@@ -1,0 +1,279 @@
+$Version=2$
+admin_fee_summary "system/report"
+    {
+    title = "Admin Fee Summary";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    //pagewidth=110;
+    //pageheight=51;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    filename = runserver("admin_fee_summary_" + :this:period + ".pdf");
+
+    // Parameters for GL Fund Balance
+    ledger "report/parameter" { type=string; default=null; }
+    period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    unposted "report/parameter" { type=integer; default=0; }
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    period_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_ledger_number = :this:ledger and :p:a_period = :this:period";
+	}
+
+    cc_qy "report/query"
+	{
+	sql = runserver("
+		select
+			atotal = isnull(sum(condition(:t:a_account_code = '5700', :t:a_amount, $0.00)), $0.00),
+			acnt = count(condition(:t:a_account_code = '5700', :t:a_amount, $0.00)),
+			gtotal = isnull(sum(condition(:t:a_account_code != '5700' and :t:a_account_code > '1199' and :t:a_account_code != '4700' and :t:a_account_code != '1900', :t:a_amount, $0.00)), $0.00),
+			:t:a_cost_center,
+			srctxt = :c:a_cc_desc
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		where
+			:t:a_ledger_number = :this:ledger and
+			:t:a_period = :this:period and
+			:t:a_origin = 'CR' and
+			:t:a_cost_center = :c:a_cost_center and
+			:c:a_ledger_number = :this:ledger
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		group by
+			:t:a_cost_center
+		having
+			:acnt > 0 and :atotal != $0.00
+		");
+	sum_atotal "report/aggregate" { compute="sum(:atotal)"; reset=0; }
+	sum_gtotal "report/aggregate" { compute="sum(:gtotal)"; reset=0; }
+	sum_sub_gtotal "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
+	sum_sub_gtotal2 "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
+	}
+
+    adminfee_qy "report/query"
+	{
+	sql = runserver("
+		select
+			atotal = isnull(sum(condition(:t:a_account_code = '5700' and not (:cd:a_cc_desc is null), :t:a_amount, $0.00)), $0.00),
+			:t:a_cost_center,
+			dsttxt = :cd:a_cc_desc,
+			a_dest_cost_center = substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255)))
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows cd
+		where
+			:t:a_ledger_number = :this:ledger and
+			:t:a_period = :this:period and
+			:t:a_origin = 'CR' and
+			:t:a_account_code = '5700' and
+			:t:a_cost_center = :cc_qy:a_cost_center and
+			substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255))) = :cd:a_cost_center and
+			:cd:a_ledger_number = :t:a_ledger_number
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		group by
+			substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255)))
+		");
+
+	sum_atotal "report/aggregate" { compute="sum(:atotal)"; reset=0; }
+	sum_sub_atotal "report/aggregate" { compute="sum(:atotal)"; reset=1; }
+	sum_sub_atotal2 "report/aggregate" { compute="sum(:atotal)"; reset=1; }
+	}
+
+    admindst_qy "report/query"
+	{
+	sql = runserver("
+		select
+			atotal = isnull(sum(:t:a_amount), $0.00),
+			acount = count(1),
+			:t:a_cost_center,
+			dsttxt = :cd:a_cc_desc,
+			a_dest_cost_center = substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255)))
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows cd
+		where
+			:t:a_ledger_number = :this:ledger and
+			:t:a_period = :this:period and
+			:t:a_origin = 'CR' and
+			:t:a_account_code = '4700' and
+			:t:a_cost_center = :cd:a_cost_center and
+			:cd:a_ledger_number = :t:a_ledger_number
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		group by
+			:t:a_cost_center
+		");
+
+	sum_atotal "report/aggregate" { compute="sum(:atotal)"; reset=0; }
+	sum_sub_atotal "report/aggregate" { compute="sum(:atotal)"; reset=1; }
+	sum_sub_atotal2 "report/aggregate" { compute="sum(:atotal)"; reset=1; }
+	}
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy, period_qy;
+
+	rpt_title "report/area"
+	    {
+	    x=0; width=80; height=3;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("Admin Fee Summary Report for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("For Period " + :this:period + " (" + :period_qy:a_period_desc + ")\n"); }
+	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    }
+
+	sect_dst_title "report/area"
+	    {
+	    x=0; width=80; height=0;
+	    font=helvetica;
+	    align=center;
+	    dt_d1 "report/data" { value = "Admin Fee Revenue Summary:\n"; style=bold; }
+	    }
+
+	dsttable "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=3;
+	    widths=10,53,15;
+	    colsep=1;
+	    source=admindst_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    dsttbl_hdr "report/table-row"
+		{
+		header=yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		hd_dst "report/table-cell" { value='Fund'; align=center; style=bold; }
+		hd_dsttxt "report/table-cell" { value='Fund Description'; align=center; style=bold; }
+		hd_amt "report/table-cell" { value='Admin Revenue'; align=center; style=bold; }
+		}
+
+	    dsttbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.06;
+		margintop=0.06;
+
+		dd_dst "report/table-cell" { value=runserver(:admindst_qy:a_cost_center); align=left; }
+		dd_dsttxt "report/table-cell" { value=runserver(:admindst_qy:dsttxt); align=left; font=helvetica; }
+		dd_amt "report/table-cell" { value=runserver($0 - :admindst_qy:atotal); align=right; }
+		}
+
+	    dsttbl_sum_row "report/table-row"
+		{
+		summary = yes;
+		topborder=0.02;
+		marginbottom=0.2;
+		font=courier;
+		fontsize=8;
+
+		sd_dst "report/table-cell" { value=runserver(""); align=right; }
+		sd_dsttxt "report/table-cell" { value=runserver("TOTAL:"); align=right; style=bold; font=helvetica; }
+		sd_amt "report/table-cell" { value=runserver($0 - :admindst_qy:sum_atotal); align=right; style=bold; }
+		}
+	    }
+
+	sect_src_title "report/area"
+	    {
+	    x=0; width=80; height=0;
+	    font=helvetica;
+	    align=center;
+	    st_d1 "report/data" { value = "\n\nAdmin Fee Deductions Summary:\n"; style=bold; }
+	    }
+
+	table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=6;
+	    widths=7,22,7,22,10,7;
+	    colsep=1;
+	    source=cc_qy,adminfee_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    tbl_hdr "report/table-row"
+		{
+		header=yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		h_src "report/table-cell" { value='Src Fund'; align=center; style=bold; }
+		h_srctxt "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_dst "report/table-cell" { value='Dst Fund'; align=center; style=bold; }
+		h_dsttxt "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_gl "report/table-cell" { value='Fee Total'; align=center; style=bold; }
+		h_pct "report/table-cell" { value='% of Gifts'; align=center; style=bold; }
+		}
+
+	    tbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+		margintop=0.02;
+
+		d_src "report/table-cell" { value=runserver(:adminfee_qy:a_cost_center); align=left; }
+		d_srctxt "report/table-cell" { value=runserver(:cc_qy:srctxt); align=left; font=helvetica; }
+		d_dst "report/table-cell" { value=runserver(:adminfee_qy:a_dest_cost_center); align=left; }
+		d_dsttxt "report/table-cell" { value=runserver(:adminfee_qy:dsttxt); align=left; font=helvetica; }
+		d_gl "report/table-cell" { value=runserver(:adminfee_qy:atotal); align=right; }
+		d_pct "report/table-cell" { value=runserver("" + round(convert(double,:adminfee_qy:atotal) / convert(double,$0 - :cc_qy:gtotal) * 100, 2) + "%"); align=right; }
+		}
+
+	    tbl_sum_row "report/table-row"
+		{
+		summary = yes;
+		summarize_for = runserver(:adminfee_qy:a_cost_center);
+		bottomborder=0.021;
+		marginbottom=0.2;
+		font=courier;
+		fontsize=8;
+
+		s1_src "report/table-cell" { value=runserver(""); align=left; }
+		s1_srctxt "report/table-cell" { value=runserver(""); align=left; }
+		s1_dst "report/table-cell" { value=runserver(""); align=right; }
+		s1_dsttxt "report/table-cell" { value=runserver("SUBTOTAL FOR " + ($0 - :cc_qy:sum_sub_gtotal) + " GIFTS:"); align=right; style=bold; font=helvetica; }
+		s1_gl "report/table-cell" { value=runserver(:adminfee_qy:sum_sub_atotal); align=right; style=bold; }
+		s1_pct "report/table-cell" { value=runserver("" + round(convert(double,:adminfee_qy:sum_sub_atotal2) / convert(double,$0 - :cc_qy:sum_sub_gtotal2) * 100, 2) + "%"); align=right; style=bold; }
+		}
+
+	    tbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		marginbottom=1.0;
+
+		s_src "report/table-cell" { value=runserver(""); align=left; }
+		s_srctxt "report/table-cell" { value=runserver(""); align=left; }
+		s_dst "report/table-cell" { value=runserver(""); align=right; }
+		s_dsttxt "report/table-cell" { value=runserver("TOTAL FEES FOR " + ($0 - :cc_qy:sum_gtotal) + " GIFTS:"); align=right; style=bold; font=helvetica; }
+		s_gl "report/table-cell" { value=runserver(:adminfee_qy:sum_atotal); align=right; style=bold; }
+		s_pct "report/table-cell" { value=runserver("" + round(convert(double,:adminfee_qy:sum_atotal) / convert(double,$0 - :cc_qy:sum_gtotal) * 100, 2) + "%"); align=right; style=bold; }
+		}
+	    }
+	}
+    }

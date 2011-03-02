@@ -1,0 +1,373 @@
+$Version=2$
+tax_table_cmp "widget/component-decl"
+    {
+    width=778; height=525;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    ttwin "widget/parameter" { type=object; }
+
+    EditTable "widget/component-decl-action" {}
+    EditTable_cn1 "widget/connector"
+	{
+	event=EditTable;
+	target=it_osrc;
+	action=QueryParam;
+	type_code = runclient(:TypeCode);
+	}
+
+    ledger_osrc "widget/osrc"
+	{
+	l_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
+	sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_ledger/rows where :a_ledger_number = :parameters:l_ledger");
+	baseobj = "/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	replicasize=10;
+	readahead=5;
+	autoquery = onload;
+	}
+
+    it_osrc "widget/osrc"
+	{
+	type_code "widget/parameter" { type=string; default=null; }
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows where :a_payroll_item_type_code = :parameters:type_code";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows";
+	replicasize=10;
+	readahead=5;
+	autoquery = never;
+
+	set_stat_dd "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=f_stat;
+	    action=SetSQL;
+	    sql = runclient("select :a_filing_status + ' - ' + :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
+	    }
+	set_stat2_dd "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=f_stat2;
+	    action=SetSQL;
+	    sql = runclient("select :a_filing_status + ' - ' + :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
+	    }
+	}
+
+    tt_lbl "widget/label"
+	{
+	x=8;y=0;width=762;height=24;
+	align=center;
+	style=bold;
+	font_size=16;
+	value = runclient(isnull('Tax Table for ' + :it_osrc:a_payroll_item_type_code + ' (' + :it_osrc:a_desc + '):', ''));
+	}
+
+    tax_tab "widget/tab"
+	{
+	x=8;y=32;width=762;height=460;
+	//background="/apps/kardia/images/bg/light_bgnd2.jpg";
+
+	tt_page "widget/tabpage"
+	    {
+	    title = "Tax Table";
+
+	    tt_osrc "widget/osrc"
+		{
+		//sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:text, :a_minimum_salary, :a_maximum_salary, :a_subtract_salary, :a_percent, :a_add_to_tax, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date) + ' - ' + datepart(month, :a_end_date) + '/' + datepart(day, :a_end_date) + '/' + datepart(year, :a_end_date), txt = '' + round(100.0 * :a_percent, 2) + '% of salary exceeding ' + :a_subtract_salary + ', plus ' + :a_add_to_tax  FROM /apps/kardia/data/Kardia_DB/a_tax_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:tag";
+		//sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:text, :a_minimum_salary, :a_maximum_salary, :a_subtract_salary, :a_percent, :a_add_to_tax, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), pct = '' + round(100.0 * :a_percent, 2) + '%', :a_subtract_salary, :a_add_to_tax  FROM /apps/kardia/data/Kardia_DB/a_tax_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:tag";
+		sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:a_desc, :a_minimum_salary, :a_maximum_salary, :a_subtract_salary, :a_percent, :a_add_to_tax, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), pct = '' + round(100.0 * :a_percent, 2) + '%', :a_subtract_salary, :a_add_to_tax  FROM /apps/kardia/data/Kardia_DB/a_tax_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:a_filing_status and :tt:a_payroll_item_type = :fs:a_payroll_item_type_code";
+		baseobj = "/apps/kardia/data/Kardia_DB/a_tax_table/rows";
+
+		replicasize=50;
+		readahead=25;
+		autoquery=never;
+
+		ledger_sync "widget/rule"
+		    {
+		    ruletype = "osrc_relationship";
+		    target = ledger_osrc;
+		    is_slave = yes;
+		    key_1 = a_ledger_number;
+		    target_key_1 = a_ledger_number;
+		    autoquery = true;
+		    }
+		type_sync "widget/rule"
+		    {
+		    ruletype = "osrc_relationship";
+		    target = it_osrc;
+		    is_slave = yes;
+		    key_1 = a_payroll_item_type;
+		    target_key_1 = a_payroll_item_type_code;
+		    autoquery = true;
+		    }
+
+		tt_list_pane "widget/pane"
+		    {
+		    x=8;y=8;width=744;height=262;
+		    widget_class = "table_bgnd";
+
+		    tt_list "widget/table"
+			{
+			x=0;y=0;width=742;height=260;
+			rowheight = 18;
+			mode=dynamicrow;
+
+			t_daterange "widget/table-column" { title="Valid From"; fieldname="txtdate"; width=70; }
+			t_interval "widget/table-column" { title="Period"; fieldname="ivtxt"; width=80; }
+			t_status "widget/table-column" { title="Status"; fieldname="fstxt"; width=140; }
+			t_min "widget/table-column" { title="At Least"; fieldname="a_minimum_salary"; width=70; align=right; }
+			t_max "widget/table-column" { title="Less Than"; fieldname="a_maximum_salary"; width=90; align=right; }
+			//t_txt "widget/table-column" { title="Description"; fieldname="txt"; width=300; }
+			t_plus "widget/table-column" { title="Tax"; fieldname="a_add_to_tax"; width=70; align=right; }
+			t_pct "widget/table-column" { title="+ Percent"; fieldname="pct"; width=70; align=right; }
+			t_exceed "widget/table-column" { title="Of Amt Exceeding"; fieldname="a_subtract_salary"; width=110; align=right; }
+			}
+		    }
+
+		tt_form "widget/form"
+		    {
+		    tt_ctls "widget/component"
+			{
+			x=8;y=274;width=744;height=26;
+			path = "/sys/cmp/form_controls.cmp";
+			deletable = no;
+			object_name = "Tax.Table.Entry";
+			}
+
+		    auto_from "widget/connector" { event=New; target=f_from; action=SetValue; Value=runclient(:tt_form:a_start_date); }
+		    auto_to "widget/connector" { event=New; target=f_to; action=SetValue; Value=runclient(:tt_form:a_end_date); }
+		    //auto_period "widget/connector" { event=New; target=f_per; action=SetValue; Value=runclient(:tt_form:a_payroll_interval); }
+		    //auto_fstat "widget/connector" { event=New; target=f_stat; action=SetValue; Value=runclient(:tt_form:a_filing_status); }
+
+		    tt_vbox "widget/vbox"
+			{
+			x=8;y=308;width=288;height=118;
+			spacing=8;
+			cellsize=20;
+
+			f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="Valid From:"; ctl_type="datetime"; tooltip="Date that this tax table entry begins to be valid"; label_width=100; }
+			f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid Thru:"; ctl_type="datetime"; tooltip="Last date that this tax table entry is valid"; label_width=100; }
+			f_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="Pay Period:"; ctl_type="dropdown"; tooltip="Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
+			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
+			f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dynamicdropdown"; tooltip="Filing Status"; label_width=100; }
+			}
+
+		    tt_vbox2 "widget/vbox"
+			{
+			x=308; y=308; width=434; height=118;
+			spacing=8;
+			cellsize=20;
+			f_lbl1 "widget/label" { align=left; style=bold; text="When Salary Is..."; }
+
+			tt_hbox1 "widget/hbox"
+			    {
+			    spacing=16;
+			    f_min "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=a_minimum_salary; text="At Least:"; ctl_type="editbox"; tooltip="Minimum salary for this tax table entry"; label_width=100; }
+			    f_max "widget/component" { width=218; path="/sys/cmp/smart_field.cmp"; field=a_maximum_salary; text="But Less Than:"; ctl_type="editbox"; tooltip="Salary must be less than this amount"; label_width=100; }
+			    }
+
+			f_lbl2 "widget/label" { align=left; style=bold; text="Tax Is Computed As..."; }
+
+			tt_hbox2 "widget/hbox"
+			    {
+			    spacing=0;
+			    f_add "widget/component" { width=110; path="/sys/cmp/smart_field.cmp"; field=a_add_to_tax; text="Tax:"; ctl_type="editbox"; tooltip="This much tax is added after the percentage computation"; label_width=40; empty_desc="Dollars"; }
+			    f_pct "widget/component" { width=100; path="/sys/cmp/smart_field.cmp"; field=a_percent; text="Plus:"; ctl_type="editbox"; tooltip="Enter tax rate as a decimal; e.g., 15% is 0.15"; label_width=50; empty_desc="Rate"; }
+			    f_sub "widget/component" { width=224; path="/sys/cmp/smart_field.cmp"; field=a_subtract_salary; text="Of Amt Exceeding:"; ctl_type="editbox"; tooltip="Tax is computed based on the amount of salary in excess of this number"; label_width=140; empty_desc="Dollars"; }
+			    }
+			}
+
+		    tt_rec_info "widget/component"
+			{
+			x=8;y=430;height=20;width=744;
+			path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+			}
+		    }
+		}
+	    }
+
+	ta_page "widget/tabpage"
+	    {
+	    title = "Allowances Table";
+	    ta_osrc "widget/osrc"
+		{
+		sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:a_desc, :a_flat_deduction_amt, :a_allowance, :a_dependent_allowance, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), pct = '' + round(100.0 * :a_percent, 2) + '%', :a_subtract_salary, :a_add_to_tax  FROM /apps/kardia/data/Kardia_DB/a_tax_allowance_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:a_filing_status and :tt:a_payroll_item_type = :fs:a_payroll_item_type_code";
+		baseobj = "/apps/kardia/data/Kardia_DB/a_tax_allowance_table/rows";
+
+		replicasize=50;
+		readahead=25;
+		autoquery=never;
+
+		ledger_sync2 "widget/rule"
+		    {
+		    ruletype = "osrc_relationship";
+		    target = ledger_osrc;
+		    is_slave = yes;
+		    key_1 = a_ledger_number;
+		    target_key_1 = a_ledger_number;
+		    autoquery = true;
+		    }
+		type_sync2 "widget/rule"
+		    {
+		    ruletype = "osrc_relationship";
+		    target = it_osrc;
+		    is_slave = yes;
+		    key_1 = a_payroll_item_type;
+		    target_key_1 = a_payroll_item_type_code;
+		    autoquery = true;
+		    }
+
+		ta_list_pane "widget/pane"
+		    {
+		    x=8;y=8;width=744;height=262;
+		    widget_class = "table_bgnd";
+
+		    ta_list "widget/table"
+			{
+			x=0;y=0;width=742;height=260;
+			rowheight = 18;
+			mode=dynamicrow;
+
+			t_daterange2 "widget/table-column" { title="Valid From"; fieldname="txtdate"; width=70; }
+			t_interval2 "widget/table-column" { title="Period"; fieldname="ivtxt"; width=80; }
+			t_status2 "widget/table-column" { title="Status"; fieldname="fstxt"; width=140; }
+			t_all "widget/table-column" { title="Allowance"; fieldname="a_allowance"; width=100; align=right; }
+			t_flat "widget/table-column" { title="Flat Ded."; fieldname="a_flat_deduction_amt"; width=100; align=right; }
+			t_depall "widget/table-column" { title="Dep. Allow."; fieldname="a_dependent_allowance"; width=100; align=right; }
+			}
+		    }
+
+		ta_form "widget/form"
+		    {
+		    ta_ctls "widget/component"
+			{
+			x=8;y=274;width=744;height=26;
+			path = "/sys/cmp/form_controls.cmp";
+			deletable = no;
+			object_name = "Tax Allowance";
+			}
+
+		    ta_vbox "widget/vbox"
+			{
+			x=8;y=308;width=312;height=118;
+			spacing=8;
+			cellsize=20;
+
+			f_from2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="Valid From:"; ctl_type="datetime"; tooltip="Date that this tax table entry begins to be valid"; label_width=100; }
+			f_to2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid Thru:"; ctl_type="datetime"; tooltip="Last date that this tax table entry is valid"; label_width=100; }
+			f_per2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="Pay Period:"; ctl_type="dropdown"; tooltip="Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
+			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
+			f_stat2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dynamicdropdown"; tooltip="Filing Status"; label_width=100; }
+			}
+
+		    ta_vbox2 "widget/vbox"
+			{
+			x=402; y=308; width=250; height=118;
+			spacing=8;
+			cellsize=20;
+			f_lbl3 "widget/label" { align=center; style=bold; text="Deductions:"; }
+			f_all "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_allowance; text="Personal:"; ctl_type="editbox"; tooltip="Personal allowance, multiplied by exemptions"; label_width=100; }
+			f_flat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_flat_deduction_amt; text="Flat:"; ctl_type="editbox"; tooltip="The standard allowance amount, regardless of exemptions"; label_width=100; }
+			f_depall "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_dependent_allowance; text="Dependent:"; ctl_type="editbox"; tooltip="Multiplied by exemptions for dependents"; label_width=100; }
+			}
+
+		    ta_rec_info "widget/component"
+			{
+			x=8;y=430;height=20;width=744;
+			path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+			}
+		    }
+		}
+	    }
+
+	fs_page "widget/tabpage"
+	    {
+	    title = "Filing Statuses";
+	    fs_osrc "widget/osrc"
+		{
+		sql = "select :a_ledger_number, :a_payroll_item_type_code, :a_filing_status, :a_desc, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by  FROM /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs";
+		baseobj = "/apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows";
+
+		replicasize=50;
+		readahead=25;
+		autoquery=never;
+
+		ledger_sync3 "widget/rule"
+		    {
+		    ruletype = "osrc_relationship";
+		    target = ledger_osrc;
+		    is_slave = yes;
+		    key_1 = a_ledger_number;
+		    target_key_1 = a_ledger_number;
+		    autoquery = true;
+		    }
+		type_sync3 "widget/rule"
+		    {
+		    ruletype = "osrc_relationship";
+		    target = it_osrc;
+		    is_slave = yes;
+		    key_1 = a_payroll_item_type_code;
+		    target_key_1 = a_payroll_item_type_code;
+		    autoquery = true;
+		    }
+
+		fs_list_pane "widget/pane"
+		    {
+		    x=8;y=8;width=744;height=262;
+		    widget_class = "table_bgnd";
+
+		    fs_list "widget/table"
+			{
+			x=0;y=0;width=742;height=260;
+			rowheight = 18;
+			mode=dynamicrow;
+
+			t_status3 "widget/table-column" { title="Status"; fieldname="a_filing_status"; width=70; }
+			t_desc3 "widget/table-column" { title="Description"; fieldname="a_desc"; width=600; }
+			}
+		    }
+
+		fs_form "widget/form"
+		    {
+		    // Reload the dropdowns if the filing status list gets changed.
+		    set_stat3_dd "widget/connector"
+			{
+			event=DataSaved;
+			target=f_stat;
+			action=SetSQL;
+			sql = runclient("select :a_filing_status + ' - ' + :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
+			}
+		    set_stat4_dd "widget/connector"
+			{
+			event=DataSaved;
+			target=f_stat2;
+			action=SetSQL;
+			sql = runclient("select :a_filing_status + ' - ' + :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
+			}
+
+		    fs_ctls "widget/component"
+			{
+			x=8;y=274;width=744;height=26;
+			path = "/sys/cmp/form_controls.cmp";
+			deletable = no;
+			object_name = "Filing Status";
+			}
+
+		    fs_vbox "widget/vbox"
+			{
+			x=8;y=308;width=312;height=118;
+			spacing=8;
+			cellsize=20;
+
+			f_fs_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Status Code:"; ctl_type="editbox"; tooltip="A one-letter code for the filing status"; label_width=100; }
+			f_fs_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_desc; text="Description:"; ctl_type="editbox"; tooltip="A short description of the filing status"; label_width=100; }
+			}
+
+		    fs_rec_info "widget/component"
+			{
+			x=8;y=430;height=20;width=744;
+			path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+			}
+		    }
+		}
+	    }
+	}
+    }

@@ -1,0 +1,96 @@
+$Version=2$
+cd_print_window "widget/component-decl"
+{
+	// Window Properties
+    width=320; height=240;
+	// style=window;
+	// titlebar=no;
+	
+	// Debugging
+	alerter "widget/alerter" {}		// USED WHEN DEBUGGING
+	
+	// Input Parameters
+    // cd_details_window "widget/parameter" { type=object; }
+	ledger "widget/parameter" { type=string; default=null; }
+	// batch_number "widget/parameter" { type=integer; default=null; }
+	// check_number "widget/parameter" { type=integer; default=null; }
+		
+	//external_cashdisb "widget/parameter" { type = "object"; default = null; }
+	//external_itself "widget/parameter" { type = "object"; default = null; }
+		
+	// Window Events / Actions / Trigger Interface
+    Open "widget/component-decl-action" { }
+    Open_cn1 "widget/connector" { event="Open"; target="cd_print_formwin"; action="Open"; Cascade=1; } // ledger=runclient(convert(integer,:ledger)); } // batch_number=runclient(convert(integer,:batch_number)); }
+    //Open_cn2 "widget/connector" { event="Open"; target="cd_print_form_cmp"; action="Open"; IsModal=1;  } // ledger=runclient(ledger); batch_number=runclient(batch_number); check_number=runclient(check_number); } // Cascade=1; 
+	//Open_cn3 "widget/connector" { event="Open"; target=cd_print_form_cmp; action="LoadBatchParameters";  batch_number=runclient(convert(integer,:batch_number)); check_number=runclient(convert(integer,:check_number)); } //ledger=runclient(convert(string,:ledger));
+	// V2 
+	//Open_cn4 "widget/connector" { event="Open"; target=cd_print_form_cmp; action=Instantiate; ledger=runclient(convert(string,:ledger)); batch_number=runclient(convert(integer,:batch_number)); check_number=runclient(convert(integer,:check_number)); }
+	
+	ReallyOpenPrintWindow "widget/component-decl-action" {}
+	ReallyOpenPrintWindow_cn1 "widget/connector" { event=ReallyOpenPrintWindow; target=cd_print_formwin; action=Open; Cascade=1; IsModal=1; }
+	ReallyOpenPrintWindow_cn2 "widget/connector" { event=ReallyOpenPrintWindow; target=cd_print_form_cmp; action=Instantiate; ledger=runclient(convert(string,:ledger)); batch_number=runclient(convert(integer,:batch_number)); disbursement_id=runclient(convert(integer,:disbursement_id)); external_cashdisb=runclient(convert(object, :external_cashdisb)); external_itself=cd_print_formwin; cash_disb_osrc_param=runclient(convert(object, :cash_disb_osrc_param)); } //runclient(convert(object, :cd_print_formwin)); }
+	// NOTE (20090901): external_itself and other external not tested 
+	
+	// Debugging Display
+	// ReallyOpenPrintWindow_cn3 "widget/connector"
+	// {
+	// 	event="ReallyOpenPrintWindow";
+	// 	target="alerter";
+
+	// 	action="Alert";
+		
+	// 	param=runclient("cd_print_window (ReallyOpenPrintWindow): You clicked " + isnull(:ledger, "<blank>") + ", " + isnull(:batch_number, "<blank>") + ", " + isnull(:disbursement_id, "<blank>"));
+	// }
+	
+    page "widget/parameter" { type=object; find_container="widget/page"; }
+	
+	// Debugging Display
+	// Open_cn2 "widget/connector"
+	// {
+	// 	event="Open";
+	// 	target="alerter";
+
+	// 	action="Alert";
+		
+	// 	param=runclient("cd_print_window (Open): You clicked " + isnull(:ledger, "<blank>") + ", " + isnull(:batch_number, "<blank>") + ", " + isnull(:disbursement_id, "<blank>"));
+	// }
+	
+	// Following... 
+	
+    cd_print_formwin "widget/childwindow"
+	{
+		// title = "Print Checks";
+		width=300; height=190;
+		x=10; y=25;
+		visible = false;
+		icon = "/apps/kardia/images/icons/gift.gif";
+		titlebar=no;
+		
+		// V2 
+		// style = dialog;
+		// toplevel = yes;
+	
+		cd_print_form_cmp "widget/component"
+		{
+			path = "/apps/kardia/modules/disb/cd_print_subform.cmp";
+			width=298;height=165;
+			
+			// V2
+			mode = dynamic;
+			toplevel = yes;
+			// TO DOCUMENT (20090729): mode = dynamic when you want to pass in use parameters for longer than the connector call...
+			
+			ledger = runserver(:this:ledger);
+			// batch_number = batch_number;
+			// check_number = check_number;
+			// runclient(convert(integer,:Batch))
+			page=page;
+			//external_cashdisb=external_cashdisb;
+			//external_itself=external_itself;
+			auto_destroy=yes;
+			
+		} // END - cd_print_form_cmp
+		
+	} // END - cd_print_formwin
+	
+} // END - cd_print_window

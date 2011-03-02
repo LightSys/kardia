@@ -1,0 +1,315 @@
+$Version=2$
+pay_form_item "widget/component-decl"
+    {
+    width=758;
+    height=18;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    period "widget/parameter" { type=string; default=null; }
+    ref_period "widget/parameter" { type=string; default=null; }
+    costctr "widget/parameter" { type=string; default=null; }
+    payroll_id "widget/parameter" { type=integer; default=null; }
+    type_code "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    class_code "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    item_desc "widget/parameter" { type=string; default=null; }
+    the_vbox "widget/parameter" { type=object; find_container = "widget/vbox"; }
+    parent "widget/parameter" { type=object; find_container = "widget/component-decl"; }
+
+    // Update available funds amount.
+    //avl_upd "widget/repeat"
+//	{
+//	condition = runserver(:this:class_code == 'A');
+	//sql = runserver("update /apps/kardia/data/Kardia_DB/a_payroll_item/rows pi set :a_actual_amount = ( select sum(:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_cost_center = " + quote(:this:costctr) + " and :a_period <= " + quote(:this:period) + " and :a_posted = 1 ) where :a_payroll_item_type_code = " + quote(:this:type_code) + " and :a_payroll_id = " + :this:payroll_id);
+//	}
+
+    // Reload the net from Gross + Taxes + Payables + Receivables.
+    recalc_net_osrc "widget/osrc"
+	{
+	condition = runserver(:this:type_code == 'NET');
+
+	readahead=1;
+	replicasize=1;
+	autoquery=never;
+	sql = runserver("UPDATE /apps/kardia/data/Kardia_DB/a_payroll_item/rows SET :a_actual_amount = (select isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'GM') > 0, :i:a_actual_amount, $0)), $0) - isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'DTV') > 0, :i:a_actual_amount, $0)), $0) FROM /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it WHERE :i:a_payroll_id = " + :this:payroll_id + " and :i:a_payroll_item_type_code = :it:a_payroll_item_type_code and :it:a_ledger_number = " + quote(:this:ledger) + " and charindex(:it:a_payroll_item_class_code, 'GDTMV') > 0 and :i:a_period = " + quote(:this:period) + ")  WHERE :a_period = " + quote(:this:period) + " and :a_payroll_id = " + :this:payroll_id + " and :a_payroll_item_type_code = 'NET'");
+
+	recalc_net "widget/connector"
+	    {
+	    source = parent;
+	    event = ItemChanged;
+	    event_condition = runclient(charindex(:Class, "GDTMV") > 0);
+	    action = QueryParam;
+	    }
+
+	done_recalc_net "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=item_osrc;
+	    action=Refresh;
+	    }
+	done_recalc_net_2 "widget/connector" { event=EndQuery; target=parent; action=TriggerEvent; EventName=runclient("ItemChanged"); Class=runclient(:pay_form_item:class_code); Type=runclient(:pay_form_item:type_code); }
+	}
+
+    // Reload the FICA from the Gross.
+    recalc_fica_osrc "widget/osrc"
+	{
+	condition = runserver(:this:type_code == 'MD' or :this:type_code == 'MDE' or :this:type_code == 'SS' or :this:type_code == 'SSE');
+	readahead=1;
+	replicasize=1;
+	autoquery=never;
+	sql = runserver("UPDATE IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i2, /apps/kardia/data/Kardia_DB/a_tax_table/rows tt  SET :i2:a_actual_amount = round(( (select isnull(sum(:i:a_actual_amount), $0) FROM /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it WHERE :i:a_payroll_id = " + :this:payroll_id + " and :i:a_payroll_item_type_code = :it:a_payroll_item_type_code and :it:a_ledger_number = " + quote(:this:ledger) + " and charindex(:it:a_payroll_item_class_code, 'G') > 0 and :i:a_period = " + quote(:this:period) + ") - :tt:a_subtract_salary) * :tt:a_percent, 2) + :tt:a_add_to_tax  WHERE :i2:a_period = " + quote(:this:period) + " and :i2:a_payroll_id = " + :this:payroll_id + " and :i2:a_payroll_item_type_code = " + quote(:this:type_code) + " and :tt:a_payroll_item_type = " + quote(:this:type_code) + " and :tt:a_ledger_number = " + quote(:this:ledger) + " and :tt:a_filing_status = :i2:a_filing_status and :tt:a_payroll_interval = '5' and :tt:a_start_date <= :i2:a_effective_date and :tt:a_end_date >= :i2:a_effective_date");
+
+	recalc_fica "widget/connector"
+	    {
+	    source = parent;
+	    event = ItemChanged;
+	    event_condition = runclient(charindex(:Class, "G") > 0);
+	    action = QueryParam;
+	    }
+
+	done_recalc_fica "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=item_osrc;
+	    action=Refresh;
+	    }
+	done_recalc_fica_2 "widget/connector" { event=EndQuery; target=parent; action=TriggerEvent; EventName=runclient("ItemChanged"); Class=runclient(:pay_form_item:class_code); Type=runclient(:pay_form_item:type_code); }
+	}
+
+    item_hbox "widget/hbox"
+	{
+	x=0; y=0; width=758; height=18;
+	spacing=8;
+
+	item_lbl "widget/label" { width=160; align=right; value=runserver(:this:item_desc + ":"); }
+
+	item_osrc "widget/osrc"
+	    {
+	    sql = runserver("
+		SELECT
+			:i:a_ref_cost_center, 
+			:i:a_actual_amount,
+			:i:a_target_amount
+		FROM
+			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it
+		WHERE
+			:i:a_payroll_item_type_code = " + quote(:this:type_code) + " and
+			:i:a_payroll_id = " + :this:payroll_id + " and
+			:it:a_ledger_number = " + quote(:this:ledger) + " and
+			:it:a_payroll_item_type_code = :i:a_payroll_item_type_code and
+			" + condition(:this:period is null, ":i:a_period is null", ":i:a_period = " + quote(:this:period))
+		);
+	    autoquery=onload;
+
+	    item_form "widget/form"
+		{
+		next_form_within = the_vbox;
+
+		saved_cn "widget/connector" { event=DataSaved; target=parent; action=TriggerEvent; EventName=runclient("ItemChanged"); Class=runclient(:pay_form_item:class_code); Type=runclient(:pay_form_item:type_code); }
+
+		item_amt "widget/editbox"
+		    {
+		    width=80;
+		    fieldname = a_actual_amount;
+		    }
+
+		item_save "widget/imagebutton"
+		    {
+		    y=0;
+		    width=18;
+		    height=18;
+		    image="/sys/images/ico20a.gif";
+		    pointimage="/sys/images/ico20b.gif";
+		    clickimage="/sys/images/ico20c.gif";
+		    disabledimage="/sys/images/ico20d.gif";
+		    tooltip = "Save Changes";
+		    enabled = runclient(:item_form:is_savable);
+		    cnSave "widget/connector" { event="Click"; target=item_form; action="Save"; }
+		    }
+		item_cancel "widget/imagebutton"
+		    {
+		    y=0;
+		    width=18;
+		    height=18;
+		    image="/sys/images/ico22a.gif";
+		    pointimage="/sys/images/ico22b.gif";
+		    clickimage="/sys/images/ico22c.gif";
+		    disabledimage="/sys/images/ico22d.gif";
+		    tooltip = "Cancel Changes";
+		    enabled = runclient(:item_form:is_discardable);
+		    cnDiscard "widget/connector" { event="Click"; target=item_form; action="Discard"; }
+		    }
+
+		item_spacer "widget/autolayoutspacer"
+		    {
+		    width = 8;
+		    }
+
+//		item_usetarget "widget/textbutton"
+//		    {
+//		    width=110;
+//		    height=20;
+		    //image="/sys/images/ico19a.gif";
+		    //pointimage="/sys/images/ico19b.gif";
+		    //clickimage="/sys/images/ico19c.gif";
+		    //disabledimage="/sys/images/ico19d.gif";
+		    //tooltip = "Use Target Amount";
+//		    text = "Use Target:";
+//		    enabled = runclient(condition(:item_form:a_target_amount,1,0));
+//		    cnUseTarget "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
+//		    }
+
+		item_target "widget/label"
+		    {
+		    widget_class = "link";
+		    width=130;
+		    //fieldname = a_target_amount;
+		    value = runclient("Budget: " + :item_form:a_target_amount);
+		    cnUseTarget "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
+		    }
+
+//		item_usegl "widget/textbutton"
+//		    {
+//		    condition = runserver(:this:class_code = 'A' or :this:class_code = 'I' or :this:class_code = 'M' or :this:class_code = 'V');
+//		    width=110;
+//		    height=20;
+//		    text = "From GL";
+//		    //cnUseGL "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
+//		    }
+
+
+		item_glosrc "widget/osrc"
+		    {
+		    condition = runserver(:this:type_code = 'AVL');
+		    autoquery=onload;
+		    replicasize=2;
+		    readahead=2;
+		    sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999'");
+		    }
+
+		item_glosrc "widget/osrc"
+		    {
+		    condition = runserver(:this:type_code = 'WKE');
+		    autoquery=onload;
+		    replicasize=2;
+		    readahead=2;
+		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period = " + quote(:this:period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '5000' and :t:a_account_code <= '5999'");
+		    }
+
+		item_glosrc "widget/osrc"
+		    {
+		    condition = runserver(:this:type_code = 'DON');
+		    autoquery=onload;
+		    replicasize=2;
+		    readahead=2;
+		    sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period = " + quote(:this:period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '4000' and :t:a_account_code <= '4999'");
+		    }
+
+		item_glosrc "widget/osrc"
+		    {
+		    condition = runserver(:this:type_code = 'RET');
+		    autoquery=onload;
+		    replicasize=2;
+		    readahead=2;
+		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code = '1281'");
+		    }
+
+		item_glosrc "widget/osrc"
+		    {
+		    condition = runserver(:this:type_code = 'ADV');
+		    autoquery=onload;
+		    replicasize=2;
+		    readahead=2;
+		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code = '1280'");
+		    }
+
+		item_glosrc "widget/osrc"
+		    {
+		    condition = runserver(:this:type_code = 'GFT');
+		    autoquery=never;
+		    replicasize=2;
+		    readahead=2;
+		    sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_account_code = '2120'");
+		    cc_sync "widget/rule"
+			{
+			ruletype = "osrc_relationship";
+			target = item_osrc;
+			is_slave = yes;
+			key_1 = a_cost_center;
+			target_key_1 = a_ref_cost_center;
+			autoquery = true;
+			}
+		    }
+
+		item_warn "widget/label"
+		    {
+		    condition = runserver(:this:type_code = 'AVL' or :this:type_code = 'WKE' or :this:type_code = 'DON' or :this:type_code = 'GFT' or :this:type_code = 'ADV' or :this:type_code = 'RET');
+		    width=4;
+		    value = runclient(condition(((not char_length(:item_amt:content) > 0) and :item_glosrc:total == "$0.00") or :item_glosrc:total is null or :item_glosrc:total == :item_amt:content, "", "!"));
+		    style=bold;
+		    font_size = 13;
+		    fgcolor = "#ff0000";
+		    }
+
+		item_gl "widget/label"
+		    {
+		    condition = runserver(:this:type_code = 'AVL' or :this:type_code = 'WKE' or :this:type_code = 'DON' or :this:type_code = 'GFT' or :this:type_code = 'ADV');
+		    //condition = runserver(:this:class_code = 'A');
+		    widget_class = "link";
+		    width=130;
+		    value = runclient("From GL: " + :item_glosrc:total);
+		    cnUseGL "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_glosrc:total); }
+		    }
+
+		item_gross_osrc "widget/osrc"
+		    {
+		    condition = runserver(:this:class_code = 'G');
+		    autoquery=never;
+		    replicasize=2;
+		    readahead=2;
+		    sql = runserver("	UPDATE
+						/apps/kardia/data/Kardia_DB/a_payroll_item/rows
+					SET
+						:a_actual_amount = constrain( (
+							SELECT
+								((isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'A') > 0, :i:a_actual_amount, $0)), $0) - isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'GEBP') > 0 and (:it:a_payroll_item_class_code != 'G' or :i:a_payroll_id != " + :this:payroll_id + ") and ((:it:a_payroll_item_type_code != 'MDE' and :it:a_payroll_item_type_code != 'SSE') or :i:a_payroll_id != " + :this:payroll_id + "), :i:a_actual_amount, $0)), $0)) / 1.0765 - isnull(sum(condition(:it:a_payroll_item_class_code == 'G' and :it:a_payroll_item_type_code != " + quote(:this:type_code) + " and :i:a_payroll_id = " + :this:payroll_id + ", :i:a_actual_amount, $0)), $0) )
+							FROM
+								/apps/kardia/data/Kardia_DB/a_payroll/rows y,
+								/apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
+								/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it
+							WHERE
+								:y:a_cost_center = " + quote(:this:costctr) + " and
+								:y:a_ledger_number = " + quote(:this:ledger) + " and
+								:i:a_payroll_id = :y:a_payroll_id and
+								:i:a_payroll_item_type_code = :it:a_payroll_item_type_code and
+								:it:a_ledger_number = " + quote(:this:ledger) + " and
+								charindex(:it:a_payroll_item_class_code, 'AGEBP') > 0 and
+								:i:a_period = " + quote(:this:period) + "
+							), $0, convert(money, null))
+					WHERE
+						:a_period = " + quote(:this:period) + " and
+						:a_payroll_id = " + :this:payroll_id + " and
+						:a_payroll_item_type_code = " + quote(:this:type_code) + "
+					");
+		    done_recalc_gross "widget/connector"
+			{
+			event=EndQuery;
+			target=item_osrc;
+			action=Refresh;
+			}
+		    done_recalc_gross_2 "widget/connector" { event=EndQuery; target=parent; action=TriggerEvent; EventName=runclient("ItemChanged"); Class=runclient(:pay_form_item:class_code); Type=runclient(:pay_form_item:type_code); }
+		    }
+
+		item_calcgross "widget/label"
+		    {
+		    //condition = runserver(:this:type_code = 'GRO');
+		    condition = runserver(:this:class_code = 'G');
+		    widget_class = "link";
+		    width=130;
+		    value = runclient("Calculate Gross");
+		    cnRecalcGross "widget/connector" { event="Click"; target=item_gross_osrc; action="QueryParam"; }
+		    }
+		}
+	    }
+	}
+    }

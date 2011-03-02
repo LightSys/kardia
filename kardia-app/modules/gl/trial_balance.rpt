@@ -1,0 +1,185 @@
+$Version=2$
+trial_balance "system/report"
+    {
+    title = "GL Trial Balance";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Parameters for GL Trial Balance
+    ledger "report/parameter" { type=string; default=null; }
+    costctr "report/parameter" { type=string; default=null; }
+    year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(month, :a_start_date) = 1 and datepart(month, :a_end_date) = 12 and datepart(year, :a_end_date) = datepart(year, getdate())) ); }
+    ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    pagesep "report/parameter" { type=integer; default=0; }
+    show1900 "report/parameter" { type=integer; default=1; }
+    unposted "report/parameter" { type=integer; default=0; }
+
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    period_qy "report/query"
+	{
+	sql = "select :p:a_period_desc, first_period = min(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
+	}
+
+    accts_qy "report/query"
+	{
+	sql = runserver("
+		select
+			:c:a_cost_center,
+			:c:a_cc_desc,
+			:c:a_bal_cost_center,
+			:a:a_account_code,
+			:a:a_acct_desc,
+			cbal = sum(:tt:a_amount),
+			bbal = isnull(sum(condition(:tt:a_transaction_type = 'B' or :tt:a_period < :this:ref_period, :tt:a_amount, $0.00)), $0.00)
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		where
+			:tt:a_ledger_number = :this:ledger and
+			:tt:a_cost_center = :c:a_cost_center and
+			:tt:a_account_code = :a:a_account_code and
+			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
+			:c:a_ledger_number = :this:ledger and
+			:a:a_ledger_number = :this:ledger
+			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
+			" + condition(:this:costctr is null, '', ' and :c:a_bal_cost_center = :this:costctr') + "
+		group by
+			:tt:a_cost_center,
+			:tt:a_account_code
+		");
+	cbal_sum "report/aggregate" { compute="sum(:cbal)"; }
+	cbal_sum2 "report/aggregate" { compute="sum(:cbal)"; }
+	cbal_sum3 "report/aggregate" { compute="sum(:cbal)"; }
+	cbal_sum4 "report/aggregate" { compute="sum(:cbal)"; }
+	bbal_sum "report/aggregate" { compute="sum(:bbal)"; }
+	bbal_sum2 "report/aggregate" { compute="sum(:bbal)"; }
+	bbal_sum3 "report/aggregate" { compute="sum(:bbal)"; }
+	bbal_sum4 "report/aggregate" { compute="sum(:bbal)"; }
+
+	all_sum_b "report/aggregate" { compute="sum(:bbal)"; reset=0; }
+	all_sum_c "report/aggregate" { compute="sum(:cbal)"; reset=0; }
+
+	ifxfr_sum_b "report/aggregate" { compute="sum(:bbal)"; where=":a_account_code == '1900'"; reset=0; }
+	ifxfr_sum_c "report/aggregate" { compute="sum(:cbal)"; where=":a_account_code == '1900'"; reset=0; }
+	}
+
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy, period_qy;
+
+	rpt_title "report/area"
+	    {
+	    x=0; width=80; height=3;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("General Ledger Trial Balance for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("For Year " + :this:year_period + ", for periods " + :this:ref_period + " through " + :this:end_period + "\n"); }
+	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    }
+
+	table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=6;
+	    widths=6,4,40,9,9,9;
+	    colsep=0.8;
+	    source=accts_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    tbl_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=8;
+		header=yes;
+		bottomborder=0.05;
+		h_cc "report/table-cell" { value='Cost Ctr'; align=center; style=bold; }
+		h_acct "report/table-cell" { value='Acct'; align=center; style=bold; }
+		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_bbal "report/table-cell" { value='Begin'; align=center; style=bold; }
+		h_chg "report/table-cell" { value='Change'; align=center; style=bold; }
+		h_cur "report/table-cell" { value='Current'; align=center; style=bold; }
+		}
+
+	    tbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+		d_cc "report/table-cell" { value=runserver(:accts_qy:a_cost_center); align=left; }
+		d_acct "report/table-cell" { value=runserver(:accts_qy:a_account_code); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_cc_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
+		d_bbal "report/table-cell" { value=runserver(condition(:accts_qy:bbal == $0, '-0-   ', :accts_qy:bbal)); align=right; }
+		d_chg "report/table-cell" { value=runserver(condition((:accts_qy:cbal - :accts_qy:bbal) == $0, '-0-   ', (:accts_qy:cbal - :accts_qy:bbal))); align=right; }
+		d_cur "report/table-cell" { value=runserver(condition(:accts_qy:cbal == $0, '-0-   ', :accts_qy:cbal)); align=right; }
+		}
+
+	    tbl_sum "report/table-row"
+		{
+		summary=yes;
+		summarize_for = runserver(:accts_qy:a_bal_cost_center);
+		font=courier;
+		fontsize=8;
+		topborder=0.05;
+		//bottomborder=0.05;
+		marginbottom=1.0;
+		s_cc "report/table-cell" { value=''; align=left; style=bold; }
+		s_acct "report/table-cell" { value=''; align=left; style=bold; }
+		s_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL FOR FUND ==>"); align=right; style=bold; }
+		s_bbal "report/table-cell" { value=runserver(condition(:accts_qy:bbal_sum2 == $0, '-0-   ', :accts_qy:bbal_sum)); align=right; style=bold; }
+		s_chg "report/table-cell" { value=runserver(condition((:accts_qy:cbal_sum3 - :accts_qy:bbal_sum3) == $0, '-0-   ', (:accts_qy:cbal_sum4 - :accts_qy:bbal_sum4))); align=right; style=bold; }
+		s_cur "report/table-cell" { value=runserver(condition(:accts_qy:cbal_sum2 == $0, '-0-   ', :accts_qy:cbal_sum)); align=right; style=bold; }
+		}
+	    tbl_sum_all "report/table-row"
+		{
+		condition = runserver(:this:costctr is null);
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		//bottomborder=0.05;
+		marginbottom=1.0;
+		s3_cc "report/table-cell" { value=''; align=left; style=bold; }
+		s3_acct "report/table-cell" { value=''; align=left; style=bold; }
+		s3_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL ALL ACCTS ALL FUNDS ==>"); align=right; style=bold; }
+		s3_bbal "report/table-cell" { value=runserver(condition(:accts_qy:all_sum_b == $0, '-0-   ', :accts_qy:all_sum_b)); align=right; style=bold; }
+		s3_chg "report/table-cell" { value=runserver(condition((:accts_qy:all_sum_c - :accts_qy:all_sum_b) == $0, '-0-   ', (:accts_qy:all_sum_c - :accts_qy:all_sum_b))); align=right; style=bold; }
+		s3_cur "report/table-cell" { value=runserver(condition(:accts_qy:all_sum_c == $0, '-0-   ', :accts_qy:all_sum_c)); align=right; style=bold; }
+		}
+	    tbl_sum_1900 "report/table-row"
+		{
+		condition = runserver(:this:costctr is null);
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		//bottomborder=0.05;
+		marginbottom=1.0;
+		s2_cc "report/table-cell" { value=''; align=left; style=bold; }
+		s2_acct "report/table-cell" { value=''; align=left; style=bold; }
+		s2_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL ALL FUNDS 1900 ACCT ==>"); align=right; style=bold; }
+		s2_bbal "report/table-cell" { value=runserver(condition(:accts_qy:ifxfr_sum_b == $0, '-0-   ', :accts_qy:ifxfr_sum_b)); align=right; style=bold; }
+		s2_chg "report/table-cell" { value=runserver(condition((:accts_qy:ifxfr_sum_c - :accts_qy:ifxfr_sum_b) == $0, '-0-   ', (:accts_qy:ifxfr_sum_c - :accts_qy:ifxfr_sum_b))); align=right; style=bold; }
+		s2_cur "report/table-cell" { value=runserver(condition(:accts_qy:ifxfr_sum_c == $0, '-0-   ', :accts_qy:ifxfr_sum_c)); align=right; style=bold; }
+		}
+	    }
+	}
+    }

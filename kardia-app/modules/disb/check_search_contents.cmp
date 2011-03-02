@@ -1,0 +1,576 @@
+$Version=2$
+check_search_component "widget/component-decl"
+{
+	ledger "widget/parameter" { type=string; default=null; }
+	param_cashdisb_form "widget/parameter" { type=object; }
+
+	// Purpose: Being able to find those checks by Numbers, querying the results, allowing the option to select, QED...
+	
+	// TODO: Query the Form on Load... =D  of course!
+	// TODO: Be able to pass in cashdisb, so that checks can be viewed...
+	// TODO: Make it so that cashdisb can accept optional check_numbers for a given batch -- and to open to that check / line item...
+	// TODO: Pass in Ledger Code as a parameter...
+	// TODO: Add Title to the Search for Check Form
+	
+	// Features TODO (from top to bottom)
+	// 1. We need to have:
+	//    a. an acct box    :a subtrx cashdisb:a_account_code
+	//    b. an payee box	-> 
+	//       i. complication: Payee Search String -> list of possible payee numbers (:a subtrx cashdisb:a_payee_partner_key)
+	//      ii. Proposed Solution: Create the ability in the partner_search
+	// 2. Table Display should have (only matching checks) 
+	//    a. Batch Number
+	//    b. Check Number
+	//    c. Payee 
+	//    d. Acct #
+	//    e. Acct Name
+	//    f. Amount
+	// 3. Selectable
+	//    Openable... to See Batch of Checks
+	//    Have it so that it goes to the exact batch, check and line item that is select in the big search form... =D
+	
+	// Behind-the-Scenes TODO
+	// 1. Payee Name Show up in Table...
+	// 2. SQL Query modify to support Feature TODOs
+	//    a. Getting Table and Columns Names...
+	
+	
+	// Make it so the user doesn't have to click New Search in order to start a search
+    New_Search_Click "widget/component-decl-action" { }
+	
+	cn_New_Search_Click "widget/connector" 
+	{ 
+		event="New_Search_Click"; 
+		target="partner_search_form"; 
+		action="Query"; 
+	}
+	
+	select_payee_window_cmp2 "widget/childwindow"
+	{ 
+		// condition = runserver(not (:this:ledger is null));
+		// ledger = runserver(:this:ledger);			// (Pass in through connector instead)
+		
+		x=72;y=65; 
+		height=465; width=700; 
+		visible=false; 
+		toplevel = yes; 
+		style = dialog; 
+		bgcolor = "#e0e0e0"; 
+		title = "Payee Search"; 
+		// icon = "/images/icons/person-search.gif"; 
+		partner_search_component2 "widget/component" 
+		{ 
+			x=0;y=0; 
+			height=440; width=700; 
+			path = "/apps/kardia/modules/disb/partner_search_contents.cmp";
+			// sync_osrc=p_partner_osrc; 
+			// sync_form=p_partner_form; 
+			
+			// Caution: These connector additions are untested (as of 20091027)
+			
+			// Update the Selected Payee
+			cnPartnerSelected2 "widget/connector" 
+			{ 
+				event="PartnerSelected";
+				target=p_payee_number_cmp;
+				action="SetValue";
+				Value=runclient(isnull(convert(integer,:partner_key)));
+			}
+			
+			cnCloseMe "widget/connector" 
+			{ 
+				event="CloseMe";
+				action=SetVisibility;
+				IsVisible=0;
+				target="select_payee_window_cmp2";
+			}
+		} 
+	}
+	
+	
+	// Ledger Select...
+	// Runs without crashing the form -- Linkage with other compontents Usage Tested since 20090311
+	ledger_osrc "widget/osrc"
+	{
+		sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_ledger/rows where :a_ledger_number = " + quote(:this:ledger));
+		baseobj = "/apps/kardia/data/Kardia_DB/a_ledger/rows";
+		replicasize=10;
+		readahead=5;
+		autoquery = onfirstreveal;
+	}
+	
+	width=700;height=440;
+	sync_osrc "widget/parameter"
+	{
+		//This osrc is a parameter passed in from the outside
+		type=object;
+		find_container="widget/osrc";
+	}
+	sync_form "widget/parameter"
+	{
+		//This osrc is a parameter passed in from the outside
+		type=object;
+		find_container="widget/form";
+	}
+
+	CheckSelected "widget/component-decl-event" {  }
+	CloseMe "widget/component-decl-event" {  }
+
+	OpenForms "widget/component-decl-action" {  }
+
+	check_search_osrc "widget/osrc"
+	{
+		// TODO: Determine the new SQL search string for checks...
+		// TODO: Proper Ledger Handling | Options: A. widget/rule B. WHERE (see/research other examples)
+		
+		// sql="SELECT
+		//		a_ledger_number  
+		//		a_batch_number 
+		//		a_disbursement_id 
+		//		a_line_item 
+		//		a_effective_date
+		//		a_check_number
+		//		a_payee_partner_key
+		//		a_amount 
+		//		TODO: Load in Display Name SQL-Dealie... 
+		//	FROM 
+		//		/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd,
+		//		/apps/kardia/data/Kardia_DB/p_partner/rows p
+		// WHERE
+		// 		
+		//  	
+		
+		sql="SELECT
+				:c:a_ledger_number,
+				:c:a_batch_number,
+				:c:a_disbursement_id,
+				:c:a_check_number,
+				:c:a_line_item,
+				:c:a_effective_date,
+				:c:a_amount,
+				:c:a_cost_center,
+				:c:a_account_code,
+				:c:a_payee_partner_key,
+				:c:a_voided ,
+				:c:a_comment,
+				:p:p_partner_key,
+				:p:p_given_name,
+				:p:p_surname,
+				:p:p_org_name,
+				display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name)
+			FROM 
+				/apps/kardia/data/Kardia_DB/p_partner/rows p,
+				/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
+			WHERE
+				:c:a_payee_partner_key = :p:p_partner_key";
+				
+		baseobj = "/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows";
+		replicasize=10;
+		readahead=10;
+		autoquery=never;
+
+		partner_search_form "widget/form"
+		{
+			p_partner_ctl "widget/component"
+			{
+				x=0;y=0;width=698;height=24;
+				path="/sys/cmp/form_controls.cmp";
+				deletable=0;
+			}
+
+			main_pane "widget/pane"
+			{
+				style=flat;
+				width=700;height=279;
+				x=0;y=29;
+
+				first_vbox "widget/vbox"
+				{
+					width=415;height=273;
+					column_width=253;
+					cellsize=20; spacing=15;
+					x=0;y=1;
+					
+					
+					// Form Title - Search for Checks
+					Search_lbl "widget/label" { x=0;y=0;width=516;height=40;align=center;valign="middle";value="Search for Check by:"; font_size=24; style=bold; }
+			
+					// TODO (20091116): Change fields of the various smart field components...
+					
+					// Current Problem, the editboxpopups require form modification... need to disable that ... :(
+					// Is it possible to click button and have it set the value without triggering a form modification?
+					// How does the form state change?  -- Time for a tutorial...
+					
+					// Or it is because the type doesn't take the readonly attribute bah!!
+					
+					// To Implement
+					
+					// check_hbox "widget/hbox"
+					// {
+						
+						// Check No Label
+						
+						// label src: partner_search_contents: 
+						
+						// Check No Box
+						p_check_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_check_number; text="Check No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Check Number"; }
+						
+					// }
+					
+					payee_hbox "widget/hbox"
+					{
+						spacing = 20;
+						width = 600;
+						
+						// Payee No Label
+						
+						// Payee No Box
+						p_payee_number_cmp "widget/component"
+						{
+							type="readonly"; 
+							path="/sys/cmp/smart_field.cmp"; 
+							field=a_payee_partner_key; 
+							text="Payee No.";
+							lookup_width=325;
+							ctl_type="editbox";
+							tooltip="Lookup by Payee Number";
+						}
+						
+						// p_payee_number_cmp "widget/component"
+						// { 
+						// 	path="/sys/cmp/smart_field.cmp";
+						// 	field=a_payee_partner_key;
+						// 	ctl_type=editbox;
+						// 	text="Payee #:";
+						// 	label_width=60; width=120;
+							
+							// Note (20091008): This connector should be associated with an intermediary
+							//					component-decl-action that is also called by cnSave_cn2.
+							//					Basically, subroutinize this so there is not duplicated code...
+							// QUESTION (20091008): Does this LoseFocus trigger before a form record change?
+							// TODO (20091013): Move this or use the duplicated code from the Save Button to the widget/form check_form to be triggered on DataSaved Event...
+							// payee_cn "widget/connector" { event="DataChanged"; target=payee_update_osrc; action="QueryParam"; 
+							// 	my_batch_ledger= runclient(:batch_osrc:a_ledger_number);
+							// 	my_batch_batch= runclient(:batch_osrc:a_batch_number);
+							// 	disbursement_id_param = runclient(:cashdisb_osrc:a_disbursement_id);
+							// 	payee_number_param = runclient(:txt_payee_number:content);
+							// }
+						// }
+						
+						
+						// a. wire up connector
+						
+						// b. handle feedback into the textbox...
+						
+					}
+					
+					// cc_hbox "widget/hbox"
+					// {
+						// CC No Label
+						
+						// CC No Box
+						p_cc_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_cost_center; text="Cost Center No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Cost Center Code"; }
+						
+						// CC (+) Symbol thingy...   (see/get from cashdish_subform)... =D  Combo...
+						
+					// }
+					
+					
+					
+					// **   NOTE!!   -- >>    Create a new type readonly in editbox_tree  (See ./where_type_readonly_is_used_in_smartfield.txt  in this folder disb )
+					
+					
+					
+					// // Cost Center Field
+					// cost_ctr_box "widget/component"
+					// {
+						// // path="/apps/kardia/modules/base/smart_field.cmp";
+						// path="/apps/kardia/modules/base/editbox_tree.cmp";
+						// type="readonly";
+						// field=a_cost_center;
+						// text="Cost Ctr:";
+						// tooltip="Cost Center Number";
+						// label_width=99;
+						// // enabled=runclient(:partner_search_form:is_queryexecutable);
+						
+						// // Prerequiste: Need to be able to add ledger paramater pass in...
+						// // Action Item: Look at Tutorial for passing in parameter and let's get the show on the road! yeah!
+						
+						// popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/");
+						// popup_text="Select Cost Center:";
+						// auto_focus=no;	// the secret that allows it all to work (no form state change)
+						
+						// cc_get_desc_1 "widget/connector"
+						// {
+							// event=LoseFocus;
+							// // event_condition=runclient(:check_form:is_savable);
+							// event_condition=runclient(:partner_search_form:is_queryexecutable);
+							// target=cc_desc_osrc;
+							// action=QueryParam;
+							// a_ledger_number=runclient(:ledger_osrc:a_ledger_number);
+							// a_cost_center=runclient(:cost_ctr_box:content);
+						// }
+
+						// cc_desc_osrc "widget/osrc"
+						// {
+							// sql = "select a_cc_desc = isnull(first(:a_cc_desc),'**INVALID**') from /apps/kardia/data/Kardia_DB/a_cost_center/rows";
+							// autoquery = never;
+							// replicasize=2;
+							// readahead=2;
+
+							// cc_get_desc_2 "widget/connector" { event=EndQuery; target=cost_ctr_box; action=SetValueDescription; Description=runclient(:cc_desc_osrc:a_cc_desc); }
+						// }
+					// }
+					
+					
+					// acct_hbox "widget/hbox"
+					// {
+						// Acct No Label
+						
+						// Acct No Box
+						p_acct_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_account_code; text="Acct No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Account Number"; }
+						
+						// Acct (+) Symbol thingy...   (see/get from cashdish_subform)... =D  Combo...
+						
+					// }
+					
+					
+					// Note: Un-Processed Code Segment
+					
+					// // Account Field
+					// f_trx_acct "widget/component"
+					// {
+						// path="/apps/kardia/modules/base/editbox_tree.cmp";
+						// field=a_account_code;
+						// type="readonly";
+						// text="Account:";
+						// tooltip="GL Account Code";
+						// label_width=75;
+						// // enabled=runclient(:partner_search_form:is_queryexecutable);
+						
+						// popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/");
+						// popup_text="Select Account:";
+						// auto_focus=no;	// the secret that allows it all to work (no form state change)
+
+						// ac_get_desc_1 "widget/connector"
+						// { 
+							// event=LoseFocus;
+							// // event_condition=runclient(:check_form:is_savable);
+							// event_condition=runclient(:partner_search_form:is_queryexecutable);
+							// target=ac_desc_osrc;
+							// action=QueryParam;
+							// a_ledger_number=runclient(:ledger_osrc:a_ledger_number);
+							// a_account_code=runclient(:f_trx_acct:content);
+						// }
+
+						// ac_desc_osrc "widget/osrc"
+						// {
+							// event_condition=runclient(:partner_search_form:is_queryexecutable);
+							// sql = "select a_acct_desc = isnull(first(:a_acct_desc),'**INVALID**') from /apps/kardia/data/Kardia_DB/a_account/rows";
+							// autoquery = never;
+							// replicasize=2;
+							// readahead=2;
+
+							// ac_get_desc_2 "widget/connector" { event=EndQuery; target=f_trx_acct; action=SetValueDescription; Description=runclient(:ac_desc_osrc:a_acct_desc); }
+						// }
+						
+					// } // END - f_trx_acct - Account Field
+					
+				}
+				
+                second_vbox "widget/vbox"
+                    {
+                    width=698;height=45;
+                    column_width=200;
+                    cellsize=20; spacing=5;
+                    x=267;y=71;
+				
+						// Payee Select Payee Button
+						cd_select_payee_btn2 "widget/textbutton"
+						{
+							
+							enabled=runclient(:partner_search_form:is_queryexecutable);
+							width=105;
+							// height = 25;
+							text="Select Payee";
+							// enabled=yes;
+							
+							open_select_payee_window_cn2 "widget/connector"
+							{
+								event = "Click";
+								target = select_payee_window_cmp2;
+								action = "Open";
+								IsModal=runclient(1);
+							}
+							open_select_payee_window_cn3 "widget/connector"
+							{
+								event = "Click";
+								target = partner_search_component2;
+								action = "Press_New_Search_Button";
+							}
+
+						}
+						}
+				query_button "widget/textbutton"
+				{
+					x=525; y=188;
+					height=24; width=100;
+					text="New Search";
+					enabled=runclient(:partner_search_form:is_queryable);
+					cnQueryExec "widget/connector" 
+					{ 
+						event="Click"; 
+						target="partner_search_form"; 
+						action="Query";
+					}
+				}
+				queryExec_button "widget/textbutton"
+				{
+					x=525; y=217;
+					height=24; width=100;
+					text="Do Search";
+					enabled=runclient(:partner_search_form:is_queryexecutable);
+					cnQuery "widget/connector" 
+					{
+						event="Click"; 
+						target="partner_search_form"; 
+						action="QueryExec"; 
+					}
+				}
+				GotoButton "widget/textbutton"
+				{
+					x=525; y=246;
+					height=24; width=100;
+					text="Select";
+					enabled=runclient(:partner_search_form:is_editable);
+					
+					choose_cn "widget/connector"
+					{
+						event=Click;
+						target=param_cashdisb_form;
+						action=GotoBatchSelectRow;
+						sr_ledger=runclient(:check_search_osrc:a_ledger_number);
+						Batch=runclient(:check_search_osrc:a_batch_number);
+						sr_disbursement_id=runclient(:check_search_osrc:a_disbursement_id);
+						sr_line_item=runclient(:check_search_osrc:a_line_item);
+					}
+					
+					// cnGoButton "widget/connector" 
+					// {
+					// 	event="Click"; 
+					// 	target="partner_search_component"; 
+					// 	action="PartnerSelected"; 
+					// 	partner_key = runclient(:partner_search_form:p_partner_key);
+					// }
+					
+					// Should it close? (Optional)
+					// cnGoButtonClose "widget/connector" 
+					// {
+					// 	event="Click"; 
+					// 	target="partner_search_component"; 
+					// 	action="CloseMe"; 
+					// }
+				}
+			}
+		}
+		scroll_pane "widget/pane"
+		{
+			width=688;height=130;
+			x=4;y=304;
+			widget_class = "table_bgnd";
+			p_search_table "widget/table"
+			{
+				x=0;y=0;
+				height=128;
+				width=686;
+				mode=dynamicrow;
+				rowheight = 20;
+
+				cnPartnerSelected "widget/connector" 
+				{ 
+					event=DblClick;
+					target="partner_search_component"; 
+					action="PartnerSelected"; 
+					partner_key = runclient(:partner_search_form:p_partner_key);
+				}
+				cnPartnerSelectedClose "widget/connector" 
+				{ 
+					event=DblClick;
+					target="partner_search_component"; 
+					action="CloseMe"; 
+				}
+				
+				// TODO: Update Table Column Listings
+				
+				// :c:a_effective_date,
+				// :c:a_ledger_number,
+				// :c:a_batch_number,
+				// :c:a_disbursement_id,
+				// :c:a_line_item,
+				// :c:a_amount,
+				// :c:a_cost_center,
+				// :c:a_account_code,
+				// :c:a_payee_partner_key,
+				// :c:a_check_number,
+				// :c:a_voided ,
+				// :c:a_comment,
+				// :p:p_partner_key,
+				// :p:p_given_name,
+				// :p:p_surname,
+				// :p:p_org_name,
+				// display_name
+				
+				table_eff_date "widget/table-column"
+				{
+					title = "Eff. Date";
+					fieldname = a_effective_date;
+					width = 75;
+				}
+				table_batch "widget/table-column"
+				{
+					title = "Batch";
+					fieldname = a_batch_number;
+				}
+				table_check_no "widget/table-column"
+				{
+					title = "Check No";
+					fieldname = a_check_number;
+				}
+				table_payee "widget/table-column"
+				{
+					title = "Payee";
+					fieldname = display_name;
+					width = 120;
+				}
+				table_line_item "widget/table-column"
+				{
+					title = "Line";
+					fieldname = a_line_item;
+					width = 40;
+				}
+				table_cost_center "widget/table-column"
+				{
+					title = "CC";
+					fieldname = a_cost_center;
+				}
+				table_acct_no "widget/table-column"
+				{
+					title = "Acct";
+					fieldname = a_account_code;
+					width = 40;
+				}
+				table_amount "widget/table-column"
+				{
+					title = "Amt.";
+					fieldname = a_amount;
+				}
+				table_comment "widget/table-column"
+				{
+					title = "Comment";
+					fieldname = a_comment;
+					width = 200;
+				}
+			}
+		}
+	}
+}

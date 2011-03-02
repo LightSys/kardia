@@ -1,0 +1,115 @@
+$Version=2$
+tree_list_data "widget/component-decl"
+    {
+    width=756;height=449;
+
+    ledger_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    tree_source "widget/parameter" { type=string; default=null; }
+    osrc_source "widget/parameter" { type=string; default=null; }
+    detail_cmp_path "widget/parameter" { type=string; default=null; }
+    object_name "widget/parameter" { type=string; default="Item"; }
+
+    tree_pane "widget/pane"
+	{
+	x=0;y=0;width=230;height=449;
+	style=lowered;
+	bgcolor=white;
+
+	tree_scroll "widget/scrollpane"
+	    {
+	    x=0;y=0;width=228;height=447;
+
+	    tree "widget/treeview"
+		{
+		x=0;y=0;width=228;
+		//height=298;
+		source=runserver(:this:tree_source);
+		show_branches=yes;
+		show_root=no;
+		show_root_branch = yes;
+		use_3d_lines=no;
+		highlight_bgcolor = "#153f5f";
+		highlight_fgcolor = white;
+
+		sync1 "widget/connector"
+		    {
+		    event = "ClickItem";
+		    target = detail_osrc;
+		    action = "ChangeSource";
+		    Source = runclient(:Pathname);
+		    }
+		sync2 "widget/connector"
+		    {
+		    event_condition = runclient(charindex('|', :Name) > 0);
+		    event = "ClickItem";
+		    target = detail_cmp;
+		    action = "SetLabel";
+		    Value = runclient('Only those related to: ' + :Name);
+		    }
+		sync3 "widget/connector"
+		    {
+		    event_condition = runclient(charindex('|', :Name) == 0);
+		    event = "ClickItem";
+		    target = detail_cmp;
+		    action = "SetLabel";
+		    Value = runclient('All in ledger ' + :Name);
+		    }
+		}
+	    }
+	}
+
+    detail_pane "widget/pane"
+	{
+	x=240;y=0;width=756 - 240; height=449;
+	style=flat;
+
+	detail_osrc "widget/osrc"
+	    {
+	    sql = runserver("select * from inclusive subtree " + :this:osrc_source);
+	    baseobj = runserver(:this:osrc_source);
+	    replicasize=20;
+	    readahead=10;
+	    autoquery = never;
+	    use_having_clause = true;
+
+	    ledger_sync "widget/rule"
+		{
+		ruletype = "osrc_relationship";
+
+		target = ledger_osrc;
+		is_slave = yes;
+		key_1 = a_ledger_number;
+		target_key_1 = a_ledger_number;
+		}
+
+	    detail_form "widget/form"
+		{
+		detail_vbox "widget/vbox"
+		    {
+		    x=0;y=0;width=756 - 240; height=449;
+		    spacing=5;
+
+		    ctl "widget/component"
+			{
+			height = 26;
+			path = "/sys/cmp/form_controls.cmp";
+			object_name = runserver(:this:object_name);
+			}
+
+		    detail_cmp "widget/component"
+			{
+			height = 393;
+			path = runserver(:this:detail_cmp_path);
+			tree_widget = tree;
+			}
+
+		    record_meta "widget/component"
+			{
+			height = 20;
+			path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+			}
+		    }
+		}
+	    }
+	}
+    }

@@ -1,0 +1,249 @@
+$Version=2$
+fund_balance_detail "system/report"
+    {
+    title = "GL Fund Detail";
+
+    document_format="application/pdf";
+
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Parameters for GL Fund Detail Report
+    ledger "report/parameter" { type=string; default=null; }
+    costctr "report/parameter" { type=string; default=null; }
+    year_period "report/parameter" { type=string; default=null; }
+    startperiod "report/parameter" { type=string; default=null; }
+    endperiod "report/parameter" { type=string; default=null; }
+    startdate "report/parameter" { type=string; default=null; }
+    enddate "report/parameter" { type=string; default=null; }
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    year_qy "report/query"
+	{
+	sql = "select *, year = datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_period = :this:year_period and :p:a_ledger_number = :this:ledger";
+	}
+
+    period_qy "report/query"
+	{
+	sql = "select :p:a_period_desc, first_period = min(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
+	}
+
+    trx_start_qy "report/query"
+	{
+	sql = runserver("
+		select
+			total = isnull(sum(:a_amount), $0)
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+			:t:a_ledger_number = :this:ledger and
+			:t:a_cost_center = :this:costctr
+			    condition(:this:startperiod is null, '', ' and :t:a_period >= :this:startperiod') + 
+			    condition(:this:startdate is null, '', ' and :t:a_effective_date >= :this:startdate') + 
+	}
+
+    trx_qy "report/query"
+	{
+	sql = runserver("
+		select
+			:t:a_batch_number,
+			:t:a_journal_number,
+			:t:a_transaction_number,
+			:t:a_period,
+			:t:a_effective_date,
+			:t:a_origin,
+			:c:a_cost_center,
+			:c:a_cc_desc,
+			:c:a_bal_cost_center,
+			:a:a_account_code,
+			:a:a_acct_desc,
+			:t:a_account_category,
+			:t:a_comment,
+			trunc_comment = substring(:t:a_comment, 1, 30) + condition(char_length(:t:a_comment) > 30, '...', ''),
+			:t:a_transaction_type,
+			:t:a_amount,
+			plus_amt = condition(:t:a_amount > $0, :t:a_amount, null),
+			minus_amt = condition(:t:a_amount < $0, :t:a_amount, null)
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		where
+			:t:a_ledger_number = :this:ledger and
+			:t:a_cost_center = :c:a_cost_center and
+			:t:a_account_code = :a:a_account_code and
+			:c:a_ledger_number = :this:ledger and
+			:a:a_ledger_number = :this:ledger and
+			(:a:a_acct_type = 'E' or :a:a_acct_type = 'Q' or :a:a_acct_type = 'R') and
+			datepart(year, :t:a_effective_date) = :year_qy:year " +
+
+			    condition(:this:startperiod is null, '', ' and :t:a_period >= :this:startperiod') + 
+			    condition(:this:endperiod is null, '', ' and :t:a_period <= :this:endperiod') + 
+			    condition(:this:startdate is null, '', ' and :t:a_effective_date >= :this:startdate') + 
+			    condition(:this:enddate is null, '', ' and :t:a_effective_date <= :this:enddate') + 
+
+		order by
+			:t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number
+		");
+	plus_sum "report/aggregate" { compute="sum(:plus_amt)"; reset=0; }
+	minus_sum "report/aggregate" { compute="sum(:minus_amt)"; reset=0; }
+	rowid "report/aggregate" { compute="count(1)"; reset=0; }
+	}
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy, year_qy;
+
+	rpt_title "report/area"
+	    {
+	    x=0; width=80; height=2;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("GL Transaction Report for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    }
+
+	rpt_criteria "report/area"
+	    {
+	    x=0; width=80; height=1;
+	    font=helvetica;
+	    c_d0 "report/data" { value = runserver("Year: " + :this:year_period + "\n"); }
+	    c_d1 "report/data"
+		{ 
+		condition = runserver(not (:this:balcostctr is null));
+		value = runserver("Balancing Cost Center: " + :this:balcostctr + "\n"); 
+		}
+	    c_d2 "report/data"
+		{ 
+		condition = runserver(not (:this:costctr is null));
+		value = runserver("Cost Center: " + :this:costctr + "\n"); 
+		}
+	    c_d3 "report/data"
+		{ 
+		condition = runserver(not (:this:account is null));
+		value = runserver("Account: " + :this:account + "\n"); 
+		}
+	    c_d4 "report/data"
+		{ 
+		condition = runserver(not (:this:batch is null));
+		value = runserver("Batch: " + :this:batch + "\n"); 
+		}
+	    c_d5 "report/data"
+		{ 
+		condition = runserver(not (:this:startperiod is null));
+		value = runserver("Starting Period: " + :this:startperiod + "\n"); 
+		}
+	    c_d6 "report/data"
+		{ 
+		condition = runserver(not (:this:endperiod is null));
+		value = runserver("Ending Period: " + :this:endperiod + "\n"); 
+		}
+	    c_d7 "report/data"
+		{ 
+		condition = runserver(not (:this:startdate is null));
+		value = runserver("Starting Date: " + :this:startdate + "\n"); 
+		}
+	    c_d8 "report/data"
+		{ 
+		condition = runserver(not (:this:enddate is null));
+		value = runserver("Ending Date: " + :this:enddate + "\n"); 
+		}
+	    c_d8 "report/data"
+		{ 
+		condition = runserver(:this:hide1900);
+		value = runserver("NOT showing acct '1900' entries\n"); 
+		}
+	    c_d10 "report/data" { value = runserver("\n"); }
+	    }
+
+	table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=11;
+	    widths=5,4,4,3,3,6,3,5,20,9,9;
+	    colsep=0.8;
+	    source=trx_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+
+	    nullformat="";
+	    dateformat="MMM-dd";
+	    moneyformat = "###,###,###.00-";
+
+	    tbl_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=8;
+		header=yes;
+		bottomborder=0.05;
+		h_period "report/table-cell" { value='Period'; align=center; style=bold; }
+		h_date "report/table-cell" { value='Date'; align=center; style=bold; }
+		h_batch "report/table-cell" { value='Batch'; align=center; style=bold; }
+		h_jnl "report/table-cell" { value='Jnl'; align=center; style=bold; }
+		h_trx "report/table-cell" { value='Trx'; align=center; style=bold; }
+		h_cc "report/table-cell" { value='CostCtr'; align=center; style=bold; }
+		h_ctlacct "report/table-cell" { value='Ctl'; align=center; style=bold; }
+		h_acct "report/table-cell" { value='Account'; align=center; style=bold; }
+		h_comment "report/table-cell" { value='Comments'; align=center; style=bold; }
+		h_debit "report/table-cell" { value='DR +'; align=center; style=bold; }
+		h_credit "report/table-cell" { value='CR -'; align=center; style=bold; }
+		}
+
+	    tbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+
+		d_period "report/table-cell" { value=runserver(:trx_qy:a_period); align=left; }
+		d_date "report/table-cell" { value=runserver(:trx_qy:a_effective_date); align=left; }
+		d_batch "report/table-cell" { value=runserver(:trx_qy:a_batch_number); align=left; }
+		d_jnl "report/table-cell" { value=runserver(:trx_qy:a_journal_number); align=left; }
+		d_trx "report/table-cell" { value=runserver(:trx_qy:a_transaction_number); align=left; }
+		d_cc "report/table-cell" { value=runserver(:trx_qy:a_cost_center); align=left; }
+		d_ctlacct "report/table-cell" { value=runserver(:trx_qy:a_account_category); align=left; }
+		d_acct "report/table-cell" { value=runserver(:trx_qy:a_account_code); align=left; }
+		d_comment "report/table-cell" { value=runserver(:trx_qy:trunc_comment); align=left; font=helvetica; }
+		d_debit "report/table-cell" { value=runserver(:trx_qy:plus_amt); align=right; }
+		d_credit "report/table-cell" { value=runserver(:trx_qy:minus_amt); align=right; }
+		}
+
+	    tbl_sep_row "report/table-row"
+		{
+		condition = runserver((:trx_qy:rowid / 5) * 5 == :trx_qy:rowid);
+		bottomborder=0.021;
+		}
+
+	    tbl_sum "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.05;
+		//bottomborder=0.05;
+		marginbottom=1.0;
+
+		s_period "report/table-cell" { value=''; align=left; }
+		s_date "report/table-cell" { value=''; align=left; }
+		s_batch "report/table-cell" { value=''; align=left; }
+		s_jnl "report/table-cell" { value=''; align=left; }
+		s_trx "report/table-cell" { value=''; align=left; }
+		s_cc "report/table-cell" { value=''; align=left; }
+		s_ctlacct "report/table-cell" { value=''; align=left; }
+		s_acct "report/table-cell" { value=''; align=left; }
+		s_comment "report/table-cell" { value=runserver('TOTAL: ' + (:trx_qy:plus_sum + :trx_qy:minus_sum) + ''); align=right; }
+		s_debit "report/table-cell" { value=runserver(:trx_qy:plus_sum); align=right; }
+		s_credit "report/table-cell" { value=runserver(:trx_qy:minus_sum); align=right; }
+		}
+	    }
+	}
+    }

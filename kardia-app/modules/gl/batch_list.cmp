@@ -1,0 +1,203 @@
+$Version=2$
+batch_list_cmp "widget/component-decl"
+    {
+    width=578; height=525;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    editor "widget/parameter" { type=object; default=null; }
+    acctbal "widget/parameter" { type=object; default=null; }
+    viewer "widget/parameter" { type=object; default=null; }
+
+    GotoBatch "widget/component-decl-action" { }
+    GotoBatch_cn "widget/connector"
+	{
+	event="GotoBatch";
+	target=batch_osrc;
+	action="QueryParam";
+	a_batch_number = runclient(:a_batch_number);
+	}
+
+    ledger_osrc "widget/osrc"
+	{
+	l_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
+	sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_ledger/rows where :a_ledger_number = :parameters:l_ledger");
+	baseobj = "/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	replicasize=10;
+	readahead=5;
+	autoquery = onload;
+	}
+
+    batch_osrc "widget/osrc"
+	{
+	b_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
+
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_batch/rows 
+		where :a_ledger_number = :parameters:b_ledger";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_batch/rows";
+
+	replicasize=60;
+	readahead=25;
+	autoquery=onfirstreveal;
+
+        ledger_sync "widget/rule"
+            {
+            ruletype = "osrc_relationship";
+            target = ledger_osrc;
+            is_slave = yes;
+            key_1 = a_ledger_number;
+            target_key_1 = a_ledger_number;
+	    autoquery = false;
+            }
+
+	set_batch "widget/rule"
+	    {
+	    ruletype = "osrc_key";
+	    keying_method = "counterosrc";
+	    key_fieldname = "a_batch_number";
+	    osrc = ledger_osrc;
+	    counter_attribute = "a_next_batch_number";
+	    }
+
+	batch_list_pane "widget/pane"
+	    {
+	    x=8;y=8;width=562;height=328;
+	    widget_class = "table_bgnd";
+
+	    batch_list "widget/table"
+		{
+		x=0;y=0;width=560;height=326;
+		rowheight = 18;
+		mode=dynamicrow;
+
+		t_batch "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=60; }
+		t_period "widget/table-column" { title="Period"; fieldname="a_period"; width=60; }
+		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=276; }
+		t_created "widget/table-column" { title="Entered"; fieldname="s_date_created"; width=82; }
+		t_effective "widget/table-column" { title="Effective"; fieldname="a_default_effective_date"; width=82; }
+
+		batch_dblclick "widget/connector" { event=DblClick; target=editor; action=GotoBatch; Batch=runclient(:batch_form:a_batch_number); }
+		}
+	    }
+
+	batch_form "widget/form"
+	    {
+	    set_eff "widget/connector" { event="New"; target=f_a_batch_eff_date; action="SetValue"; Value=runclient(getdate()); }
+
+	    batch_ctls "widget/component"
+		{
+		x=8;y=336;width=562;height=26;
+		path = "/sys/cmp/form_controls.cmp";
+		deletable = no;
+		object_name = "Batch";
+		}
+
+	    batch_vbox "widget/vbox"
+		{
+		x=8;y=370;width=270;height=118;
+		spacing=8;
+		cellsize=20;
+		//column_width=270;
+
+		f_a_batch_no "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_number; text="Batch:"; ctl_type="editbox"; tooltip="Batch Number"; label_width=70; }
+		f_a_period "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_period; text="Period:"; tooltip="Period Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Select Period:"; popup_order=desc; }
+		f_a_batch_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_desc; text="Descrip:"; ctl_type="editbox"; tooltip="Batch Description"; label_width=70; }
+		f_a_batch_eff_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_default_effective_date; text="Eff. Date:"; ctl_type="datetime"; tooltip="Effective (accrual) date for transactions"; label_width=70; }
+		}
+
+	    batchctl_vbox "widget/vbox"
+		{
+		x=340;y=370;width=200;height=100;
+		spacing=8;
+		cellsize=20;
+
+		id_hbox "widget/hbox"
+		    {
+		    spacing=8; cellsize=60;
+		    nextjnl_eb "widget/editbox"
+			{
+			fieldname="a_next_journal_number";
+			nextjnl_hints "widget/hints" { default=1; style=readonly; }
+			}
+
+		    nexttrx_eb "widget/editbox"
+			{
+			fieldname="a_next_transaction_number";
+			nexttrx_hints "widget/hints" { default=1; style=readonly; }
+			}
+		    }
+
+		editjnl_btn "widget/textbutton"
+		    {
+		    width=160;
+		    text="Edit Transactions";
+		    ej_cn "widget/connector" { event=Click; target=editor; action=GotoBatch; Batch=runclient(:batch_form:a_batch_number); }
+		    }
+		viewjnl_btn "widget/textbutton"
+		    {
+		    width=160;
+		    text="View Batch Detail";
+		    vj_cn "widget/connector" { event=Click; target=viewer; action=Browse; a_batch_number=runclient(:batch_form:a_batch_number); }
+		    }
+		}
+
+	    batch_rec_info "widget/component"
+		{
+		x=8;y=497;height=20;width=562;
+		path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+		}
+
+	    batch_origin "widget/variable" { fieldname = "a_origin"; origin_hints "widget/hints" { style=readonly; default='GL'; } }
+
+	    //batch_dt_c "widget/variable" { fieldname="s_date_created"; batch_dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+	    //batch_us_c "widget/variable" { fieldname="s_created_by"; batch_us_c_hints "widget/hints" { default=runclient(user_name()); } }
+	    //batch_dt_m "widget/variable" { fieldname="s_date_modified"; batch_dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+	    //batch_us_m "widget/variable" { fieldname="s_modified_by"; batch_us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+
+	    batch_hbox "widget/hbox"
+		{
+		condition=0;
+		x=8;y=26;width=732;height=50;spacing=8;
+
+		batchno_vbox "widget/vbox"
+		    {
+		    width=100;spacing=0;cellsize=20;
+		    batchno_lbl "widget/label" { text="Batch #:"; }
+		    batchno_eb "widget/editbox" { fieldname="a_batch_number"; }
+		    }
+		period_vbox "widget/vbox"
+		    {
+		    width=150;spacing=0;cellsize=20;
+		    period_lbl "widget/label" { text="Period:"; }
+		    period_dd "widget/dropdown" { fieldname="a_period"; mode=dynamic_server; sql=runserver("select :a_period_desc, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger)); }
+		    }
+		descrip_vbox "widget/vbox"
+		    {
+		    width=272;spacing=0;cellsize=20;
+		    descrip_lbl "widget/label" { text="Description:"; }
+		    descrip_eb "widget/editbox" { fieldname="a_batch_desc"; }
+		    }
+		ledger_vbox "widget/vbox"
+		    {
+		    width=70;spacing=0;cellsize=20;
+		    ledger_lbl "widget/label" { text="Ledger:"; }
+		    ledger_eb "widget/editbox"
+			{
+			fieldname="a_ledger_number";
+			ledger_hints "widget/hints" { style=readonly; }
+			}
+		    }
+		nextjnl_vbox "widget/vbox"
+		    {
+		    width=50;spacing=0;cellsize=20;
+		    nextjnl_lbl "widget/label" { text="Nx Jnl:"; }
+		    }
+		nexttrx_vbox "widget/vbox"
+		    {
+		    width=50;spacing=0;cellsize=20;
+		    nexttrx_lbl "widget/label" { text="Nx Trx:"; }
+		    }
+		}
+	    }
+	}
+    }

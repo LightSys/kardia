@@ -1,0 +1,203 @@
+$Version=2$
+popup_tree_list "widget/component-decl"
+    {
+    width=800; height=600;
+
+    expose_properties_for = popup;
+
+    source "widget/parameter" { type=string; default="/"; }
+
+    label "widget/parameter" { type=string; default="List"; }
+    order "widget/parameter" { type=string; default="asc"; }
+
+    Opened "widget/component-decl-event" {}
+    Closed "widget/component-decl-event" {}
+
+    Toggle "widget/component-decl-action" {}
+
+    Toggle_cn1 "widget/connector" { event=Toggle; event_condition=runclient(:popup:is_visible); target=popup; action=Close; }
+    Toggle_cn2 "widget/connector" { event=Toggle; event_condition=runclient(not :popup:is_visible); target=popup; action=Popup; PopTo=attach_to; ExtendTo=attach_to; OffsetX=runserver(:this:attach_offset); }
+
+    SetSource "widget/component-decl-action" {}
+    SetSource_cn "widget/connector" { event=SetSource; target=tree; action=SetRoot; NewRoot=runclient(:Source); }
+
+    attach_to "widget/parameter" { type=object; default=null; }
+    attach_offset "widget/parameter" { type=integer; default=0; }
+
+    editbox "widget/parameter"
+	{
+	type=object;
+	default=null;
+
+	losefocus_cn1 "widget/connector" { event = TabPressed; action = Close; target = popup; }
+
+	changed_cn "widget/connector"
+	    {
+	    event = DataModify;
+//	    event_condition = runclient(:FromKeyboard == 1 and char_length(:Value) >= char_length(:OldValue) and char_length(:Value) >= 3);
+	    event_condition = runclient(:popup:is_visible and :FromKeyboard == 1 and char_length(:Value) >= char_length(:OldValue) and char_length(:Value) >= 3);
+	    target = tree;
+	    action = Search;
+	    Value = runclient(:Value);
+	    }
+
+//	changed_kb_closed "widget/connector"
+//	    {
+//	    event = DataModify;
+//	    event_condition = runclient(not (:popup:is_visible) and :FromKeyboard == 1 and char_length(:Value) >= char_length(:OldValue) and char_length(:Value) >= 3);
+//	    target = popup;
+//	    action = Popup;
+//	    PopTo = attach_to;
+//	    ExtendTo = attach_to;
+//	    }
+
+	kp_f3_open "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'f3');
+	    event_cancel = runclient(:popup:is_visible and :Name = 'f3');
+	    target = tree;
+	    action = SearchNext;
+	    }
+
+	kp_f3_closed1 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(not (:popup:is_visible) and :Name = 'f3' and char_length(:editbox:content) >= 3);
+	    target = tree;
+	    action = Search;
+	    Value = runclient(:editbox:content);
+	    }
+	kp_f3_closed2 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(not (:popup:is_visible) and :Name = 'f3');
+	    target = popup;
+	    action = Popup;
+	    PopTo = attach_to;
+	    ExtendTo = attach_to;
+	    OffsetX = runserver(:this:attach_offset);
+	    }
+
+	kp_escape "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'escape');
+	    event_cancel = runclient(:popup:is_visible and :Name = 'escape');
+	    target = popup;
+	    action = Close;
+	    }
+
+	kp_enter1 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'enter');
+	    //event_cancel = runclient(:popup:is_visible and :Name = 'enter');
+	    target = editbox;
+	    action = SetValue;
+	    Value = runclient(substring(:tree:selected_name, 1, condition(charindex('|', :tree:selected_name) > charindex(' ', :tree:selected_name) and charindex(' ', :tree:selected_name) > 0, charindex(' ', :tree:selected_name), charindex('|', :tree:selected_name)) - 1));
+	    }
+	kp_enter2 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'enter' and charindex('-', :tree:selected_label) > 0);
+	    //event_cancel = runclient(:popup:is_visible and :Name = 'enter');
+	    target = editbox;
+	    action = SetValueDescription;
+	    Description = runclient(substring(:tree:selected_label, charindex('-', :tree:selected_label) + 2));
+	    }
+	kp_enter3 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'enter');
+	    event_cancel = runclient(:popup:is_visible and :Name = 'enter');
+	    target = popup;
+	    action = Close;
+	    }
+
+	kp_tab1 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'tab' and char_length(:editbox:content) > 0 and charindex(upper(:editbox:content), upper(:tree:selected_label)) > 0);
+	    target = editbox;
+	    action = SetValue;
+	    Value = runclient(substring(:tree:selected_name, 1, condition(charindex('|', :tree:selected_name) > charindex(' ', :tree:selected_name) and charindex(' ', :tree:selected_name) > 0, charindex(' ', :tree:selected_name), charindex('|', :tree:selected_name)) - 1));
+	    }
+	kp_tab2 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'tab' and charindex('-', :tree:selected_label) > 0);
+	    target = editbox;
+	    action = SetValueDescription;
+	    Description = runclient(substring(:tree:selected_label, charindex('-', :tree:selected_label) + 2));
+	    }
+	}
+
+    popup "widget/childwindow"
+	{
+	widget_class = "popup";
+	titlebar = no;
+	x=0; y=0;
+	width=250; height=300;
+	toplevel = yes;
+
+	popup_open "widget/connector" { event = Open; action = Opened; target = popup_tree_list; }
+	popup_close "widget/connector" { event = Close; action = Closed; target = popup_tree_list; }
+
+	vb "widget/vbox"
+	    {
+	    x=0;y=4;width=248;height=294;
+	    spacing=6;
+
+	    lbl "widget/label" { height=16; align=center; text=runserver(:this:label); style=bold; fgcolor=white; }
+
+	    sep "widget/pane" { height=2; x=8; width=232; style=lowered; }
+
+	    scroll "widget/scrollpane"
+		{
+		height=264;
+
+		tree "widget/treeview"
+		    {
+		    x=0;y=0;width=248;
+		    fgcolor=white;
+		    icon = "/apps/kardia/images/icons/object.gif";
+		    source = runserver(:this:source);
+		    show_branches=yes;
+		    show_root=no;
+		    show_root_branch = yes;
+		    use_3d_lines=no;
+		    order = runserver(:this:order);
+		    //highlight_bgcolor = "#153f5f";
+		    //highlight_bgcolor = "#133957";
+		    highlight_bgcolor = "#a8c1d8";
+		    highlight_fgcolor = black;
+
+		    clickitem1 "widget/connector"
+			{
+			event_condition = runclient(charindex('|', :Name) > 0 or charindex(' ', :Name) > 0);
+			event = "ClickItem";
+			target = editbox;
+			action = "SetValue";
+			Value = runclient(substring(:Name, 1, condition(charindex('|', :Name) > charindex(' ', :Name) and charindex(' ', :Name) > 0, charindex(' ', :Name), charindex('|', :Name)) - 1));
+			}
+		    clickitem2 "widget/connector"
+			{
+			event = "ClickItem";
+			event_condition = runclient((charindex('|', :Name) > 0 or charindex(' ', :Name) > 0) and charindex('-', :tree:selected_label) > 0);
+			target = editbox;
+			action = SetValueDescription;
+			Description = runclient(substring(:tree:selected_label, charindex('-', :tree:selected_label) + 2));
+			}
+		    clickitem3 "widget/connector"
+			{
+			event_condition = runclient(charindex('|', :Name) > 0 or charindex(' ', :Name) > 0);
+			event = "ClickItem";
+			target = popup;
+			action = "Close";
+			}
+		    }
+		}
+	    }
+	}
+    }

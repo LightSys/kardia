@@ -1,0 +1,95 @@
+$Version=2$
+cc_acct_edit "widget/component-decl"
+    {
+    width=748; height=525;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    tab_sel "widget/tab"
+	{
+	x=10;y=10;height=480;width=250;
+
+	tab_sel_period "widget/tabpage"
+	    {
+	    title = "Period";
+
+	    period_rb "widget/radiobuttonpanel"
+		{
+		x=10;y=5;width=228;height=80;
+		title="Select:";
+		period_any "widget/radiobutton" { label="All Periods"; selected=yes; }
+		period_one "widget/radiobutton" { label="One Period From List Below"; }
+		}
+
+	    period_list_pane "widget/pane"
+		{
+		x=10;y=95;width=228;height=480 - 2 - 95 - 10;
+		style=lowered;
+		bgcolor=white;
+
+		period_list_osrc "widget/osrc"
+		    {
+		    sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_period/rows where :a_parent_period is null and :a_ledger_number = '" + :this:ledger + "'");
+		    baseobj = "/apps/kardia/data/Kardia_DB/a_period/rows";
+		    replicasize=50;
+		    readahead=20;
+		    autoquery=onfirstreveal;
+
+		    period_list "widget/table"
+			{
+			x=0;y=0;width=226;height=480 - 2 - 95 - 10 - 2;
+
+			tp_period "widget/table-column" { fieldname="a_period"; title="Period"; }
+			tp_start "widget/table-column" { fieldname="a_start_date"; title="Beginning"; }
+			tp_end "widget/table-column" { fieldname="a_end_date"; title="Ending"; }
+			}
+		    }
+		}
+	    }
+
+	tab_sel_cc "widget/tabpage"
+	    {
+	    title = "CostCtr";
+	    }
+
+	tab_sel_acct "widget/tabpage"
+	    {
+	    title = "Account";
+
+	    acct_rb "widget/radiobuttonpanel"
+		{
+		x=10;y=5;width=228;height=80;
+		title="Select:";
+		acct_any "widget/radiobutton" { label="All Accounts"; selected=yes; }
+		acct_one "widget/radiobutton" { label="One Account From List Below"; }
+		}
+	    }
+	}
+
+    list_pane "widget/pane"
+	{
+	x=270; y=160; width=748 - 270 - 10; height=354;
+	style=lowered;
+	bgcolor=white;
+
+	list_osrc "widget/osrc"
+	    {
+	    sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_cc_acct/rows where :a_ledger_number = '" + :this:ledger + "'");
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_cc_acct/rows";
+	    replicasize=100;
+	    readahead=50;
+	    autoquery=oneachreveal;
+
+	    list_table "widget/table"
+		{
+		x=0;y=0;width=748 - 270 - 10 - 2; height=352;
+
+		t_period "widget/table-column" { fieldname="a_period"; title="Period"; }
+		t_costctr "widget/table-column" { fieldname="a_cost_center"; title="CostCtr"; }
+		t_glacct "widget/table-column" { fieldname="a_account_code"; title="Account"; }
+		t_openbal "widget/table-column" { fieldname="a_opening_balance"; title="Opening Bal"; }
+		t_curbal "widget/table-column" { fieldname="a_current_balance"; title="Current Bal"; }
+		}
+	    }
+	}
+    }

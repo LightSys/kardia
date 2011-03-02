@@ -1,0 +1,58 @@
+$Version=2$
+period_mgmt_cmp "widget/component-decl"
+    {
+    width=778; height=525;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    editor "widget/parameter" { type=object; default=null; }
+    viewer "widget/parameter" { type=object; default=null; }
+    acct_bal "widget/parameter" { type=object; default=null; }
+
+    tree "widget/component"
+	{
+	x=10; y=10; width=300; height=505;
+	path = "/sys/cmp/framed_tree.cmp";
+	bgcolor = white;
+	source = runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/");
+	icon = "/apps/kardia/images/icons/object.gif";
+	highlight_bgcolor = "#153f5f";
+	highlight_fgcolor = "white";
+
+	clickitem "widget/connector"
+	    {
+	    event = "ClickItem";
+	    target = period_osrc;
+	    action = QueryParam;
+	    a_period_desc = runclient(substring(:tree:selected_label, charindex('-', :tree:selected_label) + 2));
+	    }
+	}
+
+    period_osrc "widget/osrc"
+	{
+	sql = "select status_text = :ps:text, :p:a_period, :p:a_period_desc, :p:a_status, :p:a_summary_only, after_start = (getdate() >= :p:a_start_date), after_end = (getdate() >= :p:a_end_date), :p:a_first_opened, :p:a_last_closed, :p:a_archived from identity /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/_a_period_status/rows ps where :p:a_status = :ps:tag";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_period/rows";
+	replicasize = 2;
+	readahead = 2;
+	autoquery = never;
+
+	period_form "widget/form"
+	    {
+	    lbl_pane "widget/pane"
+		{
+		x=320; y=10; width=448; height=26; 
+		widget_class="label";
+		//border_color = "#153f5f";
+
+		lbl "widget/label"
+		    {
+		    x=4; y=0; width=442; height=24; 
+		    font_size = 13;
+		    widget_class="label";
+		    align=left;
+		    value = runclient("Selected Period: " + isnull(:period_osrc:a_period_desc, "(none)"));
+		    }
+		}
+	    }
+	}
+    }

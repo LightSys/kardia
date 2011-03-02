@@ -1,0 +1,54 @@
+$Version=2$
+gljournalview_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    expose_actions_for = gljview_cmp;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="gljvwin"; action="Open"; Cascade=1; }
+
+    Browse "widget/component-decl-action" { }
+    Browse_cn1 "widget/connector" 
+	{
+	event="Browse";
+	target="gljvwin";
+	action="Open";
+	Cascade=1;
+	}
+    Browse_cn2 "widget/connector" 
+	{
+	event="Browse";
+	target="gljview_cmp";
+	action="Browse";
+	a_account_code = runclient(:a_account_code);
+	a_cost_center = runclient(:a_cost_center);
+	a_period = runclient(:a_period);
+	a_batch_number = runclient(:a_batch_number);
+	a_journal_number = runclient(:a_journal_number);
+	}
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    editor "widget/parameter" { type=object; default=null; }
+    acctbal "widget/parameter" { type=object; default=null; }
+    viewer "widget/parameter" { type=object; default=null; }
+
+    gljvwin "widget/childwindow"
+	{
+	title = "View GL Activity";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	gljview_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/gl/gljournal_view.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    editor = editor;
+	    acctbal = acctbal;
+	    viewer = viewer;
+	    }
+	}
+    }

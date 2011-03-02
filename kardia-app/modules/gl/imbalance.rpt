@@ -1,0 +1,199 @@
+$Version=2$
+imbalance "system/report"
+    {
+    title = "GL Imbalance Report";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Parameters
+    ledger "report/parameter" { type=string; default=null; }
+    year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(month, :a_start_date) = 1 and datepart(month, :a_end_date) = 12 and datepart(year, :a_end_date) = datepart(year, getdate())) ); }
+    ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    unposted "report/parameter" { type=integer; default=0; }
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    batch_qy "report/query"
+	{
+	sql = runserver("
+		select
+			:b:a_batch_number,
+			:b:a_batch_desc
+		from
+			/apps/kardia/data/Kardia_DB/a_batch/rows b
+		where
+			:b:a_ledger_number = :this:ledger and
+			:b:a_period >= :this:ref_period and
+			:b:a_period <= :this:end_period
+		order by
+			:b:a_batch_number
+		");
+	bnum_agg "report/aggregate" { compute="last(:a_batch_number)"; reset=0; }
+	bname_agg "report/aggregate" { compute="last(:a_batch_desc)"; reset=0; }
+	}
+
+    accts_qy "report/query"
+	{
+	sql = runserver("
+		select
+			:cb:a_cost_center,
+			:cb:a_cc_desc,
+			:c:a_bal_cost_center,
+			batchbal = sum(:tt:a_amount),
+			:b:a_batch_number,
+			:b:a_batch_desc
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows cb,
+			/apps/kardia/data/Kardia_DB/a_batch/rows b
+		where
+			:tt:a_batch_number = :b:a_batch_number and
+			:b:a_ledger_number = :this:ledger and
+			:tt:a_ledger_number = :this:ledger and
+			:tt:a_cost_center = :c:a_cost_center and
+			:c:a_ledger_number = :this:ledger and
+			:cb:a_cost_center = :c:a_bal_cost_center and
+			:cb:a_ledger_number = :this:ledger and
+			:tt:a_period >= :this:ref_period and
+			:tt:a_period <= :this:end_period
+			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
+		group by
+			:tt:a_batch_number,
+			:tt:a_cost_center
+		");
+	bnum_agg "report/aggregate" { compute="last(:a_batch_number)"; reset=0; }
+	bname_agg "report/aggregate" { compute="last(:a_batch_desc)"; reset=0; }
+	bbal_sum "report/aggregate" { compute="sum(:batchbal)"; }
+	bbal_sum2 "report/aggregate" { compute="sum(:batchbal)"; }
+	bbal_sum3 "report/aggregate" { compute="sum(:batchbal)"; }
+	cnum_agg "report/aggregate" { compute="last(:a_cost_center)"; reset=0; }
+	cname_agg "report/aggregate" { compute="last(:a_cc_desc)"; reset=0; }
+	}
+
+    check1900_qy "report/query"
+	{
+	sql = runserver("
+		select
+			total = isnull(sum(:tt:a_amount), $0.00)
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows tt
+		where
+			:tt:a_batch_number = :batch_qy:a_batch_number and
+			:tt:a_ledger_number = :this:ledger and
+			:tt:a_account_code = '1900'
+			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
+		");
+	}
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy;
+
+	rpt_title "report/area"
+	    {
+	    x=0; width=80; height=3;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("GL Imbalance Research for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("For Year " + :this:year_period + ", for periods " + :this:ref_period + " through " + :this:end_period + "\n"); }
+	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    }
+
+	t1hdr "report/area" { font=helvetica; fontsize=9; x=0; width=80; height=1.5; value = "Batch/Fund Combinations which Do Not Balance:\n"; }
+
+	table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=5;
+	    widths=8,25,9,25,9;
+	    colsep=0.8;
+	    //source=accts_qy,openbal_qy;
+	    source=accts_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    tbl_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=8;
+		header=yes;
+		bottomborder=0.05;
+
+		h_batch "report/table-cell" { value='Batch'; align=center; style=bold; }
+		h_bdesc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_cc "report/table-cell" { value='Cost Ctr'; align=center; style=bold; }
+		h_cdesc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_cur "report/table-cell" { value='Balance'; align=center; style=bold; }
+		}
+
+	    tbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		summarize_for = runserver(:accts_qy:a_bal_cost_center + ":" + :accts_qy:a_batch_number);
+		condition = runserver(:accts_qy:bbal_sum != $0.00);
+		font=courier;
+		fontsize=8;
+
+		d_batch "report/table-cell" { value=runserver(:accts_qy:bnum_agg); align=left; }
+		d_bdesc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:bname_agg); align=left; }
+		d_cc "report/table-cell" { value=runserver(:accts_qy:cnum_agg); align=left; }
+		d_cdesc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:cname_agg); align=left; }
+		d_cur "report/table-cell" { value=runserver(condition(:accts_qy:bbal_sum2 == $0, '-0-   ', :accts_qy:bbal_sum3)); align=right; style=bold; }
+		}
+	    }
+
+	t2hdr "report/area" { font=helvetica; fontsize=9; x=0; width=80; height=1.5; value = "\n\nBatches with an Imbalanced 1900 Account:\n"; }
+
+	table1900 "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=3;
+	    widths=8,61,9;
+	    colsep=0.8;
+	    //source=accts_qy,openbal_qy;
+	    source=batch_qy, check1900_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    tbl_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=8;
+		header=yes;
+		bottomborder=0.05;
+
+		h_batch "report/table-cell" { value='Batch'; align=center; style=bold; }
+		h_bdesc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_cur "report/table-cell" { value='1900 Bal'; align=center; style=bold; }
+		}
+
+	    tbl_sum_all "report/table-row"
+		{
+		condition = runserver(:check1900_qy:total != $0.00);
+		font=courier;
+		fontsize=8;
+
+		d_batch "report/table-cell" { value=runserver(:batch_qy:a_batch_number); align=left; }
+		d_bdesc "report/table-cell" { font=helvetica; value=runserver(:batch_qy:a_batch_desc); align=left; }
+		d_cur "report/table-cell" { value=runserver(:check1900_qy:total); align=right; }
+		}
+	    }
+	}
+    }

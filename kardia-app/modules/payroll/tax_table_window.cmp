@@ -1,0 +1,48 @@
+$Version=2$
+tax_table_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event=Open; target=tt_win; action=Open; Cascade=1; }
+
+    EditTable "widget/component-decl-action" {}
+    EditTable_cn1 "widget/connector"
+	{
+	event=EditTable;
+	target=tt_win;
+	action=Open;
+	Cascade=1;
+	IsModal=1;
+	}
+    EditTable_cn2 "widget/connector"
+	{
+	event=EditTable;
+	target=tt_cmp;
+	action=EditTable;
+	TypeCode=runclient(:TypeCode);
+	}
+
+    // the ledger we are working with
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    // tax tables window, to edit tax tables for a line item type
+    ttwin "widget/parameter" { type=object; }
+
+    tt_win "widget/childwindow"
+	{
+	title = "Maintain Tax Table";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	tt_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/payroll/tax_table.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    ttwin = ttwin;
+	    }
+	}
+    }

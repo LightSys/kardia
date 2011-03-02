@@ -1,0 +1,36 @@
+$Version=2$
+pay_form_window "widget/component-decl"
+    {
+    width=800; height=630;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="pfwin"; action="Open"; Cascade=1; }
+    Close "widget/component-decl-action" { }
+    Close_cn "widget/connector" { event="Close"; target="pfwin"; action="Close"; }
+
+    ReviewPayee "widget/component-decl-action" {}
+    ReviewPayee_cn1 "widget/connector" { event=ReviewPayee; target=pfwin; action=Open; Cascade=1; }
+    ReviewPayee_cn2 "widget/connector" { event=ReviewPayee; target=pf_cmp; action=Instantiate; ledger=runclient(:ledger); period=runclient(:period); payroll_id=runclient(:payroll_id); payee_data_osrc=runclient(:payee_data_osrc); costctr=runclient(:costctr); payee_name=runclient(:payee_name); ref_period=runclient(:ref_period); }
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    pfwin "widget/childwindow"
+	{
+	titlebar = yes;
+	title = "Review Periodic Payroll Data";
+	width=780; height=610;
+	x=10; y=10;
+	visible = false;
+	style=dialog;
+	toplevel = yes;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	pf_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/payroll/pay_form.cmp";
+	    x=10;y=5;width=758;height=580;
+	    mode = dynamic;
+	    toplevel = yes;
+	    }
+	}
+    }

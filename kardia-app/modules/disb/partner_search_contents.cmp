@@ -1,0 +1,504 @@
+$Version=2$
+partner_search_component "widget/component-decl"
+{
+	// TODO: Query the Form on Load... =D  of course!
+
+	
+	// Current TODO Item: Payee Search Box...  combined... oh that should be easier... or
+	
+	// High-Level TODO
+	// #. Remove excess fieldboxes
+	//    a. Or, do the current boxes allow the user to update the information?  (put into a separate Edit Payee Information Box... =D)
+	
+	// 2. Add Title...
+	//    a. To Title Bar
+	//	  b. To Top of form
+	//    c. Search Payee Title...
+	//	  d. Details / Select Payee 
+	// 3. Retain bottom table...
+	//    a. Make bottom window taller (2x)
+	// 4. Greg, recommend any merge ideas...
+	
+	// 5. List number of Results found
+	// 6. Display when no results are found...
+	// 7. Layout reorganize
+	// 8. Figure out event / action...
+	
+	// 9. Lots of behind the scenes work will need to be done to make it easier to use?
+	
+	// 10. Ability to Add New Payee when needed... yeah...
+	
+	// 11. Search tool that looks for search string (e.g. contains) in Organization name, first, last, legacy 1 & 2 ?
+	
+	// So basically you will have a combine field
+	// call combo_something_thingy that will be fist + last+ orgName as the search name...
+	// then maybe possibly adding on something extra such as + legacy_code_x  viola!!
+	
+	width=700;height=440;
+	sync_osrc "widget/parameter"
+	{
+		//This osrc is a parameter passed in from the outside
+		type=object;
+		find_container="widget/osrc";
+	}
+	sync_form "widget/parameter"
+	{
+		//This osrc is a parameter passed in from the outside
+		type=object;
+		find_container="widget/form";
+	}
+	
+	
+					// cn_Press_New_Search_Buttonfe "widget/connector" 
+					// { 
+						// event = "BeforeKeyPress";
+						// event_condition = runclient(:Name = 'enter');
+						// // event_cancel = runclient(:Name = 'enter');
+						// target = "queryExec_button";
+						// action = "Click";
+						// // target="partner_search_form"; 
+						// // action="QueryExec";
+					// }
+	
+	
+	
+		// For "Trapping Enter Button on Search editbox" Attempt, see
+		// See Lines 173 - 251
+	
+		// Do I need to create an event / action pair to trigger multiple connectors
+		// (e.g. a chain of connectors) activatable from multiple trigger locations?
+	
+	
+	// Debugging
+	// alerter "widget/alerter" {}		// USED WHEN DEBUGGING
+
+	PartnerSelected "widget/component-decl-event" {  }
+	CloseMe "widget/component-decl-event" {  }
+
+	OpenForms "widget/component-decl-action" {  }
+	
+    Press_New_Search_Button "widget/component-decl-action" { }
+	
+	cn_Press_New_Search_Button "widget/connector" 
+	{ 
+		event="Press_New_Search_Button"; 
+		target="partner_search_form"; 
+		action="Query";
+	}
+
+	person_search_osrc "widget/osrc"
+	{
+		sql="SELECT 
+				p_combined_fields = :p:p_given_name + ' ' + :p:p_surname + ' ' + :p:p_org_name + ' ' + :p:p_legacy_key_1 + ' ' + :p:p_legacy_key_2, 
+				:l:p_address_3,
+				:l:p_address_2,
+				:l:p_location_type,
+				:l:p_country_code,
+				:l:p_partner_key,
+				:l:p_address_1,
+				:l:p_postal_code,
+				:l:p_state_province,
+				:l:p_in_care_of,
+				:l:p_city,
+				:l:p_location_id,
+				:p:p_partner_key,
+				:p:p_partner_class,
+				:p:p_title,
+				:p:p_given_name,
+				:p:p_preferred_name,
+				:p:p_surname,
+				:p:p_org_name,
+				:p:p_comments,
+				:p:p_legacy_key_1,
+				:p:p_legacy_key_2
+			FROM
+				/apps/kardia/data/Kardia_DB/p_partner/rows p,
+				/apps/kardia/data/Kardia_DB/p_location/rows l
+			WHERE
+				:p:p_partner_key = :l:p_partner_key";
+				
+		baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+		replicasize=10;
+		readahead=10;
+		autoquery=never;
+		
+		// Blocking Issue (20091214): Unusable -- search takes more than several minutes (should take: [on the order of seconds] as an upper limit)
+		// use_having_clause=yes; 	// TO DOCUMENT (20091214)
+		// Proposed Solution: Optimize "Having" Code Handler
+
+		partner_search_form "widget/form"
+		{
+			p_partner_ctl "widget/component"
+			{
+				x=0;y=0;width=698;height=24;
+				path="/sys/cmp/form_controls.cmp";
+				deletable=0;
+			}
+
+			main_pane "widget/pane"
+			{
+				style=flat;
+				width=700;height=279;
+				x=0;y=29;
+
+				first_vbox "widget/vbox"
+				{
+					width=415;height=273;
+					column_width=410;
+					cellsize=20; spacing=5;
+					x=0;y=1;
+					
+					// Form Title - Payee Search
+					Payee_Search_lbl "widget/label" { x=10;y=0;height=40;align=left;valign="middle";value="Payee Search"; font_size=24; style=bold; }
+			
+					p_given_name_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_given_name; text="First Name"; lookup_width=325; ctl_type="editbox"; tooltip="The first (Given) name of the partner"; }
+					// p_preferred_name_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_preferred_name; text="Preferred Name"; lookup_width=325; ctl_type="editbox"; tooltip="Preferred name (nickname, etc) of the partner"; }
+					p_surname_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_surname; text="Last Name"; lookup_width=325; ctl_type="editbox"; tooltip="The last Name (Surname) of the partner"; }
+					p_org_name_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_org_name; text="Organization"; lookup_width=325; ctl_type="editbox"; tooltip="The name of the organization"; }
+					// p_in_care_of_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_in_care_of; text="In-care-of"; lookup_width=325; ctl_type="editbox"; tooltip="In Care Of"; }
+					// p_address_1_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_address_1; text="Address Line 1"; lookup_width=325; ctl_type="editbox"; tooltip="First Address"; }
+					// p_address_2_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_address_2; text="Address Line 2"; lookup_width=325; ctl_type="editbox"; tooltip="Second Address"; }
+					// p_address_3_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_address_3; text="Address Line 3"; lookup_width=325; ctl_type="editbox"; tooltip="Third Address field for when address 1 and address2 are filled"; }
+					// p_comments_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments"; lookup_width=305; ctl_type="editbox"; tooltip=""; }
+					
+					sp1 "widget/autolayoutspacer" { height=20; }
+					
+					p_search_box_lbl_cmp "widget/label"
+					{
+						x = 20;
+						text = " -or- Search All Fields (one word or number)";
+						tooltip="Try limiting your search to use only one word if unable to find what you are looking for (e.g. too few results).  Another thing you could try is using only part of a word (e.g. Searching for 'ook' returns 'Brook', 'Cook', 'Cookston', ...)";
+					}
+					
+					p_search_box_cmp "widget/editbox"
+					{
+						x = 20;
+						width=390;
+						text="Search Payee";
+						lookup_width=325;
+						readonly="yes";
+						tooltip="Payee Search Text - partial text-search okay"; 
+						enabled=runclient(:partner_search_form:is_queryexecutable);
+						
+						
+					// connector 
+					// BeforeKeyPress
+					
+	// kp_f3_open "widget/connector"
+	    // {
+	    // event = "BeforeKeyPress";
+	     // event_condition = runclient(:Name = 'enter');
+	     // event_cancel = runclient(:Name = 'enter');
+						// // event="BeforeKeyPress"; 
+						// // target="partner_search_form"; 
+						// // action="Query";
+						// // event_cancel = runclient(:Name = 'enter');
+					
+						// target = "queryExec_button";
+						// action = "Click";
+						// // QUESTION: Connector has to be inside of a component? (True or false?) TO DOCUMENT(20091222)...
+					
+					// } // note: enabled...queryexecutable doesn't appear to work...}   // field=test_attribute; 
+						
+						cnQueryParam2 "widget/connector" 
+						{
+							event = "BeforeKeyPress";
+							event_condition = runclient(:Name = 'enter');
+							event_cancel = runclient(:Name = 'enter');
+							
+							event_condition=runclient( (:p_search_box_cmp:content IS NULL) AND (:Name = 'enter'));
+							
+							event="Click"; 
+							target="partner_search_form"; 
+							action="QueryExec";
+						}
+						
+						// Payee Search Box
+						cnQueryParam_blankAllFields_Search2 "widget/connector" 
+						{
+							event = "BeforeKeyPress";
+							event_cancel = runclient(:Name = 'enter');
+							event_condition=runclient( NOT (:p_search_box_cmp:content IS NULL) and (:Name = 'enter') );
+
+							target="person_search_osrc"; 
+							action="QueryParam";
+							
+							cx__case_insensitive = 1;
+							
+							joinstring=runclient("or");
+							p_given_name = runclient("*" + :p_search_box_cmp:content + "*");
+							p_surname = runclient("*" + :p_search_box_cmp:content + "*");
+							p_org_name = runclient("*" + :p_search_box_cmp:content + "*");
+							p_legacy_key_1 = runclient("*" + :p_search_box_cmp:content + "*");
+							p_legacy_key_2 = runclient("*" + :p_search_box_cmp:content + "*");
+							
+							// Version 2
+							// Blocking Issue (20091214): Unusable -- search takes more than several minutes (should take on the order of seconds as an upper limit)
+							// p_combined_fields = runclient("*" + :p_search_box_cmp:content + "*");
+							// Limitation: User cannot search for results that span across multiple
+							// Proposed Solution: Optimize "Having" Code Handler
+						
+							// Example Case: Search for [American Express] yields no results, because American Express is spread across the First and Last name fields, though a search for [American] yields American Express in the search results
+						}
+						
+						trap "widget/connector" 
+						{
+			event = "BeforeKeyPress";
+			 event_condition = runclient(:Name = 'enter');
+			 event_cancel = runclient(:Name = 'enter');
+						
+						}
+					}
+					// editboxd "widget/parameter"
+	// {
+	// type=object;
+	// default=null;
+	
+	// // Still doesn't work | Under Construction...
+	// kp_f3_open "widget/connector"
+	    // {
+	    // event = "BeforeKeyPress";
+	     // event_condition = runclient(:Name = 'enter');
+	     // event_cancel = runclient(:Name = 'enter');
+	    // //target = tree;
+	    // //action = SearchNext;
+		// target = "queryExec_button";
+						 // action = "Click";
+						 
+						 // // target=partner_search_form;		// The event to cancel?
+						 // // action="Query";
+						 
+						 // // target="partner_search_form"; 
+						 // // action="QueryExec";
+						
+						
+						// // target="person_search_osrc"; 
+						// // action="QueryParam";
+						
+						// // cx__case_insensitive = 1;
+						
+						// // joinstring=runclient("or");
+						// // p_given_name = runclient("*" + :p_search_box_cmp:content + "*");
+						// // p_surname = runclient("*" + :p_search_box_cmp:content + "*");
+						// // p_org_name = runclient("*" + :p_search_box_cmp:content + "*");
+						// // p_legacy_key_1 = runclient("*" + :p_search_box_cmp:content + "*");
+						// // p_legacy_key_2 = runclient("*" + :p_search_box_cmp:content + "*");
+						
+	    // }
+		// }
+					// TO DOCUMENT (20091222) : Ticket #123
+					// Greg.Beeley said on 21-Dec-2009 18:20...
+					// This is normal behavior of an editbox that is inside a form -- pressing ENTER when in Query mode causes the search query to run.
+					// This can be changed by putting a connector on the editbox that traps the BeforeKeyPress event, sets event_condition to require :Name = 'enter', such as:
+					// event_condition = runclient(:Name = 'enter');
+					// and then event_cancel can be set up similarly, which does not keep the connector from running (that's what event_condition is for), but it does keep the enter key from causing further events (including its native action of doing a search or saving changes):
+					// event_cancel = runclient(:Name = 'enter');
+					// The connector can then fire the QueryParam or QueryText actions to do the text search.
+					
+					// DONE: Why does p_search_box_cmp appear white on load instead of greyed out like the rest? Answer: enabled=runclient(:partner_search_form:is_queryexecutable); readonly="yes"; in a widget/form partner_search_form...
+					
+				}
+				// second_vbox "widget/vbox"
+				// {
+					// width=698;height=45;
+					// column_width=200;
+					// cellsize=20; spacing=5;
+					// x=3;y=266;
+					// // p_city_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_city; text="City"; lookup_width=305; ctl_type="editbox"; tooltip="The city or township"; }
+					// // p_state_province_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_state_province; text="State/Province"; lookup_width=305; ctl_type="editbox"; tooltip="Use country-keyed ref tbl 4 state/prov/county"; }
+					// // p_postal_code_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_postal_code; text="Postal/Zip Code"; ctl_type="editbox"; tooltip="zip code or postal code"; }
+					// // p_country_code_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_country_code; text="Country"; lookup_width=305; ctl_type="editbox"; tooltip="Use ISO codes same as domain names"; }
+				// }
+				third_vbox "widget/vbox"
+				{
+					width=200;height=175;
+					column_width=210;
+					cellsize=20; spacing=5;
+					x=425;y=41;
+					p_partner_key_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="Partner Key"; ctl_type="editbox"; tooltip="Partner Key"; }
+					// p_partner_class_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_partner_class; text="Partner Type"; lookup_width=305; tooltip=""; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_partner_class/rows";}
+					// p_location_type_cmp "widget/component" { type="readonly"; path="/apps/kardia/modules/base/fields/p_location_type.cmp"; field=p_location_type; text="Location Type"; tooltip="H=home, W=work, S=school, V=vacation"; }
+					p_legacy_key_1_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_1; text="Legacy Key"; ctl_type="editbox"; tooltip="Legacy Key 1 - Donor ID"; }
+					p_legacy_key_2_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_2; text="Legacy Key 2"; ctl_type="editbox"; tooltip="Legacy Key 2 - Sort Code"; }
+					// p_title_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_title; text="Title"; ctl_type="editbox"; tooltip="The Partners Title"; }
+					// p_partner_class_cmp "widget/component" { type="readonly"; path="/apps/kardia/modules/base/fields/p_partner_class.cmp"; field=p_partner_class; text="Select type"; lookup_width=305; tooltip=""; }
+					// p_location_type_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_location_type; text="Location Type"; tooltip="H=home, W=work, S=school, V=vacation"; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows";}
+					// p_location_id_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_location_id; text="Location ID"; ctl_type="editbox"; tooltip="unique to this partner location ID"; }
+					
+				}
+				query_button "widget/textbutton"
+				{
+					x=525; y=188;
+					height=24; width=100;
+					text="New Search";
+					enabled=runclient(:partner_search_form:is_queryable);
+					cnQuery "widget/connector" 
+					{ 
+						event="Click"; 
+						target="partner_search_form"; 
+						action="Query"; 
+					}
+				}
+				queryExec_button "widget/textbutton"
+				{
+					x=525; y=217;
+					height=24; width=100;
+					text="Do Search";
+					enabled=runclient(:partner_search_form:is_queryexecutable);
+					
+					// test_cn2 "widget/connector" 
+					// {
+					//  	event="Click"; 
+					//  	target="alerter"; 
+					//  	action="Alert"; 
+					// 	param = runclient(":p_search_box_cmp:content = " + isnull(:p_search_box_cmp:content,'null'));
+					// 	// TO DOCUMENT (20091110): <cmp>:value doesn't work, <cmp>:text doesn't work, <cmp>:content does work, why??
+					// }
+					
+					cnQueryParam "widget/connector" 
+					{
+						event_condition=runclient( (:p_search_box_cmp:content IS NULL) );
+						event="Click"; 
+						target="partner_search_form"; 
+						action="QueryExec";
+					}
+					
+					// Payee Search Box
+					cnQueryParam_blankAllFields_Search "widget/connector" 
+					{
+						event_condition=runclient( NOT (:p_search_box_cmp:content IS NULL) );
+						event="Click"; 
+						target="person_search_osrc"; 
+						action="QueryParam";
+						
+						cx__case_insensitive = 1;
+						
+						joinstring=runclient("or");
+						p_given_name = runclient("*" + :p_search_box_cmp:content + "*");
+						p_surname = runclient("*" + :p_search_box_cmp:content + "*");
+						p_org_name = runclient("*" + :p_search_box_cmp:content + "*");
+						p_legacy_key_1 = runclient("*" + :p_search_box_cmp:content + "*");
+						p_legacy_key_2 = runclient("*" + :p_search_box_cmp:content + "*");
+						
+						// Version 2
+						// Blocking Issue (20091214): Unusable -- search takes more than several minutes (should take on the order of seconds as an upper limit)
+						// p_combined_fields = runclient("*" + :p_search_box_cmp:content + "*");
+						// Limitation: User cannot search for results that span across multiple
+						// Proposed Solution: Optimize "Having" Code Handler
+					
+						// Example Case: Search for [American Express] yields no results, because American Express is spread across the First and Last name fields, though a search for [American] yields American Express in the search results
+					}
+				}
+				GotoButton "widget/textbutton"
+				{
+					x=525; y=246;
+					height=24; width=100;
+					text="Select";
+					enabled=runclient(:partner_search_form:is_editable);
+					cnGoButton "widget/connector" 
+					{
+						event="Click"; 
+						target="partner_search_component"; 
+						action="PartnerSelected"; 
+						partner_key = runclient(:partner_search_form:p_partner_key);
+					}
+					cnGoButtonClose "widget/connector" 
+					{
+						event="Click"; 
+						target="partner_search_component"; 
+						action="CloseMe"; 
+					}
+				}
+			}
+		}
+		scroll_pane "widget/pane"
+		{
+			width=688;height=130;
+			x=4;y=304;
+			widget_class = "table_bgnd";
+			p_search_table "widget/table"
+			{
+				x=0;y=0;
+				height=128;
+				width=686;
+				mode=dynamicrow;
+				rowheight = 20;
+
+				cnPartnerSelected "widget/connector" 
+				{ 
+					event=DblClick;
+					target="partner_search_component"; 
+					action="PartnerSelected"; 
+					partner_key = runclient(:partner_search_form:p_partner_key);
+				}
+				cnPartnerSelectedClose "widget/connector" 
+				{ 
+					event=DblClick;
+					target="partner_search_component"; 
+					action="CloseMe"; 
+				}
+				table_partner_key "widget/table-column"
+				{
+					title = "Partner Key";
+					fieldname = p_partner_key;
+				}
+				table_firstname "widget/table-column"
+				{
+					title = "First Name";
+					fieldname = p_given_name;
+				}
+				table_lastname "widget/table-column"
+				{
+					title = "Last Name";
+					fieldname = p_surname;
+				}
+				table_org_name "widget/table-column"
+				{
+					title = "Org";
+					fieldname = p_org_name;
+				}
+				table_address1 "widget/table-column"
+				{
+					title = "Address 1";
+					fieldname = p_address_1;
+				}
+				table_address2 "widget/table-column"
+				{
+					title = "Address 2";
+					fieldname = p_address_2;
+				}
+				table_address3 "widget/table-column"
+				{
+					title = "Address 3";
+					fieldname = p_address_3;
+				}
+				table_city "widget/table-column"
+				{
+					title = "City";
+					fieldname = p_city;
+				}
+				table_state "widget/table-column"
+				{
+					title = "State";
+					fieldname = p_state_province;
+				}
+				table_zip "widget/table-column"
+				{
+					title = "Zip/Postal";
+					fieldname = p_postal_code;
+				}
+				table_legacy1 "widget/table-column"
+				{
+					title = "Legacy 1";
+					fieldname = p_legacy_key_1;
+				}
+				table_legacy2 "widget/table-column"
+				{
+					title = "Legacy 2";
+					fieldname = p_legacy_key_2;
+				}
+			}
+		}
+	}
+}
+

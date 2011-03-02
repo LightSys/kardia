@@ -1,0 +1,98 @@
+$Version=2$
+p_church_component "widget/component-decl"
+    {
+    width=831;height=338;
+    sync_osrc "widget/parameter"
+        {
+        //This osrc is a parameter passed in from the outside
+        type=object;
+        find_container="widget/osrc";
+        }
+
+    Sync "widget/component-decl-action" {  }
+
+    p_church_osrc "widget/osrc"
+        {
+        sql="SELECT :p_partner_key, :p_approximate_size, :p_denomination_code, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by FROM /apps/kardia/data/Kardia_DB/p_church/rows";
+	baseobj = "/apps/kardia/data/Kardia_DB/p_church/rows";
+        replicasize=6;
+        readahead=6;
+        // autoquery=onload;
+	autoquery=never;
+        loc_sync "widget/rule"
+            {
+            ruletype = "osrc_relationship";
+
+            target = sync_osrc;
+            is_slave = yes;
+            key_1 = p_partner_key;
+            target_key_1 = p_partner_key;
+	    revealed_only = yes;
+            }
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        p_church_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            p_church_pane "widget/pane"
+                {
+                x=5;y=5;
+                height=123; width=831;
+
+                p_church_vbox "widget/vbox"
+                    {
+		    x=0;y=0;column_width=200;cellsize=20; spacing=5;
+                    height=118;
+		    width=829;
+                    //p_partner_key_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="partner key"; ctl_type="editbox"; form=p_church_form; tooltip="This is the partner key assigned to each partner. It consists of the fund id followed by a computer generated six digit number."; }
+                    p_approximate_size_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_approximate_size; text="approximate size"; ctl_type="editbox"; form=p_church_form; tooltip="Number of people in regular attendance."; }
+                    p_denomination_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_denomination_code; text="denomination code"; ctl_type="editbox"; form=p_church_form; tooltip=""; }
+                    s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; type="create"; ctl_type="datetime"; form=p_church_form; tooltip="The date the record was created."; }
+                    s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; type="create"; ctl_type="editbox"; form=p_church_form; tooltip="User ID of who created this record."; }
+                    s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="date modified"; type="modify"; ctl_type="datetime"; form=p_church_form; tooltip="The date the record was modified."; }
+                    s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="modified by"; type="modify"; ctl_type="editbox"; form=p_church_form; tooltip="User ID of who last modifed this record."; }
+                    }
+                }
+            }
+        }
+
+    }

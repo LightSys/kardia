@@ -1,0 +1,66 @@
+$Version=2$
+ledger_edit "widget/component-decl"
+    {
+    width=736; height=400;
+
+    ledger_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    ledger_form "widget/form"
+	{
+	objectsource = ledger_osrc;
+
+	ledger_form_controls "widget/component"
+	    {
+	    path = "/sys/cmp/form_controls.cmp";
+	    object_name = "Ledger";
+	    x=210; y=0; width=526; height=26;
+	    }
+
+	ledger_list_pane "widget/pane"
+	    {
+	    style=lowered;
+	    bgcolor=white;
+	    x=0;y=0;width=200;height=400;
+
+	    ledger_list "widget/table"
+		{
+		x=0;y=0;width=198;height=398;
+		rowheight = 20;
+		mode=dynamicrow;
+		objectsource = ledger_osrc;
+
+		t_a_ledger_number "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=52; }
+		t_a_ledger_desc "widget/table-column" { title="Description"; fieldname="a_ledger_desc"; width=96; }
+		t_a_ledger_post "widget/table-column" { title="Posting"; fieldname="a_is_posting"; type=check; width=52; }
+		}
+	    }
+
+	ledger_vbox "widget/vbox"
+	    {
+	    x=210;y=32;width=270;cellsize=20;spacing=5;
+
+	    f_a_ledger_number "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_number; text="Ledger Number:"; ctl_type="editbox"; tooltip="This is the ledger number, which represents the entirety of the accounting data for an organization."; }
+	    f_a_is_posting "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Is the ledger active and able to have transactions posted to it?"; }
+	    f_a_ledger_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_desc; text="Description:"; ctl_type="editbox"; tooltip="Brief description of ledger"; }
+	    f_a_ledger_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_comment; text="Comments:"; ctl_type="textarea"; tooltip="Comments regarding the ledger"; }
+	    }
+	ledger_vbox_sys "widget/vbox"
+	    {
+	    x=490;y=32;width=246;cellsize=20;spacing=5;
+
+	    f_a_next_batch_number "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_next_batch_number; text="Next Batch #:"; ctl_type="editbox"; tooltip="The next batch number to be used in creating GL transactions."; }
+	    //sp0 "widget/autolayoutspacer" { height=5; }
+	    //s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="Date Created:"; ctl_type="datetime"; type="create"; tooltip="The date the record was created."; }
+	    //s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="Created By:"; ctl_type="editbox"; type="create"; tooltip="The user who created the ledger" ; }
+	    //sp1 "widget/autolayoutspacer" { height=5; }
+	    //s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="Date Modified:"; ctl_type="datetime"; type="modify"; tooltip="The date the record was created."; }
+	    //s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="Modified By:"; ctl_type="editbox"; type="modify"; tooltip="The user who modified the ledger" ; }
+	    }
+
+	record_meta "widget/component"
+	    {
+	    x=210; y=379; height=20; width=520;
+	    path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+	    }
+	}
+    }

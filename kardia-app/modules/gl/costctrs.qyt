@@ -1,0 +1,29 @@
+$Version=2$
+costctrs "system/querytree"
+    {
+    ledgers "system/querytree"
+	{
+	source="/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	where="1==1";
+
+	ccprefix "system/querytree"
+	    {
+	    source="/apps/kardia/data/Kardia_DB/a_cost_center_prefix/rows";
+	    where="char_length(rtrim(:a_cost_center_prefix)) == 2 and :a_ledger_number = ::a_ledger_number";
+
+	    cctop "system/querytree"
+		{
+		source="/apps/kardia/data/Kardia_DB/a_cost_center/rows";
+		where=":a_ledger_number = ::a_ledger_number and :a_parent_cost_center is NULL and substring(::a_cost_center_prefix,1,2) = substring(:a_cost_center,1,2)";
+
+		cctree "system/querytree"
+		    {
+		    source="/apps/kardia/data/Kardia_DB/a_cost_center/rows";
+		    where=":a_parent_cost_center = ::a_cost_center and :a_ledger_number = ::a_ledger_number";
+		    recurse = cctree;
+		    known_leaf=":a_is_balancing = 0";
+		    }
+		}
+	    }
+	}
+    }

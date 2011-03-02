@@ -1,0 +1,27 @@
+$Version=2$
+whoson_and_tab_menu "widget/component-decl"
+    {
+    width = 784;
+    height = 530;
+
+    sysattr_cmp "widget/component"
+	{
+        path = "/apps/kardia/modules/base/sysattrs.cmp";
+	x=0;y=0;width=234;height=122;
+        fl_width=0;
+	}
+    
+    whoson_cmp "widget/component"
+        {
+        path = "/apps/kardia/modules/base/whoson.cmp";
+        x=0;y=130;width=234;height=400;
+        fl_width=0;
+        auto_start=1;
+        }
+
+    menu_cmp "widget/component"
+        {
+        x=246;y=0;height=530;width=538;
+        path="/apps/kardia/modules/base/tab_menu.cmp";
+        }
+    }

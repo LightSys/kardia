@@ -1,0 +1,30 @@
+$Version=2$
+financial_statement_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="mfswin"; action="Open"; Cascade=1; }
+
+    // the ledger we are working with
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    page "widget/parameter" { type=object; find_container="widget/page"; }
+
+    mfswin "widget/childwindow"
+	{
+	title = "Missionary Financial Statement";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	mfs_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/payroll/financial_statement.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    page = page;
+	    }
+	}
+    }

@@ -1,0 +1,525 @@
+$Version=2$
+
+// Prints the Details for a Batch of Checks...
+// Author: arbor70
+// Organization
+// July 2009
+
+// Table of Contents
+// 1. Parameters
+// 2. Queries
+// 3. Report Display
+
+// DONE: Voided checks...
+// TODO: BATCH parameter include....
+// TODO: Checks with line items above 22 line items... (Feature Add...)
+
+// ~ TODO: INPUT Parameter: OneCheckReport -or- BatchofChecksReport ?
+// ~ TODO: INPUT Parameters: with Update Check Numbers? (Y/N)   Start Check Number
+// ~ TODO: INPUT Parameter: Display Voided Checks? Parameter
+
+
+// p_partner - Check Payee (Display Name) defaults to :org_name except when it is null, in which case it uses given_name + ' ' + surname
+
+
+check_report "system/report"
+{
+	title = "Batch of Checks";
+	document_format = "application/pdf";
+    resolution = 100;
+	//pagewidth = 215.9;		// QUESTION: what measurement system is this? ANSWER: "US Forms" units
+	//pageheight = 279.4;
+	marginleft=.01;
+	marginright=.01;
+	margintop=.10;
+	marginbottom=.01;
+	units="millimeters";
+	// TO DOCUMENT: units attribute  osdriver/osdriver_report_v3.c [Line 3382]
+	// TO DOCUMENT: Different Units Available in Reports  report/prtmgmt_v3main.c [Line 482]
+	// TO DOCUMENT: Default US Form Units  report/prtmgmt_v3main.c  [Line 110]
+	
+	// Parameters for this Check Report
+	ledger "report/parameter" { type=string; default=null; }
+	batch_number "report/parameter" { type=integer; default=null; }
+	start_check_number "report/parameter" { type=integer; default=null; }
+	
+	///////////////////////////////////////////
+	
+	// QUERIES SECTION START
+	
+	
+	// Load a_subtrx_cashdisb table to get needed information
+	// Resources
+	// 1. database table schema
+	// Steps
+	// 1. Identify queries in cashdisb.cmp
+	// 2. Identify examples in other reports for similar things to display...
+	
+	batch_qy "report/query"
+	{
+		sql = runserver("
+		
+			SELECT
+				:c:a_check_number,
+				:c:a_disbursement_id,
+				cnt = count(1)
+			FROM
+				/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
+			WHERE
+				:c:a_ledger_number = :this:ledger and
+				:c:a_batch_number  = :this:batch_number
+			GROUP BY
+				:c:a_disbursement_id
+				
+		");
+		//
+		//	GROUP BY 
+		//		:c:a_check_number
+				
+	}
+	
+	//check_summary_qy "report/query"
+	check_ttl "report/query"
+	{
+		sql = 
+		  runserver("
+		  
+		SELECT 
+			check_total = isnull( sum( :t:a_amount ), $0.00),
+			check_total_wordify = wordify(isnull( sum( :t:a_amount ), $0.00))
+		FROM 
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows t
+		WHERE
+			:t:a_ledger_number = :this:ledger and
+			:t:a_batch_number = :this:batch_number and
+			:t:a_disbursement_id = :batch_qy:a_disbursement_id ");
+			
+			//:t:a_batch_number = :this:batch_number and
+			
+	} // END - check_ttl "report/query"
+	
+	
+	check_one_row_qy "report/query"
+	{
+		sql = "
+		SET ROWCOUNT 1
+		SELECT 
+			:t:a_ledger_number,
+			:t:a_batch_number,
+			:t:a_line_item,
+			:t:a_period,
+			:t:a_effective_date,
+			:t:a_cash_account_code,
+			:t:a_amount,
+			:t:a_cost_center,
+			:t:a_account_code,
+			:t:a_payee_partner_key,
+			:t:a_check_number,
+			:t:a_posted,
+			:t:a_posted_to_gl,
+			:t:a_voided,
+			:t:a_comment,
+			:t:s_date_created,
+			:t:s_created_by,
+			:t:s_date_modified,
+			:t:s_modified_by
+		FROM 
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows t
+		WHERE
+			:t:a_ledger_number = :this:ledger and
+			:t:a_batch_number = :this:batch_number and
+			:t:a_disbursement_id = :batch_qy:a_disbursement_id";
+			
+			//:t:a_batch_number = :this:batch_number and
+			
+	} // END - check_one_row_qy "report/query"
+	
+	
+	check_qy "report/query"
+	{
+		sql = "
+		SELECT 
+			:t:a_ledger_number,
+			:t:a_batch_number,
+			:t:a_line_item,
+			:t:a_period,
+			:t:a_effective_date,
+			:t:a_cash_account_code,
+			:t:a_amount,
+			:t:a_cost_center,
+			:t:a_account_code,
+			:t:a_payee_partner_key,
+			:t:a_check_number,
+			:t:a_posted,
+			:t:a_posted_to_gl,
+			:t:a_voided,
+			:t:a_comment,
+			:t:s_date_created,
+			:t:s_created_by,
+			:t:s_date_modified,
+			:t:s_modified_by 
+		FROM 
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows t
+		WHERE
+			:t:a_ledger_number = :this:ledger and
+			:t:a_batch_number = :this:batch_number and
+			:t:a_disbursement_id = :batch_qy:a_disbursement_id";
+			
+			//:t:a_batch_number = :this:batch_number and
+			
+	} // END - check_qy "report/query"
+	
+	
+	payee_qy "report/query"
+	{
+	
+		// temporary testing debugging step, original: // display_name = isnull(:p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+	
+		sql = runserver("SELECT
+			:p:p_partner_key,
+			:p:p_partner_class,
+			:p:p_given_name,
+			:p:p_surname,
+			:p:p_org_name,
+			display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			:p:p_partner_key = :check_one_row_qy:a_payee_partner_key");
+		
+		// 
+		// DEBUGGING CODE (Showing Work) 20091013:
+		//
+		//  Blank check would show up when orgname existed but wasn't specified... yeah...
+		// 	
+		// 	display_name = 
+		// 		  'p_partner_key - ' + isnull(:p:p_partner_key, ' is blank') +
+		// 		', p_org_name - ' + isnull(:p:p_org_name, 'is blank') + 
+		// 		', cl - ' + convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) + 
+		// 		', p_given_name - ' + isnull(:p:p_given_name, 'is blank, ') + 
+		// 		', p_surname - ' + isnull(:p:p_surname, 'is blank')
+		//  
+		
+	} // END - payee_qy "report/query"
+	
+	acct_cc_name_qy "report/query"
+	{
+		sql = runserver("SELECT
+			cost_center_description = :c:a_cc_desc,
+			account_description = :a:a_acct_desc
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		WHERE
+			:c:a_ledger_number = :check_qy:a_ledger_number and
+			:c:a_cost_center = :check_qy:a_cost_center and
+			:c:a_ledger_number = :a:a_ledger_number and
+			:a:a_account_code = :check_qy:a_account_code
+			");
+	} // END - acct_cc_name_qy "report/query"
+	
+		
+	// } // END - payee_qy "report/query"
+	
+	// Determine the Payee Number for the given check # (and display)
+	// Determine the Payee Name from the given Payee Number (and display)
+	
+	// Query Information supports information for the report below
+	
+	batch_disb_qy "report/query"
+	{
+		sql = runserver("
+		
+			SELECT
+				:c:a_disbursement_id,
+				:c:a_check_number,
+				cnt = count(1)
+			FROM
+				/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
+			WHERE
+				:c:a_ledger_number = :this:ledger and
+				:c:a_batch_number  = :this:batch_number
+			GROUP BY
+				:c:a_disbursement_id
+				
+		");
+		rowid "report/aggregate" { compute="count(1)"; reset=0; }
+				
+	}
+	
+	update_check_number_qy "report/query"
+	{
+		sql = runclient("UPDATE /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows
+						 SET	:a_check_number = :batch_disb_qy:rowid + :this:start_check_number - 1
+						 WHERE	:a_ledger_number = :this:ledger and
+								:a_batch_number = :this:batch_number and
+								:a_disbursement_id = :batch_disb_qy:a_disbursement_id");
+	}
+	
+	// QUERY SECTION END
+	
+	
+	
+	
+	///////////////////////////////////////////
+	
+	// CHECK NUMBERING SYSTEM (If a start_check_number parameter is given) :-)
+	
+	// cr_error_msgs "report/area"
+	// {
+		// height=4; width=80;
+		// align=left;
+		// fontsize=12;
+		// font = times;
+		// check_number_zero "report/data"
+		// { 
+			// condition = runserver((:this:start_check_number == '0'));
+			// value = "The starting check number can not be zero\n";
+		// }
+		// check_number_negative "report/data"
+		// { 
+			// condition = runserver((:this:start_check_number < '0'));
+			// value = "The starting check number can not be a negative number\n";
+		// }
+	// }
+	
+	// Updating Check Number based off of start_check_number (e.g. the starting check number in the user's desired check range)
+	// Assumes a_disbursement_id is uniquely set
+	update_check_numbers_iterator "report/form"
+	{
+		condition = runserver(not (:this:start_check_number is null) and (:this:start_check_number > 0));
+		source=batch_disb_qy;
+		form_stage2b "report/form"
+		{
+			source=update_check_number_qy;
+		}
+	}
+	
+	// BATCH REPORT START...
+	
+	// BATCH SUMMARY OF
+	// (Number of) Line Item Information
+		
+	// lineitemtabled_a "report/table"
+	// {
+		// x=5;
+		// y=5;
+		// width=80;height=0;
+		// columns=2;
+		// widths=36,36;
+		// colsep=1;
+		// source=batch_qy;
+		// moneyformat = "-$###,###,##0.00";
+		// font=hevetica;
+		// fontsize=8;
+		
+		// li_hdrd_a "report/table-row"
+		// {	
+			// margintop=0.0;
+			// marginbottom=0.0;
+			// header=yes;
+			// li_CC_header "report/table-cell" { value=':c:a_check_number'; style=bold; align=left; }
+			// li_AcctCode_header "report/table-cell" { value='count'; style=bold; align=left; }
+		// }
+		// li_datad_a "report/table-row"
+		// {
+			// margintop=0.0;
+			// marginbottom=0.0;
+			// li_CC_header "report/table-cell" { value=runserver(:batch_qy:a_check_number); style=bold; align=left; }
+			// li_AcctCode_header "report/table-cell" { value=runserver(:batch_qy:cnt); style=bold; align=left; }
+		// }
+		
+	// } // END - lineitemtable_a "report/table"
+	
+	batch_form "report/form"
+	{
+		source=batch_qy;
+		
+		// CHECK REPORT START
+		
+		// REPORT
+		// cr_debugging "report/area"
+		// {
+		// 	height=4; width=80;
+		// 	align=left;
+		// 	fontsize=12;
+		// 	font = times;
+		// 	db_title "report/data" { fontsize=24;value="Debugging Information\n"; }
+		// 	db_inputParams "report/data" { fontsize=16;value="Input Parameters\n"; }
+		// 	db_ledger "report/data" { value=runserver("ledger = " + isnull(:this:ledger, "<blank>") + "\n"); } // Works!  woo hoo!
+		// 	db_batch_number_param "report/data" { value=runserver("batch_number = " + isnull(:this:batch_number, "<blank>") + "\n"); }
+		// 	db_start_check_number_param "report/data" { value=runserver("start_check_number = " + isnull(:this:start_check_number, "<blank>") + "\n"); }
+			
+		// } // END - cr_debugging "report/area"
+	
+		my_form "report/form"
+		{
+			source = check_one_row_qy,payee_qy;
+			cr_debugging4 "report/area"
+			{
+				x=2;
+				y=0.1;
+			
+				height=4; width=80;
+				align=left;
+				fontsize=10;
+				font = times;
+
+				partner_eff_date_db "report/data" { xpos=68; ypos=5; dateformat="MM/dd/yyyy"; value=runserver(isnull(:check_one_row_qy:a_effective_date, getdate())); }
+				partner_display_name_db "report/data" { xpos=10; ypos=8; value=runserver(isnull(:payee_qy:display_name, "<blank>")); }
+				crhb_void_output "report/data" { condition=runserver(:check_one_row_qy:a_voided=1); xpos=28; ypos=14; fontsize=36; value="VOID"; }
+			}
+			
+		} // END - my_form "report/form"
+		
+		// REPORT DISPLAY
+		my_form2 "report/form"
+		{
+			source = check_ttl;
+		
+			// Check Total
+			cr_debugging5 "report/area"
+			{
+			x=2;
+			y=0.1;
+				height=4; width=80;
+				align=left;
+				fontsize=12;
+				font = times;
+				check_ttl_display_db "report/data" { xpos=68; ypos=8; value=runserver(isnull(:check_ttl:check_total, "<blank>") + "\n"); }
+				check_ttl_wordify_display_db "report/data" { xpos=3; ypos=10; value=runserver("*** " + isnull(:check_ttl:check_total_wordify, "<blank>") + " Dollars ***\n"); }
+			}
+		} // END - my_form2 "report/form"
+		
+		
+		// CHECK REPORT SECTION HEADER (A)
+		check_report_header_a "report/form"
+		{
+			source = check_one_row_qy,payee_qy;
+			crha_text_area "report/area"
+			{
+				x=0.01;
+				y=21;
+				height=4; width=80;
+				align=left;
+				fontsize=10;
+				font = times;
+				
+				crha_payee_check_no_output "report/data" { xpos=2; ypos=2; value = runserver("CHECK REPORT                                  To: " + isnull(:payee_qy:display_name, "<blank>") + "                                        " + isnull(:check_one_row_qy:a_check_number, "<blank>") ); }  
+				crha_payee_date_output "report/data" { xpos=68; ypos=3; dateformat="MM/dd/yyyy"; value = runserver(isnull(:check_one_row_qy:a_effective_date, "<blank>")); }  
+			}
+		} // END - my_form "report/form"
+		
+		// Line Item Information
+		lineitemtable_a "report/table"
+		{
+			x=5;
+			y=25;
+			width=80;height=0;
+			columns=5;
+			widths=12,8,85,55,24;
+			colsep=1;
+			source=check_qy,acct_cc_name_qy;
+			moneyformat = "-$###,###,##0.00";
+			font=hevetica;
+			fontsize=8;
+			
+			li_hdr_a "report/table-row"
+			{	
+				margintop=0.0;
+				marginbottom=0.0;
+				header=yes;
+				li_CC_header "report/table-cell" { value='CC'; style=bold; align=left; }
+				li_AcctCode_header "report/table-cell" { value='Acct'; style=bold; align=left; }
+				li_cc_acct_desc_header "report/table-cell" { value='Description'; style=bold; align=left; }
+				
+				li_Comment_header "report/table-cell" { value='Comment'; style=bold; align=left; }
+				li_Amount_header "report/table-cell" { value='Amount'; style=bold; align=right; }
+			}
+			li_data_a "report/table-row"
+			{
+				margintop=0.0;
+				marginbottom=0.0;
+				li_CC_header "report/table-cell" { value=runserver(:check_qy:a_cost_center); style=bold; align=left; }
+				li_AcctCode_header "report/table-cell" { value=runserver(:check_qy:a_account_code); style=bold; align=left; }
+				li_cc_acct_desc_header "report/table-cell" { value=runserver(substring(isnull(:acct_cc_name_qy:cost_center_description, "<blank>") + " (" + isnull(:acct_cc_name_qy:account_description, "<blank>") + ")", 1, 48)); style=bold; align=left; } //  
+				
+				li_Comment_header "report/table-cell" { value=runserver(substring(:check_qy:a_comment, 1, 30)); style=bold; align=left; }
+				li_Amount_header "report/table-cell" { value=runserver(:check_qy:a_amount); style=bold; align=right; }
+			}
+			
+		} // END - lineitemtable_a "report/table"
+		
+		// CHECK REPORT SECTION HEADER (B)
+		check_report_header_b "report/form"
+		{
+			source = check_one_row_qy,payee_qy;
+			crhb_text_area "report/area"
+			{
+				x=0.01;
+				y=42;
+				height=4; width=80;
+				align=left;
+				fontsize=10;
+				font = times;
+				
+				crhb_payee_check_no_output "report/data" { xpos=2; ypos=2; value = runserver("CHECK REPORT                                  To: " + isnull(:payee_qy:display_name, "<blank>") + "                                        " + isnull(:check_one_row_qy:a_check_number, "<blank>") ); }  
+				crhb_payee_date_output "report/data" { xpos=68; ypos=3; dateformat="MM/dd/yyyy"; value = runserver(isnull(:check_one_row_qy:a_effective_date, "<blank>")); }  
+				// crhb_void_output
+			}
+			
+		} // END - my_form "report/form"
+		
+		// Line Item Information
+		lineitemtable_b "report/table"
+		{
+			x=5;
+			y=46;
+			width=80;height=0;
+			columns=5;
+			widths=12,8,85,55,24;
+			colsep=1;
+			source=check_qy,acct_cc_name_qy;
+			moneyformat = "-$###,###,##0.00";
+			font=hevetica;
+			fontsize=8;
+			
+			li_hdr_b "report/table-row"
+			{	
+				margintop=0.0;
+				marginbottom=0.0;
+				header=yes;
+				li_CC_header "report/table-cell" { value='CC'; style=bold; align=left; }
+				li_AcctCode_header "report/table-cell" { value='Acct'; style=bold; align=left; }
+				li_cc_acct_desc_header "report/table-cell" { value='Description'; style=bold; align=left; }
+				
+				li_Comment_header "report/table-cell" { value='Comment'; style=bold; align=left; }
+				li_Amount_header "report/table-cell" { value='Amount'; style=bold; align=right; }
+			}
+			li_data_b "report/table-row"
+			{
+				margintop=0.0;
+				marginbottom=0.0;
+				li_CC_header "report/table-cell" { value=runserver(:check_qy:a_cost_center); style=bold; align=left; }
+				li_AcctCode_header "report/table-cell" { value=runserver(:check_qy:a_account_code); style=bold; align=left; }
+				li_cc_acct_desc_header "report/table-cell" { value=runserver(substring(isnull(:acct_cc_name_qy:cost_center_description, "<blank>") + " (" + isnull(:acct_cc_name_qy:account_description, "<blank>") + ")", 1, 48)); style=bold; align=left; } //  
+				
+				li_Comment_header "report/table-cell" { value=runserver(substring(:check_qy:a_comment, 1, 30)); style=bold; align=left; }
+				li_Amount_header "report/table-cell" { value=runserver(:check_qy:a_amount); style=bold; align=right; }
+				
+			} // END - li_data_b "report/table-row"
+			
+		} // END - lineitemtable_b "report/table"
+		
+		check_form "report/form"
+		{
+			source = check_ttl;
+			ffsep=yes;
+			
+		} // END - check_form "report/form"
+		
+	} // END - batch_form
+	
+	
+} // END - check_report
+

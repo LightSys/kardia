@@ -1,0 +1,185 @@
+$Version=2$
+coa "system/report"
+    {
+    title = "Chart of Accounts";
+    resolution = 300;
+    document_format="application/pdf";
+
+    ledger "report/parameter"
+	{
+	default = null;
+	type = string;
+	}
+    
+    pagewidth=85;
+    pageheight=66;
+    marginleft=5;
+    marginright=5;
+    margintop=3;
+    marginbottom=3;
+
+    periods "report/query"
+	{
+	sql =  runserver("
+		SELECT
+			:name, *
+		FROM
+			/apps/kardia/data/Kardia_DB/a_period/rows
+		WHERE
+			:a_ledger_number = :this:ledger
+			");
+	}
+    accts "report/query"
+	{
+	sql =  runserver("
+		SELECT
+			:name, *
+		FROM
+			/apps/kardia/data/Kardia_DB/a_account/rows
+		WHERE
+			:a_ledger_number = :this:ledger
+		ORDER BY
+			:a_account_code
+			");
+	}
+    costctrs "report/query"
+	{
+	sql =  runserver("
+		SELECT
+			:name, *
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows
+		WHERE
+			:a_ledger_number = :this:ledger
+		ORDER BY
+			:a_cost_center
+			");
+	}
+
+    title_area "report/area"
+	{
+	x=0;y=0;width=75;height=0;
+	font=helvetica;
+	fontsize=10;
+	hdr_info "report/data"
+	    {
+	    align=center;
+	    value=runserver("Non-Period-Specific Chart of Accounts for Ledger " + :this:ledger + " on [" + getdate() + " PT] requested by [" + user_name() + "]\n\n");
+	    }
+	}
+
+    period_data "report/table"
+	{
+	x=0; width=75; height=0;
+	columns=3;
+	widths=9,9,55;
+	colsep=0.9;
+	source=periods;
+	topborder=0.3;
+	bottomborder=0.3;
+	nullformat="-";
+
+	per_data_hdr "report/table-row"
+	    {
+	    font=helvetica;
+	    fontsize=8;
+	    header=yes;
+	    bottomborder=0.05;
+	    h_per "report/table-cell" { value='Period'; align=center; style=bold; }
+	    h_parent "report/table-cell" { value='Part Of:'; align=center; style=bold; }
+	    h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
+	    }
+
+	per_data_row "report/table-row"
+	    {
+	    font=courier;
+	    fontsize=8;
+	    d_per "report/table-cell" { value=runserver(:periods:a_period); align=left; }
+	    d_parent "report/table-cell" { value=runserver(:periods:a_parent_period); align=left; }
+	    d_desc "report/table-cell" { font=helvetica; value=runserver(:periods:a_period_desc); align=left; }
+	    }
+	}
+
+    spacer_1 "report/area" { x=0; width=75; height=2; }
+
+    acct_data "report/table"
+	{
+	x=0; width=75; height=0;
+	columns=7;
+	widths=8,8,4,8,8,8,25;
+	colsep=0.9;
+	source=accts;
+	topborder=0.3;
+	bottomborder=0.3;
+	nullformat="-";
+
+	acct_data_hdr "report/table-row"
+	    {
+	    font=helvetica;
+	    fontsize=8;
+	    header=yes;
+	    bottomborder=0.05;
+	    h_acct "report/table-cell" { value='Account'; align=center; style=bold; }
+	    h_acctroll "report/table-cell" { value='Part Of:'; align=center; style=bold; }
+	    h_accttype "report/table-cell" { value='Type'; align=center; style=bold; }
+	    h_acctclass "report/table-cell" { value='Class'; align=center; style=bold; }
+	    h_acctcontra "report/table-cell" { value='Contra'; align=center; style=bold; }
+	    h_acctconv "report/table-cell" { value='Convert'; align=center; style=bold; }
+	    h_acctdesc "report/table-cell" { value='Description'; align=center; style=bold; }
+	    }
+
+	acct_data_row "report/table-row"
+	    {
+	    font=courier;
+	    fontsize=8;
+	    d_acct "report/table-cell" { value=runserver(:accts:a_account_code); align=left; }
+	    d_acctroll "report/table-cell" { value=runserver(:accts:a_parent_account_code); align=left; }
+	    d_accttype "report/table-cell" { value=runserver(:accts:a_acct_type); align=left; }
+	    d_acctclass "report/table-cell" { value=runserver(:accts:a_account_class); align=left; }
+	    d_acctcontra "report/table-cell" { value=runserver(:accts:a_is_contra); align=left; }
+	    d_acctconv "report/table-cell" { value=runserver(:accts:a_legacy_code); align=left; }
+	    d_acctdesc "report/table-cell" { font=helvetica; value=runserver(:accts:a_acct_desc); align=left; }
+	    }
+	}
+
+    spacer_s "report/area" { x=0; width=75; height=2; }
+
+    costctr_data "report/table"
+	{
+	x=0; width=75; height=0;
+	columns=6;
+	widths=7,7,7,7,8,34;
+	colsep=0.9;
+	source=costctrs;
+	topborder=0.3;
+	bottomborder=0.3;
+	nullformat="-";
+
+	cc_data_hdr "report/table-row"
+	    {
+	    font=helvetica;
+	    fontsize=8;
+	    header=yes;
+	    bottomborder=0.05;
+	    h_cc "report/table-cell" { value='CostCtr'; align=center; style=bold; }
+	    h_ccroll "report/table-cell" { value='Rollup'; align=center; style=bold; }
+	    h_ccbal "report/table-cell" { value='Fund'; align=center; style=bold; }
+	    h_ccclass "report/table-cell" { value='Class'; align=center; style=bold; }
+	    h_ccconv "report/table-cell" { value='Convert'; align=center; style=bold; }
+	    h_ccdesc "report/table-cell" { value='Description'; align=center; style=bold; }
+	    }
+
+	cc_data_row "report/table-row"
+	    {
+	    font=courier;
+	    fontsize=8;
+	    d_cc "report/table-cell" { value=runserver(:costctrs:a_cost_center); align=left; }
+	    d_ccroll "report/table-cell" { value=runserver(:costctrs:a_parent_cost_center); align=left; }
+	    d_ccbal "report/table-cell" { value=runserver(:costctrs:a_bal_cost_center); align=left; }
+	    d_ccclass "report/table-cell" { value=runserver(:costctrs:a_cost_center_class); align=left; }
+	    d_ccconv "report/table-cell" { value=runserver(:costctrs:a_legacy_code); align=left; }
+	    d_ccdesc "report/table-cell" { font=helvetica; value=runserver(:costctrs:a_cc_desc); align=left; }
+	    }
+	}
+    }
+

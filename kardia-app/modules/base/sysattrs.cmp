@@ -1,0 +1,35 @@
+$Version=2$
+sysattrs "widget/component-decl"
+    {
+    width=282;height=100;
+
+    sysattrs_osrc "widget/osrc"
+	{
+	scope = session;
+	scope_name = "kardia_sysattrs_osrc";
+	replicasize = 1;
+	readahead = 1;
+	send_updates = no;
+	sql = "select
+			Ledger = (select first(:a_ledger_number) from /apps/kardia/data/Kardia_DB/a_ledger/rows order by :s_date_modified),
+			YearPeriod = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_parent_period is null and :a_start_date <= getdate() and :a_end_date >= getdate()),
+			CurrentPeriod = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where not (:a_parent_period is null) and :a_start_date <= getdate() and :a_end_date >= getdate())";
+
+	sysattrs_table "widget/table"
+	    {
+	    x=0;y=0;width=282;height=100;
+	    rowheight = 20;
+	    mode=dynamicrow;
+	    allow_selection = no;
+	    show_selection = no;
+	    demand_scrollbar = yes;
+	    overlap_scrollbar = yes;
+	    colsep = 0;
+	    data_mode = properties;
+
+	    t_img "widget/table-column" { title=""; fieldname=""; width=24; }
+	    t_name "widget/table-column" { title="Settings..."; fieldname="name"; width=120; }
+	    t_value "widget/table-column" { title=""; fieldname="value"; width=138; }
+	    }
+	}
+    }

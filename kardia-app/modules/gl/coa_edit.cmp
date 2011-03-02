@@ -1,0 +1,125 @@
+$Version=2$
+coa_edit "widget/component-decl"
+    {
+    width=778; height=525;
+
+    master_cmp "widget/component"
+	{
+	width=778; height=525; x=0; y=0;
+	path = "/sys/cmp/window_container.cmp";
+	mode=dynamic;
+
+	component="/apps/kardia/modules/gl/cc_acct_edit.cmp";
+	icon = "/apps/kardia/images/icons/gift.gif";
+	toplevel = yes;
+	w=778; h=525;
+	}
+
+    ledger_osrc "widget/osrc"
+	{
+	sql = "select :a_ledger_number, :a_next_batch_number, :a_is_posting, :a_ledger_desc, :a_ledger_comment, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by FROM /apps/kardia/data/Kardia_DB/a_ledger/rows";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	replicasize = 40;
+	readahead = 20;
+	autoquery = onfirstreveal;
+	}
+
+    ledger_txt "widget/label" { x=0;y=2;width=778; align=center; style=bold; value=runclient('Selected Ledger: ' + isnull(:ledger_osrc:a_ledger_desc + ' (' + rtrim(:ledger_osrc:a_ledger_number) + ')', '(none)')); font_size=16; height=24; }
+    sep "widget/pane" { x=0;y=30;width=778;height=2; style=lowered;}
+
+    l_tab "widget/tab"
+	{
+	x=10;y=40;width=758;height=451;
+
+	ledger_tab "widget/tabpage"
+	    {
+	    title = "Ledgers";
+
+	    editledger "widget/component"
+		{
+		x=10;y=10;width=736;height=430;
+		path="/apps/kardia/modules/gl/ledger_edit.cmp";
+		ledger_osrc = ledger_osrc;
+		}
+	    }
+
+	accts_tab "widget/tabpage"
+	    {
+	    title="GL Accounts";
+
+	    accts "widget/component"
+		{
+		path="/apps/kardia/modules/gl/accts_edit.cmp";
+		ledger_osrc = ledger_osrc;
+		}
+	    }
+
+	cc_tab "widget/tabpage"
+	    {
+	    title = "Cost Centers";
+
+	    ccs "widget/component"
+		{
+		path="/apps/kardia/modules/gl/costctrs_edit.cmp";
+		ledger_osrc = ledger_osrc;
+		}
+	    }
+
+	period_tab "widget/tabpage"
+	    {
+	    title = "Periods";
+
+	    periods "widget/component"
+		{
+		path="/apps/kardia/modules/gl/periods_edit.cmp";
+		ledger_osrc = ledger_osrc;
+		}
+	    }
+
+	settings_tab "widget/tabpage"
+	    {
+	    title = "Settings";
+
+	    acct_settings "widget/component"
+		{
+		x=10;y=10;height=190;width=736;
+		path="/apps/kardia/modules/gl/acct_settings.cmp";
+		ledger_osrc = ledger_osrc;
+		}
+
+	    per_settings "widget/component"
+		{
+		condition = 0;
+		y=220;height=200;
+		path="/apps/kardia/modules/gl/period_settings.cmp";
+		ledger_osrc = ledger_osrc;
+		}
+	    }
+
+	gl_master_tab "widget/tabpage"
+	    {
+	    title = "GL Master List";
+
+	    master_lbl "widget/label"
+		{
+		x=10;y=10;width=706;height=40;
+		text = "Once you have set up the GL Accounts, Cost Centers, and Periods, you can set up the master list of valid cost center / account combinations for each accounting period; normally this master list is set up on a yearly basis, using year-long top-level accounting periods.";
+		}
+
+	    master_btn "widget/textbutton"
+		{
+		x=303;y=130;width=120;height=32;
+		text = "GL Master List";
+
+		master_cn "widget/connector"
+		    {
+		    event="Click";
+		    action="Instantiate";
+		    target="master_cmp";
+		    ledger = runclient(:ledger_osrc:a_ledger_number);
+		    title = runclient("GL Master List -- Ledger #" + :ledger_osrc:a_ledger_number);
+		    }
+		}
+	    }
+	}
+    }

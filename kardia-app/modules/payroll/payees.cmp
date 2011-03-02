@@ -1,0 +1,120 @@
+$Version=2$
+payees_cmp "widget/component-decl"
+    {
+    width=778; height=525;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    ledger_osrc "widget/osrc"
+	{
+	l_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
+	sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_ledger/rows where :a_ledger_number = :parameters:l_ledger");
+	baseobj = "/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	replicasize=10;
+	readahead=5;
+	autoquery = onload;
+	}
+
+    // Payroll detail screen
+    paydet "widget/parameter" { type=object; }
+
+    payee_osrc "widget/osrc"
+	{
+	sql = "SELECT :a:a_payroll_id, :a:p_payee_partner_key, :a:a_payee_name, :a:a_priority, :a:a_payroll_interval, :a:a_ledger_number, :a:a_cost_center, :a:a_start_date, :a:a_end_date, :a:s_date_created, :a:s_created_by, :a:s_date_modified, :a:s_modified_by, cctxt = '' + :a:a_cost_center + ' - ' + :c:a_cc_desc, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), ptxt = condition(char_length(:a:a_payee_name) > 0, :a:a_payee_name, :p:p_surname + ', ' + :p:p_given_name), itxt = :iv:text  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_payroll/rows a, /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_cost_center/rows c  WHERE :p:p_partner_key = :a:p_payee_partner_key and :a:a_payroll_interval = :iv:tag and :a:a_cost_center = :c:a_cost_center and :a:a_ledger_number = :c:a_ledger_number";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll/rows";
+	autoquery=never;
+	replicasize=150;
+	readahead=25;
+
+	ledger_sync "widget/rule"
+	    {
+	    ruletype = "osrc_relationship";
+	    target = ledger_osrc;
+	    is_slave = yes;
+	    key_1 = a_ledger_number;
+	    target_key_1 = a_ledger_number;
+	    revealed_only = true;
+	    }
+
+	payee_list_pane "widget/pane"
+	    {
+	    x=8;y=8;width=762;height=308;
+	    widget_class = "table_bgnd";
+
+	    payee_list "widget/table"
+		{
+		x=0;y=0;width=760;height=306;
+		rowheight = 18;
+		mode=dynamicrow;
+		fl_height=100;
+
+		t_valid "widget/table-column" { title="Valid From"; fieldname="txtdate"; width=70; }
+		t_per "widget/table-column" { title="Pay Period"; fieldname="itxt"; width=80; }
+		t_cc "widget/table-column" { title="Cost Center / Fund"; fieldname="cctxt"; width=220; }
+		t_ord "widget/table-column" { title="Ord"; fieldname="a_priority"; width=30; }
+		t_ptnrid "widget/table-column" { title="Payee ID"; fieldname="p_payee_partner_key"; width=60; }
+		t_ptnr "widget/table-column" { title="Payee Name"; fieldname="ptxt"; width=190; }
+		}
+	    }
+
+	payee_form "widget/form"
+	    {
+	    payee_ctls "widget/component"
+		{
+		x=8;y=324;width=762;height=26;
+		path = "/sys/cmp/form_controls.cmp";
+		deletable = no;
+		object_name = "Payee";
+		}
+
+	    payee_vbox "widget/vbox"
+		{
+		x=8;y=358;width=262;height=118;
+		spacing=8;
+		cellsize=20;
+		fl_height=0;
+
+		f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="Valid From:"; ctl_type="datetime"; tooltip="Date that this payroll entry begins to be valid"; label_width=100; }
+		f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid To:"; ctl_type="datetime"; tooltip="Last day that this payroll entry is valid"; label_width=100; }
+		f_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="Pay Period:"; ctl_type="dropdown"; tooltip="Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
+		f_prio "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_priority; text="Order:"; ctl_type="editbox"; tooltip="Priority of this payroll record (lower number means it is run first)"; label_width=100; }
+		}
+
+	    payee_vbox_2 "widget/vbox"
+		{
+		x=278;y=358;width=312;height=118;
+		spacing=8;
+		cellsize=20;
+		fl_height=0;
+
+		f_defname "widget/component" { path="/sys/cmp/smart_field.cmp"; field=ptxt; text="Name:"; ctl_type="label"; tooltip="Default Payee Name"; label_width=100; }
+		f_name "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payee_name; text="Edit Name:"; ctl_type="editbox"; tooltip="Payee name to override default"; label_width=100; }
+		f_costctr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_cost_center"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Ctr:"; attach_point=editbox; label_width=100; empty_desc="required"; }
+		f_ptnr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=p_payee_partner_key; popup_source=runserver("/apps/kardia/modules/payroll/payee_partners.qyt/"); popup_text="Choose Payee:"; text="Partner ID:"; attach_point="editbox"; tooltip="Partner ID (address record #) for Payee (required)"; label_width=100; empty_desc="required"; }
+		}
+
+	    payee_vbox_3 "widget/vbox"
+		{
+		x=610;y=358;width=140;height=118;
+		spacing=8;
+		cellsize=20;
+		fl_height=0;
+
+		detail_btn "widget/textbutton"
+		    {
+		    width = 140;
+		    text = "Pay Details...";
+
+		    go_detail "widget/connector" { event=Click; target=paydet; action=GotoPayee; Payee=runclient(:payee_osrc:a_payroll_id); }
+		    }
+		}
+
+	    payee_rec_info "widget/component"
+		{
+		x=8;y=497;height=20;width=762;
+		fl_height=0;
+		path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+		}
+	    }
+	}
+    }

@@ -1,0 +1,267 @@
+$Version=2$
+cd_print_subform "widget/component-decl"
+{
+	width=298;height=165;
+	
+	// TODO: Insert Spacers between the buttons and textbox...
+	// TODO: Display pop-up msg when clicking each button warning / confirming that [single] check number(s) will be updated... accordingly based on the given check number...
+	
+	// Includes
+	alerter "widget/alerter" {}
+    Open "widget/component-decl-action" { }
+	
+	// Open_cn1 "widget/connector"
+	// {
+	// 	event="Open_Batch"; 
+	// 	target="cd_print_formwin"; 
+	// 	action="Open"; 
+	// 	Cascade=1;
+	// }
+	
+	LoadBatchParameters "widget/component-decl-action" { }
+	
+	// Working Debugging Code
+	// LoadBatchParameters_cn1 "widget/connector" { event="Open"; target="alerter"; // runclient(convert(integer,:batch_number))
+	//					action="Alert";
+	//					param=runclient("test"); //
+	// }
+	
+	// Working Debugging Code
+	// Load_cn1 "widget/connector" { event="LoadComplete"; target="alerter"; // runclient(convert(integer,:batch_number))
+	// 					action="Alert";
+	// 					param=runclient("test: " + isnull(:cd_print_subform:ledger, "<blank>") + ", " + isnull(:cd_print_subform:batch_number, "<blank>") + ", " + isnull(:cd_print_subform:disbursement_id, "<blank>"));
+						
+	//	// TO DOCUMENT(20090729): Instantiate -> LoadComplete [parameter access is :this:<param_name>
+	// }
+	// runclient("print_check_btn (Click): You clicked " + )
+						// cd_print_subform (Open): You clicked " + isnull(:batch_number, "<blank>")); }
+	
+    page "widget/parameter" { type=object; find_container="widget/page"; }
+	
+	// V2
+	ledger "widget/parameter" { type=string; default=null; }
+	batch_number "widget/parameter" { type=integer; default=null; }
+	disbursement_id "widget/parameter" { type=integer; default=null; }
+	external_cashdisb "widget/parameter" { type=object; default=null; }
+	external_itself "widget/parameter" { type=object; default=null; }
+	cash_disb_osrc_param "widget/parameter" { type=object; default=null; }
+						
+	// TO DOCUMENT(20090729):
+	// - widget/parameters accessed using :this:<param_name>
+	// - parametes passed in through connectors DON'T require :this:<param_name>
+	// - when in runclient expression use :cd_print_subform: instead of :this:
+	
+	//Open_cn2 "widget/connector"
+	//{
+	//	event="Open";
+	//	target="alerter";
+
+	//	action="Alert";
+		
+	//	param=runclient("cd_print_subform (Open): You clicked " + isnull(:ledger, "<blank>") + ", " + isnull(:batch_number, "<blank>") + ", " + isnull(:check_number, "<blank>"));
+	//}
+	
+	Open_Batch_Report "widget/component-decl-action" { }
+	
+	Open_Batch_cn1 "widget/connector"
+	{
+		event="Open_Batch_Report"; 
+		target = cd_print_subform;
+		action = Launch;
+		Width=800;
+		Height=600;
+		Source=runclient('/apps/kardia/modules/disb/batch_report.rpt');
+		ledger = runclient(:cd_print_subform:ledger);
+		batch_number = runclient(:cd_print_subform:batch_number);
+		start_check_number = runclient(:txt_start_check_number:content);
+	}
+	
+	
+	Open_Batch_Report_No_Params "widget/component-decl-action" { }
+	
+	Open_Batch_No_Params_cn1 "widget/connector"
+	{
+		event="Open_Batch_Report_No_Params"; 
+		target = cd_print_subform;
+		action = Launch;
+		Width=800;
+		Height=600;
+		Source=runclient('/apps/kardia/modules/disb/batch_report.rpt');
+		ledger = runclient(:cd_print_subform:ledger);
+		batch_number = runclient(:cd_print_subform:batch_number);
+		// start_check_number = runclient(:txt_start_check_number:content);
+	}
+	
+	// Open_Batch_cn2 "widget/connector"
+	// {
+	// 	event="Open_Batch_Report"; 
+	// 	target=external_itself; 
+	// 	action=Close;
+	// }
+	
+	// Open_Batch_cn3 "widget/connector"
+	// {
+	// 	event="Open_Batch_Report"; 
+	// 	target=external_cashdisb; 
+	// 	action=Close;
+	// }
+	
+	// Main Window / Form
+	myform "widget/form"
+	{
+		myvbox "widget/vbox"
+		{
+			x=5;y=4;width=290;height=160;spacing=2;cellsize=2;align=middle;
+
+			lbl_print_checks "widget/label"
+			{
+				valign="middle";
+				width=270;
+				height=30;
+				path="/sys/cmp/smart_field.cmp";
+				value="Print Checks";
+				ctl_type=editbox;
+				label_width=150;
+				label_height=30;
+				//text="Print Checks";
+				font_size=16;
+				style=bold;
+			}
+			
+			sp1 "widget/autolayoutspacer" { height=2; }
+			
+			txt_start_check_number "widget/component"
+			{
+				width=270;
+				height=30;
+				path="/sys/cmp/smart_field.cmp";
+				value="te";
+				ctl_type=editbox;
+				label_width=175;
+				label_height=30;
+				text="Set / Starting Check Number: ";
+				
+			}
+			
+			sp2 "widget/autolayoutspacer" { height=7; }
+			
+			print_check_btn "widget/textbutton"
+			{
+				x=40;
+				width=190;
+				text="Preview the Selected Check";
+				
+				// print_check_debug_cn "widget/connector" { event="Click"; target="alerter";
+				// 		action="Alert";
+				// 		param=runclient("print_check_btn (Click): You clicked " + isnull(:cd_print_subform:ledger, "<blank>") + ", " + isnull(:cd_print_subform:batch_number, "<blank>") + ", " + isnull(:cd_print_subform:disbursement_id, "<blank>")); }   //  this is undefined:  isnull(:this:ledger, "<blank>") + ", " + 
+	
+				open_check_rpt_cn "widget/connector"
+				{
+					event_condition = runclient((not (:txt_start_check_number:content is null)) and (:txt_start_check_number:content > 0));
+					event_confirm = runclient("WARNING: Are you sure you would like to re-number this check? (Note: The single check that you have selected in this batch will be re-numbered according to the specified 'Set Check Number': " + :txt_start_check_number:content + ")");
+						
+					// (Note: This check currently numbered: " +  + " will be changed to check number: " + :txt_start_check_number:content + "." );
+					// DONE: Display Are you sure you would like to print the entire batch of checks? (Note: All of the Checks in this Batch will be re-numbered according to the Starting Check Number)."
+					
+				 	event = "Click";
+				 	target = cd_print_subform;
+				 	action = "Launch";
+				 	Width=800;
+				 	Height=600;
+					Source=runclient('/apps/kardia/modules/disb/check_report.rpt');
+					ledger = runclient(:cd_print_subform:ledger);
+					batch_number = runclient(:cd_print_subform:batch_number);
+					new_check_number = runclient(:txt_start_check_number:content);
+					disbursement_id = runclient(:cd_print_subform:disbursement_id);
+				}
+				
+				open_check_rpt_cn2 "widget/connector"
+				{
+					// event_condition = runclient(false);
+					event_condition = runclient((:txt_start_check_number:content is null) or (:txt_start_check_number:content <= 0) or (:txt_start_check_number:content == ""));
+				 	event = "Click";
+				 	target = cd_print_subform;
+				 	action = "Launch";
+				 	Width=800;
+				 	Height=600;
+					Source=runclient('/apps/kardia/modules/disb/check_report.rpt');
+					ledger = runclient(:cd_print_subform:ledger);
+					batch_number = runclient(:cd_print_subform:batch_number);
+					disbursement_id = runclient(:cd_print_subform:disbursement_id);
+				}
+				
+				// TODO 20090901: Need to Set Target
+				// print_check_close_cn "widget/connector"
+				// {
+				// 	event = "Click";
+				// 	action = "Close";
+				// }
+				
+				// open_check_rpt_cn2 "widget/connector" { event="Click"; target="rpt_form"; action="Submit"; Target=runclient("page"); NewPage=runclient(1); Source=runclient("/apps/kardia/modules/gl/transaction_report.rpt"); Width=runclient(800); Height=runclient(600); }
+				
+			}	// TO DOCUMENT: runclient -> runserver
+			
+			print_batch_btn "widget/textbutton"
+			{
+				x=40;
+				width=190;
+				text="Preview Batch of Checks";
+				
+				open_batch_rpt_cn "widget/connector"
+				{
+				 	event = "Click";
+					event_condition = runclient((:txt_start_check_number:content is null) or (:txt_start_check_number:content <= 0) or (:txt_start_check_number:content == ""));
+					// event_confirm = runclient("Are you sure you would like to print the entire batch of checks? (Note: All checks in this batch will be re-numbered according to the specified Starting Check Number: " + :txt_start_check_number:content + ")"); // DONE: Display Are you sure you would like to print the entire batch of checks? (Note: All of the Checks in this Batch will be re-numbered according to the Starting Check Number).");
+					target = cd_print_subform;
+					action=TriggerEvent;
+					EventName=runclient("Open_Batch_Report_No_Params");
+				}
+				
+				open_batch_rpt_cn2 "widget/connector"
+				{
+				 	event = "Click";
+					event_condition = runclient((not (:txt_start_check_number:content is null)) and (:txt_start_check_number:content > 0));
+					event_confirm = runclient("WARNING: Are you sure you would like to re-number the check numbers in this entire batch? (Note: All checks in this batch will be re-numbered according to the specified Starting Check Number: " + :txt_start_check_number:content + ")"); // DONE: Display Are you sure you would like to print the entire batch of checks? (Note: All of the Checks in this Batch will be re-numbered according to the Starting Check Number).");
+					target = cd_print_subform;
+					action=TriggerEvent;
+					EventName=runclient("Open_Batch_Report");
+				}
+				
+			} // END - print_batch_btn "widget/textbutton"
+			
+			close_window_btn "widget/textbutton"
+			{
+				x=40;
+				width=190;
+				text="Close";
+				
+				close_cn "widget/connector"
+				{
+					event = "Click";
+					target = external_itself;
+					action = "Close";
+				}
+				
+				// TODO (20090915): Pass in osrc object, call Refresh on it here...
+				// Why does this cause many checks from other batches to appear in the table?
+				close_cn2 "widget/connector"
+				{
+					event = "Click";
+					target = cash_disb_osrc_param;
+					action = Refresh;
+				}
+				
+				// close_cn3 "widget/connector"
+				// {
+				//  event = "Click";
+				// 	target = external_cashdisb;
+				// 	action = Close;
+				// }
+				
+			} // END - print_batch_btn "widget/textbutton"
+			
+		} // END - myvbox "widget/vbox"
+		
+	} // END - myform "widget/form"
+	
+} // END - cd_print_subform "widget/component-decl"

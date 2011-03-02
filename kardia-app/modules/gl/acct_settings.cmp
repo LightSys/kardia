@@ -1,0 +1,52 @@
+$Version=2$
+acct_settings "widget/component-decl"
+    {
+    width=736; height=200;
+
+    ledger_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    acct_settings_osrc "widget/osrc"
+	{
+	sql = "select a_acct_type_desc = :at:text, :u:a_acct_usage_code, :u:a_account_code, :u:a_ledger_number, :u:s_date_created, :u:s_created_by, :u:s_date_modified, :u:s_modified_by, :t:a_acct_type, :t:a_acct_usage_desc from identity /apps/kardia/data/Kardia_DB/a_account_usage/rows u, /apps/kardia/data/Kardia_DB/a_account_usage_type/rows t, /apps/kardia/data/Kardia_DB/_a_account_type/rows at where :u:a_acct_usage_code = :t:a_acct_usage_code and :at:tag = :t:a_acct_type";
+	baseobj="/apps/kardia/data/Kardia_DB/a_account_usage/rows";
+	replicasize=20;
+	readahead=20;
+	autoquery=never;
+
+	ledger_sync "widget/rule"
+	    {
+	    ruletype = "osrc_relationship";
+	    target = ledger_osrc;
+	    is_slave = yes;
+	    revealed_only = yes;
+	    key_1 = a_ledger_number;
+	    target_key_1 = a_ledger_number;
+	    }
+
+	as_form "widget/form"
+	    {
+	    as_form_controls "widget/component"
+		{
+		path = "/sys/cmp/form_controls.cmp";
+		object_name = "Account Setting";
+		x=0; y=0; width=736; height=26;
+		}
+	    }
+	as_list_pane "widget/pane"
+	    {
+	    style=lowered;
+	    x=0;y=26;width=736;height=162;
+	    ledger_list "widget/table"
+		{
+		x=0;y=0;width=734;height=160;
+		rowheight = 20;
+		mode=dynamicrow;
+
+		t_a_usage_code "widget/table-column" { title="Code"; fieldname="a_acct_usage_code"; width=52; }
+		t_a_usage_desc "widget/table-column" { title="Description"; fieldname="a_acct_usage_desc"; width=200; }
+		t_a_type "widget/table-column" { title="Type"; fieldname="a_acct_type_desc"; width=52; }
+		t_a_acct "widget/table-column" { title="Account to Use"; fieldname="a_account_code"; width=400; }
+		}
+	    }
+	}
+    }

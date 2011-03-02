@@ -1,0 +1,7 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Payroll";
+    module_abbrev = "Payroll";
+    module_description = "Payroll system with integration into the Kardia General Ledger";
+    }

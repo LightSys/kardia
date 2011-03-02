@@ -1,0 +1,43 @@
+$Version=2$
+p_location_field "widget/component-decl"
+    {
+    width=220;
+    height=runserver(condition(:this:type == 'textarea', 64, 20));
+
+    form "widget/parameter" { type=object; find_container="widget/form";}
+    field "widget/parameter" { type=string; }
+    text "widget/parameter" { type=string; }
+    tooltip "widget/parameter" { type=string; default=null; }
+    lookup_with "widget/parameter" { type=string; default=null; }
+    sql "widget/parameter" { type=string; default="select 1,1 where 1 != 1"; }
+    type "widget/parameter" { type=string; default="standard"; }
+    ctl_type "widget/parameter" { type=string; default="editbox"; }
+
+    SetValue "widget/component-decl-action" { }
+    sv_cn "widget/connector" { event="SetValue"; target=ctl; action="SetValue"; Value=runclient(:Value); }
+    p_status_code_label "widget/label"
+        {
+        x=2;y=0;
+        height=20;width=100;
+        text=runserver(:this:text);
+        align=right;
+        tooltip=runserver(:this:tooltip);
+        }
+    p_status_code_dropdown "widget/dropdown"
+        {
+        mode="static";
+        x=102;y=0;
+        height=20;width=118;
+        hilight="#e0e0e0";
+        form=form;
+        bgcolor=white;
+        fieldname=runserver(:this:field);
+        tooltip="Defines what type of partner this is." ;
+        ddt0 "widget/dropdownitem" { label="Home"; value="H"; }
+        ddt1 "widget/dropdownitem" { label="Work"; value="W"; }
+        ddt2 "widget/dropdownitem" { label="Vacation"; value="V"; }
+        ddt3 "widget/dropdownitem" { label="School"; value="S"; }
+	ro_hints "widget/hints" { condition=runserver(:this:type == 'readonly'); style=readonly; }
+
+        }
+    }

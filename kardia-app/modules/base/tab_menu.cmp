@@ -1,0 +1,163 @@
+$Version=2$
+tab_menu "widget/component-decl"
+    {
+    width = 530;
+    height = 530;
+
+    main_tab "widget/tab"
+	{
+	x=0;y=0;height=530 - 24;width=530;
+	background="/apps/kardia/images/bg/light_bgnd.jpg";
+
+	tabpage_rpt "widget/repeat"
+	    {
+	    sql = "select modname = :name from /apps/kardia/modules order by :name";
+
+	    info_qy "widget/repeat"
+		{
+		sql = runserver("select /apps/kardia/modules/" + :tabpage_rpt:modname + "/kardia_modinfo.struct:module_name, /apps/kardia/modules/" + :tabpage_rpt:modname + "/kardia_modinfo.struct:module_abbrev, /apps/kardia/modules/" + :tabpage_rpt:modname + "/kardia_modinfo.struct:module_description");
+
+		main_tabpage "widget/tabpage"
+		    {
+		    title = runserver(:info_qy:module_abbrev);
+
+		    tab_lbl "widget/label"
+			{
+			x=8; y=8; width=300; height=20;
+			style=bold;
+			fgcolor="#153f5f";
+			font_size=14;
+			text = runserver(:info_qy:module_name);
+			}
+
+		    desc_lbl "widget/label"
+			{
+			x=8; y=32; width=512; height=20;
+			//style=bold;
+			fgcolor="black";
+			font_size=11;
+			text = runserver(:info_qy:module_description);
+			}
+
+		    progs_lbl "widget/label"
+			{
+			x=8; y=88; width=300; height=20;
+			style=bold;
+			fgcolor="#153f5f";
+			font_size=14;
+			text = runserver("Applications for " + :info_qy:module_abbrev + ":");
+			}
+
+		    progs_vbox "widget/vbox"
+			{
+			x=8; y=116; width=522; height=160;
+			cellsize=20; spacing=4; column_width=176;
+
+			progs_rpt "widget/repeat"
+			    {
+			    sql = runserver("select * from /apps/kardia/modules/" + :tabpage_rpt:modname + "/kardia_functions.csv/rows where :func_type = 'APP' order by :func_name");
+
+			    prog_h_w "widget/repeat"
+				{
+				sql = runserver("select /apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :progs_rpt:func_file + "?ls__type=system%2fstructure:width, /apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :progs_rpt:func_file + "?ls__type=system%2fstructure:height");
+
+				oneprog_hbox "widget/hbox"
+				    {
+				    spacing=8;
+
+				    oneprog_icon "widget/image"
+					{
+					width=18; height=18;
+					source = "/sys/images/ico09a.gif";
+					}
+
+				    oneprog_link "widget/label"
+					{
+					widget_class = "link";
+					width=150;
+					text = runserver(:progs_rpt:func_name);
+					tooltip = runserver(:progs_rpt:func_description);
+
+					launchprog "widget/connector"
+					    {
+					    event = Click;
+					    target = tab_menu;
+					    action = Launch;
+					    Multi = 1;
+					    //Name = runclient(runserver(:progs_rpt:func_name));
+					    Source = runclient(runserver("/apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :progs_rpt:func_file) + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
+					    Width = runserver(:prog_h_w:width);
+					    Height = runserver(:prog_h_w:height);
+					    }
+					}
+				    }
+				}
+			    }
+			}
+
+		    rpts_lbl "widget/label"
+			{
+			x=8; y=296; width=300; height=20;
+			style=bold;
+			fgcolor="#153f5f";
+			font_size=14;
+			text = runserver("Reports for " + :info_qy:module_abbrev + ":");
+			}
+
+		    rpts_vbox "widget/vbox"
+			{
+			x=8; y=324; width=522; height=160;
+			cellsize=20; spacing=4; column_width=176;
+
+			rpts_rpt "widget/repeat"
+			    {
+			    sql = runserver("select * from /apps/kardia/modules/" + :tabpage_rpt:modname + "/kardia_functions.csv/rows where :func_type = 'RPT' order by :func_name");
+
+			    rpt_h_w "widget/repeat"
+				{
+				sql = runserver("select /apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :rpts_rpt:func_file + "?ls__type=system%2fstructure:width, /apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :rpts_rpt:func_file + "?ls__type=system%2fstructure:height");
+
+				onerpt_hbox "widget/hbox"
+				    {
+				    spacing=8;
+
+				    onerpt_icon "widget/image"
+					{
+					width=18; height=18;
+					source = "/sys/images/ico01a.gif";
+					}
+
+				    onerpt_link "widget/label"
+					{
+					widget_class = "link";
+					width=150;
+					text = runserver(:rpts_rpt:func_name);
+					tooltip = runserver(:rpts_rpt:func_description);
+
+					launch_rpt "widget/connector"
+					    {
+					    event = Click;
+					    target = tab_menu;
+					    action = Launch;
+					    Multi = 1;
+					    //Name = runclient(runserver(:rpts_rpt:func_name));
+					    Source = runclient(runserver("/apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :rpts_rpt:func_file) + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
+					    Width = runserver(:rpt_h_w:width);
+					    Height = runserver(:rpt_h_w:height);
+					    }
+					}
+				    }
+				}
+			    }
+			}
+//		    test_btn "widget/label" 
+//			{
+//			widget_class=link; width=150; height=20; x=8; y=480; text = "test me"; 
+
+//			onclick "widget/connector" { event=Click; event_confirm=runclient("You clicked me ... Ledger is " + isnull(:kardia_sysattrs_osrc:Ledger, 'none')); target=tab_menu; action=Clicked; }
+//			}
+		    }
+		}
+	    }
+	}
+    }

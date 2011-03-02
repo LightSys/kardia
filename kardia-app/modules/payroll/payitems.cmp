@@ -1,0 +1,328 @@
+$Version=2$
+payitems_cmp "widget/component-decl"
+    {
+    width=778; height=565;
+
+    GotoPayee "widget/component-decl-action" { }
+    GotoPayee_cn "widget/connector"
+	{
+	event=GotoPayee;
+	target=payee_osrc;
+	action=QueryParam;
+	a_payroll_id = runclient(:Payee);
+	}
+
+//    loaded_cn_1 "widget/connector"
+//	{
+//	event = LoadComplete;
+//	event_condition = runclient(:payitems_cmp:period is null);
+//	target=payitem_osrc;
+//	action=QueryParam;
+//	a_is_instance = runclient(0);
+//	}
+  //  loaded_cn_2 "widget/connector"
+//	{
+//	event = LoadComplete;
+//	event_condition = runclient(not (:payitems_cmp:period is null));
+//	target=payitem_osrc;
+//	action=QueryParam;
+//	a_is_instance = runclient(1);
+//	a_period = runclient(:payitems_cmp:period);
+//	}
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
+//    ledger_osrc "widget/osrc"
+//	{
+//	l_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
+//	sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_ledger/rows where :a_ledger_number = :parameters:l_ledger");
+//	baseobj = "/apps/kardia/data/Kardia_DB/a_ledger/rows";
+//	replicasize=10;
+//	readahead=5;
+//	autoquery = onload;
+//	}
+
+    payitem_osrc "widget/osrc"
+	{
+	//sql = "SELECT :a:a_cost_center, :a:a_payroll_id, ptxt = condition(char_length(:a:a_payee_name) > 0, :a:a_payee_name, :p:p_surname + ', ' + :p:p_given_name), startdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), enddate = '' + datepart(month, :a_end_date) + '/' + datepart(day, :a_end_date) + '/' + datepart(year, :a_end_date) FROM /apps/kardia/data/Kardia_DB/a_payroll/rows a, /apps/kardia/data/Kardia_DB/p_partner/rows p  WHERE :p:p_partner_key = :a:p_payee_partner_key";
+	sql = runserver("SELECT :y:a_ledger_number, :i:a_is_instance, :i:a_period, pertxt = condition(:i:a_is_instance, :i:a_period, 'Template'), :y:a_cost_center, ptxt = condition(char_length(:y:a_payee_name) > 0, :y:a_payee_name, :p:p_surname + ', ' + :p:p_given_name), txt = isnull(' CostCtr: ' + :i:a_ref_cost_center,'') + isnull(' Acct: ' + :i:a_ref_account_code,'') + isnull(' XfrCostCtr: ' + :i:a_xfer_cost_center,'') + isnull(' XfrAcct: ' + :i:a_xfer_account_code,'') + isnull(' Min: ' + :i:a_minimum_amount,'') + isnull(' Allowances: ' + :i:a_allowances,'') + isnull(' DepAllow: ' + :i:a_dependent_allowances,'') + isnull(' Status: ' + :fs:a_desc, ''), :i:a_target_amount, :i:a_actual_amount, :i:a_minimum_amount, :i:a_filing_status, startdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), :a_start_date, :a_end_date, :a_allowances, :a_dependent_allowances, a_fs_desc = :fs:a_desc, :i:a_ref_cost_center, a_xfer_cost_center = isnull(:i:a_xfer_cost_center, :it:a_xfer_cost_center), a_ref_account_code = isnull(:i:a_ref_account_code, :it:a_ref_account_code), a_xfer_account_code = isnull(:i:a_xfer_account_code, :it:a_xfer_account_code), :i:a_payroll_item_type_code, :it:a_desc, :it:a_payroll_item_class_code, :s_date_modified, :s_modified_by, :s_date_created, :s_created_by  FROM /apps/kardia/data/Kardia_DB/a_payroll/rows y, /apps/kardia/data/Kardia_DB/p_partner/rows p, IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it, /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs  WHERE :i:a_payroll_item_type_code *= :it:a_payroll_item_type_code and :it:a_ledger_number = " + quote(:this:ledger) + " and :i:a_filing_status *= :fs:a_filing_status and :i:a_payroll_item_type_code *= :fs:a_payroll_item_type_code and :p:p_partner_key = :y:p_payee_partner_key and :i:a_payroll_id = :y:a_payroll_id and :y:a_ledger_number = " + quote(:this:ledger) + " ORDER BY :y:a_cost_center, :i:a_period " + condition(:this:period is null, "WHERE :i:a_is_instance = 0", "WHERE :i:a_period = " + quote(:this:period)));
+	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll_item/rows";
+	autoquery=onload;
+	replicasize=200;
+	readahead=25;
+
+	set_dd "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=f_a_costctr;
+	    action=SetSQL;
+	    sql=runclient("select :a_cost_center + ' - ' + :a_cc_desc, :a_cost_center from /apps/kardia/data/Kardia_DB/a_cost_center/rows where :a_bal_cost_center = " + quote(:payitem_osrc:a_cost_center) + " and :a_ledger_number = " + quote(:payitem_osrc:a_ledger_number));
+	    }
+
+	payitem_list_pane "widget/pane"
+	    {
+	    x=8;y=8;width=762;height=278; fl_height=100;
+	    widget_class = "table_bgnd";
+
+	    payitem_list "widget/table"
+		{
+		x=0;y=0;width=760;height=276; fl_height=100;
+		rowheight = 18;
+		mode=dynamicrow;
+
+		t_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=70; }
+		t_who "widget/table-column" { title="Payee"; fieldname="ptxt"; width=120; }
+		t_valid "widget/table-column" { title="Valid From"; fieldname="startdate"; width=70; }
+		t_period "widget/table-column" { title="Period"; fieldname="pertxt"; width=70; }
+		t_typ "widget/table-column" { title="Line Item Type"; fieldname="a_desc"; width=140; }
+		t_amt "widget/table-column" { title="Target"; fieldname="a_target_amount"; width=70; align=right; }
+		t_aamt "widget/table-column" { title="Actual"; fieldname="a_actual_amount"; width=70; align=right; }
+		t_txt "widget/table-column" { title="Details"; fieldname="txt"; width=420; }
+		}
+	    }
+
+	payitem_form "widget/form"
+	    {
+	    tab_revealed_only = true;
+
+	    payitem_ctls "widget/component"
+		{
+		x=8;y=294;width=762;height=26;
+		path = "/sys/cmp/form_controls.cmp";
+		deletable = no;
+		object_name = "Pay Item";
+		}
+
+	    payitem_is_instance "widget/variable" { fieldname=a_is_instance; payitem_is_instance_hnt "widget/hints" { style=readonly; default=0; } }
+
+	    payitem_vbox "widget/vbox"
+		{
+		x=8;y=328;width=200;height=150;
+		spacing=2;
+		cellsize=20;
+
+		f_from_lbl "widget/label" { text="Valid From:"; }
+		f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; ctl_type="datetime"; tooltip="Date that this payroll entry begins to be valid"; label_width=0; }
+		f_to_lbl "widget/label" { text="Valid To:"; }
+		f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; ctl_type="datetime"; tooltip="Last day that this payroll entry is valid"; label_width=0; }
+		f_typ_lbl "widget/label" { text="Type:"; }
+		f_typ "widget/component"
+		    { 
+		    path="/sys/cmp/smart_field.cmp";
+		    field=a_payroll_item_type_code; 
+		    ctl_type="dropdown";
+		    tooltip="Line Item Type";
+		    label_width=0;
+		    height = 20; fl_height = 0;
+		    sql=runserver("select :a_desc + ' - ' + :a_payroll_item_type_code  + ' (' + :a_payroll_item_class_code + ')', :a_payroll_item_type_code from /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows where :a_ledger_number = " + quote(:this:ledger)); 
+		    onchange "widget/connector" { event=DataChange; target=payitem_tab; action=SetTab; Tab=runclient(isnull(substring(:Label, charindex('(', :Label) + 1, 1), 'XX')); }
+		    onchange2 "widget/connector" { event=DataChange; event_condition=runclient(charindex('(T)', :Label) > 0); target=f_t_status; action=SetSQL; sql=runclient("select :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_payroll_item_type_code = " + quote(:Value)); }
+		    onchange3 "widget/connector" { event=DataChange; event_condition=runclient(charindex('(E)', :Label) > 0); target=f_e_status; action=SetSQL; sql=runclient("select :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_payroll_item_type_code = " + quote(:Value)); }
+		    }
+		}
+
+	    payitem_tab "widget/tab"
+		{
+		x=226; y=328; width=544; height=150;
+		tab_location=none;
+
+		XX "widget/tabpage"
+		    {
+		    xx_lbl "widget/label" { x=4; y=64; width=536; height=20; style=italic; font_size=13; text="No type selected"; align=center; }
+		    }
+
+		// Available Funds
+		A "widget/tabpage"
+		    {
+		    a_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Available Funds:"; align=center; }
+
+		    a_vbox "widget/vbox"
+			{
+			x=4;y=28;width=400;height=116;
+			cellsize=20;
+			spacing=4;
+
+			f_a_costctr "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ref_cost_center; text="Cost Ctr:"; ctl_type="dynamicdropdown"; tooltip="Subsidiary fund to source available funds from.  Leave blank to use the main fund."; label_width=100; }
+			f_a_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Required:"; ctl_type="editbox"; tooltip="Total amount required in fund for full pay"; label_width=100; }
+			f_a_minamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_minimum_amount; text="Min. Left:"; ctl_type="editbox"; tooltip="Minimum to leave in fund"; label_width=100; }
+			}
+		    }
+
+		// Pre-tax benefit (like health insurance)
+		B "widget/tabpage"
+		    {
+		    b_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Pre-Tax Benefit:"; align=center; }
+
+		    b_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+
+			f_b_exp_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Expense Acct:"; tooltip="GL Account for expense in this fund"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			f_b_xfer_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_cost_center; text="Xfer Costctr:"; tooltip="Fund receiving benefit transfer"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
+			f_b_xfer_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_account_code; text="Xfer Account:"; tooltip="GL Account for receiving fund"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			f_b_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Amount:"; ctl_type="editbox"; tooltip="Amount to transfer."; label_width=100; }
+			}
+		    }
+
+		// Employer side Taxes
+		E "widget/tabpage"
+		    {
+		    e_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Employer Tax:"; align=center; }
+		    e_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+
+			f_e_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="GL Account:"; tooltip="GL Account for taxes (typ. a liability acct)"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			f_e_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Amount:"; ctl_type="editbox"; tooltip="Amount of Tax."; label_width=100; }
+			}
+		    e_vbox2 "widget/vbox"
+			{
+			x=312;y=28;width=200;height=116;
+			cellsize=26;
+			spacing=4;
+			f_e_status "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Status:"; ctl_type="dynamicdropdown"; tooltip="Filing status of payee."; label_width=100; }
+			f_e_allow "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_allowances; text="Allowances:"; ctl_type="editbox"; tooltip="Number of allowances claimed by payee."; label_width=100; }
+			f_e_depallow "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_dependent_allowances; text="Dep. Allow.:"; ctl_type="editbox"; tooltip="Number of dependent allowances claimed by payee (some states)."; label_width=100; }
+			}
+		    }
+
+		// Gross pay
+		G "widget/tabpage"
+		    {
+		    g_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Gross Pay:"; align=center; }
+		    g_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+			f_g_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Gross:"; ctl_type="editbox"; tooltip="Gross Pay"; label_width=100; }
+			f_g_minamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_minimum_amount; text="Minimum:"; ctl_type="editbox"; tooltip="Minimum Gross Pay (if available funds are insufficient)"; label_width=100; }
+			}
+		    }
+
+		// Informational
+		I "widget/tabpage"
+		    {
+		    i_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Informational:"; align=center; }
+		    i_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+			f_i_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Amount:"; ctl_type="editbox"; tooltip="Enter Amount"; label_width=100; }
+			}
+		    }
+
+		// Non-tax payables (e.g., expense reimbursements)
+		M "widget/tabpage"
+		    {
+		    m_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Non-Tax Payable:"; align=center; }
+		    m_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+
+			f_m_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_cost_center; text="Cost ctr:"; tooltip="Cost center holding payable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
+			f_m_ref_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Account:"; tooltip="GL Liability Account for payable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			}
+		    }
+
+		// Net pay
+		N "widget/tabpage"
+		    {
+		    n_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Net Pay:"; align=center; }
+		    n_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+
+			n_lbl_2 "widget/label" { text = "(no settings for net pay; this is computed)"; }
+			}
+		    }
+
+		// Pre-Payroll Transaction (such as vehicle fund xfer)
+		P "widget/tabpage"
+		    {
+		    p_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Pre-Payroll Transaction:"; align=center; }
+
+		    p_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+
+			f_p_exp_acct"widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Expense Acct:"; tooltip="GL Account for expense in this fund"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			f_p_xfer_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_cost_center; text="Xfer Costctr:"; tooltip="Receiving fund's cost center"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
+			f_p_xfer_acct"widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_account_code; text="Xfer Account:"; tooltip="GL Account for receiving fund"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			f_p_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Amount:"; ctl_type="editbox"; tooltip="Amount to transfer."; label_width=100; }
+			}
+		    }
+
+		// Pre-Tax Receivables
+		R "widget/tabpage"
+		    {
+		    r_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Pre-Tax Receivable:"; align=center; }
+		    r_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+
+			f_r_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_cost_center; text="Cost ctr:"; tooltip="Cost center holding receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
+			f_r_ref_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Account:"; tooltip="GL Asset Account for receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			}
+		    }
+
+		// Tax Withholdings
+		T "widget/tabpage"
+		    {
+		    t_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Tax Withholding:"; align=center; }
+		    t_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+
+			f_t_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="GL Account:"; tooltip="GL Account for taxes (typ. a liability acct)"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			f_t_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Amount:"; ctl_type="editbox"; tooltip="Amount of Tax."; label_width=100; }
+			}
+		    t_vbox2 "widget/vbox"
+			{
+			x=312;y=28;width=200;height=116;
+			cellsize=26;
+			spacing=4;
+			f_t_status "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Status:"; ctl_type="dynamicdropdown"; tooltip="Filing status of payee."; label_width=100; }
+			f_t_allow "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_allowances; text="Allowances:"; ctl_type="editbox"; tooltip="Number of allowances claimed by payee."; label_width=100; }
+			f_t_depallow "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_dependent_allowances; text="Dep. Allow.:"; ctl_type="editbox"; tooltip="Number of dependent allowances claimed by payee (some states)."; label_width=100; }
+			}
+		    }
+
+		// Post-tax receivables (e.g., salary advances that need to be taxed)
+		V "widget/tabpage"
+		    {
+		    v_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Post-Tax Receivable:"; align=center; }
+		    v_vbox "widget/vbox"
+			{
+			x=4;y=28;width=300;height=116;
+			cellsize=26;
+			spacing=4;
+			f_v_ref_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Account:"; tooltip="GL Asset Account for receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			}
+		    }
+		}
+
+	    payee_rec_info "widget/component"
+		{
+		x=8;y=497;height=20;width=762;
+		path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+		}
+	    }
+	}
+    }

@@ -1,0 +1,22 @@
+$Version=2$
+accts_edit "widget/component-decl"
+    {
+    width=756;height=449;
+
+    ledger_osrc "widget/parameter"
+	{
+	type=object;
+	find_container="widget/osrc";
+	}
+
+    cmp "widget/component"
+	{
+	x=0;y=0;width=756;height=449;
+	path = "/apps/kardia/modules/gl/tree_list_data.cmp";
+	object_name = "Account";
+	tree_source = "/apps/kardia/modules/gl/accounts.qyt/";
+	osrc_source = "/apps/kardia/modules/gl/accounts.qyt/0US";
+	ledger_osrc = ledger_osrc;
+	detail_cmp_path = "/apps/kardia/modules/gl/acct_one_edit.cmp";
+	}
+    }

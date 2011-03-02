@@ -1,0 +1,191 @@
+$Version=2$
+partner_contact_search_cmp "widget/component-decl"
+    {
+    width=700;height=465;
+    sync_osrc "widget/parameter"
+        {
+        //This osrc is a parameter passed in from the outside
+        type=object;
+        find_container="widget/osrc";
+        }
+    sync_form "widget/parameter"
+        {
+        //This osrc is a parameter passed in from the outside
+        type=object;
+        find_container="widget/form";
+        }
+
+    PartnerSelected "widget/component-decl-event" {  }
+    CloseMe "widget/component-decl-event" {  }
+
+    OpenForms "widget/component-decl-action" {  }
+
+    person_search_osrc "widget/osrc"
+        {
+        sql="SELECT :l:p_contact_type, :l:phone_country, :l:p_phone_area_city, :l:p_contact_data, :l:p_partner_key, :p:p_partner_key, :p:p_partner_class, :p:p_title, :p:p_given_name, :p:p_preferred_name, :p:p_surname, :p:p_org_name, :p:p_comments,  :p:p_legacy_key_1, :p:p_legacy_key_2 FROM /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_contact_info/rows l WHERE :p:p_partner_key = :l:p_partner_key";
+        baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+        replicasize=10;
+        readahead=10;
+        autoquery=never;
+
+        partner_search_form "widget/form"
+            {
+            p_partner_ctl "widget/component"
+                {
+                x=0;y=0;width=698;height=24;
+                path="/sys/cmp/form_controls.cmp";
+		deletable=0;
+                }
+
+            main_pane "widget/pane"
+                {
+                width=700;height=277;
+                x=0;y=25;
+
+                first_vbox "widget/vbox"
+                    {
+                    width=415;height=273;
+                    column_width=410;
+                    cellsize=20; spacing=5;
+                    x=0;y=0;
+                    p_given_name_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_given_name; text="First Name"; lookup_width=325; ctl_type="editbox"; tooltip="The first (Given) name of the partner"; }
+                    p_preferred_name_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_preferred_name; text="Preferred Name"; lookup_width=325; ctl_type="editbox"; tooltip="Preferred name (nickname, etc) of the partner"; }
+                    p_surname_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_surname; text="Last Name"; lookup_width=325; ctl_type="editbox"; tooltip="The last Name (Surname) of the partner"; }
+                    p_org_name_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_org_name; text="Organization"; lookup_width=325; ctl_type="editbox"; tooltip="The name of the organization"; }
+                    p_comments_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments"; lookup_width=305; ctl_type="editbox"; tooltip=""; }
+
+		    p_contact_type_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_contact_type; text="contact type"; ctl_type="dropdown"; tooltip="P=phone, F=fax, C=cell, E=email, W=website"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_contact_type/rows";}
+		    p_phone_country_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_phone_country; text="countrycode"; ctl_type="editbox"; tooltip=""; }
+		    p_phone_area_city_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_phone_area_city; text="Area code"; ctl_type="editbox"; tooltip=""; }
+		    p_contact_data_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_contact_data; lookup_width=305; text="contact data"; ctl_type="editbox"; tooltip=""; } 
+                    }
+                second_vbox "widget/vbox"
+                    {
+                    width=698;height=44;
+                    column_width=200;
+                    cellsize=20; spacing=5;
+                    x=3;y=225;
+                    }
+                third_vbox "widget/vbox"
+                    {
+                    width=200;height=175;
+                    column_width=210;
+                    cellsize=20; spacing=5;
+                    x=425;y=0;
+                    p_partner_key_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="partner key"; ctl_type="editbox"; tooltip="Partner Key"; }
+                    p_legacy_key_1_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_1; text="Legacy Key"; ctl_type="editbox"; tooltip="Legacy Key 1 - Donor ID"; }
+                    p_legacy_key_2_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_2; text="Legacy Key 2"; ctl_type="editbox"; tooltip="Legacy Key 2 - Sort Code"; }
+                    p_partner_class_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_partner_class; text="Select type"; lookup_width=305; tooltip=""; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_partner_class/rows";}
+                    p_title_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_title; text="Title"; ctl_type="editbox"; tooltip="The Partners Title"; }
+                    }
+                query_button "widget/textbutton"
+                    {
+                    x=535; y=200;
+                    height=20; width=90;
+                    text="Clear Search";
+                    cnQueryExec "widget/connector" 
+                        { 
+                        event="Click"; 
+                        target="partner_search_form"; 
+                        action="Query"; 
+                        }
+                    }
+                queryExec_button "widget/textbutton"
+                    {
+                    x=535; y=225;
+                    height=20; width=90;
+                    text="Do Search";
+                    cnQuery "widget/connector" 
+                        {
+                        event="Click"; 
+                        target="partner_search_form"; 
+                        action="QueryExec"; 
+                        }
+                    }
+                GotoButton "widget/textbutton"
+                    {
+                    x=535; y=250;
+                    height=20; width=90;
+                    text="go to";
+                    cnGoButton "widget/connector" 
+                        {
+                        event="Click"; 
+                        target="partner_search_component"; 
+                        action="PartnerSelected"; 
+			partner_key = runclient(:partner_search_form:p_partner_key);
+                        }
+                    cnGoButtonClose "widget/connector" 
+                        {
+                        event="Click"; 
+                        target="partner_search_component"; 
+                        action="CloseMe"; 
+                        }
+                    }
+                }
+            }
+            scroll_pane "widget/pane"
+                {
+                width=700;height=130;
+                x=0;y=303;
+                p_search_table "widget/table"
+                    {
+                    x=0;y=5;
+                    height=126;
+                    width=695;
+                    mode=dynamicrow;
+
+                    row1_bgcolor = "#ffffff";
+                    row2_bgcolor = "#e0e0e0";
+                    rowhighlight_bgcolor = "#000080";
+                    rowheight = 20;
+                    hdr_bgcolor = "#c0c0c0";
+                    textcolorhighlight = "#ffffff";
+                    textcolor = "#000000";
+		    cnPartnerSelected "widget/connector" 
+		        { 
+			event=DblClick;
+                        target="partner_contact_search_cmp"; 
+                        action="PartnerSelected"; 
+			partner_key = runclient(:partner_search_form:p_partner_key);
+			}
+		    cnPartnerSelectedClose "widget/connector" 
+		        { 
+			event=DblClick;
+                        target="partner_contact_search_cmp"; 
+                        action="CloseMe"; 
+			}
+                    table_firstname "widget/table-column"
+                        {
+                        title = "First Name";
+                        fieldname = p_given_name;
+                        }
+                    table_lastname "widget/table-column"
+                        {
+                        title = "Last Name";
+                        fieldname = p_surname;
+                        }
+                    table_contact_type "widget/table-column"
+		        {
+			title = "Type";
+			fieldname = p_contact_type;
+			}
+                    table_phone_country "widget/table-column"
+		        {
+			title = "country code";
+			fieldname = p_phone_country;
+			}
+                    table_phone_area_city "widget/table-column"
+		        {
+			title = "Area Code";
+			fieldname = p_phone_area_city;
+			}
+                    table_contact_data "widget/table-column"
+		        {
+			title = "Contact Data";
+			fieldname = p_contact_data;
+			}
+                    }
+                }
+            }
+        }
+    }

@@ -1,0 +1,31 @@
+$Version=2$
+item_types_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="itwin"; action="Open"; Cascade=1; }
+
+    // the ledger we are working with
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    // tax tables window, to edit tax tables for a line item type
+    ttwin "widget/parameter" { type=object; }
+
+    itwin "widget/childwindow"
+	{
+	title = "Payroll Line Item Types";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	it_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/payroll/item_types.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    ttwin = ttwin;
+	    }
+	}
+    }

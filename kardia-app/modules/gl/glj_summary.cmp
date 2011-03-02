@@ -1,0 +1,175 @@
+$Version=2$
+glj_summary "widget/component-decl"
+    {
+    width=748; height=515;
+
+    batch_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    OpenModal "widget/component-decl-action" { }
+    openmodal_cn "widget/connector" { event="OpenModal"; target=glj_win; action="Open"; IsModal=1; }
+
+    glj_win "widget/childwindow"
+	{
+	x=0;y=0;width=748;height=515;
+	style=dialog;
+	title="GL Batch Summary";
+	visible = false;
+	toplevel = yes;
+
+	lbl_batchnum "widget/label"
+	    {
+	    x=0;y=0;width=748;height=32;
+	    font_size=16;
+	    align=center;
+	    style=bold;
+	    value = runclient("Batch Summary for: " + :batch_osrc:a_batch_number + " (" + :batch_osrc:a_batch_desc + ")");
+	    }
+
+	totals_osrc "widget/osrc"
+	    {
+	    sql = "select blank='', assets = isnull(sum(condition(:a:a_acct_type == 'A', :t:a_amount, $0)), $0), liabs = isnull(sum(condition(:a:a_acct_type == 'L', :t:a_amount, $0)), $0), equity = isnull(sum(condition(:a:a_acct_type == 'Q', :t:a_amount, $0)), $0), revenue = isnull(sum(condition(:a:a_acct_type == 'R', :t:a_amount, $0)), $0), expense = isnull(sum(condition(:a:a_acct_type == 'E', :t:a_amount, $0)), $0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a where :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number";
+	    replicasize=10;
+	    readahead=10;
+	    autoquery=never;
+
+	    batch_sync "widget/rule"
+		{
+		ruletype = "osrc_relationship";
+		target = batch_osrc;
+		is_slave = yes;
+		revealed_only = yes;
+		key_1 = a_batch_number;
+		target_key_1 = a_batch_number;
+		key_2 = a_ledger_number;
+		target_key_2 = a_ledger_number;
+		}
+
+	    totals_pane "widget/pane"
+		{
+		x=5;y=42;width=738;height=64;
+		widget_class="group";
+
+		totals_table "widget/table"
+		    {
+		    x=15;y=15;width=708;height=40;
+		    rowheight = 20;
+		    mode=dynamicrow;
+		    allow_selection = no;
+		    show_selection = no;
+
+		    t_blank "widget/table-column" { title=""; fieldname="blank"; width=50; }
+		    t_asset "widget/table-column" { title="Asset Change"; fieldname="assets"; width=100; align=right; }
+		    t_liab "widget/table-column" { title="Liability Change"; fieldname="liabs"; width=100; align=right; }
+		    t_equity "widget/table-column" { title="Equity Change"; fieldname="equity"; width=100; align=right; }
+		    t_rev "widget/table-column" { title="Revenue Change"; fieldname="revenue"; width=100; align=right; }
+		    t_exp "widget/table-column" { title="Expense Change"; fieldname="expense"; width=100; align=right; }
+		    }
+		}
+	    totals_label_pane "widget/pane"
+		{
+		widget_class=label;
+		x=20;y=34;width=242;
+		totals_label "widget/label" { x=0;height=18;width=240; value="Batch Totals"; widget_class="label"; }
+		}
+	    }
+	cctotals_osrc "widget/osrc"
+	    {
+	    sql = "select :t:a_cost_center, assets = isnull(sum(condition(:a:a_acct_type == 'A', :t:a_amount, $0)), $0), liabs = isnull(sum(condition(:a:a_acct_type == 'L', :t:a_amount, $0)), $0), equity = isnull(sum(condition(:a:a_acct_type == 'Q', :t:a_amount, $0)), $0), revenue = isnull(sum(condition(:a:a_acct_type == 'R', :t:a_amount, $0)), $0), expense = isnull(sum(condition(:a:a_acct_type == 'E', :t:a_amount, $0)), $0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a where :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number group by :t:a_cost_center";
+	    replicasize=100;
+	    readahead=100;
+	    autoquery=never;
+
+	    ccbatch_sync "widget/rule"
+		{
+		ruletype = "osrc_relationship";
+		target = batch_osrc;
+		is_slave = yes;
+		revealed_only = yes;
+		key_1 = a_batch_number;
+		target_key_1 = a_batch_number;
+		key_2 = a_ledger_number;
+		target_key_2 = a_ledger_number;
+		}
+
+	    cctotals_pane "widget/pane"
+		{
+		x=5;y=130;width=738;height=144;
+		widget_class="group";
+
+		cctotals_table "widget/table"
+		    {
+		    x=15;y=15;width=708;height=120;
+		    rowheight = 20;
+		    mode=dynamicrow;
+		    allow_selection = no;
+		    show_selection = no;
+
+		    t_costctr "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=50; }
+		    t_cc_asset "widget/table-column" { title="Asset Change"; fieldname="assets"; width=100; align=right; }
+		    t_cc_liab "widget/table-column" { title="Liability Change"; fieldname="liabs"; width=100; align=right; }
+		    t_cc_equity "widget/table-column" { title="Equity Change"; fieldname="equity"; width=100; align=right; }
+		    t_cc_rev "widget/table-column" { title="Revenue Change"; fieldname="revenue"; width=100; align=right; }
+		    t_cc_exp "widget/table-column" { title="Expense Change"; fieldname="expense"; width=100; align=right; }
+		    }
+		}
+	    cctotals_label_pane "widget/pane"
+		{
+		widget_class=label;
+		x=20;y=122; width=242;
+		cctotals_label "widget/label" { x=0;height=18;width=240; value="Batch Totals by Cost Ctr"; widget_class="label"; }
+		}
+	    }
+	actotals_osrc "widget/osrc"
+	    {
+	    sql = "select a_amount_plus = sum(condition(:t:a_amount > $0, :t:a_amount, null)), a_amount_minus = sum(condition(:t:a_amount < $0, :t:a_amount, null)), :t:a_account_code, :a:a_acct_desc, :at:text, total = sum(:t:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/_a_account_type/rows at where :t:a_account_code = :a:a_account_code and :a:a_acct_type = :at:tag and :t:a_ledger_number = :a:a_ledger_number group by :t:a_account_code";
+	    replicasize=100;
+	    readahead=100;
+	    autoquery=never;
+
+	    acbatch_sync "widget/rule"
+		{
+		ruletype = "osrc_relationship";
+		target = batch_osrc;
+		is_slave = yes;
+		revealed_only = yes;
+		key_1 = a_batch_number;
+		target_key_1 = a_batch_number;
+		key_2 = a_ledger_number;
+		target_key_2 = a_ledger_number;
+		}
+	    actotals_pane "widget/pane"
+		{
+		x=5;y=298;width=738;height=144;
+		widget_class="group";
+
+		actotals_table "widget/table"
+		    {
+		    x=15;y=15;width=708;height=120;
+		    rowheight = 20;
+		    mode=dynamicrow;
+		    allow_selection = no;
+		    show_selection = no;
+
+		    t_acct "widget/table-column" { title="Account"; fieldname="a_account_code"; width=50; }
+		    t_ac_type "widget/table-column" { title="Type"; fieldname="text"; width=100; }
+		    t_ac_desc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=200; }
+		    t_ac_amtd "widget/table-column" { title="Debits (+)"; fieldname="a_amount_plus"; width=100; align=right; }
+		    t_ac_amtc "widget/table-column" { title="Credits (-)"; fieldname="a_amount_minus"; width=100; align=right; }
+		    }
+		}
+	    actotals_label_pane "widget/pane"
+		{
+		widget_class=label;
+		x=20;y=290; width=242;
+		actotals_label "widget/label" { x=0;height=18;width=240;value="Batch Totals by Account"; widget_class="label"; }
+		}
+	    }
+
+	closebtn "widget/textbutton"
+	    {
+	    width=100;x=324;y=452;
+	    text = "Close";
+	    close_cn "widget/connector" { event="Click"; target=glj_win; action="Close"; }
+	    }
+	}
+    }

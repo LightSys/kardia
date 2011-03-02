@@ -1,0 +1,36 @@
+$Version=2$
+payroll_run_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    expose_events_for = pr_cmp;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="prwin"; action="Open"; Cascade=1; }
+    Close "widget/component-decl-action" { }
+    Close_cn "widget/connector" { event="Close"; target="prwin"; action="Close"; }
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    pay_form "widget/parameter" { type=object; }
+
+    prwin "widget/childwindow"
+	{
+	titlebar = yes;
+	title = "Guide: Run Payroll";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	style=dialog;
+	toplevel = yes;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	pr_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/payroll/payroll_run.cmp";
+	    x=10;y=10;width=758;height=505;
+	    ledger = runserver(:this:ledger);
+	    pay_form = pay_form;
+	    }
+	}
+    }

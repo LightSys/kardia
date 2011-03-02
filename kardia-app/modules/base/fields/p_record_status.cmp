@@ -1,0 +1,40 @@
+$Version=2$
+record_status_field "widget/component-decl"
+    {
+    width=220;
+    height=runserver(condition(:this:type == 'textarea', 64, 20));
+
+    form "widget/parameter" { type=object; find_container="widget/form";}
+    field "widget/parameter" { type=string; }
+    text "widget/parameter" { type=string; }
+    tooltip "widget/parameter" { type=string; default=null; }
+    lookup_with "widget/parameter" { type=string; default=null; }
+    sql "widget/parameter" { type=string; default="select 1,1 where 1 != 1"; }
+    type "widget/parameter" { type=string; default="standard"; }
+    ctl_type "widget/parameter" { type=string; default="editbox"; }
+
+    SetValue "widget/component-decl-action" { }
+    sv_cn "widget/connector" { event="SetValue"; target=ctl; action="SetValue"; Value=runclient(:Value); }
+    p_record_status_label "widget/label"
+        {
+        x=2;y=0;
+        height=20;width=100;
+        text="Record Status";
+        align=right;
+        tooltip="The status of the record - Active, Obsolete, Merged";
+        }
+    p_status_code_dropdown "widget/dropdown"
+        {
+        mode="static";
+        x=102;y=0;
+        height=20;width=118;
+        hilight="#e0e0e0";
+        form=form;
+        bgcolor=white;
+        fieldname="p_record_status_code";
+        tooltip="Defines what type of partner this is." ;
+        ddt0 "widget/dropdownitem" { label="Active"; value="A"; }
+        ddt1 "widget/dropdownitem" { label="Obsolete"; value="O"; }
+        ddt2 "widget/dropdownitem" { label="Merged"; value="M"; }
+        }
+    }

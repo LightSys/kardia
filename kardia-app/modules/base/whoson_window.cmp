@@ -1,0 +1,27 @@
+$Version=2$
+whoson_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="whosonwin"; action="Open"; }
+
+    whosonwin "widget/childwindow"
+	{
+	title = "Who's Online";
+	width=300; height=400;
+	x=10; y=35;
+	visible = false;
+	icon = "/apps/kardia/images/icons/group.gif";
+
+	cnopen "widget/connector" { event=Open; target=whoson_cmp; action=Start; }
+	cnclose "widget/connector" { event=Close; target=whoson_cmp; action=Stop; }
+
+	whoson_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/base/whoson.cmp";
+	    x=8;y=8;
+	    width=282;height=359;
+	    }
+	}
+    }

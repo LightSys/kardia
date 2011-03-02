@@ -1,0 +1,80 @@
+$Version=2$
+search_by_list "widget/component-decl"
+    {
+    width=600;
+    height=120;
+
+    object_name "widget/parameter" { type=string; default="Item"; }
+    form "widget/parameter"
+	{ 
+	type=object;
+	find_container="widget/form";
+	form_discard_cn "widget/connector" { event='Discard'; target=tab; action='SetTab'; Tab=runclient('tc_all'); }
+	}
+    field "widget/parameter" { type=string; default=null; }
+    sql "widget/parameter" { type=string; default="select id=null, description=null"; }
+
+    rb "widget/radiobuttonpanel"
+	{
+	x=0;y=0;width=225;height=120;
+	outline_bgcolor=black;
+	title = runserver("Search by " + :this:object_name);
+	form=null;
+	value = runclient(:tab:selected);
+	rb_all "widget/radiobutton" { label=runserver("All " + :this:object_name + "s"); value="tc_all"; selected=yes; }
+	rb_list "widget/radiobutton" { label=runserver("Select " + :this:object_name +" from List"); value="tc_list"; }
+	rb_type "widget/radiobutton" { label=runserver("Enter " + :this:object_name); value="tc_type"; }
+	}
+
+    tab "widget/tab"
+	{
+	x=235;y=0;width=365;height=120;
+	tab_location=none;
+	selected = runclient(:rb:value);
+	tab_chg_cn "widget/connector"
+	    {
+	    event="TabChanged";
+	    event_condition = runclient(:Selected == "tc_all");
+	    action="SetValue";
+	    target=srch_box;
+	    Value=runclient(null);
+	    }
+
+	tc_all "widget/tabpage"
+	    {
+	    all_lbl "widget/label" { x=0;y=40;width=289;height=20;align=center;text=runserver("All " + :this:object_name + "s"); }
+	    }
+	tc_list "widget/tabpage"
+	    {
+	    srch_osrc "widget/osrc"
+		{
+		sql = runserver(:this:sql);
+		autoquery=onfirstreveal;
+		replicasize=50;
+		readahead=25;
+
+		srch_tbl "widget/table"
+		    {
+		    x=0;y=0;width=363;height=118;
+		    rowheight = 20;
+		    mode=dynamicrow;
+
+		    t_id "widget/table-column" { title=runserver(:this:object_name + " ID"); fieldname="id"; width=80; }
+		    t_desc "widget/table-column" { title="Description"; fieldname="description"; width=180; }
+		    }
+
+		chg_cn "widget/connector"
+		    {
+		    event="DataFocusChanged";
+		    action="SetValue";
+		    target=srch_box;
+		    Value=runclient(:srch_osrc:id);
+		    }
+		}
+	    }
+	tc_type "widget/tabpage"
+	    {
+	    srch_box "widget/component" { x=10;y=10;width=270; height=24; path="/sys/cmp/smart_field.cmp"; field=runserver(:this:field); ctl_type=editbox; text=runserver("Enter " + :this:object_name + ":"); form=form; }
+	    }
+	}
+    }

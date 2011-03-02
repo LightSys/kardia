@@ -1,0 +1,175 @@
+$Version=2$
+fund_balance "system/report"
+    {
+    title = "GL Fund Balance";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Parameters for GL Fund Balance
+    ledger "report/parameter" { type=string; default=null; }
+    year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(month, :a_start_date) = 1 and datepart(month, :a_end_date) = 12 and datepart(year, :a_end_date) = datepart(year, getdate())) ); }
+    ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    unposted "report/parameter" { type=integer; default=0; }
+    showsubsid "report/parameter" { type=integer; default=0; }
+    invert "report/parameter" { type=integer; default=0; }
+    cc_class "report/parameter" { type=string; default=null; }
+
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    class_qy "report/query"
+	{
+	// uses first() to force query to return null row if no match.
+	sql = "select descrip = first(:c:a_acct_class_desc) from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows c where :c:a_ledger_number = :this:ledger and :c:a_cost_center_class = :this:cc_class";
+	}
+
+    period_qy "report/query"
+	{
+	sql = "select :p:a_period_desc, first_period = min(:p2:a_period), yr = datepart(year, :p:a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
+	}
+
+    accts_qy "report/query"
+	{
+	sql = runserver("
+		select
+			cc_code = max(condition(:c:a_cost_center == :c:a_bal_cost_center or :this:showsubsid, :c:a_cost_center, '')),
+			cc_desc = max(condition(:c:a_cost_center == :c:a_bal_cost_center or :this:showsubsid, :c:a_cc_desc, '')),
+			:c:a_bal_cost_center,
+			:c:a_restricted_type,
+			cbal = sum(condition(:a:a_acct_type == 'E' or :a:a_acct_type == 'R' or :a:a_acct_type == 'Q', condition(:this:invert, $0 - :tt:a_amount, :tt:a_amount), $0.00)),
+			bbal = isnull(sum(condition((:tt:a_transaction_type = 'B' or :tt:a_period < :this:ref_period) and (:a:a_acct_type == 'E' or :a:a_acct_type == 'R' or :a:a_acct_type == 'Q'), condition(:this:invert, $0 - :tt:a_amount, :tt:a_amount), $0.00)), $0.00),
+			oldbbal = isnull(sum(condition(:tt:a_transaction_type = 'B' and (:a:a_acct_type == 'E' or :a:a_acct_type == 'R' or :a:a_acct_type == 'Q'), condition(:this:invert, $0 - :tt:a_amount, :tt:a_amount), $0.00)), $0.00) +
+			       isnull(sum(condition(:tt:a_period < :this:ref_period and (:a:a_acct_type == 'E' or :a:a_acct_type == 'R' or :a:a_acct_type == 'Q'), :tt:a_amount, $0.00)), $0.00)
+		from
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		where
+			:tt:a_ledger_number = :this:ledger and
+			:tt:a_cost_center = :c:a_cost_center and
+			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
+			:c:a_ledger_number = :this:ledger and
+			:a:a_ledger_number = :this:ledger and
+			:a:a_account_code = :tt:a_account_code
+			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
+			" + condition(:this:cc_class is null, "", "and :c:a_cost_center_class = :this:cc_class") + "
+		group by
+			" + condition(:this:showsubsid, ":c:a_cost_center", ":c:a_bal_cost_center") + "
+		");
+
+	sum_b "report/aggregate" { compute="sum(:bbal)"; reset=0; }
+	sum_c "report/aggregate" { compute="sum(:cbal)"; reset=0; }
+	}
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy, period_qy, class_qy;
+
+	rpt_title "report/area"
+	    {
+	    x=0; width=80; height=3;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("General Ledger Fund Balances for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("For Year " + :this:year_period + ", for periods " + :this:ref_period + " through " + :this:end_period + "\n"); }
+	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    }
+
+	rpt_criteria "report/area"
+	    {
+	    x=0; width=80; height=1;
+	    font=helvetica;
+	    fontsize=8;
+	    c_d0 "report/data" { value = runserver("Year: " + :this:year_period + "\n"); }
+	    c_d1 "report/data"
+		{ 
+		condition = runserver(not (:this:ref_period is null));
+		value = runserver("Starting Period: " + :this:ref_period + "\n"); 
+		}
+	    c_d2 "report/data"
+		{ 
+		condition = runserver(not (:this:end_period is null));
+		value = runserver("Ending Period: " + :this:end_period + "\n"); 
+		}
+	    c_d3 "report/data"
+		{ 
+		condition = runserver(not (:this:cc_class is null));
+		value = runserver("Fund Class: " + :this:cc_class + " (" + :class_qy:descrip + ")\n"); 
+		}
+	    c_d3 "report/data"
+		{ 
+		condition = runserver(:this:invert);
+		value = runserver("Report in Executive Format\n"); 
+		}
+	    }
+
+	table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=6;
+	    widths=6,4,40,9,9,9;
+	    colsep=0.8;
+	    //source=accts_qy,openbal_qy;
+	    source=accts_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    tbl_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=8;
+		header=yes;
+		bottomborder=0.05;
+		h_cc "report/table-cell" { value='Cost Ctr'; align=center; style=bold; }
+		h_typ "report/table-cell" { value='Restr'; align=center; style=bold; }
+		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_bbal "report/table-cell" { value=runserver('Begin'); align=center; style=bold; }
+		h_chg "report/table-cell" { value='Change'; align=center; style=bold; }
+		h_cur "report/table-cell" { value='Current'; align=center; style=bold; }
+		}
+
+	    tbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+		d_cc "report/table-cell" { value=runserver(:accts_qy:cc_code); align=left; }
+		d_typ "report/table-cell" { value=runserver(:accts_qy:a_restricted_type); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:cc_desc); align=left; }
+		d_bbal "report/table-cell" { value=runserver(condition(:accts_qy:bbal == $0, '-0-   ', :accts_qy:bbal)); align=right; }
+		d_chg "report/table-cell" { value=runserver(condition((:accts_qy:cbal - :accts_qy:bbal) == $0, '-0-   ', (:accts_qy:cbal - :accts_qy:bbal))); align=right; }
+		d_cur "report/table-cell" { value=runserver(condition(:accts_qy:cbal == $0, '-0-   ', :accts_qy:cbal)); align=right; }
+		}
+
+	    tbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		//bottomborder=0.05;
+		marginbottom=1.0;
+		s3_cc "report/table-cell" { value=''; align=left; style=bold; }
+		s3_typ "report/table-cell" { value=''; align=left; style=bold; }
+		s3_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL ALL FUNDS ==>"); align=right; style=bold; }
+		s3_bbal "report/table-cell" { value=runserver(condition(:accts_qy:sum_b == $0, '-0-   ', :accts_qy:sum_b)); align=right; style=bold; }
+		s3_chg "report/table-cell" { value=runserver(condition((:accts_qy:sum_c - :accts_qy:sum_b) == $0, '-0-   ', (:accts_qy:sum_c - :accts_qy:sum_b))); align=right; style=bold; }
+		s3_cur "report/table-cell" { value=runserver(condition(:accts_qy:sum_c == $0, '-0-   ', :accts_qy:sum_c)); align=right; style=bold; }
+		}
+	    }
+	}
+    }

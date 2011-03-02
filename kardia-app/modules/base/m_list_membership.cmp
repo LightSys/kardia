@@ -1,0 +1,133 @@
+$Version=2$
+m_list_membership_component "widget/component-decl"
+    {
+    width=831;height=338;
+
+    sync_osrc "widget/parameter"
+        {
+        //This osrc is a parameter passed in from the outside
+        type=object;
+        find_container="widget/osrc";
+        }
+
+    Sync "widget/component-decl-action" {  }
+
+    m_list_membership_osrc "widget/osrc"
+        {
+        sql="SELECT :m:m_list_code, :m:m_list_type, :m:m_list_description, :m:m_list_type, :m:m_list_status, :l:p_postal_mode, :l:m_membership_status, :l:m_comments, :l:p_partner_key, :l:p_contact_id, :l:m_list_code, :l:m_member_type, :l:m_contact, :l:p_location_id, :l:m_num_copies FROM /apps/kardia/data/Kardia_DB/m_list_membership/rows l, /apps/kardia/data/Kardia_DB/m_list/rows m WHERE :m:m_list_code = :l:m_list_code AND :m:m_list_type = 'P'";
+        baseobj = "/apps/kardia/data/Kardia_DB/m_list_membership/rows";
+        replicasize=30;
+        readahead=10;
+        autoquery=never;
+        loc_sync "widget/rule"
+            {
+            ruletype = "osrc_relationship";
+
+            target = sync_osrc;
+            is_slave = yes;
+            key_1 = p_partner_key;
+            target_key_1 = p_partner_key;
+	    revealed_only = yes;
+            }
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        m_list_membership_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            m_list_membership_ctl "widget/component"
+                {
+                x=0;y=0;width=831;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+	    List_membership_table_pane "widget/pane"
+		{
+		//x=0;y=199;
+		x=0;y=27;
+		//height=132;
+		height=338 - 27;
+		width=831;
+		widget_class = "table_bgnd";
+
+		list_membership_table "widget/table"
+		    {
+		    x=0;y=0;
+                    height=338 - 32 - 2;
+                    width=829;
+                    mode=dynamicrow;
+                    rowheight = 20;
+
+		    table_list_code "widget/table-column"
+			{
+			title="List Code";
+			fieldname="m_list_code";
+			}
+		    table_membership_status "widget/table-column"
+			{
+			title="Membership Status";
+			fieldname="m_membership_status";
+			}
+		    table_description "widget/table-column"
+			{
+			title="Description";
+			fieldname="m_list_description";
+			}
+		    table_comments "widget/table-column"
+			{
+			title="Comments";
+			fieldname="m_comments";
+			}
+		    table_list_status "widget/table-column"
+			{
+			title="List Status";
+			fieldname="m_list_status";
+			}
+		    table_postal_mode "widget/table-column"
+			{
+			title="Postal Mode";
+			fieldname="p_postal_mode";
+			}
+		    }
+		}
+            }
+        }
+    }

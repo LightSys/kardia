@@ -1,0 +1,39 @@
+$Version=2$
+batch_list_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+	// Input Parameters
+    cd_details_window "widget/parameter" { type=object; }
+
+    expose_actions_for = batchlist_cmp;
+    expose_events_for = batchlist_cmp;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="batchlistwin"; action="Open"; Cascade=1; }
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    editor "widget/parameter" { type=object; default=null; }
+    acctbal "widget/parameter" { type=object; default=null; }
+    viewer "widget/parameter" { type=object; default=null; }
+
+    batchlistwin "widget/childwindow"
+	{
+	title = "Cash Disbursement Batches";
+	width=580; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	batchlist_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/disb/batch_list.cmp";
+	    width=578;height=525;
+	    ledger = runserver(:this:ledger);
+	    editor = editor;
+	    acctbal = acctbal;
+	    viewer = viewer;
+		cd_details_window=cd_details_window;
+	    }
+	}
+    }

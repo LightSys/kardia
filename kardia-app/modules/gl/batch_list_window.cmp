@@ -1,0 +1,50 @@
+$Version=2$
+batch_list_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    expose_actions_for = gljview_cmp;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="gljvwin"; action="Open"; Cascade=1; }
+
+    GotoBatch "widget/component-decl-action" { }
+    GotoBatch_cn1 "widget/connector" 
+	{
+	event="GotoBatch";
+	target="batchwin";
+	action="Open";
+	Cascade=1;
+	}
+    GotoBatch_cn2 "widget/connector" 
+	{
+	event="GotoBatch";
+	target="batch_cmp";
+	action="GotoBatch";
+	a_batch_number = runclient(:a_batch_number);
+	}
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    editor "widget/parameter" { type=object; default=null; }
+    acctbal "widget/parameter" { type=object; default=null; }
+    viewer "widget/parameter" { type=object; default=null; }
+
+    gljvwin "widget/childwindow"
+	{
+	title = "GL Batches";
+	width=580; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	gljview_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/gl/batch_list.cmp";
+	    width=578;height=525;
+	    ledger = runserver(:this:ledger);
+	    editor = editor;
+	    acctbal = acctbal;
+	    viewer = viewer;
+	    }
+	}
+    }

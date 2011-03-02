@@ -1,0 +1,11 @@
+func_name,func_type,func_file,func_description,func_icon
+Balance Sheet,RPT,balance_sheet.app,General Ledger Balance Sheet,
+Batch Summary,RPT,batch_balance.app,Summary of Batch by Cost Center and GL Account,
+Batch Impact,RPT,batch_impact.app,GL Balance With and Without a Batch,
+Chart of Accounts,RPT,coarpt.app,Summary of the Chart of Accounts,
+Fund Balances,RPT,fund_balance.app,"Fund Balances (Equity, Revenue, and Expense)",
+Imbalance Research,RPT,imbalance.app,Batch/Fund Combinations that Do Not Balance,
+Transaction Report,RPT,transaction_report.app,GL Transactions by Various Criteria,
+Trial Balance,RPT,trial_balance.app,General Ledger Trial Balance,
+Fund Maintenance,APP,coamaint.app,Create and Edit Funds,
+GL Acct Maintenance,APP,acctmaint.app,Create and Edit GL Accounts,

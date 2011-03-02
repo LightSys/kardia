@@ -1,0 +1,50 @@
+$Version=2$
+cd_check_search_window "widget/component-decl"
+{
+	// Window Properties
+    width=800; height=600;
+	
+	// Debugging
+	// alerter "widget/alerter" {}		// USED WHEN DEBUGGING
+	
+	// Input Parameters
+	ledger "widget/parameter" { type=string; default=null; }
+	param_cashdisb_form "widget/parameter" { type=object; }
+	
+	// Window Events / Actions / Trigger Interface
+    Open "widget/component-decl-action" { }
+    Open_cn1 "widget/connector" { event="Open"; target="cd_check_search_formwin"; action="Open"; Cascade=1; } // ledger=runclient(convert(integer,:ledger)); } // batch_number=runclient(convert(integer,:batch_number)); }
+	Open_cn2 "widget/connector" { event="Open"; target="cd_check_search_form_cmp"; action="New_Search_Click"; } // ledger=runclient(convert(integer,:ledger)); }
+
+    // page "widget/parameter" { type=object; find_container="widget/page"; }
+	
+	// Following... 
+	
+    cd_check_search_formwin "widget/childwindow"
+	{
+		title = "Search for Check"; // by Check No / Payee / Acct Code";
+		width=780; height=550;
+		x=15; y=30;
+		visible = false;
+		icon = "/apps/kardia/images/icons/gift.gif";
+		// titlebar=no;
+		
+		cd_check_search_form_cmp "widget/component"
+		{
+			path = "/apps/kardia/modules/disb/check_search_contents.cmp";
+			width=778; height=525;
+			
+			// V2
+			// mode = dynamic;
+			// toplevel = yes;
+
+			ledger = runserver(:this:ledger);
+			param_cashdisb_form = param_cashdisb_form;
+			// page=page;
+			// auto_destroy=yes;
+			
+		} // END - cd_check_search_form_cmp
+		
+	} // END - cd_check_search_formwin
+	
+} // END - cd_check_search_window

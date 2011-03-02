@@ -1,0 +1,23 @@
+$Version=2$
+prefs_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="prefswin"; action="Open"; }
+
+    prefswin "widget/childwindow"
+	{
+	title = "Preferences";
+	width=500; height=500;
+	x=150; y=50;
+	visible = false;
+	//icon = "/apps/kardia/images/icons/group.gif";
+
+	prefs_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/base/prefs.cmp";
+	    width=498;height=475;
+	    }
+	}
+    }

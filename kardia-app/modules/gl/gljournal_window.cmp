@@ -1,0 +1,31 @@
+$Version=2$
+gljournal_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="gljwin"; action="Open"; Cascade=1; }
+    GotoBatch "widget/component-decl-action" { }
+    GotoBatch_cn1 "widget/connector" { event="GotoBatch"; target="gljwin"; action="Open"; Cascade=1; }
+    GotoBatch_cn2 "widget/connector" { event="GotoBatch"; target="glj_cmp"; action="GotoBatch"; Batch=runclient(convert(integer,:Batch)); }
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    batchwin "widget/parameter" { type=object; }
+
+    gljwin "widget/childwindow"
+	{
+	title = "GL Batch and Journal Entry";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	glj_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/gl/gljournal_edit.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    batchwin = batchwin;
+	    }
+	}
+    }

@@ -1,0 +1,34 @@
+$Version=2$
+batches "system/querytree"
+    {
+    ledgers "system/querytree"
+	{
+	source="/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	where="1==1";
+
+	per "system/querytree"
+	    {
+	    source="/apps/kardia/data/Kardia_DB/a_period/rows";
+	    where=":a_ledger_number = ::a_ledger_number and :a_summary_only = 0";
+
+	    batches "system/querytree"
+		{
+		source="/apps/kardia/data/Kardia_DB/a_batch/rows";
+		where=":a_ledger_number = ::a_ledger_number and :a_period = ::a_period";
+		}
+	    }
+//	pertop "system/querytree"
+//	    {
+//	    source="/apps/kardia/data/Kardia_DB/a_period/rows";
+//	    where=":a_ledger_number = ::a_ledger_number and :a_parent_period is NULL";
+//
+//	    pertree "system/querytree"
+//		{
+//		source="/apps/kardia/data/Kardia_DB/a_period/rows";
+//		//where=":a_parent_account_code = ::a_account_code and :a_ledger_number = :ledgers:a_ledger_number";
+//		where=":a_parent_period = ::a_period and :a_ledger_number = ::a_ledger_number";
+//		recurse = pertree;
+//		}
+//	    }
+	}
+    }

@@ -1,0 +1,54 @@
+$Version=2$
+cashdisb_form_window "widget/component-decl"
+    {
+    width=800; height=600;
+	
+	alerter "widget/alerter" {}
+	
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="gljwin"; action="Open"; Cascade=1; }
+	
+    GotoBatch "widget/component-decl-action" { }
+    GotoBatch_cn1 "widget/connector" { event="GotoBatch"; target="gljwin"; action="Open"; Cascade=1; }
+    GotoBatch_cn2 "widget/connector" { event="GotoBatch"; target="glj_cmp"; action="GotoBatch"; Batch=runclient(convert(integer,:Batch)); }
+
+	GotoBatchSelectRow "widget/component-decl-action" { }
+    GotoBatchSelectRow_cn1 "widget/connector" { event="GotoBatchSelectRow"; target="gljwin"; action="Open"; Cascade=1; }
+    GotoBatchSelectRow_cn2 "widget/connector" { event="GotoBatchSelectRow"; target="glj_cmp"; action="GotoBatchSelectRow"; sr_ledger=runclient(convert(string,:sr_ledger)); Batch=runclient(convert(integer,:Batch)); sr_disbursement_id=runclient(convert(integer,:sr_disbursement_id)); sr_line_item=runclient(convert(integer,:sr_line_item)); }
+	// TO IMPLEMENT (20091215): Additional Parameters Passing in -- See Centrallix Documentation Supplemental
+	
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    batchwin "widget/parameter" { type=object; }
+	
+	external_itself "widget/parameter" { type = "object"; default = null; }
+	
+	//batch_number "widget/parameter" { type=integer; default=90114; deploy_to_client=yes; }
+
+	// Working Debugging Code
+    //Open_cn2 "widget/connector" { event="Open"; target="alerter";
+	//					action="Alert";
+	//					param=runclient("cashdisb_form (Open): You clicked " + isnull(:batch_number, "<blank>")); }
+	
+	// Working Debugging Code
+    //GB_cn26 "widget/connector" { event="GotoBatch"; target="alerter";
+	//					action="Alert";
+	//					param=runclient("cashdisb_form (GotoBatch): You clicked " + isnull(:Batch, "<blank>")); }
+						
+    gljwin "widget/childwindow"
+	{
+	title = "Cash Disbursements dash Checking";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	glj_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/disb/cashdisb_subform.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    batchwin = batchwin;
+		external_itself=gljwin;
+	    }
+	}
+    }

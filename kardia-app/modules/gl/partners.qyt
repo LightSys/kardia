@@ -1,0 +1,15 @@
+$Version=2$
+partners "system/querytree"
+    {
+    alpha "system/querytree"
+	{
+	source="/apps/kardia/data/Kardia_DB/_a_alphabet/rows";
+	where="1==1";
+
+	par_last "system/querytree"
+	    {
+	    source="/apps/kardia/data/Kardia_DB/p_partner/rows";
+	    where="substring(:p_surname, 1, 1) = ::tag";
+	    }
+	}
+    }

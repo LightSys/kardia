@@ -1,0 +1,231 @@
+$Version=2$
+acct_bal_cmp "widget/component-decl"
+    {
+    width=778; height=525;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    editor "widget/parameter" { type=object; default=null; }
+    viewer "widget/parameter" { type=object; default=null; }
+    acct_bal "widget/parameter" { type=object; default=null; }
+
+    ShowBalances "widget/component-decl-action" { }
+    ShowBalances_cn1 "widget/connector"
+	{
+	event="ShowBalances";
+	target=gl_osrc;
+	action="QueryParam";
+	//a_account_code = runclient(:Account);
+	//a_cost_center = runclient(:Costctr);
+	account = runclient(:Account);
+	costctr = runclient(:Costctr);
+	}
+
+    popup_cmp "widget/component"
+	{
+	mode=dynamic;
+	path="/apps/kardia/modules/gl/trx_popup_menu.cmp";
+	}
+
+    tc "widget/tab"
+	{
+	x=8;y=8;width=762;height=328 + 142 + 8 - 24;
+
+	summpage "widget/tabpage"
+	    {
+	    title = "Summary";
+
+	    gl_osrc_3 "widget/osrc"
+		{
+		gl3costctr "widget/parameter" { type=string; default=null; }
+		gl3ref_period "widget/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(year, :a_start_date) = datepart(year, getdate()) and :a_summary_only = 0 order by :a_start_date) ); }
+
+		sql = "SELECT revenue = isnull(sum(condition(:a:a_acct_type == 'R', :t:a_amount, $0.00)), $0.00), expense = isnull(sum(condition(:a:a_acct_type == 'E', :t:a_amount, $0.00)), $0.00), assets = isnull(sum(condition(:a:a_acct_type == 'A', :t:a_amount, $0.00)), $0.00), liabilities = isnull(sum(condition(:a:a_acct_type == 'L', :t:a_amount, $0.00)), $0.00), equity = isnull(sum(condition(:a:a_acct_type == 'Q', :t:a_amount, $0.00)), $0.00), curequity = isnull(sum(condition(:a:a_acct_type == 'R' or :a:a_acct_type == 'E' or :a:a_acct_type == 'Q', :t:a_amount, $0.00)), $0.00), assetliab = isnull(sum(condition(:a:a_acct_type == 'A' or :a:a_acct_type == 'L', :t:a_amount, $0.00)), $0.00), a_cc_disp = '' + :t:a_cost_center + ' - ' + :c:a_cc_desc, :c:a_bal_cost_center, last_trans = max(:t:a_effective_date) FROM /apps/kardia/data/Kardia_DB/a_cost_center/rows c, IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a  WHERE :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number and :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :c:a_ledger_number and (:c:a_cost_center = :parameters:gl3costctr or :c:a_bal_cost_center = :parameters:gl3costctr) and :t:a_period >= :parameters:gl3ref_period";
+
+		autoquery=never;
+		replicasize=20;
+		readahead=20;
+
+		gl3dataform "widget/form"
+		    {
+		    gl3vbox "widget/vbox"
+			{
+			x=8;y=8;width=300;height=220;spacing=4;cellsize=20;
+
+			f_cc "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_bal_cost_center'; ctl_type=label; text='Cost Center:'; label_width=130; }
+			f_act "widget/component" { path="/sys/cmp/smart_field.cmp"; field='last_trans'; ctl_type=label; text='Last Activity:'; label_width=130; }
+			//f_sep1 "widget/pane" { height=2; style=lowered; }
+			f_space1 "widget/autolayoutspacer" { height=20; }
+			f_asset "widget/component" { path="/sys/cmp/smart_field.cmp"; field='assets'; ctl_type=label; text='Assets:'; label_width=130; }
+			f_liab "widget/component" { path="/sys/cmp/smart_field.cmp"; field='liabilities'; ctl_type=label; text='Liabilities:'; label_width=130; }
+			f_sep2 "widget/pane" { height=2; style=lowered; }
+			f_assetliab "widget/component" { path="/sys/cmp/smart_field.cmp"; field='assetliab'; ctl_type=label; text='Asset+Liab:'; label_width=130; }
+			}
+		    gl3vbox2 "widget/vbox"
+			{
+			x=380;y=56;width=300;height=220;spacing=4;cellsize=20;
+			f_openeq "widget/component" { path="/sys/cmp/smart_field.cmp"; field='equity'; ctl_type=label; text='Opening Balance:'; label_width=130; }
+			f_rev "widget/component" { path="/sys/cmp/smart_field.cmp"; field='revenue'; ctl_type=label; text='Revenue:'; label_width=130; }
+			f_exp "widget/component" { path="/sys/cmp/smart_field.cmp"; field='expense'; ctl_type=label; text='Expense:'; label_width=130; }
+			f_sep3 "widget/pane" { height=2; style=lowered; }
+			f_cureq "widget/component" { path="/sys/cmp/smart_field.cmp"; field='curequity'; ctl_type=label; text='Current Balance:'; label_width=130; }
+			}
+		    }
+		}
+
+	    gl_osrc_2 "widget/osrc"
+		{
+		gl2costctr "widget/parameter" { type=string; default=null; }
+		gl2ref_period "widget/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(year, :a_start_date) = datepart(year, getdate()) and :a_summary_only = 0 order by :a_start_date) ); }
+
+		sql = "SELECT revenue = isnull(sum(condition(:a:a_acct_type == 'R', :t:a_amount, $0.00)), $0.00), expense = isnull(sum(condition(:a:a_acct_type == 'E', :t:a_amount, $0.00)), $0.00), assets = isnull(sum(condition(:a:a_acct_type == 'A', :t:a_amount, $0.00)), $0.00), liabilities = isnull(sum(condition(:a:a_acct_type == 'L', :t:a_amount, $0.00)), $0.00), equity = isnull(sum(condition(:a:a_acct_type == 'Q', :t:a_amount, $0.00)), $0.00), curequity = isnull(sum(condition(:a:a_acct_type == 'R' or :a:a_acct_type == 'E' or :a:a_acct_type == 'Q', :t:a_amount, $0.00)), $0.00), assetliab = isnull(sum(condition(:a:a_acct_type == 'A' or :a:a_acct_type == 'L', :t:a_amount, $0.00)), $0.00), a_cc_disp = '' + :t:a_cost_center + ' - ' + :c:a_cc_desc, last_trans = max(:t:a_effective_date) FROM /apps/kardia/data/Kardia_DB/a_cost_center/rows c, IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a  WHERE :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number and :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :c:a_ledger_number and (:c:a_cost_center = :parameters:gl2costctr or :c:a_bal_cost_center = :parameters:gl2costctr) and :t:a_period >= :parameters:gl2ref_period  GROUP BY :t:a_cost_center";
+		//sql = "SELECT balance = sum(:t:a_amount), a_cc_disp = '' + :t:a_cost_center + ' - ' + :c:a_cc_desc, a_acct_disp = '' + :t:a_account_code + ' - ' + :a:a_acct_desc, :t:a_account_code, :a:a_acct_desc, :t:a_cost_center, :c:a_cc_desc, last_trans = max(:t:a_effective_date), openbal = isnull(sum(condition(:t:a_transaction_type == 'B', :t:a_amount, $0.00)), $0.00)  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/a_cost_center/rows c WHERE :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number and :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :c:a_ledger_number and (:t:a_account_code = :parameters:account or :parameters:account is null) and (:c:a_cost_center = :parameters:costctr or :c:a_bal_cost_center = :parameters:costctr) GROUP BY :t:a_cost_center";
+
+		autoquery=never;
+		replicasize=20;
+		readahead=20;
+
+		cn_endq4 "widget/connector" { event=EndQuery; target=gl_osrc_3; action=QueryParam; gl3costctr=runclient(:gl_osrc_2:gl2costctr); }
+
+		gl_label_2 "widget/label" { text="Breakdown by Subsidiary Fund:"; x=8;y=184;width=200; height=20; }
+		gl_pane_2 "widget/pane"
+		    {
+		    x=8;y=204;width=746;height=242;
+		    widget_class = "table_bgnd";
+
+		    gl_tbl_2 "widget/table"
+			{
+			x=0;y=0;width=744;height=240;
+			//rowheight = 20;
+			rowheight = 18;
+			mode=dynamicrow;
+
+			tbl_2_rclick "widget/connector"
+			    {
+			    event=RightClick;
+			    target=popup_cmp;
+			    action=Instantiate;
+			    X=runclient(:X);
+			    Y=runclient(:Y);
+
+			    title = "Research Account";
+			    osrc = gl_osrc;
+			    editor = editor;
+			    viewer = viewer;
+			    acctbal = acct_bal;
+			    //period=runclient(:gl_osrc:a_period);
+			    //batch=runclient(:gl_osrc:a_batch_number);
+			    //acct=runclient(:gl_osrc:a_account_code);
+			    cc=runclient(:gl_osrc:a_cost_center);
+			    //jnl=runclient(:gl_osrc:a_journal_number);
+			    }
+
+			t_c_costctr "widget/table-column" { title="Cost Center"; fieldname="a_cc_disp"; width=135; }
+			t_c_lastact "widget/table-column" { title="Last Activity"; fieldname="last_trans"; width=80; }
+			t_c_opneq "widget/table-column" { title="Opening Eq"; fieldname="equity"; width=80; align=right; }
+			t_c_rev "widget/table-column" { title="Revenue"; fieldname="revenue"; width=80; align=right; }
+			t_c_exp "widget/table-column" { title="Expense"; fieldname="expense"; width=80; align=right; }
+			t_c_cureq "widget/table-column" { title="Current Eq"; fieldname="curequity"; width=80; align=right; }
+			t_c_assetliab "widget/table-column" { title="Asset+Liab"; fieldname="assetliab"; width=80; align=right; }
+			}
+		    }
+		}
+	    }
+
+	acctpage "widget/tabpage"
+	    {
+	    title = "By GL Account";
+
+	    gl_osrc "widget/osrc"
+		{
+		account "widget/parameter" { type=string; default=null; }
+		costctr "widget/parameter" { type=string; default=null; }
+		ref_period "widget/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(year, :a_start_date) = datepart(year, getdate()) and :a_summary_only = 0 order by :a_start_date) ); }
+
+		sql = "SELECT balance = sum(:t:a_amount), a_cc_disp = '' + :t:a_cost_center + ' - ' + :c:a_cc_desc, a_acct_disp = '' + :t:a_account_code + ' - ' + :a:a_acct_desc, :t:a_account_code, :a:a_acct_desc, :t:a_cost_center, :c:a_cc_desc, last_trans = max(:t:a_effective_date), openbal = isnull(sum(condition(:t:a_transaction_type == 'B', :t:a_amount, $0.00)), $0.00)  FROM /apps/kardia/data/Kardia_DB/a_cost_center/rows c, IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a WHERE :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number and :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :c:a_ledger_number and (:t:a_account_code = :parameters:account or :parameters:account is null) and (:c:a_cost_center = :parameters:costctr or :c:a_bal_cost_center = :parameters:costctr) and :t:a_period >= :parameters:ref_period  GROUP BY :t:a_cost_center, :t:a_account_code";
+		//sql = "SELECT balance = sum(:t:a_amount), a_cc_disp = '' + :t:a_cost_center + ' - ' + :c:a_cc_desc, a_acct_disp = '' + :t:a_account_code + ' - ' + :a:a_acct_desc, :t:a_account_code, :a:a_acct_desc, :t:a_cost_center, :c:a_cc_desc, last_trans = max(:t:a_effective_date), openbal = isnull(sum(condition(:t:a_transaction_type == 'B', :t:a_amount, $0.00)), $0.00)  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/a_cost_center/rows c WHERE :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number and :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :c:a_ledger_number GROUP BY :t:a_cost_center, :t:a_account_code";
+		//sql = "SELECT a_amount_plus = condition(:t:a_amount > $0, :t:a_amount, null), a_amount_minus = condition(:t:a_amount < $0, :t:a_amount, null), a_cc_disp = '' + :t:a_cost_center + ' - ' + :c:a_cc_desc, a_acct_disp = '' + :t:a_account_code + ' - ' + :a:a_acct_desc, :t:a_ledger_number, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number, :t:a_period, :t:a_effective_date, :t:a_cost_center, :t:a_account_code, :t:a_amount, :t:a_modified, :t:a_posted, :t:a_corrected, :t:a_correcting, :t:a_transaction_type, :t:a_reconciled, :t:a_postprocessed, :t:a_postprocess_type, :t:a_origin, :t:a_recv_document_id, :t:a_sent_document_id, :t:p_ext_partner_id, :t:p_int_partner_id, :t:a_receipt_sent, :t:a_receipt_desired, :t:a_first_gift, :t:a_gift_type, :t:a_goods_provided, :t:a_gift_received_date, :t:a_gift_postmark_date, :t:a_comment, :t:s_date_created, :t:s_created_by, :t:s_date_modified, :t:s_modified_by FROM IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/a_cost_center/rows c WHERE :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number and :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :c:a_ledger_number ORDER BY :t:a_period, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number";
+		replicasize=100;
+		readahead=100;
+		autoquery=never;
+
+		gl_pane "widget/pane"
+		    {
+		    x=8;y=8;width=746;height=438;
+		    widget_class = "table_bgnd";
+
+		    gl_tbl "widget/table"
+			{
+			x=0;y=0;width=744;height=436;
+			//rowheight = 20;
+			rowheight = 18;
+			mode=dynamicrow;
+
+			tbl_rclick "widget/connector"
+			    {
+			    event=RightClick;
+			    target=popup_cmp;
+			    action=Instantiate;
+			    X=runclient(:X);
+			    Y=runclient(:Y);
+
+			    title = "Research Account";
+			    osrc = gl_osrc;
+			    editor = editor;
+			    viewer = viewer;
+			    acctbal = acct_bal;
+			    //period=runclient(:gl_osrc:a_period);
+			    //batch=runclient(:gl_osrc:a_batch_number);
+			    acct=runclient(:gl_osrc:a_account_code);
+			    cc=runclient(:gl_osrc:a_cost_center);
+			    //jnl=runclient(:gl_osrc:a_journal_number);
+			    }
+
+			t_a_costctr "widget/table-column" { title="Cost Center"; fieldname="a_cc_disp"; width=135; }
+			t_a_acct "widget/table-column" { title="Account"; fieldname="a_acct_disp"; width=125; }
+			t_a_lastact "widget/table-column" { title="Last Activity"; fieldname="last_trans"; width=80; }
+			t_a_opnbal "widget/table-column" { title="Opening"; fieldname="openbal"; width=80; align=right; }
+			t_a_curbal "widget/table-column" { title="Current"; fieldname="balance"; width=80; align=right; }
+			}
+		    }
+
+		cn_endq1 "widget/connector" { event=EndQuery; target=f_a_cost_center; action=SetValue; Value=runclient(:gl_osrc:costctr); }
+		cn_endq2 "widget/connector" { event=EndQuery; target=f_a_account_code; action=SetValue; Value=runclient(:gl_osrc:account); }
+		cn_endq3 "widget/connector" { event=EndQuery; target=gl_osrc_2; action=QueryParam; gl2costctr=runclient(:gl_osrc:costctr); }
+		}
+	    }
+	}
+
+    gl_search_form "widget/form"
+	{
+	allow_view = no;
+	allow_new = no;
+	allow_modify = no;
+	allow_nodata = no;
+	auto_focus = no;
+
+	objectsource = gl_osrc;
+
+	gl_hb "widget/hbox"
+	    {
+	    x=8; y=494; width=762; height=24; spacing=8;
+
+	    f_a_cost_center "widget/component" { width=170; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=costctr; text="CostCtr:"; tooltip="Cost Center Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
+	    f_a_account_code "widget/component" { width=170; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=account; text="Account:"; tooltip="Account Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+	    find_rec_btn "widget/textbutton"
+		{
+		width=130;
+		text="Show Balances";
+		enabled = runclient(char_length(:f_a_cost_center:content) > 0);
+		find_rec_cn1 "widget/connector" { event="Click"; target=gl_search_form; action="QueryExec"; }
+		}
+	    clear_srch_btn "widget/textbutton"
+		{
+		width=130;
+		text="Clear Criteria";
+		clear_srch_cn1 "widget/connector" { event="Click"; target=gl_search_form; action="Discard"; }
+		}
+	    }
+	fs "widget/formstatus" { x=680; y=494; height=20; width=90; style=largeflat; }
+	}
+    }

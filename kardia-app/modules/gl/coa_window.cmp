@@ -1,0 +1,23 @@
+$Version=2$
+coa_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="coawin"; action="Open"; Cascade=1; }
+
+    coawin "widget/childwindow"
+	{
+	title = "Chart of Accounts Maintenance";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	coa_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/gl/coa_edit.cmp";
+	    width=778;height=525;
+	    }
+	}
+    }

@@ -1,0 +1,31 @@
+$Version=2$
+pay_detail_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="pay_detail_win"; action="Open"; Cascade=1; IsModal=1; }
+
+    GotoPayee "widget/component-decl-action" { }
+    GotoPayee_cn1 "widget/connector" { event="GotoPayee"; target="pay_detail_win"; action="Open"; Cascade=1; IsModal=1; }
+    GotoPayee_cn2 "widget/connector" { event="GotoPayee"; target="pay_detail_cmp"; action="GotoPayee"; Payee=runclient(:Payee); }
+
+    // the ledger we are working with
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    pay_detail_win "widget/childwindow"
+	{
+	title = "Payroll Detail";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	pay_detail_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/payroll/pay_detail.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    }
+	}
+    }

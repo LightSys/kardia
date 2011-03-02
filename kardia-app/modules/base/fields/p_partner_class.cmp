@@ -1,0 +1,50 @@
+$Version=2$
+smart_field "widget/component-decl"
+    {
+    width=220;
+    height=runserver(condition(:this:type == 'textarea', 64, 20));
+
+    form "widget/parameter" { type=object; find_container="widget/form";}
+    field "widget/parameter" { type=string; }
+    text "widget/parameter" { type=string; }
+    tooltip "widget/parameter" { type=string; default=null; }
+    lookup_with "widget/parameter" { type=string; default=null; }
+    sql "widget/parameter" { type=string; default="select 1,1 where 1 != 1"; }
+    type "widget/parameter" { type=string; default="standard"; }
+    ctl_type "widget/parameter" { type=string; default="editbox"; }
+
+    SetValue "widget/component-decl-action" { }
+    sv_cn "widget/connector" { event="SetValue"; target=ctl; action="SetValue"; Value=runclient(:Value); }
+    p_partner_class_label "widget/label"
+        {
+        x=0;y=0;
+        height=20;width=100;
+        text="select type";
+        align=right;
+        tooltip="This defines what type of partner this is." ;
+        }
+    p_partner_class_dropdown "widget/dropdown"
+        {
+        mode="static";
+        x=110;y=0;
+        height=20;width=100;
+        hilight="#e0e0e0";
+        form=form;
+        bgcolor=white;
+        fieldname = "p_partner_class";
+        tooltip="This defines what type of partner this is." ;
+        // sql = "SELECT :p_description,:p_partner_class FROM /lightsys/partner_DB/p_partner_classes/rows ORDER BY :p_partner_class";
+        ddt1 "widget/dropdownitem" { label="Individual"; value="IND"; }
+        ddt10 "widget/dropdownitem" { label="Church"; value="CHU"; }
+        ddt2 "widget/dropdownitem" { label="Organization"; value="ORG"; }
+        ddt3 "widget/dropdownitem" { label="Mission"; value="MIS"; }
+        ddt4 "widget/dropdownitem" { label="School"; value="SCH"; }
+        ddt5 "widget/dropdownitem" { label="Foundation"; value="FOU"; }
+        ddt6 "widget/dropdownitem" { label="Business"; value="BUS"; }
+        ddt7 "widget/dropdownitem" { label="Christian Business"; value="BUC Business"; }
+        ddt8 "widget/dropdownitem" { label="Field"; value="FIE"; }
+        ddt9 "widget/dropdownitem" { label="Client"; value="CLI"; }
+	ro_hints "widget/hints" { condition=runserver(:this:type == 'readonly'); style=readonly; }
+
+        }
+    }

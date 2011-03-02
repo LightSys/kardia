@@ -1,0 +1,37 @@
+$Version=2$
+batch_post_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    expose_events_for = bp_cmp;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="bpwin"; action="Open"; Cascade=1; }
+    Close "widget/component-decl-action" { }
+    Close_cn "widget/connector" { event="Close"; target="bpwin"; action="Close"; }
+
+    PostBatch "widget/component-decl-action" { }
+    PostBatch_cn1 "widget/connector" { event="PostBatch"; target="bpwin"; action="Open"; Cascade=1; IsModal=1; }
+    PostBatch_cn2 "widget/connector" { event="PostBatch"; target="bp_cmp"; action="PostBatch"; Batch=runclient(convert(integer,:Batch)); }
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    bpwin "widget/childwindow"
+	{
+	titlebar = yes;
+	title = "Guide: Post Batch";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	style=dialog;
+	toplevel = yes;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	bp_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/gl/batch_post.cmp";
+	    x=10;y=10;width=758;height=505;
+	    ledger = runserver(:this:ledger);
+	    }
+	}
+    }

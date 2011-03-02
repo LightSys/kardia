@@ -1,0 +1,208 @@
+$Version=2$
+donation_summary "system/report"
+    {
+    title = "Donation Summary";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    filename = runserver("donation_summary_" + :this:period + ".pdf");
+
+    // Parameters for GL Fund Balance
+    ledger "report/parameter" { type=string; default=null; }
+    period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    unposted "report/parameter" { type=integer; default=0; }
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    period_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_ledger_number = :this:ledger and :p:a_period = :this:period";
+	}
+
+    gifts_qy "report/query"
+	{
+	sql = runserver("
+		select
+			cnt = count(:a_amount),
+			total = isnull(sum(:a_amount), $0.00),
+			cname = :c:a_cc_desc,
+			aname = :a:a_acct_desc,
+			code = :g:a_cost_center + '.' + :g:a_account_code,
+			txt = :c:a_cc_desc + ' / ' + :a:a_acct_desc,
+			:g:a_cost_center,
+			:g:a_account_code
+		from
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift/rows g,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		where
+			:g:a_ledger_number = :this:ledger and
+			:g:a_cost_center = :c:a_cost_center and
+			:g:a_period = :this:period and
+			:c:a_ledger_number = :this:ledger and
+			:a:a_ledger_number = :this:ledger and
+			:a:a_account_code = :g:a_account_code
+		group by
+			:g:a_cost_center,
+			:g:a_account_code
+		");
+
+	sum_cnt "report/aggregate" { compute="sum(:cnt)"; reset=0; }
+	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
+	}
+
+    gl_qy "report/query"
+	{
+	sql = runserver("
+		select
+			total = isnull(sum(:a_amount), $0.00)
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+			:t:a_ledger_number = :this:ledger and
+			:t:a_origin = 'CR' and
+			:t:a_period = :this:period and
+			:t:a_cost_center = :gifts_qy:a_cost_center and
+			:t:a_account_code = :gifts_qy:a_account_code
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		");
+	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
+	}
+
+//    gifts2_qy "report/query"
+//	{
+//	sql = runserver("
+//		select
+//			cnt = count(:a_amount),
+//			total = isnull(sum(:a_amount), $0.00),
+//			cname = :c:a_cc_desc,
+//			aname = :a:a_acct_desc,
+//			code = :g:a_cost_center + '.' + :g:a_account_code,
+//			txt = :c:a_cc_desc + ' / ' + :a:a_acct_desc,
+//			:g:a_cost_center,
+//			:g:a_account_code
+//		from
+//			/apps/kardia/data/Kardia_DB/a_subtrx_gift/rows g,
+//			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+//			/apps/kardia/data/Kardia_DB/a_account/rows a
+//		where
+//			:g:a_ledger_number = :this:ledger and
+//			:g:a_cost_center = :c:a_cost_center and
+//			:g:a_period = :this:period and
+//			:c:a_ledger_number = :this:ledger and
+//			:a:a_ledger_number = :this:ledger and
+//			:a:a_account_code = :g:a_account_code
+//		group by
+//			:g:a_cost_center,
+//			:g:a_account_code
+//		");
+//
+//	sum_cnt "report/aggregate" { compute="sum(:cnt)"; reset=0; }
+//	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
+//	}
+//
+//    gl2_qy "report/query"
+//	{
+//	sql = runserver("
+//		select
+//			total = isnull(sum(:a_amount), $0.00)
+//		from
+//			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+//		where
+//			:t:a_ledger_number = :this:ledger and
+//			:t:a_origin = 'CR' and
+//			:t:a_period = :this:period and
+//			:t:a_cost_center = :gifts2_qy:a_cost_center and
+//			:t:a_account_code = :gifts2_qy:a_account_code
+//			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+//		");
+//	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
+//	}
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy, period_qy;
+
+	rpt_title "report/area"
+	    {
+	    x=0; width=80; height=3;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("Donation Summary Report for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("For Period " + :this:period + " (" + :period_qy:a_period_desc + ")\n"); }
+	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  GL DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    }
+
+	table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=7;
+	    widths=6,5,36,7,9,9,3;
+	    colsep=0.8;
+	    source=gifts_qy, gl_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    tbl_hdr "report/table-row"
+		{
+		header=yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		h_acode "report/table-cell" { value='Fund'; align=center; style=bold; }
+		h_ccode "report/table-cell" { value='Acct'; align=center; style=bold; }
+		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_cnt "report/table-cell" { value='Count'; align=center; style=bold; }
+		h_gift "report/table-cell" { value='Gift Total'; align=center; style=bold; }
+		h_gl "report/table-cell" { value='GL Total'; align=center; style=bold; }
+		h_diff "report/table-cell" { value='Diff'; align=center; style=bold; }
+		}
+
+	    tbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+
+		d_acode "report/table-cell" { value=runserver(:gifts_qy:a_cost_center); align=left; }
+		d_ccode "report/table-cell" { value=runserver(:gifts_qy:a_account_code); align=left; }
+		d_desc "report/table-cell" { value=runserver(:gifts_qy:txt); align=left; font=helvetica; }
+		d_cnt "report/table-cell" { value=runserver(:gifts_qy:cnt); align=right; }
+		d_gift "report/table-cell" { value=runserver(:gifts_qy:total); align=right; }
+		d_gl "report/table-cell" { value=runserver(:gl_qy:total); align=right; }
+		d_diff "report/table-cell" { value=runserver(condition(:gl_qy:total + :gifts_qy:total = $0, '', 'X')); align=right; }
+		}
+
+	    tbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		marginbottom=1.0;
+
+		s_acode "report/table-cell" { value=runserver(""); align=left; }
+		s_ccode "report/table-cell" { value=runserver(""); align=left; }
+		s_desc "report/table-cell" { value=runserver("GRAND TOTAL:"); align=right; }
+		s_cnt "report/table-cell" { value=runserver(:gifts_qy:sum_cnt); align=right; }
+		s_gift "report/table-cell" { value=runserver(:gifts_qy:sum_total); align=right; }
+		s_gl "report/table-cell" { value=runserver(:gl_qy:sum_total); align=right; }
+		s_diff "report/table-cell" { value=runserver(condition(:gl_qy:sum_total + :gifts_qy:sum_total = $0, '', 'X')); align=right; }
+		}
+	    }
+	}
+    }

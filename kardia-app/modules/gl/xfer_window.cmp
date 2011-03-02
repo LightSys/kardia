@@ -1,0 +1,23 @@
+$Version=2$
+xfer_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="xferwin"; action="Open"; Cascade=1; }
+
+    xferwin "widget/childwindow"
+	{
+	title = "Funds Transfer";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	xfer_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/gl/xfer_task.cmp";
+	    width=778;height=525;
+	    }
+	}
+    }

@@ -1,0 +1,23 @@
+$Version=2$
+accounts "system/querytree"
+    {
+    ledgers "system/querytree"
+	{
+	source="/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	where="1==1";
+
+	accttop "system/querytree"
+	    {
+	    source="/apps/kardia/data/Kardia_DB/a_account/rows";
+	    where=":a_ledger_number = ::a_ledger_number and :a_parent_account_code is NULL";
+
+	    accttree "system/querytree"
+		{
+		source="/apps/kardia/data/Kardia_DB/a_account/rows";
+		//where=":a_parent_account_code = ::a_account_code and :a_ledger_number = :ledgers:a_ledger_number";
+		where=":a_parent_account_code = ::a_account_code and :a_ledger_number = ::a_ledger_number";
+		recurse = accttree;
+		}
+	    }
+	}
+    }

@@ -1,0 +1,15 @@
+$Version=2$
+ctlacct "system/querytree"
+    {
+    ledgers "system/querytree"
+	{
+	source="/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	where="1==1";
+
+	accttop "system/querytree"
+	    {
+	    source="/apps/kardia/data/Kardia_DB/a_account_category/rows";
+	    where=":a_ledger_number = ::a_ledger_number";
+	    }
+	}
+    }

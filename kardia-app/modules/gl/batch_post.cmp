@@ -1,0 +1,347 @@
+$Version=2$
+batch_post "widget/component-decl"
+    {
+    width=778; height=525;
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    PostBatch "widget/component-decl-action" { }
+    PostBatch_cn1 "widget/connector"
+	{
+	event=PostBatch;
+	target=batch_osrc;
+	action=QueryParam;
+	a_batch_number = runclient(:Batch);
+	}
+    PostBatch_cn2 "widget/connector"
+	{
+	event=PostBatch;
+	target=tasklist_tab;
+	action=SetTab;
+	TabIndex=1;
+	}
+
+    Posted "widget/component-decl-event" { }
+
+    Done "widget/component-decl-event" {}
+
+    batch_osrc "widget/osrc"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_batch/rows";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_batch/rows";
+	autoquery=never;
+	replicasize=2;
+	readahead=2;
+	}
+
+    tasklist_vbox "widget/vbox"
+	{
+	x=0;y=0;width=160;height=525;cellsize=44;spacing=12;
+
+	tasklist_hdr_lbl "widget/label"
+	    {
+	    height=32;
+	    font_size=13;
+	    align=center;
+	    style=bold;
+	    text="Post Batch Tasks:";
+	    }
+
+	tasklist_rpt "widget/repeat"
+	    {
+	    sql = "select id=substring(:tag, 2, 1), :text from /apps/kardia/data/Kardia_DB/_s_process/rows where substring(:tag, 1, 1) = 'A' order by :tag";
+
+	    tasklist_item_pane "widget/pane"
+		{
+		widget_class="label";
+		enabled = runclient(:tasklist_tab:selected_index == runserver(:tasklist_rpt:id));
+		width=160; height=44;
+		border_color = "#153f5f";
+
+		tasklist_item_lbl "widget/label"
+		    {
+		    x=4;y=0;width=150;height=42;
+		    font_size = 13;
+		    widget_class="label";
+		    align=center;
+		    text = runserver(:tasklist_rpt:text);
+		    }
+		}
+	    }
+	}
+
+    tasklist_tab "widget/tab"
+	{
+	x=172;y=0;width=606;height=525;
+	tab_location=none;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+
+	task_bal "widget/tabpage"
+	    {
+	    ttl_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step One:"; style=bold; }
+	    desc_lbl "widget/label" { x=8;y=28;width=588;height=80; text="We need to generate the inter-fund (acct 1900) asset entries for this batch, so that the batch will leave all self-balancing funds in a balancing state.  Only skip this step if you have already entered the correct acct 1900 entries.  This step will remove any existing acct #1900 entries from the batch."; }
+
+	    gen_btn "widget/textbutton"
+		{
+		x=222;y=140;width=160;
+		text="Generate Entries";
+		next_qy "widget/connector" { event=Click; target=gen_osrc1; action=QueryParam; }
+		}
+
+	    gen_osrc1 "widget/osrc"
+		{
+		gen_osrc1_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
+		gen_osrc1_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
+
+		sql = "DELETE FROM /apps/kardia/data/Kardia_DB/a_transaction/rows  WHERE :a_ledger_number = :parameters:ledger and :a_batch_number = :parameters:batch and :a_account_code = '1900'";
+
+		autoquery=never;
+
+		next_qy1 "widget/connector" { event=EndQuery; target=gen_osrc2; action=QueryParam; }
+		}
+
+	    gen_osrc2 "widget/osrc"
+		{
+		gen_osrc_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
+		gen_osrc_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
+
+		sql = "INSERT INTO /apps/kardia/data/Kardia_DB/a_transaction/rows  SELECT a_amount = $0 - sum(:t:a_amount), a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_cost_center, a_account_code = '1900', a_cost_center=:c:a_bal_cost_center, :t:a_journal_number, :t:a_batch_number, :t:a_ledger_number, :t:a_period, :t:a_effective_date, :t:a_transaction_type, a_account_category = '19', a_posted = 0, a_modified = 0, a_corrected = 0, :t:a_correcting, :t:a_corrected_batch, :t:a_corrected_journal, :t:a_corrected_transaction, :t:a_reconciled, :t:a_postprocessed, :t:a_postprocess_type, :t:a_origin, a_receipt_sent = 0, a_receipt_desired = 0, a_first_gift = 0, a_goods_provided = $0, s_date_created = getdate(), s_created_by = user_name(), s_date_modified = getdate(), s_modified_by = user_name()  FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_cost_center/rows c  WHERE :t:a_ledger_number = :c:a_ledger_number and :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :parameters:ledger and :t:a_batch_number = :parameters:batch  GROUP BY :t:a_ledger_number, :t:a_batch_number, :t:a_journal_number, :c:a_bal_cost_center  ORDER BY :t:a_cost_center  HAVING :a_amount != $0";
+
+		autoquery=never;
+
+		next_qy2 "widget/connector" { event=EndQuery; target=show_1900_osrc; action=QueryParam; }
+		}
+
+	    show_1900_osrc "widget/osrc"
+		{
+		sql = "select :a_amount, :a_cost_center, :a_journal_number, :a_transaction_number, :a_account_code, :a_comment from /apps/kardia/data/Kardia_DB/a_transaction/rows where :a_account_code = '1900'";
+		autoquery=never;
+		replicasize=50;
+		readahead=25;
+
+		batch_sync "widget/rule"
+		    {
+		    ruletype = "osrc_relationship";
+		    target = batch_osrc;
+		    is_slave = yes;
+		    key_1 = a_ledger_number;
+		    target_key_1 = a_ledger_number;
+		    key_2 = a_batch_number;
+		    target_key_2 = a_batch_number;
+		    autoquery = true;
+		    }
+
+		show_1900_tbl "widget/table"
+		    {
+		    x=8;y=200;width=588;height=240;
+		    rowheight = 18;
+		    mode=dynamicrow;
+
+		    t_jnl "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=40; }
+		    t_trx "widget/table-column" { title="Trx"; fieldname="a_transaction_number"; width=40; }
+		    t_cc "widget/table-column" { title="CostCtr"; fieldname="a_cost_center"; width=80; }
+		    t_acct "widget/table-column" { title="Acct"; fieldname="a_account_code"; width=80; }
+		    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=100; align=right; }
+		    t_cmt "widget/table-column" { title="Comments"; fieldname="a_comment"; width=300; }
+		    }
+		}
+
+	    sep "widget/pane" { x=8; y=480; height=2; width=588; style=lowered; }
+	    btn_back "widget/textbutton" { x=388; y=490; width=100; text="<< Back"; enabled=runclient(0); }
+	    btn_next "widget/textbutton" 
+		{
+		x=496; y=490; width=100;
+		text="Next >>";
+
+		next_cn "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=2; }
+		}
+	    }
+	
+	task_vfyjnl "widget/tabpage"
+	    {
+	    ttl2_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Two:"; style=bold; }
+	    desc2_lbl "widget/label" { x=8;y=28;width=588;height=80; text="Next, we will double-check the journal balances within the batch.  All journals should sum to zero.  An (incomplete) list of cost centers affected by the journal are listed with each journal."; }
+
+	    jnl_bal_osrc "widget/osrc"
+		{
+		jnl_bal_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
+		jnl_bal_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
+		sql = "SELECT :a_journal_number, bal = sum(:a_amount), ccs = substring(sum(:a_cost_center + ' '),1,80) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows WHERE :a_ledger_number = :parameters:ledger and :a_batch_number = :parameters:batch GROUP BY :a_journal_number";
+		autoquery=oneachreveal;
+		replicasize=50;
+		readahead=25;
+
+		jnl_bal_tbl "widget/table"
+		    {
+		    x=8;y=140;width=588;height=300;
+		    rowheight = 18;
+		    mode=dynamicrow;
+
+		    t2_jnl "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=40; }
+		    t2_cc "widget/table-column" { title="CostCtrs"; fieldname="ccs"; width=440; }
+		    t2_bal "widget/table-column" { title="Balance"; fieldname="bal"; width=100; align=right; }
+		    }
+		}
+
+	    sep2 "widget/pane" { x=8; y=480; height=2; width=588; style=lowered; }
+	    btn2_back "widget/textbutton" 
+		{
+		x=388; y=490; width=100;
+		text="<< Back";
+
+		back_cn2 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=1; }
+		}
+	    btn2_next "widget/textbutton" 
+		{
+		x=496; y=490; width=100;
+		text="Next >>";
+
+		next_cn2 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=3; }
+		}
+	    }
+
+	task_vfycc "widget/tabpage"
+	    {
+	    ttl3_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Three:"; style=bold; }
+	    desc3_lbl "widget/label" { x=8;y=28;width=588;height=80; text="The self-balancing funds (cost centers) also must balance, in order to be able to generate a balance sheet for each of these funds.  The per-fund totals below should sum to $0."; }
+
+	    cc_bal_osrc "widget/osrc"
+		{
+		cc_bal_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
+		cc_bal_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
+		sql = "SELECT :c:a_bal_cost_center, bal = sum(:t:a_amount), accts = substring(sum(:t:a_account_code + ' '),1,80) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_cost_center/rows c WHERE :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :c:a_ledger_number and :t:a_ledger_number = :parameters:ledger and :t:a_batch_number = :parameters:batch GROUP BY :c:a_bal_cost_center ORDER BY :t:a_cost_center";
+		autoquery=oneachreveal;
+		replicasize=50;
+		readahead=25;
+
+		cc_bal_tbl "widget/table"
+		    {
+		    x=8;y=140;width=588;height=300;
+		    rowheight = 18;
+		    mode=dynamicrow;
+
+		    t3_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_bal_cost_center"; width=80; }
+		    t3_accts "widget/table-column" { title="Accounts"; fieldname="accts"; width=400; }
+		    t3_bal "widget/table-column" { title="Balance"; fieldname="bal"; width=100; align=right; }
+		    }
+		}
+
+	    sep3 "widget/pane" { x=8; y=480; height=2; width=588; style=lowered; }
+	    btn3_back "widget/textbutton" 
+		{
+		x=388; y=490; width=100;
+		text="<< Back";
+
+		back_cn3 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=2; }
+		}
+	    btn3_next "widget/textbutton" 
+		{
+		x=496; y=490; width=100;
+		text="Next >>";
+
+		next_cn3 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=4; }
+		}
+	    }
+	
+	task_vfy1900 "widget/tabpage"
+	    {
+	    ttl4_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Four:"; style=bold; }
+	    desc4_lbl "widget/label" { x=8;y=28;width=588;height=80; text="The grand total for GL account 1900 for the batch should sum to $0, in order to guarantee integrity."; }
+
+	    n_bal_osrc "widget/osrc"
+		{
+		n_bal_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
+		n_bal_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
+		sql = "SELECT acct = 1900, deb = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0), cred = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0), ttl=isnull(sum(:a_amount), $0)  FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = :parameters:ledger and :t:a_batch_number = :parameters:batch and :a_account_code = '1900'";
+		autoquery=oneachreveal;
+		replicasize=50;
+		readahead=25;
+
+		n_bal_tbl "widget/table"
+		    {
+		    x=8;y=140;width=588;height=300;
+		    rowheight = 18;
+		    mode=dynamicrow;
+
+		    t4_acct "widget/table-column" { title="Acct"; fieldname="acct"; width=60; }
+		    t4_deb "widget/table-column" { title="Debits"; fieldname="deb"; width=90; align=right; }
+		    t4_cred "widget/table-column" { title="Credits"; fieldname="cred"; width=90; align=right; }
+		    t4_ttl "widget/table-column" { title="Balance"; fieldname="ttl"; width=90; align=right; }
+		    }
+		}
+
+	    sep4 "widget/pane" { x=8; y=480; height=2; width=588; style=lowered; }
+	    btn4_back "widget/textbutton" 
+		{
+		x=388; y=490; width=100;
+		text="<< Back";
+
+		back_cn4 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=3; }
+		}
+	    btn4_next "widget/textbutton" 
+		{
+		x=496; y=490; width=100;
+		text="Next >>";
+
+		next_cn4 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=5; }
+		}
+	    }
+	
+	task_post "widget/tabpage"
+	    {
+	    ttl5_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Five:"; style=bold; }
+	    desc5_lbl "widget/label" { x=8;y=28;width=588;height=80; text="Now that everything checks out, we can actually post the batch.  Click the button below to post all transactions in this batch to the GL so that they show up in the Trial Balance and Fund Balance reports."; }
+
+	    post_btn "widget/textbutton"
+		{
+		x=222;y=140;width=160;
+		text="Post Batch!";
+		enabled = runclient(not (:stat_osrc:txt == 'Posted'));
+		do_post_qy "widget/connector" { event=Click; target=post_osrc; action=QueryParam; }
+		}
+
+	    post_osrc "widget/osrc"
+		{
+		post_batch_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
+		post_batch_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
+		sql = "UPDATE /apps/kardia/data/Kardia_DB/a_transaction/rows  SET :a_posted = 1  WHERE :a_ledger_number = :parameters:ledger and :a_batch_number = :parameters:batch";
+		autoquery=never;
+		next_qy5 "widget/connector" { event=EndQuery; target=stat_osrc; action=QueryParam; }
+		}
+
+	    stat_osrc "widget/osrc"
+		{
+		stat_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
+		stat_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
+		sql = "SELECT txt = condition(min(:a_posted) == 0 and max(:a_posted) == 0, 'Unposted', condition(min(:a_posted) > 0 and max(:a_posted) > 0, 'Posted', 'Partially Posted (ERROR!)')), min = min(:a_posted), max = max(:a_posted) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows WHERE :a_ledger_number = :parameters:ledger and :a_batch_number = :parameters:batch";
+		autoquery=oneachreveal;
+
+		stat_tbl "widget/table"
+		    {
+		    x=8;y=200;width=588;height=240;
+		    rowheight = 18;
+		    mode=dynamicrow;
+
+		    t5_stat "widget/table-column" { title="Current Batch Status"; fieldname="txt"; width=558; }
+		    }
+		//stat_label "widget/label" { x=8; y=200; width=588; height=20; style=bold; value=runclient("Current Batch Status: " + condition(:stat_osrc:min == 0 and :stat_osrc:max == 0, "Unposted", condition(:stat_osrc:min > 0 and :stat_osrc:max > 0, "Posted", "Partially Posted (ERROR!)"))); }
+		posted_cn "widget/connector" { event=EndQuery; target=batch_post; action=Posted; }
+		}
+
+	    sep5 "widget/pane" { x=8; y=480; height=2; width=588; style=lowered; }
+	    btn5_back "widget/textbutton" 
+		{
+		x=388; y=490; width=100;
+		text="<< Back";
+
+		back_cn5 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=4; }
+		}
+	    btn5_next "widget/textbutton" 
+		{
+		x=496; y=490; width=100;
+		text="Done";
+
+		done_cn "widget/connector" { event=Click; target=batch_post; action=Done; }
+		}
+	    }
+	}
+    }

@@ -1,0 +1,75 @@
+$Version=2$
+ledger_select "widget/component-decl"
+    {
+    width=800;height=600;
+
+    page "widget/parameter" { type=object; find_container = "widget/page"; }
+
+    OpenModal "widget/component-decl-action" { }
+    OpenModal_cn "widget/connector" { event="OpenModal"; target="selwin"; action="Open"; IsModal=1; }
+
+    selwin "widget/childwindow"
+	{
+	width=400;height=300;
+	x=200;y=150;
+	style=dialog;
+	title="Select Ledger";
+	icon = "/apps/kardia/images/icons/gift.gif";
+	visible = false;
+
+	splash_img "widget/image"
+	    {
+	    source = "/apps/kardia/images/bg/splash3.png";
+	    width=1024;height=45;x=0;y=0;
+	    }
+
+	inst_lbl "widget/label"
+	    {
+	    x=10;y=50;height=16;width=200;text="Select a Ledger:";
+	    }
+
+	sel_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+	    replicasize=10;
+	    readahead=10;
+	    autoquery=oneachreveal;
+
+	    sel_pane "widget/pane"
+		{
+		x=10;y=70;width=378;height=162;
+		widget_class = "table_bgnd";
+		sel_tbl "widget/table"
+		    {
+		    x=0;y=0;width=376;height=160;
+		    rowheight = 20;
+		    mode=dynamicrow;
+
+		    t_a_ledger_number "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=80; }
+		    t_a_ledger_desc "widget/table-column" { title="Description"; fieldname="a_ledger_desc"; width=250; }
+		    }
+		}
+	    sel_form "widget/form"
+		{
+		sel_ledgernum "widget/variable"
+		    {
+		    fieldname="a_ledger_number";
+		    }
+		}
+	    }
+
+	select_btn "widget/textbutton"
+	    {
+	    x=100;width=95;y=240;
+	    text="Select";
+	    select_btn_cn "widget/connector" { event="Click"; target=sel_form; action=Submit; Target=runclient("page"); ledger=runclient(:sel_form:a_ledger_number); }
+	    }
+
+	cancel_btn "widget/textbutton"
+	    {
+	    x=205;width=95;y=240;
+	    text="Cancel";
+	    cancel_btn_cn "widget/connector" { event="Click"; target=selwin; action=Close; }
+	    }
+	}
+    }

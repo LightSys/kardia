@@ -1,0 +1,32 @@
+$Version=2$
+period_mgmt_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="pmwin"; action="Open"; Cascade=1; }
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    editor "widget/parameter" { type=object; default=null; }
+    viewer "widget/parameter" { type=object; default=null; }
+    acct_bal "widget/parameter" { type=object; default=null; }
+
+    pmwin "widget/childwindow"
+	{
+	title = "Accounting Period Management";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	pm_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/gl/period_mgmt.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    editor = editor;
+	    viewer = viewer;
+	    acct_bal = acct_bal;
+	    }
+	}
+    }

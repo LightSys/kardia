@@ -1,0 +1,36 @@
+$Version=2$
+acct_bal_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="abwin"; action="Open"; Cascade=1; }
+
+    ShowBalances "widget/component-decl-action" { }
+    ShowBalances_cn1 "widget/connector" { event="ShowBalances"; target="abwin"; action="Open"; Cascade=1; }
+    ShowBalances_cn2 "widget/connector" { event="ShowBalances"; target="abal_cmp"; action="ShowBalances"; Costctr=runclient(:Costctr); Account=runclient(:Account); }
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    editor "widget/parameter" { type=object; default=null; }
+    viewer "widget/parameter" { type=object; default=null; }
+    acct_bal "widget/parameter" { type=object; default=null; }
+
+    abwin "widget/childwindow"
+	{
+	title = "Account Balances";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	abal_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/gl/acct_bal.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    editor = editor;
+	    viewer = viewer;
+	    acct_bal = acct_bal;
+	    }
+	}
+    }
