@@ -1,0 +1,216 @@
+Centrallix/Sybase/Kardia installation walkthrough
+by Jonathan Rupp
+==================================================
+
+First off, let me say that I am not expert (nor even that good) at
+installing, administering, or securing Sybase, this guide is just to let you
+reproduce the demo that we (the Centrallix/Kardia developers) presented June
+4, 2002 at ICCM at Taylor University.  Also, this is a direct walkthrough of
+the installation on my new Redhat 7.3 install, and it is not guaranteed to
+work on your machine, no matter the distro, etc.
+
+First, let's get all the downloads out of the way first:
+
+Sybase: http://crm.sybase.com/sybase/www/ESD/ase_linux_download.jsp (you'll
+        have to fill out a form to get to the downloads page, I'm using
+        11.0.3.3-6 for this example which was not the newest one offered when 
+        I wrote this -- 11.9.x is NOT free for deployment, only for development)
+        I used the following:
+            sybase-ase-11_0_3_3-6_i386.rpm (db engine)
+            sybase-doc-11_0_3_3-6_i386.rpm (documentation)
+            sybase-ocsd-10_0_4-6_i386.rpm (development library)
+
+Centrallix: (the following will create the 5 centrallix directories at the
+        location where you type them.)
+    cvs -d:pserver:anonymous@cvs.centrallix.sourceforge.net:/cvsroot/centrallix login
+    cvs -z3 -d:pserver:anonymous@cvs.centrallix.sourceforge.net:/cvsroot/centrallix co centrallix
+        (required -- server core)
+    cvs -z3 -d:pserver:anonymous@cvs.centrallix.sourceforge.net:/cvsroot/centrallix co centrallix-lib
+        (required -- server core libraries)
+    cvs -z3 -d:pserver:anonymous@cvs.centrallix.sourceforge.net:/cvsroot/centrallix co centrallix-os
+        (required -- server configuration, objectsystem root)
+    cvs -z3 -d:pserver:anonymous@cvs.centrallix.sourceforge.net:/cvsroot/centrallix co centrallix-doc
+        (optional -- application (ie. Kardia) developer documentation)
+    cvs -z3 -d:pserver:anonymous@cvs.centrallix.sourceforge.net:/cvsroot/centrallix co centrallix-sysdoc
+        (optional -- Centrallix developer documentation)
+
+Kardia: (once again, the 3 kardia directories will be created at the
+        location you run these commands):
+    cvs -d:pserver:anonymous@cvs.kardia.sourceforge.net:/cvsroot/kardia login
+    cvs -z3 -d:pserver:anonymous@cvs.kardia.sourceforge.net:/cvsroot/kardia co kardia-db
+        (required -- database creation scripts)
+    cvs -z3 -d:pserver:anonymous@cvs.kardia.sourceforge.net:/cvsroot/kardia co kardia-app
+        (required -- app files)
+    cvs -z3 -d:pserver:anonymous@cvs.kardia.sourceforge.net:/cvsroot/kardia co kardia-doc
+        (optional -- documentation)
+
+become root for the following steps:
+    Install the Sybase RPMS:
+       rpm -ivh sybase-*
+
+    Run the installation script (may be different path)
+        /opt/sybase/install/sybinstall.sh
+        Accept the license
+        create group sybase
+        create user sybase
+        set password for sybase user
+
+    Become the sybase user
+        su - sybase
+        start srvbuild
+
+    Setup Sybase
+        3. Configure a Server product
+        1. SQL Server
+        1. Configure a new Adaptive Server
+        ctrl-A Continue
+        1. CONFIGURE SERVER'S INTERFACES FILE ENTRY
+        3. Add a new listener service
+        1. Hostname/Address
+            enter a valid hostname (localhost should work)
+        2. Port
+            enter a port that nothing else is running on (remember this!!)
+        3. Name Alias
+            any name will work here
+        ctrl-A continue
+        y this information is correct
+        ctrl-A continue
+        y write changes
+        2. MASTER DEVICE CONFIGURATION
+        2. Size (Meg)
+            30 (at least)
+        ctrl-A continue
+        <return> accept the regular file
+        3.  SYBSYSTEMPROCS DATABASE CONFIGURATION
+        ctrl-A continue
+        4.  SET ERRORLOG LOCATION
+        ctrl-A continue
+        5.  CONFIGURE DEFAULT BACKUP SERVER
+        ctrl-A continue
+        6.  CONFIGURE LANGUAGES
+        ctrl-A continue
+        7.  CONFIGURE CHARACTER SETS
+        ctrl-A continue
+        8.  CONFIGURE SORT ORDER
+        ctrl-A continue
+        9.  CONFIGURE AUDITING
+        ctrl-A continue
+        ctrl-A continue
+        y execute server config now
+        <return> allow regular file
+        ctrl-x Exit Screen
+        ctrl-x Exit Screen
+        ctrl-x Exit Screen
+
+    Copy init script for sybase
+        cp /opt/sybase/install/rc.sybase /etc/init.d/sybase
+            (note: the database is started automatically after
+            configutation, this script is to start and stop it other times)
+
+you can return your normal user for the rest of this install.
+    Login to sybase as sa (System Administrator)
+            (note: if you're like me and have unixODBC installed, you have an
+            isql binary in /usr/bin, so you need to specify the full path to the
+            sybase isql binary in /opt/sybase/bin'
+        /opt/sybase/bin/isql -Usa
+
+    Change system administrator password
+        sp_password null,newpass
+        go
+
+    Create kardia database (need a bit more than the default storage size)
+        create database kardia on default = 10
+        go
+
+    Create login for yourself (this needs to match your centrallix username/password)
+        sp_addlogin username,password
+        go
+
+    Switch to the kardia database
+        use kardia
+        go
+
+    Alias the newly created user to dbo (in kardia)
+        sp_addalias jorupp,dbo
+        go
+            (note: this is a really big security problem, but it works -- I
+            said I'm not a DBA....)
+
+    Set the kardia database to be the default for your user
+        sp_modifylogin username,defdb,kardia
+        go
+
+    Exit isql
+        quit
+
+    Build centrallix-lib
+        cd centrallix-lib
+        make depend (note: XFree86-devel required for makedepend)
+        make
+
+    Build centrallix
+        cd ../centrallix
+        make depend (note: XFree86-devel required for makedepend)
+        echo 1 > .subbuild
+        make    (if your system fails the build with a message about
+                readline, remove -lreadline and -lncurses at line 121 in 
+                Makefile, and rerun make -- If I remember correctly, this
+                happens with some version of Redhat and others)
+        make modules
+                (if you get a message about not finding ctpublic.h, you
+                don't have the OpenServer-Client Development library
+                installed)
+
+    Install and configure Centrallix
+        As root: (from centrallix directory)
+            make modules_install 
+            mkdir /usr/local/bin/centrallix
+            cp centrallix /usr/local/bin/centrallix
+            cp ../centrallix-os/doc/install/centrallix.conf /usr/local/etc/
+            cp ../centrallix-os/doc/install/types.cfg /usr/local/etc/
+            cp ../centrallix-os/doc/install/rootnode /usr/local/etc/
+            cd /usr/local/etc
+            chown user:group centrallix.conf types.cfg rootnode (make it
+            owned by yourself)
+        As your normal user: (from /usr/local/etc)
+            Modify centrallix.conf as follows:
+                Set the net_http listen_port to something higher than 1024
+                (so you don't have to run as root)
+                Under mtsession, set auth_method = "altpasswd" and enable
+                the altpasswd_file (the default /usr/local/etc/cxpasswd)
+            Create your cxpasswd file
+                htpasswd -cd cxpasswd username
+                    if you don't have apache (and hence htpasswd), you can
+                    still make this, it needs to be a file with one line, of
+                    the format username:crypted_passwd (man 3 crypt)
+            Modify rootnode
+                change path to point to where you put centrallix-os at
+                    ie. path="/home/jorupp/work/centrallix-os"
+    
+    Install and configure Kardia (from the directory with kardia-app/db/doc)
+        cd kardia-db
+        export SYBASE="/opt/sybase/"
+        make clean
+        make
+    Create a symlink from your centrallix-os directory to kardia-app
+        ln -s /home/jorupp/work/kardia-app /home/jorupp/work/centrallix-os/kardia
+            (note: the symlink must be named kardia, as that is hardcoded in
+            the app file right now)
+
+
+    Launch Centrallix
+        /usr/local/bin/centrallix/centrallix
+            You should see "mod: osdriver sybd"...
+
+    Launch Netscape 4.7x and test away!
+        start with http://host:port/kardia/kardia.app
+        if you get a system/void -- you've got a directory, request a file
+        if you get scrollbars on the right or bottom, you need to make your
+            window bigger
+        if nothing happens (you can't click things, etc.), try
+            /kardia/kardia-simple.app -- it doesn't use as many new features
+        if nothing still happens, try /samples/form.app -- it uses very
+            few new features
+        
+        
+====================================================================================

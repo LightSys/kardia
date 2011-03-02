@@ -1,0 +1,75 @@
+Conventions for Kardia
+======================
+1.  Naming Prefixes
+2.  Coding Standards
+    2.1.  Code Formatting
+    2.2.  Documentation Formatting
+ 
+
+1.  Naming Prefixes
+===================
+Each module for Kardia has its own four-letter abbreviation used throughout
+the application to provide clarity and prevent namespace colisions.  Listed
+below are the currently defined prefixes.  If you add a new module, please
+place its four-letter abbreviation in alphabetical order below.
+
+   acct - Accounting
+   ptnr - Partner
+   smgr - (*) System Manager
+   
+(*) Note that the System Manager prefix is used for system information.
+This is not necessarily a part of the system manager module, but rather it
+denotes that the information provided is for the system, not necessarily
+part of the current module.  This prefix can be used anywhere to provide
+clarity.
+
+
+2.  Coding Standards
+====================
+
+2.1.  Code Formatting
+=====================
+All Kardia code (including .sql scripts, shell scripts, Centrallix app
+files, etc) will be indented using only the TAB character.  We recommend
+setting the tab-stop to 4 to allow easy reading of the code.  The reason we
+chose to use only the TAB character (and not mixed tab/spaces, or only
+spaces) is because the tab width can be configured to each individual
+preference based on the editor (see recommended .vimrc below)
+
+   Recommended .vimrc
+   ------------------
+   set ts=4
+   set noeexpandtab
+   set autoindent
+
+When creating code, the first rule of thumb is to never mix coding styles.  
+If you are in a file that uses a different style than everything else,
+please conform to that style.  See the following code segment for an
+indication of the recommended coding style (NOTE: replace beginning spaces
+with tabs):
+
+   #include <stdio.h>
+   int main() {
+       int i, number=1;
+       char buf[256];
+
+       for (i=0; i < 10; i++) {
+           sprintf(buf, "%sHello world! (%d)\n", buf, number);
+           number = (i + number) * (i*i);
+       }
+       printf("%s", buf);
+   }
+
+	
+2.2.  Documentation Formatting
+==============================
+When creating documentation for Kardia, please use plain text files with a
+.txt entension.  Naming for document files should be all lower case with the
+underscore character replacing spaces.  All paragraphs should be wrapped at
+76 characters (in vim, type "tw=76" to set auto textwrapping).  NEVER use
+tabs in documentation to format the text.  Documentation should always have
+spaces for white-space, and never tabs.
+
+If you are creating an image for the documentation, please convert it to the
+PNG format before committing it to the CVS repository.  The same naming
+conventions apply to image filenames as documents.

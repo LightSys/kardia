@@ -1,0 +1,11 @@
+Installation Intructions:
+-------------------------------
+checkout kardia-app from CVS
+ $ cvs -d :ext:user@cvs.kardia.sourceforge.net:/cvsroot/kardia checkout kardia-app
+
+create a symlink from your centrallix root to kardia-app named kardia
+ $ cd ~/centrallix/centrallix-os
+ $ ln -s ~/kardia/kardia-app kardia
+
+ensure your system password (used by centrallix for login) is the same as
+    your database password

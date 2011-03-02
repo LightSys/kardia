@@ -1,0 +1,8 @@
+$Version=2$
+KARDIA_DB "application/sybase"
+{
+    database = "kardia";
+    server = "SYBASE";
+    max_connections=256;
+    annot_table = "kardia_annotation";
+}

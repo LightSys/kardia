@@ -1,0 +1,7 @@
+INSERT INTO ptnr_occupation values ( 'AUTHOR', 'Author', 1, 0)
+INSERT INTO ptnr_occupation values ( 'BOOKSTOREMGR', 'Bookstore Manager', 1, 0)
+INSERT INTO ptnr_occupation values ( 'RETIRED', 'Retired', 1, 0)
+INSERT INTO ptnr_occupation values ( 'SECRETARY', 'Secretary', 1, 0) 
+INSERT INTO ptnr_occupation values ( 'SOCIALWORK', 'Social Worker', 1, 0) 
+INSERT INTO ptnr_occupation values ( 'STUDENT', 'Student', 1, 0) 
+INSERT INTO ptnr_occupation values ( 'TEACHER', 'Teacher', 1, 0)
