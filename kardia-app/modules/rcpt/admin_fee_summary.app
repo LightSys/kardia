@@ -5,7 +5,7 @@ admin_fee_summary "widget/page"
     width=580;
     height=525;
     background="/apps/kardia/images/bg/light_bgnd.jpg";
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
     period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
