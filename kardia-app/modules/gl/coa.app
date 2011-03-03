@@ -4,7 +4,7 @@ coa "widget/page"
     title = "Chart of Accounts";
     width=800; height=600;
 
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl";
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
 
     cnLoad "widget/connector"
 	{

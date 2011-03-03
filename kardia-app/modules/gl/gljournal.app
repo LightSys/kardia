@@ -6,7 +6,7 @@ gljournal "widget/page"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
 
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl";
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
 
     cnLoad "widget/connector"
 	{

@@ -4,7 +4,7 @@ coa "widget/page"
     title = runserver("GL Master List for " + :this:ledger);
     width=800; height=600;
 
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl";
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
 
     ledger "widget/parameter" { type=string; default="0US"; }
 
