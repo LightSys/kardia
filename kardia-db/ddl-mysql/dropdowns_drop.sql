@@ -1,0 +1,25 @@
+use Kardia_DB;
+
+drop table _p_record_status;
+drop table _p_contact_type;
+drop table _p_location_type;
+drop table _p_partner_class;
+drop table _p_partner_gender;
+drop table _p_postal_status;
+drop table _p_relation_type;
+drop table _p_status_code;
+drop table _p_marital_status;
+drop table _p_bulk_postal_code;
+drop table _a_account_type;
+drop table _a_period_status;
+drop table _a_gift_type;
+drop table _a_payroll_interval;
+drop table _a_restricted_type;
+drop table _a_alphabet;
+drop table _s_process;
+drop table _a_receipt_type;
+drop table _m_membership_status;
+drop table _m_member_type;
+drop table _p_postal_mode;
+drop table _m_list_status;
+drop table _m_list_type;
