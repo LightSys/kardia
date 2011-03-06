@@ -469,12 +469,12 @@ create table a_account_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_account_usage_type select a_acct_usage_code="IFTE", a_acct_type="E", a_acct_usage_desc="Inter-Fund Transfer Expense", s_date_created='3-14-08', s_created_by='gbeeley',s_date_modified='3-14-08',s_modified_by='gbeeley';
-insert into a_account_usage_type select a_acct_usage_code="IFTR", a_acct_type="R", a_acct_usage_desc="Inter-Fund Transfer Revenue", s_date_created='3-14-08', s_created_by='gbeeley',s_date_modified='3-14-08',s_modified_by='gbeeley';
-insert into a_account_usage_type select a_acct_usage_code="ICTE", a_acct_type="E", a_acct_usage_desc="Inter-CostCtr Transfer Expense", s_date_created='3-14-08', s_created_by='gbeeley',s_date_modified='3-14-08',s_modified_by='gbeeley';
-insert into a_account_usage_type select a_acct_usage_code="ICTR", a_acct_type="R", a_acct_usage_desc="Inter-CostCtr Transfer Revenue", s_date_created='3-14-08', s_created_by='gbeeley',s_date_modified='3-14-08',s_modified_by='gbeeley';
-insert into a_account_usage_type select a_acct_usage_code="ILTE", a_acct_type="E", a_acct_usage_desc="Inter-Ledger Transfer Expense", s_date_created='3-14-08', s_created_by='gbeeley',s_date_modified='3-14-08',s_modified_by='gbeeley';
-insert into a_account_usage_type select a_acct_usage_code="ILTR", a_acct_type="R", a_acct_usage_desc="Inter-Ledger Transfer Revenue", s_date_created='3-14-08', s_created_by='gbeeley',s_date_modified='3-14-08',s_modified_by='gbeeley';
+insert into a_account_usage_type select "IFTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Fund Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type select "IFTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Fund Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type select "ICTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-CostCtr Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type select "ICTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-CostCtr Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type select "ILTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Ledger Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type select "ILTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Ledger Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
 
 
 /* a_account_category */
@@ -504,8 +504,10 @@ create table a_cc_acct (
         a_cost_center                         char(20)  not null,      /* cost center code --  */
         a_account_code                        char(16)  not null,      /* GL account code --  */
         a_cc_acct_class                       char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
-        a_opening_balance                     money  not null,         /* opening balance for the period (year) --  */
-        a_current_balance                     money  not null,         /* current balance for the period (year) --  */
+        a_opening_balance                     decimal(14,4)  not null,
+                                                                      /* opening balance for the period (year) --  */
+        a_current_balance                     decimal(14,4)  not null,
+                                                                      /* current balance for the period (year) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -567,9 +569,9 @@ create table a_period_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_period_usage_type select a_period_usage_code="GIFT", a_period_usage_desc="Gift Entry Default Period", s_date_created='3-14-08', s_created_by='gbeeley',s_date_modified='3-14-08',s_modified_by='gbeeley';
-insert into a_period_usage_type select a_period_usage_code="CURR", a_period_usage_desc="General Default Period", s_date_created='3-14-08', s_created_by='gbeeley',s_date_modified='3-14-08',s_modified_by='gbeeley';
-insert into a_period_usage_type select a_period_usage_code="YEAR", a_period_usage_desc="General Default Year", s_date_created='3-14-08', s_created_by='gbeeley',s_date_modified='3-14-08',s_modified_by='gbeeley';
+insert into a_period_usage_type select "GIFT" as a_period_usage_code, "Gift Entry Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_period_usage_type select "CURR" as a_period_usage_code, "General Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_period_usage_type select "YEAR" as a_period_usage_code, "General Default Year" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
 
 
 /* a_ledger */
@@ -627,7 +629,8 @@ create table a_transaction (
         a_cost_center                         char(20)  not null,      /* Cost center this transaction is posted to. --  */
         a_account_category                    char(8)  not null,       /* Broad category of account (object) --  */
         a_account_code                        char(16)  not null,      /* GL Account that this transaction is posted to --  */
-        a_amount                              money  not null,         /* Amount of debit or credit --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of debit or credit --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted - yes (1) or no (0)? --  */
         a_modified                            bit  default 0,          /* Has this transaction been hand-edited (1) or auto-generated without hand edit (0)? --  */
         a_corrected                           bit  default 0,          /* Has a correcting transaction been posted affecting this entry - yes (1) or no (0)? --  */
@@ -648,7 +651,7 @@ create table a_transaction (
         a_receipt_desired                     bit  default 0,          /* *** Receipt needed -- should be "1" for all gifts unless otherwise specified --  */
         a_first_gift                          bit  default 0,          /* *** Donor's first gift? --  */
         a_gift_type                           char(1)  null,           /* *** Type of Gift? --  */
-        a_goods_provided                      money  default 0.00  null,
+        a_goods_provided                      decimal(14,4)  default 0.00  null,
                                                                       /* *** Amount of gift that is considered a fee for goods provided in return --  */
         a_gift_received_date                  datetime  null,          /* *** Date a gift actually was received by the office --  */
         a_gift_postmark_date                  datetime  null,          /* *** Date a gift was postmarked (if available) --  */
@@ -675,7 +678,8 @@ create table a_transaction_tmp (
         a_cost_center                         char(20)  not null,      /* Cost center this transaction is posted to. --  */
         a_account_category                    char(8)  not null,       /* Broad category of account (object) --  */
         a_account_code                        char(16)  not null,      /* GL Account that this transaction is posted to --  */
-        a_amount                              money  not null,         /* Amount of debit or credit --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of debit or credit --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted - yes (1) or no (0)? --  */
         a_modified                            bit  default 0,          /* Has this transaction been hand-edited (1) or auto-generated without hand edit (0)? --  */
         a_corrected                           bit  default 0,          /* Has a correcting transaction been posted affecting this entry - yes (1) or no (0)? --  */
@@ -696,7 +700,7 @@ create table a_transaction_tmp (
         a_receipt_desired                     bit  default 0,          /* *** Receipt needed -- should be "1" for all gifts unless otherwise specified --  */
         a_first_gift                          bit  default 0,          /* *** Donor's first gift? --  */
         a_gift_type                           char(1)  null,           /* *** Type of Gift? --  */
-        a_goods_provided                      money  default 0.00  null,
+        a_goods_provided                      decimal(14,4)  default 0.00  null,
                                                                       /* *** Amount of gift that is considered a fee for goods provided in return --  */
         a_gift_received_date                  datetime  null,          /* *** Date a gift actually was received by the office --  */
         a_gift_postmark_date                  datetime  null,          /* *** Date a gift was postmarked (if available) --  */
@@ -850,9 +854,9 @@ create table a_payroll_item (
         a_is_instance                         bit  default 0,          /* set to 1 if this is an actual instance of payroll, rather than the template --  */
         a_period                              char(8)  null,           /* if this is an instance, a_period contains the relevant accounting period --  */
         a_effective_date                      datetime  null,          /* if this is an instance, this field specifies the effective date for the payroll --  */
-        a_target_amount                       money  null,             /* target amount of currency, such as amount for gross pay --  */
-        a_actual_amount                       money  null,             /* actual amount of currency used, for payroll item instances --  */
-        a_minimum_amount                      money  null,             /* if amount is flexible, this specifies the minimum --  */
+        a_target_amount                       decimal(14,4)  null,     /* target amount of currency, such as amount for gross pay --  */
+        a_actual_amount                       decimal(14,4)  null,     /* actual amount of currency used, for payroll item instances --  */
+        a_minimum_amount                      decimal(14,4)  null,     /* if amount is flexible, this specifies the minimum --  */
         a_percent                             float  null,             /* if this is a percentage-based item, the percent goes here --  */
         a_filing_status                       char(1)  null,           /* for tax withholding, the filing status. --  */
         a_allowances                          integer  null,           /* for tax withholding, the number of withholding allowances claimed (e.g., on W4) --  */
@@ -881,9 +885,9 @@ create table a_payroll_item_import (
         a_is_instance                         bit  default 0,          /* set to 1 if this is an actual instance of payroll, rather than the template --  */
         a_period                              char(8)  null,           /* if this is an instance, a_period contains the relevant accounting period --  */
         a_effective_date                      datetime  null,          /* if this is an instance, this field specifies the effective date for the payroll --  */
-        a_target_amount                       money  null,             /* target amount of currency, such as amount for gross pay --  */
-        a_actual_amount                       money  null,             /* actual amount of currency used, for payroll item instances --  */
-        a_minimum_amount                      money  null,             /* if amount is flexible, this specifies the minimum --  */
+        a_target_amount                       decimal(14,4)  null,     /* target amount of currency, such as amount for gross pay --  */
+        a_actual_amount                       decimal(14,4)  null,     /* actual amount of currency used, for payroll item instances --  */
+        a_minimum_amount                      decimal(14,4)  null,     /* if amount is flexible, this specifies the minimum --  */
         a_percent                             float  null,             /* if this is a percentage-based item, the percent goes here --  */
         a_filing_status                       char(1)  null,           /* for tax withholding, the filing status. --  */
         a_allowances                          integer  null,           /* for tax withholding, the number of withholding allowances claimed (e.g., on W4) --  */
@@ -983,11 +987,15 @@ create table a_tax_table (
         a_end_date                            datetime  not null,      /* last date that this table is valid. --  */
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
         a_filing_status                       char(1)  not null,       /* for tax withholding, the filing status. --  */
-        a_minimum_salary                      money  not null,         /* minimum salary amount that this item applies to --  */
-        a_maximum_salary                      money  not null,         /* maximum salary amount that this item applies to --  */
-        a_subtract_salary                     money  not null,         /* amount to subtract from salary before computing percentage --  */
+        a_minimum_salary                      decimal(14,4)  not null,
+                                                                      /* minimum salary amount that this item applies to --  */
+        a_maximum_salary                      decimal(14,4)  not null,
+                                                                      /* maximum salary amount that this item applies to --  */
+        a_subtract_salary                     decimal(14,4)  not null,
+                                                                      /* amount to subtract from salary before computing percentage --  */
         a_percent                             float  not null,         /* percent of tax --  */
-        a_add_to_tax                          money  not null,         /* amount to add to tax after percent is computed --  */
+        a_add_to_tax                          decimal(14,4)  not null,
+                                                                      /* amount to add to tax after percent is computed --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1007,9 +1015,12 @@ create table a_tax_allowance_table (
         a_end_date                            datetime  not null,      /* last date that this table is valid. --  */
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
         a_filing_status                       char(1)  not null,       /* for tax withholding, the filing status. --  */
-        a_flat_deduction_amt                  money  not null,         /* amount of flat deduction from salary (e.g., "standard deduction" for some states) --  */
-        a_allowance                           money  not null,         /* amount to deduct for "personal" tax allowances, or a more generalized "number of exemptions". --  */
-        a_dependent_allowance                 money  not null,         /* amount to deduct for "dependent" tax allowances, for states that make this distinction. --  */
+        a_flat_deduction_amt                  decimal(14,4)  not null,
+                                                                      /* amount of flat deduction from salary (e.g., "standard deduction" for some states) --  */
+        a_allowance                           decimal(14,4)  not null,
+                                                                      /* amount to deduct for "personal" tax allowances, or a more generalized "number of exemptions". --  */
+        a_dependent_allowance                 decimal(14,4)  not null,
+                                                                      /* amount to deduct for "dependent" tax allowances, for states that make this distinction. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1156,7 +1167,8 @@ create table a_subtrx_gift (
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
         a_cost_center                         char(20)  not null,      /* Which fund the gift is given to. --  */
         a_account_code                        char(16)  not null,      /* Which GL Account this gift posts to in the above fund. --  */
-        a_amount                              money  not null,         /* Amount of the gift. --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of the gift. --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_type                           char(1)  not null,       /* Type of gift: (C)ash, chec(K), credit car(D), (E)FT --  */
@@ -1174,7 +1186,7 @@ create table a_subtrx_gift (
         a_anonymous_gift                      bit  default 0,          /* Set this if the donor wishes to remain anonymous (to the recipient) --  */
         a_personal_gift                       bit  default 0,          /* Set this if the gift is a personal gift (i.e., payable to missionary instead of support gift) --  */
         a_first_gift                          bit  default 0,          /* Donor's first gift? --  */
-        a_goods_provided                      money  default 0.00  null,
+        a_goods_provided                      decimal(14,4)  default 0.00  null,
                                                                       /* Amount of gift that is considered a fee for goods provided in return --  */
         a_gift_received_date                  datetime  null,          /* Date a gift actually was received by the office --  */
         a_gift_postmark_date                  datetime  null,          /* Date a gift was postmarked (if available) --  */
@@ -1196,7 +1208,8 @@ create table a_subtrx_gift_group (
         a_batch_number                        integer  not null,       /* Batch id for this gift. --  */
         a_gift_number                         integer  not null,       /* sequential gift number in the batch. --  */
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
-        a_amount                              money  not null,         /* Amount of the gift. --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of the gift. --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_type                           char(1)  not null,       /* Type of gift: (C)ash, chec(K), credit car(D), (E)FT --  */
@@ -1206,7 +1219,7 @@ create table a_subtrx_gift_group (
         a_receipt_desired                     char(1)  default 'I'  null,
                                                                       /* Receipt needed -- 'I' for immediate, 'A' for annual, 'N' for no receipt --  */
         a_first_gift                          bit  default 0,          /* Donor's first gift? --  */
-        a_goods_provided                      money  default 0.00  null,
+        a_goods_provided                      decimal(14,4)  default 0.00  null,
                                                                       /* Amount of gift that is considered a fee for goods provided in return --  */
         a_gift_received_date                  datetime  null,          /* Date a gift actually was received by the office --  */
         a_gift_postmark_date                  datetime  null,          /* Date a gift was postmarked (if available) --  */
@@ -1231,7 +1244,8 @@ create table a_subtrx_gift_item (
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
         a_cost_center                         char(20)  not null,      /* Which fund the gift is given to. --  */
         a_account_code                        char(16)  not null,      /* Which GL Account this gift posts to in the above fund. --  */
-        a_amount                              money  not null,         /* Amount of the gift. --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of the gift. --  */
         a_recv_document_id                    varchar(64)  null,       /* Check number, transaction number, etc., for received gift. --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
@@ -1269,7 +1283,7 @@ create table a_cc_auto_subscribe (
         a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
         m_list_code                           varchar(20)  not null,   /* the mailing list code of the mailing to subscribe the donor to. --  */
-        a_minimum_gift                        money  null,             /* sets a minimum gift before automatic subscription takes place. --  */
+        a_minimum_gift                        decimal(14,4)  null,     /* sets a minimum gift before automatic subscription takes place. --  */
         a_subscribe_months                    integer  null,           /* how many months to subscribe the donor (or indefinitely, if null) --  */
         a_comments                            varchar(255)  null,      /* comments --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -1291,7 +1305,8 @@ create table a_subtrx_cashdisb (
         a_period                              char(8)  not null,       /* Accounting period this disbursement is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of disbursement (e.g., accrual date) --  */
         a_cash_account_code                   char(10)  not null,      /* Cash account the funds are disbursed from --  */
-        a_amount                              money  not null,         /* Amount of disbursement --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of disbursement --  */
         a_cost_center                         char(20)  not null,      /* Cost center for the expense / liability side of the transaction --  */
         a_account_code                        char(10)  not null,      /* GL account for the expense / liability side of the transaction --  */
         a_payee_partner_key                   char(10)  not null,      /* Partner id of the payee (recipient) --  */
@@ -1319,7 +1334,8 @@ create table a_subtrx_xfer (
         a_effective_date                      datetime  not null,      /* Effective date of transfer (e.g., accrual date) --  */
         a_source_cost_center                  char(20)  not null,      /* Cost center the funds are coming from --  */
         a_dest_cost_center                    char(20)  not null,      /* Cost center the funds are going to --  */
-        a_amount                              money  not null,         /* Amount to transfer --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -1339,7 +1355,8 @@ create table a_subtrx_deposit (
         a_period                              char(8)  not null,       /* Accounting period this deposit is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of deposit (e.g., accrual date) --  */
         a_account_code                        char(10)  not null,      /* Cash account the funds are deposited into --  */
-        a_amount                              money  not null,         /* Amount of deposit --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of deposit --  */
         a_num_checks                          integer  not null,       /* Number of checks deposited --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
@@ -1363,7 +1380,8 @@ create table a_subtrx_cashxfer (
         a_source_cash_acct                    char(16)  not null,      /* Account the funds are coming from --  */
         a_dest_cash_acct                      char(16)  not null,      /* Account the funds are going to --  */
         a_cost_center                         char(20)  not null,      /* Cost Center in which to perform the cash transfer --  */
-        a_amount                              money  not null,         /* Amount to transfer --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
         s_date_created                        datetime  not null,      /*  --  */

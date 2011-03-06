@@ -75,7 +75,6 @@ insert _p_relation_type values('S','Sibling','','');
 insert _p_relation_type values('P','Parent','','');
 insert _p_relation_type values('F','Friend','','');
 insert _p_relation_type values('M','Member','','');
-insert _p_relation_type values('S','Staff','','');
 create table _p_status_code (
   tag	char(1) not null,
   text	varchar(30) not null,
@@ -95,7 +94,7 @@ insert _p_marital_status values('S','Single','','');
 insert _p_marital_status values('U','Unknown','','');
 insert _p_marital_status values('O','Other','(organization','');
 create table _p_bulk_postal_code (
-  tag	char(1) not null,
+  tag	char(4) not null,
   text	varchar(30) not null,
   description varchar(255) null,__cx_osml_control varchar(255) null);
 alter table _p_bulk_postal_code add constraint pk__p_bulk_postal_code primary key  (tag);
