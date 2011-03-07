@@ -469,12 +469,12 @@ create table a_account_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_account_usage_type select "IFTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Fund Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type select "IFTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Fund Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type select "ICTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-CostCtr Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type select "ICTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-CostCtr Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type select "ILTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Ledger Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type select "ILTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Ledger Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "IFTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Fund Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "IFTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Fund Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ICTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-CostCtr Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ICTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-CostCtr Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ILTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Ledger Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ILTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Ledger Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
 
 
 /* a_account_category */
@@ -569,9 +569,9 @@ create table a_period_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_period_usage_type select "GIFT" as a_period_usage_code, "Gift Entry Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_period_usage_type select "CURR" as a_period_usage_code, "General Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_period_usage_type select "YEAR" as a_period_usage_code, "General Default Year" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "GIFT" as a_period_usage_code, "Gift Entry Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "CURR" as a_period_usage_code, "General Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "YEAR" as a_period_usage_code, "General Default Year" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
 
 
 /* a_ledger */
