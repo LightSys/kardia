@@ -182,10 +182,10 @@ create  index a_trx_batch_idx on a_transaction (a_batch_number, a_ledger_number,
 /* go */
 create  index a_trx_cc_quicksum_idx on a_transaction (a_ledger_number, a_cost_center, a_effective_date, a_posted, a_amount, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trx_ccperiod_idx on a_transaction (a_ledger_number, a_cost_center, a_period, a_batch_number, a_journal_number, a_transaction_number);
-create  index a_trx_donor_id_idx on a_transaction (p_donor_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+create  index a_trx_donor_id_idx on a_transaction (p_ext_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trx_journal_idx on a_transaction (a_journal_number, a_ledger_number, a_batch_number, a_transaction_number);
 create  index a_trx_period_idx on a_transaction (a_ledger_number, a_period, a_cost_center, a_batch_number, a_journal_number, a_transaction_number);
-create  index a_trx_recip_id_idx on a_transaction (p_recip_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+create  index a_trx_recip_id_idx on a_transaction (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trx_transaction_idx on a_transaction (a_transaction_number, a_ledger_number, a_batch_number, a_journal_number);
 
 
@@ -196,9 +196,9 @@ create  index a_trxt_batch_idx on a_transaction_tmp (a_batch_number, a_ledger_nu
 /* create  index a_trxt_cc_clustered_idx on a_transaction_tmp (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)*/ 
 /* go */
 create  index a_trxt_cc_quicksum_idx on a_transaction_tmp (a_ledger_number, a_cost_center, a_effective_date, a_posted, a_amount, a_batch_number, a_journal_number, a_transaction_number);
-create  index a_trxt_donor_id_idx on a_transaction_tmp (p_donor_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+create  index a_trxt_donor_id_idx on a_transaction_tmp (p_ext_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trxt_journal_idx on a_transaction_tmp (a_journal_number, a_ledger_number, a_batch_number, a_transaction_number);
-create  index a_trxt_recip_id_idx on a_transaction_tmp (p_recip_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+create  index a_trxt_recip_id_idx on a_transaction_tmp (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trxt_transaction_idx on a_transaction_tmp (a_transaction_number, a_ledger_number, a_batch_number, a_journal_number);
 
 
@@ -337,8 +337,6 @@ create  index a_gifttrx_recip_id_idx on a_subtrx_gift (p_recip_partner_id, a_led
 
 /* a_subtrx_gift_group */
 create  index a_gifttrxgrp_batch_idx on a_subtrx_gift_group (a_batch_number, a_ledger_number, a_gift_number);
-/* create  index a_gifttrxgrp_cc_clustered_idx on a_subtrx_gift_group (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number)*/ 
-/* go */
 create  index a_gifttrxgrp_donor_id_idx on a_subtrx_gift_group (p_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number);
 create  index a_gifttrxgrp_gift_idx on a_subtrx_gift_group (a_gift_number, a_ledger_number, a_batch_number);
 /* create  index a_gifttrxgrp_pk on a_subtrx_gift_group (a_ledger_number, a_batch_number, a_gift_number)*/ 

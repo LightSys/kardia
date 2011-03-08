@@ -1,5 +1,6 @@
 use Kardia_DB;
 
+drop table ra;
 
 
 /* p_partner */

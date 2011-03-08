@@ -335,10 +335,6 @@ alter table a_subtrx_gift_group
 
 
 alter table a_subtrx_gift_group
-	drop constraint a_gifttrxgrp_cc_clustered_idx;
-
-
-alter table a_subtrx_gift_group
 	drop constraint a_gifttrxgrp_donor_id_idx;
 
 

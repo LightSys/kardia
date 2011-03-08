@@ -47,16 +47,16 @@ alter table a_account
 	add constraint a_acct_legacy_idx unique  (a_legacy_code, a_account_code, a_ledger_number);
 
 alter table a_transaction
-	add constraint a_trx_donor_id_idx unique  (p_donor_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+	add constraint a_trx_donor_id_idx unique  (p_ext_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
 alter table a_transaction
-	add constraint a_trx_recip_id_idx unique  (p_recip_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+	add constraint a_trx_recip_id_idx unique  (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
 alter table a_transaction_tmp
-	add constraint a_trxt_donor_id_idx unique  (p_donor_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+	add constraint a_trxt_donor_id_idx unique  (p_ext_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
 alter table a_transaction_tmp
-	add constraint a_trxt_recip_id_idx unique  (p_recip_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+	add constraint a_trxt_recip_id_idx unique  (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
 alter table a_payroll_import
 	add constraint a_payrolli_payee_idx unique  (a_ledger_number, p_payee_partner_key, a_payroll_id);

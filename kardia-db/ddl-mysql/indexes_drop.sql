@@ -337,8 +337,6 @@ drop index a_subtrx_gift.a_gifttrx_recip_id_idx;
 
 /* a_subtrx_gift_group */
 drop index a_subtrx_gift_group.a_gifttrxgrp_batch_idx;
-/* drop index a_subtrx_gift_group.a_gifttrxgrp_cc_clustered_idx */ 
-/* go */
 drop index a_subtrx_gift_group.a_gifttrxgrp_donor_id_idx;
 drop index a_subtrx_gift_group.a_gifttrxgrp_gift_idx;
 /* drop index a_subtrx_gift_group.a_gifttrxgrp_pk */ 

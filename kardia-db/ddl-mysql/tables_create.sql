@@ -8,6 +8,23 @@ create table ra(
 	PRIMARY KEY (a)
 	);
 
+insert ra values('a_account','GL Accounts',':a_acct_desc');
+
+insert ra values('a_account_category','Control Categories',':a_acct_cat_desc');
+
+insert ra values('a_batch','Batches',':a_batch_desc');
+
+insert ra values('a_cost_center','Cost Centers',':a_cc_desc');
+
+insert ra values('a_cost_center_prefix','CostCtr Prefixes',':a_cc_prefix_desc');
+
+insert ra values('a_period','Periods',':a_period_desc');
+
+insert ra values('m_list','Mailing Lists',':m_list_description');
+
+insert ra values('p_partner','Partners',':p_surname + ", " + :p_given_name');
+
+
 
 /* p_partner */
 

@@ -181,9 +181,6 @@ alter table a_subtrx_gift
 alter table a_subtrx_gift_group
 	add constraint a_gifttrxgrp_pk primary key  (a_ledger_number, a_batch_number, a_gift_number);
 
-alter table a_subtrx_gift_group
-	add constraint a_gifttrxgrp_cc_clustered_idx unique  (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number);
-
 alter table a_subtrx_gift_item
 	add constraint a_gifttrx_pk primary key  (a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
