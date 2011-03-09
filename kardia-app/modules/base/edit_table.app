@@ -4,7 +4,7 @@ edit_table "widget/page"
     height=600; width=800;
     title = "Kardia - Edit Table";
     background="/apps/kardia/images/bg/light_bgnd2.jpg";
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
     tablepath "widget/parameter" { type=string; default=null; }
 

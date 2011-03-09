@@ -3,7 +3,7 @@ TableMaintenance "widget/page"
     {
     height=600; width=800;
     title = "Kardia - Table Maintenance";
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl";
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
     bgcolor = "#e0e0e0";
 
     mnMain "widget/menu"
