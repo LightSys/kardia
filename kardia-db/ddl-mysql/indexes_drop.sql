@@ -406,3 +406,14 @@ alter table a_subtrx_deposit drop index a_subtrx_dep_batch_idx;
 /* s_process_status */
 /* drop index s_process_status.s_procstat_pk */ 
 /* go */
+
+
+/* s_motd */
+/* drop index s_motd.s_motd_pk */ 
+/* go */
+
+
+/* s_motd_viewed */
+/* drop index s_motd_viewed.s_motd_viewed_pk */ 
+/* go */
+alter table s_motd_viewed drop index s_motd_viewed_username_idx;

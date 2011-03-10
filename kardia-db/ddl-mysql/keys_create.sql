@@ -216,3 +216,9 @@ alter table s_process
 
 alter table s_process_status
 	add constraint s_procstat_pk primary key  (s_subsystem_code, s_process_code, s_process_status_code);
+
+alter table s_motd
+	add constraint s_motd_pk primary key  (s_motd_id);
+
+alter table s_motd_viewed
+	add constraint s_motd_viewed_pk primary key  (s_motd_id, s_username);

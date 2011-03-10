@@ -406,3 +406,14 @@ create  index a_subtrx_dep_batch_idx on a_subtrx_deposit (a_batch_number, a_ledg
 /* s_process_status */
 /* create  index s_procstat_pk on s_process_status (s_subsystem_code, s_process_code, s_process_status_code)*/ 
 /* go */
+
+
+/* s_motd */
+/* create  index s_motd_pk on s_motd (s_motd_id)*/ 
+/* go */
+
+
+/* s_motd_viewed */
+/* create  index s_motd_viewed_pk on s_motd_viewed (s_motd_id, s_username)*/ 
+/* go */
+create  index s_motd_viewed_username_idx on s_motd_viewed (s_username, s_motd_id);

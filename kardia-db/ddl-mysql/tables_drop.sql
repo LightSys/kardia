@@ -265,3 +265,11 @@ drop table s_process;
 
 /* s_process_status */
 drop table s_process_status;
+
+
+/* s_motd */
+drop table s_motd;
+
+
+/* s_motd_viewed */
+drop table s_motd_viewed;

@@ -1468,3 +1468,36 @@ create table s_process_status (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+
+
+/* s_motd */
+
+create table s_motd (
+        s_motd_id                             integer  not null,       /* id of the message --  */
+        s_valid_days                          integer  null,           /* number of days the message is valid (NULL for indefinite validity) --  */
+        s_message_title                       varchar(255)  not null,  /* the title of the message --  */
+        s_message_text                        varchar(1536)  not null,
+                                                                      /* the text of the message --  */
+        s_enabled                             bit,                     /* whether the message should be shown or not --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_motd_viewed */
+
+create table s_motd_viewed (
+        s_motd_id                             integer  not null,       /* id of the message --  */
+        s_username                            varchar(20)  not null,   /* user who viewed the message --  */
+        s_viewed_date                         datetime  not null,      /* when the user viewed the message --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);

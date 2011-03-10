@@ -396,3 +396,11 @@ alter table s_process
 
 alter table s_process_status
 	drop primary key;
+
+
+alter table s_motd
+	drop primary key;
+
+
+alter table s_motd_viewed
+	drop primary key;
