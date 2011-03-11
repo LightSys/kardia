@@ -1,0 +1,10 @@
+$Version=2$
+site "system/structure"
+    {
+    site_name = "SomeOrganization";
+    site_description = "Some Organization that is Testing Kardia";
+    site_logo = "/apps/kardia/images/artwork/Kardia2011b-horiz-37.png";
+    site_logo_width = 182;
+    site_logo_height = 37;
+    site_logo_background = white;
+    }
