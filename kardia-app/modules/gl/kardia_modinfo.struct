@@ -4,4 +4,5 @@ kardia_modinfo "system/structure"
     module_name = "General Ledger";
     module_abbrev = "GL";
     module_description = "Provides core financial system functionality for Kardia";
+    module_sequence = 100;
     }

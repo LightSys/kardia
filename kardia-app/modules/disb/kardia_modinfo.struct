@@ -4,4 +4,5 @@ kardia_modinfo "system/structure"
     module_name = "Cash Disbursements";
     module_abbrev = "Disbursements";
     module_description = "Cash Disbursements (check writing) system with integration into the Kardia General Ledger";
+    module_sequence = 110;
     }
