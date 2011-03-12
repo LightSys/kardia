@@ -14,5 +14,6 @@ financial_statement "widget/page"
 	path = "/apps/kardia/modules/payroll/financial_statement.cmp";
 	ledger = runserver(:this:ledger);
 	page = financial_statement;
+	fswin = financial_statement;
 	}
     }

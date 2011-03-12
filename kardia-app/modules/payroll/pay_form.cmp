@@ -2,12 +2,13 @@ $Version=2$
 pay_form "widget/component-decl"
     {
     width=758;
-    height=580;
+    height=620;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     period "widget/parameter" { type=string; default=null; }
     ref_period "widget/parameter" { type=string; default=null; }
     costctr "widget/parameter" { type=string; default=null; }
+    group_id "widget/parameter" { type=integer; default=null; }
     payroll_id "widget/parameter" { type=integer; default=null; }
     payee_name "widget/parameter" { type=string; default=null; }
     payee_data_osrc "widget/parameter" { type=object; }
@@ -46,7 +47,8 @@ pay_form "widget/component-decl"
 		readahead=2;
 		autoquery=onload;
 		ob_period "widget/parameter" { param_name=period; type=string; default=runserver(:this:period); }
-		sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and (:t:a_period < :parameters:period or :t:a_transaction_type = 'B') and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999'");
+		sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and ((:t:a_period == " + quote(:this:period) + " and :t:a_transaction_type = 'B') or (:t:a_period < " + quote(:this:period) + ")) and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999'");
+		//sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and ((:t:a_period == :parameters:period and :t:a_transaction_type = 'B') or (:t:a_period < :parameters:period)) and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999'");
 
 		ob_form "widget/form"
 		    {
@@ -80,6 +82,8 @@ pay_form "widget/component-decl"
 			:it:a_payroll_item_class_code = :ic:a_payroll_item_class_code and
 			:it:a_ledger_number = " + quote(:this:ledger) + " and
 			:pi:a_payroll_id = " + :this:payroll_id + " and
+			:pi:a_payroll_group_id = " + :this:group_id + " and
+			:pi:a_ledger_number = " + quote(:this:ledger) + " and
 			:pi:a_payroll_item_type_code = :it:a_payroll_item_type_code and
 			:it:a_payroll_item_form_sequence > 0 and
 			" + condition(:this:period is null, ":pi:a_is_instance = 0 and :pi:a_period is null", ":pi:a_is_instance = 1 and :pi:a_period = " + quote(:this:period)) + "
@@ -124,6 +128,8 @@ pay_form "widget/component-decl"
 				charindex(:it:a_payroll_item_class_code, " + quote(:category_rp:codes) + ") > 0 and
 				:it:a_ledger_number = " + quote(:this:ledger) + " and
 				:pi:a_payroll_id = " + :this:payroll_id + " and
+				:pi:a_payroll_group_id = " + :this:group_id + " and
+				:pi:a_ledger_number = " + quote(:this:ledger) + " and
 				:pi:a_payroll_item_type_code = :it:a_payroll_item_type_code and
 				" + condition(:this:period is null, ":pi:a_is_instance = 0 and :pi:a_period is null", ":pi:a_is_instance = 1 and :pi:a_period = " + quote(:this:period)) + "
 			ORDER BY
@@ -137,6 +143,7 @@ pay_form "widget/component-decl"
 		    period = runserver(:this:period);
 		    ref_period = runserver(:this:ref_period);
 		    payroll_id = runserver(:this:payroll_id);
+		    group_id = runserver(:this:group_id);
 		    type_code = runserver(:form_item_rp:code);
 		    class_code = runserver(:form_item_rp:class_code);
 		    item_desc = runserver(:form_item_rp:descrip);
@@ -169,10 +176,14 @@ pay_form "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it
 		WHERE
 			:it:a_ledger_number = " + quote(:this:ledger) + " and
-			" + condition(:this:period is null, ":i:a_is_instance = 0 and :i:a_period is null", ":i:a_is_instance = 1 and :i:a_period = " + quote(:this:period)) + "
+			" + condition(:this:period is null, ":i:a_is_instance = 0 and :i:a_period is null", ":i:a_is_instance = 1 and :i:a_period = " + quote(:this:period)) + " and
 			:y:a_cost_center = " + quote(:this:costctr) + " and
 			:y:a_payroll_id != " + :this:payroll_id + " and
+			:y:a_payroll_group_id = " + :this:group_id + " and
+			:y:a_ledger_number = " + quote(:this:ledger) + " and
 			:i:a_payroll_id = :y:a_payroll_id and
+			:i:a_payroll_group_id = :y:a_payroll_group_id and
+			:i:a_ledger_number = :y:a_ledger_number and
 			:it:a_payroll_item_type_code = :i:a_payroll_item_type_code
 		");
 //			/apps/kardia/data/Kardia_DB/a_period/rows p,
@@ -217,13 +228,13 @@ pay_form "widget/component-decl"
 		select
 			total = (select isnull($0 - sum(:t:a_amount),$0)
 					FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t
-					WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and (:t:a_period <= :parameters:period or :t:a_transaction_type = 'B') and :t:a_period >= :parameters:ref_period and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999' and (:t:a_origin != 'PP' or :t:a_period != :parameters:period)) -
+					WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and (:t:a_period <= " + quote(:this:period) + " or (:t:a_period == " + quote(:this:period) + " and :t:a_transaction_type = 'B')) and :t:a_period >= :parameters:ref_period and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999' and (:t:a_origin != 'PP' or :t:a_period != :parameters:period)) -
 				(select isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'GEBP') > 0, :i:a_actual_amount, $0)),$0)
 					FROM /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it
-					WHERE :it:a_ledger_number = " + quote(:this:ledger) + " and :i:a_period = :parameters:period and :i:a_payroll_id = " + :this:payroll_id + " and :it:a_payroll_item_type_code = :i:a_payroll_item_type_code) -
+					WHERE :it:a_ledger_number = " + quote(:this:ledger) + " and :i:a_period = :parameters:period and :i:a_payroll_id = " + :this:payroll_id + " and :i:a_payroll_group_id = " + :this:group_id + " and :i:a_ledger_number = " + quote(:this:ledger) + " and :it:a_payroll_item_type_code = :i:a_payroll_item_type_code) -
 				(select isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'GEBP') > 0, :i:a_actual_amount, $0)),$0)
 					FROM /apps/kardia/data/Kardia_DB/a_payroll/rows y, /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it
-					WHERE :it:a_ledger_number = " + quote(:this:ledger) + " and :i:a_period = :parameters:period and :y:a_cost_center = " + quote(:this:costctr) + " and :y:a_payroll_id != " + :this:payroll_id + " and :i:a_payroll_id = :y:a_payroll_id and :it:a_payroll_item_type_code = :i:a_payroll_item_type_code)
+					WHERE :it:a_ledger_number = " + quote(:this:ledger) + " and :i:a_period = :parameters:period and :y:a_cost_center = " + quote(:this:costctr) + " and :y:a_payroll_id != " + :this:payroll_id + " and :y:a_payroll_group_id = " + :this:group_id + " and :y:a_ledger_number = " + quote(:this:ledger) + " and :i:a_payroll_id = :y:a_payroll_id and :i:a_payroll_group_id = :y:a_payroll_group_id and :i:a_ledger_number = :y:a_ledger_number and :it:a_payroll_item_type_code = :i:a_payroll_item_type_code)
 		");
 
 //				(select isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'GEBP') > 0, :i:a_actual_amount, $0)),$0)

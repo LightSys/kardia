@@ -9,6 +9,7 @@ pay_form_item "widget/component-decl"
     ref_period "widget/parameter" { type=string; default=null; }
     costctr "widget/parameter" { type=string; default=null; }
     payroll_id "widget/parameter" { type=integer; default=null; }
+    group_id "widget/parameter" { type=integer; default=null; }
     type_code "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     class_code "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     item_desc "widget/parameter" { type=string; default=null; }
@@ -27,10 +28,10 @@ pay_form_item "widget/component-decl"
 	{
 	condition = runserver(:this:type_code == 'NET');
 
-	readahead=1;
-	replicasize=1;
+	readahead=2;
+	replicasize=2;
 	autoquery=never;
-	sql = runserver("UPDATE /apps/kardia/data/Kardia_DB/a_payroll_item/rows SET :a_actual_amount = (select isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'GM') > 0, :i:a_actual_amount, $0)), $0) - isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'DTV') > 0, :i:a_actual_amount, $0)), $0) FROM /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it WHERE :i:a_payroll_id = " + :this:payroll_id + " and :i:a_payroll_item_type_code = :it:a_payroll_item_type_code and :it:a_ledger_number = " + quote(:this:ledger) + " and charindex(:it:a_payroll_item_class_code, 'GDTMV') > 0 and :i:a_period = " + quote(:this:period) + ")  WHERE :a_period = " + quote(:this:period) + " and :a_payroll_id = " + :this:payroll_id + " and :a_payroll_item_type_code = 'NET'");
+	sql = runserver("UPDATE /apps/kardia/data/Kardia_DB/a_payroll_item/rows SET :a_actual_amount = (select isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'GM') > 0, :i:a_actual_amount, $0)), $0) - isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'DTV') > 0, :i:a_actual_amount, $0)), $0) FROM /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it WHERE :i:a_payroll_id = " + :this:payroll_id + " and :i:a_payroll_group_id = " + :this:group_id + " and :i:a_ledger_number = " + quote(:this:ledger) + " and :i:a_payroll_item_type_code = :it:a_payroll_item_type_code and :it:a_ledger_number = " + quote(:this:ledger) + " and charindex(:it:a_payroll_item_class_code, 'GDTMV') > 0 and :i:a_period = " + quote(:this:period) + ")  WHERE :a_period = " + quote(:this:period) + " and :a_payroll_id = " + :this:payroll_id + " and :a_payroll_group_id = " + :this:group_id + " and :a_ledger_number = " + quote(:this:ledger) + " and :a_payroll_item_type_code = 'NET'");
 
 	recalc_net "widget/connector"
 	    {
@@ -53,10 +54,10 @@ pay_form_item "widget/component-decl"
     recalc_fica_osrc "widget/osrc"
 	{
 	condition = runserver(:this:type_code == 'MD' or :this:type_code == 'MDE' or :this:type_code == 'SS' or :this:type_code == 'SSE');
-	readahead=1;
-	replicasize=1;
+	readahead=2;
+	replicasize=2;
 	autoquery=never;
-	sql = runserver("UPDATE IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i2, /apps/kardia/data/Kardia_DB/a_tax_table/rows tt  SET :i2:a_actual_amount = round(( (select isnull(sum(:i:a_actual_amount), $0) FROM /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it WHERE :i:a_payroll_id = " + :this:payroll_id + " and :i:a_payroll_item_type_code = :it:a_payroll_item_type_code and :it:a_ledger_number = " + quote(:this:ledger) + " and charindex(:it:a_payroll_item_class_code, 'G') > 0 and :i:a_period = " + quote(:this:period) + ") - :tt:a_subtract_salary) * :tt:a_percent, 2) + :tt:a_add_to_tax  WHERE :i2:a_period = " + quote(:this:period) + " and :i2:a_payroll_id = " + :this:payroll_id + " and :i2:a_payroll_item_type_code = " + quote(:this:type_code) + " and :tt:a_payroll_item_type = " + quote(:this:type_code) + " and :tt:a_ledger_number = " + quote(:this:ledger) + " and :tt:a_filing_status = :i2:a_filing_status and :tt:a_payroll_interval = '5' and :tt:a_start_date <= :i2:a_effective_date and :tt:a_end_date >= :i2:a_effective_date");
+	sql = runserver("UPDATE IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i2, /apps/kardia/data/Kardia_DB/a_tax_table/rows tt  SET :i2:a_actual_amount = round(( (select isnull(sum(:i:a_actual_amount), $0) FROM /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it WHERE :i:a_payroll_id = " + :this:payroll_id + " and :i:a_payroll_group_id = " + :this:group_id + " and :i:a_ledger_number = " + quote(:this:ledger) + " and :i:a_payroll_item_type_code = :it:a_payroll_item_type_code and :it:a_ledger_number = " + quote(:this:ledger) + " and charindex(:it:a_payroll_item_class_code, 'G') > 0 and :i:a_period = " + quote(:this:period) + ") - :tt:a_subtract_salary) * :tt:a_percent, 2) + :tt:a_add_to_tax  WHERE :i2:a_period = " + quote(:this:period) + " and :i2:a_payroll_id = " + :this:payroll_id + " and :i2:a_payroll_group_id = " + :this:group_id + " and :i2:a_ledger_number = " + quote(:this:ledger) + " and :i2:a_payroll_item_type_code = " + quote(:this:type_code) + " and :tt:a_payroll_item_type = " + quote(:this:type_code) + " and :tt:a_ledger_number = " + quote(:this:ledger) + " and :tt:a_filing_status = :i2:a_filing_status and :tt:a_payroll_interval = '5' and :tt:a_start_date <= :i2:a_effective_date and :tt:a_end_date >= :i2:a_effective_date");
 
 	recalc_fica "widget/connector"
 	    {
@@ -95,6 +96,8 @@ pay_form_item "widget/component-decl"
 		WHERE
 			:i:a_payroll_item_type_code = " + quote(:this:type_code) + " and
 			:i:a_payroll_id = " + :this:payroll_id + " and
+			:i:a_payroll_group_id = " + :this:group_id + " and
+			:i:a_ledger_number = " + quote(:this:ledger) + " and
 			:it:a_ledger_number = " + quote(:this:ledger) + " and
 			:it:a_payroll_item_type_code = :i:a_payroll_item_type_code and
 			" + condition(:this:period is null, ":i:a_period is null", ":i:a_period = " + quote(:this:period))
@@ -184,7 +187,7 @@ pay_form_item "widget/component-decl"
 		    autoquery=onload;
 		    replicasize=2;
 		    readahead=2;
-		    sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999'");
+		    sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999' and (:t:a_origin != 'PP' or :t:a_period < " + quote(:this:period) + ")");
 		    }
 
 		item_glosrc "widget/osrc"
@@ -193,7 +196,7 @@ pay_form_item "widget/component-decl"
 		    autoquery=onload;
 		    replicasize=2;
 		    readahead=2;
-		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period = " + quote(:this:period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '5000' and :t:a_account_code <= '5999'");
+		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period = " + quote(:this:period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '5000' and :t:a_account_code <= '5999' and :t:a_origin != 'PP'");
 		    }
 
 		item_glosrc "widget/osrc"
@@ -280,7 +283,10 @@ pay_form_item "widget/component-decl"
 							WHERE
 								:y:a_cost_center = " + quote(:this:costctr) + " and
 								:y:a_ledger_number = " + quote(:this:ledger) + " and
+								:y:a_payroll_group_id = " + :this:group_id + " and
 								:i:a_payroll_id = :y:a_payroll_id and
+								:i:a_payroll_group_id = :y:a_payroll_group_id and
+								:i:a_ledger_number = :y:a_ledger_number and
 								:i:a_payroll_item_type_code = :it:a_payroll_item_type_code and
 								:it:a_ledger_number = " + quote(:this:ledger) + " and
 								charindex(:it:a_payroll_item_class_code, 'AGEBP') > 0 and
@@ -289,6 +295,8 @@ pay_form_item "widget/component-decl"
 					WHERE
 						:a_period = " + quote(:this:period) + " and
 						:a_payroll_id = " + :this:payroll_id + " and
+						:a_payroll_group_id = " + :this:group_id + " and
+						:a_ledger_number = " + quote(:this:ledger) + " and
 						:a_payroll_item_type_code = " + quote(:this:type_code) + "
 					");
 		    done_recalc_gross "widget/connector"

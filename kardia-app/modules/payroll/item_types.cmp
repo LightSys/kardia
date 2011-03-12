@@ -5,7 +5,7 @@ item_types_cmp "widget/component-decl"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
 
-    ttwin "widget/parameter" { type=object; }
+    //ttwin "widget/parameter" { type=object; }
 
     ledger_osrc "widget/osrc"
 	{
@@ -21,7 +21,7 @@ item_types_cmp "widget/component-decl"
 	{
 	it_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
 
-	sql = "SELECT :it:a_ledger_number, :a_payroll_item_type_code, :a_payroll_item_class_code, :a_ref_account_code, :a_xfer_cost_center, :a_xfer_account_code, :a_state_province, :a_desc, :a_comment, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtit = :a_payroll_item_type_code + ' - ' + :it:a_desc, txtic = :a_payroll_item_class_code + ' - ' + :ic:a_desc, txtac = :a_ref_account_code + ' ' + :a:a_acct_desc  FROM /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it, /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows ic, /apps/kardia/data/Kardia_DB/a_account/rows a  WHERE :it:a_ledger_number = :parameters:it_ledger and :it:a_payroll_item_class_code = :ic:a_payroll_item_class_code and :it:a_ref_account_code *= :a:a_account_code and :it:a_ledger_number *= :a:a_ledger_number";
+	sql = "SELECT :it:a_ledger_number, :a_payroll_item_type_code, :a_payroll_item_class_code, :a_ref_account_code, :a_xfer_cost_center, :a_xfer_account_code, :a_state_province, :a_desc, :a_comment, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtit = :a_payroll_item_type_code + ' - ' + :it:a_desc, txtic = :a_payroll_item_class_code + ' - ' + :ic:a_desc, txtac = :a_ref_account_code + ' ' + :a:a_acct_desc  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it, /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows ic, /apps/kardia/data/Kardia_DB/a_account/rows a  WHERE :it:a_ledger_number = :parameters:it_ledger and :it:a_payroll_item_class_code = :ic:a_payroll_item_class_code and :it:a_ref_account_code *= :a:a_account_code and :it:a_ledger_number *= :a:a_ledger_number";
 	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows";
 
 	replicasize=50;
@@ -129,7 +129,17 @@ item_types_cmp "widget/component-decl"
 		    text = "Edit Tax Table";
 		    enabled=runclient(charindex(:it_osrc:a_payroll_item_class_code, "ET") > 0); 
 
-		    tt_click "widget/connector" { event=Click; target=ttwin; action=EditTable; TypeCode=runclient(:it_osrc:a_payroll_item_type_code); }
+		    tt_click "widget/connector"
+			{
+			event=Click;
+			target=item_types_cmp;
+			action=Launch;
+			Source=runclient("/apps/kardia/modules/payroll/tax_table.app");
+			Width=800;
+			Height=600;
+			ledger=runclient(:it_osrc:a_ledger_number);
+			type_code=runclient(:it_osrc:a_payroll_item_type_code);
+			}
 		    }
 
 		payees_btn "widget/textbutton"

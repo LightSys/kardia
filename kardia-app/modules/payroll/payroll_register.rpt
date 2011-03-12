@@ -14,6 +14,7 @@ payroll_register "system/report"
 
     // Parameters for Payroll Register
     ledger "report/parameter" { type=string; default=null; }
+    groupid "report/parameter" { type=integer; default=null; }
     period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
 
 
@@ -27,6 +28,11 @@ payroll_register "system/report"
 	sql = "select :p:a_period_desc, ref_period = min(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
 	}
 
+    group_qy "report/query"
+	{
+	sql = "select :pg:a_payroll_group_name from /apps/kardia/data/Kardia_DB/a_payroll_group/rows pg where :pg:a_ledger_number = :this:ledger and :pg:a_payroll_group_id = :this:groupid";
+	}
+
     // assumes only *one* "NET" line per payee per period
     payee_cnt_qy "report/query"
 	{
@@ -37,7 +43,10 @@ payroll_register "system/report"
 			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:y:a_ledger_number = :i:a_ledger_number and
 			:y:a_ledger_number = :this:ledger and
+			:y:a_payroll_group_id = :this:groupid and
 			:i:a_payroll_item_type_code = 'NET' and
 			:i:a_period = :this:period
 		";
@@ -48,6 +57,8 @@ payroll_register "system/report"
 	{
 	sql = "	SET ROWCOUNT 0
 		SELECT
+			:y:a_ledger_number,
+			:y:a_payroll_group_id,
 			:y:a_payroll_id,
 			:y:a_payee_name
 		FROM
@@ -55,7 +66,10 @@ payroll_register "system/report"
 			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:y:a_ledger_number = :i:a_ledger_number and
 			:y:a_ledger_number = :this:ledger and
+			:y:a_payroll_group_id = :this:groupid and
 			:i:a_payroll_item_type_code = 'NET' and
 			:i:a_period = :this:period
 		ORDER BY
@@ -76,6 +90,8 @@ payroll_register "system/report"
 			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
 			:t:a_ledger_number = :this:ledger and
 			:i:a_payroll_id = :payee_list_qy:a_payroll_id and
+			:i:a_payroll_group_id = :payee_list_qy:a_payroll_group_id and
+			:i:a_ledger_number = :payee_list_qy:a_ledger_number and
 			:i:a_period = :this:period and
 			:i:a_is_instance = 1 and
 			:i:a_actual_amount != $0 and
@@ -98,10 +114,12 @@ payroll_register "system/report"
 			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
 			:t:a_ledger_number = :this:ledger and
 			:i:a_payroll_id = :payee_list_qy:a_payroll_id and
+			:i:a_payroll_group_id = :payee_list_qy:a_payroll_group_id and
+			:i:a_ledger_number = :payee_list_qy:a_ledger_number and
 			:i:a_period = :this:period and
 			:i:a_is_instance = 1 and
 			:i:a_actual_amount != $0 and
-			(:t:a_payroll_item_class_code = 'T' or :t:a_payroll_item_class_code = 'T')
+			(:t:a_payroll_item_class_code = 'T' or :t:a_payroll_item_class_code = 'T' or :t:a_payroll_item_class_code = 'D')
 		";
 	total "report/aggregate" { compute="sum(:amt)"; }
 	gtotal "report/aggregate" { compute="sum(:amt)"; reset=1; }
@@ -120,6 +138,8 @@ payroll_register "system/report"
 			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
 			:t:a_ledger_number = :this:ledger and
 			:i:a_payroll_id = :payee_list_qy:a_payroll_id and
+			:i:a_payroll_group_id = :payee_list_qy:a_payroll_group_id and
+			:i:a_ledger_number = :payee_list_qy:a_ledger_number and
 			:i:a_period = :this:period and
 			:i:a_is_instance = 1 and
 			:i:a_actual_amount != $0 and
@@ -146,7 +166,10 @@ payroll_register "system/report"
 			:i:a_payroll_item_type_code = :it:a_payroll_item_type_code and
 			:it:a_ledger_number = :this:ledger and
 			:y:a_ledger_number = :this:ledger and
+			:y:a_payroll_group_id = :this:groupid and
 			:i:a_payroll_id = :y:a_payroll_id and
+			:i:a_payroll_group_id = :y:a_payroll_group_id and
+			:i:a_ledger_number = :y:a_ledger_number and
 			:i:a_period = :this:period and
 			:i:a_is_instance = 1 and
 			:i:a_actual_amount != $0
@@ -157,12 +180,12 @@ payroll_register "system/report"
 
     ledger_form "report/form"
 	{
-	source = ledger_qy,period_qy,payee_cnt_qy;
+	source = ledger_qy,period_qy,group_qy,payee_cnt_qy;
 
 	hdrimg "report/image"
 	    {
 	    x=92.85;y=0;height=4;width=12.15;
-	    source="/apps/kardia/modules/local/organization_logo.png";
+	    source="/apps/kardia/modules/local/action_logo.png";
 	    }
 
 	rpt_title "report/area"
@@ -170,7 +193,7 @@ payroll_register "system/report"
 	    x=0; y=0; width=105; height=4;
 	    font=helvetica;
 	    align=left;
-	    t_d3 "report/data" { fontsize=10; style=bold; value = runserver("Payroll Period: " + :period_qy:a_period_desc + "\n"); }
+	    t_d3 "report/data" { fontsize=10; style=bold; value = runserver(:group_qy:a_payroll_group_name + ", Period: " + :period_qy:a_period_desc + "\n"); }
 	    t_d1 "report/data" { fontsize=8; value = runserver("Payroll Register from " + :ledger_qy:a_ledger_desc + "\n"); }
 	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
 	    }
@@ -195,16 +218,16 @@ payroll_register "system/report"
 	    payroll_list "report/table"
 		{
 		condition = runserver(:payee_cnt_qy:cnt > 0);
-		x=0;width=71;height=0;
+		x=0;width=77;height=0;
 		columns=4;
-		widths=8,19,19,19;
+		widths=8,21,21,21;
 		colsep=2;
 		source=payee_list_qy;
 		mode = inner;
 		moneyformat = "-###,###,##0.00";
 		font=helvetica;
 		fontsize=8;
-		reclimit = 11;
+		//reclimit = 11;
 
 		payroll_list_hdr "report/table-row"
 		    {
@@ -221,6 +244,7 @@ payroll_register "system/report"
 		    {
 		    font=courier;
 		    topborder = 0.01;
+		    allowbreak = no;
 
 		    pd_name "report/table-cell" { value=runserver(:payee_list_qy:a_payee_name); style=bold; font=helvetica; }
 		    pd_earn "report/table-cell"
@@ -228,9 +252,9 @@ payroll_register "system/report"
 			payroll_earnings "report/table"
 			    {
 			    condition = runserver(:payee_cnt_qy:cnt > 0);
-			    x=0;width=19;height=0;
+			    x=0;width=21;height=0;
 			    columns=2;
-			    widths=11,7;
+			    widths=13,7;
 			    colsep=1;
 			    source=payee_earnings_qy;
 			    font=helvetica;
@@ -261,9 +285,9 @@ payroll_register "system/report"
 			payroll_ded "report/table"
 			    {
 			    condition = runserver(:payee_cnt_qy:cnt > 0);
-			    x=0;width=19;height=0;
+			    x=0;width=21;height=0;
 			    columns=2;
-			    widths=11,7;
+			    widths=13,7;
 			    colsep=1;
 			    source=payee_ded_qy;
 			    font=helvetica;
@@ -294,9 +318,9 @@ payroll_register "system/report"
 			payroll_pmt "report/table"
 			    {
 			    condition = runserver(:payee_cnt_qy:cnt > 0);
-			    x=0;width=19;height=0;
+			    x=0;width=21;height=0;
 			    columns=2;
-			    widths=11,7;
+			    widths=13,7;
 			    colsep=1;
 			    source=payee_pmt_qy;
 			    font=helvetica;
@@ -331,6 +355,7 @@ payroll_register "system/report"
 		    summary=yes;
 		    margintop=0.1;
 		    marginbottom=0.0;
+		    allowbreak = no;
 
 		    ps_name "report/table-cell" { value=runserver('TOTALS:'); style=bold; font=helvetica; align=right; }
 		    ps_earn "report/table-cell" { value=runserver(:payee_earnings_qy:gtotal); style=bold; align=right; }

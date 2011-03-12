@@ -259,6 +259,8 @@ financial_statement "system/report"
 			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:y:a_ledger_number = :i:a_ledger_number and
 			:y:a_ledger_number = :this:ledger and
 			:i:a_payroll_item_type_code = 'NET' and
 			:i:a_period = :this:period and
@@ -270,13 +272,17 @@ financial_statement "system/report"
     payee_list_qy "report/query"
 	{
 	sql = "	SELECT
+			:y:a_ledger_number,
 			:y:a_payroll_id,
+			:y:a_payroll_group_id,
 			:y:a_payee_name
 		FROM
 			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
 			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:y:a_ledger_number = :i:a_ledger_number and
 			:y:a_ledger_number = :this:ledger and
 			:i:a_payroll_item_type_code = 'NET' and
 			:i:a_period = :this:period and
@@ -297,6 +303,8 @@ financial_statement "system/report"
 			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
 			:t:a_ledger_number = :this:ledger and
 			:i:a_payroll_id = :payee_list_qy:a_payroll_id and
+			:i:a_payroll_group_id = :payee_list_qy:a_payroll_group_id and
+			:i:a_ledger_number = :payee_list_qy:a_ledger_number and
 			:i:a_period = :this:period and
 			:i:a_is_instance = 1 and
 			(:t:a_payroll_item_class_code = 'G' or :t:a_payroll_item_class_code = 'M') and
@@ -319,9 +327,11 @@ financial_statement "system/report"
 			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
 			:t:a_ledger_number = :this:ledger and
 			:i:a_payroll_id = :payee_list_qy:a_payroll_id and
+			:i:a_payroll_group_id = :payee_list_qy:a_payroll_group_id and
+			:i:a_ledger_number = :payee_list_qy:a_ledger_number and
 			:i:a_period = :this:period and
 			:i:a_is_instance = 1 and
-			(:t:a_payroll_item_class_code = 'T' or :t:a_payroll_item_class_code = 'T') and
+			(:t:a_payroll_item_class_code = 'T' or :t:a_payroll_item_class_code = 'T' or :t:a_payroll_item_class_code = 'D') and
 			:i:a_actual_amount != $0
 		";
 	total "report/aggregate" { compute="sum(:amt)"; }
@@ -341,6 +351,8 @@ financial_statement "system/report"
 			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
 			:t:a_ledger_number = :this:ledger and
 			:i:a_payroll_id = :payee_list_qy:a_payroll_id and
+			:i:a_payroll_group_id = :payee_list_qy:a_payroll_group_id and
+			:i:a_ledger_number = :payee_list_qy:a_ledger_number and
 			:i:a_period = :this:period and
 			:i:a_is_instance = 1 and
 			(:t:a_payroll_item_class_code = 'V' or :t:a_payroll_item_class_code = 'N') and
@@ -359,7 +371,7 @@ financial_statement "system/report"
 			total_work = first(convert(money, :TWkNov)),
 			total_sal = first(convert(money, :MbudNov))
 		FROM
-			/apps/kardia/data/organizationdata/organization.fp/payper.08/rows p
+			/apps/kardia/data/legacydata/legacy.fp/payper.08/rows p
 		WHERE
 			:p:'Account#' = :cctrs_qy:a_cost_center
 		";
@@ -385,6 +397,8 @@ financial_statement "system/report"
 			:y:a_ledger_number = :this:ledger and
 			:y:a_cost_center = :cctrs_qy:a_cost_center and
 			:i:a_payroll_id = :y:a_payroll_id and
+			:i:a_payroll_group_id = :y:a_payroll_group_id and
+			:i:a_ledger_number = :y:a_ledger_number and
 			:i:a_period = :this:period and
 			:i:a_is_instance = 1
 		";
@@ -398,7 +412,7 @@ financial_statement "system/report"
 	hdrimg "report/image"
 	    {
 	    x=67.85;y=0;height=4;width=12.15;
-	    source="/apps/kardia/modules/local/organization_logo.png";
+	    source="/apps/kardia/modules/local/logo.png";
 	    }
 
 	rpt_title "report/area"
@@ -538,7 +552,7 @@ financial_statement "system/report"
 	    x=0; width=80; height=1.0;
 	    font=helvetica;
 	    fontsize=6;
-	    value = runserver("\n** Revenue and/or expense for this fund may reflect amounts which are personal gifts received by ACTION but payable/paid to the missionary; these amounts are not strictly revenue and expense to ACTION as an organization.  These amounts are shown here for your convenience.");
+	    value = runserver("\n** Revenue and/or expense for this fund may reflect amounts which are personal gifts received by the mission but payable/paid to the missionary; these amounts are not strictly revenue and expense to the mission as an organization.  These amounts are shown here for your convenience.");
 	    }
 
 	payroll_summary "report/area"

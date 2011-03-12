@@ -39,15 +39,15 @@ tax_table_cmp "widget/component-decl"
 	    {
 	    event=EndQuery;
 	    target=f_stat;
-	    action=SetSQL;
-	    sql = runclient("select :a_filing_status + ' - ' + :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
+	    action=SetItems;
+	    SQL = runclient("select label=:a_filing_status + ' - ' + :a_desc, value=:a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
 	    }
 	set_stat2_dd "widget/connector"
 	    {
 	    event=EndQuery;
 	    target=f_stat2;
-	    action=SetSQL;
-	    sql = runclient("select :a_filing_status + ' - ' + :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
+	    action=SetItems;
+	    SQL = runclient("select label=:a_filing_status + ' - ' + :a_desc, value=:a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
 	    }
 	}
 
@@ -73,7 +73,7 @@ tax_table_cmp "widget/component-decl"
 		{
 		//sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:text, :a_minimum_salary, :a_maximum_salary, :a_subtract_salary, :a_percent, :a_add_to_tax, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date) + ' - ' + datepart(month, :a_end_date) + '/' + datepart(day, :a_end_date) + '/' + datepart(year, :a_end_date), txt = '' + round(100.0 * :a_percent, 2) + '% of salary exceeding ' + :a_subtract_salary + ', plus ' + :a_add_to_tax  FROM /apps/kardia/data/Kardia_DB/a_tax_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:tag";
 		//sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:text, :a_minimum_salary, :a_maximum_salary, :a_subtract_salary, :a_percent, :a_add_to_tax, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), pct = '' + round(100.0 * :a_percent, 2) + '%', :a_subtract_salary, :a_add_to_tax  FROM /apps/kardia/data/Kardia_DB/a_tax_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:tag";
-		sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:a_desc, :a_minimum_salary, :a_maximum_salary, :a_subtract_salary, :a_percent, :a_add_to_tax, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), pct = '' + round(100.0 * :a_percent, 2) + '%', :a_subtract_salary, :a_add_to_tax  FROM /apps/kardia/data/Kardia_DB/a_tax_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:a_filing_status and :tt:a_payroll_item_type = :fs:a_payroll_item_type_code";
+		sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:a_desc, :a_minimum_salary, :a_maximum_salary, :a_subtract_salary, :a_percent, :a_add_to_tax, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), pct = '' + round(100.0 * :a_percent, 2) + '%', :a_subtract_salary, :a_add_to_tax  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_tax_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:a_filing_status and :tt:a_payroll_item_type = :fs:a_payroll_item_type_code";
 		baseobj = "/apps/kardia/data/Kardia_DB/a_tax_table/rows";
 
 		replicasize=50;
@@ -143,11 +143,11 @@ tax_table_cmp "widget/component-decl"
 			spacing=8;
 			cellsize=20;
 
-			f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="Valid From:"; ctl_type="datetime"; tooltip="Date that this tax table entry begins to be valid"; label_width=100; }
-			f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid Thru:"; ctl_type="datetime"; tooltip="Last date that this tax table entry is valid"; label_width=100; }
+			f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="Valid From:"; ctl_type="datetime"; tooltip="Date that this tax table entry begins to be valid"; date_only=1; default_time="00:00:00"; label_width=100; }
+			f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid Thru:"; ctl_type="datetime"; tooltip="Last date that this tax table entry is valid"; date_only=1; default_time="23:59:59"; label_width=100; }
 			f_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="Pay Period:"; ctl_type="dropdown"; tooltip="Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
 			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
-			f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dynamicdropdown"; tooltip="Filing Status"; label_width=100; }
+			f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; }
 			}
 
 		    tt_vbox2 "widget/vbox"
@@ -189,7 +189,7 @@ tax_table_cmp "widget/component-decl"
 	    title = "Allowances Table";
 	    ta_osrc "widget/osrc"
 		{
-		sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:a_desc, :a_flat_deduction_amt, :a_allowance, :a_dependent_allowance, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), pct = '' + round(100.0 * :a_percent, 2) + '%', :a_subtract_salary, :a_add_to_tax  FROM /apps/kardia/data/Kardia_DB/a_tax_allowance_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:a_filing_status and :tt:a_payroll_item_type = :fs:a_payroll_item_type_code";
+		sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:a_desc, :a_flat_deduction_amt, :a_allowance, :a_dependent_allowance, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), pct = '' + round(100.0 * :a_percent, 2) + '%', :a_subtract_salary, :a_add_to_tax  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_tax_allowance_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:a_filing_status and :tt:a_payroll_item_type = :fs:a_payroll_item_type_code";
 		baseobj = "/apps/kardia/data/Kardia_DB/a_tax_allowance_table/rows";
 
 		replicasize=50;
@@ -255,7 +255,7 @@ tax_table_cmp "widget/component-decl"
 			f_to2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid Thru:"; ctl_type="datetime"; tooltip="Last date that this tax table entry is valid"; label_width=100; }
 			f_per2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="Pay Period:"; ctl_type="dropdown"; tooltip="Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
 			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
-			f_stat2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dynamicdropdown"; tooltip="Filing Status"; label_width=100; }
+			f_stat2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; }
 			}
 
 		    ta_vbox2 "widget/vbox"
@@ -332,15 +332,15 @@ tax_table_cmp "widget/component-decl"
 			{
 			event=DataSaved;
 			target=f_stat;
-			action=SetSQL;
-			sql = runclient("select :a_filing_status + ' - ' + :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
+			action=SetItems;
+			SQL = runclient("select label=:a_filing_status + ' - ' + :a_desc, value=:a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
 			}
 		    set_stat4_dd "widget/connector"
 			{
 			event=DataSaved;
 			target=f_stat2;
-			action=SetSQL;
-			sql = runclient("select :a_filing_status + ' - ' + :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
+			action=SetItems;
+			SQL = runclient("select label=:a_filing_status + ' - ' + :a_desc, value=:a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_ledger_number = " + quote(:it_osrc:a_ledger_number) + " and :a_payroll_item_type_code = " + quote(:it_osrc:a_payroll_item_type_code));
 			}
 
 		    fs_ctls "widget/component"

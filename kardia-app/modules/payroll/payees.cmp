@@ -18,13 +18,13 @@ payees_cmp "widget/component-decl"
     // Payroll detail screen
     paydet "widget/parameter" { type=object; }
 
-    payee_osrc "widget/osrc"
+    group_osrc "widget/osrc"
 	{
-	sql = "SELECT :a:a_payroll_id, :a:p_payee_partner_key, :a:a_payee_name, :a:a_priority, :a:a_payroll_interval, :a:a_ledger_number, :a:a_cost_center, :a:a_start_date, :a:a_end_date, :a:s_date_created, :a:s_created_by, :a:s_date_modified, :a:s_modified_by, cctxt = '' + :a:a_cost_center + ' - ' + :c:a_cc_desc, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), ptxt = condition(char_length(:a:a_payee_name) > 0, :a:a_payee_name, :p:p_surname + ', ' + :p:p_given_name), itxt = :iv:text  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_payroll/rows a, /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_cost_center/rows c  WHERE :p:p_partner_key = :a:p_payee_partner_key and :a:a_payroll_interval = :iv:tag and :a:a_cost_center = :c:a_cost_center and :a:a_ledger_number = :c:a_ledger_number";
-	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll/rows";
-	autoquery=never;
-	replicasize=150;
-	readahead=25;
+	sql = "SELECT :pg:a_ledger_number, :pg:a_payroll_group_id, :pg:a_payroll_group_name, txt=:pg:a_payroll_group_name + ' (' + :pg:a_payroll_group_id + ')'  FROM /apps/kardia/data/Kardia_DB/a_payroll_group/rows pg";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll_group/rows";
+	autoquery = never;
+	replicasize=10;
+	readahead=10;
 
 	ledger_sync "widget/rule"
 	    {
@@ -33,17 +33,44 @@ payees_cmp "widget/component-decl"
 	    is_slave = yes;
 	    key_1 = a_ledger_number;
 	    target_key_1 = a_ledger_number;
+	    }
+
+	group_sel_dd "widget/dropdown"
+	    {
+	    x=8; y=8; width=200; height=20;
+	    mode = objectsource;
+	    fieldname=txt;
+	    }
+	}
+
+    payee_osrc "widget/osrc"
+	{
+	sql = "SELECT :a:a_payroll_id, :a:p_payee_partner_key, :a:a_payee_name, :a:a_priority, :a:a_payroll_interval, :a:a_ledger_number, :a:a_cost_center, :a:a_start_date, :a:a_end_date, :a:s_date_created, :a:s_created_by, :a:s_date_modified, :a:s_modified_by, cctxt = '' + :a:a_cost_center + ' - ' + :c:a_cc_desc, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), ptxt = condition(char_length(:a:a_payee_name) > 0, :a:a_payee_name, :p:p_surname + ', ' + :p:p_given_name), itxt = :iv:text  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_payroll/rows a, /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_cost_center/rows c  WHERE :p:p_partner_key = :a:p_payee_partner_key and :a:a_payroll_interval = :iv:tag and :a:a_cost_center = :c:a_cost_center and :a:a_ledger_number = :c:a_ledger_number";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll/rows";
+	autoquery=never;
+	replicasize=150;
+	readahead=25;
+
+	ledger_and_group_sync "widget/rule"
+	    {
+	    ruletype = "osrc_relationship";
+	    target = group_osrc;
+	    is_slave = yes;
+	    key_1 = a_ledger_number;
+	    key_2 = a_payroll_group_id;
+	    target_key_1 = a_ledger_number;
+	    target_key_2 = a_payroll_group_id;
 	    revealed_only = true;
 	    }
 
 	payee_list_pane "widget/pane"
 	    {
-	    x=8;y=8;width=762;height=308;
+	    x=8;y=40;width=762;height=276;
 	    widget_class = "table_bgnd";
 
 	    payee_list "widget/table"
 		{
-		x=0;y=0;width=760;height=306;
+		x=0;y=0;width=760;height=274;
 		rowheight = 18;
 		mode=dynamicrow;
 		fl_height=100;
@@ -105,7 +132,7 @@ payees_cmp "widget/component-decl"
 		    width = 140;
 		    text = "Pay Details...";
 
-		    go_detail "widget/connector" { event=Click; target=paydet; action=GotoPayee; Payee=runclient(:payee_osrc:a_payroll_id); }
+		    go_detail "widget/connector" { event=Click; target=paydet; action=GotoPayee; Payee=runclient(:payee_osrc:a_payroll_id); Group=runclient(:group_osrc:a_payroll_group_id); }
 		    }
 		}
 

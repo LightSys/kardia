@@ -8,7 +8,7 @@ pay_detail_window "widget/component-decl"
 
     GotoPayee "widget/component-decl-action" { }
     GotoPayee_cn1 "widget/connector" { event="GotoPayee"; target="pay_detail_win"; action="Open"; Cascade=1; IsModal=1; }
-    GotoPayee_cn2 "widget/connector" { event="GotoPayee"; target="pay_detail_cmp"; action="GotoPayee"; Payee=runclient(:Payee); }
+    GotoPayee_cn2 "widget/connector" { event="GotoPayee"; target="pay_detail_cmp"; action="GotoPayee"; Payee=runclient(:Payee); Group=runclient(:Group); }
 
     // the ledger we are working with
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }

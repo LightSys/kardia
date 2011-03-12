@@ -41,5 +41,5 @@ copy_pay_detail "widget/component-decl"
 	    a_period = runclient(:unpost_osrc_1:a_period); 
 	    }
 	}
-    sql = "insert ./ select a_payroll_id = 123, :a:a_payroll_item_type_code, a_is_instance = 1, a_period = '2009.10', a_effective_date = convert(datetime, '10/31/2009'), a_target_amount = $0, a_actual_amount = $0, :a:a_filing_status, :a:a_allowances, a_ref_cost_center = '51017', :a:a_ref_account_code, :a:a_xfer_cost_center, :a:a_xfer_account_code, s_date_created = getdate(), s_created_by = user_name(), s_date_modified = getdate(), s_modified_by = user_name() from ./ a where :a:a_period = '2009.10' and :a:a_payroll_id = 4";
+    sql = "insert ./ select a_payroll_id = 555, :a:a_payroll_item_type_code, a_is_instance = 1, a_period = '2009.10', a_effective_date = convert(datetime, '10/31/2009'), a_target_amount = $0, a_actual_amount = $0, :a:a_filing_status, :a:a_allowances, a_ref_cost_center = '55555', :a:a_ref_account_code, :a:a_xfer_cost_center, :a:a_xfer_account_code, s_date_created = getdate(), s_created_by = user_name(), s_date_modified = getdate(), s_modified_by = user_name() from ./ a where :a:a_period = '2009.10' and :a:a_payroll_id = 5";
     }
