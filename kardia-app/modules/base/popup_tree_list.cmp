@@ -9,6 +9,7 @@ popup_tree_list "widget/component-decl"
 
     label "widget/parameter" { type=string; default="List"; }
     order "widget/parameter" { type=string; default="asc"; }
+    popup_width "widget/parameter" { type=integer; default=250; }
 
     Opened "widget/component-decl-event" {}
     Closed "widget/component-decl-event" {}
@@ -138,7 +139,7 @@ popup_tree_list "widget/component-decl"
 	widget_class = "popup";
 	titlebar = no;
 	x=0; y=0;
-	width=250; height=300;
+	width=runserver(:this:popup_width); height=300;
 	toplevel = yes;
 
 	popup_open "widget/connector" { event = Open; action = Opened; target = popup_tree_list; }
@@ -146,12 +147,12 @@ popup_tree_list "widget/component-decl"
 
 	vb "widget/vbox"
 	    {
-	    x=0;y=4;width=248;height=294;
+	    x=0;y=4;width=runserver(:this:popup_width - 2);height=294;
 	    spacing=6;
 
 	    lbl "widget/label" { height=16; align=center; text=runserver(:this:label); style=bold; fgcolor=white; }
 
-	    sep "widget/pane" { height=2; x=8; width=232; style=lowered; }
+	    sep "widget/pane" { height=2; x=8; width=runserver(:this:popup_width - 18); style=lowered; }
 
 	    scroll "widget/scrollpane"
 		{
@@ -159,7 +160,7 @@ popup_tree_list "widget/component-decl"
 
 		tree "widget/treeview"
 		    {
-		    x=0;y=0;width=248;
+		    x=0;y=0;width=runserver(:this:popup_width - 2);
 		    fgcolor=white;
 		    icon = "/apps/kardia/images/icons/object.gif";
 		    source = runserver(:this:source);

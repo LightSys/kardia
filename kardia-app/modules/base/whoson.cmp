@@ -21,7 +21,21 @@ whoson "widget/component-decl"
 
     whoson_osrc "widget/osrc"
 	{
-	sql = "select img='/apps/kardia/images/icons/person.gif', :ud:s_status, :ud:s_username, :u:description, :s:name, :s:session_cnt from /sys/cx.sysinfo/users s, /apps/kardia/data/Users.uxu u, /apps/kardia/data/Kardia_DB/s_user_data/rows ud where :s:name = :u:name and :s:name *= :ud:s_username";
+	sql = " select
+			img='/apps/kardia/images/icons/person.gif',
+			:ud:s_status,
+			:ud:s_username,
+			:u:description,
+			:s:name,
+			:s:session_cnt
+		from
+			/sys/cx.sysinfo/users s,
+			/apps/kardia/data/Users.uxu u,
+			/apps/kardia/data/Kardia_DB/s_user_data/rows ud
+		where
+			:s:name = :u:name and
+			:s:name *= :ud:s_username
+		";
 	replicasize=100;
 	readahead=100;
 	autoquery=onfirstreveal;

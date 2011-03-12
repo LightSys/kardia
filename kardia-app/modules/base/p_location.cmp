@@ -167,13 +167,15 @@ p_location_component "widget/component-decl"
                     s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="date modified"; type="modify"; ctl_type="editbox"; form=p_location_form; tooltip="Date this was last modified"; }
                     s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="modified by"; type="modify"; ctl_type="editbox"; form=p_location_form; tooltip="The user who last modified this record"; }
                     }
-                envelope_report_pane "widget/pane"
-                    { 
-                    x=430; y=5;
-                    height=145;
-                    width=393;
-                    bgcolor="#ffffff";
-                    } 
+		disp_donor "widget/component"
+		    {
+		    x=430; y=5;
+		    height=100;
+		    width=393;
+		    path = "/apps/kardia/modules/base/address_label.cmp";
+		    partner = sync_osrc;
+		    location = person_location_osrc;
+		    }
                 }
             p_location_pane "widget/pane"
                 {
@@ -226,6 +228,11 @@ p_location_component "widget/component-decl"
                         {
                         title = "state";
                         fieldname = p_state_province;
+                        }
+                    table_postal "widget/table-column"
+                        {
+                        title = "postal";
+                        fieldname = p_postal_code;
                         }
                     }
 
