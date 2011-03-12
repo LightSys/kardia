@@ -140,45 +140,75 @@ motd_edit "widget/component-decl"
 		text = runclient("Users Who Have Viewed '" + :motd_osrc:s_message_title + "'...");
 		}
 
-	    motd_viewed_osrc "widget/osrc"
+	    motd_viewed_hbox "widget/hbox"
 		{
-		sql = "select
-				:mv:s_viewed_date,
-				:mv:s_username,
-				:mv:s_motd_id,
-				user = isnull(:u:description, :mv:s_username),
-				date_txt = substring(convert(string,:mv:s_viewed_date), 1, 11)
-			from
-				/apps/kardia/data/Kardia_DB/s_motd_viewed/rows mv,
-				/apps/kardia/data/Users.uxu u
-			where
-				:mv:s_username *= :u:username
-			";
-		readahead=50;
-		replicasize=50;
+		height = 182;
+		spacing = 10;
 
-		osrc_sync "widget/rule"
+		motd_viewed_osrc "widget/osrc"
 		    {
-		    ruletype = osrc_relationship;
-		    target = motd_osrc;
-		    key_objname = mv;
-		    key_1 = s_motd_id;
-		    target_key_1 = s_motd_id;
-		    }
+		    sql = "select
+				    :mv:s_viewed_date,
+				    :mv:s_username,
+				    :mv:s_motd_id,
+				    user = isnull(:u:description, :mv:s_username),
+				    date_txt = substring(convert(string,:mv:s_viewed_date), 1, 11)
+			    from
+				    IDENTITY /apps/kardia/data/Kardia_DB/s_motd_viewed/rows mv,
+				    /apps/kardia/data/Users.uxu u
+			    where
+				    :mv:s_username *= :u:username
+			    ";
+		    readahead=50;
+		    replicasize=50;
 
-		motd_viewed_table_pane "widget/pane"
-		    {
-		    height = 182;
-		    widget_class = table_bgnd;
-
-		    motd_viewed_table "widget/table"
+		    osrc_sync "widget/rule"
 			{
-			x=0; y=0;
-			width = 498; height=180;
-			mode = dynamicrow;
+			ruletype = osrc_relationship;
+			target = motd_osrc;
+			key_objname = mv;
+			key_1 = s_motd_id;
+			target_key_1 = s_motd_id;
+			}
 
-			t_user "widget/table-column" { title="User"; fieldname="user"; width=200; }
-			t_viewdate "widget/table-column" { title="Viewed On"; fieldname="s_viewed_date"; width=300; }
+		    motd_viewed_form "widget/form"
+			{
+			confirm_delete = no;
+			}
+
+		    motd_viewed_table_pane "widget/pane"
+			{
+			width = 320;
+			widget_class = table_bgnd;
+
+			motd_viewed_table "widget/table"
+			    {
+			    x=0; y=0;
+			    width = 318; height=180;
+			    mode = dynamicrow;
+
+			    t_user "widget/table-column" { title="User"; fieldname="user"; width=150; }
+			    t_viewdate "widget/table-column" { title="Viewed On"; fieldname="s_viewed_date"; width=150; }
+			    }
+			}
+
+		    motd_viewed_buttons "widget/vbox"
+			{
+			width = 170;
+
+			view_again_btn "widget/textbutton"
+			    {
+			    width = 170;
+			    height = 28;
+			    text = "Force View Again";
+
+			    delete_to_view_again "widget/connector"
+				{
+				event = Click;
+				target = motd_viewed_form;
+				action = Delete;
+				}
+			    }
 			}
 		    }
 		}
