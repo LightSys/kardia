@@ -1,0 +1,250 @@
+$Version=2$
+popup_table "widget/component-decl"
+    {
+    width=800; height=600;
+
+    expose_properties_for = popup;
+
+    // SQL should have at least two columns in result set: "label" to show, and "value" to put in the editbox
+    sql "widget/parameter" { type=string; default=null; }
+    search_field_list "widget/parameter" { type=string; default="name"; deploy_to_client=yes; }
+    search_objname "widget/parameter" { type=string; deploy_to_client=yes; }
+
+    label "widget/parameter" { type=string; default="List"; }
+    object_name "widget/parameter" { type=string; default="Item"; }
+    popup_width "widget/parameter" { type=integer; default=250; }
+    key_name "widget/parameter" { type=string; default="name"; }
+
+    Opened "widget/component-decl-event" {}
+    Closed "widget/component-decl-event" {}
+
+    Toggle "widget/component-decl-action" {}
+
+    Toggle_cn1 "widget/connector" { event=Toggle; event_condition=runclient(:popup:is_visible); target=popup; action=Close; }
+    Toggle_cn2 "widget/connector" { event=Toggle; event_condition=runclient(not :popup:is_visible); target=popup; action=Popup; PopTo=attach_to; ExtendTo=attach_to; OffsetX=runserver(:this:attach_offset); }
+
+    attach_to "widget/parameter" { type=object; default=null; }
+    attach_offset "widget/parameter" { type=integer; default=0; }
+
+    desc_osrc "widget/osrc"
+	{
+	key "widget/parameter" { type=string; default=null; }
+	sql = runserver(:this:sql + " where :" + quote(:this:key_name) + " = :parameters:key");
+	replicasize=30;
+	readahead=30;
+	autoquery=never;
+
+	descloaded "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=editbox;
+	    action = SetValueDescription;
+	    Description = runclient(:desc_osrc:label);
+	    }
+	}
+
+    editbox "widget/parameter"
+	{
+	type=object;
+	default=null;
+
+	losefocus_cn1 "widget/connector" { event = TabPressed; action = Close; target = popup; }
+
+	autodesc_losefocus "widget/connector"
+	    {
+	    condition = 0;
+	    event=LoseFocus;
+	    event_condition = runclient(char_length(:editbox:content) >= 1);
+	    target=desc_osrc;
+	    action=QueryParam;
+	    key = runclient(:editbox:content);
+	    }
+
+	changed_cn "widget/connector"
+	    {
+	    event = DataModify;
+	    event_condition = runclient(:popup:is_visible and :FromKeyboard == 1 and char_length(:Value) >= char_length(:OldValue) and char_length(:Value) >= 3);
+	    target = table_osrc;
+	    action = QueryText;
+	    field_list = runclient(:popup_table:search_field_list);
+	    objname = runclient(:popup_table:search_objname);
+	    query = runclient(:Value);
+	    cx__case_insensitive = 1;
+	    }
+
+	kp_f3_open "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'f3');
+	    event_cancel = runclient(:popup:is_visible and :Name = 'f3');
+	    target = table_osrc;
+	    action = Next;
+	    }
+
+	kp_up "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'up');
+	    event_cancel = runclient(:popup:is_visible and :Name = 'up');
+	    target = table_osrc;
+	    action = Prev;
+	    }
+
+	kp_dn "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'down');
+	    event_cancel = runclient(:popup:is_visible and :Name = 'down');
+	    target = table_osrc;
+	    action = Next;
+	    }
+
+	kp_f3_closed1 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(not (:popup:is_visible) and :Name = 'f3' and char_length(:editbox:content) >= 3);
+	    target = table_osrc;
+	    action = QueryText;
+	    field_list = runclient(:popup_table:search_field_list);
+	    objname = runclient(:popup_table:search_objname);
+	    query = runclient(:editbox:content);
+	    cx__case_insensitive = 1;
+	    }
+	kp_f3_closed2 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(not (:popup:is_visible) and :Name = 'f3');
+	    target = popup;
+	    action = Popup;
+	    PopTo = attach_to;
+	    ExtendTo = attach_to;
+	    OffsetX = runserver(:this:attach_offset);
+	    }
+
+	kp_escape "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'escape');
+	    event_cancel = runclient(:popup:is_visible and :Name = 'escape');
+	    target = popup;
+	    action = Close;
+	    }
+
+	kp_enter1 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'enter');
+	    target = editbox;
+	    action = SetValue;
+	    Value = runclient(:table_osrc:value);
+	    }
+	kp_enter2 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'enter');
+	    //event_cancel = runclient(:popup:is_visible and :Name = 'enter');
+	    target = editbox;
+	    action = SetValueDescription;
+	    Description = runclient(:table_osrc:label);
+	    }
+	kp_enter3 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'enter');
+	    event_cancel = runclient(:popup:is_visible and :Name = 'enter');
+	    target = popup;
+	    action = Close;
+	    }
+
+	kp_tab1 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'tab' and char_length(:editbox:content) > 0);
+	    target = editbox;
+	    action = SetValue;
+	    Value = runclient(:table_osrc:value);
+	    }
+	kp_tab2 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'tab');
+	    target = editbox;
+	    action = SetValueDescription;
+	    Description = runclient(:table_osrc:label);
+	    }
+	}
+
+    popup "widget/childwindow"
+	{
+	widget_class = "popup";
+	titlebar = no;
+	x=0; y=0;
+	width=runserver(:this:popup_width); height=300;
+	toplevel = yes;
+
+	popup_open "widget/connector" { event = Open; action = Opened; target = popup_table; }
+	popup_close "widget/connector" { event = Close; action = Closed; target = popup_table; }
+
+	vb "widget/vbox"
+	    {
+	    x=0;y=4;width=runserver(:this:popup_width - 2);height=294;
+	    spacing=6;
+
+	    lbl "widget/label" { height=16; align=center; text=runserver(:this:label); style=bold; fgcolor=white; }
+
+	    sep "widget/pane" { height=2; x=8; width=runserver(:this:popup_width - 18); style=lowered; }
+
+	    table_osrc "widget/osrc"
+		{
+		sql = runserver(:this:sql);
+		replicasize=30;
+		readahead=30;
+		autoquery=never;
+
+		table "widget/table"
+		    {
+		    x=8;y=0;width=runserver(:this:popup_width - 2 - 16);
+		    height=256;
+
+		    textcolor=white;
+		    row1_bgcolor = "#153f5f";
+		    row2_bgcolor = "#133957";
+		    rowhighlight_bgcolor = "#a8c1d8";
+		    textcolorhighlight = black;
+		    colsep = 0;
+		    titlebar = no;
+
+		    tbl_col "widget/table-column" { fieldname=label; title=runserver(:this:object_name); width=runserver(:this:popup_width - 2 - 20); }
+
+		    clickitem1 "widget/connector"
+			{
+			event = "Click";
+			target = editbox;
+			action = "SetValue";
+			Value = runclient(:value);
+			}
+		    clickitem2 "widget/connector"
+			{
+			event = "Click";
+			target = editbox;
+			action = SetValueDescription;
+			Description = runclient(:label);
+			}
+		    clickitem3 "widget/connector"
+			{
+			event = "Click";
+			target = popup;
+			action = "Close";
+			}
+		    clickitem4 "widget/connector"
+			{
+			//condition = runserver(user_name() = 'gbeeley');
+			event = Click;
+			target = editbox;
+			action = SetFocus;
+			}
+		    }
+		}
+	    }
+	}
+    }

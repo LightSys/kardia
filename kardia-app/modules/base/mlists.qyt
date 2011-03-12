@@ -1,0 +1,34 @@
+$Version=2$
+mlists "system/querytree"
+    {
+    pubs "system/querytree"
+	{
+	text = "Publications";
+	top_pubs "system/querytree"
+	    {
+	    source = "/apps/kardia/data/Kardia_DB/m_list/rows";
+	    where = ":m_list_parent is null and :m_list_type = 'P'";
+	    sub_pubs "system/querytree"
+		{
+		source = "/apps/kardia/data/Kardia_DB/m_list/rows";
+		where = ":m_list_parent = ::m_list_code";
+		recurse = sub_pubs;
+		}
+	    }
+	}
+    selections "system/querytree"
+	{
+	text = "Selections";
+	top_sels "system/querytree"
+	    {
+	    source = "/apps/kardia/data/Kardia_DB/m_list/rows";
+	    where = ":m_list_parent is null and :m_list_type = 'S'";
+	    sub_sels "system/querytree"
+		{
+		source = "/apps/kardia/data/Kardia_DB/m_list/rows";
+		where = ":m_list_parent = ::m_list_code";
+		recurse = sub_sels;
+		}
+	    }
+	}
+    }

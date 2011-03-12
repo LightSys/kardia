@@ -1,0 +1,39 @@
+$Version=2$
+mailing_list_report "system/report"
+    {
+    title = "Mailing List Report";
+
+    document_format="application/pdf";
+
+    resolution = 300;
+    pagewidth=110;
+    pageheight=51;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    listcode "report/parameter" { type=string; default=null; }
+    currentonly "report/parameter" { type=integer; default=0; }
+    validonly "report/parameter" { type=integer; default=0; }
+
+    partners_qy "report/query"
+	{
+	sql = runserver(condition(:this:listcode is null,
+		"
+		SELECT
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		",
+		"
+		SELECT
+		FROM
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			:p:p_partner_key = :m:p_partner_key and
+			:m:m_list_code = :this:listcode
+			" + condition(:this:currentonly, "and :m:m_membership_status = 'A' and (:m:m_end_date is null or getdate() <= :m:m_end_date) and (:m:m_start_date is null or getdate() >= :m:m_start_date) and (:m:m_hold_until_date is null or getdate() >= :m:m_hold_until_date) and (:m:m_cancel_date is null or getdate() < :m:m_cancel_date) and (isnull(:m:m_num_issues_sub,0) == 0 or isnull(:m:m_num_issues_recv,0) < :m:m_num_issues_sub) ", "") + "
+		") + condition(:this:validonly, " WHERE :p:p_status_code = 'A' and :p:p_record_status_code = 'A'", ""));
+	}
+    }

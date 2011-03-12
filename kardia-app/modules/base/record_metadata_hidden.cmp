@@ -1,0 +1,12 @@
+$Version=2$
+record_metadata_hidden "widget/component-decl"
+    {
+    visual = no;
+
+    form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    dt_c "widget/variable" { fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } form=form; }
+    us_c "widget/variable" { fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } form=form; }
+    dt_m "widget/variable" { fieldname="s_date_modified"; dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } form=form; }
+    us_m "widget/variable" { fieldname="s_modified_by"; us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } form=form; }
+    }

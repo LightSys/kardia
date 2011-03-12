@@ -1,0 +1,73 @@
+$Version=2$
+editbox_table "widget/component-decl"
+    {
+    width=220; height=24;
+
+    expose_events_for = eb;
+    expose_actions_for = eb;
+    expose_properties_for = eb;
+
+    apply_hints_to = eb;
+
+    popup_width "widget/parameter" { type=integer; default=250; }
+    form "widget/parameter" { type=object; find_container="widget/form"; }
+    label_width "widget/parameter" { type=integer; default=100; }
+    text "widget/parameter" { type=string; default=null; }
+    popup_text "widget/parameter" { type=string; default=null; }
+    tooltip "widget/parameter" { type=string; default=null; }
+    field "widget/parameter" { type=string; default=null; }
+    popup_sql "widget/parameter" { type=string; default=null; }
+    attach_point "widget/parameter" { type=string; default="pane"; }
+    empty_desc "widget/parameter" { type=string; default=""; }
+    object_name "widget/parameter" { type=string; default="Item"; }
+    key_name "widget/parameter" { type=string; default="name"; }
+    search_field_list "widget/parameter" { type=string; default="name"; }
+    search_objname "widget/parameter" { type=string; }
+
+    pane "widget/pane"
+	{
+	x=0; y=0; width=220; height=24;
+	style=flat;
+
+	eb "widget/component"
+	    {
+	    x=2; y=2; width=192; height=20;
+	    path="/sys/cmp/smart_field.cmp"; 
+	    field=runserver(:this:field); 
+	    text=runserver(:this:text); 
+	    ctl_type="editbox"; 
+	    tooltip=runserver(:this:tooltip); 
+	    label_width=runserver(:this:label_width); 
+	    empty_desc = runserver(:this:empty_desc);
+	    form=form; 
+	    }
+	btn "widget/textbutton"
+	    {
+	    x=195; y=2; width=19; height=20;
+	    text="?";
+	    fl_height = 0;
+
+	    btn_cn "widget/connector" { event=Click; target=win; action=Toggle; }
+	    }
+	}
+
+    win "widget/component"
+	{
+	path = "/apps/kardia/modules/base/popup_table.cmp";
+	editbox = eb;
+	attach_to = pane;
+	attach_offset = runserver(condition(:this:attach_point == 'pane', 0, :this:label_width));
+	sql = runserver(:this:popup_sql);
+	label = runserver(:this:popup_text);
+	toplevel = yes;
+	popup_width = runserver(:this:popup_width);
+	object_name = runserver(:this:object_name);
+	search_field_list = runserver(:this:search_field_list);
+	search_objname = runserver(:this:search_objname);
+
+	//opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Image=runclient("/apps/kardia/images/bg/blue_gradient2_h.png"); }
+	opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Color=runclient("#a8c1d8"); }
+	//opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Color=runclient("#133957"); }
+	closed_cn "widget/connector" { event=Closed; target=pane; action=SetBackground; Color=runclient(null); }
+	}
+    }
