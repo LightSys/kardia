@@ -5,7 +5,7 @@ partner_search "widget/page"
 //    width=800;
 //    height=600;
     width=700; height=440;
-    widget_template="/apps/kardia/tpl/organization-kardia.tpl";
+    widget_template="/apps/kardia/tpl/kardia-system.tpl";
     show_diagnostics = runserver(user_name() == 'tyoung' or user_name() == 'gbeeley');
     background="/apps/kardia/images/bg/light_bgnd.jpg";
 

@@ -85,7 +85,7 @@ tab_menu "widget/component-decl"
 					    action = Launch;
 					    Multi = 1;
 					    //Name = runclient(runserver(:progs_rpt:func_name));
-					    Source = runclient(runserver("/apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :progs_rpt:func_file) + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
+					    Source = runclient(runserver("/apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :progs_rpt:func_file) + "?" + isnull("ledger=" + :kardia_sysattrs_osrc:Ledger + "&", "") + isnull("period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&","") + isnull("year_period=" + :kardia_sysattrs_osrc:YearPeriod, ""));
 					    Width = runserver(:prog_h_w:width);
 					    Height = runserver(:prog_h_w:height);
 					    }
@@ -141,7 +141,8 @@ tab_menu "widget/component-decl"
 					    action = Launch;
 					    Multi = 1;
 					    //Name = runclient(runserver(:rpts_rpt:func_name));
-					    Source = runclient(runserver("/apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :rpts_rpt:func_file) + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
+					    Source = runclient(runserver("/apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :rpts_rpt:func_file) + "?" + isnull("ledger=" + :kardia_sysattrs_osrc:Ledger + "&", "") + isnull("period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&","") + isnull("year_period=" + :kardia_sysattrs_osrc:YearPeriod, ""));
+					    //Source = runclient(runserver("/apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :rpts_rpt:func_file) + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
 					    Width = runserver(:rpt_h_w:width);
 					    Height = runserver(:rpt_h_w:height);
 					    }

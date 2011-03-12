@@ -5,7 +5,7 @@ partner_window "widget/page"
     width=850;
     height=610;
     show_diagnostics = yes;
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl";
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
 
     dbgwin "widget/component"
 	{

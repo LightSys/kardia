@@ -6,7 +6,7 @@ partner_window "widget/page"
 //    height=602;
     width = 846 - 2; height=598 - 25;
     show_diagnostics = yes;
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl";
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
     background="/apps/kardia/images/bg/light_bgnd.jpg";
 
 //    dbgwin "widget/component"

@@ -2,7 +2,7 @@ $Version=2$
 help "widget/page"
     {
     title = "Kardia - Help";
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl";
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
     bgcolor = "#ffffff";
     x=0; y=0; width=640; height=480;
 

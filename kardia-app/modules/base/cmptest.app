@@ -3,7 +3,7 @@ CmpTest "widget/page"
     {
     width=800; height=600;
     title = "Component container for testing";
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
     w "widget/parameter" { default=640; type=integer; }
     h "widget/parameter" { default=480; type=integer; }

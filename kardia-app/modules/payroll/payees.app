@@ -3,7 +3,7 @@ payees "widget/page"
     {
     title = "Payees (for Payroll)";
     width=778; height=525;
-    widget_template = "/apps/kardia/tpl/organization-kardia.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
 
     // the ledger we are working with

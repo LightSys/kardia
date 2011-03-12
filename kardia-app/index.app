@@ -51,4 +51,10 @@ index "widget/page"
 
 	instantiate_cn "widget/connector" { source = index; event="Load"; action="Instantiate"; }
 	}
+
+    motd_cmp "widget/component"
+	{
+	x=0; y=0; width=800; height=600;
+	path="/apps/kardia/modules/base/motd.cmp";
+	}
     }
