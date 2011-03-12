@@ -238,7 +238,6 @@ popup_table "widget/component-decl"
 			}
 		    clickitem4 "widget/connector"
 			{
-			//condition = runserver(user_name() = 'gbeeley');
 			event = Click;
 			target = editbox;
 			action = SetFocus;

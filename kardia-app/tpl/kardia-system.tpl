@@ -200,8 +200,5 @@ kardia "widget/template"
 	}
     tplForm "widget/form"
 	{
-	//allow_new = runserver(user_name() == 'gbeeley' or user_name() == 'tyoung');
-	//allow_modify = runserver(user_name() == 'gbeeley' or user_name() == 'tyoung');
-	//allow_delete = runserver(user_name() == 'gbeeley' or user_name() == 'tyoung');
 	}
     }

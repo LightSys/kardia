@@ -12,7 +12,6 @@ mlist_maint "widget/page"
     mlist_maint_cmp "widget/component"
 	{
 	x=10; y=10; width=780; height=580;
-	//condition = runserver((not (:this:ledger is null)) and (user_name() == 'gbeeley' or user_name() == 'carol' or user_name() == 'kimberly' or user_name() == 'brianf'));
 	path = "/apps/kardia/modules/base/mlist_maint.cmp";
 	//ledger = runserver(:this:ledger);
 	}
