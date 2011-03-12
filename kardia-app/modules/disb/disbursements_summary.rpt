@@ -44,6 +44,7 @@ disbursements_summary "system/report"
 		where
 			:d:a_ledger_number = :this:ledger and
 			:d:a_period = :this:period and
+			:d:a_voided = 0 and
 			:b:a_ledger_number =* :d:a_ledger_number and
 			:b:a_batch_number =* :d:a_batch_number
 		group by

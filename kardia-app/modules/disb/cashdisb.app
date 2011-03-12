@@ -21,17 +21,16 @@ index "widget/page"
 		widget_class = "bar";
 		x=0; y=0; width=799;
 
-		// Dave's sub-Menu System
-		mnDave "widget/menu" // Hi Mom!
+		// Dv's sub-Menu System
+		mnDv "widget/menu" // Hi Mom!
 		{
-			// ocondition = runserver(user_name() == 'djones' or user_name() == 'gbeeley');
 			label = "Checking Menu";
 			widget_class = "popup";
 			
-			mnDave_cd_batch_list_window_form "widget/menuitem"
+			mnDv_cd_batch_list_window_form "widget/menuitem"
 			{
 				label = "Select Batch";
-				mnDave_cd_batch_list_window_cn "widget/connector"
+				mnDv_cd_batch_list_window_cn "widget/connector"
 				{
 					event = Select;
 					target = cd_batch_list_window_cmp;
@@ -39,10 +38,10 @@ index "widget/page"
 					//external_itself = cd_batch_list_window_cmp;
 				}
 			}
-			mnDave_cd_search_for_check_window_form "widget/menuitem"
+			mnDv_cd_search_for_check_window_form "widget/menuitem"
 			{
 				label = "Search for Check";
-				mnDave_cd_search_for_check_window_cn "widget/connector"
+				mnDv_cd_search_for_check_window_cn "widget/connector"
 				{
 					event = Select;
 					target = cd_check_lookup_cmp;
@@ -58,7 +57,7 @@ index "widget/page"
 		path = "/apps/kardia/modules/gl/ledger_select.cmp";
 		visible = false;
 	}
-	// Dave's Compontents
+	// Dv's Compontents
 
 	cd_check_lookup_cmp "widget/component"
 	{

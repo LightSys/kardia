@@ -21,13 +21,14 @@ post_cd_batch "widget/component-decl"
 	up_a_period "widget/parameter"		{ param_name=a_period; type=string; }
 
 	replicasize=1; readahead=1; autoquery=never;
-	sql = "	DELETE
-			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+	sql = "	UPDATE
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+		SET
+			:d:a_posted = 0
 		WHERE
-			:t:a_batch_number = :parameters:a_batch_number and
-			:t:a_origin = 'CD' and
-			:a_ledger_number = :parameters:a_ledger_number and
-			:t:a_period = :parameters:a_period";
+			:d:a_batch_number = :parameters:a_batch_number and
+			:d:a_ledger_number = :parameters:a_ledger_number and
+			:d:a_period = :parameters:a_period";
 
 	end_unpost "widget/connector"
 	    { 
@@ -40,11 +41,11 @@ post_cd_batch "widget/component-decl"
 	    }
 	}
 
-    // Post a CD batch - process
+    // Unpost a CD batch - process
     Post "widget/component-decl-action" { }
     Posted "widget/component-decl-event" { }
     post_cn "widget/connector"
-	{ 
+	{
 	event=Post;
 	target=post_osrc_1;
 	action=QueryParam;
@@ -52,11 +53,90 @@ post_cd_batch "widget/component-decl"
 	a_ledger_number = runclient(:a_ledger_number);
 	a_period = runclient(:a_period);
 	}
+
     post_osrc_1 "widget/osrc"
 	{
-	p_a_batch_number "widget/parameter" { param_name=a_batch_number; type=integer; }
-	p_a_ledger_number "widget/parameter" { param_name=a_ledger_number; type=string; }
-	p_a_period "widget/parameter" { param_name=a_period; type=string; }
+	p_a_batch_number "widget/parameter"	{ param_name=a_batch_number; type=integer; }
+	p_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
+	p_a_period "widget/parameter"		{ param_name=a_period; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = "	UPDATE
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+		SET
+			:d:a_posted = 1
+		WHERE
+			:d:a_batch_number = :parameters:a_batch_number and
+			:d:a_ledger_number = :parameters:a_ledger_number and
+			:d:a_period = :parameters:a_period";
+
+	end_post "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=post_cd_batch;
+	    action=Posted;
+	    a_batch_number = runclient(:post_osrc_1:a_batch_number);
+	    a_ledger_number = runclient(:post_osrc_1:a_ledger_number);
+	    a_period = runclient(:post_osrc_1:a_period); 
+	    }
+	}
+
+    // Unpost a CD batch from GL - process
+    GLUnpost "widget/component-decl-action" { }
+    GLUnposted "widget/component-decl-event" { }
+    glunpost_cn "widget/connector"
+	{
+	event=GLUnpost;
+	target=glunpost_osrc_1;
+	action=QueryParam;
+	a_batch_number = runclient(:a_batch_number);
+	a_ledger_number = runclient(:a_ledger_number);
+	a_period = runclient(:a_period);
+	}
+
+    glunpost_osrc_1 "widget/osrc"
+	{
+	gup_a_batch_number "widget/parameter"	{ param_name=a_batch_number; type=integer; }
+	gup_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
+	gup_a_period "widget/parameter"		{ param_name=a_period; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = "	DELETE
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_origin = 'CD' and
+			:a_ledger_number = :parameters:a_ledger_number and
+			:t:a_period = :parameters:a_period";
+
+	end_glunpost "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=post_cd_batch;
+	    action=GLUnposted;
+	    a_batch_number = runclient(:glunpost_osrc_1:a_batch_number);
+	    a_ledger_number = runclient(:glunpost_osrc_1:a_ledger_number);
+	    a_period = runclient(:glunpost_osrc_1:a_period); 
+	    }
+	}
+
+    // Post a CD batch - process
+    GLPost "widget/component-decl-action" { }
+    GLPosted "widget/component-decl-event" { }
+    glpost_cn "widget/connector"
+	{ 
+	event=GLPost;
+	target=glpost_osrc_1;
+	action=QueryParam;
+	a_batch_number = runclient(:a_batch_number);
+	a_ledger_number = runclient(:a_ledger_number);
+	a_period = runclient(:a_period);
+	}
+    glpost_osrc_1 "widget/osrc"
+	{
+	glp_a_batch_number "widget/parameter" { param_name=a_batch_number; type=integer; }
+	glp_a_ledger_number "widget/parameter" { param_name=a_ledger_number; type=string; }
+	glp_a_period "widget/parameter" { param_name=a_period; type=string; }
 	replicasize=1; readahead=1; autoquery=never;
 	sql = "	INSERT INTO
 			/apps/kardia/data/Kardia_DB/a_transaction/rows
@@ -68,7 +148,7 @@ post_cd_batch "widget/component-decl"
 			:c:a_effective_date,
 			a_transaction_type='T',
 			:c:a_cost_center,
-			a_account_category=condition(:c:a_account_code >= '5000', '50', '20'),
+			a_account_category=condition(:c:a_account_code >= '5000', '50', condition(:c:a_account_code >= '4000', '40', condition(:c:a_account_code <= '1999', '10', '20'))),
 			:c:a_account_code,
 			:c:a_amount,
 			a_posted = 0,
@@ -94,7 +174,9 @@ post_cd_batch "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
 		WHERE
 			:c:a_batch_number = :parameters:a_batch_number and
-			:c:a_period = :parameters:a_period
+			:c:a_ledger_number = :parameters:a_ledger_number and
+			:c:a_period = :parameters:a_period and
+			:c:a_voided = 0
 		;
 
 		INSERT INTO
@@ -132,7 +214,8 @@ post_cd_batch "widget/component-decl"
 		WHERE
 			:c:a_batch_number = :parameters:a_batch_number and
 			:c:a_ledger_number = :parameters:a_ledger_number and
-			:c:a_period = :parameters:a_period
+			:c:a_period = :parameters:a_period and
+			:c:a_voided = 0
 		GROUP BY
 			:c:a_cash_account_code
 		;
@@ -176,7 +259,7 @@ post_cd_batch "widget/component-decl"
 		WHERE
 			:t:a_ledger_number = :c:a_ledger_number and
 			:t:a_cost_center = :c:a_cost_center and
-			:t:a_ledger_number = '0US' and
+			:t:a_ledger_number = :parameters:a_ledger_number and
 			:t:a_batch_number = :parameters:a_batch_number
 		GROUP BY
 			:t:a_ledger_number, :t:a_batch_number, :t:a_journal_number, :c:a_bal_cost_center
@@ -184,17 +267,14 @@ post_cd_batch "widget/component-decl"
 			:t:a_cost_center
 		HAVING
 			:a_amount != $0";
-	end_post "widget/connector"
+	end_glpost "widget/connector"
 	    { 
 	    event=EndQuery;
 	    target=post_cd_batch;
-	    action=Posted;
-	    a_batch_number = runclient(:post_osrc_1:a_batch_number);
-	    a_ledger_number = runclient(:post_osrc_1:a_ledger_number);
-	    a_period = runclient(:post_osrc_1:a_period); 
+	    action=GLPosted;
+	    a_batch_number = runclient(:glpost_osrc_1:a_batch_number);
+	    a_ledger_number = runclient(:glpost_osrc_1:a_ledger_number);
+	    a_period = runclient(:glpost_osrc_1:a_period); 
 	    }
 	}
-
-
-//# Create the batch
-//query INSERT INTO /apps/kardia/data/Kardia_DB/a_batch/rows  SELECT a_batch_number = BATCHNUMBER, a_ledger_number = '0US', a_origin = 'CD', a_period = 'BATCHPERIOD', a_batch_desc = 'Disbursements BATCHDATE', a_next_journal_number = 1, a_next_transaction_number = 1, a_default_effective_date = convert(datetime, 'BATCHDATE'), s_date_created = getdate(), s_created_by = user_name(), s_date_modified = getdate(), s_modified_by = user_name()
+    }

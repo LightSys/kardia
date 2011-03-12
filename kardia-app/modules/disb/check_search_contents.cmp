@@ -151,7 +151,7 @@ check_search_component "widget/component-decl"
 				:c:a_cost_center,
 				:c:a_account_code,
 				:c:a_payee_partner_key,
-				:c:a_voided ,
+				:c:a_voided,
 				:c:a_comment,
 				:p:p_partner_key,
 				:p:p_given_name,
@@ -162,7 +162,9 @@ check_search_component "widget/component-decl"
 				/apps/kardia/data/Kardia_DB/p_partner/rows p,
 				/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
 			WHERE
-				:c:a_payee_partner_key = :p:p_partner_key";
+				:c:a_payee_partner_key = :p:p_partner_key
+			ORDER BY
+				:c:a_effective_date desc, :c:a_check_number desc";
 				
 		baseobj = "/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows";
 		replicasize=10;

@@ -13,13 +13,13 @@ $Version=2$
 //     and specify which Cost Center and Accounts the funds come from.
 //
 //   Author:    arbor70
-//   For:       Organization
+//   For:       Kardia
 //   Created:	2009 February 10
 //   Modified:  2009 July 20 / 2009 Dec 28th
 //
 //////////////////////////////////////////////////////////////////////////////
 
-// arbor70's Checking / Cash Disbursement Form for Organization
+// arbor70's Checking / Cash Disbursement Form for Kardia
 // Created: 2009 February 10
 
 // Getting Started
@@ -33,10 +33,10 @@ $Version=2$
 
 // Please see:
 //    a. Table of Contents
-//    b. Organization Specific Notes
+//    b. Implementation Specific Notes
 //    c. Legend
 //    d. Status Update
-//    e. Dave TODO
+//    e. Dev TODO
 //    f. Major Features Completed
 //    g. Major TODOs 
 //    h. Smaller Misc. TODOs
@@ -49,11 +49,11 @@ $Version=2$
 // 2. The Code (The majority of this file)
 // 3. Things To Document
 
-// Organization Specific Notes:
+// Implementation Specific Notes:
 // 1. The default Batch # I've been using: 20108; Other old batch numbers are: 90112, 90114
 // 2. In order for this window to work properly, it must be called/opened from the following window:
 //    "Select Cash Disbursement Batch" (cd_select_batch_subform.cmp), which is accessible
-//     from /modules/disb/index.app - "Dave's Menu" - "Select CD Batch", then entering
+//     from /modules/disb/index.app - "arbor70's Menu" - "Select CD Batch", then entering
 //     a batch number to open (e.g. 20208), then clicking the Select Batch button.
 
 // Legend   [Terms Used & Meanings]
@@ -120,6 +120,7 @@ $Version=2$
 // 373    post_one_check_osrc            [Un]posts a Check
 // 392    post_batch_osrc                Posts a Batch
 // 409    post_button_text_decider_osrc  Sets Post Button Text
+// 409    void_button_text_decider_osrc  Sets Void Button Text
 
 // 514    cashdisb_osrc                  Main OSRC
 // 612      check_form
@@ -169,7 +170,7 @@ $Version=2$
 // Extra Information
 // 
 
-// Dave TODO | 2009 July 7th
+// arbor70 TODO | 2009 July 7th
 // # 1. Remove Debugging Pop up boxes
 // # 2. Update comments (DONE Untested Unimplemented)
 // # 3. Rearrange / Remove old comments
@@ -185,10 +186,11 @@ $Version=2$
 // BB - 4. Componentize this module the different sub cmps?
 
 // Misc Notes
-// 1. The table structure was set in stone, so I had to work around the architecture when doing this module - DJ.
+// 1. The table structure was set in stone, so I had to work around the architecture when doing this module - arbor70.
 
 // TODO (20090420): in the event that the batch number is null..., make sure the user can not make changes to whatever shows up (disable buttons?)
-// BUG (20090707): Currently user can unvoid a check by clicking on the "Void the Check" Button on a voided check. Is this Undesired behavior? (Ask Finance Ladies)
+// DONE (20090707): Currently user can unvoid a check by clicking on the "Void the Check" Button on a voided check. Is this Undesired behavior? (Ask Finance Ladies) Good feature, they want the button text to say unvoid though.... and should probably make sure can not void or unvoid a check if the check is already posted...
+// QUESTION (20100903): Should "Unpost Check" option only be available if the check has not been posted to the GL?
 // BUG (20090707): Make sure VOIDED Check does not get included in the batch total, but still shows in the check total
 
 
@@ -648,7 +650,7 @@ cashdisb_subform "widget/component-decl"
 			key_1 = a_ledger_number;
 			target_key_1 = a_ledger_number;
 			key_2 = a_batch_number;
-			target_key_2 = a_batch_number; //batch_number_q2; 20090327
+			target_key_2 = a_batch_number; // batch_number_q2; 20090327
 			// QUESTION (20090512): Should I include the extra needed checking number & line item number here?
 			// QUESTION (20090512): Do the primary keys need to be set in the database tables, or can they just be set here?
 		}
@@ -691,7 +693,7 @@ cashdisb_subform "widget/component-decl"
 		// Set Post Button Text to "Post Check", if there are [other] items that are posted, but this one is not...
 		// Usage Tested (20090616)
 		pbtdo_cn2 "widget/connector"
-		 {
+		{
 			event_condition = runclient(:post_button_text_decider_osrc:pcnt > 0 and :cashdisb_osrc:a_posted='0');
 			event="DataFocusChanged";
 			target=Post_btn;
@@ -787,7 +789,8 @@ cashdisb_subform "widget/component-decl"
 		baseobj = "/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows";
 		replicasize=100;
 		readahead=25;
-		autoquery=onfirstreveal;	// Dave 20090929: oneachreveal seems to intermittently cause 
+		autoquery=never; //20101213: GRB - this is done via GotoBatch; don't need autoquery.
+		//autoquery=onfirstreveal;	// arbor70 20090929: oneachreveal seems to intermittently cause 
 									//                checks from all batches to show up in the
 									//				  widget/table.  Changing to original setting.
 		
@@ -817,6 +820,7 @@ cashdisb_subform "widget/component-decl"
 		// Usage Tested: 20090513 / Lightly Tested: 20090319
 		cd_EndQuery_cn2 "widget/connector"
 		{
+			condition = 0; // 20101211: GRB - now unnecessary because of osrc_relationship.
 			event="DataFocusChanged";
 			target=check_details_osrc;
 			action="QueryParam";
@@ -829,6 +833,16 @@ cashdisb_subform "widget/component-decl"
 			event="DataFocusChanged";
 			target=post_button_text_decider_osrc;
 			action="QueryParam";
+		}
+		
+		// Update Void Button Text
+		// Implementing: 20100903 (Under Testing)
+		cd_EndQuery_cn9 "widget/connector"
+		{
+			event  = "DataFocusChanged";
+			target = Void_This_Check_btn;
+			action = "SetText";
+			Text   = runclient(condition(:cashdisb_osrc:a_voided == '0', 'Void This Check', 'Unvoid This Check'));
 		}
 		
 		// Lightly Tested - 20090327 / Usage Tested - 20090513
@@ -851,9 +865,9 @@ cashdisb_subform "widget/component-decl"
 		{
 			// On DataDeleted, Refresh the underlying cashdisb_osrc
 			del_cn1 "widget/connector" { event="DataDeleted"; target="cashdisb_osrc"; action="Refresh"; }
-		
+			
 			// On DataSaved, Run several required updates and other things... to maintain data consistency...
-
+			
 			// DONE (20090420): Update the Payee Number across all records of the same check number (ledger number and batch number)
 			// (e.g. if the user changes the payee for the check then the payee should change for each transaction in the check...)
 			// Note (20091008): This connector should be associated with an intermediary
@@ -985,6 +999,14 @@ cashdisb_subform "widget/component-decl"
 			{
 				x=20;y=215;width=500;height=50;spacing=25;cellsize=20;
 				
+				// DONE 20100903: Made it so that they user can not add new checks,
+				//                or add/remove transaction lines to a batch that has
+				//				  already been posted.  Implemented using enabled =
+				// 				  isnull(<current entry>:a_posted, true).  
+				//				  Proposed Future TODO, create an any_posted field in an
+				//				  aggregate cashdisb_osrc to determine whether any checks
+				//				  in the batch have been posted.
+				
 				// Next Check Number (technique: get max, then +1?)
 				// BUG: 20090707: When use clicks this button, the following message pops up: "Some Data is unsaved.  Please either save or cancel your changes first." why is that? Could it have to do with the batch form and Eff. Date?
 				// BUG_UPDATE: 20090811: Bug traced to EffBatchChange_cn2 as root bug trigger
@@ -994,7 +1016,17 @@ cashdisb_subform "widget/component-decl"
 					width=130;
 					height = 30;
 					text="New Check";
-					enabled = runclient(:check_form:is_newable);
+					// enabled = runclient(:check_form:is_newable);
+					enabled =    runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
+					
+					// TODO: Ideal Logic: AND (there are no items in the batch OR there exist items that are not posted)
+					// Ah I think this will handle it...
+					// isnull(not :cashdisb_osrc:a_posted, true)  // if empty, then true, if the current item is posted, assume that they are all posted?... (simplification)
+					
+					// Untested [20100903]
+					// Ideal, how can't directly access that osrc's variables?  grr!!...
+					// enabled = runclient(:check_form:is_newable and ( :post_button_text_decider_osrc:pcnt == 0 or :cashdisb_osrc:a_posted is null ));
+					
 					
 					// DONE: Connectors Psuedo Code
 					// 1. Try 'Newing' the current transaction record 
@@ -1066,8 +1098,12 @@ cashdisb_subform "widget/component-decl"
 					text="New Trx Line";
 					
 					// tooltip = "New Transaction for this check";
-					enabled = runclient(:check_form:is_newable and not :cashdisb_osrc:a_voided); // TODO (20090420): Don't allow clicking this button unless an entry is highlighted on the table...
-					
+					enabled = runclient(:check_form:is_newable and not :cashdisb_osrc:a_voided and isnull(not :cashdisb_osrc:a_posted, true)); // TODO (20090420): Don't allow clicking this button unless an entry is highlighted on the table...
+										
+					// Untested [20100903]
+					// Ideal, how can't directly access that osrc's variables?  grr!!...
+					//enabled = runclient(:check_form:is_newable and ( :post_button_text_decider_osrc:pcnt == 0 or :cashdisb_osrc:a_posted is null ));  
+
 					// Save the current check number...
 					new_trx_line_cn1 "widget/connector"
 					{
@@ -1199,7 +1235,11 @@ cashdisb_subform "widget/component-decl"
 					text="Delete Trx";
 					event_confirm=runclient("Are you sure you would like to delete this line item?");
 					
-					enabled = runclient(:check_form:is_editable and not :cashdisb_osrc:a_voided);
+					enabled = runclient(:check_form:is_editable and not :cashdisb_osrc:a_voided and isnull(not :cashdisb_osrc:a_posted, true));
+					
+					// Untested [20100903]
+					// Ideal, how can't directly access that osrc's variables?  grr!!...
+					//enabled = runclient(:check_form:is_newable and ( :post_button_text_decider_osrc:pcnt == 0 or :cashdisb_osrc:a_posted is null ));  
 					
 					// DONE: Make sure batch and ledger ID (sync) thingies are squared away...
 					cnDelete "widget/connector" { event="Click"; target=check_form; action="Delete"; }
@@ -1238,6 +1278,7 @@ cashdisb_subform "widget/component-decl"
 							ctl_type=editbox;
 							text="Payee #:";
 							label_width=60; width=120;
+							// enabled = runclient(:check_form:is_savable);  // BUG/TODO (20100224): Doesn't work as expected. Why?
 							
 							// Note (20091008): This connector should be associated with an intermediary
 							//					component-decl-action that is also called by cnSave_cn2.
@@ -1259,6 +1300,15 @@ cashdisb_subform "widget/component-decl"
 							height = 25;
 							text="Select Payee";
 							// enabled=yes;
+							// TODO: enabled=form.modifiedstate;
+							// enabled = runclient(:check_form:is_savable);  // BUG/TODO (20100224): Doesn't work as expected. Why?
+							// enabled = runclient(:check_form:is_editable);
+							// Goal, don't allow the user to click "Select Payee" on a Blank Batch (when they haven't clicked New Check)
+							
+							
+							// TODO (20100224): Make it so it is enabled only if a row is selected...
+							// e.g. if there are no row selected, don't let the user click this 
+							//      button or modify the text in the textbox
 							
 							open_select_payee_window_cn "widget/connector"
 							{
@@ -1290,7 +1340,9 @@ cashdisb_subform "widget/component-decl"
 								/apps/kardia/data/Kardia_DB/p_partner/rows p, 
 								/apps/kardia/data/Kardia_DB/p_location/rows l
 							WHERE 
-								:p:p_partner_key = :l:p_partner_key"); // and
+								:p:p_partner_key = :l:p_partner_key and
+								:p:p_partner_key != ' '"); // 20101213: GRB - bug workaround
+								// and
 								//:p:p_partner_key = :parameters:payee_number_q2");  // 
 						
 						    // [Possible] TODO: Fault Tolerance for when there is no payee number match...
@@ -1298,7 +1350,7 @@ cashdisb_subform "widget/component-decl"
 						baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
 						replicasize=25;
 						readahead=10;
-						autoquery=onfirstreveal;
+						autoquery=never;
 						
 						// Set First and Last Name...
 						NameGrab "widget/connector"
@@ -1357,7 +1409,7 @@ cashdisb_subform "widget/component-decl"
 						baseobj = "/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows";
 						replicasize=25;
 						readahead=10;
-						autoquery=onfirstreveal;
+						autoquery=never;
 						
 						// TO DOCUMENT: osrc_relationship replaces sync and double sync which are now deprecated...
 						check_total_link "widget/rule"
@@ -1371,6 +1423,8 @@ cashdisb_subform "widget/component-decl"
 							target_key_2 = a_batch_number;
 							key_3 = a_disbursement_id;
 							target_key_3 = a_disbursement_id;
+							autoquery=true; // 20101211: GRB - going with osrc relationship based sync now
+							// autoquery=false;
 						}
 						
 						check_details_form "widget/form"
@@ -1379,6 +1433,7 @@ cashdisb_subform "widget/component-decl"
 							{ 
 								path="/sys/cmp/smart_field.cmp";
 								// field='check_total';	// 20091001: displays a large sum when the batch is empty
+								field='check_total';	// 20101211: GRB - trying this again.
 								ctl_type=label;
 								text='Check Total:';
 								label_width=100;
@@ -1388,6 +1443,7 @@ cashdisb_subform "widget/component-decl"
 						// 20091001
 						check_total_cn "widget/connector"
 						{
+							condition = 0; // 20101211: GRB - moving back to form element.
 							event="EndQuery";  
 							event_condition = runclient( :check_details_osrc:check_li_cnt > 0 and :batch_total_osrc:cnt > 0);    // IS NOT NULL does not compile...
 							// event_condition = runclient( :check_details_osrc:check_li_cnt > 0 );    // IS NOT NULL does not compile...
@@ -1399,6 +1455,7 @@ cashdisb_subform "widget/component-decl"
 						// 20091001
 						check_total_cn2 "widget/connector"
 						{
+							condition = 0; // 20101211: GRB - moving back to form element.
 							event="EndQuery";
 							// 
 							event_condition = runclient( :check_details_osrc:check_li_cnt == 0 or :batch_total_osrc:cnt == 0);
@@ -1436,8 +1493,8 @@ cashdisb_subform "widget/component-decl"
 					} // END - check_details_osrc
 					
 					// Checkbox Display
-					cs_lbl_check_voided "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_voided'; ctl_type=checkbox; text='Check Voided?:'; label_width=100; type="readonly";} 
-					cs_lbl_check_posted "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_posted'; ctl_type=checkbox; text='Check Posted?:'; label_width=100; type="readonly";} 
+					cs_lbl_check_voided "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_voided'; ctl_type=checkbox; text='Check Voided?:'; label_width=100; type="readonly"; voided_hints "widget/hints" { default=runclient(0); style=readonly; } } 
+					cs_lbl_check_posted "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_posted'; ctl_type=checkbox; text='Check Posted?:'; label_width=100; type="readonly"; posted_hints "widget/hints" { default=runclient(0); style=readonly; } } 
 
 					// TODO
 					// 1. If Check is not voided -> comment can edit at any time without any prompting
@@ -2183,12 +2240,12 @@ cashdisb_subform "widget/component-decl"
 				// QUESTION 200902: "Are you sure you would like to print these checks using check #s <starting_check_number> through <last_checking_number>"?
 				// QUESTION 20090707: What to do if reprinting a check with a different number? Where should the check number be updated, or does the check need to have the same number?  Would a check need to be voided then reissued inorder to change the check number of a check that has already been printed? // OLD_BUSINESS_LOGIC: would it be: if the checks have been printed before: "These checks have already been printed, are you sure you would like print these checks again? (starting with check number: <starting_check_number> through <end_check_number>)?"  Yes/No/Cancel
 				
-				// Unimplemented - 20090707
+				// Usage Testeed (DMJ)
 				Print_All_Checks_btn "widget/textbutton"
 				{
 					width=130;
 					height = 40;
-					text="Print Checks";
+					text="Preview Checks";
 					
 					// Checkpoint!
 					// GB_cn1_sawd "widget/connector"
@@ -2201,7 +2258,7 @@ cashdisb_subform "widget/component-decl"
 					// 	param=runclient("Print_All_Checks_btn (Click): You clicked " + isnull(:cashdisb_osrc:a_ledger_number, "<blank>") + ", batch: " + isnull(:cashdisb_osrc:a_batch_number, "<blank>") + ", disbursement_id: " + isnull(:cashdisb_osrc:a_disbursement_id, "<blank>") + ", a_check_number: " + isnull(:cashdisb_osrc:a_check_number, "<blank>"));
 					// }
 					
-					mnDave_cd_print_window_cn "widget/connector"
+					mn_a70_cd_print_window_cn "widget/connector"
 					{
 						event = "Click";
 						target = cd_print_window_cmp;
@@ -2218,7 +2275,7 @@ cashdisb_subform "widget/component-decl"
 					// TODO: Open [Modal] the Printing Form
 					// pass parameter Batch number
 					// pass parameter of currently selected check number
-					// mnDave_cd_print_window_cn "widget/connector"
+					// mn_a70_cd_print_window_cn "widget/connector"
 					// {
 					//	event = Select;
 					//	target = cd_print_window_cmp;
@@ -2280,6 +2337,10 @@ cashdisb_subform "widget/component-decl"
 					text="Void This Check";
 					
 					cnSave_cn324 "widget/connector" { event="Click"; target=batch_total_osrc; action="Refresh"; }
+					
+					enabled = runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
+					
+					// Void_This_Check_btn
 					
 					// Update the displayed "Batch Total: $"
 					// BUG Firing out of sequence...
@@ -2379,9 +2440,9 @@ cashdisb_subform "widget/component-decl"
 // NOTES:  Cash Disbursement Balance Report (Comparing to the GL)
 // http://127.0.0.1:801/apps/kardia/modules/disb/disbursements_summary.rpt?ledger=0US&period=2009.01&unposted=1
 
-// Data Conversion Scripts are located in: kardia/sql/organizationdata/
+// Data Conversion Scripts are located in: kardia/sql/actiondata/
 // perl scripts parse_finances.pl
-// kardia/sql/organizationdata/
+// kardia/sql/actiondata/
 // [3:46:32 PM] Greg Beeley: it is a monster complicated perl script
 // [3:46:34 PM] Greg Beeley: parse_finances.pl
 // [3:46:51 PM] Greg Beeley: tim put it together way back when and it grew and grew and grew..

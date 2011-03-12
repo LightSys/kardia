@@ -1,8 +1,8 @@
 $Version=2$
 
 // Prints the Details for a Batch of Checks...
-// Author: arbor70
-// Organization
+// arbor70
+// Kardia
 // July 2009
 
 // Table of Contents
@@ -22,6 +22,19 @@ $Version=2$
 // p_partner - Check Payee (Display Name) defaults to :org_name except when it is null, in which case it uses given_name + ' ' + surname
 
 
+// report/query Dependency Graph
+//
+// Description: Which Queries require which query?
+// 
+// - batch_qy
+//   - check_ttl
+//	 - check_qy
+//     - acct_cc_name_qy
+//   - check_one_row_qy
+//     - payee_qy
+// - batch_disb_qy
+//   - update_check_number_qy
+
 check_report "system/report"
 {
 	title = "Batch of Checks";
@@ -31,8 +44,8 @@ check_report "system/report"
 	//pageheight = 279.4;
 	marginleft=.01;
 	marginright=.01;
-	margintop=.10;
-	marginbottom=.01;
+	margintop=.01;
+	marginbottom=1;
 	units="millimeters";
 	// TO DOCUMENT: units attribute  osdriver/osdriver_report_v3.c [Line 3382]
 	// TO DOCUMENT: Different Units Available in Reports  report/prtmgmt_v3main.c [Line 482]
@@ -69,13 +82,15 @@ check_report "system/report"
 				:c:a_ledger_number = :this:ledger and
 				:c:a_batch_number  = :this:batch_number
 			GROUP BY
-				:c:a_disbursement_id
+				:c:a_check_number
 				
 		");
 		//
 		//	GROUP BY 
 		//		:c:a_check_number
-				
+		
+		// GROUP BY
+		//		:c:a_disbursement_id	
 	}
 	
 	//check_summary_qy "report/query"
@@ -181,11 +196,20 @@ check_report "system/report"
 			:p:p_given_name,
 			:p:p_surname,
 			:p:p_org_name,
-			display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name)
+			display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name),
+			mail_to = 	condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name) + '\n' +
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_1, ''))))) == 0, '', :l:p_address_1 + '\n') + 
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_2, ''))))) == 0, '', :l:p_address_2 + '\n') + 
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_3, ''))))) == 0, '', :l:p_address_3 + '\n') + 
+				:l:p_city + ' ' + :l:p_state_province  + '  ' + 
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_postal_code, ''))))) == 9, substring(:l:p_postal_code,1,5) + '-' + right(:l:p_postal_code,4), :l:p_postal_code)
 		FROM
-			/apps/kardia/data/Kardia_DB/p_partner/rows p
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows l
 		WHERE
-			:p:p_partner_key = :check_one_row_qy:a_payee_partner_key");
+			:p:p_partner_key = :check_one_row_qy:a_payee_partner_key AND
+			:p:p_partner_key = :l:p_partner_key
+		");
 		
 		// 
 		// DEBUGGING CODE (Showing Work) 20091013:
@@ -355,9 +379,9 @@ check_report "system/report"
 		my_form "report/form"
 		{
 			source = check_one_row_qy,payee_qy;
-			cr_debugging4 "report/area"
+			cr_check_details "report/area"
 			{
-				x=2;
+				x=12;
 				y=0.1;
 			
 				height=4; width=80;
@@ -365,9 +389,10 @@ check_report "system/report"
 				fontsize=10;
 				font = times;
 
-				partner_eff_date_db "report/data" { xpos=68; ypos=5; dateformat="MM/dd/yyyy"; value=runserver(isnull(:check_one_row_qy:a_effective_date, getdate())); }
-				partner_display_name_db "report/data" { xpos=10; ypos=8; value=runserver(isnull(:payee_qy:display_name, "<blank>")); }
-				crhb_void_output "report/data" { condition=runserver(:check_one_row_qy:a_voided=1); xpos=28; ypos=14; fontsize=36; value="VOID"; }
+				partner_eff_date_db "report/data" { xpos=58; ypos=4.5; dateformat="MM/dd/yyyy"; value=runserver(isnull(:check_one_row_qy:a_effective_date, getdate())); }
+				partner_display_name_db "report/data" { xpos=0; ypos=7.75; value=runserver(isnull(:payee_qy:display_name, "<blank>")); }
+				crhb_void_output "report/data" { condition=runserver(:check_one_row_qy:a_voided=1); xpos=18; ypos=12; fontsize=36; value="VOID"; }
+				partner_mail_to_db "report/data" { xpos=0; ypos=14; value=runserver(isnull(:payee_qy:mail_to, "<blank>")); }
 			}
 			
 		} // END - my_form "report/form"
@@ -378,16 +403,16 @@ check_report "system/report"
 			source = check_ttl;
 		
 			// Check Total
-			cr_debugging5 "report/area"
+			cr_display_check_total_top_portion "report/area"
 			{
 			x=2;
 			y=0.1;
 				height=4; width=80;
 				align=left;
-				fontsize=12;
+				fontsize=10;
 				font = times;
-				check_ttl_display_db "report/data" { xpos=68; ypos=8; value=runserver(isnull(:check_ttl:check_total, "<blank>") + "\n"); }
-				check_ttl_wordify_display_db "report/data" { xpos=3; ypos=10; value=runserver("*** " + isnull(:check_ttl:check_total_wordify, "<blank>") + " Dollars ***\n"); }
+				check_ttl_display_db "report/data" { xpos=68; ypos=7.5; value=runserver(isnull(:check_ttl:check_total, "<blank>") + "\n"); }
+				check_ttl_wordify_display_db "report/data" { xpos=3; ypos=9.75; value=runserver("*** " + isnull(:check_ttl:check_total_wordify, "<blank>") + " Dollars ***\n"); }
 			}
 		} // END - my_form2 "report/form"
 		
@@ -395,7 +420,7 @@ check_report "system/report"
 		// CHECK REPORT SECTION HEADER (A)
 		check_report_header_a "report/form"
 		{
-			source = check_one_row_qy,payee_qy;
+			source = check_one_row_qy,payee_qy,check_ttl;
 			crha_text_area "report/area"
 			{
 				x=0.01;
@@ -405,7 +430,7 @@ check_report "system/report"
 				fontsize=10;
 				font = times;
 				
-				crha_payee_check_no_output "report/data" { xpos=2; ypos=2; value = runserver("CHECK REPORT                                  To: " + isnull(:payee_qy:display_name, "<blank>") + "                                        " + isnull(:check_one_row_qy:a_check_number, "<blank>") ); }  
+				crha_payee_check_no_output "report/data" { xpos=2; ypos=2; value = runserver("Check Report                To: " + isnull(:payee_qy:display_name, "<blank>") + " (Payee: " + isnull(:payee_qy:p_partner_key, "<blank>") + ")            Check Total: " + isnull(:check_ttl:check_total, "<blank>") + "              " + isnull(:check_one_row_qy:a_check_number, "<blank>") ); } 
 				crha_payee_date_output "report/data" { xpos=68; ypos=3; dateformat="MM/dd/yyyy"; value = runserver(isnull(:check_one_row_qy:a_effective_date, "<blank>")); }  
 			}
 		} // END - my_form "report/form"
@@ -417,7 +442,7 @@ check_report "system/report"
 			y=25;
 			width=80;height=0;
 			columns=5;
-			widths=12,8,85,55,24;
+			widths=13,8,85,54,24;
 			colsep=1;
 			source=check_qy,acct_cc_name_qy;
 			moneyformat = "-$###,###,##0.00";
@@ -429,7 +454,7 @@ check_report "system/report"
 				margintop=0.0;
 				marginbottom=0.0;
 				header=yes;
-				li_CC_header "report/table-cell" { value='CC'; style=bold; align=left; }
+				li_CC_header "report/table-cell" { value='CostCtr'; style=bold; align=left; }
 				li_AcctCode_header "report/table-cell" { value='Acct'; style=bold; align=left; }
 				li_cc_acct_desc_header "report/table-cell" { value='Description'; style=bold; align=left; }
 				
@@ -453,7 +478,7 @@ check_report "system/report"
 		// CHECK REPORT SECTION HEADER (B)
 		check_report_header_b "report/form"
 		{
-			source = check_one_row_qy,payee_qy;
+			source = check_one_row_qy,payee_qy,check_ttl;
 			crhb_text_area "report/area"
 			{
 				x=0.01;
@@ -463,7 +488,7 @@ check_report "system/report"
 				fontsize=10;
 				font = times;
 				
-				crhb_payee_check_no_output "report/data" { xpos=2; ypos=2; value = runserver("CHECK REPORT                                  To: " + isnull(:payee_qy:display_name, "<blank>") + "                                        " + isnull(:check_one_row_qy:a_check_number, "<blank>") ); }  
+				crhb_payee_check_no_output "report/data" { xpos=2; ypos=2; value = runserver("Check Report                To: " + isnull(:payee_qy:display_name, "<blank>") + " (" + isnull(:payee_qy:p_partner_key, "<blank>") + ")            Check Total: " + isnull(:check_ttl:check_total, "<blank>") + "              " + isnull(:check_one_row_qy:a_check_number, "<blank>") ); } 
 				crhb_payee_date_output "report/data" { xpos=68; ypos=3; dateformat="MM/dd/yyyy"; value = runserver(isnull(:check_one_row_qy:a_effective_date, "<blank>")); }  
 				// crhb_void_output
 			}
@@ -477,7 +502,7 @@ check_report "system/report"
 			y=46;
 			width=80;height=0;
 			columns=5;
-			widths=12,8,85,55,24;
+			widths=13,8,85,54,24;
 			colsep=1;
 			source=check_qy,acct_cc_name_qy;
 			moneyformat = "-$###,###,##0.00";
@@ -489,7 +514,7 @@ check_report "system/report"
 				margintop=0.0;
 				marginbottom=0.0;
 				header=yes;
-				li_CC_header "report/table-cell" { value='CC'; style=bold; align=left; }
+				li_CC_header "report/table-cell" { value='CostCtr'; style=bold; align=left; }
 				li_AcctCode_header "report/table-cell" { value='Acct'; style=bold; align=left; }
 				li_cc_acct_desc_header "report/table-cell" { value='Description'; style=bold; align=left; }
 				

@@ -10,11 +10,11 @@ cashdisb_form_window "widget/component-decl"
 	
     GotoBatch "widget/component-decl-action" { }
     GotoBatch_cn1 "widget/connector" { event="GotoBatch"; target="gljwin"; action="Open"; Cascade=1; }
-    GotoBatch_cn2 "widget/connector" { event="GotoBatch"; target="glj_cmp"; action="GotoBatch"; Batch=runclient(convert(integer,:Batch)); }
+    GotoBatch_cn2 "widget/connector" { event="GotoBatch"; event_delay=1; target="glj_cmp"; action="GotoBatch"; Batch=runclient(convert(integer,:Batch)); }
 
 	GotoBatchSelectRow "widget/component-decl-action" { }
     GotoBatchSelectRow_cn1 "widget/connector" { event="GotoBatchSelectRow"; target="gljwin"; action="Open"; Cascade=1; }
-    GotoBatchSelectRow_cn2 "widget/connector" { event="GotoBatchSelectRow"; target="glj_cmp"; action="GotoBatchSelectRow"; sr_ledger=runclient(convert(string,:sr_ledger)); Batch=runclient(convert(integer,:Batch)); sr_disbursement_id=runclient(convert(integer,:sr_disbursement_id)); sr_line_item=runclient(convert(integer,:sr_line_item)); }
+    GotoBatchSelectRow_cn2 "widget/connector" { event="GotoBatchSelectRow"; event_delay=1; target="glj_cmp"; action="GotoBatchSelectRow"; sr_ledger=runclient(convert(string,:sr_ledger)); Batch=runclient(convert(integer,:Batch)); sr_disbursement_id=runclient(convert(integer,:sr_disbursement_id)); sr_line_item=runclient(convert(integer,:sr_line_item)); }
 	// TO IMPLEMENT (20091215): Additional Parameters Passing in -- See Centrallix Documentation Supplemental
 	
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }

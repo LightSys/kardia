@@ -1,256 +1,225 @@
 $Version=2$
 cd_batches "widget/component-decl"
     {
-    width=640;
-    height=480;
+    width=780;
+    height=542;
 
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    periods_osrc "widget/parameter" { type=object; }
 
-    periods_osrc "widget/osrc"
+    post_cd "widget/component"
 	{
-	periods_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
+	path = "/apps/kardia/modules/disb/post_cd_batch.cmp";
+
+	post_cn "widget/connector" { event=Posted; target=disb_osrc; action=Refresh; }
+	glpost_cn "widget/connector" { event=GLPosted; target=disb_osrc; action=Refresh; }
+	unpost_cn "widget/connector" { event=Unposted; target=disb_osrc; action=Refresh; }
+	glunpost_cn "widget/connector" { event=GLUnposted; target=disb_osrc; action=Refresh; }
+	}
+
+    disb_osrc "widget/osrc"
+	{
 	sql = runserver("
 		SELECT
-			:p:a_period, :p:a_period_desc, :p:a_ledger_number, txt=:p:a_period + ' - ' + :p:a_period_desc
-		FROM
-			/apps/kardia/data/Kardia_DB/a_period/rows p
+			:b:a_ledger_number,
+			:b:a_batch_number, 
+			:b:a_batch_desc, 
+			:b:a_default_effective_date,
+			:b:s_created_by,
+			:b:s_date_created,
+			:b:s_modified_by,
+			:b:s_date_modified,
+			:b:a_period,
+			date_txt = substring(convert(string,:a_default_effective_date),1,11),
+			drec = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :b:a_batch_number and :cd:a_ledger_number = :b:a_ledger_number limit 1),
+			dpost = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :b:a_batch_number and :cd:a_ledger_number = :b:a_ledger_number and :cd:a_posted = 1 limit 1),
+			glrec = (select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1)
+		FROM 
+			/apps/kardia/data/Kardia_DB/a_batch/rows b
 		WHERE
-			:p:a_summary_only = 0 and :p:a_ledger_number = :parameters:ledger");
+			:b:a_origin = 'CD'
+		ORDER BY
+			:b:a_batch_number");
 	replicasize=50;
-	readahead=50;
-	autoquery=onload;
+	readahead=25;
+	autoquery=never;
 
-	period_form "widget/form" { }
-
-	ctls_hbox "widget/hbox"
+	period_sync "widget/rule"
 	    {
-	    x=0; y=0; width=640;height=20;
-	    spacing=4;
-
-	    disb_label "widget/label"
-		{
-		width=205;
-		text = "Disbursements";
-		style=bold;
-		font_size=16;
-		}
-	    periods_label "widget/label"
-		{
-		width=120;
-		y=1;
-		text = "Select Period:";
-		align=right;
-		style=bold;
-		}
-	    periods_select "widget/dropdown"
-		{
-		width=200;
-		mode=objectsource;
-		fieldname=txt;
-		numdisplay=12;
-		}
-
-	    sp1 "widget/autolayoutspacer" { width=8; }
-
-	    btnFirst "widget/imagebutton"
-		{
-		y=1;
-		width=18;
-		height=18;
-		image="/sys/images/ico16aa.gif";
-		pointimage="/sys/images/ico16ab.gif";
-		clickimage="/sys/images/ico16ac.gif";
-		disabledimage="/sys/images/ico16ad.gif";
-		enabled = runclient(:period_form:recid > 1);
-		cnFirst "widget/connector" { event="Click"; target=period_form; action="First"; }
-		tooltip = runserver("First Period");
-		}
-	    btnBack "widget/imagebutton"
-		{
-		y=1;
-		width=18;
-		height=18;
-		image="/sys/images/ico16ba.gif";
-		pointimage="/sys/images/ico16bb.gif";
-		clickimage="/sys/images/ico16bc.gif";
-		disabledimage="/sys/images/ico16bd.gif";
-		enabled = runclient(:period_form:recid > 1);
-		tooltip = runserver("Previous Period");
-		repeat = yes;
-		cnBack "widget/connector" { event="MouseDown"; target=period_form; action="Prev"; }
-		}
-	    btnNext "widget/imagebutton"
-		{
-		y=1;
-		width=18;
-		height=18;
-		image="/sys/images/ico16ca.gif";
-		pointimage="/sys/images/ico16cb.gif";
-		clickimage="/sys/images/ico16cc.gif";
-		disabledimage="/sys/images/ico16cd.gif";
-		enabled = runclient(not(:period_form:recid == :period_form:lastrecid));
-		tooltip = runserver("Next Period");
-		repeat = yes;
-		cnNext "widget/connector" { event="MouseDown"; target=period_form; action="Next"; }
-		}
-	    btnLast "widget/imagebutton"
-		{
-		y=1;
-		width=18;
-		height=18;
-		image="/sys/images/ico16da.gif";
-		pointimage="/sys/images/ico16db.gif";
-		clickimage="/sys/images/ico16dc.gif";
-		disabledimage="/sys/images/ico16dd.gif";
-		tooltip = runserver("Last Period");
-		enabled = runclient(not(:period_form:recid == :period_form:lastrecid));
-		cnLast "widget/connector" { event="Click"; target=period_form; action="Last"; }
-		}
+	    ruletype = "osrc_relationship";
+	    target = periods_osrc;
+	    is_slave = yes;
+	    key_1 = a_ledger_number;
+	    target_key_1 = a_ledger_number;
+	    key_2 = a_period;
+	    target_key_2 = a_period;
+	    autoquery = true;
 	    }
 
-	sep_line "widget/pane" { x=0;y=28; width=640; height=2; style=lowered; }
+	disb_form "widget/form" { }
 
-	disb_osrc "widget/osrc"
+	new_batch_window "widget/childwindow"
 	    {
-	    sql = runserver("
-		    SELECT
-			    :b:a_batch_number, 
-			    :b:a_batch_desc, 
-			    :b:a_default_effective_date,
-			    drec = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :b:a_batch_number and :cd:a_ledger_number = :b:a_ledger_number limit 1),
-			    dpost = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :b:a_batch_number and :cd:a_ledger_number = :b:a_ledger_number and :cd:a_posted = 1 limit 1),
-			    glrec = (select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1)
-		    FROM 
-			    /apps/kardia/data/Kardia_DB/a_batch/rows b
-		    WHERE
-			    :b:a_origin = 'CD'
-		    ORDER BY
-			    :b:a_batch_number");
-	    replicasize=50;
-	    readahead=25;
-	    autoquery=never;
+	    style=dialog;
+	    titlebar=no;
+	    modal=yes;
+	    toplevel=yes;
+	    width=480; height=300;
+	    x=150; y=120;
+	    visible=no;
 
-	    period_sync "widget/rule"
+	    new_batch_form "widget/form"
 		{
-		ruletype = "osrc_relationship";
-		target = periods_osrc;
-		is_slave = yes;
-		key_1 = a_ledger_number;
-		target_key_1 = a_ledger_number;
-		key_2 = a_period;
-		target_key_2 = a_period;
-		autoquery = true;
-		}
-
-	    disb_form "widget/form" { }
-
-	    new_batch_window "widget/childwindow"
-		{
-		style=dialog;
-		titlebar=no;
-		toplevel=yes;
-		width=480; height=300;
-		x=80; y=90;
-		visible=yes;
-
-		new_batch_form "widget/form"
+		new_batch_cmp "widget/component"
 		    {
-		    batch_origin "widget/variable" { fieldname="a_origin"; batch_origin_hints "widget/hints" { default=runclient('CD'); } }
-		    nextjnl_v "widget/variable" { fieldname="a_next_journal_number"; nextjnl_hints "widget/hints" { default=1; } }
-		    nexttrx_v "widget/variable" { fieldname="a_next_transaction_number"; nexttrx_hints "widget/hints" { default=1; } }
-		    ledger_v "widget/variable" { fieldname="a_ledger_number"; ledger_hints "widget/hints" { default=runclient(:cd_batches:ledger); } }
-
-		    new_batch_vbox "widget/vbox"
-			{
-			x=10;y=10;width=458;height=255;
-			spacing=8; cellsize=20;
-
-			new_batch_lbl "widget/label" { font_size = 16; align=center; value=runclient(:new_batch_form:form_mode + " Disbursement Batch"); style=bold; }
-
-			sp2 "widget/autolayoutspacer" { height=8; }
-
-			f_a_batch_no "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_number; text="Batch:"; ctl_type="editbox"; tooltip="Batch Number"; label_width=70; width=250; }
-			f_a_period "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_period; text="Period:"; tooltip="Period Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Select Period:"; popup_order=desc; width=250; }
-			f_a_batch_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_desc; text="Descrip:"; ctl_type="editbox"; tooltip="Batch Description"; label_width=70; width=250; }
-			f_a_batch_eff_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_default_effective_date; text="Eff. Date:"; ctl_type="datetime"; tooltip="Effective (accrual) date for transactions"; label_width=70; width=250; }
-			}
-
-		    new_batch_vbox2 "widget/vbox"
-			{
-			x=10;y=223;width=458;height=65;
-			spacing=8; cellsize=20;
-			align=bottom;
-
-			batch_rec_info "widget/component"
-			    {
-			    path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
-			    }
-			}
-		    }
-		}
-
-	    batch_tbl_pane "widget/pane"
-		{
-		x=0;y=38; width=500;height=442;
-		widget_class = "table_bgnd";
-
-		batch_tbl "widget/table"
-		    {
-		    x=0;y=0;width=498;height=440;
-		    mode=dynamicrow;
-
-		    t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=60; }
-		    t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=180; }
-		    t_dt "widget/table-column" { title="Eff. Date"; fieldname="a_default_effective_date"; width=80; }
-		    t_rcnt "widget/table-column" { title="Rec's"; fieldname="drec"; width=50; type=check; }
-		    t_rpost "widget/table-column" { title="Post?"; fieldname="dpost"; width=50; type=check; }
-		    t_glcnt "widget/table-column" { title="GL Rec's"; fieldname="glrec"; width=60; type=check; }
+		    x=0;y=0;width=478;height=298;
+		    path="/apps/kardia/modules/gl/generic_editbatch.cmp";
+		    ledger=runserver(:this:ledger);
+		    periods_osrc = periods_osrc;
+		    title = "Disbursements";
+		    origin = "CD";
+		    new_batch_window = new_batch_window;
+		    new_batch_form = new_batch_form;
+		    allow_effdate = 0;
 		    }
 		}
 	    }
 
-	btn_vbox "widget/vbox"
+	batch_tbl_pane "widget/pane"
 	    {
-	    x = 508; y=38; width=132; height=442;
-	    spacing=8;
-	    cellsize=40;
+	    x=0;y=0; width=600;height=542;
+	    widget_class = "table_bgnd";
 
-	    new_disb "widget/textbutton"
+	    batch_tbl "widget/table"
 		{
-		width = 132;
-		height = 40;
-		text = "New Batch";
-		}
-	    edit_disb "widget/textbutton"
-		{
-		width = 132;
-		height = 40;
-		text = "Edit CD Batch";
-		enabled = runclient(:disb_form:is_editable and :disb_form:dpost != 1 and :disb_form:glrec != 1);
-		}
-	    post "widget/textbutton"
-		{
-		width = 132;
-		height = 40;
-		text = "Post Batch To CD Journal";
-		enabled = runclient(:disb_form:is_editable and :disb_form:drec == 1 and :disb_form:glrec != 1 and :disb_form:dpost != 1);
-		}
-	    post_to_gl "widget/textbutton"
-		{
-		width = 132;
-		height = 40;
-		text = "Post Batch To GL";
-		enabled = runclient(:disb_form:is_editable and :disb_form:glrec != 1 and :disb_form:dpost == 1);
-		}
-	    disbrpt "widget/textbutton"
-		{
-		width = 132;
-		height = 40;
-		text = runclient("Disbursement Report: " + isnull(:periods_osrc:a_period, ''));
-		enabled = runclient(:period_form:is_editable);
+		x=0;y=0;width=598;height=540;
+		mode=dynamicrow;
 
-		rpt_print_cn "widget/connector" { event="Click"; target="cd_batches"; action="Launch"; Source=runclient("/apps/kardia/modules/disb/disbursements_summary.rpt"); Width=runclient(800); Height=runclient(600); ledger=runclient(:periods_osrc:a_ledger_number); period=runclient(:periods_osrc:a_period); unposted=1; }
+		t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=60; }
+		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=180; }
+		t_dt "widget/table-column" { title="Eff. Date"; fieldname="date_txt"; width=80; }
+		t_user "widget/table-column" { title="User"; fieldname="s_created_by"; width=50; }
+		t_rcnt "widget/table-column" { title="Rec's"; fieldname="drec"; width=50; type=check; }
+		t_rpost "widget/table-column" { title="Post?"; fieldname="dpost"; width=50; type=check; }
+		t_glcnt "widget/table-column" { title="GL?"; fieldname="glrec"; width=50; type=check; }
 		}
+	    }
+	}
+
+    btn_vbox "widget/vbox"
+	{
+	x = 608; y=0; width=172; height=542;
+	spacing=8;
+	cellsize=40;
+
+	new_disb "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = "New Batch";
+	    enabled = runclient(:new_batch_form:is_newable and :periods_osrc:a_status == 'O');
+
+	    new_cn "widget/connector" { event=Click; target=new_batch_form; action=New; }
+	    }
+	edit_disb "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = "Edit Batch Details";
+	    enabled = runclient(:new_batch_form:is_editable and :periods_osrc:a_status == 'O');
+
+	    detail_cn "widget/connector" { event=Click; target=new_batch_form; action=Edit; }
+	    }
+	edit_cks "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = runclient(condition(:disb_form:dpost == 1, "View", "Enter") + " Checks for #" + :disb_form:a_batch_number);
+	    //enabled = runclient(:rcpt_form:is_editable and :rcpt_form:rpost != 1 and :rcpt_form:glrec != 1);
+
+	    edit_cn "widget/connector"
+		{
+		event=Click;
+		event_condition=runclient(:disb_osrc:s_created_by == user_name() or :disb_form:dpost == 1);
+		target=cd_batches;
+		action=Launch;
+		Source = runclient("/apps/kardia/modules/disb/disbursements.app");
+		Width=800;
+		Height=600;
+		ledger=runclient(:disb_osrc:a_ledger_number);
+		batch=runclient(:disb_osrc:a_batch_number);
+		}
+	    edit_cn2 "widget/connector"
+		{
+		event=Click;
+		event_condition=runclient(:disb_osrc:s_created_by != user_name() and not (:disb_form:dpost == 1));
+		event_confirm=runclient("The batch " + :disb_osrc:a_batch_number + " was started by someone else (" + :disb_osrc:s_created_by + ").  Do you really want to enter checks in this batch?");
+		target=cd_batches;
+		action=Launch;
+		Source = runclient("/apps/kardia/modules/disb/disbursements.app");
+		Width=800;
+		Height=600;
+		ledger=runclient(:disb_osrc:a_ledger_number);
+		batch=runclient(:disb_osrc:a_batch_number);
+		}
+	    }
+
+	sep_line2 "widget/pane" { height=2; fl_height=0; style=lowered; }
+	posting_lbl "widget/label" { height=15; text="Posting"; align=center; style=bold; }
+	post "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = "Post Batch To CD Journal";
+	    enabled = runclient(:disb_form:is_editable and :disb_form:drec == 1 and :disb_form:glrec != 1 and :disb_form:dpost != 1);
+
+	    dopost_cn "widget/connector"
+		{
+		event=Click;
+		target=post_cd;
+		action=Post;
+		a_ledger_number=runclient(:cd_batches:ledger);
+		a_period=runclient(:periods_osrc:a_period);
+		a_batch_number=runclient(:disb_osrc:a_batch_number);
+		}
+	    }
+	post_to_gl "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = "Post Batch To GL";
+	    enabled = runclient(:disb_form:is_editable and :disb_form:glrec != 1 and :disb_form:dpost == 1);
+
+	    doglpost_cn "widget/connector"
+		{
+		event=Click;
+		target=post_cd;
+		action=GLPost;
+		a_ledger_number=runclient(:cd_batches:ledger);
+		a_period=runclient(:periods_osrc:a_period);
+		a_batch_number=runclient(:disb_osrc:a_batch_number);
+		}
+	    }
+
+	sep_line3 "widget/pane" { height=2; fl_height=0; style=lowered; }
+	reporting_lbl "widget/label" { height=15; text="Reports and Printing"; align=center; style=bold; }
+	disbdet "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = runclient("Report: Disb. Detail " + isnull(:periods_osrc:a_period, ''));
+	    enabled = runclient(:disb_form:is_editable);
+
+	    dd_print_cn "widget/connector" { event="Click"; target="cd_batches"; action="Launch"; Source=runclient("/apps/kardia/modules/disb/disbursements_detail.rpt"); Width=runclient(800); Height=runclient(600); ledger=runclient(:periods_osrc:a_ledger_number); start_period=runclient(:periods_osrc:a_period); end_period=runclient(:periods_osrc:a_period); unposted=1; show_line_items=1; }
+	    }
+	disbrpt "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = runclient("Report: Disb. Summary " + isnull(:periods_osrc:a_period, ''));
+	    enabled = runclient(:disb_form:is_editable);
+
+	    rpt_print_cn "widget/connector" { event="Click"; target="cd_batches"; action="Launch"; Source=runclient("/apps/kardia/modules/disb/disbursements_summary.rpt"); Width=runclient(800); Height=runclient(600); ledger=runclient(:periods_osrc:a_ledger_number); period=runclient(:periods_osrc:a_period); unposted=1; }
 	    }
 	}
     }
