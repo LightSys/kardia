@@ -1,0 +1,45 @@
+$Version=2$
+next_batch "widget/component-decl"
+    {
+    visual = no;
+
+    GetBatchNumber "widget/component-decl-action" { }
+    BatchNumber "widget/component-decl-event" { }
+
+    GetBatchNumber_cn "widget/connector"
+	{
+	event=GetBatchNumber;
+	target=getbatch_osrc;
+	action=QueryParam;
+	ledger = runclient(:ledger);
+	}
+
+    getbatch_osrc "widget/osrc"
+	{
+	ledger "widget/parameter" { type=string; }
+	sql = "	select
+			:a_next_batch_number
+		from
+			/apps/kardia/data/Kardia_DB/a_ledger/rows
+		where
+			:a_ledger_number = :parameters:ledger
+		;
+		update
+			/apps/kardia/data/Kardia_DB/a_ledger/rows
+		set
+			:a_next_batch_number = :a_next_batch_number + 1
+		where
+			:a_ledger_number = :parameters:ledger
+		;
+		-- the following is a workaround for a bug in htdrv_osrc.js
+		select
+			1
+		where
+			1 = 0
+		";
+	readahead = 2;
+	replicasize = 2;
+
+	gotit "widget/connector" { event=EndQuery; target=next_batch; action=BatchNumber; batch=runclient(:getbatch_osrc:a_next_batch_number); }
+	}
+    }

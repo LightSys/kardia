@@ -40,26 +40,26 @@ trial_balance "system/report"
 			:c:a_cost_center,
 			:c:a_cc_desc,
 			:c:a_bal_cost_center,
-			:a:a_account_code,
-			:a:a_acct_desc,
+			:tt:a_account_category,
+			:a:a_acct_cat_desc,
 			cbal = sum(:tt:a_amount),
 			bbal = isnull(sum(condition(:tt:a_transaction_type = 'B' or :tt:a_period < :this:ref_period, :tt:a_amount, $0.00)), $0.00)
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-			/apps/kardia/data/Kardia_DB/a_account/rows a
+			/apps/kardia/data/Kardia_DB/a_account_category/rows a
 		where
 			:tt:a_ledger_number = :this:ledger and
 			:tt:a_cost_center = :c:a_cost_center and
-			:tt:a_account_code = :a:a_account_code and
+			:tt:a_account_category *= :a:a_account_category and
 			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
 			:c:a_ledger_number = :this:ledger and
-			:a:a_ledger_number = :this:ledger
+			:a:a_ledger_number =* :tt:a_ledger_number
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
 			" + condition(:this:costctr is null, '', ' and :c:a_bal_cost_center = :this:costctr') + "
 		group by
 			:tt:a_cost_center,
-			:tt:a_account_code
+			:tt:a_account_category
 		");
 	cbal_sum "report/aggregate" { compute="sum(:cbal)"; }
 	cbal_sum2 "report/aggregate" { compute="sum(:cbal)"; }
@@ -73,8 +73,8 @@ trial_balance "system/report"
 	all_sum_b "report/aggregate" { compute="sum(:bbal)"; reset=0; }
 	all_sum_c "report/aggregate" { compute="sum(:cbal)"; reset=0; }
 
-	ifxfr_sum_b "report/aggregate" { compute="sum(:bbal)"; where=":a_account_code == '1900'"; reset=0; }
-	ifxfr_sum_c "report/aggregate" { compute="sum(:cbal)"; where=":a_account_code == '1900'"; reset=0; }
+	ifxfr_sum_b "report/aggregate" { compute="sum(:bbal)"; where=":a_account_category == '19'"; reset=0; }
+	ifxfr_sum_c "report/aggregate" { compute="sum(:cbal)"; where=":a_account_category == '19'"; reset=0; }
 	}
 
 
@@ -87,7 +87,7 @@ trial_balance "system/report"
 	    x=0; width=80; height=3;
 	    font=helvetica;
 	    align=center;
-	    t_d1 "report/data" { value = runserver("General Ledger Trial Balance for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d1 "report/data" { value = runserver("General Ledger Ctl Trial Balance for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
 	    t_d2 "report/data" { value = runserver("For Year " + :this:year_period + ", for periods " + :this:ref_period + " through " + :this:end_period + "\n"); }
 	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
 	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
@@ -112,7 +112,7 @@ trial_balance "system/report"
 		header=yes;
 		bottomborder=0.05;
 		h_cc "report/table-cell" { value='Cost Ctr'; align=center; style=bold; }
-		h_acct "report/table-cell" { value='Acct'; align=center; style=bold; }
+		h_acct "report/table-cell" { value='Ctl'; align=center; style=bold; }
 		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
 		h_bbal "report/table-cell" { value='Begin'; align=center; style=bold; }
 		h_chg "report/table-cell" { value='Change'; align=center; style=bold; }
@@ -125,8 +125,8 @@ trial_balance "system/report"
 		fontsize=8;
 		marginbottom=0.0;
 		d_cc "report/table-cell" { value=runserver(:accts_qy:a_cost_center); align=left; }
-		d_acct "report/table-cell" { value=runserver(:accts_qy:a_account_code); align=left; }
-		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_cc_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
+		d_acct "report/table-cell" { value=runserver(:accts_qy:a_account_category); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_cc_desc + isnull(" (" + :accts_qy:a_acct_cat_desc + ")", "")); align=left; }
 		d_bbal "report/table-cell" { value=runserver(:accts_qy:bbal); align=right; }
 		d_chg "report/table-cell" { value=runserver((:accts_qy:cbal - :accts_qy:bbal)); align=right; }
 		d_cur "report/table-cell" { value=runserver(:accts_qy:cbal); align=right; }

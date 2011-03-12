@@ -359,7 +359,7 @@ field_report "system/report"
 			total_work = first(convert(money, :TWkNov)),
 			total_sal = first(convert(money, :MbudNov))
 		FROM
-			/apps/kardia/data/organizationdata/organization.fp/payper.08/rows p
+			/apps/kardia/data/legacydata/legacy.fp/payper.08/rows p
 		WHERE
 			:p:'Account#' = :cctrs_qy:a_cost_center
 		";
@@ -398,7 +398,7 @@ field_report "system/report"
 	hdrimg "report/image"
 	    {
 	    x=67.85;y=0;height=4;width=12.15;
-	    source="/apps/kardia/modules/local/organization_logo.png";
+	    source="/apps/kardia/modules/local/action_logo.png";
 	    }
 
 	rpt_title "report/area"
@@ -444,7 +444,6 @@ field_report "system/report"
 		h_lbl "report/table-cell" { value=''; }
 		h_start "report/table-cell" { value=runserver('Begin ' + :period_qy:a_period_desc); style=bold; align=center; }
 		h_plusminus "report/table-cell" { style=bold; align=center; fontsize=12; 
-		    //plusminusimg "report/image" { height=1;width=3; source="/apps/kardia/modules/gl/plusminus.png"; }
 		}
 		h_changes "report/table-cell" { value=runserver('Changes'); style=bold; align=center; }
 		h_equals "report/table-cell" { value=runserver(''); style=bold; align=center; fontsize=12; }
@@ -538,7 +537,7 @@ field_report "system/report"
 	    x=0; width=80; height=1.0;
 	    font=helvetica;
 	    fontsize=6;
-	    value = runserver("\n** Revenue and/or expense for this fund may reflect amounts which are personal gifts received by ACTION but payable/paid to the missionary; these amounts are not strictly revenue and expense to ACTION as an organization.  These amounts are shown here for your convenience.");
+	    value = runserver("\n** Revenue and/or expense for this fund may reflect amounts which are personal gifts received by the mission but payable/paid to the missionary; these amounts are not strictly revenue and expense to the mission as an organization.  These amounts are shown here for your convenience.");
 	    }
 
 	payroll_summary "report/area"

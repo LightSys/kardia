@@ -1,7 +1,7 @@
 $Version=2$
-coamaint "widget/page"
+periodmaint "widget/page"
     {
-    title = "Chart of Accounts Maintenance";
+    title = "Accounting Period Maintenance";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
@@ -9,11 +9,11 @@ coamaint "widget/page"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
 
-    coamaint_cmp "widget/component"
+    periodmaint_cmp "widget/component"
 	{
 	x=10; y=10; width=780; height=580;
-	condition = runserver((not (:this:ledger is null)));
-	path = "/apps/kardia/modules/gl/coamaint.cmp";
+	condition = runserver(not (:this:ledger is null));
+	path = "/apps/kardia/modules/gl/periodmaint.cmp";
 	ledger = runserver(:this:ledger);
 	}
     }

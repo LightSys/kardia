@@ -1,14 +1,14 @@
 $Version=2$
 coamaint "widget/component-decl"
     {
-    width=758; height=505;
+    width=780; height=580;
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
 
     adding_subfund "widget/variable" { type=integer; value=0; }
 
     hbox "widget/hbox"
 	{
-	x=0;y=0;width=758;height=505;
+	x=0;y=0;width=780;height=580;
 	spacing=16;
 
 	fundlist_vbox "widget/vbox"
@@ -54,7 +54,7 @@ coamaint "widget/component-decl"
 
 	    searchlistpane "widget/pane"
 		{
-		height=445;
+		height=520;
 		widget_class=table_bgnd;
 
 		searchlistosrc "widget/osrc"
@@ -67,7 +67,7 @@ coamaint "widget/component-decl"
 				:cc:a_acct_class_desc,
 				:c:a_ledger_number
 			from
-				/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+				IDENTITY /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
 				/apps/kardia/data/Kardia_DB/a_cost_center_class/rows cc
 			where 
 				:c:a_ledger_number = " + quote(:this:ledger) + " and
@@ -85,9 +85,7 @@ coamaint "widget/component-decl"
 
 		    searchlisttbl "widget/table"
 			{
-			height=443; width=248; x=0; y=0;
-
-			dblclick_search "widget/connector" { event=DblClick; target=fund_edit_window; action=Open; }
+			height=518; width=248; x=0; y=0;
 
 			t_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=70; }
 			t_type "widget/table-column" { title="Type"; fieldname="a_cost_center_class"; width=40; }
@@ -99,17 +97,17 @@ coamaint "widget/component-decl"
 
 	subfund_vbox "widget/vbox"
 	    {
-	    width=492; spacing=8;
+	    width=514; spacing=8;
 
 	    sublbl_pane "widget/pane"
 		{
-		height=20; width=492;
+		height=20; width=514;
 		widget_class="label";
 		border_color = "#153f5f";
 
 		sublbl "widget/label"
 		    {
-		    x=4;y=0;width=490;height=18;
+		    x=4;y=0;width=512;height=18;
 		    widget_class="label";
 		    align=left;
 		    value = runclient("Subsidiary Funds" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
@@ -208,13 +206,12 @@ coamaint "widget/component-decl"
 			}
 
 		    after_create1 "widget/connector" { event=Created; event_condition=runclient(not :adding_subfund:value); target=searchlistosrc; action=QueryParam; a_cost_center=runclient(:subfund_osrc:a_cost_center); }
-		    after_create2 "widget/connector" { event=Created; target=fund_edit_window; action=Close; }
 
 		    subfund_table "widget/table"
 			{
-			height=143; width=490; x=0; y=0;
+			height=143; width=512; x=0; y=0;
 
-			dblclick_sub "widget/connector" { event=DblClick; target=fund_edit_window; action=Open; }
+			dblclick_sub "widget/connector" { event=DblClick; target=fund_form; action=Modify; }
 
 			t2_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=70; }
 			t2_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=130; }
@@ -229,13 +226,13 @@ coamaint "widget/component-decl"
 		}
 	    fundlbl_pane "widget/pane"
 		{
-		height=20; width=492;
+		height=20; width=514;
 		widget_class="label";
 		border_color = "#153f5f";
 
 		fundlbl "widget/label"
 		    {
-		    x=4;y=0;width=490;height=18;
+		    x=4;y=0;width=512;height=18;
 		    widget_class="label";
 		    align=left;
 		    value = runclient(condition(:fund_form:form_mode == "New", "Creating a New " + condition(:adding_subfund:value,"Sub-Fund" + isnull(" of " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc, ""), "Fund"), "Editing Fund " + :fund_form:a_cost_center + " - " + :fund_form:a_cc_desc));
@@ -251,137 +248,168 @@ coamaint "widget/component-decl"
 		new_cn2 "widget/connector" { event=New; event_condition=runclient(not :adding_subfund:value); target=f_balcc; action=SetValue; Value=runclient(null); }
 		new_cn3 "widget/connector" { event=New; event_condition=runclient(:adding_subfund:value); target=f_parentcc; action=SetValue; Value=runclient(:searchlistosrc:a_cost_center); }
 
-		//after_save "widget/connector" { event=DataSaved; target=fund_edit_window; action=Close; }
-
-		f_ledger "widget/component" { width=350; height=16; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=120; }
-		f_parentcc "widget/component" { width=350; height=16; path="/sys/cmp/smart_field.cmp"; field='a_parent_cost_center'; ctl_type=label; text='Rollup Fund:'; label_width=120; }
-		f_balcc "widget/component" { width=350; height=16; path="/sys/cmp/smart_field.cmp"; field='a_bal_cost_center'; ctl_type=label; text='Balancing Fund:'; label_width=120; }
-		f_costctr "widget/component" 
-		    { 
-		    width=350; height=20;
-		    path="/sys/cmp/smart_field.cmp";
-		    field='a_cost_center';
-		    ctl_type=editbox;
-		    text='Fund Number:';
-		    label_width=120;
-
-		    cc_type_cn1 "widget/connector"
-			{
-			event=DataModify;
-			event_condition=runclient(:f_is_balancing:is_checked == 1);
-			target=f_balcc;
-			action=SetValue;
-			Value = runclient(:Value);
-			}
-
-		    cc_type_cn2 "widget/connector"
-			{
-			event=DataModify;
-			target=f_legacy_code;
-			action=SetValue;
-			// FIXME - the below is tied specifically to ORGANIZATION.
-			Value = runclient(condition(char_length(:Value) < 5, 
-						    :Value,
-						    condition(char_length(:Value) == 5,
-							      condition(:f_cc_class:value == 'MIS', :Value + 'E', :Value),
-							      condition(substring(:Value,6,1) == '.', substring(:Value, 1, 5) + substring(:Value,7,1), :Value))));
-			}
-		    }
-		f_desc "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=editbox; text='Description:'; label_width=120; }
-		f_comm "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_comments'; ctl_type=editbox; text='Comments:'; label_width=120; }
-		f_legacy_code "widget/component" { height=20; width=350; path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="Legacy Code:"; ctl_type="editbox"; tooltip="Legacy Cost Ctr from Old System"; label_width=120; }
-		f_cc_class "widget/component"
-		    { height=20; width=350; path="/sys/cmp/smart_field.cmp"; field=a_cost_center_class; text="Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_acct_class_desc, :a_cost_center_class from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows"; label_width=120; 
-		    cc_class_cn2 "widget/connector"
-			{
-			event=DataModify;
-			target=f_legacy_code;
-			action=SetValue;
-			// FIXME - the below is tied specifically to ORGANIZATION.
-			Value = runclient(condition(char_length(:f_costctr:content) < 5, 
-						    :f_costctr:content,
-						    condition(char_length(:f_costctr:content) == 5,
-							      condition(:Value == 'MIS', :f_costctr:content + 'E', :f_costctr:content),
-							      condition(substring(:f_costctr:content,6,1) == '.', substring(:f_costctr:content, 1, 5) + substring(:f_costctr:content,7,1), :f_costctr:content))));
-			}
-		    }
-		f_cc_level "widget/component" { height=20; width=350; path="/sys/cmp/smart_field.cmp"; field=a_reporting_level; text="Report Level:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_level_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows"; label_width=120; }
-		f_restricted_type "widget/component" { height=20; width=350; path="/sys/cmp/smart_field.cmp"; field=a_restricted_type; text="Restriction:"; ctl_type="dropdown"; tooltip="Fund Restriction Type"; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_restricted_type/rows"; label_width=120; }
-		f_is_posting "widget/component" { height=20; width=350; path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this cost center"; label_width=120; }
-		f_is_external "widget/component" { height=20; width=350; path="/sys/cmp/smart_field.cmp"; field=a_is_external; text="Is External:"; ctl_type="checkbox"; tooltip="Enable posting to this cost center"; label_width=120; }
-		f_is_balancing "widget/component" { height=20; width=350; path="/sys/cmp/smart_field.cmp"; field=a_is_balancing; text="Self-Balancing:"; ctl_type="checkbox"; type=readonly; tooltip="Enable posting to this cost center"; label_width=120; }
-
-		fund_rec_info "widget/component"
+		fund_tc_pane "widget/pane"
 		    {
-		    height=20;width=492;
-		    path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+		    height=339;
+		    style=flat;
+		    enabled = runclient(:fund_form:is_editable or :fund_form:is_discardable);
+
+		    fund_tc "widget/tab"
+			{
+			height=314; width=514; x=0; y=0;
+			background="/apps/kardia/images/bg/light_bgnd2.jpg";
+			inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+
+			main_tab "widget/tabpage"
+			    {
+			    title = "Fund Options";
+
+			    form_hbox "widget/hbox"
+				{
+				height=230; width=490; x=10; y=10;
+				spacing=10;
+
+				form_vbox1 "widget/vbox"
+				    {
+				    spacing=4;
+				    width=240;
+
+				    f_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=120; }
+				    f_parentcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_parent_cost_center'; ctl_type=label; text='Rollup Fund:'; label_width=120; }
+				    f_balcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_bal_cost_center'; ctl_type=label; text='Balancing Fund:'; label_width=120; }
+				    f_costctr "widget/component" 
+					{ 
+					height=20;
+					path="/sys/cmp/smart_field.cmp";
+					field='a_cost_center';
+					ctl_type=editbox;
+					text='Fund Number:';
+					label_width=120;
+
+					cc_type_cn1 "widget/connector"
+					    {
+					    event=DataModify;
+					    event_condition=runclient(:f_is_balancing:is_checked == 1);
+					    target=f_balcc;
+					    action=SetValue;
+					    Value = runclient(:Value);
+					    }
+
+					cc_type_cn2 "widget/connector"
+					    {
+					    event=DataModify;
+					    target=f_legacy_code;
+					    action=SetValue;
+					    // FIXME - the below is tied specifically to one deployment.
+					    Value = runclient(condition(char_length(:Value) < 5, 
+									:Value,
+									condition(char_length(:Value) == 5,
+										  condition(:f_cc_class:value == 'MIS', :Value + 'E', :Value),
+										  condition(substring(:Value,6,1) == '.', substring(:Value, 1, 5) + substring(:Value,7,1), :Value))));
+					    }
+					}
+				    f_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=editbox; text='Description:'; label_width=120; }
+				    f_comm "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_comments'; ctl_type=editbox; text='Comments:'; label_width=120; }
+				    f_legacy_code "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="Legacy Code:"; ctl_type="editbox"; tooltip="Legacy Cost Ctr from Old System"; label_width=120; }
+				    }
+
+				form_vbox2 "widget/vbox"
+				    {
+				    spacing=4;
+				    width=240;
+
+				    f_is_posting "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this cost center"; label_width=120; }
+				    f_is_external "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_external; text="Is External:"; ctl_type="checkbox"; tooltip="Enable posting to this cost center"; label_width=120; }
+				    f_is_balancing "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_balancing; text="Self-Balancing:"; ctl_type="checkbox"; type=readonly; tooltip="Enable posting to this cost center"; label_width=120; }
+
+				    f_cc_class "widget/component"
+					{ height=20; path="/sys/cmp/smart_field.cmp"; field=a_cost_center_class; text="Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_acct_class_desc, :a_cost_center_class from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows"; label_width=120; 
+					cc_class_cn2 "widget/connector"
+					    {
+					    event=DataModify;
+					    target=f_legacy_code;
+					    action=SetValue;
+					    // FIXME - the below is tied specifically to one deployment.
+					    Value = runclient(condition(char_length(:f_costctr:content) < 5, 
+									:f_costctr:content,
+									condition(char_length(:f_costctr:content) == 5,
+										  condition(:Value == 'MIS', :f_costctr:content + 'E', :f_costctr:content),
+										  condition(substring(:f_costctr:content,6,1) == '.', substring(:f_costctr:content, 1, 5) + substring(:f_costctr:content,7,1), :f_costctr:content))));
+					    }
+					}
+				    f_cc_level "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_reporting_level; text="Report Level:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_level_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows"; label_width=120; }
+				    f_restricted_type "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_restricted_type; text="Restriction:"; ctl_type="dropdown"; tooltip="Fund Restriction Type"; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_restricted_type/rows"; label_width=120; }
+				    }
+				}
+
+			    formbtn_hbox "widget/hbox"
+				{
+				x=10; y=240; height = 24; width = 490;
+				align=center;
+				cellsize=120; spacing=8;
+
+				save_btn "widget/textbutton"
+				    {
+				    width=120;
+				    text = "Save";
+				    enabled = runclient(:fund_form:is_savable);
+
+				    save1 "widget/connector" { event=Click; target=fund_form; action=Save; }
+				    }
+
+				cancel_btn "widget/textbutton"
+				    {
+				    width=120;
+				    text = "Cancel";
+				    enabled = runclient(:fund_form:is_discardable);
+
+				    cancel1 "widget/connector" { event=Click; target=fund_form; action=Discard; }
+				    }
+
+				make_toplevel_btn "widget/textbutton"
+				    {
+				    condition = 0;
+				    width=120;
+				    text = "Make Fund";
+				    enabled = runclient(not :subfund_osrc:bal);
+				    }
+
+				make_subfund_btn "widget/textbutton"
+				    {
+				    condition = 0;
+				    width=120;
+				    text = "Make Subfund";
+				    enabled = runclient(:subfund_osrc:bal);
+				    }
+				}
+
+			    fund_rec_info "widget/component"
+				{
+				height=20; width=490; x=10; y=282;
+				path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+				}
+			    }
+
+			plugin_tabs "widget/repeat"
+			    {
+			    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_gl_fundedit_*.cmp'";
+
+			    plugin_tab "widget/tabpage"
+				{
+				title = runserver(:plugin_tabs:title);
+
+				plugin_cmp "widget/component"
+				    {
+				    height=292; width=490; x=10; y=10;
+				    path = runserver(:plugin_tabs:path);
+				    fund_osrc = subfund_osrc;
+				    ledger = runserver(:this:ledger);
+				    }
+				}
+			    }
+			}
 		    }
 		}
 	    }
-	}
-
-    fund_edit_window "widget/childwindow"
-	{
-	toplevel = yes;
-	titlebar = no;
-	width=640; height=480;
-	x=59; y=12;
-	background="/apps/kardia/images/bg/light_bgnd2.jpg";
-	visible = false;
-	//icon = "/apps/kardia/images/icons/gift.gif";
-	//title = "Edit Fund";
-
-
-	    // This is a hack.  FIXME
-	    timed_close "widget/timer"
-		{
-		msec=700;
-		auto_reset=0;
-		auto_start=0;
-		c4 "widget/connector" { target=fund_edit_window; event=Expire; action=Close; }
-		}
-
-	    formbtn_hbox "widget/hbox"
-		{
-		x=8; y=400; height = 24; width = 624;
-		align=center;
-		cellsize=130; spacing=8;
-
-		save_btn "widget/textbutton"
-		    {
-		    width=130;
-		    text = "Save";
-		    enabled = runclient(:fund_form:is_savable);
-
-		    save1 "widget/connector" { event=Click; target=fund_form; action=Save; }
-		    //save2 "widget/connector" { event=Click; target=timed_close; action=SetTimer; }
-		    }
-
-		cancel_btn "widget/textbutton"
-		    {
-		    width=130;
-		    text = runclient(condition(:fund_form:is_discardable, "Cancel", "Close"));
-		    //enabled = runclient(:fund_form:is_discardable);
-
-		    cancel1 "widget/connector" { event=Click; target=fund_form; action=Discard; }
-		    //cancel2 "widget/connector" { event=Click; target=fund_edit_window; action=Close; }
-		    cancel2 "widget/connector" { event=Click; target=timed_close; action=SetTimer; }
-		    }
-
-		make_toplevel_btn "widget/textbutton"
-		    {
-		    width=130;
-		    text = "Make Fund";
-		    enabled = runclient(not :subfund_osrc:bal);
-		    }
-
-		make_subfund_btn "widget/textbutton"
-		    {
-		    width=130;
-		    text = "Make Subfund";
-		    enabled = runclient(:subfund_osrc:bal);
-		    }
-		}
-
 	}
     }

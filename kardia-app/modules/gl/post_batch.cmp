@@ -1,0 +1,216 @@
+$Version=2$
+post_batch "widget/component-decl"
+    {
+    // Unpost a batch - process
+    Unpost "widget/component-decl-action" { }
+    Unposted "widget/component-decl-event" { }
+    unpost_cn "widget/connector"
+	{
+	event=Unpost;
+	target=unpost_osrc_1;
+	action=QueryParam;
+	a_batch_number = runclient(:a_batch_number);
+	a_ledger_number = runclient(:a_ledger_number);
+	a_period = runclient(:a_period);
+	}
+
+    unpost_osrc_1 "widget/osrc"
+	{
+	up_a_batch_number "widget/parameter"	{ param_name=a_batch_number; type=integer; }
+	up_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
+	up_a_period "widget/parameter"		{ param_name=a_period; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " UPDATE
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		SET
+			:t:a_posted = 0
+		WHERE
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_ledger_number = :parameters:a_ledger_number and
+			:t:a_period = :parameters:a_period
+		";
+
+	end_unpost "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=post_batch;
+	    action=Unposted;
+	    a_batch_number = runclient(:unpost_osrc_1:a_batch_number);
+	    a_ledger_number = runclient(:unpost_osrc_1:a_ledger_number);
+	    a_period = runclient(:unpost_osrc_1:a_period); 
+	    }
+	}
+
+    // Post a batch - process
+    Post "widget/component-decl-action" { }
+    Posted "widget/component-decl-event" { }
+    post_cn "widget/connector"
+	{
+	event=Post;
+	target=post_osrc_1;
+	action=QueryParam;
+	a_batch_number = runclient(:a_batch_number);
+	a_ledger_number = runclient(:a_ledger_number);
+	a_period = runclient(:a_period);
+	}
+
+    post_osrc_1 "widget/osrc"
+	{
+	p_a_batch_number "widget/parameter"	{ param_name=a_batch_number; type=integer; }
+	p_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
+	p_a_period "widget/parameter"		{ param_name=a_period; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " UPDATE
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		SET
+			:t:a_posted = 1
+		WHERE
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_ledger_number = :parameters:a_ledger_number and
+			:t:a_period = :parameters:a_period
+		";
+
+	end_post "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=post_batch;
+	    action=Posted;
+	    a_batch_number = runclient(:post_osrc_1:a_batch_number);
+	    a_ledger_number = runclient(:post_osrc_1:a_ledger_number);
+	    a_period = runclient(:post_osrc_1:a_period); 
+	    }
+	}
+
+    // Add Interfund Xfer Asset journal - process
+    AddIXA "widget/component-decl-action" { }
+    AddIXAComplete "widget/component-decl-event" { }
+    addixa_cn "widget/connector"
+	{
+	event=AddIXA;
+	target=addixa_osrc;
+	action=QueryParam;
+	a_batch_number = runclient(:a_batch_number);
+	a_ledger_number = runclient(:a_ledger_number);
+	a_period = runclient(:a_period);
+	}
+    addixa_osrc "widget/osrc"
+	{
+	ai_a_batch_number "widget/parameter"	{ param_name=a_batch_number; type=integer; }
+	ai_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
+	ai_a_period "widget/parameter"		{ param_name=a_period; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = "	DELETE
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_ledger_number = :parameters:a_ledger_number and
+			:t:a_period = :parameters:a_period and
+			:t:a_account_code = '1900'
+		;
+
+		INSERT INTO
+			/apps/kardia/data/Kardia_DB/a_transaction/rows
+		SELECT
+			a_amount = $0 - sum(:t:a_amount),
+			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_cost_center,
+			a_account_code = '1900',
+			a_cost_center=:c:a_bal_cost_center,
+			:t:a_journal_number,
+			:t:a_batch_number,
+			:t:a_ledger_number,
+			:t:a_period,
+			:t:a_effective_date,
+			:t:a_transaction_type,
+			a_account_category = '19',
+			a_posted = 0,
+			a_modified = 0,
+			a_corrected = 0,
+			:t:a_correcting,
+			:t:a_corrected_batch,
+			:t:a_corrected_journal,
+			:t:a_corrected_transaction,
+			:t:a_reconciled,
+			:t:a_postprocessed,
+			:t:a_postprocess_type,
+			:t:a_origin,
+			a_receipt_sent = 0,
+			a_receipt_desired = 0,
+			a_first_gift = 0,
+			a_goods_provided = $0,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		WHERE
+			:t:a_ledger_number = :parameters:a_ledger_number and 
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_period = :parameters:a_period and
+			:t:a_ledger_number = :c:a_ledger_number and
+			:t:a_cost_center = :c:a_cost_center
+		GROUP BY
+			:t:a_ledger_number,
+			:t:a_batch_number,
+			:t:a_journal_number,
+			:c:a_bal_cost_center
+		ORDER BY
+			:t:a_cost_center
+		HAVING
+			:a_amount != $0
+		";
+	end_addixa "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=post_batch;
+	    action=AddIXAComplete;
+	    a_batch_number = runclient(:addixa_osrc:a_batch_number);
+	    a_ledger_number = runclient(:addixa_osrc:a_ledger_number);
+	    a_period = runclient(:addixa_osrc:a_period); 
+	    }
+	}
+
+    // Remove IXA from batch - process
+    RemoveIXA "widget/component-decl-action" { }
+    RemoveIXAComplete "widget/component-decl-event" { }
+    removeixa_cn "widget/connector"
+	{
+	event=RemoveIXA;
+	target=removeixa_osrc_1;
+	action=QueryParam;
+	a_batch_number = runclient(:a_batch_number);
+	a_ledger_number = runclient(:a_ledger_number);
+	a_period = runclient(:a_period);
+	}
+
+    removeixa_osrc_1 "widget/osrc"
+	{
+	ria_a_batch_number "widget/parameter"	{ param_name=a_batch_number; type=integer; }
+	ria_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
+	ria_a_period "widget/parameter"		{ param_name=a_period; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = "	DELETE
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_ledger_number = :parameters:a_ledger_number and
+			:t:a_period = :parameters:a_period and
+			:t:a_account_code = '1900'
+		";
+
+	end_removeixa "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=post_batch;
+	    action=RemoveIXAComplete;
+	    a_batch_number = runclient(:removeixa_osrc_1:a_batch_number);
+	    a_ledger_number = runclient(:removeixa_osrc_1:a_ledger_number);
+	    a_period = runclient(:removeixa_osrc_1:a_period); 
+	    }
+	}
+    }

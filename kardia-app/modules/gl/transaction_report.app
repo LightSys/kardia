@@ -3,7 +3,7 @@ transaction_report "widget/page"
     {
     title = "Transaction Report";
     width=580;
-    height=525;
+    height=553;
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
@@ -22,7 +22,7 @@ transaction_report "widget/page"
 
 	vb2 "widget/vbox"
 	    {
-	    x=32;y=8;width=514;height=468;
+	    x=32;y=8;width=514;height=496;
 	    spacing=4;
 	    lbl_opt "widget/label" { height=30; font_size=16; text="Transaction Report Options:"; align=center; }
 
@@ -71,6 +71,24 @@ transaction_report "widget/page"
 	    f_endperiod "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="endperiod"; popup_source=runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Ending Period:"; text="End Period:"; attach_point=editbox; empty_desc = "optional"; label_width=120; }
 	    f_startdate "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="startdate"; text="Start Date:"; search_by_range=0; ctl_type=datetime; label_width=120; }
 	    f_enddate "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="enddate"; text="End Date:"; search_by_range=0; ctl_type=datetime; label_width=120; }
+	    f_persubttl "widget/component"
+		{
+		x=10; width=340; height=24;
+		path="/sys/cmp/smart_field.cmp";
+		field="persubttl";
+		ctl_type='checkboxleft';
+		text="Show subtotals by period";
+		label_width=120;
+
+		set_sort_period "widget/connector"
+		    {
+		    event = DataChange;
+		    event_condition = runclient(:Value == 1);
+		    target = f_sortby_dd;
+		    action = SetValue;
+		    Value = runclient('pbjt');
+		    }
+		}
 	    f_hide1900 "widget/component" { x=10; width=340; height=24; path="/sys/cmp/smart_field.cmp"; field="hide1900"; ctl_type='checkboxleft'; text="Do not show '1900' account transactions"; label_width=120; }
 	    f_onlyequity "widget/component" { x=10; width=340; height=24; path="/sys/cmp/smart_field.cmp"; field="onlyequity"; ctl_type='checkboxleft'; text="Show only Equity, Revenue, and Expense"; label_width=120; }
 
@@ -93,6 +111,15 @@ transaction_report "widget/page"
 		    f_sortby_opt2 "widget/dropdownitem" { label="Date / Batch / Journal / Transaction"; value="date"; }
 		    f_sortby_opt3 "widget/dropdownitem" { label="Cost Center / Account"; value="cca"; }
 		    f_sortby_opt4 "widget/dropdownitem" { label="Account / Cost Center"; value="acc"; }
+
+		    uncheck_show_per_subttl "widget/connector"
+			{
+			event = DataChange;
+			event_condition = runclient(:Value != 'pbjt');
+			target = f_persubttl;
+			action = SetValue;
+			Value = runclient(0);
+			}
 		    }
 		}
 
@@ -113,7 +140,7 @@ transaction_report "widget/page"
 
 	vb3 "widget/vbox"
 	    {
-	    x=32;y=484;width=514;height=40;
+	    x=32;y=512;width=514;height=40;
 	    align=bottom;
 
 	    spacing=4;

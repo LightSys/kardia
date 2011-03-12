@@ -1,0 +1,239 @@
+$Version=2$
+inc_exp_balance "system/report"
+    {
+    title = "Income & Expense Balance Report";
+
+    // Income and Expense Balance
+    //
+    // This report shows opening balance, income, expense, and closing balance
+    // for the organization and for all funds.  Inter-fund inc/exp is also
+    // displayed and should sum to -0- for the entire report.  Intra-fund
+    // inc/exp is displayed and should sum to -0- for each self-balancing
+    // fund.
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=110;
+    pageheight=51;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=2.5;
+    marginbottom=2.5;
+
+    // Parameters
+    ledger "report/parameter" { type=string; default=null; }
+    //costctr "report/parameter" { type=string; default=null; }
+    ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    unposted "report/parameter" { type=integer; default=0; }
+
+    // Queries
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    period_qy "report/query"
+	{
+	sql = "select :p:a_period_desc, first_period = min(:p2:a_period), yr = datepart(year, :p:a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
+	}
+
+    accts_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:c:a_bal_cost_center,
+			ob = isnull(sum(condition((:t:a_period < :this:ref_period or :t:a_transaction_type == 'B') and :t:a_account_category >= '3', :t:a_amount, $0)), $0),
+			rev = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '40', :t:a_amount, $0)), $0),
+			exp = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '50', :t:a_amount, $0)), $0),
+			irev = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '42', :t:a_amount, $0)), $0),
+			iexp = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '52', :t:a_amount, $0)), $0),
+			wrev = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '41', :t:a_amount, $0)), $0),
+			wexp = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '51', :t:a_amount, $0)), $0),
+			equity = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_transaction_type != 'B' and substring(:t:a_account_category,1,1) == '3', :t:a_amount, $0)), $0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:c:a_ledger_number = :this:ledger and
+			-- :c:a_cost_center = :c:a_bal_cost_center and
+			:t:a_ledger_number = :c:a_ledger_number and
+			:t:a_period <= :this:end_period and
+			:t:a_period >= :period_qy:first_period and
+			:t:a_cost_center = :c:a_cost_center
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		GROUP BY
+			:c:a_bal_cost_center
+		");
+	sum_irev "report/aggregate" { compute="sum(:irev)"; reset=0; }
+	sum_iexp "report/aggregate" { compute="sum(:iexp)"; reset=0; }
+	sum_rev "report/aggregate" { compute="sum(:rev)"; reset=0; }
+	sum_exp "report/aggregate" { compute="sum(:exp)"; reset=0; }
+	sum_wrev "report/aggregate" { compute="sum(:wrev)"; reset=0; }
+	sum_wexp "report/aggregate" { compute="sum(:wexp)"; reset=0; }
+	sum_ob "report/aggregate" { compute="sum(:ob)"; reset=0; }
+	sum_equity "report/aggregate" { compute="sum(:equity)"; reset=0; }
+	}
+
+    ccinfo_qy "report/query"
+	{
+	sql = " SELECT
+			:c:a_cc_desc
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		WHERE
+			:c:a_cost_center = :accts_qy:a_bal_cost_center and
+			:c:a_ledger_number = :this:ledger
+		";
+	}
+
+    subcnt_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			cnt = count(1)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		WHERE
+			:c:a_bal_cost_center = :accts_qy:a_bal_cost_center and
+			:c:a_ledger_number = :this:ledger
+		");
+	}
+
+    subaccts_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:c:a_cost_center,
+			:c:a_cc_desc,
+			ob = isnull(sum(condition((:t:a_period < :this:ref_period or :t:a_transaction_type == 'B') and :t:a_account_category >= '3', :t:a_amount, $0)), $0),
+			rev = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '40', :t:a_amount, $0)), $0),
+			exp = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '50', :t:a_amount, $0)), $0),
+			irev = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '42', :t:a_amount, $0)), $0),
+			iexp = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '52', :t:a_amount, $0)), $0),
+			wrev = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '41', :t:a_amount, $0)), $0),
+			wexp = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '51', :t:a_amount, $0)), $0),
+			equity = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_transaction_type != 'B' and substring(:t:a_account_category,1,1) == '3', :t:a_amount, $0)), $0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:c:a_bal_cost_center = :accts_qy:a_bal_cost_center and
+			:c:a_ledger_number = :this:ledger and
+			:t:a_ledger_number = :c:a_ledger_number and
+			:t:a_period <= :this:end_period and
+			:t:a_period >= :period_qy:first_period and
+			:t:a_cost_center = :c:a_cost_center
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		GROUP BY
+			:c:a_cost_center
+		");
+	}
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy, period_qy;
+
+	rpt_title "report/area"
+	    {
+	    x=0; width=105; height=3;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("Income & Expense & Balances for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("For periods " + :this:ref_period + " through " + :this:end_period + "\n"); }
+	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    }
+
+	ie_table "report/table"
+	    {
+	    x=0; width=105; height=0;
+	    columns=11;
+	    widths=6,21,8,8,8,8,8,8,8,8,8;
+	    colsep=0.5;
+	    source=accts_qy, ccinfo_qy, subcnt_qy, subaccts_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "Z###,###,###.00-";
+
+	    ie_tbl_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=7;
+		header=yes;
+		bottomborder=0.05;
+		h_cc "report/table-cell" { value='Fund'; align=left; style=bold; }
+		h_desc "report/table-cell" { value='Description'; align=left; style=bold; }
+		h_bbal "report/table-cell" { value=runserver('Begin ' + :this:ref_period); align=right; style=bold; }
+		h_rev "report/table-cell" { value='Revenue'; align=right; style=bold; }
+		h_irev "report/table-cell" { value='IF Revenue'; align=right; style=bold; }
+		h_wrev "report/table-cell" { value='WF Revenue'; align=right; style=bold; }
+		h_exp "report/table-cell" { value='Expense'; align=right; style=bold; }
+		h_iexp "report/table-cell" { value='IF Expense'; align=right; style=bold; }
+		h_wexp "report/table-cell" { value='WF Expense'; align=right; style=bold; }
+		h_eq "report/table-cell" { value='Equity Adj'; align=right; style=bold; }
+		h_cur "report/table-cell" { value=runserver('End ' + :this:end_period); align=right; style=bold; }
+		}
+
+	    ie_tbl_row "report/table-row"
+		{
+		condition=runserver(:subaccts_qy:cx__rowid == 0);
+		font=courier;
+		fontsize=7;
+		marginbottom=0.0;
+		margintop=0.5;
+		style=bold;
+		d_cc "report/table-cell" { value=runserver(:accts_qy:a_bal_cost_center); align=left; font=helvetica; }
+		d_desc "report/table-cell" { value=runserver(:ccinfo_qy:a_cc_desc); align=left; font=helvetica; }
+		d_bbal "report/table-cell" { value=runserver(:accts_qy:ob); align=right; }
+		d_rev "report/table-cell" { value=runserver(:accts_qy:rev); align=right; }
+		d_irev "report/table-cell" { value=runserver(:accts_qy:irev); align=right; }
+		d_wrev "report/table-cell" { value=runserver(:accts_qy:wrev); align=right; }
+		d_exp "report/table-cell" { value=runserver(:accts_qy:exp); align=right; }
+		d_iexp "report/table-cell" { value=runserver(:accts_qy:iexp); align=right; }
+		d_wexp "report/table-cell" { value=runserver(:accts_qy:wexp); align=right; }
+		d_eq "report/table-cell" { value=runserver(:accts_qy:equity); align=right; }
+		d_cur "report/table-cell" { value=runserver(:accts_qy:ob + :accts_qy:rev + :accts_qy:irev + :accts_qy:wrev + :accts_qy:exp + :accts_qy:iexp + :accts_qy:wexp + :accts_qy:equity); align=right; }
+		}
+
+	    sub_tbl_row "report/table-row"
+		{
+		condition=runserver(:subcnt_qy:cnt > 1);
+		font=courier;
+		fontsize=7;
+		marginbottom=0.0;
+		d2_cc "report/table-cell" { value=runserver("  " + :subaccts_qy:a_cost_center); align=left; font=helvetica; }
+		d2_desc "report/table-cell" { value=runserver(:subaccts_qy:a_cc_desc); align=left; font=helvetica; }
+		d2_bbal "report/table-cell" { value=runserver(:subaccts_qy:ob); align=right; }
+		d2_rev "report/table-cell" { value=runserver(:subaccts_qy:rev); align=right; }
+		d2_irev "report/table-cell" { value=runserver(:subaccts_qy:irev); align=right; }
+		d2_wrev "report/table-cell" { value=runserver(:subaccts_qy:wrev); align=right; }
+		d2_exp "report/table-cell" { value=runserver(:subaccts_qy:exp); align=right; }
+		d2_iexp "report/table-cell" { value=runserver(:subaccts_qy:iexp); align=right; }
+		d2_wexp "report/table-cell" { value=runserver(:subaccts_qy:wexp); align=right; }
+		d2_eq "report/table-cell" { value=runserver(:subaccts_qy:equity); align=right; }
+		d2_cur "report/table-cell" { value=runserver(:subaccts_qy:ob + :subaccts_qy:rev + :subaccts_qy:irev + :subaccts_qy:wrev + :subaccts_qy:exp + :subaccts_qy:iexp + :subaccts_qy:wexp + :subaccts_qy:equity); align=right; }
+		}
+
+	    orgsum_row "report/table-row"
+		{
+		summary = yes;
+		font=courier;
+		fontsize=7;
+		marginbottom=0.0;
+		s_cc "report/table-cell" { value=runserver(""); align=left; font=helvetica; }
+		s_desc "report/table-cell" { value=runserver("TOTALS:"); align=left; font=helvetica; }
+		s_bbal "report/table-cell" { value=runserver(:accts_qy:sum_ob); align=right; }
+		s_rev "report/table-cell" { value=runserver(:accts_qy:sum_rev); align=right; }
+		s_irev "report/table-cell" { value=runserver(:accts_qy:sum_irev); align=right; }
+		s_wrev "report/table-cell" { value=runserver(:accts_qy:sum_wrev); align=right; }
+		s_exp "report/table-cell" { value=runserver(:accts_qy:sum_exp); align=right; }
+		s_iexp "report/table-cell" { value=runserver(:accts_qy:sum_iexp); align=right; }
+		s_wexp "report/table-cell" { value=runserver(:accts_qy:sum_wexp); align=right; }
+		s_eq "report/table-cell" { value=runserver(:accts_qy:sum_equity); align=right; }
+		s_cur "report/table-cell" { value=runserver(:accts_qy:sum_ob + :accts_qy:sum_rev + :accts_qy:sum_irev + :accts_qy:sum_wrev + :accts_qy:sum_exp + :accts_qy:sum_iexp + :accts_qy:sum_wexp + :accts_qy:sum_equity); align=right; }
+		}
+	    }
+	}
+    }

@@ -3,15 +3,38 @@ tree_list_data "widget/component-decl"
     {
     width=756;height=449;
 
+    ledger "widget/parameter" { type=string; default=null; }
     ledger_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
     tree_source "widget/parameter" { type=string; default=null; }
     osrc_source "widget/parameter" { type=string; default=null; }
     detail_cmp_path "widget/parameter" { type=string; default=null; }
     object_name "widget/parameter" { type=string; default="Item"; }
 
+    search_box "widget/editbox"
+	{
+	x=0; y=0; width=228; height=20;
+	empty_description = "Type search here and press ENTER";
+
+	enter_cn "widget/connector"
+	    {
+	    event=ReturnPressed;
+	    event_condition = runclient(not (charindex(upper(:search_box:content), upper(:tree:selected_label + :tree:selected_name)) > 0));
+	    target=tree;
+	    action=Search;
+	    Value = runclient(:search_box:content);
+	    }
+	enter_cn_next "widget/connector"
+	    {
+	    event=ReturnPressed;
+	    event_condition = runclient(charindex(upper(:search_box:content), upper(:tree:selected_label + :tree:selected_name)) > 0);
+	    target=tree;
+	    action=SearchNext;
+	    }
+	}
+
     tree_pane "widget/pane"
 	{
-	x=0;y=0;width=230;height=449;
+	x=0;y=28;width=230;height=421;
 	style=lowered;
 	bgcolor=white;
 
@@ -101,6 +124,7 @@ tree_list_data "widget/component-decl"
 			height = 393;
 			path = runserver(:this:detail_cmp_path);
 			tree_widget = tree;
+			ledger = runserver(:this:ledger);
 			}
 
 		    record_meta "widget/component"

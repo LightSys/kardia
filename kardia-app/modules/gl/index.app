@@ -178,6 +178,8 @@ index "widget/page"
 		    }
 		}
 	    }
+	
+
 	}
             
     lblLedger "widget/label"
@@ -312,4 +314,5 @@ index "widget/page"
 	multiple_instantiation = yes;
 	icon = "/sys/images/ico26a.gif";
 	}
+
     }

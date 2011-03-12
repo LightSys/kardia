@@ -94,6 +94,8 @@ coa "system/report"
 	    {
 	    font=courier;
 	    fontsize=8;
+	    margintop=0.15;
+	    marginbottom=0.15;
 	    d_per "report/table-cell" { value=runserver(:periods:a_period); align=left; }
 	    d_parent "report/table-cell" { value=runserver(:periods:a_parent_period); align=left; }
 	    d_desc "report/table-cell" { font=helvetica; value=runserver(:periods:a_period_desc); align=left; }
@@ -132,6 +134,8 @@ coa "system/report"
 	    {
 	    font=courier;
 	    fontsize=8;
+	    margintop=0.15;
+	    marginbottom=0.15;
 	    d_acct "report/table-cell" { value=runserver(:accts:a_account_code); align=left; }
 	    d_acctroll "report/table-cell" { value=runserver(:accts:a_parent_account_code); align=left; }
 	    d_accttype "report/table-cell" { value=runserver(:accts:a_acct_type); align=left; }
@@ -173,6 +177,8 @@ coa "system/report"
 	    {
 	    font=courier;
 	    fontsize=8;
+	    margintop=0.15;
+	    marginbottom=0.15;
 	    d_cc "report/table-cell" { value=runserver(:costctrs:a_cost_center); align=left; }
 	    d_ccroll "report/table-cell" { value=runserver(:costctrs:a_parent_cost_center); align=left; }
 	    d_ccbal "report/table-cell" { value=runserver(:costctrs:a_bal_cost_center); align=left; }

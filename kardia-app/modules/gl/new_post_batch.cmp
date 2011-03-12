@@ -1,0 +1,631 @@
+$Version=2$
+new_post_batch "widget/component-decl"
+    {
+    width=780;
+    height=580;
+
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    batch "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+    app_container "widget/parameter" { type=object; default=null; find_container="widget/page"; }
+
+    // This action is hooked by each of the osrc's in this component -- see the
+    // individual osrcs for the connectors.  The action is TriggerEvent'ed by
+    // posting and the addition/deletion of an IXA journal.
+    Refresh "widget/component-decl-action" { }
+
+    // This component has the SQL that is used for posting and creation /
+    // deletion of the IXA journal
+    PostLogic "widget/component"
+	{
+	path = "/apps/kardia/modules/gl/post_batch.cmp";
+
+	refresh_on_posted "widget/connector" { event=Posted; target=new_post_batch; action=TriggerEvent; EventName=runclient("Refresh"); }
+	refresh_on_mkIXA "widget/connector" { event=AddIXAComplete; target=new_post_batch; action=TriggerEvent; EventName=runclient("Refresh"); }
+	refresh_on_rmIXA "widget/connector" { event=RemoveIXAComplete; target=new_post_batch; action=TriggerEvent; EventName=runclient("Refresh"); }
+	}
+
+    batch_info_osrc "widget/osrc"
+	{
+	bio_ledger "widget/parameter" { type=string; default=runclient(:new_post_batch:ledger); }
+	bio_batch "widget/parameter" { type=integer; default=runclient(:new_post_batch:batch); }
+
+	autoquery = onload;
+	replicasize = 2;
+	readhead = 2;
+
+	refresh_info "widget/connector" { event=Refresh; source=new_post_batch; action=Refresh; }
+
+	sql = "	SELECT
+			:b:a_batch_number,
+			:b:a_ledger_number,
+			:b:a_batch_desc,
+			:b:a_period,
+			balance = isnull(sum(:t:a_amount), $0),
+			cnt = count(:t:a_amount),
+			latest_modified = max(:t:s_date_modified),
+			max_is_posted = isnull(max(:t:a_posted),0),
+			min_is_posted = isnull(min(:t:a_posted),0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_batch/rows b,
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:b:a_ledger_number = :parameters:bio_ledger and
+			:b:a_batch_number = :parameters:bio_batch and
+			:t:a_ledger_number =* :b:a_ledger_number and
+			:t:a_batch_number =* :b:a_batch_number
+		";
+	}
+
+    npb_vbox "widget/vbox"
+	{
+	x=0;y=0;
+	width=780;height=580;
+	spacing = 8;
+
+	hdr "widget/component"
+	    {
+	    condition = 0;
+	    path="/apps/kardia/modules/base/section_label.cmp";
+	    height=20;
+	    text = runclient(condition(isnull(:batch_info_osrc:min_is_posted, 0) == 1, "*** POSTED ***", "Post Batch:") + "  #" + :new_post_batch:batch + isnull(" (" + :batch_info_osrc:a_batch_desc + ")", ""));
+	    }
+	header_label "widget/label"
+	    {
+	    condition = 1;
+	    height=20;
+	    font_size = 16;
+	    style = bold;
+	    align=left;
+	    value = runclient(condition(isnull(:batch_info_osrc:min_is_posted, 0) == 1, "POSTED:", "Post Batch:") + "  #" + :new_post_batch:batch + isnull(" (" + :batch_info_osrc:a_batch_desc + ")", ""));
+	    //value = runclient("Post Batch:  #" + :new_post_batch:batch + isnull(" (" + :batch_info_osrc:a_batch_desc + ")", ""));
+	    }
+
+	header_sep "widget/pane"
+	    {
+	    condition = 1;
+	    height=2;
+	    style=lowered;
+	    }
+
+	batch_summary_osrc "widget/osrc"
+	    {
+	    bso_ledger "widget/parameter" { type=string; default=runclient(:new_post_batch:ledger); }
+	    bso_batch "widget/parameter" { type=integer; default=runclient(:new_post_batch:batch); }
+
+	    refresh_summ "widget/connector" { event=Refresh; source=new_post_batch; action=Refresh; }
+
+	    autoquery = onload;
+	    replicasize = 11;
+	    readahead = 11;
+	    sql = " SELECT
+			    title = 'Assets / Cash:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    substring(:t:a_account_category,1,1) = '1' and
+			    :t:a_account_category != '19'
+		    ;
+
+		    SELECT
+			    title = 'Interfund Asset:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    :t:a_account_category == '19'
+		    ;
+
+		    SELECT
+			    title = 'Liabilities:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    substring(:t:a_account_category,1,1) = '2'
+		    ;
+
+		    SELECT
+			    title = 'Opening Equity:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    substring(:t:a_account_category,1,1) = '3'
+		    ;
+
+		    SELECT
+			    title = 'External Expense:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    :t:a_account_category = '50'
+		    ;
+
+		    SELECT
+			    title = 'External Revenue:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    :t:a_account_category = '40'
+		    ;
+
+		    SELECT
+			    title = 'Interfund Expense:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    :t:a_account_category = '52'
+		    ;
+
+		    SELECT
+			    title = 'Interfund Revenue:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    :t:a_account_category = '42'
+		    ;
+
+		    SELECT
+			    title = 'Within-fund Expense:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    :t:a_account_category = '51'
+		    ;
+
+		    SELECT
+			    title = 'Within-fund Revenue:',
+			    debits = isnull(sum(condition(:a_amount > $0, :a_amount, $0)), $0),
+			    credits = isnull(sum(condition(:a_amount < $0, :a_amount, $0)), $0),
+			    total = isnull(sum(:a_amount), $0)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE
+			    :t:a_ledger_number = :parameters:bso_ledger and
+			    :t:a_batch_number = :parameters:bso_batch and
+			    :t:a_account_category = '41'
+		    ";
+	    
+	    batch_summary_table "widget/table"
+		{
+		height=220;
+		mode=dynamicrow;
+		demand_scrollbar = yes;
+		overlap_scrollbar = yes;
+		show_selection = no;
+
+		t_title "widget/table-column" { title=""; fieldname="title"; width=150; align=right; }
+		t_debit "widget/table-column" { title="Debits (+)"; fieldname="debits"; width=100; align=right; }
+		t_credit "widget/table-column" { title="Credits (-)"; fieldname="credits"; width=100; align=right; }
+		t_total "widget/table-column" { title="Total"; fieldname="total"; width=100; align=right; }
+		}
+	    }
+
+	twocol_hbox "widget/hbox"
+	    {
+	    height = 276;
+	    spacing = 16;
+
+	    left_vbox "widget/vbox"
+		{
+		width = 382;
+		spacing = 4;
+
+		batch_balance_hdr "widget/component"
+		    {
+		    path="/apps/kardia/modules/base/section_check_label.cmp";
+		    height=20;
+		    text = "Batch Balance";
+		    checked = runclient(condition(:batch_info_osrc:balance == "$0.00", 1, 0));
+		    }
+		batch_bal_form "widget/form"
+		    {
+		    objectsource = batch_info_osrc;
+		    f_cnt "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=cnt; ctl_type=label; text="Transactions:"; }
+		    f_bal "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=balance; ctl_type=label; text="Balance:"; }
+		    }
+
+		sep1 "widget/autolayoutspacer" { height=8; }
+
+		jnl_balance_hdr "widget/component"
+		    {
+		    path="/apps/kardia/modules/base/section_check_label.cmp";
+		    height=20;
+		    text = "Journal Balance";
+		    checked = runclient(condition(:jnl_balance_osrc:jtext == 'None', 1, 0));
+		    }
+
+		jnl_balance_osrc "widget/osrc"
+		    {
+		    autoquery = never;
+		    replicasize = 10;
+		    readahead = 10;
+		    sql = " SELECT
+				    jtext = isnull(sum(condition(sum(:a_amount) == $0, convert(string,null), 'Journal ' + :a_journal_number + ' (' + sum(:a_amount) + '), ')) - ', ', 'None')
+				    -- jtotal = isnull(sum(:a_amount),$0),
+				    -- :a_journal_number
+			    FROM
+				    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+			    GROUP BY
+				    :a_journal_number
+			    --HAVING
+				--    :jtotal != $0.00
+			    ";
+
+		    refresh_jnl "widget/connector" { event=Refresh; source=new_post_batch; action=Refresh; }
+
+		    jnl_link "widget/rule"
+			{
+			ruletype = osrc_relationship;
+			target = batch_info_osrc;
+			key_1 = a_batch_number;
+			key_2 = a_ledger_number;
+			target_key_1 = a_batch_number;
+			target_key_2 = a_ledger_number;
+			}
+
+		    jnl_balance_label "widget/label" { height=16; text="Unbalanced journals in this batch:"; }
+
+		    jnl_balance_info "widget/label" { height=30; value=runclient(:jnl_balance_osrc:jtext); style=bold; }
+
+		    jnl_balance_tbl "widget/table"
+			{
+			condition = 0;
+			height=80;
+			mode=dynamicrow;
+			titlebar=no;
+			demand_scrollbar=yes;
+			overlap_scrollbar = yes;
+
+			t_jnl "widget/table-column" { title="Journal#"; fieldname="a_journal_number"; width=100; }
+			t_amt "widget/table-column" { title="Amount"; fieldname="jtotal"; width=100; align=right; }
+			}
+		    }
+
+		sep2 "widget/autolayoutspacer" { height=8; }
+
+		trx_validity_hdr "widget/component"
+		    {
+		    path="/apps/kardia/modules/base/section_check_label.cmp";
+		    height=20;
+		    text = "Transaction Validity";
+		    checked = runclient(condition(:trx_validity_osrc:msg is null and :trx_validity_loaded:value == 1, 1, 0));
+		    }
+
+		trx_validity_osrc "widget/osrc"
+		    {
+		    autoquery = never;
+		    replicasize = 10;
+		    readahead = 10;
+		    sql = " SELECT
+				    a_journal_number = 'Jnl ' + :t:a_journal_number,
+				    a_transaction_number = 'Trx ' + :t:a_transaction_number,
+				    msg =
+					  condition(:a:a_account_code is null, 'Invalid GL Account ' + :t:a_account_code,
+					   condition(:ac:a_account_category is null, 'Invalid Ctl Acct ' + :t:a_account_category,
+					    condition(:c:a_cost_center is null, 'Invalid Cost Center ' + :t:a_cost_center,
+				             condition(substring(isnull(:t:a_account_code,' '),1,1) != substring(isnull(:t:a_account_category,' '),1,1), 'Account / Ctl Acct Mismatch (' + :t:a_account_code + ' vs ' + :t:a_account_category + ')',
+					      condition(:t:a_period != :b:a_period, 'Trx Period ' + :t:a_period + ' / Batch Period ' + :b:a_period + ' Mismatch',
+					       condition(:t:a_effective_date > :p:a_end_date or :t:a_effective_date < :p:a_start_date, 'Trx Date ' + substring(convert(string,:t:a_effective_date),1,11) + ' Not In Period ' + :t:a_period,
+					        'OK'))))))
+			    FROM
+				    /apps/kardia/data/Kardia_DB/a_batch/rows b,
+				    /apps/kardia/data/Kardia_DB/a_period/rows p,
+				    /apps/kardia/data/Kardia_DB/a_transaction/rows t,
+				    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+				    /apps/kardia/data/Kardia_DB/a_account/rows a,
+				    /apps/kardia/data/Kardia_DB/a_account_category/rows ac
+			    WHERE
+				    :t:a_ledger_number = :b:a_ledger_number and
+				    :t:a_batch_number = :b:a_batch_number and
+				    :p:a_ledger_number = :b:a_ledger_number and
+				    :p:a_period = :b:a_period and
+				    :c:a_ledger_number =* :t:a_ledger_number and
+				    :c:a_cost_center =* :t:a_cost_center and
+				    :a:a_ledger_number =* :t:a_ledger_number and
+				    :a:a_account_code =* :t:a_account_code and
+				    :ac:a_ledger_number =* :t:a_ledger_number and
+				    :ac:a_account_category =* :t:a_account_category
+			    HAVING
+				    :msg != 'OK'
+			    ";
+
+		    tv_loaded_cn "widget/connector" { event=EndQuery; target=trx_validity_loaded; action=SetValue; Value=1; }
+
+		    refresh_trx1 "widget/connector" { event=Refresh; source=new_post_batch; target=trx_validity_loaded; action=SetValue; Value=0; }
+		    refresh_trx2 "widget/connector" { event=Refresh; source=new_post_batch; action=Refresh; }
+
+		    tv_link "widget/rule"
+			{
+			ruletype = osrc_relationship;
+			target = batch_info_osrc;
+			key_objname = b;
+			key_1 = a_batch_number;
+			key_2 = a_ledger_number;
+			target_key_1 = a_batch_number;
+			target_key_2 = a_ledger_number;
+			}
+
+		    trx_validity_tbl "widget/table"
+			{
+			height=80;
+			mode=dynamicrow;
+			titlebar=no;
+			demand_scrollbar=yes;
+			overlap_scrollbar = yes;
+			show_selection = no;
+
+			t_jnlv "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=50; }
+			t_trxv "widget/table-column" { title="Trx"; fieldname="a_transaction_number"; width=50; }
+			t_msg "widget/table-column" { title="Issue"; fieldname="msg"; width=280; }
+			}
+		    }
+		}
+
+	    right_vbox "widget/vbox"
+		{
+		width = 382;
+		spacing = 4;
+
+		acct_1900_hdr "widget/component"
+		    {
+		    path="/apps/kardia/modules/base/section_check_label.cmp";
+		    height=20;
+		    text = "Interfund Xfer Asset Balance";
+		    checked = runclient(condition(:a1900_balance_osrc:total == '$0.00', 1, 0));
+		    }
+
+		a1900_balance_osrc "widget/osrc"
+		    {
+		    autoquery = never;
+		    replicasize = 10;
+		    readahead = 10;
+		    sql = " SELECT
+				    total = isnull(sum(:a_amount), $0),
+				    cnt = count(1),
+				    rectxt = condition(count(1) > 0, 'Yes', 'No')
+			    FROM
+				    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+			    WHERE
+				    :a_account_code = '1900'
+			    ";
+
+		    refresh_1900 "widget/connector" { event=Refresh; source=new_post_batch; action=Refresh; }
+
+		    a1900_link "widget/rule"
+			{
+			ruletype = osrc_relationship;
+			target = batch_info_osrc;
+			key_1 = a_batch_number;
+			key_2 = a_ledger_number;
+			target_key_1 = a_batch_number;
+			target_key_2 = a_ledger_number;
+			}
+
+		    a1900_bal_form "widget/form"
+			{
+			f_a1900_recs "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=rectxt; ctl_type=label; text="Present:"; }
+			f_a1900_bal "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=total; ctl_type=label; text="Balance:"; }
+			}
+		    }
+
+		sep3 "widget/autolayoutspacer" { height=8; }
+
+		cc_balance_hdr "widget/component"
+		    {
+		    path="/apps/kardia/modules/base/section_check_label.cmp";
+		    height=20;
+		    text = "Cost Center Balance";
+		    checked = runclient(condition(:cc_balance_osrc:ctext == 'None', 1, 0));
+		    }
+
+		cc_balance_osrc "widget/osrc"
+		    {
+		    autoquery = never;
+		    replicasize = 10;
+		    readahead = 10;
+		    sql = " SELECT
+				    ctext = substring(isnull(sum(condition(sum(:t:a_amount) == $0, convert(string,null), 'CostCtr ' + :c:a_bal_cost_center + ' (' + sum(:t:a_amount) + '), ')) - ', ', 'None'),1,86)
+			    FROM
+				    /apps/kardia/data/Kardia_DB/a_transaction/rows t,
+				    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			    WHERE
+				    :t:a_ledger_number = :c:a_ledger_number and
+				    :t:a_cost_center = :c:a_cost_center
+			    GROUP BY
+				    :t:a_ledger_number,
+				    :t:a_batch_number,
+				    :c:a_bal_cost_center
+			    ORDER BY
+				    :t:a_cost_center
+			    ";
+
+		    refresh_cc "widget/connector" { event=Refresh; source=new_post_batch; action=Refresh; }
+
+		    cc_link "widget/rule"
+			{
+			ruletype = osrc_relationship;
+			target = batch_info_osrc;
+			key_1 = a_batch_number;
+			key_2 = a_ledger_number;
+			key_objname = t;
+			target_key_1 = a_batch_number;
+			target_key_2 = a_ledger_number;
+			}
+
+		    cc_balance_label "widget/label" { height=16; text="Unbalanced cost centers in this batch:"; }
+
+		    cc_balance_info "widget/label" { height=34; value=runclient(:cc_balance_osrc:ctext + "..."); style=bold; }
+
+		    cc_bal_instruction "widget/label" { height=18; value=runclient(condition(:cc_balance_osrc:ctext != 'None' and char_length(:cc_balance_osrc:ctext) > 0, condition(:a1900_balance_osrc:cnt == 0, "This batch needs an Interfund Xfer Asset journal.", "Please re-create Interfund Xfer Asset journal."), condition(:cc_balance_osrc:ctext == 'None',"All cost centers balance.",""))); }
+
+		    a1900_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=8;
+
+			mk1900_btn "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    enabled = runclient(:batch_balance_hdr:checked and :jnl_balance_hdr:checked and :trx_validity_hdr:checked and :batch_info_osrc:min_is_posted == 0);
+			    text = runclient(condition(:a1900_balance_osrc:cnt > 0, "Re-create", "Create") + " IXA");
+
+			    do_mk1900 "widget/connector"
+				{
+				event=Click;
+				target=PostLogic;
+				action=AddIXA;
+				a_ledger_number=runclient(:batch_info_osrc:a_ledger_number);
+				a_period=runclient(:batch_info_osrc:a_period);
+				a_batch_number=runclient(:batch_info_osrc:a_batch_number);
+				}
+			    }
+
+			del1900_btn "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    enabled = runclient(:a1900_balance_osrc:cnt > 0 and :batch_info_osrc:min_is_posted == 0);
+			    text = "Remove";
+
+			    do_rm1900 "widget/connector"
+				{
+				event=Click;
+				target=PostLogic;
+				action=RemoveIXA;
+				a_ledger_number=runclient(:batch_info_osrc:a_ledger_number);
+				a_period=runclient(:batch_info_osrc:a_period);
+				a_batch_number=runclient(:batch_info_osrc:a_batch_number);
+				}
+			    }
+			}
+		    }
+
+		sep4 "widget/autolayoutspacer" { height=8; }
+
+		ixfr_balance_hdr "widget/component"
+		    {
+		    path="/apps/kardia/modules/base/section_check_label.cmp";
+		    height=20;
+		    text = "Interfund / Within-Fund Xfer Balance";
+		    checked = runclient(condition(:ixfr_balance_osrc:if_xfr == '$0.00' and :ixfr_balance_osrc:wf_xfr == '$0.00', 1, -1));
+		    }
+
+		ixfr_balance_osrc "widget/osrc"
+		    {
+		    autoquery = never;
+		    replicasize = 10;
+		    readahead = 10;
+		    sql = " SELECT
+				    if_xfr = isnull(sum(condition(:a_account_category == '52' or :a_account_category == '42', :a_amount, $0)), $0),
+				    wf_xfr = isnull(sum(condition(:a_account_category == '51' or :a_account_category == '41', :a_amount, $0)), $0),
+				    cnt = count(1)
+			    FROM
+				    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+			    WHERE
+				    :a_account_category = '51' or :a_account_category = '52' or
+				    :a_account_category = '41' or :a_account_category = '42'
+			    ";
+
+		    refresh_ixfr "widget/connector" { event=Refresh; source=new_post_batch; action=Refresh; }
+
+		    ixfr_link "widget/rule"
+			{
+			ruletype = osrc_relationship;
+			target = batch_info_osrc;
+			key_1 = a_batch_number;
+			key_2 = a_ledger_number;
+			target_key_1 = a_batch_number;
+			target_key_2 = a_ledger_number;
+			}
+
+		    ixfr_balance_label "widget/label" { height=32; value=runclient(condition(:ixfr_balance_osrc:if_xfr == '$0.00' and :ixfr_balance_osrc:wf_xfr == '$0.00', "Batch is balanced.", condition(:ixfr_balance_osrc:if_xfr is null, "", "Double check: ")) + condition(not (:ixfr_balance_osrc:if_xfr is null) and :ixfr_balance_osrc:if_xfr != '$0.00', "Interfund Xfers do not balance. ", "") + condition(not (:ixfr_balance_osrc:wf_xfr is null) and :ixfr_balance_osrc:wf_xfr != '$0.00', "Within-Fund Xfers do not balance. ", "")); }
+		    }
+		}
+	    }
+
+	footer_sep "widget/pane"
+	    {
+	    height=3;
+	    style=lowered;
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height = 24;
+	    spacing = 8;
+	    align = center;
+
+	    post_btn "widget/textbutton"
+		{
+		width = 130;
+		height = 24;
+		text = "Post Batch";
+		enabled = runclient(:batch_balance_hdr:checked and :jnl_balance_hdr:checked and :trx_validity_hdr:checked and :acct_1900_hdr:checked and :cc_balance_hdr:checked and :batch_info_osrc:min_is_posted == 0);
+
+		do_post "widget/connector"
+		    {
+		    event=Click;
+		    target=PostLogic;
+		    action=Post;
+		    a_ledger_number=runclient(:batch_info_osrc:a_ledger_number);
+		    a_period=runclient(:batch_info_osrc:a_period);
+		    a_batch_number=runclient(:batch_info_osrc:a_batch_number);
+		    }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		width = 130;
+		height = 24;
+		text = runclient(condition(:batch_info_osrc:min_is_posted == 0, "Cancel", "Close"));
+
+		cancel_cn "widget/connector" { event=Click; target=app_container; action=Close; }
+		}
+	    }
+	}
+
+    trx_validity_loaded "widget/variable" { type=integer; value=0; }
+    }

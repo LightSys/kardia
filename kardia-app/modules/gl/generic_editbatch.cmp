@@ -1,0 +1,120 @@
+$Version=2$
+generic_editbatch "widget/component-decl"
+    {
+    width=478; height=298;
+
+    new_batch_window "widget/parameter" { type=object; find_container="widget/childwindow"; }
+    periods_osrc "widget/parameter" { type=object; }
+    origin "widget/parameter" { type=string; default='GL'; deploy_to_client=yes; }
+    title "widget/parameter" { type=string; default='Journal Entry'; deploy_to_client=yes; }
+    allow_effdate "widget/parameter" { type=integer; default=1; }
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    
+    new_batch_form "widget/parameter"
+	{
+	type=object;
+	find_container="widget/form";
+
+	batch_origin "widget/variable" { fieldname="a_origin"; batch_origin_hints "widget/hints" { default=runclient(:generic_editbatch:origin); } }
+	nextjnl_v "widget/variable" { fieldname="a_next_journal_number"; nextjnl_hints "widget/hints" { default=1; } }
+	nexttrx_v "widget/variable" { fieldname="a_next_transaction_number"; nexttrx_hints "widget/hints" { default=1; } }
+	ledger_v "widget/variable" { fieldname="a_ledger_number"; ledger_hints "widget/hints" { default=runclient(:generic_editbatch:ledger); } }
+
+	hide_on_view "widget/connector" { event=View; target=new_batch_window; action=Close; }
+	hide_on_nodata "widget/connector" { event=NoData; target=new_batch_window; action=Close; }
+	set_period_on_new "widget/connector" { event=New; target=f_a_period; action=SetValue; Value=runclient(:periods_osrc:a_period); }
+
+	new_batch_vbox "widget/vbox"
+	    {
+	    x=10;y=10;width=458;height=255;
+	    spacing=8; cellsize=20;
+
+	    new_batch_lbl "widget/label" { font_size = 16; align=center; value=runclient(:new_batch_form:form_mode + " " + :generic_editbatch:title + " Batch"); style=bold; }
+
+	    sp2 "widget/autolayoutspacer" { height=8; }
+
+	    f_a_batch_no "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_number; text="Batch Number:"; ctl_type="editbox"; tooltip="Batch Number (automatically generated)"; label_width=120; width=350; bn_hint "widget/hints" { style=readonly; } }
+	    f_a_period "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period; text="Period:"; ctl_type="dropdown"; tooltip="Period Number"; label_width=120; sql=runserver("select :a_period + ' - ' + :a_period_desc, :a_period, (getdate() >= :a_start_date and getdate() <= :a_end_date), '', :a_status != 'O' from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); width=350; label_width=120; per_hints "widget/hints" { style=readonly; } }
+	    f_a_batch_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_desc; text="Description:"; ctl_type="editbox"; tooltip="Batch Description"; label_width=120; width=350; }
+	    //f_a_period "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_period; text="Period:"; tooltip="Period Number"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Select Period:"; popup_order=desc; width=350; }
+	    f_a_batch_eff_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_default_effective_date; text="Effective Date:"; ctl_type="datetime"; tooltip="Effective (accrual) date for transactions"; label_width=120; width=350; eff_date_hints "widget/hints" { condition=runserver(:this:allow_effdate == 0); default=runclient(getdate()); style=readonly; } eff_date_hints "widget/hints" { condition=runserver(:this:allow_effdate == 1); default=runclient(getdate()); } }
+	    f_a_batch_corrects "widget/component"
+		{
+		condition = runserver(:this:origin == 'GL');
+		path="/sys/cmp/smart_field.cmp";
+		field=a_corrects_batch_number;
+		text="Corrects Batch:";
+		ctl_type="dropdown";
+		tooltip="Select a batch if this batch corrects an existing batch";
+		label_width=120;
+		width=350;
+		sql = "select null,null where 1 = 0";
+
+		set_batchlist_by_period "widget/connector"
+		    {
+		    source=periods_osrc;
+		    event=DataFocusChanged;
+		    action=SetItems;
+		    SQL = runclient("select label = '' + :a_batch_number + ' - ' + :a_batch_desc, value = :a_batch_number, selected = 0 from /apps/kardia/data/Kardia_DB/a_batch/rows where :a_period = " + quote(:periods_osrc:a_period));
+		    }
+		}
+	    }
+
+	new_batch_vbox2 "widget/vbox"
+	    {
+	    x=10;y=223;width=458;height=65;
+	    spacing=8; cellsize=20;
+	    align=bottom;
+
+	    buttons "widget/hbox"
+		{
+		height=32;
+		align=center;
+		spacing=8;
+
+		save_btn "widget/textbutton"
+		    {
+		    width=100; height=24;
+		    text = "Save";
+		    enabled = runclient(:new_batch_form:is_savable);
+
+		    save_cn "widget/connector" { event=Click; target=new_batch_form; action=Save; }
+		    }
+
+		bcancel_btn "widget/textbutton"
+		    {
+		    width=100; height=24;
+		    text = "Cancel";
+		    enabled = runclient(:new_batch_form:is_discardable);
+
+		    bcancel_cn "widget/connector" { event=Click; target=new_batch_form; action=Discard; }
+		    }
+		}
+
+	    batch_rec_info "widget/component"
+		{
+		path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
+		}
+	    }
+
+	nextbatch "widget/component"
+	    {
+	    path = "/apps/kardia/modules/gl/next_batch.cmp";
+
+	    generate_batchno_on_new "widget/connector"
+		{
+		source=new_batch_form;
+		event=New;
+		action=GetBatchNumber;
+		ledger=runclient(:generic_editbatch:ledger);
+		}
+	    got_batchno "widget/connector"
+		{
+		event=BatchNumber;
+		target=f_a_batch_no;
+		action=SetValue;
+		Value = runclient(:batch);
+		}
+	    }
+	}
+    }

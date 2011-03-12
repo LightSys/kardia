@@ -22,7 +22,7 @@ acctmaint "widget/page"
 	{
 	x=10; y=10; width=780; height=580;
 	//x=0;y=0;width=756;height=449;
-	condition = runserver(not (:this:ledger is null));
+	condition = runserver((not (:this:ledger is null)));
 	path = "/apps/kardia/modules/gl/accts_edit.cmp";
 	ledger = runserver(:this:ledger);
 	ledger_osrc = ledger_osrc;

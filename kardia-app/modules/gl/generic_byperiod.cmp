@@ -1,0 +1,140 @@
+$Version=2$
+generic_byperiod "widget/component-decl"
+    {
+    width=780;
+    height=580;
+
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    title "widget/parameter" { type=string; default=''; }
+    embed "widget/parameter" { type=string; default=''; }
+    period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
+    periods_osrc "widget/osrc"
+	{
+	periods_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
+	sql = runserver("
+		SELECT
+			:p:a_period, :p:a_period_desc, :p:a_ledger_number, txt=:p:a_period + ' - ' + :p:a_period_desc,
+			:p:a_status, :p:a_parent_period
+		FROM
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		WHERE
+			:p:a_summary_only = 0 and :p:a_ledger_number = :parameters:ledger
+		ORDER BY
+			:p:a_period desc");
+	replicasize=50;
+	readahead=50;
+	autoquery=onload;
+
+	auto_select_current "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:periods_osrc:a_period != :generic_byperiod:period and not (:generic_byperiod:period is null));
+	    target = periods_osrc;
+	    action = FindObject;
+	    a_period = runclient(:generic_byperiod:period);
+	    }
+
+	period_form "widget/form" { }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    x=0; y=0; width=780;height=22;
+	    spacing=4;
+
+	    rcpt_label "widget/label"
+		{
+		width=345;
+		text = runserver(:this:title); 
+		style=bold;
+		font_size=16;
+		}
+	    periods_label "widget/label"
+		{
+		width=120;
+		y=1;
+		text = "Select Period:";
+		align=right;
+		style=bold;
+		}
+	    periods_select "widget/dropdown"
+		{
+		width=200;
+		mode=objectsource;
+		fieldname=txt;
+		numdisplay=12;
+		height=20;
+		}
+
+	    sp1 "widget/autolayoutspacer" { width=8; }
+
+	    btnFirst "widget/imagebutton"
+		{
+		y=1;
+		width=18;
+		height=18;
+		image="/sys/images/ico16aa.gif";
+		pointimage="/sys/images/ico16ab.gif";
+		clickimage="/sys/images/ico16ac.gif";
+		disabledimage="/sys/images/ico16ad.gif";
+		tooltip = runserver("First Period");
+		enabled = runclient(not(:period_form:recid == :period_form:lastrecid));
+		cnLast "widget/connector" { event="Click"; target=period_form; action="Last"; }
+		}
+	    btnBack "widget/imagebutton"
+		{
+		y=1;
+		width=18;
+		height=18;
+		image="/sys/images/ico16ba.gif";
+		pointimage="/sys/images/ico16bb.gif";
+		clickimage="/sys/images/ico16bc.gif";
+		disabledimage="/sys/images/ico16bd.gif";
+		tooltip = runserver("Previous Period");
+		repeat = yes;
+		enabled = runclient(not(:period_form:recid == :period_form:lastrecid));
+		cnNext "widget/connector" { event="MouseDown"; target=period_form; action="Next"; }
+		}
+	    btnNext "widget/imagebutton"
+		{
+		y=1;
+		width=18;
+		height=18;
+		image="/sys/images/ico16ca.gif";
+		pointimage="/sys/images/ico16cb.gif";
+		clickimage="/sys/images/ico16cc.gif";
+		disabledimage="/sys/images/ico16cd.gif";
+		tooltip = runserver("Next Period");
+		repeat = yes;
+		enabled = runclient(:period_form:recid > 1);
+		cnBack "widget/connector" { event="MouseDown"; target=period_form; action="Prev"; }
+		}
+	    btnLast "widget/imagebutton"
+		{
+		y=1;
+		width=18;
+		height=18;
+		image="/sys/images/ico16da.gif";
+		pointimage="/sys/images/ico16db.gif";
+		clickimage="/sys/images/ico16dc.gif";
+		disabledimage="/sys/images/ico16dd.gif";
+		tooltip = runserver("Last Period");
+		enabled = runclient(:period_form:recid > 1);
+		cnFirst "widget/connector" { event="Click"; target=period_form; action="First"; }
+		}
+	    }
+
+	sep_line "widget/pane" { x=0;y=28; width=780; height=2; style=lowered; }
+
+	embed_cmp "widget/component"
+	    {
+	    condition=runserver(char_length(:this:embed) > 0);
+
+	    use_toplevel_params = yes;
+	    x=0;y=38; width=780;height=542;
+	    path=runserver(:this:embed);
+	    ledger=runserver(:this:ledger);
+	    periods_osrc=periods_osrc;
+	    }
+	}
+    }

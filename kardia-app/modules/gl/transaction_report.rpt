@@ -27,6 +27,7 @@ transaction_report "system/report"
     sortby "report/parameter" { type=string; default="pbjt"; }
     hide1900 "report/parameter" { type=integer; default=0; }
     onlyequity "report/parameter" { type=integer; default=0; }
+    persubttl "report/parameter" { type=integer; default=0; }
 
     ledger_qy "report/query"
 	{
@@ -36,6 +37,16 @@ transaction_report "system/report"
     year_qy "report/query"
 	{
 	sql = "select *, year = datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_period = :this:year_period and :p:a_ledger_number = :this:ledger";
+	}
+
+    fund_qy "report/query"
+	{
+	sql = "select fund_name = isnull(first(:a_cc_desc),'') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :a_ledger_number = :this:ledger and :a_cost_center = :this:costctr";
+	}
+
+    acct_qy "report/query"
+	{
+	sql = "select acct_name = isnull(first(:a_acct_desc),'') from /apps/kardia/data/Kardia_DB/a_account/rows a where :a_ledger_number = :this:ledger and :a_account_code = :this:account";
 	}
 
     balfwd_qy "report/query"
@@ -96,10 +107,10 @@ transaction_report "system/report"
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:t:a_ledger_number = :this:ledger and
-			:t:a_cost_center = :c:a_cost_center and
-			:t:a_account_code = :a:a_account_code and
-			:c:a_ledger_number = :this:ledger and
-			:a:a_ledger_number = :this:ledger and
+			:t:a_cost_center *= :c:a_cost_center and
+			:t:a_account_code *= :a:a_account_code and
+			:c:a_ledger_number =* :t:a_ledger_number and
+			:a:a_ledger_number =* :t:a_ledger_number and
 			datepart(year, :t:a_effective_date) = :year_qy:year " +
 
 			    condition(:this:balcostctr is null, '', ' and :c:a_bal_cost_center = :this:balcostctr') + 
@@ -120,14 +131,22 @@ transaction_report "system/report"
 			    condition(:this:sortby == "acc", ":t:a_account_code, :t:a_cost_center", "") +
 			    condition(:this:sortby == "date", ":t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
 		"");
-	plus_sum "report/aggregate" { compute="sum(:plus_amt)"; reset=0; }
-	minus_sum "report/aggregate" { compute="sum(:minus_amt)"; reset=0; }
+	plus_sum "report/aggregate" { compute="isnull(sum(:plus_amt),$0)"; reset=0; }
+	minus_sum "report/aggregate" { compute="isnull(sum(:minus_amt),$0)"; reset=0; }
 	rowid "report/aggregate" { compute="count(1)"; reset=0; }
+
+	// Subtotals by Period
+	p_plus_sum "report/aggregate" { compute="isnull(sum(:plus_amt),$0)"; reset=1; }
+	p_minus_sum "report/aggregate" { compute="isnull(sum(:minus_amt),$0)"; reset=1; }
+	p_plus_sum2 "report/aggregate" { compute="isnull(sum(:plus_amt),$0)"; reset=1; }
+	p_minus_sum2 "report/aggregate" { compute="isnull(sum(:minus_amt),$0)"; reset=1; }
+	pc_plus_sum "report/aggregate" { compute="isnull(sum(:plus_amt),$0)"; reset=0; }
+	pc_minus_sum "report/aggregate" { compute="isnull(sum(:minus_amt),$0)"; reset=0; }
 	}
 
     ledger_form "report/form"
 	{
-	source = ledger_qy, year_qy;
+	source = ledger_qy, year_qy, acct_qy, fund_qy;
 
 	rpt_title "report/area"
 	    {
@@ -152,12 +171,12 @@ transaction_report "system/report"
 	    c_d2 "report/data"
 		{ 
 		condition = runserver(not (:this:costctr is null));
-		value = runserver("Cost Center: " + :this:costctr + "\n"); 
+		value = runserver("Cost Center: " + :this:costctr + " - " + :fund_qy:fund_name + "\n"); 
 		}
 	    c_d3 "report/data"
 		{ 
 		condition = runserver(not (:this:account is null));
-		value = runserver("Account: " + :this:account + "\n"); 
+		value = runserver("Account: " + :this:account + " - " + :acct_qy:acct_name + "\n"); 
 		}
 	    c_d4 "report/data"
 		{ 
@@ -277,6 +296,55 @@ transaction_report "system/report"
 		    {
 		    condition = runserver((:trx_qy:rowid / 5) * 5 == :trx_qy:rowid);
 		    bottomborder=0.021;
+		    }
+
+		per_subtotal "report/table-row"
+		    {
+		    condition = runserver(:this:persubttl == 1);
+		    summary=yes;
+		    summarize_for = runserver(:trx_qy:a_period);
+		    font = courier;
+		    style = bold;
+		    fontsize = 8;
+		    topborder = 0.05;
+		    //marginbottom = 1.0;
+		    marginbottom = 0.0;
+
+		    p_period "report/table-cell" { value=''; align=left; }
+		    p_date "report/table-cell" { value=''; align=left; }
+		    p_batch "report/table-cell" { value=''; align=left; }
+		    p_jnl "report/table-cell" { value=''; align=left; }
+		    p_trx "report/table-cell" { value=''; align=left; }
+		    p_cc "report/table-cell" { value=''; align=left; }
+		    p_ctlacct "report/table-cell" { value=''; align=left; }
+		    p_acct "report/table-cell" { value=''; align=left; }
+		    p_comment "report/table-cell" { value=runserver('SUBTOTAL: ' + (:trx_qy:p_plus_sum + :trx_qy:p_minus_sum) + ''); align=right; }
+		    p_debit "report/table-cell" { value=runserver(:trx_qy:p_plus_sum2); align=right; }
+		    p_credit "report/table-cell" { value=runserver(:trx_qy:p_minus_sum2); align=right; }
+		    }
+
+		per_cum_subtotal "report/table-row"
+		    {
+		    condition = runserver(:this:persubttl == 1);
+		    summary=yes;
+		    summarize_for = runserver(:trx_qy:a_period);
+		    font = courier;
+		    style = bold;
+		    fontsize = 8;
+		    //topborder = 0.05;
+		    marginbottom = 1.0;
+
+		    pc_period "report/table-cell" { value=''; align=left; }
+		    pc_date "report/table-cell" { value=''; align=left; }
+		    pc_batch "report/table-cell" { value=''; align=left; }
+		    pc_jnl "report/table-cell" { value=''; align=left; }
+		    pc_trx "report/table-cell" { value=''; align=left; }
+		    pc_cc "report/table-cell" { value=''; align=left; }
+		    pc_ctlacct "report/table-cell" { value=''; align=left; }
+		    pc_acct "report/table-cell" { value=''; align=left; }
+		    pc_comment "report/table-cell" { value=runserver('YEAR TO DATE: ' + (:trx_qy:pc_plus_sum + :trx_qy:pc_minus_sum + :balfwd_qy:total) + ''); align=right; }
+		    pc_debit "report/table-cell" { value=runserver(:trx_qy:pc_plus_sum + condition(:balfwd_qy:total > $0, :balfwd_qy:total, $0)); align=right; }
+		    pc_credit "report/table-cell" { value=runserver(:trx_qy:pc_minus_sum + condition(:balfwd_qy:total <= $0, :balfwd_qy:total, $0)); align=right; }
 		    }
 
 		tbl_sum "report/table-row"

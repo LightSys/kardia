@@ -70,6 +70,7 @@ fund_balance "system/report"
 
 	sum_b "report/aggregate" { compute="sum(:bbal)"; reset=0; }
 	sum_c "report/aggregate" { compute="sum(:cbal)"; reset=0; }
+	rowid "report/aggregate" { compute="count(1)"; reset=0; }
 	}
 
     ledger_form "report/form"
@@ -153,6 +154,12 @@ fund_balance "system/report"
 		d_bbal "report/table-cell" { value=runserver(condition(:accts_qy:bbal == $0, '-0-   ', :accts_qy:bbal)); align=right; }
 		d_chg "report/table-cell" { value=runserver(condition((:accts_qy:cbal - :accts_qy:bbal) == $0, '-0-   ', (:accts_qy:cbal - :accts_qy:bbal))); align=right; }
 		d_cur "report/table-cell" { value=runserver(condition(:accts_qy:cbal == $0, '-0-   ', :accts_qy:cbal)); align=right; }
+		}
+
+	    tbl_sep_row "report/table-row"
+		{
+		condition = runserver((:accts_qy:rowid / 5) * 5 == :accts_qy:rowid);
+		bottomborder=0.021;
 		}
 
 	    tbl_sum_all "report/table-row"
