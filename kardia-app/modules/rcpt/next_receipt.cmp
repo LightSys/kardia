@@ -1,0 +1,45 @@
+$Version=2$
+next_receipt "widget/component-decl"
+    {
+    visual = no;
+
+    GetReceiptNumber "widget/component-decl-action" { }
+    ReceiptNumber "widget/component-decl-event" { }
+
+    GetReceiptNumber_cn "widget/connector"
+	{
+	event=GetReceiptNumber;
+	target=getrcpt_osrc;
+	action=QueryParam;
+	ledger = runclient(:ledger);
+	}
+
+    getrcpt_osrc "widget/osrc"
+	{
+	ledger "widget/parameter" { type=string; }
+	sql = "	select
+			:a_next_receipt_number
+		from
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_rcptcnt/rows
+		where
+			:a_ledger_number = :parameters:ledger
+		;
+		update
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_rcptcnt/rows
+		set
+			:a_next_receipt_number = :a_next_receipt_number + 1
+		where
+			:a_ledger_number = :parameters:ledger
+		;
+		-- the following is a workaround for a bug in htdrv_osrc.js
+		select
+			1
+		where
+			1 = 0
+		";
+	readahead = 2;
+	replicasize = 2;
+
+	gotit "widget/connector" { event=EndQuery; target=next_receipt; action=ReceiptNumber; receipt=runclient(:getrcpt_osrc:a_next_receipt_number); }
+	}
+    }

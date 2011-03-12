@@ -1,0 +1,46 @@
+$Version=2$
+plugin_gl_fundedit_receipting "widget/component-decl"
+    {
+    width=490;
+    height=292;
+    title = "Receipting";
+
+    Modified "widget/component-decl-event" { }
+
+    fund_osrc "widget/parameter" { type=object; find_container = "widget/osrc"; }
+    ledger "widget/parameter" { type=string; deploy_to_client = yes; }
+
+    vbox "widget/vbox"
+	{
+	x = 0;
+	y = 0;
+	width = 490;
+	height = 292;
+	spacing = 8;
+	cellsize = 20;
+
+	receipting_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/a_cc_receipting/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_cc_receipting/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    fund_link "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = fund_osrc;
+		key_1 = a_ledger_number;
+		key_2 = a_cost_center;
+		target_key_1 = a_ledger_number;
+		target_key_2 = a_cost_center;
+		}
+
+	    receipting_form "widget/form"
+		{
+		allow_query = no;
+		}
+	    }
+	}
+    }

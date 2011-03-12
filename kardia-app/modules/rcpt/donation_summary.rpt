@@ -42,7 +42,7 @@ donation_summary "system/report"
 			:g:a_cost_center,
 			:g:a_account_code
 		from
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g,
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
@@ -55,6 +55,31 @@ donation_summary "system/report"
 		group by
 			:g:a_cost_center,
 			:g:a_account_code
+		");
+
+	sum_cnt "report/aggregate" { compute="sum(:cnt)"; reset=0; }
+	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
+	}
+
+    giftbatches_qy "report/query"
+	{
+	sql = runserver("
+		select
+			cnt = count(:g:a_amount),
+			total = isnull(sum(:g:a_amount), $0.00),
+			batch = :g:a_batch_number,
+			batchname = :b:a_batch_desc,
+			batchdate = :b:a_default_effective_date
+		from
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g,
+			/apps/kardia/data/Kardia_DB/a_batch/rows b
+		where
+			:g:a_ledger_number = :this:ledger and
+			:g:a_period = :this:period and
+			:b:a_ledger_number =* :g:a_ledger_number and
+			:b:a_batch_number =* :g:a_batch_number
+		group by
+			:g:a_batch_number
 		");
 
 	sum_cnt "report/aggregate" { compute="sum(:cnt)"; reset=0; }
@@ -74,6 +99,25 @@ donation_summary "system/report"
 			:t:a_period = :this:period and
 			:t:a_cost_center = :gifts_qy:a_cost_center and
 			:t:a_account_code = :gifts_qy:a_account_code
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		");
+	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
+	}
+
+    glbatch_qy "report/query"
+	{
+	sql = runserver("
+		select
+			total = isnull(sum(:a_amount), $0.00)
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+			:t:a_ledger_number = :this:ledger and
+			:t:a_origin = 'CR' and
+			:t:a_period = :this:period and
+			(:t:a_account_code != '1111' and :t:a_account_code != '1112') and
+			:t:a_journal_number == 1 and
+			:t:a_batch_number = :giftbatches_qy:batch
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		");
 	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
@@ -144,6 +188,79 @@ donation_summary "system/report"
 	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  GL DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
 	    }
 
+	sep0 "report/data" { value="By Batch:"; font=helvetica; }
+
+	table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=7;
+	    widths=7,10,30,9,9,9,3;
+	    colsep=0.8;
+	    source=giftbatches_qy, glbatch_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+	    dateformat = "dd-MMM-yyyy";
+
+	    tbl_hdr "report/table-row"
+		{
+		header=yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		h_batch "report/table-cell" { value='Batch'; align=center; style=bold; }
+		h_date "report/table-cell" { value='Date'; align=center; style=bold; }
+		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_cnt "report/table-cell" { value='Count'; align=center; style=bold; }
+		h_disb "report/table-cell" { value='Gifts Total'; align=center; style=bold; }
+		h_gl "report/table-cell" { value='GL Total'; align=center; style=bold; }
+		h_diff "report/table-cell" { value='Diff'; align=center; style=bold; }
+		}
+
+	    tbl_sep_row "report/table-row"
+		{
+		condition = runserver((:giftbatches_qy:cx__rowid / 5) * 5 == :giftbatches_qy:cx__rowid);
+		bottomborder=0.021;
+		}
+
+	    tbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+
+		d_batch "report/table-cell" { value=runserver(:giftbatches_qy:batch); align=left; }
+		d_date "report/table-cell" { value=runserver(:giftbatches_qy:batchdate); align=left; }
+		d_desc "report/table-cell" { value=runserver(:giftbatches_qy:batchname); align=left; font=helvetica; }
+		d_cnt "report/table-cell" { value=runserver(:giftbatches_qy:cnt); align=right; }
+		d_disb "report/table-cell" { value=runserver(:giftbatches_qy:total); align=right; }
+		d_gl "report/table-cell" { value=runserver(:glbatch_qy:total); align=right; }
+		d_diff "report/table-cell" { value=runserver(condition(:glbatch_qy:total + :giftbatches_qy:total = $0, '', 'X')); align=right; }
+		}
+
+	    tbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		//marginbottom=0.1;
+
+		s_batch "report/table-cell" { value=runserver(""); align=left; }
+		s_x1 "report/table-cell" { value=runserver(""); align=left; }
+		s_x2 "report/table-cell" { value=runserver("GRAND TOTAL:"); align=right; }
+		s_cnt "report/table-cell" { value=runserver(:giftbatches_qy:sum_cnt); align=right; }
+		s_disb "report/table-cell" { value=runserver(:giftbatches_qy:sum_total); align=right; }
+		s_gl "report/table-cell" { value=runserver(:glbatch_qy:sum_total); align=right; }
+		s_diff "report/table-cell" { value=runserver(condition(:glbatch_qy:sum_total + :giftbatches_qy:sum_total = $0, '', 'X')); align=right; }
+		}
+	    }
+
+	sep "report/data" { value="\nBy Fund:"; font=helvetica; }
+
+
 	table "report/table"
 	    {
 	    x=0; width=80; height=0;
@@ -170,6 +287,12 @@ donation_summary "system/report"
 		h_gift "report/table-cell" { value='Gift Total'; align=center; style=bold; }
 		h_gl "report/table-cell" { value='GL Total'; align=center; style=bold; }
 		h_diff "report/table-cell" { value='Diff'; align=center; style=bold; }
+		}
+
+	    tbl_sep_row "report/table-row"
+		{
+		condition = runserver((:gifts_qy:cx__rowid / 5) * 5 == :gifts_qy:cx__rowid);
+		bottomborder=0.021;
 		}
 
 	    tbl_row "report/table-row"

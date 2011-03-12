@@ -1,0 +1,90 @@
+$Version=2$
+plugin_gl_fundedit_autosub "widget/component-decl"
+    {
+    width=490;
+    height=292;
+    title = "Auto-Subscribe";
+
+    Modified "widget/component-decl-event" { }
+
+    fund_osrc "widget/parameter" { type=object; find_container = "widget/osrc"; }
+    ledger "widget/parameter" { type=string; deploy_to_client = yes; }
+
+    vbox "widget/vbox"
+	{
+	x = 0;
+	y = 0;
+	width = 490;
+	height = 292;
+	spacing = 8;
+	cellsize = 20;
+
+	as_osrc "widget/osrc"
+	    {
+	    sql = " select
+			    :a:a_ledger_number, :a:a_cost_center, :a:m_list_code,
+			    :a:a_minimum_gift, :a:a_subscribe_months, :a:a_comments,
+			    :a:s_date_created, :a:s_created_by, :a:s_date_modified, :a:s_modified_by,
+			    :m:m_list_description, :m:m_list_status, stattext = :ls:text,
+			    monthtext = '' + :a:a_subscribe_months + ' months'
+		    from
+			    IDENTITY /apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a,
+			    /apps/kardia/data/Kardia_DB/m_list/rows m,
+			    /apps/kardia/data/Kardia_DB/_m_list_status/rows ls
+		    where
+			    :m:m_list_code = :a:m_list_code and
+			    :m:m_list_status *= :ls:tag
+		    ";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows";
+	    readahead = 10;
+	    replicasize = 10;
+	    autoquery = never;
+
+	    fund_link "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = fund_osrc;
+		key_1 = a_ledger_number;
+		key_2 = a_cost_center;
+		target_key_1 = a_ledger_number;
+		target_key_2 = a_cost_center;
+		}
+
+	    as_form "widget/form"
+		{
+		form_txt "widget/label" { text="Here you can automatically subscribe a donor to one or more mailing lists when the donor gives to this fund."; height=32; }
+		form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; height=26; object_name="List"; }
+
+		as_table_pane "widget/pane"
+		    {
+		    height=102;
+		    widget_class=table_bgnd;
+
+		    as_table "widget/table"
+			{
+			x=0;y=0;
+			width=488; height=100;
+			mode = dynamicrow;
+
+			t_list "widget/table-column" { title="List"; fieldname="m_list_code"; width=60; }
+			t_listdesc "widget/table-column" { title="Description"; fieldname="m_list_description"; width=150; }
+			t_liststat "widget/table-column" { title="Status"; fieldname="stattext"; width=90; }
+			t_mingift "widget/table-column" { title="Min. Gift"; fieldname="a_minimum_gift"; width=90; }
+			t_months "widget/table-column" { title="Subscribe For"; fieldname="monthtext"; width=90; }
+			}
+		    }
+
+		//f_listcode "widget/component" { width=300; height=20; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; text='Mailing List:'; label_width=100; }
+		f_list_code "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; ctl_type=dropdown; text='Mailing List:'; sql=runserver("select :m_list_code + ': ' + :m_list_description, :m_list_code from /apps/kardia/data/Kardia_DB/m_list/rows where :m_list_type = 'P' order by :m_list_code"); } 
+		f_minimum_gift "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_minimum_gift'; text='Minimum Gift:'; min_gift_hints "widget/hints" { default=runclient(0); } }
+		f_sub_months "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_subscribe_months'; text='Subscribe For:'; empty_desc = "# of months - optional"; sub_mon_hints "widget/hints" { default=runclient(''); } }
+		f_comments "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_comments'; text='Comments:'; }
+
+		dt_c "widget/variable" { fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+		us_c "widget/variable" { fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }
+		dt_m "widget/variable" { fieldname="s_date_modified"; dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+		us_m "widget/variable" { fieldname="s_modified_by"; us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+		}
+	    }
+	}
+    }

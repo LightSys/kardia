@@ -1,0 +1,196 @@
+$Version=2$
+plugin_base_partneredit_donor "widget/component-decl"
+    {
+    title = "Donor/Payer";
+    width=808;
+    height=338;
+
+    ledger "widget/parameter" { type=string; default=null; }
+    partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    donor_rec_osrc "widget/osrc"
+	{
+	sql = runserver("
+		SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/p_donor/rows
+		" + condition(char_length(:this:ledger) > 0, "WHERE :a_gl_ledger_number = " + quote(:this:ledger), "") + "
+		LIMIT
+			1
+		");
+	autoquery=oneachreveal;
+	replicasize = 2;
+	readahead = 2;
+	baseobj = "/apps/kardia/data/Kardia_DB/p_donor/rows";
+
+	sync_rule "widget/rule"
+	    {
+	    ruletype = osrc_relationship;
+	    target = partner_osrc;
+	    key_1 = p_partner_key;
+	    target_key_1 = p_partner_key;
+	    revealed_only = yes;
+	    }
+
+	autoload_locations "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=pref_location;
+	    action=SetItems;
+	    SQL=runclient("select label = :p_location_type + ': ' + isnull(:p_city + ', ','') + isnull(:p_state_province,'') + ' (' + rtrim(isnull(:p_address_1 + ' ','') + isnull(:p_address_2 + ' ','') + isnull(:p_address_3,'')) + ')', value = :p_location_id from /apps/kardia/data/Kardia_DB/p_location/rows where :p_partner_key = " + quote(:partner_osrc:p_partner_key));
+	    }
+
+	autoload_contacts "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=pref_contact;
+	    action=SetItems;
+	    SQL=runclient("select label = :ct:text + ': ' + isnull(:c:p_phone_country + ' ','') + isnull(:c:p_phone_area_city + ' ','') + isnull(:c:p_contact_data,''), value = :c:p_contact_id from /apps/kardia/data/Kardia_DB/p_contact_info/rows c, /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct where :p_partner_key = " + quote(:partner_osrc:p_partner_key) + " and :c:p_contact_type = :ct:tag");
+	    }
+
+	donor_vbox "widget/vbox"
+	    {
+	    x=0; y=0; width=400; height=338;
+	    spacing=4;
+
+	    enabled_simple_label "widget/label"
+		{
+		height=16;
+		style=bold;
+		value=runclient(condition(char_length(:donor_rec_osrc:p_partner_key) > 0, condition(:donor_rec_osrc:p_allow_contributions, "Currently a Donor.", "Prevously a Donor."), "Not a Donor."));
+		}
+
+	    enabled_label "widget/label"
+		{
+		height=48;
+		value=runclient(condition(char_length(:donor_rec_osrc:p_partner_key) > 0, condition(:donor_rec_osrc:p_allow_contributions, "This partner is allowed to receive receipts for contributions in the Receipting/Gift system in Kardia.  To disallow contributions, un-check the checkbox below and click Save.", "This partner has previously been allowed to make contributions.  To re-enable, check the below checkbox and click Save."), "This partner is not allowed to make contributions. To allow contributions, click 'Allow' below and click Save after entering the appropriate information."));
+		}
+
+	    donor_form "widget/form"
+		{
+		enable_btn "widget/textbutton"
+		    {
+		    width=200; x=100;
+		    text = "Allow Contributions";
+		    enabled=runclient((not (char_length(:donor_rec_osrc:p_partner_key) > 0)) and :donor_form:form_mode == 'NoData');
+		    enable_cn "widget/connector" { event=Click; target=donor_form; action=New; }
+		    }
+
+		form_pane "widget/pane"
+		    {
+		    height=250;
+		    style=flat;
+		    enabled=runclient(char_length(:donor_rec_osrc:p_partner_key) > 0 or :donor_form:form_mode != 'NoData');
+
+		    ledger_vbl "widget/variable" { fieldname="a_gl_ledger_number"; ledger_hints "widget/hints" { default=runclient(:plugin_base_partneredit_donor:ledger); } }
+		    dt_c "widget/variable" { fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+		    us_c "widget/variable" { fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }
+		    dt_m "widget/variable" { fieldname="s_date_modified"; dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+		    us_m "widget/variable" { fieldname="s_modified_by"; us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+
+		    form_pane_vbox "widget/vbox"
+			{
+			x=1;y=1;
+			width=398; height=248;
+			spacing=4;
+
+			gl_ledger "widget/component" { height=16; label_width=130; path="/sys/cmp/smart_field.cmp"; field='a_gl_ledger_number'; ctl_type=label; text='GL Ledger:'; } 
+			acct_code "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='a_gl_account_code'; ctl_type=dropdown; text='GL Receivable Acct:'; sql=runserver("select :a_account_code + ' ' + :a_acct_desc, :a_account_code from /apps/kardia/data/Kardia_DB/a_account/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_acct_type = 'A' order by :a_account_code"); } 
+			acct_with_donor "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_account_with_donor'; ctl_type=editbox; text='Account at Donor:'; empty_desc="optional"; } 
+			pref_location "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_location_id'; ctl_type=dropdown; text='Best Contact Addr:'; sql=runserver("select 1,1 where 1 = 0"); } 
+			pref_contact "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_contact_id'; ctl_type=dropdown; text='Best Contact:'; sql=runserver("select 1,1 where 1 = 0"); } 
+			receipt_desired "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_receipt_desired'; ctl_type=dropdown; text='Receipt Pref:'; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_a_receipt_type/rows"); } 
+			orgfirst "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_org_name_first'; ctl_type=checkbox; text='Org First on Rcpt?'; orgfirst_hints "widget/hints" { default=runclient(1); style=notnull; } } 
+			allow_pmts "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_allow_contributions'; ctl_type=checkbox; text='Contributions Allowed?'; allow_pmts_hints "widget/hints" { default=runclient(1); style=notnull; } } 
+
+			save_cancel_hbox "widget/hbox"
+			    {
+			    height=24;
+			    spacing=8;
+			    align=center;
+
+			    save_btn "widget/textbutton"
+				{
+				width=100; height=24;
+				text = "Save";
+				enabled = runclient(:donor_form:is_savable);
+				save_cn "widget/connector" { event=Click; target=donor_form; action=Save; }
+				}
+			    cancel_btn "widget/textbutton"
+				{
+				width=100; height=24;
+				text = "Cancel";
+				enabled = runclient(:donor_form:is_savable);
+				cancel_cn "widget/connector" { event=Click; target=donor_form; action=Discard; }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+	gifts_vbox "widget/vbox"
+	    {
+	    x=416; y=0; width=392; height=338;
+	    spacing=4;
+
+	    gifts_simple_label "widget/label"
+		{
+		height=16;
+		style=bold;
+		text = "Giving History:";
+		}
+
+	    gifts_pane "widget/pane"
+		{
+		height = 318;
+		widget_class = "table_bgnd";
+
+		gifts_osrc "widget/osrc"
+		    {
+		    sql = " SELECT
+				:a_amount,
+				-- date = substring(convert(string,:a_effective_date), 1, charindex(' ', convert(string,:a_effective_date))),
+				date = substring(convert(string,isnull(:a_gift_postmark_date, :a_gift_received_date)), 1, 11),
+				:a_period,
+				:a_receipt_number,
+				:a_comment,
+				:a_ledger_number,
+				:a_batch_number
+			    FROM
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows
+			    WHERE
+				:a_posted = 1
+			    ORDER BY
+				isnull(:a_gift_postmark_date, :a_gift_received_date) DESC
+			    ";
+		    replicasize = 25;
+		    readahead = 25;
+		    baseobj = "/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows";
+		    autoquery = never;
+
+		    gifts_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target = donor_rec_osrc;
+			key_1 = p_donor_partner_id;
+			target_key_1 = p_partner_key;
+			}
+
+		    gifts_table "widget/table"
+			{
+			x=0;y=0;
+			width=390; height=316;
+			mode = dynamicrow;
+
+			t_date "widget/table-column" { title="Date"; fieldname="date"; width=80; }
+			t_rcptno "widget/table-column" { title="Receipt"; fieldname="a_receipt_number"; width=60; }
+			t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
+			t_comm "widget/table-column" { title="Comment"; fieldname="a_comment"; width=174; }
+			}
+		    }
+		}
+	    }
+	}
+    }

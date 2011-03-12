@@ -1,0 +1,294 @@
+$Version=2$
+fund_gift_list_tntmpd "system/report"
+    {
+    title = "Gift List for Funds - TntMPD Format";
+
+    document_format="text/csv";
+    resolution = 300;
+    pagewidth=110;
+    pageheight=2000;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Give it an intelligent filename
+    filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + ".tntmpd");
+
+    // Parameters for GL Fund Balance
+    ledger "report/parameter" { type=string; default=null; }
+    costctr "report/parameter" { type=string; default=null; }
+    period "report/parameter" { type=string; default=null; }
+    startday "report/parameter" { type=integer; default=1; }
+    endday "report/parameter" { type=integer; default=31; }
+
+    // What costctrs are we reporting on?
+    cclist_qy "report/query"
+	{
+	sql = "	SELECT
+			cclist = ',' + sum(:c:a_cost_center + ',')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		WHERE
+			:c:a_ledger_number = :this:ledger and
+			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr)
+		";
+	}
+
+    // Which gift items match the cost ctr list?
+    item_qy "report/query"
+	{
+	sql = "	SELECT
+			items = ',' + sum(:i:name + ',')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		WHERE
+			:i:a_ledger_number = :this:ledger and
+			:i:a_period = :this:period and
+			:i:a_amount != $0 and
+			:i:a_posted = 1 and
+			:i:a_anonymous_gift = 0 and
+			charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+		";
+	}
+
+    // Query to retrieve list of donors who gave in this period
+    donor_qy "report/query"
+	{
+	sql = "	SELECT
+			id = :g:p_donor_partner_id
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+			-- /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		WHERE
+			:g:a_ledger_number = :this:ledger and
+			:g:a_period = :this:period and
+			:g:a_posted = 1 and
+			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) >= :this:startday and
+			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
+			charindex(',' + rtrim(:g:a_ledger_number) + '|' + convert(string, :g:a_batch_number) + '|' + convert(string, :g:a_gift_number) + '|', :item_qy:items) > 0
+			-- :i:a_ledger_number = :g:a_ledger_number and
+			-- :i:a_period = :g:a_period and
+			-- :i:a_batch_number = :g:a_batch_number and
+			-- :i:a_gift_number = :g:a_gift_number and
+			-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+		GROUP BY
+			:g:p_donor_partner_id
+		";
+	}
+
+    dinfo_qy "report/query"
+	{
+	sql = "	SELECT
+			people_id = :p:p_partner_key,
+			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			person_type = condition(char_length(rtrim(:p:p_org_name)) > 0, 'O', 'P'),
+			last_name_org = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_surname),
+			first_name = :p:p_given_name,
+			middle_name = '',
+			title = :p:p_title,
+			suffix = '',
+			sp_last_name = '',
+			sp_first_name = '',
+			sp_middle_name = '',
+			sp_title = '',
+			sp_suffix = '',
+			addr1 = condition(char_length(:pl:p_in_care_of) > 0, :pl:p_in_care_of, :pl:p_address_1),
+			addr2 = condition(char_length(:pl:p_in_care_of) > 0, :pl:p_address_1, :pl:p_address_2),
+			addr3 = condition(char_length(:pl:p_in_care_of) > 0, :pl:p_address_2, :pl:p_address_3),
+			addr4 = condition(char_length(:pl:p_in_care_of) > 0, :pl:p_address_3, ''),
+			city = :pl:p_city,
+			state = :pl:p_state_province,
+			zip = :pl:p_postal_code,
+			country = '',
+			cntry_descr = :pl:p_country_code,
+			addr_changed = '' + datepart(month, :pl:s_date_modified) + '/' + datepart(day, :pl:s_date_modified) + '/' + datepart(year, :pl:s_date_modified),
+			phone = :pc:p_phone_country + ' ' + :pc:p_phone_area_city + ' ' + :pc:p_contact_data,
+			phone_changed = '' + datepart(month, :pc:s_date_modified) + '/' + datepart(day, :pc:s_date_modified) + '/' + datepart(year, :pc:s_date_modified)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows pl,
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows pc
+		WHERE
+			:p:p_partner_key = :donor_qy:id and
+			:pl:p_partner_key =* :p:p_partner_key and
+			-- :pl:p_record_status_code != 'O' and
+			-- charindex(:pl:p_postal_status, 'KFNU') == 0 and
+			:pc:p_partner_key =* :p:p_partner_key and
+			charindex(:pc:p_contact_type, 'PC') > 0
+			-- :pc:p_record_status_code = 'A'
+		GROUP BY
+			:p:p_partner_key
+		";
+	}
+
+    // Query to retrieve list of gifts during this period
+    gift_qy "report/query"
+	{
+	sql = "	SELECT
+			id = :g:p_donor_partner_id,
+			display_date = '' + datepart(month, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) + '/' + datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) + '/' + datepart(year, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)),
+			-- amount = round(convert(double,:i:a_amount),2),
+			amount = :i:a_amount,
+			donation_id = :i:name,
+			designation = :i:a_cost_center + condition(:i:a_account_code != '4100' and :i:a_account_code != '2120', ':' + :i:a_account_code, ''),
+			motivation = '',
+			anon = :i:a_anonymous_gift
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		WHERE
+			:g:a_ledger_number = :this:ledger and
+			:g:a_period = :this:period and
+			:g:a_posted = 1 and
+			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) >= :this:startday and
+			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
+			charindex(',' + rtrim(:g:a_ledger_number) + '|' + convert(string, :g:a_batch_number) + '|' + convert(string, :g:a_gift_number) + '|', :item_qy:items) > 0 and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_period = :g:a_period and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			:i:a_amount != $0 and
+			:i:a_anonymous_gift = 0 and
+			charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+		ORDER BY
+			isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)
+		";
+	}
+
+    ginfo_qy "report/query"
+	{
+	sql = "	SELECT
+			people_id = :p:p_partner_key,
+			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			:p:p_partner_key = :gift_qy:id
+		GROUP BY
+			:p:p_partner_key
+		";
+	}
+
+    // Cost center list - entire report
+    form "report/form"
+	{
+	source = cclist_qy,item_qy;
+
+	// Table for file heading and donor list
+	donor_table "report/table"
+	    {
+	    x=0; width=110; height=0;
+	    columns=25;
+	    widths=2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2;
+	    colsep=1;
+	    nullformat="";
+	    moneyformat = "-0.00";
+	    dateformat = "mm/dd/yyyy";
+	    source=donor_qy,dinfo_qy;
+
+	    hdr1 "report/table-row" { header=yes; value = '[ORGANIZATION]'; }
+	    hdr2 "report/table-row" { header=yes; value = 'Name=Your Organization'; }
+	    hdr3 "report/table-row" { header=yes; value = 'Abbreviation=DEMO'; }
+	    hdr4 "report/table-row" { header=yes; value = 'Code=DEMO-USA'; }
+	    hdr5 "report/table-row" { header=yes; value = 'DefaultCurrencyCode=USD'; }
+	    hdr6 "report/table-row" { header=yes; value = '[DONORS]'; }
+
+	    hdr_donor "report/table-row"
+		{
+		header = yes;
+		td_id "report/table-cell" { value='PEOPLE_ID'; }
+		td_name "report/table-cell" { value='ACCT_NAME'; }
+		td_type "report/table-cell" { value='PERSON_TYPE'; }
+		td_lname "report/table-cell" { value='LAST_NAME_ORG'; }
+		td_fname "report/table-cell" { value='FIRST_NAME'; }
+		td_mname "report/table-cell" { value='MIDDLE_NAME'; }
+		td_title "report/table-cell" { value='TITLE'; }
+		td_suffix "report/table-cell" { value='SUFFIX'; }
+		td_slname "report/table-cell" { value='SP_LAST_NAME'; }
+		td_sfname "report/table-cell" { value='SP_FIRST_NAME'; }
+		td_smname "report/table-cell" { value='SP_MIDDLE_NAME'; }
+		td_stitle "report/table-cell" { value='SP_TITLE'; }
+		td_ssuffix "report/table-cell" { value='SP_SUFFIX'; }
+		td_addr1 "report/table-cell" { value='ADDR1'; }
+		td_addr2 "report/table-cell" { value='ADDR2'; }
+		td_addr3 "report/table-cell" { value='ADDR3'; }
+		td_addr4 "report/table-cell" { value='ADDR4'; }
+		td_city "report/table-cell" { value='CITY'; }
+		td_state "report/table-cell" { value='STATE'; }
+		td_zip "report/table-cell" { value='ZIP'; }
+		td_country "report/table-cell" { value='COUNTRY'; }
+		td_cntry_descr "report/table-cell" { value='CNTRY_DESCR'; }
+		td_addr_changed "report/table-cell" { value='ADDR_CHANGED'; }
+		td_phone "report/table-cell" { value='PHONE'; }
+		td_phone_changed "report/table-cell" { value='PHONE_CHANGED'; }
+		}
+	    onedonor "report/table-row"
+		{
+		allowbreak=no;
+		d_id "report/table-cell" { value=runserver(:dinfo_qy:people_id); }
+		d_name "report/table-cell" { value=runserver(:dinfo_qy:acct_name); }
+		d_type "report/table-cell" { value=runserver(:dinfo_qy:person_type); }
+		d_lname "report/table-cell" { value=runserver(:dinfo_qy:last_name_org); }
+		d_fname "report/table-cell" { value=runserver(:dinfo_qy:first_name); }
+		d_mname "report/table-cell" { value=runserver(:dinfo_qy:middle_name); }
+		d_title "report/table-cell" { value=runserver(:dinfo_qy:title); }
+		d_suffix "report/table-cell" { value=runserver(:dinfo_qy:suffix); }
+		d_slname "report/table-cell" { value=runserver(:dinfo_qy:sp_last_name); }
+		d_sfname "report/table-cell" { value=runserver(:dinfo_qy:sp_first_name); }
+		d_smname "report/table-cell" { value=runserver(:dinfo_qy:sp_middle_name); }
+		d_stitle "report/table-cell" { value=runserver(:dinfo_qy:sp_title); }
+		d_ssuffix "report/table-cell" { value=runserver(:dinfo_qy:sp_suffix); }
+		d_addr1 "report/table-cell" { value=runserver(:dinfo_qy:addr1); }
+		d_addr2 "report/table-cell" { value=runserver(:dinfo_qy:addr2); }
+		d_addr3 "report/table-cell" { value=runserver(:dinfo_qy:addr3); }
+		d_addr4 "report/table-cell" { value=runserver(:dinfo_qy:addr4); }
+		d_city "report/table-cell" { value=runserver(:dinfo_qy:city); }
+		d_state "report/table-cell" { value=runserver(:dinfo_qy:state); }
+		d_zip "report/table-cell" { value=runserver(:dinfo_qy:zip); }
+		d_country "report/table-cell" { value=runserver(:dinfo_qy:country); }
+		d_cntry_descr "report/table-cell" { value=runserver(:dinfo_qy:cntry_descr); }
+		d_addr_changed "report/table-cell" { value=runserver(:dinfo_qy:addr_changed); }
+		d_phone "report/table-cell" { value=runserver(:dinfo_qy:phone); }
+		d_phone_changed "report/table-cell" { value=runserver(:dinfo_qy:phone_changed); }
+		}
+	    }
+
+	// Table for gift list
+	gift_table "report/table"
+	    {
+	    x=0; width=110; height=0;
+	    columns=7;
+	    widths=1,1,1,1,1,1,1;
+	    colsep=1;
+	    nullformat="";
+	    moneyformat = "-0.00";
+	    dateformat = "mm/dd/yyyy";
+	    source=gift_qy,ginfo_qy;
+
+	    hdr7 "report/table-row" { header=yes; value = '[GIFTS]'; }
+	    hdr8 "report/table-row"
+		{
+		header = yes;
+		tg_id "report/table-cell" { value='PEOPLE_ID'; }
+		tg_name "report/table-cell" { value='ACCT_NAME'; }
+		tg_date "report/table-cell" { value='DISPLAY_DATE'; }
+		tg_amt "report/table-cell" { value='AMOUNT'; }
+		tg_did "report/table-cell" { value='DONATION_ID'; }
+		tg_desig "report/table-cell" { value='DESIGNATION'; }
+		tg_respcd "report/table-cell" { value='MOTIVATION'; }
+		}
+	    onegift "report/table-row"
+		{
+		allowbreak=no;
+		g_id "report/table-cell" { value=runserver(:ginfo_qy:people_id); }
+		g_name "report/table-cell" { value=runserver(:ginfo_qy:acct_name); }
+		g_date "report/table-cell" { value=runserver(:gift_qy:display_date); }
+		g_amt "report/table-cell" { value=runserver(:gift_qy:amount); }
+		g_did "report/table-cell" { value=runserver(:gift_qy:donation_id); }
+		g_desig "report/table-cell" { value=runserver(:gift_qy:designation); }
+		g_respcd "report/table-cell" { value=runserver(:gift_qy:motivation); }
+		}
+	    }
+	}
+    }

@@ -1,0 +1,245 @@
+$Version=2$
+monthly_gift_list "system/report"
+    {
+    // monthly_gift_list:  This report is used by the mailing dept for QA on
+    // donor and mailing information for a given month.
+    //
+    // Report Parameters:
+    //   - Accounting Period (year/month)
+    //   - Ledger
+    //
+    // Report Contents:
+    //   - List of donors, id's, and designations (be sure to include legacy id)
+    //       * p_partner
+    //       * a_subtrx_gift_group
+    //       * a_subtrx_gift_item
+    //       * a_cost_center
+    //       * Filepro: Address (to ensure legacy donor# is right)
+    //   - What mailing codes the donor is already subscribed to
+    //       * m_list_membership
+    //       * m_list
+    //   - What mailing codes need to be added
+    //       * Filepro: designat
+    //   - Has donor given to this account before (since beginning of 2008)?
+    //       * a_subtrx_gift_group
+    //       * a_subtrx_gift_item
+
+    title = "Monthly Donor List";
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.0;
+    marginright=2.0;
+    margintop=3;
+    marginbottom=3;
+
+    // Parameters
+    ledger "report/parameter" { type=string; default=null; }
+    period "report/parameter" { type=string; default=null; }
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    period_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_ledger_number = :this:ledger and :p:a_period = :this:period";
+	}
+
+    // Query: get the list of donors that have given this month
+    donor_list_qy "report/query"
+	{
+	sql = "	SELECT
+			:g:p_donor_partner_id,
+			:p:p_surname,
+			:p:p_given_name,
+			:p:p_org_name,
+			:p:p_legacy_key_1,
+			:p:p_legacy_key_2,
+			:p:p_legacy_key_3
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			:g:a_ledger_number = :this:ledger and
+			:g:a_period = :this:period and
+			:g:a_posted = 1 and
+			-- :g:p_donor_partner_id >= '57000' and
+			-- :g:p_donor_partner_id <= '57999' and
+			:p:p_partner_key = :g:p_donor_partner_id
+		GROUP BY
+			:g:p_donor_partner_id
+		--LIMIT
+		--	100
+		";
+	}
+
+    // Query: Gifts by each donor
+    gift_list_qy "report/query"
+	{
+	sql = "	SELECT
+			:c:a_cc_desc,
+			a_legacy_code = rtrim(:c:a_legacy_code),
+			:i:a_cost_center,
+			giftdate = isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
+			total = sum(:i:a_amount),
+			cnt = count(:i:a_amount)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		WHERE
+			:g:p_donor_partner_id = :donor_list_qy:p_donor_partner_id and
+			:g:a_period = :this:period and
+			:g:a_ledger_number = :this:ledger and
+			:g:a_posted = 1 and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			:c:a_cost_center = :i:a_cost_center and
+			:c:a_ledger_number = :i:a_ledger_number
+		GROUP BY
+			:g:p_donor_partner_id,
+			:i:a_cost_center
+		";
+	}
+
+    // Query: existing subscriptions
+    subs_qy "report/query"
+	{
+	sql = "	SELECT
+			lists = isnull(sum(:m:m_list_code + ' ') - ' ', '')
+		FROM
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows m
+		WHERE
+			:m:p_partner_key = :donor_list_qy:p_donor_partner_id
+		";
+	}
+
+    // Query: suggested mailing list membership (uses Filepro data)
+    //
+    // BUG WORKAROUND: FIXME: in the where clause I used a * instead of AND because of
+    // a bug in the SQL engine that mis-handles AND clauses that are embedded within an
+    // OR clause.  * does the same thing, but does not have short-circuit logic or 
+    // standard AND query optimization logic.
+    list_qy_fp "report/query"
+	{
+	sql = "	SELECT
+			code = isnull(first(:d:'MAILING LIST CODE' + ' '), '')
+		FROM
+			/apps/kardia/data/actiondata/action.fp/designat/rows d
+		WHERE
+			rtrim(:d:'Number \\\\ GL Account' + :d:'Obj Cd / GL Account') = :gift_list_qy:a_legacy_code or
+			((:d:'Number \\\\ GL Account' + 'E' = :gift_list_qy:a_legacy_code) * (:d:'Obj Cd / GL Account' = 'A'))
+			
+			-- (substring(:gift_list_qy:a_legacy_code,6,1) == 'E' and :d:'Number \\\\ GL Account' + 'E' = :gift_list_qy:a_legacy_code and :d:'Obj Cd / GL Account' = 'A')
+			-- rtrim(:d:'Number \\\\ GL Account' + :d:'Obj Cd / GL Account') = '75010X' or
+			-- (substring('75010X',6,1) == 'E' and :d:'Number \\\\ GL Account' + 'E' = '75010X' and :d:'Obj Cd / GL Account' = 'A')
+		";
+	}
+
+    // this one uses converted kardia data instead
+    list_qy "report/query"
+	{
+	sql = "	SELECT
+			code = isnull(first(:d:m_list_code + ' '), '')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows d
+		WHERE
+			:d:a_ledger_number = :this:ledger and
+			:d:a_cost_center = :gift_list_qy:a_cost_center
+		";
+	}
+
+    // Query: legacy donor id
+    donorid_qy "report/query"
+	{
+	sql = "	SELECT
+			id = /apps/kardia/data/actiondata/action.fp/Address/rows/&1:'DONOR NUMBER'
+		--FROM
+		--	/apps/kardia/data/actiondata/action.fp/Address/rows a
+		--WHERE
+		--	:a:name = :donor_list_qy:p_legacy_key_1
+		";
+	link = donor_list_qy,p_legacy_key_1;
+	}
+
+    // To be done:  query fetching gift history summary.
+
+    // Here we go...
+    ledger_form "report/form"
+	{
+	source = ledger_qy, period_qy;
+
+	rpt_title "report/area"
+	    {
+	    x=0; width=80; height=3;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("Donor List Report for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("For Period " + :this:period + " (" + :period_qy:a_period_desc + ")\n"); }
+	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    }
+
+	table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=5;
+	    widths=6,6,25,7,32;
+	    colsep=1;
+	    //source=donor_list_qy, subs_qy, donorid_qy, gift_list_qy, list_qy;
+	    //source=donor_list_qy, subs_qy, donorid_qy, gift_list_qy, list_qy;
+	    source=donor_list_qy, subs_qy, gift_list_qy, list_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="";
+	    moneyformat = "###,###,###.00";
+	    dateformat = "dd-MMM-yyyy";
+
+	    tbl_hdr "report/table-row"
+		{
+		header=yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		h_donorid "report/table-cell" { value='FP Donor#'; align=left; style=bold; }
+		h_recid "report/table-cell" { value='FP Rec#'; align=left; style=bold; }
+		h_name "report/table-cell" { value='Name'; align=left; style=bold; }
+		h_amt "report/table-cell" { value='Amount'; align=left; style=bold; }
+		h_subs "report/table-cell" { value='Existing Mailing Subscriptions'; align=left; style=bold; }
+		}
+
+	    tbl_donor "report/table-row"
+		{
+		condition=runserver(:gift_list_qy:cx__rowid == 0);
+		font=courier;
+		fontsize=8;
+		marginbottom=0;
+		margintop=0.50;
+
+		d_donorid "report/table-cell" { value=runserver(:donor_list_qy:p_legacy_key_3); }
+		d_recid "report/table-cell" { value=runserver(:donor_list_qy:p_legacy_key_1); }
+		d_name "report/table-cell" { value=runserver(condition(char_length(rtrim(:donor_list_qy:p_given_name + :donor_list_qy:p_surname)) > 0, :donor_list_qy:p_given_name + ' ' + :donor_list_qy:p_surname + ' ', '') + condition(char_length(:donor_list_qy:p_org_name) > 0, :donor_list_qy:p_org_name, '')); font=helvetica; }
+		d_amt "report/table-cell" { value=runserver(''); }
+		d_subs "report/table-cell" { value=runserver(:subs_qy:lists); }
+		}
+
+	    tbl_gift "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0;
+		margintop=0;
+
+		g_donorid "report/table-cell" { value=runserver(''); }
+		g_recid "report/table-cell" { value=runserver(''); }
+		g_name "report/table-cell" { value=runserver(:gift_list_qy:a_cost_center + ' ' + :gift_list_qy:a_cc_desc); font=helvetica; }
+		g_amt "report/table-cell" { value=runserver(:gift_list_qy:total); align=left; }
+		g_subs "report/table-cell" { value=runserver(condition(char_length(:list_qy:code) > 0 and not (charindex(' ' + rtrim(:list_qy:code) + ' ', ' ' + :subs_qy:lists + ' ') > 0), 'NEEDED: ' + :list_qy:code, '' )); }
+		}
+	    }
+	}
+    }

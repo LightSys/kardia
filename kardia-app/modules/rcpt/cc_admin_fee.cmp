@@ -1,0 +1,185 @@
+$Version=2$
+cc_admin_fee "widget/component-decl"
+    {
+    // Component for setting up admin fees on a per-cost-center basis.  This can also
+    // largely be done from modules/gl/coamaint.cmp.
+    width=780; height=580;
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    hbox "widget/hbox"
+	{
+	x=0;y=0;width=780;height=580;
+	spacing=16;
+
+	fundlist_vbox "widget/vbox"
+	    {
+	    width=250; spacing=8;
+
+	    searchlbl_pane "widget/pane"
+		{
+		height=20; width=250;
+		widget_class="label";
+		border_color = "#153f5f";
+
+		searchlbl "widget/label"
+		    {
+		    x=4;y=0;width=248;height=18;
+		    widget_class="label";
+		    align=left;
+		    text = "Search Funds";
+		    }
+		}
+
+	    //searchlbl "widget/label" { height=20; text="Search Funds:"; align=center; style=bold; font_size=12; }
+	    searcheb "widget/editbox"
+		{
+		height=24;
+		empty_description = "type here to search for funds";
+
+		//search_cn1 "widget/connector"
+		//    {
+		//    event=ReturnPressed;
+		//    event_condition=runclient((char_length(:searcheb:content) == 2));
+		//    target=searchlistosrc;
+		//    action=QueryParam;
+		//    cx__case_insensitive = 1;
+		//    a_admin_fee_type=runclient(:searcheb:content);
+		//    }
+		search_cn2 "widget/connector"
+		    {
+		    event=ReturnPressed;
+		    //event_condition=runclient(not (char_length(:searcheb:content) == 2));
+		    target=searchlistosrc;
+		    action=QueryText;
+		    field_list="a_cost_center*,*a_cc_desc*,a_cost_center_class";
+		    query=runclient(:searcheb:content);
+		    cx__case_insensitive = 1;
+		    }
+		}
+
+	    searchlistpane "widget/pane"
+		{
+		height=520;
+		widget_class=table_bgnd;
+
+		searchlistosrc "widget/osrc"
+		    {
+		    sql = runserver("
+			select
+				:c:a_cost_center,
+				:c:a_cc_desc,
+				cc_text = :c:a_cost_center + ' (' + :c:a_cc_desc + ')',
+				:c:a_cost_center_class,
+				:c:a_ledger_number,
+				:ad:a_admin_fee_type,
+				:ad:a_default_subtype,
+				type_txt = :ad:a_admin_fee_type + ':' + :ad:a_default_subtype,
+				admin_txt = :ad:a_admin_fee_type + ':' + :ad:a_default_subtype + ' (' + :at:a_admin_fee_type_desc + ')',
+				config_pct = round(:ad:a_percentage * 100.0 + 0.01,1),
+				type_pct = round(:at:a_default_percentage * 100.0 + 0.01,1),
+				type_pct_txt = '' + round(:at:a_default_percentage * 100.0 + 0.01,1) + isnull(' (overridden to ' + round(:ad:a_percentage * 100.0 + 0.01,1) + '%)',' (not overridden)'),
+				pct = round(isnull(:ad:a_percentage, :at:a_default_percentage) * 100.0 + 0.01, 1),
+				:at:a_admin_fee_type_desc
+			from
+				IDENTITY /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+				/apps/kardia/data/Kardia_DB/a_cc_admin_fee/rows ad,
+				/apps/kardia/data/Kardia_DB/a_admin_fee_type/rows at
+			where 
+				:c:a_ledger_number = " + quote(:this:ledger) + " and
+				:ad:a_ledger_number =* :c:a_ledger_number and
+				:ad:a_cost_center =* :c:a_cost_center and
+				:at:a_ledger_number = :ad:a_ledger_number and
+				:at:a_admin_fee_type = :ad:a_admin_fee_type and
+				:at:a_admin_fee_subtype = :ad:a_default_subtype
+			order by
+				:c:a_cost_center
+			");
+
+		    baseobj = "/apps/kardia/data/Kardia_DB/a_cost_center/rows";
+		    replicasize=100;
+		    readahead=100;
+		    autoquery=onfirstreveal;
+
+		    searchlisttbl "widget/table"
+			{
+			height=518; width=248; x=0; y=0;
+
+			t_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=75; }
+			t_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=130; }
+			t_fee "widget/table-column" { title="Type"; fieldname="type_txt"; width=45; }
+			t_pct "widget/table-column" { title="%"; fieldname="pct"; width=40; align=right; }
+			}
+		    }
+		}
+	    }
+
+	adminfee_vbox "widget/vbox"
+	    {
+	    width=514; spacing=8;
+
+	    adlbl_pane "widget/pane"
+		{
+		height=20; width=514;
+		widget_class="label";
+		border_color = "#153f5f";
+
+		adlbl "widget/label"
+		    {
+		    x=4;y=0;width=512;height=18;
+		    widget_class="label";
+		    align=left;
+		    value = runclient("Admin Fee Settings" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
+		    }
+		}
+
+	    view_form "widget/form"
+		{
+		objectsource = searchlistosrc;
+		
+		f_ledger "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=120; }
+		f_costctr "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='cc_text'; ctl_type=label; text='Cost Center:'; label_width=120; }
+		//f_costctr "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_cost_center'; ctl_type=label; text='Cost Center:'; label_width=120; }
+		//f_desc "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=label; text='Description:'; label_width=120; }
+		f_type "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='admin_txt'; ctl_type=label; text='Admin Type:'; label_width=120; }
+		//f_type "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='type_txt'; ctl_type=label; text='Admin Type:'; label_width=120; }
+		//f_admindesc "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_admin_fee_type_desc'; ctl_type=label; text='Description:'; label_width=120; }
+		f_typepct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='type_pct_txt'; ctl_type=label; text='Type %:'; label_width=120; }
+		//f_typepct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='type_pct'; ctl_type=label; text='Type %:'; label_width=120; }
+		//f_overpct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='config_pct'; ctl_type=label; text='Override %:'; label_width=120; }
+		f_actpct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='pct'; ctl_type=label; text='Actual %:'; label_width=120; }
+		}
+
+	    editlbl_pane "widget/pane"
+		{
+		height=20; width=514;
+		widget_class="label";
+		border_color = "#153f5f";
+
+		editlbl "widget/label"
+		    {
+		    x=4;y=0;width=512;height=18;
+		    widget_class="label";
+		    align=left;
+		    value = runclient("Edit Admin Fee Settings" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
+		    }
+		}
+
+	    editcmp "widget/component"
+		{
+		height=292;
+		path = "/apps/kardia/modules/rcpt/plugin_gl_fundedit_adminfee.cmp";
+		ledger=runserver(:this:ledger);
+		fund_osrc = searchlistosrc;
+
+		modified_cn "widget/connector" { event=Modified; target=searchlistosrc; action=Refresh; }
+		}
+
+	    otherpcts_hdr "widget/component"
+		{
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		height = 20;
+		text = "Other Percentages Available for Receipting:";
+		}
+	    }
+	}
+    }

@@ -1,0 +1,17 @@
+$Version=2$
+plugin_gl_batch_cr "widget/component-decl"
+    {
+    width=780;height=542;
+    title = "Cash Receipts";
+
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    periods_osrc "widget/parameter" { type=object; default=null; }
+
+    cr_batch_cmp "widget/component"
+	{
+	x=0;y=0; width=780;height=542;
+	path="/apps/kardia/modules/rcpt/cr_batches.cmp";
+	ledger=runserver(:this:ledger);
+	periods_osrc=periods_osrc;
+	}
+    }

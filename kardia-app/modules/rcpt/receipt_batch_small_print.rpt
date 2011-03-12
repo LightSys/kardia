@@ -1,0 +1,722 @@
+$Version=2$
+
+// Prints a Batch of Receipts...
+// arbor70
+// Kardia
+// February-March 2010 (3~4 Coding Days :)
+
+// High-Level Table of Contents
+// 1. Parameters
+// 2. Queries
+// 3. Report Display
+
+receipt_report "system/report"
+{
+	// Receipt Report High-Level Attributes
+	title			=	"Batch of Receipts";
+	document_format	=	"application/pdf";
+    resolution		=	 100;
+	marginleft		=	.01;
+	marginright		=	.01;
+	margintop		=	.45;
+	marginbottom	=	.01;
+	// units		=	"millimeters";
+	///////////////////////////////////////////
+	
+	// PARAMETER LOGIC
+	
+	// The report executes given:
+	// A. a valid ledger <parameter> is provided,
+	// B. a valid batch_number or receipt_number or partner_id is provided,
+	// C. the extra (optional) parameters (listed below) can be specified
+	//    to further limit / refine the report's search scope.
+	
+	// Parameters for this Receipts Report //
+	ledger			"report/parameter"	{ type=string;	default=null; }
+	ledger_number	"report/parameter"	{ type=string;	default=null; }		// deprecated
+	batch_number	"report/parameter"	{ type=integer;	default=null; }
+	gift_number		"report/parameter"	{ type=integer;	default=null; }
+	receipt_number	"report/parameter"	{ type=string;	default=null; }
+	partner_id		"report/parameter"	{ type=string;	default=null; }
+	address_full	"report/parameter"	{ type=integer;	default=0; }
+	/////////////////////////////////////////
+	
+	// DEBUGGING SECTION
+	
+	cr_debugging "report/area"
+	{
+		// If Parameter Logic is invalid, give information feedback...
+		condition = runserver(((:this:ledger is null) and (:this:ledger_number is null)) or (:this:batch_number is null and :this:receipt_number is null and :this:partner_id is null));
+		
+		x=5;
+		y=3;
+		width=70;
+		align=left;
+		fontsize=12;
+		font = times;
+		db_title "report/data" { fontsize=24;value="Receipt Batch Report\n"; }
+		db_inputParams "report/data" { fontsize=12;value="\nUnable to Run this Report\n - need to have a valid ledger AND a valid (batch_number and/or receipt_number and/or partner_id) specified.\n\n(example: <url>/report.rpt?ledger=0US&batch_number=35749&gift_number=3 )\n\n\n"; }
+		db_inputParams "report/data" { fontsize=16;value="Input Parameters\n"; }
+		db_ledger_number "report/data" { value=runserver("ledger = " + isnull(:this:ledger, "<blank>") + "\n"); }
+		db_ledger_number "report/data" { value=runserver("ledger_number = " + isnull(:this:ledger_number, "<blank>") + " (deprecated)\n"); }
+		db_batch_number "report/data" { value=runserver("batch_number = " + isnull(:this:batch_number, "<blank>") + "\n"); }
+		db_gift_number "report/data" { value=runserver("gift_number = " + isnull(:this:gift_number, "<blank>") + "\n"); }
+		db_receipt_number "report/data" { value=runserver("receipt_number = " + isnull(:this:receipt_number, "<blank>") + "\n"); }
+		db_partner_id "report/data" { value=runserver("partner_id = " + isnull(:this:partner_id, "<blank>") + "\n"); }
+		db_address_full "report/data" { value=runserver("address_full = " + isnull(:this:address_full, "<blank>") + " - Set to 1 (or any value other than 0) to display first, last, and orgname in the address box\n"); }
+		
+	} // END - cr_debugging "report/area"
+		
+	// END DEBUGGING SECTION
+	
+	///////////////////////////////////////////
+		
+	// QUERIES SECTION START
+	
+	// Main Information Gathering / Looping Queries...
+
+	// Information for One Receipt
+	receipt_group_query "report/query"
+	{
+		sql = runserver("
+		
+			SELECT
+				:grp:a_ledger_number,
+				:grp:a_batch_number,
+				:grp:a_gift_number,
+				:grp:a_receipt_number,
+				:grp:a_amount,
+				:grp:p_donor_partner_id,
+				:grp:a_goods_provided,
+				:grp:a_gift_received_date,
+				:grp:a_gift_postmark_date,
+				:grp:a_receipt_sent_date,
+				:grp:a_comment,
+				official_receipt_date = isnull(:grp:a_gift_postmark_date, :grp:a_gift_received_date),
+				row_count_id = count(1)
+			FROM
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows grp
+			WHERE " +
+			
+				// continue as long as ledger is defined and there is a batch_number or receipt_number)
+				condition(
+					not (((:this:ledger is null) and (:this:ledger_number is null)) or (:this:batch_number is null and :this:receipt_number is null and :this:partner_id is null)),
+					condition(not (:this:ledger is null), ':grp:a_ledger_number = :this:ledger', ':grp:a_ledger_number = :this:ledger_number'),
+					':grp:a_ledger_number = "_invalid_request"'
+				) + 
+				
+				// include other parameters as they are provided...
+				condition( not (:this:batch_number is null), ' AND :grp:a_batch_number = :this:batch_number', ' ') +
+				condition( not (:this:gift_number is null), ' AND :grp:a_gift_number = :this:gift_number', ' ') +
+				condition( not (:this:receipt_number is null), ' AND :grp:a_receipt_number = :this:receipt_number', ' ') +
+				condition( not (:this:partner_id is null), ' AND :grp:p_donor_partner_id = :this:partner_id', ' ') +
+
+			" GROUP BY
+				:grp:a_gift_number "
+		);
+		rowid "report/aggregate" { compute="count(1)"; reset=0; }
+
+		// TO DOCUMENT (20100301): group is a reserved keyword in sql string
+			
+	} // END - receipt_group_query "report/query"
+	
+	// Line Item Details for a Single Receipt
+	receipt_item_query "report/query"
+	{
+		sql = runserver("
+		
+			SELECT
+				:item:a_ledger_number,
+				:item:a_batch_number,
+				:item:a_gift_number,
+				:item:a_cost_center,
+				:item:a_account_code,
+				:item:a_amount,
+				:item:a_comment,
+				:item:a_personal_gift,
+				:item:a_anonymous_gift
+			FROM
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows item
+			WHERE
+				:item:a_ledger_number = :receipt_group_query:a_ledger_number and
+				:item:a_batch_number  = :receipt_group_query:a_batch_number and
+				:item:a_gift_number  = :receipt_group_query:a_gift_number
+				
+		");
+		
+	} // END - receipt_item_query "report/query"
+	
+	// HELPER QUERIES
+	
+	// Donor Name & Address Mail To Details
+	donor_query "report/query"
+	{
+	
+	// Mailto 
+	// - defaults to printing Orgname, then address1, address2, etc...
+	//   if the Orgname is not listed, then the first name and last, then address1, address2, etc..
+	
+	// - The second block is activated if parameter :this:address_full is set to 'true' (or any other value)
+	//   It displays first name, last name (& orgname one the second line if it is defined), followed by the address...
+	
+		sql = runserver("SELECT
+			:p:p_partner_key,
+			:p:p_partner_class,
+			:p:p_given_name,
+			:p:p_surname,
+			:p:p_org_name,
+			display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name),
+			mail_to = condition( (:this:address_full == 0)
+			,
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name) + '\n' +
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_1, ''))))) == 0, '', :l:p_address_1 + '\n') + 
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_2, ''))))) == 0, '', :l:p_address_2 + '\n') + 
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_3, ''))))) == 0, '', :l:p_address_3 + '\n') + 
+				:l:p_city + ' ' + :l:p_state_province  + '  ' + 
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_postal_code, ''))))) == 9, substring(:l:p_postal_code,1,5) + '-' + right(:l:p_postal_code,4), :l:p_postal_code)
+			,
+
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_given_name, ''))))) == 0, '', :p:p_given_name + ' ') +
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_surname, ''))))) == 0, '', :p:p_surname) + '\n' +
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, '', :p:p_org_name + '\n') +
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_1, ''))))) == 0, '', :l:p_address_1 + '\n') + 
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_2, ''))))) == 0, '', :l:p_address_2 + '\n') + 
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_3, ''))))) == 0, '', :l:p_address_3 + '\n') + 
+				:l:p_city + ' ' + :l:p_state_province  + '  ' + 
+				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_postal_code, ''))))) == 9, substring(:l:p_postal_code,1,5) + '-' + right(:l:p_postal_code,4), :l:p_postal_code)
+			)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows l
+		WHERE
+			:p:p_partner_key = :receipt_group_query:p_donor_partner_id AND
+			:p:p_partner_key = :l:p_partner_key
+		");
+		
+		// 
+		// DEBUGGING CODE (Showing Work) 20091013:
+		//
+		//  Blank name would show up when orgname existed but wasn't specified... yeah...
+		// 	
+		// 	display_name = 
+		// 		  'p_partner_key - ' + isnull(:p:p_partner_key, ' is blank') +
+		// 		', p_org_name - ' + isnull(:p:p_org_name, 'is blank') + 
+		// 		', cl - ' + convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) + 
+		// 		', p_given_name - ' + isnull(:p:p_given_name, 'is blank, ') + 
+		// 		', p_surname - ' + isnull(:p:p_surname, 'is blank')
+		//  
+		
+	} // END - donor_query "report/query"
+
+	
+	// Account / Cost Center Descriptions (given cost center / account codes)
+	acct_cc_name_qy "report/query"
+	{
+		sql = runserver("SELECT
+			cost_center_description = :c:a_cc_desc,
+			account_description = :a:a_acct_desc
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		WHERE
+			:c:a_ledger_number = :receipt_item_query:a_ledger_number and
+			:c:a_cost_center = :receipt_item_query:a_cost_center and
+			:a:a_ledger_number = :receipt_item_query:a_ledger_number and
+			:a:a_account_code = :receipt_item_query:a_account_code
+			");
+			
+	} // END - acct_cc_name_qy "report/query"
+	
+	// Totalling Queries
+	
+	// J = receipt_tax_deductible_query     = D C
+	// K = receipt_non_tax_deductible_query = D C
+	// L = ytd_tax_deductible_query	    = F B G N
+	
+	// B = sum(condition([not]:item:a_personal_gift,:item:a_amount, $0)) +[or minus] :group:a_goods_provided
+	
+	// C = 
+	// 		:group:a_ledger_number = :this:ledger_number and
+	// 		:group:a_batch_number  = :this:batch_number and
+	// 		:group:a_gift_number  = :this:gift_number
+	
+	// D = <query name>
+	//		SELECT
+	//			total = B
+	//		FROM
+	// 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows group
+	// 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows item
+	//		WHERE
+	//			C
+	
+	// F = ytd_tax_deductible_query
+	//		SELECT
+	//			total = sum(B)
+	//		GROUP BY
+	//			a_gift_number
+	//		WHERE
+	//			G
+	
+	// G = WHERE
+	//			:group:a_ledger_number = :this:ledger_number AND
+	//			:group:p_donor_partner_id = :receipt_group_query:p_donor_partner_id AND
+	//			N
+	
+	// YTD Check
+	// N =	datepart(year, receipt_group_query:H) =
+	//		datepart(year, :group:H)
+	// H = :receipt_group_query:official_receipt_date
+	
+	// Total Tax Deductible Amount for this Receipt
+	receipt_tax_deductible_query "report/query"
+	{
+		sql = runserver("SELECT
+			total = (convert(money,sum(condition(:item:a_personal_gift == '0', :item:a_amount, 0))) - convert(money,:grp:a_goods_provided))
+		FROM
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows grp,
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows item
+		WHERE
+				:grp:a_ledger_number = :receipt_group_query:a_ledger_number and
+				:grp:a_batch_number = :receipt_group_query:a_batch_number and
+				:grp:a_gift_number = :receipt_group_query:a_gift_number and
+				:item:a_ledger_number = :grp:a_ledger_number and
+				:item:a_batch_number = :grp:a_batch_number and
+				:item:a_gift_number = :grp:a_gift_number
+		");	
+	} // END - receipt_tax_deductible_query "report/query"
+	
+	// Total Non-Tax Deductible Amount for this Receipt
+	receipt_non_tax_deductible_query "report/query"
+	{
+		sql = runserver("SELECT
+			total = convert(money,sum(condition(:item:a_personal_gift == '1', :item:a_amount, 0)) + :grp:a_goods_provided)
+		FROM
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows grp,
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows item
+		WHERE
+				:grp:a_ledger_number = :receipt_group_query:a_ledger_number and
+				:grp:a_batch_number = :receipt_group_query:a_batch_number and
+				:grp:a_gift_number = :receipt_group_query:a_gift_number and
+				:item:a_ledger_number = :grp:a_ledger_number and
+				:item:a_batch_number = :grp:a_batch_number and
+				:item:a_gift_number = :grp:a_gift_number
+		");	
+	} // END - receipt_non_tax_deductible_query "report/query"
+	
+	// YTD Tax Deductible Amount
+	ytd_tax_deductible_query "report/query"
+	{
+		sql = runserver("SELECT
+			total = sum(sum(condition(:item:a_personal_gift == '0', :item:a_amount, 0)) - :grp:a_goods_provided),
+			year1 = datepart('year', :receipt_group_query:official_receipt_date),
+			year2 = datepart('year', isnull(:grp:a_gift_postmark_date, :grp:a_gift_received_date))
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows grp,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows item
+		GROUP BY
+			:grp:a_gift_number
+		WHERE
+			:grp:a_ledger_number = :receipt_group_query:a_ledger_number and
+			:grp:p_donor_partner_id = :receipt_group_query:p_donor_partner_id and
+			:item:a_ledger_number = :grp:a_ledger_number and
+			:item:a_batch_number = :grp:a_batch_number and
+			:item:a_gift_number = :grp:a_gift_number and
+			datepart('year', :receipt_group_query:official_receipt_date) ==
+			datepart('year', isnull(:grp:a_gift_postmark_date, :grp:a_gift_received_date))
+		");
+		
+	} // END - ytd_tax_deductible_query "report/query"
+	
+	// QUERY SECTION END
+	
+	
+	///////////////////////////////////////////
+	
+	// BATCH REPORT START - DISPLAY
+	
+	// Middle Section of Report...
+	
+	// For each Receipt :-)  arbor70
+	foreach_receipt_form "report/form"
+	{
+		source=receipt_group_query;
+		ffsep=yes;	// a new (one) receipt on each page
+		
+		// TEST / DEBUGGING CODE
+		// debug_overall_receipt_details "report/area" { x=12; y=0.1; height=20; width=40; align=left; fontsize=10; font = times;
+			// debug_batch_gift_number "report/data" { xpos=0; ypos=14; value=runserver(isnull(:receipt_group_query:a_gift_number, "<blank>")); } }
+		
+		// Display Postmark Date  (Middle Section)
+		postmark_date_area_middle "report/area"
+		{
+			condition = runserver(not (:receipt_group_query:a_gift_postmark_date is null));
+			x=11.25;
+			y=23.75;
+		
+			height=4; width=20;
+			align=left;
+			fontsize=12;
+			font = times;
+
+			postmark_date_middle "report/data" {  xpos=0; ypos=0; dateformat="MM/dd/yyyy"; value=runserver("Postmarked: " + isnull(:receipt_group_query:a_gift_postmark_date, "<blank>")); }
+		}
+		
+		// Display Official Receipt Date  (Middle Section)
+		receipt_date_area_middle "report/area"
+		{
+			x=49.375; // 33; old value
+			y=23.75;
+		
+			height=4; width=20;
+			align=left;
+			fontsize=12;
+			font = times;
+
+			official_receipt_date "report/data" {  xpos=0; ypos=0; dateformat="MM/dd/yyyy"; value=runserver(isnull(:receipt_group_query:official_receipt_date, "<blank>")); }
+		}
+		
+		// Receipt Line Items (Middle Section)
+		receipt_line_item_table_middle "report/table"
+		{
+			x=4;
+			y=25.3;
+			width=80;height=0;
+			columns=5;
+			widths=27,33,7,2,9;
+			colsep=0;
+			source=receipt_item_query,acct_cc_name_qy;
+			moneyformat = "-###,###,##0.00";
+			font=hevetica;
+			fontsize=8;
+			
+			receipt_line_item_row "report/table-row"
+			{
+				margintop=0.0;
+				marginbottom=0.0;
+
+				
+				cell_cost_center_description "report/table-cell" { value=runserver( 
+					isnull(:acct_cc_name_qy:cost_center_description, "<blank>")
+				); style=bold; align=left; }
+				
+				cell_comment "report/table-cell" { value=runserver( 
+					isnull(:receipt_item_query:a_comment, " ") + "  " +
+					condition(:receipt_item_query:a_anonymous_gift == 1, "(Anonymous)", "")
+				); style=bold; align=left; }
+				
+				cell_cost_center_code "report/table-cell" { value=runserver( isnull(:receipt_item_query:a_cost_center, "<blank>")); style=bold; align=left; }
+				cell_non_tax_deductible "report/table-cell" { value=runserver( isnull(condition(:receipt_item_query:a_personal_gift==1, 'X ', ''), "<blank>")); style=bold; align=center; }
+				cell_amount "report/table-cell" { value=runserver(isnull(:receipt_item_query:a_amount, "<blank>")); style=bold; align=right; }
+				
+			} // END - receipt_line_item_row "report/table-row"
+			
+		} // END - receipt_line_item_table_a "report/table"
+	
+		// Donor Information (Middle Section)
+		donor_form_middle "report/form"
+		{
+			source = donor_query;
+			
+			donor_details_middle "report/area"
+			{
+				x=4;
+				y=35.35;  // 34.875 (settings to put address near the top)
+			
+				height=4.25;	// 4.875 (settings to put address near the top)
+				width=35;
+				align=left;
+				fontsize=12;
+				font = times;
+
+				donor_mail_to_data_middle "report/data" { xpos=0; ypos=0; value=runserver(isnull(:donor_query:mail_to, "<blank>")); }
+			}
+		}
+		
+		// Goods Provided Box (Middle Section)
+		goods_provided_middle "report/area"
+		{
+			condition = runserver(:receipt_group_query:a_goods_provided > 0);
+			x=35.5;
+			y=34;
+		
+			height=0; width=13;
+			align=center;
+			fontsize=12;
+			font = times;
+
+			goods_provided_box_middle "report/data" {  xpos=0; ypos=0; value=runserver("Goods Provided " + isnull(:receipt_group_query:a_goods_provided, " -- ")); }
+		}
+		
+		// Total Tax Deductible Amount for this Receipt (Middle Section)
+		total_tax_deductible_amount_form_middle "report/form"
+		{
+			source = receipt_tax_deductible_query;
+			
+			total_tax_deductible_amount_area_middle "report/area"
+			{
+				x=49.375;
+				y=35.825;
+
+				height=0; width=10;
+				align=center;
+				fontsize=12;
+				font = times;
+
+				total_tax_deductible_amount_data_middle "report/data" { xpos=0; ypos=0; value=runserver(isnull(:receipt_tax_deductible_query:total, "<blank>")); }
+				
+			} // END - total_tax_deductible_amount_area_middle "report/area"
+			
+		} // END - total_tax_deductible_amount_form_middle "report/form"
+		
+		// Total Non-Tax Deductible Amount for this Receipt (Middle Section)
+		total_non_tax_deductible_amount_form_middle "report/form"
+		{
+			source = receipt_non_tax_deductible_query;
+			
+			total_non_tax_deductible_amount_area_middle "report/area"
+			{
+				x=60;
+				y=35.825;
+
+				height=0; width=10;
+				align=center;
+				fontsize=12;
+				font = times;
+
+				total_non_tax_deductible_amount_data_middle "report/data" { xpos=0; ypos=0; value=runserver(isnull(:receipt_non_tax_deductible_query:total, "<blank>")); }
+				
+			} // END - total_non_tax_deductible_amount_area "report/area"
+			
+		} // END - total_non_tax_deductible_amount_form "report/form"
+		
+		// Total YTD Tax Deductible Amount for this Donor (Middle Section)
+		ytd_tax_deductible_amount_form_middle "report/form"
+		{
+			source = ytd_tax_deductible_query;
+			
+			ytd_tax_deductible_amount_area_middle "report/area"
+			{
+				x=72;
+				y=35.825;
+
+				height=0; width=10;
+				align=center;
+				fontsize=12;
+				font = times;
+
+				ytd_tax_deductible_amount_data_middle "report/data" { xpos=0; ypos=0; value=runserver(isnull(:ytd_tax_deductible_query:total, "<blank>")); }
+				
+			} // END - ytd_tax_deductible_amount_area "report/area"
+			
+		} // END - ytd_tax_deductible_amount_form "report/form"
+		
+		// Display Receipt ID / Donor ID (Middle Section)
+		receipt_donor_id_details_middle "report/area"
+		{
+			x=72.5;
+			y=37.4;
+			
+			height=0; width=10;
+			align=left;
+			fontsize=12;
+			font = times;
+
+			receipt_id_data_middle "report/data" { xpos=0; ypos=0; value=runserver(isnull(:receipt_group_query:a_receipt_number, "<blank>")); }
+			donor_id_data_middle "report/data" { xpos=0; ypos=1.125; value=runserver(isnull(:receipt_group_query:p_donor_partner_id, "<blank>")); }
+			
+		} // END - Receipt / Donor ID
+		
+		
+		// Middle Section
+		
+		//////////////////////////////////////////////
+		
+		// Bottom Section
+		
+		// offset + 4 inches in vertical (y) direction * 6 US Form units per inch => offset +24 US Form Units
+		
+		// Display Postmark Date  (Bottom Section)
+		postmark_date_area_bottom "report/area"
+		{
+			condition = runserver(not (:receipt_group_query:a_gift_postmark_date is null));
+			x=11.25;
+			y=48;
+		
+			height=4; width=20;
+			align=left;
+			fontsize=12;
+			font = times;
+
+			postmark_date_bottom "report/data" {  xpos=0; ypos=0; dateformat="MM/dd/yyyy"; value=runserver("Postmarked: " + isnull(:receipt_group_query:a_gift_postmark_date, "<blank>")); }
+		}
+		
+		// Display Official Receipt Date  (Bottom Section)
+		receipt_date_area_bottom "report/area"
+		{
+			x=49.375; // 33; old value
+			y=48;
+		
+			height=4; width=20;
+			align=left;
+			fontsize=12;
+			font = times;
+
+			official_receipt_date_bottom "report/data" {  xpos=0; ypos=0; dateformat="MM/dd/yyyy"; value=runserver(isnull(:receipt_group_query:official_receipt_date, "<blank>")); }
+		}
+		
+		// Receipt Line Items (Bottom Section)
+		receipt_line_item_table_bottom "report/table"
+		{
+			x=4;
+			y=49.65;
+			width=79;height=0;
+			columns=5;
+			//widths=26,32,8,3,8;    // original: 6,3 6  col sep 1
+			// colsep=0;
+			widths=27,33,7,2,9;
+			colsep=0;
+			source=receipt_item_query,acct_cc_name_qy;
+			moneyformat = "-###,###,##0.00";
+			font=hevetica;
+			fontsize=8;
+			
+			receipt_line_item_row_bottom "report/table-row"
+			{
+				margintop=0.0;
+				marginbottom=0.0;
+
+				
+				cell_cost_center_description_bottom "report/table-cell" { value=runserver( 
+					isnull(:acct_cc_name_qy:cost_center_description, "<blank>")
+				); style=bold; align=left; }
+				
+				cell_comment_bottom "report/table-cell" { value=runserver( 
+					isnull(:receipt_item_query:a_comment, " ") + "  " +
+					condition(:receipt_item_query:a_anonymous_gift == 1, "(Anonymous)", "")
+				); style=bold; align=left; }
+				
+				cell_cost_center_code_bottom "report/table-cell" { value=runserver( isnull(:receipt_item_query:a_cost_center, "<blank>")); style=bold; align=left; }
+				cell_non_tax_deductible_bottom "report/table-cell" { value=runserver( isnull(condition(:receipt_item_query:a_personal_gift==1, 'X ', ''), "<blank>")); style=bold; align=center; }
+				cell_amount_bottom "report/table-cell" { value=runserver(isnull(:receipt_item_query:a_amount, "<blank>")); style=bold; align=right; }
+				
+			} // END - receipt_line_item_row "report/table-row"
+			
+		} // END - receipt_line_item_table_a "report/table"
+	
+		// Donor Information (Bottom Section)
+		donor_form_middle_bottom "report/form"
+		{
+			source = donor_query;
+			
+			donor_details_bottom "report/area"
+			{
+				x=12;
+				y=59.6; //60; // 59.125;
+			
+				height=4.25;
+				width=35;
+				align=left;
+				fontsize=10;
+				font = times;
+
+				donor_mail_to_data_bottom "report/data" { xpos=0; ypos=0; value=runserver(isnull(:donor_query:mail_to, "<blank>")); }
+			}
+		}
+		
+		// Goods Provided Box (Bottom Section)
+		goods_provided_bottom "report/area"
+		{
+			condition = runserver(:receipt_group_query:a_goods_provided > 0);
+			x=35.75;
+			y=58;
+		
+			height=0; width=13;
+			align=center;
+			fontsize=12;
+			font = times;
+
+			goods_provided_box_bottom "report/data" {  xpos=0; ypos=0; value=runserver("Goods Provided " + isnull(:receipt_group_query:a_goods_provided, " -- ")); }
+		}
+		
+		// Total Tax Deductible Amount for this Receipt (Bottom Section)
+		total_tax_deductible_amount_form_bottom "report/form"
+		{
+			source = receipt_tax_deductible_query;
+			
+			total_tax_deductible_amount_area_bottom "report/area"
+			{
+				x=49.375;
+				y=60; // 59.7;
+
+				height=0; width=10;
+				align=center;
+				fontsize=12;
+				font = times;
+
+				total_tax_deductible_amount_data_bottom "report/data" { xpos=0; ypos=0; value=runserver(isnull(:receipt_tax_deductible_query:total, "<blank>")); }
+				
+			} // END - total_tax_deductible_amount_area_middle "report/area"
+			
+		} // END - total_tax_deductible_amount_form_middle "report/form"
+		
+		// Total Non-Tax Deductible Amount for this Receipt (Bottom Section)
+		total_non_tax_deductible_amount_form_bottom "report/form"
+		{
+			source = receipt_non_tax_deductible_query;
+			
+			total_non_tax_deductible_amount_area_bottom "report/area"
+			{
+				x=60;
+				y=60; // 59.7;
+
+				height=0; width=10;
+				align=center;
+				fontsize=12;
+				font = times;
+
+				total_non_tax_deductible_amount_data_bottom "report/data" { xpos=0; ypos=0; value=runserver(isnull(:receipt_non_tax_deductible_query:total, "<blank>")); }
+				
+			} // END - total_non_tax_deductible_amount_area "report/area"
+			
+		} // END - total_non_tax_deductible_amount_form "report/form"
+		
+		// Total YTD Tax Deductible Amount for this Donor (Bottom Section)
+		ytd_tax_deductible_amount_form_bottom "report/form"
+		{
+			source = ytd_tax_deductible_query;
+			
+			ytd_tax_deductible_amount_area_bottom "report/area"
+			{
+				x=72;
+				y=60; // 59.7;
+
+				height=0; width=10;
+				align=center;
+				fontsize=12;
+				font = times;
+
+				ytd_tax_deductible_amount_data_bottom "report/data" { xpos=0; ypos=0; value=runserver(isnull(:ytd_tax_deductible_query:total, "<blank>")); }
+				
+			} // END - ytd_tax_deductible_amount_area "report/area"
+			
+		} // END - ytd_tax_deductible_amount_form "report/form"
+		
+		// Display Receipt ID / Donor ID (Bottom Section)
+		receipt_donor_id_details_bottom "report/area"
+		{
+			x=72;
+			y=61.5;
+			
+			height=0; width=10;
+			align=left;
+			fontsize=12;
+			font = times;
+
+			receipt_id_data_bottom "report/data" { xpos=0; ypos=0; value=runserver(isnull(:receipt_group_query:a_receipt_number, "<blank>")); }
+			donor_id_data_bottom "report/data" { xpos=0; ypos=1.125; value=runserver(isnull(:receipt_group_query:p_donor_partner_id, "<blank>")); }
+			
+		} // END - Receipt / Donor ID
+		
+	} // END - foreach_receipt_form
+	
+} // END - receipt_report
