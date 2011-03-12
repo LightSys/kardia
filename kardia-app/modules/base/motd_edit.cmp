@@ -1,0 +1,187 @@
+$Version=2$
+motd_edit "widget/component-decl"
+    {
+    width=780;
+    height=580;
+
+    // This hbox encompasses the entire app
+    motd_hbox "widget/hbox"
+	{
+	x=0; y=0;
+	width=780; height=580;
+	spacing=10;
+
+	motd_search_vbox "widget/vbox"
+	    {
+	    width = 270;
+	    spacing = 7;
+
+	    search_hdr "widget/component"
+		{
+		height = 20;
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		text = "Search Messages of the Day:";
+		}
+
+	    search_box "widget/editbox"
+		{
+		height = 20;
+		empty_description = "type search and press ENTER";
+
+		do_search "widget/connector"
+		    {
+		    event = ReturnPressed;
+		    target = motd_osrc;
+		    action = QueryText;
+		    field_list = "*s_message_title*,*s_message_text*,s_created_by";
+		    objname = runclient("m");
+		    query = runclient(:search_box:content);
+		    }
+		}
+
+	    sep1 "widget/autolayoutspacer" { height=5; }
+
+	    results_hdr "widget/component"
+		{
+		height = 20;
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		text = "Messages of the Day:";
+		}
+
+	    motd_osrc "widget/osrc"
+		{
+		autoquery = onfirstreveal;
+
+		sql = "	select
+				viewcnt = count(:mv:s_motd_id),
+				:m:s_motd_id,
+				:m:s_message_title,
+				:m:s_message_text,
+				:m:s_enabled,
+				:m:s_valid_days,
+				:m:s_date_created,
+				:m:s_created_by,
+				:m:s_date_modified,
+				:m:s_modified_by,
+				date_txt = substring(convert(string,:m:s_date_created),1,11)
+			from
+				IDENTITY /apps/kardia/data/Kardia_DB/s_motd/rows m,
+				/apps/kardia/data/Kardia_DB/s_motd_viewed/rows mv
+			where
+				:m:s_motd_id *= :mv:s_motd_id
+			group by
+				:m:s_motd_id
+			order by
+				:m:s_motd_id desc
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/s_motd/rows";
+
+		readahead = 50;
+		replicasize = 50;
+
+		motd_table_pane "widget/pane"
+		    {
+		    height = 487;
+		    widget_class=table_bgnd;
+
+		    motd_table "widget/table"
+			{
+			x=0; y=0;
+			height = 485;
+			width = 268;
+			mode=dynamicrow;
+
+			t_ena "widget/table-column" { title="On?"; fieldname="s_enabled"; width=35; type=check; }
+			t_dat "widget/table-column" { title="Date"; fieldname="date_txt"; width=85; }
+			t_ttl "widget/table-column" { title="Title"; fieldname="s_message_title"; width=150; }
+			}
+		    }
+		}
+	    }
+
+	motd_edit_vbox "widget/vbox"
+	    {
+	    spacing = 7;
+	    width = 500;
+	    cellsize = 20;
+
+	    edit_hdr "widget/component"
+		{
+		height = 20;
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		text = runclient("Editing Message '" + :motd_osrc:s_message_title + "'...");
+		}
+
+	    motd_form "widget/form"
+		{
+		objectsource = motd_osrc;
+
+		motd_controls "widget/component"
+		    {
+		    height=26;
+		    path = "/sys/cmp/form_controls.cmp";
+		    object_name = "MOTD";
+		    deletable = 1;
+		    }
+
+		f_title "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_message_title; ctl_type=editbox; text="Title:"; }
+		f_valid_days "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_valid_days; ctl_type=editbox; text="# Valid Days:"; f_valid_days_hints "widget/hints" { default=7; } }
+		f_enabled "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_enabled; ctl_type=checkbox; text="Enabled:"; f_enabled_hints "widget/hints" { default=runclient(1); style=notnull; } }
+		f_text "widget/component" { height=180; path="/sys/cmp/smart_field.cmp"; field=s_message_text; ctl_type=textarea; text="Message:"; }
+		footer "widget/component" { height=24; path="/apps/kardia/modules/base/record_metadata_bar.cmp"; }
+		}
+
+	    sep2 "widget/autolayoutspacer" { height=5; }
+
+	    viewed_hdr "widget/component"
+		{
+		height = 20;
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		text = runclient("Users Who Have Viewed '" + :motd_osrc:s_message_title + "'...");
+		}
+
+	    motd_viewed_osrc "widget/osrc"
+		{
+		sql = "select
+				:mv:s_viewed_date,
+				:mv:s_username,
+				:mv:s_motd_id,
+				user = isnull(:u:description, :mv:s_username),
+				date_txt = substring(convert(string,:mv:s_viewed_date), 1, 11)
+			from
+				/apps/kardia/data/Kardia_DB/s_motd_viewed/rows mv,
+				/apps/kardia/data/Users.uxu u
+			where
+				:mv:s_username *= :u:username
+			";
+		readahead=50;
+		replicasize=50;
+
+		osrc_sync "widget/rule"
+		    {
+		    ruletype = osrc_relationship;
+		    target = motd_osrc;
+		    key_objname = mv;
+		    key_1 = s_motd_id;
+		    target_key_1 = s_motd_id;
+		    }
+
+		motd_viewed_table_pane "widget/pane"
+		    {
+		    height = 182;
+		    widget_class = table_bgnd;
+
+		    motd_viewed_table "widget/table"
+			{
+			x=0; y=0;
+			width = 498; height=180;
+			mode = dynamicrow;
+
+			t_user "widget/table-column" { title="User"; fieldname="user"; width=200; }
+			t_viewdate "widget/table-column" { title="Viewed On"; fieldname="s_viewed_date"; width=300; }
+			}
+		    }
+		}
+	    }
+	}
+    }

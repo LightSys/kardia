@@ -1,0 +1,218 @@
+$Version=2$
+motd "widget/component-decl"
+    {
+    width=800; height=600;
+    motd_timer "widget/timer"
+	{
+	msec=300000; // 5 minutes
+	auto_reset=0;
+	auto_start=0;
+	interval_cn "widget/connector" { target=motd_osrc; event=Expire; action=Refresh; }
+	}
+
+
+    motd_viewed_osrc "widget/osrc"
+	{
+	s_motd_id "widget/parameter" { type=integer; }
+
+	autoquery = never;
+
+	sql = "	insert
+			/apps/kardia/data/Kardia_DB/s_motd_viewed/rows
+		select
+			s_motd_id = :parameters:s_motd_id,
+			s_username = user_name(),
+			s_viewed_date = getdate(),
+			s_created_by = user_name(),
+			s_date_created = getdate(),
+			s_modified_by = user_name(),
+			s_date_modified = getdate()
+		";
+	}
+
+
+    motd_osrc "widget/osrc"
+	{
+	autoquery=onload;
+
+	sql = "	select
+			:m:s_motd_id,
+			:m:s_message_title,
+			:m:s_message_text,
+			:m:s_created_by,
+			:m:s_date_created,
+			:m:s_modified_by,
+			:m:s_date_modified,
+			:mv:s_viewed_date,
+			user_txt = isnull(:u:description + ' (' + :m:s_created_by + ')', :m:s_created_by),
+			date_txt = substring(convert(string,:m:s_date_created),1,11)
+		from
+			/apps/kardia/data/Kardia_DB/s_motd/rows m,
+			/apps/kardia/data/Kardia_DB/s_motd_viewed/rows mv,
+			/apps/kardia/data/Users.uxu u
+		where
+			:m:s_enabled = 1 and
+			dateadd(day, isnull(:m:s_valid_days,99999), :m:s_date_created) > getdate() and
+			:m:s_motd_id *= :mv:s_motd_id and
+			:mv:s_username = user_name() and
+			:u:username = :m:s_created_by
+		order by
+			:m:s_date_modified
+		having
+			:s_viewed_date is null
+		";
+
+	replicasize = 10;
+	readahead = 10;
+
+	open_motd_on_data "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(char_length(:motd_osrc:s_message_title) > 0);
+	    target=motd_window;
+	    action=Open;
+	    }
+
+	motd_window "widget/childwindow"
+	    {
+	    titlebar = no;
+	    width=500;
+	    height=400;
+	    x=150;
+	    y=100;
+	    visible = false;
+	    modal = yes;
+	    style = dialog;
+	    toplevel = yes;
+	    bgcolor = white;
+	    background = null;
+
+	    reset_timer_on_close "widget/connector"
+		{
+		event=Close;
+		action=SetTimer;
+		target=motd_timer;
+		Time=300000;
+		}
+
+	    kardia_logo "widget/image"
+		{
+		source = "/apps/kardia/images/artwork/Kardia2011b-horiz-25.png";
+		x = 4;
+		y = 4;
+		height = 25;
+		width = 123;
+		}
+
+	    motd_header "widget/label"
+		{
+		x = 200;
+		y = 4;
+		height = 25;
+		width = 294;
+		style = bold;
+		font_size = 18;
+		text = "Message of the Day";
+		align = center;
+		valign = middle;
+		}
+
+	    motd_rule "widget/image"
+		{
+		source = "/apps/kardia/images/artwork/blue_rule.png";
+		x=0;
+		y=33;
+		width=498;
+		height=4;
+		}
+
+	    motd_pane "widget/pane"
+		{
+		x=0;y=37;height=361; width=498;
+		style=flat;
+		background = "/apps/kardia/images/bg/light_bgnd.jpg";
+
+		motd_form "widget/form"
+		    {
+		    motd_vbox "widget/vbox"
+			{
+			x=8; y=8;
+			width=480; height=343;
+			cellsize=16;
+			spacing=4;
+
+			f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=user_txt; ctl_type=label; text="From:"; }
+			f_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=date_txt; ctl_type=label; text="Date:"; }
+			f_subj "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_message_title; ctl_type=label; text="Regarding:"; }
+
+			pane_msg "widget/pane"
+			    {
+			    height=232;
+			    //style=lowered;
+			    style=bordered;
+			    border_color="#a0a0a0";
+			    bgcolor=white;
+
+			    msg_label "widget/label"
+				{
+				x=4; y=4; width=470; height=210;
+				value=runclient(:motd_osrc:s_message_text);
+				}
+			    }
+
+			sep "widget/autolayoutspacer" { height=8; }
+
+			button_hbox "widget/hbox"
+			    {
+			    align=center;
+			    height=32;
+			    spacing=8;
+			    cellsize=140;
+
+			    back_btn "widget/textbutton"
+				{
+				height=32;
+				width=100;
+				text="<< Back";
+				enabled=runclient(:motd_form:recid > 1);
+				cnBack "widget/connector" { event="Click"; target=motd_form; action="Prev"; }
+				}
+
+			    next_btn "widget/textbutton"
+				{
+				height=32;
+				width=100;
+				text=runclient(condition(:motd_form:recid == :motd_form:lastrecid, "Close", "Next >>"));
+
+				mark_motd_viewed "widget/connector"
+				    {
+				    event=Click;
+				    target=motd_viewed_osrc;
+				    action=QueryParam;
+				    s_motd_id = runclient(:motd_form:s_motd_id);
+				    }
+
+				cnDone "widget/connector"
+				    {
+				    event=Click;
+				    event_condition=runclient(:motd_form:recid == :motd_form:lastrecid);
+				    target=motd_window;
+				    action=Close;
+				    }
+
+				cnNext "widget/connector"
+				    {
+				    event=Click;
+				    event_condition=runclient(not(:motd_form:recid == :motd_form:lastrecid));
+				    target=motd_form;
+				    action=Next;
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
