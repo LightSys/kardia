@@ -40,7 +40,7 @@ tree_list_data "widget/component-decl"
 
 	tree_scroll "widget/scrollpane"
 	    {
-	    x=0;y=0;width=228;height=447;
+	    x=0;y=0;width=228;height=419;
 
 	    tree "widget/treeview"
 		{
