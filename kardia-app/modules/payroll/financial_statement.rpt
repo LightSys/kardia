@@ -412,7 +412,7 @@ financial_statement "system/report"
 	hdrimg "report/image"
 	    {
 	    x=67.85;y=0;height=4;width=12.15;
-	    source="/apps/kardia/modules/local/logo.png";
+	    source="/apps/kardia/images/artwork/Kardia2011b-horiz-37.png";
 	    }
 
 	rpt_title "report/area"
@@ -435,7 +435,7 @@ financial_statement "system/report"
 	    font=helvetica;
 	    align=left;
 
-	    sep_line "report/image" { width=80;height=0.06; source="/apps/kardia/modules/local/BlackPixel.png"; }
+	    sep_line "report/image" { width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
 	    s_d0 "report/data" { fontsize=12; style=bold; value = "Balance Summary for All Funds:"; }
 	    }
 
@@ -508,7 +508,7 @@ financial_statement "system/report"
 	    font=helvetica;
 	    align=left;
 
-	    sep_line2 "report/image" { y=0.5; width=80;height=0.06; source="/apps/kardia/modules/local/BlackPixel.png"; }
+	    sep_line2 "report/image" { y=0.5; width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
 	    s2_d0 "report/data" { fontsize=12; style=bold; value = "Balances By Fund:"; }
 	    }
 
@@ -562,7 +562,7 @@ financial_statement "system/report"
 	    font=helvetica;
 	    align=left;
 
-	    sep_line3 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/modules/local/BlackPixel.png"; }
+	    sep_line3 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
 	    s3_d0 "report/data" { fontsize=12; style=bold; value = runserver("Monthly Payroll Summary (" + :payee_cnt_qy:cnt + " Payee" + condition(:payee_cnt_qy:cnt == 1, "", "s") + "):"); }
 	    }
 
@@ -721,7 +721,7 @@ financial_statement "system/report"
 	    font=helvetica;
 	    align=left;
 
-	    sep_line5 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/modules/local/BlackPixel.png"; }
+	    sep_line5 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
 	    s5_d0 "report/data" { fontsize=12; style=bold; value = runserver("Missionary Budget:"); }
 	    }
 
@@ -851,7 +851,7 @@ financial_statement "system/report"
 		font=helvetica;
 		align=left;
 
-		sep_line4 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/modules/local/BlackPixel.png"; }
+		sep_line4 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
 		s4_d0 "report/data" { fontsize=12; style=bold; value = runserver(:subcc_qy:a_cost_center + " (" + :subcc_qy:a_cc_desc + ") Detail:"); }
 
 		//s4_d1 "report/data" { fontsize=8; style=bold; value="\n\nTotal Gifts:"; }

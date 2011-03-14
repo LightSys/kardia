@@ -185,7 +185,7 @@ payroll_register "system/report"
 	hdrimg "report/image"
 	    {
 	    x=92.85;y=0;height=4;width=12.15;
-	    source="/apps/kardia/modules/local/action_logo.png";
+	    source="/apps/kardia/images/artwork/Kardia2011b-horiz-37.png";
 	    }
 
 	rpt_title "report/area"
@@ -205,7 +205,7 @@ payroll_register "system/report"
 	    font=helvetica;
 	    align=left;
 
-	    sep_line3 "report/image" { y=1.5; width=105;height=0.06; source="/apps/kardia/modules/local/BlackPixel.png"; }
+	    sep_line3 "report/image" { y=1.5; width=105;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
 	    s3_d0 "report/data" { fontsize=12; style=bold; value = runserver("Monthly Payroll Register (" + :payee_cnt_qy:cnt + " Payee" + condition(:payee_cnt_qy:cnt == 1, "", "s") + "):"); }
 	    }
 
@@ -372,7 +372,7 @@ payroll_register "system/report"
 	    font=helvetica;
 	    align=left;
 
-	    sep_line3 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/modules/local/BlackPixel.png"; }
+	    sep_line3 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
 	    s3_d0 "report/data" { fontsize=12; style=bold; value = runserver("Line Item Type Totals (" + :payee_cnt_qy:cnt + " Payee" + condition(:payee_cnt_qy:cnt == 1, "", "s") + "):"); }
 	    }
 	itemtype_list "report/table"

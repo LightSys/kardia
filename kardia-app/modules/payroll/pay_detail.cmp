@@ -106,7 +106,7 @@ pay_detail_cmp "widget/component-decl"
 	{
 	periods_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
 	sql = runserver("
-		SELECT	a_period=null, a_period_desc=null, a_ledger_number='0US', txt='Template';
+		SELECT	a_period=null, a_period_desc=null, a_ledger_number=" + quote(:this:ledger) + ", txt='Template';
 
 		SELECT
 			:p:a_period, :p:a_period_desc, :p:a_ledger_number, txt=:p:a_period + ' - ' + :p:a_period_desc
