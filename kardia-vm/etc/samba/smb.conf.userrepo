@@ -1,0 +1,49 @@
+# Kardia stuff
+[kardia]
+	comment = Kardia Source - %u
+	path = %H/kardia-git
+	browseable = yes
+	writable = yes
+	printable = no
+	guest ok = no
+	force group = kardia_src
+	valid users = +kardia_src
+	create mask = 0755
+	directory mask = 0755
+
+[centrallix]
+	comment = Centrallix Source - %u
+	path = %H/cx-git
+	browseable = yes
+	writable = yes
+	printable = no
+	guest ok = no
+	force group = kardia_src
+	valid users = +kardia_src
+	create mask = 0755
+	directory mask = 0755
+
+# Main repository
+[kardia-shared]
+	comment = Kardia Source (SHARED repository)
+	path = /usr/local/src/kardia-git
+	browseable = yes
+	writable = yes
+	printable = no
+	guest ok = no
+	force group = kardia_src
+	valid users = +kardia_src
+	create mask = 0775
+	directory mask = 0775
+
+[centrallix-shared]
+	comment = Centrallix Source (SHARED repository)
+	path = /usr/local/src/cx-git
+	browseable = yes
+	writable = yes
+	printable = no
+	guest ok = no
+	force group = kardia_src
+	valid users = +kardia_src
+	create mask = 0775
+	directory mask = 0775

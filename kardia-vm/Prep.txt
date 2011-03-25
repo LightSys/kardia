@@ -1,0 +1,23 @@
+Here's a list of things I did to prep the VM Image:
+
+    Removed some packages: kernel-devel redhat-lsb cups poppler poppler-utils mesa-libGL
+    Installed: samba mysql-devel
+    Added public key for EPEL
+    Installed: epel-release-5-4.noarch.rpm (this is for the git packages)
+    Installed: git gitk git-gui dialog
+    Edited: /root/.vimrc to add centrallix-friendly formatting options to it
+    Edited: /root/.bashrc to add vi alias to /usr/bin/vim
+    Copied: /root/anaconda-ks.cfg to /root/kickstart.cfg
+    Edited: /root/kickstart.cfg to reflect added/removed pkgs
+    Edited: /etc/pam.d/system-auth to add smbpasswd sync. This is tricky on RHEL5/CentOS5 boxen - it is not clear how to add pam_smbpass.so. The resulting edited file is lower down on this page.
+    Edited: /etc/samba/smb.conf to set node and workgroup names / descriptions, set load printers to 'no', added kardia and centrallix shares.
+    Created: /etc/samba/smb.conf.noshares, smb.conf.onerepo, smb.conf.userrepo, for the two different repository sharing modes
+    Ran 'lokkit' and set firewall to allow SSH, Samba, and 800:tcp
+    Change /etc/sysconfig/network 'HOSTNAME' to kardiadevel
+    Edited sudoers (visudo) to allow group kardia_root to sudo.
+    Edited /etc/ssh/sshd_config to allow only group kardia_ssh ("AllowGroups kardia_ssh")
+    Install Ghostscript -- needed to run PDF reports.
+    Install libpng-devel -- needed to run reports with images.
+    Disable prelink (to avoid using more disk space than needed during the prelinking process)
+
+The Kickstart file reflects some of the above package choices.  However, redhat-lsb and kernel-devel still had to be removed manually.

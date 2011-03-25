@@ -1,0 +1,24 @@
+# Kardia stuff
+[kardia]
+	comment = Kardia Source
+	path = /usr/local/src/kardia-git
+	browseable = yes
+	writable = yes
+	printable = no
+	guest ok = no
+	force group = kardia_src
+	valid users = +kardia_src
+	create mask = 0775
+	directory mask = 0775
+
+[centrallix]
+	comment = Centrallix Source
+	path = /usr/local/src/cx-git
+	browseable = yes
+	writable = yes
+	printable = no
+	guest ok = no
+	force group = kardia_src
+	valid users = +kardia_src
+	create mask = 0775
+	directory mask = 0775
