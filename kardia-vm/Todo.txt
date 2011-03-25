@@ -11,3 +11,5 @@ TODO Before Final Release of Kardia VM 1.0:
 3.  When pushing individual to shared, or pulling shared to individual, in
     Team mode, config the origin URL temporarily and then swap it back.  This
     allows the user to config a different URL for using an external IDE.
+
+4.  Timezone configuration?  Otherwise time is incorrect!

@@ -21,3 +21,13 @@ Here's a list of things I did to prep the VM Image:
     Disable prelink (to avoid using more disk space than needed during the prelinking process)
 
 The Kickstart file reflects some of the above package choices.  However, redhat-lsb and kernel-devel still had to be removed manually.
+
+Before zipping up the hard disk image, it is useful to fill the hard disk
+image up with a very large "zero file".  This overwrites residual deleted
+data with something highly compressible, allowing the .zip file of the VM to
+be significantly smaller:
+
+    dd if=/dev/zero of=/tmp/zerofile bs=10240
+    sync
+    rm /tmp/zerofile
+    sync
