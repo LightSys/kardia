@@ -1,0 +1,13 @@
+TODO Before Final Release of Kardia VM 1.0:
+
+1.  Delete host keys before generating VM, to make sure they are regenerated
+    uniquely for each time the VM is installed.  This prevents us having a
+    bunch of VM's out there with identical host keys.  That would be bad if
+    someone puts a VM live up on the internet.
+
+2.  When deleting directories, make sure we cd out of them and then back into
+    newly created ones (e.g., when re-initializing a repository).
+
+3.  When pushing individual to shared, or pulling shared to individual, in
+    Team mode, config the origin URL temporarily and then swap it back.  This
+    allows the user to config a different URL for using an external IDE.
