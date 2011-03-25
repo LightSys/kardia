@@ -55,7 +55,7 @@ motd "widget/component-decl"
 			dateadd(day, isnull(:m:s_valid_days,99999), :m:s_date_created) > getdate() and
 			:m:s_motd_id *= :mv:s_motd_id and
 			:mv:s_username = user_name() and
-			:u:username = :m:s_created_by
+			:u:username =* :m:s_created_by
 		order by
 			:m:s_date_modified
 		having
