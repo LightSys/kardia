@@ -86,6 +86,7 @@ create  index p_gl_acct_idx on p_payee (a_gl_account_code, a_gl_ledger_number, p
 /* m_list_membership */
 /* create  index m_list_membership_clustered_pk on m_list_membership (m_list_code, p_partner_key)*/ 
 /* go */
+create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_code);
 
 
 /* a_analysis_attr */

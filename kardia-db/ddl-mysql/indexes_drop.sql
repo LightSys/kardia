@@ -86,6 +86,7 @@ alter table p_payee drop index p_gl_acct_idx;
 /* m_list_membership */
 /* drop index m_list_membership.m_list_membership_clustered_pk */ 
 /* go */
+alter table m_list_membership drop index m_lists_by_partner;
 
 
 /* a_analysis_attr */
