@@ -1,0 +1,306 @@
+$Version=2$
+donor_report "system/report"
+    {
+    // Greg Beeley / LightSys - 15-Apr-2011
+    //
+    // This report prints a list of donors and how much they have given,
+    // given several possible criteria.
+    //
+    // Information Presented:
+    //   - Donor ID
+    //   - Donor Name (organization and/or first/last)
+    //   - Donor Address/City/State/Zip
+    //   - Total Amount Given
+    //   - Last Gift Date
+    //
+    // Report Criteria:
+    //   - GL Accounts to include
+    //   - GL Accounts to exclude
+    //   - Funds to include
+    //   - Funds to exclude
+    //   - Starting period
+    //   - Ending period
+    //   - Minimum aggregate total
+    //   - Maximum aggregate total
+    //   - States/Provinces to include
+    //   - States/Provinces to exclude
+    //
+    // Other Report Options:
+    //   - Create Mailing List (list ID, list description, list type)
+    //
+    title = "Donor Report";
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.0;
+    marginright=2.0;
+    margintop=3;
+    marginbottom=3;
+
+    // Report Parameters
+    ledger "report/parameter" { type=string; }
+    include_accts "report/parameter" { type=string; }
+    exclude_accts "report/parameter" { type=string; }
+    include_funds "report/parameter" { type=string; }
+    exclude_funds "report/parameter" { type=string; }
+    start_period "report/parameter" { type=string; }
+    end_period "report/parameter" { type=string; }
+    min_total "report/parameter" { type=integer; }  // FIXME - money type
+    max_total "report/parameter" { type=integer; }  // FIXME - money type
+    include_states "report/parameter" { type=string; }
+    exclude_states "report/parameter" { type=string; }
+
+    // Add-to-mailing-list Parameters
+    list_code "report/parameter" { type=string; }
+    list_desc "report/parameter" { type=string; default=runserver("Donor List on " + getdate()); }
+    list_type "report/parameter" { type=string; default="S"; }
+
+    // Query to get site information
+    site_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			OBJECT /apps/kardia/data/Site.struct
+		";
+	}
+
+    // Get ledger info
+    ledger_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/a_ledger/rows
+		WHERE
+			:a_ledger_number = :this:ledger
+		";
+	}
+
+    // Create mailing list
+    make_list_qy "report/query"
+	{
+	sql = runserver(condition(:this:list_code is null or :this:list_desc is null,
+		"SELECT
+			m_list_code = NULL
+		",
+
+		"INSERT
+			/apps/kardia/data/Kardia_DB/m_list/rows
+		SELECT
+			m_list_code = :this:list_code,
+			m_list_description = :this:list_desc,
+			m_list_type = :this:list_type,
+			m_list_frozen = 0,
+			m_list_status = 'A',
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		;
+
+		SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/m_list/rows
+		WHERE
+			:m_list_code = :this:list_code
+		"));
+	}
+
+    // Create list memberships
+    add_to_list_qy "report/query"
+	{
+	sql = runserver(condition(:this:list_code is null or :this:list_desc is null,
+		"SELECT
+			m_list_code = NULL
+		",
+
+		"INSERT
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows
+		SELECT
+			m_list_code = :this:list_code,
+			p_partner_key = :donors_qy:p_partner_key,
+			m_num_copies = 0,
+			m_member_type = 'M',
+			m_membership_status = 'A',
+			m_complimentary = 1,
+			m_show_contact = 1,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		;
+
+		SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows
+		WHERE
+			:m_list_code = :this:list_code and
+			:p_partner_key = :donors_qy:p_partner_key
+		"));
+	}
+
+    // Main donor/gift query
+    donors_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:p:p_partner_key,
+			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			:p:p_org_name,
+			:p:p_surname,
+			:p:p_given_name,
+			:p:p_title,
+			:pl:p_in_care_of,
+			:pl:p_address_1,
+			:pl:p_address_2,
+			:pl:p_address_3,
+			:pl:p_city,
+			:pl:p_state_province,
+			:pl:p_postal_code,
+			:pl:p_country_code,
+			gift_total = isnull(sum(:i:a_amount), $0),
+			last_gift = max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows pl
+		WHERE
+			:g:a_ledger_number = :this:ledger and
+			" + condition(:this:start_period is null, "", ":g:a_period >= :this:start_period and ") + "
+			" + condition(:this:end_period is null, "", ":g:a_period <= :this:end_period and ") + "
+			:g:a_posted = 1 and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			" + condition(:this:include_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:include_accts) > 0 and") + "
+			" + condition(:this:exclude_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:exclude_accts) == 0 and") + "
+			" + condition(:this:include_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:include_funds) > 0 and") + "
+			" + condition(:this:exclude_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:exclude_funds) == 0 and") + "
+			:p:p_partner_key =* :g:p_donor_partner_id and
+			:pl:p_partner_key =* :p:p_partner_key
+		GROUP BY
+			:g:p_donor_partner_id
+		HAVING
+			" + condition(:this:max_total is null, "", ":gift_total <= " + :this:max_total + " and") + "
+			" + condition(:this:min_total is null, "", ":gift_total >= " + :this:min_total + " and") + "
+			" + condition(:this:include_states is null, "", "charindex(:p_state_province, " + quote(:this:include_states) + ") > 0 and") + "
+			" + condition(:this:exclude_states is null, "", "charindex(:p_state_province, " + quote(:this:exclude_states) + ") == 0 and") + "
+			1 = 1
+		");
+	// FIXME - collision between report 'this' and having clause 'this' means
+	// we had to use programmatic sql building above instead of normal params.
+
+	gift_sum "report/aggregate" { compute="sum(:gift_total)"; reset = 0; }
+	}
+
+    // Main body of the report.
+    ledger_form "report/form"
+	{
+	moneyformat = "-###,###,##0.00";
+	dateformat = "dd-MMM-yyyy";
+
+	source = ledger_qy,site_qy,make_list_qy;
+
+	hdrimg "report/image"
+	    {
+	    x=67.85;y=0;
+	    height=4;
+	    //width=runserver(4.0 * :site_qy:site_report_logo_width / :site_qy:site_report_logo_height);
+	    width = 12.15;
+	    //height=12.15 * /apps/kardia/data/Site.struct:site_report_logo_height / /apps/kardia/data/Site.struct:site_report_logo_width;
+	    source = /apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=80; height=4;
+	    font=helvetica;
+	    align=left;
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Donor Report\n"); }
+	    t_d1 "report/data" { fontsize=10; value = runserver("For Ledger " + :ledger_qy:a_ledger_desc + "\n"); }
+	    t_d3 "report/data" { condition=runserver(not (:this:list_code is null or :this:list_desc is null));
+			fontsize=10; value = runserver("Creating List: " + :this:list_code + " (" + :this:list_desc + ")\n"); }
+	    t_d4 "report/data" { condition=runserver(not (:this:start_period is null and :this:end_period is null));
+			fontsize=10; value = runserver("Period: " + isnull("From " + :this:start_period + " ", "") + isnull("Through " + :this:end_period, "") + "\n"); }
+	    t_d5 "report/data" { condition=runserver(not (:this:include_accts is null));
+			fontsize=10; value = runserver("Only GL Accounts: " + :this:include_accts + "\n"); }
+	    t_d6 "report/data" { condition=runserver(not (:this:exclude_accts is null));
+			fontsize=10; value = runserver("Excluding GL Accounts: " + :this:exclude_accts + "\n"); }
+	    t_d7 "report/data" { condition=runserver(not (:this:include_funds is null));
+			fontsize=10; value = runserver("Only Funds: " + :this:include_funds + "\n"); }
+	    t_d8 "report/data" { condition=runserver(not (:this:exclude_funds is null));
+			fontsize=10; value = runserver("Excluding Funds: " + :this:exclude_funds + "\n"); }
+	    t_d9 "report/data" { condition=runserver(not (:this:min_total is null and :this:max_total is null));
+			fontsize=10; value = runserver("Gift Total: " + isnull("At Least " + :this:min_total + " ", "") + isnull("Not Exceeding " + :this:max_total, "") + "\n"); }
+	    t_d10 "report/data" { condition=runserver(not (:this:include_states is null));
+			fontsize=10; value = runserver("Only States: " + :this:include_states + "\n"); }
+	    t_d11 "report/data" { condition=runserver(not (:this:exclude_states is null));
+			fontsize=10; value = runserver("Excluding States: " + :this:exclude_states + "\n"); }
+	    t_d12 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+	    }
+
+	donor_table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=5;
+	    widths=5,19,36,8,10;
+	    colsep=0.5;
+	    nullformat="";
+	    moneyformat = "-###,###,##0.00";
+	    dateformat = "dd-MMM-yyyy";
+	    bottomborder=0.3;
+	    margintop=0;
+	    source=donors_qy,add_to_list_qy;
+
+	    hdr "report/table-row"
+		{
+		header = yes;
+		font=helvetica;
+		fontsize=8;
+		topborder=0.3;
+		bottomborder=0.05;
+
+		tg_id "report/table-cell" { value='Donor #'; align=center; }
+		tg_name "report/table-cell" { value='Donor Name'; align=center; }
+		tg_addr "report/table-cell" { value='Donor Address'; align=center; }
+		tg_last "report/table-cell" { value='Last Gift'; align=center; }
+		tg_amt "report/table-cell" { value='Total Given'; align=center; }
+		}
+
+	    one_donor "report/table-row"
+		{
+		allowbreak=no;
+		fontsize=9;
+		font=helvetica;
+		margintop = 0.1;
+
+		d_id "report/table-cell" { value=runserver(:donors_qy:p_partner_key); }
+		d_name "report/table-cell" { value=runserver(:donors_qy:acct_name); }
+		d_addr "report/table-cell" { value=runserver(isnull(:donors_qy:p_in_care_of + " ","") + isnull(:donors_qy:p_address_1 + " ","") + isnull(:donors_qy:p_address_2 + " ","") + isnull(:donors_qy:p_address_3 + " ","") + isnull(:donors_qy:p_city + ", " + :donors_qy:p_state_province + " ","") + isnull(:donors_qy:p_postal_code + " ","")); }
+		d_last "report/table-cell" { value=runserver(:donors_qy:last_gift); }
+		d_amt "report/table-cell" { value=runserver(:donors_qy:gift_total); font=courier; align=right; }
+		}
+
+	    totals "report/table-row"
+		{
+		summary=yes;
+		fontsize=9;
+		font=helvetica;
+		topborder = 0.03;
+		margintop = 0.1;
+
+		s_id "report/table-cell" { value=""; }
+		s_name "report/table-cell" { value=""; }
+		s_addr "report/table-cell" { value=""; }
+		s_last "report/table-cell" { value="TOTAL:"; style=bold; }
+		s_amt "report/table-cell" { value=runserver(:donors_qy:gift_sum); font=courier; align=right; style=bold; }
+		}
+	    }
+	}
+    }
+
