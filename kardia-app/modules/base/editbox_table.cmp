@@ -10,6 +10,7 @@ editbox_table "widget/component-decl"
     apply_hints_to = eb;
 
     popup_width "widget/parameter" { type=integer; default=250; }
+    popup_height "widget/parameter" { type=integer; default=300; }
     form "widget/parameter" { type=object; find_container="widget/form"; }
     label_width "widget/parameter" { type=integer; default=100; }
     text "widget/parameter" { type=string; default=null; }
@@ -61,6 +62,7 @@ editbox_table "widget/component-decl"
 	label = runserver(:this:popup_text);
 	toplevel = yes;
 	popup_width = runserver(:this:popup_width);
+	popup_height = runserver(:this:popup_height);
 	object_name = runserver(:this:object_name);
 	search_field_list = runserver(:this:search_field_list);
 	search_objname = runserver(:this:search_objname);

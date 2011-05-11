@@ -244,7 +244,7 @@ p_partner_component "widget/component-decl"
 				    {
 				    spacing=10;
 				    p_no_solicitations_cmp "widget/component" { width=130; label_width=103; path="/sys/cmp/smart_field.cmp"; field=p_no_solicitations; text="No Solicit.:"; ctl_type="checkbox"; form=p_partner_form; tooltip="Do not solicit from this partner" ; }
-				    p_no_mail_cmp "widget/component" { width=80; path="/sys/cmp/smart_field.cmp"; field=p_no_mail; text="No Mail:"; ctl_type="checkbox"; form=p_partner_form; tooltip="Do not send any mail to this partner" ; }
+				    p_no_mail_cmp "widget/component" { width=80; label_width=60; path="/sys/cmp/smart_field.cmp"; field=p_no_mail; text="No Mail:"; ctl_type="checkbox"; form=p_partner_form; tooltip="Do not send any mail to this partner" ; }
 				    }
 				p_status_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; form=p_partner_form; field=p_status_code; text="Status:"; ctl_type="dropdown"; sql="select :text, :tag FROM /apps/kardia/data/Kardia_DB/_p_status_code/rows";}
 				p_partner_class_dropdown "widget/component"
@@ -260,7 +260,7 @@ p_partner_component "widget/component-decl"
 				p_gender_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; form=p_partner_form; field=p_gender; text="Gender:"; tooltip="The partners gender: M=Male F=Female C=Couple O=Other (for organizations)"; ctl_type="dropdown"; sql="SELECT :text, :tag FROM /apps/kardia/data/Kardia_DB/_p_partner_gender/rows";}
 				}
 			    }
-			p_comments_cmp "widget/component" { height=20; label_width=96; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments:"; lookup_width=305; ctl_type="editbox"; form=p_partner_form; tooltip=""; }
+			p_comments_cmp "widget/component" { height=20; label_width=100; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments:"; lookup_width=305; ctl_type="editbox"; form=p_partner_form; tooltip=""; }
 			}
 		    related_pane "widget/pane"
 			{
@@ -308,7 +308,7 @@ p_partner_component "widget/component-decl"
             		person_location_cmp "widget/component"
                             {
                             path="/apps/kardia/modules/base/p_location.cmp";
-                            x=0; y=0; width=833; height=358;
+                            x=10; y=10; width=806; height=338;
                             }
                         }
                     partner_rest_tab "widget/tabpage"

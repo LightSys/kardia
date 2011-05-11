@@ -12,7 +12,7 @@ tab_menu "widget/component-decl"
 
 	tabpage_rpt "widget/repeat"
 	    {
-	    sql = "select modname = :cx__pathpart4, :module_name, :module_abbrev, :module_description from object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' order by isnull(:module_sequence,10000)";
+	    sql = "select modname = :cx__pathpart4, :module_name, :module_abbrev, :module_description from object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' order by :module_sequence";
 
 	    main_tabpage "widget/tabpage"
 		{
@@ -47,7 +47,7 @@ tab_menu "widget/component-decl"
 
 		progs_vbox "widget/vbox"
 		    {
-		    x=8; y=116; width=522; height=160;
+		    x=8; y=116; width=522; height=136;
 		    cellsize=20; spacing=4; column_width=176;
 
 		    progs_rpt "widget/repeat"
@@ -103,7 +103,7 @@ tab_menu "widget/component-decl"
 
 		rpts_vbox "widget/vbox"
 		    {
-		    x=8; y=324; width=522; height=160;
+		    x=8; y=324; width=522; height=136;
 		    cellsize=20; spacing=4; column_width=176;
 
 		    rpts_rpt "widget/repeat"

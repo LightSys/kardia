@@ -13,6 +13,7 @@ popup_table "widget/component-decl"
     label "widget/parameter" { type=string; default="List"; }
     object_name "widget/parameter" { type=string; default="Item"; }
     popup_width "widget/parameter" { type=integer; default=250; }
+    popup_height "widget/parameter" { type=integer; default=300; }
     key_name "widget/parameter" { type=string; default="name"; }
 
     Opened "widget/component-decl-event" {}
@@ -179,7 +180,7 @@ popup_table "widget/component-decl"
 	widget_class = "popup";
 	titlebar = no;
 	x=0; y=0;
-	width=runserver(:this:popup_width); height=300;
+	width=runserver(:this:popup_width); height=runserver(:this:popup_height);
 	toplevel = yes;
 
 	popup_open "widget/connector" { event = Open; action = Opened; target = popup_table; }
@@ -187,7 +188,7 @@ popup_table "widget/component-decl"
 
 	vb "widget/vbox"
 	    {
-	    x=0;y=4;width=runserver(:this:popup_width - 2);height=294;
+	    x=0;y=4;width=runserver(:this:popup_width - 2);height=runserver(:this:popup_height - 6);
 	    spacing=6;
 
 	    lbl "widget/label" { height=16; align=center; text=runserver(:this:label); style=bold; fgcolor=white; }
@@ -204,7 +205,7 @@ popup_table "widget/component-decl"
 		table "widget/table"
 		    {
 		    x=8;y=0;width=runserver(:this:popup_width - 2 - 16);
-		    height=256;
+		    height=runserver(:this:popup_height - 44);
 
 		    textcolor=white;
 		    row1_bgcolor = "#153f5f";
