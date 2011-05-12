@@ -1,0 +1,51 @@
+                     Kardia Virtual Appliance Beta 3 README
+                   (C) 2011 LightSys Technology Services, Inc.
+                                  May 11, 2011
+-------------------------------------------------------------------------------
+
+Kardia is designed to help meet the software needs of non-profit organizations
+in the realm of management and finance, built entirely upon open standards and
+open software. 
+
+This is a VM image you can run in VMware/VirtualBox/Xen/HyperV.  Targeted at
+developers and those who want to try Kardia and Centrallix, it makes
+installation & setup simple.  It is based on an up-to-date CentOS 5.6 install
+and features a menu-based interface for setup and use.
+
+The VM uses Git to download the latest Kardia and Centrallix source code, and
+provides multiple workflow and development options.  The Git repositories are
+shared via Samba, so an external IDE can be used to develop, as well.  Or, you
+can just as easily use the VM to simply try out Kardia.
+
+At the time of writing, the current Git version of Kardia is not yet complete.
+This means that you'll find some things broken or missing.  We're working on
+it!  (we do have a live Kardia deployment at one of our clients)
+
+The VM's default password is in the PDF documentation.
+
+Documentation:
+
+    ApplianceQuickReference_1_0_Beta3.pdf (302 KB)
+
+VM Image (md5 51823a988e79ad44228d55ffb8e4f66f):
+
+    KardiaVM_1_0_Beta3.zip (384 MB)
+
+Requirements:
+
+    - x86-based system (Windows, Linux, or Mac)
+    - 2.5 GB free hard disk space (4.5 GB for Hyper-V)
+    - 2 GB memory in your computer
+    - Virtualization Software (tested: VMware Player, VirtualBox, Xen, Hyper-V)
+    - Firefox 3.x or 4.x
+    - Internet connection
+
+License:
+
+    This is free open-source software. :)
+
+    Kardia is under the GNU GPL v2.
+    Centrallix is under the GNU GPL v2 and LGPL.
+    CentOS 5.6 is under various open source licenses - see individual packages.
+    The VM management tools we've written are under the GPL v2.
+
