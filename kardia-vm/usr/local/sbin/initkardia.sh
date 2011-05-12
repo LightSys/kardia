@@ -41,6 +41,10 @@ set cino={1s,:0,t0,f1s
 set sts=4" >> /root/.vimrc
 echo "alias vi=/usr/bin/vim" >> /root/.bashrc
 
+# Remove SSH host keys, to force them to be re-generated at each Kardia VM
+# installation.
+/bin/rm -f /etc/ssh/*host*
+
 # Bring up the eth0 network interface (alas, if this script is on the VM, then
 # eth0 is probably already configured properly...)
 ETH0=/etc/sysconfig/network-scripts/ifcfg-eth0
