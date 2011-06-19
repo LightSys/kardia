@@ -42,7 +42,7 @@ p_partner_component "widget/component-decl"
 		");
         baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
 	replicasize = 10;
-	readhead = 5;
+	readahead = 5;
 	autoquery = never;
 	}
 
