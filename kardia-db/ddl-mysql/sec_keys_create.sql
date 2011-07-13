@@ -76,8 +76,17 @@ alter table a_subtrx_gift_group
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_recip_id_idx unique  (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_mcode_idx unique  (a_motivational_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
+alter table a_motivational_code
+	add constraint a_motiv_code_list unique  (m_list_code, a_ledger_number, a_motivational_code);
+
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_acct_idx unique  (a_cash_account_code, a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
 
 alter table a_subtrx_deposit
 	add constraint a_subtrx_dep_acct_idx unique  (a_account_code, a_ledger_number, a_batch_number);
+
+alter table c_chat
+	add constraint c_public_idx unique  (c_public, c_chat_id);

@@ -131,8 +131,8 @@ receipt_report "system/report"
 				:item:a_account_code,
 				:item:a_amount,
 				:item:a_comment,
-				:item:a_personal_gift,
-				:item:a_anonymous_gift
+				:item:a_non_tax_deductible,
+				:item:a_confidential
 			FROM
 				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows item
 			WHERE
@@ -210,7 +210,7 @@ receipt_report "system/report"
 	// K = receipt_non_tax_deductible_query = D C
 	// L = ytd_tax_deductible_query	    = F B G N
 	
-	// B = sum(condition([not]:item:a_personal_gift,:item:a_amount, $0)) +[or minus] :group:a_goods_provided
+	// B = sum(condition([not]:item:a_non_tax_deductible,:item:a_amount, $0)) +[or minus] :group:a_goods_provided
 	
 	// C = 
 	// 		:group:a_ledger_number = :this:ledger_number and
@@ -248,7 +248,7 @@ receipt_report "system/report"
 	receipt_tax_deductible_query "report/query"
 	{
 		sql = runserver("SELECT
-			total = (convert(money,sum(condition(:item:a_personal_gift == '0', :item:a_amount, 0))) - convert(money,:grp:a_goods_provided))
+			total = (convert(money,sum(condition(:item:a_non_tax_deductible == '0', :item:a_amount, 0))) - convert(money,:grp:a_goods_provided))
 		FROM
 				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows grp,
 				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows item
@@ -266,7 +266,7 @@ receipt_report "system/report"
 	receipt_non_tax_deductible_query "report/query"
 	{
 		sql = runserver("SELECT
-			total = convert(money,sum(condition(:item:a_personal_gift == '1', :item:a_amount, 0)) + :grp:a_goods_provided)
+			total = convert(money,sum(condition(:item:a_non_tax_deductible == '1', :item:a_amount, 0)) + :grp:a_goods_provided)
 		FROM
 				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows grp,
 				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows item
@@ -284,7 +284,7 @@ receipt_report "system/report"
 	ytd_tax_deductible_query "report/query"
 	{
 		sql = runserver("SELECT
-			total = sum(sum(condition(:item:a_personal_gift == '0', :item:a_amount, 0)) - :grp:a_goods_provided),
+			total = sum(sum(condition(:item:a_non_tax_deductible == '0', :item:a_amount, 0)) - :grp:a_goods_provided),
 			year1 = datepart('year', :receipt_group_query:official_receipt_date),
 			year2 = datepart('year', isnull(:grp:a_gift_postmark_date, :grp:a_gift_received_date))
 		FROM
@@ -378,11 +378,11 @@ receipt_report "system/report"
 				
 				cell_comment "report/table-cell" { value=runserver( 
 					isnull(:receipt_item_query:a_comment, " ") + "  " +
-					condition(:receipt_item_query:a_anonymous_gift == 1, "(Anonymous)", "")
+					condition(:receipt_item_query:a_confidential == 1, "(Anonymous)", "")
 				); style=bold; align=left; }
 				
 				cell_cost_center_code "report/table-cell" { value=runserver( isnull(:receipt_item_query:a_cost_center, "<blank>")); style=bold; align=left; }
-				cell_non_tax_deductible "report/table-cell" { value=runserver( isnull(condition(:receipt_item_query:a_personal_gift==1, 'X ', ''), "<blank>")); style=bold; align=center; }
+				cell_non_tax_deductible "report/table-cell" { value=runserver( isnull(condition(:receipt_item_query:a_non_tax_deductible==1, 'X ', ''), "<blank>")); style=bold; align=center; }
 				cell_amount "report/table-cell" { value=runserver(isnull(:receipt_item_query:a_amount, "<blank>")); style=bold; align=right; }
 				
 			} // END - receipt_line_item_row "report/table-row"
@@ -569,11 +569,11 @@ receipt_report "system/report"
 				
 				cell_comment_bottom "report/table-cell" { value=runserver( 
 					isnull(:receipt_item_query:a_comment, " ") + "  " +
-					condition(:receipt_item_query:a_anonymous_gift == 1, "(Anonymous)", "")
+					condition(:receipt_item_query:a_confidential == 1, "(Anonymous)", "")
 				); style=bold; align=left; }
 				
 				cell_cost_center_code_bottom "report/table-cell" { value=runserver( isnull(:receipt_item_query:a_cost_center, "<blank>")); style=bold; align=left; }
-				cell_non_tax_deductible_bottom "report/table-cell" { value=runserver( isnull(condition(:receipt_item_query:a_personal_gift==1, 'X ', ''), "<blank>")); style=bold; align=center; }
+				cell_non_tax_deductible_bottom "report/table-cell" { value=runserver( isnull(condition(:receipt_item_query:a_non_tax_deductible==1, 'X ', ''), "<blank>")); style=bold; align=center; }
 				cell_amount_bottom "report/table-cell" { value=runserver(isnull(:receipt_item_query:a_amount, "<blank>")); style=bold; align=right; }
 				
 			} // END - receipt_line_item_row "report/table-row"

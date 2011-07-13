@@ -567,10 +567,11 @@ gift_entry "widget/component-decl"
 				admin = isnull(:g:a_gift_admin_fee + ' ', '') + isnull(:g:a_gift_admin_subtype, ''),
 				:g:a_recv_document_id,
 				:g:p_recip_partner_id,
-				:g:a_anonymous_gift,
-				:g:a_personal_gift,
+				:g:a_confidential,
+				:g:a_non_tax_deductible,
 				:g:a_posted,
 				:g:a_posted_to_gl,
+				:g:a_motivational_code,
 				:g:a_comment,
 				:g:s_date_modified,
 				:g:s_modified_by,
@@ -633,8 +634,8 @@ gift_entry "widget/component-decl"
 			    t_cc_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=120; }
 			    t_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=120; }
 			    t_itemamt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
-			    t_pers "widget/table-column" { title="Pers"; fieldname="a_personal_gift"; width=30; type=check; }
-			    t_anon "widget/table-column" { title="Anon"; fieldname="a_anonymous_gift"; width=30; type=check; }
+			    t_pers "widget/table-column" { title="NDed"; fieldname="a_non_tax_deductible"; width=30; type=check; }
+			    t_anon "widget/table-column" { title="Conf"; fieldname="a_confidential"; width=30; type=check; }
 			    t_admin "widget/table-column" { title="Adm"; fieldname="admin"; width=35; }
 			    }
 			}
@@ -709,39 +710,7 @@ gift_entry "widget/component-decl"
 
 			    desig_vbox2 "widget/vbox"
 				{
-				width=221;
-				spacing=6;
-
-				f_desig_recvdoc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Check No:'; field='a_recv_document_id'; ctl_type=editbox; }
-				f_desig_amount "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Amount:'; field='a_amount'; ctl_type=editbox; amt_hints "widget/hints" { default=runclient(''); } }
-				//f_desig_custompct "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Set Admin %:'; field='a_gift_admin_fee'; ctl_type=editbox; empty_desc="optional"; }
-				f_desig_pers "widget/component"
-				    {
-				    height=20;
-				    width=150;
-				    path="/sys/cmp/smart_field.cmp";
-				    label_width=125;
-				    text='Personal Gift?';
-				    field='a_personal_gift';
-				    ctl_type=checkbox;
-
-				    pers_hints "widget/hints" { default=runclient(0); style=notnull; }
-
-				    auto_sel_4100_2010 "widget/connector"
-					{
-					event=DataChange;
-					event_condition=runclient(:FromOSRC == 0 and (char_length(:f_desig_acct:value) == 0 or :f_desig_acct:value == '4100' or :f_desig_acct:value == '2120'));
-					target = f_desig_acct;
-					action=SetValue;
-					Value=runclient(condition(:Value, '2120', '4100'));
-					}
-				    }
-				f_desig_anon "widget/component" { height=20; width=150; path="/sys/cmp/smart_field.cmp"; label_width=125; text='Anonymous Gift?'; field='a_anonymous_gift'; ctl_type=checkbox; anon_hints "widget/hints" { default=runclient(0); style=notnull; } }
-				}
-
-			    desig_vbox1 "widget/vbox"
-				{
-				width=330;
+				width=275;
 				spacing=6;
 
 				f_desig_cc "widget/component"
@@ -750,13 +719,14 @@ gift_entry "widget/component-decl"
 				    path="/apps/kardia/modules/base/editbox_table.cmp";
 				    field='a_cost_center';
 				    text='Designation:';
-				    label_width=120;
+				    label_width=100;
 				    popup_width=380;
-				    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')' from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger));
+				    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
 				    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
 				    key_name="a_cost_center";
 				    object_name="Fund / Cost Center";
 				    popup_text="Select Designation:";
+				    empty_desc="required";
 
 				    desig_hints "widget/hints" { style=applyonchange,uppercase; }
 
@@ -789,13 +759,21 @@ gift_entry "widget/component-decl"
 					a_ledger_number = runclient(:receipts_osrc:a_ledger_number);
 					a_cost_center = runclient(:Value);
 					}
+
+				    set_accts_based_on_cc "widget/connector"
+					{
+					event = DataChange;
+					target = f_desig_acct_dd;
+					action = SetItems;
+					SQL=runclient("select label = :a:a_account_code + ': ' + :a:a_acct_desc, value = :a:a_account_code, selected = 1 from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr, /apps/kardia/data/Kardia_DB/a_account/rows a where :cr:a_cost_center = " + quote(:f_desig_cc:content) + " and :cr:a_ledger_number = " + quote(:gift_entry:ledger) + " and :a:a_ledger_number = :cr:a_ledger_number and :a:a_account_code = :cr:a_account_code");
+					}
 				    }
 
 				ccinfo_osrc "widget/osrc"
 				    {
 				    a_cost_center "widget/parameter" { type=string; }
 				    a_ledger_number "widget/parameter" { type=string; }
-				    sql = "select txt = condition(char_length(:parameters:a_cost_center) > 0, isnull(first(:a_cc_desc), '** INVALID **'), 'required') from /apps/kardia/data/Kardia_DB/a_cost_center/rows where :a_cost_center = :parameters:a_cost_center and :a_ledger_number = :parameters:a_ledger_number";
+				    sql = "select txt = condition(char_length(:parameters:a_cost_center) > 0, isnull(first(:c:a_cc_desc), '** INVALID **'), 'required') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_cost_center = :parameters:a_cost_center and :c:a_ledger_number = :parameters:a_ledger_number and :cr:a_ledger_number = :c:a_ledger_number and :cr:a_cost_center = :c:a_cost_center and :cr:a_receiptable = 1";
 				    readahead = 2;
 				    replicasize = 2;
 				    autoquery = never;
@@ -809,13 +787,29 @@ gift_entry "widget/component-decl"
 					}
 				    }
 
+				f_desig_recvdoc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Check No:'; field='a_recv_document_id'; ctl_type=editbox; }
+				f_desig_amount "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Amount:'; field='a_amount'; ctl_type=editbox; amt_hints "widget/hints" { default=runclient(''); } empty_desc="required"; }
+
+				f_desig_comment "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Comments:'; field='a_comment'; ctl_type=editbox; }
+
+				//f_desig_custompct "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Set Admin %:'; field='a_gift_admin_fee'; ctl_type=editbox; empty_desc="optional"; }
+				}
+
+			    desig_vbox1 "widget/vbox"
+				{
+				width=275;
+				spacing=6;
+
+				f_desig_motiv "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Motivation Cd.:'; field='a_motivational_code'; ctl_type=editbox; }
+
 				f_desig_acct "widget/component"
 				    {
+				    condition = 0;
 				    height=20;
 				    path="/apps/kardia/modules/base/editbox_table.cmp";
 				    field='a_account_code';
 				    text='GL Acct:';
-				    label_width=120;
+				    label_width=100;
 				    popup_width=380;
 				    popup_sql=runserver("select value = :a:a_account_code, label = :a:a_account_code + ' - ' + :a:a_acct_desc + isnull(' (legacy # ' + :a:a_legacy_code + ')', '') from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_is_posting = 1 and :a:a_ledger_number = " + quote(:this:ledger));
 				    search_field_list="a_account_code*,*a_acct_desc*,a_legacy_code*";
@@ -825,22 +819,87 @@ gift_entry "widget/component-decl"
 
 				    ac_hints "widget/hints" { default=runclient('4100'); style=readonly; }
 				    }
+
+				f_desig_acct_dd "widget/component"
+				    {
+				    height = 20;
+				    path = "/sys/cmp/smart_field.cmp";
+				    label_width=100;
+				    text = "GL Acct:";
+				    field = "a_account_code";
+				    ctl_type = dropdown;
+				    sql = "select '','' where 1 = 0";
+				    invalid_select_default = yes;
+
+				    set_nonded_on_glacct_change "widget/connector"
+					{
+					event=DataChange;
+					event_condition=runclient(char_length(:Value) > 0 and (:desig_form:form_mode == 'New' or :desig_form:form_mode == 'Modify'));
+					target = acctinfo_osrc;
+					action=QueryParam;
+					a_ledger_number = runclient(:receipts_osrc:a_ledger_number);
+					a_cost_center = runclient(:f_desig_cc:content);
+					a_account_code = runclient(:Value);
+					}
+
+				    ac_hints "widget/hints" { style=notnull; }
+				    }
+
+				f_desig_ckboxes "widget/hbox"
+				    {
+				    height=20;
+				    spacing=4;
+				    f_desig_pers "widget/component"
+					{
+					width=125;
+					path="/sys/cmp/smart_field.cmp";
+					label_width=100;
+					text='Non Tax-Ded.?';
+					field='a_non_tax_deductible';
+					ctl_type=checkbox;
+
+					pers_hints "widget/hints" { default=runclient(0); style=notnull; }
+
+					auto_sel_4100_2010 "widget/connector"
+					    {
+					    condition = 0;
+					    event=DataChange;
+					    event_condition=runclient(:FromOSRC == 0 and (char_length(:f_desig_acct:value) == 0 or :f_desig_acct:value == '4100' or :f_desig_acct:value == '2120'));
+					    target = f_desig_acct;
+					    action=SetValue;
+					    Value=runclient(condition(:Value, '2120', '4100'));
+					    }
+					}
+				    f_desig_anon "widget/component" { width=148; path="/sys/cmp/smart_field.cmp"; label_width=90; text='Confidential?'; field='a_confidential'; ctl_type=checkbox; anon_hints "widget/hints" { default=runclient(0); style=notnull; } }
+				    }
+
 				f_desig_customtyp "widget/component"
 				    {
 				    height=20;
 				    path="/sys/cmp/smart_field.cmp";
-				    label_width=120;
-				    text='Admin Fee Type:';
+				    label_width=100;
+				    text='Admin Fee:';
 				    field='a_gift_admin_subtype';
 				    ctl_type=dropdown;
 				    }
-				f_desig_comment "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Comments:'; field='a_comment'; ctl_type=editbox; }
 
-				ckbox_hbox "widget/hbox"
+				acctinfo_osrc "widget/osrc"
 				    {
-				    height=20;
-				    spacing=0;
+				    a_account_code "widget/parameter" { type=string; }
+				    a_cost_center_2 "widget/parameter" { param_name=a_cost_center; type=string; }
+				    a_ledger_number_2 "widget/parameter" { param_name=a_ledger_number; type=string; }
+				    sql = "select check = :a_non_tax_deductible from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr where :cr:a_cost_center = :parameters:a_cost_center and :cr:a_ledger_number = :parameters:a_ledger_number and :cr:a_account_code = :parameters:a_account_code";
+				    readahead = 2;
+				    replicasize = 2;
+				    autoquery = never;
 
+				    set_check_based_on_acct "widget/connector"
+					{
+					event = EndQuery;
+					target = f_desig_pers;
+					action = SetValue;
+					Value = runclient(:acctinfo_osrc:check);
+					}
 				    }
 				}
 			    }

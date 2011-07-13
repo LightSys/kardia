@@ -235,6 +235,10 @@ drop table a_subtrx_gift_rcptcnt;
 drop table a_cc_auto_subscribe;
 
 
+/* a_motivational_code */
+drop table a_motivational_code;
+
+
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb;
 
@@ -249,6 +253,18 @@ drop table a_subtrx_deposit;
 
 /* a_subtrx_cashxfer */
 drop table a_subtrx_cashxfer;
+
+
+/* c_message */
+drop table c_message;
+
+
+/* c_chat */
+drop table c_chat;
+
+
+/* c_member */
+drop table c_member;
 
 
 /* s_user_data */

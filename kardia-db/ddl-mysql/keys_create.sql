@@ -193,6 +193,9 @@ alter table a_subtrx_gift_rcptcnt
 alter table a_cc_auto_subscribe
 	add constraint a_cc_auto_subscribe_pk primary key  (a_cost_center, a_ledger_number, m_list_code);
 
+alter table a_motivational_code
+	add constraint a_motivational_code_pk primary key  (a_ledger_number, a_motivational_code);
+
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
 
@@ -204,6 +207,15 @@ alter table a_subtrx_deposit
 
 alter table a_subtrx_cashxfer
 	add constraint a_subtrx_cashxfer_pk primary key  (a_ledger_number, a_batch_number, a_journal_number);
+
+alter table c_message
+	add constraint c_messages_pk primary key  (chat_id, c_message_id);
+
+alter table c_chat
+	add constraint c_chats_pk primary key  (c_chat_id);
+
+alter table c_member
+	add constraint c_chats_pk primary key  (c_chat_id, s_username);
 
 alter table s_user_data
 	add constraint s_user_data_pk primary key  (s_username);

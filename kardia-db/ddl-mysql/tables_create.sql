@@ -1272,8 +1272,9 @@ create table a_subtrx_gift_item (
         a_calc_admin_fee_type                 char(3)  null,           /* admin fee type as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_subtype              char(1)  null,           /* admin fee subtype as calculated by the system (set by admin fee logic) --  */
         p_recip_partner_id                    char(10)  null,          /* Partner ID of gift recipient. May not be needed for non-pool based financial setups. --  */
-        a_anonymous_gift                      bit  default 0,          /* Set this if the donor wishes to remain anonymous (to the recipient) --  */
-        a_personal_gift                       bit  default 0,          /* Set this if the gift is a personal gift (i.e., payable to missionary instead of support gift) --  */
+        a_confidential                        bit  default 0,          /* Set this if the donor wishes to remain anonymous (to the recipient) --  */
+        a_non_tax_deductible                  bit  default 0,          /* Set this if the gift is a non-tax-deductible gift, such as a personal gift (i.e., payable to missionary instead of support gift) --  */
+        a_motivational_code                   varchar(16)  null,       /* Optional motivational code that indicates what motivated the donor to give this gift. --  */
         a_comment                             varchar(255)  null,      /* Gift comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -1302,6 +1303,29 @@ create table a_cc_auto_subscribe (
         m_list_code                           varchar(20)  not null,   /* the mailing list code of the mailing to subscribe the donor to. --  */
         a_minimum_gift                        decimal(14,4)  null,     /* sets a minimum gift before automatic subscription takes place. --  */
         a_subscribe_months                    integer  null,           /* how many months to subscribe the donor (or indefinitely, if null) --  */
+        a_comments                            varchar(255)  null,      /* comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_motivational_code */
+
+create table a_motivational_code (
+        a_motivational_code                   char(16)  not null,      /* motivational code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this motivational code --  */
+        a_motivational_code_status            char(1)  not null,       /* status of this motivational code: A=Active, O=Obsolete. --  */
+        a_parent_motivational_code            varchar(16)  null,       /* motivational code parent or category --  */
+        m_list_code                           varchar(20)  null,       /* (Optional) mailing list associated with this motivational code --  */
+        a_cost_center                         varchar(20)  null,       /* Optional cost center associated with this motivational code --  */
+        a_account_code                        varchar(16)  null,       /* Optional GL account associated with this motivational code --  */
+        a_gift_admin_fee                      float  null,             /* Optional override percentage for admin fees for gifts on this motiv code. --  */
+        a_gift_admin_subtype                  char(1)  null,           /* Optional override admin subtype for admin fees for gifts on this motiv code. --  */
+        a_gift_comment                        varchar(255)  null,      /* Optional comment to auto-fill the gift comment field. --  */
         a_comments                            varchar(255)  null,      /* comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -1403,6 +1427,56 @@ create table a_subtrx_cashxfer (
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* c_message */
+
+create table c_message (
+        c_message_id                          int  not null,           /* The id of a message in a specific chat. --  */
+        c_chat_id                             int  not null,           /* The foreign key to the chat that this is part of. --  */
+        c_message                             varchar(1024)  not null,
+                                                                      /* The actual message that is being held --  */
+        s_date_created                        datetime  not null,      /* The time that the message was sent out. --  */
+        s_created_by                          varchar(20)  not null,   /* This is used for the person that created the message. --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* c_chat */
+
+create table c_chat (
+        c_chat_id                             int  not null,           /* The synthetic key that serves to identify the unique chat. --  */
+        c_name                                varchar(30)  not null,   /* The name of the chat. --  */
+        c_last_send                           datetime  not null,      /* The time of the last message to be sent. -- This am thinking this should be denormalized (as it is) so that the retrieved list of tables can be ordered by this. (It is not too essential that it is updated.) */
+        c_last_message_id                     int  not null,           /* The message_id of the last message to be sent. -- This can be used in combination with the user's data to see if there is any new data in a chat for each user. */
+        c_public                              char(1)  not null,       /* If the chat is public or not. ('Y' or 'N' for yes or no) --  */
+        c_title                               varchar(30)  not null,   /* The title of the chat. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /* This is not the same as the time of the last message sent. This is the time that things such as the chat name or chat publicity were modified. --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* c_member */
+
+create table c_member (
+        c_chat_id                             int  not null,           /* The key of the chat that the user has been invited to. --  */
+        s_username                            varchar(20)  not null,   /* Foreign natural key of the user that has been invited to/is in the chat. --  */
+        c_last_read_message_id                int  null,               /* The id of the last message that the user read from this chat. -- This could be null for invitations. */
+        c_status                              char(1)  not null,       /* The user's status in the chat. 'U' is unanswered invitation, 'I' is in the chat, and 'O' is out of the chat. This record is deleted if the user declines the invitation. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /* Here, this is used for the person that invited them to the chat. --  */
         s_date_modified                       datetime  not null,      /*  --  */
         s_modified_by                         varchar(20)  not null,   /*  --  */
         __cx_osml_control                     varchar(255)  null       /*  --  */

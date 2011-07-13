@@ -350,12 +350,24 @@ alter table a_subtrx_gift_item
 	drop index a_gifttrxi_recip_id_idx;
 
 
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_mcode_idx;
+
+
 alter table a_subtrx_gift_rcptcnt
 	drop primary key;
 
 
 alter table a_cc_auto_subscribe
 	drop primary key;
+
+
+alter table a_motivational_code
+	drop primary key;
+
+
+alter table a_motivational_code
+	drop index a_motiv_code_list;
 
 
 alter table a_subtrx_cashdisb
@@ -379,6 +391,22 @@ alter table a_subtrx_deposit
 
 
 alter table a_subtrx_cashxfer
+	drop primary key;
+
+
+alter table c_message
+	drop primary key;
+
+
+alter table c_chat
+	drop primary key;
+
+
+alter table c_chat
+	drop index c_public_idx;
+
+
+alter table c_member
 	drop primary key;
 
 

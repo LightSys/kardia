@@ -21,7 +21,7 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 
 	receipting_osrc "widget/osrc"
 	    {
-	    sql = "select * from /apps/kardia/data/Kardia_DB/a_cc_receipting/rows";
+	    sql = "select * from /apps/kardia/data/Kardia_DB/a_cc_receipting/rows limit 1";
 	    baseobj = "/apps/kardia/data/Kardia_DB/a_cc_receipting/rows";
 	    readahead = 2;
 	    replicasize = 2;
@@ -40,7 +40,93 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 	    receipting_form "widget/form"
 		{
 		allow_query = no;
+
+		form_txt "widget/label" { text="Click the checkbox below and click Save to allow receipting to this fund."; height=14; }
+
+		allow_rcpt_hbox "widget/hbox"
+		    {
+		    height=20;
+		    spacing = 4;
+		    cellsize = 20;
+
+		    allow_rcpt_checkbox "widget/component" { width=190; label_width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_receiptable; text="Allow Receipting:"; }
+		    save_btn "widget/component" { path = "/sys/cmp/save_btn.cmp"; }
+		    cancel_btn "widget/component" { path = "/sys/cmp/cancel_btn.cmp"; }
+		    }
+
 		}
+
+	    sep_line "widget/pane" { height=2; style=lowered; }
+
+	    recpt_accts_osrc "widget/osrc"
+		{
+		sql = "	select
+			    :ra:a_cost_center,
+			    :ra:a_ledger_number,
+			    :ra:a_account_code,
+			    :ra:a_non_tax_deductible,
+			    :ra:s_date_created,
+			    :ra:s_created_by,
+			    :ra:s_date_modified,
+			    :ra:s_modified_by,
+			    a_acct_desc = isnull(:a:a_acct_desc, '**INVALID**')
+			from
+			    /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ra,
+			    /apps/kardia/data/Kardia_DB/a_account/rows a
+			where
+			    :ra:a_ledger_number *= :a:a_ledger_number and
+			    :ra:a_account_code *= :a:a_account_code
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows";
+		readahead = 20;
+		replicasize = 20;
+
+		fund_link_2 "widget/rule"
+		    {
+		    ruletype = osrc_relationship;
+		    target = fund_osrc;
+		    key_1 = a_ledger_number;
+		    key_2 = a_cost_center;
+		    target_key_1 = a_ledger_number;
+		    target_key_2 = a_cost_center;
+		    }
+
+		ra_form "widget/form"
+		    {
+		    form_txt2 "widget/label" { text="If you want to restrict this fund's receipting to a specific set of GL accounts, you can enter them below:"; height=30; }
+		    form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; height=26; object_name="Account"; }
+
+		    ra_table_pane "widget/pane"
+			{
+			height=102;
+			widget_class=table_bgnd;
+
+			ra_table "widget/table"
+			    {
+			    x=0;y=0;
+			    width=488; height=100;
+			    mode = dynamicrow;
+
+			    t_acct "widget/table-column" { title="GL Account"; fieldname="a_account_code"; width=100; }
+			    t_acctdesc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=150; }
+			    t_liststat "widget/table-column" { title="Non Tax Deductible?"; fieldname="a_non_tax_deductible"; width=100; type=check; }
+			    }
+			}
+
+		    f_glacct "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_account_code"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Choose GL Account:"; text="GL Account:"; attach_point=editbox; empty_desc = "required"; label_width=150; }
+		    f_non_tax_ded "widget/component" { label_width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_non_tax_deductible; text="Non Tax-Deductible:"; }
+
+		    dt_c "widget/variable" { fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+		    us_c "widget/variable" { fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }
+		    dt_m "widget/variable" { fieldname="s_date_modified"; dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+		    us_m "widget/variable" { fieldname="s_modified_by"; us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+		    }
+		}
+
+	    dt_cr "widget/variable" { form=receipting_form; fieldname="s_date_created"; dt_cr_hints "widget/hints" { default=runclient(getdate()); } }
+	    us_cr "widget/variable" { form=receipting_form; fieldname="s_created_by"; us_cr_hints "widget/hints" { default=runclient(user_name()); } }
+	    dt_mr "widget/variable" { form=receipting_form; fieldname="s_date_modified"; dt_mr_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+	    us_mr "widget/variable" { form=receipting_form; fieldname="s_modified_by"; us_mr_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
 	    }
 	}
     }

@@ -350,6 +350,7 @@ alter table a_subtrx_gift_group drop index a_gifttrxgrp_gift_idx;
 /* drop index a_subtrx_gift_item.a_gifttrxi_cc_clustered_idx */ 
 /* go */
 alter table a_subtrx_gift_item drop index a_gifttrxi_gift_idx;
+alter table a_subtrx_gift_item drop index a_gifttrxi_mcode_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_recip_id_idx;
 
 
@@ -362,6 +363,14 @@ alter table a_subtrx_gift_item drop index a_gifttrxi_recip_id_idx;
 alter table a_cc_auto_subscribe drop index a_cc_as_ledger_number_idx;
 alter table a_cc_auto_subscribe drop index a_cc_as_listcode_idx;
 /* drop index a_cc_auto_subscribe.a_cc_auto_subscribe_pk */ 
+/* go */
+
+
+/* a_motivational_code */
+alter table a_motivational_code drop index a_motiv_code_cc;
+alter table a_motivational_code drop index a_motiv_code_list;
+alter table a_motivational_code drop index a_motiv_code_parent;
+/* drop index a_motivational_code.a_motivational_code_pk */ 
 /* go */
 
 
@@ -386,6 +395,22 @@ alter table a_subtrx_deposit drop index a_subtrx_dep_batch_idx;
 
 /* a_subtrx_cashxfer */
 /* drop index a_subtrx_cashxfer.a_subtrx_cashxfer_pk */ 
+/* go */
+
+
+/* c_message */
+/* drop index c_message.c_messages_pk */ 
+/* go */
+
+
+/* c_chat */
+/* drop index c_chat.c_chats_pk */ 
+/* go */
+alter table c_chat drop index c_public_idx;
+
+
+/* c_member */
+/* drop index c_member.c_chats_pk */ 
 /* go */
 
 

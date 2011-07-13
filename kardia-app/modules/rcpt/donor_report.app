@@ -67,10 +67,11 @@ donor_report "widget/page"
 		{ 
 		width=350; height=24; 
 		path="/sys/cmp/smart_field.cmp"; 
-		field='document_format'; 
+		field='user_document_format'; 
 		ctl_type=dropdown; 
 		text='Format:'; 
-		sql = runserver("select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
+		//sql = runserver("select 'TntMPD Format','tntmpd'; select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
+		sql = runserver("select 'Separate Fields CSV','sep_csv'; select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
 		form=rpt_form;
 		label_width=120;
 		}
@@ -99,6 +100,7 @@ donor_report "widget/page"
 		    rpt_print_cn "widget/connector"
 			{
 			event="Click";
+			event_condition=runclient(not (:f_docfmt:value = 'sep_csv'));
 			target="rpt_form";
 			action="Submit";
 			Target=runclient("donor_report");
@@ -106,6 +108,20 @@ donor_report "widget/page"
 			Source=runclient("/apps/kardia/modules/rcpt/donor_report.rpt");
 			Width=800;
 			Height=600;
+			document_format=runclient(isnull(:f_docfmt:value, 'application/pdf'));
+			}
+		    rpt_print_cn2 "widget/connector"
+			{
+			event="Click";
+			event_condition=runclient(:f_docfmt:value = 'sep_csv');
+			target="rpt_form";
+			action="Submit";
+			Target=runclient("donor_report");
+			NewPage=1;
+			Source=runclient("/apps/kardia/modules/rcpt/donor_report_fields.rpt");
+			Width=800;
+			Height=600;
+			document_format=runclient('text/csv');
 			}
 		    }
 		rpt_cancel "widget/textbutton"

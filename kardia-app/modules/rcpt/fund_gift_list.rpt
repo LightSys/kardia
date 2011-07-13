@@ -143,7 +143,7 @@ fund_gift_list "system/report"
 			designation = :i:a_cost_center + condition(:i:a_account_code != '4100' and :i:a_account_code != '2120', ':' + :i:a_account_code, ''),
 			:i:a_cost_center,
 			motivation = '',
-			anon = :i:a_anonymous_gift,
+			anon = :i:a_confidential,
 			comments = :i:a_comment
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,

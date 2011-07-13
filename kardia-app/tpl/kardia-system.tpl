@@ -8,6 +8,7 @@ kardia "widget/template"
 	linkcolor="#153f5f";
 	font_name = "Arial";
 	font_size = 12;
+	icon = "/apps/kardia/favicon.ico";
 
 	//cx__debug "widget/parameter"
 	//    {

@@ -199,8 +199,8 @@ annual_statement "system/report"
 			cc = :i:a_cost_center,
 			ccname = :c:a_cc_desc,
 			ckno = :i:a_recv_document_id,
-			:i:a_anonymous_gift,
-			:i:a_personal_gift,
+			:i:a_confidential,
+			:i:a_non_tax_deductible,
 			:i:a_comment
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
@@ -215,8 +215,8 @@ annual_statement "system/report"
 			and :c:a_ledger_number = :i:a_ledger_number
 		");
 	item_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; reset = 0; }
-	item_nontaxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_personal_gift = 1"; reset = 0; }
-	item_taxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_personal_gift = 0"; reset = 0; }
+	item_nontaxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 1"; reset = 0; }
+	item_taxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 0"; reset = 0; }
 	}
 
 
@@ -350,8 +350,8 @@ annual_statement "system/report"
 		g_cc "report/table-cell" { value=runserver(:gift_items_qy:cc); }
 		g_desc "report/table-cell" { value=runserver(:gift_items_qy:ccname); }
 		g_amt "report/table-cell" { value=runserver(:gift_items_qy:item_amt); font=courier; align=right; }
-		g_anon "report/table-cell" { value=runserver(condition(:gift_items_qy:a_anonymous_gift, 'Anon', '-')); align=center; }
-		g_pers "report/table-cell" { value=runserver(condition(:gift_items_qy:a_personal_gift, 'NonDed', '-')); align=center; }
+		g_anon "report/table-cell" { value=runserver(condition(:gift_items_qy:a_confidential, 'Anon', '-')); align=center; }
+		g_pers "report/table-cell" { value=runserver(condition(:gift_items_qy:a_non_tax_deductible, 'NonDed', '-')); align=center; }
 		}
 	    }
 

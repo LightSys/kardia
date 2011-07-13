@@ -350,6 +350,7 @@ create  index a_gifttrxgrp_gift_idx on a_subtrx_gift_group (a_gift_number, a_led
 /* create  index a_gifttrxi_cc_clustered_idx on a_subtrx_gift_item (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
 /* go */
 create  index a_gifttrxi_gift_idx on a_subtrx_gift_item (a_gift_number, a_ledger_number, a_batch_number, a_split_number);
+create  index a_gifttrxi_mcode_idx on a_subtrx_gift_item (a_motivational_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_recip_id_idx on a_subtrx_gift_item (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
 
@@ -362,6 +363,14 @@ create  index a_gifttrxi_recip_id_idx on a_subtrx_gift_item (p_recip_partner_id,
 create  index a_cc_as_ledger_number_idx on a_cc_auto_subscribe (a_ledger_number, a_cost_center, m_list_code);
 create  index a_cc_as_listcode_idx on a_cc_auto_subscribe (m_list_code, a_cost_center, a_ledger_number);
 /* create  index a_cc_auto_subscribe_pk on a_cc_auto_subscribe (a_cost_center, a_ledger_number, m_list_code)*/ 
+/* go */
+
+
+/* a_motivational_code */
+create  index a_motiv_code_cc on a_motivational_code (a_ledger_number, a_cost_center, a_account_code, a_motivational_code);
+create  index a_motiv_code_list on a_motivational_code (m_list_code, a_ledger_number, a_motivational_code);
+create  index a_motiv_code_parent on a_motivational_code (a_ledger_number, a_parent_motivational_code, a_motivational_code);
+/* create  index a_motivational_code_pk on a_motivational_code (a_ledger_number, a_motivational_code)*/ 
 /* go */
 
 
@@ -386,6 +395,22 @@ create  index a_subtrx_dep_batch_idx on a_subtrx_deposit (a_batch_number, a_ledg
 
 /* a_subtrx_cashxfer */
 /* create  index a_subtrx_cashxfer_pk on a_subtrx_cashxfer (a_ledger_number, a_batch_number, a_journal_number)*/ 
+/* go */
+
+
+/* c_message */
+/* create  index c_messages_pk on c_message (chat_id, c_message_id)*/ 
+/* go */
+
+
+/* c_chat */
+/* create  index c_chats_pk on c_chat (c_chat_id)*/ 
+/* go */
+create  index c_public_idx on c_chat (c_public, c_chat_id);
+
+
+/* c_member */
+/* create  index c_chats_pk on c_member (c_chat_id, s_username)*/ 
 /* go */
 
 

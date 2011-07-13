@@ -47,7 +47,7 @@ fund_gift_list_tntmpd "system/report"
 			:i:a_period = :this:period and
 			:i:a_amount != $0 and
 			:i:a_posted = 1 and
-			:i:a_anonymous_gift = 0 and
+			:i:a_confidential = 0 and
 			charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
 		";
 	}
@@ -133,7 +133,7 @@ fund_gift_list_tntmpd "system/report"
 			donation_id = :i:name,
 			designation = :i:a_cost_center + condition(:i:a_account_code != '4100' and :i:a_account_code != '2120', ':' + :i:a_account_code, ''),
 			motivation = '',
-			anon = :i:a_anonymous_gift
+			anon = :i:a_confidential
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
@@ -149,7 +149,7 @@ fund_gift_list_tntmpd "system/report"
 			:i:a_batch_number = :g:a_batch_number and
 			:i:a_gift_number = :g:a_gift_number and
 			:i:a_amount != $0 and
-			:i:a_anonymous_gift = 0 and
+			:i:a_confidential = 0 and
 			charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
 		ORDER BY
 			isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)
