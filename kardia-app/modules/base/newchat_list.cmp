@@ -1,0 +1,135 @@
+// This proivdes a list of all the chats that a person is currently in
+$Version=2$
+newchat_list "widget/component-decl"
+    {
+    width=282; height=150;
+    
+    // Parameters
+    shows_invited "widget/parameter" {type="integer"; default=1;}
+    shows_current "widget/parameter" {type="integer"; default=1;}
+    shows_exited "widget/parameter" {type="integer"; default=0;}
+    with_who "widget/parameter" {type="string"; default=runserver(user_name());}
+    decline_confirmation_cmp "widget/parameter" {type="object";}
+    chat_window "widget/parameter" {type="object";}
+    chat_window_cmp "widget/parameter" {type="object";}
+	
+    // Make a dynamic component that shows each of the chats, their status, and
+    // if you want to exit them (if applicable)  TODO - Convert this over to the
+    // table view when the table view is ready enough.
+    
+    chat_list_vlayout "widget/vbox"
+        {
+        height=150; width=282;
+        spacing=2;
+    
+	// The title bar of the table
+	title_bar "widget/pane"
+	    {
+	    height=20; width=282;
+	    
+	    height=20; width=282;
+            background="/apps/kardia/images/bg/blue_gradient.png";
+            style="flat";
+	    
+	    title_hlayout "widget/hbox"
+		{
+	    
+		blank_col_lbl "widget/label"
+		    {
+		    text="";
+		    width=24; 
+		    }
+		    
+		chat_name_label "widget/label"
+		    {
+		    text="Chat Name";
+		    width=200;
+		    }
+		    
+		} // End title_hlayout
+	    
+	    }
+	
+	list_container "widget/vbox"
+	    {
+	    width=282; height=110;
+	    
+	    repeater "widget/repeat"
+		{
+		sql="select name='Muchos long title',
+			    status='O',
+			    newstuff=1";
+		
+		// A display for a single chat
+		chat_row "widget/pane"
+		    {
+		    height=18; width=282;
+		    style="flat";
+		    bgcolor="white";
+		    condition=runserver((:shows_invited AND :repeater:status == "I") OR (:shows_current AND :repeater:status == "O") OR (:shows_exited AND :repeater:status == "C"));
+		    
+		    blank_col_lbl "widget/image"
+			{
+			source=runserver(condition(:repeater:status == "O", condition(:repeater:newstuff, "/apps/kardia/images/icons/chat_stat_open_new.png", "/apps/kardia/images/icons/chat_stat_open_no_new.png"),
+					 condition(:repeater:status == "C", condition(:repeater:newstuff, "/apps/kardia/images/icons/chat_stat_closed_new.png", "/apps/kardia/images/icons/chat_stat_closed_no_new.png"),
+					 "/apps/kardia/images/icons/chat_stat_invite.png")));
+			width=16; height=16; x=1; y=1;
+			}
+			
+		    chat_name_label "widget/label"
+			{
+			text=runserver(:repeater:name);
+			width=225;  x=24; height=18;
+			}
+			
+		    chat_button "widget/imagebutton"
+                        {
+                        x=246; y=1;width=16;height=16;
+                        image="/apps/kardia/images/icons/chat.png";
+			condition=runserver(:repeater:status != 'I');
+                        
+			open_chat_window "widget/connector"
+			    {
+			    event="Click";
+			    target=chat_window_cmp;
+			    action="Instantiate";
+			    }
+			
+                        }	
+		    
+		    accept_button "widget/imagebutton"
+			{
+			image="/apps/kardia/images/icons/chat_accept.png";
+			x=246; y=1; width=16; height=16;
+			condition=runserver(:repeater:status == 'I');
+			} // End accept_button
+			
+		    decline_button "widget/imagebutton"
+			{
+			image="/apps/kardia/images/icons/chat_decline.png";
+			x=262; y=1; width=16; height=16;
+			
+			decline_action "widget/connector"
+			    {
+			    condition=runserver(:repeater:status == 'I');
+			    target=decline_confirmation_cmp;
+			    action="Instantiate";
+			    chat_name=runserver(:repeater:name);
+			    event="Click";
+			    }
+			
+			} // End accept_button
+		    
+		    }
+		} // End repeater
+	    } // End list_container
+	    
+	    // Button to start a new public chat
+	    public_chat_button "widget/textbutton"
+		{
+		text="New Public Chat";
+		width=130; x=152; height=20;
+		}
+	    
+	} // End chat_list_vlayout
+    } // End newchat_list

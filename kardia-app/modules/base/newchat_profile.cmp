@@ -1,0 +1,61 @@
+// This proivdes a profile view for a user.
+$Version=2$
+newchat_profile "widget/component-decl"
+    {
+    width=300; height=400;
+    
+    // Parameters
+    specimen "widget/parameter" {type="string";}
+    
+    // Close chat confirmation window
+    decline_chat_confirmation "widget/component"
+        {
+        path="/apps/kardia/modules/base/decline_chat_confirmation.cmp";
+        mode=dynamic;
+        }
+        
+    // Chat window for the chat list to instantiate
+    chat_window "widget/component"
+        {
+        path="/apps/kardia/modules/base/newchat_window.cmp";
+        mode="dynamic";
+        multiple_instantiation="yes";
+        }
+    
+    image_panel "widget/pane"{
+        x=10; y=10; width=150; height=150;
+        style="lowered";
+        bgcolor="white";
+    
+        image_view "widget/image"
+            {
+            width=150; height=150;
+            source="/apps/kardia/images/icons/user.gif";
+            } // End image_view
+    
+        } // End image_panel
+            
+        y=170; x=10; height=230; width=280;
+        
+        chats_label "widget/label"
+            {
+            text=runserver(condition(rtrim(:specimen) == user_name(), "Chats:", "Chats with " + :specimen));
+            height=20; x=10; y=170; width=200;
+            }
+    
+        // Show all chats
+        chat_list "widget/component"
+            {
+            path="/apps/kardia/modules/base/newchat_list.cmp";
+            height=170; x=10; y=190; width=280;
+            mode="static";
+            decline_confirmation_cmp=decline_chat_confirmation;
+            shows_invited=1;
+            shows_current=1;
+            shows_exited=1;
+            with_who=runserver(specimen);
+            chat_window_cmp=chat_window;
+            }
+            
+    } // End newchat_profile
+    

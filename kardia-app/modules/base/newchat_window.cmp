@@ -1,0 +1,28 @@
+// This component is a chat window that allows for the changing of a chat's
+// name and inviting more people.
+$Version=2$
+newchat_window "widget/component-decl"
+    {
+    height=600; width=800;
+    
+    chat_window "widget/childwindow"
+        {
+        width=300; height=400; x=250; y=100;
+        title="Chat";
+        toplevel="yes";
+        icon="/apps/kardia/images/icons/chat.png";
+    
+        testlbl "widget/label"
+            {
+            text = "IIIIIIIIIIIIIIIIIIIIIIIIIII"; width=80;height=20;
+            }
+    
+        message_list "widget/component"
+            {
+            path="/apps/kardia/modules/base/newchat_message_list.cmp";
+            mode="static";
+            x=10; y=40; width=240; height=350;
+            
+            } // End message_list
+        } // End chat_child_window
+    } // End newchat_window

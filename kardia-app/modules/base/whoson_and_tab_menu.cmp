@@ -37,6 +37,35 @@ whoson_and_tab_menu "widget/component-decl"
 	    path="/apps/kardia/modules/base/edit_settings.cmp";
 	    }
 	}
+	
+    // Other top level windows
+    
+    // This window creator is passed to the dynamic object so that they will not
+    // be destroyed when the statuses refresh
+    profile_window "widget/component"
+        {
+        path="/apps/kardia/modules/base/newchat_profile_window.cmp";
+        mode="dynamic";
+        multiple_instantiation="yes";
+        width=282; height=400; x=100; y=100;
+        }
+	
+    // Window to ask if people really mean to decline a chat
+    decline_chat_cmp "widget/component"
+	{
+	path="/apps/kardia/modules/base/decline_chat_confirmation.cmp";
+	width=784; height=530;
+	mode="dynamic";
+	}
+	
+    // Window for chats
+    chat_window_cmp "widget/component"
+	{
+	path="/apps/kardia/modules/base/newchat_window.cmp";
+	mode=dynamic;
+	width=784; height=530;
+	multiple_instantiation="yes";
+	}
 
     whoson_cmp "widget/component"
         {
@@ -44,6 +73,10 @@ whoson_and_tab_menu "widget/component-decl"
         x=0;y=130;width=234;height=400;
         fl_width=0;
         auto_start=1;
+	
+	decline_chat_dialog = decline_chat_cmp;
+	profile_window_cmp = profile_window;
+	chat_window=chat_window_cmp;
         }
 
     menu_cmp "widget/component"

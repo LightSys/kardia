@@ -1,0 +1,32 @@
+// A window dedicated to showing newchat_profile components.
+$Version=2$
+newchat_profile_window "widget/component-decl"
+    {
+    height=300; width=250; x=300; y=300;
+    
+    specimen "widget/parameter" {type="string"; default="Unknown";}
+    
+    // User image - right now, this is nothing in particular
+    profile_window "widget/childwindow"
+        {
+        toplevel="yes";
+        width=300; height=400; x=300; y=300;
+        title=runserver(:specimen + " | Profile");
+        background="/apps/kardia/images/bg/light_bgnd3.jpg";
+        icon="/apps/kardia/images/icons/user.gif";
+        visible="true";
+        
+        profile_view "widget/component"
+            {
+            width=300; height=400;
+            path="/apps/kardia/modules/base/newchat_profile.cmp";
+            
+            specimen=runserver(:specimen);
+            }
+        
+        }
+        
+    // List of all chats
+    
+    
+    }

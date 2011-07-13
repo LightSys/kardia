@@ -2,6 +2,11 @@ $Version=2$
 whoson "widget/component-decl"
     {
     width=282;height=360;
+    
+    // Top level window parameters
+    profile_window_cmp "widget/parameter" {type="object";}
+    decline_chat_dialog "widget/parameter" {type="object";}
+    chat_window "widget/parameter" {type="object";}
 
     Stop "widget/component-decl-action" {}
     Stop_cn "widget/connector" { event=Stop; target=whoson_timer; action=CancelTimer; }
@@ -16,58 +21,86 @@ whoson "widget/component-decl"
 	msec=30000;
 	auto_reset=0;
 	auto_start=runserver(:this:auto_start);
-	interval_cn "widget/connector" { target=whoson_osrc; event=Expire; action=Refresh; }
+	interval_cn "widget/connector" { target=whoson_browser_cmp; event=Expire; action=Instantiate;  profile_window = profile_window_cmp;}
+	interval_cn2 "widget/connector" { target=chat_list_cmp; event=Expire; action=Instantiate; decline_confirmation_cmp=decline_chat_dialog; chat_window_cmp=chat_window;}
 	}
-
-    whoson_osrc "widget/osrc"
+    
+    // This shows a list of all of the current users using a "widget/repeat"
+    // TODO Change back to table view if buttons ever become available in
+    // it.  This and the chat listing would fit a lot better in a table.
+    whoson_chat_layout "widget/vbox"
 	{
-	sql = " select
-			img='/apps/kardia/images/icons/person.gif',
-			:ud:s_status,
-			:ud:s_username,
-			:u:description,
-			:s:name,
-			:s:session_cnt
-		from
-			/sys/cx.sysinfo/users s,
-			/apps/kardia/data/Users.uxu u,
-			/apps/kardia/data/Kardia_DB/s_user_data/rows ud
-		where
-			:s:name = :u:name and
-			:s:name *= :ud:s_username
-		";
-	replicasize=100;
-	readahead=100;
-	autoquery=onfirstreveal;
-	endquery_cn "widget/connector" { target=whoson_timer; event=EndQuery; action=SetTimer; Time=30000; }
-	indicates_activity = no;
-
-	whoson_tbl "widget/table"
+	x=0; y=0; width=282;
+	
+	whoson_browser_cmp "widget/component"
 	    {
-	    x=0;y=0;width=282;height=300;
-	    rowheight = 20;
-	    mode=dynamicrow;
-	    allow_selection = yes;
-	    show_selection = no;
-	    demand_scrollbar = yes;
-	    overlap_scrollbar = yes;
-	    colsep = 0;
-
-	    chat_cn "widget/connector"
-		{
-		event=DblClick;
-		target="chat_cmp"; 
-		action="Instantiate"; 
-		WithWhom = runclient(:whoson_osrc:name);
-		visible = runclient('yes');
-		}
-
-	    t_img "widget/table-column" { title=""; fieldname="img"; width=24; type=image; }
-	    //t_usr "widget/table-column" { title="User"; fieldname="name"; width=80; }
-	    t_desc "widget/table-column" { title="Name"; fieldname="description"; width=98; }
-	    t_stat "widget/table-column" { title="Status"; fieldname="s_status"; width=160; }
-	    //t_cnt "widget/table-column" { title="Logins"; fieldname="session_cnt"; width=48; }
+	    path = "/apps/kardia/modules/base/whoson_browser.cmp";
+	    height=150; width=282;
+	    mode = "dynamic";
+	    	    
+	    instantiate_cn "widget/connector" { source=whoson; event="LoadComplete"; action="Instantiate"; profile_window = profile_window_cmp;}
 	    }
+	    
+	chat_list_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/base/newchat_list.cmp";
+	    height=150; width=282;
+	    mode=dynamic;
+	    
+	    instantiate_chat_list_cn "widget/connector" { source=whoson; event="LoadComplete"; action="Instantiate"; decline_confirmation_cmp=decline_chat_dialog; chat_window_cmp=chat_window;}
+	    }
+	
+	//whoson_osrc "widget/osrc"
+	//    {
+	//    sql = " select
+	//		    img='/apps/kardia/images/icons/person.gif',
+	//		    :ud:s_status,
+	//		    :ud:s_username,
+	//		    :u:description,
+	//		    :s:name,
+	//		    :s:session_cnt
+	//	    from
+	//		    /sys/cx.sysinfo/users s,
+	//		    /apps/kardia/data/Users.uxu u,
+	//		    /apps/kardia/data/Kardia_DB/s_user_data/rows ud
+	//	    where
+	//		    :s:name = :u:name and
+	//		    :s:name *= :ud:s_username
+	//	    ";
+	//    replicasize=100;
+	//    readahead=100;
+	//    autoquery=onfirstreveal;
+	//    endquery_cn "widget/connector" { target=whoson_timer; event=EndQuery; action=SetTimer; Time=30000; }
+	//    indicates_activity = no;
+	// 
+	//    whoson_tbl "widget/table"
+	//	{
+	//	height=150;
+	//	rowheight = 20;
+	//	mode=dynamicrow;
+	//	allow_selection = yes;
+	//	show_selection = no;
+	//	demand_scrollbar = yes;
+	//	overlap_scrollbar = yes;
+	//	colsep = 0;
+	//
+	//	chat_cn "widget/connector"
+	//	    {
+	//	    event=DblClick;
+	//	    target="chat_cmp"; 
+	//	    action="Instantiate"; 
+	//	    WithWhom = runclient(:whoson_osrc:name);
+	//	    visible = runclient('yes');
+	//	    }
+	//
+	//	t_img "widget/table-column" { title=""; fieldname="img"; width=24; type=image; }
+	//	//t_usr "widget/table-column" { title="User"; fieldname="name"; width=80; }
+	//	t_desc "widget/table-column" { title="Name"; fieldname="description"; width=98; }
+	//	t_stat "widget/table-column" { title="Status"; fieldname="s_status"; width=160; }
+	//	//t_cnt "widget/table-column" { title="Logins"; fieldname="session_cnt"; width=48; }
+	//	}
+	//    }
+	
 	}
 
     sep "widget/pane" { x=0; y=316; height=2; width=282; style=lowered; fl_height=0; }
@@ -106,7 +139,7 @@ whoson "widget/component-decl"
 	    confirm_discard = no;
 	    auto_focus = no;
 
-	    save_cn "widget/connector" { event=DataSaved; target=whoson_osrc; action=Refresh; }
+	    save_cn "widget/connector" { target=whoson_browser_cmp; event=DataSaved; action=Instantiate;  profile_window = profile_window_cmp;}
 
 	    status_lbl "widget/label" { x=0;y=340;height=20;width=85; value=runclient(isnull(condition(charindex(' ', :usrdat_osrc:description) > 0, substring(:usrdat_osrc:description, 1, charindex(' ', :usrdat_osrc:description) - 1), :usrdat_osrc:description) + ' is:', '')); align=right; }
 	    status_eb "widget/editbox" { x=90; y=340; height=20; width=192; tooltip="What are you doing right now?"; fieldname=s_status; empty_description="What are you doing now?"; }
@@ -127,4 +160,5 @@ whoson "widget/component-decl"
 	mode = dynamic;
 	toplevel = yes;
 	}
+	
     }
