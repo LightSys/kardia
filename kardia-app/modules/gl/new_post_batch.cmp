@@ -31,7 +31,7 @@ new_post_batch "widget/component-decl"
 
 	autoquery = onload;
 	replicasize = 2;
-	readhead = 2;
+	readahead = 2;
 
 	refresh_info "widget/connector" { event=Refresh; source=new_post_batch; action=Refresh; }
 
