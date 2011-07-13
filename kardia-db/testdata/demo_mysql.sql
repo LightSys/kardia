@@ -386,7 +386,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `a_subtrx_gift_item` WRITE;
 /*!40000 ALTER TABLE `a_subtrx_gift_item` DISABLE KEYS */;
-INSERT INTO `a_subtrx_gift_item` (`a_ledger_number`, `a_batch_number`, `a_gift_number`, `a_split_number`, `a_period`, `a_cost_center`, `a_account_code`, `a_amount`, `a_recv_document_id`, `a_posted`, `a_posted_to_gl`, `a_gift_admin_fee`, `a_gift_admin_subtype`, `a_calc_admin_fee`, `a_calc_admin_fee_type`, `a_calc_admin_fee_subtype`, `p_recip_partner_id`, `a_anonymous_gift`, `a_personal_gift`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',100005,1,1,'2011.03','PRJ000','4100','100.0000','1234','','',NULL,'A',0.1,'GEN','A',NULL,'\0','\0',NULL,'2011-03-13 17:57:01','gbeeley','2011-03-13 17:57:01','gbeeley',NULL);
+INSERT INTO `a_subtrx_gift_item` (`a_ledger_number`, `a_batch_number`, `a_gift_number`, `a_split_number`, `a_period`, `a_cost_center`, `a_account_code`, `a_amount`, `a_recv_document_id`, `a_posted`, `a_posted_to_gl`, `a_gift_admin_fee`, `a_gift_admin_subtype`, `a_calc_admin_fee`, `a_calc_admin_fee_type`, `a_calc_admin_fee_subtype`, `p_recip_partner_id`, `a_confidential`, `a_non_tax_deductible`, `a_motivational_code`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',100005,1,1,'2011.03','PRJ000','4100','100.0000','1234','','',NULL,'A',0.1,'GEN','A',NULL,'\0','\0',NULL,NULL,'2011-03-13 17:57:01','gbeeley','2011-03-13 17:57:01','gbeeley',NULL);
 /*!40000 ALTER TABLE `a_subtrx_gift_item` ENABLE KEYS */;
 UNLOCK TABLES;
 
