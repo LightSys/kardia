@@ -3,6 +3,7 @@ newuser_default "widget/template"
     {
     page "widget/page"
         {
+        locale = en_US;
         font_name =  "Arial" ;
         font_size = 12;
         show_diagnostics = 0;

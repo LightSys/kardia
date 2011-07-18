@@ -7,7 +7,8 @@ index "widget/page"
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
     background="/apps/kardia/images/bg/light_bgnd3.jpg";
-
+	locales = "locales";
+	
     pnHeader "widget/pane"
 	{
 	x=0;y=0;width=800;height=45;
