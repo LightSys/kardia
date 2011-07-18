@@ -38,11 +38,11 @@ newchat_list "widget/component-decl"
 		    chat=condition(:member:c_status == 'I', '/sys/images/green_check.gif','/apps/kardia/images/icons/chat.png'),
 		    close=" + runserver(condition(:shows_exited, "condition(:member:c_status != 'I', '/sys/images/trans_1.gif', '/sys/images/red_x.gif')", "'/sys/images/red_x.gif'")) + "
 		from
-		    /apps/kardia/data/Kardia_DB/c_member/rows member,
+		    identity /apps/kardia/data/Kardia_DB/c_member/rows member,
 		    /apps/kardia/data/Kardia_DB/c_chat/rows chat
 		where
 		    :member:c_chat_id == :chat:c_chat_id " + 
-		    runserver(condition(:shows_exited, "", ", and :member:c_status != 'C'")) + "
+		    runserver(condition(:this:shows_exited, "", " and :member:c_status != 'C'")) + "
 		");
 		
 	replicasize=100;
@@ -50,6 +50,20 @@ newchat_list "widget/component-decl"
 	autoquery=onfirstreveal;
 	endquery_cn "widget/connector" { target=refresh_timer; event=EndQuery; action=SetTimer; Time=30000; }
 	indicates_activity = no;
+	
+	modified_cn "widget/connector"
+	    {
+	    event="Modified";
+	    action="Refresh";
+	    target=chat_list_osrc;
+	    }
+	    
+	// This form has been inserted to take care of deleting rows from the chat table when requested
+	deletion_form "widget/form"
+	    {
+	    allow_delete="yes";
+	    confirm_delete="no";
+	    }
 	
 	chat_list_table "widget/table"
 	    {
@@ -59,7 +73,7 @@ newchat_list "widget/component-decl"
 	    allow_selection = "yes";
 	    show_selection = no;
 	    demand_scrollbar = yes;
-	    overlap_scrollbar = yes;
+	    overlap_scrollbar = "yes";
 	    colsep = 0;
 	    
 	    cn_chat_window "widget/connector"
@@ -74,15 +88,24 @@ newchat_list "widget/component-decl"
 		    
 		} // End cn_chat_window
 		
+	    cn_open_invited "widget/connector"
+		{
+		event="Click";
+		event_condition=runclient(:Column == 'chat');
+		target=chat_list_osrc;
+		action="Modify";
+		
+		// Parameters to pass
+		c_status=runclient("O");
+		}
+		
 	    cn_decline_invitation "widget/connector"
 		{
 		event="Click";
+		event_confirm=runclient("Are you sure you want to quit chat \"" + :c_title + "\"?");
 		event_condition=runclient(:Column == "close" and :c_status == "I");
-		target=decline_confirmation;
-		action="Instantiate";
-		
-		// Parameters
-		chat_name=runclient(:c_title + " ");
+		target=deletion_form;
+		action="Delete";
 		}
 		
 	    cn_close_open_chat_invitation "widget/connector"
@@ -96,10 +119,10 @@ newchat_list "widget/component-decl"
 		c_status=runclient("C");
 		}
 	    
-	    status_indicator "widget/table-column" {title=""; fieldname="status";width=24; type="image";}
-	    member_col "widget/table-column" {title="Chat Name"; fieldname="c_title"; width=180;}
-	    chat_image "widget/table-column" {title=""; fieldname="chat"; type="image"; width=24;}
-	    close_image "widget/table-column" {title="";fieldname="close";type="image";width=24;}
+	    status_indicator "widget/table-column" {title=""; fieldname="status";width=28; type="image";}
+	    member_col "widget/table-column" {title="Chat Name"; fieldname="c_title"; width=175;}
+	    chat_image "widget/table-column" {title=""; fieldname="chat"; type="image"; width=28;}
+	    close_image "widget/table-column" {title="";fieldname="close";type="image";width=28;}
 	    } // End chat_list_table
 	} // End chat_list_osrc
     } // End newchat_list

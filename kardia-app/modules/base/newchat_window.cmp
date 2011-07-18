@@ -6,9 +6,7 @@ newchat_window "widget/component-decl"
     height=600; width=800;
     
     chat_id "widget/parameter" {type="integer";}
-    
-    instantiate_cn "widget/connector" {target=message_list; action="Instantiate"; event="LoadComplete";}
-    
+        
     chat_window "widget/childwindow"
         {
         width=300; height=400; x=250; y=100;
@@ -19,8 +17,8 @@ newchat_window "widget/component-decl"
         chat_panel "widget/component"
             {
             path="/apps/kardia/modules/base/newchat_panel.cmp";
-            mode="dynamic";
-            x=0; y=40; width=280; height=300;
+            mode="static";
+            x=0; y=0; width=280; height=380;
             
             chat_id=runserver(:chat_id);
             } // End message_list
