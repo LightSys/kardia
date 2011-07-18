@@ -75,7 +75,7 @@ whoson_and_tab_menu "widget/component-decl"
         auto_start=1;
 	
 	decline_chat_dialog = decline_chat_cmp;
-	profile_window_cmp = profile_window;
+	profile_window = profile_window;
 	chat_window=chat_window_cmp;
         }
 

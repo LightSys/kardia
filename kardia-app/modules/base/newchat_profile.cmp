@@ -6,20 +6,24 @@ newchat_profile "widget/component-decl"
     
     // Parameters
     specimen "widget/parameter" {type="string";}
+    chat_window "widget/parameter" {type="object";}
+    decline_chat_confirmation "widget/parameter" {type="object";}
     
-    // Close chat confirmation window
-    decline_chat_confirmation "widget/component"
-        {
-        path="/apps/kardia/modules/base/decline_chat_confirmation.cmp";
-        mode=dynamic;
-        }
-        
-    // Chat window for the chat list to instantiate
-    chat_window "widget/component"
-        {
-        path="/apps/kardia/modules/base/newchat_window.cmp";
-        mode="dynamic";
-        multiple_instantiation="yes";
+    usrdat_osrc "widget/osrc"
+	{
+        sql = runserver("select * from /apps/kardia/data/Users.uxu where :name == " + :specimen);
+	replicasize=2;
+	readahead=2;
+	autoquery=onfirstreveal;
+	}
+
+    stat_osrc "widget/osrc"
+	{
+	sql = runserver("select * from /apps/kardia/data/Kardia_DB/s_user_data/rows where :s_username == " + :specimen);
+	baseobj = "/apps/kardia/data/Kardia_DB/s_user_data/rows";
+	replicasize=2;
+	readahead=2;
+	autoquery=onfirstreveal;
         }
     
     image_panel "widget/pane"{
@@ -34,12 +38,52 @@ newchat_profile "widget/component-decl"
             } // End image_view
     
         } // End image_panel
+                    
+        // Show username, description, and status
+        info_vlayout "widget/vbox"
+            {
+            width=120; height=163; x=170; y=10;
             
-        y=170; x=10; height=230; width=280;
+            username_desc_field "widget/label"
+                {
+                text=runserver("User Name:");
+                width=140; height=20; x=0;
+                }
+                
+            username_field "widget/label"
+                {
+                text=runserver(rtrim(:this:specimen));
+                width=100; height=20; x=20;
+                }
+                
+            user_desc_desc_field "widget/label"
+                {
+                text=runserver("Description:");
+                width=100; height=20; x=0;
+                }
+                
+            user_desc_field "widget/label"
+                {
+                value=runclient(:usrdat_osrc:description);
+                width=100; height=20; x=20;
+                }
+                
+            user_status_desc_field "widget/label"
+                {
+                text=runserver("Status:");
+                width=100; height=20; x=0;
+                }
+                
+            user_status_field "widget/label"
+                {
+                width=115; height=50; x = 20;
+                value=runclient(:stat_osrc:s_status);
+                } // End user_status_field
+            } // End info_vlayout
         
         chats_label "widget/label"
             {
-            text=runserver(condition(rtrim(:specimen) == user_name(), "Chats:", "Chats with " + :specimen));
+            text=runserver(condition(rtrim(:this:specimen) == user_name(), "Chats:", "Chats with " + :this:specimen));
             height=20; x=10; y=170; width=200;
             }
     
@@ -49,12 +93,12 @@ newchat_profile "widget/component-decl"
             path="/apps/kardia/modules/base/newchat_list.cmp";
             height=170; x=10; y=190; width=280;
             mode="static";
-            decline_confirmation_cmp=decline_chat_confirmation;
             shows_invited=1;
             shows_current=1;
             shows_exited=1;
             with_who=runserver(specimen);
-            chat_window_cmp=chat_window;
+            chat_window=chat_window;
+            decline_confirmation=decline_chat_confirmation;
             }
             
     } // End newchat_profile

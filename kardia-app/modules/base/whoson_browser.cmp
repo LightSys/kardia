@@ -4,11 +4,42 @@ whoson_browser "widget/component-decl"
     {
     height=100; width=282;
     
+    // Parameters
     profile_window "widget/parameter" {type="object"; }
-        
+    
+    // Actions
+    
+    whoson_table "widget/table"
+        {
+        sql = " select
+                    img='/apps/kardia/images/icons/person.gif',
+                    :ud:s_status,
+                    :ud:s_username,
+                    :u:description,
+                    :s:name,
+                    :s:session_cnt
+                from
+                    /sys/cx.sysinfo/users s,
+                    /apps/kardia/data/Users.uxu u,
+                    /apps/kardia/data/Kardia_DB/s_user_data/rows ud
+                where
+                    :s:name = :u:name and
+                    :s:name *= :ud:s_username
+                ";
+                
+            mode="dynamicrow";
+            width=282;
+            height=100;
+            
+            img "widget/table-column" {title=""; width=24;}
+            name "widget/table-column" {title="User Name"; width=200;}
+    
+        }
+    
     whoson_vlayout "widget/vbox"
         {
         height=100; width=282;
+        x=0; y=100;
         spacing=2;
         
         // Horizontal pane for the header
@@ -48,6 +79,7 @@ whoson_browser "widget/component-decl"
         whoson_table_vbox "widget/vbox"
             {
             width=282;
+            spacing=2;
         
             // Now autogenerate the rest of the rows to the table.
             whoson_lister "widget/repeat"

@@ -1,9 +1,78 @@
 // This component displays a chat and a way to add more text messages to the
 // chat as well as view ones that have been sent.
 $Version=2$
-chat_panel "widget/componentdecl"
+newchat_panel "widget/component-decl"
     {
+    width=240; height=350;
     
+    chat_id "widget/parameter" {type="integer"; deploy_to_client="yes";}
+        
+    Stop "widget/component-decl-action" {}
+    Stop_cn "widget/connector" { event=Stop; target=chat_timer; action=CancelTimer; }
+
+    Start "widget/component-decl-action" {}
+    Start_cn "widget/connector" { event=Start; target=chat_timer; action=SetTimer; Time=1; }
+
+    chat_timer "widget/timer"
+	{
+	msec=30000;
+	auto_reset=0;
+	auto_start=0;
+	interval_cn "widget/connector" { target=chat_osrc; event=Expire; action=Refresh;}
+	}
+
+    chat_osrc "widget/osrc"
+	{
+	sql = "select hist='asdf'";//sum('[' + condition(datepart(year,:s_date_modified) != datepart(year,getdate()) or datepart(month,:s_date_modified) != datepart(month, getdate()) or datepart(day,:s_date_modified) != datepart(day,getdate()), '' + datepart(month,:s_date_modified) + '/' + datepart(day,:s_date_modified) + condition(datepart(year,getdate()) != datepart(year,:s_date_modified), '/' + datepart(year,:s_date_modified), '') + ' ' ,'') + condition(datepart(hour,:s_date_modified) < 10, '0', '') + datepart(hour,:s_date_modified) + ':' + condition(datepart(minute,:s_date_modified) < 10, '0', '') + datepart(minute,:s_date_modified) + '] ' + :s_created_by + ': ' + :c_message + '\n') - '\n' from /apps/kardia/data/Kardia_DB/c_message/rows");
+	baseobj = "/apps/kardia/data/Kardia_DB/c_message/rows";
+	readahead=10;
+	replicasize=10;
+	autoquery=onfirstreveal;
+	indicates_activity = no;
+
+	created_cn1 "widget/connector" { target=chat_timer; event=Created; action=SetTimer; Time=1;}
+
+	endquery_cn1 "widget/connector" { target=chat_timer; event=EndQuery; action=SetTimer; Time=30000;  }
+	endquery_cn2 "widget/connector" { event=EndQuery; target=log; action=SetValue; Value=runclient(:chat_osrc:hist); ContentType = runclient('text/plain'); }
+	endquery_cn3 "widget/connector" { event=EndQuery; target=log; action=ShowText; }
+	endquery_cn4 "widget/connector" { event=EndQuery; target=log_scroll; action=ScrollTo; Percent=100; }
+	}
+
+    log_pane "widget/pane"
+	{
+	x=10;y=10;width=240;height=320;
+	style=lowered;
+	bgcolor=white;
+
+	log_scroll "widget/scrollpane"
+	    {
+	    x=0;y=0;width=240;height=320;
+
+	    log "widget/html"
+		{
+		x=0;y=0;width=240;
+		mode=dynamic;
+		}
+                
+	    }
+	}
+
+    type_eb "widget/editbox"
+    	{
+    	x=10;y=340;height=20;width=210;
+    	enter_cn_1 "widget/connector" { target=chat_timer; event=ReturnPressed; action=CancelTimer; }
+    	enter_cn_2 "widget/connector" { target=chat_osrc; event=ReturnPressed; action=Create; c_message=runclient(:type_eb:content); c_from=runclient(user_name()); c_to=runclient(:newchat_panel:chat_id); c_date=runclient(getdate()); c_viewed=runclient(0); }
+    	enter_cn_3 "widget/connector" { target=type_eb; event=ReturnPressed; action=SetValue; Value=runclient(''); }
+    	}
+        
+    send_button "widget/imagebutton"
+        {
+        x=230; y=340; height=20; width=20;
+        image="/sys/images/menu_arrow.gif";
+        
+        send_cn_1 "widget/connector" { target=chat_timer; event=Click; action=CancelTimer; }
+    	send_cn_2 "widget/connector" { target=chat_osrc; event=Click; action=Create; c_message=runclient(:type_eb:content); c_from=runclient(user_name()); c_to=runclient(:newchat_panel:chat_id); c_date=runclient(getdate()); c_viewed=runclient(0); }
+    	send_cn_3 "widget/connector" { target=type_eb; event=Click; action=SetValue; Value=runclient(''); }
+        }
     
-    
-    }
+    } // End chat_id

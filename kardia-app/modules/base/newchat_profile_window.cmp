@@ -5,6 +5,8 @@ newchat_profile_window "widget/component-decl"
     height=300; width=250; x=300; y=300;
     
     specimen "widget/parameter" {type="string"; default="Unknown";}
+    chat_window "widget/parameter" {type="object";}
+    decline_chat_confirmation "widget/parameter" {type="object";}
     
     // User image - right now, this is nothing in particular
     profile_window "widget/childwindow"
@@ -21,7 +23,10 @@ newchat_profile_window "widget/component-decl"
             width=300; height=400;
             path="/apps/kardia/modules/base/newchat_profile.cmp";
             
+            // Parameters
             specimen=runserver(:specimen);
+            chat_window=chat_window;
+            decline_chat_confirmation=decline_chat_confirmation;
             }
         
         }

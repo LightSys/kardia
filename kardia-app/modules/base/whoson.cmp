@@ -4,7 +4,7 @@ whoson "widget/component-decl"
     width=282;height=360;
     
     // Top level window parameters
-    profile_window_cmp "widget/parameter" {type="object";}
+    profile_window "widget/parameter" {type="object";}
     decline_chat_dialog "widget/parameter" {type="object";}
     chat_window "widget/parameter" {type="object";}
 
@@ -21,8 +21,7 @@ whoson "widget/component-decl"
 	msec=30000;
 	auto_reset=0;
 	auto_start=runserver(:this:auto_start);
-	interval_cn "widget/connector" { target=whoson_browser_cmp; event=Expire; action=Instantiate;  profile_window = profile_window_cmp;}
-	interval_cn2 "widget/connector" { target=chat_list_cmp; event=Expire; action=Instantiate; decline_confirmation_cmp=decline_chat_dialog; chat_window_cmp=chat_window;}
+	interval_cn "widget/connector" { target=whoson_osrc; event=Expire; action=Refresh;}
 	}
     
     // This shows a list of all of the current users using a "widget/repeat"
@@ -32,77 +31,97 @@ whoson "widget/component-decl"
 	{
 	x=0; y=0; width=282;
 	
-	whoson_browser_cmp "widget/component"
+	whoson_osrc "widget/osrc"
 	    {
-	    path = "/apps/kardia/modules/base/whoson_browser.cmp";
-	    height=150; width=282;
-	    mode = "dynamic";
-	    	    
-	    instantiate_cn "widget/connector" { source=whoson; event="LoadComplete"; action="Instantiate"; profile_window = profile_window_cmp;}
-	    }
-	    
+	    sql = " select
+			    img='/apps/kardia/images/icons/person.gif',
+			    :ud:s_status,
+			    :ud:s_username,
+			    :u:description,
+			    :s:name,
+			    :s:session_cnt,
+			    chat=condition(:s:name != user_name(), '/apps/kardia/images/icons/chat.png', '/sys/images/trans_1.gif'),
+			    profile='/apps/kardia/images/icons/user.gif'
+		    from
+			    /sys/cx.sysinfo/users s,
+			    /apps/kardia/data/Users.uxu u,
+			    /apps/kardia/data/Kardia_DB/s_user_data/rows ud
+		    where
+			    :s:name = :u:name and
+			    :s:name *= :ud:s_username
+		    ";
+	    replicasize=100;
+	    readahead=100;
+	    autoquery=onfirstreveal;
+	    endquery_cn "widget/connector" { target=whoson_timer; event=EndQuery; action=SetTimer; Time=30000; }
+	    indicates_activity = no;
+	 
+	    whoson_tbl "widget/table"
+		{
+		height=100;
+		rowheight = 20;
+		mode=dynamicrow;
+		allow_selection = "yes";
+		show_selection = no;
+		demand_scrollbar = yes;
+		overlap_scrollbar = yes;
+		colsep = 0;
+		
+		cn_profile_view "widget/connector"
+		    {
+		    event="Click";
+		    event_condition=runclient(:Column == 'profile');
+		    target=profile_window;
+		    action="Instantiate";
+		    
+		    // Parameters to pass
+		    specimen=runclient(:name);
+		    chat_window=chat_window;
+		    decline_chat_confirmation=decline_chat_dialog;
+		    } // End cn_profile_view
+		    
+		cn_chat_window "widget/connector"
+		    {
+		    event="Click";
+		    event_condition=runclient(:Column == 'chat' and :name != user_name());
+		    target=chat_window;
+		    action="Instantiate";
+		    
+		    // Parameters to pass
+		    chat_id=runserver(0);
+			
+		    } // End cn_profile_view
+	
+		t_img "widget/table-column" { title=""; fieldname="img"; width=24; type=image; }
+		//t_usr "widget/table-column" { title="User"; fieldname="name"; width=80; }
+		t_desc "widget/table-column" { title="Name"; fieldname="description"; width=80; }
+		t_stat "widget/table-column" { title="Status"; fieldname="s_status"; width=100; }
+		//t_cnt "widget/table-column" { title="Logins"; fieldname="session_cnt"; width=48; }
+		t_chat "widget/table-column" {title=""; fieldname="chat"; type="image"; width=24;}
+		t_profile "widget/table-column" {title="";fieldname="profile";type="image";width=24;}
+		} // End whoson_tbl
+	    } // End whoson_osrc
+	
 	chat_list_cmp "widget/component"
 	    {
 	    path = "/apps/kardia/modules/base/newchat_list.cmp";
-	    height=150; width=282;
-	    mode=dynamic;
-	    
-	    instantiate_chat_list_cn "widget/connector" { source=whoson; event="LoadComplete"; action="Instantiate"; decline_confirmation_cmp=decline_chat_dialog; chat_window_cmp=chat_window;}
+	    height=100; width=282;
+	    mode=static;
+	    decline_confirmation=decline_chat_dialog;
+	    chat_window=chat_window;
+	    }    
+	
+	// Public chat button
+	public_chat_button "widget/textbutton"
+	    {
+	    text="New Public Chat";
+	    width=130; x=152; height=20;
 	    }
 	
-	//whoson_osrc "widget/osrc"
-	//    {
-	//    sql = " select
-	//		    img='/apps/kardia/images/icons/person.gif',
-	//		    :ud:s_status,
-	//		    :ud:s_username,
-	//		    :u:description,
-	//		    :s:name,
-	//		    :s:session_cnt
-	//	    from
-	//		    /sys/cx.sysinfo/users s,
-	//		    /apps/kardia/data/Users.uxu u,
-	//		    /apps/kardia/data/Kardia_DB/s_user_data/rows ud
-	//	    where
-	//		    :s:name = :u:name and
-	//		    :s:name *= :ud:s_username
-	//	    ";
-	//    replicasize=100;
-	//    readahead=100;
-	//    autoquery=onfirstreveal;
-	//    endquery_cn "widget/connector" { target=whoson_timer; event=EndQuery; action=SetTimer; Time=30000; }
-	//    indicates_activity = no;
-	// 
-	//    whoson_tbl "widget/table"
-	//	{
-	//	height=150;
-	//	rowheight = 20;
-	//	mode=dynamicrow;
-	//	allow_selection = yes;
-	//	show_selection = no;
-	//	demand_scrollbar = yes;
-	//	overlap_scrollbar = yes;
-	//	colsep = 0;
-	//
-	//	chat_cn "widget/connector"
-	//	    {
-	//	    event=DblClick;
-	//	    target="chat_cmp"; 
-	//	    action="Instantiate"; 
-	//	    WithWhom = runclient(:whoson_osrc:name);
-	//	    visible = runclient('yes');
-	//	    }
-	//
-	//	t_img "widget/table-column" { title=""; fieldname="img"; width=24; type=image; }
-	//	//t_usr "widget/table-column" { title="User"; fieldname="name"; width=80; }
-	//	t_desc "widget/table-column" { title="Name"; fieldname="description"; width=98; }
-	//	t_stat "widget/table-column" { title="Status"; fieldname="s_status"; width=160; }
-	//	//t_cnt "widget/table-column" { title="Logins"; fieldname="session_cnt"; width=48; }
-	//	}
-	//    }
+	} // End whoson_chat_layout
 	
-	}
 
+    // The following updates the status field
     sep "widget/pane" { x=0; y=316; height=2; width=282; style=lowered; fl_height=0; }
 
     upd_stat "widget/label" { x=0; y=318; height=20; width=282; style=bold; text="Update My Status:"; }
@@ -139,7 +158,7 @@ whoson "widget/component-decl"
 	    confirm_discard = no;
 	    auto_focus = no;
 
-	    save_cn "widget/connector" { target=whoson_browser_cmp; event=DataSaved; action=Instantiate;  profile_window = profile_window_cmp;}
+	    save_cn "widget/connector" { target=whoson_osrc; event=DataSaved; action=Refresh;}
 
 	    status_lbl "widget/label" { x=0;y=340;height=20;width=85; value=runclient(isnull(condition(charindex(' ', :usrdat_osrc:description) > 0, substring(:usrdat_osrc:description, 1, charindex(' ', :usrdat_osrc:description) - 1), :usrdat_osrc:description) + ' is:', '')); align=right; }
 	    status_eb "widget/editbox" { x=90; y=340; height=20; width=192; tooltip="What are you doing right now?"; fieldname=s_status; empty_description="What are you doing now?"; }
@@ -151,14 +170,6 @@ whoson "widget/component-decl"
 
 	    //f_s_status "widget/component" { x=0; y=340; height=20; width=282; path="/sys/cmp/smart_field.cmp"; field=s_status; text=runserver(condition(charindex(' ', user_name()) > 0, substring(user_name(), 1, charindex(' ', user_name()) - 1), user_name()) + ' is:'); ctl_type="editbox"; tooltip="What are you doing right now?"; }
 	    }
-	}
-
-    chat_cmp "widget/component"
-	{
-	path = "/apps/kardia/modules/base/chat_window.cmp";
-	multiple_instantiation = yes;
-	mode = dynamic;
-	toplevel = yes;
 	}
 	
     }

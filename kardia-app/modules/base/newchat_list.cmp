@@ -9,127 +9,97 @@ newchat_list "widget/component-decl"
     shows_current "widget/parameter" {type="integer"; default=1;}
     shows_exited "widget/parameter" {type="integer"; default=0;}
     with_who "widget/parameter" {type="string"; default=runserver(user_name());}
-    decline_confirmation_cmp "widget/parameter" {type="object";}
+    refreshes "widget/parameter" {type="integer";}
+    
+    decline_confirmation "widget/parameter" {type="object";}
     chat_window "widget/parameter" {type="object";}
-    chat_window_cmp "widget/parameter" {type="object";}
-	
-    // Make a dynamic component that shows each of the chats, their status, and
-    // if you want to exit them (if applicable)  TODO - Convert this over to the
-    // table view when the table view is ready enough.
     
-    chat_list_vlayout "widget/vbox"
-        {
-        height=150; width=282;
-        spacing=2;
-    
-	// The title bar of the table
-	title_bar "widget/pane"
-	    {
-	    height=20; width=282;
-	    
-	    height=20; width=282;
-            background="/apps/kardia/images/bg/blue_gradient.png";
-            style="flat";
-	    
-	    title_hlayout "widget/hbox"
-		{
-	    
-		blank_col_lbl "widget/label"
-		    {
-		    text="";
-		    width=24; 
-		    }
-		    
-		chat_name_label "widget/label"
-		    {
-		    text="Chat Name";
-		    width=200;
-		    }
-		    
-		} // End title_hlayout
-	    
-	    }
+    refresh_timer "widget/timer"
+	{
+	msec=30000;
+	auto_reset=0;
+	interval_cn "widget/connector" { target=chat_list_osrc; event=Expire; action=Refresh;}
+	}
 	
-	list_container "widget/vbox"
-	    {
-	    width=282; height=110;
-	    
-	    repeater "widget/repeat"
-		{
-		sql="select name='Muchos long title',
-			    status='O',
-			    newstuff=1";
+    // The data source for listing chats
+    // Need to add 
+    chat_list_osrc "widget/osrc"
+	{
+	sql=runserver("   select
+		    :member:c_status,
+		    :member:c_chat_id,
+		    :member:c_last_read_message_id,
+		    :chat:c_chat_id,
+		    :chat:c_title,
+		    :chat:c_last_message_id,
+		    status= condition(:member:c_status == 'O', condition(:member:c_last_read_message_id < :chat:c_last_message_id, '/apps/kardia/images/icons/chat_stat_open_new.png', '/apps/kardia/images/icons/chat_stat_open_no_new.png'),
+			    condition(:member:c_status == 'C', condition(:member:c_last_read_message_id < :chat:c_last_message_id, '/apps/kardia/images/icons/chat_stat_closed_new.png', '/apps/kardia/images/icons/chat_stat_closed_no_new.png'),
+			    '/apps/kardia/images/icons/chat_stat_invite.png')),
+		    chat=condition(:member:c_status == 'I', '/sys/images/green_check.gif','/apps/kardia/images/icons/chat.png'),
+		    close=" + runserver(condition(:shows_exited, "condition(:member:c_status != 'I', '/sys/images/trans_1.gif', '/sys/images/red_x.gif')", "'/sys/images/red_x.gif'")) + "
+		from
+		    /apps/kardia/data/Kardia_DB/c_member/rows member,
+		    /apps/kardia/data/Kardia_DB/c_chat/rows chat
+		where
+		    :member:c_chat_id == :chat:c_chat_id " + 
+		    runserver(condition(:shows_exited, "", ", and :member:c_status != 'C'")) + "
+		");
 		
-		// A display for a single chat
-		chat_row "widget/pane"
-		    {
-		    height=18; width=282;
-		    style="flat";
-		    bgcolor="white";
-		    condition=runserver((:shows_invited AND :repeater:status == "I") OR (:shows_current AND :repeater:status == "O") OR (:shows_exited AND :repeater:status == "C"));
-		    
-		    blank_col_lbl "widget/image"
-			{
-			source=runserver(condition(:repeater:status == "O", condition(:repeater:newstuff, "/apps/kardia/images/icons/chat_stat_open_new.png", "/apps/kardia/images/icons/chat_stat_open_no_new.png"),
-					 condition(:repeater:status == "C", condition(:repeater:newstuff, "/apps/kardia/images/icons/chat_stat_closed_new.png", "/apps/kardia/images/icons/chat_stat_closed_no_new.png"),
-					 "/apps/kardia/images/icons/chat_stat_invite.png")));
-			width=16; height=16; x=1; y=1;
-			}
-			
-		    chat_name_label "widget/label"
-			{
-			text=runserver(:repeater:name);
-			width=225;  x=24; height=18;
-			}
-			
-		    chat_button "widget/imagebutton"
-                        {
-                        x=246; y=1;width=16;height=16;
-                        image="/apps/kardia/images/icons/chat.png";
-			condition=runserver(:repeater:status != 'I');
-                        
-			open_chat_window "widget/connector"
-			    {
-			    event="Click";
-			    target=chat_window_cmp;
-			    action="Instantiate";
-			    }
-			
-                        }	
-		    
-		    accept_button "widget/imagebutton"
-			{
-			image="/apps/kardia/images/icons/chat_accept.png";
-			x=246; y=1; width=16; height=16;
-			condition=runserver(:repeater:status == 'I');
-			} // End accept_button
-			
-		    decline_button "widget/imagebutton"
-			{
-			image="/apps/kardia/images/icons/chat_decline.png";
-			x=262; y=1; width=16; height=16;
-			
-			decline_action "widget/connector"
-			    {
-			    condition=runserver(:repeater:status == 'I');
-			    target=decline_confirmation_cmp;
-			    action="Instantiate";
-			    chat_name=runserver(:repeater:name);
-			    event="Click";
-			    }
-			
-			} // End accept_button
-		    
-		    }
-		} // End repeater
-	    } // End list_container
+	replicasize=100;
+	readahead=100;
+	autoquery=onfirstreveal;
+	endquery_cn "widget/connector" { target=refresh_timer; event=EndQuery; action=SetTimer; Time=30000; }
+	indicates_activity = no;
+	
+	chat_list_table "widget/table"
+	    {
+	    width=282; height=150;
+	    rowheight = 20;
+	    mode=dynamicrow;
+	    allow_selection = "yes";
+	    show_selection = no;
+	    demand_scrollbar = yes;
+	    overlap_scrollbar = yes;
+	    colsep = 0;
 	    
-	    // Button to start a new public chat
-	    public_chat_button "widget/textbutton"
+	    cn_chat_window "widget/connector"
 		{
-		text="New Public Chat";
-		width=130; x=152; height=20;
+		event="Click";
+		event_condition=runclient(:Column == 'chat');
+		target=chat_window;
+		action="Instantiate";
+		
+		// Parameters to pass
+		chat_id = 0;
+		    
+		} // End cn_chat_window
+		
+	    cn_decline_invitation "widget/connector"
+		{
+		event="Click";
+		event_condition=runclient(:Column == "close" and :c_status == "I");
+		target=decline_confirmation;
+		action="Instantiate";
+		
+		// Parameters
+		chat_name=runclient(:c_title + " ");
+		}
+		
+	    cn_close_open_chat_invitation "widget/connector"
+		{
+		event="Click";
+		event_condition=runclient(:Column == "close" and :c_status == "O");
+		target=chat_list_osrc;
+		action="Modify";
+		
+		// Parameters
+		c_status=runclient("C");
 		}
 	    
-	} // End chat_list_vlayout
+	    status_indicator "widget/table-column" {title=""; fieldname="status";width=24; type="image";}
+	    member_col "widget/table-column" {title="Chat Name"; fieldname="c_title"; width=180;}
+	    chat_image "widget/table-column" {title=""; fieldname="chat"; type="image"; width=24;}
+	    close_image "widget/table-column" {title="";fieldname="close";type="image";width=24;}
+	    } // End chat_list_table
+	} // End chat_list_osrc
     } // End newchat_list

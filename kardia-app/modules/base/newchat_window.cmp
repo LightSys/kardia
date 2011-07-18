@@ -5,6 +5,10 @@ newchat_window "widget/component-decl"
     {
     height=600; width=800;
     
+    chat_id "widget/parameter" {type="integer";}
+    
+    instantiate_cn "widget/connector" {target=message_list; action="Instantiate"; event="LoadComplete";}
+    
     chat_window "widget/childwindow"
         {
         width=300; height=400; x=250; y=100;
@@ -12,17 +16,13 @@ newchat_window "widget/component-decl"
         toplevel="yes";
         icon="/apps/kardia/images/icons/chat.png";
     
-        testlbl "widget/label"
+        chat_panel "widget/component"
             {
-            text = "IIIIIIIIIIIIIIIIIIIIIIIIIII"; width=80;height=20;
-            }
-    
-        message_list "widget/component"
-            {
-            path="/apps/kardia/modules/base/newchat_message_list.cmp";
-            mode="static";
-            x=10; y=40; width=240; height=350;
+            path="/apps/kardia/modules/base/newchat_panel.cmp";
+            mode="dynamic";
+            x=0; y=40; width=280; height=300;
             
+            chat_id=runserver(:chat_id);
             } // End message_list
         } // End chat_child_window
     } // End newchat_window

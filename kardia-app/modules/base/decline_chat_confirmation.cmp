@@ -4,11 +4,12 @@ decline_chat_confirmation "widget/component-decl"
     {
     width=800; height=600;
     
+    chat_name "widget/parameter" {type="string";}
+    chat_id "widget/parameter" {type="integer";}
+    
     // A dialog to ask people if they are sure they want to decline a chat
     decline_confirmation "widget/childwindow"
 	{
-	chat_name "widget/parameter" {type="string";}
-	chat_id "widget/parameter" {type="integer";}
 	
 	width=200; height=100; x=300; y=250;
 	style="dialog";
@@ -20,7 +21,7 @@ decline_chat_confirmation "widget/component-decl"
 	    {
 	    x=5; y=5; width=190; height=35;
 	    // TODO Get this fixed, it does not apear to work
-	    text=runserver("Are you sure you want to decline chat \"" + chat_name + "\"?");
+	    text=runserver("Are you sure you want to decline chat \"" + rtrim(:this:chat_name) + "\"?");
 	    background="/apps/kardia/images/bg/light_bgnd3.jpg";
 	    }
 	    
