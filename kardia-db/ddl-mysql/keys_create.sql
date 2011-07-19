@@ -209,13 +209,13 @@ alter table a_subtrx_cashxfer
 	add constraint a_subtrx_cashxfer_pk primary key  (a_ledger_number, a_batch_number, a_journal_number);
 
 alter table c_message
-	add constraint c_messages_pk primary key  (chat_id, c_message_id);
+	add constraint c_message_pk primary key  (c_chat_id, c_message_id);
 
 alter table c_chat
-	add constraint c_chats_pk primary key  (c_chat_id);
+	add constraint c_chat_pk primary key  (c_chat_id);
 
 alter table c_member
-	add constraint c_chats_pk primary key  (c_chat_id, s_username);
+	add constraint c_member_pk primary key  (c_chat_id, s_username);
 
 alter table s_user_data
 	add constraint s_user_data_pk primary key  (s_username);

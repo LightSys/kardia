@@ -399,19 +399,20 @@ alter table a_subtrx_deposit drop index a_subtrx_dep_batch_idx;
 
 
 /* c_message */
-/* drop index c_message.c_messages_pk */ 
+/* drop index c_message.c_message_pk */ 
 /* go */
 
 
 /* c_chat */
-/* drop index c_chat.c_chats_pk */ 
+/* drop index c_chat.c_chat_pk */ 
 /* go */
 alter table c_chat drop index c_public_idx;
 
 
 /* c_member */
-/* drop index c_member.c_chats_pk */ 
+/* drop index c_member.c_member_pk */ 
 /* go */
+alter table c_member drop index s_username_idx;
 
 
 /* s_user_data */

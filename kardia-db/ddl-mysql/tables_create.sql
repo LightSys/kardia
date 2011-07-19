@@ -1454,7 +1454,6 @@ create table c_message (
 
 create table c_chat (
         c_chat_id                             int  not null,           /* The synthetic key that serves to identify the unique chat. --  */
-        c_name                                varchar(30)  not null,   /* The name of the chat. --  */
         c_last_send                           datetime  not null,      /* The time of the last message to be sent. -- This am thinking this should be denormalized (as it is) so that the retrieved list of tables can be ordered by this. (It is not too essential that it is updated.) */
         c_last_message_id                     int  not null,           /* The message_id of the last message to be sent. -- This can be used in combination with the user's data to see if there is any new data in a chat for each user. */
         c_public                              char(1)  not null,       /* If the chat is public or not. ('Y' or 'N' for yes or no) --  */
@@ -1474,7 +1473,7 @@ create table c_member (
         c_chat_id                             int  not null,           /* The key of the chat that the user has been invited to. --  */
         s_username                            varchar(20)  not null,   /* Foreign natural key of the user that has been invited to/is in the chat. --  */
         c_last_read_message_id                int  null,               /* The id of the last message that the user read from this chat. -- This could be null for invitations. */
-        c_status                              char(1)  not null,       /* The user's status in the chat. 'U' is unanswered invitation, 'I' is in the chat, and 'O' is out of the chat. This record is deleted if the user declines the invitation. --  */
+        c_status                              char(1)  not null,       /* The user's status in the chat. 'I' is unanswered invitation, 'O' is in the chat (open chat), and 'C' is closed chat. This record is deleted if the user declines the invitation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /* Here, this is used for the person that invited them to the chat. --  */
         s_date_modified                       datetime  not null,      /*  --  */

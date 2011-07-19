@@ -399,19 +399,20 @@ create  index a_subtrx_dep_batch_idx on a_subtrx_deposit (a_batch_number, a_ledg
 
 
 /* c_message */
-/* create  index c_messages_pk on c_message (chat_id, c_message_id)*/ 
+/* create  index c_message_pk on c_message (c_chat_id, c_message_id)*/ 
 /* go */
 
 
 /* c_chat */
-/* create  index c_chats_pk on c_chat (c_chat_id)*/ 
+/* create  index c_chat_pk on c_chat (c_chat_id)*/ 
 /* go */
 create  index c_public_idx on c_chat (c_public, c_chat_id);
 
 
 /* c_member */
-/* create  index c_chats_pk on c_member (c_chat_id, s_username)*/ 
+/* create  index c_member_pk on c_member (c_chat_id, s_username)*/ 
 /* go */
+create  index s_username_idx on c_member (s_username, c_chat_id);
 
 
 /* s_user_data */
