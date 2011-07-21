@@ -137,14 +137,15 @@ newchat_panel "widget/component-decl"
                                                                           '/' + datepart(year,:s_date_created),
                                                                           '') + ' ',
                                                             '') +
-                                                 condition(datepart(hour,:s_date_created) < 10,
+                                                condition(datepart(hour,:s_date_created) < 10,
                                                            '0',
                                                            '') +
                                                 datepart(hour,:s_date_created) + ':' +
                                                  condition(datepart(minute,:s_date_created) < 10,
                                                            '0',
                                                            '') +
-                                                 datepart(minute,:s_date_created) + '] ' + :s_date_created + ': ' + :c_message + '\n') - '\n'
+                                                 datepart(minute,:s_date_created) +
+                                                 '] ' + :c_message + '\n') - '\n'
                             FROM /apps/kardia/data/Kardia_DB/c_message/rows
                             WHERE (:c_chat_id == " + :this:chat_id + ")
                         ");
