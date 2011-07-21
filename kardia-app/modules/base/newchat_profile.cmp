@@ -7,7 +7,6 @@ newchat_profile "widget/component-decl"
     // Parameters
     specimen "widget/parameter" {type="string";}
     chat_window "widget/parameter" {type="object";}
-    decline_chat_confirmation "widget/parameter" {type="object";}
     
     usrdat_osrc "widget/osrc"
 	{
@@ -98,7 +97,6 @@ newchat_profile "widget/component-decl"
             shows_exited=1;
             with_who=runserver(specimen);
             chat_window=chat_window;
-            decline_confirmation=decline_chat_confirmation;
             }
             
     } // End newchat_profile

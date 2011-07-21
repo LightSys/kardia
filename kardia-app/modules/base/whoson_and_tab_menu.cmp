@@ -50,14 +50,6 @@ whoson_and_tab_menu "widget/component-decl"
         width=282; height=400; x=100; y=100;
         }
 	
-    // Window to ask if people really mean to decline a chat
-    decline_chat_cmp "widget/component"
-	{
-	path="/apps/kardia/modules/base/decline_chat_confirmation.cmp";
-	width=784; height=530;
-	mode="dynamic";
-	}
-	
     // Window for chats
     chat_window_cmp "widget/component"
 	{
@@ -74,7 +66,6 @@ whoson_and_tab_menu "widget/component-decl"
         fl_width=0;
         auto_start=1;
 	
-	decline_chat_dialog = decline_chat_cmp;
 	profile_window = profile_window;
 	chat_window=chat_window_cmp;
         }

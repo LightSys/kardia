@@ -1,0 +1,113 @@
+// This is a component that creates chats and shows new chats.
+// This component should be dynamic and allow multiple instantiation
+// and a new instance should be created every time someone wants to
+// create a chat.
+$Version=2$
+newchat_chat_maker "widget/component-decl"
+    {
+    width=0; height=0;
+    
+    // Parameters
+    is_public "widget/parameter" {type="integer"; deploy_to_client=yes;}
+    initial_invite "widget/parameter" {type="string"; deploy_to_client=yes;}
+    chat_window "widget/parameter" {type="object"; deploy_to_client=yes;}
+    
+    // OSRC for creating the new invitations
+    member_list_osrc "widget/osrc"
+        {
+        sql="SELECT * FROM identity /apps/kardia/data/Kardia_DB/c_member/rows";
+        baseobj="/apps/kardia/data/Kardia_DB/c_member/rows";
+        }
+        
+    // Create the new chat entry
+    load_cn_1 "widget/connector"
+        {
+        source=newchat_chat_maker;
+        event="LoadComplete";
+        action="Create";
+        target=chat_list_osrc;
+        
+        // Parameters
+        c_last_message_id=0;
+        c_last_send=runclient(getdate());
+        c_public=runclient(condition(:newchat_chat_maker:is_public, "Y", "N"));
+        c_title=runclient(condition(:newchat_chat_maker:is_public, "Public ", "") + "Chat " + user_name() +
+                            condition(:newchat_chat_maker:initial_invite is not null, " and " + :newchat_chat_maker:initial_invite, "") +
+                            " (" + convert("string", getdate()) + ")");
+        s_date_created=runclient(getdate());
+        s_created_by=runclient(user_name());
+        s_date_modified=runclient(getdate());
+        s_modified_by=runclient(user_name());
+        }
+        
+    // Get the new c_chat_id
+    load_cn_2 "widget/connector"
+        {
+        source=newchat_chat_maker;
+        event="LoadComplete";
+        action="QueryParam";
+        target=chat_list_osrc;
+        }
+        
+    // OSRC for creating new chats
+    chat_list_osrc "widget/osrc"
+        {
+        sql="   SELECT c_chat_id = max(:c_chat_id)
+                FROM identity /apps/kardia/data/Kardia_DB/c_chat/rows
+                WHERE :c_last_message_id == 0 and
+                    :s_created_by == user_name()";
+        baseobj="/apps/kardia/data/Kardia_DB/c_chat/rows";
+        autoquery="never";
+        
+        // Create the invite status for the other member
+        load_cn_3 "widget/connector"
+            {
+            event="EndQuery";
+            action="Create";
+            target=member_list_osrc;
+            event_condition=runclient(:newchat_chat_maker:initial_invite is not null);
+            
+            // Parameters
+            c_chat_id=runclient(:chat_list_osrc:c_chat_id);
+            s_username=runclient(:newchat_chat_maker:initial_invite);
+            c_last_read_message_id=0;
+            c_status=runclient("I");
+            s_date_created=runclient(getdate());
+            s_created_by=runclient(user_name());
+            s_date_modified=runclient(getdate());
+            s_modified_by=runclient(user_name());
+            }
+        
+        // Create the open status for the inviting member
+        load_cn_4 "widget/connector"
+            {
+            event="EndQuery";
+            action="Create";
+            target=member_list_osrc;
+            
+            // Parameters
+            c_chat_id=runclient(:chat_list_osrc:c_chat_id);
+            s_username=runclient(user_name());
+            c_last_read_message_id=0;
+            c_status=runclient("O");
+            s_date_created=runclient(getdate());
+            s_created_by=runclient(user_name());
+            s_date_modified=runclient(getdate());
+            s_modified_by=runclient(user_name());
+            }
+            
+            
+        // Create the chat window
+        load_cn_5 "widget/connector"
+            {
+            event="EndQuery";
+            action="Instantiate";
+            target=chat_window;
+            
+            // Parameters
+            chat_id=runclient(:chat_list_osrc:c_chat_id);
+            }
+        
+        }
+    
+    }

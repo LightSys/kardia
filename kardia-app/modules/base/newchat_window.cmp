@@ -9,7 +9,7 @@ newchat_window "widget/component-decl"
         
     chat_window "widget/childwindow"
         {
-        width=300; height=400; x=250; y=100;
+        width=400; height=300; x=150; y=200;
         title="Chat";
         toplevel="yes";
         icon="/apps/kardia/images/icons/chat.png";
@@ -18,7 +18,7 @@ newchat_window "widget/component-decl"
             {
             path="/apps/kardia/modules/base/newchat_panel.cmp";
             mode="static";
-            x=0; y=0; width=280; height=380;
+            x=0; y=0; width=380; height=280;
             
             chat_id=runserver(:chat_id);
             } // End message_list

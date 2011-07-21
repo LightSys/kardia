@@ -5,7 +5,6 @@ whoson "widget/component-decl"
     
     // Top level window parameters
     profile_window "widget/parameter" {type="object";}
-    decline_chat_dialog "widget/parameter" {type="object";}
     chat_window "widget/parameter" {type="object";}
 
     Stop "widget/component-decl-action" {}
@@ -23,6 +22,14 @@ whoson "widget/component-decl"
 	auto_start=runserver(:this:auto_start);
 	interval_cn "widget/connector" { target=whoson_osrc; event=Expire; action=Refresh;}
 	}
+    
+    // This object helps create new chats when instantiated
+    chat_maker "widget/component"
+        {
+        path="/apps/kardia/modules/base/newchat_chat_maker.cmp";
+        mode="dynamic";
+        multiple_instantiation="yes";
+        }
     
     // This shows a list of all of the current users using a "widget/repeat"
     // TODO Change back to table view if buttons ever become available in
@@ -77,20 +84,20 @@ whoson "widget/component-decl"
 		    // Parameters to pass
 		    specimen=runclient(:name);
 		    chat_window=chat_window;
-		    decline_chat_confirmation=decline_chat_dialog;
 		    } // End cn_profile_view
 		    
 		cn_chat_window "widget/connector"
 		    {
 		    event="Click";
 		    event_condition=runclient(:Column == 'chat' and :name != user_name());
-		    target=chat_window;
+		    target=chat_maker;
 		    action="Instantiate";
 		    
 		    // Parameters to pass
-		    chat_id=runserver(0);
-			
-		    } // End cn_profile_view
+		    initial_invite=runclient(:name);
+		    is_public=0;
+		    chat_window=chat_window;
+		    } // End cn_chat_window
 	
 		t_img "widget/table-column" { title=""; fieldname="img"; width=24; type=image; }
 		//t_usr "widget/table-column" { title="User"; fieldname="name"; width=80; }
@@ -107,7 +114,6 @@ whoson "widget/component-decl"
 	    path = "/apps/kardia/modules/base/newchat_list.cmp";
 	    height=100; width=282;
 	    mode=static;
-	    decline_confirmation=decline_chat_dialog;
 	    chat_window=chat_window;
 	    }    
 	
@@ -116,7 +122,19 @@ whoson "widget/component-decl"
 	    {
 	    text="New Public Chat";
 	    width=130; x=152; height=20;
-	    }
+	    
+	    create_public_cn "widget/connector"
+		{
+		action="Instantiate";
+		event="Click";
+		target=chat_maker;
+		
+		// Parameters
+		is_public=1;
+		chat_window=chat_window;
+		}
+	    
+	    } // End pulbic_chat_button
 	
 	} // End whoson_chat_layout
 	

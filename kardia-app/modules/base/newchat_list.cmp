@@ -11,7 +11,6 @@ newchat_list "widget/component-decl"
     with_who "widget/parameter" {type="string"; default=runserver(user_name());}
     refreshes "widget/parameter" {type="integer";}
     
-    decline_confirmation "widget/parameter" {type="object";}
     chat_window "widget/parameter" {type="object";}
     
     refresh_timer "widget/timer"
@@ -25,26 +24,37 @@ newchat_list "widget/component-decl"
     // Need to add 
     chat_list_osrc "widget/osrc"
 	{
-	sql=runserver("   select
-		    :member:c_status,
-		    :member:c_chat_id,
-		    :member:c_last_read_message_id,
-		    :chat:c_chat_id,
-		    :chat:c_title,
-		    :chat:c_last_message_id,
-		    status= condition(:member:c_status == 'O', condition(:member:c_last_read_message_id < :chat:c_last_message_id, '/apps/kardia/images/icons/chat_stat_open_new.png', '/apps/kardia/images/icons/chat_stat_open_no_new.png'),
-			    condition(:member:c_status == 'C', condition(:member:c_last_read_message_id < :chat:c_last_message_id, '/apps/kardia/images/icons/chat_stat_closed_new.png', '/apps/kardia/images/icons/chat_stat_closed_no_new.png'),
-			    '/apps/kardia/images/icons/chat_stat_invite.png')),
-		    chat=condition(:member:c_status == 'I', '/sys/images/green_check.gif','/apps/kardia/images/icons/chat.png'),
-		    close=" + runserver(condition(:shows_exited, "condition(:member:c_status != 'I', '/sys/images/trans_1.gif', '/sys/images/red_x.gif')", "'/sys/images/red_x.gif'")) + "
-		from
-		    identity /apps/kardia/data/Kardia_DB/c_member/rows member,
-		    /apps/kardia/data/Kardia_DB/c_chat/rows chat
-		where
-		    :member:c_chat_id == :chat:c_chat_id " + 
-		    runserver(condition(:this:shows_exited, "", " and :member:c_status != 'C'")) + "
-		");
-		
+	sql=runserver(" SELECT
+			    :chat:c_chat_id,
+			    :chat:c_title,
+			    :chat:c_public,
+			    :chat:c_last_send,
+			    :member:c_status,
+			    :member:s_username,
+			    status= condition(:member:c_status == 'O',
+					condition(:member:c_last_read_message_id < :chat:c_last_message_id,
+					    '/apps/kardia/images/icons/chat_stat_open_new.png',
+					    '/apps/kardia/images/icons/chat_stat_open_no_new.png'),
+					condition(:member:c_status == 'C',
+					    condition(:member:c_last_read_message_id < :chat:c_last_message_id,
+						'/apps/kardia/images/icons/chat_stat_closed_new.png',
+						'/apps/kardia/images/icons/chat_stat_closed_no_new.png'),
+					    '/apps/kardia/images/icons/chat_stat_invite.png')),
+			    chat=condition(:member:c_status == 'I', '/sys/images/green_check.gif', '/apps/kardia/images/icons/chat.png'),
+			    close=" + condition(:shows_exited, "condition(:member:c_status != 'C' or :member:c_status is null, '/sys/images/red_x.gif', '/sys/images/trans_1.gif')", "'/sys/images/red_x.gif'") + "
+			FROM
+			    identity /apps/kardia/data/Kardia_DB/c_member/rows member,
+			    /apps/kardia/data/Kardia_DB/c_chat/rows chat
+			WHERE
+			    :chat:c_chat_id *= :member:c_chat_id
+			HAVING
+			    -- Pick all that are pubic or the user has a matching record for
+			    (:c_public == 'Y' or
+			    :s_username == user_name()) " + 
+			    condition(:shows_exited, "", "and not (:c_status == 'C')") + " 
+			ORDER BY :chat:c_last_send DESC
+			");
+	baseobj="/apps/kardia/data/Kardia_DB/c_member/rows";
 	replicasize=100;
 	readahead=100;
 	autoquery=onfirstreveal;
@@ -75,7 +85,44 @@ newchat_list "widget/component-decl"
 	    demand_scrollbar = yes;
 	    overlap_scrollbar = "yes";
 	    colsep = 0;
-	    
+		
+	    cn_close_public "widget/connector"
+		{
+		event="Click";
+		event_condition=runclient(:Column == "close" and :c_status is null);
+		target=chat_list_osrc;
+		action="Create";
+		
+		// Parameters
+		c_chat_id=runclient(:c_chat_id);
+		s_username=runclient(user_name());
+		c_last_read_message_id=0;
+		c_status=runclient("C");
+		s_created_by=runclient(user_name());
+		s_date_created=runclient(getdate());
+		s_modified_by=runclient(user_name());
+		s_date_modified=runclient(getdate());
+		}
+		
+	    // Connector for non-recorded chats
+	    cn_open_public "widget/connector"
+		{
+		event="Click";
+		event_condition=runclient(:Column == 'chat' and :c_status is null);
+		target=chat_list_osrc;
+		action="Create";
+		
+		// Parameters to pass
+		c_chat_id=runclient(:c_chat_id);
+		s_username=runclient(user_name());
+		c_last_read_message_id=0;
+		c_status=runclient("O");
+		s_created_by=runclient(user_name());
+		s_date_created=runclient(getdate());
+		s_modified_by=runclient(user_name());
+		s_date_modified=runclient(getdate());
+		}
+		
 	    cn_chat_window "widget/connector"
 		{
 		event="Click";
@@ -84,19 +131,31 @@ newchat_list "widget/component-decl"
 		action="Instantiate";
 		
 		// Parameters to pass
-		chat_id = 0;
+		chat_id = runclient(:c_chat_id);
 		    
 		} // End cn_chat_window
-		
+	    
+	    // Connector for already recorded chats
 	    cn_open_invited "widget/connector"
 		{
 		event="Click";
-		event_condition=runclient(:Column == 'chat');
+		event_condition=runclient(:Column == 'chat' and :c_status is not null);
 		target=chat_list_osrc;
 		action="Modify";
 		
 		// Parameters to pass
 		c_status=runclient("O");
+		}
+		
+	    cn_close_open_chat "widget/connector"
+		{
+		event="Click";
+		event_condition=runclient(:Column == "close" and :c_status == "O");
+		target=chat_list_osrc;
+		action="Modify";
+		
+		// Parameters
+		c_status=runclient("C");
 		}
 		
 	    cn_decline_invitation "widget/connector"
@@ -107,17 +166,9 @@ newchat_list "widget/component-decl"
 		target=deletion_form;
 		action="Delete";
 		}
-		
-	    cn_close_open_chat_invitation "widget/connector"
-		{
-		event="Click";
-		event_condition=runclient(:Column == "close" and :c_status == "O");
-		target=chat_list_osrc;
-		action="Modify";
-		
-		// Parameters
-		c_status=runclient("C");
-		}
+	    
+	    // This was added due to some slight errors in the way the table handles adding new columns, apparently
+	    cn_public_refresh "widget/connector"{target=chat_list_osrc; event="Click"; condition=runclient(:c_chat_status is null); action="Refresh";}
 	    
 	    status_indicator "widget/table-column" {title=""; fieldname="status";width=28; type="image";}
 	    member_col "widget/table-column" {title="Chat Name"; fieldname="c_title"; width=175;}
