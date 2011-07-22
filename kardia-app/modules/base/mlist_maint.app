@@ -1,7 +1,7 @@
 $Version=2$
 mlist_maint "widget/page"
     {
-    title = "Mailing Lists Maintenance";
+    title = "i18n:Mailing Lists Maintenance";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

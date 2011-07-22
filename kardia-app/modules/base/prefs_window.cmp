@@ -8,7 +8,7 @@ prefs_window "widget/component-decl"
 
     prefswin "widget/childwindow"
 	{
-	title = "Preferences";
+	title = "i18n:Preferences";
 	width=500; height=500;
 	x=150; y=50;
 	visible = false;

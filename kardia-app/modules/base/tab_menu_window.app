@@ -3,7 +3,7 @@ tab_menu_window "widget/page"
     {
     width = 546;
     height = 591;
-    title = "Kardia Menu";
+    title = "i18n:Kardia Menu";
     background="/apps/kardia/images/bg/light_bgnd3.jpg";
 
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

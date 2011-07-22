@@ -64,7 +64,7 @@ prefs "widget/component-decl"
 		allow_query = no;
 		allow_delete = no;
 
-		f_rowheight "widget/component" { x=30; width=350; text="Table Row Height:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=rowheight; sql="select :descrip, :height from /apps/kardia/data/TableRowHeights.csv/rows"; label_width=140; }
+		f_rowheight "widget/component" { x=30; width=350; text="Table Row Height:Table Row Height:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=rowheight; sql="select :descrip, :height from /apps/kardia/data/TableRowHeights.csv/rows"; label_width=140; }
 		}
 	    }
 
@@ -81,7 +81,7 @@ prefs "widget/component-decl"
 		font_size = 13;
 		widget_class="label";
 		align=left;
-		text = "Data Entry";
+		text = "i18n:Data Entry";
 		}
 	    }
 
@@ -100,9 +100,9 @@ prefs "widget/component-decl"
 		allow_query = no;
 		allow_delete = no;
 
-		f_entermode "widget/component" { x=30; width=350; text="[ENTER] Key:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=enter_mode; sql="select :descrip, :mode from /apps/kardia/data/EnterModes.csv/rows"; label_width=140; }
-		f_confirmdel "widget/component" { x=30; width=350; text="Confirm Deletes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=confirm_delete; label_width=140; }
-		f_allowmod "widget/component" { x=30; width=350; text="Allow Changes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=allow_modify; label_width=140; }
+		f_entermode "widget/component" { x=30; width=350; text="i18n:[ENTER] Key:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=enter_mode; sql="select :descrip, :mode from /apps/kardia/data/EnterModes.csv/rows"; label_width=140; }
+		f_confirmdel "widget/component" { x=30; width=350; text="i18n:Confirm Deletes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=confirm_delete; label_width=140; }
+		f_allowmod "widget/component" { x=30; width=350; text="i18n:Allow Changes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=allow_modify; label_width=140; }
 		}
 	    }
 	}

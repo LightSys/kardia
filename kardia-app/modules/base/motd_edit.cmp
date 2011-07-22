@@ -20,13 +20,13 @@ motd_edit "widget/component-decl"
 		{
 		height = 20;
 		path = "/apps/kardia/modules/base/section_label.cmp";
-		text = "Search Messages of the Day:";
+		text = "i18n:Search Messages of the Day:";
 		}
 
 	    search_box "widget/editbox"
 		{
 		height = 20;
-		empty_description = "type search and press ENTER";
+		empty_description = "i18n:type search and press ENTER";
 
 		do_search "widget/connector"
 		    {
@@ -45,7 +45,7 @@ motd_edit "widget/component-decl"
 		{
 		height = 20;
 		path = "/apps/kardia/modules/base/section_label.cmp";
-		text = "Messages of the Day:";
+		text = "i18n:Messages of the Day:";
 		}
 
 	    motd_osrc "widget/osrc"
@@ -91,9 +91,9 @@ motd_edit "widget/component-decl"
 			width = 268;
 			mode=dynamicrow;
 
-			t_ena "widget/table-column" { title="On?"; fieldname="s_enabled"; width=35; type=check; }
-			t_dat "widget/table-column" { title="Date"; fieldname="date_txt"; width=85; }
-			t_ttl "widget/table-column" { title="Title"; fieldname="s_message_title"; width=150; }
+			t_ena "widget/table-column" { title="i18n:On?"; fieldname="s_enabled"; width=35; type=check; }
+			t_dat "widget/table-column" { title="i18n:Date"; fieldname="date_txt"; width=85; }
+			t_ttl "widget/table-column" { title="i18n:Title"; fieldname="s_message_title"; width=150; }
 			}
 		    }
 		}
@@ -124,10 +124,10 @@ motd_edit "widget/component-decl"
 		    deletable = 1;
 		    }
 
-		f_title "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_message_title; ctl_type=editbox; text="Title:"; }
-		f_valid_days "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_valid_days; ctl_type=editbox; text="# Valid Days:"; f_valid_days_hints "widget/hints" { default=7; } }
-		f_enabled "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_enabled; ctl_type=checkbox; text="Enabled:"; f_enabled_hints "widget/hints" { default=runclient(1); style=notnull; } }
-		f_text "widget/component" { height=180; path="/sys/cmp/smart_field.cmp"; field=s_message_text; ctl_type=textarea; text="Message:"; }
+		f_title "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_message_title; ctl_type=editbox; text="i18n:Title:"; }
+		f_valid_days "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_valid_days; ctl_type=editbox; text="i18n:# Valid Days:"; f_valid_days_hints "widget/hints" { default=7; } }
+		f_enabled "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_enabled; ctl_type=checkbox; text="i18n:Enabled:"; f_enabled_hints "widget/hints" { default=runclient(1); style=notnull; } }
+		f_text "widget/component" { height=180; path="/sys/cmp/smart_field.cmp"; field=s_message_text; ctl_type=textarea; text="i18n:Message:"; }
 		footer "widget/component" { height=24; path="/apps/kardia/modules/base/record_metadata_bar.cmp"; }
 		}
 
@@ -187,8 +187,8 @@ motd_edit "widget/component-decl"
 			    width = 318; height=180;
 			    mode = dynamicrow;
 
-			    t_user "widget/table-column" { title="User"; fieldname="user"; width=150; }
-			    t_viewdate "widget/table-column" { title="Viewed On"; fieldname="s_viewed_date"; width=150; }
+			    t_user "widget/table-column" { title="i18n:User"; fieldname="user"; width=150; }
+			    t_viewdate "widget/table-column" { title="i18n:Viewed On"; fieldname="s_viewed_date"; width=150; }
 			    }
 			}
 
@@ -200,7 +200,7 @@ motd_edit "widget/component-decl"
 			    {
 			    width = 170;
 			    height = 28;
-			    text = "Force View Again";
+			    text = "i18n:Force View Again";
 
 			    delete_to_view_again "widget/connector"
 				{

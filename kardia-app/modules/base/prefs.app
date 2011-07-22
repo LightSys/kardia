@@ -2,7 +2,7 @@ $Version=2$
 prefs "widget/page"
     {
     width=500; height=475;
-    title = "Kardia Preferences";
+    title = "i18n:Kardia Preferences";
 
     background="/apps/kardia/images/bg/light_bgnd2.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
