@@ -16,8 +16,7 @@ tab_menu "widget/component-decl"
 
 	    main_tabpage "widget/tabpage"
 		{
-		title = runserver(:tabpage_rpt:module_abbrev);
-
+		title = runserver("i18n:":tabpage_rpt:module_abbrev);
 		tab_lbl "widget/label"
 		    {
 		    x=8; y=8; width=300; height=20;
@@ -33,7 +32,7 @@ tab_menu "widget/component-decl"
 		    //style=bold;
 		    fgcolor="black";
 		    font_size=11;
-		    text = runserver(:tabpage_rpt:module_description);
+		    text = runserver("i18n:":tabpage_rpt:module_description);
 		    }
 
 		progs_lbl "widget/label"
@@ -149,7 +148,7 @@ tab_menu "widget/component-decl"
 		    }
 //		    test_btn "widget/label" 
 //			{
-//			widget_class=link; width=150; height=20; x=8; y=480; text = "test me"; 
+//			widget_class=link; width=150; height=20; x=8; y=480; text = "i18n:test me"; 
 
 //			onclick "widget/connector" { event=Click; event_confirm=runclient("You clicked me ... Ledger is " + isnull(:kardia_sysattrs_osrc:Ledger, 'none')); target=tab_menu; action=Clicked; }
 //			}

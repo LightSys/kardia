@@ -13,8 +13,11 @@ cd_check_search_window "widget/component-decl"
 	
 	// Window Events / Actions / Trigger Interface
     Open "widget/component-decl-action" { }
-    Open_cn1 "widget/connector" { event="Open"; target="cd_check_search_formwin"; action="Open"; Cascade=1; } // ledger=runclient(convert(integer,:ledger)); } // batch_number=runclient(convert(integer,:batch_number)); }
-	Open_cn2 "widget/connector" { event="Open"; target="cd_check_search_form_cmp"; action="New_Search_Click"; } // ledger=runclient(convert(integer,:ledger)); }
+    Open_cn1 "widget/connector" { event="Open"; target="cd_check_search_formwin"; action="Open"; Cascade=1; }
+ // ledger=runclient(convert(integer,:ledger)); }
+ // batch_number=runclient(convert(integer,:batch_number)); }
+	Open_cn2 "widget/connector" { event="Open"; target="cd_check_search_form_cmp"; action="New_Search_Click"; }
+ // ledger=runclient(convert(integer,:ledger)); }
 
     // page "widget/parameter" { type=object; find_container="widget/page"; }
 	
@@ -22,7 +25,7 @@ cd_check_search_window "widget/component-decl"
 	
     cd_check_search_formwin "widget/childwindow"
 	{
-		title = "Search for Check"; // by Check No / Payee / Acct Code";
+		title = "i18n:Search for Check"; // by Check No / Payee / Acct Code";
 		width=780; height=550;
 		x=15; y=30;
 		visible = false;

@@ -36,7 +36,7 @@ cashdisb_form_window "widget/component-decl"
 						
     gljwin "widget/childwindow"
 	{
-	title = "Cash Disbursements dash Checking";
+	title = "i18n:Cash Disbursements dash Checking";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;

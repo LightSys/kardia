@@ -1,7 +1,7 @@
 $Version=2$
 index "widget/page"
 {
-	title = "Checking - Cash Disbursements - Kardia";
+	title = "i18n:Checking - Cash Disbursements - Kardia";
 	width=800;
 	height=600;
 	widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
@@ -24,7 +24,7 @@ index "widget/page"
 		// Dv's sub-Menu System
 		mnDv "widget/menu" // Hi Mom!
 		{
-			label = "Checking Menu";
+			label = "i18n:Checking Menu";
 			widget_class = "popup";
 			
 			mnDv_cd_batch_list_window_form "widget/menuitem"
@@ -40,7 +40,7 @@ index "widget/page"
 			}
 			mnDv_cd_search_for_check_window_form "widget/menuitem"
 			{
-				label = "Search for Check";
+				label = "i18n:Search for Check";
 				mnDv_cd_search_for_check_window_cn "widget/connector"
 				{
 					event = Select;

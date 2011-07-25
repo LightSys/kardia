@@ -407,7 +407,7 @@ cashdisb_subform "widget/component-decl"
 		toplevel = yes; 
 		style = dialog; 
 		bgcolor = "#e0e0e0"; 
-		title = "Payee Search"; 
+		title = "i18n:Payee Search"; 
 		// icon = "/images/icons/person-search.gif"; 
 		partner_search_component "widget/component" 
 		{ 
@@ -932,11 +932,11 @@ cashdisb_subform "widget/component-decl"
 			set_eff_date "widget/connector" { event="New"; target=cd_batch_date; action="SetValue"; Value=runclient(isnull(:batch_osrc:a_default_effective_date, getdate())); }
 			
 			// Title
-			batch_lbl_2 "widget/label" { x=116;y=0;width=516;height=20;align=center;valign="middle";value="Checking - Cash Disbursements"; font_size=16; style=bold; }
+			batch_lbl_2 "widget/label" { x=116;y=0;width=516;height=20;align=center;valign="middle";value="i18n:Checking - Cash Disbursements"; font_size=16; style=bold; }
 			
 			// DONE: Wire up for automatically displaying the current batch number
 			// DONE(2009416): Should this use fieldname="a_batch_number"; smartfield or other control (similar to line item control) // Control is set by another connector...
-			batch_lbl_3 "widget/label" { x=10;y=25;width=516;height=20;align=left;valign="middle";value="Batch #: (none selected)"; font_size=16; style=bold; } // will need a smartfield I think to dynamically update the number?  Or maybe just set value will work?
+			batch_lbl_3 "widget/label" { x=10;y=25;width=516;height=20;align=left;valign="middle";value="i18n:Batch #: (none selected)"; font_size=16; style=bold; } // will need a smartfield I think to dynamically update the number?  Or maybe just set value will work?
 			
 			// DONE: Wire up for automatically displaying the current check number // isnull( , "(none selectled)")
 			// DONE: Trigger to change Check # on cashdisb_table selection change -event trigger name: Click... / New Batch... -look up control object...
@@ -964,25 +964,25 @@ cashdisb_subform "widget/component-decl"
 					x=0;y=0;width=748;height=154;
 					mode=dynamicrow;
 
-					dd_a_check_number "widget/table-column" { title="CheckNo"; fieldname="a_check_number"; width=40; }
-					dd_a_line_item "widget/table-column" { title="Line"; fieldname="a_line_item"; width=30; }
-					//dd_a_ledger_number "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=60; }
-					//dd_a_batch_number "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=60; }
-					//dd_a_period "widget/table-column" { title="Period"; fieldname="a_period"; width=60; }
-					//dd_a_effective_date "widget/table-column" { title="EffDate"; fieldname="a_effective_date"; width=60; }
-					//dd_a_cash_account_code "widget/table-column" { title="CAcode"; fieldname="a_cash_account_code"; width=60; }
-					dd_a_cost_center "widget/table-column" { title="CC"; fieldname="a_cc_disp"; width=130; }
-					dd_a_account_code  "widget/table-column" { title="AcctCode"; fieldname="a_acct_disp"; width=130; }
-					dd_a_amount "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
-					//dd_a_posted "widget/table-column" { title="P"; fieldname="a_posted"; width=20; type="check"; }	
-					dd_a_voided "widget/table-column" { title="V"; fieldname="a_voided"; width=20; type="check"; }
-					//dd_a_payee_partner_key "widget/table-column" { title="PayeePartnerKey"; fieldname="a_payee_partner_key"; width=60; }
-					//dd_a_posted_to_gl "widget/table-column" { title="PostedGL"; fieldname="a_posted_to_gl"; width=60; }
-					dd_a_comment "widget/table-column" { title="Comment"; fieldname="a_comment"; width=160; }
-					//dd_s_date_created "widget/table-column" { title="DateCreated"; fieldname="s_date_created"; width=60; }
-					//dd_s_created_by "widget/table-column" { title="CreatedBy"; fieldname="s_created_by"; width=60; }
-					// dd_s_date_modified "widget/table-column" { title="DateModified; fieldname="s_date_modified"; width=60; }  // This needs to have isnull check??
-					//dd_s_modified_by "widget/table-column" { title="ModifiedBy"; fieldname="s_modified_by"; width=60; }
+					dd_a_check_number "widget/table-column" { title="i18n:CheckNo"; fieldname="a_check_number"; width=40; }
+					dd_a_line_item "widget/table-column" { title="i18n:Line"; fieldname="a_line_item"; width=30; }
+					//dd_a_ledger_number "widget/table-column" { title="i18n:Ledger"; fieldname="a_ledger_number"; width=60; }
+					//dd_a_batch_number "widget/table-column" { title="i18n:Batch"; fieldname="a_batch_number"; width=60; }
+					//dd_a_period "widget/table-column" { title="i18n:Period"; fieldname="a_period"; width=60; }
+					//dd_a_effective_date "widget/table-column" { title="i18n:EffDate"; fieldname="a_effective_date"; width=60; }
+					//dd_a_cash_account_code "widget/table-column" { title="i18n:CAcode"; fieldname="a_cash_account_code"; width=60; }
+					dd_a_cost_center "widget/table-column" { title="i18n:CC"; fieldname="a_cc_disp"; width=130; }
+					dd_a_account_code  "widget/table-column" { title="i18n:AcctCode"; fieldname="a_acct_disp"; width=130; }
+					dd_a_amount "widget/table-column" { title="i18n:Amount"; fieldname="a_amount"; width=60; align=right; }
+					//dd_a_posted "widget/table-column" { title="i18n:P"; fieldname="a_posted"; width=20; type="check"; }	
+					dd_a_voided "widget/table-column" { title="i18n:V"; fieldname="a_voided"; width=20; type="check"; }
+					//dd_a_payee_partner_key "widget/table-column" { title="i18n:PayeePartnerKey"; fieldname="a_payee_partner_key"; width=60; }
+					//dd_a_posted_to_gl "widget/table-column" { title="i18n:PostedGL"; fieldname="a_posted_to_gl"; width=60; }
+					dd_a_comment "widget/table-column" { title="i18n:Comment"; fieldname="a_comment"; width=160; }
+					//dd_s_date_created "widget/table-column" { title="i18n:DateCreated"; fieldname="s_date_created"; width=60; }
+					//dd_s_created_by "widget/table-column" { title="i18n:CreatedBy"; fieldname="s_created_by"; width=60; }
+					// dd_s_date_modified "widget/table-column" { title="i18n:DateModified; fieldname="s_date_modified"; width=60; }  // This needs to have isnull check??
+					//dd_s_modified_by "widget/table-column" { title="i18n:ModifiedBy"; fieldname="s_modified_by"; width=60; }
 					
 					//CDtable_cn4 "widget/connector" { event="DataChange"; target=check_title_1;
 					//	action="SetValue";
@@ -1015,7 +1015,7 @@ cashdisb_subform "widget/component-decl"
 				{
 					width=130;
 					height = 30;
-					text="New Check";
+					text="i18n:New Check";
 					// enabled = runclient(:check_form:is_newable);
 					enabled =    runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
 					
@@ -1095,9 +1095,9 @@ cashdisb_subform "widget/component-decl"
 				{
 					width=130;
 					height = 30;
-					text="New Trx Line";
+					text="i18n:New Trx Line";
 					
-					// tooltip = "New Transaction for this check";
+					// tooltip = "i18n:New Transaction for this check";
 					enabled = runclient(:check_form:is_newable and not :cashdisb_osrc:a_voided and isnull(not :cashdisb_osrc:a_posted, true)); // TODO (20090420): Don't allow clicking this button unless an entry is highlighted on the table...
 										
 					// Untested [20100903]
@@ -1232,7 +1232,7 @@ cashdisb_subform "widget/component-decl"
 				{
 					width=130;
 					height = 30;
-					text="Delete Trx";
+					text="i18n:Delete Trx";
 					event_confirm=runclient("Are you sure you would like to delete this line item?");
 					
 					enabled = runclient(:check_form:is_editable and not :cashdisb_osrc:a_voided and isnull(not :cashdisb_osrc:a_posted, true));
@@ -1276,7 +1276,7 @@ cashdisb_subform "widget/component-decl"
 							path="/sys/cmp/smart_field.cmp";
 							field=a_payee_partner_key;
 							ctl_type=editbox;
-							text="Payee #:";
+							text="i18n:Payee #:";
 							label_width=60; width=120;
 							// enabled = runclient(:check_form:is_savable);  // BUG/TODO (20100224): Doesn't work as expected. Why?
 							
@@ -1298,7 +1298,7 @@ cashdisb_subform "widget/component-decl"
 						{
 							width=105;
 							height = 25;
-							text="Select Payee";
+							text="i18n:Select Payee";
 							// enabled=yes;
 							// TODO: enabled=form.modifiedstate;
 							// enabled = runclient(:check_form:is_savable);  // BUG/TODO (20100224): Doesn't work as expected. Why?
@@ -1435,7 +1435,7 @@ cashdisb_subform "widget/component-decl"
 								// field='check_total';	// 20091001: displays a large sum when the batch is empty
 								field='check_total';	// 20101211: GRB - trying this again.
 								ctl_type=label;
-								text='Check Total:';
+								text='i18n:Check Total:';
 								label_width=100;
 							}
 						}
@@ -1493,8 +1493,8 @@ cashdisb_subform "widget/component-decl"
 					} // END - check_details_osrc
 					
 					// Checkbox Display
-					cs_lbl_check_voided "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_voided'; ctl_type=checkbox; text='Check Voided?:'; label_width=100; type="readonly"; voided_hints "widget/hints" { default=runclient(0); style=readonly; } } 
-					cs_lbl_check_posted "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_posted'; ctl_type=checkbox; text='Check Posted?:'; label_width=100; type="readonly"; posted_hints "widget/hints" { default=runclient(0); style=readonly; } } 
+					cs_lbl_check_voided "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_voided'; ctl_type=checkbox; text='i18n:Check Voided?:'; label_width=100; type="readonly"; voided_hints "widget/hints" { default=runclient(0); style=readonly; } } 
+					cs_lbl_check_posted "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_posted'; ctl_type=checkbox; text='i18n:Check Posted?:'; label_width=100; type="readonly"; posted_hints "widget/hints" { default=runclient(0); style=readonly; } } 
 
 					// TODO
 					// 1. If Check is not voided -> comment can edit at any time without any prompting
@@ -1533,7 +1533,7 @@ cashdisb_subform "widget/component-decl"
 						line_item_display "widget/label" { width=175;valign="middle";value=runclient("Line Item: " + isnull(convert(integer,:var_line_item:value), "(none selected)")); style=bold; }
 						
 						// QUESTION: How to make this [line_item_num_lbl_inv] really invisible? is there another way [variable] to store the number?, ah should use an osrc, on save, save, refresh to get next max, then +! and set ... but still need to use an intermeidate user contorl (hopefully invisible [pending first question of course]) to store then set value of new trx line -- woo hoo!! -- thought thought through...)
-						//line_item_num_lbl_inv "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; text='Line Item:'; label_width=75; visible=false; }
+						//line_item_num_lbl_inv "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; text='i18n:Line Item:'; label_width=75; visible=false; }
 					}
 					
 					// TODO: Make the cost center & account descriptions show up on cashdisb_form:DataFocusChanged events (e.g. doesn't show up when the user first loads the form)
@@ -1542,12 +1542,12 @@ cashdisb_subform "widget/component-decl"
 					cost_ctr_box "widget/component"
 					{
 						path="/apps/kardia/modules/base/editbox_tree.cmp";
-						field=a_cost_center;
-						text="Cost Ctr:";
-						tooltip="Cost Center Number";
+						field=a_cost_center;  
+						text="i18n:Cost Ctr:";
+						tooltip="i18n:Cost Center Number";
 						label_width=75;
 						popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/");
-						popup_text="Select Cost Center:";
+						popup_text="i18n:Select Cost Center:";
 						
 						cc_get_desc_1 "widget/connector"
 						{
@@ -1575,11 +1575,11 @@ cashdisb_subform "widget/component-decl"
 					{
 						path="/apps/kardia/modules/base/editbox_tree.cmp";
 						field=a_account_code;
-						text="Account:";
+						text="i18n:Account:";
 						tooltip="GL Account Code";
 						label_width=75;
 						popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/");
-						popup_text="Select Account:";
+						popup_text="i18n:Select Account:";
 
 						ac_get_desc_1 "widget/connector"
 						{ 
@@ -1648,7 +1648,7 @@ cashdisb_subform "widget/component-decl"
 						path="/sys/cmp/smart_field.cmp";
 						field=a_amount;
 						ctl_type=editbox;
-						text="Amount: ";
+						text="i18n:Amount: ";
 						label_width=75;
 					}
 					
@@ -1666,7 +1666,7 @@ cashdisb_subform "widget/component-decl"
 					
 					// TODO: If enter key is pressed, wire to trigger Save button click, then New Trx Line Button
 					// DONE: Cancel Button Wire up...
-					comment_lbl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=editbox; text="Comment: "; label_width=75; }
+					comment_lbl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=editbox; text="i18n:Comment: "; label_width=75; }
 					
 					// el Spacer 'o...
 					sp1 "widget/autolayoutspacer" { height=4; }
@@ -1681,7 +1681,7 @@ cashdisb_subform "widget/component-decl"
 						{
 							width=90;
 							height = 40;
-							text="Save";
+							text="i18n:Save";
 							enabled = runclient(:check_form:is_savable);
 							
 							// Validation Code: Payee  (Provides a hint instead of a "Data Save Fail" msg)
@@ -1760,7 +1760,7 @@ cashdisb_subform "widget/component-decl"
 						{
 							width=90;
 							height = 40;
-							text="Cancel";
+							text="i18n:Cancel";
 							enabled = runclient(:check_form:is_discardable);
 							
 							cnCancel_cn0 "widget/connector" { event="Click"; target=batch_form; action="Discard"; }
@@ -1769,7 +1769,7 @@ cashdisb_subform "widget/component-decl"
 							// Refresh Payee Name
 							Cancel_cn2 "widget/connector"
 							{
-								event="Click";
+								event="i18n:Click";
 								target=payee_details_osrc;
 								action="QueryParam";
 								p_partner_key = runclient(:cashdisb_osrc:a_payee_partner_key);
@@ -1794,8 +1794,8 @@ cashdisb_subform "widget/component-decl"
 				//x=40;y=35;width=80;
 				widget_class = "label";
 
-				// trx_form_pane_hdr_l "widget/label" { x=0;width=178;height=16;valign="middle";value=runclient(isnull(condition(:trx_form:a_posted == 1, "Posted ", "Unposted "),"") + "Transaction"); widget_class="label"; }
-				trx_pane_hdr_l "widget/label" { x=0;width=138;height=16;valign="bottom";value="Transaction Details"; widget_class="label"; }
+				// trx_form_pane_hdr_l "widget/label" { x=0; width=178; height=16; valign="middle"; value=runclient(isnull(condition(:trx_form:a_posted ==1, "Posted ", "Unposted "),"") + "Transaction"); widget_class="label"; }
+				trx_pane_hdr_l "widget/label" { x=0;width=138;height=16;valign="bottom";value="i18n:Transaction Details"; widget_class="label"; }
 			}
 			
 			// Batch Modifiable Details
@@ -1809,7 +1809,7 @@ cashdisb_subform "widget/component-decl"
 					path="/sys/cmp/smart_field.cmp";
 					field="a_default_effective_date";
 					ctl_type=datetime;
-					text="Batch Eff. Date:";
+					text="i18n:Batch Eff. Date:";
 					label_width=100;
 					label_width=15;
 					form=batch_form;
@@ -1867,10 +1867,10 @@ cashdisb_subform "widget/component-decl"
 				// Allow virtually any check number, until posted.
 				
 				// Start Check Number
-				//cd_Check_No "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; text="Start Check # for this Batch:"; label_width=90; enabled=no; }
+				//cd_Check_No "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; text="i18n:Start Check # for this Batch:"; label_width=90; enabled=no; }
 				
 				// Period Information
-				// cd_period_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_period"; ctl_type=datetime; text="Period:"; label_width=90; enabled=no; }
+				// cd_period_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_period"; ctl_type=datetime; text="i18n:Period:"; label_width=90; enabled=no; }
 				// Don't include here, set it out on the Cash Disbursements Batches Window...
 				
 				// QUESTIONS: (a_cash_account_code) 

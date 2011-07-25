@@ -63,10 +63,10 @@ whoson "widget/component-decl"
 		}
 
 	    t_img "widget/table-column" { title=""; fieldname="img"; width=24; type=image; }
-	    //t_usr "widget/table-column" { title="User"; fieldname="name"; width=80; }
+	    //t_usr "widget/table-column" { title="i18n:User"; fieldname="name"; width=80; }
 	    t_desc "widget/table-column" { title="i18n:Name"; fieldname="description"; width=98; }
 	    t_stat "widget/table-column" { title="i18n:Status"; fieldname="s_status"; width=160; }
-	    //t_cnt "widget/table-column" { title="Logins"; fieldname="session_cnt"; width=48; }
+	    //t_cnt "widget/table-column" { title="i18n:Logins"; fieldname="session_cnt"; width=48; }
 	    }
 	}
 
@@ -116,7 +116,8 @@ whoson "widget/component-decl"
 	    stat_dt_m "widget/variable" { fieldname="s_date_modified"; stat_dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
 	    stat_us_m "widget/variable" { fieldname="s_modified_by"; stat_us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
 
-	    //f_s_status "widget/component" { x=0; y=340; height=20; width=282; path="/sys/cmp/smart_field.cmp"; field=s_status; text=runserver(condition(charindex(' ', user_name()) > 0, substring(user_name(), 1, charindex(' ', user_name()) - 1), user_name()) + ' is:'); ctl_type="editbox"; tooltip="What are you doing right now?"; }
+	    //f_s_status "widget/component" { x=0; y=340; height=20; width=282; 
+path="/sys/cmp/smart_field.cmp"; field=s_status; text=runserver(condition(charindex(' ', user_name()) > 0, substring(user_name(), 1, charindex(' ', user_name()) - 1), user_name()) + ' is:'); ctl_type="editbox"; tooltip="i18n:What are you doing right now?"; }
 	    }
 	}
 
