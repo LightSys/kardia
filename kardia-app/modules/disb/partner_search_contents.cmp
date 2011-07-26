@@ -332,7 +332,7 @@ partner_search_component "widget/component-decl"
 				{
 					x=525; y=188;
 					height=24; width=100;
-					text="New Search";
+					text="i18n:New Search";
 					enabled=runclient(:partner_search_form:is_queryable);
 					cnQuery "widget/connector" 
 					{ 

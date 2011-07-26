@@ -165,7 +165,7 @@ cd_batches "widget/component-decl"
 	    }
 
 	sep_line2 "widget/pane" { height=2; fl_height=0; style=lowered; }
-	posting_lbl "widget/label" { height=15; text="Posting"; align=center; style=bold; }
+	posting_lbl "widget/label" { height=15; text="i18n:Posting"; align=center; style=bold; }
 	post "widget/textbutton"
 	    {
 	    width = 172;

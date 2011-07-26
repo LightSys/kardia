@@ -188,7 +188,7 @@ plugin_base_partneredit_payee "widget/component-decl"
 			t_ckno "widget/table-column" { title="i18n:Check#"; fieldname="a_check_number"; width=60; }
 			t_amt "widget/table-column" { title="i18n:Amount"; fieldname="a_amount"; width=60; align=right; }
 			t_void "widget/table-column" { title="i18n:Void?"; fieldname="a_voided"; width=40; type=check; }
-			t_comm "widget/table-column" { title="Comment"; fieldname="a_comment"; width=134; }
+			t_comm "widget/table-column" { title="i18n:Comment"; fieldname="a_comment"; width=134; }
 			}
 		    }
 		}

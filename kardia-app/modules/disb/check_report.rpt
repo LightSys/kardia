@@ -31,7 +31,7 @@ $Version=2$
 
 check_report "system/report"
 {
-	title = "Check";
+	title = "i18n:Check";
 	document_format = "application/pdf";
     resolution = 100;
 	//pagewidth = 215.9;		// QUESTION: what measurement system is this? ANSWER: "US Forms" units

@@ -1576,7 +1576,7 @@ cashdisb_subform "widget/component-decl"
 						path="/apps/kardia/modules/base/editbox_tree.cmp";
 						field=a_account_code;
 						text="i18n:Account:";
-						tooltip="GL Account Code";
+						tooltip="i18n:GL Account Code";
 						label_width=75;
 						popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/");
 						popup_text="i18n:Select Account:";
@@ -1769,7 +1769,7 @@ cashdisb_subform "widget/component-decl"
 							// Refresh Payee Name
 							Cancel_cn2 "widget/connector"
 							{
-								event="i18n:Click";
+								event="Click";
 								target=payee_details_osrc;
 								action="QueryParam";
 								p_partner_key = runclient(:cashdisb_osrc:a_payee_partner_key);
@@ -1795,7 +1795,7 @@ cashdisb_subform "widget/component-decl"
 				widget_class = "label";
 
 				// trx_form_pane_hdr_l "widget/label" { x=0; width=178; height=16; valign="middle"; value=runclient(isnull(condition(:trx_form:a_posted ==1, "Posted ", "Unposted "),"") + "Transaction"); widget_class="label"; }
-				trx_pane_hdr_l "widget/label" { x=0;width=138;height=16;valign="bottom";value="i18n:Transaction Details"; widget_class="label"; }
+				trx_pane_hdr_l "widget/label" { x=0;width=138;height=16;valign="bottom";value="Transaction Details"; widget_class="label"; }
 			}
 			
 			// Batch Modifiable Details
@@ -2166,7 +2166,7 @@ cashdisb_subform "widget/component-decl"
 				{
 					width=130;
 					height = 40;
-					text="Post Button";
+					text="i18n:Post Button";
 					
 					// Question: Should the Post to subledger and the Print Button be combined? (e.g. Post/Print Batch)
 					// Answer (20090707): Often times they are done at the same time, but they need to be separate in order to account for common special case situations.
@@ -2245,7 +2245,7 @@ cashdisb_subform "widget/component-decl"
 				{
 					width=130;
 					height = 40;
-					text="Preview Checks";
+					text="i18n:Preview Checks";
 					
 					// Checkpoint!
 					// GB_cn1_sawd "widget/connector"

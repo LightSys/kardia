@@ -29,7 +29,7 @@ index "widget/page"
 			
 			mnDv_cd_batch_list_window_form "widget/menuitem"
 			{
-				label = "Select Batch";
+				label = "i18n:Select Batch";
 				mnDv_cd_batch_list_window_cn "widget/connector"
 				{
 					event = Select;

@@ -89,7 +89,7 @@ batch_list_cmp "widget/component-decl"
 		{
 		x=8;y=336;width=562;height=26;
 		path = "/sys/cmp/form_controls.cmp";
-		deletable = no;
+		deletable = no; 
 		object_name = "Batch";
 		}
 
