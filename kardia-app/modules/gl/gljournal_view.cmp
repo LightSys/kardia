@@ -66,7 +66,7 @@ gljournal_view "widget/component-decl"
 		    editor = editor;
 		    viewer = viewer;
 		    acctbal = acctbal;
-		    title = "GL Transaction";
+		    title = "i18n:GL Transaction";
 		    period=runclient(:gl_osrc:a_period);
 		    batch=runclient(:gl_osrc:a_batch_number);
 		    acct=runclient(:gl_osrc:a_account_code);
@@ -75,18 +75,18 @@ gljournal_view "widget/component-decl"
 		    legacy=runclient(condition(charindex('#', :a_comment) > 0, substring(:a_comment, charindex('#', :a_comment)), null));
 		    }
 
-		t_a_posted "widget/table-column" { title="Post"; fieldname="a_posted"; width=40; type=check; }
-		t_a_period "widget/table-column" { title="Period"; fieldname="a_period"; width=62; }
-		t_a_date "widget/table-column" { title="Date"; fieldname="a_effective_date"; width=56; }
-		t_a_bat_num "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=56; }
-		t_a_jnl_num "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=30; }
-		t_a_trx_num "widget/table-column" { title="Trx"; fieldname="a_transaction_number"; width=30; }
-		t_a_costctr "widget/table-column" { title="Cost Center"; fieldname="a_cc_disp"; width=135; }
-		t_a_ctlacct "widget/table-column" { title="Ctl"; fieldname="a_account_category"; width=30; }
-		t_a_acct "widget/table-column" { title="Account"; fieldname="a_acct_disp"; width=125; }
-		t_a_amtp "widget/table-column" { title="Debit (+)"; fieldname="a_amount_plus"; width=90; align=right; }
-		t_a_amtm "widget/table-column" { title="Credit (-)"; fieldname="a_amount_minus"; width=90; align=right; }
-		t_a_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=154; }
+		t_a_posted "widget/table-column" { title="i18n:Post"; fieldname="a_posted"; width=40; type=check; }
+		t_a_period "widget/table-column" { title="i18n:Period"; fieldname="a_period"; width=62; }
+		t_a_date "widget/table-column" { title="i18n:Date"; fieldname="a_effective_date"; width=56; }
+		t_a_bat_num "widget/table-column" { title="i18n:Batch"; fieldname="a_batch_number"; width=56; }
+		t_a_jnl_num "widget/table-column" { title="i18n:Jnl"; fieldname="a_journal_number"; width=30; }
+		t_a_trx_num "widget/table-column" { title="i18n:Trx"; fieldname="a_transaction_number"; width=30; }
+		t_a_costctr "widget/table-column" { title="i18n:Cost Center"; fieldname="a_cc_disp"; width=135; }
+		t_a_ctlacct "widget/table-column" { title="i18n:Ctl"; fieldname="a_account_category"; width=30; }
+		t_a_acct "widget/table-column" { title="i18n:Account"; fieldname="a_acct_disp"; width=125; }
+		t_a_amtp "widget/table-column" { title="i18n:Debit (+)"; fieldname="a_amount_plus"; width=90; align=right; }
+		t_a_amtm "widget/table-column" { title="i18n:Credit (-)"; fieldname="a_amount_minus"; width=90; align=right; }
+		t_a_comm "widget/table-column" { title="i18n:Comments"; fieldname="a_comment"; width=154; }
 		}
 	    }
 
@@ -105,20 +105,20 @@ gljournal_view "widget/component-decl"
 		column_width=240;
 		cellsize=24;
 
-		f_a_period "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=period; text="Period:"; tooltip="Period Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Select Period:"; }
-		f_a_batch "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=batch_number; text="Batch:"; tooltip="Batch Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/batches.qyt/" + :this:ledger + "/"); popup_text="Select Batch:"; }
-		f_a_cost_center "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=cost_center; text="CostCtr:"; tooltip="Cost Center Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
-		f_a_account "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=account_code; text="Account:"; tooltip="GL Account Code"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+		f_a_period "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=period; text="i18n:Period:"; tooltip="i18n:Period Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Period:"; }
+		f_a_batch "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=batch_number; text="i18n:Batch:"; tooltip="i18n:Batch Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/batches.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Batch:"; }
+		f_a_cost_center "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=cost_center; text="i18n:CostCtr:"; tooltip="i18n:Cost Center Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Cost Center:"; }
+		f_a_account "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=account_code; text="i18n:Account:"; tooltip="i18n:GL Account Code"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Account:"; }
 		find_rec_btn "widget/textbutton"
 		    {
 		    width=130;
-		    text="Find Records";
+		    text="i18n:Find Records";
 		    find_rec_cn1 "widget/connector" { event="Click"; target=search_form; action="QueryExec"; }
 		    }
 		clear_srch_btn "widget/textbutton"
 		    {
 		    width=130;
-		    text="Clear Criteria";
+		    text="i18n:Clear Criteria";
 		    clear_srch_cn1 "widget/connector" { event="Click"; target=search_form; action="Discard"; }
 		    clear_srch_cn2 "widget/connector" { event="Click"; target=search_form; action="QueryExec"; }
 		    }

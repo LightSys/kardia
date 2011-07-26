@@ -2,7 +2,7 @@ $Version=2$
 tax_table "widget/page"
     {
     width=800; height=600;
-    title = "Tax Table";
+    title = "i18n:Tax Table";
 
     background="/apps/kardia/images/bg/light_bgnd2.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

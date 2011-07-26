@@ -26,7 +26,7 @@ coamaint "widget/component-decl"
 		    x=4;y=0;width=248;height=18;
 		    widget_class="label";
 		    align=left;
-		    text = "Search Funds";
+		    text = "i18n:Search Funds";
 		    }
 		}
 
@@ -34,7 +34,7 @@ coamaint "widget/component-decl"
 	    searcheb "widget/editbox"
 		{
 		height=24;
-		empty_description = "type here to search for funds";
+		empty_description = "i18n:type here to search for funds";
 
 		search_cn "widget/connector"
 		    {
@@ -87,9 +87,9 @@ coamaint "widget/component-decl"
 			{
 			height=518; width=248; x=0; y=0;
 
-			t_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=70; }
-			t_type "widget/table-column" { title="Type"; fieldname="a_cost_center_class"; width=40; }
-			t_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=140; }
+			t_cc "widget/table-column" { title="i18n:Cost Ctr"; fieldname="a_cost_center"; width=70; }
+			t_type "widget/table-column" { title="i18n:Type"; fieldname="a_cost_center_class"; width=40; }
+			t_desc "widget/table-column" { title="i18n:Description"; fieldname="a_cc_desc"; width=140; }
 			}
 		    }
 		}
@@ -121,7 +121,7 @@ coamaint "widget/component-decl"
 
 		addfund_btn "widget/textbutton"
 		    {
-		    text = "Add Fund";
+		    text = "i18n:Add Fund";
 		    enabled = runclient(:fund_form:is_newable);
 
 		    addf_1 "widget/connector" { event=Click; target=adding_subfund; action=SetValue; Value=runclient(0); }
@@ -130,7 +130,7 @@ coamaint "widget/component-decl"
 
 		addsubfund_btn "widget/textbutton"
 		    {
-		    text = "Add Subfund";
+		    text = "i18n:Add Subfund";
 		    enabled = runclient(:fund_form:is_newable);
 
 		    adds_1 "widget/connector" { event=Click; target=adding_subfund; action=SetValue; Value=runclient(1); }
@@ -139,7 +139,7 @@ coamaint "widget/component-decl"
 
 		editfund_btn "widget/textbutton"
 		    {
-		    text = "Edit Fund";
+		    text = "i18n:Edit Fund";
 		    enabled = runclient(:fund_form:is_editable);
 
 		    editcn "widget/connector" { event=Click; target=fund_form; action=Edit; }
@@ -213,14 +213,14 @@ coamaint "widget/component-decl"
 
 			dblclick_sub "widget/connector" { event=DblClick; target=fund_form; action=Modify; }
 
-			t2_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=70; }
-			t2_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=130; }
-			t2_cls "widget/table-column" { title="Type"; fieldname="a_cost_center_class"; width=40; }
-			t2_legacy "widget/table-column" { title="Legacy"; fieldname="a_legacy_code"; width=70; }
-			t2_restr "widget/table-column" { title="Rest."; fieldname="a_restricted_type"; width=40; }
-			t2_bal "widget/table-column" { title="Bal?"; fieldname="bal"; width=40; type=check; }
-			t2_ext "widget/table-column" { title="Ext?"; fieldname="a_is_external"; width=40; type=check; }
-			t2_post "widget/table-column" { title="Post?"; fieldname="a_is_posting"; width=40; type=check; }
+			t2_cc "widget/table-column" { title="i18n:Cost Ctr"; fieldname="a_cost_center"; width=70; }
+			t2_desc "widget/table-column" { title="i18n:Description"; fieldname="a_cc_desc"; width=130; }
+			t2_cls "widget/table-column" { title="i18n:Type"; fieldname="a_cost_center_class"; width=40; }
+			t2_legacy "widget/table-column" { title="i18n:Legacy"; fieldname="a_legacy_code"; width=70; }
+			t2_restr "widget/table-column" { title="i18n:Rest."; fieldname="a_restricted_type"; width=40; }
+			t2_bal "widget/table-column" { title="i18n:Bal?"; fieldname="bal"; width=40; type=check; }
+			t2_ext "widget/table-column" { title="i18n:Ext?"; fieldname="a_is_external"; width=40; type=check; }
+			t2_post "widget/table-column" { title="i18n:Post?"; fieldname="a_is_posting"; width=40; type=check; }
 			}
 		    }
 		}
@@ -262,7 +262,7 @@ coamaint "widget/component-decl"
 
 			main_tab "widget/tabpage"
 			    {
-			    title = "Fund Options";
+			    title = "i18n:Fund Options";
 
 			    form_hbox "widget/hbox"
 				{
@@ -283,7 +283,7 @@ coamaint "widget/component-decl"
 					path="/sys/cmp/smart_field.cmp";
 					field='a_cost_center';
 					ctl_type=editbox;
-					text='Fund Number:';
+					text='i18n:Fund Number:';
 					label_width=120;
 
 					cc_type_cn1 "widget/connector"
@@ -310,7 +310,7 @@ coamaint "widget/component-decl"
 					}
 				    f_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=editbox; text='Description:'; label_width=120; }
 				    f_comm "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_comments'; ctl_type=editbox; text='Comments:'; label_width=120; }
-				    f_legacy_code "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="Legacy Code:"; ctl_type="editbox"; tooltip="Legacy Cost Ctr from Old System"; label_width=120; }
+				    f_legacy_code "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="i18n:Legacy Code:"; ctl_type="editbox"; tooltip="i18n:Legacy Cost Ctr from Old System"; label_width=120; }
 				    }
 
 				form_vbox2 "widget/vbox"
@@ -318,12 +318,12 @@ coamaint "widget/component-decl"
 				    spacing=4;
 				    width=240;
 
-				    f_is_posting "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this cost center"; label_width=120; }
-				    f_is_external "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_external; text="Is External:"; ctl_type="checkbox"; tooltip="Enable posting to this cost center"; label_width=120; }
-				    f_is_balancing "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_balancing; text="Self-Balancing:"; ctl_type="checkbox"; type=readonly; tooltip="Enable posting to this cost center"; label_width=120; }
+				    f_is_posting "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="i18n:Is Posting:"; ctl_type="checkbox"; tooltip="i18n:Enable posting to this cost center"; label_width=120; }
+				    f_is_external "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_external; text="i18n:Is External:"; ctl_type="checkbox"; tooltip="i18n:Enable posting to this cost center"; label_width=120; }
+				    f_is_balancing "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_balancing; text="i18n:Self-Balancing:"; ctl_type="checkbox"; type=readonly; tooltip="i18n:Enable posting to this cost center"; label_width=120; }
 
 				    f_cc_class "widget/component"
-					{ height=20; path="/sys/cmp/smart_field.cmp"; field=a_cost_center_class; text="Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_acct_class_desc, :a_cost_center_class from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows"; label_width=120; 
+					{ height=20; path="/sys/cmp/smart_field.cmp"; field=a_cost_center_class; text="i18n:Class:"; ctl_type="dropdown"; tooltip="i18n:Class/Category"; sql="select :a_acct_class_desc, :a_cost_center_class from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows"; label_width=120; 
 					cc_class_cn2 "widget/connector"
 					    {
 					    event=DataModify;
@@ -337,8 +337,8 @@ coamaint "widget/component-decl"
 										  condition(substring(:f_costctr:content,6,1) == '.', substring(:f_costctr:content, 1, 5) + substring(:f_costctr:content,7,1), :f_costctr:content))));
 					    }
 					}
-				    f_cc_level "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_reporting_level; text="Report Level:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_level_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows"; label_width=120; }
-				    f_restricted_type "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_restricted_type; text="Restriction:"; ctl_type="dropdown"; tooltip="Fund Restriction Type"; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_restricted_type/rows"; label_width=120; }
+				    f_cc_level "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_reporting_level; text="i18n:Report Level:"; ctl_type="dropdown"; tooltip="i18n:Class/Category"; sql="select :a_level_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows"; label_width=120; }
+				    f_restricted_type "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_restricted_type; text="i18n:Restriction:"; ctl_type="dropdown"; tooltip="i18n:Fund Restriction Type"; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_restricted_type/rows"; label_width=120; }
 				    }
 				}
 
@@ -351,7 +351,7 @@ coamaint "widget/component-decl"
 				save_btn "widget/textbutton"
 				    {
 				    width=120;
-				    text = "Save";
+				    text = "i18n:Save";
 				    enabled = runclient(:fund_form:is_savable);
 
 				    save1 "widget/connector" { event=Click; target=fund_form; action=Save; }
@@ -360,7 +360,7 @@ coamaint "widget/component-decl"
 				cancel_btn "widget/textbutton"
 				    {
 				    width=120;
-				    text = "Cancel";
+				    text = "i18n:Cancel";
 				    enabled = runclient(:fund_form:is_discardable);
 
 				    cancel1 "widget/connector" { event=Click; target=fund_form; action=Discard; }
@@ -370,7 +370,7 @@ coamaint "widget/component-decl"
 				    {
 				    condition = 0;
 				    width=120;
-				    text = "Make Fund";
+				    text = "i18n:Make Fund";
 				    enabled = runclient(not :subfund_osrc:bal);
 				    }
 
@@ -378,7 +378,7 @@ coamaint "widget/component-decl"
 				    {
 				    condition = 0;
 				    width=120;
-				    text = "Make Subfund";
+				    text = "i18n:Make Subfund";
 				    enabled = runclient(:subfund_osrc:bal);
 				    }
 				}

@@ -16,7 +16,7 @@ tab_menu "widget/component-decl"
 
 	    main_tabpage "widget/tabpage"
 		{
-		title = runserver("i18n:":tabpage_rpt:module_abbrev);
+		title = runserver("i18n:" + :tabpage_rpt:module_abbrev);
 		tab_lbl "widget/label"
 		    {
 		    x=8; y=8; width=300; height=20;
@@ -32,7 +32,7 @@ tab_menu "widget/component-decl"
 		    //style=bold;
 		    fgcolor="black";
 		    font_size=11;
-		    text = runserver("i18n:":tabpage_rpt:module_description);
+		    text = runserver("i18n:" + :tabpage_rpt:module_description);
 		    }
 
 		progs_lbl "widget/label"

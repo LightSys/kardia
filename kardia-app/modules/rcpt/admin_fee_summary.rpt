@@ -1,7 +1,7 @@
 $Version=2$
 admin_fee_summary "system/report"
     {
-    title = "Admin Fee Summary";
+    title = "i18n:Admin Fee Summary";
 
     document_format="application/pdf";
     resolution = 300;

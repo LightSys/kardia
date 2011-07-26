@@ -14,7 +14,7 @@ payees_window "widget/component-decl"
 
     payeewin "widget/childwindow"
 	{
-	title = "Payees (for Payroll)";
+	title = "i18n:Payees (for Payroll)";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;

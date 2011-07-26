@@ -52,7 +52,7 @@ payroll_run "widget/component-decl"
 	    font_size=13;
 	    align=center;
 	    style=bold;
-	    text="Run Payroll Tasks:";
+	    text="i18n:Run Payroll Tasks:";
 	    }
 
 	tasklist_rpt "widget/repeat"
@@ -87,7 +87,7 @@ payroll_run "widget/component-decl"
 	    font_size=13;
 	    align=center;
 	    style=bold;
-	    text="Settings:";
+	    text="i18n:Settings:";
 	    }
 
 	grp_lbl "widget/label"
@@ -111,8 +111,8 @@ payroll_run "widget/component-decl"
 
 	task_sel_period "widget/tabpage"
 	    {
-	    ttl_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step One:"; style=bold; }
-	    desc_lbl "widget/label" { x=8;y=28;width=568;height=80; text="Select a group and a period to process payroll for.  We will be working with payroll records that are created specifically for this accounting period, and which can be modified to suit the needs and circumstances of this period."; }
+	    ttl_lbl "widget/label" { x=8;y=8;width=100;height=20; text="i18n:Step One:"; style=bold; }
+	    desc_lbl "widget/label" { x=8;y=28;width=568;height=80; text="i18n:Select a group and a period to process payroll for.  We will be working with payroll records that are created specifically for this accounting period, and which can be modified to suit the needs and circumstances of this period."; }
 
 	    group_osrc "widget/osrc"
 		{
@@ -199,19 +199,19 @@ payroll_run "widget/component-decl"
 		    x=20;y=140;width=544;height=278;
 		    mode=dynamicrow;
 
-		    t_per "widget/table-column" { title="Period"; fieldname="a_period"; width=80; }
-		    t_desc "widget/table-column" { title="Description"; fieldname="a_period_desc"; width=240; }
-		    t_rcnt "widget/table-column" { title="Records"; fieldname="cnt"; width=80; type=check; }
-		    t_glcnt "widget/table-column" { title="GL Records"; fieldname="glcnt"; width=80; type=check; }
+		    t_per "widget/table-column" { title="i18n:Period"; fieldname="a_period"; width=80; }
+		    t_desc "widget/table-column" { title="i18n:Description"; fieldname="a_period_desc"; width=240; }
+		    t_rcnt "widget/table-column" { title="i18n:Records"; fieldname="cnt"; width=80; type=check; }
+		    t_glcnt "widget/table-column" { title="i18n:GL Records"; fieldname="glcnt"; width=80; type=check; }
 		    }
 		}
 
 	    sep "widget/pane" { x=8; y=460; height=2; width=568; style=lowered; }
-	    btn_back "widget/textbutton" { x=368; y=470; width=100; text="<< Back"; enabled=runclient(0); }
+	    btn_back "widget/textbutton" { x=368; y=470; width=100; text="i18n:<< Back"; enabled=runclient(0); }
 	    btn_next "widget/textbutton" 
 		{
 		x=476; y=470; width=100;
-		text="Next >>";
+		text="i18n:Next >>";
 
 		next_cn "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=runclient(condition(char_length(:period_osrc:a_period) > 0, 2, 3)); }
 		}
@@ -219,10 +219,10 @@ payroll_run "widget/component-decl"
 	
 	task_create_rec "widget/tabpage"
 	    {
-	    ttl2_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Two:"; style=bold; }
-	    desc2_lbl "widget/label" { x=8;y=28;width=568;height=55; text="You can create a new set of payroll data records for this period, or if records already exist that you want to remove first, you have the option of deleting those."; }
+	    ttl2_lbl "widget/label" { x=8;y=8;width=100;height=20; text="i18n:Step Two:"; style=bold; }
+	    desc2_lbl "widget/label" { x=8;y=28;width=568;height=55; text="i18n:You can create a new set of payroll data records for this period, or if records already exist that you want to remove first, you have the option of deleting those."; }
 
-	    whichperiod_lbl "widget/component" { x=8;y=95;width=300;height=20; path="/sys/cmp/smart_field.cmp"; text="Payroll Period:"; form=period_form; field=a_period_desc; ctl_type=label; label_width=140; }
+	    whichperiod_lbl "widget/component" { x=8;y=95;width=300;height=20; path="/sys/cmp/smart_field.cmp"; text="i18n:Payroll Period:"; form=period_form; field=a_period_desc; ctl_type=label; label_width=140; }
 
 	    payrollcnt_osrc "widget/osrc"
 		{
@@ -235,7 +235,7 @@ payroll_run "widget/component-decl"
 
 		payrollcnt_form "widget/form"
 		    {
-		    hasrecs_lbl "widget/component" { x=8;y=120;width=300;height=20;text="Records Present:"; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=txt; label_width=140; }
+		    hasrecs_lbl "widget/component" { x=8;y=120;width=300;height=20;text="i18n:Records Present:"; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=txt; label_width=140; }
 		    }
 		}
 
@@ -260,7 +260,7 @@ payroll_run "widget/component-decl"
 
 	    create_lbl "widget/label" { x=8;y=200;width=568;height=55; value=runclient(condition(:payrollcnt_form:txt == 'No', "Click the button below to create a new set of payroll records for all cost centers, based on the payroll data for the period selected below.", "There are already records present.  If you want to create records, you will have to either delete them first (see below).")); }
 
-	    lastperiod_lbl "widget/label" { x=8; y=255; width=120; height=20; text="Create Based On:"; align=right; }
+	    lastperiod_lbl "widget/label" { x=8; y=255; width=120; height=20; text="i18n:Create Based On:"; align=right; }
 	    lastperiod_dd "widget/dropdown"
 		{
 		x=132; y=255; width=200; height=20;
@@ -278,7 +278,7 @@ payroll_run "widget/component-decl"
 
 	    create_btn "widget/textbutton"
 		{
-		x=362; y=255; width=100; height=24; text = "Create";
+		x=362; y=255; width=100; height=24; text = "i18n:Create";
 		enabled = runclient(:payrollcnt_form:txt == 'No');
 		create_cn "widget/connector"
 		    {
@@ -298,7 +298,7 @@ payroll_run "widget/component-decl"
 
 	    delete_btn "widget/textbutton"
 		{
-		x=242; y=375; width=100; height=24; text = "Delete";
+		x=242; y=375; width=100; height=24; text = "i18n:Delete";
 		enabled = runclient(:payrollcnt_form:txt == 'Yes' and :period_osrc:glcnt == 0);
 		delete_cn "widget/connector"
 		    {
@@ -313,14 +313,14 @@ payroll_run "widget/component-decl"
 	    btn2_back "widget/textbutton"
 		{
 		x=368; y=470; width=100;
-		text="<< Back";
+		text="i18n:<< Back";
 
 		back_cn2 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=1; }
 		}
 	    btn2_next "widget/textbutton"
 		{
 		x=476; y=470; width=100;
-		text="Next >>";
+		text="i18n:Next >>";
 
 		next_cn2 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=3; }
 		}
@@ -328,8 +328,8 @@ payroll_run "widget/component-decl"
 
 	task_review_data "widget/tabpage"
 	    {
-	    ttl3_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Three:"; style=bold; }
-	    desc3_lbl "widget/label" { x=8;y=28;width=568;height=80; text="Here you can customize the payroll data to the needs of this payroll period, by adjusting transfers, withholding, gross pay, and more.  Double-click on a payee to review this period's payroll data for that payee."; }
+	    ttl3_lbl "widget/label" { x=8;y=8;width=100;height=20; text="i18n:Step Three:"; style=bold; }
+	    desc3_lbl "widget/label" { x=8;y=28;width=568;height=80; text="i18n:Here you can customize the payroll data to the needs of this payroll period, by adjusting transfers, withholding, gross pay, and more.  Double-click on a payee to review this period's payroll data for that payee."; }
 
 	    payeelist_osrc "widget/osrc"
 		{
@@ -404,16 +404,16 @@ payroll_run "widget/component-decl"
 //			payee_data_osrc = payeelist_osrc;
 //			}
 
-		    t_cc "widget/table-column" { title="Cost Center / Fund"; fieldname="cctxt"; width=180; }
-		    t_payee "widget/table-column" { title="Payee"; fieldname="ptxt"; width=220; }
-		    t_cnt "widget/table-column" { title="Recs"; fieldname="cnt"; width=50; }
-		    t_netpay "widget/table-column" { title="Net Pay"; fieldname="netpay"; width=70; }
+		    t_cc "widget/table-column" { title="i18n:Cost Center / Fund"; fieldname="cctxt"; width=180; }
+		    t_payee "widget/table-column" { title="i18n:Payee"; fieldname="ptxt"; width=220; }
+		    t_cnt "widget/table-column" { title="i18n:Recs"; fieldname="cnt"; width=50; }
+		    t_netpay "widget/table-column" { title="i18n:Net Pay"; fieldname="netpay"; width=70; }
 		    }
 		}
 
 	    edit_btn "widget/textbutton"
 		{
-		x=242; y=420; width=100; height=24; text = "Review Pay";
+		x=242; y=420; width=100; height=24; text = "i18n:Review Pay";
 		//enabled = runclient(:payrollcnt_form:txt == 'Yes');
 		edit_cn "widget/connector"
 		    {
@@ -449,14 +449,14 @@ payroll_run "widget/component-decl"
 	    btn3_back "widget/textbutton" 
 		{
 		x=368; y=470; width=100;
-		text="<< Back";
+		text="i18n:<< Back";
 
 		back_cn3 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=runclient(condition(char_length(:period_osrc:a_period) > 0, 2, 1)); }
 		}
 	    btn3_next "widget/textbutton" 
 		{
 		x=476; y=470; width=100;
-		text="Next >>";
+		text="i18n:Next >>";
 
 		next_cn3 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=4; }
 		}
@@ -464,20 +464,20 @@ payroll_run "widget/component-decl"
 	
 	task_create_glbatch "widget/tabpage"
 	    {
-	    ttl4_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Four:"; style=bold; }
-	    desc4_lbl "widget/label" { x=8;y=28;width=568;height=80; text="Finally, the General Ledger (GL) batch for this payroll period needs to be created.  You may either post the batch directly here, or leave it unposted so you can review it first from the General Ledger module of Kardia."; }
+	    ttl4_lbl "widget/label" { x=8;y=8;width=100;height=20; text="i18n:Step Four:"; style=bold; }
+	    desc4_lbl "widget/label" { x=8;y=28;width=568;height=80; text="i18n:Finally, the General Ledger (GL) batch for this payroll period needs to be created.  You may either post the batch directly here, or leave it unposted so you can review it first from the General Ledger module of Kardia."; }
 	    sep4 "widget/pane" { x=8; y=460; height=2; width=568; style=lowered; }
 	    btn4_back "widget/textbutton" 
 		{
 		x=368; y=470; width=100;
-		text="<< Back";
+		text="i18n:<< Back";
 
 		back_cn4 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=3; }
 		}
 	    btn4_next "widget/textbutton" 
 		{
 		x=476; y=470; width=100;
-		text="Done";
+		text="i18n:Done";
 
 		done_cn "widget/connector" { event=Click; target=container; action=Close; }
 		}

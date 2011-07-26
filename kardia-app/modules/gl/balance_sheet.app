@@ -4,7 +4,7 @@ balance_sheet "widget/page"
     width=580;
     height=550;
 
-    title = runserver("Balance Sheet Report - " + :this:ledger);
+    title = runserver("i18n:Balance Sheet Report - " + :this:ledger);
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
@@ -20,7 +20,7 @@ balance_sheet "widget/page"
 	    {
 	    x=32;y=8;width=514;height=508;
 	    spacing=4;
-	    lbl_bs "widget/label" { height=30; font_size=16; text="GL Balance Sheet - Report Options:"; align=center; }
+	    lbl_bs "widget/label" { height=30; font_size=16; text="i18n:GL Balance Sheet - Report Options:"; align=center; }
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
 	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
 	    f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Center:"; attach_point=editbox; label_width=120; empty_desc="optional"; }
@@ -64,9 +64,9 @@ balance_sheet "widget/page"
 		    sql = runclient("select :a_period + ' - ' + :a_period_desc, :a_period, :a_summary_only from subtree /apps/kardia/modules/gl/periods.qyt/" + :balance_sheet:ledger + "/" + :rpt_form:year_period + "|" + :balance_sheet:ledger + " order by :a_period asc having :a_summary_only = 0 and :a_period >= " + quote(:rpt_form:ref_period));
 		    }
 		}
-	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dynamicdropdown; text='Ending Period:';  form=rpt_form; label_width=120; }
+	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dynamicdropdown; text='i18n:Ending Period:';  form=rpt_form; label_width=120; }
 	    sep "widget/autolayoutspacer" { height=4; }
-	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=rpt_form; label_width=120; }
+	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="i18n:Include unposted transactions"; form=rpt_form; label_width=120; }
 	    f_level "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='report_level'; ctl_type=dropdown; text='Detail Level:'; sql=runserver("select '' + :a_reporting_level + ' - ' + :a_level_rpt_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows where :a_ledger_number = " + quote(:this:ledger)); form=rpt_form; label_width=120; }
 	    f_docfmt "widget/component"
 		{ 
@@ -90,13 +90,13 @@ balance_sheet "widget/page"
 		rpt_print "widget/textbutton"
 		    {
 		    width=90;
-		    text="Print";
+		    text="i18n:Print";
 		    rpt_print_cn "widget/connector" { event="Click"; target="rpt_form"; action="Submit"; Target=runclient("balance_sheet"); NewPage=runclient(1); Source=runclient("/apps/kardia/modules/gl/balance_sheet.rpt"); Width=runclient(800); Height=runclient(600); }
 		    }
 		rpt_cancel "widget/textbutton"
 		    {
 		    width=90;
-		    text="Cancel";
+		    text="i18n:Cancel";
 		    rpt_cancel_cn "widget/connector" { event="Click"; target="balance_sheet"; action="Close"; }
 		    }
 		}

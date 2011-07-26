@@ -2,7 +2,7 @@ $Version=2$
 item_types "widget/page"
     {
     width=800; height=600;
-    title = "Payroll Line Item Types";
+    title = "i18n:Payroll Line Item Types";
     background="/apps/kardia/images/bg/light_bgnd2.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 

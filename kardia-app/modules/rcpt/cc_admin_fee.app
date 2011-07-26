@@ -1,7 +1,7 @@
 $Version=2$
 cc_admin_fee "widget/page"
     {
-    title = "Admin Fees for Funds Maintenance";
+    title = "i18n:Admin Fees for Funds Maintenance";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

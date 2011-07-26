@@ -1,7 +1,7 @@
 $Version=2$
 admin_types "widget/page"
     {
-    title = "Maintain Admin Fee Types and Schedules";
+    title = "i18n:Maintain Admin Fee Types and Schedules";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

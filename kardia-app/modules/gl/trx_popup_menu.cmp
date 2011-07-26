@@ -36,43 +36,43 @@ trx_popup_menu "widget/component-decl"
 	per_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:period is null));
-	    label = runserver('Browse Period ' + :this:period);
+	    label = runserver('i18n:Browse Period ' + :this:period);
 	    per_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_period=runclient(:trx_popup_menu:period); }
 	    }
 	batch_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:batch is null));
-	    label = runserver('Browse Batch ' + :this:batch); 
+	    label = runserver('i18n:Browse Batch ' + :this:batch); 
 	    batch_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_batch_number=runclient(:trx_popup_menu:batch); }
 	    }
 	jnl_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:jnl is null));
-	    label = runserver('Browse Batch ' + :this:batch + ', Journal ' + :this:jnl);
+	    label = runserver('i18n:Browse Batch ' + :this:batch + ', Journal ' + :this:jnl);
 	    jnl_batch_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_batch_number=runclient(:trx_popup_menu:batch); a_journal_number=runclient(:trx_popup_menu:jnl);}
 	    }
 	bcc_item "widget/menuitem"
 	    {
 	    condition = runserver((not (:this:cc is null)) and (not (:this:batch is null)));
-	    label = runserver('Browse Batch ' + :this:batch + ', Cost Ctr ' + :this:cc);
+	    label = runserver('i18n:Browse Batch ' + :this:batch + ', Cost Ctr ' + :this:cc);
 	    bcc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_cost_center=runclient(:trx_popup_menu:cc); a_batch_number=runclient(:trx_popup_menu:batch); }
 	    }
 	acct_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:acct is null));
-	    label = runserver('Browse Account ' + :this:acct);
+	    label = runserver('i18n:Browse Account ' + :this:acct);
 	    acct_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_account_code=runclient(:trx_popup_menu:acct); }
 	    }
 	cc_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:cc is null));
-	    label = runserver('Browse Cost Ctr ' + :this:cc); 
+	    label = runserver('i18n:Browse Cost Ctr ' + :this:cc); 
 	    cc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_cost_center=runclient(:trx_popup_menu:cc); }
 	    }
 	acc_item "widget/menuitem"
 	    {
 	    condition = runserver((not (:this:cc is null)) and (not (:this:acct is null)));
-	    label = runserver('Browse Cost Ctr ' + :this:cc + ', Account ' + :this:acct);
+	    label = runserver('i18n:Browse Cost Ctr ' + :this:cc + ', Account ' + :this:acct);
 	    acc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_cost_center=runclient(:trx_popup_menu:cc); a_account_code=runclient(:trx_popup_menu:acct); }
 	    }
 
@@ -81,30 +81,30 @@ trx_popup_menu "widget/component-decl"
 	viewlegacy_item "widget/menuitem"
 	    { 
 	    condition = runserver(not (:this:legacy is null));
-	    label = runserver('View Filepro Trx ' + :this:legacy); 
+	    label = runserver('i18n:View Filepro Trx ' + :this:legacy); 
 	    //edit_cn "widget/connector" { event=Select; target=editor; action=GotoBatch; Batch=runclient(:trx_popup_menu:batch); }
 	    }
 	editbatch_item "widget/menuitem"
 	    { 
 	    condition = runserver(not (:this:batch is null));
-	    label = runserver('Open Batch ' + :this:batch + ' in Editor'); 
+	    label = runserver('i18n:Open Batch ' + :this:batch + ' in Editor'); 
 	    edit_cn "widget/connector" { event=Select; target=editor; action=GotoBatch; Batch=runclient(:trx_popup_menu:batch); }
 	    }
 	summbatch_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:batch is null));
-	    label = runserver('Show Summary for Batch ' + :this:batch); 
+	    label = runserver('i18n:Show Summary for Batch ' + :this:batch); 
 	    }
 	balcc_item "widget/menuitem"
 	    { 
 	    condition = runserver(not (:this:cc is null));
-	    label = runserver('Show Balances for ' + :this:cc); 
+	    label = runserver('i18n:Show Balances for ' + :this:cc); 
 	    balcc_cn "widget/connector" { event=Select; target=acctbal; action=ShowBalances; Costctr=runclient(:trx_popup_menu:cc); Account=runclient(null); }
 	    }
 	balccacct_item "widget/menuitem"
 	    { 
 	    condition = runserver((not (:this:cc is null)) and (not (:this:acct is null)));
-	    label = runserver('Show Balance for ' + :this:cc + ':' + :this:acct); 
+	    label = runserver('i18n:Show Balance for ' + :this:cc + ':' + :this:acct); 
 	    balccacct_cn "widget/connector" { event=Select; target=acctbal; action=ShowBalances; Costctr=runclient(:trx_popup_menu:cc); Account=runclient(:trx_popup_menu:acct); }
 	    }
 	}

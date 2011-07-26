@@ -42,10 +42,10 @@ acct_settings "widget/component-decl"
 		rowheight = 20;
 		mode=dynamicrow;
 
-		t_a_usage_code "widget/table-column" { title="Code"; fieldname="a_acct_usage_code"; width=52; }
-		t_a_usage_desc "widget/table-column" { title="Description"; fieldname="a_acct_usage_desc"; width=200; }
-		t_a_type "widget/table-column" { title="Type"; fieldname="a_acct_type_desc"; width=52; }
-		t_a_acct "widget/table-column" { title="Account to Use"; fieldname="a_account_code"; width=400; }
+		t_a_usage_code "widget/table-column" { title="i18n:Code"; fieldname="a_acct_usage_code"; width=52; }
+		t_a_usage_desc "widget/table-column" { title="i18n:Description"; fieldname="a_acct_usage_desc"; width=200; }
+		t_a_type "widget/table-column" { title="i18n:Type"; fieldname="a_acct_type_desc"; width=52; }
+		t_a_acct "widget/table-column" { title="i18n:Account to Use"; fieldname="a_account_code"; width=400; }
 		}
 	    }
 	}

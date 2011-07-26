@@ -8,7 +8,7 @@ coa_window "widget/component-decl"
 
     coawin "widget/childwindow"
 	{
-	title = "Chart of Accounts Maintenance";
+	title = "i18n:Chart of Accounts Maintenance";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;
