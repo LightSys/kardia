@@ -1,7 +1,7 @@
 $Version=2$
 gift_entry "widget/page"
     {
-    title = "Gift Entry";
+    title = "i18n:Gift Entry";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

@@ -1,7 +1,7 @@
 $Version=2$
 donation_checks "system/report"
     {
-    title = "Donation Report by Check";
+    title = "i18n:Donation Report by Check";
 
     document_format="application/pdf";
     resolution = 300;

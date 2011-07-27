@@ -26,7 +26,7 @@ cc_admin_fee "widget/component-decl"
 		    x=4;y=0;width=248;height=18;
 		    widget_class="label";
 		    align=left;
-		    text = "Search Funds";
+		    text = "i18n:Search Funds";
 		    }
 		}
 
@@ -34,7 +34,7 @@ cc_admin_fee "widget/component-decl"
 	    searcheb "widget/editbox"
 		{
 		height=24;
-		empty_description = "type here to search for funds";
+		empty_description = "i18n:type here to search for funds";
 
 		//search_cn1 "widget/connector"
 		//    {
@@ -136,17 +136,16 @@ cc_admin_fee "widget/component-decl"
 		{
 		objectsource = searchlistosrc;
 		
-		f_ledger "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=120; }
-		f_costctr "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='cc_text'; ctl_type=label; text='Cost Center:'; label_width=120; }
-		//f_costctr "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_cost_center'; ctl_type=label; text='Cost Center:'; label_width=120; }
-		//f_desc "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=label; text='Description:'; label_width=120; }
-		f_type "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='admin_txt'; ctl_type=label; text='Admin Type:'; label_width=120; }
+		f_ledger "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='i18n:Ledger:'; label_width=120; }
+		f_costctr "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='cc_text'; ctl_type=label; text='i18n:Cost Center:'; label_width=120; }
+		//f_costctr "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_cost_center'; ctl_type=label; text='i18n:Cost Center:'; label_width=120; }
+		//f_desc "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=label; text='i18n:Description:'; label_width=120; }
+		f_type "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='admin_txt'; ctl_type=label; text='i18n:Admin Type:'; label_width=120; }
 		//f_type "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='type_txt'; ctl_type=label; text='Admin Type:'; label_width=120; }
 		//f_admindesc "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_admin_fee_type_desc'; ctl_type=label; text='Description:'; label_width=120; }
-		f_typepct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='type_pct_txt'; ctl_type=label; text='Type %:'; label_width=120; }
-		//f_typepct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='type_pct'; ctl_type=label; text='Type %:'; label_width=120; }
+ 	 	f_typepct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='type_pct_txt'; ctl_type=label; text='i18n:Type %:'; label_width=120; }
 		//f_overpct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='config_pct'; ctl_type=label; text='Override %:'; label_width=120; }
-		f_actpct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='pct'; ctl_type=label; text='Actual %:'; label_width=120; }
+		f_actpct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='pct'; ctl_type=label; text='i18n:Actual %:'; label_width=120; }
 		}
 
 	    editlbl_pane "widget/pane"
@@ -178,7 +177,7 @@ cc_admin_fee "widget/component-decl"
 		{
 		path = "/apps/kardia/modules/base/section_label.cmp";
 		height = 20;
-		text = "Other Percentages Available for Receipting:";
+		text = "i18n:Other Percentages Available for Receipting:";
 		}
 	    }
 	}

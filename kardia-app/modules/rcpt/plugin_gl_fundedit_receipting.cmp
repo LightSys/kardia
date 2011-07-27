@@ -3,7 +3,7 @@ plugin_gl_fundedit_receipting "widget/component-decl"
     {
     width=490;
     height=292;
-    title = "Receipting";
+    title = "i18n:Receipting";
 
     Modified "widget/component-decl-event" { }
 
@@ -41,7 +41,7 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 		{
 		allow_query = no;
 
-		form_txt "widget/label" { text="Click the checkbox below and click Save to allow receipting to this fund."; height=14; }
+		form_txt "widget/label" { text="i18n:Click the checkbox below and click Save to allow receipting to this fund."; height=14; }
 
 		allow_rcpt_hbox "widget/hbox"
 		    {
@@ -49,7 +49,7 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 		    spacing = 4;
 		    cellsize = 20;
 
-		    allow_rcpt_checkbox "widget/component" { width=190; label_width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_receiptable; text="Allow Receipting:"; }
+		    allow_rcpt_checkbox "widget/component" { width=190; label_width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_receiptable; text="i18n:Allow Receipting:"; }
 		    save_btn "widget/component" { path = "/sys/cmp/save_btn.cmp"; }
 		    cancel_btn "widget/component" { path = "/sys/cmp/cancel_btn.cmp"; }
 		    }
@@ -93,7 +93,7 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 
 		ra_form "widget/form"
 		    {
-		    form_txt2 "widget/label" { text="If you want to restrict this fund's receipting to a specific set of GL accounts, you can enter them below:"; height=30; }
+		    form_txt2 "widget/label" { text="i18n:If you want to restrict this fund's receipting to a specific set of GL accounts, you can enter them below:"; height=30; }
 		    form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; height=26; object_name="Account"; }
 
 		    ra_table_pane "widget/pane"
@@ -107,14 +107,14 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 			    width=488; height=100;
 			    mode = dynamicrow;
 
-			    t_acct "widget/table-column" { title="GL Account"; fieldname="a_account_code"; width=100; }
-			    t_acctdesc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=150; }
-			    t_liststat "widget/table-column" { title="Non Tax Deductible?"; fieldname="a_non_tax_deductible"; width=100; type=check; }
+			    t_acct "widget/table-column" { title="i18n:GL Account"; fieldname="a_account_code"; width=100; }
+			    t_acctdesc "widget/table-column" { title="i18n:Description"; fieldname="a_acct_desc"; width=150; }
+			    t_liststat "widget/table-column" { title="i18n:Non Tax Deductible?"; fieldname="a_non_tax_deductible"; width=100; type=check; }
 			    }
 			}
 
-		    f_glacct "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_account_code"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Choose GL Account:"; text="GL Account:"; attach_point=editbox; empty_desc = "required"; label_width=150; }
-		    f_non_tax_ded "widget/component" { label_width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_non_tax_deductible; text="Non Tax-Deductible:"; }
+		    f_glacct "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_account_code"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="i18n:Choose GL Account:"; text="i18n:GL Account:"; attach_point=editbox; empty_desc = "i18n:required"; label_width=150; }
+		    f_non_tax_ded "widget/component" { label_width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_non_tax_deductible; text="i18n:Non Tax-Deductible:"; }
 
 		    dt_c "widget/variable" { fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
 		    us_c "widget/variable" { fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }

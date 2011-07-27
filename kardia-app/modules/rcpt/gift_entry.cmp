@@ -132,7 +132,7 @@ gift_entry "widget/component-decl"
 	srchbox "widget/editbox"
 	    {
 	    height=20;
-	    empty_description = "type search, press ENTER";
+	    empty_description = "i18n:type search, press ENTER";
 
 	    enter_pressed_do_search "widget/connector"
 		{
@@ -179,7 +179,7 @@ gift_entry "widget/component-decl"
 		    height=98; width=198; x=0; y=0;
 		    titlebar = no;
 
-		    pt_name "widget/table-column" { title="Name"; fieldname="nm"; width=180; }
+		    pt_name "widget/table-column" { title="i18n:Name"; fieldname="nm"; width=180; }
 		    //pt_city "widget/table-column" { title="City"; fieldname="addr"; width=90; }
 		    }
 		}
@@ -249,9 +249,9 @@ gift_entry "widget/component-decl"
 		    {
 		    height=350; width=198; x=0; y=0;
 
-		    t_rcpt "widget/table-column" { title="Rcpt#"; fieldname="a_receipt_number"; width=60; }
-		    t_date "widget/table-column" { title="Date"; fieldname="viewdate"; width=100; }
-		    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=75; align=right; }
+		    t_rcpt "widget/table-column" { title="i18n:Rcpt#"; fieldname="a_receipt_number"; width=60; }
+		    t_date "widget/table-column" { title="i18n:Date"; fieldname="viewdate"; width=100; }
+		    t_amt "widget/table-column" { title="i18n:Amount"; fieldname="a_amount"; width=75; align=right; }
 		    }
 		}
 	    }
@@ -373,10 +373,10 @@ gift_entry "widget/component-decl"
 			    height=20;
 			    //width=450;
 			    path="/sys/cmp/smart_field.cmp";
-			    text = "Prev. Receipt No:";
+			    text = "i18n:Prev. Receipt No:";
 			    label_width = 120;
 			    field = a_receipt_number;
-			    empty_desc = "optional";
+			    empty_desc = "i18n:optional";
 
 			    user_set_prev_rcpt "widget/connector"
 				{
@@ -396,7 +396,7 @@ gift_entry "widget/component-decl"
 			//width=450;
 			path="/apps/kardia/modules/base/editbox_table.cmp";
 			field='p_donor_partner_id';
-			text='Donor:';
+			text='i18n:Donor:';
 			label_width=120;
 			popup_width=380;
 			popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
@@ -404,19 +404,18 @@ gift_entry "widget/component-decl"
 			search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
 			key_name="p_partner_key";
 			object_name="Donor";
-			popup_text="Select a Donor:";
+			popup_text="i18n:Select a Donor:";
 			//attach_point=editbox;
 
 			donor_hints "widget/hints" { style=applyonchange; }
 			}
 
 		    //f_rcpt_addnew "widget/label" { height=20; x=120; text="Add New Donor"; widget_class=link; }
-		    f_rcpt_addnew "widget/textbutton" { height=24; x=120; width=130; text="Add New Donor"; }
-
-		    f_rcpt_gifttype "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Gift Type:'; field='a_gift_type'; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_gift_type/rows"; gt_hints "widget/hints" { default='K'; } }
-		    f_rcpt_postdate "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Postmark Date:'; field='a_gift_postmark_date'; ctl_type=datetime; }
-		    f_rcpt_rcptwanted "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Receipt Desired?'; field='a_receipt_desired'; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_receipt_type/rows"; rw_hints "widget/hints" { default=runclient('I'); style=notnull; } }
-		    f_rcpt_goods "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Goods Provided:'; tooltip='Value of goods provided to donor for a quid pro quo donation'; field='a_goods_provided'; ctl_type=editbox; rgoods_hints "widget/hints" { default=runclient(0); } }
+		    f_rcpt_addnew "widget/textbutton" { height=24; x=120; width=130; text="i18n:Add New Donor"; }
+		    f_rcpt_gifttype "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Gift Type:'; field='a_gift_type'; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_gift_type/rows"; gt_hints "widget/hints" { default='K'; } }
+		    f_rcpt_postdate "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Postmark Date:'; field='a_gift_postmark_date'; ctl_type=datetime; }
+		    f_rcpt_rcptwanted "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Receipt Desired?'; field='a_receipt_desired'; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_receipt_type/rows"; rw_hints "widget/hints" { default=runclient('I'); style=notnull; } }
+		    f_rcpt_goods "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Goods Provided:'; tooltip='i18n:Value of goods provided to donor for a quid pro quo donation'; field='a_goods_provided'; ctl_type=editbox; rgoods_hints "widget/hints" { default=runclient(0); } }
 		    }
 
 		rcpt_vbox2 "widget/vbox"
@@ -523,9 +522,9 @@ gift_entry "widget/component-decl"
 			    //value = runclient(condition((:donor_giving_osrc:donorid == :f_rcpt_donorid:content or not (char_length(:donor_giving_osrc:donorid) == 0)), condition(:donor_giving_osrc:cnt > 0, 'Donor has given ' + :donor_giving_osrc:cnt + ' times, last on ' + substring(:donor_giving_osrc:lastdate, 1, 11) + '.', '** No Giving History **'), ''));
 			    }
 			}
-		    f_rcpt_recvdate "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Received Date:'; field='a_gift_received_date'; ctl_type=datetime; rd_hints "widget/hints" { default=runclient(getdate()); style=readonly; } }
-		    f_rcpt_rcptno "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Receipt Number:'; field='a_receipt_number'; ctl_type=editbox; rn_hints "widget/hints" { style=readonly; } }
-		    f_rcpt_total "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Total Amount:'; field='a_amount'; ctl_type=editbox; rttl_hints "widget/hints" { style=readonly; default=runclient(0); } }
+		    f_rcpt_recvdate "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Received Date:'; field='a_gift_received_date'; ctl_type=datetime; rd_hints "widget/hints" { default=runclient(getdate()); style=readonly; } }
+		    f_rcpt_rcptno "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Receipt Number:'; field='a_receipt_number'; ctl_type=editbox; rn_hints "widget/hints" { style=readonly; } }
+		    f_rcpt_total "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Total Amount:'; field='a_amount'; ctl_type=editbox; rttl_hints "widget/hints" { style=readonly; default=runclient(0); } }
 		    }
 		}
 	    }
@@ -630,13 +629,13 @@ gift_entry "widget/component-decl"
 			    x=0; y=0;
 			    height=164; width=570;
 
-			    t_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=50; }
-			    t_cc_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=120; }
-			    t_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=120; }
-			    t_itemamt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
-			    t_pers "widget/table-column" { title="NDed"; fieldname="a_non_tax_deductible"; width=30; type=check; }
-			    t_anon "widget/table-column" { title="Conf"; fieldname="a_confidential"; width=30; type=check; }
-			    t_admin "widget/table-column" { title="Adm"; fieldname="admin"; width=35; }
+			    t_cc "widget/table-column" { title="i18n:Fund"; fieldname="a_cost_center"; width=50; }
+			    t_cc_desc "widget/table-column" { title="i18n:Description"; fieldname="a_cc_desc"; width=120; }
+			    t_comm "widget/table-column" { title="i18n:Comments"; fieldname="a_comment"; width=120; }
+			    t_itemamt "widget/table-column" { title="i18n:Amount"; fieldname="a_amount"; width=60; align=right; }
+			    t_pers "widget/table-column" { title="i18n:NDed"; fieldname="a_non_tax_deductible"; width=30; type=check; }
+			    t_anon "widget/table-column" { title="i18n:Conf"; fieldname="a_confidential"; width=30; type=check; }
+			    t_admin "widget/table-column" { title="i18n:Adm"; fieldname="admin"; width=35; }
 			    }
 			}
 
@@ -718,15 +717,15 @@ gift_entry "widget/component-decl"
 				    height=20;
 				    path="/apps/kardia/modules/base/editbox_table.cmp";
 				    field='a_cost_center';
-				    text='Designation:';
+				    text='i18n:Designation:';
 				    label_width=100;
 				    popup_width=380;
 				    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
 				    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
 				    key_name="a_cost_center";
 				    object_name="Fund / Cost Center";
-				    popup_text="Select Designation:";
-				    empty_desc="required";
+				    popup_text="i18n:Select Designation:";
+				    empty_desc="i18n:required";
 
 				    desig_hints "widget/hints" { style=applyonchange,uppercase; }
 
@@ -787,10 +786,9 @@ gift_entry "widget/component-decl"
 					}
 				    }
 
-				f_desig_recvdoc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Check No:'; field='a_recv_document_id'; ctl_type=editbox; }
-				f_desig_amount "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Amount:'; field='a_amount'; ctl_type=editbox; amt_hints "widget/hints" { default=runclient(''); } empty_desc="required"; }
-
-				f_desig_comment "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Comments:'; field='a_comment'; ctl_type=editbox; }
+				f_desig_recvdoc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='i18n:Check No:'; field='a_recv_document_id'; ctl_type=editbox; }
+				f_desig_amount "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='i18n:Amount:'; field='a_amount'; ctl_type=editbox; amt_hints "widget/hints" { default=runclient(''); } empty_desc="i18n:required"; }
+				f_desig_comment "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='i18n:Comments:'; field='a_comment'; ctl_type=editbox; }
 
 				//f_desig_custompct "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Set Admin %:'; field='a_gift_admin_fee'; ctl_type=editbox; empty_desc="optional"; }
 				}
@@ -800,22 +798,21 @@ gift_entry "widget/component-decl"
 				width=275;
 				spacing=6;
 
-				f_desig_motiv "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Motivation Cd.:'; field='a_motivational_code'; ctl_type=editbox; }
-
+				f_desig_motiv "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='i18n:Motivation Cd.:'; field='a_motivational_code'; ctl_type=editbox; }
 				f_desig_acct "widget/component"
 				    {
 				    condition = 0;
 				    height=20;
 				    path="/apps/kardia/modules/base/editbox_table.cmp";
 				    field='a_account_code';
-				    text='GL Acct:';
+				    text='i18n:GL Acct:';
 				    label_width=100;
 				    popup_width=380;
 				    popup_sql=runserver("select value = :a:a_account_code, label = :a:a_account_code + ' - ' + :a:a_acct_desc + isnull(' (legacy # ' + :a:a_legacy_code + ')', '') from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_is_posting = 1 and :a:a_ledger_number = " + quote(:this:ledger));
 				    search_field_list="a_account_code*,*a_acct_desc*,a_legacy_code*";
 				    key_name="a_account_code";
 				    object_name="GL Account";
-				    popup_text="Select GL Account:";
+				    popup_text="i18n:Select GL Account:";
 
 				    ac_hints "widget/hints" { default=runclient('4100'); style=readonly; }
 				    }
@@ -825,7 +822,7 @@ gift_entry "widget/component-decl"
 				    height = 20;
 				    path = "/sys/cmp/smart_field.cmp";
 				    label_width=100;
-				    text = "GL Acct:";
+				    text = "i18n:GL Acct:";
 				    field = "a_account_code";
 				    ctl_type = dropdown;
 				    sql = "select '','' where 1 = 0";
@@ -854,7 +851,7 @@ gift_entry "widget/component-decl"
 					width=125;
 					path="/sys/cmp/smart_field.cmp";
 					label_width=100;
-					text='Non Tax-Ded.?';
+					text='i18n:Non Tax-Ded.?';
 					field='a_non_tax_deductible';
 					ctl_type=checkbox;
 
@@ -870,7 +867,7 @@ gift_entry "widget/component-decl"
 					    Value=runclient(condition(:Value, '2120', '4100'));
 					    }
 					}
-				    f_desig_anon "widget/component" { width=148; path="/sys/cmp/smart_field.cmp"; label_width=90; text='Confidential?'; field='a_confidential'; ctl_type=checkbox; anon_hints "widget/hints" { default=runclient(0); style=notnull; } }
+				    f_desig_anon "widget/component" { width=148; path="/sys/cmp/smart_field.cmp"; label_width=90; text='i18n:Confidential?'; field='a_confidential'; ctl_type=checkbox; anon_hints "widget/hints" { default=runclient(0); style=notnull; } }
 				    }
 
 				f_desig_customtyp "widget/component"
@@ -878,7 +875,7 @@ gift_entry "widget/component-decl"
 				    height=20;
 				    path="/sys/cmp/smart_field.cmp";
 				    label_width=100;
-				    text='Admin Fee:';
+				    text='i18n:Admin Fee:';
 				    field='a_gift_admin_subtype';
 				    ctl_type=dropdown;
 				    }
@@ -917,7 +914,7 @@ gift_entry "widget/component-decl"
 	    new_rcpt "widget/textbutton"
 		{
 		width=130;
-		text = "New Receipt";
+		text = "i18n:New Receipt";
 
 		enabled = runclient(:gift_entry:by_donor == 0 and :receipts_osrc:cx__pending == 0 and (not (:batch_osrc:a_batch_number is null)) and ((char_length(:line_items_osrc:a_cost_center) > 0 and :desig_form:form_mode == 'New' and not (char_length(:f_desig_recvdoc:content) > 0 or char_length(:f_desig_amount:content) > 0 or char_length(:f_desig_cc:content) > 0)) or :desig_form:form_mode == 'View' or :desig_form:form_mode == 'NoData') and :rcpt_form:is_newable and not (:rcpt_form:a_posted == 1));
 
@@ -929,7 +926,7 @@ gift_entry "widget/component-decl"
 	    del_rcpt "widget/textbutton"
 		{
 		width=130;
-		text = "Delete Receipt";
+		text = "i18n:Delete Receipt";
 
 		enabled = runclient(((:desig_form:form_mode = 'NoData')) and :rcpt_form:is_editable and not (:rcpt_form:a_posted == 1));
 
@@ -939,7 +936,7 @@ gift_entry "widget/component-decl"
 	    new_desig "widget/textbutton"
 		{
 		width=130;
-		text = "New Desig.";
+		text = "i18n:New Desig.";
 
 		enabled = runclient(:desig_form:is_newable and :rcpt_form:is_editable and not (:rcpt_form:a_posted == 1));
 
@@ -949,7 +946,7 @@ gift_entry "widget/component-decl"
 	    del_desig "widget/textbutton"
 		{
 		width=130;
-		text = "Delete Desig.";
+		text = "i18n:Delete Desig.";
 
 		enabled = runclient(:desig_form:is_editable and not (:rcpt_form:a_posted == 1));
 
@@ -1032,16 +1029,16 @@ gift_entry "widget/component-decl"
 
 		donor_info_form "widget/form"
 		    {
-		    d_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_receipt_sent_date; text="Date of Gift:"; ctl_type="label"; label_width=120; width=450; }
-		    d_ttl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_amount; text="Gift Amount:"; ctl_type="label"; label_width=120; width=450; }
-		    d_pkey "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="Partner Key:"; ctl_type="label"; label_width=120; width=450; }
+		    d_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_receipt_sent_date; text="i18n:Date of Gift:"; ctl_type="label"; label_width=120; width=450; }
+		    d_ttl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_amount; text="i18n:Gift Amount:"; ctl_type="label"; label_width=120; width=450; }
+		    d_pkey "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="i18n:Partner Key:"; ctl_type="label"; label_width=120; width=450; }
 		    d_label "widget/component" { x=123; height=76; width=330; path="/apps/kardia/modules/base/address_label.cmp"; }
 		    //d_name "widget/component" { path="/sys/cmp/smart_field.cmp"; field=nm; text="Name:"; ctl_type="label"; label_width=120; width=450; }
 		    //d_org "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_org_name; text="Organization:"; ctl_type="label"; label_width=120; width=450; }
 		    //d_al3 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=al3; text="Address:"; ctl_type="label"; label_width=120; width=450; }
 
 		    sp2 "widget/autolayoutspacer" { height=2; }
-		    d_desig_lbl "widget/label" { text = "Designation:"; style=bold; }
+		    d_desig_lbl "widget/label" { text = "i18n:Designation:"; style=bold; }
 		    }
 
 		prev_desig_osrc "widget/osrc"
@@ -1083,9 +1080,9 @@ gift_entry "widget/component-decl"
 			    allow_selection = no;
 			    show_selection = no;
 
-			    t_prev_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=90; }
-			    t_prev_cc_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=300; }
-			    t_prev_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=90; }
+			    t_prev_cc "widget/table-column" { title="i18n:Fund"; fieldname="a_cost_center"; width=90; }
+			    t_prev_cc_desc "widget/table-column" { title="i18n:Description"; fieldname="a_cc_desc"; width=300; }
+			    t_prev_amt "widget/table-column" { title="i18n:Amount"; fieldname="a_amount"; width=90; }
 			    }
 			}
 		    }
@@ -1102,17 +1099,17 @@ gift_entry "widget/component-decl"
 		prev_yes "widget/textbutton"
 		    {
 		    width=180;
-		    text = "Right Donor & Desig.";
+		    text = "i18n:Right Donor & Desig.";
 		    }
 		prev_donoronly "widget/textbutton"
 		    {
 		    width=180;
-		    text = "Right Donor Only";
+		    text = "i18n:Right Donor Only";
 		    }
 		prev_no "widget/textbutton"
 		    {
 		    width=180;
-		    text = "Wrong Donor";
+		    text = "i18n:Wrong Donor";
 
 		    no_cn "widget/connector" { event=Click; target=prevrcpt_window; action=Close; }
 		    }
