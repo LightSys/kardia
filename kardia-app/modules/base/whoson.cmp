@@ -63,16 +63,16 @@ whoson "widget/component-decl"
 		}
 
 	    t_img "widget/table-column" { title=""; fieldname="img"; width=24; type=image; }
-	    //t_usr "widget/table-column" { title="User"; fieldname="name"; width=80; }
-	    t_desc "widget/table-column" { title="Name"; fieldname="description"; width=98; }
-	    t_stat "widget/table-column" { title="Status"; fieldname="s_status"; width=160; }
-	    //t_cnt "widget/table-column" { title="Logins"; fieldname="session_cnt"; width=48; }
+	    //t_usr "widget/table-column" { title="i18n:User"; fieldname="name"; width=80; }
+	    t_desc "widget/table-column" { title="i18n:Name"; fieldname="description"; width=98; }
+	    t_stat "widget/table-column" { title="i18n:Status"; fieldname="s_status"; width=160; }
+	    //t_cnt "widget/table-column" { title="i18n:Logins"; fieldname="session_cnt"; width=48; }
 	    }
 	}
 
     sep "widget/pane" { x=0; y=316; height=2; width=282; style=lowered; fl_height=0; }
 
-    upd_stat "widget/label" { x=0; y=318; height=20; width=282; style=bold; text="Update My Status:"; }
+    upd_stat "widget/label" { x=0; y=318; height=20; width=282; style=bold; text="i18n:Update My Status:"; }
 
     usrdat_osrc "widget/osrc"
 	{
@@ -109,14 +109,15 @@ whoson "widget/component-decl"
 	    save_cn "widget/connector" { event=DataSaved; target=whoson_osrc; action=Refresh; }
 
 	    status_lbl "widget/label" { x=0;y=340;height=20;width=85; value=runclient(isnull(condition(charindex(' ', :usrdat_osrc:description) > 0, substring(:usrdat_osrc:description, 1, charindex(' ', :usrdat_osrc:description) - 1), :usrdat_osrc:description) + ' is:', '')); align=right; }
-	    status_eb "widget/editbox" { x=90; y=340; height=20; width=192; tooltip="What are you doing right now?"; fieldname=s_status; empty_description="What are you doing now?"; }
+	    status_eb "widget/editbox" { x=90; y=340; height=20; width=192; tooltip="i18n:What are you doing right now?"; fieldname=s_status; empty_description="i18n:What are you doing now?"; }
 
 	    stat_dt_c "widget/variable" { fieldname="s_date_created"; stat_dt_c_hints "widget/hints" { default=runclient(getdate()); } }
 	    stat_us_c "widget/variable" { fieldname="s_created_by"; stat_us_c_hints "widget/hints" { default=runclient(user_name()); } }
 	    stat_dt_m "widget/variable" { fieldname="s_date_modified"; stat_dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
 	    stat_us_m "widget/variable" { fieldname="s_modified_by"; stat_us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
 
-	    //f_s_status "widget/component" { x=0; y=340; height=20; width=282; path="/sys/cmp/smart_field.cmp"; field=s_status; text=runserver(condition(charindex(' ', user_name()) > 0, substring(user_name(), 1, charindex(' ', user_name()) - 1), user_name()) + ' is:'); ctl_type="editbox"; tooltip="What are you doing right now?"; }
+	    //f_s_status "widget/component" { x=0; y=340; height=20; width=282; 
+path="/sys/cmp/smart_field.cmp"; field=s_status; text=runserver(condition(charindex(' ', user_name()) > 0, substring(user_name(), 1, charindex(' ', user_name()) - 1), user_name()) + ' is:'); ctl_type="editbox"; tooltip="i18n:What are you doing right now?"; }
 	    }
 	}
 

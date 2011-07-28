@@ -1,7 +1,7 @@
 $Version=2$
 financial_statement "widget/page"
     {
-    title = "Missionary Financial Statement";
+    title = "i18n:Missionary Financial Statement";
     width=780; height=550;
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

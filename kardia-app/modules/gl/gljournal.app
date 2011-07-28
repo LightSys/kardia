@@ -1,7 +1,7 @@
 $Version=2$
 gljournal "widget/page"
     {
-    title = "GL Batch and Journal Entry";
+    title = "i18n:GL Batch and Journal Entry";
     width=800; height=600;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }

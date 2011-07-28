@@ -49,10 +49,10 @@ item_types_cmp "widget/component-decl"
 		rowheight = 18;
 		mode=dynamicrow;
 
-		t_typ "widget/table-column" { title="Line Item Type"; fieldname="txtit"; width=180; }
-		t_cls "widget/table-column" { title="Class"; fieldname="txtic"; width=180; }
-		t_acct "widget/table-column" { title="GL Acct"; fieldname="txtac"; width=180; }
-		t_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=180; }
+		t_typ "widget/table-column" { title="i18n:Line Item Type"; fieldname="txtit"; width=180; }
+		t_cls "widget/table-column" { title="i18n:Class"; fieldname="txtic"; width=180; }
+		t_acct "widget/table-column" { title="i18n:GL Acct"; fieldname="txtac"; width=180; }
+		t_comm "widget/table-column" { title="i18n:Comments"; fieldname="a_comment"; width=180; }
 		}
 	    }
 
@@ -63,7 +63,7 @@ item_types_cmp "widget/component-decl"
 		x=8;y=318;width=762;height=26;
 		path = "/sys/cmp/form_controls.cmp";
 		deletable = no;
-		object_name = "Line Item Type";
+		object_name = "i18n:Line Item Type";
 		}
 
 	    it_vbox "widget/vbox"
@@ -72,10 +72,10 @@ item_types_cmp "widget/component-decl"
 		spacing=8;
 		cellsize=20;
 
-		f_typ "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_item_type_code; text="Type Code:"; ctl_type="editbox"; tooltip="Payroll Line Item Type Code (3 letters)"; label_width=100; empty_desc="3 or 4 letter unique code"; }
-		f_cls "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_item_class_code; text="Class:"; ctl_type="dropdown"; tooltip="Payroll Line Item Class"; label_width=100; sql="select :a_payroll_item_class_code + ' - ' + :a_desc, :a_payroll_item_class_code from /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows order by :a_payroll_item_class_code"; }
-		f_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_desc; text="Descrip:"; ctl_type="editbox"; tooltip="Item Type Description (appears on payroll screens & reports)"; label_width=100; }
-		f_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; text="Comment:"; ctl_type="editbox"; tooltip="Item Type Comments (does not appear on reports, screens, etc.)"; label_width=100; }
+		f_typ "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_item_type_code; text="i18n:Type Code:"; ctl_type="editbox"; tooltip="i18n:Payroll Line Item Type Code (3 letters)"; label_width=100; empty_desc="i18n:3 or 4 letter unique code"; }
+		f_cls "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_item_class_code; text="i18n:Class:"; ctl_type="dropdown"; tooltip="i18n:Payroll Line Item Class"; label_width=100; sql="select :a_payroll_item_class_code + ' - ' + :a_desc, :a_payroll_item_class_code from /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows order by :a_payroll_item_class_code"; }
+		f_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_desc; text="i18n:Descrip:"; ctl_type="editbox"; tooltip="i18n:Item Type Description (appears on payroll screens & reports)"; label_width=100; }
+		f_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; text="i18n:Comment:"; ctl_type="editbox"; tooltip="i18n:Item Type Comments (does not appear on reports, screens, etc.)"; label_width=100; }
 		}
 
 	    it_vbox2 "widget/vbox"
@@ -89,7 +89,7 @@ item_types_cmp "widget/component-decl"
 		    width=300; height=26; style=flat;
 		    enabled = runclient(charindex(:it_osrc:a_payroll_item_class_code, "BDEGMNPRTV") > 0);
 
-		    f_a_account_code "widget/component" { x=0;y=0;height=26;width=300; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Account:"; tooltip="Account Number"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; empty_desc="Expense or Payable GL Acct"; }
+		    f_a_account_code "widget/component" { x=0;y=0;height=26;width=300; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="i18n:Account:"; tooltip="i18n:Account Number"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Account:"; empty_desc="i18n:Expense or Payable GL Acct"; }
 		    }
 
 		cc_xfer_pane "widget/pane"
@@ -97,7 +97,7 @@ item_types_cmp "widget/component-decl"
 		    width=300; height=26; style=flat;
 		    enabled = runclient(charindex(:it_osrc:a_payroll_item_class_code, "BMPRV") > 0);
 
-		    f_a_xfer_cc "widget/component" { x=0;y=0;height=26;width=300; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_cost_center; text="Xfer Costctr:"; tooltip="Cost Center for inter-fund xfer"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; empty_desc="Default costctr to transfer TO"; }
+		    f_a_xfer_cc "widget/component" { x=0;y=0;height=26;width=300; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_cost_center; text="i18n:Xfer Costctr:"; tooltip="i18n:Cost Center for inter-fund xfer"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Cost Center:"; empty_desc="i18n:Default costctr to transfer TO"; }
 		    }
 
 		acct_xfer_pane "widget/pane"
@@ -105,7 +105,7 @@ item_types_cmp "widget/component-decl"
 		    width=300; height=26; style=flat;
 		    enabled = runclient(charindex(:it_osrc:a_payroll_item_class_code, "BMPRV") > 0);
 
-		    f_a_xfer_acct"widget/component" { x=0;y=0;height=26;width=300; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_account_code; text="Xfer Account:"; tooltip="GL Account for inter-fund xfer"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; empty_desc="GL Acct to transfer TO"; }
+		    f_a_xfer_acct"widget/component" { x=0;y=0;height=26;width=300; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_account_code; text="i18n:Xfer Account:"; tooltip="i18n:GL Account for inter-fund xfer"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; empty_desc="i18n:GL Acct to transfer TO"; }
 		    }
 
 		state_pane "widget/pane"
@@ -113,7 +113,7 @@ item_types_cmp "widget/component-decl"
 		    width=300; height=22; style=flat;
 		    enabled = runclient(charindex(:it_osrc:a_payroll_item_class_code, "ET") > 0);
 
-		    f_state "widget/component" { x=1;y=1;height=20;width=298; path="/sys/cmp/smart_field.cmp"; field=a_state_province; text="State/Prov:"; ctl_type="dropdown"; tooltip="State or Province (for state tax withholding only)"; label_width=100; sql="select :p_state_code + ' - ' + :p_state_name, :p_state_code from /apps/kardia/data/Kardia_DB/p_zipranges/rows group by :p_state_code"; }
+		    f_state "widget/component" { x=1;y=1;height=20;width=298; path="/sys/cmp/smart_field.cmp"; field=a_state_province; text="i18n:State/Prov:"; ctl_type="dropdown"; tooltip="i18n:State or Province (for state tax withholding only)"; label_width=100; sql="select :p_state_code + ' - ' + :p_state_name, :p_state_code from /apps/kardia/data/Kardia_DB/p_zipranges/rows group by :p_state_code"; }
 		    }
 		}
 
@@ -126,7 +126,7 @@ item_types_cmp "widget/component-decl"
 		tt_btn "widget/textbutton" 
 		    {
 		    width=136;
-		    text = "Edit Tax Table";
+		    text = "i18n:Edit Tax Table";
 		    enabled=runclient(charindex(:it_osrc:a_payroll_item_class_code, "ET") > 0); 
 
 		    tt_click "widget/connector"
@@ -145,7 +145,7 @@ item_types_cmp "widget/component-decl"
 		payees_btn "widget/textbutton"
 		    {
 		    width=136;
-		    text = "Edit Payees";
+		    text = "i18n:Edit Payees";
 		    py_click "widget/connector" { event=Click; target=item_types_cmp; action=Launch; Width=800; Height=600; Source=runclient('/apps/kardia/modules/payroll/pay_detail.app'); ledger=runclient(:it_osrc:a_ledger_number); item_type=runclient(:it_osrc:a_payroll_item_type_code); }
 		    }
 		}

@@ -31,7 +31,7 @@ batch_list_window "widget/component-decl"
 
     gljvwin "widget/childwindow"
 	{
-	title = "GL Batches";
+	title = "i18n:GL Batches";
 	width=580; height=550;
 	x=10; y=25;
 	visible = false;

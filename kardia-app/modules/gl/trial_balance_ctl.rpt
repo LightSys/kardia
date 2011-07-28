@@ -1,7 +1,7 @@
 $Version=2$
 trial_balance "system/report"
     {
-    title = "GL Trial Balance";
+    title = "i18n:GL Trial Balance";
 
     document_format="application/pdf";
     resolution = 300;

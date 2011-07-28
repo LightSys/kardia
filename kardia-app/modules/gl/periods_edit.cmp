@@ -12,7 +12,7 @@ periods_edit "widget/component-decl"
     cmp "widget/component"
 	{
 	path = "/apps/kardia/modules/gl/tree_list_data.cmp";
-	object_name = "Period";
+	object_name = "i18n:Period";
 	tree_source = "/apps/kardia/modules/gl/periods.qyt/";
 	osrc_source = "/apps/kardia/modules/gl/periods.qyt/0US";
 	ledger_osrc = ledger_osrc;

@@ -29,9 +29,9 @@ ledger_edit "widget/component-decl"
 		mode=dynamicrow;
 		objectsource = ledger_osrc;
 
-		t_a_ledger_number "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=52; }
-		t_a_ledger_desc "widget/table-column" { title="Description"; fieldname="a_ledger_desc"; width=96; }
-		t_a_ledger_post "widget/table-column" { title="Posting"; fieldname="a_is_posting"; type=check; width=52; }
+		t_a_ledger_number "widget/table-column" { title="i18n:Ledger"; fieldname="a_ledger_number"; width=52; }
+		t_a_ledger_desc "widget/table-column" { title="i18n:Description"; fieldname="a_ledger_desc"; width=96; }
+		t_a_ledger_post "widget/table-column" { title="i18n:Posting"; fieldname="a_is_posting"; type=check; width=52; }
 		}
 	    }
 
@@ -39,16 +39,16 @@ ledger_edit "widget/component-decl"
 	    {
 	    x=210;y=32;width=270;cellsize=20;spacing=5;
 
-	    f_a_ledger_number "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_number; text="Ledger Number:"; ctl_type="editbox"; tooltip="This is the ledger number, which represents the entirety of the accounting data for an organization."; }
-	    f_a_is_posting "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Is the ledger active and able to have transactions posted to it?"; }
-	    f_a_ledger_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_desc; text="Description:"; ctl_type="editbox"; tooltip="Brief description of ledger"; }
-	    f_a_ledger_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_comment; text="Comments:"; ctl_type="textarea"; tooltip="Comments regarding the ledger"; }
+	    f_a_ledger_number "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_number; text="i18n:Ledger Number:"; ctl_type="editbox"; tooltip="i18n:This is the ledger number, which represents the entirety of the accounting data for an organization."; }
+	    f_a_is_posting "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="i18n:Is Posting:"; ctl_type="checkbox"; tooltip="i18n:Is the ledger active and able to have transactions posted to it?"; }
+	    f_a_ledger_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_desc; text="i18n:Description:"; ctl_type="editbox"; tooltip="i18n:Brief description of ledger"; }
+	    f_a_ledger_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_comment; text="i18n:Comments:"; ctl_type="textarea"; tooltip="i18n:Comments regarding the ledger"; }
 	    }
 	ledger_vbox_sys "widget/vbox"
 	    {
 	    x=490;y=32;width=246;cellsize=20;spacing=5;
 
-	    f_a_next_batch_number "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_next_batch_number; text="Next Batch #:"; ctl_type="editbox"; tooltip="The next batch number to be used in creating GL transactions."; }
+	    f_a_next_batch_number "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_next_batch_number; text="i18n:Next Batch #:"; ctl_type="editbox"; tooltip="i18n:The next batch number to be used in creating GL transactions."; }
 	    //sp0 "widget/autolayoutspacer" { height=5; }
 	    //s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="Date Created:"; ctl_type="datetime"; type="create"; tooltip="The date the record was created."; }
 	    //s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="Created By:"; ctl_type="editbox"; type="create"; tooltip="The user who created the ledger" ; }

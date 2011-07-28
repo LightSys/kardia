@@ -13,7 +13,7 @@ $Version=2$
 receipt_report "system/report"
 {
 	// Receipt Report High-Level Attributes
-	title			=	"Batch of Receipts";
+	title = "i18n:Batch of Receipts";
 	document_format	=	"application/pdf";
     resolution		=	 100;
 	marginleft		=	.01;

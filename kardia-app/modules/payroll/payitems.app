@@ -1,7 +1,7 @@
 $Version=2$
 payitems "widget/page"
     {
-    title = "Payroll Line Items - Kardia";
+    title = "i18n:Payroll Line Items - Kardia";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

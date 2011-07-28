@@ -19,7 +19,7 @@ batch_list_window "widget/component-decl"
 
     batchlistwin "widget/childwindow"
 	{
-	title = "Cash Disbursement Batches";
+	title = "i18n:Cash Disbursement Batches";
 	width=580; height=550;
 	x=10; y=25;
 	visible = false;

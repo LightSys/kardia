@@ -43,7 +43,7 @@ batch_post "widget/component-decl"
 	    font_size=13;
 	    align=center;
 	    style=bold;
-	    text="Post Batch Tasks:";
+	    text="i18n:Post Batch Tasks:";
 	    }
 
 	tasklist_rpt "widget/repeat"
@@ -77,13 +77,13 @@ batch_post "widget/component-decl"
 
 	task_bal "widget/tabpage"
 	    {
-	    ttl_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step One:"; style=bold; }
-	    desc_lbl "widget/label" { x=8;y=28;width=588;height=80; text="We need to generate the inter-fund (acct 1900) asset entries for this batch, so that the batch will leave all self-balancing funds in a balancing state.  Only skip this step if you have already entered the correct acct 1900 entries.  This step will remove any existing acct #1900 entries from the batch."; }
+	    ttl_lbl "widget/label" { x=8;y=8;width=100;height=20; text="i18n:Step One:"; style=bold; }
+	    desc_lbl "widget/label" { x=8;y=28;width=588;height=80; text="i18n:We need to generate the inter-fund (acct 1900) asset entries for this batch, so that the batch will leave all self-balancing funds in a balancing state.  Only skip this step if you have already entered the correct acct 1900 entries.  This step will remove any existing acct #1900 entries from the batch."; }
 
 	    gen_btn "widget/textbutton"
 		{
 		x=222;y=140;width=160;
-		text="Generate Entries";
+		text="i18n:Generate Entries";
 		next_qy "widget/connector" { event=Click; target=gen_osrc1; action=QueryParam; }
 		}
 
@@ -136,21 +136,21 @@ batch_post "widget/component-decl"
 		    rowheight = 18;
 		    mode=dynamicrow;
 
-		    t_jnl "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=40; }
-		    t_trx "widget/table-column" { title="Trx"; fieldname="a_transaction_number"; width=40; }
-		    t_cc "widget/table-column" { title="CostCtr"; fieldname="a_cost_center"; width=80; }
-		    t_acct "widget/table-column" { title="Acct"; fieldname="a_account_code"; width=80; }
-		    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=100; align=right; }
-		    t_cmt "widget/table-column" { title="Comments"; fieldname="a_comment"; width=300; }
+		    t_jnl "widget/table-column" { title="i18n:Jnl"; fieldname="a_journal_number"; width=40; }
+		    t_trx "widget/table-column" { title="i18n:Trx"; fieldname="a_transaction_number"; width=40; }
+		    t_cc "widget/table-column" { title="i18n:CostCtr"; fieldname="a_cost_center"; width=80; }
+		    t_acct "widget/table-column" { title="i18n:Acct"; fieldname="a_account_code"; width=80; }
+		    t_amt "widget/table-column" { title="i18n:Amount"; fieldname="a_amount"; width=100; align=right; }
+		    t_cmt "widget/table-column" { title="i18n:Comments"; fieldname="a_comment"; width=300; }
 		    }
 		}
 
 	    sep "widget/pane" { x=8; y=480; height=2; width=588; style=lowered; }
-	    btn_back "widget/textbutton" { x=388; y=490; width=100; text="<< Back"; enabled=runclient(0); }
+	    btn_back "widget/textbutton" { x=388; y=490; width=100; text="i18n:<< Back"; enabled=runclient(0); }
 	    btn_next "widget/textbutton" 
 		{
 		x=496; y=490; width=100;
-		text="Next >>";
+		text="i18n:Next >>";
 
 		next_cn "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=2; }
 		}
@@ -158,8 +158,8 @@ batch_post "widget/component-decl"
 	
 	task_vfyjnl "widget/tabpage"
 	    {
-	    ttl2_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Two:"; style=bold; }
-	    desc2_lbl "widget/label" { x=8;y=28;width=588;height=80; text="Next, we will double-check the journal balances within the batch.  All journals should sum to zero.  An (incomplete) list of cost centers affected by the journal are listed with each journal."; }
+	    ttl2_lbl "widget/label" { x=8;y=8;width=100;height=20; text="i18n:Step Two:"; style=bold; }
+	    desc2_lbl "widget/label" { x=8;y=28;width=588;height=80; text="i18n:Next, we will double-check the journal balances within the batch.  All journals should sum to zero.  An (incomplete) list of cost centers affected by the journal are listed with each journal."; }
 
 	    jnl_bal_osrc "widget/osrc"
 		{
@@ -176,9 +176,9 @@ batch_post "widget/component-decl"
 		    rowheight = 18;
 		    mode=dynamicrow;
 
-		    t2_jnl "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=40; }
-		    t2_cc "widget/table-column" { title="CostCtrs"; fieldname="ccs"; width=440; }
-		    t2_bal "widget/table-column" { title="Balance"; fieldname="bal"; width=100; align=right; }
+		    t2_jnl "widget/table-column" { title="i18n:Jnl"; fieldname="a_journal_number"; width=40; }
+		    t2_cc "widget/table-column" { title="i18n:CostCtrs"; fieldname="ccs"; width=440; }
+		    t2_bal "widget/table-column" { title="i18n:Balance"; fieldname="bal"; width=100; align=right; }
 		    }
 		}
 
@@ -186,14 +186,14 @@ batch_post "widget/component-decl"
 	    btn2_back "widget/textbutton" 
 		{
 		x=388; y=490; width=100;
-		text="<< Back";
+		text="i18n:<< Back";
 
 		back_cn2 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=1; }
 		}
 	    btn2_next "widget/textbutton" 
 		{
 		x=496; y=490; width=100;
-		text="Next >>";
+		text="i18n:Next >>";
 
 		next_cn2 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=3; }
 		}
@@ -201,8 +201,8 @@ batch_post "widget/component-decl"
 
 	task_vfycc "widget/tabpage"
 	    {
-	    ttl3_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Three:"; style=bold; }
-	    desc3_lbl "widget/label" { x=8;y=28;width=588;height=80; text="The self-balancing funds (cost centers) also must balance, in order to be able to generate a balance sheet for each of these funds.  The per-fund totals below should sum to $0."; }
+	    ttl3_lbl "widget/label" { x=8;y=8;width=100;height=20; text="i18n:Step Three:"; style=bold; }
+	    desc3_lbl "widget/label" { x=8;y=28;width=588;height=80; text="i18n:The self-balancing funds (cost centers) also must balance, in order to be able to generate a balance sheet for each of these funds.  The per-fund totals below should sum to $0."; }
 
 	    cc_bal_osrc "widget/osrc"
 		{
@@ -219,9 +219,9 @@ batch_post "widget/component-decl"
 		    rowheight = 18;
 		    mode=dynamicrow;
 
-		    t3_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_bal_cost_center"; width=80; }
-		    t3_accts "widget/table-column" { title="Accounts"; fieldname="accts"; width=400; }
-		    t3_bal "widget/table-column" { title="Balance"; fieldname="bal"; width=100; align=right; }
+		    t3_cc "widget/table-column" { title="i18n:Cost Ctr"; fieldname="a_bal_cost_center"; width=80; }
+		    t3_accts "widget/table-column" { title="i18n:Accounts"; fieldname="accts"; width=400; }
+		    t3_bal "widget/table-column" { title="i18n:Balance"; fieldname="bal"; width=100; align=right; }
 		    }
 		}
 
@@ -229,14 +229,14 @@ batch_post "widget/component-decl"
 	    btn3_back "widget/textbutton" 
 		{
 		x=388; y=490; width=100;
-		text="<< Back";
+		text="i18n:<< Back";
 
 		back_cn3 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=2; }
 		}
 	    btn3_next "widget/textbutton" 
 		{
 		x=496; y=490; width=100;
-		text="Next >>";
+		text="i18n:Next >>";
 
 		next_cn3 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=4; }
 		}
@@ -244,8 +244,8 @@ batch_post "widget/component-decl"
 	
 	task_vfy1900 "widget/tabpage"
 	    {
-	    ttl4_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Four:"; style=bold; }
-	    desc4_lbl "widget/label" { x=8;y=28;width=588;height=80; text="The grand total for GL account 1900 for the batch should sum to $0, in order to guarantee integrity."; }
+	    ttl4_lbl "widget/label" { x=8;y=8;width=100;height=20; text="i18n:Step Four:"; style=bold; }
+	    desc4_lbl "widget/label" { x=8;y=28;width=588;height=80; text="i18n:The grand total for GL account 1900 for the batch should sum to $0, in order to guarantee integrity."; }
 
 	    n_bal_osrc "widget/osrc"
 		{
@@ -262,10 +262,10 @@ batch_post "widget/component-decl"
 		    rowheight = 18;
 		    mode=dynamicrow;
 
-		    t4_acct "widget/table-column" { title="Acct"; fieldname="acct"; width=60; }
-		    t4_deb "widget/table-column" { title="Debits"; fieldname="deb"; width=90; align=right; }
-		    t4_cred "widget/table-column" { title="Credits"; fieldname="cred"; width=90; align=right; }
-		    t4_ttl "widget/table-column" { title="Balance"; fieldname="ttl"; width=90; align=right; }
+		    t4_acct "widget/table-column" { title="i18n:Acct"; fieldname="acct"; width=60; }
+		    t4_deb "widget/table-column" { title="i18n:Debits"; fieldname="deb"; width=90; align=right; }
+		    t4_cred "widget/table-column" { title="i18n:Credits"; fieldname="cred"; width=90; align=right; }
+		    t4_ttl "widget/table-column" { title="i18n:Balance"; fieldname="ttl"; width=90; align=right; }
 		    }
 		}
 
@@ -273,14 +273,14 @@ batch_post "widget/component-decl"
 	    btn4_back "widget/textbutton" 
 		{
 		x=388; y=490; width=100;
-		text="<< Back";
+		text="i18n:<< Back";
 
 		back_cn4 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=3; }
 		}
 	    btn4_next "widget/textbutton" 
 		{
 		x=496; y=490; width=100;
-		text="Next >>";
+		text="i18n:Next >>";
 
 		next_cn4 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=5; }
 		}
@@ -288,13 +288,13 @@ batch_post "widget/component-decl"
 	
 	task_post "widget/tabpage"
 	    {
-	    ttl5_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Five:"; style=bold; }
-	    desc5_lbl "widget/label" { x=8;y=28;width=588;height=80; text="Now that everything checks out, we can actually post the batch.  Click the button below to post all transactions in this batch to the GL so that they show up in the Trial Balance and Fund Balance reports."; }
+	    ttl5_lbl "widget/label" { x=8;y=8;width=100;height=20; text="i18n:Step Five:"; style=bold; }
+	    desc5_lbl "widget/label" { x=8;y=28;width=588;height=80; text="i18n:Now that everything checks out, we can actually post the batch.  Click the button below to post all transactions in this batch to the GL so that they show up in the Trial Balance and Fund Balance reports."; }
 
 	    post_btn "widget/textbutton"
 		{
 		x=222;y=140;width=160;
-		text="Post Batch!";
+		text="i18n:Post Batch!";
 		enabled = runclient(not (:stat_osrc:txt == 'Posted'));
 		do_post_qy "widget/connector" { event=Click; target=post_osrc; action=QueryParam; }
 		}
@@ -331,14 +331,14 @@ batch_post "widget/component-decl"
 	    btn5_back "widget/textbutton" 
 		{
 		x=388; y=490; width=100;
-		text="<< Back";
+		text="i18n:<< Back";
 
 		back_cn5 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=4; }
 		}
 	    btn5_next "widget/textbutton" 
 		{
 		x=496; y=490; width=100;
-		text="Done";
+		text="i18n:Done";
 
 		done_cn "widget/connector" { event=Click; target=batch_post; action=Done; }
 		}

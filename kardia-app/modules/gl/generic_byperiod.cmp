@@ -53,7 +53,7 @@ generic_byperiod "widget/component-decl"
 		{
 		width=120;
 		y=1;
-		text = "Select Period:";
+		text = "i18n:Select Period:";
 		align=right;
 		style=bold;
 		}
@@ -77,7 +77,7 @@ generic_byperiod "widget/component-decl"
 		pointimage="/sys/images/ico16ab.gif";
 		clickimage="/sys/images/ico16ac.gif";
 		disabledimage="/sys/images/ico16ad.gif";
-		tooltip = runserver("First Period");
+		tooltip = runserver("i18n:First Period");
 		enabled = runclient(not(:period_form:recid == :period_form:lastrecid));
 		cnLast "widget/connector" { event="Click"; target=period_form; action="Last"; }
 		}
@@ -90,7 +90,7 @@ generic_byperiod "widget/component-decl"
 		pointimage="/sys/images/ico16bb.gif";
 		clickimage="/sys/images/ico16bc.gif";
 		disabledimage="/sys/images/ico16bd.gif";
-		tooltip = runserver("Previous Period");
+		tooltip = runserver("i18n:Previous Period");
 		repeat = yes;
 		enabled = runclient(not(:period_form:recid == :period_form:lastrecid));
 		cnNext "widget/connector" { event="MouseDown"; target=period_form; action="Next"; }
@@ -104,7 +104,7 @@ generic_byperiod "widget/component-decl"
 		pointimage="/sys/images/ico16cb.gif";
 		clickimage="/sys/images/ico16cc.gif";
 		disabledimage="/sys/images/ico16cd.gif";
-		tooltip = runserver("Next Period");
+		tooltip = runserver("i18n:Next Period");
 		repeat = yes;
 		enabled = runclient(:period_form:recid > 1);
 		cnBack "widget/connector" { event="MouseDown"; target=period_form; action="Prev"; }
@@ -118,7 +118,7 @@ generic_byperiod "widget/component-decl"
 		pointimage="/sys/images/ico16db.gif";
 		clickimage="/sys/images/ico16dc.gif";
 		disabledimage="/sys/images/ico16dd.gif";
-		tooltip = runserver("Last Period");
+		tooltip = runserver("i18n:Last Period");
 		enabled = runclient(:period_form:recid > 1);
 		cnFirst "widget/connector" { event="Click"; target=period_form; action="First"; }
 		}

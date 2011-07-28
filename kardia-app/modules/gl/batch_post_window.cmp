@@ -19,7 +19,7 @@ batch_post_window "widget/component-decl"
     bpwin "widget/childwindow"
 	{
 	titlebar = yes;
-	title = "Guide: Post Batch";
+	title = "i18n:Guide: Post Batch";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;

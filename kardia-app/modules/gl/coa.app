@@ -1,7 +1,7 @@
 $Version=2$
 coa "widget/page"
     {
-    title = "Chart of Accounts";
+    title = "i18n:Chart of Accounts";
     width=800; height=600;
 
     widget_template = "/apps/kardia/tpl/kardia-system.tpl";

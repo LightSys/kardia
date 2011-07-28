@@ -1,7 +1,7 @@
 $Version=2$
 pay_form_app "widget/page"
     {
-    title = "Payroll Form";
+    title = "i18n:Payroll Form";
 
     width=800; height=630;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

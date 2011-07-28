@@ -38,7 +38,7 @@ pay_form "widget/component-decl"
 	    ob_label "widget/label"
 		{
 		style=bold; width=160; align=right;
-		text = "Opening Balance:";
+		text = "i18n:Opening Balance:";
 		}
 	    
 	    ob_osrc "widget/osrc"
@@ -199,7 +199,7 @@ pay_form "widget/component-decl"
 	    oth_label "widget/label"
 		{
 		style=bold; width=160; align=right;
-		text = "Other Payees:";
+		text = "i18n:Other Payees:";
 		}
 
 	    oth_value "widget/label"
@@ -258,7 +258,7 @@ pay_form "widget/component-decl"
 	    ttl_label "widget/label"
 		{
 		style=bold; width=160; align=right;
-		text = "Ending Balance:";
+		text = "i18n:Ending Balance:";
 		}
 
 	    ttl_value "widget/label"
@@ -270,7 +270,7 @@ pay_form "widget/component-decl"
 	    ttl_expl "widget/label"
 		{
 		width=480;
-		text = "OPENBAL + {GL DON} - {GL EXP} - ETAX - XFERS - BENEFITS - GROSS";
+		text = "i18n:OPENBAL + {GL DON} - {GL EXP} - ETAX - XFERS - BENEFITS - GROSS";
 		}
 	    }
 	}

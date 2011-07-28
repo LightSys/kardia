@@ -67,7 +67,7 @@ tax_table_cmp "widget/component-decl"
 
 	tt_page "widget/tabpage"
 	    {
-	    title = "Tax Table";
+	    title = "i18n:Tax Table";
 
 	    tt_osrc "widget/osrc"
 		{
@@ -110,15 +110,15 @@ tax_table_cmp "widget/component-decl"
 			rowheight = 18;
 			mode=dynamicrow;
 
-			t_daterange "widget/table-column" { title="Valid From"; fieldname="txtdate"; width=70; }
-			t_interval "widget/table-column" { title="Period"; fieldname="ivtxt"; width=80; }
-			t_status "widget/table-column" { title="Status"; fieldname="fstxt"; width=140; }
-			t_min "widget/table-column" { title="At Least"; fieldname="a_minimum_salary"; width=70; align=right; }
-			t_max "widget/table-column" { title="Less Than"; fieldname="a_maximum_salary"; width=90; align=right; }
+			t_daterange "widget/table-column" { title="i18n:Valid From"; fieldname="txtdate"; width=70; }
+			t_interval "widget/table-column" { title="i18n:Period"; fieldname="ivtxt"; width=80; }
+			t_status "widget/table-column" { title="i18n:Status"; fieldname="fstxt"; width=140; }
+			t_min "widget/table-column" { title="i18n:At Least"; fieldname="a_minimum_salary"; width=70; align=right; }
+			t_max "widget/table-column" { title="i18n:Less Than"; fieldname="a_maximum_salary"; width=90; align=right; }
 			//t_txt "widget/table-column" { title="Description"; fieldname="txt"; width=300; }
-			t_plus "widget/table-column" { title="Tax"; fieldname="a_add_to_tax"; width=70; align=right; }
-			t_pct "widget/table-column" { title="+ Percent"; fieldname="pct"; width=70; align=right; }
-			t_exceed "widget/table-column" { title="Of Amt Exceeding"; fieldname="a_subtract_salary"; width=110; align=right; }
+			t_plus "widget/table-column" { title="i18n:Tax"; fieldname="a_add_to_tax"; width=70; align=right; }
+			t_pct "widget/table-column" { title="i18n:+ Percent"; fieldname="pct"; width=70; align=right; }
+			t_exceed "widget/table-column" { title="i18n:Of Amt Exceeding"; fieldname="a_subtract_salary"; width=110; align=right; }
 			}
 		    }
 
@@ -143,11 +143,11 @@ tax_table_cmp "widget/component-decl"
 			spacing=8;
 			cellsize=20;
 
-			f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="Valid From:"; ctl_type="datetime"; tooltip="Date that this tax table entry begins to be valid"; date_only=1; default_time="00:00:00"; label_width=100; }
-			f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid Thru:"; ctl_type="datetime"; tooltip="Last date that this tax table entry is valid"; date_only=1; default_time="23:59:59"; label_width=100; }
-			f_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="Pay Period:"; ctl_type="dropdown"; tooltip="Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
+			f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="i18n:Valid From:"; ctl_type="datetime"; tooltip="i18n:Date that this tax table entry begins to be valid"; date_only=1; default_time="00:00:00"; label_width=100; }
+			f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="i18n:Valid Thru:"; ctl_type="datetime"; tooltip="i18n:Last date that this tax table entry is valid"; date_only=1; default_time="23:59:59"; label_width=100; }
+			f_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="i18n:Pay Period:"; ctl_type="dropdown"; tooltip="i18n:Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
 			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
-			f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; }
+			f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="i18n:Filing Stat.:"; ctl_type="dropdown"; tooltip="i18n:Filing Status"; label_width=100; }
 			}
 
 		    tt_vbox2 "widget/vbox"
@@ -155,23 +155,23 @@ tax_table_cmp "widget/component-decl"
 			x=308; y=308; width=434; height=118;
 			spacing=8;
 			cellsize=20;
-			f_lbl1 "widget/label" { align=left; style=bold; text="When Salary Is..."; }
+			f_lbl1 "widget/label" { align=left; style=bold; text="i18n:When Salary Is..."; }
 
 			tt_hbox1 "widget/hbox"
 			    {
 			    spacing=16;
-			    f_min "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=a_minimum_salary; text="At Least:"; ctl_type="editbox"; tooltip="Minimum salary for this tax table entry"; label_width=100; }
-			    f_max "widget/component" { width=218; path="/sys/cmp/smart_field.cmp"; field=a_maximum_salary; text="But Less Than:"; ctl_type="editbox"; tooltip="Salary must be less than this amount"; label_width=100; }
+			    f_min "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=a_minimum_salary; text="i18n:At Least:"; ctl_type="editbox"; tooltip="i18n:Minimum salary for this tax table entry"; label_width=100; }
+			    f_max "widget/component" { width=218; path="/sys/cmp/smart_field.cmp"; field=a_maximum_salary; text="i18n:But Less Than:"; ctl_type="editbox"; tooltip="i18n:Salary must be less than this amount"; label_width=100; }
 			    }
 
-			f_lbl2 "widget/label" { align=left; style=bold; text="Tax Is Computed As..."; }
+			f_lbl2 "widget/label" { align=left; style=bold; text="i18n:Tax Is Computed As..."; }
 
 			tt_hbox2 "widget/hbox"
 			    {
 			    spacing=0;
-			    f_add "widget/component" { width=110; path="/sys/cmp/smart_field.cmp"; field=a_add_to_tax; text="Tax:"; ctl_type="editbox"; tooltip="This much tax is added after the percentage computation"; label_width=40; empty_desc="Dollars"; }
-			    f_pct "widget/component" { width=100; path="/sys/cmp/smart_field.cmp"; field=a_percent; text="Plus:"; ctl_type="editbox"; tooltip="Enter tax rate as a decimal; e.g., 15% is 0.15"; label_width=50; empty_desc="Rate"; }
-			    f_sub "widget/component" { width=224; path="/sys/cmp/smart_field.cmp"; field=a_subtract_salary; text="Of Amt Exceeding:"; ctl_type="editbox"; tooltip="Tax is computed based on the amount of salary in excess of this number"; label_width=140; empty_desc="Dollars"; }
+			    f_add "widget/component" { width=110; path="/sys/cmp/smart_field.cmp"; field=a_add_to_tax; text="i18n:Tax:"; ctl_type="editbox"; tooltip="i18n:This much tax is added after the percentage computation"; label_width=40; empty_desc="i18n:Dollars"; }
+			    f_pct "widget/component" { width=100; path="/sys/cmp/smart_field.cmp"; field=a_percent; text="i18n:Plus:"; ctl_type="editbox"; tooltip="i18n:Enter tax rate as a decimal; e.g., 15% is 0.15"; label_width=50; empty_desc="i18n:Rate"; }
+			    f_sub "widget/component" { width=224; path="/sys/cmp/smart_field.cmp"; field=a_subtract_salary; text="i18n:Of Amt Exceeding:"; ctl_type="editbox"; tooltip="i18n:Tax is computed based on the amount of salary in excess of this number"; label_width=140; empty_desc="i18n:Dollars"; }
 			    }
 			}
 
@@ -186,7 +186,7 @@ tax_table_cmp "widget/component-decl"
 
 	ta_page "widget/tabpage"
 	    {
-	    title = "Allowances Table";
+	    title = "i18n:Allowances Table";
 	    ta_osrc "widget/osrc"
 		{
 		sql = "select :a_ledger_number, :a_payroll_item_type, :a_start_date, :a_end_date, :a_payroll_interval, ivtxt = :iv:text, :a_filing_status, fstxt = :fs:a_desc, :a_flat_deduction_amt, :a_allowance, :a_dependent_allowance, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), pct = '' + round(100.0 * :a_percent, 2) + '%', :a_subtract_salary, :a_add_to_tax  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_tax_allowance_table/rows tt, /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv, /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs  WHERE :tt:a_payroll_interval = :iv:tag and :tt:a_filing_status = :fs:a_filing_status and :tt:a_payroll_item_type = :fs:a_payroll_item_type_code";
@@ -226,12 +226,12 @@ tax_table_cmp "widget/component-decl"
 			rowheight = 18;
 			mode=dynamicrow;
 
-			t_daterange2 "widget/table-column" { title="Valid From"; fieldname="txtdate"; width=70; }
-			t_interval2 "widget/table-column" { title="Period"; fieldname="ivtxt"; width=80; }
-			t_status2 "widget/table-column" { title="Status"; fieldname="fstxt"; width=140; }
-			t_all "widget/table-column" { title="Allowance"; fieldname="a_allowance"; width=100; align=right; }
-			t_flat "widget/table-column" { title="Flat Ded."; fieldname="a_flat_deduction_amt"; width=100; align=right; }
-			t_depall "widget/table-column" { title="Dep. Allow."; fieldname="a_dependent_allowance"; width=100; align=right; }
+			t_daterange2 "widget/table-column" { title="i18n:Valid From"; fieldname="txtdate"; width=70; }
+			t_interval2 "widget/table-column" { title="i18n:Period"; fieldname="ivtxt"; width=80; }
+			t_status2 "widget/table-column" { title="i18n:Status"; fieldname="fstxt"; width=140; }
+			t_all "widget/table-column" { title="i18n:Allowance"; fieldname="a_allowance"; width=100; align=right; }
+			t_flat "widget/table-column" { title="i18n:Flat Ded."; fieldname="a_flat_deduction_amt"; width=100; align=right; }
+			t_depall "widget/table-column" { title="i18n:Dep. Allow."; fieldname="a_dependent_allowance"; width=100; align=right; }
 			}
 		    }
 
@@ -251,11 +251,11 @@ tax_table_cmp "widget/component-decl"
 			spacing=8;
 			cellsize=20;
 
-			f_from2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="Valid From:"; ctl_type="datetime"; tooltip="Date that this tax table entry begins to be valid"; label_width=100; }
-			f_to2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid Thru:"; ctl_type="datetime"; tooltip="Last date that this tax table entry is valid"; label_width=100; }
-			f_per2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="Pay Period:"; ctl_type="dropdown"; tooltip="Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
+			f_from2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="i18n:Valid From:"; ctl_type="datetime"; tooltip="i18n:Date that this tax table entry begins to be valid"; label_width=100; }
+			f_to2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="i18n:Valid Thru:"; ctl_type="datetime"; tooltip="i18n:Last date that this tax table entry is valid"; label_width=100; }
+			f_per2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="i18n:Pay Period:"; ctl_type="dropdown"; tooltip="i18n:Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
 			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
-			f_stat2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; }
+			f_stat2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="i18n:Filing Stat.:"; ctl_type="dropdown"; tooltip="i18n:Filing Status"; label_width=100; }
 			}
 
 		    ta_vbox2 "widget/vbox"
@@ -263,10 +263,10 @@ tax_table_cmp "widget/component-decl"
 			x=402; y=308; width=250; height=118;
 			spacing=8;
 			cellsize=20;
-			f_lbl3 "widget/label" { align=center; style=bold; text="Deductions:"; }
-			f_all "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_allowance; text="Personal:"; ctl_type="editbox"; tooltip="Personal allowance, multiplied by exemptions"; label_width=100; }
-			f_flat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_flat_deduction_amt; text="Flat:"; ctl_type="editbox"; tooltip="The standard allowance amount, regardless of exemptions"; label_width=100; }
-			f_depall "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_dependent_allowance; text="Dependent:"; ctl_type="editbox"; tooltip="Multiplied by exemptions for dependents"; label_width=100; }
+			f_lbl3 "widget/label" { align=center; style=bold; text="i18n:Deductions:"; }
+			f_all "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_allowance; text="i18n:Personal:"; ctl_type="editbox"; tooltip="i18n:Personal allowance, multiplied by exemptions"; label_width=100; }
+			f_flat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_flat_deduction_amt; text="i18n:Flat:"; ctl_type="editbox"; tooltip="i18n:The standard allowance amount, regardless of exemptions"; label_width=100; }
+			f_depall "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_dependent_allowance; text="i18n:Dependent:"; ctl_type="editbox"; tooltip="i18n:Multiplied by exemptions for dependents"; label_width=100; }
 			}
 
 		    ta_rec_info "widget/component"
@@ -280,7 +280,7 @@ tax_table_cmp "widget/component-decl"
 
 	fs_page "widget/tabpage"
 	    {
-	    title = "Filing Statuses";
+	    title = "i18n:Filing Statuses";
 	    fs_osrc "widget/osrc"
 		{
 		sql = "select :a_ledger_number, :a_payroll_item_type_code, :a_filing_status, :a_desc, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by  FROM /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs";
@@ -320,8 +320,8 @@ tax_table_cmp "widget/component-decl"
 			rowheight = 18;
 			mode=dynamicrow;
 
-			t_status3 "widget/table-column" { title="Status"; fieldname="a_filing_status"; width=70; }
-			t_desc3 "widget/table-column" { title="Description"; fieldname="a_desc"; width=600; }
+			t_status3 "widget/table-column" { title="i18n:Status"; fieldname="a_filing_status"; width=70; }
+			t_desc3 "widget/table-column" { title="i18n:Description"; fieldname="a_desc"; width=600; }
 			}
 		    }
 
@@ -357,8 +357,8 @@ tax_table_cmp "widget/component-decl"
 			spacing=8;
 			cellsize=20;
 
-			f_fs_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Status Code:"; ctl_type="editbox"; tooltip="A one-letter code for the filing status"; label_width=100; }
-			f_fs_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_desc; text="Description:"; ctl_type="editbox"; tooltip="A short description of the filing status"; label_width=100; }
+			f_fs_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="i18n:Status Code:"; ctl_type="editbox"; tooltip="i18n:A one-letter code for the filing status"; label_width=100; }
+			f_fs_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_desc; text="i18n:Description:"; ctl_type="editbox"; tooltip="i18n:A short description of the filing status"; label_width=100; }
 			}
 
 		    fs_rec_info "widget/component"

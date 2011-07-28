@@ -1,7 +1,7 @@
 $Version=2$
 payees "widget/page"
     {
-    title = "Payees (for Payroll)";
+    title = "i18n:Payees (for Payroll)";
     width=778; height=525;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";

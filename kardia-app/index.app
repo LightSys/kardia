@@ -7,7 +7,8 @@ index "widget/page"
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
     background="/apps/kardia/images/bg/light_bgnd3.jpg";
-
+    locales = "locales";
+	
     pnHeader "widget/pane"
 	{
 	x=0;y=0;width=800;height=45;
@@ -21,7 +22,7 @@ index "widget/page"
 	    align=right;
 	    //style=bold;
 	    font_size=11;
-	    text = runserver( "Logged In As: " + (select :u:description from /apps/kardia/data/Users.uxu u where :u:name = user_name() ) );
+	    text = runserver( "i18n:Logged In As: " + (select :u:description from /apps/kardia/data/Users.uxu u where :u:name = user_name() ) );
 	    }
 	lblSite "widget/label"
 	    {
@@ -29,7 +30,7 @@ index "widget/page"
 	    align=right;
 	    //style=bold;
 	    font_size=11;
-	    text = runserver( "Site: " + /apps/kardia/data/Site.struct:site_description );
+	    text = runserver( "i18n:Site: " + /apps/kardia/data/Site.struct:site_description );
 	    }
 	}
 

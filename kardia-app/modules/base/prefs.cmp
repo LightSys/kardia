@@ -23,7 +23,7 @@ prefs "widget/component-decl"
 		font_size = 13;
 		widget_class="label";
 		align=left;
-		text = "Appearance";
+		text = "i18n:Appearance";
 		}
 	    }
 
@@ -32,7 +32,7 @@ prefs "widget/component-decl"
 	    autoquery=onload;
 	    replicasize=2;
 	    readahead=1;
-	    sql = runserver("select :font_size, :font_name, :show_diagnostics from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'page'");
+	    sql = runserver("select :font_size, :font_name, :show_diagnostics, :locale from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'page'");
 
 	    pg_form "widget/form"
 		{
@@ -42,9 +42,10 @@ prefs "widget/component-decl"
 		allow_query = no;
 		allow_delete = no;
 
-		f_fontname "widget/component" { x=30; width=350; text="Font:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=font_name; sql="select :font, :font from /apps/kardia/data/Fonts.csv/rows"; label_width=140; }
-		f_fontsize "widget/component" { x=30; width=350; text="Text Size:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=font_size; sql="select :descrip, :fontsize from /apps/kardia/data/FontSizes.csv/rows"; label_width=140; }
-		f_showdiag "widget/component" { x=30; width=350; text="Show Diagnostics:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=show_diagnostics; label_width=140; }
+		f_fontname "widget/component" { x=30; width=350; text="i18n:Font:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=font_name; sql="select :font, :font from /apps/kardia/data/Fonts.csv/rows"; label_width=140; }
+		f_fontsize "widget/component" { x=30; width=350; text="i18n:Text Size:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=font_size; sql="select :descrip, :fontsize from /apps/kardia/data/FontSizes.csv/rows"; label_width=140; }
+		f_locale "widget/component" { x=30; width=350; text="i18n:Locale:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=locale; sql="select :name, :name from /apps/kardia/locales"; label_width=140; }
+		f_showdiag "widget/component" { x=30; width=350; text="i18n:Show Diagnostics:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=show_diagnostics; label_width=140; }
 		}
 	    }
 
@@ -63,7 +64,8 @@ prefs "widget/component-decl"
 		allow_query = no;
 		allow_delete = no;
 
-		f_rowheight "widget/component" { x=30; width=350; text="Table Row Height:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=rowheight; sql="select :descrip, :height from /apps/kardia/data/TableRowHeights.csv/rows"; label_width=140; }
+		f_rowheight "widget/component" { x=30; width=350; text="i18n:Table Row Height:Table Row Height:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; 
+field=rowheight; sql="select :descrip, :height from /apps/kardia/data/TableRowHeights.csv/rows"; label_width=140; }
 		}
 	    }
 
@@ -80,7 +82,7 @@ prefs "widget/component-decl"
 		font_size = 13;
 		widget_class="label";
 		align=left;
-		text = "Data Entry";
+		text = "i18n:Data Entry";
 		}
 	    }
 
@@ -99,9 +101,9 @@ prefs "widget/component-decl"
 		allow_query = no;
 		allow_delete = no;
 
-		f_entermode "widget/component" { x=30; width=350; text="[ENTER] Key:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=enter_mode; sql="select :descrip, :mode from /apps/kardia/data/EnterModes.csv/rows"; label_width=140; }
-		f_confirmdel "widget/component" { x=30; width=350; text="Confirm Deletes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=confirm_delete; label_width=140; }
-		f_allowmod "widget/component" { x=30; width=350; text="Allow Changes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=allow_modify; label_width=140; }
+		f_entermode "widget/component" { x=30; width=350; text="i18n:[ENTER] Key:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=enter_mode; sql="select :descrip, :mode from /apps/kardia/data/EnterModes.csv/rows"; label_width=140; }
+		f_confirmdel "widget/component" { x=30; width=350; text="i18n:Confirm Deletes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=confirm_delete; label_width=140; }
+		f_allowmod "widget/component" { x=30; width=350; text="i18n:Allow Changes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=allow_modify; label_width=140; }
 		}
 	    }
 	}
@@ -111,7 +113,7 @@ prefs "widget/component-decl"
 	x=8;y=408;width=482;height=59;
 	spacing=8;
 
-	restart_lbl "widget/label" { height=14; font_size=10; text="These settings will take effect the next time you log in."; }
+	restart_lbl "widget/label" { height=14; font_size=10; text="i18n:These settings will take effect the next time you log in."; }
 	sep3 "widget/pane" { height=2; style=lowered; }
 	prefctl_hbox "widget/hbox"
 	    {
@@ -122,7 +124,7 @@ prefs "widget/component-decl"
 	    apply_btn "widget/textbutton"
 		{
 		enabled = runclient(:pg_form:is_savable or :tb_form:is_savable or :fm_form:is_savable);
-		text = "Save";
+		text = "i18n:Save";
 		apply_cn1 "widget/connector" { event=Click; target=pg_form; action=Save; }
 		apply_cn2 "widget/connector" { event=Click; target=tb_form; action=Save; }
 		apply_cn3 "widget/connector" { event=Click; target=fm_form; action=Save; }
@@ -131,7 +133,7 @@ prefs "widget/component-decl"
 	    reset_btn "widget/textbutton"
 		{
 		enabled = runclient(:pg_form:is_savable or :tb_form:is_savable or :fm_form:is_savable);
-		text = "Reset";
+		text = "i18n:Reset";
 		reset_cn1 "widget/connector" { event=Click; target=pg_form; action=Discard; }
 		reset_cn2 "widget/connector" { event=Click; target=tb_form; action=Discard; }
 		reset_cn3 "widget/connector" { event=Click; target=fm_form; action=Discard; }
@@ -139,7 +141,7 @@ prefs "widget/component-decl"
 
 	    close_btn "widget/textbutton"
 		{
-		text = "Close";
+		text = "i18n:Close";
 
 		close_cn "widget/connector" { target=page; event=Click; action=Close; }
 		}

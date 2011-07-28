@@ -1,7 +1,7 @@
 $Version=2$
 partner_search "widget/page"
     {
-    title = "Partner Search";
+    title = "i18n:Partner Search";
 //    width=800;
 //    height=600;
     width=700; height=440;

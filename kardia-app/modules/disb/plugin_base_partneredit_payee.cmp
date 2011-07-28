@@ -1,7 +1,7 @@
 $Version=2$
 plugin_base_partneredit_payee "widget/component-decl"
     {
-    title = "Payee";
+    title = "i18n:Payee";
     width=808;
     height=338;
 
@@ -72,7 +72,7 @@ plugin_base_partneredit_payee "widget/component-decl"
 		enable_btn "widget/textbutton"
 		    {
 		    width=200; x=100;
-		    text = "Allow Payments";
+		    text = "i18n:Allow Payments";
 		    enabled=runclient((not (char_length(:payee_rec_osrc:p_partner_key) > 0)) and :payee_form:form_mode == 'NoData');
 		    enable_cn "widget/connector" { event=Click; target=payee_form; action=New; }
 		    }
@@ -95,12 +95,12 @@ plugin_base_partneredit_payee "widget/component-decl"
 			width=398; height=248;
 			spacing=4;
 
-			gl_ledger "widget/component" { height=16; label_width=130; path="/sys/cmp/smart_field.cmp"; field='a_gl_ledger_number'; ctl_type=label; text='GL Ledger:'; } 
-			acct_code "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='a_gl_account_code'; ctl_type=dropdown; text='GL Payable Acct:'; sql=runserver("select :a_account_code + ' ' + :a_acct_desc, :a_account_code from /apps/kardia/data/Kardia_DB/a_account/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_acct_type = 'L' order by :a_account_code"); } 
-			acct_with_payee "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_account_with_payee'; ctl_type=editbox; text='Account at Payee:'; empty_desc="optional"; } 
-			pref_location "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_location_id'; ctl_type=dropdown; text='Best Contact Addr:'; sql=runserver("select 1,1 where 1 = 0"); } 
-			pref_contact "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_contact_id'; ctl_type=dropdown; text='Best Contact:'; sql=runserver("select 1,1 where 1 = 0"); } 
-			allow_pmts "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_allow_payments'; ctl_type=checkbox; text='Payments Allowed?'; allow_pmts_hints "widget/hints" { default=runclient(1); style=notnull; } } 
+			gl_ledger "widget/component" { height=16; label_width=130; path="/sys/cmp/smart_field.cmp"; field='a_gl_ledger_number'; ctl_type=label; text='i18n:GL Ledger:'; } 
+			acct_code "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='a_gl_account_code'; ctl_type=dropdown; text='i18n:GL Payable Acct:'; sql=runserver("select :a_account_code + ' ' + :a_acct_desc, :a_account_code from /apps/kardia/data/Kardia_DB/a_account/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_acct_type = 'L' order by :a_account_code"); } 
+			acct_with_payee "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_account_with_payee'; ctl_type=editbox; text='i18n:Account at Payee:'; empty_desc="optional"; } 
+			pref_location "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_location_id'; ctl_type=dropdown; text='i18n:Best Contact Addr:'; sql=runserver("select 1,1 where 1 = 0"); } 
+			pref_contact "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_contact_id'; ctl_type=dropdown; text='i18n:Best Contact:'; sql=runserver("select 1,1 where 1 = 0"); } 
+			allow_pmts "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_allow_payments'; ctl_type=checkbox; text='i18n:Payments Allowed?'; allow_pmts_hints "widget/hints" { default=runclient(1); style=notnull; } } 
 
 			save_cancel_hbox "widget/hbox"
 			    {
@@ -111,14 +111,14 @@ plugin_base_partneredit_payee "widget/component-decl"
 			    save_btn "widget/textbutton"
 				{
 				width=100; height=24;
-				text = "Save";
+				text = "i18n:Save";
 				enabled = runclient(:payee_form:is_savable);
 				save_cn "widget/connector" { event=Click; target=payee_form; action=Save; }
 				}
 			    cancel_btn "widget/textbutton"
 				{
 				width=100; height=24;
-				text = "Cancel";
+				text = "i18n:Cancel";
 				enabled = runclient(:payee_form:is_savable);
 				cancel_cn "widget/connector" { event=Click; target=payee_form; action=Discard; }
 				}
@@ -137,7 +137,7 @@ plugin_base_partneredit_payee "widget/component-decl"
 		{
 		height=16;
 		style=bold;
-		text = "Disbursements History:";
+		text = "i18n:Disbursements History:";
 		}
 
 	    disbs_pane "widget/pane"
@@ -184,11 +184,11 @@ plugin_base_partneredit_payee "widget/component-decl"
 			width=390; height=316;
 			mode = dynamicrow;
 
-			t_date "widget/table-column" { title="Date"; fieldname="date"; width=80; }
-			t_ckno "widget/table-column" { title="Check#"; fieldname="a_check_number"; width=60; }
-			t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
-			t_void "widget/table-column" { title="Void?"; fieldname="a_voided"; width=40; type=check; }
-			t_comm "widget/table-column" { title="Comment"; fieldname="a_comment"; width=134; }
+			t_date "widget/table-column" { title="i18n:Date"; fieldname="date"; width=80; }
+			t_ckno "widget/table-column" { title="i18n:Check#"; fieldname="a_check_number"; width=60; }
+			t_amt "widget/table-column" { title="i18n:Amount"; fieldname="a_amount"; width=60; align=right; }
+			t_void "widget/table-column" { title="i18n:Void?"; fieldname="a_voided"; width=40; type=check; }
+			t_comm "widget/table-column" { title="i18n:Comment"; fieldname="a_comment"; width=134; }
 			}
 		    }
 		}

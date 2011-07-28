@@ -76,7 +76,7 @@ cd_batches "widget/component-decl"
 		    path="/apps/kardia/modules/gl/generic_editbatch.cmp";
 		    ledger=runserver(:this:ledger);
 		    periods_osrc = periods_osrc;
-		    title = "Disbursements";
+		    title = "i18n:Disbursements";
 		    origin = "CD";
 		    new_batch_window = new_batch_window;
 		    new_batch_form = new_batch_form;
@@ -95,13 +95,13 @@ cd_batches "widget/component-decl"
 		x=0;y=0;width=598;height=540;
 		mode=dynamicrow;
 
-		t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=60; }
-		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=180; }
-		t_dt "widget/table-column" { title="Eff. Date"; fieldname="date_txt"; width=80; }
-		t_user "widget/table-column" { title="User"; fieldname="s_created_by"; width=50; }
-		t_rcnt "widget/table-column" { title="Rec's"; fieldname="drec"; width=50; type=check; }
-		t_rpost "widget/table-column" { title="Post?"; fieldname="dpost"; width=50; type=check; }
-		t_glcnt "widget/table-column" { title="GL?"; fieldname="glrec"; width=50; type=check; }
+		t_bat "widget/table-column" { title="i18n:Batch"; fieldname="a_batch_number"; width=60; }
+		t_desc "widget/table-column" { title="i18n:Description"; fieldname="a_batch_desc"; width=180; }
+		t_dt "widget/table-column" { title="i18n:Eff. Date"; fieldname="date_txt"; width=80; }
+		t_user "widget/table-column" { title="i18n:User"; fieldname="s_created_by"; width=50; }
+		t_rcnt "widget/table-column" { title="i18n:Rec's"; fieldname="drec"; width=50; type=check; }
+		t_rpost "widget/table-column" { title="i18n:Post?"; fieldname="dpost"; width=50; type=check; }
+		t_glcnt "widget/table-column" { title="i18n:GL?"; fieldname="glrec"; width=50; type=check; }
 		}
 	    }
 	}
@@ -116,7 +116,7 @@ cd_batches "widget/component-decl"
 	    {
 	    width = 172;
 	    height = 40;
-	    text = "New Batch";
+	    text = "i18n:New Batch";
 	    enabled = runclient(:new_batch_form:is_newable and :periods_osrc:a_status == 'O');
 
 	    new_cn "widget/connector" { event=Click; target=new_batch_form; action=New; }
@@ -125,7 +125,7 @@ cd_batches "widget/component-decl"
 	    {
 	    width = 172;
 	    height = 40;
-	    text = "Edit Batch Details";
+	    text = "i18n:Edit Batch Details";
 	    enabled = runclient(:new_batch_form:is_editable and :periods_osrc:a_status == 'O');
 
 	    detail_cn "widget/connector" { event=Click; target=new_batch_form; action=Edit; }
@@ -165,12 +165,12 @@ cd_batches "widget/component-decl"
 	    }
 
 	sep_line2 "widget/pane" { height=2; fl_height=0; style=lowered; }
-	posting_lbl "widget/label" { height=15; text="Posting"; align=center; style=bold; }
+	posting_lbl "widget/label" { height=15; text="i18n:Posting"; align=center; style=bold; }
 	post "widget/textbutton"
 	    {
 	    width = 172;
 	    height = 40;
-	    text = "Post Batch To CD Journal";
+	    text = "i18n:Post Batch To CD Journal";
 	    enabled = runclient(:disb_form:is_editable and :disb_form:drec == 1 and :disb_form:glrec != 1 and :disb_form:dpost != 1);
 
 	    dopost_cn "widget/connector"
@@ -187,7 +187,7 @@ cd_batches "widget/component-decl"
 	    {
 	    width = 172;
 	    height = 40;
-	    text = "Post Batch To GL";
+	    text = "i18n:Post Batch To GL";
 	    enabled = runclient(:disb_form:is_editable and :disb_form:glrec != 1 and :disb_form:dpost == 1);
 
 	    doglpost_cn "widget/connector"
@@ -202,7 +202,7 @@ cd_batches "widget/component-decl"
 	    }
 
 	sep_line3 "widget/pane" { height=2; fl_height=0; style=lowered; }
-	reporting_lbl "widget/label" { height=15; text="Reports and Printing"; align=center; style=bold; }
+	reporting_lbl "widget/label" { height=15; text="i18n:Reports and Printing"; align=center; style=bold; }
 	disbdet "widget/textbutton"
 	    {
 	    width = 172;

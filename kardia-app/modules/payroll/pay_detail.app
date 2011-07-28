@@ -1,7 +1,7 @@
 $Version=2$
 pay_detail "widget/page"
     {
-    title = "Pay Detail Items - by Item Type";
+    title = "i18n:Pay Detail Items - by Item Type";
     width=778; height=525;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";

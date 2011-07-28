@@ -41,7 +41,7 @@ p_partner_relationship_cmp "widget/component-decl"
             }
         ConfirmWindow "widget/childwindow"
             {
-            title = "Data Was Modified!";
+            title = "i18n:Data Was Modified!";
             titlebar = yes;
             hdr_bgcolor="#c00000";
             bgcolor= "#e0e0e0";
@@ -52,7 +52,7 @@ p_partner_relationship_cmp "widget/component-decl"
             warninglabel "widget/label"
                 {
                 x=10;y=10;width=276;height=30;
-                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                text="i18n:Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
                 }
 
             _3bConfirmSave "widget/textbutton"
@@ -60,7 +60,7 @@ p_partner_relationship_cmp "widget/component-decl"
                 x=10;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "Save";
+                text = "i18n:Save";
                 fgcolor1=black;fgcolor2=white;
                 }
             _3bConfirmDiscard "widget/textbutton"
@@ -68,7 +68,7 @@ p_partner_relationship_cmp "widget/component-decl"
                 x=110;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "Discard";
+                text = "i18n:Discard";
                 fgcolor1=black;fgcolor2=white;
                 }
             _3bConfirmCancel "widget/textbutton"
@@ -76,7 +76,7 @@ p_partner_relationship_cmp "widget/component-decl"
                 x=210;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "Cancel";
+                text = "i18n:Cancel";
                 fgcolor1=black;fgcolor2=white;
                 }
             }
@@ -100,21 +100,22 @@ p_partner_relationship_cmp "widget/component-decl"
                     height=94;
 		    width=826;
     
-                    //p_partner_key_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="partner key"; ctl_type="editbox"; form=p_partner_relationship_form; tooltip="source of relationship"; }
-                    p_relation_key_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_relation_key; text="relation key"; ctl_type="editbox"; form=p_partner_relationship_form; tooltip="the one the source is related to"; }
-                    //p_relation_ctl_type_cmp "widget/component" { path="/apps/kardia/modules/base/fields/p_relation_ctl_type.cmp"; field=p_relation_type; text="relation type"; form=p_partner_relationship_form; tooltip="sibling, child, etc."; }
-                    p_relation_ctl_type_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_relation_type; text="relation type"; form=p_partner_relationship_form; tooltip="sibling, child, etc."; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_relation_type/rows";}
-                    p_relation_comments_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_relation_comments; text="comments"; ctl_type="editbox"; form=p_partner_relationship_form; tooltip=""; }
-                    s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; type="create"; ctl_type="datetime"; form=p_partner_relationship_form; tooltip=""; }
-                    s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; type="create"; ctl_type="editbox"; form=p_partner_relationship_form; tooltip=""; }
-                    s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="date modified"; type="modify"; ctl_type="datetime"; form=p_partner_relationship_form; tooltip=""; }
-                    s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="modified by"; type="modify"; ctl_type="editbox"; form=p_partner_relationship_form; tooltip=""; }
+                    //p_partner_key_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="i18n:partner key"; ctl_type="editbox"; 
+form=p_partner_relationship_form; tooltip="i18n:source of relationship"; }
+                    p_relation_key_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_relation_key; text="i18n:relation key"; ctl_type="editbox"; form=p_partner_relationship_form; tooltip="i18n:the one the source is related to"; }
+                    //p_relation_ctl_type_cmp "widget/component" { path="/apps/kardia/modules/base/fields/p_relation_ctl_type.cmp"; field=p_relation_type; text="i18n:relation type"; form=p_partner_relationship_form; tooltip="i18n:sibling, child, etc."; }
+                    p_relation_ctl_type_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_relation_type; text="i18n:relation type"; form=p_partner_relationship_form; tooltip="i18n:sibling, child, etc."; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_relation_type/rows";}
+                    p_relation_comments_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_relation_comments; text="i18n:comments"; ctl_type="editbox"; form=p_partner_relationship_form; tooltip=""; }
+                    s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="i18n:date created"; type="create"; ctl_type="datetime"; form=p_partner_relationship_form; tooltip=""; }
+                    s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="i18n:created by"; type="create"; ctl_type="editbox"; form=p_partner_relationship_form; tooltip=""; }
+                    s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="i18n:date modified"; type="modify"; ctl_type="datetime"; form=p_partner_relationship_form; tooltip=""; }
+                    s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="i18n:modified by"; type="modify"; ctl_type="editbox"; form=p_partner_relationship_form; tooltip=""; }
                     }
                 GotoButton "widget/textbutton"
                     {
                     x=755; y=87;
                     height=40; width=70;
-                    text="go to relation";
+                    text="i18n:go to relation";
 		    enabled = runclient(:p_partner_relationship_form:is_editable);
                     cnGoButton "widget/connector"
                         {
@@ -147,17 +148,17 @@ p_partner_relationship_cmp "widget/component-decl"
                         }
                     table_relation_key "widget/table-column"
                         {
-                        title = "Relation Key";
+                        title = "i18n:Relation Key";
                         fieldname = p_relation_key;
                         }
                     table_relation_type "widget/table-column"
                         {
-                        title = "Relation type";
+                        title = "i18n:Relation type";
                         fieldname = p_relation_type;
                         }
                     table_relation_comments "widget/table-column"
                         {
-                        title = "Comments";
+                        title = "i18n:Comments";
                         fieldname = p_relation_comments;
                         }
                     }

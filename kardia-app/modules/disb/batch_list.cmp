@@ -71,11 +71,11 @@ batch_list_cmp "widget/component-decl"
 		rowheight = 18;
 		mode=dynamicrow;
 
-		t_batch "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=60; }
-		t_period "widget/table-column" { title="Period"; fieldname="a_period"; width=60; }
-		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=276; }
-		t_created "widget/table-column" { title="Entered"; fieldname="s_date_created"; width=82; }
-		t_effective "widget/table-column" { title="Effective"; fieldname="a_default_effective_date"; width=82; }
+		t_batch "widget/table-column" { title="i18n:Batch"; fieldname="a_batch_number"; width=60; }
+		t_period "widget/table-column" { title="i18n:Period"; fieldname="a_period"; width=60; }
+		t_desc "widget/table-column" { title="i18n:Description"; fieldname="a_batch_desc"; width=276; }
+		t_created "widget/table-column" { title="i18n:Entered"; fieldname="s_date_created"; width=82; }
+		t_effective "widget/table-column" { title="i18n:Effective"; fieldname="a_default_effective_date"; width=82; }
 
 		batch_dblclick "widget/connector" { event=DblClick; target=editor; action=GotoBatch; Batch=runclient(:batch_form:a_batch_number); }
 		}
@@ -89,7 +89,7 @@ batch_list_cmp "widget/component-decl"
 		{
 		x=8;y=336;width=562;height=26;
 		path = "/sys/cmp/form_controls.cmp";
-		deletable = no;
+		deletable = no; 
 		object_name = "Batch";
 		}
 
@@ -100,12 +100,11 @@ batch_list_cmp "widget/component-decl"
 		cellsize=20;
 		//column_width=270;
 
-		f_a_batch_no "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_number; text="Batch:"; ctl_type="editbox"; tooltip="Batch Number"; label_width=70; }
-		//f_a_batch_no "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_number; text="Batch:"; ctl_type="editbox"; tooltip="Batch Number"; label_width=70; batch_no_hints "widget/hints" { style=createonly; } }
-		//f_a_period "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_period; text="Period:"; tooltip="Period Number"; label_width=70; popup_source = runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Select Period:"; popup_order=desc; }
-		f_a_period "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period; text="Period:"; ctl_type="dropdown"; tooltip="Period Number"; label_width=70; sql=runserver("select :a_period + ' - ' + :a_period_desc, :a_period, (getdate() >= :a_start_date and getdate() <= :a_end_date), '', :a_status != 'O' from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); }
-		f_a_batch_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_desc; text="Descrip:"; ctl_type="editbox"; tooltip="Batch Description"; label_width=70; }
-		f_a_batch_eff_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_default_effective_date; text="Eff. Date:"; ctl_type="datetime"; tooltip="Effective (accrual) date for transactions"; label_width=70; }
+		f_a_batch_no "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_number; text="i18n:Batch:"; ctl_type="editbox"; tooltip="i18n:Batch Number"; label_width=70; }
+		//f_a_batch_no "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_number; text="i18n:Batch:"; ctl_type="editbox"; tooltip="i18n:Batch Number"; label_width=70; batch_no_hints "widget/hints" { style=createonly; } }
+		f_a_period "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period; text="i18n:Period:"; ctl_type="dropdown"; tooltip="i18n:Period Number"; label_width=70; sql=runserver("select :a_period + ' - ' + :a_period_desc, :a_period, (getdate() >= :a_start_date and getdate() <= :a_end_date), '', :a_status != 'O' from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); }
+		f_a_batch_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_desc; text="i18n:Descrip:"; ctl_type="editbox"; tooltip="i18n:Batch Description"; label_width=70; }
+		f_a_batch_eff_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_default_effective_date; text="i18n:Eff. Date:"; ctl_type="datetime"; tooltip="i18n:Effective (accrual) date for transactions"; label_width=70; }
 		}
 
 	    batchctl_vbox "widget/vbox"
@@ -133,19 +132,19 @@ batch_list_cmp "widget/component-decl"
 		selectb_btn "widget/textbutton"
 		    {
 		    width=160;
-		    text="View Batch";
+		    text="i18n:View Batch";
 		    sb_cn "widget/connector" { event=Click; target=cd_details_window; action=GotoBatch; Batch=runclient(:batch_form:a_batch_number); }
 		    }
 //		editjnl_btn "widget/textbutton"
 //		    {
 //		    width=160;
-//		    text="Edit Transactions";
+//		    text="i18n:Edit Transactions";
 //		    ej_cn "widget/connector" { event=Click; target=editor; action=GotoBatch; Batch=runclient(:batch_form:a_batch_number); }
 //		    }
 //		viewjnl_btn "widget/textbutton"
 //		    {
 //		    width=160;
-//		    text="View Batch Detail";
+//		    text="i18n:View Batch Detail";
 //		    vj_cn "widget/connector" { event=Click; target=viewer; action=Browse; a_batch_number=runclient(:batch_form:a_batch_number); }
 //		    }
 		}
@@ -171,25 +170,25 @@ batch_list_cmp "widget/component-decl"
 		batchno_vbox "widget/vbox"
 		    {
 		    width=100;spacing=0;cellsize=20;
-		    batchno_lbl "widget/label" { text="Batch #:"; }
+		    batchno_lbl "widget/label" { text="i18n:Batch #:"; }
 		    batchno_eb "widget/editbox" { fieldname="a_batch_number"; }
 		    }
 		period_vbox "widget/vbox"
 		    {
 		    width=150;spacing=0;cellsize=20;
-		    period_lbl "widget/label" { text="Period:"; }
+		    period_lbl "widget/label" { text="i18n:Period:"; }
 		    period_dd "widget/dropdown" { fieldname="a_period"; mode=dynamic_server; sql=runserver("select :a_period_desc, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger)); }
 		    }
 		descrip_vbox "widget/vbox"
 		    {
 		    width=272;spacing=0;cellsize=20;
-		    descrip_lbl "widget/label" { text="Description:"; }
+		    descrip_lbl "widget/label" { text="i18n:Description:"; }
 		    descrip_eb "widget/editbox" { fieldname="a_batch_desc"; }
 		    }
 		ledger_vbox "widget/vbox"
 		    {
 		    width=70;spacing=0;cellsize=20;
-		    ledger_lbl "widget/label" { text="Ledger:"; }
+		    ledger_lbl "widget/label" { text="i18n:Ledger:"; }
 		    ledger_eb "widget/editbox"
 			{
 			fieldname="a_ledger_number";
@@ -199,12 +198,12 @@ batch_list_cmp "widget/component-decl"
 		nextjnl_vbox "widget/vbox"
 		    {
 		    width=50;spacing=0;cellsize=20;
-		    nextjnl_lbl "widget/label" { text="Nx Jnl:"; }
+		    nextjnl_lbl "widget/label" { text="i18n:Nx Jnl:"; }
 		    }
 		nexttrx_vbox "widget/vbox"
 		    {
 		    width=50;spacing=0;cellsize=20;
-		    nexttrx_lbl "widget/label" { text="Nx Trx:"; }
+		    nexttrx_lbl "widget/label" { text="i18n:Nx Trx:"; }
 		    }
 		}
 	    }

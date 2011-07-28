@@ -16,15 +16,14 @@ tab_menu "widget/component-decl"
 
 	    main_tabpage "widget/tabpage"
 		{
-		title = runserver(:tabpage_rpt:module_abbrev);
-
+		title = runserver("i18n:" + :tabpage_rpt:module_abbrev);
 		tab_lbl "widget/label"
 		    {
 		    x=8; y=8; width=300; height=20;
 		    style=bold;
 		    fgcolor="#153f5f";
 		    font_size=14;
-		    text = runserver(:tabpage_rpt:module_name);
+		    text = runserver("i18n:"+:tabpage_rpt:module_name);
 		    }
 
 		desc_lbl "widget/label"
@@ -33,7 +32,7 @@ tab_menu "widget/component-decl"
 		    //style=bold;
 		    fgcolor="black";
 		    font_size=11;
-		    text = runserver(:tabpage_rpt:module_description);
+		    text = runserver("i18n:" + :tabpage_rpt:module_description);
 		    }
 
 		progs_lbl "widget/label"
@@ -42,7 +41,7 @@ tab_menu "widget/component-decl"
 		    style=bold;
 		    fgcolor="#153f5f";
 		    font_size=14;
-		    text = runserver("Applications for " + :tabpage_rpt:module_abbrev + ":");
+		    text = runserver("i18n:Applications for " + :tabpage_rpt:module_abbrev + ":");
 		    }
 
 		progs_vbox "widget/vbox"
@@ -72,8 +71,8 @@ tab_menu "widget/component-decl"
 				    {
 				    widget_class = "link";
 				    width=150;
-				    text = runserver(:progs_rpt:func_name);
-				    tooltip = runserver(:progs_rpt:func_description);
+				    text = runserver("i18n:"+:progs_rpt:func_name);
+				    tooltip = runserver("i18n:"+:progs_rpt:func_description);
 
 				    launchprog "widget/connector"
 					{
@@ -98,7 +97,7 @@ tab_menu "widget/component-decl"
 		    style=bold;
 		    fgcolor="#153f5f";
 		    font_size=14;
-		    text = runserver("Reports for " + :tabpage_rpt:module_abbrev + ":");
+		    text = runserver("i18n:Reports for " + :tabpage_rpt:module_abbrev + ":");
 		    }
 
 		rpts_vbox "widget/vbox"
@@ -128,8 +127,8 @@ tab_menu "widget/component-decl"
 				    {
 				    widget_class = "link";
 				    width=150;
-				    text = runserver(:rpts_rpt:func_name);
-				    tooltip = runserver(:rpts_rpt:func_description);
+				    text = runserver("i18n:"+:rpts_rpt:func_name);
+				    tooltip = runserver("i18n:"+:rpts_rpt:func_description);
 
 				    launch_rpt "widget/connector"
 					{
@@ -149,7 +148,7 @@ tab_menu "widget/component-decl"
 		    }
 //		    test_btn "widget/label" 
 //			{
-//			widget_class=link; width=150; height=20; x=8; y=480; text = "test me"; 
+//			widget_class=link; width=150; height=20; x=8; y=480; text = "i18n:test me"; 
 
 //			onclick "widget/connector" { event=Click; event_confirm=runclient("You clicked me ... Ledger is " + isnull(:kardia_sysattrs_osrc:Ledger, 'none')); target=tab_menu; action=Clicked; }
 //			}

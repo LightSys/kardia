@@ -35,7 +35,7 @@ gljournalview_window "widget/component-decl"
 
     gljvwin "widget/childwindow"
 	{
-	title = "View GL Activity";
+	title = "i18n:View GL Activity";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;

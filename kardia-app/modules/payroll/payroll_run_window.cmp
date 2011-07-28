@@ -17,7 +17,7 @@ payroll_run_window "widget/component-decl"
     prwin "widget/childwindow"
 	{
 	titlebar = yes;
-	title = "Guide: Run Payroll";
+	title = "i18n:Guide: Run Payroll";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;
