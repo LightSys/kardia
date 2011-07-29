@@ -18,7 +18,7 @@ search_by_list "widget/component-decl"
 	{
 	x=0;y=0;width=225;height=120;
 	outline_bgcolor=black;
-	title = runserver("i18n:Search by " + :this:object_name);
+	title = runserver("Search by " + :this:object_name);
 	form=null;
 	value = runclient(:tab:selected);
 	rb_all "widget/radiobutton" { label=runserver("All " + :this:object_name + "s"); value="tc_all"; selected=yes; }
@@ -60,7 +60,7 @@ search_by_list "widget/component-decl"
 		    mode=dynamicrow;
 
 		    t_id "widget/table-column" { title=runserver(:this:object_name + " ID"); fieldname="id"; width=80; }
-		    t_desc "widget/table-column" { title="i18n:Description"; fieldname="description"; width=180; }
+		    t_desc "widget/table-column" { title="Description"; fieldname="description"; width=180; }
 		    }
 
 		chg_cn "widget/connector"
@@ -74,7 +74,7 @@ search_by_list "widget/component-decl"
 	    }
 	tc_type "widget/tabpage"
 	    {
-	    srch_box "widget/component" { x=10;y=10;width=270; height=24; path="/sys/cmp/smart_field.cmp"; field=runserver(:this:field); ctl_type=editbox; text=runserver("i18n:Enter " + :this:object_name + ":"); form=form; }
+	    srch_box "widget/component" { x=10;y=10;width=270; height=24; path="/sys/cmp/smart_field.cmp"; field=runserver(:this:field); ctl_type=editbox; text=runserver("Enter " + :this:object_name + ":"); form=form; }
 	    }
 	}
     }

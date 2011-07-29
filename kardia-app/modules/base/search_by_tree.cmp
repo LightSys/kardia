@@ -21,9 +21,9 @@ search_by_tree "widget/component-decl"
 	outline_bgcolor=black;
 	title = runserver(condition(:this:object_name is null, "Select one:", "By " + :this:object_name));
 	form=null;
-	rb_all "widget/radiobutton" { label=runserver("i18n:All " + :this:object_name + "s"); value="tc_all"; selected=yes; }
-	rb_type "widget/radiobutton" { label=runserver("i18n:Enter " + :this:object_name); value="tc_type"; }
-	rb_list "widget/radiobutton" { label=runserver("i18n:Select " + :this:object_name +" from List"); value="tc_list"; }
+	rb_all "widget/radiobutton" { label=runserver("All " + :this:object_name + "s"); value="tc_all"; selected=yes; }
+	rb_type "widget/radiobutton" { label=runserver("Enter " + :this:object_name); value="tc_type"; }
+	rb_list "widget/radiobutton" { label=runserver("Select " + :this:object_name +" from List"); value="tc_list"; }
 	clear_on_all "widget/connector"
 	    {
 	    event_condition = runclient(:Value == 'tc_all');
@@ -46,7 +46,7 @@ search_by_tree "widget/component-decl"
 	    path="/sys/cmp/smart_field.cmp"; 
 	    field=runserver(:this:field); 
 	    ctl_type=editbox; 
-	    text=runserver("i18n:Enter " + :this:object_name + ":"); 
+	    text=runserver("Enter " + :this:object_name + ":"); 
 	    form=form; 
 	    label_width=120; 
 

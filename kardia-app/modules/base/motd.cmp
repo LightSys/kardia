@@ -112,7 +112,7 @@ motd "widget/component-decl"
 		width = 294;
 		style = bold;
 		font_size = 18;
-		text = "i18n:Message of the Day";
+		text = "Message of the Day";
 		align = center;
 		valign = middle;
 		}
@@ -141,9 +141,9 @@ motd "widget/component-decl"
 			cellsize=16;
 			spacing=4;
 
-			f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=user_txt; ctl_type=label; text="i18n:From:"; }
-			f_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=date_txt; ctl_type=label; text="i18n:Date:"; }
-			f_subj "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_message_title; ctl_type=label; text="i18n:Regarding:"; }
+			f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=user_txt; ctl_type=label; text="From:"; }
+			f_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=date_txt; ctl_type=label; text="Date:"; }
+			f_subj "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_message_title; ctl_type=label; text="Regarding:"; }
 
 			pane_msg "widget/pane"
 			    {
@@ -173,7 +173,7 @@ motd "widget/component-decl"
 				{
 				height=32;
 				width=100;
-				text="i18n:<< Back";
+				text="<< Back";
 				enabled=runclient(:motd_form:recid > 1);
 				cnBack "widget/connector" { event="Click"; target=motd_form; action="Prev"; }
 				}

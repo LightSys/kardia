@@ -55,7 +55,7 @@ edit_settings "widget/component-decl"
 		path="/sys/cmp/smart_field.cmp"; 
 		field='Ledger';
 		ctl_type=dropdown;
-		text='i18n:Ledger:';
+		text='Ledger:';
 		label_width=100;
 		sql = runserver("select :a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows");
 
@@ -82,7 +82,7 @@ edit_settings "widget/component-decl"
 		path="/sys/cmp/smart_field.cmp"; 
 		field='YearPeriod'; 
 		ctl_type=dropdown; 
-		text='i18n:Year:'; 
+		text='Year:'; 
 		sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_period/rows where :a_parent_period is null order by :a_period desc");
 		label_width=100;
 
@@ -102,7 +102,7 @@ edit_settings "widget/component-decl"
 		path="/sys/cmp/smart_field.cmp";
 		field='CurrentPeriod';
 		ctl_type=dropdown;
-		text='i18n:Period:';
+		text='Period:';
 		label_width=100;
 		sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_ledger_number + '|' + :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 order by :a_period asc");
 
@@ -116,14 +116,14 @@ edit_settings "widget/component-decl"
 
 	    ok_btn "widget/textbutton"
 		{
-		text="i18n:OK";
+		text="OK";
 		width=100; height=24;
 		ok_cn "widget/connector" { event=Click; target=settings_form; action=Save; }
 		ok_cn2 "widget/connector" { event=Click; target=container_window; action=Close; }
 		}
 	    cancel_btn "widget/textbutton"
 		{
-		text="i18n:Cancel";
+		text="Cancel";
 		width=100; height=24;
 		cancel_cn "widget/connector" { event=Click; target=settings_form; action=Discard; }
 		cancel_cn2 "widget/connector" { event=Click; target=container_window; action=Close; }

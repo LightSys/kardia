@@ -4,7 +4,7 @@ chat "widget/page"
     width=600; height=300;
     background="/apps/kardia/images/bg/light_bgnd3.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
-    title = runserver("i18n:Chat with " + :this:WithWhom);
+    title = runserver("Chat with " + :this:WithWhom);
 
     WithWhom "widget/parameter" { type=string; default=runserver(user_name()); }
 

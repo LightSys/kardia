@@ -2,7 +2,7 @@ $Version=2$
 TableMaintenance "widget/page"
     {
     height=600; width=800;
-    title = "i18n:Kardia - Table Maintenance";
+    title = "Kardia - Table Maintenance";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl";
     bgcolor = "#e0e0e0";
 
@@ -18,7 +18,7 @@ TableMaintenance "widget/page"
 	    mnKardia "widget/menu"
 		{
 		condition=runserver(char_length(:type_rpt:prefix) > 0);
-		label = runserver("i18n:" + :type_rpt:description + ' Tables');
+		label = runserver(:type_rpt:description + ' Tables');
 		widget_class = "popup";
 
 		tbl_rpt "widget/repeat"

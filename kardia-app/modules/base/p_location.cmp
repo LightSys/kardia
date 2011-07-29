@@ -129,10 +129,10 @@ p_location_component "widget/component-decl"
 			    width=258;
 			    mode=dynamicrow;
 
-			    table_location_type "widget/table-column" { width=42; title = "i18n:Type"; fieldname = loc_type_text; }
-			    table_address "widget/table-column" { width=105; title = "i18n:Address"; fieldname = all; }
-			    table_city "widget/table-column" { width=70; title = "i18n:City"; fieldname = p_city; }
-			    table_state "widget/table-column" { width=25; title = "i18n:St."; fieldname = p_state_province; }
+			    table_location_type "widget/table-column" { width=42; title = "Type"; fieldname = loc_type_text; }
+			    table_address "widget/table-column" { width=105; title = "Address"; fieldname = all; }
+			    table_city "widget/table-column" { width=70; title = "City"; fieldname = p_city; }
+			    table_state "widget/table-column" { width=25; title = "St."; fieldname = p_state_province; }
 			    //table_postal "widget/table-column" { width=60; title = "Postal"; fieldname = p_postal_code; }
 			    }
 			}
@@ -150,7 +150,7 @@ p_location_component "widget/component-decl"
 			    {
 			    height = 22;
 			    path = "/apps/kardia/modules/base/section_header.cmp";
-			    text = "i18n:Addresses:";
+			    text = "Addresses:";
 			    }
 
 			location_form_hbox "widget/hbox"
@@ -164,28 +164,28 @@ p_location_component "widget/component-decl"
 				spacing = 4;
 				cellsize = 20;
 
-				p_location_type_cmp "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=p_location_type; text="i18n:Location Type:"; ctl_type="dropdown"; tooltip="i18n:H=home, W=work, S=school, V=vacation"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows";}
-				p_in_care_of_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_in_care_of; text="i18n:In Care Of:"; ctl_type="editbox"; tooltip="i18n:In Care Of Whom?"; }
-				p_address_1_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_1; text="i18n:Addr Line 1:"; ctl_type="editbox"; tooltip="i18n:Address Line 1"; }
-				p_address_2_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_2; text="i18n:Addr Line 2:"; ctl_type="editbox"; tooltip="i18n:Address Line 2"; }
-				p_address_3_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_3; text="i18n:Addr Line 3:"; ctl_type="editbox"; tooltip="i18n:Address Line 3"; }
+				p_location_type_cmp "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=p_location_type; text="Location Type:"; ctl_type="dropdown"; tooltip="H=home, W=work, S=school, V=vacation"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows";}
+				p_in_care_of_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_in_care_of; text="In Care Of:"; ctl_type="editbox"; tooltip="In Care Of Whom?"; }
+				p_address_1_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_1; text="Addr Line 1:"; ctl_type="editbox"; tooltip="Address Line 1"; }
+				p_address_2_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_2; text="Addr Line 2:"; ctl_type="editbox"; tooltip="Address Line 2"; }
+				p_address_3_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_3; text="Addr Line 3:"; ctl_type="editbox"; tooltip="Address Line 3"; }
 				p_city_state_hbox "widget/hbox"
 				    {
 				    height=20;
 				    spacing=4;
 
-				    p_city_cmp "widget/component" { label_width=100; width=201; path="/sys/cmp/smart_field.cmp"; field=p_city; text="i18n:City:"; ctl_type="editbox"; tooltip="i18n:The city or township"; }
-				    p_state_province_cmp "widget/component" { label_width=65; width=95; path="/sys/cmp/smart_field.cmp"; field=p_state_province; text="i18n:St/Prov:"; ctl_type="editbox"; tooltip="i18n:State or Province"; }
+				    p_city_cmp "widget/component" { label_width=100; width=201; path="/sys/cmp/smart_field.cmp"; field=p_city; text="City:"; ctl_type="editbox"; tooltip="The city or township"; }
+				    p_state_province_cmp "widget/component" { label_width=65; width=95; path="/sys/cmp/smart_field.cmp"; field=p_state_province; text="St/Prov:"; ctl_type="editbox"; tooltip="State or Province"; }
 				    }
 				p_zip_country_hbox "widget/hbox"
 				    {
 				    height=20;
 				    spacing=4;
 
-				    p_postal_code_cmp "widget/component" { label_width=100; width=196; path="/sys/cmp/smart_field.cmp"; field=p_postal_code; text="i18n:Postal/Zip:"; ctl_type="editbox"; tooltip="i18n:Zip code or Postal code"; }
-				    p_country_code_cmp "widget/component" { label_width=70; width=100; path="/sys/cmp/smart_field.cmp"; field=p_country_code; text="i18n:Country:"; ctl_type="editbox"; tooltip="i18n:Use ISO codes same as domain names"; }
+				    p_postal_code_cmp "widget/component" { label_width=100; width=196; path="/sys/cmp/smart_field.cmp"; field=p_postal_code; text="Postal/Zip:"; ctl_type="editbox"; tooltip="Zip code or Postal code"; }
+				    p_country_code_cmp "widget/component" { label_width=70; width=100; path="/sys/cmp/smart_field.cmp"; field=p_country_code; text="Country:"; ctl_type="editbox"; tooltip="Use ISO codes same as domain names"; }
 				    }
-				p_location_comments_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_location_comments; text="i18n:Comments:"; ctl_type="editbox"; tooltip="i18n:Comments about this specific address"; }
+				p_location_comments_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_location_comments; text="Comments:"; ctl_type="editbox"; tooltip="Comments about this specific address"; }
 				}
 
 			    location_form_vbox2 "widget/vbox"
@@ -194,14 +194,14 @@ p_location_component "widget/component-decl"
 				spacing=4;
 				cellsize=20;
 
-				p_date_effective_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_effective; text="i18n:Effective:"; ctl_type="datetime"; tooltip="i18n:Date when the location becomes effective"; }
-				p_date_good_until_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_good_until; text="i18n:Good Until:"; ctl_type="datetime"; tooltip="i18n:Date that this location stops being effective"; }
-				p_purge_date_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_purge_date; text="i18n:Purge On:"; ctl_type="datetime"; tooltip="i18n:When this address should be purged (deleted) from the database"; }
+				p_date_effective_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_effective; text="Effective:"; ctl_type="datetime"; tooltip="Date when the location becomes effective"; }
+				p_date_good_until_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_good_until; text="Good Until:"; ctl_type="datetime"; tooltip="Date that this location stopps being effective"; }
+				p_purge_date_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_purge_date; text="Purge On:"; ctl_type="datetime"; tooltip="When this address should be purged (deleted) from the database"; }
 
-				p_postal_mode_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_postal_mode; text="i18n:Postal Mode:"; ctl_type="editbox"; tooltip="i18n:B-Bulk F-FirstClass Used to override postal modes on mailings"; }
-				p_bulk_postal_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_bulk_postal_code; text="i18n:Bulk Post Code:"; ctl_type="editbox"; tooltip="i18n:USPS - zip center 3 digits"; }
-				p_postal_status_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_postal_status; text="i18n:Postal Status:"; tooltip="i18n:e.g., ACS status, CASS status K=Addressee-UnKnown F=Forwarding-Order-Expired N=No-such-#-or-Address U=Undeliverable-by-P.O. X=Other"; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_postal_status/rows";}
-				p_certified_date_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_certified_date; text="i18n:Certified On:"; type="readonly"; ctl_type="datetime"; tooltip="i18n:e.g., CASS certification of address"; }
+				p_postal_mode_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_postal_mode; text="Postal Mode:"; ctl_type="editbox"; tooltip="B-Bulk F-FirstClass Used to override postal modes on mailings"; }
+				p_bulk_postal_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_bulk_postal_code; text="Bulk Post Code:"; ctl_type="editbox"; tooltip="USPS - zip center 3 digits"; }
+				p_postal_status_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_postal_status; text="Postal Status:"; tooltip="e.g., ACS status, CASS status K=Addressee-UnKnown F=Forwarding-Order-Expired N=No-such-#-or-Address U=Undeliverable-by-P.O. X=Other"; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_postal_status/rows";}
+				p_certified_date_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_certified_date; text="Certified On:"; type="readonly"; ctl_type="datetime"; tooltip="e.g., CASS certification of address"; }
 				}
 			    }
 			}
@@ -278,9 +278,9 @@ p_location_component "widget/component-decl"
 			    width=258;
 			    mode=dynamicrow;
 
-			    table_contact_type "widget/table-column" { width=47; title = "i18n:Type"; fieldname = con_type_txt; }
-			    table_contact_location_type "widget/table-column" { width=47; title = "i18n:Where"; fieldname = loc_type_txt; }
-			    table_contact_data "widget/table-column" { width=148; title = "Ci18n:ontact Info"; fieldname = all; }
+			    table_contact_type "widget/table-column" { width=47; title = "Type"; fieldname = con_type_txt; }
+			    table_contact_location_type "widget/table-column" { width=47; title = "Where"; fieldname = loc_type_txt; }
+			    table_contact_data "widget/table-column" { width=148; title = "Contact Info"; fieldname = all; }
 			    }
 			}
 
@@ -295,7 +295,7 @@ p_location_component "widget/component-decl"
 				{
 				height = 22;
 				path = "/apps/kardia/modules/base/section_header.cmp";
-				text = "i18n:Contact Information:";
+				text = "Contact Information:";
 				}
 
 			    contact_form_hbox "widget/hbox"
@@ -318,10 +318,9 @@ p_location_component "widget/component-decl"
 					    width=200;
 					    path="/sys/cmp/smart_field.cmp";
 					    field=p_contact_type;
-					    text="i18n:Contact Type:";
+					    text="Contact Type:";
 					    ctl_type="dropdown";
-					    tooltip="i18n:P=phone, F=fax, C=cell, E=email, W=website"; 
-					    sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_contact_type/rows";
+					    tooltip="P=phone, F=fax, C=cell, E=email, W=website"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_contact_type/rows";
 
 					    enab_disab_phones_1 "widget/connector"
 						{
@@ -353,19 +352,19 @@ p_location_component "widget/component-decl"
 						}
 					    }
 
-					associated_location "widget/component" { width=332; path="/sys/cmp/smart_field.cmp"; field='p_location_id'; ctl_type=dropdown; text='i18n:Assoc. Addr:'; sql=runserver("select 1,1 where 1 = 0"); } 
+					associated_location "widget/component" { width=332; path="/sys/cmp/smart_field.cmp"; field='p_location_id'; ctl_type=dropdown; text='Assoc. Addr:'; sql=runserver("select 1,1 where 1 = 0"); } 
 					}
 
 				    p_contact_data_hbox "widget/hbox"
 					{
 					spacing = 4;
-					p_phone_country_cmp "widget/component" { width=140; path="/sys/cmp/smart_field.cmp"; field=p_phone_country; text="i18n:Country Code:"; ctl_type="editbox"; tooltip=""; }
-					p_phone_area_city_cmp "widget/component" { label_width=80; width=120; path="/sys/cmp/smart_field.cmp"; field=p_phone_area_city; text="i18n:Area Code:"; ctl_type="editbox"; tooltip=""; }
+					p_phone_country_cmp "widget/component" { width=140; path="/sys/cmp/smart_field.cmp"; field=p_phone_country; text="Country Code:"; ctl_type="editbox"; tooltip=""; }
+					p_phone_area_city_cmp "widget/component" { label_width=80; width=120; path="/sys/cmp/smart_field.cmp"; field=p_phone_area_city; text="Area Code:"; ctl_type="editbox"; tooltip=""; }
 					p_contact_data_label "widget/label" { width=65; value=runclient(isnull(condition(:p_contact_type_cmp:value = 'P' or :p_contact_type_cmp:value = 'F' or :p_contact_type_cmp:value = 'C','Phone:',condition(:p_contact_type_cmp:value = 'E','Email:',condition(:p_contact_type_cmp:value = 'B' or :p_contact_type_cmp:value = 'W', 'URL:', 'Contact:'))),'Contact:')); align=right; }
 					p_contact_data_eb "widget/editbox" { width=199; fieldname=p_contact_data; }
 					}
 
-				    p_contact_comments_cmp "widget/component" { width=536; path="/sys/cmp/smart_field.cmp"; field=p_contact_comments; text="i18n:Comments:"; ctl_type="editbox"; tooltip=""; }
+				    p_contact_comments_cmp "widget/component" { width=536; path="/sys/cmp/smart_field.cmp"; field=p_contact_comments; text="Comments:"; ctl_type="editbox"; tooltip=""; }
 				    }
 				}
 			    }

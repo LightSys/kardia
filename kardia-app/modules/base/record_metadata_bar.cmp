@@ -10,9 +10,9 @@ record_metadata_bar "widget/component-decl"
 	{
 	x=0;y=0;width=460;height=20;spacing=5;
 
-	f_s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="i18n:Created:"; ctl_type="editbox"; type="create"; tooltip="i18n:The user who created the transaction"; label_width=65; width=130; form=form; }
-	f_s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="x"; ctl_type="datetime"; type="create"; tooltip="i18n:The date the record was created."; label_width=0; width=90; form=form; }
-	f_s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="i18n:Modified:"; ctl_type="editbox"; type="modify"; tooltip="i18n:The user who modified the transaction"; label_width=65; width=130; form=form; }
-	f_s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="x"; ctl_type="datetime"; type="modify"; tooltip="i18n:The date the record was modified."; label_width=0; width=90; form=form; }
+	f_s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="Created:"; ctl_type="editbox"; type="create"; tooltip="The user who created the transaction"; label_width=65; width=130; form=form; }
+	f_s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="x"; ctl_type="datetime"; type="create"; tooltip="The date the record was created."; label_width=0; width=90; form=form; }
+	f_s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="Modified:"; ctl_type="editbox"; type="modify"; tooltip="The user who modified the transaction"; label_width=65; width=130; form=form; }
+	f_s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="x"; ctl_type="datetime"; type="modify"; tooltip="The date the record was created."; label_width=0; width=90; form=form; }
 	}
     }

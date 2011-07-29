@@ -31,7 +31,7 @@ p_church_component "widget/component-decl"
             }
         ConfirmWindow "widget/childwindow"
             {
-            title = "i18n:Data Was Modified!";
+            title = "Data Was Modified!";
             titlebar = yes;
             hdr_bgcolor="#c00000";
             bgcolor= "#e0e0e0";
@@ -42,7 +42,7 @@ p_church_component "widget/component-decl"
             warninglabel "widget/label"
                 {
                 x=10;y=10;width=276;height=30;
-                text="i18n:Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
                 }
 
             _3bConfirmSave "widget/textbutton"
@@ -50,7 +50,7 @@ p_church_component "widget/component-decl"
                 x=10;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "i18n:Save";
+                text = "Save";
                 fgcolor1=black;fgcolor2=white;
                 }
             _3bConfirmDiscard "widget/textbutton"
@@ -58,7 +58,7 @@ p_church_component "widget/component-decl"
                 x=110;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "i18n:Discard";
+                text = "Discard";
                 fgcolor1=black;fgcolor2=white;
                 }
             _3bConfirmCancel "widget/textbutton"
@@ -66,7 +66,7 @@ p_church_component "widget/component-decl"
                 x=210;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "i18n:Cancel";
+                text = "Cancel";
                 fgcolor1=black;fgcolor2=white;
                 }
             }
@@ -84,12 +84,12 @@ p_church_component "widget/component-decl"
                     height=118;
 		    width=829;
                     //p_partner_key_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="partner key"; ctl_type="editbox"; form=p_church_form; tooltip="This is the partner key assigned to each partner. It consists of the fund id followed by a computer generated six digit number."; }
-                    p_approximate_size_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_approximate_size; text="i18n:approximate size"; ctl_type="editbox"; form=p_church_form; tooltip="i18n:Number of people in regular attendance."; }
-                    p_denomination_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_denomination_code; text="i18n:denomination code"; ctl_type="editbox"; form=p_church_form; tooltip=""; }
-                    s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="i18n:date created"; type="create"; ctl_type="datetime"; form=p_church_form; tooltip="i18n:The date the record was created."; }
-                    s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="i18n:created by"; type="create"; ctl_type="editbox"; form=p_church_form; tooltip="i18n:User ID of who created this record."; }
-                    s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="i18n:date modified"; type="modify"; ctl_type="datetime"; form=p_church_form; tooltip="i18n:The date the record was modified."; }
-                    s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="i18n:modified by"; type="modify"; ctl_type="editbox"; form=p_church_form; tooltip="i18n:User ID of who last modifed this record."; }
+                    p_approximate_size_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_approximate_size; text="approximate size"; ctl_type="editbox"; form=p_church_form; tooltip="Number of people in regular attendance."; }
+                    p_denomination_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_denomination_code; text="denomination code"; ctl_type="editbox"; form=p_church_form; tooltip=""; }
+                    s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; type="create"; ctl_type="datetime"; form=p_church_form; tooltip="The date the record was created."; }
+                    s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; type="create"; ctl_type="editbox"; form=p_church_form; tooltip="User ID of who created this record."; }
+                    s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="date modified"; type="modify"; ctl_type="datetime"; form=p_church_form; tooltip="The date the record was modified."; }
+                    s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="modified by"; type="modify"; ctl_type="editbox"; form=p_church_form; tooltip="User ID of who last modifed this record."; }
                     }
                 }
             }

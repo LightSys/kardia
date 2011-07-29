@@ -2,7 +2,7 @@ $Version=2$
 edit_table "widget/page"
     {
     height=600; width=800;
-    title = "i18n:Kardia - Edit Table";
+    title = "Kardia - Edit Table";
     background="/apps/kardia/images/bg/light_bgnd2.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
@@ -30,7 +30,7 @@ edit_table "widget/page"
 	path = "/sys/cmp/window_container.cmp";
 	component = "/sys/cmp/file_selection.cmp";
 	visible = no;
-	title = "i18n:Select File/Table:";
+	title = "Select File/Table:";
 	toplevel = yes;
 	padding = 10;
 

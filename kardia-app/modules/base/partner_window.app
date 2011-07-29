@@ -3,7 +3,7 @@ partner_window "widget/page"
     {
     width = 844;
     height=600;
-    title = "i18n:Kardia - Partners";
+    title = "Kardia - Partners";
     show_diagnostics = yes;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
