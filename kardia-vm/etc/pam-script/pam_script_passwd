@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# A part of the Kardia VM Appliance.
+# LightSys Technology Services, Inc., 15-Jun-2011
+#
+# This runs when a user's password changes.  The purpose of this script is to
+# synchronize passwords so that the user's MySQL password and Centrallix
+# password (if running as separate users) are also updated.
+#
+# From README:
+#
+#	PAM_SERVICE	- the application that's invoking the PAM stack
+#	PAM_TYPE	- the module-type (e.g. auth,account,session,password)
+#	PAM_USER	- the user being authenticated into
+#	PAM_RUSER	- the remote user, the user invoking the application
+#	PAM_RHOST	- remote host
+#	PAM_TTY		- the controlling tty
+#	PAM_AUTHTOK	- password in readable text
+#	PAM_OLDAUTHTOK	- old password in readable text
+#
+PATH="$PATH:/usr/local/bin:/usr/local/sbin"
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
+export LD_LIBRARY_PATH
+
+# Synchronize Centrallix password, if any.
+if [ -f "/home/$PAM_USER/cxinst/etc/centrallix/cxpasswd" ]; then
+    builtin echo -n "$PAM_AUTHTOK" | cxpasswd -f "/home/$PAM_USER/cxinst/etc/centrallix/cxpasswd" -u "$PAM_USER" -P
+fi
+
+# Synchronize MySQL password.  We just set it to the default password, and
+# Centrallix will take care of the actual sync for us.
+mysql --user=root -e "SET PASSWORD FOR '$PAM_USER'@'localhost' = PASSWORD('newuserpass');" 2>/dev/null >/dev/null
+
+# Report success.
+exit 0
