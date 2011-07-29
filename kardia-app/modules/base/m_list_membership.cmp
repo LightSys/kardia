@@ -31,7 +31,7 @@ m_list_membership_component "widget/component-decl"
             }
         ConfirmWindow "widget/childwindow"
             {
-            title = "Data Was Modified!";
+            title = "i18n:Data Was Modified!";
             titlebar = yes;
             hdr_bgcolor="#c00000";
             bgcolor= "#e0e0e0";
@@ -42,7 +42,7 @@ m_list_membership_component "widget/component-decl"
             warninglabel "widget/label"
                 {
                 x=10;y=10;width=276;height=30;
-                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                text="i18n:Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
                 }
 
             _3bConfirmSave "widget/textbutton"
@@ -50,7 +50,7 @@ m_list_membership_component "widget/component-decl"
                 x=10;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "Save";
+                text = "i18n:Save";
                 fgcolor1=black;fgcolor2=white;
                 }
             _3bConfirmDiscard "widget/textbutton"
@@ -58,7 +58,7 @@ m_list_membership_component "widget/component-decl"
                 x=110;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "Discard";
+                text = "i18n:Discard";
                 fgcolor1=black;fgcolor2=white;
                 }
             _3bConfirmCancel "widget/textbutton"
@@ -66,7 +66,7 @@ m_list_membership_component "widget/component-decl"
                 x=210;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "Cancel";
+                text = "i18n:Cancel";
                 fgcolor1=black;fgcolor2=white;
                 }
             }
@@ -98,32 +98,32 @@ m_list_membership_component "widget/component-decl"
 
 		    table_list_code "widget/table-column"
 			{
-			title="List Code";
+			title="i18n:List Code";
 			fieldname="m_list_code";
 			}
 		    table_membership_status "widget/table-column"
 			{
-			title="Membership Status";
+			title="i18n:Membership Status";
 			fieldname="m_membership_status";
 			}
 		    table_description "widget/table-column"
 			{
-			title="Description";
+			title="i18n:Description";
 			fieldname="m_list_description";
 			}
 		    table_comments "widget/table-column"
 			{
-			title="Comments";
+			title="i18n:Comments";
 			fieldname="m_comments";
 			}
 		    table_list_status "widget/table-column"
 			{
-			title="List Status";
+			title="i18n:List Status";
 			fieldname="m_list_status";
 			}
 		    table_postal_mode "widget/table-column"
 			{
-			title="Postal Mode";
+			title="i18n:Postal Mode";
 			fieldname="p_postal_mode";
 			}
 		    }

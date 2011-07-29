@@ -1,12 +1,12 @@
 $Version=2$
 help "widget/page"
     {
-    title = "Kardia - Help";
+    title = "i18n:Kardia - Help";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl";
     bgcolor = "#ffffff";
     x=0; y=0; width=1040; height=480;
 
-    lang_label "widget/label" { x=8;y=8;width=192;height=20; text="Language:"; }
+    lang_label "widget/label" { x=8;y=8;width=192;height=20; text="i18n:Language:"; }
     lang_dd "widget/dropdown" { x=8;y=28;width=192;height=20; bgcolor="#ffffff"; mode=dynamic_server; highlight="#c0c0c0"; 
     				sql="select :l:lc_description, :f:name from /apps/kardia/help f, /apps/kardia/data/Locale.csv/rows l where :f:name = :l:lc_id"; 
     			      }

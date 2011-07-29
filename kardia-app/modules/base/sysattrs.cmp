@@ -34,7 +34,7 @@ sysattrs "widget/component-decl"
 	    edit_settings_on_click "widget/connector" { event=Click; target=sysattrs_window; action=Open; }
 
 	    t_img "widget/table-column" { title=""; fieldname=""; width=24; }
-	    t_name "widget/table-column" { title="Settings..."; fieldname="name"; width=120; }
+	    t_name "widget/table-column" { title="i18n:Settings..."; fieldname="name"; width=120; }
 	    t_value "widget/table-column" { title=""; fieldname="value"; width=138; }
 	    }
 	}

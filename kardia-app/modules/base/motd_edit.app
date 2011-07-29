@@ -3,7 +3,7 @@ motd_edit "widget/page"
     {
     width=800;
     height=600;
-    title = "Message of the Day Editor";
+    title = "i18n:Message of the Day Editor";
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 

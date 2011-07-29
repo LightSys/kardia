@@ -31,7 +31,7 @@ p_person_component "widget/component-decl"
 	    }
         ConfirmWindow "widget/childwindow"
             {
-            title = "Data Was Modified!";
+            title = "i18n:Data Was Modified!";
             titlebar = yes;
             hdr_bgcolor="#c00000";
             bgcolor= "#e0e0e0";
@@ -42,7 +42,7 @@ p_person_component "widget/component-decl"
             warninglabel "widget/label"
                 {
                 x=10;y=10;width=276;height=30;
-                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                text="i18n:Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
                 }
 
             _3bConfirmSave "widget/textbutton"
@@ -50,7 +50,7 @@ p_person_component "widget/component-decl"
                 x=10;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "Save";
+                text = "i18n:Save";
                 fgcolor1=black;fgcolor2=white;
                 }
             _3bConfirmDiscard "widget/textbutton"
@@ -58,7 +58,7 @@ p_person_component "widget/component-decl"
                 x=110;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "Discard";
+                text = "i18n:Discard";
                 fgcolor1=black;fgcolor2=white;
                 }
             _3bConfirmCancel "widget/textbutton"
@@ -66,7 +66,7 @@ p_person_component "widget/component-decl"
                 x=210;y=75;width=80;height=30;
                 tristate=no;
                 background="/sys/images/grey_gradient.png";
-                text = "Cancel";
+                text = "i18n:Cancel";
                 fgcolor1=black;fgcolor2=white;
                 }
             }
@@ -83,15 +83,15 @@ p_person_component "widget/component-decl"
                     height=118;
 		    width=832;
                     //p_partner_key_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="partner key"; ctl_type="editbox"; form=p_person_form; tooltip="This is the partner key assigned to each partner. It consists of the fund id followed by a computer generated six digit number."; }
-                    p_previous_surname_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_previous_surname; text="Previous Name"; ctl_type="editbox"; form=p_person_form; tooltip="Maiden name or previous last name" ; }
-                    p_date_of_birth_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_of_birth; text="Birthday"; ctl_type="datetime"; form=p_person_form; tooltip="Birthday / Date of Birth" ; }
+                    p_previous_surname_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_previous_surname; text="i18n:Previous Name"; ctl_type="editbox"; form=p_person_form; tooltip="i18n:Maiden name or previous last name" ; }
+                    p_date_of_birth_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_of_birth; text="i18n:Birthday"; ctl_type="datetime"; form=p_person_form; tooltip="i18n:Birthday / Date of Birth" ; }
                     //p_marital_status_cmp "widget/component" { path="/apps/kardia/modules/base/fields/p_person_marital_status.cmp"; field=p_marital_status; text="Marital Status"; form=p_person_form; tooltip="Marital Status:  M=Married S=Single U=Unknown"; }
-                    p_marital_status_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_marital_status; text="Marital Status"; ctl_type="dropdown"; form=p_person_form; tooltip="Marital Status:  M=Married S=Single U=Unknown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_marital_status/rows";}
-                    p_academic_title_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_academic_title; text="Academic title"; ctl_type="editbox"; form=p_person_form; tooltip="Academic title"; }
-                    s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; ctl_type="datetime"; type="create"; form=p_person_form; tooltip="The date the record was created."; }
-                    s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; ctl_type="editbox"; type="create"; form=p_person_form; tooltip="User ID of who created this record."; }
-                    s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="date modified"; ctl_type="datetime"; type="modify"; form=p_person_form; tooltip="The date the record was modified."; }
-                    s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="modified by"; ctl_type="editbox"; type="modify"; form=p_person_form; tooltip="User ID of who last modifed this record."; }
+                    p_marital_status_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_marital_status; text="i18n:Marital Status"; ctl_type="dropdown"; form=p_person_form; tooltip=i18n:"Marital Status:  M=Married S=Single U=Unknown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_marital_status/rows";}
+                    p_academic_title_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_academic_title; text="i18n:Academic title"; ctl_type="editbox"; form=p_person_form; tooltip="i18n:Academic title"; }
+                    s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="i18n:date created"; ctl_type="datetime"; type="create"; form=p_person_form; tooltip="i18n:The date the record was created."; }
+                    s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="i18n:created by"; ctl_type="editbox"; type="create"; form=p_person_form; tooltip="i18n:User ID of who created this record."; }
+                    s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="i18n:date modified"; ctl_type="datetime"; type="modify"; form=p_person_form; tooltip="i18n:The date the record was modified."; }
+                    s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="i18n:modified by"; ctl_type="editbox"; type="modify"; form=p_person_form; tooltip="i18n:User ID of who last modifed this record."; }
                     }
                 }
             }
