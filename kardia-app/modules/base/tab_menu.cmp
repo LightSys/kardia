@@ -24,7 +24,7 @@ tab_menu "widget/component-decl"
 		    style=bold;
 		    fgcolor="#153f5f";
 		    font_size=14;
-		    text = runserver(:tabpage_rpt:module_name);
+		    text = runserver("i18n:"+:tabpage_rpt:module_name);
 		    }
 
 		desc_lbl "widget/label"
@@ -42,7 +42,7 @@ tab_menu "widget/component-decl"
 		    style=bold;
 		    fgcolor="#153f5f";
 		    font_size=14;
-		    text = runserver("Applications for " + :tabpage_rpt:module_abbrev + ":");
+		    text = runserver("i18n:Applications for " + :tabpage_rpt:module_abbrev + ":");
 		    }
 
 		progs_vbox "widget/vbox"
@@ -72,8 +72,8 @@ tab_menu "widget/component-decl"
 				    {
 				    widget_class = "link";
 				    width=150;
-				    text = runserver(:progs_rpt:func_name);
-				    tooltip = runserver(:progs_rpt:func_description);
+				    text = runserver("i18n:"+:progs_rpt:func_name);
+				    tooltip = runserver("i18n:"+:progs_rpt:func_description);
 
 				    launchprog "widget/connector"
 					{
@@ -98,7 +98,7 @@ tab_menu "widget/component-decl"
 		    style=bold;
 		    fgcolor="#153f5f";
 		    font_size=14;
-		    text = runserver("Reports for " + :tabpage_rpt:module_abbrev + ":");
+		    text = runserver("i18n:Reports for " + :tabpage_rpt:module_abbrev + ":");
 		    }
 
 		rpts_vbox "widget/vbox"
@@ -128,8 +128,8 @@ tab_menu "widget/component-decl"
 				    {
 				    widget_class = "link";
 				    width=150;
-				    text = runserver(:rpts_rpt:func_name);
-				    tooltip = runserver(:rpts_rpt:func_description);
+				    text = runserver("i18n:"+:rpts_rpt:func_name);
+				    tooltip = runserver("i18n:"+:rpts_rpt:func_description);
 
 				    launch_rpt "widget/connector"
 					{
