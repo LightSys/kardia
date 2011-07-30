@@ -1,7 +1,7 @@
 $Version=2$
 disbursements "widget/page"
     {
-    title = "Cash Disbursements - Checking";
+    title = "i18n:Cash Disbursements - Checking";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

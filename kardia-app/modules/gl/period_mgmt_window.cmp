@@ -13,7 +13,7 @@ period_mgmt_window "widget/component-decl"
 
     pmwin "widget/childwindow"
 	{
-	title = "Accounting Period Management";
+	title = "i18n:Accounting Period Management";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;

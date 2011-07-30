@@ -11,14 +11,14 @@ cc_acct_edit "widget/component-decl"
 
 	tab_sel_period "widget/tabpage"
 	    {
-	    title = "Period";
+	    title = "i18n:Period";
 
 	    period_rb "widget/radiobuttonpanel"
 		{
 		x=10;y=5;width=228;height=80;
-		title="Select:";
-		period_any "widget/radiobutton" { label="All Periods"; selected=yes; }
-		period_one "widget/radiobutton" { label="One Period From List Below"; }
+		title="i18n:Select:";
+		period_any "widget/radiobutton" { label="i18n:All Periods"; selected=yes; }
+		period_one "widget/radiobutton" { label="i18n:One Period From List Below"; }
 		}
 
 	    period_list_pane "widget/pane"
@@ -39,9 +39,9 @@ cc_acct_edit "widget/component-decl"
 			{
 			x=0;y=0;width=226;height=480 - 2 - 95 - 10 - 2;
 
-			tp_period "widget/table-column" { fieldname="a_period"; title="Period"; }
-			tp_start "widget/table-column" { fieldname="a_start_date"; title="Beginning"; }
-			tp_end "widget/table-column" { fieldname="a_end_date"; title="Ending"; }
+			tp_period "widget/table-column" { fieldname="a_period"; title="i18n:Period"; }
+			tp_start "widget/table-column" { fieldname="a_start_date"; title="i18n:Beginning"; }
+			tp_end "widget/table-column" { fieldname="a_end_date"; title="i18n:Ending"; }
 			}
 		    }
 		}
@@ -49,19 +49,19 @@ cc_acct_edit "widget/component-decl"
 
 	tab_sel_cc "widget/tabpage"
 	    {
-	    title = "CostCtr";
+	    title = "i18n:CostCtr";
 	    }
 
 	tab_sel_acct "widget/tabpage"
 	    {
-	    title = "Account";
+	    title = "i18n:Account";
 
 	    acct_rb "widget/radiobuttonpanel"
 		{
 		x=10;y=5;width=228;height=80;
 		title="Select:";
-		acct_any "widget/radiobutton" { label="All Accounts"; selected=yes; }
-		acct_one "widget/radiobutton" { label="One Account From List Below"; }
+		acct_any "widget/radiobutton" { label="i18n:All Accounts"; selected=yes; }
+		acct_one "widget/radiobutton" { label="i18n:One Account From List Below"; }
 		}
 	    }
 	}
@@ -84,11 +84,11 @@ cc_acct_edit "widget/component-decl"
 		{
 		x=0;y=0;width=748 - 270 - 10 - 2; height=352;
 
-		t_period "widget/table-column" { fieldname="a_period"; title="Period"; }
-		t_costctr "widget/table-column" { fieldname="a_cost_center"; title="CostCtr"; }
-		t_glacct "widget/table-column" { fieldname="a_account_code"; title="Account"; }
-		t_openbal "widget/table-column" { fieldname="a_opening_balance"; title="Opening Bal"; }
-		t_curbal "widget/table-column" { fieldname="a_current_balance"; title="Current Bal"; }
+		t_period "widget/table-column" { fieldname="a_period"; title="i18n:Period"; }
+		t_costctr "widget/table-column" { fieldname="a_cost_center"; title="i18n:CostCtr"; }
+		t_glacct "widget/table-column" { fieldname="a_account_code"; title="i18n:Account"; }
+		t_openbal "widget/table-column" { fieldname="a_opening_balance"; title="i18n:Opening Bal"; }
+		t_curbal "widget/table-column" { fieldname="a_current_balance"; title="i18n:Current Bal"; }
 		}
 	    }
 	}

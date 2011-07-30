@@ -48,7 +48,8 @@ check_search_component "widget/component-decl"
 	select_payee_window_cmp2 "widget/childwindow"
 	{ 
 		// condition = runserver(not (:this:ledger is null));
-		// ledger = runserver(:this:ledger);			// (Pass in through connector instead)
+		// ledger = runserver(:this:ledger);
+		// (Pass in through connector instead)
 		
 		x=72;y=65; 
 		height=465; width=700; 
@@ -56,7 +57,7 @@ check_search_component "widget/component-decl"
 		toplevel = yes; 
 		style = dialog; 
 		bgcolor = "#e0e0e0"; 
-		title = "Payee Search"; 
+		title = "i18n:Payee Search"; 
 		// icon = "/images/icons/person-search.gif"; 
 		partner_search_component2 "widget/component" 
 		{ 
@@ -215,7 +216,7 @@ check_search_component "widget/component-decl"
 						// label src: partner_search_contents: 
 						
 						// Check No Box
-						p_check_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_check_number; text="Check No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Check Number"; }
+						p_check_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_check_number; text="i18n:Check No."; lookup_width=325; ctl_type="editbox"; tooltip="i18n:Lookup by Check Number"; }
 						
 					// }
 					
@@ -232,10 +233,10 @@ check_search_component "widget/component-decl"
 							type="readonly"; 
 							path="/sys/cmp/smart_field.cmp"; 
 							field=a_payee_partner_key; 
-							text="Payee No.";
+							text="i18n:Payee No.";
 							lookup_width=325;
 							ctl_type="editbox";
-							tooltip="Lookup by Payee Number";
+							tooltip="i18n:Lookup by Payee Number";
 						}
 						
 						// p_payee_number_cmp "widget/component"
@@ -243,7 +244,7 @@ check_search_component "widget/component-decl"
 						// 	path="/sys/cmp/smart_field.cmp";
 						// 	field=a_payee_partner_key;
 						// 	ctl_type=editbox;
-						// 	text="Payee #:";
+						// 	text="i18n:Payee #:";
 						// 	label_width=60; width=120;
 							
 							// Note (20091008): This connector should be associated with an intermediary
@@ -271,7 +272,7 @@ check_search_component "widget/component-decl"
 						// CC No Label
 						
 						// CC No Box
-						p_cc_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_cost_center; text="Cost Center No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Cost Center Code"; }
+						p_cc_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_cost_center; text="i18n:Cost Center No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Cost Center Code"; }
 						
 						// CC (+) Symbol thingy...   (see/get from cashdish_subform)... =D  Combo...
 						
@@ -290,8 +291,8 @@ check_search_component "widget/component-decl"
 						// path="/apps/kardia/modules/base/editbox_tree.cmp";
 						// type="readonly";
 						// field=a_cost_center;
-						// text="Cost Ctr:";
-						// tooltip="Cost Center Number";
+						// text="i18n:Cost Ctr:";
+						// tooltip="i18n:Cost Center Number";
 						// label_width=99;
 						// // enabled=runclient(:partner_search_form:is_queryexecutable);
 						
@@ -299,7 +300,7 @@ check_search_component "widget/component-decl"
 						// // Action Item: Look at Tutorial for passing in parameter and let's get the show on the road! yeah!
 						
 						// popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/");
-						// popup_text="Select Cost Center:";
+						// popup_text="i18n:Select Cost Center:";
 						// auto_focus=no;	// the secret that allows it all to work (no form state change)
 						
 						// cc_get_desc_1 "widget/connector"
@@ -330,7 +331,7 @@ check_search_component "widget/component-decl"
 						// Acct No Label
 						
 						// Acct No Box
-						p_acct_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_account_code; text="Acct No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Account Number"; }
+						p_acct_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_account_code; text="i18n:Acct No."; lookup_width=325; ctl_type="editbox"; tooltip="i18n:Lookup by Account Number"; }
 						
 						// Acct (+) Symbol thingy...   (see/get from cashdish_subform)... =D  Combo...
 						
@@ -351,7 +352,7 @@ check_search_component "widget/component-decl"
 						// // enabled=runclient(:partner_search_form:is_queryexecutable);
 						
 						// popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/");
-						// popup_text="Select Account:";
+						// popup_text="i18n:Select Account:";
 						// auto_focus=no;	// the secret that allows it all to work (no form state change)
 
 						// ac_get_desc_1 "widget/connector"
@@ -394,7 +395,7 @@ check_search_component "widget/component-decl"
 							enabled=runclient(:partner_search_form:is_queryexecutable);
 							width=105;
 							// height = 25;
-							text="Select Payee";
+							text="i18n:Select Payee";
 							// enabled=yes;
 							
 							open_select_payee_window_cn2 "widget/connector"
@@ -417,7 +418,7 @@ check_search_component "widget/component-decl"
 				{
 					x=525; y=188;
 					height=24; width=100;
-					text="New Search";
+					text="i18n:New Search";
 					enabled=runclient(:partner_search_form:is_queryable);
 					cnQueryExec "widget/connector" 
 					{ 
@@ -430,7 +431,7 @@ check_search_component "widget/component-decl"
 				{
 					x=525; y=217;
 					height=24; width=100;
-					text="Do Search";
+					text="i18n:Do Search";
 					enabled=runclient(:partner_search_form:is_queryexecutable);
 					cnQuery "widget/connector" 
 					{
@@ -443,7 +444,7 @@ check_search_component "widget/component-decl"
 				{
 					x=525; y=246;
 					height=24; width=100;
-					text="Select";
+					text="i18n:Select";
 					enabled=runclient(:partner_search_form:is_editable);
 					
 					choose_cn "widget/connector"
@@ -524,51 +525,51 @@ check_search_component "widget/component-decl"
 				
 				table_eff_date "widget/table-column"
 				{
-					title = "Eff. Date";
+					title = "i18n:Eff. Date";
 					fieldname = a_effective_date;
 					width = 75;
 				}
 				table_batch "widget/table-column"
 				{
-					title = "Batch";
+					title = "i18n:Batch";
 					fieldname = a_batch_number;
 				}
 				table_check_no "widget/table-column"
 				{
-					title = "Check No";
+					title = "i18n:Check No";
 					fieldname = a_check_number;
 				}
 				table_payee "widget/table-column"
 				{
-					title = "Payee";
+					title = "i18n:Payee";
 					fieldname = display_name;
 					width = 120;
 				}
 				table_line_item "widget/table-column"
 				{
-					title = "Line";
+					title = "i18n:Line";
 					fieldname = a_line_item;
 					width = 40;
 				}
 				table_cost_center "widget/table-column"
 				{
-					title = "CC";
+					title = "i18n:CC";
 					fieldname = a_cost_center;
 				}
 				table_acct_no "widget/table-column"
 				{
-					title = "Acct";
+					title = "i18n:Acct";
 					fieldname = a_account_code;
 					width = 40;
 				}
 				table_amount "widget/table-column"
 				{
-					title = "Amt.";
+					title = "i18n:Amt.";
 					fieldname = a_amount;
 				}
 				table_comment "widget/table-column"
 				{
-					title = "Comment";
+					title = "i18n:Comment";
 					fieldname = a_comment;
 					width = 200;
 				}

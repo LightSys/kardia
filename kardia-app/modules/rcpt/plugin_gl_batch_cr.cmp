@@ -2,7 +2,7 @@ $Version=2$
 plugin_gl_batch_cr "widget/component-decl"
     {
     width=780;height=542;
-    title = "Cash Receipts";
+    title = "i18n:Cash Receipts";
 
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     periods_osrc "widget/parameter" { type=object; default=null; }

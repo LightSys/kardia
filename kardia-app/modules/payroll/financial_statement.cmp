@@ -30,7 +30,7 @@ financial_statement_cmp "widget/component-decl"
 	    x=8;y=8;width=762;height=207;
 	    fl_height = 0;
 	    spacing=4;
-	    lbl_opt "widget/label" { height=30; font_size=16; text="Missionary Financial Statement Options:"; align=center; }
+	    lbl_opt "widget/label" { height=30; font_size=16; text="i18n:Missionary Financial Statement Options:"; align=center; }
 
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
 
@@ -42,7 +42,7 @@ financial_statement_cmp "widget/component-decl"
 		path="/sys/cmp/smart_field.cmp"; 
 		field='year_period'; 
 		ctl_type=dropdown; 
-		text="Year (req'd):"; 
+		text="i18n:Year (req'd):"; 
 		sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_parent_period is null order by :a_period desc");
 		form=report_form;
 		label_width=120;
@@ -56,21 +56,21 @@ financial_statement_cmp "widget/component-decl"
 		    Source = runclient("/apps/kardia/modules/gl/periods.qyt/" + :report_form:ledger + "/" + :report_form:year_period + "|" + :report_form:ledger + "/");
 		    }
 		}
-	    f_startperiod "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="period"; popup_source=runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Period:"; text="Statement Period:"; attach_point=editbox; empty_desc = "required"; label_width=120; }
-	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=report_form; label_width=120; }
+	    f_startperiod "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="period"; popup_source=runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="i18n:Period:"; text="i18n:Statement Period:"; attach_point=editbox; empty_desc = "i18n:required"; label_width=120; }
+	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="i18n:Include unposted transactions"; form=report_form; label_width=120; }
 	    }
 
 	rpt_print "widget/textbutton"
 	    {
 	    x=650; y=52; width=120; height=24;
-	    text="Print";
+	    text="i18n:Print";
 	    //enabled=runclient(char_length(:f_year:value) > 0 and char_length(:report_form:period) > 0 and char_length(:report_form:costctr) > 0);
 	    rpt_print_cn "widget/connector" { event="Click"; target="report_form"; action="Submit"; Target=runclient("page"); NewPage=runclient(1); Source=runclient("/apps/kardia/modules/payroll/financial_statement.rpt"); Width=runclient(800); Height=runclient(600); UseragentResize=runclient(1); UseragentMenu=runclient(1); }
 	    }
 	rpt_cancel "widget/textbutton"
 	    {
 	    x=650; y=80; width=120; height=24;
-	    text="Close";
+	    text="i18n:Close";
 	    rpt_cancel_cn "widget/connector" { event="Click"; target="fswin"; action="Close"; }
 	    }
 	}
@@ -134,9 +134,9 @@ financial_statement_cmp "widget/component-decl"
 		mode=dynamicrow;
 		fl_height = 100;
 
-		t_cc "widget/table-column" { title="Cost Center / Fund"; fieldname="cctxt"; width=300; }
-		t_paycnt "widget/table-column" { title="# Payees"; fieldname="paycnt"; width=40; }
-		t_paynames "widget/table-column" { title="Payroll Names"; fieldname="paynames"; width=420; }
+		t_cc "widget/table-column" { title="i18n:Cost Center / Fund"; fieldname="cctxt"; width=300; }
+		t_paycnt "widget/table-column" { title="i18n:# Payees"; fieldname="paycnt"; width=40; }
+		t_paynames "widget/table-column" { title="i18n:Payroll Names"; fieldname="paynames"; width=420; }
 		}
 	    }
 	}

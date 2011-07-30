@@ -1,7 +1,7 @@
 $Version=2$
 acctmaint "widget/page"
     {
-    title = "GL Accounts Maintenance";
+    title = "i18n:GL Accounts Maintenance";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

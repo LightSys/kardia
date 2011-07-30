@@ -49,17 +49,17 @@ costctr_one_edit "widget/component-decl"
 	{
 	x=0;y=194;height=179;cellsize=20;spacing=4; width=200;
 
-	f_a_cost_center "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cost_center; text="Cost Center:"; ctl_type="editbox"; tooltip="Cost Center"; form=form; }
-	f_a_parent_cost_center "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_parent_cost_center; text="Rollup CostCtr:"; ctl_type="editbox"; tooltip="Cost center that this cost center rolls into"; form=form; }
-	f_a_cc_class "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cost_center_class; text="Costctr Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_acct_class_desc, :a_cost_center_class from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows"; form=form; }
-	f_a_is_posting "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this cost center"; form=form; }
+	f_a_cost_center "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cost_center; text="i18n:Cost Center:"; ctl_type="editbox"; tooltip="i18n:Cost Center"; form=form; }
+	f_a_parent_cost_center "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_parent_cost_center; text="i18n:Rollup CostCtr:"; ctl_type="editbox"; tooltip="i18n:Cost center that this cost center rolls into"; form=form; }
+	f_a_cc_class "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cost_center_class; text="i18n:Costctr Class:"; ctl_type="dropdown"; tooltip="i18n:Class/Category"; sql="select :a_acct_class_desc, :a_cost_center_class from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows"; form=form; }
+	f_a_is_posting "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="i18n:Is Posting:"; ctl_type="checkbox"; tooltip="i18n:Enable posting to this cost center"; form=form; }
 	}
     cc_vbox_2 "widget/vbox"
 	{
 	x=210;y=194;height=179;cellsize=20;spacing=4; width=290;
 
-	f_a_legacy_code "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="Legacy #:"; ctl_type="editbox"; tooltip="Legacy Cost Ctr from Old System"; form=form; }
-	f_a_cc_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cc_desc; text="Description:"; ctl_type="editbox"; tooltip="A short description of this cost center"; form=form; }
-	f_a_cc_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cc_comments; text="Comments:"; ctl_type="textarea"; tooltip="Comments"; form=form; }
+	f_a_legacy_code "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="i18n:Legacy #:"; ctl_type="editbox"; tooltip="i18n:Legacy Cost Ctr from Old System"; form=form; }
+	f_a_cc_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cc_desc; text="i18n:Description:"; ctl_type="editbox"; tooltip="i18n:A short description of this cost center"; form=form; }
+	f_a_cc_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cc_comments; text="i18n:Comments:"; ctl_type="textarea"; tooltip="i18n:Comments"; form=form; }
 	}
     }

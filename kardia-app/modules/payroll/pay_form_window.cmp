@@ -17,7 +17,7 @@ pay_form_window "widget/component-decl"
     pfwin "widget/childwindow"
 	{
 	titlebar = yes;
-	title = "Review Periodic Payroll Data";
+	title = "i18n:Review Periodic Payroll Data";
 	width=780; height=610;
 	x=10; y=10;
 	visible = false;

@@ -1,7 +1,7 @@
 $Version=2$
 fund_gift_list "system/report"
     {
-    title = "Gift List for Funds";
+    title = "i18n:Gift List for Funds";
 
     document_format="application/pdf";
     resolution = 300;

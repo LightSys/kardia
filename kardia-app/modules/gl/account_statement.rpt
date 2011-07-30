@@ -1,7 +1,7 @@
 $Version=2$
 account_statement "system/report"
     {
-    title = "Account Statement (GL)";
+    title = "i18n:Account Statement (GL)";
 
     // Default to PDF
     document_format="application/pdf";

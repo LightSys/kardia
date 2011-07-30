@@ -13,7 +13,7 @@ financial_statement_window "widget/component-decl"
 
     mfswin "widget/childwindow"
 	{
-	title = "Missionary Financial Statement";
+	title = "i18n:Missionary Financial Statement";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;

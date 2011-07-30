@@ -32,10 +32,10 @@ acct_one_edit "widget/component-decl"
 	    objectsource = osrc;
 	    fl_height = 100;
 
-	    a_t_number "widget/table-column" { title="Acct"; fieldname="a_account_code"; width=50; } 
-	    a_t_type "widget/table-column" { title="Type"; fieldname="a_acct_type"; width=50; } 
-	    a_t_class "widget/table-column" { title="Class"; fieldname="a_account_class"; width=50; } 
-	    a_t_desc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=300; } 
+	    a_t_number "widget/table-column" { title="i18n:Acct"; fieldname="a_account_code"; width=50; } 
+	    a_t_type "widget/table-column" { title="i18n:Type"; fieldname="a_acct_type"; width=50; } 
+	    a_t_class "widget/table-column" { title="i18n:Class"; fieldname="a_account_class"; width=50; } 
+	    a_t_desc "widget/table-column" { title="i18n:Description"; fieldname="a_acct_desc"; width=300; } 
 	    }
 	}
 
@@ -56,29 +56,29 @@ acct_one_edit "widget/component-decl"
 	x=0;y=185;height=179;cellsize=20;spacing=4; width=280;
 	fl_height = 0;
 
-	f_a_account_code "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_account_code; text="Account #:"; ctl_type="editbox"; tooltip="Account Number"; form=form; }
-	f_a_parent_account_code "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_parent_account_code; text="Rollup Acct #:"; ctl_type="editbox"; tooltip="Account number this account rolls into"; form=form; }
+	f_a_account_code "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_account_code; text="i18n:Account #:"; ctl_type="editbox"; tooltip="i18n:Account Number"; form=form; }
+	f_a_parent_account_code "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_parent_account_code; text="i18n:Rollup Acct #:"; ctl_type="editbox"; tooltip="i18n:Account number this account rolls into"; form=form; }
 	f_a_acct_type "widget/component" 
 	    { 
-	    path="/sys/cmp/smart_field.cmp"; field=a_acct_type; text="Account Type:"; ctl_type="dropdown"; tooltip="(E)xpense / (R)evenue / (A)sset / (L)iability / e(Q)uity"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_a_account_type/rows"; form=form; 
+	    path="/sys/cmp/smart_field.cmp"; field=a_acct_type; text="i18n:Account Type:"; ctl_type="dropdown"; tooltip="i18n:(E)xpense / (R)evenue / (A)sset / (L)iability / e(Q)uity"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_a_account_type/rows"; form=form; 
 	    accttypemod "widget/connector" { event=DataModify; target=f_a_is_inverted; action=SetValue; Value=runclient(condition(:Value = 'A' or :Value = 'L', 0, 1)); }
 	    }
-	f_a_acct_class "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_account_class; text="Account Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_acct_class_desc, :a_account_class from /apps/kardia/data/Kardia_DB/a_account_class/rows"; form=form; }
-	f_a_def_ctl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_default_category; text="Default Ctl:"; ctl_type="dropdown"; tooltip="Default Control Code"; sql=runserver("select :a_account_category + ' - ' + :a_acct_cat_desc, :a_account_category from /apps/kardia/data/Kardia_DB/a_account_category/rows where :a_ledger_number = " + quote(:this:ledger)); form=form; }
-	f_a_acct_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_acct_desc; text="Description:"; ctl_type="editbox"; tooltip="A short description of this account"; form=form; }
-	f_a_acct_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_acct_comment; text="Comments:"; ctl_type="textarea"; tooltip="Comments"; form=form; }
+	f_a_acct_class "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_account_class; text="i18n:Account Class:"; ctl_type="dropdown"; tooltip="i18n:Class/Category"; sql="select :a_acct_class_desc, :a_account_class from /apps/kardia/data/Kardia_DB/a_account_class/rows"; form=form; }
+	f_a_def_ctl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_default_category; text="i18n:Default Ctl:"; ctl_type="dropdown"; tooltip="i18n:Default Control Code"; sql=runserver("select :a_account_category + ' - ' + :a_acct_cat_desc, :a_account_category from /apps/kardia/data/Kardia_DB/a_account_category/rows where :a_ledger_number = " + quote(:this:ledger)); form=form; }
+	f_a_acct_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_acct_desc; text="i18n:Description:"; ctl_type="editbox"; tooltip="i18n:A short description of this account"; form=form; }
+	f_a_acct_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_acct_comment; text="i18n:Comments:"; ctl_type="textarea"; tooltip="i18n:Comments"; form=form; }
 	}
     accts_vbox_2 "widget/vbox"
 	{
 	x=290;y=185;height=179;cellsize=20;spacing=4; width=210;
 	fl_height = 0;
 
-	f_a_rep_lvl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_reporting_level; text="Report Level:"; ctl_type="dropdown"; tooltip="Reporting Level"; sql="select '' + :a_reporting_level + ' - ' + :a_level_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows"; form=form; }
-	f_a_legacy_code "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="Legacy Acct #:"; ctl_type="editbox"; tooltip="Legacy Account from Old System"; form=form; }
-	f_a_is_contra "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_contra; text="Is Contra:"; ctl_type="checkbox"; tooltip="Is this a contra account? (use rollup for the main acct #"; form=form; }
-	f_a_is_posting "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this account"; form=form; }
-	f_a_is_inverted "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_inverted; text="Is Inverted:"; ctl_type="checkbox"; tooltip="Invert monetary amounts for reporting (for R/L/Q accounts)"; form=form; }
-	f_a_is_intrafund "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_intrafund_xfer; text="Intrafund Xfr:"; ctl_type="checkbox"; tooltip="Account is used for intra-fund transfers"; form=form; }
-	f_a_is_interfund "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_interfund_xfer; text="Interfund Xfr:"; ctl_type="checkbox"; tooltip="Account is used for inter-fund transfers"; form=form; }
+	f_a_rep_lvl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_reporting_level; text="i18n:Report Level:"; ctl_type="dropdown"; tooltip="i18n:Reporting Level"; sql="select '' + :a_reporting_level + ' - ' + :a_level_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows"; form=form; }
+	f_a_legacy_code "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="i18n:Legacy Acct #:"; ctl_type="editbox"; tooltip="i18n:Legacy Account from Old System"; form=form; }
+	f_a_is_contra "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_contra; text="i18n:Is Contra:"; ctl_type="checkbox"; tooltip="i18n:Is this a contra account? (use rollup for the main acct #"; form=form; }
+	f_a_is_posting "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="i18n:Is Posting:"; ctl_type="checkbox"; tooltip="i18n:Enable posting to this account"; form=form; }
+	f_a_is_inverted "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_inverted; text="i18n:Is Inverted:"; ctl_type="checkbox"; tooltip="i18n:Invert monetary amounts for reporting (for R/L/Q accounts)"; form=form; }
+	f_a_is_intrafund "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_intrafund_xfer; text="i18n:Intrafund Xfr:"; ctl_type="checkbox"; tooltip="i18n:Account is used for intra-fund transfers"; form=form; }
+	f_a_is_interfund "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_interfund_xfer; text="i18n:Interfund Xfr:"; ctl_type="checkbox"; tooltip="i18n:Account is used for inter-fund transfers"; form=form; }
 	}
     }

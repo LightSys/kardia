@@ -15,7 +15,7 @@ pay_detail_window "widget/component-decl"
 
     pay_detail_win "widget/childwindow"
 	{
-	title = "Payroll Detail";
+	title = "i18n:Payroll Detail";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;

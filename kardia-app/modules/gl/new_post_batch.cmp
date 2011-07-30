@@ -237,9 +237,9 @@ new_post_batch "widget/component-decl"
 		show_selection = no;
 
 		t_title "widget/table-column" { title=""; fieldname="title"; width=150; align=right; }
-		t_debit "widget/table-column" { title="Debits (+)"; fieldname="debits"; width=100; align=right; }
-		t_credit "widget/table-column" { title="Credits (-)"; fieldname="credits"; width=100; align=right; }
-		t_total "widget/table-column" { title="Total"; fieldname="total"; width=100; align=right; }
+		t_debit "widget/table-column" { title="i18n:Debits (+)"; fieldname="debits"; width=100; align=right; }
+		t_credit "widget/table-column" { title="i18n:Credits (-)"; fieldname="credits"; width=100; align=right; }
+		t_total "widget/table-column" { title="i18n:Total"; fieldname="total"; width=100; align=right; }
 		}
 	    }
 
@@ -257,14 +257,14 @@ new_post_batch "widget/component-decl"
 		    {
 		    path="/apps/kardia/modules/base/section_check_label.cmp";
 		    height=20;
-		    text = "Batch Balance";
+		    text = "i18n:Batch Balance";
 		    checked = runclient(condition(:batch_info_osrc:balance == "$0.00", 1, 0));
 		    }
 		batch_bal_form "widget/form"
 		    {
 		    objectsource = batch_info_osrc;
-		    f_cnt "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=cnt; ctl_type=label; text="Transactions:"; }
-		    f_bal "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=balance; ctl_type=label; text="Balance:"; }
+		    f_cnt "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=cnt; ctl_type=label; text="i18n:Transactions:"; }
+		    f_bal "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=balance; ctl_type=label; text="i18n:Balance:"; }
 		    }
 
 		sep1 "widget/autolayoutspacer" { height=8; }
@@ -273,7 +273,7 @@ new_post_batch "widget/component-decl"
 		    {
 		    path="/apps/kardia/modules/base/section_check_label.cmp";
 		    height=20;
-		    text = "Journal Balance";
+		    text = "i18n:Journal Balance";
 		    checked = runclient(condition(:jnl_balance_osrc:jtext == 'None', 1, 0));
 		    }
 
@@ -306,7 +306,7 @@ new_post_batch "widget/component-decl"
 			target_key_2 = a_ledger_number;
 			}
 
-		    jnl_balance_label "widget/label" { height=16; text="Unbalanced journals in this batch:"; }
+		    jnl_balance_label "widget/label" { height=16; text="i18n:Unbalanced journals in this batch:"; }
 
 		    jnl_balance_info "widget/label" { height=30; value=runclient(:jnl_balance_osrc:jtext); style=bold; }
 
@@ -319,8 +319,8 @@ new_post_batch "widget/component-decl"
 			demand_scrollbar=yes;
 			overlap_scrollbar = yes;
 
-			t_jnl "widget/table-column" { title="Journal#"; fieldname="a_journal_number"; width=100; }
-			t_amt "widget/table-column" { title="Amount"; fieldname="jtotal"; width=100; align=right; }
+			t_jnl "widget/table-column" { title="i18n:Journal#"; fieldname="a_journal_number"; width=100; }
+			t_amt "widget/table-column" { title="i18n:Amount"; fieldname="jtotal"; width=100; align=right; }
 			}
 		    }
 
@@ -330,7 +330,7 @@ new_post_batch "widget/component-decl"
 		    {
 		    path="/apps/kardia/modules/base/section_check_label.cmp";
 		    height=20;
-		    text = "Transaction Validity";
+		    text = "i18n:Transaction Validity";
 		    checked = runclient(condition(:trx_validity_osrc:msg is null and :trx_validity_loaded:value == 1, 1, 0));
 		    }
 
@@ -397,9 +397,9 @@ new_post_batch "widget/component-decl"
 			overlap_scrollbar = yes;
 			show_selection = no;
 
-			t_jnlv "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=50; }
-			t_trxv "widget/table-column" { title="Trx"; fieldname="a_transaction_number"; width=50; }
-			t_msg "widget/table-column" { title="Issue"; fieldname="msg"; width=280; }
+			t_jnlv "widget/table-column" { title="i18n:Jnl"; fieldname="a_journal_number"; width=50; }
+			t_trxv "widget/table-column" { title="i18n:Trx"; fieldname="a_transaction_number"; width=50; }
+			t_msg "widget/table-column" { title="i18n:Issue"; fieldname="msg"; width=280; }
 			}
 		    }
 		}
@@ -413,7 +413,7 @@ new_post_batch "widget/component-decl"
 		    {
 		    path="/apps/kardia/modules/base/section_check_label.cmp";
 		    height=20;
-		    text = "Interfund Xfer Asset Balance";
+		    text = "i18n:Interfund Xfer Asset Balance";
 		    checked = runclient(condition(:a1900_balance_osrc:total == '$0.00', 1, 0));
 		    }
 
@@ -446,8 +446,8 @@ new_post_batch "widget/component-decl"
 
 		    a1900_bal_form "widget/form"
 			{
-			f_a1900_recs "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=rectxt; ctl_type=label; text="Present:"; }
-			f_a1900_bal "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=total; ctl_type=label; text="Balance:"; }
+			f_a1900_recs "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=rectxt; ctl_type=label; text="i18n:Present:"; }
+			f_a1900_bal "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=total; ctl_type=label; text="i18n:Balance:"; }
 			}
 		    }
 
@@ -457,7 +457,7 @@ new_post_batch "widget/component-decl"
 		    {
 		    path="/apps/kardia/modules/base/section_check_label.cmp";
 		    height=20;
-		    text = "Cost Center Balance";
+		    text = "i18n:Cost Center Balance";
 		    checked = runclient(condition(:cc_balance_osrc:ctext == 'None', 1, 0));
 		    }
 
@@ -495,7 +495,7 @@ new_post_batch "widget/component-decl"
 			target_key_2 = a_ledger_number;
 			}
 
-		    cc_balance_label "widget/label" { height=16; text="Unbalanced cost centers in this batch:"; }
+		    cc_balance_label "widget/label" { height=16; text="i18n:Unbalanced cost centers in this batch:"; }
 
 		    cc_balance_info "widget/label" { height=34; value=runclient(:cc_balance_osrc:ctext + "..."); style=bold; }
 
@@ -528,7 +528,7 @@ new_post_batch "widget/component-decl"
 			    {
 			    width=130; height=24;
 			    enabled = runclient(:a1900_balance_osrc:cnt > 0 and :batch_info_osrc:min_is_posted == 0);
-			    text = "Remove";
+			    text = "i18n:Remove";
 
 			    do_rm1900 "widget/connector"
 				{
@@ -549,7 +549,7 @@ new_post_batch "widget/component-decl"
 		    {
 		    path="/apps/kardia/modules/base/section_check_label.cmp";
 		    height=20;
-		    text = "Interfund / Within-Fund Xfer Balance";
+		    text = "i18n:Interfund / Within-Fund Xfer Balance";
 		    checked = runclient(condition(:ixfr_balance_osrc:if_xfr == '$0.00' and :ixfr_balance_osrc:wf_xfr == '$0.00', 1, -1));
 		    }
 
@@ -602,7 +602,7 @@ new_post_batch "widget/component-decl"
 		{
 		width = 130;
 		height = 24;
-		text = "Post Batch";
+		text = "i18n:Post Batch";
 		enabled = runclient(:batch_balance_hdr:checked and :jnl_balance_hdr:checked and :trx_validity_hdr:checked and :acct_1900_hdr:checked and :cc_balance_hdr:checked and :batch_info_osrc:min_is_posted == 0);
 
 		do_post "widget/connector"

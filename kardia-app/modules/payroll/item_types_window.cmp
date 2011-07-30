@@ -14,7 +14,7 @@ item_types_window "widget/component-decl"
 
     itwin "widget/childwindow"
 	{
-	title = "Payroll Line Item Types";
+	title = "i18n:Payroll Line Item Types";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;

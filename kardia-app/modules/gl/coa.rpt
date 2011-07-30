@@ -1,7 +1,7 @@
 $Version=2$
 coa "system/report"
     {
-    title = "Chart of Accounts";
+    title = "i18n:Chart of Accounts";
     resolution = 300;
     document_format="application/pdf";
 

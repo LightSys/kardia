@@ -27,9 +27,9 @@ period_one_edit "widget/component-decl"
 	    mode=dynamicrow;
 	    objectsource = osrc;
 
-	    p_t_number "widget/table-column" { title="Period"; fieldname="a_period"; width=60; } 
-	    p_t_status "widget/table-column" { title="Status"; fieldname="a_status"; width=50; } 
-	    p_t_desc "widget/table-column" { title="Description"; fieldname="a_period_desc"; width=340; } 
+	    p_t_number "widget/table-column" { title="i18n:Period"; fieldname="a_period"; width=60; } 
+	    p_t_status "widget/table-column" { title="i18n:Status"; fieldname="a_status"; width=50; } 
+	    p_t_desc "widget/table-column" { title="i18n:Description"; fieldname="a_period_desc"; width=340; } 
 	    }
 	}
 
@@ -49,20 +49,20 @@ period_one_edit "widget/component-decl"
 	{
 	x=0;y=194;height=179;cellsize=20;spacing=4; width=260;
 
-	f_a_period "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period; text="Period:"; ctl_type="editbox"; tooltip="Period ID"; form=form; }
-	f_a_parent_period "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_parent_period; text="Rollup Period:"; ctl_type="editbox"; tooltip="Period that this period is a part of"; form=form; }
-	f_a_per_status "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_status; text="Status:"; ctl_type="dropdown"; tooltip="Status"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_a_period_status/rows"; form=form; }
-	f_a_per_summary "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_summary_only; text="Summary?"; ctl_type="checkbox"; tooltip="Period is summary-only"; form=form; }
-	f_a_per_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period_desc; text="Description:"; ctl_type="editbox"; tooltip="A short description of this period"; form=form; }
-	f_a_per_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period_comment; text="Comments:"; ctl_type="textarea"; tooltip="Comments"; form=form; }
+	f_a_period "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period; text="i18n:Period:"; ctl_type="editbox"; tooltip="i18n:Period ID"; form=form; }
+	f_a_parent_period "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_parent_period; text="i18n:Rollup Period:"; ctl_type="editbox"; tooltip="i18n:Period that this period is a part of"; form=form; }
+	f_a_per_status "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_status; text="i18n:Status:"; ctl_type="dropdown"; tooltip="i18n:Status"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_a_period_status/rows"; form=form; }
+	f_a_per_summary "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_summary_only; text="i18n:Summary?"; ctl_type="checkbox"; tooltip="i18n:Period is summary-only"; form=form; }
+	f_a_per_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period_desc; text="i18n:Description:"; ctl_type="editbox"; tooltip="i18n:A short description of this period"; form=form; }
+	f_a_per_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period_comment; text="i18n:Comments:"; ctl_type="textarea"; tooltip="i18n:Comments"; form=form; }
 	}
     per_vbox_2 "widget/vbox"
 	{
 	x=270;y=194;height=179;cellsize=20;spacing=4; width=230;
-	f_a_per_start "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_start_date"; ctl_type=datetime; text="Start Date:"; form=form; }
-	f_a_per_end "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_end_date"; ctl_type=datetime; text="End Date:"; form=form; }
-	f_a_per_opened "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_first_opened"; ctl_type=datetime; text="First Opened:"; form=form; }
-	f_a_per_closed "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_last_closed"; ctl_type=datetime; text="Last Closed:"; form=form; }
-	f_a_per_archived "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_archived"; ctl_type=datetime; text="Archived:"; form=form; }
+	f_a_per_start "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_start_date"; ctl_type=datetime; text="i18n:Start Date:"; form=form; }
+	f_a_per_end "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_end_date"; ctl_type=datetime; text="i18n:End Date:"; form=form; }
+	f_a_per_opened "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_first_opened"; ctl_type=datetime; text="i18n:First Opened:"; form=form; }
+	f_a_per_closed "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_last_closed"; ctl_type=datetime; text="i18n:Last Closed:"; form=form; }
+	f_a_per_archived "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_archived"; ctl_type=datetime; text="i18n:Archived:"; form=form; }
 	}
     }

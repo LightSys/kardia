@@ -13,7 +13,7 @@ ledger_select "widget/component-decl"
 	width=400;height=300;
 	x=200;y=150;
 	style=dialog;
-	title="Select Ledger";
+	title="i18n:Select Ledger";
 	icon = "/apps/kardia/images/icons/gift.gif";
 	visible = false;
 
@@ -25,7 +25,7 @@ ledger_select "widget/component-decl"
 
 	inst_lbl "widget/label"
 	    {
-	    x=10;y=50;height=16;width=200;text="Select a Ledger:";
+	    x=10;y=50;height=16;width=200;text="i18n:Select a Ledger:";
 	    }
 
 	sel_osrc "widget/osrc"
@@ -45,8 +45,8 @@ ledger_select "widget/component-decl"
 		    rowheight = 20;
 		    mode=dynamicrow;
 
-		    t_a_ledger_number "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=80; }
-		    t_a_ledger_desc "widget/table-column" { title="Description"; fieldname="a_ledger_desc"; width=250; }
+		    t_a_ledger_number "widget/table-column" { title="i18n:Ledger"; fieldname="a_ledger_number"; width=80; }
+		    t_a_ledger_desc "widget/table-column" { title="i18n:Description"; fieldname="a_ledger_desc"; width=250; }
 		    }
 		}
 	    sel_form "widget/form"
@@ -61,14 +61,14 @@ ledger_select "widget/component-decl"
 	select_btn "widget/textbutton"
 	    {
 	    x=100;width=95;y=240;
-	    text="Select";
+	    text="i18n:Select";
 	    select_btn_cn "widget/connector" { event="Click"; target=sel_form; action=Submit; Target=runclient("page"); ledger=runclient(:sel_form:a_ledger_number); }
 	    }
 
 	cancel_btn "widget/textbutton"
 	    {
 	    x=205;width=95;y=240;
-	    text="Cancel";
+	    text="i18n:Cancel";
 	    cancel_btn_cn "widget/connector" { event="Click"; target=selwin; action=Close; }
 	    }
 	}

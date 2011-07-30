@@ -25,14 +25,14 @@ admin_types "widget/component-decl"
 		    x=4;y=0;width=248;height=18;
 		    widget_class="label";
 		    align=left;
-		    text = "Search Admin Fee Types";
+		    text = "i18n:Search Admin Fee Types";
 		    }
 		}
 
 	    searcheb "widget/editbox"
 		{
 		height=24;
-		empty_description = "type here to search";
+		empty_description = "i18n:type here to search";
 
 		search_cn1 "widget/connector"
 		    {
@@ -78,10 +78,10 @@ admin_types "widget/component-decl"
 			{
 			height=318; width=248; x=0; y=0;
 
-			t_type "widget/table-column" { title="Type"; fieldname="a_admin_fee_type"; width=40; }
-			t_desc "widget/table-column" { title="Description"; fieldname="desc"; width=100; }
-			t_minpct "widget/table-column" { title="Min%"; fieldname="minpct"; width=40; align=right; }
-			t_maxpct "widget/table-column" { title="Max%"; fieldname="maxpct"; width=40; align=right; }
+			t_type "widget/table-column" { title="i18n:Type"; fieldname="a_admin_fee_type"; width=40; }
+			t_desc "widget/table-column" { title="i18n:Description"; fieldname="desc"; width=100; }
+			t_minpct "widget/table-column" { title="i18n:Min%"; fieldname="minpct"; width=40; align=right; }
+			t_maxpct "widget/table-column" { title="i18n:Max%"; fieldname="maxpct"; width=40; align=right; }
 			}
 		    }
 		}
@@ -153,8 +153,8 @@ admin_types "widget/component-decl"
 			{
 			height=150; width=248; x=0; y=0;
 
-			s_t_type "widget/table-column" { title="Sub"; fieldname="a_admin_fee_subtype"; width=40; }
-			s_t_desc "widget/table-column" { title="Description"; fieldname="a_admin_fee_type_desc"; width=140; }
+			s_t_type "widget/table-column" { title="i18n:Sub"; fieldname="a_admin_fee_subtype"; width=40; }
+			s_t_desc "widget/table-column" { title="i18n:Description"; fieldname="a_admin_fee_type_desc"; width=140; }
 			s_t_pct "widget/table-column" { title="%"; fieldname="pct"; width=40; align=right; }
 			}
 		    }
@@ -198,7 +198,7 @@ admin_types "widget/component-decl"
 
 		    addtype_btn "widget/textbutton"
 			{
-			text = "Add Type";
+			text = "i18n:Add Type";
 			enabled = runclient(:admin_form:is_newable);
 
 			//addt_1 "widget/connector" { event=Click; target=searchlistosrc; action=Clear; }
@@ -209,7 +209,7 @@ admin_types "widget/component-decl"
 
 		    addsubtype_btn "widget/textbutton"
 			{
-			text = "Add SubType";
+			text = "i18n:Add SubType";
 			enabled = runclient(:admin_form:is_newable and not (:searchlistosrc:a_admin_fee_type is null));
 
 			adds_1 "widget/connector" { event=Click; target=adding_subtype; action=SetValue; Value=runclient(1); }
@@ -243,12 +243,12 @@ admin_types "widget/component-decl"
 		    }
 
 		// Now the form to edit the admin fee type
-		f_type "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_admin_fee_type'; text='Type:'; label_width=120; }
-		f_subtype "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_admin_fee_subtype'; text='Sub Type:'; label_width=120; }
-		f_desc "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_admin_fee_type_desc'; text='Description:'; label_width=120; }
-		f_default "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_is_default_subtype'; ctl_type=checkbox; text='Is Default Subtype?'; label_width=120; }
-		f_pct "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_default_percentage'; text='Percentage:'; label_width=120; }
-		f_comm "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_comment'; text='Comments:'; label_width=120; }
+		f_type "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_admin_fee_type'; text='i18n:Type:'; label_width=120; }
+		f_subtype "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_admin_fee_subtype'; text='i18n:Sub Type:'; label_width=120; }
+		f_desc "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_admin_fee_type_desc'; text='i18n:Description:'; label_width=120; }
+		f_default "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_is_default_subtype'; ctl_type=checkbox; text='i18n:Is Default Subtype?'; label_width=120; }
+		f_pct "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_default_percentage'; text='i18n:Percentage:'; label_width=120; }
+		f_comm "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_comment'; text='i18n:Comments:'; label_width=120; }
 
 		sp2 "widget/autolayoutspacer" { height=2; }
 
@@ -358,9 +358,9 @@ admin_types "widget/component-decl"
 
 				//f_dest "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_dest_cost_center'; text='To CostCtr:'; label_width=120; }
 				f_dest "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_dest_cost_center"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="To CostCtr:"; attach_point=editbox; label_width=120; empty_desc="Fund to receive admin fee revenues"; }
-				f_pct2 "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_percentage'; text='Percentage:'; label_width=120; }
-				f_fixed "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_is_fixed'; text='Is Fixed?'; ctl_type=checkbox; label_width=120; }
-				f_comm2 "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_comment'; text='Comments:'; label_width=120; }
+				f_pct2 "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_percentage'; text='i18n:Percentage:'; label_width=120; }
+				f_fixed "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_is_fixed'; text='i18n:Is Fixed?'; ctl_type=checkbox; label_width=120; }
+				f_comm2 "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_comment'; text='i18n:Comments:'; label_width=120; }
 				}
 
 			    adminitem_tbl_pane "widget/pane"
@@ -376,11 +376,11 @@ admin_types "widget/component-decl"
 				    //allow_selection = yes;
 				    //show_selection = no;
 
-				    t_actual_pct "widget/table-column" { title="Actual %"; fieldname="actual_item_pct"; width=70; align=right; }
-				    t_config_pct "widget/table-column" { title="Type %"; fieldname="a_disp_percentage"; width=70; align=right; }
-				    t_fixed "widget/table-column" { title="Fixed?"; fieldname="a_is_fixed"; width=60; type=check; }
-				    t_dest_cc "widget/table-column" { title="To Costctr:"; fieldname="a_dest_cost_center"; width=90; }
-				    t_dest_cc_txt "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=190; }
+				    t_actual_pct "widget/table-column" { title="i18n:Actual %"; fieldname="actual_item_pct"; width=70; align=right; }
+				    t_config_pct "widget/table-column" { title="i18n:Type %"; fieldname="a_disp_percentage"; width=70; align=right; }
+				    t_fixed "widget/table-column" { title="i18n:Fixed?"; fieldname="a_is_fixed"; width=60; type=check; }
+				    t_dest_cc "widget/table-column" { title="i18n:To Costctr:"; fieldname="a_dest_cost_center"; width=90; }
+				    t_dest_cc_txt "widget/table-column" { title="i18n:Description"; fieldname="a_cc_desc"; width=190; }
 				    }
 				}
 			    }

@@ -3,7 +3,7 @@ plugin_gl_fundedit_autosub "widget/component-decl"
     {
     width=490;
     height=292;
-    title = "Auto-Subscribe";
+    title = "i18n:Auto-Subscribe";
 
     Modified "widget/component-decl-event" { }
 
@@ -52,7 +52,7 @@ plugin_gl_fundedit_autosub "widget/component-decl"
 
 	    as_form "widget/form"
 		{
-		form_txt "widget/label" { text="Here you can automatically subscribe a donor to one or more mailing lists when the donor gives to this fund."; height=32; }
+		form_txt "widget/label" { text="i18n:Here you can automatically subscribe a donor to one or more mailing lists when the donor gives to this fund."; height=32; }
 		form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; height=26; object_name="List"; }
 
 		as_table_pane "widget/pane"
@@ -66,19 +66,19 @@ plugin_gl_fundedit_autosub "widget/component-decl"
 			width=488; height=100;
 			mode = dynamicrow;
 
-			t_list "widget/table-column" { title="List"; fieldname="m_list_code"; width=60; }
-			t_listdesc "widget/table-column" { title="Description"; fieldname="m_list_description"; width=150; }
-			t_liststat "widget/table-column" { title="Status"; fieldname="stattext"; width=90; }
-			t_mingift "widget/table-column" { title="Min. Gift"; fieldname="a_minimum_gift"; width=90; }
-			t_months "widget/table-column" { title="Subscribe For"; fieldname="monthtext"; width=90; }
+			t_list "widget/table-column" { title="i18n:List"; fieldname="m_list_code"; width=60; }
+			t_listdesc "widget/table-column" { title="i18n:Description"; fieldname="m_list_description"; width=150; }
+			t_liststat "widget/table-column" { title="i18n:Status"; fieldname="stattext"; width=90; }
+			t_mingift "widget/table-column" { title="i18n:Min. Gift"; fieldname="a_minimum_gift"; width=90; }
+			t_months "widget/table-column" { title="i18n:Subscribe For"; fieldname="monthtext"; width=90; }
 			}
 		    }
 
 		//f_listcode "widget/component" { width=300; height=20; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; text='Mailing List:'; label_width=100; }
-		f_list_code "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; ctl_type=dropdown; text='Mailing List:'; sql=runserver("select :m_list_code + ': ' + :m_list_description, :m_list_code from /apps/kardia/data/Kardia_DB/m_list/rows where :m_list_type = 'P' order by :m_list_code"); } 
-		f_minimum_gift "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_minimum_gift'; text='Minimum Gift:'; min_gift_hints "widget/hints" { default=runclient(0); } }
-		f_sub_months "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_subscribe_months'; text='Subscribe For:'; empty_desc = "# of months - optional"; sub_mon_hints "widget/hints" { default=runclient(''); } }
-		f_comments "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_comments'; text='Comments:'; }
+		f_list_code "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; ctl_type=dropdown; text='i18n:Mailing List:'; sql=runserver("select :m_list_code + ': ' + :m_list_description, :m_list_code from /apps/kardia/data/Kardia_DB/m_list/rows where :m_list_type = 'P' order by :m_list_code"); } 
+		f_minimum_gift "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_minimum_gift'; text='i18n:Minimum Gift:'; min_gift_hints "widget/hints" { default=runclient(0); } }
+		f_sub_months "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_subscribe_months'; text='i18n:Subscribe For:'; empty_desc = "i18n:# of months - optional"; sub_mon_hints "widget/hints" { default=runclient(''); } }
+		f_comments "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_comments'; text='i18n:Comments:'; }
 
 		dt_c "widget/variable" { fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
 		us_c "widget/variable" { fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }

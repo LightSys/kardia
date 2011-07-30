@@ -12,7 +12,7 @@ glj_summary "widget/component-decl"
 	{
 	x=0;y=0;width=748;height=515;
 	style=dialog;
-	title="GL Batch Summary";
+	title="i18n:GL Batch Summary";
 	visible = false;
 	toplevel = yes;
 
@@ -58,11 +58,11 @@ glj_summary "widget/component-decl"
 		    show_selection = no;
 
 		    t_blank "widget/table-column" { title=""; fieldname="blank"; width=50; }
-		    t_asset "widget/table-column" { title="Asset Change"; fieldname="assets"; width=100; align=right; }
-		    t_liab "widget/table-column" { title="Liability Change"; fieldname="liabs"; width=100; align=right; }
-		    t_equity "widget/table-column" { title="Equity Change"; fieldname="equity"; width=100; align=right; }
-		    t_rev "widget/table-column" { title="Revenue Change"; fieldname="revenue"; width=100; align=right; }
-		    t_exp "widget/table-column" { title="Expense Change"; fieldname="expense"; width=100; align=right; }
+		    t_asset "widget/table-column" { title="i18n:Asset Change"; fieldname="assets"; width=100; align=right; }
+		    t_liab "widget/table-column" { title="i18n:Liability Change"; fieldname="liabs"; width=100; align=right; }
+		    t_equity "widget/table-column" { title="i18n:Equity Change"; fieldname="equity"; width=100; align=right; }
+		    t_rev "widget/table-column" { title="i18n:Revenue Change"; fieldname="revenue"; width=100; align=right; }
+		    t_exp "widget/table-column" { title="i18n:Expense Change"; fieldname="expense"; width=100; align=right; }
 		    }
 		}
 	    totals_label_pane "widget/pane"
@@ -104,12 +104,12 @@ glj_summary "widget/component-decl"
 		    allow_selection = no;
 		    show_selection = no;
 
-		    t_costctr "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=50; }
-		    t_cc_asset "widget/table-column" { title="Asset Change"; fieldname="assets"; width=100; align=right; }
-		    t_cc_liab "widget/table-column" { title="Liability Change"; fieldname="liabs"; width=100; align=right; }
-		    t_cc_equity "widget/table-column" { title="Equity Change"; fieldname="equity"; width=100; align=right; }
-		    t_cc_rev "widget/table-column" { title="Revenue Change"; fieldname="revenue"; width=100; align=right; }
-		    t_cc_exp "widget/table-column" { title="Expense Change"; fieldname="expense"; width=100; align=right; }
+		    t_costctr "widget/table-column" { title="i18n:Cost Ctr"; fieldname="a_cost_center"; width=50; }
+		    t_cc_asset "widget/table-column" { title="i18n:Asset Change"; fieldname="assets"; width=100; align=right; }
+		    t_cc_liab "widget/table-column" { title="i18n:Liability Change"; fieldname="liabs"; width=100; align=right; }
+		    t_cc_equity "widget/table-column" { title="i18n:Equity Change"; fieldname="equity"; width=100; align=right; }
+		    t_cc_rev "widget/table-column" { title="i18n:Revenue Change"; fieldname="revenue"; width=100; align=right; }
+		    t_cc_exp "widget/table-column" { title="i18n:Expense Change"; fieldname="expense"; width=100; align=right; }
 		    }
 		}
 	    cctotals_label_pane "widget/pane"
@@ -150,25 +150,25 @@ glj_summary "widget/component-decl"
 		    allow_selection = no;
 		    show_selection = no;
 
-		    t_acct "widget/table-column" { title="Account"; fieldname="a_account_code"; width=50; }
-		    t_ac_type "widget/table-column" { title="Type"; fieldname="text"; width=100; }
-		    t_ac_desc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=200; }
-		    t_ac_amtd "widget/table-column" { title="Debits (+)"; fieldname="a_amount_plus"; width=100; align=right; }
-		    t_ac_amtc "widget/table-column" { title="Credits (-)"; fieldname="a_amount_minus"; width=100; align=right; }
+		    t_acct "widget/table-column" { title="i18n:Account"; fieldname="a_account_code"; width=50; }
+		    t_ac_type "widget/table-column" { title="i18n:Type"; fieldname="text"; width=100; }
+		    t_ac_desc "widget/table-column" { title="i18n:Description"; fieldname="a_acct_desc"; width=200; }
+		    t_ac_amtd "widget/table-column" { title="i18n:Debits (+)"; fieldname="a_amount_plus"; width=100; align=right; }
+		    t_ac_amtc "widget/table-column" { title="i18n:Credits (-)"; fieldname="a_amount_minus"; width=100; align=right; }
 		    }
 		}
 	    actotals_label_pane "widget/pane"
 		{
 		widget_class=label;
 		x=20;y=290; width=242;
-		actotals_label "widget/label" { x=0;height=18;width=240;value="Batch Totals by Account"; widget_class="label"; }
+		actotals_label "widget/label" { x=0;height=18;width=240;value="i18n:Batch Totals by Account"; widget_class="label"; }
 		}
 	    }
 
 	closebtn "widget/textbutton"
 	    {
 	    width=100;x=324;y=452;
-	    text = "Close";
+	    text = "i18n:Close";
 	    close_cn "widget/connector" { event="Click"; target=glj_win; action="Close"; }
 	    }
 	}

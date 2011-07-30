@@ -1,8 +1,8 @@
 $Version=2$
 kardia_modinfo "system/structure"
     {
-    module_name = "Cash Disbursements";
-    module_abbrev = "Disbursements";
-    module_description = "Cash Disbursements (check writing) system with integration into the Kardia General Ledger";
+    module_name = "i18n:Cash Disbursements";
+    module_abbrev = "i18n:Disbursements";
+    module_description = "i18n:Cash Disbursements (check writing) system with integration into the Kardia General Ledger";
     module_sequence = 110;
     }

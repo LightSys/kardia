@@ -33,7 +33,7 @@ record_metadata "widget/component-decl"
 	x=120;y=0;height=20;width=120; 
 	fieldname = "s_date_created";
 	form=form; 
-	tooltip = runserver("Date this " + :this:object_name + " was created");
+	tooltip = runserver("i18n:Date this " + :this:object_name + " was created");
         create_hints "widget/hints" { default = runclient(getdate()); style=readonly; }
 	}
 
@@ -42,7 +42,7 @@ record_metadata "widget/component-decl"
 	x=120;y=25;height=20;width=120; 
 	fieldname = "s_date_modified";
 	form=form; 
-	tooltip = runserver("Date this " + :this:object_name + " was modified");
+	tooltip = runserver("i18n:Date this " + :this:object_name + " was modified");
         modify_hints "widget/hints" { default = runclient(getdate()); style=readonly,alwaysdef; }
 	}
     }

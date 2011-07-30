@@ -75,12 +75,12 @@ payees_cmp "widget/component-decl"
 		mode=dynamicrow;
 		fl_height=100;
 
-		t_valid "widget/table-column" { title="Valid From"; fieldname="txtdate"; width=70; }
-		t_per "widget/table-column" { title="Pay Period"; fieldname="itxt"; width=80; }
-		t_cc "widget/table-column" { title="Cost Center / Fund"; fieldname="cctxt"; width=220; }
-		t_ord "widget/table-column" { title="Ord"; fieldname="a_priority"; width=30; }
-		t_ptnrid "widget/table-column" { title="Payee ID"; fieldname="p_payee_partner_key"; width=60; }
-		t_ptnr "widget/table-column" { title="Payee Name"; fieldname="ptxt"; width=190; }
+		t_valid "widget/table-column" { title="i18n:Valid From"; fieldname="txtdate"; width=70; }
+		t_per "widget/table-column" { title="i18n:Pay Period"; fieldname="itxt"; width=80; }
+		t_cc "widget/table-column" { title="i18n:Cost Center / Fund"; fieldname="cctxt"; width=220; }
+		t_ord "widget/table-column" { title="i18n:Ord"; fieldname="a_priority"; width=30; }
+		t_ptnrid "widget/table-column" { title="i18n:Payee ID"; fieldname="p_payee_partner_key"; width=60; }
+		t_ptnr "widget/table-column" { title="i18n:Payee Name"; fieldname="ptxt"; width=190; }
 		}
 	    }
 
@@ -101,10 +101,10 @@ payees_cmp "widget/component-decl"
 		cellsize=20;
 		fl_height=0;
 
-		f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="Valid From:"; ctl_type="datetime"; tooltip="Date that this payroll entry begins to be valid"; label_width=100; }
-		f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid To:"; ctl_type="datetime"; tooltip="Last day that this payroll entry is valid"; label_width=100; }
-		f_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="Pay Period:"; ctl_type="dropdown"; tooltip="Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
-		f_prio "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_priority; text="Order:"; ctl_type="editbox"; tooltip="Priority of this payroll record (lower number means it is run first)"; label_width=100; }
+		f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="i18n:Valid From:"; ctl_type="datetime"; tooltip="i18n:Date that this payroll entry begins to be valid"; label_width=100; }
+		f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="i18n:Valid To:"; ctl_type="datetime"; tooltip="i18n:Last day that this payroll entry is valid"; label_width=100; }
+		f_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="i18n:Pay Period:"; ctl_type="dropdown"; tooltip="i18n:Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
+		f_prio "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_priority; text="i18n:Order:"; ctl_type="editbox"; tooltip="i18n:Priority of this payroll record (lower number means it is run first)"; label_width=100; }
 		}
 
 	    payee_vbox_2 "widget/vbox"
@@ -114,10 +114,10 @@ payees_cmp "widget/component-decl"
 		cellsize=20;
 		fl_height=0;
 
-		f_defname "widget/component" { path="/sys/cmp/smart_field.cmp"; field=ptxt; text="Name:"; ctl_type="label"; tooltip="Default Payee Name"; label_width=100; }
-		f_name "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payee_name; text="Edit Name:"; ctl_type="editbox"; tooltip="Payee name to override default"; label_width=100; }
-		f_costctr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_cost_center"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Ctr:"; attach_point=editbox; label_width=100; empty_desc="required"; }
-		f_ptnr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=p_payee_partner_key; popup_source=runserver("/apps/kardia/modules/payroll/payee_partners.qyt/"); popup_text="Choose Payee:"; text="Partner ID:"; attach_point="editbox"; tooltip="Partner ID (address record #) for Payee (required)"; label_width=100; empty_desc="required"; }
+		f_defname "widget/component" { path="/sys/cmp/smart_field.cmp"; field=ptxt; text="i18n:Name:"; ctl_type="label"; tooltip="i18n:Default Payee Name"; label_width=100; }
+		f_name "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payee_name; text="i18n:Edit Name:"; ctl_type="editbox"; tooltip="i18n:Payee name to override default"; label_width=100; }
+		f_costctr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_cost_center"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="i18n:Choose Cost Center:"; text="i18n:Cost Ctr:"; attach_point=editbox; label_width=100; empty_desc="required"; }
+		f_ptnr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=p_payee_partner_key; popup_source=runserver("/apps/kardia/modules/payroll/payee_partners.qyt/"); popup_text="i18n:Choose Payee:"; text="i18n:Partner ID:"; attach_point="editbox"; tooltip="i18n:Partner ID (address record #) for Payee (required)"; label_width=100; empty_desc="i18n:required"; }
 		}
 
 	    payee_vbox_3 "widget/vbox"
@@ -130,7 +130,7 @@ payees_cmp "widget/component-decl"
 		detail_btn "widget/textbutton"
 		    {
 		    width = 140;
-		    text = "Pay Details...";
+		    text = "i18n:Pay Details...";
 
 		    go_detail "widget/connector" { event=Click; target=paydet; action=GotoPayee; Payee=runclient(:payee_osrc:a_payroll_id); Group=runclient(:group_osrc:a_payroll_group_id); }
 		    }

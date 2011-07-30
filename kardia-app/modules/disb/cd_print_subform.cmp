@@ -139,7 +139,7 @@ cd_print_subform "widget/component-decl"
 				ctl_type=editbox;
 				label_width=175;
 				label_height=30;
-				text="Set / Starting Check Number: ";
+				text="i18n:Set / Starting Check Number: ";
 				
 			}
 			
@@ -149,7 +149,7 @@ cd_print_subform "widget/component-decl"
 			{
 				x=40;
 				width=190;
-				text="Preview the Selected Check";
+				text="i18n:Preview the Selected Check";
 				
 				// print_check_debug_cn "widget/connector" { event="Click"; target="alerter";
 				// 		action="Alert";
@@ -205,7 +205,7 @@ cd_print_subform "widget/component-decl"
 			{
 				x=40;
 				width=190;
-				text="Preview Batch of Checks";
+				text="i18n:Preview Batch of Checks";
 				
 				open_batch_rpt_cn "widget/connector"
 				{
@@ -233,7 +233,7 @@ cd_print_subform "widget/component-decl"
 			{
 				x=40;
 				width=190;
-				text="Close";
+				text="i18n:Close";
 				
 				close_cn "widget/connector"
 				{

@@ -1,7 +1,7 @@
 $Version=2$
 journal_entry "widget/page"
     {
-    title = "GL Journal Entry";
+    title = "i18n:GL Journal Entry";
     width=800; height=600;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }

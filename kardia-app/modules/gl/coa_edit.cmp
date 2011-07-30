@@ -33,7 +33,7 @@ coa_edit "widget/component-decl"
 
 	ledger_tab "widget/tabpage"
 	    {
-	    title = "Ledgers";
+	    title = "i18n:Ledgers";
 
 	    editledger "widget/component"
 		{
@@ -45,7 +45,7 @@ coa_edit "widget/component-decl"
 
 	accts_tab "widget/tabpage"
 	    {
-	    title="GL Accounts";
+	    title="i18n:GL Accounts";
 
 	    accts "widget/component"
 		{
@@ -56,7 +56,7 @@ coa_edit "widget/component-decl"
 
 	cc_tab "widget/tabpage"
 	    {
-	    title = "Cost Centers";
+	    title = "i18n:Cost Centers";
 
 	    ccs "widget/component"
 		{
@@ -67,7 +67,7 @@ coa_edit "widget/component-decl"
 
 	period_tab "widget/tabpage"
 	    {
-	    title = "Periods";
+	    title = "i18n:Periods";
 
 	    periods "widget/component"
 		{
@@ -78,7 +78,7 @@ coa_edit "widget/component-decl"
 
 	settings_tab "widget/tabpage"
 	    {
-	    title = "Settings";
+	    title = "i18n:Settings";
 
 	    acct_settings "widget/component"
 		{
@@ -98,7 +98,7 @@ coa_edit "widget/component-decl"
 
 	gl_master_tab "widget/tabpage"
 	    {
-	    title = "GL Master List";
+	    title = "i18n:GL Master List";
 
 	    master_lbl "widget/label"
 		{
@@ -109,7 +109,7 @@ coa_edit "widget/component-decl"
 	    master_btn "widget/textbutton"
 		{
 		x=303;y=130;width=120;height=32;
-		text = "GL Master List";
+		text = "i18n:GL Master List";
 
 		master_cn "widget/connector"
 		    {

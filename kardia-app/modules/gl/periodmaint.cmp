@@ -12,7 +12,7 @@ periodmaint "widget/component-decl"
 	    {
 	    path="/apps/kardia/modules/base/section_label.cmp";
 	    height=20; width=780;
-	    text = runserver("Accounting Years - Ledger " + :this:ledger);
+	    text = runserver("i18n:Accounting Years - Ledger " + :this:ledger);
 	    }
 
 	year_hbox "widget/hbox"
@@ -64,8 +64,8 @@ periodmaint "widget/component-decl"
 			{
 			height=198; width=198; x=0; y=0;
 
-			t_yr "widget/table-column" { title="Year"; fieldname="a_period_desc"; width=125; }
-			t_stat "widget/table-column" { title="Status"; fieldname="text"; width=55; }
+			t_yr "widget/table-column" { title="i18n:Year"; fieldname="a_period_desc"; width=125; }
+			t_stat "widget/table-column" { title="i18n:Status"; fieldname="text"; width=55; }
 			}
 		    }
 		}
@@ -100,7 +100,7 @@ periodmaint "widget/component-decl"
 		newyr_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "New Year";
+		    text = "i18n:New Year";
 		    enabled = runclient(:yearedit_form:is_newable);
 
 		    newyr_cn "widget/connector" { event=Click; target=yearedit_form; action=New; }
@@ -123,7 +123,7 @@ periodmaint "widget/component-decl"
 		closeyr_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "Close Year";
+		    text = "i18n:Close Year";
 		    enabled = runclient(:year_osrc:a_status = 'O' and :yearedit_form:form_mode == 'View');
 
 		    closeyr_cn "widget/connector"
@@ -139,7 +139,7 @@ periodmaint "widget/component-decl"
 		archiveyr_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "Archive Year";
+		    text = "i18n:Archive Year";
 		    enabled = runclient(:year_osrc:a_status = 'C' and :yearedit_form:form_mode == 'View');
 
 		    archiveyr_cn "widget/connector"
@@ -159,14 +159,14 @@ periodmaint "widget/component-decl"
 		yrsave_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "Save";
+		    text = "i18n:Save";
 		    enabled = runclient(:yearedit_form:is_savable);
 		    yrsave_cn "widget/connector" { event=Click; target=yearedit_form; action=Save; }
 		    }
 		yrcancel_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "Cancel";
+		    text = "i18n:Cancel";
 		    enabled = runclient(:yearedit_form:is_discardable);
 		    yrcancel_cn "widget/connector" { event=Click; target=yearedit_form; action=Discard; }
 		    }
@@ -247,8 +247,8 @@ periodmaint "widget/component-decl"
 			{
 			height=298; width=198; x=0; y=0;
 
-			t_per "widget/table-column" { title="Year"; fieldname="a_period_desc"; width=125; }
-			t_perstat "widget/table-column" { title="Status"; fieldname="text"; width=55; }
+			t_per "widget/table-column" { title="i18n:Year"; fieldname="a_period_desc"; width=125; }
+			t_perstat "widget/table-column" { title="i18n:Status"; fieldname="text"; width=55; }
 			}
 		    }
 		}
@@ -263,14 +263,14 @@ periodmaint "widget/component-decl"
 		    spacing=4;
 
 		    //perdisp_lbl "widget/label" { height=24; font_size=16; style=bold; fgcolor="#153f5f"; value=runclient(:period_osrc:a_period + ' - ' + :period_osrc:a_period_desc); }
-		    p_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=100; }
-		    p_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period'; ctl_type=editbox; text='Period:'; label_width=100; p_period_hnt "widget/hints" { style=createonly; } }
-		    p_perioddesc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period_desc'; ctl_type=editbox; text='Description:'; label_width=100; }
-		    p_start "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_start_date'; ctl_type=datetime; text='Start Date:'; label_width=100; date_only=1; default_time="00:00:00"; }
-		    p_end "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_end_date'; ctl_type=datetime; text='End Date:'; label_width=100; date_only=1; default_time="23:59:59"; }
-		    p_opened "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_first_opened'; ctl_type=datetime; text='Opened:'; label_width=100; type=readonly; }
-		    p_closed "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_last_closed'; ctl_type=datetime; text='Closed:'; label_width=100; type=readonly; }
-		    p_archived "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_archived'; ctl_type=datetime; text='Archived:'; label_width=100; type=readonly; }
+		    p_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='i18n:Ledger:'; label_width=100; }
+		    p_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period'; ctl_type=editbox; text='i18n:Period:'; label_width=100; p_period_hnt "widget/hints" { style=createonly; } }
+		    p_perioddesc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period_desc'; ctl_type=editbox; text='i18n:Description:'; label_width=100; }
+		    p_start "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_start_date'; ctl_type=datetime; text='i18n:Start Date:'; label_width=100; date_only=1; default_time="00:00:00"; }
+		    p_end "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_end_date'; ctl_type=datetime; text='i18n:End Date:'; label_width=100; date_only=1; default_time="23:59:59"; }
+		    p_opened "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_first_opened'; ctl_type=datetime; text='i18n:Opened:'; label_width=100; type=readonly; }
+		    p_closed "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_last_closed'; ctl_type=datetime; text='i18n:Closed:'; label_width=100; type=readonly; }
+		    p_archived "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_archived'; ctl_type=datetime; text='i18n:Archived:'; label_width=100; type=readonly; }
 		    }
 		}
 
@@ -278,11 +278,11 @@ periodmaint "widget/component-decl"
 		{
 		width=150; spacing=4;
 
-		p_stat "widget/component" { form=peredit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='text'; ctl_type=label; text='Status:'; label_width=50; }
+		p_stat "widget/component" { form=peredit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='i18n:text'; ctl_type=label; text='Status:'; label_width=50; }
 		newper_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "New Period";
+		    text = "i18n:New Period";
 		    enabled = runclient(:peredit_form:is_newable);
 
 		    newper_cn "widget/connector" { event=Click; target=peredit_form; action=New; }
@@ -305,7 +305,7 @@ periodmaint "widget/component-decl"
 		closeper_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "Close Period";
+		    text = "i18n:Close Period";
 		    enabled = runclient(:period_osrc:a_status = 'O' and :peredit_form:form_mode == 'View');
 
 		    closeper_cn "widget/connector"
@@ -321,7 +321,7 @@ periodmaint "widget/component-decl"
 		archiveper_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "Archive Period";
+		    text = "i18n:Archive Period";
 		    enabled = runclient(:period_osrc:a_status = 'C' and :peredit_form:form_mode == 'View');
 
 		    archiveper_cn "widget/connector"
@@ -341,14 +341,14 @@ periodmaint "widget/component-decl"
 		persave_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "Save";
+		    text = "i18n:Save";
 		    enabled = runclient(:peredit_form:is_savable);
 		    persave_cn "widget/connector" { event=Click; target=peredit_form; action=Save; }
 		    }
 		percancel_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
-		    text = "Cancel";
+		    text = "i18n:Cancel";
 		    enabled = runclient(:peredit_form:is_discardable);
 		    percancel_cn "widget/connector" { event=Click; target=peredit_form; action=Discard; }
 		    }

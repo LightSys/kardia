@@ -31,7 +31,7 @@ tax_table_window "widget/component-decl"
 
     tt_win "widget/childwindow"
 	{
-	title = "Maintain Tax Table";
+	title = "i18n:Maintain Tax Table";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;

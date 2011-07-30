@@ -1,7 +1,7 @@
 $Version=2$
 disbursements_detail "system/report"
     {
-    title = "Disbursements Detail";
+    title = "i18n:Disbursements Detail";
 
     document_format="application/pdf";
     resolution = 300;

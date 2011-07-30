@@ -42,7 +42,7 @@ search_by_list "widget/component-decl"
 
 	tc_all "widget/tabpage"
 	    {
-	    all_lbl "widget/label" { x=0;y=40;width=289;height=20;align=center;text=runserver("All " + :this:object_name + "s"); }
+	    all_lbl "widget/label" { x=0;y=40;width=289;height=20;align=center;text=runserver("i18n:All " + :this:object_name + "s"); }
 	    }
 	tc_list "widget/tabpage"
 	    {
@@ -59,7 +59,7 @@ search_by_list "widget/component-decl"
 		    rowheight = 20;
 		    mode=dynamicrow;
 
-		    t_id "widget/table-column" { title=runserver(:this:object_name + " ID"); fieldname="id"; width=80; }
+		    t_id "widget/table-column" { title=runserver("i18n:":this:object_name + " ID"); fieldname="id"; width=80; }
 		    t_desc "widget/table-column" { title="i18n:Description"; fieldname="description"; width=180; }
 		    }
 

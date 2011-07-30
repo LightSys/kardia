@@ -17,7 +17,7 @@ acct_bal_window "widget/component-decl"
 
     abwin "widget/childwindow"
 	{
-	title = "Account Balances";
+	title = "i18n:Account Balances";
 	width=780; height=550;
 	x=10; y=25;
 	visible = false;
