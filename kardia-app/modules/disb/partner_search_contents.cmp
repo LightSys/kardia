@@ -324,7 +324,7 @@ partner_search_component "widget/component-decl"
 					p_legacy_key_2_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_2; text="i18n:Legacy Key 2"; ctl_type="editbox"; tooltip="i18n:Legacy Key 2 - Sort Code"; }
 					// p_title_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_title; text="i18n:Title"; ctl_type="editbox"; tooltip="i18n:The Partners Title"; }
 					// p_partner_class_cmp "widget/component" { type="readonly"; path="/apps/kardia/modules/base/fields/p_partner_class.cmp"; field=p_partner_class; text="i18n:Select type"; lookup_width=305; tooltip=""; }
-					// p_location_type_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_location_type; text="i18n:Location Type"; tooltip="H=home, W=work, S=school, V=vacation"; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows";}
+					// p_location_type_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_location_type; text="i18n:Location Type"; tooltip="i18n:H=home, W=work, S=school, V=vacation"; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows";}
 					// p_location_id_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_location_id; text="i18n:Location ID"; ctl_type="editbox"; tooltip="i18n:unique to this partner location ID"; }
 					
 				}

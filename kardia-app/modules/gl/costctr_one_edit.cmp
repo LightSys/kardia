@@ -27,9 +27,9 @@ costctr_one_edit "widget/component-decl"
 	    mode=dynamicrow;
 	    objectsource = osrc;
 
-	    c_t_number "widget/table-column" { title="CostCtr"; fieldname="a_cost_center"; width=60; } 
-	    c_t_class "widget/table-column" { title="Class"; fieldname="a_cost_center_class"; width=50; } 
-	    c_t_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=340; } 
+	    c_t_number "widget/table-column" { title="i18n:CostCtr"; fieldname="a_cost_center"; width=60; } 
+	    c_t_class "widget/table-column" { title="i18n:Class"; fieldname="a_cost_center_class"; width=50; } 
+	    c_t_desc "widget/table-column" { title="i18n:Description"; fieldname="a_cc_desc"; width=340; } 
 	    }
 	}
 

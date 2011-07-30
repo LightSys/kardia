@@ -342,7 +342,7 @@ p_partner_component "widget/component-decl"
 			    x=326; y=10; cellsize=20; spacing=4;
 			    height=338;
 			    width=300;
-			    //p_cost_center_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_cost_center; text="Cost Center:"; ctl_type="editbox"; form=p_partner_form; tooltip="Cost Center associated with the partner" ; }
+			    //p_cost_center_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_cost_center; text="i18n:Cost Center:"; ctl_type="editbox"; form=p_partner_form; tooltip="i18n:Cost Center associated with the partner" ; }
 			    //sep01 "widget/autolayoutspacer" { height=4; }
 			    recinfo_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="i18n:Record Information"; }
 			    p_record_status_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; form=p_partner_form; field=p_record_status_code; text="i18n:Record Status:"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows"; tooltip="i18n:The status of the record"; ctl_type="dropdown";}
@@ -444,7 +444,7 @@ p_partner_component "widget/component-decl"
 	bgcolor = "#e0e0e0";
 	titlebar = no;
 	modal = yes;
-	//title = "Partner Search";
+	//title = "i18n:Partner Search";
 	//icon = "/apps/kardia/images/icons/person-search.gif";
         partner_search_component "widget/component"
             {

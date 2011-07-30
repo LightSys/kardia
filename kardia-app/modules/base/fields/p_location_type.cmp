@@ -32,7 +32,7 @@ p_location_field "widget/component-decl"
         form=form;
         bgcolor=white;
         fieldname=runserver(:this:field);
-        tooltip="Defines what type of partner this is." ;
+        tooltip="i18n:Defines what type of partner this is." ;
         ddt0 "widget/dropdownitem" { label="Home"; value="H"; }
         ddt1 "widget/dropdownitem" { label="Work"; value="W"; }
         ddt2 "widget/dropdownitem" { label="Vacation"; value="V"; }

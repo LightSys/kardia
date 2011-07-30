@@ -133,7 +133,7 @@ p_location_component "widget/component-decl"
 			    table_address "widget/table-column" { width=105; title = "i18n:Address"; fieldname = all; }
 			    table_city "widget/table-column" { width=70; title = "i18n:City"; fieldname = p_city; }
 			    table_state "widget/table-column" { width=25; title = "i18n:St."; fieldname = p_state_province; }
-			    //table_postal "widget/table-column" { width=60; title = "Postal"; fieldname = p_postal_code; }
+			    //table_postal "widget/table-column" { width=60; title = "i18n:Postal"; fieldname = p_postal_code; }
 			    }
 			}
 		    }
@@ -280,7 +280,7 @@ p_location_component "widget/component-decl"
 
 			    table_contact_type "widget/table-column" { width=47; title = "i18n:Type"; fieldname = con_type_txt; }
 			    table_contact_location_type "widget/table-column" { width=47; title = "i18n:Where"; fieldname = loc_type_txt; }
-			    table_contact_data "widget/table-column" { width=148; title = "Ci18n:ontact Info"; fieldname = all; }
+			    table_contact_data "widget/table-column" { width=148; title = "i18n:Contact Info"; fieldname = all; }
 			    }
 			}
 
@@ -377,18 +377,17 @@ p_location_component "widget/component-decl"
 	    // Fields not yet addressed in new version:
 
 		    // location
-                    //p_record_status_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_record_status_code; text="record status"; form=p_location_form; tooltip="A=active, O=obsolete"; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows";}
-                    //s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; ctl_type="editbox"; type="create"; form=p_location_form; tooltip="Date this record was created"; }
-                    //s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; ctl_type="editbox"; type="create"; form=p_location_form; tooltip="User who created this"; }
-                    //s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="date modified"; type="modify"; ctl_type="editbox"; form=p_location_form; tooltip="Date this was last modified"; }
-                    //s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="modified by"; type="modify"; ctl_type="editbox"; form=p_location_form; tooltip="The user who last modified this record"; }
+                    //p_record_status_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_record_status_code; text="i18n:record status"; form=p_location_form; tooltip="i18n:A=active, O=obsolete"; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows";}
+                    //s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="i18n:date created"; ctl_type="editbox"; type="create"; form=p_location_form; tooltip="i18n:Date this record was created"; }
+                    //s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="i18n:created by"; ctl_type="editbox"; type="create"; form=p_location_form; tooltip="i18n:User who created this"; }
+                    //s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="i18n:date modified"; type="modify"; ctl_type="editbox"; form=p_location_form; tooltip="i18n:Date this was last modified"; }
+                    //s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="i18n:modified by"; type="modify"; ctl_type="editbox"; form=p_location_form; tooltip="i18n:The user who last modified this record"; }
 
 		    // contact
-                    //p_record_status_code_contact_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_record_status_code; text="record status code"; ctl_type="dropdown"; form=p_contact_info_form; tooltip="A=active, O=obsolete"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows";}
-                    //s_contact_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; type="create"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
-                    //s_contact_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; type="create"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
-                    //s_contact_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; type="modify"; text="date modified"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
-                    //s_contact_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; type="modify"; text="modified by"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
-
+                    //p_record_status_code_contact_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_record_status_code; text="i18n:record status code"; ctl_type="dropdown"; form=p_contact_info_form; tooltip="i18n:A=active, O=obsolete"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows";}
+                    //s_contact_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="i18n:date created"; type="create"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
+                    //s_contact_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="i18n:created by"; type="create"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
+                    //s_contact_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; type="modify"; text="i18n:date modified"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
+                    //s_contact_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; type="modify"; text="i18n:modified by"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
         }
     }

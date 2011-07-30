@@ -63,7 +63,7 @@ pay_form "widget/component-decl"
 	    ob_expl "widget/label"
 		{
 		width = 480;
-		text = runserver(isnull("Balance is prior to beginning of payroll period " + :this:period, "(working with template/budget; no opening balance)"));
+		text = runserver(isnull("i18n:Balance is prior to beginning of payroll period " + :this:period, "(working with template/budget; no opening balance)"));
 		}
 	    }
 

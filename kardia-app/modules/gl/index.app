@@ -1,7 +1,7 @@
 $Version=2$
 index "widget/page"
     {
-    title = "GL - Kardia";
+    title = "i18n:GL - Kardia";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");

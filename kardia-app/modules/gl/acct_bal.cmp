@@ -52,23 +52,23 @@ acct_bal_cmp "widget/component-decl"
 			{
 			x=8;y=8;width=300;height=220;spacing=4;cellsize=20;
 
-			f_cc "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_bal_cost_center'; ctl_type=label; text='Cost Center:'; label_width=130; }
-			f_act "widget/component" { path="/sys/cmp/smart_field.cmp"; field='last_trans'; ctl_type=label; text='Last Activity:'; label_width=130; }
+			f_cc "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_bal_cost_center'; ctl_type=label; text='i18n:Cost Center:'; label_width=130; }
+			f_act "widget/component" { path="/sys/cmp/smart_field.cmp"; field='last_trans'; ctl_type=label; text='i18n:Last Activity:'; label_width=130; }
 			//f_sep1 "widget/pane" { height=2; style=lowered; }
 			f_space1 "widget/autolayoutspacer" { height=20; }
-			f_asset "widget/component" { path="/sys/cmp/smart_field.cmp"; field='assets'; ctl_type=label; text='Assets:'; label_width=130; }
-			f_liab "widget/component" { path="/sys/cmp/smart_field.cmp"; field='liabilities'; ctl_type=label; text='Liabilities:'; label_width=130; }
+			f_asset "widget/component" { path="/sys/cmp/smart_field.cmp"; field='assets'; ctl_type=label; text='i18n:Assets:'; label_width=130; }
+			f_liab "widget/component" { path="/sys/cmp/smart_field.cmp"; field='liabilities'; ctl_type=label; text='i18n:Liabilities:'; label_width=130; }
 			f_sep2 "widget/pane" { height=2; style=lowered; }
-			f_assetliab "widget/component" { path="/sys/cmp/smart_field.cmp"; field='assetliab'; ctl_type=label; text='Asset+Liab:'; label_width=130; }
+			f_assetliab "widget/component" { path="/sys/cmp/smart_field.cmp"; field='assetliab'; ctl_type=label; text='i18n:Asset+Liab:'; label_width=130; }
 			}
 		    gl3vbox2 "widget/vbox"
 			{
 			x=380;y=56;width=300;height=220;spacing=4;cellsize=20;
-			f_openeq "widget/component" { path="/sys/cmp/smart_field.cmp"; field='equity'; ctl_type=label; text='Opening Balance:'; label_width=130; }
-			f_rev "widget/component" { path="/sys/cmp/smart_field.cmp"; field='revenue'; ctl_type=label; text='Revenue:'; label_width=130; }
-			f_exp "widget/component" { path="/sys/cmp/smart_field.cmp"; field='expense'; ctl_type=label; text='Expense:'; label_width=130; }
+			f_openeq "widget/component" { path="/sys/cmp/smart_field.cmp"; field='equity'; ctl_type=label; text='i18n:Opening Balance:'; label_width=130; }
+			f_rev "widget/component" { path="/sys/cmp/smart_field.cmp"; field='revenue'; ctl_type=label; text='i18n:Revenue:'; label_width=130; }
+			f_exp "widget/component" { path="/sys/cmp/smart_field.cmp"; field='expense'; ctl_type=label; text='i18n:Expense:'; label_width=130; }
 			f_sep3 "widget/pane" { height=2; style=lowered; }
-			f_cureq "widget/component" { path="/sys/cmp/smart_field.cmp"; field='curequity'; ctl_type=label; text='Current Balance:'; label_width=130; }
+			f_cureq "widget/component" { path="/sys/cmp/smart_field.cmp"; field='curequity'; ctl_type=label; text='i18n:Current Balance:'; label_width=130; }
 			}
 		    }
 		}

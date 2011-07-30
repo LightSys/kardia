@@ -116,7 +116,7 @@ payees_cmp "widget/component-decl"
 
 		f_defname "widget/component" { path="/sys/cmp/smart_field.cmp"; field=ptxt; text="i18n:Name:"; ctl_type="label"; tooltip="i18n:Default Payee Name"; label_width=100; }
 		f_name "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payee_name; text="i18n:Edit Name:"; ctl_type="editbox"; tooltip="i18n:Payee name to override default"; label_width=100; }
-		f_costctr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_cost_center"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="i18n:Choose Cost Center:"; text="i18n:Cost Ctr:"; attach_point=editbox; label_width=100; empty_desc="required"; }
+		f_costctr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_cost_center"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="i18n:Choose Cost Center:"; text="i18n:Cost Ctr:"; attach_point=editbox; label_width=100; empty_desc="i18n:required"; }
 		f_ptnr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=p_payee_partner_key; popup_source=runserver("/apps/kardia/modules/payroll/payee_partners.qyt/"); popup_text="i18n:Choose Payee:"; text="i18n:Partner ID:"; attach_point="editbox"; tooltip="i18n:Partner ID (address record #) for Payee (required)"; label_width=100; empty_desc="i18n:required"; }
 		}
 

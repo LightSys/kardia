@@ -32,7 +32,7 @@ p_location_field "widget/component-decl"
         form=form;
         bgcolor=white;
         fieldname=runserver(:this:field);
-        tooltip="Record status for this location" ;
+        tooltip="i18n:Record status for this location" ;
         ddt0 "widget/dropdownitem" { label="Active"; value="A"; }
         ddt1 "widget/dropdownitem" { label="Obsolete"; value="O"; }
         ddt2 "widget/dropdownitem" { label="Unknown"; value="X"; }

@@ -356,8 +356,8 @@ admin_types "widget/component-decl"
 
 				form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; x=10; width=492; height=26; object_name="Line Item"; }
 
-				//f_dest "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_dest_cost_center'; text='To CostCtr:'; label_width=120; }
-				f_dest "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_dest_cost_center"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="To CostCtr:"; attach_point=editbox; label_width=120; empty_desc="Fund to receive admin fee revenues"; }
+				//f_dest "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_dest_cost_center'; text='i18n:To CostCtr:'; label_width=120; }
+				f_dest "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_dest_cost_center"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="i18n:Choose Cost Center:"; text="i18n:To CostCtr:"; attach_point=editbox; label_width=120; empty_desc="i18n:Fund to receive admin fee revenues"; }
 				f_pct2 "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_percentage'; text='i18n:Percentage:'; label_width=120; }
 				f_fixed "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_is_fixed'; text='i18n:Is Fixed?'; ctl_type=checkbox; label_width=120; }
 				f_comm2 "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; field='a_comment'; text='i18n:Comments:'; label_width=120; }

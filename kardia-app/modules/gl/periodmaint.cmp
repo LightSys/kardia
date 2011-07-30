@@ -80,14 +80,14 @@ periodmaint "widget/component-decl"
 		    spacing=4;
 
 		    //yeardisp_lbl "widget/label" { height=24; font_size=16; style=bold; fgcolor="#153f5f"; value=runclient(:year_osrc:a_period + ' - ' + :year_osrc:a_period_desc); }
-		    f_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=100; ledger_hints "widget/hints" { default=runserver(:this:ledger); } }
-		    f_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period'; ctl_type=editbox; text='Period:'; label_width=100; f_period_hnt "widget/hints" { style=createonly; } }
-		    f_perioddesc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period_desc'; ctl_type=editbox; text='Description:'; label_width=100; }
-		    f_start "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_start_date'; ctl_type=datetime; text='Start Date:'; label_width=100; date_only=1; default_time="00:00:00"; }
-		    f_end "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_end_date'; ctl_type=datetime; text='End Date:'; label_width=100; date_only=1; default_time="23:59:59"; }
-		    f_opened "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_first_opened'; ctl_type=datetime; text='Opened:'; label_width=100; type=readonly; }
-		    f_closed "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_last_closed'; ctl_type=datetime; text='Closed:'; label_width=100; type=readonly; }
-		    f_archived "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_archived'; ctl_type=datetime; text='Archived:'; label_width=100; type=readonly; }
+		    f_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='i18n:Ledger:'; label_width=100; ledger_hints "widget/hints" { default=runserver(:this:ledger); } }
+		    f_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period'; ctl_type=editbox; text='i18n:Period:'; label_width=100; f_period_hnt "widget/hints" { style=createonly; } }
+		    f_perioddesc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period_desc'; ctl_type=editbox; text='i18n:Description:'; label_width=100; }
+		    f_start "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_start_date'; ctl_type=datetime; text='i18n:Start Date:'; label_width=100; date_only=1; default_time="00:00:00"; }
+		    f_end "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_end_date'; ctl_type=datetime; text='i18n:End Date:'; label_width=100; date_only=1; default_time="23:59:59"; }
+		    f_opened "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_first_opened'; ctl_type=datetime; text='i18n:Opened:'; label_width=100; type=readonly; }
+		    f_closed "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_last_closed'; ctl_type=datetime; text='i18n:Closed:'; label_width=100; type=readonly; }
+		    f_archived "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_archived'; ctl_type=datetime; text='i18n:Archived:'; label_width=100; type=readonly; }
 		    }
 		}
 
@@ -96,7 +96,7 @@ periodmaint "widget/component-decl"
 		width=150;
 		spacing=4;
 
-		y_stat "widget/component" { form=yearedit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='text'; ctl_type=label; text='Status:'; label_width=50; }
+		y_stat "widget/component" { form=yearedit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='text'; ctl_type=label; text='i18n:Status:'; label_width=50; }
 		newyr_btn "widget/textbutton"
 		    {
 		    height=24; width=150;
@@ -278,7 +278,7 @@ periodmaint "widget/component-decl"
 		{
 		width=150; spacing=4;
 
-		p_stat "widget/component" { form=peredit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='i18n:text'; ctl_type=label; text='Status:'; label_width=50; }
+		p_stat "widget/component" { form=peredit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='i18n:text'; ctl_type=label; text='i18n:Status:'; label_width=50; }
 		newper_btn "widget/textbutton"
 		    {
 		    height=24; width=150;

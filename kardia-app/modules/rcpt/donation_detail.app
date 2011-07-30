@@ -101,7 +101,7 @@ donation_detail "widget/page"
 		rpt_print "widget/textbutton"
 		    {
 		    width=90;
-		    text="Print";
+		    text="i18n:Print";
 		    rpt_print_cn "widget/connector" { event="Click"; target="rpt_form"; action="Submit"; Target=runclient("donation_detail"); NewPage=runclient(1); Source=runclient("/apps/kardia/modules/rcpt/donation_detail.rpt"); Width=runclient(800); Height=runclient(600); }
 		    }
 		rpt_cancel "widget/textbutton"

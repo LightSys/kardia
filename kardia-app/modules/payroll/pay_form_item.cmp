@@ -125,7 +125,7 @@ pay_form_item "widget/component-decl"
 		    pointimage="/sys/images/ico20b.gif";
 		    clickimage="/sys/images/ico20c.gif";
 		    disabledimage="/sys/images/ico20d.gif";
-		    tooltip = "Save Changes";
+		    tooltip = "i18n:Save Changes";
 		    enabled = runclient(:item_form:is_savable);
 		    cnSave "widget/connector" { event="Click"; target=item_form; action="Save"; }
 		    }
@@ -138,7 +138,7 @@ pay_form_item "widget/component-decl"
 		    pointimage="/sys/images/ico22b.gif";
 		    clickimage="/sys/images/ico22c.gif";
 		    disabledimage="/sys/images/ico22d.gif";
-		    tooltip = "Cancel Changes";
+		    tooltip = "i18n:Cancel Changes";
 		    enabled = runclient(:item_form:is_discardable);
 		    cnDiscard "widget/connector" { event="Click"; target=item_form; action="Discard"; }
 		    }
@@ -156,8 +156,8 @@ pay_form_item "widget/component-decl"
 		    //pointimage="/sys/images/ico19b.gif";
 		    //clickimage="/sys/images/ico19c.gif";
 		    //disabledimage="/sys/images/ico19d.gif";
-		    //tooltip = "Use Target Amount";
-//		    text = "Use Target:";
+		    //tooltip = "i18n:Use Target Amount";
+//		    text = "i18n:Use Target:";
 //		    enabled = runclient(condition(:item_form:a_target_amount,1,0));
 //		    cnUseTarget "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
 //		    }
@@ -176,7 +176,7 @@ pay_form_item "widget/component-decl"
 //		    condition = runserver(:this:class_code = 'A' or :this:class_code = 'I' or :this:class_code = 'M' or :this:class_code = 'V');
 //		    width=110;
 //		    height=20;
-//		    text = "From GL";
+//		    text = "i18n:From GL";
 //		    //cnUseGL "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
 //		    }
 

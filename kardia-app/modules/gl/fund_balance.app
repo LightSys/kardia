@@ -22,7 +22,7 @@ fund_balance "widget/page"
 	    spacing=4;
 	    lbl_tb "widget/label" { height=30; font_size=16; text="i18n:GL Fund Balances Report Options:"; align=center; }
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
-	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
+	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='i18n:Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
 	    f_year "widget/component"
 		{ 
 		width=350; height=24; 
@@ -63,7 +63,7 @@ fund_balance "widget/page"
 		    sql = runclient("select :a_period + ' - ' + :a_period_desc, :a_period, :a_summary_only from subtree /apps/kardia/modules/gl/periods.qyt/" + :fund_balance:ledger + "/" + :rpt_form:year_period + "|" + :fund_balance:ledger + " order by :a_period asc having :a_summary_only = 0 and :a_period >= " + quote(:rpt_form:ref_period));
 		    }
 		}
-	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dynamicdropdown; text='Ending Period:';  form=rpt_form; label_width=120; }
+	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dynamicdropdown; text='i18n:Ending Period:'; form=rpt_form; label_width=120; }
 	    f_class "widget/component"
 		{ 
 		width=350; height=24; 

@@ -46,7 +46,7 @@ edit_settings "widget/component-decl"
 	    width=400;height=270;
 	    spacing=8;
 
-	    settings_label "widget/label" { style=bold; fgcolor="#153f5f"; font_size=14; text="Your Current Settings:"; align=center; height=24; }
+	    settings_label "widget/label" { style=bold; fgcolor="#153f5f"; font_size=14; text="i18n:Your Current Settings:"; align=center; height=24; }
 	    sep_line "widget/pane" { style=lowered; height=3; }
 
 	    f_ledger "widget/component"

@@ -27,7 +27,7 @@ inc_exp_balance "widget/page"
 	    lbl_tb "widget/label" { height=30; font_size=16; text="i18n:GL Income/Expense Report Options:"; align=center; }
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
 	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='i18n:Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
-	    //f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Center:"; attach_point=editbox; label_width=120; empty_desc="optional"; }
+	    //f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Center:"; attach_point=editbox; label_width=120; empty_desc="i18n:optional"; }
 	    f_year "widget/component"
 		{ 
 		width=350; height=24; 
@@ -77,11 +77,11 @@ inc_exp_balance "widget/page"
 		    //sql = runclient("select :a_period + ' - ' + :a_period_desc, :a_period, :a_summary_only from subtree /apps/kardia/modules/gl/periods.qyt/" + :inc_exp_balance:ledger + "/" + :rpt_form:year_period + "|" + :inc_exp_balance:ledger + " order by :a_period asc having :a_summary_only = 0 and :a_period >= " + quote(:rpt_form:ref_period));
 		    }
 		}
-	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dropdown; text='Ending Period:';  form=rpt_form; label_width=120; sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period asc"); }
+	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dropdown; text='i18n:Ending Period:';  form=rpt_form; label_width=120; sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period asc"); }
 	    sep "widget/autolayoutspacer" { height=4; }
 	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="i18n:Include unposted transactions"; form=rpt_form; label_width=120; }
 	    f_bybatch "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="bybatch"; ctl_type='checkboxleft'; text="i18n:Show Totals by Batch (instead of Cost Ctr)"; form=rpt_form; label_width=120; checked=0; bybatch_hints "widget/hints" { style=notnull; default=0; } }
-	    f_level "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='report_level'; ctl_type=dropdown; text='Detail Level:'; sql=runserver("select '' + :a_reporting_level + ' - ' + :a_level_rpt_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows where :a_ledger_number = " + quote(:this:ledger)); form=rpt_form; label_width=120; }
+	    f_level "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='report_level'; ctl_type=dropdown; text='i18n:Detail Level:'; sql=runserver("select '' + :a_reporting_level + ' - ' + :a_level_rpt_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows where :a_ledger_number = " + quote(:this:ledger)); form=rpt_form; label_width=120; }
 	    f_docfmt "widget/component"
 		{ 
 		width=350; height=24; 

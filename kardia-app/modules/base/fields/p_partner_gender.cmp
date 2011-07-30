@@ -21,7 +21,7 @@ partner_gender "widget/component-decl"
         height=20;width=100;
         text="Gender";
         align=right;
-        tooltip="The partner's gender";
+        tooltip="i18n:The partner's gender";
         }
     p_partner_gender_dropdown "widget/dropdown"
         {
@@ -32,7 +32,7 @@ partner_gender "widget/component-decl"
         form=form;
         bgcolor=white;
         fieldname=p_gender;
-        tooltip="Defines what type of partner this is." ;
+        tooltip="i18n:Defines what type of partner this is." ;
         ddt0 "widget/dropdownitem" { label="Male"; value="M"; }
         ddt1 "widget/dropdownitem" { label="Female"; value="F"; }
         ddt2 "widget/dropdownitem" { label="Couple"; value="C"; }

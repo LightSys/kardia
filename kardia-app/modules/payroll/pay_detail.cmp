@@ -205,12 +205,12 @@ pay_detail_cmp "widget/component-decl"
 		rowheight = 18;
 		mode=dynamicrow;
 
-		t_valid "widget/table-column" { title="Valid From"; fieldname="startdate"; width=70; }
-		t_typ "widget/table-column" { condition=runserver(:this:by_item_type == 0); title="Line Item Type"; fieldname="a_desc"; width=140; }
-		t_payee "widget/table-column" { condition=runserver(:this:by_item_type != 0); title="Payee"; fieldname="a_payee_name"; width=140; }
-		t_group "widget/table-column" { condition=runserver(:this:by_item_type != 0); title="Grp"; fieldname="a_payroll_group_id"; width=30; }
-		t_amt "widget/table-column" { title="Target Amount"; fieldname="a_target_amount"; width=100; align=right; }
-		t_txt "widget/table-column" { title="Details"; fieldname="txt"; width=390; }
+		t_valid "widget/table-column" { title="i18n:Valid From"; fieldname="startdate"; width=70; }
+		t_typ "widget/table-column" { condition=runserver(:this:by_item_type == 0); title="i18n:Line Item Type"; fieldname="a_desc"; width=140; }
+		t_payee "widget/table-column" { condition=runserver(:this:by_item_type != 0); title="i18n:Payee"; fieldname="a_payee_name"; width=140; }
+		t_group "widget/table-column" { condition=runserver(:this:by_item_type != 0); title="i18n:Grp"; fieldname="a_payroll_group_id"; width=30; }
+		t_amt "widget/table-column" { title="i18n:Target Amount"; fieldname="a_target_amount"; width=100; align=right; }
+		t_txt "widget/table-column" { title="i18n:Details"; fieldname="txt"; width=390; }
 		}
 	    }
 
@@ -337,7 +337,7 @@ pay_detail_cmp "widget/component-decl"
 		// Pre-tax benefit (like health insurance)
 		B "widget/tabpage"
 		    {
-		    b_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="Pre-Tax Benefit:"; align=center; }
+		    b_lbl "widget/label" { x=4; y=0; width=536; height=20; style=bold; font_size=13; text="i18n:Pre-Tax Benefit:"; align=center; }
 
 		    b_vbox "widget/vbox"
 			{
@@ -407,7 +407,7 @@ pay_detail_cmp "widget/component-decl"
 		// Informational
 		I "widget/tabpage"
 		    {
-		    i_lbl "widget/label" { x=4; y=64; width=536; height=20; font_size=13; text="(No further information needed)"; align=center; }
+		    i_lbl "widget/label" { x=4; y=64; width=536; height=20; font_size=13; text="i18n:(No further information needed)"; align=center; }
 		    }
 
 		// Non-tax payables (e.g., expense reimbursements)
@@ -420,8 +420,8 @@ pay_detail_cmp "widget/component-decl"
 			cellsize=26;
 			spacing=4;
 
-			f_m_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_cost_center; text="i18n:Cost ctr:"; tooltip="i18n:Cost center holding payable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
-			f_m_ref_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="i18n:Account:"; tooltip="i18n:GL Liability Account for payable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			f_m_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_cost_center; text="i18n:Cost ctr:"; tooltip="i18n:Cost center holding payable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Cost Center:"; }
+			f_m_ref_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="i18n:Account:"; tooltip="i18n:GL Liability Account for payable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Account:"; }
 			}
 		    }
 
@@ -467,8 +467,8 @@ pay_detail_cmp "widget/component-decl"
 			cellsize=26;
 			spacing=4;
 
-			f_r_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_cost_center; text="i18n:Cost ctr:"; tooltip="i18n:Cost center holding receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
-			f_r_ref_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="i18n:Account:"; tooltip="i18n:GL Asset Account for receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			f_r_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_cost_center; text="i18n:Cost ctr:"; tooltip="i18n:Cost center holding receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Cost Center:"; }
+			f_r_ref_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="i18n:Account:"; tooltip="i18n:GL Asset Account for receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Account:"; }
 			}
 		    }
 
@@ -482,7 +482,7 @@ pay_detail_cmp "widget/component-decl"
 			cellsize=26;
 			spacing=4;
 
-			f_t_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="i18n:GL Account:"; tooltip="i18n:GL Account for taxes (typ. a liability acct)"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
+			f_t_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="i18n:GL Account:"; tooltip="i18n:GL Account for taxes (typ. a liability acct)"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="i18n:Select Account:"; }
 			f_t_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="i18n:Amount:"; ctl_type="editbox"; tooltip="i18n:Amount of Tax."; label_width=100; }
 			}
 		    t_vbox2 "widget/vbox"

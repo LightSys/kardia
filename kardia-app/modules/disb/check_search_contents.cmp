@@ -272,7 +272,7 @@ check_search_component "widget/component-decl"
 						// CC No Label
 						
 						// CC No Box
-						p_cc_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_cost_center; text="i18n:Cost Center No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Cost Center Code"; }
+						p_cc_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_cost_center; text="i18n:Cost Center No."; lookup_width=325; ctl_type="editbox"; tooltip="i18n:Lookup by Cost Center Code"; }
 						
 						// CC (+) Symbol thingy...   (see/get from cashdish_subform)... =D  Combo...
 						
@@ -346,8 +346,8 @@ check_search_component "widget/component-decl"
 						// path="/apps/kardia/modules/base/editbox_tree.cmp";
 						// field=a_account_code;
 						// type="readonly";
-						// text="Account:";
-						// tooltip="GL Account Code";
+						// text="i18n:Account:";
+						// tooltip="i18n:GL Account Code";
 						// label_width=75;
 						// // enabled=runclient(:partner_search_form:is_queryexecutable);
 						

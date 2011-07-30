@@ -8,7 +8,7 @@ whoson_window "widget/component-decl"
 
     whosonwin "widget/childwindow"
 	{
-	title = "Who's Online";
+	title = "i18n:Who's Online";
 	width=300; height=400;
 	x=10; y=35;
 	visible = false;

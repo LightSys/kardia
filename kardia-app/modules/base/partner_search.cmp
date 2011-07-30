@@ -299,21 +299,21 @@ partner_search_component "widget/component-decl"
 		    }
 
 		table_key "widget/table-column" { title = "i18n:ID"; fieldname = p_partner_key; width=60; }
-		//table_firstname "widget/table-column" { title = "First Name"; fieldname = p_given_name; }
-		//table_lastname "widget/table-column" { title = "Last Name"; fieldname = p_surname; }
+		//table_firstname "widget/table-column" { title = "i18n:First Name"; fieldname = p_given_name; }
+		//table_lastname "widget/table-column" { title = "i18n:Last Name"; fieldname = p_surname; }
 		table_name "widget/table-column" { title = "i18n:Name"; fieldname = disp_name; width = 185; }
-		//table_address1 "widget/table-column" { title = "Address 1"; fieldname = p_address_1; }
-		//table_address2 "widget/table-column" { title = "Address 2"; fieldname = p_address_2; }
-		//table_address3 "widget/table-column" { title = "Address 3"; fieldname = p_address_3; }
+		//table_address1 "widget/table-column" { title = "i18n:Address 1"; fieldname = p_address_1; }
+		//table_address2 "widget/table-column" { title = "i18n:Address 2"; fieldname = p_address_2; }
+		//table_address3 "widget/table-column" { title = "i18n:Address 3"; fieldname = p_address_3; }
 		table_address "widget/table-column" { title = "i18n:Address"; fieldname = disp_addr; width = 185; }
-		//table_city "widget/table-column" { title = "City"; fieldname = p_city; }
-		//table_state "widget/table-column" { title = "State"; fieldname = p_state_province; }
+		//table_city "widget/table-column" { title = "i18n:City"; fieldname = p_city; }
+		//table_state "widget/table-column" { title = "i18n:State"; fieldname = p_state_province; }
 		table_city "widget/table-column" { title = "i18n:City"; fieldname = disp_city; width = 105; }
 		table_zip "widget/table-column" { title = "i18n:Zip/Postal"; fieldname = p_postal_code; width=83; }
-		//table_legacy1 "widget/table-column" { title = "Legacy 1"; fieldname = p_legacy_key_1; width=50; }
-		//table_legacy2 "widget/table-column" { title = "Legacy 2"; fieldname = p_legacy_key_2; width=75; }
-		table_isdnr "widget/table-column" { title = "D"; fieldname = is_donor; width=20; type=check; }
-		table_ispay "widget/table-column" { title = "P"; fieldname = is_payee; width=20; type=check; }
+		//table_legacy1 "widget/table-column" { title = "i18n:Legacy 1"; fieldname = p_legacy_key_1; width=50; }
+		//table_legacy2 "widget/table-column" { title = "i18n:Legacy 2"; fieldname = p_legacy_key_2; width=75; }
+		table_isdnr "widget/table-column" { title = "i18n:D"; fieldname = is_donor; width=20; type=check; }
+		table_ispay "widget/table-column" { title = "i18n:P"; fieldname = is_payee; width=20; type=check; }
 		}
 	    }
 

@@ -32,7 +32,7 @@ p_postal_status_field "widget/component-decl"
         form=form;
         bgcolor=white;
         fieldname=runserver(:this:field);
-        tooltip="Defines what type of partner this is." ;
+        tooltip="i18n:Defines what type of partner this is." ;
         ddt0 "widget/dropdownitem" { label="Addressee Unknown"; value="K"; }
         ddt1 "widget/dropdownitem" { label="Forwarding expired"; value="F"; }
         ddt2 "widget/dropdownitem" { label="No # or address"; value="N"; }

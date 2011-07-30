@@ -109,9 +109,9 @@ gift_entry "widget/component-decl"
 		    {
 		    height=516; width=198; x=0; y=0;
 
-		    t_rcpt "widget/table-column" { title="Rcpt#"; fieldname="a_receipt_number"; width=60; }
-		    t_don "widget/table-column" { title="Donor"; fieldname="viewname"; width=93; }
-		    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=82; align=right; }
+		    t_rcpt "widget/table-column" { title="i18n:Rcpt#"; fieldname="a_receipt_number"; width=60; }
+		    t_don "widget/table-column" { title="i18n:Donor"; fieldname="viewname"; width=93; }
+		    t_amt "widget/table-column" { title="i18n:Amount"; fieldname="a_amount"; width=82; align=right; }
 		    }
 		}
 	    }
@@ -410,7 +410,7 @@ gift_entry "widget/component-decl"
 			donor_hints "widget/hints" { style=applyonchange; }
 			}
 
-		    //f_rcpt_addnew "widget/label" { height=20; x=120; text="Add New Donor"; widget_class=link; }
+		    //f_rcpt_addnew "widget/label" { height=20; x=120; text="i18n:Add New Donor"; widget_class=link; }
 		    f_rcpt_addnew "widget/textbutton" { height=24; x=120; width=130; text="i18n:Add New Donor"; }
 		    f_rcpt_gifttype "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Gift Type:'; field='a_gift_type'; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_gift_type/rows"; gt_hints "widget/hints" { default='K'; } }
 		    f_rcpt_postdate "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Postmark Date:'; field='a_gift_postmark_date'; ctl_type=datetime; }
@@ -790,7 +790,7 @@ gift_entry "widget/component-decl"
 				f_desig_amount "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='i18n:Amount:'; field='a_amount'; ctl_type=editbox; amt_hints "widget/hints" { default=runclient(''); } empty_desc="i18n:required"; }
 				f_desig_comment "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='i18n:Comments:'; field='a_comment'; ctl_type=editbox; }
 
-				//f_desig_custompct "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Set Admin %:'; field='a_gift_admin_fee'; ctl_type=editbox; empty_desc="optional"; }
+				//f_desig_custompct "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='i18n:Set Admin %:'; field='a_gift_admin_fee'; ctl_type=editbox; empty_desc="i18n:optional"; }
 				}
 
 			    desig_vbox1 "widget/vbox"
@@ -1033,9 +1033,9 @@ gift_entry "widget/component-decl"
 		    d_ttl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_amount; text="i18n:Gift Amount:"; ctl_type="label"; label_width=120; width=450; }
 		    d_pkey "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="i18n:Partner Key:"; ctl_type="label"; label_width=120; width=450; }
 		    d_label "widget/component" { x=123; height=76; width=330; path="/apps/kardia/modules/base/address_label.cmp"; }
-		    //d_name "widget/component" { path="/sys/cmp/smart_field.cmp"; field=nm; text="Name:"; ctl_type="label"; label_width=120; width=450; }
-		    //d_org "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_org_name; text="Organization:"; ctl_type="label"; label_width=120; width=450; }
-		    //d_al3 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=al3; text="Address:"; ctl_type="label"; label_width=120; width=450; }
+		    //d_name "widget/component" { path="/sys/cmp/smart_field.cmp"; field=nm; text="i18n:Name:"; ctl_type="label"; label_width=120; width=450; }
+		    //d_org "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_org_name; text="i18n:Organization:"; ctl_type="label"; label_width=120; width=450; }
+		    //d_al3 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=al3; text="i18n:Address:"; ctl_type="label"; label_width=120; width=450; }
 
 		    sp2 "widget/autolayoutspacer" { height=2; }
 		    d_desig_lbl "widget/label" { text = "i18n:Designation:"; style=bold; }

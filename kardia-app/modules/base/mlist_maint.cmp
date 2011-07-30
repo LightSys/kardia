@@ -81,14 +81,14 @@ mlist_maint "widget/component-decl"
 
 	    mlist_form "widget/form"
 		{
-		f_code "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; ctl_type=editbox; text='List ID:'; label_width=120; }
-		f_parent "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_parent'; ctl_type=editbox; text='Related To List:'; label_width=120; }
-		//f_parent "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_parent'; ctl_type=dropdown; text='Related To List:'; sql=runserver("select :m_list_code + ': ' + :m_list_description, :m_list_code from /apps/kardia/data/Kardia_DB/m_list/rows order by :m_list_code"); label_width=120; } 
-		f_desc "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_description'; ctl_type=editbox; text='Description:'; label_width=120; }
-		f_stat "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_status'; ctl_type=dropdown; text='Status:'; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_status/rows order by :text"); label_width=120; } 
-		f_type "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_type'; ctl_type=dropdown; text='List Type:'; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_type/rows order by :text"); label_width=120; f_type_hints "widget/hints" { default=runclient(condition(charindex(:tree:selected_name, 'Publications') > 0, 'P', 'S')); } }
-		f_frozen "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_frozen'; ctl_type=checkbox; text='List Frozen?'; label_width=120; f_frozen_hints "widget/hints" { default=runclient(0); } }
-		f_discard "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_discard_after'; ctl_type=datetime; text='Discard After:'; label_width=120; }
+		f_code "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; ctl_type=editbox; text='i18n:List ID:'; label_width=120; }
+		f_parent "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_parent'; ctl_type=editbox; text='i18n:Related To List:'; label_width=120; }
+		//f_parent "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_parent'; ctl_type=dropdown; text='i18n:Related To List:'; sql=runserver("select :m_list_code + ': ' + :m_list_description, :m_list_code from /apps/kardia/data/Kardia_DB/m_list/rows order by :m_list_code"); label_width=120; } 
+		f_desc "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_description'; ctl_type=editbox; text='i18n:Description:'; label_width=120; }
+		f_stat "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_status'; ctl_type=dropdown; text='i18n:Status:'; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_status/rows order by :text"); label_width=120; } 
+		f_type "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_type'; ctl_type=dropdown; text='i18n:List Type:'; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_type/rows order by :text"); label_width=120; f_type_hints "widget/hints" { default=runclient(condition(charindex(:tree:selected_name, 'Publications') > 0, 'P', 'S')); } }
+		f_frozen "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_list_frozen'; ctl_type=checkbox; text='i18n:List Frozen?'; label_width=120; f_frozen_hints "widget/hints" { default=runclient(0); } }
+		f_discard "widget/component" { height=20; width=400; path="/sys/cmp/smart_field.cmp"; field='m_discard_after'; ctl_type=datetime; text='i18n:Discard After:'; label_width=120; }
 		}
 	    }
 	}

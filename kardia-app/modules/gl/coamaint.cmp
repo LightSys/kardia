@@ -30,7 +30,7 @@ coamaint "widget/component-decl"
 		    }
 		}
 
-	    //searchlbl "widget/label" { height=20; text="Search Funds:"; align=center; style=bold; font_size=12; }
+	    //searchlbl "widget/label" { height=20; text="i18n:Search Funds:"; align=center; style=bold; font_size=12; }
 	    searcheb "widget/editbox"
 		{
 		height=24;
@@ -113,7 +113,7 @@ coamaint "widget/component-decl"
 		    value = runclient("Subsidiary Funds" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
 		    }
 		}
-	    //sublbl "widget/label" { height=20; text="Subsidiary Funds:"; align=center; style=bold; font_size=12; }
+	    //sublbl "widget/label" { height=20; text="i18n:Subsidiary Funds:"; align=center; style=bold; font_size=12; }
 
 	    btn_hbox "widget/hbox"
 		{
@@ -147,7 +147,7 @@ coamaint "widget/component-decl"
 
 //		copyfund_btn "widget/textbutton"
 //		    {
-//		    text = "Copy Fund";
+//		    text = "i18n:Copy Fund";
 //		    enabled = runclient(:fund_form:is_newable and :fund_form:is_editable);
 //		    }
 		}
@@ -274,9 +274,9 @@ coamaint "widget/component-decl"
 				    spacing=4;
 				    width=240;
 
-				    f_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=120; }
-				    f_parentcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_parent_cost_center'; ctl_type=label; text='Rollup Fund:'; label_width=120; }
-				    f_balcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_bal_cost_center'; ctl_type=label; text='Balancing Fund:'; label_width=120; }
+				    f_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='i18n:Ledger:'; label_width=120; }
+				    f_parentcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_parent_cost_center'; ctl_type=label; text='i18n:Rollup Fund:'; label_width=120; }
+				    f_balcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_bal_cost_center'; ctl_type=label; text='i18n:Balancing Fund:'; label_width=120; }
 				    f_costctr "widget/component" 
 					{ 
 					height=20;
@@ -308,8 +308,8 @@ coamaint "widget/component-decl"
 										  condition(substring(:Value,6,1) == '.', substring(:Value, 1, 5) + substring(:Value,7,1), :Value))));
 					    }
 					}
-				    f_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=editbox; text='Description:'; label_width=120; }
-				    f_comm "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_comments'; ctl_type=editbox; text='Comments:'; label_width=120; }
+				    f_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=editbox; text='i18n:Description:'; label_width=120; }
+				    f_comm "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_comments'; ctl_type=editbox; text='i18n:Comments:'; label_width=120; }
 				    f_legacy_code "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="i18n:Legacy Code:"; ctl_type="editbox"; tooltip="i18n:Legacy Cost Ctr from Old System"; label_width=120; }
 				    }
 

@@ -1364,8 +1364,8 @@ cashdisb_subform "widget/component-decl"
 						// payee_details_form
 						payee_form "widget/form"
 						{
-							lbl_name "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; text='Name:'; label_width=60; } // field='p_given_name'; 
-							lbl_city "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field='p_city'; text='City:'; label_width=60; } // field='assets'; 
+							lbl_name "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; text='i18n:Name:'; label_width=60; } // field='p_given_name'; 
+							lbl_city "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field='p_city'; text='i18n:City:'; label_width=60; } // field='assets'; 
 							
 						} // END - payee_form
 						
@@ -1499,7 +1499,7 @@ cashdisb_subform "widget/component-decl"
 					// TODO
 					// 1. If Check is not voided -> comment can edit at any time without any prompting
 					// 2. If Check has been voided -> if there is an edit, confirm "The Check Summary Comment has been modified for this Voided Check, would you like to retain the changes?"  (not sure if this is required or optional?)  Perhaps should be guided by user feedback?
-					// Table doesn't accomadate for a check-wide comment :-( // cs_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=editbox; text="Comment:"; label_width=90; }
+					// Table doesn't accomadate for a check-wide comment :-( // cs_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=editbox; text="i18n:Comment:"; label_width=90; }
 				}
 				
 			} // END - CheckSummary_pane - CheckingSummary GroupBox (Pane) Area
@@ -1658,7 +1658,7 @@ cashdisb_subform "widget/component-decl"
 						// path="/apps/kardia/modules/base/editbox_tree.cmp";
 						// field=a_account_category;
 						// text="Control:";
-						// tooltip="GL Ctl Account Code";
+						// tooltip="i18n:GL Ctl Account Code";
 						// label_width=90;
 						// popup_source = runserver("/apps/kardia/modules/gl/ctlacct.qyt/" + :this:ledger + "/");
 						// popup_text="Select Control:";
@@ -1877,20 +1877,20 @@ cashdisb_subform "widget/component-decl"
 				// 1. Include default account number...
 				// 2. Should this be displayed to the user?
 				// 3. Include cash account source selection code similar to selecting cost center and account number?
-				//cd_cash_acct "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; text="Cash Account:"; label_width=90; }
+				//cd_cash_acct "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; text="i18n:Cash Account:"; label_width=90; }
 				// QUESTION: Should Cash Account be listed outside like with the period?
 				// QUESTION: Is there a way to specify a set of possible cash accounts for the user to choose form?
 				
 				// TO DOCUMENT: ANSWERED: Why does [type="readonly"] not work? (Field name required?) [ANSWER: Field name is required in order for the "readonly" attribute to take effect.]
 				// BUG/TODO (20090707): Make it actually set to the real value of whether the batch is posted, or I need to remove this (that might be the solution) | Maybe if I make the form = batch_form? and get a_batch's a_posted value?
 				// chkbox_Batch_Posted "widget/component" { width = 120; path="/sys/cmp/smart_field.cmp"; form=post_button_text_decider_form; field="a_posted"; ctl_type=checkbox; text='Batch Posted ?:'; label_width=99; label_height=15; type="readonly"; }
-				//f_trx_posted "widget/component" { width=120; path="/sys/cmp/smart_field.cmp"; field=a_posted; ctl_type=checkbox; text="Posted?"; label_width=90; type="readonly"; }
+				//f_trx_posted "widget/component" { width=120; path="/sys/cmp/smart_field.cmp"; field=a_posted; ctl_type=checkbox; text="i18n:Posted?"; label_width=90; type="readonly"; }
 				//sp73262 "widget/autolayoutspacer" { width=25; }
 				
 				// QUESTION: Should this window display the 'Posted to GL' flag? Proposed Answer: No It will be handed in another area, 
 				// QUESTION: Should there be special case logic to handle if the batch has been posted to gl? Proposed Answer: Yes, will need to be able to unpost and change batch information accordingly.  I can think of some straight-forward ways to do this, but I don't know how Greg has designed the system to interface in.
 				// COMMENTED-OUT: No Table column to record whether has been printed...
-				//chkbox_Batch_Printed "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; text='Batch Printed:'; label_width=99; type="readonly"; }
+				//chkbox_Batch_Printed "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; text='i18n:Batch Printed:'; label_width=99; type="readonly"; }
 				//
 			}
 			
@@ -2183,7 +2183,7 @@ cashdisb_subform "widget/component-decl"
 					Post_Button_cn1 "widget/connector"
 					{
 					 	event="Click";
-					 	event_condition = runclient(:post_button_text_decider_osrc:pcnt == '0'); // ":text == 'Post Batch'");	// TEST THIS LINE!! (Other Ideas: value, decider_osrc lookup value)
+					 	event_condition = runclient(:post_button_text_decider_osrc:pcnt == '0'); // ":text == 'i18n:Post Batch'");	// TEST THIS LINE!! (Other Ideas: value, decider_osrc lookup value)
 					 	event_confirm = runclient("Post this Batch?");
 						
 					 	target="post_batch_osrc";
@@ -2285,7 +2285,7 @@ cashdisb_subform "widget/component-decl"
 					//Print_Button_cn1_Debugging "widget/connector"
 					//{
 					// 	event="Click";
-					 	//event_condition = runclient(not :var_batch_posted); // ":text == 'Post Batch'");	// TEST THIS LINE!! (Other Ideas: value, decider_osrc lookup value)
+					 	//event_condition = runclient(not :var_batch_posted); // ":text == 'i18n:Post Batch'");	// TEST THIS LINE!! (Other Ideas: value, decider_osrc lookup value)
 					 	//event_confirm = runclient("Post this Batch?");
 						
 					// 	target=var_batch_posted;
@@ -2296,7 +2296,7 @@ cashdisb_subform "widget/component-decl"
 					//Print_Button_cn1_Debugging "widget/connector"
 					//{
 					// 	event="Click";
-					 	//event_condition = runclient(not :var_batch_posted); // ":text == 'Post Batch'");	// TEST THIS LINE!! (Other Ideas: value, decider_osrc lookup value)
+					 	//event_condition = runclient(not :var_batch_posted); // ":text == 'i18n:Post Batch'");	// TEST THIS LINE!! (Other Ideas: value, decider_osrc lookup value)
 					 	//event_confirm = runclient("Post this Batch?");
 						
 					// 	target=var_batch_posted;
@@ -2308,7 +2308,7 @@ cashdisb_subform "widget/component-decl"
 					// Print_Button_cn1_tmp "widget/connector"
 					// {
 					 	// event="Click";
-					 	// event_condition = runclient(:post_button_text_decider_osrc:pcnt > '0'); // ":text == 'Post Batch'");	// TEST THIS LINE!! (Other Ideas: value, decider_osrc lookup value)
+					 	// event_condition = runclient(:post_button_text_decider_osrc:pcnt > '0'); // ":text == 'i18n:Post Batch'");	// TEST THIS LINE!! (Other Ideas: value, decider_osrc lookup value)
 					 	// event_confirm = runclient("Unpost this Batch?");
 						
 					 	// target="post_batch_osrc";
@@ -2334,7 +2334,7 @@ cashdisb_subform "widget/component-decl"
 				{
 					width=130;
 					height = 40;
-					text="Void This Check";
+					text="i18n:Void This Check";
 					
 					cnSave_cn324 "widget/connector" { event="Click"; target=batch_total_osrc; action="Refresh"; }
 					

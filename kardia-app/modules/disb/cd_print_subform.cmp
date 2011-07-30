@@ -123,7 +123,7 @@ cd_print_subform "widget/component-decl"
 				ctl_type=editbox;
 				label_width=150;
 				label_height=30;
-				//text="Print Checks";
+				//text="i18n:Print Checks";
 				font_size=16;
 				style=bold;
 			}

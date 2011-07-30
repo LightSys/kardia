@@ -50,11 +50,11 @@ ledger_edit "widget/component-decl"
 
 	    f_a_next_batch_number "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_next_batch_number; text="i18n:Next Batch #:"; ctl_type="editbox"; tooltip="i18n:The next batch number to be used in creating GL transactions."; }
 	    //sp0 "widget/autolayoutspacer" { height=5; }
-	    //s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="Date Created:"; ctl_type="datetime"; type="create"; tooltip="The date the record was created."; }
-	    //s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="Created By:"; ctl_type="editbox"; type="create"; tooltip="The user who created the ledger" ; }
+	    //s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="i18n:Date Created:"; ctl_type="datetime"; type="create"; tooltip="i18n:The date the record was created."; }
+	    //s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="i18n:Created By:"; ctl_type="editbox"; type="create"; tooltip="i18n:The user who created the ledger" ; }
 	    //sp1 "widget/autolayoutspacer" { height=5; }
-	    //s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="Date Modified:"; ctl_type="datetime"; type="modify"; tooltip="The date the record was created."; }
-	    //s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="Modified By:"; ctl_type="editbox"; type="modify"; tooltip="The user who modified the ledger" ; }
+	    //s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="i18n:Date Modified:"; ctl_type="datetime"; type="modify"; tooltip="i18n:The date the record was created."; }
+	    //s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="i18n:Modified By:"; ctl_type="editbox"; type="modify"; tooltip="i18n:The user who modified the ledger" ; }
 	    }
 
 	record_meta "widget/component"

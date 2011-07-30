@@ -21,7 +21,7 @@ smart_field "widget/component-decl"
         height=20;width=100;
         text="select type";
         align=right;
-        tooltip="This defines what type of partner this is." ;
+        tooltip="i18n:This defines what type of partner this is." ;
         }
     p_partner_class_dropdown "widget/dropdown"
         {
@@ -32,7 +32,7 @@ smart_field "widget/component-decl"
         form=form;
         bgcolor=white;
         fieldname = "p_partner_class";
-        tooltip="This defines what type of partner this is." ;
+        tooltip="i18n:This defines what type of partner this is." ;
         // sql = "SELECT :p_description,:p_partner_class FROM /lightsys/partner_DB/p_partner_classes/rows ORDER BY :p_partner_class";
         ddt1 "widget/dropdownitem" { label="Individual"; value="IND"; }
         ddt10 "widget/dropdownitem" { label="Church"; value="CHU"; }

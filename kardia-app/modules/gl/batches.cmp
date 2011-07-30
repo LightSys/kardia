@@ -176,7 +176,7 @@ batches "widget/component-decl"
 			}
 
 		    sep_line4 "widget/pane" { height=2; fl_height=0; style=lowered; }
-		    posting_lbl "widget/label" { height=15; text="Posting"; align=center; style=bold; }
+		    posting_lbl "widget/label" { height=15; text="i18n:Posting"; align=center; style=bold; }
 		    post_batch "widget/textbutton"
 			{
 			width = 172;
@@ -203,7 +203,7 @@ batches "widget/component-decl"
 			{
 			width = 172;
 			height = 40;
-			text = "Transaction Report";
+			text = "i18n:Transaction Report";
 			enabled = runclient(:new_batch_form:is_editable and :new_batch_form:glrec == 1);
 
 			doprintbatch_cn "widget/connector"

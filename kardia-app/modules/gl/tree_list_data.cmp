@@ -13,7 +13,7 @@ tree_list_data "widget/component-decl"
     search_box "widget/editbox"
 	{
 	x=0; y=0; width=228; height=20;
-	empty_description = "Type search here and press ENTER";
+	empty_description = "i18n:Type search here and press ENTER";
 
 	enter_cn "widget/connector"
 	    {

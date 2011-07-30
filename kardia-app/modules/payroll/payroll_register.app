@@ -33,7 +33,7 @@ payroll_register "widget/page"
 		path="/sys/cmp/smart_field.cmp";
 		field='period';
 		ctl_type=dropdown;
-		text='Period:';
+		text='i18n:Period:';
 		label_width=120;
 		form=rpt_form;
 

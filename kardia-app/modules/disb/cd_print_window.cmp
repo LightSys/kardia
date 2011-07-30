@@ -59,7 +59,7 @@ cd_print_window "widget/component-decl"
 	
     cd_print_formwin "widget/childwindow"
 	{
-		// title = "Print Checks";
+		// title = "i18n:Print Checks";
 		width=300; height=190;
 		x=10; y=25;
 		visible = false;

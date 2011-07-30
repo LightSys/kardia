@@ -88,7 +88,7 @@ gljournal_edit "widget/component-decl"
 	    choosebatch "widget/textbutton" 
 		{
 		x=4;y=4;width=112;height=20;
-		text="Choose Batch";
+		text="i18n:Choose Batch";
 
 		choose_cn "widget/connector" { event=Click; target=batchwin; action=Open; }
 		}
@@ -211,14 +211,14 @@ gljournal_edit "widget/component-decl"
 		    trx_jnl_hbox "widget/hbox"
 			{
 			spacing=0;
-			//f_trx_jnl "widget/component" { width=130; path="/sys/cmp/smart_field.cmp"; field=a_journal_number; ctl_type=editbox; text="Journal:"; label_width=90; }
-			//f_trx_trx "widget/component" { width=90; path="/sys/cmp/smart_field.cmp"; field=a_transaction_number; ctl_type=editbox; text="Trx:"; label_width=50; }
+			//f_trx_jnl "widget/component" { width=130; path="/sys/cmp/smart_field.cmp"; field=a_journal_number; ctl_type=editbox; text="i18n:Journal:"; label_width=90; }
+			//f_trx_trx "widget/component" { width=90; path="/sys/cmp/smart_field.cmp"; field=a_transaction_number; ctl_type=editbox; text="i18n:Trx:"; label_width=50; }
 			f_trx_jnl "widget/component" { width=120; path="/sys/cmp/smart_field.cmp"; field=a_journal_number; ctl_type=label; text="i18n:Journal:"; label_width=90; }
 			f_trx_trx "widget/component" { width=80; path="/sys/cmp/smart_field.cmp"; field=a_transaction_number; ctl_type=label; text="i18n:Trx:"; label_width=50; }
 			}
 
-		    //f_trx_cc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cost_center; ctl_type=editbox; text="Cost Ctr:"; preview_field="a_cost_center"; preview_sql="select msg=:a_cc_desc from /apps/kardia/data/Kardia_DB/a_cost_center/rows"; height=40; label_width=90; }
-		    //f_trx_acct "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_account_code; ctl_type=editbox; text="Account:"; preview_field="a_account_code"; preview_sql="select msg=:a_acct_desc from /apps/kardia/data/Kardia_DB/a_account/rows"; height=40; label_width=90; }
+		    //f_trx_cc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_cost_center; ctl_type=editbox; text="i18n:Cost Ctr:"; preview_field="a_cost_center"; preview_sql="select msg=:a_cc_desc from /apps/kardia/data/Kardia_DB/a_cost_center/rows"; height=40; label_width=90; }
+		    //f_trx_acct "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_account_code; ctl_type=editbox; text="i18n:Account:"; preview_field="a_account_code"; preview_sql="select msg=:a_acct_desc from /apps/kardia/data/Kardia_DB/a_account/rows"; height=40; label_width=90; }
 		    f_trx_cc "widget/component" 
 			{ 
 			path="/apps/kardia/modules/base/editbox_tree.cmp"; 
@@ -322,7 +322,7 @@ gljournal_edit "widget/component-decl"
 		    f_trx_ext_pid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_ext_partner_id; ctl_type=editbox; text="i18n:Ext. Partner:"; label_width=90; }
 		    f_trx_rcv_doc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_recv_document_id; ctl_type=editbox; text="i18n:Recv'd Doc:"; label_width=90; }
 		    f_trx_snd_doc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_sent_document_id; ctl_type=editbox; text="i18n:Sent Doc:"; label_width=90; }
-		    //f_trx_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=textarea; text="Comment:"; label_width=90; height=20; }
+		    //f_trx_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=textarea; text="i18n:Comment:"; label_width=90; height=20; }
 		    }
 		}
 	    trx_form_pane_hdr "widget/pane"
@@ -342,9 +342,9 @@ gljournal_edit "widget/component-decl"
 		    {
 		    x=0;y=20;width=123;height=198;cellsize=20;spacing=5;
 
-		    //f_trx_ldgr "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_number; ctl_type=editbox; text="Ledger:"; type=readonly; label_width=60; }
-		    //f_trx_bat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_number; ctl_type=editbox; text="Batch:"; type=readonly; label_width=60; }
-		    //f_trx_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period; ctl_type=editbox; text="Period:"; type=readonly; label_width=60; }
+		    //f_trx_ldgr "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ledger_number; ctl_type=editbox; text="i18n:Ledger:"; type=readonly; label_width=60; }
+		    //f_trx_bat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_batch_number; ctl_type=editbox; text="i18n:Batch:"; type=readonly; label_width=60; }
+		    //f_trx_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_period; ctl_type=editbox; text="i18n:Period:"; type=readonly; label_width=60; }
 		    f_trx_corr "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_corrected; ctl_type=checkbox; text="i18n:Corrected?"; label_width=80; }
 		    f_trx_corring "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_correcting; ctl_type=checkbox; text="i18n:Correcting?"; label_width=80; }
 		    }

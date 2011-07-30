@@ -59,7 +59,7 @@ cc_acct_edit "widget/component-decl"
 	    acct_rb "widget/radiobuttonpanel"
 		{
 		x=10;y=5;width=228;height=80;
-		title="Select:";
+		title="i18n:Select:";
 		acct_any "widget/radiobutton" { label="i18n:All Accounts"; selected=yes; }
 		acct_one "widget/radiobutton" { label="i18n:One Account From List Below"; }
 		}

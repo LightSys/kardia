@@ -413,7 +413,7 @@ cr_batches "widget/component-decl"
 	    {
 	    width = 172;
 	    height = 40;
-	    text = runclient("i18n:Report: Cash Receipts " + isnull(:periods_osrc:a_period, ''));
+	    text = runclient("Report: Cash Receipts " + isnull(:periods_osrc:a_period, ''));
 	    enabled = runclient(:rcpt_form:is_editable);
 
 	    rpt_print_cn "widget/connector" { event="Click"; target="cr_batches"; action="Launch"; Source=runclient("/apps/kardia/modules/rcpt/donation_summary.rpt"); Width=runclient(800); Height=runclient(600); ledger=runclient(:periods_osrc:a_ledger_number); period=runclient(:periods_osrc:a_period); unposted=1; }

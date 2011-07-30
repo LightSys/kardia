@@ -74,7 +74,7 @@ plugin_gl_fundedit_autosub "widget/component-decl"
 			}
 		    }
 
-		//f_listcode "widget/component" { width=300; height=20; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; text='Mailing List:'; label_width=100; }
+		//f_listcode "widget/component" { width=300; height=20; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; text='i18n:Mailing List:'; label_width=100; }
 		f_list_code "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; ctl_type=dropdown; text='i18n:Mailing List:'; sql=runserver("select :m_list_code + ': ' + :m_list_description, :m_list_code from /apps/kardia/data/Kardia_DB/m_list/rows where :m_list_type = 'P' order by :m_list_code"); } 
 		f_minimum_gift "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_minimum_gift'; text='i18n:Minimum Gift:'; min_gift_hints "widget/hints" { default=runclient(0); } }
 		f_sub_months "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_subscribe_months'; text='i18n:Subscribe For:'; empty_desc = "i18n:# of months - optional"; sub_mon_hints "widget/hints" { default=runclient(''); } }

@@ -115,7 +115,7 @@ tax_table_cmp "widget/component-decl"
 			t_status "widget/table-column" { title="i18n:Status"; fieldname="fstxt"; width=140; }
 			t_min "widget/table-column" { title="i18n:At Least"; fieldname="a_minimum_salary"; width=70; align=right; }
 			t_max "widget/table-column" { title="i18n:Less Than"; fieldname="a_maximum_salary"; width=90; align=right; }
-			//t_txt "widget/table-column" { title="Description"; fieldname="txt"; width=300; }
+			//t_txt "widget/table-column" { title="i18n:Description"; fieldname="txt"; width=300; }
 			t_plus "widget/table-column" { title="i18n:Tax"; fieldname="a_add_to_tax"; width=70; align=right; }
 			t_pct "widget/table-column" { title="i18n:+ Percent"; fieldname="pct"; width=70; align=right; }
 			t_exceed "widget/table-column" { title="i18n:Of Amt Exceeding"; fieldname="a_subtract_salary"; width=110; align=right; }
@@ -146,7 +146,7 @@ tax_table_cmp "widget/component-decl"
 			f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="i18n:Valid From:"; ctl_type="datetime"; tooltip="i18n:Date that this tax table entry begins to be valid"; date_only=1; default_time="00:00:00"; label_width=100; }
 			f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="i18n:Valid Thru:"; ctl_type="datetime"; tooltip="i18n:Last date that this tax table entry is valid"; date_only=1; default_time="23:59:59"; label_width=100; }
 			f_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="i18n:Pay Period:"; ctl_type="dropdown"; tooltip="i18n:Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
-			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
+			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="i18n:Filing Stat.:"; ctl_type="dropdown"; tooltip="i18n:Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
 			f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="i18n:Filing Stat.:"; ctl_type="dropdown"; tooltip="i18n:Filing Status"; label_width=100; }
 			}
 
@@ -254,7 +254,7 @@ tax_table_cmp "widget/component-decl"
 			f_from2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="i18n:Valid From:"; ctl_type="datetime"; tooltip="i18n:Date that this tax table entry begins to be valid"; label_width=100; }
 			f_to2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="i18n:Valid Thru:"; ctl_type="datetime"; tooltip="i18n:Last date that this tax table entry is valid"; label_width=100; }
 			f_per2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="i18n:Pay Period:"; ctl_type="dropdown"; tooltip="i18n:Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
-			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="Filing Stat.:"; ctl_type="dropdown"; tooltip="Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
+			//f_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="i18n:Filing Stat.:"; ctl_type="dropdown"; tooltip="i18n:Filing Status"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_filingstatus/rows order by :tag"; }
 			f_stat2 "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_filing_status; text="i18n:Filing Stat.:"; ctl_type="dropdown"; tooltip="i18n:Filing Status"; label_width=100; }
 			}
 

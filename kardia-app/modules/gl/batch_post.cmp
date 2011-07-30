@@ -321,7 +321,7 @@ batch_post "widget/component-decl"
 		    rowheight = 18;
 		    mode=dynamicrow;
 
-		    t5_stat "widget/table-column" { title="Current Batch Status"; fieldname="txt"; width=558; }
+		    t5_stat "widget/table-column" { title="i18n:Current Batch Status"; fieldname="txt"; width=558; }
 		    }
 		//stat_label "widget/label" { x=8; y=200; width=588; height=20; style=bold; value=runclient("Current Batch Status: " + condition(:stat_osrc:min == 0 and :stat_osrc:max == 0, "Unposted", condition(:stat_osrc:min > 0 and :stat_osrc:max > 0, "Posted", "Partially Posted (ERROR!)"))); }
 		posted_cn "widget/connector" { event=EndQuery; target=batch_post; action=Posted; }

@@ -24,7 +24,7 @@ annual_statement "widget/page"
 
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
 
-	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
+	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='i18n:Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
 
 	    f_donorid "widget/component"
 		{

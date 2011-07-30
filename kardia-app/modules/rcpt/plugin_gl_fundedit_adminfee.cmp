@@ -148,7 +148,7 @@ plugin_gl_fundedit_adminfee "widget/component-decl"
 				    path="/sys/cmp/smart_field.cmp";
 				    field='a_percentage';
 				    text='i18n:Percentage:';
-				    empty_desc="optional - to override the default";
+				    empty_desc="i18n:optional - to override the default";
 				    label_width=90;
 				    tooltip="i18n:Only enter this optional value if you need to override the default (above)";
 				    pct_change_cn "widget/connector"
