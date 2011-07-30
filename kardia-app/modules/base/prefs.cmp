@@ -64,7 +64,7 @@ prefs "widget/component-decl"
 		allow_query = no;
 		allow_delete = no;
 
-		f_rowheight "widget/component" { x=30; width=350; text="i18n:Table Row Height:Table Row Height:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; 
+		f_rowheight "widget/component" { x=30; width=350; text="i18n:Table Row Height:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; 
 field=rowheight; sql="select :descrip, :height from /apps/kardia/data/TableRowHeights.csv/rows"; label_width=140; }
 		}
 	    }

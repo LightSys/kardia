@@ -13,7 +13,7 @@ fund_balance_window "widget/component-decl"
 
     fbwin "widget/childwindow"
 	{
-	title = runserver("Fund Balances Report - " + :this:ledger);
+	title = runserver("i18n:Fund Balances Report - " + :this:ledger);
 	width=580; height=550;
 	x=10; y=25;
 	visible = false;
@@ -31,14 +31,14 @@ fund_balance_window "widget/component-decl"
 		spacing=4;
 		lbl_tb "widget/label" { height=30; font_size=16; text="i18n:GL Fund Balances Report Options:"; align=center; }
 		pn_sep1 "widget/pane" { height=2; style=lowered; }
-		f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
+		f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='i18n:Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
 		f_year "widget/component"
 		    { 
 		    width=350; height=24; 
 		    path="/sys/cmp/smart_field.cmp"; 
 		    field='year_period'; 
 		    ctl_type=dropdown; 
-		    text='Year:'; 
+		    text='i18n:Year:'; 
 		    sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_parent_period is null order by :a_period desc");
 		    label_width=120;
 		    form=rpt_form;
@@ -59,7 +59,7 @@ fund_balance_window "widget/component-decl"
 		    path="/sys/cmp/smart_field.cmp";
 		    field='ref_period';
 		    ctl_type=dynamicdropdown;
-		    text='Reference Period:';
+		    text='i18n:Reference Period:';
 		    label_width=120;
 		    form=rpt_form;
 
@@ -79,7 +79,7 @@ fund_balance_window "widget/component-decl"
 		    path="/sys/cmp/smart_field.cmp"; 
 		    field='cc_class'; 
 		    ctl_type=dropdown; 
-		    text='Fund Class:'; 
+		    text='i18n:Fund Class:'; 
 		    sql = runserver("select :a_cost_center_class + ' - ' + :a_acct_class_desc, :a_cost_center_class from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows where :a_ledger_number = " + quote(:this:ledger) + " order by :a_cost_center_class");
 		    label_width=120;
 		    form=rpt_form;
@@ -94,7 +94,7 @@ fund_balance_window "widget/component-decl"
 		    path="/sys/cmp/smart_field.cmp"; 
 		    field='document_format'; 
 		    ctl_type=dropdown; 
-		    text='Format:'; 
+		    text='i18n:Format:'; 
 		    sql = runserver("select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
 		    form=rpt_form;
 		    label_width=120;

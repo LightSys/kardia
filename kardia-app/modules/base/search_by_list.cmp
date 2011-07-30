@@ -21,9 +21,12 @@ search_by_list "widget/component-decl"
 	title = runserver("i18n:Search by " + :this:object_name);
 	form=null;
 	value = runclient(:tab:selected);
-	rb_all "widget/radiobutton" { label=runserver("All " + :this:object_name + "s"); value="tc_all"; selected=yes; }
-	rb_list "widget/radiobutton" { label=runserver("Select " + :this:object_name +" from List"); value="tc_list"; }
-	rb_type "widget/radiobutton" { label=runserver("Enter " + :this:object_name); value="tc_type"; }
+	rb_all "widget/radiobutton" { label=runserver("i18n:All " + 
+:this:object_name + "s"); value="tc_all"; selected=yes; }
+	rb_list "widget/radiobutton" { label=runserver("i18n:Select " + 
+:this:object_name +" from List"); value="tc_list"; }
+	rb_type "widget/radiobutton" { label=runserver("i18n:Enter " + 
+:this:object_name); value="tc_type"; }
 	}
 
     tab "widget/tab"
@@ -59,7 +62,7 @@ search_by_list "widget/component-decl"
 		    rowheight = 20;
 		    mode=dynamicrow;
 
-		    t_id "widget/table-column" { title=runserver("i18n:":this:object_name + " ID"); fieldname="id"; width=80; }
+		    t_id "widget/table-column" { title=runserver("i18n:" + :this:object_name + " ID"); fieldname="id"; width=80; }
 		    t_desc "widget/table-column" { title="i18n:Description"; fieldname="description"; width=180; }
 		    }
 

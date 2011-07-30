@@ -27,7 +27,7 @@ TableMaintenance "widget/page"
 
 		    mnItem "widget/menuitem"
 			{
-			label = runserver(:tbl_rpt:name);
+			label = runserver("i18n:" + :tbl_rpt:name);
 
 			mnLink "widget/connector"
 			    {

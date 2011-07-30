@@ -169,7 +169,7 @@ p_partner_component "widget/component-decl"
 			pointimage="/sys/images/ico21b.gif";
 			clickimage="/sys/images/ico21c.gif";
 			disabledimage="/sys/images/ico21d.gif";
-			tooltip = runserver("Search for Partners");
+			tooltip = runserver("i18n:Search for Partners");
 			enabled = runclient(:p_partner_form:is_queryable);
 
 			search_cn "widget/connector" { event=Click; target=partner_search_window; action=Open; IsModal=1; }

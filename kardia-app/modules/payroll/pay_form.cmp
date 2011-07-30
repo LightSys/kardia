@@ -211,7 +211,7 @@ pay_form "widget/component-decl"
 	    oth_expl "widget/label"
 		{
 		width=480;
-		text = runserver("Gross Pay, Benefits, Xfers, and Employer Tax for Other(s) in " + :this:costctr);
+		text = runserver("i18n:Gross Pay, Benefits, Xfers, and Employer Tax for Other(s) in " + :this:costctr);
 		}
 	    }
 

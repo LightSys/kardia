@@ -11,7 +11,7 @@ chat_window "widget/component-decl"
 
     chatwin "widget/childwindow"
 	{
-	title = runserver("Chat Between " + user_name() + " and " + :this:WithWhom);
+	title = runserver("i18n:Chat Between " + user_name() + " and " + :this:WithWhom);
 	width=400; height=300;
 	x=200; y=150;
 	visible = runserver(:this:visible);
