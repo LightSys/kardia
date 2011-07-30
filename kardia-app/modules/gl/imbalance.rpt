@@ -1,7 +1,7 @@
 $Version=2$
 imbalance "system/report"
     {
-    title = "i18n:GL Imbalance Report";
+    title = "GL Imbalance Report";
 
     document_format="application/pdf";
     resolution = 300;

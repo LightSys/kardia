@@ -1,7 +1,7 @@
 $Version=2$
 payroll_register "system/report"
     {
-    title = "i18n:Payroll Register";
+    title = "Payroll Register";
 
     document_format="application/pdf";
     resolution = 300;

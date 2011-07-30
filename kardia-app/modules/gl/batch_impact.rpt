@@ -1,7 +1,7 @@
 $Version=2$
 batch_impact "system/report"
     {
-    title = "i18n:GL Batch Impact";
+    title = "GL Batch Impact";
 
     // This report shows the impact of a batch on the GL balances.
 

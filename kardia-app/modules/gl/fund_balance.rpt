@@ -1,7 +1,7 @@
 $Version=2$
 fund_balance "system/report"
     {
-    title = "i18n:GL Fund Balance";
+    title = "GL Fund Balance";
 
     document_format="application/pdf";
     resolution = 300;

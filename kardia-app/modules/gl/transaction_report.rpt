@@ -1,7 +1,7 @@
 $Version=2$
 transaction_report "system/report"
     {
-    title = "i18n:GL Transaction Report";
+    title = "GL Transaction Report";
 
     document_format="application/pdf";
 
@@ -153,8 +153,8 @@ transaction_report "system/report"
 	    x=0; width=80; height=2;
 	    font=helvetica;
 	    align=center;
-	    t_d1 "report/data" { value = runserver("i18n:GL Transaction Report for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
-	    t_d2 "report/data" { value = runserver("i18n:Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    t_d1 "report/data" { value = runserver("GL Transaction Report for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
 	    }
 
 	rpt_criteria "report/area"

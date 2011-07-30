@@ -1,7 +1,7 @@
 $Version=2$
 financial_statement "system/report"
     {
-    title = "i18n:Missionary Financial Statement";
+    title = "Missionary Financial Statement";
 
     document_format="application/pdf";
     resolution = 300;

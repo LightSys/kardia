@@ -1,7 +1,7 @@
 $Version=2$
 field_report "system/report"
     {
-    title = "i18n:Field Financial Statement";
+    title = "Field Financial Statement";
 
     document_format="application/pdf";
     resolution = 300;
@@ -494,7 +494,7 @@ field_report "system/report"
 	    align=left;
 
 	    sep_line2 "report/image" { y=0.5; width=80;height=0.06; source="/apps/kardia/modules/local/BlackPixel.png"; }
-	    s2_d0 "report/data" { fontsize=12; style=bold; value = "i18n:Balances By Fund:"; }
+	    s2_d0 "report/data" { fontsize=12; style=bold; value = "Balances By Fund:"; }
 	    }
 
 	sumtbl2 "report/table"
