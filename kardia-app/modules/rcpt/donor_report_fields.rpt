@@ -31,7 +31,7 @@ donor_report "system/report"
     // Other Report Options:
     //   - Create Mailing List (list ID, list description, list type)
     //
-    title = "i18n:Donor Report";
+    title = "Donor Report";
     document_format="application/pdf";
     resolution = 300;
     pagewidth=110;

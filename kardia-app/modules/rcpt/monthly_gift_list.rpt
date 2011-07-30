@@ -24,7 +24,7 @@ monthly_gift_list "system/report"
     //       * a_subtrx_gift_group
     //       * a_subtrx_gift_item
 
-    title = "i18n:Monthly Donor List";
+    title = "Monthly Donor List";
     document_format="application/pdf";
     resolution = 300;
     pagewidth=85;

@@ -29,7 +29,7 @@ annual_statement "system/report"
     //   - Year Period
     //   - Whether to include all gifts, just non-2120 gifts, or 4100 gifts only.
     //
-    title = "i18n:Annual Giving Statement";
+    title = "Annual Giving Statement";
     document_format="application/pdf";
     resolution = 300;
     pagewidth=85;

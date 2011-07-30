@@ -1,7 +1,7 @@
 $Version=2$
 fund_gift_list_tntmpd "system/report"
     {
-    title = "i18n:Gift List for Funds - TntMPD Format";
+    title = "Gift List for Funds - TntMPD Format";
 
     document_format="text/csv";
     resolution = 300;

@@ -1,7 +1,7 @@
 $Version=2$
 donation_summary "system/report"
     {
-    title = "i18n:Donation Summary";
+    title = "Donation Summary";
 
     document_format="application/pdf";
     resolution = 300;
