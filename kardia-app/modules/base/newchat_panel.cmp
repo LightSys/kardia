@@ -80,20 +80,20 @@ newchat_panel "widget/component-decl"
                                     WHERE
                                         :member:c_chat_id == " + :this:chat_id + " and
                                         :member:s_username == :s:name)
-                                    is null");
+                                    is null");    
                 }
                 
             invite_button "widget/textbutton"
                 {
                 width=60; 
                 text="Invite";
+                enabled=runclient(:not_on_users_list:value is not null);
                 
-                add_invitation_cn "widget/connector"
+                add_invitation_cn1 "widget/connector"
                     {
                     event="Click";
                     action="Create";
                     target=invite_osrc;
-                    event_confirm=runclient("asdfsadf");
                     
                     // Parameters
                     c_chat_id= runclient(:newchat_panel:chat_id);
@@ -106,6 +106,14 @@ newchat_panel "widget/component-decl"
                     c_last_read_mesage_id=runclient(0);
                     c_chat_id=runclient(:newchat_panel:chat_id);
                     }
+                
+                add_invitation_cn2 "widget/connector"
+                    {
+                    event="Click";
+                    action="Instantiate";
+                    target=not_on_users_list;
+                    }
+                    
                 }
             }
         
@@ -144,8 +152,8 @@ newchat_panel "widget/component-decl"
                                                  condition(datepart(minute,:s_date_created) < 10,
                                                            '0',
                                                            '') +
-                                                 datepart(minute,:s_date_created) +
-                                                 '] ' + :c_message + '\n') - '\n'
+                                                 datepart(minute,:s_date_created) + ' - ' + :s_created_by + ']: ' +
+                                                 :c_message + '\n') - '\n'
                             FROM /apps/kardia/data/Kardia_DB/c_message/rows
                             WHERE (:c_chat_id == " + :this:chat_id + ")
                         ");

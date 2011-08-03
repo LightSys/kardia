@@ -92,6 +92,7 @@ whoson "widget/component-decl"
 		    event_condition=runclient(:Column == 'chat' and :name != user_name());
 		    target=chat_maker;
 		    action="Instantiate";
+		    event_confirm=runclient("Confirming event " + :name);
 		    
 		    // Parameters to pass
 		    initial_invite=runclient(:name);

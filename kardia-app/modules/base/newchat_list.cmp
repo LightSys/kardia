@@ -46,11 +46,10 @@ newchat_list "widget/component-decl"
 			    identity /apps/kardia/data/Kardia_DB/c_member/rows member,
 			    /apps/kardia/data/Kardia_DB/c_chat/rows chat
 			WHERE
-			    :chat:c_chat_id *= :member:c_chat_id
+			    :member:s_username == user=name() and :chat:c_chat_id *= :member:c_chat_id
 			HAVING
 			    -- Pick all that are pubic or the user has a matching record for
-			    (:c_public == 'Y' or
-			    :s_username == user_name()) " + 
+			    (:c_public == 'Y') " + 
 			    condition(:shows_exited, "", "and not (:c_status == 'C')") + " 
 			ORDER BY :chat:c_last_send DESC
 			");
@@ -89,7 +88,7 @@ newchat_list "widget/component-decl"
 	    cn_close_public "widget/connector"
 		{
 		event="Click";
-		event_condition=runclient(:Column == "close" and :c_status is null);
+		event_condition=runclient(:Column == "close" and :c_public == "Y");
 		target=chat_list_osrc;
 		action="Create";
 		
