@@ -4,7 +4,7 @@ help "widget/page"
     title = "i18n:Kardia - Help";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl";
     bgcolor = "#ffffff";
-    x=0; y=0; width=1040; height=480;
+    x=0; y=0; width=1040; height=780;
 
     lang_label "widget/label" { x=8;y=8;width=192;height=20; text="i18n:Language:"; }
     lang_dd "widget/dropdown" { x=8;y=28;width=192;height=20; bgcolor="#ffffff"; mode=dynamic_server; highlight="#c0c0c0"; 
@@ -24,7 +24,7 @@ help "widget/page"
 		tree_scroll "widget/scrollpane"
 			{
 			x=0;y=0;
-			height=480 - 8 - 64 - 2;
+			height=280 - 8 - 64 - 2;
 			width=200 - 8 - 2;
 			samples_tree "widget/treeview"
 				{
@@ -49,7 +49,7 @@ help "widget/page"
     info_pane "widget/pane"
 		{
 		x=208;y=8;
-		height=480 - 16;
+		height=780 - 16;
 		width=1040 - 208 - 8;
 		style=lowered;
 		bgcolor="#ffffff";
@@ -57,13 +57,13 @@ help "widget/page"
 		info_scroll "widget/scrollpane"
 			{
 			x=0;y=0;
-			height=480 - 16 - 2;
+			height=780 - 16 - 2;
 			width=1040 - 208 - 8 - 2;
 			info_html "widget/html"
 				{
 				x=1;y=0;width = 1040 - 208 - 8 - 2 - 20;
 				mode=dynamic;
-				source="/apps/kardia/help/en_US/Overview/Introduction.html";
+				source="/apps/kardia/help/en_US/Basics-GettingLoggedIn.html";
 				}
 			}
 		}
