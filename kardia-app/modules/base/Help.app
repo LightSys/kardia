@@ -32,7 +32,7 @@ help "widget/page"
 				show_root=no;
 				show_root_branch = yes;
 				use_3d_lines=no;
-				source="/apps/kardia/help/en_US/";
+				source="/apps/kardia/help/";
 
 				tree_click "widget/connector"
 					{
