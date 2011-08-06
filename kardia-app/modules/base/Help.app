@@ -24,7 +24,7 @@ help "widget/page"
 		tree_scroll "widget/scrollpane"
 			{
 			x=0;y=0;
-			height=280 - 8 - 64 - 2;
+			height=480 - 8 - 64 - 2;
 			width=200 - 8 - 2;
 			samples_tree "widget/treeview"
 				{
