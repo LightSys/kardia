@@ -9,6 +9,7 @@ help "widget/page"
     lang_label "widget/label" { x=8;y=8;width=192;height=20; text="i18n:Language:"; }
     lang_dd "widget/dropdown" { x=8;y=28;width=192;height=20; bgcolor="#ffffff"; mode=dynamic_server; highlight="#c0c0c0"; 
     				sql="select :l:lc_description, :f:name from /apps/kardia/help f, /apps/kardia/data/Locale.csv/rows l where :f:name = :l:lc_id"; 
+				locale_id "widget/connector" { event=DataChange; target=samples_tree; action=SetRoot; NewRoot=runclient("/apps/kardia/help/" + :lang_dd:value + "/"); }
     			      }
  
 	   
