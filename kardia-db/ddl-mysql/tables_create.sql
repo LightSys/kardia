@@ -41,12 +41,14 @@ create table p_partner (
         p_surname                             varchar(64)  null,       /* Doe --  */
         p_surname_first                       bit,                     /* surname comes first, e.g., Korean --  */
         p_localized_name                      varchar(96)  null,       /*  --  */
+        p_suffix                              varchar(64)  null,       /* such as "Jr.", "M.D.", "and Family", etc. --  */
         p_org_name                            varchar(64)  null,       /*  --  */
         p_gender                              char(1)  null,           /* M=male, F=female, C=couple --  */
         p_language_code                       char(3)  null,           /*  --  */
         p_acquisition_code                    char(3)  null,           /*  --  */
         p_comments                            varchar(1536)  null,     /*  --  */
         p_record_status_code                  char(1)  not null,       /* A=active, O=obsolete, M=merged --  */
+        p_no_mail_reason                      char(1)  null,           /* Reason why p_no_mail is set: (U)ndeliverable, (O)ffice Request, (P)ersonal Request, (M)issionary Request, (D)eceased, (T)emporarily Away, (I)nactive Donor, (X) Other. --  */
         p_no_solicitations                    bit,                     /*  --  */
         p_no_mail                             bit,                     /*  --  */
         p_cost_center                         varchar(20)  null,       /* The cost center number (see a_cost_center) associated with the partner, if applicable. --  */
@@ -60,6 +62,14 @@ create table p_partner (
         s_date_modified                       datetime  not null,      /*  --  */
         s_modified_by                         varchar(20)  not null,   /*  --  */
         __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_partner_key_cnt */
+
+create table p_partner_key_cnt (
+        p_partner_key                         char(10)  not null       /*  --  */
 
 );
 
@@ -86,6 +96,7 @@ create table p_person (
 create table p_location (
         p_partner_key                         char(10)  not null,      /*  --  */
         p_location_id                         tinyint  not null,       /*  --  */
+        p_revision_id                         integer  not null,       /* 0 if current address, or <n> if it is an older revision. --  */
         p_location_type                       char(1)  null,           /* H=home, W=work, S=school, V=vacation --  */
         p_date_effective                      datetime  null,          /*  --  */
         p_date_good_until                     datetime  null,          /*  --  */
@@ -102,8 +113,25 @@ create table p_location (
         p_bulk_postal_code                    varchar(12)  null,       /* USPS - zip center 3 digits --  */
         p_certified_date                      datetime  null,          /* e.g., CASS certification of address --  */
         p_postal_status                       char(1)  null,           /* e.g., ACS status, CASS status -- K=Addressee-UnKnown F=Forwarding-Order-Expired N=No-such-#-or-Address U=Undeliverable-by-P.O. X=Other */
+        p_postal_barcode                      varchar(128)  null,      /* Postal barcode sequence for printing mailing labels etc. --  */
         p_record_status_code                  char(1)  not null,       /* A=active, O=obsolete, Q=active but needs QA (e.g., new record) --  */
         p_location_comments                   varchar(1536)  null,     /*  --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_address_format */
+
+create table p_address_format (
+        p_address_set                         char(10)  not null,      /* Set of address formats being used --  */
+        p_country_code                        char(2)  not null,       /* Country for address format (from p_country table / p_country_code in p_location) --  */
+        p_format                              varchar(1024)  not null,
+                                                                      /* Format of address, to be evaluated with Centrallix substitute() function. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -119,7 +147,7 @@ create table p_contact_info (
         p_partner_key                         char(10)  not null,      /*  --  */
         p_contact_id                          tinyint  not null,       /*  --  */
         p_contact_type                        char(1)  not null,       /* P=phone, F=fax, C=cell, E=email, W=website --  */
-        p_location_id                         tinyint  null,           /*  --  */
+        p_location_id                         char(3)  null,           /* Either the ID of the associated location, or a 'location type' (W, H, etc...) --  */
         p_phone_country                       varchar(3)  null,        /*  --  */
         p_phone_area_city                     varchar(4)  null,        /*  --  */
         p_contact_data                        varchar(80)  null,       /*  --  */
@@ -205,6 +233,24 @@ create table p_payee (
 );
 
 
+/* p_staff */
+
+create table p_staff (
+        p_partner_key                         char(10)  not null,      /* The partner key of the staff member --  */
+        p_is_staff                            bit,                     /* Set to 0 to disable this partner as a staff member. --  */
+        p_kardia_login                        varchar(128)  null,      /* The Kardia login name of the staff member. --  */
+        p_kardiaweb_login                     varchar(128)  null,      /* The Kardia self-service website login of the staff member. --  */
+        p_preferred_email_id                  integer  null,           /* Preferred email (p_contact_info) for receiving reports and such from Kardia --  */
+        p_preferred_location_id               integer  null,           /* Preferred location (p_location) for receiving reports and such from Kardia --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* p_bulk_postal_code */
 
 create table p_bulk_postal_code (
@@ -242,14 +288,18 @@ create table p_zipranges (
 /* p_country */
 
 create table p_country (
-        p_country_code                        char(2)  not null,       /* key --  */
-        p_country_name                        varchar(30)  not null,   /* The name of the country --  */
-        p_local_name                          varchar(30)  null,       /* The localized name of the country --  */
+        p_country_code                        char(2)  not null,       /* ISO 3166-1 Alpha-2 With UK exception (basically ccTLD codes) --  */
+        p_iso3166_2_code                      char(2)  not null,       /* ISO 3166-1 Alpha-2 --  */
+        p_iso3166_3_code                      char(3)  not null,       /* ISO 3166-1 Alpha-3 --  */
+        p_fips_code                           char(2)  not null,       /* Two-letter codes used by FIPS 10-4 / CIA World Factbook / Joshua Project / HIS-ROG3 --  */
+        p_country_name                        varchar(255)  not null,  /* The name of the country --  */
+        p_local_name                          varchar(255)  null,      /* The localized name of the country --  */
         p_phone_code                          int  null,               /* The phone calling code for this country --  */
         p_security_level                      int  null,               /* The security level for this country (from Joshua project) --  */
         p_nationality                         varchar(30)  null,       /* Nationality of the people --  */
         p_early_timezone                      char(5)  null,           /* Earliest timezone in the country --  */
         p_late_timezone                       char(5)  null,           /* Latest timezone in the country --  */
+        p_record_status_code                  char(1)  not null,       /* (A)ctive, (O)bsolete -- for listing old addresses that have obsolete country codes. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -282,6 +332,20 @@ create table p_banking_details (
 );
 
 
+/* p_title */
+
+create table p_title (
+        p_title                               varchar(64)  not null,   /* Mr. & Mrs. --  */
+        p_record_status_code                  char(1)  not null,       /* A=active, O=obsolete --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (
@@ -290,6 +354,7 @@ create table m_list (
         m_list_description                    varchar(255)  not null,  /*  --  */
         m_list_status                         char(1)  not null,       /* O=obsolete, A=active --  */
         m_list_type                           char(1)  not null,       /* P=publication, I=issue, C=campaign, M=motivational code, O=other, etc. --  */
+        m_delivery_method                     char(1)  null,           /* default delivery method for this publication (E=email, M=mail) --  */
         m_discard_after                       datetime  null,          /* for temporary lists/extracts --  */
         m_list_frozen                         bit,                     /* do not permit add/remove memberships --  */
         m_date_sent                           datetime  null,          /*  --  */
@@ -313,6 +378,7 @@ create table m_list_membership (
         m_num_copies                          int  not null,           /* usually just 1 copy; possible to be 0 copies --  */
         p_location_id                         tinyint  null,           /* if member specifies a particular Location to use --  */
         p_contact_id                          tinyint  null,           /* if member specifies a particular contact info record to use --  */
+        m_delivery_method                     char(1)  null,           /* E=email, M=postal mail. If NULL, use delivery method from m_list. --  */
         m_member_type                         char(1)  not null,       /* O=owner, M=member --  */
         m_num_issues_sub                      int  null,               /* how many issues in subscription --  */
         m_num_issues_recv                     int  null,               /* DENORMALIZATION: how many issues received? --  */
@@ -330,6 +396,80 @@ create table m_list_membership (
         m_contact                             varchar(80)  null,       /* text to use instead of first/last name when printing labels --  */
         m_reason_member                       char(1)  null,           /* why person is on this list --  */
         m_reason_cancel                       char(1)  null,           /* reason given for canceling --  */
+        m_sort_order                          integer  null,           /* if a list was imported, and the order it prints in is significant in some way, this field can be used. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* r_group */
+
+create table r_group (
+        r_group_name                          char(8)  not null,       /* short name of the report group. --  */
+        r_group_description                   varchar(255)  null,      /* description of the report group --  */
+        r_group_module                        varchar(20)  not null,   /* directory name of the module containing the report to run (e.g., 'base', 'rcpt', 'disb', etc.) --  */
+        r_group_file                          varchar(255)  not null,  /* file name of the .rpt file in the above module. --  */
+        r_is_active                           bit,                     /* Whether or not the group is 'active'. Kardia may come with many preconfigured report groups that are not activated by the user yet. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* r_group_report */
+
+create table r_group_report (
+        r_group_name                          char(8)  not null,       /* short name of the report group. --  */
+        r_delivery_method                     varchar(1)  not null,    /* method of delivery - Email/Web/Print --  */
+        p_recipient_partner_key               char(10)  not null,      /* to whom we are sending this report --  */
+        r_report_id                           integer  not null,       /* an ID representing a unique report of this type received by this partner (can be many) --  */
+        r_is_active                           bit,                     /* Whether or not the report is 'active'. We may need to enable/disable particular reports in the group from time to time. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* r_group_param */
+
+create table r_group_param (
+        r_group_name                          char(8)  not null,       /* short name of the report group that this parameter belongs to --  */
+        r_param_name                          varchar(64)  not null,   /* name of the parameter --  */
+        r_param_description                   varchar(255)  null,      /* description of the report parameter --  */
+        r_is_group_param                      bit,                     /* whether this parameter can be supplied by the user running the report group --  */
+        r_is_report_param                     bit,                     /* whether this parameter can be supplied by individual reports in the group --  */
+        r_is_required                         bit,                     /* whether this parameter MUST be supplied --  */
+        r_param_cmp_module                    varchar(64)  null,       /* component module (directory name) used for getting user input on this parameter. --  */
+        r_param_cmp_file                      varchar(256)  null,      /* component file (.cmp) used for getting user input on this parameter. --  */
+        r_param_default                       varchar(1536)  null,     /* default value for the parameter (in string format). --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* r_group_report_param */
+
+create table r_group_report_param (
+        r_group_name                          char(8)  not null,       /* short name of the report group that this parameter belongs to --  */
+        r_delivery_method                     char(1)  not null,       /* delivery method (Email, Web, Print) --  */
+        p_recipient_partner_key               char(10)  not null,      /* partner key of report recipient --  */
+        r_report_id                           integer  not null,       /* represents a unique report of this type received by this partner (can be many) --  */
+        r_param_name                          varchar(64)  not null,   /* name of the parameter --  */
+        r_param_value                         varchar(1024)  null,     /* value for the parameter (in string format). --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -785,6 +925,35 @@ create table a_cost_center_prefix (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center prefix --  */
         a_cc_prefix_desc                      char(32)  null,          /* short description of cost center prefix, for reporting --  */
         a_cc_prefix_comments                  varchar(255)  null,      /* comments / long description of cost center prefix --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_cc_staff */
+
+create table a_cc_staff (
+        a_ledger_number                       char(10)  not null,      /* ledger number (a_ledger) --  */
+        a_cost_center                         char(20)  not null,      /* cost center code (a_cost_center) --  */
+        p_staff_partner_key                   varchar(10)  not null,   /* Partner key (p_partner) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_ledger_office */
+
+create table a_ledger_office (
+        a_ledger_number                       char(10)  not null,      /* ledger number (a_ledger) --  */
+        p_office_partner_key                  varchar(10)  not null,   /* Partner key of Office (p_partner) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

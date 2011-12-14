@@ -16,6 +16,11 @@ alter table p_partner drop index p_parent_key_idx;
 /* go */
 
 
+/* p_partner_key_cnt */
+/* drop index p_partner_key_cnt.p_partner_key_cnt_pk */ 
+/* go */
+
+
 /* p_person */
 /* drop index p_person.p_person_clustered_pk */ 
 /* go */
@@ -25,9 +30,16 @@ alter table p_partner drop index p_parent_key_idx;
 alter table p_location drop index p_location_city_idx;
 /* drop index p_location.p_location_pk */ 
 /* go */
+alter table p_location drop index p_location_rev_idx;
 alter table p_location drop index p_location_state_idx;
 alter table p_location drop index p_location_zip_idx;
 /* drop index p_location.p_postal_sort_clustered_idx */ 
+/* go */
+
+
+/* p_address_format */
+alter table p_address_format drop index p_af_country_idx;
+/* drop index p_address_format.p_af_pk */ 
 /* go */
 
 
@@ -58,6 +70,13 @@ alter table p_payee drop index p_gl_acct_idx;
 /* go */
 
 
+/* p_staff */
+alter table p_staff drop index p_staff_login_idx;
+/* drop index p_staff.p_staff_pk */ 
+/* go */
+alter table p_staff drop index p_staff_weblogin_idx;
+
+
 /* p_bulk_postal_code */
 /* drop index p_bulk_postal_code.p_bulk_code_pk */ 
 /* go */
@@ -78,6 +97,11 @@ alter table p_payee drop index p_gl_acct_idx;
 /* go */
 
 
+/* p_title */
+/* drop index p_title.p_title_pk */ 
+/* go */
+
+
 /* m_list */
 /* drop index m_list.m_list_pk */ 
 /* go */
@@ -87,6 +111,32 @@ alter table p_payee drop index p_gl_acct_idx;
 /* drop index m_list_membership.m_list_membership_clustered_pk */ 
 /* go */
 alter table m_list_membership drop index m_lists_by_partner;
+
+
+/* r_group */
+alter table r_group drop index r_grp_modfile_idx;
+/* drop index r_group.r_grp_pk */ 
+/* go */
+
+
+/* r_group_report */
+alter table r_group_report drop index r_rpt_partner_idx;
+/* drop index r_group_report.r_rpt_pk */ 
+/* go */
+
+
+/* r_group_param */
+alter table r_group_param drop index r_param_cmp_idx;
+/* drop index r_group_param.r_param_pk */ 
+/* go */
+
+
+/* r_group_report_param */
+alter table r_group_report_param drop index r_rparam_param_idx;
+alter table r_group_report_param drop index r_rparam_partner_idx;
+/* drop index r_group_report_param.r_rparam_pk */ 
+/* go */
+alter table r_group_report_param drop index r_rparam_value_idx;
 
 
 /* a_analysis_attr */
@@ -221,6 +271,16 @@ alter table a_transaction_tmp drop index a_trxt_transaction_idx;
 /* a_cost_center_prefix */
 alter table a_cost_center_prefix drop index a_cc_pfx_ledger_number_idx;
 /* drop index a_cost_center_prefix.a_cost_center_prefix_pk */ 
+/* go */
+
+
+/* a_cc_staff */
+/* drop index a_cc_staff.a_cc_staff_pk */ 
+/* go */
+
+
+/* a_ledger_office */
+/* drop index a_ledger_office.a_lo_pk */ 
 /* go */
 
 

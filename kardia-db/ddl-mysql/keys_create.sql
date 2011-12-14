@@ -7,14 +7,20 @@ alter table p_partner
 alter table p_partner
 	add constraint p_surname_clustered_idx unique  (p_surname, p_given_name, p_org_name, p_partner_key);
 
+alter table p_partner_key_cnt
+	add constraint p_partner_key_cnt_pk primary key  (p_partner_key);
+
 alter table p_person
 	add constraint p_person_clustered_pk primary key  (p_partner_key);
 
 alter table p_location
-	add constraint p_location_pk primary key  (p_partner_key, p_location_id);
+	add constraint p_location_pk primary key  (p_partner_key, p_location_id, p_revision_id);
 
 alter table p_location
-	add constraint p_postal_sort_clustered_idx unique  (p_country_code, p_bulk_postal_code, p_postal_code, p_partner_key, p_location_id);
+	add constraint p_postal_sort_clustered_idx unique  (p_country_code, p_bulk_postal_code, p_postal_code, p_partner_key, p_location_id, p_revision_id);
+
+alter table p_address_format
+	add constraint p_af_pk primary key  (p_address_set, p_country_code);
 
 alter table p_contact_info
 	add constraint p_contact_info_pk primary key  (p_partner_key, p_contact_id);
@@ -31,6 +37,9 @@ alter table p_donor
 alter table p_payee
 	add constraint p_payee_pk primary key  (p_partner_key, a_gl_ledger_number);
 
+alter table p_staff
+	add constraint p_staff_pk primary key  (p_partner_key);
+
 alter table p_bulk_postal_code
 	add constraint p_bulk_code_pk primary key  (p_country_code,p_bulk_postal_code,p_bulk_code);
 
@@ -43,11 +52,26 @@ alter table p_country
 alter table p_banking_details
 	add constraint p_banking_details_pk primary key  (p_banking_details_key);
 
+alter table p_title
+	add constraint p_title_pk primary key  (p_title);
+
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
 
 alter table m_list_membership
 	add constraint m_list_membership_clustered_pk primary key  (m_list_code, p_partner_key);
+
+alter table r_group
+	add constraint r_grp_pk primary key  (r_group_name);
+
+alter table r_group_report
+	add constraint r_rpt_pk primary key  (r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id);
+
+alter table r_group_param
+	add constraint r_param_pk primary key  (r_group_name, r_param_name);
+
+alter table r_group_report_param
+	add constraint r_rparam_pk primary key  (r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id, r_param_name);
 
 alter table a_analysis_attr
 	add constraint a_an_attr_pk primary key  (a_ledger_number, a_attr_code);
@@ -117,6 +141,12 @@ alter table a_reporting_level
 
 alter table a_cost_center_prefix
 	add constraint a_cost_center_prefix_pk primary key  (a_cost_center_prefix, a_ledger_number);
+
+alter table a_cc_staff
+	add constraint a_cc_staff_pk primary key  (a_ledger_number, a_cost_center, p_staff_partner_key);
+
+alter table a_ledger_office
+	add constraint a_lo_pk primary key  (a_ledger_number, p_office_partner_key);
 
 alter table a_payroll
 	add constraint a_payroll_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_id);

@@ -38,6 +38,10 @@ alter table p_partner
 	drop index p_merged_with_idx;
 
 
+alter table p_partner_key_cnt
+	drop primary key;
+
+
 alter table p_person
 	drop primary key;
 
@@ -62,6 +66,10 @@ alter table p_location
 	drop index p_location_city_idx;
 
 
+alter table p_address_format
+	drop primary key;
+
+
 alter table p_contact_info
 	drop primary key;
 
@@ -82,6 +90,18 @@ alter table p_payee
 	drop primary key;
 
 
+alter table p_staff
+	drop primary key;
+
+
+alter table p_staff
+	drop index p_staff_login_idx;
+
+
+alter table p_staff
+	drop index p_staff_weblogin_idx;
+
+
 alter table p_bulk_postal_code
 	drop primary key;
 
@@ -98,11 +118,39 @@ alter table p_banking_details
 	drop primary key;
 
 
+alter table p_title
+	drop primary key;
+
+
 alter table m_list
 	drop primary key;
 
 
 alter table m_list_membership
+	drop primary key;
+
+
+alter table r_group
+	drop primary key;
+
+
+alter table r_group
+	drop index r_grp_modfile_idx;
+
+
+alter table r_group_report
+	drop primary key;
+
+
+alter table r_group_param
+	drop primary key;
+
+
+alter table r_group_param
+	drop index r_param_cmp_idx;
+
+
+alter table r_group_report_param
 	drop primary key;
 
 
@@ -231,6 +279,14 @@ alter table a_reporting_level
 
 
 alter table a_cost_center_prefix
+	drop primary key;
+
+
+alter table a_cc_staff
+	drop primary key;
+
+
+alter table a_ledger_office
 	drop primary key;
 
 

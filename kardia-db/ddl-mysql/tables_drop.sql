@@ -7,12 +7,20 @@ drop table ra;
 drop table p_partner;
 
 
+/* p_partner_key_cnt */
+drop table p_partner_key_cnt;
+
+
 /* p_person */
 drop table p_person;
 
 
 /* p_location */
 drop table p_location;
+
+
+/* p_address_format */
+drop table p_address_format;
 
 
 /* p_contact_info */
@@ -35,6 +43,10 @@ drop table p_donor;
 drop table p_payee;
 
 
+/* p_staff */
+drop table p_staff;
+
+
 /* p_bulk_postal_code */
 drop table p_bulk_postal_code;
 
@@ -51,12 +63,32 @@ drop table p_country;
 drop table p_banking_details;
 
 
+/* p_title */
+drop table p_title;
+
+
 /* m_list */
 drop table m_list;
 
 
 /* m_list_membership */
 drop table m_list_membership;
+
+
+/* r_group */
+drop table r_group;
+
+
+/* r_group_report */
+drop table r_group_report;
+
+
+/* r_group_param */
+drop table r_group_param;
+
+
+/* r_group_report_param */
+drop table r_group_report_param;
 
 
 /* a_analysis_attr */
@@ -141,6 +173,14 @@ drop table a_reporting_level;
 
 /* a_cost_center_prefix */
 drop table a_cost_center_prefix;
+
+
+/* a_cc_staff */
+drop table a_cc_staff;
+
+
+/* a_ledger_office */
+drop table a_ledger_office;
 
 
 /* a_payroll */

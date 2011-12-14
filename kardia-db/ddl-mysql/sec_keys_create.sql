@@ -23,13 +23,25 @@ alter table p_partner
 	add constraint p_merged_with_idx unique  (p_merged_with, p_partner_key);
 
 alter table p_location
-	add constraint p_location_state_idx unique  (p_state_province, p_postal_code, p_partner_key, p_location_id);
+	add constraint p_location_state_idx unique  (p_state_province, p_postal_code, p_partner_key, p_location_id, p_revision_id);
 
 alter table p_location
-	add constraint p_location_zip_idx unique  (p_postal_code, p_state_province, p_partner_key, p_location_id);
+	add constraint p_location_zip_idx unique  (p_postal_code, p_state_province, p_partner_key, p_location_id, p_revision_id);
 
 alter table p_location
-	add constraint p_location_city_idx unique  (p_city, p_state_province, p_partner_key, p_location_id);
+	add constraint p_location_city_idx unique  (p_city, p_state_province, p_partner_key, p_location_id, p_revision_id);
+
+alter table p_staff
+	add constraint p_staff_login_idx unique  (p_kardia_login, p_partner_key);
+
+alter table p_staff
+	add constraint p_staff_weblogin_idx unique  (p_kardiaweb_login, p_partner_key);
+
+alter table r_group
+	add constraint r_grp_modfile_idx unique  (r_group_module, r_group_file, r_group_name);
+
+alter table r_group_param
+	add constraint r_param_cmp_idx unique  (r_param_cmp_module, r_param_cmp_file, r_group_name, r_param_name);
 
 alter table a_cost_center
 	add constraint a_cc_parent_idx unique  (a_parent_cost_center, a_cost_center, a_ledger_number);

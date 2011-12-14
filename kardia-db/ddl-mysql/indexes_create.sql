@@ -16,18 +16,30 @@ create  index p_parent_key_idx on p_partner (p_parent_key, p_partner_key);
 /* go */
 
 
+/* p_partner_key_cnt */
+/* create  index p_partner_key_cnt_pk on p_partner_key_cnt (p_partner_key)*/ 
+/* go */
+
+
 /* p_person */
 /* create  index p_person_clustered_pk on p_person (p_partner_key)*/ 
 /* go */
 
 
 /* p_location */
-create  index p_location_city_idx on p_location (p_city, p_state_province, p_partner_key, p_location_id);
-/* create  index p_location_pk on p_location (p_partner_key, p_location_id)*/ 
+create  index p_location_city_idx on p_location (p_city, p_state_province, p_partner_key, p_location_id, p_revision_id);
+/* create  index p_location_pk on p_location (p_partner_key, p_location_id, p_revision_id)*/ 
 /* go */
-create  index p_location_state_idx on p_location (p_state_province, p_postal_code, p_partner_key, p_location_id);
-create  index p_location_zip_idx on p_location (p_postal_code, p_state_province, p_partner_key, p_location_id);
-/* create  index p_postal_sort_clustered_idx on p_location (p_country_code, p_bulk_postal_code, p_postal_code, p_partner_key, p_location_id)*/ 
+create  index p_location_rev_idx on p_location (p_partner_key, p_revision_id, p_location_id);
+create  index p_location_state_idx on p_location (p_state_province, p_postal_code, p_partner_key, p_location_id, p_revision_id);
+create  index p_location_zip_idx on p_location (p_postal_code, p_state_province, p_partner_key, p_location_id, p_revision_id);
+/* create  index p_postal_sort_clustered_idx on p_location (p_country_code, p_bulk_postal_code, p_postal_code, p_partner_key, p_location_id, p_revision_id)*/ 
+/* go */
+
+
+/* p_address_format */
+create  index p_af_country_idx on p_address_format (p_country_code, p_address_set);
+/* create  index p_af_pk on p_address_format (p_address_set, p_country_code)*/ 
 /* go */
 
 
@@ -58,6 +70,13 @@ create  index p_gl_acct_idx on p_payee (a_gl_account_code, a_gl_ledger_number, p
 /* go */
 
 
+/* p_staff */
+create  index p_staff_login_idx on p_staff (p_kardia_login, p_partner_key);
+/* create  index p_staff_pk on p_staff (p_partner_key)*/ 
+/* go */
+create  index p_staff_weblogin_idx on p_staff (p_kardiaweb_login, p_partner_key);
+
+
 /* p_bulk_postal_code */
 /* create  index p_bulk_code_pk on p_bulk_postal_code (p_country_code,p_bulk_postal_code,p_bulk_code)*/ 
 /* go */
@@ -78,6 +97,11 @@ create  index p_gl_acct_idx on p_payee (a_gl_account_code, a_gl_ledger_number, p
 /* go */
 
 
+/* p_title */
+/* create  index p_title_pk on p_title (p_title)*/ 
+/* go */
+
+
 /* m_list */
 /* create  index m_list_pk on m_list (m_list_code)*/ 
 /* go */
@@ -87,6 +111,32 @@ create  index p_gl_acct_idx on p_payee (a_gl_account_code, a_gl_ledger_number, p
 /* create  index m_list_membership_clustered_pk on m_list_membership (m_list_code, p_partner_key)*/ 
 /* go */
 create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_code);
+
+
+/* r_group */
+create  index r_grp_modfile_idx on r_group (r_group_module, r_group_file, r_group_name);
+/* create  index r_grp_pk on r_group (r_group_name)*/ 
+/* go */
+
+
+/* r_group_report */
+create  index r_rpt_partner_idx on r_group_report (p_recipient_partner_key, r_group_name, r_delivery_method, r_report_id);
+/* create  index r_rpt_pk on r_group_report (r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id)*/ 
+/* go */
+
+
+/* r_group_param */
+create  index r_param_cmp_idx on r_group_param (r_param_cmp_module, r_param_cmp_file, r_group_name, r_param_name);
+/* create  index r_param_pk on r_group_param (r_group_name, r_param_name)*/ 
+/* go */
+
+
+/* r_group_report_param */
+create  index r_rparam_param_idx on r_group_report_param (r_group_name, r_param_name, r_delivery_method, p_recipient_partner_key, r_report_id);
+create  index r_rparam_partner_idx on r_group_report_param (p_recipient_partner_key, r_group_name, r_delivery_method, r_report_id, r_param_name);
+/* create  index r_rparam_pk on r_group_report_param (r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id, r_param_name)*/ 
+/* go */
+create  index r_rparam_value_idx on r_group_report_param (r_param_name, r_param_value, r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id);
 
 
 /* a_analysis_attr */
@@ -221,6 +271,16 @@ create  index a_trxt_transaction_idx on a_transaction_tmp (a_transaction_number,
 /* a_cost_center_prefix */
 create  index a_cc_pfx_ledger_number_idx on a_cost_center_prefix (a_ledger_number, a_cost_center_prefix);
 /* create  index a_cost_center_prefix_pk on a_cost_center_prefix (a_cost_center_prefix, a_ledger_number)*/ 
+/* go */
+
+
+/* a_cc_staff */
+/* create  index a_cc_staff_pk on a_cc_staff (a_ledger_number, a_cost_center, p_staff_partner_key)*/ 
+/* go */
+
+
+/* a_ledger_office */
+/* create  index a_lo_pk on a_ledger_office (a_ledger_number, p_office_partner_key)*/ 
 /* go */
 
 
