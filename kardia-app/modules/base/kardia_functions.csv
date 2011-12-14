@@ -1,8 +1,14 @@
 func_name,func_type,func_file,func_description,func_icon
 Main Menu,APP,tab_menu_window.app,Kardia Main Menu,
 Who's Online,APP,whoson_window.app,See and chat with users who are online on Kardia,
-Partner Maintenance,APP,partner_window.app,Lookup/Maintain/Edit/Add names and addresses,
 Kardia Tables,APP,TableMaintenance.app,Lookup and maintain data in Kardia tables,
 Help,APP,Help.app,Online Help,
 Preferences,APP,prefs.app,User Preferences and Settings,
 Message of the Day,APP,motd_edit.app,Create and Edit Messages of the Day (MOTDs),                                 
+Mailing Lists,APP,mlist_maint.app,Manage mailing lists,""                               
+Names and Addresses,APP,partner_window.app,Lookup/Maintain/Edit/Add names and addresses,""                                 
+Countries,APP,country_maint.app,Manage countries and mailing address formats,                                 
+Recent Subscriptions,APP,new_subs.app,Manage recent subscriptions to lists,                                 
+Add New Partner,APP,new_partner.app,Add a new name and address,                                 
+Mailings Report,RPT,mailing_report.app,"List partners by mailing, state, and zip",                                 
+Staff Members,APP,staffmaint.app,Maintain Staff and Missionary Data,                                 

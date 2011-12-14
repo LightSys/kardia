@@ -1,7 +1,7 @@
 $Version=2$
 tab_menu_window "widget/page"
     {
-    width = 546;
+    width = 574;
     height = 591;
     title = "Kardia Menu";
     background="/apps/kardia/images/bg/light_bgnd3.jpg";
@@ -10,7 +10,7 @@ tab_menu_window "widget/page"
 
     pnHeader "widget/pane"
 	{
-	x=0;y=0;width=546;height=37;
+	x=0;y=0;width=574;height=37;
 	style=flat;
 	//bgcolor=white;
 	background="/apps/kardia/images/bg/splash3.png";
@@ -18,7 +18,7 @@ tab_menu_window "widget/page"
 
     tab_menu_cmp "widget/component"
 	{
-	x=8;y=45;width=530;height=538;
+	x=8;y=45;width=558;height=538;
 	path = "/apps/kardia/modules/base/tab_menu.cmp";
 	}
     }

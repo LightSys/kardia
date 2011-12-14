@@ -5,7 +5,7 @@ plugin_base_partneredit_donor "widget/component-decl"
     width=808;
     height=338;
 
-    ledger "widget/parameter" { type=string; default=null; }
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
     donor_rec_osrc "widget/osrc"
@@ -102,7 +102,7 @@ plugin_base_partneredit_donor "widget/component-decl"
 			pref_contact "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_contact_id'; ctl_type=dropdown; text='Best Contact:'; sql=runserver("select 1,1 where 1 = 0"); } 
 			receipt_desired "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_receipt_desired'; ctl_type=dropdown; text='Receipt Pref:'; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_a_receipt_type/rows"); } 
 			orgfirst "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_org_name_first'; ctl_type=checkbox; text='Org First on Rcpt?'; orgfirst_hints "widget/hints" { default=runclient(1); style=notnull; } } 
-			allow_pmts "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_allow_contributions'; ctl_type=checkbox; text='Contributions Allowed?'; allow_pmts_hints "widget/hints" { default=runclient(1); style=notnull; } } 
+			allow_pmts "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_allow_contributions'; ctl_type=checkbox; text='Contrib. Allowed?'; allow_pmts_hints "widget/hints" { default=runclient(1); style=notnull; } } 
 
 			save_cancel_hbox "widget/hbox"
 			    {
@@ -144,7 +144,7 @@ plugin_base_partneredit_donor "widget/component-decl"
 
 	    gifts_pane "widget/pane"
 		{
-		height = 318;
+		height = 290;
 		widget_class = "table_bgnd";
 
 		gifts_osrc "widget/osrc"
@@ -153,6 +153,7 @@ plugin_base_partneredit_donor "widget/component-decl"
 				:a_amount,
 				-- date = substring(convert(string,:a_effective_date), 1, charindex(' ', convert(string,:a_effective_date))),
 				date = substring(convert(string,isnull(:a_gift_postmark_date, :a_gift_received_date)), 1, 11),
+				stat = condition(:a_amount = $0, 'Voided', condition(:a_receipt_sent_date is null, 'Processing', 'Receipted')),
 				:a_period,
 				:a_receipt_number,
 				:a_comment,
@@ -173,7 +174,7 @@ plugin_base_partneredit_donor "widget/component-decl"
 		    gifts_link "widget/rule"
 			{
 			ruletype=osrc_relationship;
-			target = donor_rec_osrc;
+			target = partner_osrc;
 			key_1 = p_donor_partner_id;
 			target_key_1 = p_partner_key;
 			}
@@ -181,13 +182,57 @@ plugin_base_partneredit_donor "widget/component-decl"
 		    gifts_table "widget/table"
 			{
 			x=0;y=0;
-			width=390; height=316;
+			width=390; height=288;
 			mode = dynamicrow;
 
-			t_date "widget/table-column" { title="Date"; fieldname="date"; width=80; }
-			t_rcptno "widget/table-column" { title="Receipt"; fieldname="a_receipt_number"; width=60; }
-			t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
-			t_comm "widget/table-column" { title="Comment"; fieldname="a_comment"; width=174; }
+			t_date "widget/table-column" { title="Date"; fieldname="date"; width=100; }
+			t_batno "widget/table-column" { title="Batch#"; fieldname="a_batch_number"; width=80; }
+			t_rcptno "widget/table-column" { title="Receipt"; fieldname="a_receipt_number"; width=80; }
+			t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=80; align=right; }
+			t_stat "widget/table-column" { title="Status"; fieldname="stat"; width=80; align=right; }
+			//t_comm "widget/table-column" { title="Comment"; fieldname="a_comment"; width=174; }
+
+			do_view_batch_on_dblclick "widget/connector"
+			    {
+			    event=DblClick;
+			    event_condition = runclient(isnull(:gifts_osrc:stat,'') != 'Processing' and not (:gifts_osrc:a_batch_number is null));
+			    target=plugin_base_partneredit_donor;
+			    action=Launch;
+			    Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
+			    Width=800;
+			    Height=600;
+			    ledger=runclient(:gifts_osrc:a_ledger_number);
+			    batch=runclient(:gifts_osrc:a_batch_number);
+			    receipt=runclient(:gifts_osrc:a_receipt_number);
+			    }
+			}
+		    }
+		}
+
+	    gifts_btns_hbox "widget/hbox"
+		{
+		height = 24;
+		align = center;
+		spacing = 8;
+
+		view_batch "widget/textbutton"
+		    {
+		    width = 150;
+		    height = 24;
+		    text = "View Gift Batch";
+		    enabled = runclient(isnull(:gifts_osrc:stat,'') != 'Processing' and not (:gifts_osrc:a_batch_number is null));
+
+		    do_view_batch "widget/connector"
+			{
+			event=Click;
+			target=plugin_base_partneredit_donor;
+			action=Launch;
+			Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
+			Width=800;
+			Height=600;
+			ledger=runclient(:gifts_osrc:a_ledger_number);
+			batch=runclient(:gifts_osrc:a_batch_number);
+			receipt=runclient(:gifts_osrc:a_receipt_number);
 			}
 		    }
 		}

@@ -11,21 +11,7 @@ prefs "widget/component-decl"
 	spacing=8;
 	cellsize=20;
 
-	pg_pane "widget/pane"
-	    {
-	    height=26; width=482;
-	    widget_class="label";
-	    border_color = "#153f5f";
-
-	    pg_lbl "widget/label"
-		{
-		x=4;y=0;width=480;height=24;
-		font_size = 13;
-		widget_class="label";
-		align=left;
-		text = "Appearance";
-		}
-	    }
+	pg_label "widget/component" { height=23; path="section_label.cmp"; text="Appearance"; }
 
 	pg_osrc "widget/osrc"
 	    {
@@ -68,21 +54,8 @@ prefs "widget/component-decl"
 	    }
 
 	spa2 "widget/autolayoutspacer" { height=16; }
-	fm_pane "widget/pane"
-	    {
-	    height=26; width=482;
-	    widget_class="label";
-	    border_color = "#153f5f";
 
-	    fm_lbl "widget/label"
-		{
-		x=4;y=0;width=480;height=24;
-		font_size = 13;
-		widget_class="label";
-		align=left;
-		text = "Data Entry";
-		}
-	    }
+	fm_label "widget/component" { height=23; path="section_label.cmp"; text="Data Entry"; }
 
 	fm_osrc "widget/osrc"
 	    {

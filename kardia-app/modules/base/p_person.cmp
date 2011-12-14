@@ -17,8 +17,8 @@ p_person_component "widget/component-decl"
         baseobj = "//apps/kardia/data/Kardia_DB/p_person/rows";
         replicasize=6;
         readahead=6;
-        //autoquery=onload;
 	autoquery=never;
+
 	loc_sync "widget/rule"
 	    {
 	    ruletype = "osrc_relationship";
@@ -27,7 +27,7 @@ p_person_component "widget/component-decl"
 	    is_slave = yes;
 	    key_1 = p_partner_key;
 	    target_key_1 = p_partner_key;
-	    revealed_only = yes;
+	    revealed_only = no;
 	    }
         ConfirmWindow "widget/childwindow"
             {
@@ -73,27 +73,27 @@ p_person_component "widget/component-decl"
         p_person_form "widget/form"
             {
             _3bconfirmwindow = "ConfirmWindow";
-            p_person_pane "widget/pane"
-                {
-                x=5;y=5;
-                height=123; width=834;
+	    allow_query = no;
+
                 p_person_vbox "widget/vbox"
                     {
-		    x=0;y=0;column_width=230;cellsize=20; spacing=5;
-                    height=118;
-		    width=832;
-                    //p_partner_key_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="partner key"; ctl_type="editbox"; form=p_person_form; tooltip="This is the partner key assigned to each partner. It consists of the fund id followed by a computer generated six digit number."; }
-                    p_previous_surname_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_previous_surname; text="Previous Name"; ctl_type="editbox"; form=p_person_form; tooltip="Maiden name or previous last name" ; }
-                    p_date_of_birth_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_of_birth; text="Birthday"; ctl_type="datetime"; form=p_person_form; tooltip="Birthday / Date of Birth" ; }
-                    //p_marital_status_cmp "widget/component" { path="/apps/kardia/modules/base/fields/p_person_marital_status.cmp"; field=p_marital_status; text="Marital Status"; form=p_person_form; tooltip="Marital Status:  M=Married S=Single U=Unknown"; }
-                    p_marital_status_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_marital_status; text="Marital Status"; ctl_type="dropdown"; form=p_person_form; tooltip="Marital Status:  M=Married S=Single U=Unknown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_marital_status/rows";}
-                    p_academic_title_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_academic_title; text="Academic title"; ctl_type="editbox"; form=p_person_form; tooltip="Academic title"; }
-                    s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; ctl_type="datetime"; type="create"; form=p_person_form; tooltip="The date the record was created."; }
-                    s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; ctl_type="editbox"; type="create"; form=p_person_form; tooltip="User ID of who created this record."; }
-                    s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="date modified"; ctl_type="datetime"; type="modify"; form=p_person_form; tooltip="The date the record was modified."; }
-                    s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="modified by"; ctl_type="editbox"; type="modify"; form=p_person_form; tooltip="User ID of who last modifed this record."; }
+		    x=10;y=10;column_width=300;cellsize=20; spacing=5;
+                    height=318;
+		    width=811;
+		    person_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Personal Info"; }
+                    p_previous_surname_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_previous_surname; text="Prior Surname:"; ctl_type="editbox"; form=p_person_form; tooltip="Maiden name or previous last name" ; }
+                    p_date_of_birth_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_of_birth; text="Birthday:"; ctl_type="datetime"; form=p_person_form; tooltip="Birthday / Date of Birth" ; }
+                    p_marital_status_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_marital_status; text="Marital Status:"; ctl_type="dropdown"; form=p_person_form; tooltip="Marital Status:  M=Married S=Single U=Unknown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_marital_status/rows";}
+                    p_academic_title_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_academic_title; text="Academic Title:"; ctl_type="editbox"; form=p_person_form; tooltip="Academic title"; }
+                    //s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; ctl_type="datetime"; type="create"; form=p_person_form; tooltip="The date the record was created."; }
+                    //s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; ctl_type="editbox"; type="create"; form=p_person_form; tooltip="User ID of who created this record."; }
+                    //s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="date modified"; ctl_type="datetime"; type="modify"; form=p_person_form; tooltip="The date the record was modified."; }
+                    //s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="modified by"; ctl_type="editbox"; type="modify"; form=p_person_form; tooltip="User ID of who last modifed this record."; }
+		    pe_dt_c "widget/variable" { fieldname="s_date_created"; pe_dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+		    pe_us_c "widget/variable" { fieldname="s_created_by"; pe_us_c_hints "widget/hints" { default=runclient(user_name()); } }
+		    pe_dt_m "widget/variable" { fieldname="s_date_modified"; pe_dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+		    pe_us_m "widget/variable" { fieldname="s_modified_by"; pe_us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
                     }
-                }
             }
         }
     }

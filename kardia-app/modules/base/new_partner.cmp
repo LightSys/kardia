@@ -1,0 +1,659 @@
+$Version=2$
+new_partner "widget/component-decl"
+    {
+    width=828;
+    height=584;
+
+    //
+    // This app allows the creation of as many as eight new records associated
+    // with a new Partner:
+    //
+    //   - p_partner
+    //   - p_location
+    //   - three p_contact_info records (email, 2 phones)
+    //   - p_payee
+    //   - p_donor
+    //   - one m_list_membership
+    //
+
+    page "widget/parameter" { type=object; find_container="widget/page"; }
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    return_to "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
+    set_donor "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    set_payee "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    set_staff "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+
+    set_focus "widget/connector"
+	{
+	event=LoadComplete;
+	target=new_partner_form;
+	action=New;
+	}
+
+    set_donor_cn "widget/connector"
+	{
+	event=LoadComplete;
+	event_condition=runclient(:new_partner:set_donor != 0);
+	target=new_donorrec_form;
+	action=New;
+	}
+    set_donor_cn2 "widget/connector"
+	{
+	event=LoadComplete;
+	event_condition=runclient(:new_partner:set_donor != 0);
+	target=allow_donor;
+	action=SetValue;
+	Value=runclient(1);
+	}
+
+    set_payee_cn "widget/connector"
+	{
+	event=LoadComplete;
+	event_condition=runclient(:new_partner:set_payee != 0);
+	target=new_payeerec_form;
+	action=New;
+	}
+    set_payee_cn2 "widget/connector"
+	{
+	event=LoadComplete;
+	event_condition=runclient(:new_partner:set_payee != 0);
+	target=allow_payee;
+	action=SetValue;
+	Value=runclient(1);
+	}
+
+    set_staff_cn "widget/connector"
+	{
+	event=LoadComplete;
+	event_condition=runclient(:new_partner:set_staff != 0);
+	target=new_staffrec_form;
+	action=New;
+	}
+    set_staff_cn2 "widget/connector"
+	{
+	event=LoadComplete;
+	event_condition=runclient(:new_partner:set_staff != 0);
+	target=allow_staff;
+	action=SetValue;
+	Value=runclient(1);
+	}
+
+    nextpartner "widget/component"
+	{
+	path = "/apps/kardia/modules/base/next_partner.cmp";
+
+	got_key "widget/connector"
+	    {
+	    event=PartnerKey;
+	    target=partner_key_internal;
+	    action=SetValue;
+	    Value=runclient(:p_partner_key);
+	    }
+	got_key2 "widget/connector"
+	    {
+	    event=PartnerKey;
+	    target=new_partner_fields;
+	    action=SetPartner;
+	    p_partner_key=runclient(:p_partner_key);
+	    }
+	}
+
+    new_partner_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=600; height=520;
+	spacing=4;
+
+	partner_hdr "widget/component"
+	    {
+	    height=22;
+	    path = "section_label.cmp";
+	    text = "New Partner...";
+	    }
+
+	new_partner_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_partner/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    new_partner_form "widget/form"
+		{
+		next_form=new_location_form;
+
+		// On new, also initialize a new address record, since we can't
+		// do one without the other right now.
+		new_addr_on_new_partner "widget/connector"
+		    {
+		    event=New;
+		    target=new_location_form;
+		    action=New;
+		    }
+
+		// Return value on save
+		return_to_cn "widget/connector"
+		    {
+		    event=DataSaved;
+		    event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff);
+		    event_delay=0.3;
+		    target=return_to;
+		    action=SetValue;
+		    Value=runclient(:new_partner_form:p_partner_key);
+		    }
+
+		// Autogenerate partner key
+		getkey_on_new "widget/connector" { event=New; target=nextpartner; action=GetPartnerKey; }
+		partner_key_internal "widget/variable" { fieldname=p_partner_key; type=string; }
+
+		// Hidden fields that need to be set
+		rec_stat_internal "widget/variable" { fieldname=p_record_status_code; type=string; rec_stat_hints "widget/hints" { default=runclient('A'); } }
+		surname_first_internal "widget/variable" { fieldname=p_surname_first; type=string; surname_first_hints "widget/hints" { default=runclient(0); } }
+		creating_office_internal "widget/variable" { fieldname=p_creating_office; type=string; creating_office_hints "widget/hints" { default=runclient('USA'); } }
+		rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+
+		// Our visible fields.
+		new_partner_fields "widget/component" { height=140; path="p_partner_fields.cmp"; }
+		}
+	    }
+
+	partner_end "widget/autolayoutspacer" { height=8; }
+
+	location_hdr "widget/component"
+	    {
+	    height=22;
+	    path = "section_label.cmp";
+	    text = "Address...";
+	    }
+
+	new_location_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_location/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_location/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    partner_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=new_partner_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		//master_null_action=norecs;
+		}
+
+	    new_location_form "widget/form"
+		{
+		next_form=new_email_form;
+
+		// Hidden fields
+		loc_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+
+		new_location_fields "widget/component"
+		    {
+		    height=188;
+		    path="p_location_fields.cmp";
+		    }
+		}
+	    }
+
+	location_end "widget/autolayoutspacer" { height=8; }
+
+	contact_hdr "widget/component"
+	    {
+	    height=22;
+	    path = "section_label.cmp";
+	    text = "Email and Phone...";
+	    }
+
+	new_email_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_contact_info/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_contact_info/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    partner_em_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=new_partner_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		}
+
+	    new_email_form "widget/form"
+		{
+		next_form=new_phone_form;
+
+		em_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+		em_type_internal "widget/variable" { fieldname=p_contact_type; type=string; em_type_hints "widget/hints" { default=runclient('E'); } }
+		em_rec_stat_internal "widget/variable" { fieldname=p_record_status_code; type=string; em_rec_stat_hints "widget/hints" { default=runclient('A'); } }
+
+		email_hbox "widget/hbox"
+		    {
+		    height=20; spacing=4;
+		    email_label "widget/label" { width=96; align=right; text="Email:"; }
+		    email_where "widget/dropdown"
+			{
+			fieldname=p_location_id;
+			bgcolor=white;
+			hilight="#d0d0d0";
+			width=115;
+			mode=dynamic_server; 
+			sql="select 'Above Addr.', '1'; select 'Other ' + :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows";
+			where_hints "widget/hints" { default=runclient('1'); style=notnull; }
+			}
+		    email_field "widget/editbox" { height=20; width=300; fieldname=p_contact_data; }
+		    }
+		}
+	    }
+
+	new_phone_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_contact_info/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_contact_info/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    partner_ph1_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=new_partner_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		}
+
+	    new_phone_form "widget/form"
+		{
+		next_form=new_phone2_form;
+
+		ph_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+		ph_rec_stat_internal "widget/variable" { fieldname=p_record_status_code; type=string; ph_rec_stat_hints "widget/hints" { default=runclient('A'); } }
+
+		new_phone_fields "widget/component"
+		    {
+		    height=20;
+		    path="phone_fields.cmp";
+		    }
+		}
+	    }
+
+	new_phone2_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_contact_info/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_contact_info/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    partner_ph2_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=new_partner_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		}
+
+	    new_phone2_form "widget/form"
+		{
+		next_form=new_payeerec_form;
+
+		ph2_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+		ph2_rec_stat_internal "widget/variable" { fieldname=p_record_status_code; type=string; ph2_rec_stat_hints "widget/hints" { default=runclient('A'); } }
+
+		new_phone2_fields "widget/component"
+		    {
+		    height=20;
+		    path="phone_fields.cmp";
+		    }
+		}
+	    }
+	}
+
+    new_partner_narrow_vbox "widget/vbox"
+	{
+	x=616; y=0;
+	width=212; height=520;
+	spacing=4;
+
+	payee_hdr "widget/component"
+	    {
+	    height=22;
+	    path = "section_label.cmp";
+	    text = "Payee?";
+	    }
+
+	new_payeerec_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_payee/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_payee/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    partner_payee_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=new_partner_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		}
+
+	    new_payeerec_form "widget/form"
+		{
+		next_form=new_staffrec_form;
+
+		payee_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+		payee_ledger_internal "widget/variable" { fieldname=a_gl_ledger_number; type=string; payee_ledger_hints "widget/hints" { default=runclient(:ledger:value); } }
+
+		allow_payee "widget/component"
+		    {
+		    height=20;
+		    path="/sys/cmp/smart_field.cmp";
+		    ctl_type=checkboxleft;
+		    field=p_allow_payments;
+		    text="This Partner is a Payee";
+
+		    payee_hints "widget/hints" { default=0; style=notnull; }
+		    }
+		}
+	    }
+
+	payee_end "widget/autolayoutspacer" { height=8; }
+
+	staff_hdr "widget/component"
+	    {
+	    height=22;
+	    path = "section_label.cmp";
+	    text = "Staff Member?";
+	    }
+
+	new_staffrec_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_staff/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_staff/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    partner_staff_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=new_partner_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		}
+
+	    new_staffrec_form "widget/form"
+		{
+		next_form=new_donorrec_form;
+
+		staff_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+
+		allow_staff "widget/component"
+		    {
+		    height=20;
+		    path="/sys/cmp/smart_field.cmp";
+		    ctl_type=checkboxleft;
+		    field=p_is_staff;
+		    text="This Partner is Staff";
+
+		    staff_hints "widget/hints" { default=0; style=notnull; }
+		    }
+		}
+	    }
+
+	staff_end "widget/autolayoutspacer" { height=8; }
+
+	donor_hdr "widget/component"
+	    {
+	    height=22;
+	    path = "section_label.cmp";
+	    text = "Donor?";
+	    }
+
+	new_donorrec_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_donor/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_donor/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    partner_donor_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=new_partner_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		}
+
+	    new_donorrec_form "widget/form"
+		{
+		next_form=new_mlist_form;
+
+		donor_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+		donor_ledger_internal "widget/variable" { fieldname=a_gl_ledger_number; type=string; donor_ledger_hints "widget/hints" { default=runclient(:ledger:value); } }
+		donor_org_first "widget/variable" { fieldname=p_org_name_first; type=integer; org_first_hints "widget/hints" { default=runclient(1); } }
+
+		allow_donor "widget/component"
+		    {
+		    height=20;
+		    path="/sys/cmp/smart_field.cmp";
+		    ctl_type=checkboxleft;
+		    field=p_allow_contributions;
+		    text="This Partner is a Donor";
+
+		    donor_hints "widget/hints" { default=0; style=notnull; }
+		    }
+		}
+	    }
+
+	donor_end "widget/autolayoutspacer" { height=8; }
+
+	mlist_hdr "widget/component"
+	    {
+	    height=22;
+	    path = "section_label.cmp";
+	    text = "Add to a Mailing List?";
+	    }
+
+	new_mlist_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/m_list_membership/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/m_list_membership/rows";
+	    readahead = 2;
+	    replicasize = 2;
+	    autoquery = never;
+
+	    partner_mlist_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=new_partner_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		}
+
+	    new_mlist_form "widget/form"
+		{
+		//next_form=new_partner_form;
+
+		mlist_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+		comp_v "widget/variable" { fieldname="m_complimentary"; comp_v_hints "widget/hints" { default=runclient(1); } }
+		showc_v "widget/variable" { fieldname="m_show_contact"; showc_v_hints "widget/hints" { default=runclient(1); } }
+		memstat_v "widget/variable" { fieldname="m_membership_status"; memstat_v_hints "widget/hints" { default=runclient('A'); } }
+		memtype_v "widget/variable" { fieldname="m_member_type"; memtype_v_hints "widget/hints" { default=runclient('M'); } }
+		numcopy_v "widget/variable" { fieldname="m_num_copies"; numcopy_v_hints "widget/hints" { default=runclient(1); } }
+
+		f_listcode "widget/component"
+		    {
+		    height=24;
+		    //width=300;
+		    path="/apps/kardia/modules/base/editbox_table.cmp";
+		    field='m_list_code';
+		    text='List Code:';
+		    validate=1;
+		    popup_width=300;
+		    popup_height=210;
+		    popup_sql="select value = :m:m_list_code, label = :m:m_list_description + ' (' + :m:m_list_code + ')' from /apps/kardia/data/Kardia_DB/m_list/rows m where :m:m_list_type = 'P'";
+		    search_field_list="m_list_code,*m_list_description*";
+		    key_name="m_list_code";
+		    object_name="Mailing List";
+		    popup_text="Select a Mailing:";
+		    label_width=80;
+		    //attach_point=editbox;
+
+		    listcode_hints "widget/hints" { style=applyonchange; }
+		    }
+		reason "widget/component" { height=20; label_width=80; path="/sys/cmp/smart_field.cmp"; field='m_reason_member'; ctl_type=dropdown; text='Reason:'; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_member_reason/rows"; } 
+		}
+	    }
+	}
+
+    sep_line "widget/pane" { x=0; y=540; width=828; height=2; style=lowered; }
+
+    ctls_hbox "widget/hbox"
+	{
+	x=0; y=560; width=828; height=24;
+	spacing=8;
+	align=center;
+
+	add_another_btn "widget/textbutton"
+	    {
+	    height=24; width=120;
+	    text="Add Another";
+	    enabled=runclient(not (:new_partner_osrc:is_client_savable));
+	    //enabled=runclient(not (:new_partner_form:is_savable or :new_location_form:is_savable or :new_email_form:is_savable or :new_phone_form:is_savable or :new_phone2_form:is_savable or :new_donorrec_form:is_savable or :new_payeerec_form:is_savable or :new_mlist_form:is_savable));
+
+	    clr2 "widget/connector" { event=Click; target=new_location_osrc; action=Clear; }
+	    clr3 "widget/connector" { event=Click; target=new_email_osrc; action=Clear; }
+	    clr4 "widget/connector" { event=Click; target=new_phone_osrc; action=Clear; }
+	    clr5 "widget/connector" { event=Click; target=new_phone2_osrc; action=Clear; }
+	    clr6 "widget/connector" { event=Click; target=new_payeerec_osrc; action=Clear; }
+	    clr7 "widget/connector" { event=Click; target=new_donorrec_osrc; action=Clear; }
+	    clr8 "widget/connector" { event=Click; target=new_mlist_osrc; action=Clear; }
+	    clr9 "widget/connector" { event=Click; target=new_staffrec_osrc; action=Clear; }
+	    clr1 "widget/connector" { event=Click; target=new_partner_osrc; action=Clear; }
+	    new1 "widget/connector" { event=Click; target=new_partner_form; action=New; }
+	    }
+
+	edit_detail_btn "widget/textbutton"
+	    {
+	    height=24; width=120;
+	    text="Edit Detail";
+	    enabled = runclient(:new_partner_form:form_mode == 'View');
+
+	    edit_detail_cn "widget/connector"
+		{
+		event=Click;
+		target=page;
+		action=LoadPage;
+		Source="/apps/kardia/modules/base/partner_window.app";
+		id=runclient(:new_partner_osrc:p_partner_key);
+		ledger=runclient(:new_partner:ledger);
+		}
+	    }
+
+	save_btn "widget/textbutton"
+	    {
+	    height=24; width=120;
+	    text="Save";
+	    enabled = runclient(:new_partner_osrc:is_client_savable);
+	    //enabled=runclient(:new_partner_form:is_savable or :new_location_form:is_savable or :new_email_form:is_savable or :new_phone_form:is_savable or :new_phone2_form:is_savable or :new_donorrec_form:is_savable or :new_payeerec_form:is_savable or :new_mlist_form:is_savable);
+
+	    // First, cancel out the New mode on any forms that are in New status
+	    // but don't need a record created.
+	    cancel_addr "widget/connector"
+		{
+		condition=0; // ok to add empty address, for now.
+		event=Click;
+		target=new_location_fields;
+		action=CheckCancel;
+		}
+	    cancel_email "widget/connector"
+		{
+		event=Click;
+		event_condition=runclient(not (char_length(:email_field:content) > 0));
+		target=new_email_form;
+		action=Discard;
+		}
+	    cancel_phone1 "widget/connector"
+		{
+		event=Click;
+		target=new_phone_fields;
+		action=CheckCancel;
+		}
+	    cancel_phone2 "widget/connector"
+		{
+		event=Click;
+		target=new_phone2_fields;
+		action=CheckCancel;
+		}
+	    cancel_payee "widget/connector"
+		{
+		event=Click;
+		event_condition=runclient(not (:allow_payee:value == 1));
+		target=new_payeerec_form;
+		action=Discard;
+		}
+	    cancel_donor "widget/connector"
+		{
+		event=Click;
+		event_condition=runclient(not (:allow_donor:value == 1));
+		target=new_donorrec_form;
+		action=Discard;
+		}
+	    cancel_staff "widget/connector"
+		{
+		event=Click;
+		event_condition=runclient(not (:allow_staff:value == 1));
+		target=new_staffrec_form;
+		action=Discard;
+		}
+	    cancel_mlist "widget/connector"
+		{
+		event=Click;
+		event_condition=runclient(not (char_length(:f_listcode:content) > 0));
+		target=new_mlist_form;
+		action=Discard;
+		}
+
+	    // This saves *all* newly created records.
+	    save_cn "widget/connector"
+		{
+		event=Click;
+		target=new_partner_osrc;
+		action=SaveClients;
+		}
+	    }
+
+	cancel_btn "widget/textbutton"
+	    {
+	    height=24; width=120;
+	    //text = runclient(condition(:new_partner_form:is_savable or :new_location_form:is_savable or :new_email_form:is_savable or :new_phone_form:is_savable or :new_phone2_form:is_savable or :new_donorrec_form:is_savable or :new_payeerec_form:is_savable or :new_mlist_form:is_savable, 'Cancel', 'Close'));
+	    text = runclient(condition(:new_partner_osrc:is_client_savable, 'Cancel', 'Close'));
+
+	    cancel_cn2 "widget/connector"
+		{
+		event=Click;
+		//event_condition=runclient(not (:new_partner_form:is_savable or :new_location_form:is_savable or :new_email_form:is_savable or :new_phone_form:is_savable or :new_phone2_form:is_savable or :new_donorrec_form:is_savable or :new_payeerec_form:is_savable or :new_mlist_form:is_savable));
+		event_condition=runclient(not (:new_partner_osrc:is_client_savable));
+		target=page;
+		action=Close;
+		}
+	    cancel_cn "widget/connector"
+		{
+		event=Click;
+		//event_condition=runclient(:new_partner_form:is_savable or :new_location_form:is_savable or :new_email_form:is_savable or :new_phone_form:is_savable or :new_phone2_form:is_savable or :new_donorrec_form:is_savable or :new_payeerec_form:is_savable or :new_mlist_form:is_savable);
+		event_condition=runclient(:new_partner_osrc:is_client_savable);
+		target=new_partner_osrc;
+		action=DiscardClients;
+		}
+	    }
+	}
+    }
+

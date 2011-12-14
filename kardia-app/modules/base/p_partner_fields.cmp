@@ -1,0 +1,126 @@
+$Version=2$
+p_partner_fields "widget/component-decl"
+    {
+    height = 140;
+    width = 610;
+
+    osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    SetPartner "widget/component-decl-action" { }
+    SetPartner_cn "widget/connector"
+	{
+	event=SetPartner;
+	target=p_partner_key_cmp;
+	action=SetValue;
+	Value=runclient(:p_partner_key);
+	}
+
+    form_vbox "widget/vbox"
+	{
+	x=0; y=0; width=610; height=140;
+	spacing=4;
+
+	fields_twocol_hbox "widget/hbox"
+	    {
+	    height=116;
+	    spacing=10;
+
+	    p_partner_long_vbox "widget/vbox"
+		{
+		cellsize=20; spacing=4;
+		width=350;
+		//p_title_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_title; text="Title:"; ctl_type="editbox"; form=form; tooltip="The Partners Title"; }
+		title_stat_hbox "widget/hbox"
+		    {
+		    height=20; spacing=4;
+		    p_title_cmp "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=p_title; text="Title:"; ctl_type="dropdown"; form=form; tooltip="The Partners Title"; sql="select :p_title, :p_title, sel=0, grp=0, hide=condition(:p_record_status_code == 'A', 0, 1) from /apps/kardia/data/Kardia_DB/p_title/rows"; }
+		    p_status_code_cmp "widget/component" { width=146; label_width=60; path="/sys/cmp/smart_field.cmp"; form=form; field=p_status_code; text="Status:"; ctl_type="dropdown"; sql="select :text, :tag FROM /apps/kardia/data/Kardia_DB/_p_status_code/rows"; stat_code_hints "widget/hints" { default=runclient('A'); style=notnull; } }
+		    }
+		p_given_name_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_given_name; text="First Name:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="The first (Given) name of the partner"; }
+		surname_suffix_hbox "widget/hbox"
+		    {
+		    height=20;
+		    spacing=4;
+		    p_surname_cmp "widget/component" { width=206; path="/sys/cmp/smart_field.cmp"; field=p_surname; text="Last Name:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="The last Name (Surname) of the partner"; }
+		    p_suffix_cmp "widget/component" { width=140; label_width=60; path="/sys/cmp/smart_field.cmp"; field=p_suffix; text="Suffix:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="Suffix, e.g., Jr., Sr., etc."; }
+		    }
+		p_preferred_name_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_preferred_name; text="Salutation:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="Preferred name (nickname, etc) of the partner"; }
+		p_org_name_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_org_name; text="Organization:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="The name of the organization"; }
+		}
+
+	    p_partner_short_vbox "widget/vbox"
+		{
+		cellsize=20; spacing=4;
+		width=250;
+
+		partner_key_hbox "widget/hbox"
+		    {
+		    height=20; spacing=4;
+
+		    p_partner_key_cmp "widget/component" 
+			{
+			width=206;
+			path="/sys/cmp/smart_field.cmp";
+			field=p_partner_key;
+			text="Partner ID:";
+			ctl_type="label";
+			form=form;
+			tooltip="This is the partner key assigned to each partner. It consists of the fund id followed by a computer generated six digit number.";
+			}
+
+		    prev_ptnr_btn "widget/imagebutton"
+			{
+			condition=0;
+			y=1;
+			width=18; height=18;
+			image="/sys/images/ico16ba.gif";
+			pointimage="/sys/images/ico16bb.gif";
+			clickimage="/sys/images/ico16bc.gif";
+			disabledimage="/sys/images/ico16bd.gif";
+			tooltip = runserver("Previous by Partner ID");
+			enabled = runclient(not :form:is_savable);
+
+			//prev_srch_cn "widget/connector" { event=Click; target=partner_search_component; action=PrevResult; }
+			}
+
+		    next_ptnr_btn "widget/imagebutton"
+			{
+			condition=0;
+			y=1;
+			width=18; height=18;
+			image="/sys/images/ico16ca.gif";
+			pointimage="/sys/images/ico16cb.gif";
+			clickimage="/sys/images/ico16cc.gif";
+			disabledimage="/sys/images/ico16cd.gif";
+			tooltip = runserver("Next by Partner ID");
+			enabled = runclient(not :form:is_savable);
+
+			//next_srch_cn "widget/connector" { event=Click; target=partner_search_component; action=NextResult; }
+			}
+		    }
+
+		ckbox_hbox "widget/hbox"
+		    {
+		    spacing=10;
+		    p_no_solicitations_cmp "widget/component" { width=130; label_width=100; path="/sys/cmp/smart_field.cmp"; field=p_no_solicitations; text="No Solicit.:"; ctl_type="checkbox"; form=form; tooltip="Do not solicit from this partner" ; no_solicit_hints "widget/hints" { default=runclient(0); style=notnull; } }
+		    p_no_mail_cmp "widget/component" { width=80; label_width=60; path="/sys/cmp/smart_field.cmp"; field=p_no_mail; text="No Mail:"; ctl_type="checkbox"; form=form; tooltip="Do not send any mail to this partner" ; no_mail_hints "widget/hints" { default=runclient(0); style=notnull; } }
+		    }
+		p_nomail_reason_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_no_mail_reason; text="NoMail Reason:"; ctl_type="dropdown"; form=form; tooltip="Reason the partner is receiving no mail from us"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_nomail_reason/rows"; }
+		p_partner_class_dropdown "widget/component"
+		    {
+		    path="/sys/cmp/smart_field.cmp";
+		    text="Partner Type:";
+		    ctl_type=dropdown;
+		    field = "p_partner_class";
+		    form = form;
+		    tooltip="This defines what type of partner this is." ; 
+		    sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_partner_class/rows";
+		    class_hints "widget/hints" { default=runclient('IND'); style=notnull; }
+		    }
+		p_gender_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; form=form; field=p_gender; text="Gender:"; tooltip="The partners gender: M=Male F=Female C=Couple O=Other (for organizations)"; ctl_type="dropdown"; sql="SELECT :text, :tag FROM /apps/kardia/data/Kardia_DB/_p_partner_gender/rows";}
+		}
+	    }
+	p_comments_cmp "widget/component" { height=20; label_width=100; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip=""; }
+	}
+    }

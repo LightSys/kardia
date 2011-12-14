@@ -145,10 +145,19 @@ receipt_report "system/report"
 		");
 		
 	} // END - receipt_item_query "report/query"
+
+// Super isnull
 	
+// condition(
+//	convert(string, char_length(ltrim(rtrim(isnull(
+//	:query:field
+//''))))) > 0, 
+//	:query:field
+// + ' \n', '') +
+
+
 	// HELPER QUERIES
 	
-	// Donor Name & Address Mail To Details
 	donor_query "report/query"
 	{
 	
@@ -165,32 +174,44 @@ receipt_report "system/report"
 			:p:p_given_name,
 			:p:p_surname,
 			:p:p_org_name,
-			display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name),
-			mail_to = condition( (:this:address_full == 0)
-			,
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name) + '\n' +
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_1, ''))))) == 0, '', :l:p_address_1 + '\n') + 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_2, ''))))) == 0, '', :l:p_address_2 + '\n') + 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_3, ''))))) == 0, '', :l:p_address_3 + '\n') + 
-				:l:p_city + ' ' + :l:p_state_province  + '  ' + 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_postal_code, ''))))) == 9, substring(:l:p_postal_code,1,5) + '-' + right(:l:p_postal_code,4), :l:p_postal_code)
-			,
+			:l:p_in_care_of,
+			:l:p_address_1,
+			:l:p_address_2,
+			:l:p_address_3,
+			:l:p_city,
+			:l:p_state_province,
+			:l:p_postal_code,
+			:l:p_country_code,
+			p_country_name = upper(:c:p_country_name),
+			:af:p_format,
 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_given_name, ''))))) == 0, '', :p:p_given_name + ' ') +
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_surname, ''))))) == 0, '', :p:p_surname) + '\n' +
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, '', :p:p_org_name + '\n') +
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_1, ''))))) == 0, '', :l:p_address_1 + '\n') + 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_2, ''))))) == 0, '', :l:p_address_2 + '\n') + 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_3, ''))))) == 0, '', :l:p_address_3 + '\n') + 
-				:l:p_city + ' ' + :l:p_state_province  + '  ' + 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_postal_code, ''))))) == 9, substring(:l:p_postal_code,1,5) + '-' + right(:l:p_postal_code,4), :l:p_postal_code)
-			)
+			display_name = 
+condition(
+	convert(string, char_length(ltrim(rtrim(isnull(
+	:p:p_given_name + :p:p_surname,
+''))))) > 0, 
+	:p:p_given_name + ' ' + :p:p_surname
+ + ' \n', '') +
+condition(
+	convert(string, char_length(ltrim(rtrim(isnull(
+	:p:p_org_name,
+''))))) > 0, 
+	:p:p_org_name
+ + ' \n', '')
+
 		FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
-			/apps/kardia/data/Kardia_DB/p_location/rows l
+			/apps/kardia/data/Kardia_DB/p_location/rows l,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
 		WHERE
 			:p:p_partner_key = :receipt_group_query:p_donor_partner_id AND
-			:p:p_partner_key = :l:p_partner_key
+			:l:p_revision_id = 0 and
+			:l:p_partner_key =* :p:p_partner_key and
+			:c:p_country_code =* :l:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = 'STANDARD'
+		LIMIT 1
 		");
 		
 		// 
@@ -207,7 +228,6 @@ receipt_report "system/report"
 		//  
 		
 	} // END - donor_query "report/query"
-
 	
 	// Account / Cost Center Descriptions (given cost center / account codes)
 	acct_cc_name_qy "report/query"
@@ -216,8 +236,8 @@ receipt_report "system/report"
 			cost_center_description = :c:a_cc_desc,
 			account_description = :a:a_acct_desc
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-			/apps/kardia/data/Kardia_DB/a_account/rows a
+			/apps/kardia/data/Kardia_DB/a_account/rows a,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
 		WHERE
 			:c:a_ledger_number = :receipt_item_query:a_ledger_number and
 			:c:a_cost_center = :receipt_item_query:a_cost_center and
@@ -322,7 +342,8 @@ receipt_report "system/report"
 			:item:a_batch_number = :grp:a_batch_number and
 			:item:a_gift_number = :grp:a_gift_number and
 			datepart('year', :receipt_group_query:official_receipt_date) ==
-			datepart('year', isnull(:grp:a_gift_postmark_date, :grp:a_gift_received_date))
+			datepart('year', isnull(:grp:a_gift_postmark_date, :grp:a_gift_received_date)) and
+			:receipt_group_query:official_receipt_date >= isnull(:grp:a_gift_postmark_date, :grp:a_gift_received_date)
 		");
 		
 	} // END - ytd_tax_deductible_query "report/query"
@@ -428,7 +449,7 @@ receipt_report "system/report"
 				fontsize=12;
 				font = times;
 
-				donor_mail_to_data_middle "report/data" { xpos=0; ypos=0; value=runserver(isnull(:donor_query:mail_to, "<blank>")); }
+				donor_mail_to_data_middle "report/data" { xpos=0; ypos=0; value=runserver(:donor_query:display_name + substitute(isnull(:donor_query:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=donor_query,p=donor_query')); }
 			}
 		}
 		
@@ -604,7 +625,7 @@ receipt_report "system/report"
 		} // END - receipt_line_item_table_a "report/table"
 	
 		// Donor Information (Bottom Section)
-		donor_form_middle_bottom "report/form"
+		donor_form_bottom "report/form"
 		{
 			source = donor_query;
 			
@@ -619,7 +640,7 @@ receipt_report "system/report"
 				fontsize=10;
 				font = times;
 
-				donor_mail_to_data_bottom "report/data" { xpos=0; ypos=0; value=runserver(isnull(:donor_query:mail_to, "<blank>")); }
+				donor_mail_to_data_bottom "report/data" { xpos=0; ypos=0; value=runserver(:donor_query:display_name + substitute(isnull(:donor_query:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=donor_query,p=donor_query')); }
 			}
 		}
 		
@@ -627,15 +648,21 @@ receipt_report "system/report"
 		goods_provided_bottom "report/area"
 		{
 			condition = runserver(:receipt_group_query:a_goods_provided > 0);
-			x=35.75;
-			y=58;
+			//x=35.75;
+			//y=58;
+			// GRB - move this so it doesn't show through the envelope's window.
+			x=25.75;
+			y=57.4;
 		
-			height=0; width=13;
+			height=0; 
+			//width=13;
+			width=23;
 			align=center;
-			fontsize=12;
+			//fontsize=12;
+			fontsize=10;
 			font = times;
 
-			goods_provided_box_bottom "report/data" {  xpos=0; ypos=0; value=runserver("Goods Provided " + isnull(:receipt_group_query:a_goods_provided, " -- ")); }
+			goods_provided_box_bottom "report/data" {  xpos=0; ypos=0; value=runserver("Goods Provided: " + isnull(:receipt_group_query:a_goods_provided, " -- ")); }
 		}
 		
 		// Total Tax Deductible Amount for this Receipt (Bottom Section)

@@ -28,7 +28,7 @@ financial_statement "system/report"
 
     period_qy "report/query"
 	{
-	sql = "select :p:a_period_desc, ref_period = min(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
+	sql = "select :p:a_period_desc, ref_period = min(:p2:a_period), :p:a_end_date from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
 	}
 
     cctrs_qy "report/query"
@@ -963,6 +963,21 @@ financial_statement "system/report"
 		    det_d_comments "report/table-cell" { value=runserver(substring(:detail_erq_qy:a_comment,1,55)); font=helvetica; }
 		    }
 
+		detail_erq_tbl_admin "report/table-row"
+		    {
+		    summary=yes;
+		    font=courier;
+		    margintop = 0.04;
+		    marginbottom = 0.04;
+
+		    det_a_date "report/table-cell" { value=runserver(:period_qy:a_end_date); font=courier; }
+		    det_a_debit "report/table-cell" { value=runserver($0 - :gift_and_admin_qy:admin); align=right; }
+		    det_a_credit "report/table-cell" { value=runserver(''); align=right; style=bold; }
+		    det_a_acct "report/table-cell" { value=runserver('5700 - Admin Fees (this month)'); font=helvetica; }
+		    det_a_whom "report/table-cell" { value=runserver(''); font=helvetica; }
+		    det_a_comments "report/table-cell" { value=runserver(''); font=helvetica; }
+		    }
+
 		detail_erq_tbl_sum "report/table-row"
 		    {
 		    summary=yes;
@@ -971,9 +986,9 @@ financial_statement "system/report"
 		    marginbottom = 0.04;
 
 		    det_s_date "report/table-cell" { value=runserver('Total:'); style=bold; font=helvetica; }
-		    det_s_debit "report/table-cell" { value=runserver($0 - :detail_erq_qy:debit_sum); align=right; style=bold; }
+		    det_s_debit "report/table-cell" { value=runserver($0 - (:detail_erq_qy:debit_sum + :gift_and_admin_qy:admin)); align=right; style=bold; }
 		    det_s_credit "report/table-cell" { value=runserver($0 - :detail_erq_qy:credit_sum); align=right; style=bold; }
-		    det_s_acct "report/table-cell" { value=runserver('(excluding admin fee expense)'); font=helvetica; style=bold; }
+		    det_s_acct "report/table-cell" { value=runserver(''); font=helvetica; style=bold; }
 		    det_s_whom "report/table-cell" { value=runserver(''); font=helvetica; }
 		    det_s_comments "report/table-cell" { value=runserver(''); font=helvetica; }
 		    }

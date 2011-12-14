@@ -1,0 +1,40 @@
+$Version=2$
+plugin_base_addrinternet_whitepagesaddr "widget/component-decl"
+    {
+    title="View Address on whitepages.com";
+
+    person_location_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    Select "widget/component-decl-action" { }
+
+    launch_map_on_click "widget/connector"
+	{
+	event=Select;
+	event_condition=runclient(:person_location_osrc:sec_level < 2);
+	event_confirm="To view this resource, the selected address must be passed insecurely over the internet to an outside corporation (Whitepages).  Click OK to view the map, or Cancel to not send the address to Whitepages.";
+	target=plugin_base_addrinternet_whitepagesaddr;
+	action=Launch;
+	Width=980;
+	Height=600;
+	Source=runclient("http://www.whitepages.com/search/FindNearby");
+	street=runclient(isnull(:person_location_osrc:p_address_1 + " ", "") + isnull(:person_location_osrc:p_address_2 + " ", "") + isnull(:person_location_osrc:p_address_3 + " ", ""));
+	where=runclient(isnull(:person_location_osrc:p_postal_code, ""));
+	Multi=1;
+	UseragentScroll=1;
+	}
+    launch_map_on_click_secure "widget/connector"
+	{
+	event=Select;
+	event_condition=runclient(:person_location_osrc:sec_level >= 2);
+	event_confirm="*** WARNING ***\n\nThis is a SECURITY SENSITIVE ADDRESS, due to the country where it is located.  To view this resource, the selected address must be passed insecurely over the internet to an outside corporation (Whitepages).  ONLY CLICK OK IF YOU ARE SURE THIS IS SAFE TO DO.  Otherwise, click Cancel now.\n\n*** WARNING ***";
+	target=plugin_base_addrinternet_whitepagesaddr;
+	action=Launch;
+	Width=980;
+	Height=600;
+	Source=runclient("http://www.whitepages.com/search/FindNearby");
+	street=runclient(isnull(:person_location_osrc:p_address_1 + " ", "") + isnull(:person_location_osrc:p_address_2 + " ", "") + isnull(:person_location_osrc:p_address_3 + " ", ""));
+	where=runclient(isnull(:person_location_osrc:p_postal_code, ""));
+	Multi=1;
+	UseragentScroll=1;
+	}
+    }

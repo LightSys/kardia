@@ -10,6 +10,7 @@ popup_tree_list "widget/component-decl"
     label "widget/parameter" { type=string; default="List"; }
     order "widget/parameter" { type=string; default="asc"; }
     popup_width "widget/parameter" { type=integer; default=250; }
+    popup_height "widget/parameter" { type=integer; default=300; }
 
     Opened "widget/component-decl-event" {}
     Closed "widget/component-decl-event" {}
@@ -139,7 +140,8 @@ popup_tree_list "widget/component-decl"
 	widget_class = "popup";
 	titlebar = no;
 	x=0; y=0;
-	width=runserver(:this:popup_width); height=300;
+	width=runserver(:this:popup_width);
+	height=runserver(:this:popup_height);
 	toplevel = yes;
 
 	popup_open "widget/connector" { event = Open; action = Opened; target = popup_tree_list; }
@@ -147,7 +149,9 @@ popup_tree_list "widget/component-decl"
 
 	vb "widget/vbox"
 	    {
-	    x=0;y=4;width=runserver(:this:popup_width - 2);height=294;
+	    x=0;y=4;
+	    width=runserver(:this:popup_width - 2);
+	    height=runserver(:this:popup_height - 6);
 	    spacing=6;
 
 	    lbl "widget/label" { height=16; align=center; text=runserver(:this:label); style=bold; fgcolor=white; }
@@ -156,7 +160,7 @@ popup_tree_list "widget/component-decl"
 
 	    scroll "widget/scrollpane"
 		{
-		height=264;
+		height=runserver(:this:popup_height - 36);
 
 		tree "widget/treeview"
 		    {

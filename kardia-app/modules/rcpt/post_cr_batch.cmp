@@ -30,6 +30,7 @@ post_cr_batch "widget/component-decl"
 			:g:a_ledger_number = :parameters:a_ledger_number and
 			:g:a_period = :parameters:a_period
 		;
+
 		UPDATE
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
 		SET
@@ -51,7 +52,7 @@ post_cr_batch "widget/component-decl"
 	    }
 	}
 
-    // Unpost a CR batch - process
+    // Post a CR batch - process
     Post "widget/component-decl-action" { }
     Posted "widget/component-decl-event" { }
     post_cn "widget/connector"
@@ -87,7 +88,71 @@ post_cr_batch "widget/component-decl"
 		WHERE
 			:g:a_batch_number = :parameters:a_batch_number and
 			:g:a_ledger_number = :parameters:a_ledger_number and
-			:g:a_period = :parameters:a_period";
+			:g:a_period = :parameters:a_period
+		;
+
+		INSERT INTO
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows
+		SELECT
+			:a:m_list_code,
+			p_partner_key = :g:p_donor_partner_id,
+			m_num_copies=1,
+			m_delivery_method='M',
+			m_member_type='M',
+			m_membership_status='P',
+			m_complimentary=1,
+			m_show_contact=1,
+			m_reason_member='D',
+			m_comments = 'Donated to ' + :i:a_cost_center,
+			s_date_created=getdate(),
+			s_created_by=user_name(),
+			s_date_modified=getdate(),
+			s_modified_by=user_name()
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a
+		WHERE
+			:g:a_period = :parameters:a_period and
+			:g:a_ledger_number = :parameters:a_ledger_number and
+			:g:a_batch_number = :parameters:a_batch_number and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			:a:a_cost_center = :i:a_cost_center and
+			:a:a_ledger_number = :i:a_ledger_number
+		GROUP BY
+			:g:p_donor_partner_id,
+			:i:a_cost_center
+		HAVING
+			(select :m:m_membership_status from /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key) is null
+		;
+
+		UPDATE
+			IDENTITY /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a
+		SET
+			:m:m_membership_status = 'P',
+			:m:m_reason_member = 'D',
+			:m:m_comments = 'Re-donated to ' + :i:a_cost_center,
+			:m:s_date_modified = getdate(),
+			:m:s_modified_by = user_name()
+		WHERE
+			:g:a_period = :parameters:a_period and
+			:g:a_ledger_number = :parameters:a_ledger_number and
+			:g:a_batch_number = :parameters:a_batch_number and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			:a:a_cost_center = :i:a_cost_center and
+			:a:a_ledger_number = :i:a_ledger_number and
+			:m:m_list_code = :a:m_list_code and
+			:m:p_partner_key = :g:p_donor_partner_id and
+			(:m:m_membership_status = 'D' or
+			    (:m:m_membership_status = 'C' and :m:m_reason_cancel = 'G'))
+		";
 
 	end_post "widget/connector"
 	    { 

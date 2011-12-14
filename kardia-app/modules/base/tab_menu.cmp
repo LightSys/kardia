@@ -1,12 +1,12 @@
 $Version=2$
 tab_menu "widget/component-decl"
     {
-    width = 530;
+    width = 558;
     height = 530;
 
     main_tab "widget/tab"
 	{
-	x=0;y=0;height=530 - 24;width=530;
+	x=0;y=0;height=530 - 24;width=558;
 	background="/apps/kardia/images/bg/light_bgnd.jpg";
 	inactive_background="/apps/kardia/images/bg/light_bgnd2.jpg";
 
@@ -29,7 +29,7 @@ tab_menu "widget/component-decl"
 
 		desc_lbl "widget/label"
 		    {
-		    x=8; y=32; width=512; height=20;
+		    x=8; y=32; width=530; height=20;
 		    //style=bold;
 		    fgcolor="black";
 		    font_size=11;
@@ -47,8 +47,9 @@ tab_menu "widget/component-decl"
 
 		progs_vbox "widget/vbox"
 		    {
-		    x=8; y=116; width=522; height=136;
+		    x=8; y=116; width=540; height=136;
 		    cellsize=20; spacing=4; column_width=176;
+		    fl_width=0;
 
 		    progs_rpt "widget/repeat"
 			{
@@ -103,8 +104,9 @@ tab_menu "widget/component-decl"
 
 		rpts_vbox "widget/vbox"
 		    {
-		    x=8; y=324; width=522; height=136;
+		    x=8; y=324; width=540; height=136;
 		    cellsize=20; spacing=4; column_width=176;
+		    fl_width=0;
 
 		    rpts_rpt "widget/repeat"
 			{

@@ -146,6 +146,7 @@ payroll_run "widget/component-decl"
 			select
 				a_ref_period = null,
 				a_period = null,
+				prev_period = null,
 				a_period_desc = 'Budget / Template',
 				a_end_date = null,
 				cnt = (select count(1) from /apps/kardia/data/Kardia_DB/a_payroll_item/rows i where :i:a_period is null),
@@ -154,6 +155,7 @@ payroll_run "widget/component-decl"
 			select 
 				a_ref_period = (select first(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :p:a_ledger_number), 
 				:p:a_period,
+				prev_period = (select max(:p3:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p3 where :p3:a_summary_only = 0 and :p3:a_ledger_number = :p:a_ledger_number and :p3:a_period < :p:a_period),
 				:p:a_period_desc,
 				:p:a_end_date,
 				cnt = count(:i:a_payroll_id),
@@ -384,6 +386,7 @@ payroll_run "widget/component-decl"
 
 			period = runclient(:period_osrc:a_period);
 			ref_period = runclient(:period_osrc:a_ref_period);
+			prev_period = runclient(:period_osrc:prev_period);
 			ledger = runclient(:ledger_osrc:a_ledger_number);
 			payrollid = runclient(:payeelist_osrc:a_payroll_id);
 			groupid = runclient(:payeelist_osrc:a_payroll_group_id);
@@ -428,6 +431,7 @@ payroll_run "widget/component-decl"
 
 		    period = runclient(:period_osrc:a_period);
 		    ref_period = runclient(:period_osrc:a_ref_period);
+		    prev_period = runclient(:period_osrc:prev_period);
 		    ledger = runclient(:ledger_osrc:a_ledger_number);
 		    payrollid = runclient(:payeelist_osrc:a_payroll_id);
 		    groupid = runclient(:payeelist_osrc:a_payroll_group_id);

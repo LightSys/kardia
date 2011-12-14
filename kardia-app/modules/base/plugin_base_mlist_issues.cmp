@@ -1,0 +1,130 @@
+$Version=2$
+plugin_base_mlist_issues "widget/component-decl"
+    {
+    title = "Issues";
+    sequence = 200;
+    width=518;
+    height=324;
+
+    mlist_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    issue_osrc "widget/osrc"
+	{
+	sql = "
+	    SELECT 
+		:l:m_list_code, 
+		:l:m_list_description,
+		:l:m_list_status,
+		status_text= :ls:text,
+		created = substring(convert(string,:l:s_date_created),1,12)
+	    FROM 
+		/apps/kardia/data/Kardia_DB/m_list/rows l,
+		/apps/kardia/data/Kardia_DB/_m_list_status/rows ls
+	    WHERE 
+		:l:m_list_status *= :ls:tag and
+		:l:m_list_type = 'I'
+	    ORDER BY
+		:l:s_date_created desc
+	    ";
+	baseobj = "/apps/kardia/data/Kardia_DB/m_list/rows";
+	replicasize=100;
+	readahead=100;
+	autoquery=never;
+
+	list_sync "widget/rule"
+	    {
+	    ruletype = "osrc_relationship";
+
+	    target = mlist_osrc;
+	    is_slave = yes;
+	    key_1 = m_list_parent;
+	    target_key_1 = m_list_code;
+	    revealed_only = yes;
+	    }
+
+	issues_tbl "widget/table"
+	    {
+	    x=0;y=0;width=518;height=204;
+
+	    issue_code "widget/table-column" { width=60; title = "List ID"; fieldname = m_list_code; }
+	    issue_date "widget/table-column" { width=80; title = "Date"; fieldname = created; }
+	    issue_name "widget/table-column" { width=280; title = "Description"; fieldname = m_list_description; }
+	    issue_status_text "widget/table-column" { width=70; title = "Status"; fieldname = status_text; }
+	    }
+
+	newissue_pane "widget/pane"
+	    {
+	    style=flat;
+	    x=0;y=208;
+	    height=116;
+	    width=518;
+	    enabled=runclient(:mlist_osrc:m_list_type == 'P');
+
+	    newissue_cmp "widget/component"
+		{
+		path = "/apps/kardia/modules/base/create_issue.cmp";
+		refresh_on_create "widget/connector"
+		    {
+		    event=IssueCreated;
+		    target=issue_osrc;
+		    action=Refresh;
+		    }
+		clear_form_on_create "widget/connector"
+		    {
+		    event=IssueCreated;
+		    target=newissue_form;
+		    action=Discard;
+		    }
+		}
+
+	    newissue_grp "widget/pane"
+		{
+		x=0; y=8; width=518; height=108;
+		widget_class = group;
+		background="/apps/kardia/images/bg/light_bgnd3.jpg";
+
+		newissue_form "widget/form"
+		    {
+		    allow_nodata = no;
+		    allow_view = no;
+		    allow_new = no;
+		    auto_focus = no;
+
+		    newissue_vbox "widget/vbox"
+			{
+			x=10; y=18; width=300; height=78;
+			spacing = 4;
+			cellsize = 20;
+			
+			ni_code "widget/component" { label_width=120; path="/sys/cmp/smart_field.cmp"; text="Issue List ID:"; ctl_type="editbox"; tooltip="Enter a unique new list ID for this issue"; field=m_list_code; }
+			ni_desc "widget/component" { label_width=120; path="/sys/cmp/smart_field.cmp"; text="Issue Description:"; ctl_type="editbox"; tooltip="Enter a description for the issue"; field=m_list_desc; }
+
+			create_btn "widget/textbutton"
+			    {
+			    height=24; width=120;
+			    text = "Create Issue";
+			    enabled=runclient(char_length(:ni_code:content) > 0 and char_length(:ni_desc:content) > 0);
+
+			    do_create "widget/connector"
+				{
+				event=Click;
+				target=newissue_cmp;
+				action=CreateIssue;
+				parent_mlist=runclient(:mlist_osrc:m_list_code);
+				new_mlist=runclient(:ni_code:content);
+				new_desc=runclient(:ni_desc:content);
+				}
+			    }
+			}
+		    }
+		}
+
+	    newissue_label_pane "widget/pane"
+		{
+		x=16; y=0; width=170;
+		widget_class = label;
+		newissue_label "widget/label" { x=0;y=0;width=168;height=16;value=runclient("Create New Issue"); widget_class="label"; }
+		}
+	    }
+	}
+    }

@@ -47,6 +47,20 @@ partner_search_component "widget/component-decl"
 		type=object;
 		find_container="widget/form";
 	}
+	return_to_eb "widget/parameter"
+	{
+		//This is the editbox we're stuffing the new partner code in.
+		type=object;
+		deploy_to_client=yes;
+	}
+	ledger "widget/parameter"
+	{
+		// We need this so the new_partner window can know what kind of
+		// p_payee record to create.
+		type=string;
+		default=null;
+		deploy_to_client=yes;
+	}
 	
 	
 					// cn_Press_New_Search_Buttonfe "widget/connector" 
@@ -111,13 +125,18 @@ partner_search_component "widget/component-decl"
 				:p:p_comments,
 				:p:p_legacy_key_1,
 				:p:p_legacy_key_2,
-				:p:p_acquisition_code 
+				:p:p_acquisition_code,
+				:y:p_allow_payments
 			FROM
 				/apps/kardia/data/Kardia_DB/p_partner/rows p,
-				/apps/kardia/data/Kardia_DB/p_location/rows l
+				/apps/kardia/data/Kardia_DB/p_location/rows l,
+				/apps/kardia/data/Kardia_DB/p_payee/rows y
 			WHERE
 				:p:p_partner_key = :l:p_partner_key AND
-				:p:p_acquisition_code = 'PAY'";
+				:y:p_partner_key = :p:p_partner_key
+			HAVING
+				:p_allow_payments = 1
+			";
 				
 		baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
 		replicasize=10;
@@ -130,6 +149,9 @@ partner_search_component "widget/component-decl"
 
 		partner_search_form "widget/form"
 		{
+			//allow_new = 0;
+			//allow_modify = 0;
+
 			p_partner_ctl "widget/component"
 			{
 				x=0;y=0;width=698;height=24;
@@ -168,7 +190,7 @@ partner_search_component "widget/component-decl"
 					p_search_box_lbl_cmp "widget/label"
 					{
 						x = 20;
-						text = " -or- Search All Fields (one word or number)";
+						text = " -or- Search All Fields";
 						tooltip="Try limiting your search to use only one word if unable to find what you are looking for (e.g. too few results).  Another thing you could try is using only part of a word (e.g. Searching for 'ook' returns 'Brook', 'Cook', 'Cookston', ...)";
 					}
 					
@@ -180,7 +202,7 @@ partner_search_component "widget/component-decl"
 						lookup_width=325;
 						readonly="yes";
 						tooltip="Payee Search Text - partial text-search okay"; 
-						enabled=runclient(:partner_search_form:is_queryexecutable);
+						//enabled=runclient(:partner_search_form:is_queryexecutable);
 						
 						
 					// connector 
@@ -205,10 +227,12 @@ partner_search_component "widget/component-decl"
 						cnQueryParam2 "widget/connector" 
 						{
 							event = "BeforeKeyPress";
-							event_condition = runclient(:Name = 'enter');
-							event_cancel = runclient(:Name = 'enter');
+							//event_condition = runclient(:Name = 'enter');
+							//event_cancel = runclient(:Name = 'enter');
 							
 							event_condition=runclient( (:p_search_box_cmp:content IS NULL) AND (:Name = 'enter'));
+							event_cancel=runclient( (:p_search_box_cmp:content IS NULL) AND (:Name = 'enter'));
+							event_delay=0.1;
 							
 							event="Click"; 
 							target="partner_search_form"; 
@@ -221,18 +245,23 @@ partner_search_component "widget/component-decl"
 							event = "BeforeKeyPress";
 							event_cancel = runclient(:Name = 'enter');
 							event_condition=runclient( NOT (:p_search_box_cmp:content IS NULL) and (:Name = 'enter') );
+							event_delay=0.1;
 
 							target="person_search_osrc"; 
-							action="QueryParam";
+							//action="QueryParam";
 							
 							cx__case_insensitive = 1;
+
+							action=QueryText;
+							query=runclient(:p_search_box_cmp:content);
+							field_list="*p_given_name*,p_surname*,*p_org_name*,p_partner_key,p_legacy_key_1,*p_legacy_key_2*";
 							
-							joinstring=runclient("or");
-							p_given_name = runclient("*" + :p_search_box_cmp:content + "*");
-							p_surname = runclient("*" + :p_search_box_cmp:content + "*");
-							p_org_name = runclient("*" + :p_search_box_cmp:content + "*");
-							p_legacy_key_1 = runclient("*" + :p_search_box_cmp:content + "*");
-							p_legacy_key_2 = runclient("*" + :p_search_box_cmp:content + "*");
+							//joinstring=runclient("or");
+							//p_given_name = runclient("*" + :p_search_box_cmp:content + "*");
+							//p_surname = runclient("*" + :p_search_box_cmp:content + "*");
+							//p_org_name = runclient("*" + :p_search_box_cmp:content + "*");
+							//p_legacy_key_1 = runclient("*" + :p_search_box_cmp:content + "*");
+							//p_legacy_key_2 = runclient("*" + :p_search_box_cmp:content + "*");
 							
 							// Version 2
 							// Blocking Issue (20091214): Unusable -- search takes more than several minutes (should take on the order of seconds as an upper limit)
@@ -328,9 +357,30 @@ partner_search_component "widget/component-decl"
 					// p_location_id_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_location_id; text="Location ID"; ctl_type="editbox"; tooltip="unique to this partner location ID"; }
 					
 				}
+
+				add_button "widget/textbutton"
+				{
+					x=595; y=240;
+					height=24; width=100;
+					text="New Payee";
+
+					add_cn "widget/connector"
+					{
+						event=Click;
+						target=partner_search_component;
+						action=Launch;
+						Source="/apps/kardia/modules/base/new_partner.app";
+						Width=844;
+						Height=600;
+						set_payee=1;
+						return_to=return_to_eb;
+						ledger=runclient(:partner_search_component:ledger);
+					}
+				}
+
 				query_button "widget/textbutton"
 				{
-					x=525; y=188;
+					x=485; y=153;
 					height=24; width=100;
 					text="New Search";
 					enabled=runclient(:partner_search_form:is_queryable);
@@ -343,7 +393,7 @@ partner_search_component "widget/component-decl"
 				}
 				queryExec_button "widget/textbutton"
 				{
-					x=525; y=217;
+					x=485; y=182;
 					height=24; width=100;
 					text="Do Search";
 					enabled=runclient(:partner_search_form:is_queryexecutable);
@@ -371,16 +421,19 @@ partner_search_component "widget/component-decl"
 						event_condition=runclient( NOT (:p_search_box_cmp:content IS NULL) );
 						event="Click"; 
 						target="person_search_osrc"; 
-						action="QueryParam";
+						//action="QueryParam";
 						
 						cx__case_insensitive = 1;
 						
-						joinstring=runclient("or");
-						p_given_name = runclient("*" + :p_search_box_cmp:content + "*");
-						p_surname = runclient("*" + :p_search_box_cmp:content + "*");
-						p_org_name = runclient("*" + :p_search_box_cmp:content + "*");
-						p_legacy_key_1 = runclient("*" + :p_search_box_cmp:content + "*");
-						p_legacy_key_2 = runclient("*" + :p_search_box_cmp:content + "*");
+						action=QueryText;
+						query=runclient(:p_search_box_cmp:content);
+						field_list="*p_given_name*,p_surname*,*p_org_name*,p_partner_key,p_legacy_key_1,*p_legacy_key_2*";
+						//joinstring=runclient("or");
+						//p_given_name = runclient("*" + :p_search_box_cmp:content + "*");
+						//p_surname = runclient("*" + :p_search_box_cmp:content + "*");
+						//p_org_name = runclient("*" + :p_search_box_cmp:content + "*");
+						//p_legacy_key_1 = runclient("*" + :p_search_box_cmp:content + "*");
+						//p_legacy_key_2 = runclient("*" + :p_search_box_cmp:content + "*");
 						
 						// Version 2
 						// Blocking Issue (20091214): Unusable -- search takes more than several minutes (should take on the order of seconds as an upper limit)
@@ -393,7 +446,7 @@ partner_search_component "widget/component-decl"
 				}
 				GotoButton "widget/textbutton"
 				{
-					x=525; y=246;
+					x=485; y=211;
 					height=24; width=100;
 					text="Select";
 					enabled=runclient(:partner_search_form:is_editable);
@@ -409,6 +462,25 @@ partner_search_component "widget/component-decl"
 						event="Click"; 
 						target="partner_search_component"; 
 						action="CloseMe"; 
+					}
+				}
+
+				EditButton "widget/textbutton"
+				{
+					x=485; y=240;
+					height=24; width=100;
+					text="Edit Payee";
+					enabled=runclient(:partner_search_form:is_editable);
+
+					edit_cn "widget/connector"
+					{
+						event=Click;
+						target=partner_search_component;
+						action=Launch;
+						Source="/apps/kardia/modules/base/partner_window.app";
+						Width=844;
+						Height=600;
+						id=runclient(:partner_search_form:p_partner_key);
 					}
 				}
 			}

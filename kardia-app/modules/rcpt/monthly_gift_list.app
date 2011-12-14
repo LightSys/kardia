@@ -21,7 +21,7 @@ monthly_gift_list "widget/page"
 
 	vb2 "widget/vbox"
 	    {
-	    x=32;y=8;width=514;height=468;
+	    x=32;y=8;width=514;height=368;
 	    spacing=4;
 	    lbl_tb "widget/label" { height=30; font_size=16; text="Mailings for Gifts - Report Options:"; align=center; }
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
@@ -57,10 +57,12 @@ monthly_gift_list "widget/page"
 
 	vb3 "widget/vbox"
 	    {
-	    x=32;y=484;width=514;height=40;
+	    x=32;y=384;width=514;height=140;
 	    align=bottom;
 
 	    spacing=4;
+
+	    note "widget/label" { height=40; style=italic; text="This report can take a while to run.  You should only run this report when no one is entering gifts in Receipting."; }
 
 	    pn_sep2 "widget/pane" { height=2; style=lowered; }
 

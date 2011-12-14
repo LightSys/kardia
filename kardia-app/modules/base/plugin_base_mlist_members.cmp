@@ -1,0 +1,117 @@
+$Version=2$
+plugin_base_mlist_members "widget/component-decl"
+    {
+    title = "Members";
+    sequence = 0;
+    width=518;
+    height=324;
+
+    mlist_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    list_membership_osrc "widget/osrc"
+	{
+	sql = "SELECT 
+		:l:m_list_code, 
+		:l:p_partner_key,
+		:l:m_num_copies,
+		-- :l:m_member_type,
+		:l:m_comments,
+		-- :p:p_org_name,
+		-- :p:p_given_name,
+		-- :p:p_surname,
+		-- :p:p_given_name,
+		-- member_type_text= :mt:text,
+		membership_status_text= :ms:text,
+		disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ','')
+	    FROM 
+		/apps/kardia/data/Kardia_DB/m_list_membership/rows l,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p,
+		-- /apps/kardia/data/Kardia_DB/_m_member_type/rows mt,
+		/apps/kardia/data/Kardia_DB/_m_membership_status/rows ms
+	    WHERE 
+		:l:p_partner_key = :p:p_partner_key and 
+		-- :l:m_member_type *= :mt:tag and
+		:l:m_membership_status *= :ms:tag and
+		(:l:m_membership_status != 'D' or dateadd(day,1,:s_date_modified) > getdate())
+	    ";
+	baseobj = "/apps/kardia/data/Kardia_DB/m_list_membership/rows";
+	replicasize=50;
+	readahead=50;
+	autoquery=never;
+
+	memberlist_sync "widget/rule"
+	    {
+	    ruletype = "osrc_relationship";
+
+	    target = mlist_osrc;
+	    is_slave = yes;
+	    key_1 = m_list_code;
+	    target_key_1 = m_list_code;
+	    revealed_only = yes;
+	    }
+
+	listsearch_hbox "widget/hbox"
+	    {
+	    x=0; y=0; width=518; height=20;
+	    spacing=4;
+	    search_lbl "widget/label" { width=120; text="Search Members:"; align=right; }
+	    search_eb "widget/editbox"
+		{
+		width=200;
+		empty_description="type search and press ENTER";
+		do_name_search "widget/connector"
+		    {
+		    event=ReturnPressed;
+		    event_condition=runclient(char_length(:search_eb:content) > 0);
+		    target=list_membership_osrc;
+		    action=QueryText;
+		    field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key";
+		    objname=runclient("p");
+		    query=runclient(:search_eb:content);
+		    cx__case_insensitive = 1;
+		    }
+		}
+	    }
+
+	listmembers_tbl "widget/table"
+	    {
+	    x=0;y=26;width=518;height=270;
+
+	    table_p_partner_key "widget/table-column" { width=60; title = "ID"; fieldname = p_partner_key; }
+	    table_disp_name "widget/table-column" { width=170; title = "Name"; fieldname = disp_name; }
+	    //table_member_type_text "widget/table-column" { width=60; title = "Type"; fieldname = member_type_text; }
+	    table_membership_status_text "widget/table-column" { width=70; title = "Status"; fieldname = membership_status_text; }
+	    table_copies "widget/table-column" { width=60; title = "#Copies"; fieldname = m_num_copies; }
+	    table_m_comments "widget/table-column" { width=130; title = "Comment"; fieldname = m_comments; }
+	    }
+
+	detail_btn_hbox "widget/hbox"
+	    {
+	    x=0;y=300; height=24;width=518;
+	    align=center;
+	    detail_btn "widget/textbutton"
+		{
+		height=24;
+		width=180;
+		enabled=runclient(not (:list_membership_osrc:p_partner_key is null));
+		text = "Subscription Detail";
+
+		details_cn "widget/connector"
+		    {
+		    event=Click;
+		    target=plugin_base_mlist_members;
+		    action=Launch;
+		    Multi = 1;
+		    Source = runclient("/apps/kardia/modules/base/subscription.app");
+		    Width = 800;
+		    Height = 600;
+		    partner = runclient(:list_membership_osrc:p_partner_key);
+		    list = runclient(:list_membership_osrc:m_list_code);
+		    mlist_parent_osrc = list_membership_osrc;
+		    send_update = 1;
+		    //memb_osrc = memb_osrc;
+		    }
+		}
+	    }
+	}
+    }

@@ -1,0 +1,104 @@
+$Version=2$
+plugin_base_mlist_autosub "widget/component-decl"
+    {
+    width=490;
+    height=292;
+    sequence=300;
+    title = "Auto-Sub Donors";
+
+    Modified "widget/component-decl-event" { }
+
+    mlist_osrc "widget/parameter" { type=object; find_container = "widget/osrc"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    vbox "widget/vbox"
+	{
+	x = 0;
+	y = 0;
+	width = 490;
+	height = 292;
+	spacing = 4;
+	cellsize = 20;
+
+	as_osrc "widget/osrc"
+	    {
+	    sql = " select
+			    :a:a_ledger_number, :a:a_cost_center, :a:m_list_code,
+			    :a:a_minimum_gift, :a:a_subscribe_months, :a:a_comments,
+			    :a:s_date_created, :a:s_created_by, :a:s_date_modified, :a:s_modified_by,
+			    :c:a_cc_desc,
+			    monthtext = '' + :a:a_subscribe_months + ' months',
+			    fundtext = :c:a_cost_center + ' - ' + :c:a_cc_desc
+		    from
+			    IDENTITY /apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a,
+			    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		    where
+			    :c:a_cost_center = :a:a_cost_center and
+			    :c:a_ledger_number = :a:a_ledger_number
+		    ";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows";
+	    readahead = 10;
+	    replicasize = 10;
+	    autoquery = never;
+
+	    list_link "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = mlist_osrc;
+		key_1 = m_list_code;
+		target_key_1 = m_list_code;
+		revealed_only = yes;
+		}
+
+	    as_form "widget/form"
+		{
+		form_txt "widget/label" { text="Here you can automatically subscribe a donor to this list when the donor gives to one or more funds."; height=32; }
+		form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; height=26; object_name="Fund"; }
+
+		as_table_pane "widget/pane"
+		    {
+		    height=106;
+		    widget_class=table_bgnd;
+
+		    as_table "widget/table"
+			{
+			x=0;y=0;
+			width=488; height=104;
+			mode = dynamicrow;
+
+			t_ledger "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=60; }
+			t_fund "widget/table-column" { title="Fund"; fieldname="fundtext"; width=230; }
+			t_mingift "widget/table-column" { title="Min. Gift"; fieldname="a_minimum_gift"; width=90; }
+			t_months "widget/table-column" { title="Subscribe For"; fieldname="monthtext"; width=90; }
+			}
+		    }
+
+		f_ledger "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; f_ledger_hints "widget/hints" { default=runserver(:this:ledger); } } 
+		f_cc "widget/component"
+		    {
+		    height=20;
+		    width=400;
+		    path="/apps/kardia/modules/base/editbox_table.cmp";
+		    field='a_cost_center';
+		    text='Fund:';
+		    label_width=100;
+		    popup_width=380;
+		    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
+		    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
+		    key_name="a_cost_center";
+		    object_name="Fund / Cost Center";
+		    popup_text="Select Fund:";
+		    empty_desc="required";
+		    }
+		f_minimum_gift "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_minimum_gift'; text='Minimum Gift:'; min_gift_hints "widget/hints" { default=runclient(0); } }
+		f_sub_months "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_subscribe_months'; text='Subscribe For:'; empty_desc = "# of months - optional"; sub_mon_hints "widget/hints" { default=runclient(''); } }
+		f_comments "widget/component" { width=400; height=20; path="/sys/cmp/smart_field.cmp"; field='a_comments'; text='Comments:'; }
+
+		dt_c "widget/variable" { fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+		us_c "widget/variable" { fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }
+		dt_m "widget/variable" { fieldname="s_date_modified"; dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+		us_m "widget/variable" { fieldname="s_modified_by"; us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+		}
+	    }
+	}
+    }

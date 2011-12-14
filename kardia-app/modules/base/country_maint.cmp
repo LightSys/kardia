@@ -1,0 +1,132 @@
+$Version=2$
+country_maint "widget/component-decl"
+    {
+    width=780;height=580;
+
+    ledger "widget/parameter" { type=string; default=null; }
+
+    search_box "widget/editbox"
+	{
+	x=0; y=0; width=200; height=20;
+	empty_description = "Type search and press ENTER";
+
+	enter_cn "widget/connector"
+	    {
+	    event=ReturnPressed;
+	    target=countries_osrc;
+	    action=QueryText;
+	    query=runclient(:search_box:content);
+	    field_list="p_country_code,*p_country_name*";
+	    cx__case_insensitive = 1;
+	    }
+	}
+
+    countries_pane "widget/pane"
+	{
+	x=0;y=28;width=200;height=552;
+	widget_class = "table_bgnd";
+
+	countries_osrc "widget/osrc"
+	    {
+	    sql = "select *, sec_level_txt = condition(:p_security_level == 0, 'Normal', condition(:p_security_level == 1, 'High', 'Very High')) from /apps/kardia/data/Kardia_DB/p_country/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_country/rows";
+	    replicasize = 300;
+	    readahead = 300;
+	    autoquery = onload;
+
+	    countries_table "widget/table"
+		{
+		x=0; y=0; width=198; height=550;
+
+		c_code "widget/table-column" { title="Code"; fieldname="p_country_code"; width=45; }
+		c_name "widget/table-column" { title="Country Name"; fieldname="p_country_name"; width=130; }
+		}
+	    }
+	}
+
+    onecountry_vbox "widget/vbox"
+	{
+	x=210; y=0; height=580; width=570;
+	spacing=4;
+
+	country_form "widget/form"
+	    {
+	    objectsource = countries_osrc;
+
+	    onelist_section "widget/component"
+		{
+		path = "/apps/kardia/modules/base/section_header.cmp";
+		height=20;
+		text = runclient(condition(char_length(:countries_osrc:p_country_code) > 0, 'Country: ' + :countries_osrc:p_country_name + ' (' + :countries_osrc:p_country_code + ')', '(none selected)'));
+		}
+
+	    sep0 "widget/autolayoutspacer" { height=2; }
+
+	    f_name "widget/component" { height=16; width=400; path="/sys/cmp/smart_field.cmp"; field='p_country_name'; ctl_type=label; text='Name:'; label_width=140; }
+	    f_local_name "widget/component" { height=16; width=400; path="/sys/cmp/smart_field.cmp"; field='p_local_name'; ctl_type=label; text='Localized Name:'; label_width=140; }
+
+	    sep_line "widget/pane" { height=2; style=lowered; }
+
+	    fields_hbox "widget/hbox"
+		{
+		height=104; spacing=10;
+
+		fields_vbox_1 "widget/vbox"
+		    {
+		    width=260;
+		    spacing=4;
+
+		    f_code "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='p_country_code'; ctl_type=label; text='Country Code:'; label_width=140; }
+		    f_iso2code "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='p_iso3166_2_code'; ctl_type=label; text='ISO 3166 2-Char:'; label_width=140; }
+		    f_iso3code "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='p_iso3166_3_code'; ctl_type=label; text='ISO 3166 3-Char:'; label_width=140; }
+		    f_fipscode "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='p_fips_code'; ctl_type=label; text='FIPS 10-4 2-Char:'; label_width=140; }
+		    f_phone_code "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='p_phone_code'; ctl_type=label; text='Dialing Code:'; label_width=140; }
+		    }
+
+		fields_vbox_2 "widget/vbox"
+		    {
+		    width=300;
+		    spacing=4;
+
+		    f_security_level "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='sec_level_txt'; ctl_type=label; text='Security:'; label_width=120; }
+		    f_nationality "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='p_nationality'; ctl_type=label; text='Nationality:'; label_width=120; }
+		    f_tz_early "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='p_early_timezone'; ctl_type=label; text='Early TZ Offset:'; label_width=120; }
+		    f_tz_late "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='p_late_timezone'; ctl_type=label; text='Late TZ Offset:'; label_width=120; }
+		    f_status "widget/component" { height=20; width=250; path="/sys/cmp/smart_field.cmp"; field='p_record_status_code'; ctl_type=dropdown; text='Status:'; label_width=120; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows where :tag == 'A' or :tag == 'O'"; }
+		    }
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=8; }
+
+	list_tab "widget/tab"
+	    {
+	    background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	    inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+	    height=360;
+
+	    plugin_tabs "widget/repeat"
+		{
+		sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_base_country_*.cmp' order by :sequence";
+
+		plugin_tab "widget/tabpage"
+		    {
+		    title = runserver(:plugin_tabs:title);
+
+		    plugin_cmp "widget/component"
+			{
+			x=10;y=10;width=548;height=338;
+			path = runserver(:plugin_tabs:path);
+			countries_osrc = countries_osrc;
+			ledger = runserver(:this:ledger);
+			}
+		    }
+		}
+	    }
+	}
+
+    dt_c "widget/variable" { form=country_form; fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+    us_c "widget/variable" { form=country_form; fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }
+    dt_m "widget/variable" { form=country_form; fieldname="s_date_modified"; dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+    us_m "widget/variable" { form=country_form; fieldname="s_modified_by"; us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+    }

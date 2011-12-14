@@ -1,0 +1,255 @@
+$Version=2$
+plugin_base_staffmaint_ccmanage "widget/component-decl"
+    {
+    title = "Funds Managed";
+    height=272;
+    width=758;
+    table_addon_title = "Funds";
+    table_addon_field = "cclist";
+    table_addon_width = 200;
+    sql_addon = "cclist = (select isnull(sum(:a_cost_center + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = :parameters:a_ledger_number)";
+
+    Modified "widget/component-decl-event" { }
+
+    staff_osrc "widget/parameter" { type=object; find_container = "widget/osrc"; }
+    ledger "widget/parameter" { type=string; deploy_to_client = yes; }
+
+    rpt_ctls "widget/component"
+	{
+	path = "/apps/kardia/modules/base/receives_report.cmp";
+
+	on_connect "widget/connector"
+	    {
+	    event=Connected;
+	    target=mgr_osrc;
+	    action=RefreshObject;
+	    }
+	on_disconnect "widget/connector"
+	    {
+	    event=Disconnected;
+	    target=mgr_osrc;
+	    action=RefreshObject;
+	    }
+	}
+
+    vbox "widget/vbox"
+	{
+	x = 0;
+	y = 0;
+	width = 758;
+	height = 272;
+	spacing = 8;
+	cellsize = 20;
+
+	mgr_osrc "widget/osrc"
+	    {
+	    // See SQL comments in the SELECT statement below for 
+	    // info on what is going on here.  We essentially have a
+	    // query within a query within a query, using one SQL
+	    // query to build a list of subqueries that are embedded
+	    // within the main SELECT statement, one subquery for
+	    // each report group name that we want to display as a
+	    // table column.
+	    sql = runserver("
+		    SELECT
+			:cs:a_ledger_number,
+			:cs:a_cost_center,
+			:cs:p_staff_partner_key,
+			:cs:s_date_created,
+			:cs:s_created_by,
+			:cs:s_date_modified,
+			:cs:s_modified_by,
+			:c:a_cc_desc,
+			disp_name = :cs:a_cost_center + ' - ' + :c:a_cc_desc,
+			-- Below we build the list of report groups, as well as their
+			-- current setting for this costctr and this person.  We only
+			-- look at report groups that have a param named 'costctr' that
+			-- is specifiable by an individual report.
+			" + (select
+				sum(quote("_col_" + :r_group_name) + " = condition( (select count(1) from /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp, /apps/kardia/data/Kardia_DB/r_group_report/rows gr where :rp:p_recipient_partner_key = :cs:p_staff_partner_key and :rp:r_group_name = " + quote(:r_group_name) + " and :gr:r_is_active = 1 and :rp:r_group_name = :gr:r_group_name and :rp:r_delivery_method = :gr:r_delivery_method and :rp:p_recipient_partner_key = :gr:p_recipient_partner_key" + " and :rp:r_report_id = :gr:r_report_id and :rp:r_param_name = 'costctr' and :rp:r_param_value = :cs:a_cost_center),'/sys/images/checkbox_checked.png', '/sys/images/checkbox_unchecked.png'), ")
+			    from
+				/apps/kardia/data/Kardia_DB/r_group_param/rows
+			    where
+				:r_param_name = "costctr" and
+				:r_is_report_param = 1
+			    ) + "
+			test = 1
+		    FROM
+			IDENTITY /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		    WHERE
+			:c:a_cost_center = :cs:a_cost_center and
+			:c:a_ledger_number = :cs:a_ledger_number and
+			:cs:a_ledger_number = " + quote(:this:ledger) + "
+		    ");
+	    baseobj="/apps/kardia/data/Kardia_DB/a_cc_staff/rows";
+	    replicasize=25;
+	    readahead=25;
+
+	    staff_link "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = staff_osrc;
+		key_objname = cs;
+		key_1 = p_staff_partner_key;
+		target_key_1 = p_partner_key;
+		revealed_only = yes;
+		}
+
+	    mgr_form "widget/form"
+		{
+		refresh_parent_on_save "widget/connector"
+		    {
+		    event=DataSaved;
+		    target=staff_osrc;
+		    action=RefreshObject;
+		    }
+		refresh_parent_on_delete "widget/connector"
+		    {
+		    event=DataDeleted;
+		    target=staff_osrc;
+		    action=RefreshObject;
+		    }
+
+		form_txt "widget/label" { value=runclient("Set up what funds this staff member is in charge of managing, and thus can receive reports for."); height=16; }
+
+		mgr_pane "widget/pane"
+		    {
+		    height=246;
+		    style=flat;
+
+		    mgr_vbox "widget/vbox"
+			{
+			x=0; y=0;
+			height=246;
+			width=758;
+			spacing=8;
+			cellsize = 20;
+
+			form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; height=26; object_name="Fund"; }
+
+			mgr_table_pane "widget/pane"
+			    {
+			    height=149;
+			    widget_class=table_bgnd;
+
+			    mgr_table "widget/table"
+				{
+				x=0;y=0;
+				width=756; height=147;
+				mode = dynamicrow;
+
+				//t_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=70; }
+				//t_name "widget/table-column" { title="Name"; fieldname="a_cc_desc"; width=450; }
+				t_disp "widget/table-column" { title="Fund"; fieldname="disp_name"; width=450; }
+
+				t_items_rpt "widget/repeat"
+				    {
+				    sql = " select
+						:r:r_group_name
+					    from
+						/apps/kardia/data/Kardia_DB/r_group/rows r,
+						/apps/kardia/data/Kardia_DB/r_group_param/rows rp
+					    where
+						:r:r_is_active = 1 and
+						:r:r_group_name = :rp:r_group_name and
+						:rp:r_param_name = 'costctr' and
+						:rp:r_is_report_param = 1
+					    ";
+
+				    t_item "widget/table-column" { title=runserver(:t_items_rpt:r_group_name); fieldname=runserver("_col_" + :t_items_rpt:r_group_name); width=70; type=image; align=center; }
+				    }
+
+				enable_on_click_column "widget/connector"
+				    {
+				    event=Click;
+				    event_condition=runclient(substring(:Column,1,5) == '_col_' and :ColumnValue == '/sys/images/checkbox_unchecked.png');
+				    target = rpt_ctls;
+				    action=ConnectReport;
+
+				    // Parameters to ConnectReport
+				    method=runclient('E');
+				    param=runclient('costctr');
+				    value=runclient(:a_cost_center);
+				    report_group=runclient(substring(:Column, 6));
+				    partner=runclient(:staff_osrc:p_partner_key);
+				    }
+				disable_on_click_column "widget/connector"
+				    {
+				    event=Click;
+				    event_condition=runclient(substring(:Column,1,5) == '_col_' and :ColumnValue == '/sys/images/checkbox_checked.png');
+				    target = rpt_ctls;
+				    action=DisconnectReport;
+
+				    // Parameters to ConnectReport
+				    method=runclient('E');
+				    param=runclient('costctr');
+				    value=runclient(:a_cost_center);
+				    report_group=runclient(substring(:Column, 6));
+				    partner=runclient(:staff_osrc:p_partner_key);
+				    }
+				}
+			    }
+
+			f_costctr "widget/component"
+			    {
+			    height=24;
+			    width=300;
+			    path="/apps/kardia/modules/base/editbox_table.cmp";
+			    field='a_cost_center';
+			    text='Fund:';
+			    popup_width=300;
+			    popup_height=210;
+			    popup_sql = runserver("
+				    SELECT
+					value = :a_cost_center,
+					label = :a_cost_center + ' ' + :a_cc_desc
+				    FROM
+					/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+				    WHERE
+					:a_ledger_number = " + quote(:this:ledger) + " and
+					:a_bal_cost_center = :a_cost_center
+				    ");
+			    search_field_list="a_cost_center,*a_cc_desc*,a_legacy_code";
+			    key_name="a_cost_center";
+			    object_name="Funds";
+			    popup_text="Choose Fund:";
+			    empty_desc = "required";
+			    attach_point=editbox;
+			    }
+
+			ledger_v "widget/variable" { fieldname="a_ledger_number"; ledger_hints "widget/hints" { default=runclient(:plugin_base_staffmaint_ccmanage:ledger); } }
+
+			btns_hbox "widget/hbox"
+			    {
+			    x=100; height=24;
+			    spacing=8;
+
+			    save_btn "widget/textbutton"
+				{
+				height=24;
+				width=120;
+				enabled=runclient(:mgr_form:is_savable);
+				text=runclient(condition(:mgr_form:form_mode == 'New', 'Add', 'Save'));
+
+				save_cn "widget/connector" { event=Click; target=mgr_form; action=Save; }
+				}
+
+			    cancel_btn "widget/textbutton"
+				{
+				height=24;
+				width=120;
+				enabled=runclient(:mgr_form:is_discardable);
+				text="Cancel";
+
+				discard_cn "widget/connector" { event=Click; target=mgr_form; action=Discard; }
+				}
+			    }
+
+			rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+			}
+		    }
+		}
+	    }
+	}
+    }

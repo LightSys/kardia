@@ -7,12 +7,14 @@ mlist_maint "widget/page"
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
 
-    //ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    list "widget/parameter" { type=string; default=null; }
 
     mlist_maint_cmp "widget/component"
 	{
 	x=10; y=10; width=780; height=580;
 	path = "/apps/kardia/modules/base/mlist_maint.cmp";
-	//ledger = runserver(:this:ledger);
+	ledger = runserver(:this:ledger);
+	list = runserver(:this:list);
 	}
     }

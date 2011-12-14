@@ -8,6 +8,7 @@ editbox_tree "widget/component-decl"
     expose_properties_for = eb;
 
     popup_width "widget/parameter" { type=integer; default=250; }
+    popup_height "widget/parameter" { type=integer; default=300; }
     form "widget/parameter" { type=object; find_container="widget/form"; }
     label_width "widget/parameter" { type=integer; default=100; }
     text "widget/parameter" { type=string; default=null; }
@@ -60,6 +61,7 @@ editbox_tree "widget/component-decl"
 	order = runserver(:this:popup_order);
 	toplevel = yes;
 	popup_width = runserver(:this:popup_width);
+	popup_height = runserver(:this:popup_height);
 
 	//opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Image=runclient("/apps/kardia/images/bg/blue_gradient2_h.png"); }
 	opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Color=runclient("#a8c1d8"); }

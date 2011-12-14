@@ -86,13 +86,21 @@ annual_statement "system/report"
 			:pl:p_postal_code,
 			:pl:p_country_code,
 			partner_changed = :p:s_date_modified,
-			addr_changed = :pl:s_date_modified
+			addr_changed = :pl:s_date_modified,
+			p_country_name = upper(:c:p_country_name),
+			:af:p_format
 		FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
-			/apps/kardia/data/Kardia_DB/p_location/rows pl
+			/apps/kardia/data/Kardia_DB/p_location/rows pl,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
 		WHERE
 			:p:p_partner_key = :this:donor_id and
-			:pl:p_partner_key =* :p:p_partner_key
+			:pl:p_partner_key =* :p:p_partner_key and
+			:pl:p_revision_id = 0 and 
+			:c:p_country_code =* :pl:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = 'STANDARD'
 		GROUP BY
 			:p:p_partner_key
 		";
@@ -259,12 +267,13 @@ annual_statement "system/report"
 	    marginright=0.5;
 
 	    d_d0 "report/data" { fontsize=15; style=bold; value=runserver("Donor #" + :donor_qy:p_partner_key + ":\n"); }
-	    d_d1 "report/data" { fontsize=10; value=runserver(:donor_qy:acct_name); }
-	    d_d2 "report/data" { fontsize=10; value=runserver(condition(char_length(rtrim(:donor_qy:p_in_care_of)) > 0, "\n" + :donor_qy:p_in_care_of, "")); }
-	    d_d3 "report/data" { fontsize=10; value=runserver(condition(char_length(rtrim(:donor_qy:p_address_1)) > 0, "\n" + :donor_qy:p_address_1, "")); }
-	    d_d4 "report/data" { fontsize=10; value=runserver(condition(char_length(rtrim(:donor_qy:p_address_2)) > 0, "\n" + :donor_qy:p_address_2, "")); }
-	    d_d5 "report/data" { fontsize=10; value=runserver(condition(char_length(rtrim(:donor_qy:p_address_3)) > 0, "\n" + :donor_qy:p_address_3, "")); }
-	    d_d6 "report/data" { fontsize=10; value=runserver("\n" + :donor_qy:p_city + ", " + :donor_qy:p_state_province + " " + :donor_qy:p_postal_code); }
+	    d_d1 "report/data" { fontsize=10; value=runserver(:donor_qy:acct_name + "\n"); }
+	    //d_d2 "report/data" { fontsize=10; value=runserver(condition(char_length(rtrim(:donor_qy:p_in_care_of)) > 0, "\n" + :donor_qy:p_in_care_of, "")); }
+	    //d_d3 "report/data" { fontsize=10; value=runserver(condition(char_length(rtrim(:donor_qy:p_address_1)) > 0, "\n" + :donor_qy:p_address_1, "")); }
+	    //d_d4 "report/data" { fontsize=10; value=runserver(condition(char_length(rtrim(:donor_qy:p_address_2)) > 0, "\n" + :donor_qy:p_address_2, "")); }
+	    //d_d5 "report/data" { fontsize=10; value=runserver(condition(char_length(rtrim(:donor_qy:p_address_3)) > 0, "\n" + :donor_qy:p_address_3, "")); }
+	    //d_d6 "report/data" { fontsize=10; value=runserver("\n" + :donor_qy:p_city + ", " + :donor_qy:p_state_province + " " + :donor_qy:p_postal_code); }
+	    d_d2 "report/data" { fontsize=10; value=runserver(substitute(isnull(:donor_qy:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=donor_qy,p=donor_qy')); }
 	    }
 
 	gift_area "report/area"

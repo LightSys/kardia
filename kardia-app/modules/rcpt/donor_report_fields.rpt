@@ -41,6 +41,8 @@ donor_report "system/report"
     margintop=3;
     marginbottom=3;
 
+    filename = "donor_report.csv";
+
     // Report Parameters
     ledger "report/parameter" { type=string; }
     include_accts "report/parameter" { type=string; }

@@ -9,6 +9,7 @@ gift_entry "widget/page"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     batch "widget/parameter" { type=integer; default=null; }
+    receipt "widget/parameter" { type=string; default=null; }
     by_donor "widget/parameter" { type=integer; default=0; }
 
     ge_cmp "widget/component"
@@ -18,6 +19,7 @@ gift_entry "widget/page"
 	path = "/apps/kardia/modules/rcpt/gift_entry.cmp";
 	ledger = runserver(:this:ledger);
 	batch = runserver(:this:batch);
+	receipt = runserver(:this:receipt);
 	by_donor = runserver(:this:by_donor);
 	}
     }

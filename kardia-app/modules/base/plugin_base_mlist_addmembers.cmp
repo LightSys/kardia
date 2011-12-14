@@ -1,0 +1,239 @@
+$Version=2$
+plugin_base_mlist_addmembers "widget/component-decl"
+    {
+    title = "Add Members";
+    sequence = 100;
+    width=518;
+    height=324;
+
+    mlist_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    new_add_vbox "widget/vbox"
+	{
+	x=0;y=0;width=240;height=324;
+	spacing=4;
+	cellsize=20;
+
+	new_add_label "widget/label" { height=16; text="Find New Members..."; style=bold; }
+
+	search_eb "widget/editbox"
+	    {
+	    height=20;
+	    empty_description = "Type your search, Press [ENTER]";
+
+	    press_up "widget/connector"
+		{
+		event = "BeforeKeyPress";
+		event_condition = runclient(:Name = 'up');
+		event_cancel = runclient(:Name = 'up');
+		target = search_osrc;
+		action = Prev;
+		}
+
+	    press_dn "widget/connector"
+		{
+		event = "BeforeKeyPress";
+		event_condition = runclient(:Name = 'down');
+		event_cancel = runclient(:Name = 'down');
+		target = search_osrc;
+		action = Next;
+		}
+
+	    do_search "widget/connector"
+		{
+		event=ReturnPressed;
+		event_condition=runclient(char_length(:search_eb:content) > 0);
+		target=search_osrc;
+		action=QueryText;
+		field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
+		objname=runclient("p");
+		query=runclient(:search_eb:content);
+		cx__case_insensitive = 1;
+		}
+	    }
+
+	search_osrc "widget/osrc"
+	    {
+	    // SQL code from partner_search.cmp
+	    sql="	SELECT
+			    :l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_partner_key, :l:p_address_1,
+			    :l:p_postal_code, :l:p_state_province, :l:p_in_care_of, :l:p_city, :l:p_location_id,
+			    :p:p_partner_key, :p:p_partner_class, :p:p_title, :p:p_given_name, :p:p_preferred_name,
+			    :p:p_surname, :p:p_org_name, :p:p_comments,  :p:p_legacy_key_1, :p:p_legacy_key_2, :p:p_legacy_key_3,
+			    disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_surname + ', ' + :p:p_given_name) > 0, '- ', ''), '') + isnull(:p:p_surname + ', ','') + isnull(:p:p_given_name,''),
+			    disp_addr = condition(char_length(:l:p_address_1) > 0, :l:p_address_1 + ' ', '') + condition(char_length(:l:p_address_2) > 0, :l:p_address_2 + ' ', '') + condition(char_length(:l:p_address_3) > 0, :l:p_address_3 + ' ', ''),
+			    disp_city = condition(char_length(:l:p_city) > 0, :l:p_city + ', ', '') + condition(char_length(:l:p_state_province) > 0, :l:p_state_province + ' ', ''),
+			    p_country_name = upper(:c:p_country_name),
+			    :af:p_format
+		    FROM
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			    /apps/kardia/data/Kardia_DB/p_location/rows l,
+			    /apps/kardia/data/Kardia_DB/p_country/rows c,
+			    /apps/kardia/data/Kardia_DB/p_address_format/rows af
+		    WHERE
+			    :p:p_record_status_code != 'X' and
+			    :p:p_partner_key *= :l:p_partner_key and
+			    :l:p_revision_id = 0 and
+			    :l:p_country_code *= :c:p_country_code and
+			    :c:p_country_code *= :af:p_country_code and
+			    :af:p_address_set = 'STANDARD'
+		    GROUP BY
+			    :p:p_partner_key
+		    ";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+	    replicasize=50;
+	    readahead=25;
+	    autoquery=never;
+
+	    search_results_tbl "widget/table"
+		{
+		height=108;
+		demand_scrollbar=yes;
+		overlap_scrollbar=yes;
+
+		srch_p_partner_key "widget/table-column" { width=50; title = "ID"; fieldname = p_partner_key; }
+		srch_disp_name "widget/table-column" { width=85; title = "Name"; fieldname = disp_name; }
+		srch_disp_city "widget/table-column" { width=95; title = "Location"; fieldname = disp_city; }
+		}
+
+	    location_addr_label "widget/component"
+		{
+		height=75;
+		path = "/apps/kardia/modules/base/address_label_fmt.cmp";
+		partner = search_osrc;
+		location = search_osrc;
+		}
+
+	    srch_sep1 "widget/autolayoutspacer" { height=4; }
+
+	    comment "widget/component" { label_width=70; path="/sys/cmp/smart_field.cmp"; text="Comment:"; ctl_type="editbox"; tooltip="Comments"; }
+	    reason "widget/component" { label_width=70; path="/sys/cmp/smart_field.cmp"; text="Reason:"; ctl_type="dropdown"; tooltip="Reason this member is being added"; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_member_reason/rows"; }
+
+	    add_btn_hbox "widget/hbox"
+		{
+		height=20;
+		align=center;
+		add_btn "widget/textbutton"
+		    {
+		    height=24;
+		    width=100;
+		    enabled=runclient(:mlist_osrc:m_list_frozen = 0 and not (:search_osrc:p_partner_key is null));
+		    text = "Add >>";
+
+		    add_on_click "widget/connector"
+			{
+			event=Click;
+			target=todays_adds_osrc;
+			action=Create;
+			s_date_created=runclient(getdate());
+			s_created_by=runclient(user_name());
+			s_date_modified=runclient(getdate());
+			s_modified_by=runclient(user_name());
+			m_list_code=runclient(:mlist_osrc:m_list_code);
+			p_partner_key=runclient(:search_osrc:p_partner_key);
+			m_num_copies=runclient(1);
+			m_member_type=runclient('M');
+			m_membership_status=runclient('A');
+			m_comments=runclient(:comment:content);
+			m_reason_member=runclient(:reason:value);
+			m_complimentary=runclient(1);
+			m_show_contact=runclient(1);
+			}
+		    }
+		}
+	    }
+	}
+
+    vsep "widget/pane" { x=249; y=0; width=2; height=324; style=lowered; }
+
+    todays_adds_vbox "widget/vbox"
+	{
+	x=260;y=0;width=258;height=324;
+	spacing=4;
+
+	todays_adds_label "widget/label" { height=16; text="Members Added Today..."; style=bold; }
+
+	todays_adds_osrc "widget/osrc"
+	    {
+	    //disp_name code snagged from partner_search.cmp
+	    sql = "SELECT 
+		    :m:m_list_code, 
+		    :m:p_partner_key,
+		    :m:m_num_copies,
+		    :m:m_member_type,
+		    :m:m_comments,
+		    :p:p_org_name,
+		    :p:p_given_name,
+		    :p:p_surname,
+		    :p:p_given_name,
+		    disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_surname + ', ' + :p:p_given_name) > 0, '- ', ''), '') + isnull(:p:p_surname + ', ','') + isnull(:p:p_given_name,''),
+		    disp_city = condition(char_length(:l:p_city) > 0, :l:p_city + ', ', '') + condition(char_length(:l:p_state_province) > 0, :l:p_state_province + ' ', '')
+		FROM 
+		    /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_location/rows l
+		WHERE 
+		    :m:p_partner_key = :p:p_partner_key and
+		    :p:p_partner_key *= :l:p_partner_key
+		    and dateadd(day, 1, :m:s_date_created) > getdate()
+		ORDER BY
+		    :m:s_date_created asc
+		";
+	    baseobj = "/apps/kardia/data/Kardia_DB/m_list_membership/rows";
+	    replicasize=100;
+	    readahead=100;
+	    autoquery=never;
+
+	    memberlist_sync "widget/rule"
+		{
+		ruletype = "osrc_relationship";
+
+		target = mlist_osrc;
+		is_slave = yes;
+		key_1 = m_list_code;
+		target_key_1 = m_list_code;
+		revealed_only = yes;
+		}
+
+	    todays_adds_tbl "widget/table"
+		{
+		height=267;
+		demand_scrollbar=yes;
+		overlap_scrollbar=yes;
+
+		adds_p_partner_key "widget/table-column" { width=50; title = "ID"; fieldname = p_partner_key; }
+		adds_disp_name "widget/table-column" { width=85; title = "Name"; fieldname = disp_name; }
+		adds_disp_city "widget/table-column" { width=95; title = "Location"; fieldname = disp_city; }
+		}
+
+	    detail_btn_hbox "widget/hbox"
+		{
+		height=24;
+		align=center;
+		detail_btn "widget/textbutton"
+		    {
+		    height=24;
+		    width=180;
+		    enabled=runclient(not (:todays_adds_osrc:p_partner_key is null));
+		    text = "Subscription Detail";
+
+		    details_cn "widget/connector"
+			{
+			event=Click;
+			target=plugin_base_mlist_addmembers;
+			action=Launch;
+			Multi = 1;
+			Source = runclient("/apps/kardia/modules/base/subscription.app");
+			Width = 800;
+			Height = 600;
+			partner = runclient(:todays_adds_osrc:p_partner_key);
+			list = runclient(:todays_adds_osrc:m_list_code);
+			send_update = 1;
+			mlist_parent_osrc = todays_adds_osrc;
+			//memb_osrc = memb_osrc;
+			}
+		    }
+		}
+	    }
+	}
+    }

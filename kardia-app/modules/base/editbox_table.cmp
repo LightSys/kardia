@@ -22,8 +22,10 @@ editbox_table "widget/component-decl"
     empty_desc "widget/parameter" { type=string; default=""; }
     object_name "widget/parameter" { type=string; default="Item"; }
     key_name "widget/parameter" { type=string; default="name"; }
+    key_type "widget/parameter" { type=string; default="string"; }
     search_field_list "widget/parameter" { type=string; default="name"; }
     search_objname "widget/parameter" { type=string; }
+    validate "widget/parameter" { type=integer; default=0; }
 
     pane "widget/pane"
 	{
@@ -32,7 +34,7 @@ editbox_table "widget/component-decl"
 
 	eb "widget/component"
 	    {
-	    x=2; y=2; width=192; height=20;
+	    x=2; y=2; width=196; height=20;
 	    path="/sys/cmp/smart_field.cmp"; 
 	    field=runserver(:this:field); 
 	    text=runserver(:this:text); 
@@ -44,11 +46,79 @@ editbox_table "widget/component-decl"
 	    }
 	btn "widget/textbutton"
 	    {
-	    x=195; y=2; width=19; height=20;
+	    x=199; y=2; width=19; height=20;
 	    text="?";
 	    fl_height = 0;
 
 	    btn_cn "widget/connector" { event=Click; target=win; action=Toggle; }
+	    btn_cn2 "widget/connector" { event=Click; target=eb; action=SetFocus; event_delay=0.1; }
+	    }
+	}
+
+    validation_osrc "widget/osrc"
+	{
+	condition = runserver(:this:validate);
+
+	keyparam "widget/parameter" { type=runserver(:this:key_type); }
+	sql = runserver(:this:popup_sql + " where " + condition(char_length(:this:search_objname) > 0, ":" + :this:search_objname, "") + ":" + quote(:this:key_name) + " = :parameters:keyparam");
+	readahead = 2;
+	replicasize = 2;
+	autoquery = never;
+
+	try_val_on_eb_change "widget/connector"
+	    {
+	    source=eb;
+	    event=DataChange;
+	    event_condition=runclient(not (char_length(:eb:description) > 0));
+	    target=validation_osrc;
+	    action=QueryParam;
+	    keyparam=runclient(:eb:content);
+	    }
+	clear_bgnd_on_eb_change "widget/connector"
+	    {
+	    source=eb;
+	    event=DataChange;
+	    target=pane;
+	    action=SetBackground;
+	    Color=runclient(condition(:win:is_visible, "#a8c1d8", null));
+	    }
+
+	set_desc_on_validate "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(char_length(:validation_osrc:label) > 0);
+	    target=eb;
+	    action=SetValueDescription;
+	    Description = runclient(:validation_osrc:label);
+	    }
+
+	before_save_check_desc "widget/connector"
+	    {
+	    source=form;
+	    event=BeforeSave;
+	    event_condition=runclient((not char_length(:eb:description) > 0) or :eb:description == '** INVALID **');
+	    target=pane;
+	    action=SetBackground;
+	    Color=runclient("#d00000");
+	    }
+	before_save_check_desc2 "widget/connector"
+	    {
+	    source=form;
+	    event=BeforeSave;
+	    event_condition=runclient((not char_length(:eb:description) > 0) or :eb:description == '** INVALID **');
+	    target=eb;
+	    action=SetValueDescription;
+	    Description = runclient('** INVALID **');
+	    }
+	before_save_check_desc3 "widget/connector"
+	    {
+	    source=form;
+	    event=BeforeSave;
+	    event_condition=runclient((not char_length(:eb:description) > 0) or :eb:description == '** INVALID **');
+	    event_cancel=runclient((not char_length(:eb:description) > 0) or :eb:description == '** INVALID **');
+	    event_delay=0.1;
+	    target=eb;
+	    action=SetFocus;
 	    }
 	}
 

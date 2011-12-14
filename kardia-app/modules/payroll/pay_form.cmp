@@ -1,12 +1,13 @@
 $Version=2$
 pay_form "widget/component-decl"
     {
-    width=758;
+    width=778;
     height=620;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     period "widget/parameter" { type=string; default=null; }
     ref_period "widget/parameter" { type=string; default=null; }
+    prev_period "widget/parameter" { type=string; default=""; }
     costctr "widget/parameter" { type=string; default=null; }
     group_id "widget/parameter" { type=integer; default=null; }
     payroll_id "widget/parameter" { type=integer; default=null; }
@@ -14,6 +15,66 @@ pay_form "widget/component-decl"
     payee_data_osrc "widget/parameter" { type=object; }
 
     outer_cmp "widget/parameter" { type=object; find_container="widget/component-decl"; }
+
+    resize_curbox_on_load "widget/connector"
+	{
+	event=LoadComplete;
+	target=current_box;
+	action=Resize;
+	Height=runclient(:ttl_hbox:y - 67);
+	}
+
+    resize_box_on_load "widget/connector"
+	{
+	event=LoadComplete;
+	target=budget_box;
+	action=Resize;
+	Height=runclient(:ttl_hbox:y - 67);
+	}
+
+    resize_box2_on_load "widget/connector"
+	{
+	event=LoadComplete;
+	target=prev_box;
+	action=Resize;
+	Height=runclient(:ttl_hbox:y - 67);
+	}
+
+    resize_box3_on_load "widget/connector"
+	{
+	event=LoadComplete;
+	target=fromgl_box;
+	action=Resize;
+	Height=runclient(:ttl_hbox:y - 67);
+	}
+
+    current_box "widget/pane"
+	{
+	x=163; y=36; width=143; height=570;
+	style=flat;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	}
+
+    budget_box "widget/pane"
+	{
+	x=314; y=36; width=93; height=570;
+	style=flat;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	}
+
+    prev_box "widget/pane"
+	{
+	x=415; y=36; width=82; height=570;
+	style=flat;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	}
+
+    fromgl_box "widget/pane"
+	{
+	x=505; y=36; width=94; height=570;
+	style=flat;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	}
 
     // This is used to resync the various computed fields when a change is signaled.
     // It is called by connectors using the TriggerEvent action on pay_form.
@@ -24,7 +85,7 @@ pay_form "widget/component-decl"
 
     form_vbox "widget/vbox"
 	{
-	x=0; y=0; width=758; height=580;
+	x=0; y=0; width=778; height=620;
 	spacing=2;
 
 	//title_lbl "widget/label" { height=24; font_size=15; style=bold; align=center; value=runclient(:payee_data_osrc:ptxt); }
@@ -67,6 +128,21 @@ pay_form "widget/component-decl"
 		}
 	    }
 
+	col_headings "widget/hbox"
+	    {
+	    height=16;
+	    spacing=0;
+
+	    col_sep0 "widget/autolayoutspacer" { width=163; }
+	    cur_hdr "widget/label" { width=143; text=runserver(:this:period); style=bold; align=center; }
+	    col_sep1 "widget/autolayoutspacer" { width=8; }
+	    budget_hdr "widget/label" { width=93; text="Budget"; style=bold; align=center; }
+	    col_sep2 "widget/autolayoutspacer" { width=8; }
+	    prev_hdr "widget/label" { width=82; text=runserver(condition(char_length(:this:prev_period) > 0, :this:prev_period, '-')); style=bold; align=center; }
+	    col_sep3 "widget/autolayoutspacer" { width=8; }
+	    fromgl_hdr "widget/label" { width=94; text="From GL"; style=bold; align=center; }
+	    }
+
 	category_rp "widget/repeat"
 	    {
 	    sql = runserver("
@@ -96,7 +172,7 @@ pay_form "widget/component-decl"
 
 	    category_pane "widget/pane"
 		{
-		height=20; width=758;
+		height=20; width=778;
 		widget_class="label";
 		border_color = "#153f5f";
 
@@ -142,6 +218,7 @@ pay_form "widget/component-decl"
 		    ledger = runserver(:this:ledger);
 		    period = runserver(:this:period);
 		    ref_period = runserver(:this:ref_period);
+		    prev_period = runserver(:this:prev_period);
 		    payroll_id = runserver(:this:payroll_id);
 		    group_id = runserver(:this:group_id);
 		    type_code = runserver(:form_item_rp:code);
@@ -272,6 +349,28 @@ pay_form "widget/component-decl"
 		width=480;
 		text = "OPENBAL + {GL DON} - {GL EXP} - ETAX - XFERS - BENEFITS - GROSS";
 		}
+	    }
+	}
+
+    add_line_item_btn "widget/textbutton"
+	{
+	x=648; y=0; width=130; height=20;
+	text = "Add Line Item";
+	}
+
+    edit_budget_win "widget/childwindow"
+	{
+	x=188; y=159;
+	width=402; height=302; 
+	titlebar=no;
+	visible=no;
+	modal=yes;
+	background="/apps/kardia/images/bg/light_bgnd.jpg";
+
+	edit_budget_cmp "widget/component"
+	    {
+	    x=0; y=0; height=300; width=400;
+	    path="pay_form_edit_budget.cmp";
 	    }
 	}
     }

@@ -1,0 +1,437 @@
+$Version=2$
+staffmaint "widget/component-decl"
+    {
+    width=780;
+    height=580;
+
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=780; height=580;
+	spacing=8;
+
+	page_hdr "widget/component" { height=20; path="section_label.cmp"; text="Manage Missionaries / Staff"; }
+
+	search_hbox "widget/hbox"
+	    {
+	    height=20;
+	    spacing=4;
+
+	    search_lbl "widget/label" { width=120; text="Search Staff:"; align=right; }
+
+	    search_eb "widget/editbox"
+		{
+		width=150;
+		do_name_search "widget/connector"
+		    {
+		    event=ReturnPressed;
+		    //event_condition=runclient(char_length(:search_eb:content) > 0);
+		    target=staff_osrc;
+		    action=QueryText;
+		    cx__case_insensitive=1;
+		    field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key";
+		    //objname=runclient("p");
+		    query=runclient(:search_eb:content);
+		    }
+		}
+	    }
+
+	staff_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; default=runclient(:staffmaint:ledger); }
+	    sql = runserver("
+		    SELECT
+			name = :s:name,
+			:s:p_partner_key,
+			:s:p_is_staff,
+			:s:p_kardia_login,
+			:s:p_kardiaweb_login,
+			:s:p_preferred_email_id,
+			:s:p_preferred_location_id,
+			:s:s_date_created,
+			:s:s_created_by,
+			:s:s_date_modified,
+			:s:s_modified_by,
+			:p:p_surname,
+			:p:p_given_name,
+			:p:p_org_name,
+			:p:p_preferred_name,
+			email = isnull(:ci2:p_contact_data, :ci1:p_contact_data),
+			disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+			" + (select sum(:sql_addon + ',\n') - ',\n' from object wildcard '/apps/kardia/modules/*/plugin_base_staffmaint_*.cmp') + 
+			//+"cclist = (select isnull(sum(:a_cost_center + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = " + quote(:this:ledger) + ")
+			//+"cclist = (select isnull(sum(:a_cost_center + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = :parameters:a_ledger_number)
+			"
+		    FROM
+			IDENTITY /apps/kardia/data/Kardia_DB/p_staff/rows s,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci1,
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci2
+		    WHERE
+			:s:p_partner_key = :p:p_partner_key and
+			:ci1:p_partner_key =* :p:p_partner_key and
+			:ci1:p_record_status_code = 'A' and
+			:ci1:p_contact_type = 'E' and
+			:ci2:p_partner_key =* :p:p_partner_key and
+			:ci2:p_record_status_code = 'A' and
+			:ci2:p_contact_type = 'E' and
+			:ci2:p_contact_id =* :s:p_preferred_email_id
+		    GROUP BY
+			convert(integer,:s:p_partner_key)
+		    ");
+	    baseobj="/apps/kardia/data/Kardia_DB/p_staff/rows";
+	    replicasize=200;
+	    readahead=200;
+	    use_having_clause=yes;
+
+	    manual_email_sync "widget/connector"
+		{
+		event=Modified;
+		target=email_osrc;
+		action=QueryParam;
+		}
+
+	    autoload_locations "widget/connector"
+		{
+		event=DataFocusChanged;
+		target=associated_location;
+		action=SetItems;
+		SQL=runclient("
+			select 
+			    label = :p_location_type + ': ' + isnull(:p_city + ', ','') + isnull(:p_state_province,'') + ' (' + rtrim(isnull(:p_address_1 + ' ','') + isnull(:p_address_2 + ' ','') + isnull(:p_address_3,'')) + ')',
+			    value = :p_location_id
+			from
+			    /apps/kardia/data/Kardia_DB/p_location/rows where :p_revision_id = 0 and :p_partner_key = " + quote(:staff_osrc:p_partner_key) + "
+			;
+			select
+			    label = :tag + ': (' + :text + ', no address)',
+			    value = :tag
+			from
+			    /apps/kardia/data/Kardia_DB/_p_location_type/rows
+			");
+		}
+
+	    staff_table_pane "widget/pane"
+		{
+		height=188;
+		widget_class="table_bgnd";
+
+		staff_table "widget/table"
+		    {
+		    x=0; y=0; height=186; width=778;
+
+		    t_isstaff "widget/table-column" { title=""; fieldname=p_is_staff; width=32; type=check; }
+		    t_id "widget/table-column" { title="ID"; fieldname=p_partner_key; width=60; }
+		    t_name "widget/table-column" { title="Name"; fieldname=disp_name; width=160; }
+		    t_email "widget/table-column" { title="Email"; fieldname=email; width=200; }
+		    t_kardia "widget/table-column" { title="Kardia"; fieldname=p_kardia_login; width=80; }
+		    t_kardiaweb "widget/table-column" { title="KardiaWeb"; fieldname=p_kardiaweb_login; width=80; }
+		    //t_cclist "widget/table-column" { title="Funds"; fieldname=cclist; width=200; }
+
+		    staff_cols_repeat "widget/repeat"
+			{
+			//condition=0;
+			sql = "select :table_addon_title, :table_addon_field, :table_addon_width from object wildcard '/apps/kardia/modules/*/plugin_base_staffmaint_*.cmp";
+			t_addoncol "widget/table-column" { title=runserver(:staff_cols_repeat:table_addon_title); fieldname=runserver(:staff_cols_repeat:table_addon_field); width=runserver(:staff_cols_repeat:table_addon_width); }
+			}
+		    }
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	staff_tab_pane "widget/pane"
+	    {
+	    height=319;
+	    style=flat;
+
+	    staff_tab "widget/tab"
+		{
+		background="/apps/kardia/images/bg/light_bgnd2.jpg";
+		inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+		x=0; y=0;
+		height=294; width=780;
+
+		details_tab "widget/tabpage"
+		    {
+		    title = "Staff Detail";
+
+		    details_form "widget/form"
+			{
+			objectsource = staff_osrc;
+			allow_delete = no;
+
+			refresh_email_list_on_save "widget/connector"
+			    {
+			    event=DataSaved;
+			    target=email_osrc;
+			    action=Refresh;
+			    }
+
+			rec_ctls "widget/component"
+			    {
+			    path="/sys/cmp/form_controls.cmp";
+			    x=10; y=10; width=758; height=26;
+			    object_name="Staff Member";
+			    save_mode=osrc;
+			    osrc=staff_osrc;
+			    deletable=0;
+			    }
+
+			rec_details_vbox "widget/vbox"
+			    {
+			    x=10; y=46; width=350; height=235;
+			    spacing=6;
+			    cellsize=20;
+
+			    f_staff_partnerid "widget/component"
+				{
+				height=20;
+				//width=450;
+				path="/apps/kardia/modules/base/editbox_table.cmp";
+				field='p_partner_key';
+				text='Partner ID:';
+				label_width=100;
+				validate=1;
+				popup_width=380;
+				popup_height=224;
+				popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + ']', '') + ' #' + :p:p_partner_key from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key and :pl:p_revision_id = 0";
+				//search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*,*p_comments";
+				search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+				key_name="p_partner_key";
+				object_name="Partner";
+				popup_text="Select a Partner";
+				//attach_point=editbox;
+
+				partner_hints "widget/hints" { style=applyonchange; }
+
+				update_emails_on_pkey_change "widget/connector"
+				    {
+				    event=DataChange;
+				    target=f_prefemail;
+				    action=SetItems;
+				    SQL=runclient("select label = :ct:text + ': ' + isnull(:c:p_contact_data,''), value = :c:p_contact_id from /apps/kardia/data/Kardia_DB/p_contact_info/rows c, /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct where :c:p_partner_key = " + quote(:f_staff_partnerid:content) + " and :c:p_contact_type = :ct:tag and :c:p_contact_type = 'E'");
+				    }
+				}
+
+			    f_addnew "widget/textbutton" 
+				{
+				height=24;
+				x=100;
+				width=140;
+				text="Add New Partner";
+				enabled = runclient(:details_form:form_mode == 'New' or :details_form:form_mode == 'Modify');
+
+				addnew_cn "widget/connector"
+				    {
+				    event=Click;
+				    target=staffmaint;
+				    action=Launch;
+				    Width=844;
+				    Height=600;
+				    Source="/apps/kardia/modules/base/new_partner.app";
+				    return_to=f_staff_partnerid;
+				    set_staff=1;
+				    set_payee=1;
+				    ledger=runclient(:staffmaint:ledger);
+				    }
+				}
+
+			    f_addrlabel "widget/component" { height=78; width=250; x=100; path="address_label_with_osrc.cmp"; osrc=staff_osrc; }
+
+			    f_isstaff "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_is_staff'; ctl_type=checkbox; text='Active Staff?'; isstaff_hints "widget/hints" { default=runclient(1); style=notnull; } }
+			    f_kardialogin "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_kardia_login'; ctl_type=editbox; text='Kardia Login:'; empty_desc="optional"; } 
+			    f_kardiaweblogin "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_kardiaweb_login'; ctl_type=editbox; text='Web Login:'; empty_desc="optional"; } 
+			    f_prefemail "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; text="Pref. Email:"; field=p_preferred_email_id; ctl_type=dropdown; sql="select '','' where 0 = 1"; }
+			    f_rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+			    }
+
+			sepline "widget/pane"
+			    {
+			    style=lowered;
+			    x=374; y=46; width=2; height=235;
+			    }
+
+			// Allow user to create/edit emails from this interface
+			emails_vbox "widget/vbox"
+			    {
+			    x=390; y=46; width=378; height=235;
+			    spacing=6;
+			    cellsize=20;
+
+			    email_label "widget/label" { height=20; text="Add/Update Staff Email Addresses:"; style=bold; }
+
+			    email_osrc "widget/osrc"
+				{
+				sql="   SELECT
+					    :c:p_contact_id,
+					    :c:p_contact_type,
+					    all=(isnull(:c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + :c:p_contact_data),
+					    :c:p_phone_country,
+					    :c:p_contact_comments,
+					    :c:p_partner_key,
+					    :c:p_location_id,
+					    :c:p_record_status_code,
+					    :c:p_phone_area_city,
+					    :c:p_contact_data,
+					    :c:s_created_by,
+					    :c:s_date_created,
+					    :c:s_modified_by,
+					    :c:s_date_modified,
+					    con_type_txt = :ct:text,
+					    loc_type_txt = isnull(:lt:text, isnull(:lt2:text,'-')),
+					    rec_stat_txt = isnull(:rsc:text, 'Unknown'),
+					    is_pref = condition(:s:p_preferred_email_id == :c:p_contact_id, 1, 0)
+					FROM
+					    IDENTITY /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
+					    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+					    /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
+					    /apps/kardia/data/Kardia_DB/p_location/rows l,
+					    /apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+					    /apps/kardia/data/Kardia_DB/_p_location_type/rows lt2,
+					    /apps/kardia/data/Kardia_DB/_p_record_status/rows rsc
+					WHERE
+					    :c:p_contact_type = :ct:tag and
+					    convert(integer,:c:p_location_id) *= :l:p_location_id and
+					    :c:p_partner_key *= :l:p_partner_key and
+					    :l:p_location_type = :lt:tag and
+					    :l:p_revision_id = 0 and
+					    convert(string,:c:p_location_id) *= :lt2:tag and
+					    :c:p_record_status_code *= :rsc:tag and
+					    :c:p_contact_type = 'E' and
+					    :s:p_partner_key =* :c:p_partner_key
+					ORDER BY
+					    :c:p_location_id,
+					    :c:p_contact_id
+					";
+				readahead=10;
+				replicasize=10;
+				baseobj="/apps/kardia/data/Kardia_DB/p_contact_info/rows";
+
+				emails_link "widget/rule"
+				    {
+				    ruletype=osrc_relationship;
+				    target=staff_osrc;
+				    target_key_1=p_partner_key;
+				    key_1=p_partner_key;
+				    key_objname="c";
+				    }
+
+				emails_table_pane "widget/pane"
+				    {
+				    widget_class="table_bgnd";
+				    height=100;
+
+				    emails_table "widget/table"
+					{
+					x=0;y=0;
+					height=98;
+					width=376;
+
+					table_contact_pref "widget/table-column" { width=50; title = "Pref?"; fieldname = is_pref; type=check; }
+					table_contact_type "widget/table-column" { width=50; title = "Type"; fieldname = con_type_txt; }
+					table_contact_location_type "widget/table-column" { width=50; title = "Where"; fieldname = loc_type_txt; }
+					table_contact_data "widget/table-column" { width=208; title = "Contact Info"; fieldname = p_contact_data; }
+
+					make_pref_on_dbl_click "widget/connector"
+					    {
+					    event=DblClick;
+					    event_condition=runclient(:details_form:form_mode == 'View');
+					    target=staff_osrc;
+					    action=Modify;
+					    p_preferred_email_id=runclient(:email_osrc:p_contact_id);
+					    }
+					}
+				    }
+
+				email_form "widget/form"
+				    {
+				    update_dd_on_save "widget/connector"
+					{
+					event=DataSaved;
+					target=f_prefemail;
+					action=SetItems;
+					SQL=runclient("select label = :ct:text + ': ' + isnull(:c:p_contact_data,''), value = :c:p_contact_id from /apps/kardia/data/Kardia_DB/p_contact_info/rows c, /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct where :c:p_partner_key = " + quote(:f_staff_partnerid:content) + " and :c:p_contact_type = :ct:tag and :c:p_contact_type = 'E'");
+					}
+
+				    em_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+				    em_type_internal "widget/variable" { fieldname=p_contact_type; type=string; em_type_hints "widget/hints" { default=runclient('E'); } }
+				    em_rec_stat_internal "widget/variable" { fieldname=p_record_status_code; type=string; em_rec_stat_hints "widget/hints" { default=runclient('A'); } }
+
+				    associated_location "widget/component" { height=20; width=364; path="/sys/cmp/smart_field.cmp"; field='p_location_id'; ctl_type=dropdown; text='Where:'; sql=runserver("select 1,1 where 1 = 0"); label_width=64; } 
+
+				    email_hbox "widget/hbox"
+					{
+					height=20; spacing=4;
+					email_label2 "widget/label" { width=60; align=right; text="Email:"; }
+
+					email_where "widget/dropdown"
+					    {
+					    condition=0;
+					    fieldname=p_location_id;
+					    bgcolor=white;
+					    hilight="#d0d0d0";
+					    width=115;
+					    mode=dynamic_server; 
+					    sql="select 'Above Addr.', '1'; select 'Other ' + :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows";
+					    where_hints "widget/hints" { default=runclient('1'); style=notnull; }
+					    }
+					email_field "widget/editbox" { height=20; width=300; fieldname=p_contact_data; }
+					}
+
+				    email_addnew "widget/textbutton"
+					{
+					height=20; width=140; x=64;
+					text = "Add New Email";
+					enabled=runclient(:email_form:form_mode == 'View' or :email_form:form_mode == 'NoData');
+
+					add_new_email "widget/connector"
+					    {
+					    event=Click;
+					    target=email_form;
+					    action=New;
+					    }
+					}
+				    email_makepref "widget/textbutton"
+					{
+					height=20; width=140; x=64;
+					text = "Set Preferred";
+					enabled=runclient(:email_form:form_mode == 'View' and :details_form:form_mode == 'View');
+
+					make_pref_on_click "widget/connector"
+					    {
+					    event=Click;
+					    target=staff_osrc;
+					    action=Modify;
+					    p_preferred_email_id=runclient(:email_osrc:p_contact_id);
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		plugin_tabs "widget/repeat"
+		    {
+		    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_base_staffmaint_*.cmp'";
+
+		    plugin_tab "widget/tabpage"
+			{
+			title = runserver(:plugin_tabs:title);
+
+			plugin_cmp "widget/component"
+			    {
+			    height=272; width=758; x=10; y=10;
+			    path = runserver(:plugin_tabs:path);
+			    staff_osrc = staff_osrc;
+			    ledger = runserver(:this:ledger);
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+

@@ -1,0 +1,41 @@
+$Version=2$
+next_partner "widget/component-decl"
+    {
+    visual = no;
+
+    GetPartnerKey "widget/component-decl-action" { }
+    PartnerKey "widget/component-decl-event" { }
+
+    GetPartnerKey_cn "widget/connector"
+	{
+	event=GetPartnerKey;
+	target=getpartner_osrc;
+	action=QueryParam;
+	}
+
+    getpartner_osrc "widget/osrc"
+	{
+	sql = "	select
+			:p_partner_key
+		from
+			/apps/kardia/data/Kardia_DB/p_partner_key_cnt/rows
+		;
+
+		update
+			/apps/kardia/data/Kardia_DB/p_partner_key_cnt/rows
+		set
+			:p_partner_key = convert(string, convert(integer, :p_partner_key) + 1)
+		;
+
+		-- the following is a workaround for a bug in htdrv_osrc.js
+		select
+			1
+		where
+			1 = 0
+		";
+	readahead = 2;
+	replicasize = 2;
+
+	gotit "widget/connector" { event=EndQuery; target=next_partner; action=PartnerKey; p_partner_key=runclient(:getpartner_osrc:p_partner_key); }
+	}
+    }

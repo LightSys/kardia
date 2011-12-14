@@ -13,7 +13,7 @@ fund_gift_list "system/report"
     marginbottom=2;
 
     // Give it an intelligent filename
-    filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + ".pdf");
+    filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + condition(:this:document_format2 == 'text/csv', '.csv', '.pdf') );
 
     // Parameters for GL Fund Balance
     ledger "report/parameter" { type=string; default=null; }
@@ -21,6 +21,7 @@ fund_gift_list "system/report"
     period "report/parameter" { type=string; default=null; }
     startday "report/parameter" { type=integer; default=1; }
     endday "report/parameter" { type=integer; default=31; }
+    document_format2 "report/parameter" { type=string; default="application/pdf"; }
 
 
     // Get name of ledger
@@ -112,16 +113,24 @@ fund_gift_list "system/report"
 			:pl:p_postal_code,
 			:pl:p_country_code,
 			partner_changed = :p:s_date_modified,
-			addr_changed = :pl:s_date_modified
+			addr_changed = :pl:s_date_modified,
+			-- p_country_name = upper(isnull(:c:p_country_name, '')),
+			p_country_name = upper(:c:p_country_name),
+			:af:p_format
 			-- phone = :pc:p_phone_country + ' ' + :pc:p_phone_area_city + ' ' + :pc:p_contact_data,
 			-- phone_changed = '' + datepart(month, :pc:s_date_modified) + '/' + datepart(day, :pc:s_date_modified) + '/' + datepart(year, :pc:s_date_modified)
 		FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
-			/apps/kardia/data/Kardia_DB/p_location/rows pl
+			/apps/kardia/data/Kardia_DB/p_location/rows pl,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
 			-- /apps/kardia/data/Kardia_DB/p_contact_info/rows pc
 		WHERE
 			:p:p_partner_key = :gift_qy:id and
-			:pl:p_partner_key =* :p:p_partner_key
+			:pl:p_partner_key =* :p:p_partner_key and
+			:c:p_country_code =* :pl:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = 'STANDARD'
 			-- :pl:p_record_status_code != 'O' and
 			-- charindex(:pl:p_postal_status, 'KFNU') == 0 and
 			-- :pc:p_partner_key =* :p:p_partner_key and
@@ -153,7 +162,8 @@ fund_gift_list "system/report"
 			:g:a_period = :this:period and
 			:g:a_posted = 1 and
 			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) >= :this:startday and
-			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
+			-- datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
+			(datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday or isnull(:g:a_gift_postmark_date, :g:a_gift_received_date) < :period_qy:a_start_date) and
 			charindex(',' + rtrim(:g:a_ledger_number) + '|' + convert(string, :g:a_batch_number) + '|' + convert(string, :g:a_gift_number) + '|', :item_qy:items) > 0 and
 			:i:a_ledger_number = :g:a_ledger_number and
 			:i:a_period = :g:a_period and
@@ -249,7 +259,7 @@ fund_gift_list "system/report"
 	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
 	    //t_d5 "report/data" { fontsize=8; condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
 
-	    msg "report/data" { fontsize=8; style=italic; value="\nNOTE: This is your new contributions statement.  Along with the list of names, addresses, and gifts, this statement includes (on the lefthand side) notes about what is new in this statement.  Due to technical details, it is possible that during the next couple of months, indications of changed addresses or changed names may show up when the address or name has not actually changed during the month.  This technical issue is only temporary and will go away with time.\n"; }
+	    //msg "report/data" { fontsize=8; style=italic; value="\nNOTE: This is your new contributions statement.  Along with the list of names, addresses, and gifts, this statement includes (on the lefthand side) notes about what is new in this statement.  Due to technical details, it is possible that during the next couple of months, indications of changed addresses or changed names may show up when the address or name has not actually changed during the month.  This technical issue is only temporary and will go away with time.\n"; }
 	    }
 	
 	    // Table for gift list
@@ -261,7 +271,6 @@ fund_gift_list "system/report"
 		colsep=1;
 		nullformat="";
 		moneyformat = "-###,###,##0.00";
-		dateformat = "dd-MMM";
 		topborder=0.3;
 		bottomborder=0.3;
 		source=cclist_qy,item_qy,gift_qy,dinfo_qy,contact_qy,changes_qy;
@@ -291,16 +300,17 @@ fund_gift_list "system/report"
 		    margintop = 0.8;
 
 		    g_chg "report/table-cell" { value=runserver(condition(:gift_qy:anon, '', condition(charindex('NEW DONOR', :changes_qy:changes) > 0, 'NEW DONOR', :changes_qy:changes))); }
-		    g_date "report/table-cell" { value=runserver(:gift_qy:display_date); font=courier; }
+		    g_date "report/table-cell" { value=runserver(:gift_qy:display_date); font=courier; dateformat = "dd-MMM"; }
 		    g_id "report/table-cell" { value=runserver(condition(:gift_qy:anon, '', :gift_qy:id)); font=courier; }
 		    g_addr "report/table-cell" { value=runserver(condition(:gift_qy:anon, '(anonymous donor)', 
-			    condition(char_length(rtrim(:dinfo_qy:p_given_name + :dinfo_qy:p_surname)) > 0, :dinfo_qy:p_given_name + ' ' + :dinfo_qy:p_surname + '\n', '') +
-			    condition(char_length(rtrim(:dinfo_qy:p_org_name)) > 0, :dinfo_qy:p_org_name + "\n", "") +
-			    condition(char_length(rtrim(:dinfo_qy:p_in_care_of)) > 0, :dinfo_qy:p_in_care_of + "\n", "") +
-			    condition(char_length(rtrim(:dinfo_qy:p_address_1)) > 0, :dinfo_qy:p_address_1 + "\n", "") +
-			    condition(char_length(rtrim(:dinfo_qy:p_address_2)) > 0, :dinfo_qy:p_address_2 + "\n", "") +
-			    condition(char_length(rtrim(:dinfo_qy:p_address_3)) > 0, :dinfo_qy:p_address_3 + "\n", "") +
-			    isnull(:dinfo_qy:p_city + ", " + :dinfo_qy:p_state_province + " " + :dinfo_qy:p_postal_code + " " + isnull(:dinfo_qy:p_country_code, ""), "")
+			    condition(char_length(rtrim(:dinfo_qy:p_given_name + :dinfo_qy:p_surname)) > 0, :dinfo_qy:p_given_name + ' ' + :dinfo_qy:p_surname + ' \n', '') +
+			    condition(char_length(rtrim(:dinfo_qy:p_org_name)) > 0, :dinfo_qy:p_org_name + " \n", "") +
+			    substitute(isnull(:dinfo_qy:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=dinfo_qy,p=dinfo_qy')
+			    //condition(char_length(rtrim(:dinfo_qy:p_in_care_of)) > 0, :dinfo_qy:p_in_care_of + " \n", "") +
+			    //condition(char_length(rtrim(:dinfo_qy:p_address_1)) > 0, :dinfo_qy:p_address_1 + " \n", "") +
+			    //condition(char_length(rtrim(:dinfo_qy:p_address_2)) > 0, :dinfo_qy:p_address_2 + " \n", "") +
+			    //condition(char_length(rtrim(:dinfo_qy:p_address_3)) > 0, :dinfo_qy:p_address_3 + " \n", "") +
+			    //isnull(:dinfo_qy:p_city + ", " + :dinfo_qy:p_state_province + " " + :dinfo_qy:p_postal_code + " " + isnull(:dinfo_qy:p_country_code, ""), "")
 			    )); }
 		    g_cont "report/table-cell" { value=runserver(condition(:gift_qy:anon, '', :contact_qy:info)); font=helvetica; }
 		    g_amt "report/table-cell" { value=runserver(:gift_qy:amount); font=courier; align=right; }

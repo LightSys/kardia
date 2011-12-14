@@ -44,12 +44,24 @@ p_location_component "widget/component-decl"
 		    :l:s_date_created,
 		    :l:s_modified_by,
 		    :l:s_date_modified,
-		    loc_type_text = :lt:text
+		    loc_type_text = isnull(:lt:text, 'INVALID'),
+		    rec_stat_txt = isnull(:rsc:text, 'Unknown'),
+		    sec_level = isnull(:c:p_security_level, 0),
+		    p_country_name = upper(:c:p_country_name),
+		    :af:p_format
 		FROM
 		    identity /apps/kardia/data/Kardia_DB/p_location/rows l,
-		    /apps/kardia/data/Kardia_DB/_p_location_type/rows lt
+		    /apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+		    /apps/kardia/data/Kardia_DB/_p_record_status/rows rsc,
+		    /apps/kardia/data/Kardia_DB/p_country/rows c,
+		    /apps/kardia/data/Kardia_DB/p_address_format/rows af
 		WHERE
-		    :l:p_location_type = :lt:tag
+		    :l:p_revision_id = 0 and
+		    :l:p_location_type *= :lt:tag and
+		    :l:p_record_status_code *= :rsc:tag and
+		    :l:p_country_code *= :c:p_country_code and
+		    :af:p_country_code =* :c:p_country_code and
+		    :af:p_address_set = 'STANDARD'
 		ORDER BY
 		    :l:p_location_id
 		";
@@ -73,14 +85,14 @@ p_location_component "widget/component-decl"
 	autoload_locations "widget/connector"
 	    {
 	    event=EndQuery;
-	    target=associated_location;
-	    action=SetItems;
+	    target=contact_fields;
+	    action=SetLocationItems;
 	    SQL=runclient("
 		    select 
 			label = :p_location_type + ': ' + isnull(:p_city + ', ','') + isnull(:p_state_province,'') + ' (' + rtrim(isnull(:p_address_1 + ' ','') + isnull(:p_address_2 + ' ','') + isnull(:p_address_3,'')) + ')',
 			value = :p_location_id
 		    from
-			/apps/kardia/data/Kardia_DB/p_location/rows where :p_partner_key = " + quote(:person_location_osrc:p_partner_key) + "
+			/apps/kardia/data/Kardia_DB/p_location/rows where :p_revision_id = 0 and :p_partner_key = " + quote(:person_location_osrc:p_partner_key) + "
 		    ;
 		    select
 			label = :tag + ': (' + :text + ', no address)',
@@ -100,7 +112,7 @@ p_location_component "widget/component-decl"
 	    // Hbox containing (1) location label and list, and (2) location form
 	    location_hbox "widget/hbox"
 		{
-		height=215;
+		height=216;
 		spacing=10;
 
 		// Vbox containing (1) location label and (2) location list
@@ -112,20 +124,21 @@ p_location_component "widget/component-decl"
 		    location_addr_label "widget/component"
 			{
 			height=75;
-			path = "/apps/kardia/modules/base/address_label.cmp";
+			path = "/apps/kardia/modules/base/address_label_fmt.cmp";
+			//path = "/apps/kardia/modules/base/address_label.cmp";
 			partner = sync_osrc;
 			location = person_location_osrc;
 			}
 
 		    location_table_pane "widget/pane"
 			{
-			height=130;
+			height=94;
 			widget_class=table_bgnd;
 
 			p_location_table "widget/table"
 			    {
 			    x=0;y=0;
-			    height=128;
+			    height=92;
 			    width=258;
 			    mode=dynamicrow;
 
@@ -134,6 +147,57 @@ p_location_component "widget/component-decl"
 			    table_city "widget/table-column" { width=70; title = "City"; fieldname = p_city; }
 			    table_state "widget/table-column" { width=25; title = "St."; fieldname = p_state_province; }
 			    //table_postal "widget/table-column" { width=60; title = "Postal"; fieldname = p_postal_code; }
+			    }
+			}
+
+		    location_ctl_hbox "widget/hbox"
+			{
+			height=26;
+			align=center;
+			spacing=4;
+
+			location_menu "widget/menu"
+			    {
+			    width=160; height=26;
+			    widget_class="bar";
+			    
+			    location_menu_popup "widget/menu"
+				{
+				label="Address Options";
+				icon = "/sys/images/menu_dnarrow.gif";
+				widget_class="popup";
+
+				internet_opts "widget/menu"
+				    {
+				    label="Internet Resources";
+				    widget_class="popup";
+
+				    internet_opts_rpt "widget/repeat"
+					{
+					sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_base_addrinternet_*.cmp'";
+
+					one_item "widget/menuitem"
+					    {
+					    label=runserver(:internet_opts_rpt:title);
+
+					    one_item_cmp "widget/component"
+						{
+						path=runserver(:internet_opts_rpt:path);
+						person_osrc = sync_osrc;
+						person_location_osrc = person_location_osrc;
+
+						one_item_select "widget/connector"
+						    {
+						    source=one_item;
+						    event=Select;
+						    //target=one_item_cmp;
+						    action=Select;
+						    }
+						}
+					    }
+					}
+				    }
+				}
 			    }
 			}
 		    }
@@ -146,63 +210,29 @@ p_location_component "widget/component-decl"
 
 		    location_form "widget/form"
 			{
+			allow_query = no;
+
+			auto_new_on_new_partner "widget/connector"
+			    {
+			    source=sync_osrc;
+			    event=Created;
+			    action=New;
+			    }
+
 			location_hdr "widget/component"
 			    {
 			    height = 22;
 			    path = "/apps/kardia/modules/base/section_header.cmp";
-			    text = "Addresses:";
+			    text = runclient("Address: " + isnull('(' + :person_location_osrc:rec_stat_txt + ')',''));
+			    object_name = "Address";
+			    allow_new = 1;
+			    //allow_delete = 1;
 			    }
 
-			location_form_hbox "widget/hbox"
+			location_fields "widget/component"
 			    {
-			    height=215;
-			    spacing=6;
-
-			    location_form_vbox1 "widget/vbox"
-				{
-				width=300;
-				spacing = 4;
-				cellsize = 20;
-
-				p_location_type_cmp "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=p_location_type; text="Location Type:"; ctl_type="dropdown"; tooltip="H=home, W=work, S=school, V=vacation"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows";}
-				p_in_care_of_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_in_care_of; text="In Care Of:"; ctl_type="editbox"; tooltip="In Care Of Whom?"; }
-				p_address_1_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_1; text="Addr Line 1:"; ctl_type="editbox"; tooltip="Address Line 1"; }
-				p_address_2_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_2; text="Addr Line 2:"; ctl_type="editbox"; tooltip="Address Line 2"; }
-				p_address_3_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_3; text="Addr Line 3:"; ctl_type="editbox"; tooltip="Address Line 3"; }
-				p_city_state_hbox "widget/hbox"
-				    {
-				    height=20;
-				    spacing=4;
-
-				    p_city_cmp "widget/component" { label_width=100; width=201; path="/sys/cmp/smart_field.cmp"; field=p_city; text="City:"; ctl_type="editbox"; tooltip="The city or township"; }
-				    p_state_province_cmp "widget/component" { label_width=65; width=95; path="/sys/cmp/smart_field.cmp"; field=p_state_province; text="St/Prov:"; ctl_type="editbox"; tooltip="State or Province"; }
-				    }
-				p_zip_country_hbox "widget/hbox"
-				    {
-				    height=20;
-				    spacing=4;
-
-				    p_postal_code_cmp "widget/component" { label_width=100; width=196; path="/sys/cmp/smart_field.cmp"; field=p_postal_code; text="Postal/Zip:"; ctl_type="editbox"; tooltip="Zip code or Postal code"; }
-				    p_country_code_cmp "widget/component" { label_width=70; width=100; path="/sys/cmp/smart_field.cmp"; field=p_country_code; text="Country:"; ctl_type="editbox"; tooltip="Use ISO codes same as domain names"; }
-				    }
-				p_location_comments_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_location_comments; text="Comments:"; ctl_type="editbox"; tooltip="Comments about this specific address"; }
-				}
-
-			    location_form_vbox2 "widget/vbox"
-				{
-				width=230;
-				spacing=4;
-				cellsize=20;
-
-				p_date_effective_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_effective; text="Effective:"; ctl_type="datetime"; tooltip="Date when the location becomes effective"; }
-				p_date_good_until_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_good_until; text="Good Until:"; ctl_type="datetime"; tooltip="Date that this location stopps being effective"; }
-				p_purge_date_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_purge_date; text="Purge On:"; ctl_type="datetime"; tooltip="When this address should be purged (deleted) from the database"; }
-
-				p_postal_mode_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_postal_mode; text="Postal Mode:"; ctl_type="editbox"; tooltip="B-Bulk F-FirstClass Used to override postal modes on mailings"; }
-				p_bulk_postal_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_bulk_postal_code; text="Bulk Post Code:"; ctl_type="editbox"; tooltip="USPS - zip center 3 digits"; }
-				p_postal_status_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_postal_status; text="Postal Status:"; tooltip="e.g., ACS status, CASS status K=Addressee-UnKnown F=Forwarding-Order-Expired N=No-such-#-or-Address U=Undeliverable-by-P.O. X=Other"; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_postal_status/rows";}
-				p_certified_date_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_certified_date; text="Certified On:"; type="readonly"; ctl_type="datetime"; tooltip="e.g., CASS certification of address"; }
-				}
+			    height=188;
+			    path="/apps/kardia/modules/base/p_location_fields.cmp";
 			    }
 			}
 		    }
@@ -221,7 +251,7 @@ p_location_component "widget/component-decl"
 		    sql="   SELECT
 				:c:p_contact_id,
 				:c:p_contact_type,
-				all=(:c:p_phone_country + ' ' + :c:p_phone_area_city + ' ' + :c:p_contact_data),
+				all=(isnull(:c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + :c:p_contact_data),
 				:c:p_phone_country,
 				:c:p_contact_comments,
 				:c:p_partner_key,
@@ -234,19 +264,23 @@ p_location_component "widget/component-decl"
 				:c:s_modified_by,
 				:c:s_date_modified,
 				con_type_txt = :ct:text,
-				loc_type_txt = isnull(:lt:text, isnull(:lt2:text,'-'))
+				loc_type_txt = isnull(:lt:text, isnull(:lt2:text,'-')),
+				rec_stat_txt = isnull(:rsc:text, 'Unknown')
 			    FROM
 				IDENTITY /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
 				/apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
 				/apps/kardia/data/Kardia_DB/p_location/rows l,
 				/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
-				/apps/kardia/data/Kardia_DB/_p_location_type/rows lt2
+				/apps/kardia/data/Kardia_DB/_p_location_type/rows lt2,
+				/apps/kardia/data/Kardia_DB/_p_record_status/rows rsc
 			    WHERE
 				:c:p_contact_type = :ct:tag and
 				convert(integer,:c:p_location_id) *= :l:p_location_id and
 				:c:p_partner_key *= :l:p_partner_key and
 				:l:p_location_type = :lt:tag and
-				convert(string,:c:p_location_id) *= :lt2:tag
+				:l:p_revision_id = 0 and
+				convert(string,:c:p_location_id) *= :lt2:tag and
+				:c:p_record_status_code *= :rsc:tag
 			    ORDER BY
 				:c:p_location_id,
 				:c:p_contact_id
@@ -263,6 +297,7 @@ p_location_component "widget/component-decl"
 			target = person_location_osrc;
 			is_slave = yes;
 			key_1 = p_partner_key;
+			key_objname = "c";
 			target_key_1 = p_partner_key;
 			revealed_only = yes;
 			}
@@ -291,103 +326,27 @@ p_location_component "widget/component-decl"
 
 			contact_form "widget/form"
 			    {
+			    allow_query = no;
+
 			    contact_hdr "widget/component"
 				{
 				height = 22;
 				path = "/apps/kardia/modules/base/section_header.cmp";
-				text = "Contact Information:";
+				text = runclient("Contact Information: " + isnull('(' + :p_contact_info_osrc:rec_stat_txt + ')',''));
+				object_name = "Contact Record";
+				allow_new = 1;
+				allow_delete = 1;
 				}
 
-			    contact_form_hbox "widget/hbox"
+			    contact_fields "widget/component"
 				{
-				height = 73;
-				spacing=6;
-
-				contact_form_vbox1 "widget/vbox"
-				    {
-				    width = 536;
-				    cellsize = 20;
-				    spacing = 4;
-
-				    contact_type_loc_hbox "widget/hbox"
-					{
-					spacing = 4;
-
-					p_contact_type_cmp "widget/component"
-					    {
-					    width=200;
-					    path="/sys/cmp/smart_field.cmp";
-					    field=p_contact_type;
-					    text="Contact Type:";
-					    ctl_type="dropdown";
-					    tooltip="P=phone, F=fax, C=cell, E=email, W=website"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_contact_type/rows";
-
-					    enab_disab_phones_1 "widget/connector"
-						{
-						event = DataChange;
-						event_condition = runclient(:Value = 'P' or :Value = 'C' or :Value = 'F');
-						target = p_phone_country_cmp;
-						action = Enable;
-						}
-					    enab_disab_phones_2 "widget/connector"
-						{
-						event = DataChange;
-						event_condition = runclient(:Value = 'P' or :Value = 'C' or :Value = 'F');
-						target = p_phone_area_city_cmp;
-						action = Enable;
-						}
-					    enab_disab_phones_3 "widget/connector"
-						{
-						event = DataChange;
-						event_condition = runclient(not (:Value = 'P' or :Value = 'C' or :Value = 'F'));
-						target = p_phone_country_cmp;
-						action = Disable;
-						}
-					    enab_disab_phones_4 "widget/connector"
-						{
-						event = DataChange;
-						event_condition = runclient(not (:Value = 'P' or :Value = 'C' or :Value = 'F'));
-						target = p_phone_area_city_cmp;
-						action = Disable;
-						}
-					    }
-
-					associated_location "widget/component" { width=332; path="/sys/cmp/smart_field.cmp"; field='p_location_id'; ctl_type=dropdown; text='Assoc. Addr:'; sql=runserver("select 1,1 where 1 = 0"); } 
-					}
-
-				    p_contact_data_hbox "widget/hbox"
-					{
-					spacing = 4;
-					p_phone_country_cmp "widget/component" { width=140; path="/sys/cmp/smart_field.cmp"; field=p_phone_country; text="Country Code:"; ctl_type="editbox"; tooltip=""; }
-					p_phone_area_city_cmp "widget/component" { label_width=80; width=120; path="/sys/cmp/smart_field.cmp"; field=p_phone_area_city; text="Area Code:"; ctl_type="editbox"; tooltip=""; }
-					p_contact_data_label "widget/label" { width=65; value=runclient(isnull(condition(:p_contact_type_cmp:value = 'P' or :p_contact_type_cmp:value = 'F' or :p_contact_type_cmp:value = 'C','Phone:',condition(:p_contact_type_cmp:value = 'E','Email:',condition(:p_contact_type_cmp:value = 'B' or :p_contact_type_cmp:value = 'W', 'URL:', 'Contact:'))),'Contact:')); align=right; }
-					p_contact_data_eb "widget/editbox" { width=199; fieldname=p_contact_data; }
-					}
-
-				    p_contact_comments_cmp "widget/component" { width=536; path="/sys/cmp/smart_field.cmp"; field=p_contact_comments; text="Comments:"; ctl_type="editbox"; tooltip=""; }
-				    }
+				height=73;
+				path="/apps/kardia/modules/base/p_contact_info_fields.cmp";
 				}
 			    }
 			}
 		    }
 		}
 	    }
-
-	    // Fields not yet addressed in new version:
-
-		    // location
-                    //p_record_status_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_record_status_code; text="record status"; form=p_location_form; tooltip="A=active, O=obsolete"; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows";}
-                    //s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; ctl_type="editbox"; type="create"; form=p_location_form; tooltip="Date this record was created"; }
-                    //s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; ctl_type="editbox"; type="create"; form=p_location_form; tooltip="User who created this"; }
-                    //s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="date modified"; type="modify"; ctl_type="editbox"; form=p_location_form; tooltip="Date this was last modified"; }
-                    //s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="modified by"; type="modify"; ctl_type="editbox"; form=p_location_form; tooltip="The user who last modified this record"; }
-
-		    // contact
-                    //p_record_status_code_contact_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_record_status_code; text="record status code"; ctl_type="dropdown"; form=p_contact_info_form; tooltip="A=active, O=obsolete"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows";}
-                    //s_contact_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="date created"; type="create"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
-                    //s_contact_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="created by"; type="create"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
-                    //s_contact_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; type="modify"; text="date modified"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
-                    //s_contact_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; type="modify"; text="modified by"; ctl_type="editbox"; form=p_contact_info_form; tooltip=""; }
-
         }
     }

@@ -4,6 +4,9 @@ $Version=2$
 // arbor70
 // Kardia
 // July 2009
+//
+// CHANGES
+// 20111025: Uses Country Specific formatting (substitute function)
 
 // Table of Contents
 // 1. Parameters
@@ -196,19 +199,29 @@ check_report "system/report"
 			:p:p_given_name,
 			:p:p_surname,
 			:p:p_org_name,
-			display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name),
-			mail_to = 	condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name) + '\n' +
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_1, ''))))) == 0, '', :l:p_address_1 + '\n') + 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_2, ''))))) == 0, '', :l:p_address_2 + '\n') + 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_address_3, ''))))) == 0, '', :l:p_address_3 + '\n') + 
-				:l:p_city + ' ' + :l:p_state_province  + '  ' + 
-				condition( convert(string, char_length(ltrim(rtrim(isnull(:l:p_postal_code, ''))))) == 9, substring(:l:p_postal_code,1,5) + '-' + right(:l:p_postal_code,4), :l:p_postal_code)
+			:l:p_in_care_of,
+			:l:p_address_1,
+			:l:p_address_2,
+			:l:p_address_3,
+			:l:p_city,
+			:l:p_state_province,
+			:l:p_postal_code,
+			:l:p_country_code,
+			p_country_name = upper(:c:p_country_name),
+			:af:p_format,
+			display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name)
 		FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
-			/apps/kardia/data/Kardia_DB/p_location/rows l
+			/apps/kardia/data/Kardia_DB/p_location/rows l,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
 		WHERE
 			:p:p_partner_key = :check_one_row_qy:a_payee_partner_key AND
-			:p:p_partner_key = :l:p_partner_key
+			:l:p_revision_id = 0 and
+			:l:p_partner_key =* :p:p_partner_key and
+			:c:p_country_code =* :l:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = 'STANDARD'
 		");
 		
 		// 
@@ -392,11 +405,11 @@ check_report "system/report"
 				partner_eff_date_db "report/data" { xpos=58; ypos=4.5; dateformat="MM/dd/yyyy"; value=runserver(isnull(:check_one_row_qy:a_effective_date, getdate())); }
 				partner_display_name_db "report/data" { xpos=0; ypos=7.75; value=runserver(isnull(:payee_qy:display_name, "<blank>")); }
 				crhb_void_output "report/data" { condition=runserver(:check_one_row_qy:a_voided=1); xpos=18; ypos=12; fontsize=36; value="VOID"; }
-				partner_mail_to_db "report/data" { xpos=0; ypos=14; value=runserver(isnull(:payee_qy:mail_to, "<blank>")); }
+				partner_mail_to_db "report/data" { xpos=0; ypos=14; value=runserver(:payee_qy:display_name + '\n' + substitute(isnull(:payee_qy:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=payee_qy,p=payee_qy')); }
 			}
 			
 		} // END - my_form "report/form"
-		
+
 		// REPORT DISPLAY
 		my_form2 "report/form"
 		{

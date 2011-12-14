@@ -1,0 +1,229 @@
+$Version=2$
+num_addrs "system/report"
+    {
+    // Greg Beeley / LightSys - 26-Sep-2011
+    //
+    // This report prints a list of partners, given several possible criteria.
+    //
+    // Information Presented:
+    //   - Partner ID
+    //   - Partner Name (organization and/or first/last)
+    //   - Partner Address/City/State/Zip
+    //   - No Mail / No Solicit Flag
+    //
+    // Report Criteria:
+    //   - States/Provinces to include
+    //   - States/Provinces to exclude
+    //   - Mailing List(s) to include
+    //
+    // Other Report Options:
+    //   - Create Mailing List (list ID, list description, list type)
+    //
+    title = "Mailing Report";
+    document_format="text/plain";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=0;
+    marginright=0;
+    margintop=0;
+    marginbottom=0;
+
+    filename="count.txt";
+
+    // Report Parameters
+    ledger "report/parameter" { type=string; }
+    include_states "report/parameter" { type=string; badchars=" "; }
+    exclude_states "report/parameter" { type=string; badchars=" "; }
+    include_lists "report/parameter" { type=string; badchars=" "; }
+    include_zips "report/parameter" { type=string; }
+    exclude_zips "report/parameter" { type=string; }
+    include_cntrys "report/parameter" { type=string; }
+    exclude_cntrys "report/parameter" { type=string; }
+    only_donors "report/parameter" { type=integer; }
+    only_payees "report/parameter" { type=integer; }
+    only_staff "report/parameter" { type=integer; }
+    only_postal "report/parameter" { type=integer; default=0; }
+    only_okmail "report/parameter" { type=integer; default=0; }
+    only_oksolicit "report/parameter" { type=integer; default=0; }
+    cntry_fmt "report/parameter" { type=string; default='full'; }
+    include_obs "report/parameter" { type=integer; default=0; }
+    mincopies "report/parameter" { type=integer; default=0; }
+    maxcopies "report/parameter" { type=integer; default=99999999; }
+
+    // Add-to-mailing-list Parameters
+    list_code "report/parameter" { type=string; }
+    list_desc "report/parameter" { type=string; default=runserver("Mailings List on " + getdate()); }
+    list_type "report/parameter" { type=string; default="S"; }
+
+    // Query to get site information
+    site_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			OBJECT /apps/kardia/data/Site.struct
+		";
+	}
+
+    // Get ledger info
+    ledger_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/a_ledger/rows
+		WHERE
+			:a_ledger_number = :this:ledger
+		";
+	}
+
+    // Create mailing list
+    make_list_qy "report/query"
+	{
+	sql = runserver(condition(:this:list_code is null or :this:list_desc is null,
+		"SELECT
+			m_list_code = NULL
+		",
+
+		"INSERT
+			/apps/kardia/data/Kardia_DB/m_list/rows
+		SELECT
+			m_list_code = :this:list_code,
+			m_list_description = :this:list_desc,
+			m_list_type = :this:list_type,
+			m_list_frozen = 0,
+			m_list_status = 'A',
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		;
+
+		SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/m_list/rows
+		WHERE
+			:m_list_code = :this:list_code
+		"));
+	}
+
+    // Create list memberships
+    add_to_list_qy "report/query"
+	{
+	sql = runserver(condition(:this:list_code is null or :this:list_desc is null,
+		"SELECT
+			m_list_code = NULL
+		",
+
+		"INSERT
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows
+		SELECT
+			m_list_code = :this:list_code,
+			p_partner_key = :partners_qy:p_partner_key,
+			m_num_copies = 1,
+			m_member_type = 'M',
+			m_membership_status = 'A',
+			m_complimentary = 1,
+			m_show_contact = 1,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		;
+
+		SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows
+		WHERE
+			:m_list_code = :this:list_code and
+			:p_partner_key = :partners_qy:p_partner_key
+		"));
+	}
+
+    // Main  query
+    partners_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:p:p_partner_key,
+			disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			:p:p_org_name,
+			:p:p_surname,
+			:p:p_given_name,
+			:p:p_title,
+			:p:p_no_mail,
+			:p:p_no_solicitations,
+			:p:p_status_code,
+			:pl:p_in_care_of,
+			:pl:p_address_1,
+			:pl:p_address_2,
+			:pl:p_address_3,
+			:pl:p_city,
+			:pl:p_state_province,
+			:pl:p_postal_code,
+			:pl:p_country_code,
+			lists=isnull(sum(:ml:m_list_code + ',') - ',', ''),
+			p_iso3166_2_code = isnull(:c:p_iso3166_2_code,''),
+			p_iso3166_3_code = isnull(:c:p_iso3166_3_code,''),
+			p_fips_code = isnull(:c:p_fips_code,''),
+			p_country_name = isnull(:c:p_country_name,'')
+		FROM
+			/apps/kardia/data/Kardia_DB/p_location/rows pl,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows ml
+		WHERE
+			:p:p_partner_key = :pl:p_partner_key and
+			:ml:p_partner_key = :pl:p_partner_key and
+			:c:p_country_code =* :pl:p_country_code and
+			:pl:p_revision_id = 0 and
+			:ml:m_membership_status = 'A' and
+			:ml:m_num_copies >= :this:mincopies and
+			:ml:m_num_copies <= :this:maxcopies
+			" + condition(:this:include_lists is null, "", " and charindex(',' + :ml:m_list_code + ',', " + quote(',' + :this:include_lists + ',') + ") > 0") + "
+			" + condition(:this:only_postal, " and isnull(:ml:m_delivery_method, 'M') = 'M' ", "") + "
+		GROUP BY
+			:ml:p_partner_key
+		HAVING
+			" + condition(:this:only_donors == 1, "(select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:p_partner_key = :this:p_partner_key and :d:a_gl_ledger_number = " + quote(:this:ledger) + " and :d:p_allow_contributions = 1) = 1 and ", "") + "
+			" + condition(:this:only_donors == 0, "(select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:p_partner_key = :this:p_partner_key and :d:a_gl_ledger_number = " + quote(:this:ledger) + " and :d:p_allow_contributions = 1) = 0 and ", "") + "
+			" + condition(:this:only_payees == 1, "(select count(1) from /apps/kardia/data/Kardia_DB/p_payee/rows d where :d:p_partner_key = :this:p_partner_key and :d:a_gl_ledger_number = " + quote(:this:ledger) + " and :d:p_allow_payments = 1) = 1 and ", "") + "
+			" + condition(:this:only_payees == 0, "(select count(1) from /apps/kardia/data/Kardia_DB/p_payee/rows d where :d:p_partner_key = :this:p_partner_key and :d:a_gl_ledger_number = " + quote(:this:ledger) + " and :d:p_allow_payments = 1) = 0 and ", "") + "
+			" + condition(:this:only_staff == 1, "(select count(1) from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_partner_key = :this:p_partner_key and :s:p_is_staff = 1) = 1 and ", "") + "
+			" + condition(:this:only_staff == 0, "(select count(1) from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_partner_key = :this:p_partner_key and :s:p_is_staff = 1) = 0 and ", "") + "
+			" + condition(:this:include_obs, "(:p_status_code = 'O' or :p_status_code = 'A') and ", ":p_status_code = 'A' and ") + "
+			" + condition(:this:only_okmail, ":p_no_mail = 0 and ", "") + "
+			" + condition(:this:only_oksolicit, ":p_no_solicitations = 0 and ", "") + "
+			" + condition(:this:include_states is null, "", "charindex(',' + :p_state_province + ',', " + quote(',' + :this:include_states + ',') + ") > 0 and") + "
+			" + condition(:this:exclude_states is null, "", "charindex(',' + :p_state_province + ',', " + quote(',' + :this:exclude_states + ',') + ") == 0 and") + "
+			" + condition(:this:include_cntrys is null, "", "charindex(',' + :p_country_code + ',', " + quote(',' + :this:include_cntrys + ',') + ") > 0 and") + "
+			" + condition(:this:exclude_cntrys is null, "", "charindex(',' + :p_country_code + ',', " + quote(',' + :this:exclude_cntrys + ',') + ") == 0 and") + "
+			" + condition(:this:include_zips is null, "", " (charindex(',' + upper(:p_postal_code) + ',', " + quote(',' + upper(:this:include_zips) + ',') + ") > 0 or (:p_country_code = 'US' and charindex(',' + substring(:p_postal_code,1,5) + ',', " + quote(',' + :this:include_zips + ',') + ") > 0) or (:p_country_code = 'CA' and charindex(',' + substring(upper(:p_postal_code),1,7) + ',', " + quote(',' + upper(:this:include_zips) + ',') + ") > 0)) and ") + "
+			" + condition(:this:exclude_zips is null, "", " not (charindex(',' + upper(:p_postal_code) + ',', " + quote(',' + upper(:this:exclude_zips) + ',') + ") > 0 or (:p_country_code = 'US' and charindex(',' + substring(:p_postal_code,1,5) + ',', " + quote(',' + :this:exclude_zips + ',') + ") > 0) or (:p_country_code = 'CA' and charindex(',' + substring(upper(:p_postal_code),1,7) + ',', " + quote(',' + upper(:this:exclude_zips) + ',') + ") > 0)) and ") + "
+			1 = 1
+		");
+
+	// FIXME - collision between report 'this' and having clause 'this' means
+	// we had to use programmatic sql building above instead of normal params.
+
+	cnt "report/aggregate" { compute="count(1)"; }
+	}
+
+    // Main body of the report.
+    ledger_form "report/form"
+	{
+	moneyformat = "-###,###,##0.00";
+	dateformat = "dd-MMM-yyyy";
+
+	//source = ledger_qy,site_qy,make_list_qy;
+	source = ledger_qy,site_qy;
+	
+	ptnr_form "report/form" { source=partners_qy; }
+
+	showcnt "report/data" { value=runserver('' + :partners_qy:cnt); }
+	}
+    }
+

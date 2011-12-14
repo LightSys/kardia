@@ -1,0 +1,97 @@
+$Version=2$
+p_contact_info_fields "widget/component-decl"
+    {
+    width=536;
+    height=73;
+
+    form "widget/parameter" { type=object; find_container="widget/form"; }
+    osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    SetLocationItems "widget/component-decl-action" { }
+
+    SetLocationItems_cn "widget/connector"
+	{
+	event=SetLocationItems;
+	target=associated_location;
+	action=SetItems;
+	SQL=runclient(:SQL);
+	}
+    
+    contact_form_hbox "widget/hbox"
+	{
+	height = 73;
+	spacing=6;
+
+	contact_form_vbox1 "widget/vbox"
+	    {
+	    width = 536;
+	    cellsize = 20;
+	    spacing = 4;
+
+	    contact_type_loc_hbox "widget/hbox"
+		{
+		spacing = 4;
+
+		p_contact_type_cmp "widget/component"
+		    {
+		    width=200;
+		    path="/sys/cmp/smart_field.cmp";
+		    field=p_contact_type;
+		    text="Contact Type:";
+		    ctl_type="dropdown";
+		    tooltip="P=phone, F=fax, C=cell, E=email, W=website"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_contact_type/rows";
+		    form=form;
+
+		    enab_disab_phones_1 "widget/connector"
+			{
+			event = DataChange;
+			event_condition = runclient(:Value = 'P' or :Value = 'C' or :Value = 'F');
+			target = p_phone_country_cmp;
+			action = Enable;
+			}
+		    enab_disab_phones_2 "widget/connector"
+			{
+			event = DataChange;
+			event_condition = runclient(:Value = 'P' or :Value = 'C' or :Value = 'F');
+			target = p_phone_area_city_cmp;
+			action = Enable;
+			}
+		    enab_disab_phones_3 "widget/connector"
+			{
+			event = DataChange;
+			event_condition = runclient(not (:Value = 'P' or :Value = 'C' or :Value = 'F'));
+			target = p_phone_country_cmp;
+			action = Disable;
+			}
+		    enab_disab_phones_4 "widget/connector"
+			{
+			event = DataChange;
+			event_condition = runclient(not (:Value = 'P' or :Value = 'C' or :Value = 'F'));
+			target = p_phone_area_city_cmp;
+			action = Disable;
+			}
+		    }
+
+		associated_location "widget/component" { width=332; path="/sys/cmp/smart_field.cmp"; field='p_location_id'; ctl_type=dropdown; text='Assoc. Addr:'; sql=runserver("select 1,1 where 1 = 0"); form=form; } 
+		}
+
+	    p_contact_data_hbox "widget/hbox"
+		{
+		spacing = 4;
+		p_phone_country_cmp "widget/component" { width=140; path="/sys/cmp/smart_field.cmp"; field=p_phone_country; text="Country Code:"; ctl_type="editbox"; tooltip=""; form=form; }
+		p_phone_area_city_cmp "widget/component" { label_width=80; width=120; path="/sys/cmp/smart_field.cmp"; field=p_phone_area_city; text="Area Code:"; ctl_type="editbox"; tooltip=""; form=form; }
+		p_contact_data_label "widget/label" { width=65; value=runclient(isnull(condition(:p_contact_type_cmp:value = 'P' or :p_contact_type_cmp:value = 'F' or :p_contact_type_cmp:value = 'C','Phone:',condition(:p_contact_type_cmp:value = 'E','Email:',condition(:p_contact_type_cmp:value = 'B' or :p_contact_type_cmp:value = 'W', 'URL:', 'Contact:'))),'Contact:')); align=right; form=form; }
+		p_contact_data_eb "widget/editbox" { width=199; fieldname=p_contact_data; form=form; }
+		}
+
+	    p_contact_comments_cmp "widget/component" { width=536; path="/sys/cmp/smart_field.cmp"; field=p_contact_comments; text="Comments:"; ctl_type="editbox"; tooltip=""; form=form; }
+
+	    // Invisible create/modify metadata fields
+	    ct_dt_c "widget/variable" { fieldname="s_date_created"; ct_dt_c_hints "widget/hints" { default=runclient(getdate()); } form=form; }
+	    ct_us_c "widget/variable" { fieldname="s_created_by"; ct_us_c_hints "widget/hints" { default=runclient(user_name()); } form=form; }
+	    ct_dt_m "widget/variable" { fieldname="s_date_modified"; ct_dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } form=form; }
+	    ct_us_m "widget/variable" { fieldname="s_modified_by"; ct_us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } form=form; }
+	    ct_rec "widget/variable" { fieldname="p_record_status_code"; ct_rec_hints "widget/hints" { default=runclient('A'); } form=form; }
+	    }
+	}
+    }

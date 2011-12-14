@@ -1,0 +1,256 @@
+$Version=2$
+plugin_base_country_addrformat "widget/component-decl"
+    {
+    title = "Address Format";
+    sequence = 100;
+    width=548;height=338;
+
+    countries_osrc "widget/parameter" { type=object; }
+    ledger "widget/parameter" { type=string; }
+
+    af_osrc "widget/osrc"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/p_address_format/rows";
+	baseobj = "/apps/kardia/data/Kardia_DB/p_address_format/rows";
+	replicasize=2;
+	readahead=2;
+	autoquery=never;
+
+	af_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=countries_osrc;
+	    key_1=p_country_code;
+	    target_key_1=p_country_code;
+	    }
+
+	af_form "widget/form"
+	    {
+	    allow_query = no;
+
+	    refresh_format_on_save "widget/connector"
+		{
+		event=DataSaved;
+		target=addrs_osrc;
+		action=Refresh;
+		}
+
+	    fmt_vbox "widget/vbox"
+		{
+		x=0; y=0; width=350; height=338;
+		spacing=8;
+
+		fmt_label "widget/label" { height=20; text="Edit Address Format:"; }
+
+		format "widget/textarea"
+		    {
+		    height=120;
+		    fieldname=p_format;
+		    bgcolor=white;
+		    }
+
+		ctl_hbox "widget/hbox"
+		    {
+		    height=24;
+		    align=center; spacing=8;
+
+		    def_btn "widget/textbutton"
+			{
+			width=90; height=24;
+			text = "Default";
+
+			def_cn "widget/connector"
+			    {
+			    event=Click;
+			    target=format;
+			    action=SetValue;
+			    Value="[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]";
+			    }
+			}
+
+		    save_btn "widget/textbutton"
+			{
+			width=90; height=24;
+			enabled = runclient(:af_form:is_savable);
+			text = "Save";
+
+			save_cn "widget/connector" { event=Click; target=af_form; action=Save; }
+			}
+		    cancel_btn "widget/textbutton"
+			{
+			width=90; height=24;
+			text = "Cancel";
+			enabled = runclient(:af_form:is_discardable);
+			cancel_cn "widget/connector" { event=Click; target=af_form; action=Discard; }
+			}
+		    }
+
+		//fields_lbl "widget/label" { height=20; text="Available Fields:"; }
+
+		addrs_osrc "widget/osrc"
+		    {
+		    sql="   SELECT
+				    :l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_partner_key, :l:p_address_1,
+				    :l:p_postal_code, :l:p_state_province, :l:p_in_care_of, :l:p_city, :l:p_location_id,
+				    :p:p_partner_key, :p:p_partner_class, :p:p_title, :p:p_given_name, :p:p_preferred_name,
+				    :p:p_surname, :p:p_org_name, :p:p_comments,  :p:p_legacy_key_1, :p:p_legacy_key_2, :p:p_legacy_key_3,
+				    disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_surname + ', ' + :p:p_given_name) > 0, '- ', ''), '') + isnull(:p:p_surname + ', ','') + isnull(:p:p_given_name,''),
+				    disp_addr = condition(char_length(:l:p_address_1) > 0, :l:p_address_1 + ' ', '') + condition(char_length(:l:p_address_2) > 0, :l:p_address_2 + ' ', '') + condition(char_length(:l:p_address_3) > 0, :l:p_address_3 + ' ', ''),
+				    disp_city = condition(char_length(:l:p_city) > 0, :l:p_city + ', ', '') + condition(char_length(:l:p_state_province) > 0, :l:p_state_province + ' ', ''),
+				    p_country_name = upper(:c:p_country_name),
+				    :f:p_format
+			    FROM
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_location/rows l,
+				    /apps/kardia/data/Kardia_DB/p_country/rows c,
+				    /apps/kardia/data/Kardia_DB/p_address_format/rows f
+			    WHERE
+				    :p:p_partner_key = :l:p_partner_key and
+				    (:l:p_record_status_code = 'A' or :l:p_record_status_code = 'Q') and
+				    :l:p_revision_id = 0 and
+				    :l:p_country_code *= :c:p_country_code and
+				    :c:p_country_code *= :f:p_country_code and
+				    :f:p_address_set = 'STANDARD'
+			    ";
+		    baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+		    replicasize=20;
+		    readahead=20;
+		    autoquery=never;
+
+		    addrs_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=countries_osrc;
+			key_objname=l;
+			key_1=p_country_code;
+			target_key_1=p_country_code;
+			}
+
+		    sep3 "widget/autolayoutspacer" { height=7; }
+
+		    preview_label "widget/label" { height=20; text="Preview Addresses:"; }
+
+		    location_addr_label "widget/component"
+			{
+			height=78;
+			path = "/apps/kardia/modules/base/address_label_fmt.cmp";
+			partner = addrs_osrc;
+			location = addrs_osrc;
+			}
+
+		    preview_scroll_hbox "widget/hbox"
+			{
+			height=18;
+			spacing=4;
+
+			prev_btn "widget/imagebutton"
+			    {
+			    y=1;
+			    width=18; height=18;
+			    image="/sys/images/ico16ba.gif";
+			    pointimage="/sys/images/ico16bb.gif";
+			    clickimage="/sys/images/ico16bc.gif";
+			    disabledimage="/sys/images/ico16bd.gif";
+			    tooltip = runserver("Previous Address");
+			    //enabled = runclient(:p_partner_form:is_queryable);
+
+			    prev_cn "widget/connector" { event=Click; target=addrs_osrc; action=Prev; }
+			    }
+
+			next_btn "widget/imagebutton"
+			    {
+			    y=1;
+			    width=18; height=18;
+			    image="/sys/images/ico16ca.gif";
+			    pointimage="/sys/images/ico16cb.gif";
+			    clickimage="/sys/images/ico16cc.gif";
+			    disabledimage="/sys/images/ico16cd.gif";
+			    tooltip = runserver("Next Address");
+			    //enabled = runclient(:p_partner_form:is_queryable);
+
+			    next_cn "widget/connector" { event=Click; target=addrs_osrc; action=Next; }
+			    }
+			}
+
+		    preview_results_tbl "widget/table"
+			{
+			condition = 0;
+			height=78;
+			demand_scrollbar=yes;
+			overlap_scrollbar=yes;
+
+			srch_p_partner_key "widget/table-column" { width=50; title = "ID"; fieldname = p_partner_key; }
+			srch_disp_name "widget/table-column" { width=85; title = "Name"; fieldname = disp_name; }
+			srch_disp_city "widget/table-column" { width=95; title = "Location"; fieldname = disp_city; }
+
+			launch_ptnr_win "widget/connector"
+			    {
+			    event=DblClick;
+			    target=plugin_base_country_addrformat;
+			    action=Launch;
+			    Width=844;
+			    Height=600;
+			    Source=runclient("/apps/kardia/modules/base/partner_window.app");
+			    id=runclient(:addrs_osrc:p_partner_key);
+			    }
+			}
+		    }
+		}
+
+	    sep_line2 "widget/pane" { x=360; y=0; width=2; height=338; style=lowered; }
+
+	    fields_vbox "widget/vbox"
+		{
+		x=370; y=0; width=178; height=338;
+		spacing=8;
+
+		fields_osrc "widget/osrc"
+		    {
+		    sql = "select :text from /apps/kardia/data/Kardia_DB/_p_addr_field/rows";
+		    replicasize=20;
+		    readahead=20;
+		    autoquery=onfirstreveal;
+
+		    fields_pane "widget/pane"
+			{
+			widget_class = "table_bgnd";
+			height = 338;
+
+			fields_tbl "widget/table"
+			    {
+			    x=0; y=0; width=176; height=336;
+			    show_selection=no;
+			    allow_selection=yes;
+			    demand_scrollbar=yes;
+			    overlap_scrollbar=yes;
+
+			    t_text "widget/table-column" { fieldname=text; title="Available Fields:"; }
+
+			    insert_field_on_click "widget/connector"
+				{
+				event=Click;
+				target=format;
+				action=InsertText;
+				Text=runclient('[:' + :text + ']');
+				SetFocus=1;
+				}
+			    reset_focus_on_click "widget/connector"
+				{
+				event=Click;
+				target=format;
+				action=SetFocus;
+				}
+			    }
+			}
+		    }
+
+		}
+
+	    set "widget/variable" { fieldname="p_address_set"; set_hints "widget/hints" { default=runclient('STANDARD'); } }
+	    dt_c "widget/variable" { fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+	    us_c "widget/variable" { fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }
+	    dt_m "widget/variable" { fieldname="s_date_modified"; dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+	    us_m "widget/variable" { fieldname="s_modified_by"; us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+	    }
+	}
+    }

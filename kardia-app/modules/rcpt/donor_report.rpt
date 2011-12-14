@@ -122,7 +122,7 @@ donor_report "system/report"
 		SELECT
 			m_list_code = :this:list_code,
 			p_partner_key = :donors_qy:p_partner_key,
-			m_num_copies = 0,
+			m_num_copies = 1,
 			m_member_type = 'M',
 			m_membership_status = 'A',
 			m_complimentary = 1,
@@ -182,7 +182,8 @@ donor_report "system/report"
 			" + condition(:this:include_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:include_funds) > 0 and") + "
 			" + condition(:this:exclude_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:exclude_funds) == 0 and") + "
 			:p:p_partner_key =* :g:p_donor_partner_id and
-			:pl:p_partner_key =* :p:p_partner_key
+			:pl:p_partner_key =* :p:p_partner_key and
+			:pl:p_revision_id = 0
 		GROUP BY
 			:g:p_donor_partner_id
 		HAVING

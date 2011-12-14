@@ -18,14 +18,26 @@ popup_table "widget/component-decl"
 
     Opened "widget/component-decl-event" {}
     Closed "widget/component-decl-event" {}
-
     Toggle "widget/component-decl-action" {}
 
-    Toggle_cn1 "widget/connector" { event=Toggle; event_condition=runclient(:popup:is_visible); target=popup; action=Close; }
-    Toggle_cn2 "widget/connector" { event=Toggle; event_condition=runclient(not :popup:is_visible); target=popup; action=Popup; PopTo=attach_to; ExtendTo=attach_to; OffsetX=runserver(:this:attach_offset); }
+    Toggle_cn_close "widget/connector" { event=Toggle; event_condition=runclient(:popup:is_visible); target=popup; action=Close; }
+    Toggle_cn_open1 "widget/connector" { event=Toggle; event_condition=runclient(not :popup:is_visible); target=popup; action=Popup; PopTo=attach_to; ExtendTo=attach_to; OffsetX=runserver(:this:attach_offset); }
+    Toggle_cn_open2 "widget/connector"
+	{
+	event=Toggle;
+	event_condition=runclient(isnull(:editbox:content,'') != :prev_selected_value:value and not :popup:is_visible);
+	target = table_osrc;
+	action = QueryText;
+	field_list = runclient(:popup_table:search_field_list);
+	objname = runclient(:popup_table:search_objname);
+	query = runclient(:editbox:content);
+	cx__case_insensitive = 1;
+	}
 
     attach_to "widget/parameter" { type=object; default=null; }
     attach_offset "widget/parameter" { type=integer; default=0; }
+
+    prev_selected_value "widget/variable" { type=string; default='****************'; }
 
     desc_osrc "widget/osrc"
 	{
@@ -103,7 +115,8 @@ popup_table "widget/component-decl"
 	kp_f3_closed1 "widget/connector"
 	    {
 	    event = "BeforeKeyPress";
-	    event_condition = runclient(not (:popup:is_visible) and :Name = 'f3' and char_length(:editbox:content) >= 3);
+	    //event_condition = runclient(not (:popup:is_visible) and :Name = 'f3' and char_length(:editbox:content) >= 3);
+	    event_condition = runclient(not (:popup:is_visible) and :Name = 'f3');
 	    target = table_osrc;
 	    action = QueryText;
 	    field_list = runclient(:popup_table:search_field_list);
@@ -152,6 +165,14 @@ popup_table "widget/component-decl"
 	    {
 	    event = "BeforeKeyPress";
 	    event_condition = runclient(:popup:is_visible and :Name = 'enter');
+	    target = prev_selected_value;
+	    action = SetValue;
+	    Value = runclient(:table_osrc:value);
+	    }
+	kp_enter4 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'enter');
 	    event_cancel = runclient(:popup:is_visible and :Name = 'enter');
 	    target = popup;
 	    action = Close;
@@ -160,7 +181,8 @@ popup_table "widget/component-decl"
 	kp_tab1 "widget/connector"
 	    {
 	    event = "BeforeKeyPress";
-	    event_condition = runclient(:popup:is_visible and :Name = 'tab' and char_length(:editbox:content) > 0);
+	    //event_condition = runclient(:popup:is_visible and :Name = 'tab' and char_length(:editbox:content) > 0);
+	    event_condition = runclient(:popup:is_visible and :Name = 'tab');
 	    target = editbox;
 	    action = SetValue;
 	    Value = runclient(:table_osrc:value);
@@ -172,6 +194,14 @@ popup_table "widget/component-decl"
 	    target = editbox;
 	    action = SetValueDescription;
 	    Description = runclient(:table_osrc:label);
+	    }
+	kp_tab3 "widget/connector"
+	    {
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Name = 'enter');
+	    target = prev_selected_value;
+	    action = SetValue;
+	    Value = runclient(:table_osrc:value);
 	    }
 	}
 
@@ -234,10 +264,17 @@ popup_table "widget/component-decl"
 		    clickitem3 "widget/connector"
 			{
 			event = "Click";
+			target = prev_selected_value;
+			action = SetValue;
+			Value = runclient(:value);
+			}
+		    clickitem4 "widget/connector"
+			{
+			event = "Click";
 			target = popup;
 			action = "Close";
 			}
-		    clickitem4 "widget/connector"
+		    clickitem5 "widget/connector"
 			{
 			event = Click;
 			target = editbox;

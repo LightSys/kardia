@@ -21,16 +21,67 @@ partner_search_component "widget/component-decl"
 	find_container="widget/childwindow";
 	}
 
+    auto_focus "widget/connector"
+	{
+	source=window_container;
+	event=Open;
+	event_condition=runclient(:search_tabs:selected == 'express_tab');
+	target=name_eb;
+	action=SetFocus;
+	}
+    auto_focus2 "widget/connector"
+	{
+	source=window_container;
+	event=Open;
+	event_condition=runclient(:search_tabs:selected != 'express_tab');
+	target=p_partner_key_cmp;
+	action=SetFocus;
+	}
+
     PartnerSelected "widget/component-decl-event" {  }
     PartnerNew "widget/component-decl-event" {  }
+    PartnerCancel "widget/component-decl-event" {  }
     CloseMe "widget/component-decl-event" {  }
 
     OpenForms "widget/component-decl-action" {  }
 
+    NextResult "widget/component-decl-action" { }
+    PrevResult "widget/component-decl-action" { }
+
+    NextResult_cn1 "widget/connector"
+	{
+	event=NextResult;
+	target=person_search_osrc;
+	action=Next;
+	}
+    NextResult_cn2 "widget/connector" 
+	{ 
+	condition=0;
+	event=NextResult;
+	target="partner_search_component"; 
+	action="PartnerSelected"; 
+	partner_key = runclient(:person_search_osrc:p_partner_key);
+	}
+
+    PrevResult_cn1 "widget/connector"
+	{
+	event=PrevResult;
+	target=person_search_osrc;
+	action=Prev;
+	}
+    PrevResult_cn2 "widget/connector" 
+	{ 
+	condition=0;
+	event=PrevResult;
+	target="partner_search_component"; 
+	action="PartnerSelected"; 
+	partner_key = runclient(:person_search_osrc:p_partner_key);
+	}
+
     person_search_osrc "widget/osrc"
         {
         sql="	SELECT
-			:l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_partner_key, :l:p_address_1,
+			:l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_address_1,
 			:l:p_postal_code, :l:p_state_province, :l:p_in_care_of, :l:p_city, :l:p_location_id,
 			:p:p_partner_key, :p:p_partner_class, :p:p_title, :p:p_given_name, :p:p_preferred_name,
 			:p:p_surname, :p:p_org_name, :p:p_comments,  :p:p_legacy_key_1, :p:p_legacy_key_2, :p:p_legacy_key_3,
@@ -46,6 +97,8 @@ partner_search_component "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/p_payee/rows y
 		WHERE
 			:p:p_partner_key = :l:p_partner_key and
+			:p:p_record_status_code != 'X' and
+			:l:p_revision_id = 0 and
 			:d:p_partner_key =* :p:p_partner_key and
 			:y:p_partner_key =* :p:p_partner_key
 		";
@@ -53,6 +106,15 @@ partner_search_component "widget/component-decl"
         replicasize=50;
         readahead=25;
         autoquery=never;
+
+	sel_partner_if_window_closed "widget/connector"
+	    {
+	    event=DataFocusChanged;
+	    event_condition=runclient(not :window_container:is_visible);
+	    target="partner_search_component"; 
+	    action="PartnerSelected"; 
+	    partner_key = runclient(:person_search_osrc:p_partner_key);
+	    }
 
 	search_tabs "widget/tab"
 	    {
@@ -95,6 +157,7 @@ partner_search_component "widget/component-decl"
 			    event_condition=runclient(char_length(:name_eb:content) > 0);
 			    target=person_search_osrc;
 			    action=QueryText;
+			    cx__case_insensitive=1;
 			    //field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*";
 			    field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
 			    objname=runclient("p");
@@ -120,6 +183,7 @@ partner_search_component "widget/component-decl"
 			    event_condition=runclient(char_length(:addr_eb:content) > 0);
 			    target=person_search_osrc;
 			    action=QueryText;
+			    cx__case_insensitive=1;
 			    //field_list="*p_address_1*,*p_address_2*,*p_address_3*,*p_in_care_of*,p_city*,p_state_province,p_postal_code*,p_partner_key,*p_location_comments*";
 			    field_list="*p_address_1*,*p_address_2*,*p_address_3*,*p_in_care_of*,p_city*,p_state_province,p_postal_code*,p_partner_key";
 			    objname=runclient("l");
@@ -135,9 +199,10 @@ partner_search_component "widget/component-decl"
 			do_btn_name_search "widget/connector"
 			    {
 			    event=Click;
-			    event_condition=runclient(char_length(:name_eb:content) > 0);
+			    event_condition=runclient(not (char_length(:addr_eb:content) > 0) or char_length(:name_eb:content) > 0);
 			    target=person_search_osrc;
 			    action=QueryText;
+			    cx__case_insensitive=1;
 			    //field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*";
 			    field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
 			    objname=runclient("p");
@@ -149,6 +214,7 @@ partner_search_component "widget/component-decl"
 			    event_condition=runclient(char_length(:addr_eb:content) > 0 and not (char_length(:name_eb:content) > 0));
 			    target=person_search_osrc;
 			    action=QueryText;
+			    cx__case_insensitive=1;
 			    //field_list="*p_address_1*,*p_address_2*,*p_address_3*,*p_in_care_of*,p_city*,p_state_province,p_postal_code*,p_partner_key,*p_location_comments*";
 			    field_list="*p_address_1*,*p_address_2*,*p_address_3*,*p_in_care_of*,p_city*,p_state_province,p_postal_code*,p_partner_key";
 			    objname=runclient("l");
@@ -182,7 +248,7 @@ partner_search_component "widget/component-decl"
 
 			first_vbox "widget/vbox"
 			    {
-			    width=220;
+			    width=225;
 			    cellsize=20;
 			    spacing=4;
 
@@ -195,7 +261,7 @@ partner_search_component "widget/component-decl"
 			    }
 			second_vbox "widget/vbox"
 			    {
-			    width=220;
+			    width=225;
 			    cellsize=20;
 			    spacing=4;
 
@@ -208,11 +274,11 @@ partner_search_component "widget/component-decl"
 			    }
 			third_vbox "widget/vbox"
 			    {
-			    width=220;
+			    width=225;
 			    cellsize=20;
 			    spacing=4;
 
-			    p_country_code_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_country_code; text="Country:"; lookup_width=305; ctl_type="editbox"; tooltip="Use ISO codes same as domain names"; }
+			    p_country_code_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_country_code; text="Country Code:"; lookup_width=305; ctl_type="editbox"; tooltip="Use ISO codes same as domain names"; }
 			    p_partner_class_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_partner_class; text="Partner Type:"; lookup_width=305; tooltip=""; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_partner_class/rows";}
 			    p_title_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_title; text="Title:"; ctl_type="editbox"; tooltip="The Partners Title"; }
 			    p_comments_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments:"; lookup_width=305; ctl_type="editbox"; tooltip=""; }
@@ -349,11 +415,17 @@ partner_search_component "widget/component-decl"
 		text = "Cancel";
 		width = 100;
 		height = 24;
-		cnCancel "widget/connector" 
+		cnCancel2 "widget/connector" 
 		    { 
 		    event=Click;
 		    target="window_container"; 
 		    action="Close"; 
+		    }
+		cnCancel "widget/connector" 
+		    { 
+		    event=Click;
+		    target="partner_search_component"; 
+		    action="PartnerCancel"; 
 		    }
 		}
 	    new_btn "widget/textbutton"

@@ -262,7 +262,7 @@ coamaint "widget/component-decl"
 
 			main_tab "widget/tabpage"
 			    {
-			    title = "Fund Options";
+			    title = "Fund";
 
 			    form_hbox "widget/hbox"
 				{

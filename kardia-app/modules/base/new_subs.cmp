@@ -1,0 +1,553 @@
+$Version=2$
+new_subs "widget/component-decl"
+    {
+    width=780;
+    height=580;
+
+    ledger "widget/parameter" { type=object; default=null; }
+
+    new_subs_vbox "widget/vbox"
+	{
+	x=0; y=0; width=780; height=580;
+	spacing=8;
+	cellsize=20;
+
+	new_subs_hdr "widget/component" { path="section_label.cmp"; text="Manage New Subscriptions..."; }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    spacing=4;
+	    height=21;
+
+	    status_dd_label "widget/label" { align=right; width=100; text="With Status:"; }
+
+	    status_dd "widget/dropdown"
+		{
+		width=120;
+		bgcolor=white; 
+		mode=static;
+		hilight="#d0d0d0";
+		status_dd_hints "widget/hints" { style=notnull; }
+		refresh_on_status_chg "widget/connector" { event=DataChange; target=new_subs_osrc; action=QueryParam; }
+
+		all_status "widget/dropdownitem" { label="All"; value="*"; }
+		pending "widget/dropdownitem" { label="Pending Only"; value="P"; selected=yes; }
+		active "widget/dropdownitem" { label="Active Only"; value="A"; }
+		}
+
+	    time_dd_label "widget/label" { align=right; width=120; text="Added During:"; }
+
+	    time_dd "widget/dropdown"
+		{
+		width=120;
+		bgcolor=white; 
+		mode=static;
+		hilight="#d0d0d0";
+		time_dd_hints "widget/hints" { style=notnull; }
+		refresh_on_time_chg "widget/connector" { event=DataChange; target=new_subs_osrc; action=QueryParam; }
+		numdisplay=6;
+
+		t_all "widget/dropdownitem" { label="All"; value="0"; }
+		t_year "widget/dropdownitem" { label="Last 12 Months"; value="8784"; }
+		t_month "widget/dropdownitem" { label="Last 31 Days"; value="744"; selected=yes; }
+		t_week "widget/dropdownitem" { label="Last 7 Days"; value="168"; }
+		t_day "widget/dropdownitem" { label="Last 24 Hours"; value="24"; }
+		t_2hr "widget/dropdownitem" { label="Last 2 Hours"; value="2"; }
+		}
+	    }
+
+	new_subs_osrc "widget/osrc"
+	    {
+	    sp1 "widget/parameter" { param_name=pstat; type=string; default=runclient(:status_dd:value); }
+	    sp2 "widget/parameter" { param_name=ptime; type=string; default=runclient(:time_dd:value); }
+
+	    sql="   SELECT
+			    :m:m_list_description, :m:m_list_type, :m:m_list_status,
+			    :l:p_postal_mode,
+			    :l:m_membership_status, :l:m_comments,
+			    :l:p_partner_key, :l:p_contact_id,
+			    :l:m_list_code, :l:m_member_type, :l:m_contact, :l:p_location_id, :l:m_num_copies,
+			    :l:m_num_issues_sub, :l:m_num_issues_recv, :l:m_start_date, :l:m_end_date,
+			    :l:m_hold_until_date, :l:m_renewal_date, :l:m_cancel_date, :l:m_notice_sent_date,
+			    :l:m_complimentary, :l:m_show_contact, :l:m_contact, 
+			    :l:m_reason_member,
+			    :l:m_reason_cancel,
+			    :l:s_date_created, :l:s_created_by, :l:s_date_modified, :l:s_modified_by,
+			    membstat = :ms:text,
+			    postmode = :pm:text,
+			    -- liststat = :ls:text,
+			    -- cancel_txt = :cr:text,
+			    member_txt = :mr:text,
+			    disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_surname + ', ' + :p:p_given_name) > 0, '- ', ''), '') + isnull(:p:p_surname + ', ','') + isnull(:p:p_given_name,''),
+			    disp_city = condition(char_length(:loc:p_city) > 0, :loc:p_city + ', ', '') + condition(char_length(:loc:p_state_province) > 0, :loc:p_state_province + ' ', ''),
+			    disp_date = substring(convert(string,:l:s_date_created),1,12),
+			    person_date = :p:s_date_created
+		    FROM 
+			    /apps/kardia/data/Kardia_DB/m_list_membership/rows l,
+			    /apps/kardia/data/Kardia_DB/m_list/rows m,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			    /apps/kardia/data/Kardia_DB/p_location/rows loc,
+			    /apps/kardia/data/Kardia_DB/_m_membership_status/rows ms,
+			    /apps/kardia/data/Kardia_DB/_p_postal_mode/rows pm,
+			    -- /apps/kardia/data/Kardia_DB/_m_list_status/rows ls,
+			    -- /apps/kardia/data/Kardia_DB/_m_cancel_reason/rows cr,
+			    /apps/kardia/data/Kardia_DB/_m_member_reason/rows mr
+		    WHERE
+			    :m:m_list_code = :l:m_list_code and
+			    :m:m_list_type = 'P' and
+			    :p:p_partner_key = :l:p_partner_key and
+			    :loc:p_partner_key =* :p:p_partner_key and
+			    :loc:p_revision_id = 0 and
+			    :ms:tag =* :l:m_membership_status and
+			    :pm:tag =* :l:p_postal_mode and
+			    -- :ls:tag =* :m:m_list_status and
+			    -- :l:m_reason_cancel *= :cr:tag and
+			    :l:m_reason_member *= :mr:tag and
+			    :m:m_list_type = 'P' and
+			    (:l:m_membership_status != 'D' or dateadd(hour, 24, :l:s_date_modified) > getdate()) and
+			    (:l:m_membership_status = :parameters:pstat or :parameters:pstat is null or :parameters:pstat = '*') and
+			    (:parameters:ptime is null or :parameters:ptime = '0' or dateadd(hour, convert(integer, :parameters:ptime), :l:s_date_created) > getdate())
+		    ";
+	    replicasize=50;
+	    readahead=50;
+	    autoquery=onfirstreveal;
+
+	    new_subs_pane "widget/pane"
+		{
+		height=250;
+		widget_class="table_bgnd";
+
+		new_subs_tbl "widget/table"
+		    {
+		    x=0; y=0; width=778; height=248;
+
+		    st_pkey "widget/table-column" { width=60; fieldname=p_partner_key; title="ID"; }
+		    st_pname "widget/table-column" { width=120; fieldname=disp_name; title="Name"; }
+		    st_pcity "widget/table-column" { width=120; fieldname=disp_city; title="City"; }
+		    st_mcode "widget/table-column" { width=50; fieldname=m_list_code; title="List"; }
+		    st_mname "widget/table-column" { width=120; fieldname=m_list_description; title="Name"; }
+		    st_mdate "widget/table-column" { width=90; fieldname=disp_date; title="Sub. Date"; }
+		    st_mstat "widget/table-column" { width=60; fieldname=membstat; title="Status"; }
+		    st_mreason "widget/table-column" { width=120; fieldname=member_txt; title="Sub. Reason"; }
+
+		    dblclick_open_sub2 "widget/connector"
+			{
+			event=DblClick;
+			target=new_subs;
+			action=Launch;
+			Width=800;
+			Height=600;
+			Source="/apps/kardia/modules/base/subscription.app";
+			partner=runclient(:new_subs_osrc:p_partner_key);
+			list=runclient(:new_subs_osrc:m_list_code);
+			mlist_parent_osrc = new_subs_osrc;
+			send_update = 1;
+			}
+		    }
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	subs_hbox "widget/hbox"
+	    {
+	    height = 257;
+	    spacing = 16;
+
+	    also_subs_vbox "widget/vbox"
+		{
+		width = 300;
+		spacing = 8;
+
+		//full_addr_hdr "widget/component" { height=20; path="section_label.cmp"; text="Full Address:"; }
+
+		addr_label "widget/component"
+		    {
+		    height=76;
+		    path="address_label_with_osrc.cmp";
+		    osrc = new_subs_osrc;
+		    }
+
+		person_label "widget/label" { height=20; value=runclient('(Partner added: ' + substring(:new_subs_osrc:person_date,1,11) + ')'); }
+
+		also_subs_hdr "widget/component" { height=20; path="section_label.cmp"; text=runclient(condition(char_length(:new_subs_osrc:disp_name) > 20, substring(:new_subs_osrc:disp_name,1,17) + '...', :new_subs_osrc:disp_name) + " also subscribed to:"); }
+
+		also_subs_osrc "widget/osrc"
+		    {
+		    sql="   SELECT
+				    :m:m_list_description, :m:m_list_type, :m:m_list_status,
+				    :l:p_postal_mode,
+				    :l:m_membership_status, :l:m_comments,
+				    :l:p_partner_key, :l:p_contact_id,
+				    :l:m_list_code, :l:m_member_type, :l:m_contact, :l:p_location_id, :l:m_num_copies,
+				    :l:m_num_issues_sub, :l:m_num_issues_recv, :l:m_start_date, :l:m_end_date,
+				    :l:m_hold_until_date, :l:m_renewal_date, :l:m_cancel_date, :l:m_notice_sent_date,
+				    :l:m_complimentary, :l:m_show_contact, :l:m_contact, 
+				    :l:m_reason_member,
+				    :l:m_reason_cancel,
+				    :l:s_date_created, :l:s_created_by, :l:s_date_modified, :l:s_modified_by,
+				    membstat = :ms:text,
+				    -- liststat = :ls:text,
+				    -- cancel_txt = :cr:text,
+				    member_txt = :mr:text,
+				    disp_date = substring(convert(string,:l:s_date_created),1,12)
+			    FROM 
+				    /apps/kardia/data/Kardia_DB/m_list_membership/rows l,
+				    /apps/kardia/data/Kardia_DB/m_list/rows m,
+				    /apps/kardia/data/Kardia_DB/_m_membership_status/rows ms,
+				    -- /apps/kardia/data/Kardia_DB/_m_list_status/rows ls,
+				    -- /apps/kardia/data/Kardia_DB/_m_cancel_reason/rows cr,
+				    /apps/kardia/data/Kardia_DB/_m_member_reason/rows mr
+			    WHERE
+				    :m:m_list_code = :l:m_list_code and
+				    :m:m_list_type = 'P' and
+				    :ms:tag =* :l:m_membership_status and
+				    -- :ls:tag =* :m:m_list_status and
+				    -- :l:m_reason_cancel *= :cr:tag and
+				    :l:m_reason_member *= :mr:tag and
+				    (:l:m_membership_status != 'D' or dateadd(hour, 24, :l:s_date_modified) > getdate()) and
+				    :m:m_list_type = 'P'
+			    ";
+		    replicasize=20;
+		    readahead=20;
+
+		    also_subs_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=new_subs_osrc;
+			key_objname=l;
+			key_1=p_partner_key;
+			target_key_objname=l;
+			target_key_1=p_partner_key;
+			master_norecs_action=norecs;
+			}
+
+		    also_subs_table_pane "widget/pane"
+			{
+			height=117;
+			widget_class="table_bgnd";
+
+			also_subs_table "widget/table"
+			    {
+			    x=0; y=0; width=298; height=115;
+
+			    at_code "widget/table-column" { width=50; fieldname=m_list_code; title="List"; }
+			    at_name "widget/table-column" { width=120; fieldname=m_list_description; title="Name"; }
+			    at_date "widget/table-column" { width=90; fieldname=disp_date; title="Sub. Date"; }
+			    at_stat "widget/table-column" { width=20; fieldname=m_membership_status; title="St."; }
+
+			    dblclick_open_sub "widget/connector"
+				{
+				event=DblClick;
+				target=new_subs;
+				action=Launch;
+				Width=800;
+				Height=600;
+				Source="/apps/kardia/modules/base/subscription.app";
+				partner=runclient(:also_subs_osrc:p_partner_key);
+				list=runclient(:also_subs_osrc:m_list_code);
+				mlist_parent_osrc = new_subs_osrc;
+				send_update = 1;
+				}
+			    }
+			}
+		    }
+		}
+
+	    gift_history_vbox "widget/vbox"
+		{
+		width=250;
+		spacing=8;
+
+		gift_history_hdr "widget/component" { height=20; path="section_label.cmp"; text=runclient('Gift History for ' + condition(char_length(:new_subs_osrc:disp_name) > 17, substring(:new_subs_osrc:disp_name,1,14) + '...', :new_subs_osrc:disp_name)); }
+
+		gifts_pane "widget/pane"
+		    {
+		    height = 229;
+		    widget_class = "table_bgnd";
+
+		    gifts_osrc "widget/osrc"
+			{
+			sql = " SELECT
+				    :i:a_amount,
+				    date = substring(convert(string,isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)), 1, 11),
+				    stat = condition(:i:a_amount = $0, 'Voided', condition(:i:a_receipt_sent_date is null, 'Processing', 'Receipted')),
+				    :g:a_period,
+				    :g:a_receipt_number,
+				    :i:a_comment,
+				    :g:a_ledger_number,
+				    :g:a_batch_number,
+				    :i:a_cost_center,
+				    :c:a_cc_desc,
+				    cc_txt = :i:a_cost_center + ' - ' + isnull(:c:a_cc_desc, '**INVALID**')
+				FROM
+				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+				    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+				WHERE
+				    :g:a_posted = 1 and
+				    :i:a_ledger_number = :g:a_ledger_number and
+				    :i:a_batch_number = :g:a_batch_number and
+				    :i:a_gift_number = :g:a_gift_number and
+				    :c:a_ledger_number =* :i:a_ledger_number and
+				    :c:a_cost_center =* :i:a_cost_center
+				ORDER BY
+				    isnull(:g:a_gift_postmark_date, :g:a_gift_received_date) DESC
+				";
+			replicasize = 25;
+			readahead = 25;
+			baseobj = "/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows";
+			autoquery = never;
+
+			gifts_link "widget/rule"
+			    {
+			    ruletype=osrc_relationship;
+			    target = new_subs_osrc;
+			    key_objname=g;
+			    key_1 = p_donor_partner_id;
+			    target_key_1 = p_partner_key;
+			    }
+
+			gifts_table "widget/table"
+			    {
+			    x=0;y=0;
+			    width=248; height=227;
+			    mode = dynamicrow;
+
+			    t_date "widget/table-column" { title="Date"; fieldname="date"; width=90; }
+			    t_to "widget/table-column" { title="Desig."; fieldname="cc_txt"; width=85; align=left; }
+			    //t_batno "widget/table-column" { title="Batch#"; fieldname="a_batch_number"; width=80; }
+			    //t_rcptno "widget/table-column" { title="Receipt"; fieldname="a_receipt_number"; width=80; }
+			    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=65; align=right; }
+			    //t_stat "widget/table-column" { title="Status"; fieldname="stat"; width=80; align=right; }
+
+			    do_view_batch_on_dblclick "widget/connector"
+				{
+				event=DblClick;
+				event_condition = runclient(isnull(:gifts_osrc:stat,'') != 'Processing' and not (:gifts_osrc:a_batch_number is null));
+				target=new_subs;
+				action=Launch;
+				Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
+				Width=800;
+				Height=600;
+				ledger=runclient(:gifts_osrc:a_ledger_number);
+				batch=runclient(:gifts_osrc:a_batch_number);
+				receipt=runclient(:gifts_osrc:a_receipt_number);
+				}
+			    }
+			}
+		    }
+		}
+
+	    actions_vbox "widget/vbox"
+		{
+		width=198;
+		spacing=4;
+
+		actions_hdr "widget/component" { height=20; path="section_label.cmp"; text="Actions:"; }
+
+		sep2 "widget/autolayoutspacer" { height=0; }
+
+		view_partner "widget/textbutton"
+		    {
+		    width=198;
+		    height=24;
+		    text = "View Partner Record";
+		    enabled = runclient(not (:new_subs_osrc:p_partner_key is null));
+
+		    view_partner_cn "widget/connector"
+			{
+			event=Click;
+			target=new_subs;
+			action=Launch;
+			Width=844;
+			Height=600;
+			Source="/apps/kardia/modules/base/partner_window.app";
+			id=runclient(:new_subs_osrc:p_partner_key);
+			}
+		    }
+
+		view_sub "widget/textbutton"
+		    {
+		    width=198;
+		    height=24;
+		    text = "Subscription Detail";
+		    enabled = runclient(not (:new_subs_osrc:p_partner_key is null));
+
+		    view_sub_cn "widget/connector"
+			{
+			event=Click;
+			target=new_subs;
+			action=Launch;
+			Width=800;
+			Height=600;
+			Source="/apps/kardia/modules/base/subscription.app";
+			partner=runclient(:new_subs_osrc:p_partner_key);
+			list=runclient(:new_subs_osrc:m_list_code);
+			mlist_parent_osrc = new_subs_osrc;
+			send_update = 1;
+			}
+		    }
+
+		view_list "widget/textbutton"
+		    {
+		    width=198;
+		    height=24;
+		    text = "Mailing List Detail";
+		    enabled = runclient(not (:new_subs_osrc:p_partner_key is null));
+
+		    view_list_cn "widget/connector"
+			{
+			event=Click;
+			target=new_subs;
+			action=Launch;
+			Width=800;
+			Height=600;
+			Source="/apps/kardia/modules/base/mlist_maint.app";
+			list=runclient(:new_subs_osrc:m_list_code);
+			}
+		    }
+
+		sep_line "widget/pane" { height=2; style=lowered; }
+
+		delete_sub "widget/textbutton"
+		    {
+		    width=198;
+		    height=24;
+		    text = "Delete Subscription";
+		    enabled = runclient(:new_subs_osrc:m_membership_status == 'P');
+		    delete_cn "widget/connector"
+			{
+			event=Click;
+			event_confirm=runclient("Are you sure you want to delete this subscription?  (Note: if the donor gives again, the subscription will return to Pending status).");
+			target=new_subs_osrc;
+			action=Modify;
+			m_membership_status=runclient('D');
+			m_cancel_date=runclient(getdate());
+			}
+		    delete_cn2 "widget/connector"
+			{
+			event=Click;
+			target=new_subs_osrc;
+			action=Refresh;
+			}
+		    }
+
+		cancel_sub "widget/textbutton"
+		    {
+		    width=198;
+		    height=24;
+		    text = "Cancel Subscription";
+		    enabled = runclient(:new_subs_osrc:m_membership_status == 'P' or :new_subs_osrc:m_membership_status == 'A');
+
+		    cancel_sub_cn "widget/connector" { event=Click; target=cancel_sub_window; action=Open; }
+		    }
+
+		activate_sub "widget/textbutton"
+		    {
+		    width=198;
+		    height=24;
+		    text = runclient(condition(:new_subs_osrc:m_membership_status == 'P', "Activate Subscription", "Reactivate Subscription"));
+		    enabled = runclient(:new_subs_osrc:m_membership_status == 'P' or :new_subs_osrc:m_membership_status == 'C' or :new_subs_osrc:m_membership_status == 'D');
+
+		    activate_cn "widget/connector"
+			{
+			event=Click;
+			target=new_subs_osrc;
+			action=Modify;
+			m_membership_status=runclient('A');
+			}
+		    activate_cn2 "widget/connector"
+			{
+			event=Click;
+			target=new_subs_osrc;
+			action=Refresh;
+			}
+		    }
+		}
+	    }
+	}
+
+    cancel_sub_window "widget/childwindow"
+	{
+	style=dialog;
+	titlebar=no;
+	modal=yes;
+	toplevel=yes;
+	width=480; height=300;
+	x=150; y=140;
+	visible=no;
+
+	cancel_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=458; height=278;
+	    spacing=8;
+
+	    cancel_title "widget/label" { height=20; font_size=15; style=bold; align=center; text="Cancel Subscription"; }
+
+	    cancel_line "widget/pane" { height=2; style=lowered; }
+
+	    mlist_txt "widget/label" { height=16; value=runclient("List: " + :new_subs_osrc:m_list_description); }
+	    who_txt "widget/label" { height=16; value=runclient("Whom: " + :new_subs_osrc:disp_name + " of " + :new_subs_osrc:disp_city); }
+
+	    sep3 "widget/autolayoutspacer" { height=8; }
+
+	    cancel_lbl "widget/label" { height=16; text="Cancel Reason:"; }
+
+	    reason_dd "widget/dropdown"
+		{
+		height=20;
+		width=300;
+		bgcolor=white; 
+		mode=dynamic_server;
+		hilight="#d0d0d0";
+		sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_cancel_reason/rows";
+		}
+
+	    inst_lbl "widget/label" { height=64; text="Please select a reason for cancellation, and then click 'Yes, Cancel' below to cancel this subscription.  Note: selecting any reason other than 'No Longer A Donor' will prevent all future auto-subscriptions for this person to this list."; }
+
+	    sep5 "widget/autolayoutspacer" { height=8; }
+
+	    cancel_ctls_hbox "widget/hbox"
+		{
+		height=24; spacing=8;
+		align=center;
+
+		yescancel "widget/textbutton"
+		    {
+		    height=24; width=170;
+		    text = "Yes, Cancel";
+		    yescancel_cn "widget/connector"
+			{
+			event=Click;
+			target=new_subs_osrc;
+			action=Modify;
+			m_membership_status=runclient('C');
+			m_reason_cancel=runclient(:reason_dd:value);
+			m_cancel_date=runclient(getdate());
+			}
+		    yescancel_cn2 "widget/connector"
+			{
+			event=Click;
+			target=new_subs_osrc;
+			action=Refresh;
+			}
+		    yescancel_cn3 "widget/connector"
+			{
+			event=Click;
+			target=cancel_sub_window;
+			action=Close;
+			}
+		    }
+		nocancel "widget/textbutton"
+		    {
+		    height=24; width=170;
+		    text = "No, Do Not Cancel";
+
+		    nocancel_cn "widget/connector" { event=Click; target=cancel_sub_window; action=Close; }
+		    }
+		}
+	    }
+	}
+    }
+

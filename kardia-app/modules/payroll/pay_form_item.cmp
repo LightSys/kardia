@@ -1,12 +1,13 @@
 $Version=2$
 pay_form_item "widget/component-decl"
     {
-    width=758;
+    width=778;
     height=18;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     period "widget/parameter" { type=string; default=null; }
     ref_period "widget/parameter" { type=string; default=null; }
+    prev_period "widget/parameter" { type=string; default=null; }
     costctr "widget/parameter" { type=string; default=null; }
     payroll_id "widget/parameter" { type=integer; default=null; }
     group_id "widget/parameter" { type=integer; default=null; }
@@ -78,7 +79,7 @@ pay_form_item "widget/component-decl"
 
     item_hbox "widget/hbox"
 	{
-	x=0; y=0; width=758; height=18;
+	x=0; y=0; width=778; height=18;
 	spacing=8;
 
 	item_lbl "widget/label" { width=160; align=right; value=runserver(:this:item_desc + ":"); }
@@ -89,7 +90,8 @@ pay_form_item "widget/component-decl"
 		SELECT
 			:i:a_ref_cost_center, 
 			:i:a_actual_amount,
-			:i:a_target_amount
+			:i:a_target_amount,
+			prev_amt = (select :i2:a_actual_amount from /apps/kardia/data/Kardia_DB/a_payroll_item/rows i2 where :i2:a_payroll_id = :i:a_payroll_id and :i2:a_payroll_group_id = :i:a_payroll_group_id and :i2:a_ledger_number = :i:a_ledger_number and :i2:a_payroll_item_type_code = :i:a_payroll_item_type_code and :i2:a_period = " + quote(:this:prev_period) + ")
 		FROM
 			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it
@@ -145,6 +147,7 @@ pay_form_item "widget/component-decl"
 
 		item_spacer "widget/autolayoutspacer"
 		    {
+		    condition=0;
 		    width = 8;
 		    }
 
@@ -162,13 +165,39 @@ pay_form_item "widget/component-decl"
 //		    cnUseTarget "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
 //		    }
 
-		item_target "widget/label"
+		item_target_hbox "widget/hbox"
+		    {
+		    width=93;
+		    spacing=2;
+
+		    item_target "widget/label"
+			{
+			widget_class = "link";
+			width=80;
+			align=right;
+			//fieldname = a_target_amount;
+			value = runclient("" + :item_form:a_target_amount);
+			cnUseTarget "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
+			}
+		    item_target_edit "widget/imagebutton"
+			{
+			width=11;
+			height=11;
+			y=2;
+			//enabled=runclient(char_length(:item_form:a_target_amount) > 0);
+			image="/apps/kardia/images/icons/pencil.png";
+			//disabledimage="/apps/kardia/images/icons/pencil_d.png";
+			}
+		    }
+
+		item_prev "widget/label"
 		    {
 		    widget_class = "link";
-		    width=130;
+		    width=82;
 		    //fieldname = a_target_amount;
-		    value = runclient("Budget: " + :item_form:a_target_amount);
-		    cnUseTarget "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
+		    value = runclient("" + :item_form:prev_amt);
+		    align=right;
+		    cnUsePrev "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:prev_amt); }
 		    }
 
 //		item_usegl "widget/textbutton"
@@ -244,6 +273,12 @@ pay_form_item "widget/component-decl"
 			}
 		    }
 
+		sep_warn "widget/autolayoutspacer"
+		    {
+		    condition = runserver(:this:type_code = 'AVL' or :this:type_code = 'WKE' or :this:type_code = 'DON' or :this:type_code = 'GFT' or :this:type_code = 'ADV' or :this:type_code = 'RET');
+		    width=0;
+		    }
+
 		item_warn "widget/label"
 		    {
 		    condition = runserver(:this:type_code = 'AVL' or :this:type_code = 'WKE' or :this:type_code = 'DON' or :this:type_code = 'GFT' or :this:type_code = 'ADV' or :this:type_code = 'RET');
@@ -256,11 +291,12 @@ pay_form_item "widget/component-decl"
 
 		item_gl "widget/label"
 		    {
-		    condition = runserver(:this:type_code = 'AVL' or :this:type_code = 'WKE' or :this:type_code = 'DON' or :this:type_code = 'GFT' or :this:type_code = 'ADV');
+		    condition = runserver(:this:type_code = 'AVL' or :this:type_code = 'WKE' or :this:type_code = 'DON' or :this:type_code = 'GFT' or :this:type_code = 'ADV' or :this:type_code = 'RET');
 		    //condition = runserver(:this:class_code = 'A');
 		    widget_class = "link";
-		    width=130;
-		    value = runclient("From GL: " + :item_glosrc:total);
+		    width=74;
+		    align=right;
+		    value = runclient("" + :item_glosrc:total);
 		    cnUseGL "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_glosrc:total); }
 		    }
 
@@ -313,8 +349,9 @@ pay_form_item "widget/component-decl"
 		    //condition = runserver(:this:type_code = 'GRO');
 		    condition = runserver(:this:class_code = 'G');
 		    widget_class = "link";
-		    width=130;
-		    value = runclient("Calculate Gross");
+		    width=94;
+		    value = runclient("Calc Gross");
+		    align=right;
 		    cnRecalcGross "widget/connector" { event="Click"; target=item_gross_osrc; action="QueryParam"; }
 		    }
 		}

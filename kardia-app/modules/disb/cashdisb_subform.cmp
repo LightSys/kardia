@@ -36,7 +36,7 @@ $Version=2$
 //    b. Implementation Specific Notes
 //    c. Legend
 //    d. Status Update
-//    e. Dev TODO
+//    e. Dv TODO
 //    f. Major Features Completed
 //    g. Major TODOs 
 //    h. Smaller Misc. TODOs
@@ -53,7 +53,7 @@ $Version=2$
 // 1. The default Batch # I've been using: 20108; Other old batch numbers are: 90112, 90114
 // 2. In order for this window to work properly, it must be called/opened from the following window:
 //    "Select Cash Disbursement Batch" (cd_select_batch_subform.cmp), which is accessible
-//     from /modules/disb/index.app - "arbor70's Menu" - "Select CD Batch", then entering
+//     from /modules/disb/index.app - "Dv's Menu" - "Select CD Batch", then entering
 //     a batch number to open (e.g. 20208), then clicking the Select Batch button.
 
 // Legend   [Terms Used & Meanings]
@@ -170,7 +170,7 @@ $Version=2$
 // Extra Information
 // 
 
-// arbor70 TODO | 2009 July 7th
+// Dv TODO | 2009 July 7th
 // # 1. Remove Debugging Pop up boxes
 // # 2. Update comments (DONE Untested Unimplemented)
 // # 3. Rearrange / Remove old comments
@@ -186,7 +186,7 @@ $Version=2$
 // BB - 4. Componentize this module the different sub cmps?
 
 // Misc Notes
-// 1. The table structure was set in stone, so I had to work around the architecture when doing this module - arbor70.
+// 1. The table structure was set in stone, so I had to work around the architecture when doing this module - DJ.
 
 // TODO (20090420): in the event that the batch number is null..., make sure the user can not make changes to whatever shows up (disable buttons?)
 // DONE (20090707): Currently user can unvoid a check by clicking on the "Void the Check" Button on a voided check. Is this Undesired behavior? (Ask Finance Ladies) Good feature, they want the button text to say unvoid though.... and should probably make sure can not void or unvoid a check if the check is already posted...
@@ -414,6 +414,8 @@ cashdisb_subform "widget/component-decl"
 			x=0;y=0; 
 			height=440; width=700; 
 			path = "/apps/kardia/modules/disb/partner_search_contents.cmp";
+			ledger = runserver(:this:ledger);
+			return_to_eb = txt_payee_number;
 			// sync_osrc=p_partner_osrc; 
 			// sync_form=p_partner_form; 
 			
@@ -431,6 +433,7 @@ cashdisb_subform "widget/component-decl"
 			// Update the Details 
 			cnPartnerSelected_2 "widget/connector" 
 			{ 
+				condition=0;
 				event="PartnerSelected";
 				target="payee_details_osrc";
 				action="QueryParam";
@@ -790,7 +793,7 @@ cashdisb_subform "widget/component-decl"
 		replicasize=100;
 		readahead=25;
 		autoquery=never; //20101213: GRB - this is done via GotoBatch; don't need autoquery.
-		//autoquery=onfirstreveal;	// arbor70 20090929: oneachreveal seems to intermittently cause 
+		//autoquery=onfirstreveal;	// Dv 20090929: oneachreveal seems to intermittently cause 
 									//                checks from all batches to show up in the
 									//				  widget/table.  Changing to original setting.
 		
@@ -798,6 +801,7 @@ cashdisb_subform "widget/component-decl"
 		// Usage Tested: 20090513 / Lightly Tested: 20090319
 		cd_EndQuery_cn1 "widget/connector"
 		{
+			condition=0;
 			event="DataFocusChanged";
 			target=payee_details_osrc;
 			action="QueryParam";
@@ -1060,9 +1064,10 @@ cashdisb_subform "widget/component-decl"
 					
 					// QUESTION: is this needed?  batch_form save was only to update the next batch_number...
 					// new_new_check_cn3 "widget/connector" { event="Click"; target=check_form; action="Save"; }
-					
-					new_check_cn4 "widget/connector" { event="Click"; target=lbl_name; action="SetValue"; Value=" "; }
-					new_check_cn4b "widget/connector" { event="Click"; target=lbl_city; action="SetValue"; Value=" "; }
+				
+					// GRB commented out 28-Sep-2011 because we are using the 'address label' widget now.
+					//new_check_cn4 "widget/connector" { event="Click"; target=lbl_name; action="SetValue"; Value=" "; }
+					//new_check_cn4b "widget/connector" { event="Click"; target=lbl_city; action="SetValue"; Value=" "; }
 					// TO DOCUMENT: So Having "" as a value seems to cause the system to Hang
 					
 					// Clear Check Total
@@ -1201,7 +1206,16 @@ cashdisb_subform "widget/component-decl"
 					}
 					
 					// TODO: SetFocus to 'Cost Ctr' Text Box (smartfield)
-					
+					// Attempt 20110817
+					new_trx_line_cn7cctr_focus "widget/connector"
+					{
+						event="Click";
+						target=cost_ctr_box;
+						action="SetFocus";
+						// Value=" ";
+						// Value=runclient(:cost_ctr_box:content);
+					}
+
 					// DEBUGGING: alert Box to Show Sequencing and Diagnostic Info
 					//	nextCheckNoEndQuerycn6 "widget/connector" { event="Click"; target="alerter";
 					//		action="Alert";
@@ -1256,12 +1270,12 @@ cashdisb_subform "widget/component-decl"
 			// Payee GroupBox (Pane) Area
 			payee_pane "widget/pane"
 			{
-				x=20;y=265;width=250;height=105;
+				x=20;y=265;width=250;height=125;
 				bgcolor="#e0e0e0";
 				
 				payee_vbox "widget/vbox"
 				{
-					x=8;y=8;width=230;height=250;spacing=1;cellsize=30;
+					x=8;y=8;width=232;height=250;spacing=1;cellsize=30;
 					
 					// Group Box
 					payee_select_hbox  "widget/hbox"
@@ -1291,6 +1305,21 @@ cashdisb_subform "widget/component-decl"
 							// 	disbursement_id_param = runclient(:cashdisb_osrc:a_disbursement_id);
 							// 	payee_number_param = runclient(:txt_payee_number:content);
 							// }
+							query_on_id_change "widget/connector"
+							{
+								// update the mailing label thingy whenever our value changes.
+								event = DataChange;
+								target=payee_details_osrc;
+								action = QueryParam;
+								p_partner_key = runclient(:Value);
+							}
+							close_win_on_id_change "widget/connector"
+							{
+								// When new partner returns, make sure search window is closed.
+								event = DataChange;
+								target=select_payee_window_cmp;
+								action = Close;
+							}
 						}
 
 						// Implemented - 20091028
@@ -1332,18 +1361,37 @@ cashdisb_subform "widget/component-decl"
 					payee_details_osrc "widget/osrc"
 					{
 						//payee_number_q2 "widget/parameter" { type=string; default="96038"; }
-						sql = runserver("
-						
-							SELECT
-								:p_given_name, :p_surname, :l:p_city
-							FROM 
-								/apps/kardia/data/Kardia_DB/p_partner/rows p, 
-								/apps/kardia/data/Kardia_DB/p_location/rows l
-							WHERE 
+						sql="   SELECT
+								:l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_partner_key, :l:p_address_1,
+								:l:p_postal_code, :l:p_state_province, :l:p_in_care_of, :l:p_city, :l:p_location_id,
+								:p:p_partner_key, :p:p_partner_class, :p:p_title, :p:p_given_name, :p:p_preferred_name,
+								:p:p_surname, :p:p_org_name, :p:p_comments,  :p:p_legacy_key_1, :p:p_legacy_key_2, :p:p_legacy_key_3,
+								p_country_name = upper(:c:p_country_name),
+								:f:p_format
+							FROM
+								/apps/kardia/data/Kardia_DB/p_partner/rows p,
+								/apps/kardia/data/Kardia_DB/p_location/rows l,
+								/apps/kardia/data/Kardia_DB/p_country/rows c,
+								/apps/kardia/data/Kardia_DB/p_address_format/rows f
+							WHERE
 								:p:p_partner_key = :l:p_partner_key and
-								:p:p_partner_key != ' '"); // 20101213: GRB - bug workaround
-								// and
-								//:p:p_partner_key = :parameters:payee_number_q2");  // 
+								(:l:p_record_status_code = 'A' or :l:p_record_status_code = 'Q') and
+								:l:p_country_code *= :c:p_country_code and
+								:c:p_country_code *= :f:p_country_code and
+								:f:p_address_set = 'STANDARD'
+							";
+						//sql = runserver("
+						//
+						//	SELECT
+						//		:p_given_name, :p_surname, :l:p_city
+						//	FROM 
+						//		/apps/kardia/data/Kardia_DB/p_partner/rows p, 
+						//		/apps/kardia/data/Kardia_DB/p_location/rows l
+						//	WHERE 
+						//		:p:p_partner_key = :l:p_partner_key and
+						//		:p:p_partner_key != ' '"); // 20101213: GRB - bug workaround
+						//		// and
+						//		//:p:p_partner_key = :parameters:payee_number_q2");  // 
 						
 						    // [Possible] TODO: Fault Tolerance for when there is no payee number match...
 							
@@ -1353,21 +1401,27 @@ cashdisb_subform "widget/component-decl"
 						autoquery=never;
 						
 						// Set First and Last Name...
-						NameGrab "widget/connector"
+						//NameGrab "widget/connector"
+						//{
+						//	event="EndQuery";
+						//	target=lbl_name;
+						//	action="SetValue";
+						//	Value=runclient(:payee_details_osrc:p_given_name + " " + :payee_details_osrc:p_surname); // runclient(:p_given_name);
+						//}
+
+						payee_label "widget/component"
 						{
-							event="EndQuery";
-							target=lbl_name;
-							action="SetValue";
-							Value=runclient(:payee_details_osrc:p_given_name + " " + :payee_details_osrc:p_surname); // runclient(:p_given_name);
+							height=78;
+							path = "/apps/kardia/modules/base/address_label_fmt.cmp";
 						}
 						
 						// payee_details_form
-						payee_form "widget/form"
-						{
-							lbl_name "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; text='Name:'; label_width=60; } // field='p_given_name'; 
-							lbl_city "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field='p_city'; text='City:'; label_width=60; } // field='assets'; 
+						//payee_form "widget/form"
+						//{
+						//	lbl_name "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; text='Name:'; label_width=60; } // field='p_given_name'; 
+						//	lbl_city "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field='p_city'; text='City:'; label_width=60; } // field='assets'; 
 							
-						} // END - payee_form
+						//} // END - payee_form
 						
 					} // END - payee_details_osrc
 					
@@ -1387,7 +1441,7 @@ cashdisb_subform "widget/component-decl"
 			// CheckingSummary GroupBox (Pane) Area
 			CheckSummary_pane "widget/pane"
 			{
-				x=20;y=390;width=250;height=90;
+				x=20;y=410;width=250;height=80;
 				bgcolor="#e0e0e0";
 				
 				CheckSummary_vbox "widget/vbox"
@@ -1507,7 +1561,7 @@ cashdisb_subform "widget/component-decl"
 			// Display the Checking Summary Pane's Title
 			CheckSummary_pane_hdr "widget/pane"
 			{
-				x=35;y=374;width=130;
+				x=35;y=394;width=130;
 				widget_class = "label";
 
 				cs_pane_hdr_l "widget/label" { x=0;width=128;height=16;valign="middle";value="Check Summary"; widget_class="label"; }
@@ -1516,13 +1570,13 @@ cashdisb_subform "widget/component-decl"
 			// Transaction Details GroupBox (Pane) Area
 			trx_details_pane "widget/pane"
 			{
-				x=300;y=290;width=250;height=200;
+				x=300;y=290;width=290;height=200;
 				bgcolor="#e0e0e0";
 				widget_class = "group";
 				
 				trx_vbox "widget/vbox"
 				{
-					x=8;y=8;width=230;height=250;spacing=5;cellsize=20;
+					x=8;y=8;width=272;height=250;spacing=5;cellsize=20;
 					
 					// Line Item Thingy
 					trx_details_hbox "widget/hbox"
@@ -1674,7 +1728,8 @@ cashdisb_subform "widget/component-decl"
 					// Save Cancel Area
 					cd_SaveCancel_hbox "widget/hbox"
 					{
-						x=20;y=215;width=500;height=50;spacing=25;cellsize=20;
+						y=215;height=50;spacing=25;cellsize=20;
+						align=center;
 						
 						// Save Button
 						save_trx_changes_btn "widget/textbutton"
@@ -1769,6 +1824,7 @@ cashdisb_subform "widget/component-decl"
 							// Refresh Payee Name
 							Cancel_cn2 "widget/connector"
 							{
+								condition=0;
 								event="Click";
 								target=payee_details_osrc;
 								action="QueryParam";
@@ -2151,7 +2207,7 @@ cashdisb_subform "widget/component-decl"
 			// Batch Button Commands
 			cd_LowerRightMost_vbox "widget/vbox"
 			{
-				x=565;y=315;width=200;height=150;cellsize=1;
+				x=605;y=315;width=200;height=150;cellsize=1;
 				
 				// The following items are DONE (20090417)
 				// A. Button Text Display
@@ -2258,7 +2314,7 @@ cashdisb_subform "widget/component-decl"
 					// 	param=runclient("Print_All_Checks_btn (Click): You clicked " + isnull(:cashdisb_osrc:a_ledger_number, "<blank>") + ", batch: " + isnull(:cashdisb_osrc:a_batch_number, "<blank>") + ", disbursement_id: " + isnull(:cashdisb_osrc:a_disbursement_id, "<blank>") + ", a_check_number: " + isnull(:cashdisb_osrc:a_check_number, "<blank>"));
 					// }
 					
-					mn_a70_cd_print_window_cn "widget/connector"
+					mnDv_cd_print_window_cn "widget/connector"
 					{
 						event = "Click";
 						target = cd_print_window_cmp;
@@ -2275,7 +2331,7 @@ cashdisb_subform "widget/component-decl"
 					// TODO: Open [Modal] the Printing Form
 					// pass parameter Batch number
 					// pass parameter of currently selected check number
-					// mn_a70_cd_print_window_cn "widget/connector"
+					// mnDv_cd_print_window_cn "widget/connector"
 					// {
 					//	event = Select;
 					//	target = cd_print_window_cmp;

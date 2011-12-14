@@ -7,6 +7,8 @@ section_header "widget/component-decl"
     text "widget/parameter" { type=string; default=''; deploy_to_client=yes; }
     form "widget/parameter" { type=object; find_container="widget/form"; }
     object_name "widget/parameter" { type=string; default="Item"; }
+    allow_new "widget/parameter" { type=integer; default=0; }
+    allow_delete "widget/parameter" { type=integer; default=0; }
 
     lbl_pane "widget/pane"
 	{
@@ -30,6 +32,22 @@ section_header "widget/component-decl"
 	    spacing=4; cellsize=18;
 	    align=right;
 
+	    new "widget/component"
+		{
+		condition = runserver(:this:allow_new != 0);
+		width=18; height=18; fl_width=0;
+		path = "/sys/cmp/new_btn.cmp";
+		form = form;
+		object_name = runserver(:this:object_name);
+		}
+	    delete "widget/component"
+		{
+		condition = runserver(:this:allow_delete != 0);
+		width=18; height=18; fl_width=0;
+		path = "/sys/cmp/delete_btn.cmp";
+		form = form;
+		object_name = runserver(:this:object_name);
+		}
 	    save "widget/component"
 		{
 		width=18; height=18; fl_width=0;

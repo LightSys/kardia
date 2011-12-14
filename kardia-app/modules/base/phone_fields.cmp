@@ -1,0 +1,82 @@
+$Version=2$
+phone_fields "widget/component-decl"
+    {
+    width=600;
+    height=20;
+
+    form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    CheckCancel "widget/component-decl-action" { }
+    CheckCancel_cn "widget/connector"
+	{
+	event=CheckCancel;
+	event_condition=runclient(not (char_length(:phone_areacity:content) > 0) and not (char_length(:phone_number:content) > 0));
+	target=form;
+	action=Discard;
+	}
+
+    phone_hbox "widget/hbox"
+	{
+	x=0; y=0; width=600; height=20; spacing=4;
+
+	phone_label "widget/label" { width=96; align=right; text="Phone:"; }
+
+	phone_where "widget/dropdown"
+	    {
+	    fieldname=p_location_id;
+	    bgcolor=white;
+	    form=form;
+	    hilight="#d0d0d0";
+	    width=115;
+	    mode=dynamic_server; 
+	    sql="select 'Above Addr.', '1'; select 'Other ' + :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows";
+	    pw_hints "widget/hints" { default=runclient('1'); style=notnull; }
+	    }
+
+	phone_type "widget/dropdown"
+	    {
+	    fieldname=p_contact_type;
+	    bgcolor=white; 
+	    mode=static;
+	    hilight="#d0d0d0";
+	    width=80;
+	    form=form;
+
+	    phone_cell "widget/dropdownitem" { label="Cell"; value="C"; }
+	    phone_fax "widget/dropdownitem" { label="Fax"; value="F"; }
+	    phone_phone "widget/dropdownitem" { label="Phone"; value="P"; }
+
+	    pt_hints "widget/hints" { default=runclient('P'); style=notnull; }
+	    }
+
+	phone_country "widget/dropdown"
+	    {
+	    fieldname=p_phone_country;
+	    bgcolor=white;
+	    hilight="#d0d0d0";
+	    width=100;
+	    form=form;
+	    mode=dynamic_server; 
+	    sql="select '+' + :p_phone_code + ' (' + sum(:p_country_code + ',') - ',' + ')', '' + :p_phone_code from /apps/kardia/data/Kardia_DB/p_country/rows where :p_phone_code != 0 group by :p_phone_code asc";
+	    }
+
+	phone_openparen "widget/label" { width=10; text="("; align=right; }
+
+	phone_areacity "widget/editbox"
+	    {
+	    fieldname=p_phone_area_city;
+	    width=50;
+	    form=form;
+	    }
+
+	phone_closeparen "widget/label" { width=10; text=")"; align=left; }
+
+	phone_number "widget/editbox"
+	    {
+	    fieldname=p_contact_data;
+	    form=form;
+	    width=100;
+	    }
+	}
+    }
+

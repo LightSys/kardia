@@ -1,0 +1,342 @@
+$Version=2$
+plugin_gl_fundedit_managers "widget/component-decl"
+    {
+    width=490;
+    height=292;
+    title = "Managers";
+
+    Modified "widget/component-decl-event" { }
+
+    fund_osrc "widget/parameter" { type=object; find_container = "widget/osrc"; }
+    ledger "widget/parameter" { type=string; deploy_to_client = yes; }
+
+    rpt_ctls "widget/component"
+	{
+	path = "/apps/kardia/modules/base/receives_report.cmp";
+
+	on_connect "widget/connector"
+	    {
+	    event=Connected;
+	    target=reports_osrc;
+	    action=RefreshObject;
+	    }
+	on_connect2 "widget/connector"
+	    {
+	    event=Connected;
+	    target=mgr_osrc;
+	    action=RefreshObject;
+	    }
+	on_disconnect "widget/connector"
+	    {
+	    event=Disconnected;
+	    target=reports_osrc;
+	    action=RefreshObject;
+	    }
+	on_disconnect2 "widget/connector"
+	    {
+	    event=Disconnected;
+	    target=mgr_osrc;
+	    action=RefreshObject;
+	    }
+	}
+
+    vbox "widget/vbox"
+	{
+	x = 0;
+	y = 0;
+	width = 490;
+	height = 292;
+	spacing = 8;
+	cellsize = 20;
+
+	mgr_osrc "widget/osrc"
+	    {
+	    sql = " SELECT
+			:cs:a_ledger_number,
+			:cs:a_cost_center,
+			:cs:p_staff_partner_key,
+			:cs:s_date_created,
+			:cs:s_created_by,
+			:cs:s_date_modified,
+			:cs:s_modified_by,
+			:s:p_preferred_email_id,
+			:s:p_kardia_login,
+			:s:p_kardiaweb_login,
+			:p:p_surname,
+			:p:p_given_name,
+			:ci1:p_contact_data,
+			:ci2:p_contact_data,
+			email = isnull(:ci2:p_contact_data, :ci1:p_contact_data),
+			disp_name_and_id = :cs:p_staff_partner_key + ' - ' + condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+			disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+			web = condition(char_length(:s:p_kardiaweb_login) > 0, 'Y', 'N'),
+			reports = (select sum(:rp:r_group_name + ',') - ',' from /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp, /apps/kardia/data/Kardia_DB/r_group_report/rows r where :rp:p_recipient_partner_key = :cs:p_staff_partner_key and :rp:r_param_name = 'costctr' and :rp:r_param_value = :cs:a_cost_center and :r:r_group_name = :rp:r_group_name and :r:r_delivery_method = :rp:r_delivery_method and :r:p_recipient_partner_key = :rp:p_recipient_partner_key and :r:r_report_id = :rp:r_report_id and :r:r_is_active = 1)
+		    FROM
+			IDENTITY /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+			/apps/kardia/data/Kardia_DB/p_staff/rows s,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci1,
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci2
+		    WHERE
+			:s:p_partner_key = :cs:p_staff_partner_key and
+			:p:p_partner_key = :s:p_partner_key and
+			:ci1:p_partner_key =* :p:p_partner_key and
+			:ci1:p_record_status_code = 'A' and
+			:ci1:p_contact_type = 'E' and
+			:ci2:p_partner_key =* :p:p_partner_key and
+			:ci2:p_record_status_code = 'A' and
+			:ci2:p_contact_type = 'E' and
+			:ci2:p_contact_id =* :s:p_preferred_email_id
+		    GROUP BY
+			:cs:a_ledger_number,
+			:cs:a_cost_center,
+			:cs:p_staff_partner_key
+		    ";
+	    baseobj="/apps/kardia/data/Kardia_DB/a_cc_staff/rows";
+	    replicasize=25;
+	    readahead=25;
+
+	    fund_link "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = fund_osrc;
+		key_objname = cs;
+		key_1 = a_ledger_number;
+		key_2 = a_cost_center;
+		target_key_1 = a_ledger_number;
+		target_key_2 = a_cost_center;
+		revealed_only = yes;
+		}
+
+	    mgr_form "widget/form"
+		{
+		form_txt "widget/label" { value=runclient(condition(:fund_osrc:a_cost_center = :fund_osrc:a_bal_cost_center, "Set up what staff members are in charge of managing this fund, and thus can receive reports for this fund.", "Please set up managers on main funds only - not on sub funds.")); height=32; }
+
+		mgr_pane "widget/pane"
+		    {
+		    height=250;
+		    style=flat;
+		    enabled=runclient(:fund_osrc:a_cost_center = :fund_osrc:a_bal_cost_center);
+
+		    mgr_vbox "widget/vbox"
+			{
+			x=0; y=0;
+			height=250;
+			width=490;
+			spacing=8;
+			cellsize = 20;
+
+			form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; height=26; object_name="Manager"; }
+
+			mgr_table_pane "widget/pane"
+			    {
+			    height=142;
+			    widget_class=table_bgnd;
+
+			    mgr_table "widget/table"
+				{
+				x=0;y=0;
+				width=488; height=140;
+				mode = dynamicrow;
+
+				//t_id "widget/table-column" { title="ID"; fieldname="p_staff_partner_key"; width=70; }
+				t_name "widget/table-column" { title="Name"; fieldname="disp_name_and_id"; width=162; }
+				t_email "widget/table-column" { title="Email"; fieldname="email"; width=163; }
+				t_web "widget/table-column" { title="Web?"; fieldname="web"; width=45; type=check; }
+				t_reports "widget/table-column" { title="Reports"; fieldname="reports"; width=100; }
+
+				edit_reports_cn2 "widget/connector" { event=DblClick; target=popup_report_edit; action=Open; }
+				}
+			    }
+
+			f_partnerid "widget/component"
+			    {
+			    height=24;
+			    width=300;
+			    path="/apps/kardia/modules/base/editbox_table.cmp";
+			    field='p_staff_partner_key';
+			    text='Staff ID:';
+			    validate=1;
+			    popup_width=300;
+			    popup_height=210;
+			    popup_sql = "
+				    SELECT
+					value = :s:p_partner_key,
+					label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ','') + '(' + :s:p_partner_key + ')'
+				    FROM
+					/apps/kardia/data/Kardia_DB/p_partner/rows p,
+					/apps/kardia/data/Kardia_DB/p_staff/rows s,
+					/apps/kardia/data/Kardia_DB/p_contact_info/rows ci1,
+					/apps/kardia/data/Kardia_DB/p_contact_info/rows ci2
+				    WHERE
+					:p:p_partner_key = :s:p_partner_key and
+					:ci1:p_partner_key =* :s:p_partner_key and
+					:ci1:p_record_status_code = 'A' and
+					:ci1:p_contact_type = 'E' and
+					:ci2:p_partner_key =* :p:p_partner_key and
+					:ci2:p_record_status_code = 'A' and
+					:ci2:p_contact_type = 'E' and
+					:ci2:p_contact_id =* :s:p_preferred_email_id
+				    GROUP BY
+					:s:p_partner_key
+				    ";
+			    search_field_list="p_partner_key,*p_given_name*,p_surname*";
+			    key_name="p_partner_key";
+			    search_objname="p";
+			    object_name="Staff Partners";
+			    popup_text="Choose Staff:";
+			    empty_desc = "required";
+			    attach_point=editbox;
+			    }
+
+			btns_hbox "widget/hbox"
+			    {
+			    x=100; height=24;
+			    spacing=8;
+
+			    save_btn "widget/textbutton"
+				{
+				height=24;
+				width=100;
+				enabled=runclient(:mgr_form:is_savable);
+				text=runclient(condition(:mgr_form:form_mode == 'New', 'Add', 'Save'));
+
+				save_cn "widget/connector" { event=Click; target=mgr_form; action=Save; }
+				}
+
+			    cancel_btn "widget/textbutton"
+				{
+				height=24;
+				width=100;
+				enabled=runclient(:mgr_form:is_discardable);
+				text="Cancel";
+
+				discard_cn "widget/connector" { event=Click; target=mgr_form; action=Discard; }
+				}
+
+			    sep "widget/autolayoutspacer" { width=8; }
+
+			    whatrpt_btn "widget/textbutton"
+				{
+				height=24;
+				width=100;
+				enabled=runclient(:mgr_form:is_editable);
+				text="Reports...";
+
+				edit_reports_cn "widget/connector" { event=Click; target=popup_report_edit; action=Open; }
+				}
+			    }
+
+			rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+			}
+		    }
+		}
+	    }
+	}
+
+    popup_report_edit "widget/childwindow"
+	{
+	titlebar = no;
+	toplevel = yes;
+	width=400;
+	height=250;
+	x=45;
+	y=21;
+	modal = yes;
+	visible = no;
+
+	report_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=380; height=230;
+	    spacing=6;
+	    cellsize=20;
+
+	    info_lbl "widget/label" { height=32; value=runclient("Click the checkboxes for the reports that " + :mgr_osrc:disp_name + " should receive for " + :fund_osrc:a_cost_center + ", and click Close."); }
+
+	    reports_osrc "widget/osrc"
+		{
+		sql = "	select
+			    :g:r_group_name,
+			    rpt_name = :g:r_group_description,
+			    rpt_ck = condition(isnull(:r:r_is_active,0),'/sys/images/checkbox_checked.png','/sys/images/checkbox_unchecked.png')
+			from
+			    /apps/kardia/data/Kardia_DB/r_group/rows g,
+			    /apps/kardia/data/Kardia_DB/r_group_report/rows r,
+			    /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp
+			where
+			    :g:r_is_active = 1 and
+			    :g:r_group_name *= :rp:r_group_name and
+			    :r:r_group_name = :rp:r_group_name and
+			    :r:p_recipient_partner_key = :rp:p_recipient_partner_key and
+			    :r:r_delivery_method = :rp:r_delivery_method and
+			    :r:r_report_id = :rp:r_report_id and
+			    :rp:r_param_name = 'costctr' 
+			group by
+			    :g:r_group_name
+			";
+		replicasize=20;
+		readahead=20;
+
+		reports_link "widget/rule"
+		    {
+		    ruletype=osrc_relationship;
+		    target=mgr_osrc;
+		    key_objname="rp";
+		    key_1=p_recipient_partner_key;
+		    target_key_1=p_staff_partner_key;
+		    key_2=r_param_value;
+		    target_key_2=a_cost_center;
+		    revealed_only=yes;
+		    }
+
+		reports_table "widget/table"
+		    {
+		    height=166;
+		    colsep=0;
+		    demand_scrollbar=yes;
+		    overlap_scrollbar=yes;
+		    show_selection=no;
+
+		    rt_check "widget/table-column" { title=""; fieldname=rpt_ck; width=20; type=image; }
+		    rt_name "widget/table-column" { title="Report Name"; fieldname=rpt_name; width=360; }
+
+		    enable_on_click_column "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:Column == 'rpt_ck' and :ColumnValue == '/sys/images/checkbox_unchecked.png');
+			target = rpt_ctls;
+			action=ConnectReport;
+
+			// Parameters to ConnectReport
+			method=runclient('E');
+			param=runclient('costctr');
+			value=runclient(:fund_osrc:a_cost_center);
+			report_group=runclient(:reports_osrc:r_group_name);
+			partner=runclient(:mgr_osrc:p_staff_partner_key);
+			}
+		    disable_on_click_column "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:Column == 'rpt_ck' and :ColumnValue == '/sys/images/checkbox_checked.png');
+			target = rpt_ctls;
+			action=DisconnectReport;
+
+			// Parameters to ConnectReport
+			method=runclient('E');
+			param=runclient('costctr');
+			value=runclient(:fund_osrc:a_cost_center);
+			report_group=runclient(:reports_osrc:r_group_name);
+			partner=runclient(:mgr_osrc:p_staff_partner_key);
+			}
+		    }
+		}
+
+	    close_btn "widget/textbutton"
+		{
+		height=20; width=100; x=140;
+		text = "Close";
+		on_close "widget/connector" { event=Click; target=popup_report_edit; action=Close; }
+		}
+	    }
+	}
+    }

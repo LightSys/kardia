@@ -1,0 +1,105 @@
+$Version=2$
+create_issue "widget/component-decl"
+    {
+    // Create a new Issue of a Publication - process
+    CreateIssue "widget/component-decl-action" { }
+    IssueCreated "widget/component-decl-event" { }
+    create_cn "widget/connector"
+	{
+	event=CreateIssue;
+	target=create_osrc;
+	action=QueryParam;
+	parent_mlist = runclient(:parent_mlist);
+	new_mlist = runclient(:new_mlist);
+	new_desc = runclient(:new_desc);
+	}
+
+    create_osrc "widget/osrc"
+	{
+	cr_parent_mlist "widget/parameter"	{ param_name=parent_mlist; type=string; }
+	cr_new_mlist "widget/parameter"		{ param_name=new_mlist; type=string; }
+	cr_new_desc "widget/parameter"		{ param_name=new_desc; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " INSERT
+			/apps/kardia/data/Kardia_DB/m_list/rows
+		SELECT
+			m_list_code = :parameters:new_mlist,
+			m_list_parent = :parameters:parent_mlist,
+			m_list_description = :parameters:new_desc,
+			m_list_status = 'A',
+			m_list_type = 'I',
+			m_list_frozen = 1,
+			:l:m_charge_ledger,
+			:l:p_postal_mode,
+			:l:m_charge_cost_ctr,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		FROM
+			/apps/kardia/data/Kardia_DB/m_list/rows l
+		WHERE
+			:l:m_list_code = :parameters:parent_mlist
+		;
+
+		UPDATE
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows m
+		SET
+			:m:m_num_issues_recv = isnull(:m:m_num_issues_recv,0) + 1
+		WHERE
+			:m:m_list_code = :parameters:parent_mlist and
+			:m:m_membership_status = 'A' and
+			(:m:m_hold_until_date is null or :m:m_hold_until_date < getdate()) and
+			(:m:m_num_issues_sub is null or :m:m_num_issues_recv is null or :m:m_num_issues_sub > :m:m_num_issues_recv) and
+			(:m:m_end_date is null or :m:m_end_date > getdate()) and
+			(:m:m_start_date is null or :m:m_start_date < getdate())
+		;
+
+		INSERT
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows
+		SELECT
+			m_list_code = :parameters:new_mlist,
+			:m:p_partner_key,
+			:m:m_num_copies,
+			:m:p_location_id,
+			:m:p_contact_id,
+			:m:m_member_type,
+			:m:m_num_issues_sub,
+			:m:m_num_issues_recv,
+			:m:m_start_date,
+			:m:m_end_date,
+			:m:m_hold_until_date,
+			:m:m_renewal_date,
+			:m:m_cancel_date,
+			:m:m_notice_sent_date,
+			:m:p_postal_mode,
+			:m:m_membership_status,
+			:m:m_complimentary,
+			:m:m_comments,
+			:m:m_show_contact,
+			:m:m_reason_member,
+			:m:m_reason_cancel,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		FROM
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows m
+		WHERE
+			:m:m_list_code = :parameters:parent_mlist and
+			:m:m_membership_status = 'A' and
+			(:m:m_hold_until_date is null or :m:m_hold_until_date < getdate()) and
+			(:m:m_num_issues_sub is null or :m:m_num_issues_recv is null or :m:m_num_issues_sub >= :m:m_num_issues_recv) and
+			(:m:m_end_date is null or :m:m_end_date > getdate()) and
+			(:m:m_start_date is null or :m:m_start_date < getdate())
+		";
+
+	end_create "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=create_issue;
+	    action=IssueCreated;
+	    }
+	}
+    }
