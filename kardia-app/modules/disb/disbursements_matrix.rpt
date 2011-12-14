@@ -1,0 +1,211 @@
+$Version=2$
+disbursements_matrix "system/report"
+    {
+    title = "Disbursements Matrix";
+    resolution = 300;
+    document_format="application/pdf";
+
+    pagewidth=110;
+    pageheight=51;
+    marginleft=5;
+    marginright=5;
+    margintop=5;
+    marginbottom=5;
+
+    ledger "report/parameter" { type=string; default=null; }
+
+    year_period "report/parameter"
+	{
+	default = runserver((select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and datepart(year,getdate()) == datepart(year, :a_start_date) and :a_parent_period is null));
+	type = string;
+	}
+
+    startperiod "report/parameter"
+	{
+	default = runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period));
+	type=string;
+	}
+
+    endperiod "report/parameter"
+	{
+	default = runserver((select max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period));
+	type=string;
+	}
+
+    // Here is the list of periods to use for the 12 period columns.
+    p1 "report/parameter" { type=string; default = runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period)); }
+    p2 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p1)); }
+    p3 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p2)); }
+    p4 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p3)); }
+    p5 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p4)); }
+    p6 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p5)); }
+    p7 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p6)); }
+    p8 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p7)); }
+    p9 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p8)); }
+    p10 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p9)); }
+    p11 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p10)); }
+    p12 "report/parameter" { type=string; default=runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period and :a_period > :this:p11)); }
+
+    pmt_summary "report/query"
+	{
+	sql =  runserver("
+		SELECT
+			sum = sum(:c:a_amount),
+			count = count(:c:a_amount),
+			:c:a_payee_partner_key,
+			:c:a_period,
+			nametxt = :c:a_payee_partner_key + ' ' + condition(char_length(:p:p_org_name) > 0, :p:p_org_name, :p:p_surname + ', ' + :p:p_given_name),
+			p1 = :this:p1,
+			p2 = :this:p2,
+			p3 = :this:p3,
+			p4 = :this:p4,
+			p5 = :this:p5,
+			p6 = :this:p6,
+			p7 = :this:p7,
+			p8 = :this:p8,
+			p9 = :this:p9,
+			p10 = :this:p10,
+			p11 = :this:p11,
+			p12 = :this:p12
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE 
+			:c:a_period >= :this:startperiod and
+			:c:a_period <= :this:endperiod and
+			:p:p_partner_key = :c:a_payee_partner_key and
+			:c:a_posted = 1
+		GROUP BY
+			:c:a_payee_partner_key, :c:a_period
+		");
+
+	mo1 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p1"; }
+	mo2 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p2"; }
+	mo3 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p3"; }
+	mo4 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p4"; }
+	mo5 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p5"; }
+	mo6 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p6"; }
+	mo7 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p7"; }
+	mo8 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p8"; }
+	mo9 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p9"; }
+	mo10 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p10"; }
+	mo11 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p11"; }
+	mo12 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p12"; }
+	s_mo1 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p1"; }
+	s_mo2 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p2"; }
+	s_mo3 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p3"; }
+	s_mo4 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p4"; }
+	s_mo5 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p5"; }
+	s_mo6 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p6"; }
+	s_mo7 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p7"; }
+	s_mo8 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p8"; }
+	s_mo9 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p9"; }
+	s_mo10 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p10"; }
+	s_mo11 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p11"; }
+	s_mo12 "report/aggregate" { compute="sum(:sum)"; where=":a_period = :p12"; }
+
+	total_sum "report/aggregate" { compute="sum(:sum)"; }
+	s_total_sum "report/aggregate" { compute="sum(:sum)"; }
+	total_cnt "report/aggregate" { compute="sum(:count)"; }
+	s_total_cnt "report/aggregate" { compute="sum(:count)"; }
+	payee_agg "report/aggregate" { compute="min(:nametxt)"; }
+	}
+
+    paymtx_hdr "report/area"
+	{
+	x=0;width=100;height=0;
+	font=helvetica;
+	fontsize=10;
+	paymtx_hdr_info "report/data"
+	    {
+	    align=center;
+	    value=runserver("Disbursements Matrix on [" + getdate() + " ET] requested by [" + user_name() + "]\nFor ledger " + :this:ledger + ", year " + :this:year_period + ", periods " + :this:startperiod + " through " + :this:endperiod + "\n\n");
+	    }
+	}
+
+    payeelist "report/table"
+	{
+	source=pmt_summary;
+	mode=normal;
+	x=0; 
+	width=100; height=0;
+	topborder=0.3;
+	bottomborder=0.3;
+	columns=14;
+	widths=16,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,6;
+	colsep=0.8;
+	shadow=0;
+	nullformat="-";
+	moneyformat="0.00";
+
+	payee_list_hdr "report/table-row"
+	    {
+	    font=helvetica;
+	    fontsize=8;
+	    header=yes;
+	    bottomborder=0.05;
+	    h1 "report/table-cell" { value='Payee'; align=center; style=bold; }
+	    h2 "report/table-cell" { value=runserver(:this:p1); align=center; style=bold; }
+	    h3 "report/table-cell" { value=runserver(:this:p2); align=center; style=bold; }
+	    h4 "report/table-cell" { value=runserver(:this:p3); align=center; style=bold; }
+	    h5 "report/table-cell" { value=runserver(:this:p4); align=center; style=bold; }
+	    h6 "report/table-cell" { value=runserver(:this:p5); align=center; style=bold; }
+	    h7 "report/table-cell" { value=runserver(:this:p6); align=center; style=bold; }
+	    h8 "report/table-cell" { value=runserver(:this:p7); align=center; style=bold; }
+	    h9 "report/table-cell" { value=runserver(:this:p8); align=center; style=bold; }
+	    h10 "report/table-cell" { value=runserver(:this:p9); align=center; style=bold; }
+	    h11 "report/table-cell" { value=runserver(:this:p10); align=center; style=bold; }
+	    h12 "report/table-cell" { value=runserver(:this:p11); align=center; style=bold; }
+	    h13 "report/table-cell" { value=runserver(:this:p12); align=center; style=bold; }
+	    h14 "report/table-cell" { value='Total'; align=center; style=bold; }
+	    }
+	payee_list_row "report/table-row"
+	    {
+	    summary=yes;
+	    summarize_for=runserver('' + :pmt_summary:a_payee_partner_key);
+	    font=courier;
+	    fontsize=7;
+	    margintop=0.1;
+	    marginbottom=0.1;
+	    r1 "report/table-cell" { value=runserver(substring(:pmt_summary:payee_agg, 1, 29)); align=left; font=helvetica; }
+	    r2 "report/table-cell" { value=runserver(:pmt_summary:mo1); align=right; }
+	    r3 "report/table-cell" { value=runserver(:pmt_summary:mo2); align=right; }
+	    r4 "report/table-cell" { value=runserver(:pmt_summary:mo3); align=right; }
+	    r5 "report/table-cell" { value=runserver(:pmt_summary:mo4); align=right; }
+	    r6 "report/table-cell" { value=runserver(:pmt_summary:mo5); align=right; }
+	    r7 "report/table-cell" { value=runserver(:pmt_summary:mo6); align=right; }
+	    r8 "report/table-cell" { value=runserver(:pmt_summary:mo7); align=right; }
+	    r9 "report/table-cell" { value=runserver(:pmt_summary:mo8); align=right; }
+	    r10 "report/table-cell" { value=runserver(:pmt_summary:mo9); align=right; }
+	    r11 "report/table-cell" { value=runserver(:pmt_summary:mo10); align=right; }
+	    r12 "report/table-cell" { value=runserver(:pmt_summary:mo11); align=right; }
+	    r13 "report/table-cell" { value=runserver(:pmt_summary:mo12); align=right; }
+	    r14 "report/table-cell" { value=runserver(:pmt_summary:total_sum); align=right; }
+	    }
+	payee_list_summ "report/table-row"
+	    {
+	    summary=yes;
+	    font=courier;
+	    fontsize=7;
+	    margintop=0.1;
+	    marginbottom=0.1;
+	    topborder=0.05;
+	    style=bold;
+	    r1 "report/table-cell" { value=runserver('TOTAL:'); align=right; }
+	    r2 "report/table-cell" { value=runserver(:pmt_summary:s_mo1); align=right; }
+	    r3 "report/table-cell" { value=runserver(:pmt_summary:s_mo2); align=right; }
+	    r4 "report/table-cell" { value=runserver(:pmt_summary:s_mo3); align=right; }
+	    r5 "report/table-cell" { value=runserver(:pmt_summary:s_mo4); align=right; }
+	    r6 "report/table-cell" { value=runserver(:pmt_summary:s_mo5); align=right; }
+	    r7 "report/table-cell" { value=runserver(:pmt_summary:s_mo6); align=right; }
+	    r8 "report/table-cell" { value=runserver(:pmt_summary:s_mo7); align=right; }
+	    r9 "report/table-cell" { value=runserver(:pmt_summary:s_mo8); align=right; }
+	    r10 "report/table-cell" { value=runserver(:pmt_summary:s_mo9); align=right; }
+	    r11 "report/table-cell" { value=runserver(:pmt_summary:s_mo10); align=right; }
+	    r12 "report/table-cell" { value=runserver(:pmt_summary:s_mo11); align=right; }
+	    r13 "report/table-cell" { value=runserver(:pmt_summary:s_mo12); align=right; }
+	    r14 "report/table-cell" { value=runserver(:pmt_summary:s_total_sum); align=right; }
+	    }
+	}
+    }
+
