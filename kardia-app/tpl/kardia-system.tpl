@@ -44,6 +44,7 @@ kardia "widget/template"
 	active_bgcolor = "#a8c1d8";
 	direction = "vertical";
 	popup = true;
+	shadow_offset=2;
 	}
     tplClock "widget/clock"
 	{
@@ -71,6 +72,7 @@ kardia "widget/template"
 	height=258;
 	background="/apps/kardia/images/bg/splash3.png";
 	closetype="shrink3";
+	shadow_offset=2;
 	}
     tplWin "widget/childwindow"
 	{
@@ -79,6 +81,7 @@ kardia "widget/template"
 	textcolor="white";
 	background="/apps/kardia/images/bg/light_bgnd.jpg";
 	style=dialog;
+	shadow_offset=2;
 	}
     tplPopupWin "widget/childwindow"
 	{
@@ -86,6 +89,7 @@ kardia "widget/template"
 	background = "/apps/kardia/images/bg/blue_gradient2_h.png";
 	style = dialog;
 	visible = false;
+	shadow_offset=2;
 	}
     tplFormWin "widget/childwindow"
 	{
@@ -93,6 +97,7 @@ kardia "widget/template"
 	style=dialog;
 	//background="/apps/kardia/images/bg/light_bgnd2.jpg";
 	bgcolor="#d8d8d8";
+	shadow_offset=2;
 	}
     tpEb "widget/editbox"
 	{
