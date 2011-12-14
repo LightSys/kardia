@@ -1,10 +1,17 @@
 TODO Before Final Release of Kardia VM 1.0:
 
-1.  Passwords - on password change by user, the cxpasswd and mysql passwords
-    are not updated (this is a harder issue to solve).
+3.  More sample data in Kardia!
 
-2.  When deleting directories, make sure we cd out of them and then back into
-    newly created ones (e.g., when re-initializing a repository).
+
+CHANGES FOR RC1 Release of Kardia VM 1.0:
+
+1.  Main menu "Update" option that does a git pull, rebuilds Centrallix and
+    the Kardia database, reloads the sample data, updates kardia.sh with the
+    new version from the kardia-git/kardia-vm directory, and runs any
+    version upgrade scripts (to be added).
+
+2.  Passwords - on password change by user, the cxpasswd and mysql passwords
+    are now updated (solved via pam-script).
 
 
 CHANGES FOR Beta 3 Release of Kardia VM 1.0:
