@@ -132,7 +132,7 @@ fund_gift_list_tntmpd "system/report"
 			amount = :i:a_amount,
 			donation_id = :i:name,
 			designation = :i:a_cost_center + condition(:i:a_account_code != '4100' and :i:a_account_code != '2120', ':' + :i:a_account_code, ''),
-			motivation = '',
+			motivation = :i:a_motivational_code,
 			anon = :i:a_confidential
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
