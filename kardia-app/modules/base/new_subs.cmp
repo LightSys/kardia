@@ -4,7 +4,7 @@ new_subs "widget/component-decl"
     width=780;
     height=580;
 
-    ledger "widget/parameter" { type=object; default=null; }
+    ledger "widget/parameter" { type=string; default=null; }
 
     new_subs_vbox "widget/vbox"
 	{
