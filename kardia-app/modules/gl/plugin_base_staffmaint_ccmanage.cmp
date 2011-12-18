@@ -66,7 +66,7 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 			-- look at report groups that have a param named 'costctr' that
 			-- is specifiable by an individual report.
 			" + (select
-				sum(quote("_col_" + :r_group_name) + " = condition( (select count(1) from /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp, /apps/kardia/data/Kardia_DB/r_group_report/rows gr where :rp:p_recipient_partner_key = :cs:p_staff_partner_key and :rp:r_group_name = " + quote(:r_group_name) + " and :gr:r_is_active = 1 and :rp:r_group_name = :gr:r_group_name and :rp:r_delivery_method = :gr:r_delivery_method and :rp:p_recipient_partner_key = :gr:p_recipient_partner_key" + " and :rp:r_report_id = :gr:r_report_id and :rp:r_param_name = 'costctr' and :rp:r_param_value = :cs:a_cost_center),'/sys/images/checkbox_checked.png', '/sys/images/checkbox_unchecked.png'), ")
+				isnull(sum(quote("_col_" + :r_group_name) + " = condition( (select count(1) from /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp, /apps/kardia/data/Kardia_DB/r_group_report/rows gr where :rp:p_recipient_partner_key = :cs:p_staff_partner_key and :rp:r_group_name = " + quote(:r_group_name) + " and :gr:r_is_active = 1 and :rp:r_group_name = :gr:r_group_name and :rp:r_delivery_method = :gr:r_delivery_method and :rp:p_recipient_partner_key = :gr:p_recipient_partner_key" + " and :rp:r_report_id = :gr:r_report_id and :rp:r_param_name = 'costctr' and :rp:r_param_value = :cs:a_cost_center),'/sys/images/checkbox_checked.png', '/sys/images/checkbox_unchecked.png'), "),"")
 			    from
 				/apps/kardia/data/Kardia_DB/r_group_param/rows
 			    where
