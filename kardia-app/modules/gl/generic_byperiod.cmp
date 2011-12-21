@@ -22,8 +22,8 @@ generic_byperiod "widget/component-decl"
 			:p:a_summary_only = 0 and :p:a_ledger_number = :parameters:ledger
 		ORDER BY
 			:p:a_period desc");
-	replicasize=50;
-	readahead=50;
+	replicasize=120;
+	readahead=120;
 	autoquery=onload;
 
 	auto_select_current "widget/connector"
