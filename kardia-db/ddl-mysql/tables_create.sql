@@ -479,6 +479,21 @@ create table r_group_report_param (
 );
 
 
+/* a_config */
+
+create table a_config (
+        a_ledger_number                       char(10)  not null,      /* ledger number (alphanumeric allowed) --  */
+        a_config_name                         char(16)  not null,      /* configuration parameter name --  */
+        a_config_value                        varchar(255)  null,      /* configuration parameter value --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* a_analysis_attr */
 
 create table a_analysis_attr (

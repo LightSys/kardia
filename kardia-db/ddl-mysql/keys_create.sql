@@ -73,6 +73,9 @@ alter table r_group_param
 alter table r_group_report_param
 	add constraint r_rparam_pk primary key  (r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id, r_param_name);
 
+alter table a_config
+	add constraint a_config_pk primary key  (a_ledger_number, a_config_name);
+
 alter table a_analysis_attr
 	add constraint a_an_attr_pk primary key  (a_ledger_number, a_attr_code);
 

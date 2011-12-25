@@ -139,6 +139,11 @@ create  index r_rparam_partner_idx on r_group_report_param (p_recipient_partner_
 create  index r_rparam_value_idx on r_group_report_param (r_param_name, r_param_value, r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id);
 
 
+/* a_config */
+/* create  index a_config_pk on a_config (a_ledger_number, a_config_name)*/ 
+/* go */
+
+
 /* a_analysis_attr */
 /* create  index a_an_attr_pk on a_analysis_attr (a_ledger_number, a_attr_code)*/ 
 /* go */

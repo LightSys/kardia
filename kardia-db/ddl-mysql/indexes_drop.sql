@@ -139,6 +139,11 @@ alter table r_group_report_param drop index r_rparam_partner_idx;
 alter table r_group_report_param drop index r_rparam_value_idx;
 
 
+/* a_config */
+/* drop index a_config.a_config_pk */ 
+/* go */
+
+
 /* a_analysis_attr */
 /* drop index a_analysis_attr.a_an_attr_pk */ 
 /* go */

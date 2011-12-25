@@ -91,6 +91,10 @@ drop table r_group_param;
 drop table r_group_report_param;
 
 
+/* a_config */
+drop table a_config;
+
+
 /* a_analysis_attr */
 drop table a_analysis_attr;
 

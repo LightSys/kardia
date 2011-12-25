@@ -154,6 +154,10 @@ alter table r_group_report_param
 	drop primary key;
 
 
+alter table a_config
+	drop primary key;
+
+
 alter table a_analysis_attr
 	drop primary key;
 
