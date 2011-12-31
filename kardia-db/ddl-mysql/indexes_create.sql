@@ -296,6 +296,12 @@ create  index a_payroll_payee_idx on a_payroll (a_ledger_number, p_payee_partner
 /* go */
 
 
+/* a_payroll_period */
+create  index a_payperiod_idx on a_payroll_period (a_period, a_ledger_number, a_payroll_period);
+/* create  index a_payperiod_pk on a_payroll_period (a_payroll_period, a_ledger_number)*/ 
+/* go */
+
+
 /* a_payroll_group */
 /* create  index a_payroll_grp_pk on a_payroll_group (a_ledger_number, a_payroll_group_id)*/ 
 /* go */

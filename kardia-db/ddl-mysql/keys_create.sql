@@ -154,6 +154,9 @@ alter table a_ledger_office
 alter table a_payroll
 	add constraint a_payroll_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_id);
 
+alter table a_payroll_period
+	add constraint a_payperiod_pk primary key  (a_payroll_period, a_ledger_number);
+
 alter table a_payroll_group
 	add constraint a_payroll_grp_pk primary key  (a_ledger_number, a_payroll_group_id);
 

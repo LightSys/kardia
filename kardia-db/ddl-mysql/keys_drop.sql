@@ -298,6 +298,10 @@ alter table a_payroll
 	drop primary key;
 
 
+alter table a_payroll_period
+	drop primary key;
+
+
 alter table a_payroll_group
 	drop primary key;
 
