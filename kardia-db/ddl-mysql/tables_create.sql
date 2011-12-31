@@ -1000,6 +1000,26 @@ create table a_payroll (
 );
 
 
+/* a_payroll_period */
+
+create table a_payroll_period (
+        a_payroll_period                      char(12)  not null,      /* payroll period (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number (alphanumeric allowed) --  */
+        a_period                              char(8)  not null,       /* accounting period for this payroll period. --  */
+        a_start_date                          datetime  not null,      /* first date that wages are being paid for in this period. --  */
+        a_end_date                            datetime  not null,      /* last date that wages are being paid for in this period. --  */
+        a_pay_date                            datetime  not null,      /* date wages are actually paid (this date must be within the accounting period in question) --  */
+        a_payroll_period_desc                 varchar(40)  null,       /* short description of payroll period, for reporting --  */
+        a_payroll_period_comment              varchar(255)  null,      /* comments / long description of payroll period --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* a_payroll_group */
 
 create table a_payroll_group (
@@ -1581,9 +1601,12 @@ create table a_subtrx_deposit (
         a_effective_date                      datetime  not null,      /* Effective date of deposit (e.g., accrual date) --  */
         a_account_code                        char(10)  not null,      /* Cash account the funds are deposited into --  */
         a_amount                              decimal(14,4)  not null,
-                                                                      /* Amount of deposit --  */
+                                                                      /* Total amount of deposit --  */
+        a_cash_amount                         decimal(14,4)  not null,
+                                                                      /* Amount of cash deposited --  */
         a_num_checks                          integer  not null,       /* Number of checks deposited --  */
-        a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
+        a_posted                              bit  default 0,          /* Has this transfer been posted into the Deposits journal? --  */
+        a_posted_to_gl                        bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */

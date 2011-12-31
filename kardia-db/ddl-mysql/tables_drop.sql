@@ -191,6 +191,10 @@ drop table a_ledger_office;
 drop table a_payroll;
 
 
+/* a_payroll_period */
+drop table a_payroll_period;
+
+
 /* a_payroll_group */
 drop table a_payroll_group;
 
