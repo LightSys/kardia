@@ -7,6 +7,7 @@ gift_entry "widget/component-decl"
     batch "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
     receipt "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     by_donor "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    receipts_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'ReceiptReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
 
     batch_osrc "widget/osrc"
 	{
@@ -277,7 +278,7 @@ gift_entry "widget/component-decl"
 	    event_confirm=runclient(condition(:receipts_osrc:a_receipt_sent, "Do you really want to re-print single receipt " + :receipts_osrc:a_receipt_number + "?  Since it was already printed, this will not update its Sent Date.", "Do you really want to print single receipt " + :receipts_osrc:a_receipt_number + "?  This will not set its Sent Date and mark it as having been sent.  To do that, please print the whole batch from the 'Receipts Batches' window."));
 	    target = gift_entry;
 	    action = Launch;
-	    Source=runclient("/apps/kardia/modules/rcpt/receipt_batch.rpt");
+	    Source=runclient(:receipts_rpt:value);
 	    Name=runclient("OneReceipt");
 	    Width=800;
 	    Height=600;
