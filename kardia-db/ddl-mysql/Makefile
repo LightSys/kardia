@@ -1,6 +1,10 @@
 DBUSER=root
-#MYSQLOPTS=-u $(DBUSER) -p -f -h localhost
-MYSQLOPTS=-u $(DBUSER) -f -h localhost
+DBHOST=localhost
+LOGINHOST=localhost
+LOGINUSER=root
+DEFAULTPASS=newuserpass
+#MYSQLOPTS=-u $(DBUSER) -p -f -h $(DBHOST)
+MYSQLOPTS=-u $(DBUSER) -f -h $(DBHOST)
 
 .PHONY: tables
 .PHONY: notables
@@ -12,10 +16,21 @@ MYSQLOPTS=-u $(DBUSER) -f -h localhost
 .PHONY: nodb
 .PHONY: dropdowns
 .PHONY: nodropdowns
+.PHONY:	createdb
+.PHONY:	createuser
+.PHONY:	countries
 
-db: tables keys indexes dropdowns
+db: tables keys indexes dropdowns countries
 
 nodb: noindexes nokeys notables nodropdowns
+
+createuser:
+	mysql $(MYSQLOPTS) -e "CREATE USER '$(LOGINUSER)'@'$(LOGINHOST)' IDENTIFIED BY '$(DEFAULTPASS)';"
+	mysql $(MYSQLOPTS) -e "GRANT ALL ON Kardia_DB.* TO '$(LOGINUSER)'@'$(LOGINHOST)';"
+	mysql $(MYSQLOPTS) -e "FLUSH PRIVILEGES;"
+
+createdb:
+	mysql $(MYSQLOPTS) -e "create database Kardia_DB;"
 
 tables:
 	mysql $(MYSQLOPTS) < tables_create.sql
@@ -41,3 +56,6 @@ dropdowns:
 
 nodropdowns:
 	mysql $(MYSQLOPTS) < dropdowns_drop.sql
+
+countries:
+	mysql $(MYSQLOPTS) < 2011countries.sql

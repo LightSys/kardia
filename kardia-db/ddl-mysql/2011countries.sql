@@ -1,13 +1,13 @@
---This script goes into the geos directory of the
---CIA World Factbook and retrieves country information.
---Because there is no promise that the format of their
---HTML will not change, we saved a local copy of the 
---2011 data.
+-- This script goes into the geos directory of the
+-- CIA World Factbook and retrieves country information.
+-- Because there is no promise that the format of their
+-- HTML will not change, we saved a local copy of the 
+-- 2011 data.
 use Kardia_DB;
 delete from p_country;
---TCY: loading country timezones
---TCY: loading world-factbook
---TCY: loading joshuaproject files
+-- TCY: loading country timezones
+-- TCY: loading world-factbook
+-- TCY: loading joshuaproject files
 insert into p_country (p_country_code, p_iso3166_2_code, p_iso3166_3_code, p_fips_code, p_country_name, p_local_name,p_phone_code, p_security_level, p_nationality, p_early_timezone, p_late_timezone, p_record_status_code, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('BG','BG','BGR','BU','Bulgaria','Balgariya',359, 0, 'Bulgarian(s)', '+2.0','+2.0','A','9-23-2011','tyoung','9-23-2011','tyoung');
 insert into p_country (p_country_code, p_iso3166_2_code, p_iso3166_3_code, p_fips_code, p_country_name, p_local_name,p_phone_code, p_security_level, p_nationality, p_early_timezone, p_late_timezone, p_record_status_code, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('BN','BN','BRN','BX','Brunei Darussalam','Brunei',673, 2, 'Bruneian(s)', '+8.0','+8.0','A','9-23-2011','tyoung','9-23-2011','tyoung');
 insert into p_country (p_country_code, p_iso3166_2_code, p_iso3166_3_code, p_fips_code, p_country_name, p_local_name,p_phone_code, p_security_level, p_nationality, p_early_timezone, p_late_timezone, p_record_status_code, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('BI','BI','BDI','BY','Burundi','Burundi',257, 0, 'Burundian(s)', '+2.0','+2.0','A','9-23-2011','tyoung','9-23-2011','tyoung');
