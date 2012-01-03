@@ -263,6 +263,10 @@ drop table a_cc_receipting;
 drop table a_cc_receipting_accts;
 
 
+/* a_receipt_type */
+drop table a_receipt_type;
+
+
 /* a_subtrx_gift */
 drop table a_subtrx_gift;
 
@@ -337,3 +341,7 @@ drop table s_motd;
 
 /* s_motd_viewed */
 drop table s_motd_viewed;
+
+
+/* s_sec_endorsement */
+drop table s_sec_endorsement;

@@ -396,6 +396,11 @@ create  index a_ccra_acct_number_idx on a_cc_receipting_accts (a_ledger_number, 
 create  index a_ccra_ledger_number_idx on a_cc_receipting_accts (a_ledger_number, a_cost_center, a_account_code);
 
 
+/* a_receipt_type */
+/* create  index a_rcpttype_pk on a_receipt_type (a_receipt_type)*/ 
+/* go */
+
+
 /* a_subtrx_gift */
 create  index a_gifttrx_batch_idx on a_subtrx_gift (a_batch_number, a_ledger_number, a_gift_number);
 /* create  index a_gifttrx_cc_clustered_idx on a_subtrx_gift (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number)*/ 
@@ -515,3 +520,8 @@ create  index s_username_idx on c_member (s_username, c_chat_id);
 /* create  index s_motd_viewed_pk on s_motd_viewed (s_motd_id, s_username)*/ 
 /* go */
 create  index s_motd_viewed_username_idx on s_motd_viewed (s_username, s_motd_id);
+
+
+/* s_sec_endorsement */
+/* create  index s_end_pk on s_sec_endorsement (s_endorsement, s_context, s_subject)*/ 
+/* go */

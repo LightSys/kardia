@@ -641,12 +641,12 @@ create table a_account_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "IFTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Fund Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "IFTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Fund Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ICTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-CostCtr Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ICTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-CostCtr Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ILTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Ledger Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ILTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Ledger Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "IFTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Fund Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "IFTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Fund Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ICTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-CostCtr Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ICTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-CostCtr Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ILTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Ledger Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "ILTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Ledger Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_account_category */
@@ -741,9 +741,9 @@ create table a_period_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "GIFT" as a_period_usage_code, "Gift Entry Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "CURR" as a_period_usage_code, "General Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
-insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "YEAR" as a_period_usage_code, "General Default Year" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "GIFT" as a_period_usage_code, "Gift Entry Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "CURR" as a_period_usage_code, "General Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by) select "YEAR" as a_period_usage_code, "General Default Year" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_ledger */
@@ -1379,6 +1379,27 @@ create table a_cc_receipting_accts (
 );
 
 
+/* a_receipt_type */
+
+create table a_receipt_type (
+        a_receipt_type                        char(1)  not null,       /* receipt type --  */
+        a_receipt_type_desc                   varchar(64)  not null,   /* receipt type description --  */
+        a_is_default                          bit  default 0,          /* is this the default receipt type? --  */
+        a_is_enabled                          bit  default 1,          /* is this receipt type enabled? --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by) select "I" as a_receipt_type, "Immediate" as a_receipt_type_desc, 1 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by) select "N" as a_receipt_type, "None" as a_receipt_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by) select "A" as a_receipt_type, "Annual" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by) select "Q" as a_receipt_type, "Quarterly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by) select "M" as a_receipt_type, "Monthly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+
+
 /* a_subtrx_gift */
 
 create table a_subtrx_gift (
@@ -1774,6 +1795,21 @@ create table s_motd_viewed (
         s_motd_id                             integer  not null,       /* id of the message --  */
         s_username                            varchar(20)  not null,   /* user who viewed the message --  */
         s_viewed_date                         datetime  not null,      /* when the user viewed the message --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_sec_endorsement */
+
+create table s_sec_endorsement (
+        s_endorsement                         varchar(64)  not null,   /* endorsement to be granted --  */
+        s_context                             varchar(255)  not null,  /* context of endorsement --  */
+        s_subject                             varchar(20)  not null,   /* name of subject being granted the endorsement (username, group name) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

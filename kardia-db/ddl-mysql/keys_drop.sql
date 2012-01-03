@@ -378,6 +378,10 @@ alter table a_cc_receipting_accts
 	drop primary key;
 
 
+alter table a_receipt_type
+	drop primary key;
+
+
 alter table a_subtrx_gift
 	drop primary key;
 
@@ -495,4 +499,8 @@ alter table s_motd
 
 
 alter table s_motd_viewed
+	drop primary key;
+
+
+alter table s_sec_endorsement
 	drop primary key;

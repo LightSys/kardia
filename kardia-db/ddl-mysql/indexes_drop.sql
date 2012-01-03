@@ -396,6 +396,11 @@ alter table a_cc_receipting_accts drop index a_ccra_acct_number_idx;
 alter table a_cc_receipting_accts drop index a_ccra_ledger_number_idx;
 
 
+/* a_receipt_type */
+/* drop index a_receipt_type.a_rcpttype_pk */ 
+/* go */
+
+
 /* a_subtrx_gift */
 alter table a_subtrx_gift drop index a_gifttrx_batch_idx;
 /* drop index a_subtrx_gift.a_gifttrx_cc_clustered_idx */ 
@@ -515,3 +520,8 @@ alter table c_member drop index s_username_idx;
 /* drop index s_motd_viewed.s_motd_viewed_pk */ 
 /* go */
 alter table s_motd_viewed drop index s_motd_viewed_username_idx;
+
+
+/* s_sec_endorsement */
+/* drop index s_sec_endorsement.s_end_pk */ 
+/* go */

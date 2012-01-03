@@ -208,6 +208,9 @@ alter table a_cc_receipting
 alter table a_cc_receipting_accts
 	add constraint a_cc_rcptacct_pk primary key  (a_cost_center, a_ledger_number,a_account_code);
 
+alter table a_receipt_type
+	add constraint a_rcpttype_pk primary key  (a_receipt_type);
+
 alter table a_subtrx_gift
 	add constraint a_gifttrx_pk primary key  (a_ledger_number, a_batch_number, a_gift_number);
 
@@ -270,3 +273,6 @@ alter table s_motd
 
 alter table s_motd_viewed
 	add constraint s_motd_viewed_pk primary key  (s_motd_id, s_username);
+
+alter table s_sec_endorsement
+	add constraint s_end_pk primary key  (s_endorsement, s_context, s_subject);
