@@ -244,7 +244,7 @@ fund_gift_list "system/report"
 	hdrimg "report/image"
 	    {
 	    x=89.85;y=0;height=4;width=12.15;
-	    source="/apps/kardia/images/artwork/Kardia2011b-horiz-37.png";
+	    source = /apps/kardia/data/Site.struct:site_report_logo;
 	    }
 
 	rpt_title "report/area"

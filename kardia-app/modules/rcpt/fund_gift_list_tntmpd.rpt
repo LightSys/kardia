@@ -15,12 +15,16 @@ fund_gift_list_tntmpd "system/report"
     // Give it an intelligent filename
     filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + ".tntmpd");
 
-    // Parameters for GL Fund Balance
+    // Parameters for TntMPD gift/donor list report
     ledger "report/parameter" { type=string; default=null; }
     costctr "report/parameter" { type=string; default=null; }
     period "report/parameter" { type=string; default=null; }
     startday "report/parameter" { type=integer; default=1; }
     endday "report/parameter" { type=integer; default=31; }
+
+    tntname "report/parameter" { type=string; default=runserver(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'TntName' and :a_ledger_number = :this:ledger), /apps/kardia/data/Site.struct:site_description)); }
+    tntabbrev "report/parameter" { type=string; default=runserver(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'TntAbbrev' and :a_ledger_number = :this:ledger), /apps/kardia/data/Site.struct:site_name)); }
+    tntcode "report/parameter" { type=string; default=runserver(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'TntCode' and :a_ledger_number = :this:ledger), /apps/kardia/data/Site.struct:site_name)); }
 
     // What costctrs are we reporting on?
     cclist_qy "report/query"
@@ -143,6 +147,7 @@ fund_gift_list_tntmpd "system/report"
 			:g:a_posted = 1 and
 			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) >= :this:startday and
 			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
+			-- (datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday or isnull(:g:a_gift_postmark_date, :g:a_gift_received_date) < :period_qy:a_start_date) and
 			charindex(',' + rtrim(:g:a_ledger_number) + '|' + convert(string, :g:a_batch_number) + '|' + convert(string, :g:a_gift_number) + '|', :item_qy:items) > 0 and
 			:i:a_ledger_number = :g:a_ledger_number and
 			:i:a_period = :g:a_period and
@@ -188,9 +193,9 @@ fund_gift_list_tntmpd "system/report"
 	    source=donor_qy,dinfo_qy;
 
 	    hdr1 "report/table-row" { header=yes; value = '[ORGANIZATION]'; }
-	    hdr2 "report/table-row" { header=yes; value = 'Name=Your Organization'; }
-	    hdr3 "report/table-row" { header=yes; value = 'Abbreviation=DEMO'; }
-	    hdr4 "report/table-row" { header=yes; value = 'Code=DEMO-USA'; }
+	    hdr2 "report/table-row" { header=yes; value = runserver('Name=' + :this:tntname); }
+	    hdr3 "report/table-row" { header=yes; value = runserver('Abbreviation=' + :this:tntabbrev); }
+	    hdr4 "report/table-row" { header=yes; value = runserver('Code=' + :this:tntcode); }
 	    hdr5 "report/table-row" { header=yes; value = 'DefaultCurrencyCode=USD'; }
 	    hdr6 "report/table-row" { header=yes; value = '[DONORS]'; }
 

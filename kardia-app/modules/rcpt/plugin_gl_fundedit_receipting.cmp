@@ -71,7 +71,7 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 			    :ra:s_modified_by,
 			    a_acct_desc = isnull(:a:a_acct_desc, '**INVALID**')
 			from
-			    /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ra,
+			    IDENTITY /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ra,
 			    /apps/kardia/data/Kardia_DB/a_account/rows a
 			where
 			    :ra:a_ledger_number *= :a:a_ledger_number and

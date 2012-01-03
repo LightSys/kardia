@@ -1,7 +1,7 @@
 $Version=2$
 annual_statement "system/report"
     {
-    // This is an Annual Giving Statement report to be sent to a donor.
+    // This is a Giving Statement report to be sent to a donor.
     // 12-Apr-2011 / Greg Beeley / LightSys
     //
     // It needs to show at the top:
@@ -29,7 +29,7 @@ annual_statement "system/report"
     //   - Year Period
     //   - Whether to include all gifts, just non-2120 gifts, or 4100 gifts only.
     //
-    title = "Annual Giving Statement";
+    title = "Giving Statement";
     document_format="application/pdf";
     resolution = 300;
     pagewidth=85;
@@ -42,8 +42,15 @@ annual_statement "system/report"
     // Parameters
     ledger "report/parameter" { type=string; }
     year_period "report/parameter" { type=string; }
+    stmt_start_period "report/parameter" { type=string; }
+    stmt_end_period "report/parameter" { type=string; }
     donor_id "report/parameter" { type=string; }
     which_accts "report/parameter" { type=string; default="allgifts"; }
+    rcpt_type "report/parameter" { type=string; }
+
+    // Office
+    ofckey "report/parameter" { type=string; default=runserver( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows cfg where :cfg:a_ledger_number = :this:ledger and :cfg:a_config_name = 'OfcPartnerKey') ); }
+    ofcloc "report/parameter" { type=string; default=runserver( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows cfg where :cfg:a_ledger_number = :this:ledger and :cfg:a_config_name = 'OfcRcptLocation') ); }
 
     // Query to get site information
     site_qy "report/query"
@@ -65,6 +72,65 @@ annual_statement "system/report"
 		WHERE
 			:a_ledger_number = :this:ledger
 		";
+	}
+
+    // Office name and address
+    office_qy "report/query"
+	{
+	// the use of the aggregate first() is to convert this query into
+	// a group, which returns a null row if nothing matches, rather than
+	// no rows.
+	sql = " SELECT
+			p_partner_key = first(:p:p_partner_key),
+			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			:p:p_org_name,
+			:p:p_surname,
+			:p:p_given_name,
+			:p:p_title,
+			:pl:p_in_care_of,
+			:pl:p_address_1,
+			:pl:p_address_2,
+			:pl:p_address_3,
+			:pl:p_city,
+			:pl:p_state_province,
+			:pl:p_postal_code,
+			:pl:p_country_code,
+			p_country_name = upper(:c:p_country_name),
+			:af:p_format
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows pl,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
+		WHERE
+			:p:p_partner_key = :this:ofckey and
+			:pl:p_partner_key =* :p:p_partner_key and
+			:pl:p_revision_id = 0 and 
+			:pl:p_location_id = convert(integer, :this:ofcloc) and
+			:c:p_country_code =* :pl:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = 'STANDARD'
+		";
+	}
+
+    list_qy "report/query"
+	{
+	sql = runserver(condition(:this:donor_id is null,
+	    "	SELECT
+			:p_donor_partner_id
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+		WHERE
+			:a_receipt_desired = :this:rcpt_type and
+			:a_period >= :stmt_start_period_qy:a_period and
+			:a_period <= :stmt_end_period_qy:a_period
+		GROUP BY
+			:p_donor_partner_id
+		",
+	    "	SELECT
+			p_donor_partner_id = :this:donor_id
+		"
+	    ));
 	}
 
     // Get donor information
@@ -95,7 +161,7 @@ annual_statement "system/report"
 			/apps/kardia/data/Kardia_DB/p_country/rows c,
 			/apps/kardia/data/Kardia_DB/p_address_format/rows af
 		WHERE
-			:p:p_partner_key = :this:donor_id and
+			:p:p_partner_key = :list_qy:p_donor_partner_id and
 			:pl:p_partner_key =* :p:p_partner_key and
 			:pl:p_revision_id = 0 and 
 			:c:p_country_code =* :pl:p_country_code and
@@ -111,7 +177,9 @@ annual_statement "system/report"
 	{
 	sql = "	SELECT
 			start_period = min(:p:a_period),
-			end_period = max(:p:a_period)
+			end_period = max(:p:a_period),
+			stmt_start_period = isnull(:this:stmt_start_period, min(:p:a_period)),
+			stmt_end_period = isnull(:this:stmt_end_period, max(:p:a_period))
 		FROM
 			/apps/kardia/data/Kardia_DB/a_period/rows p
 		WHERE
@@ -141,6 +209,28 @@ annual_statement "system/report"
 			:p:a_ledger_number = :this:ledger
 		";
 	}
+    stmt_start_period_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		WHERE
+			:p:a_period = :period_qy:stmt_start_period and
+			:p:a_ledger_number = :this:ledger
+		";
+	}
+    stmt_end_period_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		WHERE
+			:p:a_period = :period_qy:stmt_end_period and
+			:p:a_ledger_number = :this:ledger
+		";
+	}
 
     // Gift information for donor for the year
     gift_info_qy "report/query"
@@ -158,7 +248,7 @@ annual_statement "system/report"
 			:g:a_ledger_number = :this:ledger and
 			:g:a_period >= :period_qy:start_period and
 			:g:a_period <= :period_qy:end_period and
-			:g:p_donor_partner_id = :this:donor_id and
+			:g:p_donor_partner_id = :list_qy:p_donor_partner_id and
 			:g:a_posted = 1 and
 			:i:a_ledger_number = :g:a_ledger_number and
 			:i:a_batch_number = :g:a_batch_number and
@@ -177,6 +267,8 @@ annual_statement "system/report"
 	{
 	sql = runserver("
 		SELECT
+			start_limit = :stmt_start_period_qy:a_period,
+			this_period = :g:a_period,
 			:g:a_ledger_number,
 			:g:a_batch_number,
 			:g:a_gift_number,
@@ -189,14 +281,16 @@ annual_statement "system/report"
 		WHERE
 			:g:a_ledger_number = :this:ledger and
 			:g:a_period >= :period_qy:start_period and
-			:g:a_period <= :period_qy:end_period and
-			:g:p_donor_partner_id = :this:donor_id and
+			:g:a_period <= :period_qy:stmt_end_period and
+			:g:p_donor_partner_id = :list_qy:p_donor_partner_id and
 			:g:a_posted = 1
 		ORDER BY
 			:g:a_batch_number,
 			:g:a_gift_number
 		");
-	goods_total "report/aggregate" { compute="sum(:goods)"; reset = 0; }
+	disp_goods_total "report/aggregate" { compute="isnull(sum(:goods),$0)"; reset=1; where=":this_period >= :start_limit"; }
+	goods_total "report/aggregate" { compute="sum(:goods)"; reset = 1; }
+	goods_total2 "report/aggregate" { compute="sum(:goods)"; reset = 1; }
 	}
 
     gift_items_qy "report/query"
@@ -204,6 +298,8 @@ annual_statement "system/report"
 	sql = runserver("
 		SELECT
 			item_amt = :i:a_amount,
+			start_limit = :stmt_start_period_qy:a_period,
+			this_period = :i:a_period,
 			cc = :i:a_cost_center,
 			ccname = :c:a_cc_desc,
 			ckno = :i:a_recv_document_id,
@@ -222,9 +318,10 @@ annual_statement "system/report"
 			"and :c:a_cost_center = :i:a_cost_center
 			and :c:a_ledger_number = :i:a_ledger_number
 		");
-	item_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; reset = 0; }
-	item_nontaxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 1"; reset = 0; }
-	item_taxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 0"; reset = 0; }
+	disp_item_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; reset=1; where=":this_period >= :start_limit"; }
+	item_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; reset = 1; }
+	item_nontaxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 1"; reset = 1; }
+	item_taxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 0"; reset = 1; }
 	}
 
 
@@ -232,8 +329,9 @@ annual_statement "system/report"
 	{
 	moneyformat = "-###,###,##0.00";
 	dateformat = "dd-MMM-yyyy";
+	ffsep = yes;
 
-	source = ledger_qy,period_qy,start_period_qy,end_period_qy,site_qy,donor_qy,gift_info_qy;
+	source = office_qy,ledger_qy,period_qy,start_period_qy,end_period_qy,stmt_start_period_qy,stmt_end_period_qy,site_qy,list_qy,donor_qy,gift_info_qy;
 
 	hdrimg "report/image"
 	    {
@@ -249,10 +347,10 @@ annual_statement "system/report"
 	    x=0; y=0; width=80; height=4;
 	    font=helvetica;
 	    align=left;
-	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Annual Giving Statement\n"); }
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Giving Statement\n"); }
 	    t_d1 "report/data" { fontsize=10; value = runserver("From " + :ledger_qy:a_ledger_desc + "\n"); }
 	    //t_d2 "report/data" { fontsize=10; value = runserver("For " + :donor_qy:acct_name + isnull(", " + :donor_qy:p_city + ", " + :donor_qy:p_state_province, "") + "\n"); }
-	    t_d3 "report/data" { fontsize=10; value = runserver("Statement Period: " + :start_period_qy:a_period_desc + " - " + :end_period_qy:a_period_desc + "\n"); }
+	    t_d3 "report/data" { fontsize=10; value = runserver("Statement Period: " + :stmt_start_period_qy:a_period_desc + " - " + :stmt_end_period_qy:a_period_desc + "\n"); }
 	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
 	    }
 
@@ -292,7 +390,8 @@ annual_statement "system/report"
 	    x=40; y=6.53; width=29; height=1;
 	    font=helvetica;
 	    g_d0 "report/data" { fontsize=15; style=bold; value="Given To:\n"; }
-	    d_d1 "report/data" { fontsize=10; value="Some Organization\nPO Box 12345\nSomewhere, USA 00000-0000"; }
+	    g_d1 "report/data" { fontsize=10; value=runserver(:office_qy:acct_name + "\n"); }
+	    g_d2 "report/data" { fontsize=10; value=runserver(substitute(isnull(:office_qy:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=office_qy,p=office_qy')); }
 	    }
 
 	gift_table_hdr "report/area"
@@ -301,14 +400,14 @@ annual_statement "system/report"
 	    margintop = 2.5;
 	    fontsize=10;
 	    font=helvetica;
-	    value=runserver("You gave to Some Organization for its ministry under the direction of the following:\n");
+	    value=runserver("You gave to " + :office_qy:p_org_name + " for its ministry under the direction of the following:\n");
 	    }
 
 	gift_table "report/table"
 	    {
 	    x=0; width=80; height=0;
-	    columns=9;
-	    widths=5,6,6,9,6,25,8,5,5;
+	    columns=8;
+	    widths=5,6,6,9,31,8,5,5;
 	    colsep=0.5;
 	    nullformat="";
 	    moneyformat = "-###,###,##0.00";
@@ -330,8 +429,7 @@ annual_statement "system/report"
 		tg_rcpt "report/table-cell" { value='Receipt #'; align=center; }
 		tg_goods "report/table-cell" { value='GoodsProv'; align=center; }
 		tg_ckno "report/table-cell" { value='Check #'; align=center; }
-		tg_cc "report/table-cell" { value='Desig.'; align=center; }
-		tg_desc "report/table-cell" { value='Description'; align=center; }
+		tg_cc "report/table-cell" { value='Designation'; align=center; }
 		tg_amt "report/table-cell" { value='Amount'; align=center; }
 		tg_anon "report/table-cell" { value='Anon?'; align=center; }
 		tg_pers "report/table-cell" { value='NonDed?'; align=center; }
@@ -339,7 +437,7 @@ annual_statement "system/report"
 
 	    gift_sep "report/table-row"
 		{
-		condition = runserver(:gift_items_qy:cx__rowid == 0);
+		condition = runserver(:gift_items_qy:cx__rowid == 0 and :gift_items_qy:this_period >= :gift_items_qy:start_limit);
 		margintop = 0.2;
 		fontsize = 1;
 		value=runserver("");
@@ -347,6 +445,7 @@ annual_statement "system/report"
 
 	    onegift "report/table-row"
 		{
+		condition=runserver(:gift_items_qy:this_period >= :gift_items_qy:start_limit);
 		allowbreak=no;
 		fontsize=9;
 		font=helvetica;
@@ -356,11 +455,37 @@ annual_statement "system/report"
 		g_rcpt "report/table-cell" { value=runserver(condition(:gift_items_qy:cx__rowid == 0, :gifts_qy:rcpt_no, '')); font=courier; }
 		g_goods "report/table-cell" { value=runserver(condition(:gift_items_qy:cx__rowid == 0, condition(:gifts_qy:goods == $0, '-   ', :gifts_qy:goods), '')); font=courier; align=right; }
 		g_ckno "report/table-cell" { value=runserver(:gift_items_qy:ckno); font=courier; }
-		g_cc "report/table-cell" { value=runserver(:gift_items_qy:cc); }
-		g_desc "report/table-cell" { value=runserver(:gift_items_qy:ccname); }
+		g_desc "report/table-cell" { value=runserver(:gift_items_qy:cc + ' ' + :gift_items_qy:ccname); }
 		g_amt "report/table-cell" { value=runserver(:gift_items_qy:item_amt); font=courier; align=right; }
 		g_anon "report/table-cell" { value=runserver(condition(:gift_items_qy:a_confidential, 'Anon', '-')); align=center; }
 		g_pers "report/table-cell" { value=runserver(condition(:gift_items_qy:a_non_tax_deductible, 'NonDed', '-')); align=center; }
+		}
+
+	    end_sep "report/table-row"
+		{
+		summary = yes;
+		margintop = 0.2;
+		fontsize = 1;
+		value=runserver("");
+		}
+
+	    period_summary "report/table-row"
+		{
+		summary = yes;
+		allowbreak=no;
+		fontsize=9;
+		font=helvetica;
+		margintop = 0.1;
+		topborder = 0.05;
+
+		s_date "report/table-cell" { value=runserver(''); }
+		s_rcpt "report/table-cell" { value=runserver(''); font=courier; }
+		s_goods "report/table-cell" { value=runserver(:gifts_qy:disp_goods_total); font=courier; style=bold; align=right; }
+		s_ckno "report/table-cell" { value=runserver(''); font=courier; }
+		s_desc "report/table-cell" { value=runserver(:stmt_start_period_qy:a_period_desc + ' - ' + :stmt_end_period_qy:a_period_desc); }
+		s_amt "report/table-cell" { value=runserver(:gift_items_qy:disp_item_total); font=courier; align=right; style=bold; }
+		s_anon "report/table-cell" { value=runserver(''); align=center; }
+		s_pers "report/table-cell" { value=runserver(''); align=center; }
 		}
 	    }
 
@@ -371,13 +496,15 @@ annual_statement "system/report"
 	    font=helvetica;
 	    fontsize=10;
 
-	    s_d0 "report/data" { value=runserver("Total Gifts:\t\t\t" + isnull(:gift_items_qy:item_total,'none') + "\n"); }
-	    s_d1 "report/data" { value=runserver("Goods Provided in Return for Gifts:\t" + isnull(:gifts_qy:goods_total,'none') + "\n"); }
+	    s_d0 "report/data" { value=runserver("-- Year to Date " + datepart(year, :end_period_qy:a_end_date) + " --\nGifts through " + :stmt_end_period_qy:a_period_desc + ":"); }
+	    s_d0b "report/data" { value=runserver(isnull(:gift_items_qy:item_total,'none')); xpos=24; }
+	    s_d1 "report/data" { value=runserver("\nGoods Provided in Return for Gifts:\t" + isnull(:gifts_qy:goods_total,'none') + "\n"); }
 	    s_d2 "report/data" { value=runserver("Non-Tax Deductible Designations:\t" + isnull(:gift_items_qy:item_nontaxded_total, 'none') + "\n"); }
 	    s_d3 "report/data" { value=runserver("\n"); }
-	    s_d4 "report/data" { value=runserver("Tax Deductible Total:\t\t" + isnull(:gift_items_qy:item_taxded_total - :gifts_qy:goods_total, 'none') + "\n"); }
+	    s_d4 "report/data" { value=runserver("Deductible Total, " + :stmt_end_period_qy:a_period_desc + ":"); }
+	    s_d4b "report/data" { value=runserver(isnull(:gift_items_qy:item_taxded_total - :gifts_qy:goods_total2, 'none')); xpos=24; }
 
-	    s_d5 "report/data" { fontsize=8; style=italic; value="\n\nUnless otherwise stated, no goods or services have been received by the donor in return for the gifts indicated.  Gifts which are not tax deductible are marked as 'NonDed'.  Anonymous/Confidential gifts are marked Anon.  All contributions received by Some Organization, PO Box 12345, Somewhere, USA 00000-0000, for ministries and projects under its control are income tax deductible.\n"; }
+	    s_d5 "report/data" { fontsize=8; style=italic; value=runserver("\n\nUnless otherwise stated, no goods or services have been received by the donor in return for the gifts indicated.  Gifts which are not tax deductible are marked as 'NonDed'.  Anonymous/Confidential gifts are marked Anon.  All contributions received by " + :office_qy:p_org_name + " for ministries and projects under its control are income tax deductible."); }
 	    }
 	}
     }

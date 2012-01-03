@@ -100,7 +100,7 @@ plugin_base_partneredit_donor "widget/component-decl"
 			acct_with_donor "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_account_with_donor'; ctl_type=editbox; text='Account at Donor:'; empty_desc="optional"; } 
 			pref_location "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_location_id'; ctl_type=dropdown; text='Best Contact Addr:'; sql=runserver("select 1,1 where 1 = 0"); } 
 			pref_contact "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_contact_id'; ctl_type=dropdown; text='Best Contact:'; sql=runserver("select 1,1 where 1 = 0"); } 
-			receipt_desired "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_receipt_desired'; ctl_type=dropdown; text='Receipt Pref:'; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_a_receipt_type/rows"); } 
+			receipt_desired "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_receipt_desired'; ctl_type=dropdown; text='Receipt Pref:'; sql=runserver("select :a_receipt_type_desc, :a_receipt_type from /apps/kardia/data/Kardia_DB/a_receipt_type/rows where :a_is_enabled = 1"); } 
 			orgfirst "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_org_name_first'; ctl_type=checkbox; text='Org First on Rcpt?'; orgfirst_hints "widget/hints" { default=runclient(1); style=notnull; } } 
 			allow_pmts "widget/component" { height=20; label_width=130; path="/sys/cmp/smart_field.cmp"; field='p_allow_contributions'; ctl_type=checkbox; text='Contrib. Allowed?'; allow_pmts_hints "widget/hints" { default=runclient(1); style=notnull; } } 
 

@@ -81,6 +81,7 @@ donation_detail "system/report"
 			rcpt = :d:a_receipt_number,
 			extname = rtrim(:d:p_donor_partner_id + isnull(' ' + rtrim(:p:p_given_name) + ' ' + :p:p_surname, '**INVALID**')),
 			:d:a_gift_number,
+			:d:a_comment,
 			firstline = min(:i:a_split_number),
 			dcnt = count(:i:a_split_number),
 			checkmin = min(:i:a_recv_document_id),
@@ -220,7 +221,7 @@ donation_detail "system/report"
 		d_ck "report/table-cell" { value=runserver(condition(:don_qy:checkmin != :don_qy:checkmax, 'multiple', :don_qy:checkmin)); align=left; }
 		d_date "report/table-cell" { value=runserver(:don_qy:date); align=left; }
 		d_donor "report/table-cell" { value=runserver(:don_qy:extname); align=left; font=helvetica; }
-		d_desc "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
+		d_desc "report/table-cell" { value=runserver(:don_qy:a_comment); align=left; font=helvetica; }
 		d_don "report/table-cell" { value=runserver(:don_qy:dtotal); align=right; }
 		d_gl "report/table-cell" { value=runserver(''); align=right; }
 		d_diff "report/table-cell" { value=runserver(''); align=right; }

@@ -66,13 +66,9 @@ monthly_gift_list "system/report"
 			:g:a_ledger_number = :this:ledger and
 			:g:a_period = :this:period and
 			:g:a_posted = 1 and
-			-- :g:p_donor_partner_id >= '57000' and
-			-- :g:p_donor_partner_id <= '57999' and
 			:p:p_partner_key = :g:p_donor_partner_id
 		GROUP BY
 			:g:p_donor_partner_id
-		--LIMIT
-		--	100
 		";
 	}
 

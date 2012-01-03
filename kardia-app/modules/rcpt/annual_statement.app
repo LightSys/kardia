@@ -1,7 +1,7 @@
 $Version=2$
 annual_statement "widget/page"
     {
-    title = "Annual Giving Statement for Donor";
+    title = "Periodic Giving Statement for Donor";
     width=580;
     height=553;
     background="/apps/kardia/images/bg/light_bgnd.jpg";
@@ -20,12 +20,14 @@ annual_statement "widget/page"
 	    {
 	    x=32;y=8;width=514;height=496;
 	    spacing=4;
-	    lbl_opt "widget/label" { height=30; font_size=16; text="Annual Giving Statement Options:"; align=center; }
+	    lbl_opt "widget/label" { height=30; font_size=16; text="Periodic Giving Statement Options:"; align=center; }
 
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
 
 	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
 
+	    sep "widget/autolayoutspacer" { height=4; }
+	    donor_txt "widget/label" { height=16; x=120; text="Donor Selection:"; style=bold; }
 	    f_donorid "widget/component"
 		{
 		height=24;
@@ -45,10 +47,70 @@ annual_statement "widget/page"
 
 		donor_hints "widget/hints" { style=applyonchange; }
 		}
+	    donor2_txt "widget/label" { height=16; x=120; text="- or -"; }
+	    f_rcpttype "widget/component"
+		{
+		height=24;
+		width=350;
+		path="/sys/cmp/smart_field.cmp";
+		field="rcpt_type";
+		text="All Requesting:";
+		ctl_type=dropdown;
+		label_width=120;
+		sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_receipt_type/rows where :tag != 'I' and :tag != 'N'"; 
+		}
 
-	    f_period "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="year_period"; text="Year:"; empty_desc = "required"; ctl_type=dropdown; sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_parent_period is null and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); label_width=120; }
+	    sep0 "widget/autolayoutspacer" { height=4; }
+	    period_txt "widget/label" { height=16; x=120; text="Statement Period:"; style=bold; }
+	    f_year "widget/component"
+		{
+		width=350;
+		height=24;
+		path="/sys/cmp/smart_field.cmp";
+		field="year_period";
+		text="Year:";
+		empty_desc = "required";
+		ctl_type=dropdown;
+		sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_parent_period is null and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc");
+		label_width=120;
+
+		year_sel_cn "widget/connector"
+		    {
+		    event="DataChange";
+		    event_condition=runclient(char_length(:Value) > 0);
+		    target=f_start;
+		    action=SetGroup;
+		    Group = runclient(:Value);
+		    }
+		}
+	    f_start "widget/component"
+		{
+		width=350;
+		height=24;
+		path="/sys/cmp/smart_field.cmp";
+		field='stmt_start_period';
+		ctl_type=dropdown;
+		text='Starting Period:';
+		label_width=120;
+		form=rpt_form;
+		sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period asc");
+
+		ref_sel_cn "widget/connector"
+		    {
+		    event="DataChange";
+		    event_condition=runclient(char_length(:rpt_form:stmt_start_period) > 0 and char_length(:rpt_form:year_period) > 0);
+		    target=f_end;
+		    action=SetGroup;
+		    Group = runclient(:f_year:value);
+		    Min = runclient(:Value);
+		    //action=SetSQL;
+		    //sql = runclient("select :a_period + ' - ' + :a_period_desc, :a_period, :a_summary_only from subtree /apps/kardia/modules/gl/periods.qyt/" + :trial_balance:ledger + "/" + :rpt_form:year_period + "|" + :trial_balance:ledger + " order by :a_period asc having :a_summary_only = 0 and :a_period >= " + quote(:rpt_form:ref_period));
+		    }
+		}
+	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='stmt_end_period'; ctl_type=dropdown; text='Ending Period:';  form=rpt_form; label_width=120; sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period asc"); }
 
 	    sep1 "widget/autolayoutspacer" { height=4; }
+	    fmt_txt "widget/label" { height=16; x=120; text="Format Options:"; style=bold; }
 
 	    f_docfmt "widget/component"
 		{ 

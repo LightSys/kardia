@@ -364,6 +364,7 @@ cr_batches "widget/component-decl"
 	    }
 	post_to_gl "widget/textbutton"
 	    {
+	    condition = runserver((select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows where :s_endorsement = 'gift_manage' and :s_context = 'ledger=' + :this:ledger and :s_subject = 'u:' + user_name()) > 0 or (select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows where :s_endorsement = 'gift_manage' and :s_context = 'ledger=' + :this:ledger) == 0);
 	    width = 172;
 	    height = 40;
 	    text = "Post Batch To GL";

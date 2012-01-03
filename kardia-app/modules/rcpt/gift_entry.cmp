@@ -366,13 +366,13 @@ gift_entry "widget/component-decl"
 
 	    rcpt_hbox "widget/hbox"
 		{
-		height=188;
+		height=198;
 		spacing=20;
 
 		rcpt_vbox1 "widget/vbox"
 		    {
 		    width=270;
-		    spacing=6;
+		    spacing=4;
 
 		    prevrcpt_form "widget/form"
 			{
@@ -444,14 +444,15 @@ gift_entry "widget/component-decl"
 
 		    f_rcpt_gifttype "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Gift Type:'; field='a_gift_type'; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_gift_type/rows"; gt_hints "widget/hints" { default='K'; } }
 		    f_rcpt_postdate "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Postmark Date:'; field='a_gift_postmark_date'; ctl_type=datetime; }
-		    f_rcpt_rcptwanted "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Receipt Desired?'; field='a_receipt_desired'; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_receipt_type/rows"; rw_hints "widget/hints" { default=runclient('I'); style=notnull; } }
+		    f_rcpt_rcptwanted "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Receipt Desired?'; field='a_receipt_desired'; ctl_type=dropdown; sql = "select :a_receipt_type_desc, :a_receipt_type from /apps/kardia/data/Kardia_DB/a_receipt_type/rows where :a_is_enabled = 1"; rw_hints "widget/hints" { default=runclient(runserver( (select :a_receipt_type from /apps/kardia/data/Kardia_DB/a_receipt_type/rows where :a_is_enabled = 1 and :a_is_default=1) )); style=notnull; } }
 		    f_rcpt_goods "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Goods Provided:'; tooltip='Value of goods provided to donor for a quid pro quo donation'; field='a_goods_provided'; ctl_type=editbox; rgoods_hints "widget/hints" { default=runclient(0); } }
+		    f_rcpt_notes "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Admin Notes:'; tooltip='Administrative notes (not donor comments)'; field='a_comment'; ctl_type=editbox; }
 		    }
 
 		rcpt_vbox2 "widget/vbox"
 		    {
 		    width=282;
-		    spacing=6;
+		    spacing=4;
 
 		    donor_osrc "widget/osrc"
 			{
@@ -554,13 +555,24 @@ gift_entry "widget/component-decl"
 
 			donor_giving_link "widget/label"
 			    {
-			    height = 22;
+			    height = 18;
 			    widget_class = link;
 			    value = runclient(condition(:donor_giving_osrc:cnt > 0, condition(:donor_giving_osrc:cnt == 1, 'Donor has given one time, on ' ,'Donor has given ' + :donor_giving_osrc:cnt + ' times, last on ') + substring(:donor_giving_osrc:lastdate, 1, 11) + '.', '** No Giving History **'));
 			    //value = runclient(condition((:donor_giving_osrc:donorid == :f_rcpt_donorid:content or not (char_length(:donor_giving_osrc:donorid) == 0)), condition(:donor_giving_osrc:cnt > 0, 'Donor has given ' + :donor_giving_osrc:cnt + ' times, last on ' + substring(:donor_giving_osrc:lastdate, 1, 11) + '.', '** No Giving History **'), ''));
 			    }
 			}
-		    f_rcpt_recvdate "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Received Date:'; field='a_gift_received_date'; ctl_type=datetime; rd_hints "widget/hints" { default=runclient(getdate()); style=readonly; } }
+		    f_rcpt_recvdate "widget/component"
+			{
+			height=20;
+			path="/sys/cmp/smart_field.cmp";
+			label_width=120;
+			text='Received Date:';
+			field='a_gift_received_date';
+			ctl_type=datetime;
+
+			rd_hints1 "widget/hints" { condition=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows cfg where :cfg:a_ledger_number = :this:ledger and :cfg:a_config_name = 'RcptDisabRcvdDt'),0) == 1); default=runclient(getdate()); style=readonly; }
+			rd_hints2 "widget/hints" { condition=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows cfg where :cfg:a_ledger_number = :this:ledger and :cfg:a_config_name = 'RcptDisabRcvdDt'),0) == 0); default=runclient(getdate()); }
+			}
 		    f_rcpt_rcptno "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Receipt Number:'; field='a_receipt_number'; ctl_type=editbox; rn_hints "widget/hints" { style=readonly; } }
 		    f_rcpt_total "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Total Amount:'; field='a_amount'; ctl_type=editbox; rttl_hints "widget/hints" { style=readonly; default=runclient(0); } }
 		    }
@@ -570,13 +582,13 @@ gift_entry "widget/component-decl"
 	desig_pane "widget/pane"
 	    {
 	    style=flat;
-	    height = 322;
+	    height = 312;
 
 	    enabled = runclient(:rcpt_form:form_mode == 'View' or :rcpt_form:form_mode == 'Modify');
 
 	    desig_vbox "widget/vbox"
 		{
-		width = 572; height=322;
+		width = 572; height=312;
 		x=0; y=0;
 		spacing=8;
 
@@ -659,13 +671,13 @@ gift_entry "widget/component-decl"
 
 		    desig_table_pane "widget/pane"
 			{
-			height=166;
+			height=156;
 			widget_class=table_bgnd;
 
 			desig_table "widget/table"
 			    {
 			    x=0; y=0;
-			    height=164; width=570;
+			    height=154; width=570;
 
 			    t_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=50; }
 			    t_cc_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=120; }
