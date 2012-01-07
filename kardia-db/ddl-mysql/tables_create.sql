@@ -1501,6 +1501,10 @@ create table a_subtrx_gift_item (
         a_non_tax_deductible                  bit  default 0,          /* Set this if the gift is a non-tax-deductible gift, such as a personal gift (i.e., payable to missionary instead of support gift) --  */
         a_motivational_code                   varchar(16)  null,       /* Optional motivational code that indicates what motivated the donor to give this gift. --  */
         a_comment                             varchar(255)  null,      /* Gift comments --  */
+        p_dn_donor_partner_id                 char(10)  null,          /* **Denormalized** Partner ID of gift donor. --  */
+        a_dn_receipt_number                   varchar(64)  null,       /* **Denormalized** Receipt number we sent out. --  */
+        a_dn_gift_received_date               datetime  null,          /* **Denormalized** Date gift was received --  */
+        a_dn_gift_postmark_date               datetime  null,          /* **Denormalized** Date gift was postmarked --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

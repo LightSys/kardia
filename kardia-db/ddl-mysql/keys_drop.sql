@@ -422,6 +422,14 @@ alter table a_subtrx_gift_item
 	drop index a_gifttrxi_mcode_idx;
 
 
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_donor_idx;
+
+
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_rcpt_idx;
+
+
 alter table a_subtrx_gift_rcptcnt
 	drop primary key;
 

@@ -91,6 +91,12 @@ alter table a_subtrx_gift_item
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_mcode_idx unique  (a_motivational_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_donor_idx unique  (p_dn_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_rcpt_idx unique  (a_dn_receipt_number, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
 alter table a_motivational_code
 	add constraint a_motiv_code_list unique  (m_list_code, a_ledger_number, a_motivational_code);
 

@@ -425,8 +425,10 @@ alter table a_subtrx_gift_group drop index a_gifttrxgrp_gift_idx;
 /* go */
 /* drop index a_subtrx_gift_item.a_gifttrxi_cc_clustered_idx */ 
 /* go */
+alter table a_subtrx_gift_item drop index a_gifttrxi_donor_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_gift_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_mcode_idx;
+alter table a_subtrx_gift_item drop index a_gifttrxi_rcpt_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_recip_id_idx;
 
 
