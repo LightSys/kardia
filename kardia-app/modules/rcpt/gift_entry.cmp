@@ -815,7 +815,7 @@ gift_entry "widget/component-decl"
 					event = DataChange;
 					target = f_desig_acct_dd;
 					action = SetItems;
-					SQL=runclient("select label = :a:a_account_code + ': ' + :a:a_acct_desc, value = :a:a_account_code, selected = 1 from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr, /apps/kardia/data/Kardia_DB/a_account/rows a where :cr:a_cost_center = " + quote(:f_desig_cc:content) + " and :cr:a_ledger_number = " + quote(:gift_entry:ledger) + " and :a:a_ledger_number = :cr:a_ledger_number and :a:a_account_code = :cr:a_account_code");
+					SQL=runclient("select label = :a:a_account_code + ': ' + :a:a_acct_desc, value = :a:a_account_code, selected = 1 from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr, /apps/kardia/data/Kardia_DB/a_account/rows a where :cr:a_cost_center = " + quote(:f_desig_cc:content) + " and :cr:a_ledger_number = " + quote(:gift_entry:ledger) + " and :a:a_ledger_number = :cr:a_ledger_number and :a:a_account_code = :cr:a_account_code order by :cr:a_is_default asc");
 					}
 				    }
 

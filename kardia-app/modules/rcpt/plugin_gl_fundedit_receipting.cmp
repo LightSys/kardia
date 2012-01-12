@@ -16,7 +16,7 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 	y = 0;
 	width = 490;
 	height = 292;
-	spacing = 8;
+	spacing = 6;
 	cellsize = 20;
 
 	receipting_osrc "widget/osrc"
@@ -65,6 +65,7 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 			    :ra:a_ledger_number,
 			    :ra:a_account_code,
 			    :ra:a_non_tax_deductible,
+			    :ra:a_is_default,
 			    :ra:s_date_created,
 			    :ra:s_created_by,
 			    :ra:s_date_modified,
@@ -98,23 +99,25 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 
 		    ra_table_pane "widget/pane"
 			{
-			height=102;
+			height=82;
 			widget_class=table_bgnd;
 
 			ra_table "widget/table"
 			    {
 			    x=0;y=0;
-			    width=488; height=100;
+			    width=488; height=80;
 			    mode = dynamicrow;
 
 			    t_acct "widget/table-column" { title="GL Account"; fieldname="a_account_code"; width=100; }
-			    t_acctdesc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=150; }
-			    t_liststat "widget/table-column" { title="Non Tax Deductible?"; fieldname="a_non_tax_deductible"; width=100; type=check; }
+			    t_acctdesc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=120; }
+			    t_liststat "widget/table-column" { title="Non Tax Deductible?"; fieldname="a_non_tax_deductible"; width=140; type=check; }
+			    t_default "widget/table-column" { title="Default?"; fieldname="a_is_default"; width=60; type=check; }
 			    }
 			}
 
 		    f_glacct "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_account_code"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Choose GL Account:"; text="GL Account:"; attach_point=editbox; empty_desc = "required"; label_width=150; }
-		    f_non_tax_ded "widget/component" { label_width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_non_tax_deductible; text="Non Tax-Deductible:"; }
+		    f_non_tax_ded "widget/component" { label_width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_non_tax_deductible; text="Non Tax-Deductible?"; }
+		    f_default "widget/component" { label_width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_is_default; text="Default?"; }
 
 		    dt_c "widget/variable" { fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
 		    us_c "widget/variable" { fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }

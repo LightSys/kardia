@@ -1,0 +1,66 @@
+$Version=2$
+receipt_types "widget/component-decl"
+    {
+    width=780;
+    height=480;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    rt_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=780; height=480;
+	spacing=6;
+	cellsize=20;
+
+	rcpt_type_hdr "widget/component"
+	    {
+	    path="/apps/kardia/modules/base/section_label.cmp";
+	    height=24;
+	    text="Receipt Types:";
+	    }
+
+	rt_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/a_receipt_type/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_receipt_type/rows";
+	    replicasize=20;
+	    readahead=20;
+
+	    rt_table_pane "widget/pane"
+		{
+		widget_class = table_bgnd;
+		height=200;
+
+		rt_table "widget/table"
+		    {
+		    height=198;
+		    width=778;
+
+		    rtt_type "widget/table-column" { fieldname=a_receipt_type; title="Type"; width=60; }
+		    rtt_desc "widget/table-column" { fieldname=a_receipt_type_desc; title="Description"; width=500; }
+		    rtt_enab "widget/table-column" { fieldname=a_is_enabled; title="Enabled?"; width=80; type=check; }
+		    rtt_def "widget/table-column" { fieldname=a_is_default; title="Default?"; width=80; type=check; }
+		    }
+		}
+
+	    rt_form "widget/form"
+		{
+		rt_sep "widget/autolayoutspacer" { height=4; }
+		rt_ctls "widget/component"
+		    {
+		    path="/sys/cmp/form_controls.cmp";
+		    height=26;
+		    object_name = "Receipt Type";
+		    }
+		
+		rt_f_type "widget/component" { width=150; path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_receipt_type; text="Receipt Type:"; }
+		rt_f_desc "widget/component" { width=300; path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_receipt_type_desc; text="Description:"; }
+		rt_f_enab "widget/component" { width=300; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_is_enabled; text="Enabled?"; enab_hints "widget/hints" { style=notnull; default=runclient(1); } }
+		rt_f_def "widget/component" { width=300; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_is_default; text="Default?"; def_hints "widget/hints" { style=notnull; default=runclient(0); } }
+
+		hidden_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+		}
+	    }
+	}
+    }

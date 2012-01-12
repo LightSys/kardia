@@ -1370,6 +1370,7 @@ create table a_cc_receipting_accts (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
         a_account_code                        char(16)  not null,      /* a GL account that we can receipt into for this fund. --  */
         a_non_tax_deductible                  bit  default 0,          /* are cash receipts tax deductible? --  */
+        a_is_default                          bit  default 0,          /* is this the default receipting acct for this fund? --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
