@@ -218,19 +218,24 @@ display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_or
 	} // END - donor_query "report/query"
 	
 	// Account / Cost Center Descriptions (given cost center / account codes)
+	// Updated GRB to fetch description from a_cc_receipting_accts if available.
 	acct_cc_name_qy "report/query"
 	{
 		sql = runserver("SELECT
-			cost_center_description = :c:a_cc_desc,
+			cost_center_description = isnull(:ac:a_receipt_comment, :c:a_cc_desc),
 			account_description = :a:a_acct_desc
 		FROM
 			/apps/kardia/data/Kardia_DB/a_account/rows a,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ac
 		WHERE
 			:c:a_ledger_number = :receipt_item_query:a_ledger_number and
 			:c:a_cost_center = :receipt_item_query:a_cost_center and
-			:a:a_ledger_number = :receipt_item_query:a_ledger_number and
-			:a:a_account_code = :receipt_item_query:a_account_code
+			:a:a_ledger_number = :c:a_ledger_number and
+			:a:a_account_code = :receipt_item_query:a_account_code and
+			:ac:a_ledger_number =* :c:a_ledger_number and
+			:ac:a_cost_center =* :c:a_cost_center and
+			:ac:a_account_code =* :a:a_account_code
 			");
 			
 	} // END - acct_cc_name_qy "report/query"
