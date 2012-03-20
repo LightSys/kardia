@@ -55,6 +55,12 @@ alter table p_banking_details
 alter table p_title
 	add constraint p_title_pk primary key  (p_title);
 
+alter table p_gazetteer
+	add constraint p_gazetteer_pk primary key  (p_country_code, p_feature_type, p_feature_id);
+
+alter table p_gazetteer
+	add constraint p_gaz_name_clustered_idx unique  (p_feature_name, p_country_code, p_feature_type, p_feature_id);
+
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
 

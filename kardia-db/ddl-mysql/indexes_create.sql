@@ -102,6 +102,17 @@ create  index p_staff_weblogin_idx on p_staff (p_kardiaweb_login, p_partner_key)
 /* go */
 
 
+/* p_gazetteer */
+create  index p_gaz_altid_idx on p_gazetteer (p_alt_feature_id, p_country_code, p_feature_type, p_feature_id);
+create  index p_gaz_id_idx on p_gazetteer (p_feature_id, p_country_code, p_feature_type);
+/* create  index p_gaz_name_clustered_idx on p_gazetteer (p_feature_name, p_country_code, p_feature_type, p_feature_id)*/ 
+/* go */
+create  index p_gaz_state_idx on p_gazetteer (p_state_province, p_country_code, p_feature_type, p_feature_id);
+create  index p_gaz_type_idx on p_gazetteer (p_feature_type, p_country_code, p_feature_id);
+/* create  index p_gazetteer_pk on p_gazetteer (p_country_code, p_feature_type, p_feature_id)*/ 
+/* go */
+
+
 /* m_list */
 /* create  index m_list_pk on m_list (m_list_code)*/ 
 /* go */

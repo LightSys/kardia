@@ -37,6 +37,12 @@ alter table p_staff
 alter table p_staff
 	add constraint p_staff_weblogin_idx unique  (p_kardiaweb_login, p_partner_key);
 
+alter table p_gazetteer
+	add constraint p_gaz_altid_idx unique  (p_alt_feature_id, p_country_code, p_feature_type, p_feature_id);
+
+alter table p_gazetteer
+	add constraint p_gaz_state_idx unique  (p_state_province, p_country_code, p_feature_type, p_feature_id);
+
 alter table r_group
 	add constraint r_grp_modfile_idx unique  (r_group_module, r_group_file, r_group_name);
 

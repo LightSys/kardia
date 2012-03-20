@@ -122,6 +122,22 @@ alter table p_title
 	drop primary key;
 
 
+alter table p_gazetteer
+	drop primary key;
+
+
+alter table p_gazetteer
+	drop index p_gaz_altid_idx;
+
+
+alter table p_gazetteer
+	drop index p_gaz_state_idx;
+
+
+alter table p_gazetteer
+	drop index p_gaz_name_clustered_idx;
+
+
 alter table m_list
 	drop primary key;
 

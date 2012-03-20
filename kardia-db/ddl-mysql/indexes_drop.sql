@@ -102,6 +102,17 @@ alter table p_staff drop index p_staff_weblogin_idx;
 /* go */
 
 
+/* p_gazetteer */
+alter table p_gazetteer drop index p_gaz_altid_idx;
+alter table p_gazetteer drop index p_gaz_id_idx;
+/* drop index p_gazetteer.p_gaz_name_clustered_idx */ 
+/* go */
+alter table p_gazetteer drop index p_gaz_state_idx;
+alter table p_gazetteer drop index p_gaz_type_idx;
+/* drop index p_gazetteer.p_gazetteer_pk */ 
+/* go */
+
+
 /* m_list */
 /* drop index m_list.m_list_pk */ 
 /* go */
