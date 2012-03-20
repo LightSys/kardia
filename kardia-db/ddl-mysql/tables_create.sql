@@ -346,6 +346,30 @@ create table p_title (
 );
 
 
+/* p_gazetteer */
+
+create table p_gazetteer (
+        p_country_code                        char(2)  not null,       /* The country code containing this gazetteer feature --  */
+        p_feature_type                        char(2)  not null,       /* The feature type. "PC" for postal code (zip code). --  */
+        p_feature_id                          integer  not null,       /* numeric ID of the feature (this depends on feature source) --  */
+        p_alt_feature_id                      integer  not null,       /* alternate numeric ID of the feature (this depends on feature source) --  */
+        p_feature_name                        varchar(80)  not null,   /* name of the feature (zip code, city name, etc.) --  */
+        p_state_province                      varchar(64)  null,       /* if applicable, the state or province that this feature occurs in (data not always available) --  */
+        p_area_land                           float  null,             /* land area of the feature, in square miles --  */
+        p_area_water                          float  null,             /* water area of the feature, in square miles --  */
+        p_latitude                            float  null,             /* latitude of the feature, in degrees. Positive is north latitude, negative is south latitude. --  */
+        p_longitude                           float  null,             /* longitude of the feature, in degrees. Positive is east latitude, negative is west latitude. --  */
+        p_source                              varchar(40)  null,       /* source of the data (USCENSUS2010, for the US 2010 Census Gazetteer files) --  */
+        p_validity_date                       datetime  null,          /* the date that the data was gathered / is first valid. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (

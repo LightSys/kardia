@@ -67,6 +67,10 @@ drop table p_banking_details;
 drop table p_title;
 
 
+/* p_gazetteer */
+drop table p_gazetteer;
+
+
 /* m_list */
 drop table m_list;
 
