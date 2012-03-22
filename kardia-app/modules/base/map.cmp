@@ -10,15 +10,16 @@ map "widget/component-decl"
 			:l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_address_1,
 			:l:p_postal_code, :l:p_state_province, :l:p_in_care_of, :l:p_city, :l:p_location_id,
 			disp_name = condition(char_length(:p:p_org_name) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_title + ' ','') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ','') + ' | ' + :l:p_city + ', ' + :l:p_state_province,
+			popup_text = condition(char_length(:p:p_org_name) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_title + ' ','') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ','') + ' | ' + :l:p_city + ', ' + :l:p_state_province,
 			-- image = '/apps/kardia/images/icons/' + condition(:p:p_partner_class == 'IND', 'person.gif', 'group.gif'),
 			image = '/apps/kardia/images/icons/object.gif',
 			width = 16,
 			height = 16,
 			color = null,
-			x = (:g:p_longitude + 180.0) / 360.0 * 800.0 - 8,
-			y = (90.0 - :g:p_latitude) / 180.0 * 400.0 - 8,
-			:g:p_longitude,
-			:g:p_latitude
+			-- x = (:g:p_longitude + 180.0) / 360.0 * 800.0 - 8,
+			-- y = (90.0 - :g:p_latitude) / 180.0 * 400.0 - 8,
+			lon = :g:p_longitude,
+			lat = :g:p_latitude
 		FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
 			/apps/kardia/data/Kardia_DB/p_location/rows l,
@@ -55,7 +56,7 @@ map "widget/component-decl"
 		    {
 		    height=400;
 		    width=820;
-		    background="/apps/kardia/images/bg/world_800x400.jpg";
+		   // background="/apps/kardia/images/bg/world_800x400.jpg";
 		    allow_selection = yes;
 		    show_selection = yes;
 		    }
