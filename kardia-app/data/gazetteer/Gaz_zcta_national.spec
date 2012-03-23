@@ -16,7 +16,7 @@ Gaz_zcta_national "application/filespec"
     awater "filespec/column" { type=double id=3 }
     aland_sqmi "filespec/column" { type=double id=4 }
     awater_sqmi "filespec/column" { type=double id=5 }
-    lat "filespec/column" { type=double id=6 }
-    lon "filespec/column" { type=double id=7 }
+    lon "filespec/column" { type=double id=6 }
+    lat "filespec/column" { type=double id=7 }
     }
 

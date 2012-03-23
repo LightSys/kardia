@@ -1,0 +1,200 @@
+$Version=2$
+partner_search_controls "widget/component-decl"
+    {
+    width=700;
+    height=225;
+
+    person_search_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    SetFocus "widget/component-decl-action" { }
+
+    auto_focus "widget/connector"
+	{
+	event=SetFocus;
+	event_condition=runclient(:search_tabs:selected == 'express_tab');
+	target=name_eb;
+	action=SetFocus;
+	}
+    auto_focus2 "widget/connector"
+	{
+	event=SetFocus;
+	event_condition=runclient(:search_tabs:selected != 'express_tab');
+	target=p_partner_key_cmp;
+	action=SetFocus;
+	}
+
+    search_tabs "widget/tab"
+	{
+	x=0; y=0;
+	width=700; height=200;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+
+	express_tab "widget/tabpage"
+	    {
+	    title = "Express Search";
+
+	    express_vbox "widget/vbox"
+		{
+		x=8; y=8; width=682; height=182;
+		spacing=4;
+		
+		inst_lbl "widget/label"
+		    {
+		    height = 40;
+		    text = "Enter parts of the name, -or- parts of the address, and then press [ENTER] or click the Search button.  You don't need to type the entire name - the first few letters will do.  For instance, to search for John Smith, you can enter 'J Smi' and all names that are similar to J Smi will be listed.";
+		    }
+		sp1 "widget/autolayoutspacer" { height=4; }
+
+		name_eb_lbl "widget/label"
+		    {
+		    style=bold;
+		    height=16;
+		    text = "Name / ID:";
+		    }
+		name_eb "widget/editbox"
+		    {
+		    height=20;
+		    width=370;
+		    empty_description = "Type all or part of the Name or ID, and press ENTER";
+
+		    do_name_search "widget/connector"
+			{
+			event=ReturnPressed;
+			event_condition=runclient(char_length(:name_eb:content) > 0);
+			target=person_search_osrc;
+			action=QueryText;
+			cx__case_insensitive=1;
+			//field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*";
+			field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
+			objname=runclient("p");
+			query=runclient(:name_eb:content);
+			}
+		    }
+		sp2 "widget/autolayoutspacer" { height=4; }
+		addr_eb_lbl "widget/label"
+		    {
+		    style=bold;
+		    height=16;
+		    text = "Address:";
+		    }
+		addr_eb "widget/editbox"
+		    {
+		    height=20;
+		    width=370;
+		    empty_description = "Type all or part of the Addr/City/St, and press ENTER";
+
+		    do_addr_search "widget/connector"
+			{
+			event=ReturnPressed;
+			event_condition=runclient(char_length(:addr_eb:content) > 0);
+			target=person_search_osrc;
+			action=QueryText;
+			cx__case_insensitive=1;
+			//field_list="*p_address_1*,*p_address_2*,*p_address_3*,*p_in_care_of*,p_city*,p_state_province,p_postal_code*,p_partner_key,*p_location_comments*";
+			field_list="*p_address_1*,*p_address_2*,*p_address_3*,*p_in_care_of*,p_city*,p_state_province,p_postal_code*,p_partner_key";
+			objname=runclient("l");
+			query=runclient(:addr_eb:content);
+			}
+		    }
+		sp3 "widget/autolayoutspacer" { height=4; }
+		search_btn "widget/textbutton"
+		    {
+		    width=100;
+		    text="Search";
+
+		    do_btn_name_search "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(not (char_length(:addr_eb:content) > 0) or char_length(:name_eb:content) > 0);
+			target=person_search_osrc;
+			action=QueryText;
+			cx__case_insensitive=1;
+			//field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*";
+			field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
+			objname=runclient("p");
+			query=runclient(:name_eb:content);
+			}
+		    do_btn_addr_search "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(char_length(:addr_eb:content) > 0 and not (char_length(:name_eb:content) > 0));
+			target=person_search_osrc;
+			action=QueryText;
+			cx__case_insensitive=1;
+			//field_list="*p_address_1*,*p_address_2*,*p_address_3*,*p_in_care_of*,p_city*,p_state_province,p_postal_code*,p_partner_key,*p_location_comments*";
+			field_list="*p_address_1*,*p_address_2*,*p_address_3*,*p_in_care_of*,p_city*,p_state_province,p_postal_code*,p_partner_key";
+			objname=runclient("l");
+			query=runclient(:addr_eb:content);
+			}
+		    }
+		}
+	    }
+
+	advanced_tab "widget/tabpage"
+	    {
+	    title = "Advanced Search";
+
+	    partner_search_form "widget/form"
+		{
+		objectsource = person_search_osrc;
+		allow_nodata = no;
+		allow_view = no;
+		allow_modify = no;
+		allow_new = no;
+		auto_focus = no;
+
+		advinst_lbl "widget/label"
+		    {
+		    x=8; y=8; width=682;
+		    height = 30;
+		    text = "Type your search and press ENTER.  You can use '*' as a wildcard.  For example, enter 'J*' in First Name to search for all first names that start with J.  Enter '*son' in Last Name to find all last names that end with 'son'.";
+		    }
+		advanced_hbox "widget/hbox"
+		    {
+		    x=8; y=48; width=682; height=142;
+
+		    first_vbox "widget/vbox"
+			{
+			width=225;
+			cellsize=20;
+			spacing=4;
+
+			p_partner_key_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_partner_key; text="Partner ID:"; ctl_type="editbox"; tooltip="Partner Key"; }
+			p_given_name_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_given_name; text="First Name:"; lookup_width=325; ctl_type="editbox"; tooltip="The first (Given) name of the partner"; }
+			p_preferred_name_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_preferred_name; text="Salutation:"; lookup_width=325; ctl_type="editbox"; tooltip="Preferred name (nickname, etc) of the partner"; }
+			p_surname_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_surname; text="Last Name:"; lookup_width=325; ctl_type="editbox"; tooltip="The last Name (Surname) of the partner"; }
+			p_org_name_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_org_name; text="Organization:"; lookup_width=325; ctl_type="editbox"; tooltip="The name of the organization"; }
+			p_in_care_of_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_in_care_of; text="In care of:"; lookup_width=325; ctl_type="editbox"; tooltip="In Care Of"; }
+			}
+		    second_vbox "widget/vbox"
+			{
+			width=225;
+			cellsize=20;
+			spacing=4;
+
+			p_address_1_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_address_1; text="Addr Line 1:"; lookup_width=325; ctl_type="editbox"; tooltip="First Address"; }
+			p_address_2_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_address_2; text="Addr Line 2:"; lookup_width=325; ctl_type="editbox"; tooltip="Second Address"; }
+			p_address_3_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_address_3; text="Addr Line 3:"; lookup_width=325; ctl_type="editbox"; tooltip="Third Address field for when address 1 and address2 are filled"; }
+			p_city_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_city; text="City:"; lookup_width=305; ctl_type="editbox"; tooltip="The city or township"; }
+			p_state_province_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_state_province; text="State/Prov:"; lookup_width=305; ctl_type="editbox"; tooltip="Use country-keyed ref tbl 4 state/prov/county"; }
+			p_postal_code_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_postal_code; text="Postal Code:"; ctl_type="editbox"; tooltip="zip code or postal code"; }
+			}
+		    third_vbox "widget/vbox"
+			{
+			width=225;
+			cellsize=20;
+			spacing=4;
+
+			p_country_code_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_country_code; text="Country Code:"; lookup_width=305; ctl_type="editbox"; tooltip="Use ISO codes same as domain names"; }
+			p_partner_class_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_partner_class; text="Partner Type:"; lookup_width=305; tooltip=""; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_partner_class/rows";}
+			p_title_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_title; text="Title:"; ctl_type="editbox"; tooltip="The Partners Title"; }
+			p_comments_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments:"; lookup_width=305; ctl_type="editbox"; tooltip=""; }
+			p_legacy_key_1_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_1; text="Legacy Key:"; ctl_type="editbox"; tooltip="Legacy Key 1"; }
+			p_legacy_key_2_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_2; text="Legacy Key 2:"; ctl_type="editbox"; tooltip="Legacy Key 2"; }
+			}
+		    }
+		}
+	    }
+	}
+    }

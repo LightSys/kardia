@@ -20,7 +20,7 @@ MYSQLOPTS=-u $(DBUSER) -f -h $(DBHOST)
 .PHONY:	createuser
 .PHONY:	countries
 
-db: tables keys indexes dropdowns countries
+db: tables keys indexes dropdowns countries gazetteer
 
 nodb: noindexes nokeys notables nodropdowns
 
@@ -59,3 +59,6 @@ nodropdowns:
 
 countries:
 	mysql $(MYSQLOPTS) < 2011countries.sql
+
+gazetteer:
+	gzip -d < gazetteer-mysql.sql.gz | mysql $(MYSQLOPTS) Kardia_DB

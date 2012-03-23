@@ -25,16 +25,7 @@ partner_search_component "widget/component-decl"
 	{
 	source=window_container;
 	event=Open;
-	event_condition=runclient(:search_tabs:selected == 'express_tab');
-	target=name_eb;
-	action=SetFocus;
-	}
-    auto_focus2 "widget/connector"
-	{
-	source=window_container;
-	event=Open;
-	event_condition=runclient(:search_tabs:selected != 'express_tab');
-	target=p_partner_key_cmp;
+	target=search_controls;
 	action=SetFocus;
 	}
 
@@ -116,8 +107,15 @@ partner_search_component "widget/component-decl"
 	    partner_key = runclient(:person_search_osrc:p_partner_key);
 	    }
 
+	search_controls "widget/component"
+	    {
+	    path = "partner_search_controls.cmp";
+	    x=0; y=0; width=700; height=225;
+	    }
+
 	search_tabs "widget/tab"
 	    {
+	    condition=0;
 	    x=0; y=0;
 	    width=700; height=200;
 	    background="/apps/kardia/images/bg/light_bgnd2.jpg";
@@ -284,52 +282,6 @@ partner_search_component "widget/component-decl"
 			    p_comments_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments:"; lookup_width=305; ctl_type="editbox"; tooltip=""; }
 			    p_legacy_key_1_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_1; text="Legacy Key:"; ctl_type="editbox"; tooltip="Legacy Key 1"; }
 			    p_legacy_key_2_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_2; text="Legacy Key 2:"; ctl_type="editbox"; tooltip="Legacy Key 2"; }
-			    }
-			query_button "widget/textbutton"
-			    {
-			    x=525; y=188;
-			    height=24; width=100;
-			    text="New Search";
-			    enabled=runclient(:partner_search_form:is_queryable);
-			    cnQueryExec "widget/connector" 
-				{ 
-				event="Click"; 
-				target="partner_search_form"; 
-				action="Query"; 
-				}
-			    }
-			queryExec_button "widget/textbutton"
-			    {
-			    x=525; y=217;
-			    height=24; width=100;
-			    text="Do Search";
-			    enabled=runclient(:partner_search_form:is_queryexecutable);
-			    cnQuery "widget/connector" 
-				{
-				event="Click"; 
-				target="partner_search_form"; 
-				action="QueryExec"; 
-				}
-			    }
-			GotoButton "widget/textbutton"
-			    {
-			    x=525; y=246;
-			    height=24; width=100;
-			    text="Select";
-			    enabled=runclient(:partner_search_form:is_editable);
-			    cnGoButton "widget/connector" 
-				{
-				event="Click"; 
-				target="partner_search_component"; 
-				action="PartnerSelected"; 
-				partner_key = runclient(:partner_search_form:p_partner_key);
-				}
-			    cnGoButtonClose "widget/connector" 
-				{
-				event="Click"; 
-				target="partner_search_component"; 
-				action="CloseMe"; 
-				}
 			    }
 			}
 		    }
