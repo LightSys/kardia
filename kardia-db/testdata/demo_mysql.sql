@@ -551,6 +551,16 @@ INSERT INTO `p_partner` (`p_partner_key`, `p_creating_office`, `p_parent_key`, `
 UNLOCK TABLES;
 
 --
+-- Dumping data for table `p_partner_key_cnt`
+--
+
+LOCK TABLES `p_partner_key_cnt` WRITE;
+/*!40000 ALTER TABLE `p_partner_key_cnt` DISABLE KEYS */;
+INSERT INTO `p_partner_key_cnt` (`p_partner_key`) VALUES ('100002');
+/*!40000 ALTER TABLE `p_partner_key_cnt` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Dumping data for table `p_partner_relationship`
 --
 
