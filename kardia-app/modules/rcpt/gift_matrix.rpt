@@ -1,0 +1,282 @@
+$Version=2$
+gift_matrix "system/report"
+    {
+    title = "Gift Matrix";
+    resolution = 300;
+    document_format = "application/pdf";
+
+    pagewidth = 110;
+    pageheight = 51;
+    marginleft = 5;
+    marginright = 5;
+    margintop = 2.5;
+    marginbotton = 2.5;
+
+    ledger "report/parameter" { type=string; }
+    costctr "report/parameter" { type=string; }
+    end_period "report/parameter" { type=string; }
+
+    periods_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			periods = ',' + sum(:p:a_period + ',')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		WHERE
+			:p:a_period <= :this:end_period and
+			:p:a_ledger_number = :this:ledger
+		LIMIT
+			12
+		");
+	}
+
+    p1_qy "report/query" { sql="select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period = :this:end_period"; }
+    p2_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p1_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p3_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p2_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p4_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p3_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p5_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p4_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p6_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p5_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p7_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p6_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p8_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p7_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p9_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p8_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p10_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p9_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p11_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p10_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+    p12_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p11_qy:a_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
+
+    gifts_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			gifts = ',' + sum(:i:a_ledger_number + '|' + :i:a_batch_number + '|' + :i:a_gift_number + ',')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		WHERE
+			:c:a_ledger_number = :this:ledger and
+			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr) and
+			:i:a_posted = 1 and
+			:i:a_ledger_number = :c:a_ledger_number and
+			:i:a_cost_center = :c:a_cost_center and
+			:i:a_period <= :p1_qy:a_period and
+			:i:a_period >= :p12_qy:a_period
+			-- charindex(',' + :i:a_period + ',', ',' + :p1_qy:a_period + ',' + :p2_qy:a_period + ',' + :p3_qy:a_period + ',' + :p4_qy:a_period + ',' + :p5_qy:a_period + ',' + :p6_qy:a_period + ',' + :p7_qy:a_period + ',' + :p8_qy:a_period + ',' + :p9_qy:a_period + ',' + :p10_qy:a_period + ',' + :p11_qy:a_period + ',' + :p12_qy:a_period + ',') > 0
+		ORDER BY
+			:c:a_cost_center
+		");
+	}
+
+    gift_sum_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			amt = isnull(sum(:i:a_amount), $0),
+			cnt = count(1),
+			:i:a_period,
+			:i:a_cost_center,
+			:g:p_donor_partner_id,
+			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			p1val = :p1_qy:a_period,
+			p2val = :p2_qy:a_period,
+			p3val = :p3_qy:a_period,
+			p4val = :p4_qy:a_period,
+			p5val = :p5_qy:a_period,
+			p6val = :p6_qy:a_period,
+			p7val = :p7_qy:a_period,
+			p8val = :p8_qy:a_period,
+			p9val = :p9_qy:a_period,
+			p10val = :p10_qy:a_period,
+			p11val = :p11_qy:a_period,
+			p12val = :p12_qy:a_period
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			charindex(',' + :g:name + ',', :gifts_qy:gifts) > 0 and
+			:g:a_posted = 1 and
+			:g:a_ledger_number = :this:ledger and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			:c:a_cost_center = :i:a_cost_center and
+			:c:a_ledger_number = :i:a_ledger_number and
+			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr) and
+			:p:p_partner_key = :g:p_donor_partner_id
+		GROUP BY
+			:g:p_donor_partner_id,
+			:i:a_cost_center,
+			:g:a_period
+		");
+
+	p1 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p1val"; }
+	p2 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p2val"; }
+	p3 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p3val"; }
+	p4 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p4val"; }
+	p5 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p5val"; }
+	p6 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p6val"; }
+	p7 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p7val"; }
+	p8 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p8val"; }
+	p9 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p9val"; }
+	p10 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p10val"; }
+	p11 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p11val"; }
+	p12 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p12val"; }
+	c_all "report/aggregate" { compute="sum(:cnt)"; }
+	p_all "report/aggregate" { compute="round(sum(:amt))"; }
+
+	tp1 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p1val"; }
+	tp2 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p2val"; }
+	tp3 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p3val"; }
+	tp4 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p4val"; }
+	tp5 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p5val"; }
+	tp6 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p6val"; }
+	tp7 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p7val"; }
+	tp8 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p8val"; }
+	tp9 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p9val"; }
+	tp10 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p10val"; }
+	tp11 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p11val"; }
+	tp12 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p12val"; }
+	tc_all "report/aggregate" { compute="sum(:cnt)"; }
+	tp_all "report/aggregate" { compute="round(sum(:amt))"; }
+	
+	period_agg "report/aggregate" { compute="max(:a_period)"; }
+	cc_agg "report/aggregate" { compute="max(:a_cost_center)"; }
+	id_agg "report/aggregate" { compute="max(:p_donor_partner_id)"; }
+	id3_agg "report/aggregate" { compute="max(:p_donor_partner_id)"; reset=0; }
+	cc2_agg "report/aggregate" { compute="max(:a_cost_center)"; }
+	id2_agg "report/aggregate" { compute="max(:p_donor_partner_id)"; }
+	donor_agg "report/aggregate" { compute="min(:acct_name)"; }
+	}
+
+    donor_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:p_partner_key,
+			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			:p:p_partner_key = :gift_sum_qy:id3_agg
+		");
+	}
+
+    main_form "report/form"
+	{
+	source = periods_qy, p1_qy, p2_qy, p3_qy, p4_qy, p5_qy, p6_qy, p7_qy, p8_qy, p9_qy, p10_qy, p11_qy, p12_qy;
+
+	giftmtx_hdr "report/area"
+	    {
+	    x=0;width=100;height=0;
+	    font=helvetica;
+	    fontsize=10;
+	    paymtx_hdr_info "report/data"
+		{
+		align=center;
+		value=runserver("Gift Matrix on [" + getdate() + " ET] requested by [" + user_name() + "]\nFor ledger " + :this:ledger + ", ending " + :this:end_period + "\n\n");
+		}
+	    }
+
+	info_table "report/table"
+	    {
+	    source = gifts_qy, gift_sum_qy;
+	    //source = gifts_qy, gift_sum_qy, donor_qy;
+
+	    x=0; width=100; height=0;
+	    columns = 17;
+	    widths = 5,22,5,4,4,4,4,4,4,4,4,4,4,4,4,4,8;
+	    colsep=0.5;
+	    nullformat=" ";
+	    moneyformat = "###,###,##0";
+	    dateformat = "dd-MMM-yyyy";
+	    bottomborder=0.3;
+	    topborder=0.3;
+	    margintop=0;
+
+	    hdr_row "report/table-row"
+		{
+		header = yes;
+		font = helvetica;
+		fontsize = 7;
+		bottomborder = 0.05;
+
+		h1 "report/table-cell" { value="ID"; align=center; style=bold; }
+		h2 "report/table-cell" { value="Donor"; align=center; style=bold; }
+		h3 "report/table-cell" { value="Fund"; align=center; style=bold; }
+		h4 "report/table-cell" { value=runserver(:p12_qy:a_period); align=center; style=bold; }
+		h5 "report/table-cell" { value=runserver(:p11_qy:a_period); align=center; style=bold; }
+		h6 "report/table-cell" { value=runserver(:p10_qy:a_period); align=center; style=bold; }
+		h7 "report/table-cell" { value=runserver(:p9_qy:a_period); align=center; style=bold; }
+		h8 "report/table-cell" { value=runserver(:p8_qy:a_period); align=center; style=bold; }
+		h9 "report/table-cell" { value=runserver(:p7_qy:a_period); align=center; style=bold; }
+		h10 "report/table-cell" { value=runserver(:p6_qy:a_period); align=center; style=bold; }
+		h11 "report/table-cell" { value=runserver(:p5_qy:a_period); align=center; style=bold; }
+		h12 "report/table-cell" { value=runserver(:p4_qy:a_period); align=center; style=bold; }
+		h13 "report/table-cell" { value=runserver(:p3_qy:a_period); align=center; style=bold; }
+		h14 "report/table-cell" { value=runserver(:p2_qy:a_period); align=center; style=bold; }
+		h15 "report/table-cell" { value=runserver(:p1_qy:a_period); align=center; style=bold; }
+		h16 "report/table-cell" { value="#"; align=center; style=bold; }
+		h17 "report/table-cell" { value="Total"; align=center; style=bold; }
+		}
+
+	    detail_row "report/table-row"
+		{
+		summary = yes;
+		summarize_for = runserver('' + :gift_sum_qy:p_donor_partner_id + ',' + :gift_sum_qy:a_cost_center);
+		font=courier;
+		fontsize=7;
+		margintop=0.2;
+		marginbottom=0.2;
+
+		r1 "report/table-cell" { value=runserver(:gift_sum_qy:id3_agg); font=helvetica; }
+		r2 "report/table-cell" { value=runserver(:gift_sum_qy:donor_agg); font=helvetica; }
+		r3 "report/table-cell" { value=runserver(:gift_sum_qy:cc_agg); font=helvetica; }
+		r4 "report/table-cell" { value=runserver(:gift_sum_qy:p12); align=right; }
+		r5 "report/table-cell" { value=runserver(:gift_sum_qy:p11); align=right; }
+		r6 "report/table-cell" { value=runserver(:gift_sum_qy:p10); align=right; }
+		r7 "report/table-cell" { value=runserver(:gift_sum_qy:p9); align=right; }
+		r8 "report/table-cell" { value=runserver(:gift_sum_qy:p8); align=right; }
+		r9 "report/table-cell" { value=runserver(:gift_sum_qy:p7); align=right; }
+		r10 "report/table-cell" { value=runserver(:gift_sum_qy:p6); align=right; }
+		r11 "report/table-cell" { value=runserver(:gift_sum_qy:p5); align=right; }
+		r12 "report/table-cell" { value=runserver(:gift_sum_qy:p4); align=right; }
+		r13 "report/table-cell" { value=runserver(:gift_sum_qy:p3); align=right; }
+		r14 "report/table-cell" { value=runserver(:gift_sum_qy:p2); align=right; }
+		r15 "report/table-cell" { value=runserver(:gift_sum_qy:p1); align=right; }
+		r16 "report/table-cell" { value=runserver(:gift_sum_qy:c_all); align=right; }
+		r17 "report/table-cell" { value=runserver(:gift_sum_qy:p_all); align=right; }
+		}
+
+	    summary_row "report/table-row"
+		{
+		summary = yes;
+		font = courier;
+		fontsize = 7;
+		margintop = 0.1;
+		marginbottom = 0.1;
+		topborder = 0.05;
+		style = bold;
+
+		s1 "report/table-cell" { value=runserver('TOTAL:'); font=helvetica; }
+		s2 "report/table-cell" { value=runserver(''); font=helvetica; }
+		s3 "report/table-cell" { value=runserver(''); font=helvetica; }
+		s4 "report/table-cell" { value=runserver(:gift_sum_qy:tp12); align=right; }
+		s5 "report/table-cell" { value=runserver(:gift_sum_qy:tp11); align=right; }
+		s6 "report/table-cell" { value=runserver(:gift_sum_qy:tp10); align=right; }
+		s7 "report/table-cell" { value=runserver(:gift_sum_qy:tp9); align=right; }
+		s8 "report/table-cell" { value=runserver(:gift_sum_qy:tp8); align=right; }
+		s9 "report/table-cell" { value=runserver(:gift_sum_qy:tp7); align=right; }
+		s10 "report/table-cell" { value=runserver(:gift_sum_qy:tp6); align=right; }
+		s11 "report/table-cell" { value=runserver(:gift_sum_qy:tp5); align=right; }
+		s12 "report/table-cell" { value=runserver(:gift_sum_qy:tp4); align=right; }
+		s13 "report/table-cell" { value=runserver(:gift_sum_qy:tp3); align=right; }
+		s14 "report/table-cell" { value=runserver(:gift_sum_qy:tp2); align=right; }
+		s15 "report/table-cell" { value=runserver(:gift_sum_qy:tp1); align=right; }
+		s16 "report/table-cell" { value=runserver(:gift_sum_qy:tc_all); align=right; }
+		s17 "report/table-cell" { value=runserver(:gift_sum_qy:tp_all); align=right; }
+		}
+	    }
+	}
+    }
+
