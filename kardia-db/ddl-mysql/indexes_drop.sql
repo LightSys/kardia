@@ -538,3 +538,8 @@ alter table s_motd_viewed drop index s_motd_viewed_username_idx;
 /* s_sec_endorsement */
 /* drop index s_sec_endorsement.s_end_pk */ 
 /* go */
+
+
+/* s_mykardia */
+/* drop index s_mykardia.s_myk_pk */ 
+/* go */

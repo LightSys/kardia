@@ -1847,3 +1847,21 @@ create table s_sec_endorsement (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+
+
+/* s_mykardia */
+
+create table s_mykardia (
+        s_username                            varchar(20)  not null,   /* username of user --  */
+        s_module                              varchar(20)  not null,   /* module that the plugin belongs to --  */
+        s_plugin                              varchar(255)  not null,  /* filename of the plugin .cmp providing the UI element. --  */
+        s_occurrence                          int  not null,           /* incrementing ID allowing for multiple instances of each plugin (such as a separator line, etc.) --  */
+        s_sequence                            int  not null,           /* order that the plugin comes in on the start page --  */
+        s_height                              int  null,               /* height, in pixels, occupied by the plugin. if null, defaults to height specified in the plugin itself. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);

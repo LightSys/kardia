@@ -349,3 +349,7 @@ drop table s_motd_viewed;
 
 /* s_sec_endorsement */
 drop table s_sec_endorsement;
+
+
+/* s_mykardia */
+drop table s_mykardia;

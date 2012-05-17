@@ -282,3 +282,6 @@ alter table s_motd_viewed
 
 alter table s_sec_endorsement
 	add constraint s_end_pk primary key  (s_endorsement, s_context, s_subject);
+
+alter table s_mykardia
+	add constraint s_myk_pk primary key  (s_username, s_module, s_plugin, s_occurrence);

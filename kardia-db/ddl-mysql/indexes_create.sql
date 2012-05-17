@@ -538,3 +538,8 @@ create  index s_motd_viewed_username_idx on s_motd_viewed (s_username, s_motd_id
 /* s_sec_endorsement */
 /* create  index s_end_pk on s_sec_endorsement (s_endorsement, s_context, s_subject)*/ 
 /* go */
+
+
+/* s_mykardia */
+/* create  index s_myk_pk on s_mykardia (s_username, s_module, s_plugin, s_occurrence)*/ 
+/* go */

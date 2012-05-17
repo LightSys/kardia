@@ -528,3 +528,7 @@ alter table s_motd_viewed
 
 alter table s_sec_endorsement
 	drop primary key;
+
+
+alter table s_mykardia
+	drop primary key;
