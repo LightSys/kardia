@@ -79,7 +79,7 @@ donation_detail "system/report"
 			period = :d:a_period,
 			date = isnull(:d:a_gift_postmark_date, :d:a_gift_received_date),
 			rcpt = :d:a_receipt_number,
-			extname = rtrim(:d:p_donor_partner_id + isnull(' ' + rtrim(:p:p_given_name) + ' ' + :p:p_surname, '**INVALID**')),
+			extname = rtrim(:d:p_donor_partner_id + isnull(' ' + condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, rtrim(:p:p_given_name) + ' ' + :p:p_surname), '**INVALID**')),
 			:d:a_gift_number,
 			:d:a_comment,
 			firstline = min(:i:a_split_number),
