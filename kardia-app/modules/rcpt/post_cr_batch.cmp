@@ -177,6 +177,7 @@ post_cr_batch "widget/component-decl"
 	a_ledger_number = runclient(:a_ledger_number);
 	a_period = runclient(:a_period);
 	a_receipt_sent_date = runclient(:a_receipt_sent_date);
+	types = runclient(:types);
 	}
     setdate_osrc "widget/osrc"
 	{
@@ -184,6 +185,7 @@ post_cr_batch "widget/component-decl"
 	sd_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
 	sd_a_period "widget/parameter"		{ param_name=a_period; type=string; }
 	sd_a_receipt_sent_date "widget/parameter" { param_name=a_receipt_sent_date; type=string; }
+	sd_types "widget/parameter" { param_name=types; type=string; }
 
 	replicasize=1; readahead=1; autoquery=never;
 	sql = " UPDATE
@@ -195,7 +197,8 @@ post_cr_batch "widget/component-decl"
 			:g:a_batch_number = :parameters:a_batch_number and
 			:g:a_ledger_number = :parameters:a_ledger_number and
 			:g:a_period = :parameters:a_period and
-			:g:a_receipt_sent = 0
+			:g:a_receipt_sent = 0 and
+			(:parameters:types = '_' or :parameters:types = :g:a_receipt_desired)
 		";
 	end_setdate "widget/connector"
 	    { 

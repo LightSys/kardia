@@ -18,7 +18,7 @@ cr_batches "widget/component-decl"
 	glpost_cn "widget/connector" { event=GLPosted; target=rcpt_osrc; action=Refresh; }
 	unpost_cn "widget/connector" { event=Unposted; target=rcpt_osrc; action=Refresh; }
 	glunpost_cn "widget/connector" { event=GLUnposted; target=rcpt_osrc; action=Refresh; }
-	setdate_cn1 "widget/connector" { event=SetSentDateComplete; target=cr_batches; action=Launch; Source=runclient(:receipts_rpt:value); Width=800; Height=600; ledger=runclient(:rcpt_osrc:a_ledger_number); batch_number=runclient(:rcpt_osrc:a_batch_number); }
+	setdate_cn1 "widget/connector" { event=SetSentDateComplete; target=cr_batches; action=Launch; Source=runclient(:receipts_rpt:value); Width=800; Height=600; ledger=runclient(:rcpt_osrc:a_ledger_number); batch_number=runclient(:rcpt_osrc:a_batch_number); types=runclient(:print_which_type:value); }
 	setdate_cn2 "widget/connector" { event=SetSentDateComplete; target=rcpt_osrc; action=Refresh; }
 	}
 
@@ -94,15 +94,38 @@ cr_batches "widget/component-decl"
 
 	    print_vbox "widget/vbox"
 		{
-		width=458; height=220; x=10; y=10;
+		width=458; height=230; x=10; y=10;
 		spacing=10;
 
 		print_lbl "widget/label" { height=24; font_size=16; value=runclient("Print Batch " + :rcpt_osrc:a_batch_number + " of Receipts"); align=center; style=bold; }
 
 		sep_line4 "widget/pane" { height=2; fl_height=0; style=lowered; }
 
+		print_which_type "widget/component"
+		    {
+		    path = "/sys/cmp/smart_field.cmp";
+		    ctl_type = dropdown;
+		    text = "Which Types?";
+		    width = 350;
+		    height = 20;
+		    label_width = 140;
+		    sql = "select 'All','_',0; select 'Only Immediate Receipts','I',1";
+
+		    print_wt_hints "widget/hints" { style=notnull; default=runclient('I'); }
+
+		    print_change_type "widget/connector"
+			{
+			event=DataChange;
+			target=print_info_osrc;
+			action=QueryParam;
+			a_ledger_number = runclient(:rcpt_osrc:a_ledger_number);
+			a_batch_number = runclient(:rcpt_osrc:a_batch_number);
+			}
+		    }
+
 		print_info_osrc "widget/osrc"
 		    {
+		    print_wt_param "widget/parameter" { type=string; default=runclient(:print_which_type:value); }
 		    sql = "select
 				min_rcptno = min(:a_receipt_number),
 				max_rcptno = max(:a_receipt_number),
@@ -110,6 +133,8 @@ cr_batches "widget/component-decl"
 				min_sent = min(:a_receipt_sent)
 			    from
 				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows
+			    where
+				:parameters:print_wt_param = '_' or :a_receipt_desired = :parameters:print_wt_param
 			    ";
 		    readahead = 2;
 		    replicasize = 2;
@@ -126,17 +151,17 @@ cr_batches "widget/component-decl"
 
 		    print_info_form "widget/form"
 			{
-			f_min_rcptno "widget/component" { width=300; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=min_rcptno; text="Starting Receipt:"; label_width=140; }
-			f_max_rcptno "widget/component" { width=300; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=max_rcptno; text="Ending Receipt:"; label_width=140; }
-			f_num_rcpts "widget/component" { width=300; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=num_rcpts; text="Number of Receipts:"; label_width=140; }
+			f_min_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=min_rcptno; text="Starting Receipt:"; label_width=140; }
+			f_max_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=max_rcptno; text="Ending Receipt:"; label_width=140; }
+			f_num_rcpts "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=num_rcpts; text="Number of Receipts:"; label_width=140; }
 			}
 		    }
 		sent_date_pane "widget/pane"
 		    {
-		    width=300; height=20;
+		    width=350; height=20;
 		    style=flat;
 		    enabled = runclient(not :print_info_osrc:min_sent);
-		    f_sent_date "widget/component" { x=0; y=0; width=300; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; field=sent_date; text="Mailing Date:"; label_width=140; sd_hints "widget/hints" { default=runclient(getdate()); } }
+		    f_sent_date "widget/component" { x=0; y=0; width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; field=sent_date; text="Mailing Date:"; label_width=140; sd_hints "widget/hints" { default=runclient(getdate()); } }
 		    }
 		sent_date_set "widget/connector"
 		    {
@@ -156,7 +181,7 @@ cr_batches "widget/component-decl"
 
 	    print_ctls_hbox "widget/hbox"
 		{
-		width=458; height=24; x=10; y=240;
+		width=458; height=24; x=10; y=250;
 		spacing=10;
 		align=center;
 
@@ -172,6 +197,7 @@ cr_batches "widget/component-decl"
 			a_period=runclient(:periods_osrc:a_period);
 			a_batch_number=runclient(:rcpt_osrc:a_batch_number);
 			a_receipt_sent_date=runclient(:f_sent_date:value);
+			types = runclient(:print_which_type:value);
 			}
 		    print_ok_cn2 "widget/connector" { event=Click; target=print_rcpt_window; action=Close; }
 		    }
