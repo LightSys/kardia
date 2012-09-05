@@ -64,6 +64,7 @@ donor_report "widget/page"
 		    f_max "widget/component" { width=340; height=24; path="/sys/cmp/smart_field.cmp"; field="max_total"; text="Max. Total Gift:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; }
 		    f_incstates "widget/component" { width=340; height=24; path="/sys/cmp/smart_field.cmp"; field="include_states"; text="Only States:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; }
 		    f_excstates "widget/component" { width=340; height=24; path="/sys/cmp/smart_field.cmp"; field="exclude_states"; text="Exclude States:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; }
+		    f_comm "widget/component" { width=340; height=24; path="/sys/cmp/smart_field.cmp"; field="comment_text"; text="Gift Comment:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; }
 		    }
 
 		col2_vbox "widget/vbox"
@@ -94,6 +95,30 @@ donor_report "widget/page"
 			form=rpt_form;
 			label_width=120;
 			}
+		    cntry_hbox "widget/hbox"
+			{
+			height=24;
+			spacing=4;
+
+			cntry_label "widget/label" { width=116; text="Country Names:"; align=right; }
+			f_cntry_dd "widget/dropdown"
+			    {
+			    width=220;
+			    bgcolor=white; 
+			    fieldname="cntry_fmt";
+			    mode=static;
+			    hilight="#d0d0d0";
+			    numdisplay=7;
+
+			    f_cntry_opt1 "widget/dropdownitem" { label="Full Country Name (default for Sep. Fields)"; value="full"; }
+			    f_cntry_opt2 "widget/dropdownitem" { label="Kardia / ccTLD"; value="kardia"; }
+			    f_cntry_opt3 "widget/dropdownitem" { label="ISO3166-1 Alpha-2"; value="iso_alpha2"; }
+			    f_cntry_opt4 "widget/dropdownitem" { label="ISO3166-1 Alpha-3"; value="iso_alpha3"; }
+			    f_cntry_opt5 "widget/dropdownitem" { label="FIPS 10-4"; value="fips10"; }
+			    f_cntry_opt6 "widget/dropdownitem" { label="Blank (default for PDF)"; value="none"; selected=yes; }
+			    }
+			}
+		    f_showamt "widget/component" { width=340; height=24; path="/sys/cmp/smart_field.cmp"; field="show_amounts"; text="Show Amounts:"; ctl_type=checkbox; label_width=120; }
 		    }
 		}
 	    }
