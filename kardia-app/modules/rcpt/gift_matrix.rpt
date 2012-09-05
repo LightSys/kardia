@@ -13,7 +13,7 @@ gift_matrix "system/report"
     marginbotton = 2.5;
 
     ledger "report/parameter" { type=string; }
-    costctr "report/parameter" { type=string; }
+    costctr "report/parameter" { type=string; default=null; }
     end_period "report/parameter" { type=string; }
 
     periods_qy "report/query"
@@ -54,7 +54,7 @@ gift_matrix "system/report"
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 		WHERE
 			:c:a_ledger_number = :this:ledger and
-			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr) and
+			" + condition(:this:costctr is null, "", "(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr) and") + "
 			:i:a_posted = 1 and
 			:i:a_ledger_number = :c:a_ledger_number and
 			:i:a_cost_center = :c:a_cost_center and
@@ -74,6 +74,7 @@ gift_matrix "system/report"
 			cnt = count(1),
 			:i:a_period,
 			:i:a_cost_center,
+			:i:a_confidential,
 			:g:p_donor_partner_id,
 			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 			p1val = :p1_qy:a_period,
@@ -102,9 +103,10 @@ gift_matrix "system/report"
 			:i:a_gift_number = :g:a_gift_number and
 			:c:a_cost_center = :i:a_cost_center and
 			:c:a_ledger_number = :i:a_ledger_number and
-			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr) and
+			" + condition(:this:costctr is null, "", "(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr) and") + "
 			:p:p_partner_key = :g:p_donor_partner_id
 		GROUP BY
+			:i:a_confidential,
 			:g:p_donor_partner_id,
 			:i:a_cost_center,
 			:g:a_period
@@ -143,10 +145,12 @@ gift_matrix "system/report"
 	period_agg "report/aggregate" { compute="max(:a_period)"; }
 	cc_agg "report/aggregate" { compute="max(:a_cost_center)"; }
 	id_agg "report/aggregate" { compute="max(:p_donor_partner_id)"; }
-	id3_agg "report/aggregate" { compute="max(:p_donor_partner_id)"; reset=0; }
+	id3_agg "report/aggregate" { compute="max(:p_donor_partner_id)"; }
 	cc2_agg "report/aggregate" { compute="max(:a_cost_center)"; }
 	id2_agg "report/aggregate" { compute="max(:p_donor_partner_id)"; }
 	donor_agg "report/aggregate" { compute="min(:acct_name)"; }
+	conf_agg "report/aggregate" { compute="min(:a_confidential)"; }
+	conf2_agg "report/aggregate" { compute="min(:a_confidential)"; }
 	}
 
     donor_qy "report/query"
@@ -223,14 +227,16 @@ gift_matrix "system/report"
 	    detail_row "report/table-row"
 		{
 		summary = yes;
-		summarize_for = runserver('' + :gift_sum_qy:p_donor_partner_id + ',' + :gift_sum_qy:a_cost_center);
+		summarize_for = runserver('' + :gift_sum_qy:a_confidential + ',' + :gift_sum_qy:p_donor_partner_id + ',' + :gift_sum_qy:a_cost_center);
 		font=courier;
 		fontsize=7;
 		margintop=0.2;
 		marginbottom=0.2;
 
-		r1 "report/table-cell" { value=runserver(:gift_sum_qy:id3_agg); font=helvetica; }
-		r2 "report/table-cell" { value=runserver(:gift_sum_qy:donor_agg); font=helvetica; }
+		r1 "report/table-cell" { value=runserver(condition(:gift_sum_qy:conf_agg, '(anon)' + substring(:gift_sum_qy:id2_agg, 1, 0), substring(:gift_sum_qy:id2_agg, 1, 29))); align=left; font=helvetica; }
+		//r1 "report/table-cell" { value=runserver(:gift_sum_qy:id2_agg); font=helvetica; }
+		r2 "report/table-cell" { value=runserver(condition(:gift_sum_qy:conf2_agg, '(anonymous donor)' + substring(:gift_sum_qy:donor_agg, 1, 0), substring(:gift_sum_qy:donor_agg, 1, 40))); align=left; font=helvetica; }
+		//r2 "report/table-cell" { value=runserver(:gift_sum_qy:donor_agg); font=helvetica; }
 		r3 "report/table-cell" { value=runserver(:gift_sum_qy:cc_agg); font=helvetica; }
 		r4 "report/table-cell" { value=runserver(:gift_sum_qy:p12); align=right; }
 		r5 "report/table-cell" { value=runserver(:gift_sum_qy:p11); align=right; }
