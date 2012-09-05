@@ -115,7 +115,7 @@ donation_summary "system/report"
 			:t:a_ledger_number = :this:ledger and
 			:t:a_origin = 'CR' and
 			:t:a_period = :this:period and
-			(:t:a_account_code != '1111' and :t:a_account_code != '1112') and
+			(charindex('Gifts deposited', :t:a_comment) < 1) and
 			:t:a_journal_number == 1 and
 			:t:a_batch_number = :giftbatches_qy:batch
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
