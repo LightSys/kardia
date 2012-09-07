@@ -7,6 +7,10 @@ newuser_default "widget/template"
         font_size = 12;
         show_diagnostics = 0;
         }
+    page_style "widget/page"
+	{
+	widget_template="/apps/kardia/themes/winter-ocean/tpl/winter-ocean.tpl";
+	}
     form "widget/form"
         {
         enter_mode =  "save" ;
