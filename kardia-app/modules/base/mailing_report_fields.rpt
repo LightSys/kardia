@@ -154,6 +154,7 @@ mailing_report "system/report"
 			:p:p_surname,
 			:p:p_given_name,
 			:p:p_title,
+			:p:p_suffix,
 			:p:p_no_mail,
 			:p:p_no_solicitations,
 			:p:p_status_code,
@@ -268,8 +269,8 @@ mailing_report "system/report"
 	partners_table "report/table"
 	    {
 	    x=0; width=80; height=0;
-	    columns=16;
-	    widths=4,4,4,8,8,8,4,8,8,8,8,4,4,4,4,16;
+	    columns=17;
+	    widths=4,4,4,7,7,7,4,4,8,8,7,7,4,4,4,4,16;
 	    colsep=0.5;
 	    nullformat="";
 	    moneyformat = "-###,###,##0.00";
@@ -293,6 +294,7 @@ mailing_report "system/report"
 		tg_surname "report/table-cell" { value='Surname'; align=center; }
 		tg_givenname "report/table-cell" { value='Given Name(s)'; align=center; }
 		tg_title "report/table-cell" { value='Title'; align=center; }
+		tg_suffix "report/table-cell" { value='Suffix'; align=center; }
 		tg_ico "report/table-cell" { value='Care/Of'; align=center; }
 		tg_addr1 "report/table-cell" { value='Address 1'; align=center; }
 		tg_addr2 "report/table-cell" { value='Address 2'; align=center; }
@@ -318,6 +320,7 @@ mailing_report "system/report"
 		d_surname "report/table-cell" { value=runserver(:partners_qy:p_surname); }
 		d_givenname "report/table-cell" { value=runserver(:partners_qy:p_given_name); }
 		d_title "report/table-cell" { value=runserver(:partners_qy:p_title); }
+		d_suffix "report/table-cell" { value=runserver(:partners_qy:p_suffix); }
 		d_ico "report/table-cell" { value=runserver(:partners_qy:p_in_care_of); }
 		d_addr1 "report/table-cell" { value=runserver(:partners_qy:p_address_1); }
 		d_addr2 "report/table-cell" { value=runserver(:partners_qy:p_address_2); }
