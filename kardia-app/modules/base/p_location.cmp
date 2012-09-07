@@ -277,7 +277,7 @@ p_location_component "widget/component-decl"
 				:c:p_contact_type = :ct:tag and
 				convert(integer,:c:p_location_id) *= :l:p_location_id and
 				:c:p_partner_key *= :l:p_partner_key and
-				:l:p_location_type = :lt:tag and
+				:l:p_location_type *= :lt:tag and
 				:l:p_revision_id = 0 and
 				convert(string,:c:p_location_id) *= :lt2:tag and
 				:c:p_record_status_code *= :rsc:tag

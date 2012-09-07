@@ -1,7 +1,7 @@
 $Version=2$
 financial_statement "system/report"
     {
-    title = "Missionary Financial Statement";
+    title = "Financial Statement";
 
     document_format="application/pdf";
     resolution = 300;
@@ -14,7 +14,7 @@ financial_statement "system/report"
 
     filename = runserver("Stmt-" + :this:period + "-" + isnull(:this:costctr, "ALL") + condition(:this:costctr is null, "", "-" + (select condition(charindex(',',:a_cc_desc) > 0, substring(:a_cc_desc, 1, charindex(',',:a_cc_desc) - 1), :a_cc_desc) from /apps/kardia/data/Kardia_DB/a_cost_center/rows where :a_ledger_number = :this:ledger and :a_cost_center = :this:costctr)) + ".pdf");
 
-    // Parameters for Missionary Financial Statement
+    // Parameters for Financial Statement
     ledger "report/parameter" { type=string; default=null; }
     costctr "report/parameter" { type=string; default=null; }
     period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
@@ -51,7 +51,7 @@ financial_statement "system/report"
 
     subcc_qy "report/query"
 	{
-	sql = "select * from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where (:c:a_bal_cost_center = :cctrs_qy:a_cost_center or :c:a_cost_center = :cctrs_qy:a_cost_center) and :c:a_ledger_number = :this:ledger";
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where (:c:a_bal_cost_center = :cctrs_qy:a_cost_center or :c:a_cost_center = :cctrs_qy:a_cost_center) and :c:a_ledger_number = :this:ledger order by :c:a_cost_center";
 	}
 
     gift_and_admin_qy "report/query"
@@ -412,7 +412,7 @@ financial_statement "system/report"
 	hdrimg "report/image"
 	    {
 	    x=67.85;y=0;height=4;width=12.15;
-	    source="/apps/kardia/images/artwork/Kardia2011b-horiz-37.png";
+	    source=/apps/kardia/data/Site.struct:site_report_logo;
 	    }
 
 	rpt_title "report/area"
@@ -422,7 +422,7 @@ financial_statement "system/report"
 	    align=left;
 	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver(:cctrs_qy:a_cost_center + " " + condition(charindex("-", :cctrs_qy:a_cc_desc) > 0, substring(:cctrs_qy:a_cc_desc, 1, charindex("-", :cctrs_qy:a_cc_desc) - 1), :cctrs_qy:a_cc_desc) + "\n"); }
 	    t_d3 "report/data" { fontsize=10; style=bold; value = runserver("Statement Period: " + :period_qy:a_period_desc + "\n"); }
-	    t_d1 "report/data" { fontsize=8; value = runserver("Missionary Financial Statement from " + :ledger_qy:a_ledger_desc + "\n"); }
+	    t_d1 "report/data" { fontsize=8; value = runserver("Financial Statement from " + :ledger_qy:a_ledger_desc + "\n"); }
 	    //t_d2 "report/data" { fontsize=8; value = runserver("For Fund: " + :cctrs_qy:a_cc_desc + " (" + :cctrs_qy:a_cost_center + ")\n"); }
 	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
 	    t_d5 "report/data" { fontsize=8; condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
@@ -722,7 +722,7 @@ financial_statement "system/report"
 	    align=left;
 
 	    sep_line5 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
-	    s5_d0 "report/data" { fontsize=12; style=bold; value = runserver("Missionary Budget:"); }
+	    s5_d0 "report/data" { fontsize=12; style=bold; value = runserver("Budget:"); }
 	    }
 
 	budget_tbl "report/table"
