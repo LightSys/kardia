@@ -38,7 +38,7 @@ donation_summary "system/report"
 			cname = :c:a_cc_desc,
 			aname = :a:a_acct_desc,
 			code = :g:a_cost_center + '.' + :g:a_account_code,
-			txt = :c:a_cc_desc + ' / ' + :a:a_acct_desc,
+			txt = isnull(:c:a_cc_desc + ' / ' + :a:a_acct_desc, '**INVALID**'),
 			:g:a_cost_center,
 			:g:a_account_code
 		from
@@ -47,11 +47,11 @@ donation_summary "system/report"
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:g:a_ledger_number = :this:ledger and
-			:g:a_cost_center = :c:a_cost_center and
 			:g:a_period = :this:period and
-			:c:a_ledger_number = :this:ledger and
-			:a:a_ledger_number = :this:ledger and
-			:a:a_account_code = :g:a_account_code
+			:c:a_cost_center =* :g:a_cost_center and
+			:c:a_ledger_number =* :g:a_ledger_number and
+			:a:a_ledger_number =* :g:a_ledger_number and
+			:a:a_account_code =* :g:a_account_code
 		group by
 			:g:a_cost_center,
 			:g:a_account_code
@@ -188,13 +188,13 @@ donation_summary "system/report"
 	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  GL DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
 	    }
 
-	sep0 "report/data" { value="By Batch:"; font=helvetica; }
+	sep0 "report/data" { value="By Batch:\n"; font=helvetica; style=bold; }
 
 	table "report/table"
 	    {
 	    x=0; width=80; height=0;
 	    columns=7;
-	    widths=7,10,30,9,9,9,3;
+	    widths=7,10,30.2,7,9,9,3;
 	    colsep=0.8;
 	    source=giftbatches_qy, glbatch_qy;
 	    topborder=0.3;
@@ -229,7 +229,7 @@ donation_summary "system/report"
 		{
 		font=courier;
 		fontsize=8;
-		marginbottom=0.0;
+		marginbottom=0.1;
 
 		d_batch "report/table-cell" { value=runserver(:giftbatches_qy:batch); align=left; }
 		d_date "report/table-cell" { value=runserver(:giftbatches_qy:batchdate); align=left; }
@@ -246,7 +246,7 @@ donation_summary "system/report"
 		font=courier;
 		fontsize=8;
 		topborder=0.3;
-		//marginbottom=0.1;
+		marginbottom=0.1;
 
 		s_batch "report/table-cell" { value=runserver(""); align=left; }
 		s_x1 "report/table-cell" { value=runserver(""); align=left; }
@@ -258,14 +258,14 @@ donation_summary "system/report"
 		}
 	    }
 
-	sep "report/data" { value="\nBy Fund:"; font=helvetica; }
+	sep "report/data" { value="\nBy Fund:\n"; font=helvetica; style=bold; }
 
 
 	table "report/table"
 	    {
 	    x=0; width=80; height=0;
 	    columns=7;
-	    widths=6,5,36,7,9,9,3;
+	    widths=6,5,36.2,7,9,9,3;
 	    colsep=0.8;
 	    source=gifts_qy, gl_qy;
 	    topborder=0.3;
@@ -299,7 +299,7 @@ donation_summary "system/report"
 		{
 		font=courier;
 		fontsize=8;
-		marginbottom=0.0;
+		marginbottom=0.1;
 
 		d_acode "report/table-cell" { value=runserver(:gifts_qy:a_cost_center); align=left; }
 		d_ccode "report/table-cell" { value=runserver(:gifts_qy:a_account_code); align=left; }
@@ -316,7 +316,7 @@ donation_summary "system/report"
 		font=courier;
 		fontsize=8;
 		topborder=0.3;
-		marginbottom=1.0;
+		marginbottom=0.1;
 
 		s_acode "report/table-cell" { value=runserver(""); align=left; }
 		s_ccode "report/table-cell" { value=runserver(""); align=left; }

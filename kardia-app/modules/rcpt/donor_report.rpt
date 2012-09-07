@@ -33,8 +33,8 @@ donor_report "system/report"
     resolution = 300;
     pagewidth=85;
     pageheight=66;
-    marginleft=2.0;
-    marginright=2.0;
+    marginleft=2.5;
+    marginright=2.5;
     margintop=3;
     marginbottom=3;
 
@@ -50,6 +50,10 @@ donor_report "system/report"
     max_total "report/parameter" { type=integer; }  // FIXME - money type
     include_states "report/parameter" { type=string; }
     exclude_states "report/parameter" { type=string; }
+    comment_text "report/parameter" { type=string; }
+
+    show_amounts "report/parameter" { type=integer; default=1; }
+    cntry_fmt "report/parameter" { type=string; default='blank'; }
 
     // Add-to-mailing-list Parameters
     list_code "report/parameter" { type=string; }
@@ -150,25 +154,31 @@ donor_report "system/report"
 		SELECT
 			:p:p_partner_key,
 			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			attn = condition(char_length(rtrim(:p:p_org_name)) > 0 and (char_length(rtrim(:p:p_surname)) > 0 or char_length(rtrim(:p:p_given_name)) > 0), 'Attn: ' + rtrim(isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname,'')) ,null),
 			:p:p_org_name,
 			:p:p_surname,
 			:p:p_given_name,
 			:p:p_title,
-			:pl:p_in_care_of,
-			:pl:p_address_1,
-			:pl:p_address_2,
-			:pl:p_address_3,
+			p_in_care_of = condition(char_length(:pl:p_in_care_of) > 0, :pl:p_in_care_of, null),
+			p_address_1 = condition(char_length(:pl:p_address_1) > 0, :pl:p_address_1, null),
+			p_address_2 = condition(char_length(:pl:p_address_2) > 0, :pl:p_address_2, null),
+			p_address_3 = condition(char_length(:pl:p_address_3) > 0, :pl:p_address_3, null),
 			:pl:p_city,
 			:pl:p_state_province,
 			:pl:p_postal_code,
 			:pl:p_country_code,
 			gift_total = isnull(sum(:i:a_amount), $0),
-			last_gift = max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))
+			last_gift = max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)),
+			p_iso3166_2_code = isnull(:c:p_iso3166_2_code,''),
+			p_iso3166_3_code = isnull(:c:p_iso3166_3_code,''),
+			p_fips_code = isnull(:c:p_fips_code,''),
+			p_country_name = isnull(:c:p_country_name,'')
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
-			/apps/kardia/data/Kardia_DB/p_location/rows pl
+			/apps/kardia/data/Kardia_DB/p_location/rows pl,
+			/apps/kardia/data/Kardia_DB/p_country/rows c
 		WHERE
 			:g:a_ledger_number = :this:ledger and
 			" + condition(:this:start_period is null, "", ":g:a_period >= :this:start_period and ") + "
@@ -181,9 +191,11 @@ donor_report "system/report"
 			" + condition(:this:exclude_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:exclude_accts) == 0 and") + "
 			" + condition(:this:include_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:include_funds) > 0 and") + "
 			" + condition(:this:exclude_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:exclude_funds) == 0 and") + "
+			" + condition(:this:comment_text is null, "", "charindex(upper(:this:comment_text), upper(:i:a_comment)) > 0 and") + "
 			:p:p_partner_key =* :g:p_donor_partner_id and
 			:pl:p_partner_key =* :p:p_partner_key and
-			:pl:p_revision_id = 0
+			:pl:p_revision_id = 0 and
+			:c:p_country_code =* :pl:p_country_code
 		GROUP BY
 			:g:p_donor_partner_id
 		HAVING
@@ -277,7 +289,9 @@ donor_report "system/report"
 			fontsize=10; value = runserver("Only States: " + :this:include_states + "\n"); }
 	    t_d11 "report/data" { condition=runserver(not (:this:exclude_states is null));
 			fontsize=10; value = runserver("Excluding States: " + :this:exclude_states + "\n"); }
-	    t_d12 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+	    t_d12 "report/data" { condition=runserver(not (:this:comment_text is null));
+			fontsize=10; value = runserver("Gifts With Comment Including: " + :this:comment_text + "\n"); }
+	    t_d13 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
 	    }
 
 	donor_table "report/table"
@@ -317,9 +331,9 @@ donor_report "system/report"
 
 		d_id "report/table-cell" { value=runserver(:donors_qy:p_partner_key); }
 		d_name "report/table-cell" { value=runserver(:donors_qy:acct_name); }
-		d_addr "report/table-cell" { value=runserver(isnull(:donors_qy:p_in_care_of + " ","") + isnull(:donors_qy:p_address_1 + " ","") + isnull(:donors_qy:p_address_2 + " ","") + isnull(:donors_qy:p_address_3 + " ","") + isnull(:donors_qy:p_city + ", " + :donors_qy:p_state_province + " ","") + isnull(:donors_qy:p_postal_code + " ","")); }
+		d_addr "report/table-cell" { value=runserver(isnull(:donors_qy:attn + " / ", "") + isnull(:donors_qy:p_in_care_of + " / ","") + isnull(:donors_qy:p_address_1 + " / ","") + isnull(:donors_qy:p_address_2 + " / ","") + isnull(:donors_qy:p_address_3 + " / ","") + isnull(:donors_qy:p_city + ", " + :donors_qy:p_state_province + " ","") + isnull(:donors_qy:p_postal_code + " ","") + isnull(condition(:this:cntry_fmt = 'full', :donors_qy:p_country_name, condition(:this:cntry_fmt = 'kardia', :donors_qy:p_country_code, condition(:this:cntry_fmt = 'fips10', :donors_qy:p_fips_code, condition(:this:cntry_fmt = 'iso_alpha2', :donors_qy:p_iso3166_2_code, condition(:this:cntry_fmt = 'iso_alpha3', :donors_qy:p_iso3166_3_code, ''))))),'')); }
 		d_last "report/table-cell" { value=runserver(:donors_qy:last_gift); }
-		d_amt "report/table-cell" { value=runserver(:gift_qy:gift_total); font=courier; align=right; }
+		d_amt "report/table-cell" { value=runserver(condition(:this:show_amounts, :gift_qy:gift_total, '-')); font=courier; align=right; }
 		}
 
 	    totals "report/table-row"

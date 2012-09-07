@@ -57,7 +57,7 @@ annual_statement "widget/page"
 		text="All Requesting:";
 		ctl_type=dropdown;
 		label_width=120;
-		sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_receipt_type/rows where :tag != 'I' and :tag != 'N'"; 
+		sql = "select :a_receipt_type_desc, :a_receipt_type from /apps/kardia/data/Kardia_DB/a_receipt_type/rows where :a_receipt_type != 'I' and :a_receipt_type != 'N' and :a_is_enabled = 1"; 
 		}
 
 	    sep0 "widget/autolayoutspacer" { height=4; }
