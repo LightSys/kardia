@@ -111,7 +111,7 @@ plugin_base_mlist_addmembers "widget/component-decl"
 
 	    add_btn_hbox "widget/hbox"
 		{
-		height=20;
+		height=24;
 		align=center;
 		add_btn "widget/textbutton"
 		    {

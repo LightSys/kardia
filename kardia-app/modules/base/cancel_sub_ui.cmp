@@ -1,0 +1,82 @@
+$Version=2$
+cancel_sub_ui "widget/component-decl"
+    {
+    width=458;
+    height=278;
+
+    subs_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    cancel_sub_window "widget/parameter" { type=object; find_container="widget/childwindow"; }
+    whom_text "widget/parameter" { type=string; deploy_to_client=yes; }
+    
+    cancel_vbox "widget/vbox"
+	{
+	x=0; y=0; width=458; height=278;
+	spacing=8;
+
+	cancel_title "widget/label" { height=20; font_size=15; style=bold; align=center; text="Cancel Subscription"; }
+
+	cancel_line "widget/pane" { height=2; style=lowered; }
+
+	mlist_txt "widget/label" { height=16; value=runclient("List: " + :subs_osrc:m_list_description); }
+	//who_txt "widget/label" { height=16; value=runclient("Whom: " + :subs_osrc:disp_name + " of " + :subs_osrc:disp_city); }
+	who_txt "widget/label" { height=16; value=runclient("Whom: " + :whom_text:value); }
+
+	sep3 "widget/autolayoutspacer" { height=8; }
+
+	cancel_lbl "widget/label" { height=16; text="Cancel Reason:"; }
+
+	reason_dd "widget/dropdown"
+	    {
+	    height=20;
+	    width=300;
+	    bgcolor=white; 
+	    mode=dynamic_server;
+	    hilight="#d0d0d0";
+	    sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_cancel_reason/rows";
+	    }
+
+	inst_lbl "widget/label" { height=64; text="Please select a reason for cancellation, and then click 'Yes, Cancel' below to cancel this subscription.  Note: selecting any reason other than 'No Longer A Donor' will prevent all future auto-subscriptions for this person to this list."; }
+
+	sep5 "widget/autolayoutspacer" { height=8; }
+
+	cancel_ctls_hbox "widget/hbox"
+	    {
+	    height=24; spacing=8;
+	    align=center;
+
+	    yescancel "widget/textbutton"
+		{
+		height=24; width=170;
+		text = "Yes, Cancel";
+		yescancel_cn "widget/connector"
+		    {
+		    event=Click;
+		    target=subs_osrc;
+		    action=Modify;
+		    m_membership_status=runclient('C');
+		    m_reason_cancel=runclient(:reason_dd:value);
+		    m_cancel_date=runclient(getdate());
+		    }
+		yescancel_cn2 "widget/connector"
+		    {
+		    event=Click;
+		    target=subs_osrc;
+		    action=Refresh;
+		    }
+		yescancel_cn3 "widget/connector"
+		    {
+		    event=Click;
+		    target=cancel_sub_window;
+		    action=Close;
+		    }
+		}
+	    nocancel "widget/textbutton"
+		{
+		height=24; width=170;
+		text = "No, Do Not Cancel";
+
+		nocancel_cn "widget/connector" { event=Click; target=cancel_sub_window; action=Close; }
+		}
+	    }
+	}
+    }
