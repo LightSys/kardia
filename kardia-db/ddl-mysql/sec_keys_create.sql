@@ -49,6 +49,9 @@ alter table r_group
 alter table r_group_param
 	add constraint r_param_cmp_idx unique  (r_param_cmp_module, r_param_cmp_file, r_group_name, r_param_name);
 
+alter table r_saved_paramset
+	add constraint r_ps_modfile_idx unique  (r_module, r_file, r_paramset_id);
+
 alter table a_cost_center
 	add constraint a_cc_parent_idx unique  (a_parent_cost_center, a_cost_center, a_ledger_number);
 

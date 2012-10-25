@@ -138,6 +138,10 @@ alter table p_gazetteer
 	drop index p_gaz_name_clustered_idx;
 
 
+alter table p_dup_check_tmp
+	drop primary key;
+
+
 alter table m_list
 	drop primary key;
 
@@ -167,6 +171,18 @@ alter table r_group_param
 
 
 alter table r_group_report_param
+	drop primary key;
+
+
+alter table r_saved_paramset
+	drop primary key;
+
+
+alter table r_saved_paramset
+	drop index r_ps_modfile_idx;
+
+
+alter table r_saved_param
 	drop primary key;
 
 
@@ -506,6 +522,10 @@ alter table s_user_data
 	drop primary key;
 
 
+alter table s_user_loginhistory
+	drop primary key;
+
+
 alter table s_subsystem
 	drop primary key;
 
@@ -527,6 +547,14 @@ alter table s_motd_viewed
 
 
 alter table s_sec_endorsement
+	drop primary key;
+
+
+alter table s_sec_endorsement_type
+	drop primary key;
+
+
+alter table s_sec_endorsement_context
 	drop primary key;
 
 

@@ -113,6 +113,12 @@ create  index p_gaz_type_idx on p_gazetteer (p_feature_type, p_country_code, p_f
 /* go */
 
 
+/* p_dup_check_tmp */
+create  index p_dc_username_idx on p_dup_check_tmp (s_username, p_partner_key);
+/* create  index p_dupcheck_pk on p_dup_check_tmp (p_partner_key,s_username)*/ 
+/* go */
+
+
 /* m_list */
 /* create  index m_list_pk on m_list (m_list_code)*/ 
 /* go */
@@ -148,6 +154,17 @@ create  index r_rparam_partner_idx on r_group_report_param (p_recipient_partner_
 /* create  index r_rparam_pk on r_group_report_param (r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id, r_param_name)*/ 
 /* go */
 create  index r_rparam_value_idx on r_group_report_param (r_param_name, r_param_value, r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id);
+
+
+/* r_saved_paramset */
+create  index r_ps_modfile_idx on r_saved_paramset (r_module, r_file, r_paramset_id);
+/* create  index r_ps_pk on r_saved_paramset (r_paramset_id)*/ 
+/* go */
+
+
+/* r_saved_param */
+/* create  index r_psparam_pk on r_saved_param (r_paramset_id, r_param_name)*/ 
+/* go */
 
 
 /* a_config */
@@ -509,6 +526,11 @@ create  index s_username_idx on c_member (s_username, c_chat_id);
 /* go */
 
 
+/* s_user_loginhistory */
+/* create  index s_loginhist_pk on s_user_loginhistory (s_username, s_sessionid)*/ 
+/* go */
+
+
 /* s_subsystem */
 /* create  index s_subsystem_pk on s_subsystem (s_subsystem_code)*/ 
 /* go */
@@ -537,6 +559,16 @@ create  index s_motd_viewed_username_idx on s_motd_viewed (s_username, s_motd_id
 
 /* s_sec_endorsement */
 /* create  index s_end_pk on s_sec_endorsement (s_endorsement, s_context, s_subject)*/ 
+/* go */
+
+
+/* s_sec_endorsement_type */
+/* create  index s_endt_pk on s_sec_endorsement_type (s_endorsement)*/ 
+/* go */
+
+
+/* s_sec_endorsement_context */
+/* create  index s_endc_pk on s_sec_endorsement_context (s_context)*/ 
 /* go */
 
 

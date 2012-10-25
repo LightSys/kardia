@@ -71,6 +71,10 @@ drop table p_title;
 drop table p_gazetteer;
 
 
+/* p_dup_check_tmp */
+drop table p_dup_check_tmp;
+
+
 /* m_list */
 drop table m_list;
 
@@ -93,6 +97,14 @@ drop table r_group_param;
 
 /* r_group_report_param */
 drop table r_group_report_param;
+
+
+/* r_saved_paramset */
+drop table r_saved_paramset;
+
+
+/* r_saved_param */
+drop table r_saved_param;
 
 
 /* a_config */
@@ -327,6 +339,10 @@ drop table c_member;
 drop table s_user_data;
 
 
+/* s_user_loginhistory */
+drop table s_user_loginhistory;
+
+
 /* s_subsystem */
 drop table s_subsystem;
 
@@ -349,6 +365,14 @@ drop table s_motd_viewed;
 
 /* s_sec_endorsement */
 drop table s_sec_endorsement;
+
+
+/* s_sec_endorsement_type */
+drop table s_sec_endorsement_type;
+
+
+/* s_sec_endorsement_context */
+drop table s_sec_endorsement_context;
 
 
 /* s_mykardia */
