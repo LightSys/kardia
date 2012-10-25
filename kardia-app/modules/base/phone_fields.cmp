@@ -6,6 +6,9 @@ phone_fields "widget/component-decl"
 
     form "widget/parameter" { type=object; find_container="widget/form"; }
 
+    area "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    number "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
     CheckCancel "widget/component-decl-action" { }
     CheckCancel_cn "widget/connector"
 	{
@@ -67,6 +70,8 @@ phone_fields "widget/component-decl"
 	    fieldname=p_phone_area_city;
 	    width=50;
 	    form=form;
+
+	    on_area_change "widget/connector" { event=DataChange; target=area; action=SetValue; Value=runclient(:Value); }
 	    }
 
 	phone_closeparen "widget/label" { width=10; text=")"; align=left; }
@@ -76,6 +81,8 @@ phone_fields "widget/component-decl"
 	    fieldname=p_contact_data;
 	    form=form;
 	    width=100;
+
+	    on_number_change "widget/connector" { event=DataChange; target=number; action=SetValue; Value=runclient(:Value); }
 	    }
 	}
     }

@@ -197,6 +197,37 @@ p_location_component "widget/component-decl"
 					    }
 					}
 				    }
+
+				search_dups "widget/menuitem"
+				    {
+				    label = "Check for Duplicates";
+
+				    search_dups_select "widget/connector"
+					{
+					event=Select;
+					target=p_location_component;
+					action=Launch;
+					Width=806;
+					Height=562;
+					Source="/apps/kardia/modules/base/dup_check.app";
+					partner_key = runclient(:sync_osrc:p_partner_key);
+					location_id = runclient(:person_location_osrc:p_location_id);
+					given_name = runclient(:sync_osrc:p_given_name);
+					surname = runclient(:sync_osrc:p_surname);
+					org_name = runclient(:sync_osrc:p_org_name);
+					address_1 = runclient(:person_location_osrc:p_address_1);
+					city = runclient(:person_location_osrc:p_city);
+					state_province = runclient(:person_location_osrc:p_state_province);
+					postal_code = runclient(:person_location_osrc:p_postal_code);
+					// The following have to be looked up by dup_check.app, since we only have
+					// access to one contact record at a time in this context.
+					//email1 = runclient(:email_field:content);
+					//phone1_area = runclient(:new_phone_fields:area);
+					//phone1_number = runclient(:new_phone_fields:number);
+					//phone2_area = runclient(:new_phone2_fields:area);
+					//phone2_number = runclient(:new_phone2_fields:number);
+					}
+				    }
 				}
 			    }
 			}
