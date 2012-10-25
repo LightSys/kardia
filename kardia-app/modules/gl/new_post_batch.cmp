@@ -72,7 +72,7 @@ new_post_batch "widget/component-decl"
 	header_label "widget/label"
 	    {
 	    condition = 1;
-	    height=20;
+	    height=17;
 	    font_size = 16;
 	    style = bold;
 	    align=left;
