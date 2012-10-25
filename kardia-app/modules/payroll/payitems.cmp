@@ -46,7 +46,58 @@ payitems_cmp "widget/component-decl"
     payitem_osrc "widget/osrc"
 	{
 	//sql = "SELECT :a:a_cost_center, :a:a_payroll_id, ptxt = condition(char_length(:a:a_payee_name) > 0, :a:a_payee_name, :p:p_surname + ', ' + :p:p_given_name), startdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), enddate = '' + datepart(month, :a_end_date) + '/' + datepart(day, :a_end_date) + '/' + datepart(year, :a_end_date) FROM /apps/kardia/data/Kardia_DB/a_payroll/rows a, /apps/kardia/data/Kardia_DB/p_partner/rows p  WHERE :p:p_partner_key = :a:p_payee_partner_key";
-	sql = runserver("SELECT :y:a_ledger_number, :i:a_is_instance, :i:a_period, pertxt = condition(:i:a_is_instance, :i:a_period, 'Template'), :y:a_cost_center, ptxt = condition(char_length(:y:a_payee_name) > 0, :y:a_payee_name, :p:p_surname + ', ' + :p:p_given_name), txt = isnull(' CostCtr: ' + :i:a_ref_cost_center,'') + isnull(' Acct: ' + :i:a_ref_account_code,'') + isnull(' XfrCostCtr: ' + :i:a_xfer_cost_center,'') + isnull(' XfrAcct: ' + :i:a_xfer_account_code,'') + isnull(' Min: ' + :i:a_minimum_amount,'') + isnull(' Allowances: ' + :i:a_allowances,'') + isnull(' DepAllow: ' + :i:a_dependent_allowances,'') + isnull(' Status: ' + :fs:a_desc, ''), :i:a_target_amount, :i:a_actual_amount, :i:a_minimum_amount, :i:a_filing_status, startdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), :a_start_date, :a_end_date, :a_allowances, :a_dependent_allowances, a_fs_desc = :fs:a_desc, :i:a_ref_cost_center, a_xfer_cost_center = isnull(:i:a_xfer_cost_center, :it:a_xfer_cost_center), a_ref_account_code = isnull(:i:a_ref_account_code, :it:a_ref_account_code), a_xfer_account_code = isnull(:i:a_xfer_account_code, :it:a_xfer_account_code), :i:a_payroll_item_type_code, :it:a_desc, :it:a_payroll_item_class_code, :s_date_modified, :s_modified_by, :s_date_created, :s_created_by  FROM /apps/kardia/data/Kardia_DB/a_payroll/rows y, /apps/kardia/data/Kardia_DB/p_partner/rows p, IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i, /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it, /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs  WHERE :i:a_payroll_item_type_code *= :it:a_payroll_item_type_code and :it:a_ledger_number = " + quote(:this:ledger) + " and :i:a_filing_status *= :fs:a_filing_status and :i:a_payroll_item_type_code *= :fs:a_payroll_item_type_code and :p:p_partner_key = :y:p_payee_partner_key and :i:a_payroll_id = :y:a_payroll_id and :y:a_ledger_number = " + quote(:this:ledger) + " ORDER BY :y:a_cost_center, :i:a_period " + condition(:this:period is null, "WHERE :i:a_is_instance = 0", "WHERE :i:a_period = " + quote(:this:period)));
+	sql = runserver("
+		SELECT 
+			:y:a_ledger_number,
+			:i:a_is_instance,
+			:i:a_period,
+			pertxt = condition(:i:a_is_instance, :i:a_period, 'Template'),
+			:y:a_cost_center,
+			ptxt = condition(char_length(:y:a_payee_name) > 0, :y:a_payee_name, :p:p_surname + ', ' + :p:p_given_name),
+			txt = isnull(' CostCtr: ' + :i:a_ref_cost_center,'') + isnull(' Acct: ' + :i:a_ref_account_code,'') + isnull(' XfrCostCtr: ' + :i:a_xfer_cost_center,'') + isnull(' XfrAcct: ' + :i:a_xfer_account_code,'') + isnull(' Min: ' + :i:a_minimum_amount,'') + isnull(' Allowances: ' + :i:a_allowances,'') + isnull(' DepAllow: ' + :i:a_dependent_allowances,'') + isnull(' Status: ' + :fs:a_desc, ''),
+			:i:a_target_amount,
+			:i:a_actual_amount,
+			:i:a_minimum_amount,
+			:i:a_filing_status,
+			startdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date),
+			:a_start_date,
+			:a_end_date,
+			:a_allowances,
+			:a_dependent_allowances,
+			a_fs_desc = :fs:a_desc,
+			:i:a_ref_cost_center,
+			a_xfer_cost_center = isnull(:i:a_xfer_cost_center, :it:a_xfer_cost_center),
+			a_ref_account_code = isnull(:i:a_ref_account_code, :it:a_ref_account_code),
+			a_xfer_account_code = isnull(:i:a_xfer_account_code, :it:a_xfer_account_code),
+			:i:a_payroll_item_type_code,
+			:it:a_desc,
+			:it:a_payroll_item_class_code,
+			:s_date_modified,
+			:s_modified_by,
+			:s_date_created,
+			:s_created_by,
+			num_filing_status = (select count(1) from /apps/kardia/data/Kardia_DB/a_tax_filingstatus fs2 where :fs2:a_payroll_item_type_code = :i:a_payroll_item_type_code and :fs2:a_ledger_number = :i:a_ledger_number),
+			one_filing_status = (select max(:fs2:a_filing_status) from /apps/kardia/data/Kardia_DB/a_tax_filingstatus fs2 where :fs2:a_payroll_item_type_code = :i:a_payroll_item_type_code and :fs2:a_ledger_number = :i:a_ledger_number)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it,
+			/apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows fs
+		WHERE
+			:i:a_payroll_item_type_code *= :it:a_payroll_item_type_code and
+			:it:a_ledger_number = " + quote(:this:ledger) + " and
+			:i:a_filing_status *= :fs:a_filing_status and
+			:i:a_payroll_item_type_code *= :fs:a_payroll_item_type_code and
+			:i:a_ledger_number *= :fs:a_ledger_number and
+			:p:p_partner_key = :y:p_payee_partner_key and
+			:i:a_payroll_id = :y:a_payroll_id and
+			:y:a_ledger_number = " + quote(:this:ledger) + "
+		ORDER BY
+			:y:a_cost_center,
+			:i:a_period 
+		" + condition(:this:period is null, "WHERE :i:a_is_instance = 0", "WHERE :i:a_period = " + quote(:this:period))
+		);
 	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll_item/rows";
 	autoquery=onload;
 	replicasize=200;
@@ -119,6 +170,8 @@ payitems_cmp "widget/component-decl"
 		    onchange "widget/connector" { event=DataChange; target=payitem_tab; action=SetTab; Tab=runclient(isnull(substring(:Label, charindex('(', :Label) + 1, 1), 'XX')); }
 		    onchange2 "widget/connector" { event=DataChange; event_condition=runclient(charindex('(T)', :Label) > 0); target=f_t_status; action=SetSQL; sql=runclient("select :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_payroll_item_type_code = " + quote(:Value)); }
 		    onchange3 "widget/connector" { event=DataChange; event_condition=runclient(charindex('(E)', :Label) > 0); target=f_e_status; action=SetSQL; sql=runclient("select :a_desc, :a_filing_status from /apps/kardia/data/Kardia_DB/a_tax_filingstatus/rows where :a_payroll_item_type_code = " + quote(:Value)); }
+
+		    //onchange_setdef "widget/connector" { event=DataChange; event_condition=runclient(charindex('(T)', :Label) > 0 and :payitem_osrc:num_filing_status = 1); target=f_t_status; action=SetValue; Value=runclient(:payitem_osrc:one_filing_status); 
 		    }
 		}
 
