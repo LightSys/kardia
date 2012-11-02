@@ -2,6 +2,13 @@ $Version=2$
 partner_search_component "widget/component-decl"
     {
     width=700;height=472;
+
+    auto_search "widget/parameter"
+	{
+	//If a search query is specified during window opening...
+	type=string;
+	default=null;
+	}
     sync_osrc "widget/parameter"
         {
         //This osrc is a parameter passed in from the outside
@@ -111,6 +118,7 @@ partner_search_component "widget/component-decl"
 	    {
 	    path = "partner_search_controls.cmp";
 	    x=0; y=0; width=700; height=225;
+	    auto_search=runserver(:this:auto_search);
 	    }
 
 	search_tabs "widget/tab"

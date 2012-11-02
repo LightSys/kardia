@@ -6,6 +6,8 @@ partner_search_controls "widget/component-decl"
 
     person_search_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
+    auto_search "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
     SetFocus "widget/component-decl-action" { }
 
     auto_focus "widget/connector"
@@ -14,6 +16,26 @@ partner_search_controls "widget/component-decl"
 	event_condition=runclient(:search_tabs:selected == 'express_tab');
 	target=name_eb;
 	action=SetFocus;
+	}
+    auto_search_fill "widget/connector"
+	{
+	event=SetFocus;
+	event_condition=runclient(:partner_search_controls:auto_search is not null);
+	target=name_eb;
+	action=SetValue;
+	Value=runclient(:partner_search_controls:auto_search);
+	}
+    auto_do_name_search "widget/connector"
+	{
+	event=SetFocus;
+	event_condition=runclient(:partner_search_controls:auto_search is not null and char_length(:name_eb:content) > 0);
+	target=person_search_osrc;
+	action=QueryText;
+	cx__case_insensitive=1;
+	//field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*";
+	field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
+	objname=runclient("p");
+	query=runclient(:name_eb:content);
 	}
     auto_focus2 "widget/connector"
 	{

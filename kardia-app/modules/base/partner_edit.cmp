@@ -7,6 +7,9 @@ p_partner_component "widget/component-decl"
     // If needing to pre-load a particular partner record, use this parameter.
     id "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
+    // Auto-executing a search query...
+    search "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
     // If a finance ledger context is available...
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
@@ -447,6 +450,8 @@ p_partner_component "widget/component-decl"
             path="/apps/kardia/modules/base/partner_search.cmp";
 	    sync_osrc=p_partner_osrc;
 	    sync_form=p_partner_form;
+	    auto_search=runserver(:this:search);
+
 	    cnParterSelected "widget/connector"
 	        {
 	        event="PartnerSelected";

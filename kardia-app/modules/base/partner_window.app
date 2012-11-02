@@ -11,6 +11,8 @@ partner_window "widget/page"
     // If needing to pre-load a particular partner record, use this parameter.
     id "widget/parameter" { type=string; default=null; }
 
+    search "widget/parameter" { type=string; default=null; }
+
     ledger "widget/parameter" { type=string; default=null; }
 
     this_form_cmp "widget/component" 
@@ -21,5 +23,6 @@ partner_window "widget/page"
 	path="/apps/kardia/modules/base/partner_edit.cmp"; 
 	id = runserver(:this:id);
 	ledger = runserver(:this:ledger);
+	search = runserver(:this:search);
 	}
     }
