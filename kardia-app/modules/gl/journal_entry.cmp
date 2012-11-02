@@ -130,6 +130,25 @@ journal_entry "widget/component-decl"
 	    // now set jnl id
 	    set_jnl "widget/connector" { event="New"; target=f_trx_jnl; action="SetValue"; Value=runclient(:nextjnl_eb:content); }
 
+	    block_save_on_bad_cc "widget/connector"
+		{
+		event=BeforeSave;
+		event_condition=runclient(:f_trx_cc:description == '**INVALID**' or not char_length(:f_trx_cc:content) > 0);
+		event_cancel=runclient(:f_trx_cc:description == '**INVALID**' or not char_length(:f_trx_cc:content) > 0);
+		event_delay = 0.25;
+		target = f_trx_cc;
+		action = SetFocus;
+		}
+	    block_save_on_bad_acct "widget/connector"
+		{
+		event=BeforeSave;
+		event_condition=runclient(:f_trx_acct:description == '**INVALID**' or not char_length(:f_trx_acct:content) > 0);
+		event_cancel=runclient(:f_trx_acct:description == '**INVALID**' or not char_length(:f_trx_acct:content) > 0);
+		event_delay = 0.25;
+		target = f_trx_acct;
+		action = SetFocus;
+		}
+
 	    trx_pane "widget/pane"
 		{
 		x=5;y=56;width=770;height=273;

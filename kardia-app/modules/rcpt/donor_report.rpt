@@ -199,14 +199,49 @@ donor_report "system/report"
 		GROUP BY
 			:g:p_donor_partner_id
 		HAVING
-			" + condition(:this:max_total is null, "", ":gift_total <= " + :this:max_total + " and") + "
 			" + condition(:this:min_total is null, "", ":gift_total >= " + :this:min_total + " and") + "
 			" + condition(:this:include_states is null, "", "charindex(:p_state_province, " + quote(:this:include_states) + ") > 0 and") + "
 			" + condition(:this:exclude_states is null, "", "charindex(:p_state_province, " + quote(:this:exclude_states) + ") == 0 and") + "
 			1 = 1
 		");
+			// " + condition(:this:max_total is null, "", ":gift_total <= " + :this:max_total + " and") + "
+
 	// FIXME - collision between report 'this' and having clause 'this' means
 	// we had to use programmatic sql building above instead of normal params.
+
+	gift_sum "report/aggregate" { compute="sum(:gift_total)"; reset = 0; }
+	}
+
+    // Fetch gift total, independent of # of addresses.
+    gift_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			gift_total = isnull(sum(:i:a_amount), $0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		WHERE
+			:g:a_ledger_number = :this:ledger and
+			" + condition(:this:start_period is null, "", ":g:a_period >= :this:start_period and ") + "
+			" + condition(:this:end_period is null, "", ":g:a_period <= :this:end_period and ") + "
+			:g:a_posted = 1 and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			" + condition(:this:include_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:include_accts) > 0 and") + "
+			" + condition(:this:exclude_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:exclude_accts) == 0 and") + "
+			" + condition(:this:include_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:include_funds) > 0 and") + "
+			" + condition(:this:exclude_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:exclude_funds) == 0 and") + "
+			:g:p_donor_partner_id = :donors_qy:p_partner_key
+		GROUP BY
+			:g:p_donor_partner_id
+		HAVING
+			" + condition(:this:max_total is null, "", ":gift_total <= " + :this:max_total + " and") + "
+			" + condition(:this:min_total is null, "", ":gift_total >= " + :this:min_total + " and") + "
+			1 = 1
+
+		");
 
 	gift_sum "report/aggregate" { compute="sum(:gift_total)"; reset = 0; }
 	}
@@ -270,7 +305,7 @@ donor_report "system/report"
 	    dateformat = "dd-MMM-yyyy";
 	    bottomborder=0.3;
 	    margintop=0;
-	    source=donors_qy,add_to_list_qy;
+	    source=donors_qy,gift_qy,add_to_list_qy;
 
 	    hdr "report/table-row"
 		{
@@ -298,7 +333,7 @@ donor_report "system/report"
 		d_name "report/table-cell" { value=runserver(:donors_qy:acct_name); }
 		d_addr "report/table-cell" { value=runserver(isnull(:donors_qy:attn + " / ", "") + isnull(:donors_qy:p_in_care_of + " / ","") + isnull(:donors_qy:p_address_1 + " / ","") + isnull(:donors_qy:p_address_2 + " / ","") + isnull(:donors_qy:p_address_3 + " / ","") + isnull(:donors_qy:p_city + ", " + :donors_qy:p_state_province + " ","") + isnull(:donors_qy:p_postal_code + " ","") + isnull(condition(:this:cntry_fmt = 'full', :donors_qy:p_country_name, condition(:this:cntry_fmt = 'kardia', :donors_qy:p_country_code, condition(:this:cntry_fmt = 'fips10', :donors_qy:p_fips_code, condition(:this:cntry_fmt = 'iso_alpha2', :donors_qy:p_iso3166_2_code, condition(:this:cntry_fmt = 'iso_alpha3', :donors_qy:p_iso3166_3_code, ''))))),'')); }
 		d_last "report/table-cell" { value=runserver(:donors_qy:last_gift); }
-		d_amt "report/table-cell" { value=runserver(condition(:this:show_amounts, :donors_qy:gift_total, '-')); font=courier; align=right; }
+		d_amt "report/table-cell" { value=runserver(condition(:this:show_amounts, :gift_qy:gift_total, '-')); font=courier; align=right; }
 		}
 
 	    totals "report/table-row"
@@ -313,7 +348,7 @@ donor_report "system/report"
 		s_name "report/table-cell" { value=""; }
 		s_addr "report/table-cell" { value=""; }
 		s_last "report/table-cell" { value="TOTAL:"; style=bold; }
-		s_amt "report/table-cell" { value=runserver(:donors_qy:gift_sum); font=courier; align=right; style=bold; }
+		s_amt "report/table-cell" { value=runserver(:gift_qy:gift_sum); font=courier; align=right; style=bold; }
 		}
 	    }
 	}

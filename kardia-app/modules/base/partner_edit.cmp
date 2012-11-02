@@ -465,6 +465,7 @@ p_partner_component "widget/component-decl"
 		event=PartnerNew;
 		target=page;
 		action=LoadPage;
+		ledger = runclient(:p_partner_component:ledger);
 		Source="/apps/kardia/modules/base/new_partner.app";
 		}
 

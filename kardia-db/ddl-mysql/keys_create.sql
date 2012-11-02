@@ -61,6 +61,9 @@ alter table p_gazetteer
 alter table p_gazetteer
 	add constraint p_gaz_name_clustered_idx unique  (p_feature_name, p_country_code, p_feature_type, p_feature_id);
 
+alter table p_dup_check_tmp
+	add constraint p_dupcheck_pk primary key  (p_partner_key,s_username);
+
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
 
@@ -78,6 +81,12 @@ alter table r_group_param
 
 alter table r_group_report_param
 	add constraint r_rparam_pk primary key  (r_group_name, r_delivery_method, p_recipient_partner_key, r_report_id, r_param_name);
+
+alter table r_saved_paramset
+	add constraint r_ps_pk primary key  (r_paramset_id);
+
+alter table r_saved_param
+	add constraint r_psparam_pk primary key  (r_paramset_id, r_param_name);
 
 alter table a_config
 	add constraint a_config_pk primary key  (a_ledger_number, a_config_name);
@@ -265,6 +274,9 @@ alter table c_member
 alter table s_user_data
 	add constraint s_user_data_pk primary key  (s_username);
 
+alter table s_user_loginhistory
+	add constraint s_loginhist_pk primary key  (s_username, s_sessionid);
+
 alter table s_subsystem
 	add constraint s_subsystem_pk primary key  (s_subsystem_code);
 
@@ -282,6 +294,12 @@ alter table s_motd_viewed
 
 alter table s_sec_endorsement
 	add constraint s_end_pk primary key  (s_endorsement, s_context, s_subject);
+
+alter table s_sec_endorsement_type
+	add constraint s_endt_pk primary key  (s_endorsement);
+
+alter table s_sec_endorsement_context
+	add constraint s_endc_pk primary key  (s_context);
 
 alter table s_mykardia
 	add constraint s_myk_pk primary key  (s_username, s_module, s_plugin, s_occurrence);

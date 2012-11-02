@@ -73,7 +73,7 @@ new_subs "widget/component-decl"
 			    :l:m_reason_member,
 			    :l:m_reason_cancel,
 			    :l:s_date_created, :l:s_created_by, :l:s_date_modified, :l:s_modified_by,
-			    membstat = :ms:text,
+			    membstat = :ms:text + condition(:l:m_hold_until_date is null or :l:m_hold_until_date <= getdate(), '', '-OnHold'),
 			    postmode = :pm:text,
 			    -- liststat = :ls:text,
 			    -- cancel_txt = :cr:text,
@@ -81,7 +81,8 @@ new_subs "widget/component-decl"
 			    disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_surname + ', ' + :p:p_given_name) > 0, '- ', ''), '') + isnull(:p:p_surname + ', ','') + isnull(:p:p_given_name,''),
 			    disp_city = condition(char_length(:loc:p_city) > 0, :loc:p_city + ', ', '') + condition(char_length(:loc:p_state_province) > 0, :loc:p_state_province + ' ', ''),
 			    disp_date = substring(convert(string,:l:s_date_created),1,12),
-			    person_date = :p:s_date_created
+			    person_date = :p:s_date_created,
+			    :p:p_comments
 		    FROM 
 			    /apps/kardia/data/Kardia_DB/m_list_membership/rows l,
 			    /apps/kardia/data/Kardia_DB/m_list/rows m,
@@ -114,12 +115,12 @@ new_subs "widget/component-decl"
 
 	    new_subs_pane "widget/pane"
 		{
-		height=250;
+		height=230;
 		widget_class="table_bgnd";
 
 		new_subs_tbl "widget/table"
 		    {
-		    x=0; y=0; width=778; height=248;
+		    x=0; y=0; width=778; height=228;
 
 		    st_pkey "widget/table-column" { width=60; fieldname=p_partner_key; title="ID"; }
 		    st_pname "widget/table-column" { width=120; fieldname=disp_name; title="Name"; }
@@ -151,7 +152,7 @@ new_subs "widget/component-decl"
 
 	subs_hbox "widget/hbox"
 	    {
-	    height = 257;
+	    height = 277;
 	    spacing = 16;
 
 	    also_subs_vbox "widget/vbox"
@@ -168,7 +169,7 @@ new_subs "widget/component-decl"
 		    osrc = new_subs_osrc;
 		    }
 
-		person_label "widget/label" { height=20; value=runclient('(Partner added: ' + substring(:new_subs_osrc:person_date,1,11) + ')'); }
+		person_label "widget/label" { height=40; value=runclient('(Partner added: ' + substring(:new_subs_osrc:person_date,1,11) + ') ' + :new_subs_osrc:p_comments); }
 
 		also_subs_hdr "widget/component" { height=20; path="section_label.cmp"; text=runclient(condition(char_length(:new_subs_osrc:disp_name) > 20, substring(:new_subs_osrc:disp_name,1,17) + '...', :new_subs_osrc:disp_name) + " also subscribed to:"); }
 
@@ -263,7 +264,7 @@ new_subs "widget/component-decl"
 
 		gifts_pane "widget/pane"
 		    {
-		    height = 229;
+		    height = 249;
 		    widget_class = "table_bgnd";
 
 		    gifts_osrc "widget/osrc"
@@ -311,7 +312,7 @@ new_subs "widget/component-decl"
 			gifts_table "widget/table"
 			    {
 			    x=0;y=0;
-			    width=248; height=227;
+			    width=248; height=247;
 			    mode = dynamicrow;
 
 			    t_date "widget/table-column" { title="Date"; fieldname="date"; width=90; }
@@ -478,75 +479,12 @@ new_subs "widget/component-decl"
 	x=150; y=140;
 	visible=no;
 
-	cancel_vbox "widget/vbox"
+	cancel_ui "widget/component"
 	    {
 	    x=10; y=10; width=458; height=278;
-	    spacing=8;
-
-	    cancel_title "widget/label" { height=20; font_size=15; style=bold; align=center; text="Cancel Subscription"; }
-
-	    cancel_line "widget/pane" { height=2; style=lowered; }
-
-	    mlist_txt "widget/label" { height=16; value=runclient("List: " + :new_subs_osrc:m_list_description); }
-	    who_txt "widget/label" { height=16; value=runclient("Whom: " + :new_subs_osrc:disp_name + " of " + :new_subs_osrc:disp_city); }
-
-	    sep3 "widget/autolayoutspacer" { height=8; }
-
-	    cancel_lbl "widget/label" { height=16; text="Cancel Reason:"; }
-
-	    reason_dd "widget/dropdown"
-		{
-		height=20;
-		width=300;
-		bgcolor=white; 
-		mode=dynamic_server;
-		hilight="#d0d0d0";
-		sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_cancel_reason/rows";
-		}
-
-	    inst_lbl "widget/label" { height=64; text="Please select a reason for cancellation, and then click 'Yes, Cancel' below to cancel this subscription.  Note: selecting any reason other than 'No Longer A Donor' will prevent all future auto-subscriptions for this person to this list."; }
-
-	    sep5 "widget/autolayoutspacer" { height=8; }
-
-	    cancel_ctls_hbox "widget/hbox"
-		{
-		height=24; spacing=8;
-		align=center;
-
-		yescancel "widget/textbutton"
-		    {
-		    height=24; width=170;
-		    text = "Yes, Cancel";
-		    yescancel_cn "widget/connector"
-			{
-			event=Click;
-			target=new_subs_osrc;
-			action=Modify;
-			m_membership_status=runclient('C');
-			m_reason_cancel=runclient(:reason_dd:value);
-			m_cancel_date=runclient(getdate());
-			}
-		    yescancel_cn2 "widget/connector"
-			{
-			event=Click;
-			target=new_subs_osrc;
-			action=Refresh;
-			}
-		    yescancel_cn3 "widget/connector"
-			{
-			event=Click;
-			target=cancel_sub_window;
-			action=Close;
-			}
-		    }
-		nocancel "widget/textbutton"
-		    {
-		    height=24; width=170;
-		    text = "No, Do Not Cancel";
-
-		    nocancel_cn "widget/connector" { event=Click; target=cancel_sub_window; action=Close; }
-		    }
-		}
+	    path="cancel_sub_ui.cmp";
+	    subs_osrc = new_subs_osrc;
+	    whom_text = runclient(:new_subs_osrc:disp_name + " of " + :new_subs_osrc:disp_city);
 	    }
 	}
     }

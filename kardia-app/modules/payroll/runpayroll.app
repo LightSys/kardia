@@ -18,6 +18,7 @@ runpayroll "widget/page"
     payrun_cmp "widget/component"
 	{
 	x=10; y=10; width=780; height=565;
+	condition = runserver((not (:this:ledger is null)) and ((select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows where :s_endorsement = 'pay_manage' and :s_context = 'ledger=' + :this:ledger and :s_subject = 'u:' + user_name()) > 0 or (select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows where :s_endorsement = 'pay_manage' and :s_context = 'ledger=' + :this:ledger) == 0));
 	path = "/apps/kardia/modules/payroll/payroll_run.cmp";
 	ledger = runserver(:this:ledger);
 //	pay_form = payform_cmp;

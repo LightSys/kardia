@@ -25,7 +25,7 @@ subscription "widget/component-decl"
 			:l:m_reason_member,
 			:l:m_reason_cancel,
 			:l:s_date_created, :l:s_created_by, :l:s_date_modified, :l:s_modified_by,
-			membstat = :ms:text,
+			membstat = :ms:text + condition(:l:m_hold_until_date is null or :l:m_hold_until_date <= getdate(), '', '-OnHold'),
 			postmode = :pm:text,
 			liststat = :ls:text,
 			cancel_txt = :cr:text,

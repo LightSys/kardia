@@ -1,0 +1,499 @@
+$Version=2$
+dup_check "widget/component-decl"
+    {
+    width=786;
+    height=542;
+
+    // This screen searches for duplicate partner records, using a number of
+    // different searches.  The search results are aggregated in a temporary
+    // db table, and then from there displayed to the user.
+    //
+    // Checks:
+    //    + exact first/last or org match *and* city,state,(zip,3) match
+    //    + (first,4) and (last,3)
+    //    + (first,3) and last
+    //    + (last,3) and if the existing or current record first names are
+    //      substrings of each other
+    //    + compare entire organization names and state name
+    //    + org names are substrings of each other and state and (zip,3)
+    //    + (addr1,9) and state and [(city,8) or city substr] and (zip,3)
+    //    + state and (zip,3) and (last,5)
+    //    + state and (zip,3) and first names are substrings of each other
+    //    - all of the above address comparisons with old addresses as well
+    //      as current ones
+    //    - phone1 exact match (except country code)
+    //    - phone2 exact match (except country code)
+    //    - email exact match
+    //    - email domain mutual substring check and user part mutual substring
+    //      check.
+
+    ScanForDups "widget/component-decl-action" { }
+
+    ClosePressed "widget/component-decl-event" { }
+
+    ScanForDups_cn1 "widget/connector"
+	{
+	event=ScanForDups;
+	target=dup_check_osrc;
+	action=Clear;
+	}
+    ScanForDups_cn2 "widget/connector"
+	{
+	event=ScanForDups;
+	target=dup_check_osrc;
+	action=QueryParam;
+	event_all_params = 1;
+	}
+
+    dup_check_vbox "widget/vbox"
+	{
+	x=0; y=0; width=786; height=542;
+	spacing=8;
+
+	hdr "widget/label" { height=20; text="Duplicate Scan..."; style=bold; font_size=15; align=center; }
+
+	dup_check_osrc "widget/osrc"
+	    {
+	    given_name "widget/parameter" { type=string; }
+	    surname "widget/parameter" { type=string; }
+	    org_name "widget/parameter" { type=string; }
+	    address_1 "widget/parameter" { type=string; }
+	    city "widget/parameter" { type=string; }
+	    state_province "widget/parameter" { type=string; }
+	    postal_code "widget/parameter" { type=string; }
+	    phone1_area "widget/parameter" { type=string; }
+	    phone1_number "widget/parameter" { type=string; }
+	    phone2_area "widget/parameter" { type=string; }
+	    phone2_number "widget/parameter" { type=string; }
+	    email1 "widget/parameter" { type=string; }
+	    email2 "widget/parameter" { type=string; }
+	    exclude_partner_key "widget/parameter" { type=string; }
+
+	    sql = runserver("
+		    DELETE
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows d
+		    WHERE
+			    :d:s_username = user_name() or :d:s_username = 'x'
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1000',
+			    p_score = 70,
+			    p_comment = 'BEGIN Matched Name+Addr ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = user_name(),
+			    :p:p_partner_key,
+			    p_score = condition(:l:p_revision_id == 0, 100, 60),
+			    p_comment = condition(:l:p_revision_id == 0, 'Matched Name+Addr', 'Matched Name+OLDaddr'),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    FROM
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			    /apps/kardia/data/Kardia_DB/p_location/rows l
+		    WHERE
+			    :l:p_partner_key = :p:p_partner_key and
+			    ((upper(rtrim(:p:p_surname)) = upper(:parameters:surname) and upper(rtrim(:p:p_given_name)) = upper(:parameters:given_name)) or
+			      isnull(rtrim(isnull(:p:p_surname,'') + isnull(:p:p_given_name,'') + isnull(:parameters:surname,'') + isnull(:parameters:given_name,'')),'') == '') and
+			    (upper(:p:p_org_name) = upper(:parameters:org_name) or
+			      isnull(rtrim(isnull(:p:p_org_name,'') + isnull(:parameters:org_name,'')),'') == '') and
+			    upper(:l:p_city) = upper(:parameters:city) and
+			    upper(:l:p_state_province) = upper(:parameters:state_province) and
+			    substring(upper(:l:p_postal_code),1,3) = substring(upper(:parameters:postal_code),1,3)
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1001',
+			    p_score = 90,
+			    p_comment = 'BEGIN Same Email ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    INSERT
+		 	    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+		 	    s_username = user_name(),
+		 	    :ci:p_partner_key,
+		 	    p_score = 90,
+		 	    p_comment = 'Same Email',
+		 	    s_date_created = getdate(),
+		 	    s_created_by = user_name(),
+		 	    s_date_modified = getdate(),
+		 	    s_modified_by = user_name()
+		    FROM
+		 	    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+		    WHERE
+			    :ci:p_contact_type = 'E' and
+			    :ci:p_record_status_code = 'A' and
+			    char_length(:ci:p_contact_data) >= 3 and
+			    (upper(:ci:p_contact_data) = upper(:parameters:email1) or
+			     upper(:ci:p_contact_data) = upper(:parameters:email2))
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1002',
+			    p_score = 70,
+			    p_comment = 'BEGIN Same Org Name ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = user_name(),
+			    :p:p_partner_key,
+			    p_score = condition(:l:p_revision_id == 0, 75, 45),
+			    p_comment = condition(:l:p_revision_id == 0, 'Same Org. Name', 'Same Org. Name (OLD addr)'),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    FROM
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			    /apps/kardia/data/Kardia_DB/p_location/rows l
+		    WHERE
+			    :l:p_partner_key = :p:p_partner_key and
+			    upper(:p:p_org_name) = upper(:parameters:org_name) and 
+			    upper(:p:p_org_name) = upper(:parameters:org_name) and 
+			    char_length(:p:p_org_name) > 1 and char_length(:parameters:org_name) > 1 and
+			    upper(:l:p_state_province) = upper(:parameters:state_province)
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1003',
+			    p_score = 70,
+			    p_comment = 'BEGIN Very Similar Addr. ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = user_name(),
+			    :l:p_partner_key,
+			    p_score = condition(:l:p_revision_id == 0, 70, 42),
+			    p_comment = condition(:l:p_revision_id == 0, 'Very Similar Addr', 'Very Similar OLD addr'),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    FROM
+			    /apps/kardia/data/Kardia_DB/p_location/rows l
+		    WHERE
+			    substring(upper(:l:p_address_1),1,9) = substring(upper(:parameters:address_1),1,9) and
+			    (charindex(upper(:l:p_city),upper(:parameters:city)) > 0 or
+			     charindex(upper(:parameters:city),upper(:l:p_city)) > 0 or
+			     substring(upper(:l:p_city),1,8) = substring(upper(:parameters:city),1,8)) and
+			    upper(:l:p_state_province) = upper(:parameters:state_province) and
+			    substring(upper(:l:p_postal_code),1,3) = substring(upper(:parameters:postal_code),1,3) and
+			    char_length(rtrim(:l:p_city)) > 0 and char_length(rtrim(:l:p_postal_code)) > 0
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1004',
+			    p_score = 70,
+			    p_comment = 'BEGIN Similar Org. ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = user_name(),
+			    :p:p_partner_key,
+			    p_score = condition(:l:p_revision_id == 0, 60, 36),
+			    p_comment = condition(:l:p_revision_id == 0, 'Similar Org.', 'Similar Org. (OLD addr)'),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    FROM
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			    /apps/kardia/data/Kardia_DB/p_location/rows l
+		    WHERE
+			    :l:p_partner_key = :p:p_partner_key and
+			    (charindex(upper(:p:p_org_name), upper(:parameters:org_name)) > 0 or charindex(upper(:parameters:org_name), upper(:p:p_org_name)) > 0 or substring(upper(:p:p_org_name),1,10) = substring(upper(:parameters:org_name),1,10)) and
+			    ((char_length(:p:p_org_name) - 1) * (char_length(:parameters:org_name) - 1) > 1) and
+			    upper(:l:p_state_province) = upper(:parameters:state_province) and
+			    substring(upper(:l:p_postal_code),1,3) = substring(upper(:parameters:postal_code),1,3) and
+			    ((char_length(:p:p_org_name) - 1) * (char_length(:parameters:org_name) - 1) > 1) and
+			    ((char_length(:p:p_org_name) - 1) * (char_length(:parameters:org_name) - 1) > 1)
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1005',
+			    p_score = 65,
+			    p_comment = 'BEGIN Same Phone ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    INSERT
+		 	    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+		 	    s_username = user_name(),
+		 	    :ci:p_partner_key,
+		 	    p_score = 65,
+		 	    p_comment = 'Same Phone',
+		 	    s_date_created = getdate(),
+		 	    s_created_by = user_name(),
+		 	    s_date_modified = getdate(),
+		 	    s_modified_by = user_name()
+		    FROM
+		 	    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+		    WHERE
+			    (:ci:p_contact_type = 'P' or :ci:p_contact_type = 'C' or :ci:p_contact_type = 'F') and
+			    :ci:p_record_status_code = 'A' and
+			    char_length(:ci:p_contact_data) >= 3 and
+			    (char_length(:parameters:phone1_data) > 1 or char_length(:parameters:phone2_data) > 1) and
+			    ((upper(:ci:p_contact_data) = upper(:parameters:phone1_data) and
+			      upper(:ci:p_phone_area_city) = upper(:parameters:phone1_area)) or
+			     (upper(:ci:p_contact_data) = upper(:parameters:phone2_data) and
+			      upper(:ci:p_phone_area_city) = upper(:parameters:phone2_area)))
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1006',
+			    p_score = 70,
+			    p_comment = 'BEGIN Similar Name ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = user_name(),
+			    :p:p_partner_key,
+			    p_score = 50,
+			    p_comment = 'Similar Name',
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    FROM
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		    WHERE
+			    ((substring(upper(:p:p_surname),1,3) = substring(upper(:parameters:surname),1,3) and
+			      substring(upper(:p:p_given_name),1,4) = substring(upper(:parameters:given_name),1,4)) or
+			     (upper(:p:p_surname) = upper(:parameters:surname) and
+			      substring(upper(:p:p_given_name),1,3) = substring(upper(:parameters:given_name),1,3)) or
+			     (substring(upper(:p:p_surname),1,3) = substring(upper(:parameters:surname),1,3) and
+			      (charindex(upper(:p:p_given_name), upper(:parameters:given_name)) > 0 or charindex(upper(:parameters:given_name), upper(:p:p_given_name)) > 0))) and
+			    ((char_length(rtrim(:p:p_surname)) - 1) * (char_length(:parameters:surname) - 1) > 0 or (char_length(rtrim(:p:p_given_name)) - 1) * (char_length(:parameters:given_name) - 1) > 0)
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1007',
+			    p_score = 70,
+			    p_comment = 'BEGIN Region + Last Name ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    INSERT
+		 	    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+		 	    s_username = user_name(),
+		 	    :l:p_partner_key,
+			    p_score = condition(:l:p_revision_id == 0, 40, 24),
+			    p_comment = condition(:l:p_revision_id == 0, 'Region + Last Name', 'Region + Last Name (OLD addr)'),
+		 	    s_date_created = getdate(),
+		 	    s_created_by = user_name(),
+		 	    s_date_modified = getdate(),
+		 	    s_modified_by = user_name()
+		    FROM
+		 	    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		 	    /apps/kardia/data/Kardia_DB/p_location/rows l
+		    WHERE
+		 	    :l:p_partner_key = :p:p_partner_key and
+		 	    substring(upper(:p:p_surname),1,5) = substring(upper(:parameters:surname),1,5) and
+		 	    upper(:l:p_state_province) = upper(:parameters:state_province) and
+		 	    substring(upper(:l:p_postal_code),1,3) = substring(upper(:parameters:postal_code),1,3) and
+			    char_length(rtrim(:l:p_postal_code)) > 0 and char_length(rtrim(:l:p_city)) > 0 and
+			    ((char_length(:p:p_surname) - 1) * (char_length(:parameters:surname) - 1) > 1) and
+		 	    substring(upper(:p:p_surname),1,5) = substring(upper(:parameters:surname),1,5) and
+		 	    substring(upper(:p:p_surname),1,5) = substring(upper(:parameters:surname),1,5) and
+		 	    substring(upper(:p:p_surname),1,5) = substring(upper(:parameters:surname),1,5) and
+		 	    substring(upper(:p:p_surname),1,5) = substring(upper(:parameters:surname),1,5) and
+		 	    substring(upper(:p:p_surname),1,5) = substring(upper(:parameters:surname),1,5) and
+		 	    substring(upper(:p:p_surname),1,5) = substring(upper(:parameters:surname),1,5) and
+		 	    substring(upper(:p:p_surname),1,5) = substring(upper(:parameters:surname),1,5)
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1008',
+			    p_score = 70,
+			    p_comment = 'BEGIN City + First Name ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    INSERT
+		 	    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+		 	    s_username = user_name(),
+		 	    :l:p_partner_key,
+			    p_score = condition(:l:p_revision_id == 0, 35, 21),
+			    p_comment = condition(:l:p_revision_id == 0, 'City + First Name', 'City + First Name (OLD addr)'),
+		 	    s_date_created = getdate(),
+		 	    s_created_by = user_name(),
+		 	    s_date_modified = getdate(),
+		 	    s_modified_by = user_name()
+		    FROM
+		 	    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		 	    /apps/kardia/data/Kardia_DB/p_location/rows l
+		    WHERE
+		 	    :l:p_partner_key = :p:p_partner_key and
+		 	    char_length(rtrim(:p:p_given_name)) > 0 and
+		 	    char_length(rtrim(:parameters:given_name)) > 0 and
+		 	    (charindex(upper(:p:p_given_name), upper(:parameters:given_name)) > 0 or charindex(upper(:parameters:given_name), upper(:p:p_given_name)) > 0) and
+		 	    upper(:l:p_state_province) = upper(:parameters:state_province) and
+		 	    upper(:l:p_city) = upper(:parameters:city) and
+		 	    substring(upper(:l:p_postal_code),1,3) = substring(upper(:parameters:postal_code),1,3) and
+			    char_length(rtrim(:l:p_postal_code)) > 0 and char_length(rtrim(:l:p_city)) > 0 and
+			    ((char_length(:p:p_given_name) - 1) * (char_length(:parameters:given_name) - 1) > 1) and
+			    ((char_length(:p:p_given_name) - 1) * (char_length(:parameters:given_name) - 1) > 1) and
+			    ((char_length(:p:p_given_name) - 1) * (char_length(:parameters:given_name) - 1) > 1) and
+			    ((char_length(:p:p_given_name) - 1) * (char_length(:parameters:given_name) - 1) > 1) and
+			    ((char_length(:p:p_given_name) - 1) * (char_length(:parameters:given_name) - 1) > 1) and
+			    ((char_length(:p:p_given_name) - 1) * (char_length(:parameters:given_name) - 1) > 1)
+		    ;
+
+		    INSERT
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+		    SELECT
+			    s_username = 'x',
+			    p_partner_key = '1009',
+			    p_score = 70,
+			    p_comment = 'DUP SEARCH COMPLETE AT ' + convert(string,getdate()) + ':' + datepart(second,getdate()),
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    ;
+
+		    SELECT
+			    :p:p_partner_key,
+			    :d:p_score,
+			    :d:p_comment,
+			    :l:p_postal_code,
+			    disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+			    disp_addr = condition(char_length(:l:p_address_1) > 0, :l:p_address_1 + ' ', '') + condition(char_length(:l:p_address_2) > 0, :l:p_address_2 + ' ', '') + condition(char_length(:l:p_address_3) > 0, :l:p_address_3 + ' ', ''),
+			    disp_city = condition(char_length(:l:p_city) > 0, :l:p_city + ', ', '') + condition(char_length(:l:p_state_province) > 0, :l:p_state_province + ' ', ''),
+			    stat_text = :sc:text,
+			    score_asterisks = '*' * (:d:p_score / 20)
+		    FROM
+			    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows d,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			    /apps/kardia/data/Kardia_DB/p_location/rows l,
+			    /apps/kardia/data/Kardia_DB/_p_status_code/rows sc
+		    WHERE
+			    :d:s_username = user_name() and
+			    (:parameters:exclude_partner_key is null or :d:p_partner_key != :parameters:exclude_partner_key) and
+			    :p:p_partner_key = :d:p_partner_key and
+			    :l:p_partner_key =* :p:p_partner_key and
+			    :l:p_revision_id = 0 and
+			    :sc:tag = :p:p_status_code
+		    ORDER BY
+			    :d:p_score desc
+		    ");
+
+	    autoquery = never;
+	    readahead=50;
+	    replicasize=50;
+
+	    dups_pane "widget/pane"
+		{
+		height=480;
+		widget_class=table_bgnd;
+
+		dups_table "widget/table"
+		    {
+		    x=0; y=0; width=784; height=478;
+
+		    t_stat "widget/table-column" { title = "Status"; fieldname = stat_text; width=53; }
+		    t_partner_key "widget/table-column" { title = "ID"; fieldname = p_partner_key; width=53; }
+		    t_name "widget/table-column" { title = "Name"; fieldname = disp_name; width=133; }
+		    t_addr "widget/table-column" { title = "Address"; fieldname = disp_addr; width=133; }
+		    t_city "widget/table-column" { title = "City/St"; fieldname = disp_city; width=133; }
+		    t_postal "widget/table-column" { title = "Zip/Postal"; fieldname = p_postal_code; width=83; }
+		    t_reason "widget/table-column" { title = "Dup Reason?"; fieldname = p_comment; width=123; }
+		    t_score "widget/table-column" { title = "Score"; fieldname = score_asterisks; width=50; }
+		    }
+		}
+	    }
+
+	dup_ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    spacing=8;
+	    align=center;
+
+	    close_button "widget/textbutton"
+		{
+		width=100;
+		text="Close";
+
+		close_cn "widget/connector" { event=Click; target=dup_check; action=ClosePressed; }
+		}
+	    }
+	}
+    }
+

@@ -119,8 +119,8 @@ gift_entry "widget/component-decl"
 		    {
 		    height=516; width=198; x=0; y=0;
 
-		    t_rcpt "widget/table-column" { title="Rcpt#"; fieldname="a_receipt_number"; width=60; }
-		    t_don "widget/table-column" { title="Donor"; fieldname="viewname"; width=93; }
+		    t_rcpt "widget/table-column" { title="Rcpt#"; fieldname="a_receipt_number"; width=63; }
+		    t_don "widget/table-column" { title="Donor"; fieldname="viewname"; width=90; }
 		    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=82; align=right; }
 		    }
 		}
@@ -259,8 +259,8 @@ gift_entry "widget/component-decl"
 		    {
 		    height=350; width=198; x=0; y=0;
 
-		    t_rcpt "widget/table-column" { title="Rcpt#"; fieldname="a_receipt_number"; width=60; }
-		    t_date "widget/table-column" { title="Date"; fieldname="viewdate"; width=100; }
+		    t_rcpt "widget/table-column" { title="Rcpt#"; fieldname="a_receipt_number"; width=63; }
+		    t_date "widget/table-column" { title="Date"; fieldname="viewdate"; width=97; }
 		    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=75; align=right; }
 		    }
 		}
@@ -462,6 +462,7 @@ gift_entry "widget/component-decl"
 				    :p:p_given_name,
 				    :p:p_surname,
 				    :p:p_org_name,
+				    :p:p_comments,
 				    :pl:p_address_1,
 				    :pl:p_address_2,
 				    :pl:p_address_3,
@@ -559,6 +560,12 @@ gift_entry "widget/component-decl"
 			    widget_class = link;
 			    value = runclient(condition(:donor_giving_osrc:cnt > 0, condition(:donor_giving_osrc:cnt == 1, 'Donor has given one time, on ' ,'Donor has given ' + :donor_giving_osrc:cnt + ' times, last on ') + substring(:donor_giving_osrc:lastdate, 1, 11) + '.', '** No Giving History **'));
 			    //value = runclient(condition((:donor_giving_osrc:donorid == :f_rcpt_donorid:content or not (char_length(:donor_giving_osrc:donorid) == 0)), condition(:donor_giving_osrc:cnt > 0, 'Donor has given ' + :donor_giving_osrc:cnt + ' times, last on ' + substring(:donor_giving_osrc:lastdate, 1, 11) + '.', '** No Giving History **'), ''));
+			    }
+
+			donor_comment_text "widget/label"
+			    {
+			    height=21;
+			    value=runclient(:donor_osrc:p_comments);
 			    }
 			}
 		    f_rcpt_recvdate "widget/component"

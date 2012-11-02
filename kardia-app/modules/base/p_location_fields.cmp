@@ -9,6 +9,11 @@ p_location_fields "widget/component-decl"
 
     //def_country "widget/parameter" { type=string; default=runserver( (select /apps/kardia/data/Site.struct:site_country) ); }
     
+    address_1 "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    city "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    state_province "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    postal_code "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
     CheckCancel "widget/component-decl-action" { }
     CheckCancel_cn "widget/connector"
 	{
@@ -31,7 +36,7 @@ p_location_fields "widget/component-decl"
 
 	    p_location_type_cmp "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=p_location_type; text="Location Type:"; ctl_type="dropdown"; tooltip="H=home, W=work, S=school, V=vacation"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows"; form=form; loc_type_hints "widget/hints" { default=runclient('H'); style=notnull; } }
 	    p_in_care_of_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_in_care_of; text="In Care Of:"; ctl_type="editbox"; tooltip="In Care Of Whom?";  form=form; }
-	    p_address_1_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_1; text="Addr Line 1:"; ctl_type="editbox"; tooltip="Address Line 1";  form=form; }
+	    p_address_1_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_1; text="Addr Line 1:"; ctl_type="editbox"; tooltip="Address Line 1";  form=form; on_addr1_change "widget/connector" { event=DataChange; target=address_1; action=SetValue; Value=runclient(:Value); } }
 	    p_address_2_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_2; text="Addr Line 2:"; ctl_type="editbox"; tooltip="Address Line 2";  form=form; }
 	    p_address_3_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_3; text="Addr Line 3:"; ctl_type="editbox"; tooltip="Address Line 3";  form=form; }
 	    p_city_state_hbox "widget/hbox"
@@ -39,15 +44,15 @@ p_location_fields "widget/component-decl"
 		height=20;
 		spacing=4;
 
-		p_city_cmp "widget/component" { label_width=100; width=201; path="/sys/cmp/smart_field.cmp"; field=p_city; text="City:"; ctl_type="editbox"; tooltip="The city or township";  form=form; }
-		p_state_province_cmp "widget/component" { label_width=65; width=95; path="/sys/cmp/smart_field.cmp"; field=p_state_province; text="St/Prov:"; ctl_type="editbox"; tooltip="State or Province";  form=form; stprov_hints "widget/hints" { style=uppercase; } }
+		p_city_cmp "widget/component" { label_width=100; width=201; path="/sys/cmp/smart_field.cmp"; field=p_city; text="City:"; ctl_type="editbox"; tooltip="The city or township";  form=form; on_city_change "widget/connector" { event=DataChange; target=city; action=SetValue; Value=runclient(:Value); } }
+		p_state_province_cmp "widget/component" { label_width=65; width=95; path="/sys/cmp/smart_field.cmp"; field=p_state_province; text="St/Prov:"; ctl_type="editbox"; tooltip="State or Province";  form=form; stprov_hints "widget/hints" { style=uppercase; } on_stprov_change "widget/connector" { event=DataChange; target=state_province; action=SetValue; Value=runclient(:Value); } }
 		}
 	    p_zip_country_hbox "widget/hbox"
 		{
 		height=20;
 		spacing=4;
 
-		p_postal_code_cmp "widget/component" { label_width=100; width=182; path="/sys/cmp/smart_field.cmp"; field=p_postal_code; text="Postal/Zip:"; ctl_type="editbox"; tooltip="Zip code or Postal code";  form=form; }
+		p_postal_code_cmp "widget/component" { label_width=100; width=182; path="/sys/cmp/smart_field.cmp"; field=p_postal_code; text="Postal/Zip:"; ctl_type="editbox"; tooltip="Zip code or Postal code";  form=form; on_postal_code_change "widget/connector" { event=DataChange; target=postal_code; action=SetValue; Value=runclient(:Value); } }
 		p_country_code_cmp "widget/component"
 		    {
 		    label_width=70;

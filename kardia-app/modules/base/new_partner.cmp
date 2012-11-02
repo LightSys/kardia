@@ -132,6 +132,14 @@ new_partner "widget/component-decl"
 		    action=New;
 		    }
 
+		clear_dup_done_on_new "widget/connector"
+		    {
+		    event=New;
+		    target=dup_scan_done;
+		    action=SetValue;
+		    Value=0;
+		    }
+
 		// Return value on save
 		return_to_cn "widget/connector"
 		    {
@@ -558,11 +566,40 @@ new_partner "widget/component-decl"
 		}
 	    }
 
+	dup_btn "widget/textbutton"
+	    {
+	    height=24; width=120;
+	    text="Dup Check";
+	    enabled = runclient(:new_partner_osrc:is_client_savable and (char_length(:new_partner_fields:given_name) > 0 or char_length(:new_partner_fields:surname) > 0 or char_length(:new_partner_fields:org_name) > 0));
+
+	    dup_open_window "widget/connector" { event=Click; target=dup_scan_window; action=Open; }
+
+	    dup_do_scan "widget/connector"
+		{
+		event=Click;
+		target=dup_cmp;
+		action=ScanForDups;
+		given_name = runclient(:new_partner_fields:given_name);
+		surname = runclient(:new_partner_fields:surname);
+		org_name = runclient(:new_partner_fields:org_name);
+		address_1 = runclient(:new_location_fields:address_1);
+		city = runclient(:new_location_fields:city);
+		state_province = runclient(:new_location_fields:state_province);
+		postal_code = runclient(:new_location_fields:postal_code);
+		email1 = runclient(:email_field:content);
+		phone1_area = runclient(:new_phone_fields:area);
+		phone1_number = runclient(:new_phone_fields:number);
+		phone2_area = runclient(:new_phone2_fields:area);
+		phone2_number = runclient(:new_phone2_fields:number);
+		}
+	    }
+
 	save_btn "widget/textbutton"
 	    {
 	    height=24; width=120;
 	    text="Save";
 	    enabled = runclient(:new_partner_osrc:is_client_savable);
+	    //enabled = runclient(:new_partner_osrc:is_client_savable and :dup_scan_done:value == 1);
 	    //enabled=runclient(:new_partner_form:is_savable or :new_location_form:is_savable or :new_email_form:is_savable or :new_phone_form:is_savable or :new_phone2_form:is_savable or :new_donorrec_form:is_savable or :new_payeerec_form:is_savable or :new_mlist_form:is_savable);
 
 	    // First, cancel out the New mode on any forms that are in New status
@@ -653,6 +690,34 @@ new_partner "widget/component-decl"
 		target=new_partner_osrc;
 		action=DiscardClients;
 		}
+	    }
+	}
+
+    dup_scan_done "widget/variable"
+	{
+	type=integer;
+	value=0;
+	}
+
+    dup_scan_window "widget/childwindow"
+	{
+	x=10; y=10;
+	width=808;
+	height=564;
+	modal=yes;
+	titlebar=no;
+	visible=no;
+        style = dialog;
+
+	dup_cmp "widget/component"
+	    {
+	    x=10; y=10;
+	    width=786;
+	    height=542;
+	    path="dup_check.cmp";
+
+	    close_cn "widget/connector" { event=ClosePressed; target=dup_scan_window; action=Close; }
+	    close_cn2 "widget/connector" { event=ClosePressed; target=dup_scan_done; action=SetValue; Value=1; }
 	    }
 	}
     }

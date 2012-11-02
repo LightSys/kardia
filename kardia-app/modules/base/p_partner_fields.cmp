@@ -7,6 +7,10 @@ p_partner_fields "widget/component-decl"
     osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
     form "widget/parameter" { type=object; find_container="widget/form"; }
 
+    surname "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    given_name "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    org_name "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
     SetPartner "widget/component-decl-action" { }
     SetPartner_cn "widget/connector"
 	{
@@ -37,16 +41,16 @@ p_partner_fields "widget/component-decl"
 		    p_title_cmp "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=p_title; text="Title:"; ctl_type="dropdown"; form=form; tooltip="The Partners Title"; sql="select :p_title, :p_title, sel=0, grp=0, hide=condition(:p_record_status_code == 'A', 0, 1) from /apps/kardia/data/Kardia_DB/p_title/rows"; }
 		    p_status_code_cmp "widget/component" { width=146; label_width=60; path="/sys/cmp/smart_field.cmp"; form=form; field=p_status_code; text="Status:"; ctl_type="dropdown"; sql="select :text, :tag FROM /apps/kardia/data/Kardia_DB/_p_status_code/rows"; stat_code_hints "widget/hints" { default=runclient('A'); style=notnull; } }
 		    }
-		p_given_name_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_given_name; text="First Name:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="The first (Given) name of the partner"; }
+		p_given_name_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_given_name; text="First Name:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="The first (Given) name of the partner"; on_given_name_change "widget/connector" { event=DataChange; target=given_name; action=SetValue; Value=runclient(:Value); } }
 		surname_suffix_hbox "widget/hbox"
 		    {
 		    height=20;
 		    spacing=4;
-		    p_surname_cmp "widget/component" { width=206; path="/sys/cmp/smart_field.cmp"; field=p_surname; text="Last Name:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="The last Name (Surname) of the partner"; }
+		    p_surname_cmp "widget/component" { width=206; path="/sys/cmp/smart_field.cmp"; field=p_surname; text="Last Name:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="The last Name (Surname) of the partner"; on_surname_change "widget/connector" { event=DataChange; target=surname; action=SetValue; Value=runclient(:Value); } }
 		    p_suffix_cmp "widget/component" { width=140; label_width=60; path="/sys/cmp/smart_field.cmp"; field=p_suffix; text="Suffix:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="Suffix, e.g., Jr., Sr., etc."; }
 		    }
 		p_preferred_name_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_preferred_name; text="Salutation:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="Preferred name (nickname, etc) of the partner"; }
-		p_org_name_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_org_name; text="Organization:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="The name of the organization"; }
+		p_org_name_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_org_name; text="Organization:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip="The name of the organization"; on_org_name_change "widget/connector" { event=DataChange; target=org_name; action=SetValue; Value=runclient(:Value); } }
 		}
 
 	    p_partner_short_vbox "widget/vbox"
@@ -123,4 +127,5 @@ p_partner_fields "widget/component-decl"
 	    }
 	p_comments_cmp "widget/component" { height=20; label_width=100; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments:"; lookup_width=305; ctl_type="editbox"; form=form; tooltip=""; }
 	}
+
     }

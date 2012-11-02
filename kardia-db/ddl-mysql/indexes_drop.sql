@@ -113,6 +113,12 @@ alter table p_gazetteer drop index p_gaz_type_idx;
 /* go */
 
 
+/* p_dup_check_tmp */
+alter table p_dup_check_tmp drop index p_dc_username_idx;
+/* drop index p_dup_check_tmp.p_dupcheck_pk */ 
+/* go */
+
+
 /* m_list */
 /* drop index m_list.m_list_pk */ 
 /* go */
@@ -148,6 +154,17 @@ alter table r_group_report_param drop index r_rparam_partner_idx;
 /* drop index r_group_report_param.r_rparam_pk */ 
 /* go */
 alter table r_group_report_param drop index r_rparam_value_idx;
+
+
+/* r_saved_paramset */
+alter table r_saved_paramset drop index r_ps_modfile_idx;
+/* drop index r_saved_paramset.r_ps_pk */ 
+/* go */
+
+
+/* r_saved_param */
+/* drop index r_saved_param.r_psparam_pk */ 
+/* go */
 
 
 /* a_config */
@@ -509,6 +526,11 @@ alter table c_member drop index s_username_idx;
 /* go */
 
 
+/* s_user_loginhistory */
+/* drop index s_user_loginhistory.s_loginhist_pk */ 
+/* go */
+
+
 /* s_subsystem */
 /* drop index s_subsystem.s_subsystem_pk */ 
 /* go */
@@ -537,6 +559,16 @@ alter table s_motd_viewed drop index s_motd_viewed_username_idx;
 
 /* s_sec_endorsement */
 /* drop index s_sec_endorsement.s_end_pk */ 
+/* go */
+
+
+/* s_sec_endorsement_type */
+/* drop index s_sec_endorsement_type.s_endt_pk */ 
+/* go */
+
+
+/* s_sec_endorsement_context */
+/* drop index s_sec_endorsement_context.s_endc_pk */ 
 /* go */
 
 

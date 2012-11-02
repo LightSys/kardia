@@ -2,7 +2,7 @@ $Version=2$
 coamaint "widget/component-decl"
     {
     width=780; height=580;
-    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
 
     adding_subfund "widget/variable" { type=integer; value=0; }
 
@@ -247,6 +247,8 @@ coamaint "widget/component-decl"
 		new_cn1 "widget/connector" { event=New; target=f_is_balancing; action=SetValue; Value=runclient(1 - :adding_subfund:value); }
 		new_cn2 "widget/connector" { event=New; event_condition=runclient(not :adding_subfund:value); target=f_balcc; action=SetValue; Value=runclient(null); }
 		new_cn3 "widget/connector" { event=New; event_condition=runclient(:adding_subfund:value); target=f_parentcc; action=SetValue; Value=runclient(:searchlistosrc:a_cost_center); }
+
+		new_cn4 "widget/connector" { event=New; event_condition=runclient(:searchlistosrc:a_ledger_number is null); target=f_ledger; action=SetValue; Value=runclient(:ledger:value); }
 
 		fund_tc_pane "widget/pane"
 		    {

@@ -370,6 +370,22 @@ create table p_gazetteer (
 );
 
 
+/* p_dup_check_tmp */
+
+create table p_dup_check_tmp (
+        p_partner_key                         char(10)  not null,      /* partner key of a potential duplicate record. --  */
+        s_username                            varchar(20)  not null,   /* name of the user that is looking for the dups --  */
+        p_score                               int  not null,           /* the "score" that we want to order the potential duplicate record in. --  */
+        p_comment                             varchar(255)  not null,  /* a comment describing what is similar about this duplicate record. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (
@@ -494,6 +510,39 @@ create table r_group_report_param (
         r_report_id                           integer  not null,       /* represents a unique report of this type received by this partner (can be many) --  */
         r_param_name                          varchar(64)  not null,   /* name of the parameter --  */
         r_param_value                         varchar(1024)  null,     /* value for the parameter (in string format). --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* r_saved_paramset */
+
+create table r_saved_paramset (
+        r_paramset_id                         int  not null,           /* unique id for the parameter set --  */
+        r_paramset_desc                       varchar(255)  null,      /* description of the parameter set --  */
+        r_module                              varchar(20)  not null,   /* directory name of the module containing the report to run (e.g., 'base', 'rcpt', 'disb', etc.) --  */
+        r_file                                varchar(255)  not null,  /* file name of the .rpt file in the above module. --  */
+        r_is_personal                         bit,                     /* Set to 1 if the parameter set is available only to its creator. Otherwise, everyone can see the parameter set. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* r_saved_param */
+
+create table r_saved_param (
+        r_paramset_id                         int  not null,           /* unique id for the parameter set --  */
+        r_param_name                          varchar(64)  null,       /* name of the parameter --  */
+        r_param_value                         varchar(1536)  not null,
+                                                                      /* parameter's value --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1755,6 +1804,22 @@ create table s_user_data (
 );
 
 
+/* s_user_loginhistory */
+
+create table s_user_loginhistory (
+        s_username                            varchar(20)  not null,   /* user who logged in. --  */
+        s_sessionid                           integer  not null,       /* an incrementing value for this particular login record. --  */
+        s_first_seen                          datetime  not null,      /* this login session began on this date/time --  */
+        s_last_seen                           datetime  not null,      /* this login session ended on or around this date/time --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* s_subsystem */
 
 create table s_subsystem (
@@ -1840,6 +1905,35 @@ create table s_sec_endorsement (
         s_endorsement                         varchar(64)  not null,   /* endorsement to be granted --  */
         s_context                             varchar(255)  not null,  /* context of endorsement --  */
         s_subject                             varchar(20)  not null,   /* name of subject being granted the endorsement (username, group name) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_sec_endorsement_type */
+
+create table s_sec_endorsement_type (
+        s_endorsement                         varchar(64)  not null,   /* endorsement to be granted --  */
+        s_endorsement_desc                    varchar(255)  not null,  /* description of endorsement --  */
+        s_endorsement_context_type            varchar(64)  not null,   /* type of context this endorsement operates within (e.g., "*" or "ledger") --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_sec_endorsement_context */
+
+create table s_sec_endorsement_context (
+        s_context                             varchar(255)  not null,  /* context of endorsement --  */
+        s_context_desc                        varchar(255)  not null,  /* description of security endorsement context --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

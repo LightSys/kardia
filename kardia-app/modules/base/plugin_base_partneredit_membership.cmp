@@ -25,7 +25,7 @@ m_list_membership_component "widget/component-decl"
 			:l:m_reason_member,
 			:l:m_reason_cancel,
 			:l:s_date_created, :l:s_created_by, :l:s_date_modified, :l:s_modified_by,
-			membstat = :ms:text,
+			membstat = :ms:text + condition(:l:m_hold_until_date is null or :l:m_hold_until_date <= getdate(), '', '-OnHold'),
 			postmode = :pm:text,
 			liststat = :ls:text,
 			cancel_txt = :cr:text,
@@ -322,8 +322,8 @@ m_list_membership_component "widget/component-decl"
 		    {
 		    width = 171;
 		    height = 24;
-		    enabled = runclient((not (:memb_osrc:m_end_date is null)) or not (:memb_osrc:m_num_issues_sub is null));
-		    text = "Renew";
+		    enabled = runclient(:memb_osrc:m_membership_status = 'C' or (not (:memb_osrc:m_end_date is null)) or not (:memb_osrc:m_num_issues_sub is null));
+		    text = runclient(condition(:memb_osrc:m_membership_status = 'C', "Reactivate", "Renew"));
 		    }
 
 		cancel_btn "widget/textbutton"
@@ -331,7 +331,8 @@ m_list_membership_component "widget/component-decl"
 		    width = 171;
 		    height = 24;
 		    enabled = runclient(:memb_osrc:m_cancel_date is null and not (:memb_osrc:p_partner_key is null));
-		    text = "Cancel / Remove";
+		    text = "Cancel...";
+		    cancel_sub_cn "widget/connector" { event=Click; target=cancel_sub_window; action=Open; }
 		    }
 
 		suspend_btn "widget/textbutton"
@@ -339,9 +340,103 @@ m_list_membership_component "widget/component-decl"
 		    width = 171;
 		    height = 24;
 		    enabled = runclient(:memb_osrc:m_cancel_date is null and not (:memb_osrc:p_partner_key is null));
-		    text = "Suspend Until...";
+		    text = "Hold Until...";
+		    hold_sub_cn "widget/connector" { event=Click; target=hold_sub_window; action=Open; }
 		    }
 		}
             }
         }
+
+    hold_sub_window "widget/childwindow"
+	{
+	style=dialog;
+	titlebar=no;
+	modal=yes;
+	toplevel=yes;
+	width=480; height=300;
+	x=175; y=20;
+	visible=no;
+
+	hold_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=458; height=278;
+	    spacing=8;
+
+	    hold_title "widget/label" { height=20; font_size=15; style=bold; align=center; text="Hold Subscription"; }
+
+	    hold_line "widget/pane" { height=2; style=lowered; }
+
+	    hold_date_lbl "widget/label" { text="Hold Until:"; height=20; }
+
+	    hold_form "widget/form"
+		{
+		objectsource = memb_osrc;
+		hold_date "widget/datetime"
+		    {
+		    width=300;
+		    height=20;
+		    fieldname=m_hold_until_date;
+		    }
+		}
+
+	    hold_ctls_hbox "widget/hbox"
+		{
+		height=24; spacing=8;
+		align=center;
+
+		yeshold "widget/textbutton"
+		    {
+		    height=24; width=170;
+		    text = runclient(condition(:hold_form:is_savable and :hold_date:value is null, "Remove Hold", "Hold Subscription"));
+		    enabled = runclient(condition(:hold_form:is_savable));
+
+		    yeshold_cn "widget/connector"
+			{
+			event=Click;
+			target=hold_form;
+			action=Save;
+			}
+		    yeshold_cn2 "widget/connector"
+			{
+			condition=0;
+			event=Click;
+			target=memb_osrc;
+			action=Refresh;
+			}
+		    yeshold_cn3 "widget/connector"
+			{
+			event=Click;
+			target=hold_sub_window;
+			action=Close;
+			}
+		    }
+		nohold "widget/textbutton"
+		    {
+		    height=24; width=170;
+		    text = "Leave Unchanged";
+
+		    nohold_cn "widget/connector" { event=Click; target=hold_sub_window; action=Close; }
+		    }
+		}
+	    }
+	}
+
+    cancel_sub_window "widget/childwindow"
+	{
+	style=dialog;
+	titlebar=no;
+	modal=yes;
+	toplevel=yes;
+	width=480; height=300;
+	x=175; y=20;
+	visible=no;
+
+	cancel_ui "widget/component"
+	    {
+	    x=10; y=10; width=458; height=278;
+	    path="cancel_sub_ui.cmp";
+	    subs_osrc = memb_osrc;
+	    whom_text = runclient(:partner_osrc:disp_name);
+	    }
+	}
     }
