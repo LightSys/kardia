@@ -43,6 +43,11 @@ create  index p_af_country_idx on p_address_format (p_country_code, p_address_se
 /* go */
 
 
+/* p_address_format_set */
+/* create  index p_afs_pk on p_address_format_set (p_address_set)*/ 
+/* go */
+
+
 /* p_contact_info */
 /* create  index p_contact_info_pk on p_contact_info (p_partner_key, p_contact_id)*/ 
 /* go */
@@ -116,6 +121,11 @@ create  index p_gaz_type_idx on p_gazetteer (p_feature_type, p_country_code, p_f
 /* p_dup_check_tmp */
 create  index p_dc_username_idx on p_dup_check_tmp (s_username, p_partner_key);
 /* create  index p_dupcheck_pk on p_dup_check_tmp (p_partner_key,s_username)*/ 
+/* go */
+
+
+/* p_partner_sort_tmp */
+/* create  index p_sort_pk on p_partner_sort_tmp (p_partner_key,s_username,p_sort_session_id)*/ 
 /* go */
 
 
@@ -325,8 +335,8 @@ create  index a_payroll_payee_idx on a_payroll (a_ledger_number, p_payee_partner
 
 
 /* a_payroll_period */
-create  index a_payperiod_idx on a_payroll_period (a_period, a_ledger_number, a_payroll_period);
-/* create  index a_payperiod_pk on a_payroll_period (a_payroll_period, a_ledger_number)*/ 
+create  index a_payperiod_idx on a_payroll_period (a_period, a_ledger_number, a_payroll_group_id, a_payroll_period);
+/* create  index a_payperiod_pk on a_payroll_period (a_ledger_number, a_payroll_group_id, a_payroll_period)*/ 
 /* go */
 
 
@@ -575,3 +585,23 @@ create  index s_motd_viewed_username_idx on s_motd_viewed (s_username, s_motd_id
 /* s_mykardia */
 /* create  index s_myk_pk on s_mykardia (s_username, s_module, s_plugin, s_occurrence)*/ 
 /* go */
+
+
+/* s_request */
+create  index s_objkey12_idx on s_request (s_object_key_1, s_object_key_2, s_request_id);
+create  index s_objkey21_idx on s_request (s_object_key_2, s_object_key_1, s_request_id);
+/* create  index s_req_pk on s_request (s_request_id)*/ 
+/* go */
+
+
+/* s_request_type */
+/* create  index s_reqtype_pk on s_request_type (s_request_type)*/ 
+/* go */
+
+
+/* s_audit */
+create  index s_audit_intval_idx on s_audit (s_table, s_attrname, s_valueint, s_key, s_sequence);
+create  index s_audit_name_idx on s_audit (s_table, s_key, s_attrname, s_sequence);
+/* create  index s_audit_pk on s_audit (s_sequence)*/ 
+/* go */
+create  index s_audit_strval_idx on s_audit (s_table, s_attrname, s_valuestring, s_key, s_sequence);

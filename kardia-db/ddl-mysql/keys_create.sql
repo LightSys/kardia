@@ -22,6 +22,9 @@ alter table p_location
 alter table p_address_format
 	add constraint p_af_pk primary key  (p_address_set, p_country_code);
 
+alter table p_address_format_set
+	add constraint p_afs_pk primary key  (p_address_set);
+
 alter table p_contact_info
 	add constraint p_contact_info_pk primary key  (p_partner_key, p_contact_id);
 
@@ -63,6 +66,9 @@ alter table p_gazetteer
 
 alter table p_dup_check_tmp
 	add constraint p_dupcheck_pk primary key  (p_partner_key,s_username);
+
+alter table p_partner_sort_tmp
+	add constraint p_sort_pk primary key  (p_partner_key,s_username,p_sort_session_id);
 
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
@@ -170,7 +176,7 @@ alter table a_payroll
 	add constraint a_payroll_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_id);
 
 alter table a_payroll_period
-	add constraint a_payperiod_pk primary key  (a_payroll_period, a_ledger_number);
+	add constraint a_payperiod_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_period);
 
 alter table a_payroll_group
 	add constraint a_payroll_grp_pk primary key  (a_ledger_number, a_payroll_group_id);
@@ -303,3 +309,12 @@ alter table s_sec_endorsement_context
 
 alter table s_mykardia
 	add constraint s_myk_pk primary key  (s_username, s_module, s_plugin, s_occurrence);
+
+alter table s_request
+	add constraint s_req_pk primary key  (s_request_id);
+
+alter table s_request_type
+	add constraint s_reqtype_pk primary key  (s_request_type);
+
+alter table s_audit
+	add constraint s_audit_pk primary key  (s_sequence);

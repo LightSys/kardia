@@ -141,6 +141,21 @@ create table p_address_format (
 );
 
 
+/* p_address_format_set */
+
+create table p_address_format_set (
+        p_address_set                         char(10)  not null,      /* Set of address formats being used --  */
+        p_address_set_desc                    char(255)  not null,     /* description of address format set. --  */
+        p_is_active                           bit  not null,           /* is the address format set active? --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* p_contact_info */
 
 create table p_contact_info (
@@ -386,6 +401,24 @@ create table p_dup_check_tmp (
 );
 
 
+/* p_partner_sort_tmp */
+
+create table p_partner_sort_tmp (
+        p_partner_key                         char(10)  not null,      /* partner key --  */
+        s_username                            varchar(20)  not null,   /* name of the user --  */
+        p_sort_session_id                     integer  not null,       /* ID of sort session, a unique integer. --  */
+        p_sortkey                             varchar(255)  not null,  /* the sorting key, determining the order in which sorted records are returned. --  */
+        p_location_id                         integer  null,           /* the location record to use for this partner --  */
+        p_contact_id                          integer  null,           /* the contact record to use for this partner --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (
@@ -540,9 +573,8 @@ create table r_saved_paramset (
 
 create table r_saved_param (
         r_paramset_id                         int  not null,           /* unique id for the parameter set --  */
-        r_param_name                          varchar(64)  null,       /* name of the parameter --  */
-        r_param_value                         varchar(1536)  not null,
-                                                                      /* parameter's value --  */
+        r_param_name                          varchar(64)  not null,   /* name of the parameter --  */
+        r_param_value                         varchar(1536)  null,     /* parameter's value --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1076,12 +1108,14 @@ create table a_payroll (
 /* a_payroll_period */
 
 create table a_payroll_period (
-        a_payroll_period                      char(12)  not null,      /* payroll period (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number (alphanumeric allowed) --  */
+        a_payroll_group_id                    integer  not null,       /* payroll group ID --  */
+        a_payroll_period                      char(12)  not null,      /* payroll period (alphanumeric allowed) --  */
         a_period                              char(8)  not null,       /* accounting period for this payroll period. --  */
-        a_start_date                          datetime  not null,      /* first date that wages are being paid for in this period. --  */
-        a_end_date                            datetime  not null,      /* last date that wages are being paid for in this period. --  */
-        a_pay_date                            datetime  not null,      /* date wages are actually paid (this date must be within the accounting period in question) --  */
+        a_start_date                          datetime  not null,      /* first date that wages were earned this period. --  */
+        a_end_date                            datetime  not null,      /* last date that wages were earned in this period. --  */
+        a_accrual_date                        datetime  not null,      /* date wages are accounted for. Typically same as a_end_date on accrual setups, same as a_pay_date on cash or modified cash setups. --  */
+        a_pay_date                            datetime  not null,      /* date wages are actually paid / paychecks disbursed --  */
         a_payroll_period_desc                 varchar(40)  null,       /* short description of payroll period, for reporting --  */
         a_payroll_period_comment              varchar(255)  null,      /* comments / long description of payroll period --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -1956,6 +1990,68 @@ create table s_mykardia (
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
         s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_request */
+
+create table s_request (
+        s_request_id                          integer  not null,       /* id of the request --  */
+        s_request_type                        char(10)  not null,      /* type of request, see the s_request_type table --  */
+        s_object_key_1                        varchar(255)  not null,  /* key value for object subject to the request --  */
+        s_object_key_2                        varchar(255)  not null,  /* secondary key value for object subject to the request - if does not apply, leave empty (not null) --  */
+        s_date_requested                      datetime  not null,      /*  --  */
+        s_requested_by                        varchar(20)  not null,   /*  --  */
+        s_request_comment                     varchar(255)  null,      /*  --  */
+        s_date_assigned                       datetime  null,          /*  --  */
+        s_assigned_by                         varchar(20)  null,       /*  --  */
+        s_assigned_to                         varchar(20)  null,       /*  --  */
+        s_assigned_comment                    varchar(255)  null,      /*  --  */
+        s_date_approved                       datetime  null,          /*  --  */
+        s_approved_by                         varchar(20)  null,       /*  --  */
+        s_approved_comment                    varchar(255)  null,      /*  --  */
+        s_date_completed                      datetime  null,          /*  --  */
+        s_completed_by                        varchar(20)  null,       /*  --  */
+        s_completed_comment                   varchar(255)  null,      /*  --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_request_type */
+
+create table s_request_type (
+        s_request_type                        char(10)  not null,      /* type of request --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_audit */
+
+create table s_audit (
+        s_sequence                            int  not null,           /* audit record ID (incrementing integer) --  */
+        s_table                               varchar(32)  not null,   /* table (entity type) being modified --  */
+        s_key                                 varchar(255)  not null,  /* key (:name) of object being modified --  */
+        s_attrname                            varchar(32)  not null,   /* name of attribute being modified or created --  */
+        s_attrtype                            varchar(32)  not null,   /* data type of attribute being modified or created --  */
+        s_valuestring                         varchar(255)  null,      /* string value --  */
+        s_valueint                            int  null,               /* integer value --  */
+        s_valuedouble                         float  null,             /* float/double value --  */
+        s_valuemoney                          decimal(14,4)  null,     /* money value --  */
+        s_valuedatetime                       datetime  null,          /* date/time value --  */
+        s_date_created                        datetime  not null,      /* date the modification was made --  */
+        s_created_by                          varchar(20)  not null,   /* user who made the modification --  */
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );

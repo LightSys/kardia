@@ -70,6 +70,10 @@ alter table p_address_format
 	drop primary key;
 
 
+alter table p_address_format_set
+	drop primary key;
+
+
 alter table p_contact_info
 	drop primary key;
 
@@ -139,6 +143,10 @@ alter table p_gazetteer
 
 
 alter table p_dup_check_tmp
+	drop primary key;
+
+
+alter table p_partner_sort_tmp
 	drop primary key;
 
 
@@ -332,6 +340,10 @@ alter table a_payroll
 
 alter table a_payroll_period
 	drop primary key;
+
+
+alter table a_payroll_period
+	drop index a_payperiod_idx;
 
 
 alter table a_payroll_group
@@ -560,3 +572,35 @@ alter table s_sec_endorsement_context
 
 alter table s_mykardia
 	drop primary key;
+
+
+alter table s_request
+	drop primary key;
+
+
+alter table s_request
+	drop index s_objkey12_idx;
+
+
+alter table s_request
+	drop index s_objkey21_idx;
+
+
+alter table s_request_type
+	drop primary key;
+
+
+alter table s_audit
+	drop primary key;
+
+
+alter table s_audit
+	drop index s_audit_name_idx;
+
+
+alter table s_audit
+	drop index s_audit_strval_idx;
+
+
+alter table s_audit
+	drop index s_audit_intval_idx;

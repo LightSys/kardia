@@ -79,6 +79,9 @@ alter table a_transaction_tmp
 alter table a_transaction_tmp
 	add constraint a_trxt_recip_id_idx unique  (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
+alter table a_payroll_period
+	add constraint a_payperiod_idx unique  (a_period, a_ledger_number, a_payroll_group_id, a_payroll_period);
+
 alter table a_payroll_import
 	add constraint a_payrolli_payee_idx unique  (a_ledger_number, p_payee_partner_key, a_payroll_id);
 
@@ -117,3 +120,18 @@ alter table a_subtrx_deposit
 
 alter table c_chat
 	add constraint c_public_idx unique  (c_public, c_chat_id);
+
+alter table s_request
+	add constraint s_objkey12_idx unique  (s_object_key_1, s_object_key_2, s_request_id);
+
+alter table s_request
+	add constraint s_objkey21_idx unique  (s_object_key_2, s_object_key_1, s_request_id);
+
+alter table s_audit
+	add constraint s_audit_name_idx unique  (s_table, s_key, s_attrname, s_sequence);
+
+alter table s_audit
+	add constraint s_audit_strval_idx unique  (s_table, s_attrname, s_valuestring, s_key, s_sequence);
+
+alter table s_audit
+	add constraint s_audit_intval_idx unique  (s_table, s_attrname, s_valueint, s_key, s_sequence);

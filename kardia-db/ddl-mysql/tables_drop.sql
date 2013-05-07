@@ -23,6 +23,10 @@ drop table p_location;
 drop table p_address_format;
 
 
+/* p_address_format_set */
+drop table p_address_format_set;
+
+
 /* p_contact_info */
 drop table p_contact_info;
 
@@ -73,6 +77,10 @@ drop table p_gazetteer;
 
 /* p_dup_check_tmp */
 drop table p_dup_check_tmp;
+
+
+/* p_partner_sort_tmp */
+drop table p_partner_sort_tmp;
 
 
 /* m_list */
@@ -377,3 +385,15 @@ drop table s_sec_endorsement_context;
 
 /* s_mykardia */
 drop table s_mykardia;
+
+
+/* s_request */
+drop table s_request;
+
+
+/* s_request_type */
+drop table s_request_type;
+
+
+/* s_audit */
+drop table s_audit;

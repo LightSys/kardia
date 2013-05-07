@@ -43,6 +43,11 @@ alter table p_address_format drop index p_af_country_idx;
 /* go */
 
 
+/* p_address_format_set */
+/* drop index p_address_format_set.p_afs_pk */ 
+/* go */
+
+
 /* p_contact_info */
 /* drop index p_contact_info.p_contact_info_pk */ 
 /* go */
@@ -116,6 +121,11 @@ alter table p_gazetteer drop index p_gaz_type_idx;
 /* p_dup_check_tmp */
 alter table p_dup_check_tmp drop index p_dc_username_idx;
 /* drop index p_dup_check_tmp.p_dupcheck_pk */ 
+/* go */
+
+
+/* p_partner_sort_tmp */
+/* drop index p_partner_sort_tmp.p_sort_pk */ 
 /* go */
 
 
@@ -575,3 +585,23 @@ alter table s_motd_viewed drop index s_motd_viewed_username_idx;
 /* s_mykardia */
 /* drop index s_mykardia.s_myk_pk */ 
 /* go */
+
+
+/* s_request */
+alter table s_request drop index s_objkey12_idx;
+alter table s_request drop index s_objkey21_idx;
+/* drop index s_request.s_req_pk */ 
+/* go */
+
+
+/* s_request_type */
+/* drop index s_request_type.s_reqtype_pk */ 
+/* go */
+
+
+/* s_audit */
+alter table s_audit drop index s_audit_intval_idx;
+alter table s_audit drop index s_audit_name_idx;
+/* drop index s_audit.s_audit_pk */ 
+/* go */
+alter table s_audit drop index s_audit_strval_idx;
