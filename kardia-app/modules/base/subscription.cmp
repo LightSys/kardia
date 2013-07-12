@@ -179,8 +179,8 @@ subscription "widget/component-decl"
 		    f_m_num_recv "widget/component" { width=196; path="/sys/cmp/smart_field.cmp"; text="Issues Recvd:"; field=m_num_issues_recv; ctl_type=label; tooltip="Number of issues the member has received"; nr_hints "widget/hints" { style=readonly; } }
 		    }
 		f_m_complimentary "widget/component" { path="/sys/cmp/smart_field.cmp"; text="Complimentary:"; field=m_complimentary; ctl_type=checkbox; }
-		f_m_reason_memb "widget/component" { width=400; path="/sys/cmp/smart_field.cmp"; text="Memb. Reason:"; field=m_reason_member; ctl_type=dropdown; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_m_member_reason/rows"); }
-		f_m_reason_canc "widget/component" { width=400; path="/sys/cmp/smart_field.cmp"; text="Cancel Reason:"; field=m_reason_cancel; ctl_type=dropdown; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_m_cancel_reason/rows"); }
+		f_m_reason_memb "widget/component" { width=400; path="/sys/cmp/smart_field.cmp"; text="Why Memb.:"; field=m_reason_member; ctl_type=dropdown; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_m_member_reason/rows"); }
+		f_m_reason_canc "widget/component" { width=400; path="/sys/cmp/smart_field.cmp"; text="Why Cancel:"; field=m_reason_cancel; ctl_type=dropdown; sql=runserver("select :text, :tag from /apps/kardia/data/Kardia_DB/_m_cancel_reason/rows"); }
 		f_m_comments "widget/component" { path="/sys/cmp/smart_field.cmp"; text="Comments:"; field=m_comments; }
 		}
 
