@@ -6,7 +6,7 @@ fund_balance "widget/page"
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
-    title = runserver("Fund Balances Report - " + :this:ledger);
+    title = runserver("Fund Balances Report" + isnull(" - " + :this:ledger,""));
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
 
