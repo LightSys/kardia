@@ -15,6 +15,7 @@ popup_table "widget/component-decl"
     popup_width "widget/parameter" { type=integer; default=250; }
     popup_height "widget/parameter" { type=integer; default=300; }
     key_name "widget/parameter" { type=string; default="name"; }
+    multiselect "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
 
     Opened "widget/component-decl-event" {}
     Closed "widget/component-decl-event" {}
@@ -30,7 +31,7 @@ popup_table "widget/component-decl"
 	action = QueryText;
 	field_list = runclient(:popup_table:search_field_list);
 	objname = runclient(:popup_table:search_objname);
-	query = runclient(:editbox:content);
+	query = runclient(condition(charindex(',',:editbox:content) > 0 and :popup_table:multiselect, substring(:editbox:content,char_length(:editbox:content) - charindex(',', reverse(:editbox:content)) + 2), :editbox:content));
 	cx__case_insensitive = 1;
 	}
 
@@ -81,7 +82,7 @@ popup_table "widget/component-decl"
 	    action = QueryText;
 	    field_list = runclient(:popup_table:search_field_list);
 	    objname = runclient(:popup_table:search_objname);
-	    query = runclient(:Value);
+	    query = runclient(condition(charindex(',',:Value) > 0 and :popup_table:multiselect, substring(:Value,char_length(:Value) - charindex(',', reverse(:Value)) + 2), :Value));
 	    cx__case_insensitive = 1;
 	    }
 
@@ -112,7 +113,7 @@ popup_table "widget/component-decl"
 	    action = Next;
 	    }
 
-	kp_f3_closed1 "widget/connector"
+	kp_f3_closed1a "widget/connector"
 	    {
 	    event = "BeforeKeyPress";
 	    //event_condition = runclient(not (:popup:is_visible) and :Name = 'f3' and char_length(:editbox:content) >= 3);
@@ -121,7 +122,7 @@ popup_table "widget/component-decl"
 	    action = QueryText;
 	    field_list = runclient(:popup_table:search_field_list);
 	    objname = runclient(:popup_table:search_objname);
-	    query = runclient(:editbox:content);
+	    query = runclient(condition(charindex(',',:editbox:content) > 0 and :popup_table:multiselect, substring(:editbox:content,char_length(:editbox:content) - charindex(',', reverse(:editbox:content)) + 2), :editbox:content));
 	    cx__case_insensitive = 1;
 	    }
 	kp_f3_closed2 "widget/connector"
@@ -150,7 +151,7 @@ popup_table "widget/component-decl"
 	    event_condition = runclient(:popup:is_visible and :Name = 'enter');
 	    target = editbox;
 	    action = SetValue;
-	    Value = runclient(:table_osrc:value);
+	    Value = runclient(condition(charindex(',', :editbox:content) > 0 and :popup_table:multiselect, substring(:editbox:content, 1, char_length(:editbox:content) - charindex(',', reverse(:editbox:content)) + 1) + :table_osrc:value + ',', condition(:popup_table:multiselect, :table_osrc:value + ',', :table_osrc:value)));
 	    }
 	kp_enter2 "widget/connector"
 	    {
@@ -159,7 +160,7 @@ popup_table "widget/component-decl"
 	    //event_cancel = runclient(:popup:is_visible and :Name = 'enter');
 	    target = editbox;
 	    action = SetValueDescription;
-	    Description = runclient(:table_osrc:label);
+	    Description = runclient(condition(:popup_table:multiselect and charindex(',', :editbox:content) > 0 and charindex(',', :editbox:content) != char_length(:editbox:content), '** MULTIPLE **', :table_osrc:label));
 	    }
 	kp_enter3 "widget/connector"
 	    {
@@ -178,6 +179,27 @@ popup_table "widget/component-decl"
 	    action = Close;
 	    }
 
+	kp_comma1 "widget/connector"
+	    {
+	    condition=runserver(:this:multiselect);
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Code = 44 and char_length(:table_osrc:value) > 0); // comma
+	    //event_cancel = runclient(:popup:is_visible and :Code = 44); // comma
+	    target = editbox;
+	    action = SetValue;
+	    Value = runclient(condition(charindex(',', :editbox:content) > 0, substring(:editbox:content, 1, char_length(:editbox:content) - charindex(',', reverse(:editbox:content)) + 1) + :table_osrc:value + ',', :table_osrc:value + ','));
+	    }
+	kp_comma2 "widget/connector"
+	    {
+	    condition=runserver(:this:multiselect);
+	    event = "BeforeKeyPress";
+	    event_condition = runclient(:popup:is_visible and :Code = 44 and char_length(:table_osrc:value) > 0); // comma
+	    event_cancel = runclient(:popup:is_visible and :Code = 44 and char_length(:table_osrc:value) > 0); // comma
+	    target = editbox;
+	    action = SetValueDescription;
+	    Description = runclient('** MULTIPLE **');
+	    }
+
 	kp_tab1 "widget/connector"
 	    {
 	    event = "BeforeKeyPress";
@@ -185,7 +207,7 @@ popup_table "widget/component-decl"
 	    event_condition = runclient(:popup:is_visible and :Name = 'tab');
 	    target = editbox;
 	    action = SetValue;
-	    Value = runclient(:table_osrc:value);
+	    Value = runclient(condition(charindex(',', :editbox:content) > 0 and :popup_table:multiselect, substring(:editbox:content, 1, char_length(:editbox:content) - charindex(',', reverse(:editbox:content)) + 1) + :table_osrc:value + ',', condition(:popup_table:multiselect, :table_osrc:value + ',', :table_osrc:value)));
 	    }
 	kp_tab2 "widget/connector"
 	    {
@@ -193,7 +215,7 @@ popup_table "widget/component-decl"
 	    event_condition = runclient(:popup:is_visible and :Name = 'tab');
 	    target = editbox;
 	    action = SetValueDescription;
-	    Description = runclient(:table_osrc:label);
+	    Description = runclient(condition(:popup_table:multiselect and charindex(',', :editbox:content) > 0 and charindex(',', :editbox:content) != char_length(:editbox:content), '** MULTIPLE **', :table_osrc:label));
 	    }
 	kp_tab3 "widget/connector"
 	    {
@@ -251,15 +273,15 @@ popup_table "widget/component-decl"
 			{
 			event = "Click";
 			target = editbox;
-			action = "SetValue";
-			Value = runclient(:value);
+			action = SetValue;
+			Value = runclient(condition(charindex(',', :editbox:content) > 0 and :popup_table:multiselect, substring(:editbox:content, 1, char_length(:editbox:content) - charindex(',', reverse(:editbox:content)) + 1) + :value + ',', condition(:popup_table:multiselect, :value + ',', :value)));
 			}
 		    clickitem2 "widget/connector"
 			{
 			event = "Click";
 			target = editbox;
 			action = SetValueDescription;
-			Description = runclient(:label);
+			Description = runclient(condition(:popup_table:multiselect and charindex(',', :editbox:content) > 0 and charindex(',', :editbox:content) != char_length(:editbox:content), '** MULTIPLE **', :label));
 			}
 		    clickitem3 "widget/connector"
 			{
@@ -270,6 +292,7 @@ popup_table "widget/component-decl"
 			}
 		    clickitem4 "widget/connector"
 			{
+			condition=runserver(not :this:multiselect);
 			event = "Click";
 			target = popup;
 			action = "Close";
