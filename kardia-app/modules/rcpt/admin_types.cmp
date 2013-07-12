@@ -194,12 +194,13 @@ admin_types "widget/component-decl"
 
 		btn_hbox "widget/hbox"
 		    {
-		    cellsize = 100; spacing=8; height=24;
+		    cellsize = 130; spacing=8; height=24;
 
 		    addtype_btn "widget/textbutton"
 			{
 			text = "Add Type";
 			enabled = runclient(:admin_form:is_newable);
+			width = 130;
 
 			//addt_1 "widget/connector" { event=Click; target=searchlistosrc; action=Clear; }
 			//addt_2 "widget/connector" { event=Click; target=sublistosrc; action=Clear; }
@@ -211,6 +212,7 @@ admin_types "widget/component-decl"
 			{
 			text = "Add SubType";
 			enabled = runclient(:admin_form:is_newable and not (:searchlistosrc:a_admin_fee_type is null));
+			width = 130;
 
 			adds_1 "widget/connector" { event=Click; target=adding_subtype; action=SetValue; Value=runclient(1); }
 			adds_2 "widget/connector" { event=Click; target=admin_form; action=New; }
