@@ -16,7 +16,7 @@ receipt_report "system/report"
 	title			=	"Batch of Receipts";
 	document_format	=	"application/pdf";
     resolution		=	 100;
-	marginleft		=	.01;
+	marginleft		=	1;
 	marginright		=	.01;
 	margintop		=	.142;
 	marginbottom	=	.01;
@@ -33,12 +33,14 @@ receipt_report "system/report"
 	
 	// Parameters for this Receipts Report //
 	ledger			"report/parameter"	{ type=string;	default=null; }
-	ledger_number	"report/parameter"	{ type=string;	default=null; }		// deprecated
+	ledger_number	"report/parameter"	{ type=string;	default=null; }	// deprecated
 	batch_number	"report/parameter"	{ type=integer;	default=null; }
 	gift_number		"report/parameter"	{ type=integer;	default=null; }
 	receipt_number	"report/parameter"	{ type=string;	default=null; }
 	partner_id		"report/parameter"	{ type=string;	default=null; }
-	address_full	"report/parameter"	{ type=integer;	default=0; }
+	address_full	"report/parameter"	{ type=integer;	default=0;    } // Display the Full Address? 1-yes 0-no
+	receipt_desired	"report/parameter"	{ type=string;	default="_";  }	// I-Immediate, A-Annual, "_"-all receipt types
+	types			"report/parameter"	{ type=string;	default="_";  }	// currently same as receipt_desired parameter
 	/////////////////////////////////////////
 	
 	// DEBUGGING SECTION
@@ -64,6 +66,8 @@ receipt_report "system/report"
 		db_receipt_number "report/data" { value=runserver("receipt_number = " + isnull(:this:receipt_number, "<blank>") + "\n"); }
 		db_partner_id "report/data" { value=runserver("partner_id = " + isnull(:this:partner_id, "<blank>") + "\n"); }
 		db_address_full "report/data" { value=runserver("address_full = " + isnull(:this:address_full, "<blank>") + " - Set to 1 (or any value other than 0) to display first, last, and orgname in the address box\n"); }
+		db_receipt_desired_filter "report/data" { value=runserver("receipt_desired = " + isnull(:this:receipt_desired, "<blank>") + " Filter for Receipt Desired: I-Immediate, A-Annual, _-All Receipts in the batch (default)\n"); }
+		db_types "report/data" { value=runserver("types = " + isnull(:this:types, "<blank>") + " Filter for Types (same as Receipt Desired): I-Immediate, A-Annual, _-All Receipts in the batch (default)\n"); }
 		
 	} // END - cr_debugging "report/area"
 		
@@ -92,6 +96,7 @@ receipt_report "system/report"
 				:grp:a_gift_postmark_date,
 				:grp:a_receipt_sent_date,
 				:grp:a_comment,
+				:grp:a_receipt_desired,
 				official_receipt_date = isnull(:grp:a_gift_postmark_date, :grp:a_gift_received_date),
 				row_count_id = count(1)
 			FROM
@@ -110,6 +115,8 @@ receipt_report "system/report"
 				condition( not (:this:gift_number is null), ' AND :grp:a_gift_number = :this:gift_number', ' ') +
 				condition( not (:this:receipt_number is null), ' AND :grp:a_receipt_number = :this:receipt_number', ' ') +
 				condition( not (:this:partner_id is null), ' AND :grp:p_donor_partner_id = :this:partner_id', ' ') +
+				condition( not (:this:receipt_desired == '_'), ' AND :grp:a_receipt_desired = :this:receipt_desired', ' ') +
+				condition( not (:this:types == '_'), ' AND :grp:a_receipt_desired = :this:types', ' ') +
 
 			" GROUP BY
 				:grp:a_gift_number "
@@ -185,19 +192,7 @@ receipt_report "system/report"
 			p_country_name = upper(:c:p_country_name),
 			:af:p_format,
 
-			display_name = 
-condition(
-	convert(string, char_length(ltrim(rtrim(isnull(
-	:p:p_given_name + :p:p_surname,
-''))))) > 0, 
-	:p:p_given_name + ' ' + :p:p_surname
- + ' \n', '') +
-condition(
-	convert(string, char_length(ltrim(rtrim(isnull(
-	:p:p_org_name,
-''))))) > 0, 
-	:p:p_org_name
- + ' \n', '')
+			display_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name) + ' \n'
 
 		FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
@@ -539,7 +534,7 @@ condition(
 		// Display Receipt ID / Donor ID (Middle Section)
 		receipt_donor_id_details_middle "report/area"
 		{
-			x=72.5;
+			x=73;
 			y=37.4;
 			
 			height=0; width=10;
@@ -736,7 +731,7 @@ condition(
 		// Display Receipt ID / Donor ID (Bottom Section)
 		receipt_donor_id_details_bottom "report/area"
 		{
-			x=72;
+			x=73;
 			y=61.5;
 			
 			height=0; width=10;
