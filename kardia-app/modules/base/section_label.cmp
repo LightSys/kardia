@@ -15,6 +15,7 @@ section_label "widget/component-decl"
 	lbl "widget/label"
 	    {
 	    x=4;y=0;width=190;height=18;
+	    fl_height=1;
 	    widget_class="label";
 	    align=left;
 	    value=runclient(:text:value);
