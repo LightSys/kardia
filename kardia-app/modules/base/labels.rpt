@@ -1,0 +1,278 @@
+$Version=2$
+labels "system/report"
+    {
+    title = "Avery 5160 Labels";
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=1.875;
+    marginright=1.875;
+    margintop=3.2;
+    marginbottom=2.8;
+
+    // Who to print
+    incl_lists "report/parameter" { type=string; badchars=" "; default=""; description="Include List(s):"; }
+    incl_partners "report/parameter" { type=string; badchars=" "; default=""; description="Incl. Partner(s):"; }
+    skip "report/parameter" { type=integer; default=0; description="Skip Over #:"; }
+    show_cnt "report/parameter" { type=integer; default=0; description="Show Skip # (for reusing label sheets)?"; }
+    show_id "report/parameter" { type=integer; default=0; description="Show Partner ID?"; }
+    only_okmail "report/parameter" { type=integer; default=1; }
+    only_oksolicit "report/parameter" { type=integer; default=1; }
+    include_obs "report/parameter" { type=integer; default=0; }
+    limit_cnt "report/parameter" { type=integer; default=999999; description=""; }
+
+    // Output options
+    partner_sort "report/parameter" { type=string; default="id"; groupid=2; groupname="Format"; description="Sort By:"; }
+    formatset "report/parameter" { type=string; default="STANDARD"; groupid=2; groupname="Format"; description="Addr Format:"; }
+    //layoutdir "report/parameter" { type=string; default="cols"; groupid=2; groupname="Format"; description="Layout:"; }
+
+    show_border "report/parameter" { type=integer; default=0; description=""; }
+
+    // Next sort ID to use
+    sortid_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+		    newid = isnull(max(:p_sort_session_id),0) + 1
+		FROM
+		    /apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+		WHERE
+		    :s_username = user_name()
+		");
+	}
+
+    // Query partner ID's
+    partnerlist_qy "report/query"
+	{
+	sql = runserver("
+		" + condition(char_length(:this:incl_lists) > 0, "
+		INSERT
+		    /apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+		SELECT
+		    :p:p_partner_key,
+		    p_sort_session_id = :sortid_qy:newid,
+		    s_username = user_name(),
+		    p_sortkey = condition(:this:partner_sort == 'id', ralign(isnull(:p:p_partner_key,''),12), condition(:this:partner_sort == 'lfo', isnull(:p:p_surname,'') + '|' + isnull(:p:p_given_name,'') + '|' + isnull(:p:p_org_name,''), condition(:this:partner_sort == 'flo', isnull(:p:p_given_name,'') + '|' + isnull(:p:p_surname,'') + '|' + isnull(:p:p_org_name,''), condition(:this:partner_sort == 'olf', isnull(:p:p_org_name,'') + '|' + isnull(:p:p_surname,'') + '|' + isnull(:p:p_given_name,''), isnull(:p:p_org_name,'') + '|' + isnull(:p:p_given_name,'') + '|' + isnull(:p:p_surname,''))))),
+		    s_created_by = user_name(),
+		    s_date_created = getdate(),
+		    s_modified_by = user_name(),
+		    s_date_modified = getdate()
+		FROM
+		    /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+		    charindex(',' + rtrim(:m:m_list_code) + ',', " + quote(',' + :this:incl_lists + ',') + ") > 0 and
+		    charindex(',' + rtrim(:m:m_list_code) + ',', " + quote(',' + :this:incl_lists + ',') + ") > 0 and
+		    charindex(',' + rtrim(:m:m_list_code) + ',', " + quote(',' + :this:incl_lists + ',') + ") > 0 and
+		    :p:p_partner_key = :m:p_partner_key
+		    " + condition(:this:include_obs, "and (:p:p_status_code = 'O' or :p:p_status_code = 'A')", "and :p:p_status_code = 'A'") + "
+		    " + condition(:this:only_okmail, "and :p:p_no_mail = 0", "") + "
+		    " + condition(:this:only_oksolicit, "and :p:p_no_solicitations = 0", "") + "
+		;
+		","") +
+		condition(char_length(:this:incl_partners) > 0, "
+
+		INSERT
+		    /apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+		SELECT
+		    :p:p_partner_key,
+		    p_sort_session_id = :sortid_qy:newid,
+		    s_username = user_name(),
+		    p_sortkey = condition(:this:partner_sort == 'id', ralign(isnull(:p:p_partner_key,''),12), condition(:this:partner_sort == 'lfo', isnull(:p:p_surname,'') + '|' + isnull(:p:p_given_name,'') + '|' + isnull(:p:p_org_name,''), condition(:this:partner_sort == 'flo', isnull(:p:p_given_name,'') + '|' + isnull(:p:p_surname,'') + '|' + isnull(:p:p_org_name,''), condition(:this:partner_sort == 'olf', isnull(:p:p_org_name,'') + '|' + isnull(:p:p_surname,'') + '|' + isnull(:p:p_given_name,''), isnull(:p:p_org_name,'') + '|' + isnull(:p:p_given_name,'') + '|' + isnull(:p:p_surname,''))))),
+		    s_created_by = user_name(),
+		    s_date_created = getdate(),
+		    s_modified_by = user_name(),
+		    s_date_modified = getdate()
+		FROM
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+		    charindex(',' + rtrim(:p_partner_key) + ',', " + quote(',' + :this:incl_partners + ',') + ") > 0
+		    " + condition(:this:include_obs, "and (:p:p_status_code = 'O' or :p:p_status_code = 'A')", "and :p:p_status_code = 'A'") + "
+		    " + condition(:this:only_okmail, "and :p:p_no_mail = 0", "") + "
+		    " + condition(:this:only_oksolicit, "and :p:p_no_solicitations = 0", "") + "
+		;
+		","") + "
+
+		SELECT
+		    p_partner_key = ''
+		FROM
+		    /apps/kardia/modules/base
+		LIMIT
+		    " + :this:skip + "
+		;
+
+		SELECT
+		    :p_partner_key
+		FROM
+		    /apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+		WHERE
+		    :s_username = user_name() and
+		    :p_sort_session_id = :sortid_qy:newid
+		ORDER BY
+		    :p_sortkey asc
+		;
+
+		DELETE
+		    /apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+		WHERE
+		    :s_username = user_name() and
+		    dateadd(day, 2, :s_date_modified) < getdate()
+		");
+
+	blankcnt "report/aggregate" { compute="count(1)"; reset=0; where=":p_partner_key = ''"; }
+	}
+
+    // Partner and address data
+    partner_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:p:p_partner_key,
+			disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, condition(char_length(rtrim(:p:p_given_name + :p:p_surname)) > 0, :p:p_given_name + ' ' + :p:p_surname + '\n', '') + :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			:p:p_org_name,
+			:p:p_surname,
+			:p:p_given_name,
+			:p:p_title,
+			:p:p_no_mail,
+			:p:p_no_solicitations,
+			:p:p_status_code,
+			:pl:p_in_care_of,
+			:pl:p_address_1,
+			:pl:p_address_2,
+			:pl:p_address_3,
+			:pl:p_city,
+			:pl:p_state_province,
+			:pl:p_postal_code,
+			:pl:p_country_code,
+			p_iso3166_2_code = isnull(:c:p_iso3166_2_code,''),
+			p_iso3166_3_code = isnull(:c:p_iso3166_3_code,''),
+			p_fips_code = isnull(:c:p_fips_code,''),
+			p_country_name = upper(isnull(:c:p_country_name,'')),
+			:af:p_format
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows pl,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
+		WHERE
+			:p:p_partner_key = :partnerlist_qy:p_partner_key and 
+			:pl:p_partner_key = :p:p_partner_key and
+			:pl:p_revision_id = 0 and
+			:c:p_country_code =* :pl:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = " + quote(:this:formatset) + "
+		LIMIT
+			1
+		");
+
+	cnt "report/aggregate" { compute="count(1)"; reset=0; }
+	}
+
+    // Row-wise output
+    main_form "report/form"
+	{
+	//condition=runserver(:this:layoutdir = 'rows');
+	condition=0;
+	source=sortid_qy,partnerlist_qy;
+	mode=outer;
+
+	row_area "report/area"
+	    {
+	    x=0; y=0; width=81.25; height=6;
+	    fixedsize=yes;
+
+	    row_form "report/form"
+		{
+		source=sortid_qy,partnerlist_qy;
+		mode=inner;
+		reclimit=3;
+
+		label_row_noborder "report/area"
+		    {
+		    width=26.25; height=6.00;
+		    marginleft=0.8;
+		    margintop=0.3;
+		    fixedsize=yes;
+		    font=helvetica;
+		    fontsize=10;
+
+		    label_row_cell_form "report/form"
+			{
+			source=partner_qy;
+			lr_d0 "report/data" { value=runserver(:partner_qy:p_partner_key + "\n"); align=right; fontsize=8; condition=runserver(:this:show_id); }
+			lr_d1 "report/data" { value=runserver(:partner_qy:disp_name + "\n"); align=left; fontsize=10; }
+			lr_d2 "report/data" { value=runserver(substitute(isnull(:partner_qy:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=partner_qy,p=partner_qy')); }
+			}
+		    }
+		}
+	    }
+	}
+
+    // Multicolumn output - column-wise
+    multicol "report/section"
+	{
+	//condition=runserver(:this:layoutdir = 'cols');
+	x=0; y=0; width=81.25; height=0;
+	colsep = 1.25;
+	columns = 3;
+	balanced = no;
+
+	label_form "report/form"
+	    {
+	    source=sortid_qy,partnerlist_qy;
+
+	    label_noborder "report/area"
+		{
+		condition=runserver(not :this:show_border);
+		x=0; width=26.25; height=6.00;
+		marginleft=0.8;
+		margintop=0.3;
+		fixedsize=yes;
+		font=helvetica;
+		fontsize=10;
+
+		label_data_form "report/form"
+		    {
+		    source=partner_qy;
+		    l_d0 "report/data" { value=runserver(:partner_qy:p_partner_key + "\n"); align=right; fontsize=8; condition=runserver(:this:show_id); }
+		    l_d1 "report/data" { value=runserver(:partner_qy:disp_name + "\n"); align=left; fontsize=10; }
+		    l_d2 "report/data" { value=runserver(substitute(isnull(:partner_qy:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=partner_qy,p=partner_qy')); }
+		    }
+		}
+
+	    label_border "report/area"
+		{
+		condition=runserver(:this:show_border);
+		x=0; width=26.25; height=6.00;
+		border=0.01;
+		marginleft=0.8;
+		margintop=0.3;
+		fixedsize=yes;
+		font=helvetica;
+		fontsize=10;
+
+		label_data_form "report/form"
+		    {
+		    source=partner_qy;
+		    l_d0 "report/data" { value=runserver(:partner_qy:p_partner_key + "\n"); align=right; fontsize=8; condition=runserver(:this:show_id); }
+		    l_d1 "report/data" { value=runserver(:partner_qy:disp_name + "\n"); align=left; fontsize=10; }
+		    l_d2 "report/data" { value=runserver(substitute(isnull(:partner_qy:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=partner_qy,p=partner_qy')); }
+		    }
+		}
+	    }
+
+	label_cnt "report/area"
+	    {
+	    condition=runserver(:this:show_cnt and ((:partner_qy:cnt + :partnerlist_qy:blankcnt) / 30 * 30) != (:partner_qy:cnt + :partnerlist_qy:blankcnt));
+	    x=0; width=26.25; height=6.00;
+	    margintop=1.0;
+	    fixedsize=yes;
+	    font=helvetica;
+	    align=center;
+	    style=bold;
+	    cnt_d1 "report/data" { fontsize=10; value="SKIP\n"; }
+	    cnt_d2 "report/data" { fontsize=40; value=runserver(condition(:partner_qy:cnt + :partnerlist_qy:blankcnt + 1 - ((:partner_qy:cnt + :partnerlist_qy:blankcnt + 1) / 30 * 30) == 0, 'X', :partner_qy:cnt + :partnerlist_qy:blankcnt + 1 - ((:partner_qy:cnt + :partnerlist_qy:blankcnt + 1) / 30 * 30))); }
+	    }
+	}
+    }
