@@ -1,11 +1,13 @@
 $Version=2$
-gift_entry "widget/page"
+gift_history "widget/page"
     {
     title = "Gift History Search";
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
+    require_one_endorsement="kardia:gift","kardia:gift_entry","kardia:gift_manage";
+    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     by_donor "widget/parameter" { type=integer; default=1; }

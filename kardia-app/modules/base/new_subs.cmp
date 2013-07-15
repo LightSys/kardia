@@ -4,7 +4,7 @@ new_subs "widget/component-decl"
     width=780;
     height=580;
 
-    ledger "widget/parameter" { type=string; default=null; }
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
     new_subs_vbox "widget/vbox"
 	{
@@ -257,6 +257,8 @@ new_subs "widget/component-decl"
 
 	    gift_history_vbox "widget/vbox"
 		{
+		require_endorsements="kardia:gift";
+		endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 		width=250;
 		spacing=8;
 
@@ -319,7 +321,12 @@ new_subs "widget/component-decl"
 			    t_to "widget/table-column" { title="Desig."; fieldname="cc_txt"; width=85; align=left; }
 			    //t_batno "widget/table-column" { title="Batch#"; fieldname="a_batch_number"; width=80; }
 			    //t_rcptno "widget/table-column" { title="Receipt"; fieldname="a_receipt_number"; width=80; }
-			    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=65; align=right; }
+			    t_amt "widget/table-column"
+				{
+				require_endorsements="kardia:gift_amt";
+				endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+				title="Amount"; fieldname="a_amount"; width=65; align=right;
+				}
 			    //t_stat "widget/table-column" { title="Status"; fieldname="stat"; width=80; align=right; }
 
 			    do_view_batch_on_dblclick "widget/connector"
@@ -365,6 +372,7 @@ new_subs "widget/component-decl"
 			Height=600;
 			Source="/apps/kardia/modules/base/partner_window.app";
 			id=runclient(:new_subs_osrc:p_partner_key);
+			ledger=runclient(:new_subs:ledger);
 			}
 		    }
 
