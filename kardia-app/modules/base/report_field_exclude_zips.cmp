@@ -1,0 +1,12 @@
+$Version=2$
+report_field_exclude_zips "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "exclude_zips";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_exczips "widget/component" { height=24; width=350; path="/sys/cmp/smart_field.cmp"; field="exclude_zips"; text="Exc. Postal Codes:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; form=rpt_form; }
+    }

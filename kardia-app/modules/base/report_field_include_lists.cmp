@@ -1,0 +1,35 @@
+$Version=2$
+report_field_include_lists "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param="include_lists";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_inclists "widget/component"
+	{
+	height=24;
+	width=350;
+	form = rpt_form;
+	path="/apps/kardia/modules/base/editbox_table.cmp";
+	field='include_lists';
+	text='Only List(s):';
+	popup_width=300;
+	popup_height=210;
+	popup_sql="select value = :m:m_list_code, label = :m:m_list_description + ' (' + :m:m_list_code + ')' from /apps/kardia/data/Kardia_DB/m_list/rows m where (:m:m_list_type = 'P' or :m:m_list_type = 'S')";
+	search_field_list="m_list_code,*m_list_description*";
+	key_name="m_list_code";
+	object_name="Mailing List";
+	popup_text="Choose List:";
+	empty_desc = "required; comma-separated";
+	label_width=120;
+	attach_point=editbox;
+
+	listcode_hints "widget/hints" { style=applyonchange; }
+	//height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="include_lists"; popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/"); popup_text="Choose List:"; text="Only List(s):"; attach_point=editbox; empty_desc = "required; comma-separated"; label_width=120; lists_hints "widget/hints" { badchars=" "; } 
+
+	no_spaces "widget/connector" { event=BeforeKeyPress; event_condition=runclient(:Code = 32); event_cancel=runclient(:Code = 32); target=f_inclists; action=SetFocus; }
+	}
+    }

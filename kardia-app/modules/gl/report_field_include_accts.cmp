@@ -1,0 +1,12 @@
+$Version=2$
+report_field_include_accts "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "include_accts";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_incaccts "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="include_accts"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Choose GL Account:"; text="Only Accts:"; attach_point=editbox; empty_desc = "optional"; label_width=120; form=rpt_form; }
+    }

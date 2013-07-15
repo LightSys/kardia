@@ -1,0 +1,12 @@
+$Version=2$
+report_field_maxcopies "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "maxcopies";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_maxcopy "widget/component" { height=24; path="/sys/cmp/smart_field.cmp"; field="maxcopies"; text="Maximum Copies:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; width=220; tooltip="Only include subscribers who are receiving this number or fewer copies of the publication."; form=rpt_form; }
+    }

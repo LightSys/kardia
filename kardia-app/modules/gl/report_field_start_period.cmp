@@ -1,0 +1,12 @@
+$Version=2$
+report_field_start_period "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "start_period";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_speriod "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="start_period"; text="Start Period:"; empty_desc = "required"; ctl_type=dropdown; sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); label_width=120; form=rpt_form; }
+    }

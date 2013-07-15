@@ -1,0 +1,12 @@
+$Version=2$
+report_field_only_donors "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "only_donors";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_donors "widget/component" { x=10; height=24; width=340; path="/sys/cmp/smart_field.cmp"; field="only_donors"; ctl_type='checkboxleft'; text="Donors"; label_width=120; form=rpt_form; }
+    }

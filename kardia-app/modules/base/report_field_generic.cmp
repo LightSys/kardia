@@ -1,0 +1,38 @@
+$Version=2$
+report_field_generic "widget/component-decl"
+    {
+    width=350;
+    height=24;
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+    field "widget/parameter" { type=string; default=null; }
+    text "widget/parameter" { type=string; default="?"; }
+    datatype "widget/parameter" { type=string; default="string"; }
+
+    f_generic_editbox "widget/component"
+	{
+	condition=runserver(substring(reverse(:this:text),1,1) != '?');
+	height=24; width=350;
+	label_width=120;
+	path="/sys/cmp/smart_field.cmp";
+	field=runserver(:this:field);
+	text=runserver(:this:text);
+	empty_desc = "";
+	ctl_type=editbox;
+	form=rpt_form; 
+	}
+
+    f_generic_checkbox "widget/component"
+	{
+	condition=runserver(substring(reverse(:this:text),1,1) == '?');
+	x=10;
+	width=340; height=24;
+	label_width=120;
+	path="/sys/cmp/smart_field.cmp";
+	field=runserver(:this:field);
+	text=runserver(:this:text);
+	ctl_type='checkboxleft';
+	form=rpt_form;
+	}
+    }

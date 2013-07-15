@@ -1,0 +1,35 @@
+$Version=2$
+report_field_partner_sort "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "partner_sort";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_sortby_hbx "widget/hbox"
+	{
+	width=350; height=24; spacing=5;
+
+	f_sortby_lbl "widget/label" { text="Sort By:"; align=right; width=115; }
+
+	f_sortby_dd "widget/dropdown"
+	    {
+	    width=230;
+	    fl_width=40; 
+	    bgcolor=white; 
+	    fieldname="partner_sort";
+	    mode=static;
+	    hilight="#d0d0d0";
+	    form=rpt_form;
+	    numdisplay=6;
+
+	    f_sortby_opt1 "widget/dropdownitem" { label="Partner ID"; value="id"; }
+	    f_sortby_opt2 "widget/dropdownitem" { label="Last Name / First Name / Org."; value="lfo"; }
+	    f_sortby_opt3 "widget/dropdownitem" { label="Org. / Last Name / First Name"; value="olf"; }
+	    f_sortby_opt4 "widget/dropdownitem" { label="First Name / Last Name / Org."; value="flo"; }
+	    f_sortby_opt5 "widget/dropdownitem" { label="Org. / First Name / Last Name"; value="ofl"; }
+	    }
+	}
+    }

@@ -1,0 +1,36 @@
+$Version=2$
+report_field_incl_partners "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "incl_partners";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_incpartners "widget/component"
+	{
+	width=350;
+	height=24;
+	label_width=120;
+	popup_width=300;
+	popup_height=210;
+	path="/apps/kardia/modules/base/editbox_table.cmp";
+	field='incl_partners';
+	text='Incl. Partner(s):';
+	popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
+	search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+	key_name="p_partner_key";
+	object_name="Partner";
+	popup_text="Choose Partner(s):";
+	empty_desc = "optional; comma-separated";
+	attach_point=editbox;
+	form=rpt_form;
+	multiselect=1;
+
+	listcode_hints "widget/hints" { style=applyonchange; }
+	//height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="include_lists"; popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/"); popup_text="Choose List:"; text="Only List(s):"; attach_point=editbox; empty_desc = "required; comma-separated"; label_width=120; lists_hints "widget/hints" { badchars=" "; } 
+
+	//no_spaces "widget/connector" { event=BeforeKeyPress; event_condition=runclient(:Code = 32); event_cancel=runclient(:Code = 32); target=f_incpartners; action=SetFocus; }
+	}
+    }

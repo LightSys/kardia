@@ -1,0 +1,12 @@
+$Version=2$
+report_field_include_cntrys "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "include_cntrys";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_incctrys "widget/component" { height=24; width=350; path="/sys/cmp/smart_field.cmp"; field="include_cntrys"; text="Only Countries:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; ic_hints "widget/hints" { style=uppercase; } form=rpt_form; }
+    }

@@ -1,0 +1,12 @@
+$Version=2$
+report_field_include_funds "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "include_funds";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_incfunds "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="include_funds"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Only Funds:"; attach_point=editbox; empty_desc = "optional"; label_width=120; form=rpt_form; }
+    }
