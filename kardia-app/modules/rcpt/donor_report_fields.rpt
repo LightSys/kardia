@@ -49,6 +49,7 @@ donor_report "system/report"
     exclude_accts "report/parameter" { type=string; }
     include_funds "report/parameter" { type=string; }
     exclude_funds "report/parameter" { type=string; }
+    use_subfunds "report/parameter" { type=integer; default=0; description="Include Subfunds?"; }
     start_period "report/parameter" { type=string; }
     end_period "report/parameter" { type=string; }
     min_total "report/parameter" { type=integer; }  // FIXME - money type
@@ -64,6 +65,11 @@ donor_report "system/report"
     list_code "report/parameter" { type=string; }
     list_desc "report/parameter" { type=string; default=runserver("Donor List on " + getdate()); }
     list_type "report/parameter" { type=string; default="S"; }
+
+    // This report can modify data (the create/add-to mailing list feature).
+    // Therefore we can't allow direct access - must be via an app.  This
+    // prevents CSRF type attacks.
+    require_endorsements = "system:from_application";
 
     // Query to get site information
     site_qy "report/query"
@@ -85,6 +91,36 @@ donor_report "system/report"
 		WHERE
 			:a_ledger_number = :this:ledger
 		";
+	}
+
+    // Get the actual list of cost centers to include
+    cc_include_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			cclist = isnull(',' + sum(rtrim(:c:a_cost_center) + ','), ''),
+			show_cclist = isnull(sum(rtrim(:c:a_cost_center) + ',') - ',', '')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		WHERE
+			:c:a_ledger_number = :this:ledger and
+			" + condition(:this:use_subfunds == 1, "(charindex(',' + rtrim(:c:a_bal_cost_center) + ',', ',' + :this:include_funds + ',') > 0 or charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :this:include_funds + ',') > 0)","charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :this:include_funds + ',') > 0") + "
+		");
+	}
+
+    // Get the actual list of cost centers to include
+    cc_exclude_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			cclist = isnull(',' + sum(rtrim(:c:a_cost_center) + ','), ''),
+			show_cclist = isnull(sum(rtrim(:c:a_cost_center) + ',') - ',', '')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		WHERE
+			:c:a_ledger_number = :this:ledger and
+			" + condition(:this:use_subfunds == 1, "(charindex(',' + rtrim(:c:a_bal_cost_center) + ',', ',' + :this:exclude_funds + ',') > 0 or charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :this:exclude_funds + ',') > 0)","charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :this:exclude_funds + ',') > 0") + "
+		");
 	}
 
     // Create mailing list
@@ -196,8 +232,8 @@ donor_report "system/report"
 			:i:a_gift_number = :g:a_gift_number and
 			" + condition(:this:include_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:include_accts) > 0 and") + "
 			" + condition(:this:exclude_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:exclude_accts) == 0 and") + "
-			" + condition(:this:include_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:include_funds) > 0 and") + "
-			" + condition(:this:exclude_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:exclude_funds) == 0 and") + "
+			" + condition(:this:include_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_include_qy:cclist) > 0 and") + "
+			" + condition(:this:exclude_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_exclude_qy:cclist) == 0 and") + "
 			" + condition(:this:comment_text is null, "", "charindex(upper(:this:comment_text), upper(:i:a_comment)) > 0 and") + "
 			:p:p_partner_key =* :g:p_donor_partner_id and
 			:pl:p_partner_key =* :p:p_partner_key and
@@ -237,8 +273,8 @@ donor_report "system/report"
 			:i:a_gift_number = :g:a_gift_number and
 			" + condition(:this:include_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:include_accts) > 0 and") + "
 			" + condition(:this:exclude_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:exclude_accts) == 0 and") + "
-			" + condition(:this:include_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:include_funds) > 0 and") + "
-			" + condition(:this:exclude_funds is null, "", "charindex(rtrim(:i:a_cost_center), :this:exclude_funds) == 0 and") + "
+			" + condition(:this:include_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_include_qy:cclist) > 0 and") + "
+			" + condition(:this:exclude_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_exclude_qy:cclist) == 0 and") + "
 			:g:p_donor_partner_id = :donors_qy:p_partner_key
 		GROUP BY
 			:g:p_donor_partner_id
@@ -258,7 +294,7 @@ donor_report "system/report"
 	moneyformat = "-###,###,##0.00";
 	dateformat = "dd-MMM-yyyy";
 
-	source = ledger_qy,site_qy,make_list_qy;
+	source = ledger_qy,site_qy,make_list_qy,cc_include_qy,cc_exclude_qy;
 
 	hdrimg "report/image"
 	    {
@@ -287,8 +323,12 @@ donor_report "system/report"
 			fontsize=10; value = runserver("Excluding GL Accounts: " + :this:exclude_accts + "\n"); }
 	    t_d7 "report/data" { condition=runserver(not (:this:include_funds is null));
 			fontsize=10; value = runserver("Only Funds: " + :this:include_funds + "\n"); }
+	    t_d7b "report/data" { condition=runserver(:this:use_subfunds and not (:this:include_funds is null));
+			fontsize=10; value = runserver("-- Automatically using sub-funds.  Actual Only Funds: " + :cc_include_qy:show_cclist + "\n"); }
 	    t_d8 "report/data" { condition=runserver(not (:this:exclude_funds is null));
 			fontsize=10; value = runserver("Excluding Funds: " + :this:exclude_funds + "\n"); }
+	    t_d8b "report/data" { condition=runserver(:this:use_subfunds and not (:this:exclude_funds is null));
+			fontsize=10; value = runserver("-- Automatically using sub-funds.  Actual Excluding Funds: " + :cc_exclude_qy:show_cclist + "\n"); }
 	    t_d9 "report/data" { condition=runserver(not (:this:min_total is null and :this:max_total is null));
 			fontsize=10; value = runserver("Gift Total: " + isnull("At Least " + :this:min_total + " ", "") + isnull("Not Exceeding " + :this:max_total, "") + "\n"); }
 	    t_d10 "report/data" { condition=runserver(not (:this:include_states is null));
