@@ -1,0 +1,13 @@
+$Version=2$
+r_saved_param_pivot "system/querypivot"
+    {
+    source = "/apps/kardia/data/Kardia_DB/r_saved_param/rows";
+
+    r_paramset_id "system/querypivot" { type=integer; usage=key; }
+    r_param_name "system/querypivot" { type=string; usage=name; }
+    r_param_value "system/querypivot" { type=string; usage=value; }
+    s_date_created "system/querypivot" { type=datetime; usage=createdate; }
+    s_created_by "system/querypivot" { type=string; usage=createuser; }
+    s_date_modified "system/querypivot" { type=datetime; usage=modifydate; }
+    s_modified_by "system/querypivot" { type=string; usage=modifyuser; }
+    }
