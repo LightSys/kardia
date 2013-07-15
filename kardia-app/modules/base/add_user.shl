@@ -1,0 +1,9 @@
+$Version=2$
+add_user "system/shell"
+{
+    program = "/usr/bin/sudo";
+    arg="sudo","/usr/local/sbin/helper_add_kardia_user.sh";
+    changeable="NEWUSERNAME";
+    NEWUSERNAME="";
+    require_endorsements = "system:from_application";
+}

@@ -1,0 +1,1041 @@
+$Version=2$
+security_policy "widget/component-decl"
+    {
+    width=824; height=580;
+
+    sec_tabs "widget/tab"
+	{
+	x=0; y=0; width=824; height=555;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+
+	user_tab "widget/tabpage"
+	    {
+	    title = "System Users";
+
+	    users_list_vbox "widget/vbox"
+		{
+		x=10; y=10; width=300; height=533;
+		spacing=8;
+		cellsize=20;
+
+		user_list_hdr "widget/component" { path="section_label.cmp"; text="System Users..."; }
+
+		user_list_searchbox "widget/editbox"
+		    {
+		    empty_description="type search, press [enter]";
+
+		    user_search_cn "widget/connector"
+			{
+			event=ReturnPressed;
+			target=user_list_osrc;
+			action=QueryText;
+			field_list="*description*,username";
+			query=runclient(:user_list_searchbox:content);
+			cx__case_insensitive = 1;
+			}
+		    }
+
+		show_all_check "widget/component"
+		    {
+		    path="/sys/cmp/smart_field.cmp";
+		    height=20;
+		    ctl_type=checkboxleft;
+		    text="Show only Kardia Database users";
+		    check_hints "widget/hints" { default=1; style=notnull; }
+
+		    refresh_on_check "widget/connector"
+			{
+			event=DataChange;
+			target=user_list_osrc;
+			action=QueryText;
+			field_list="*description*,username";
+			query=runclient(:user_list_searchbox:content);
+			cx__case_insensitive = 1;
+			}
+		    }
+
+		user_list_osrc "widget/osrc"
+		    {
+		    show_all "widget/parameter" { param_name=show_all; type=integer; default=runclient(1 - :show_all_check:value); }
+		    sql = " SELECT
+				    :ux:description,
+				    :ux:username,
+				    dbuser = :su:__cx_literal_name,
+				    is_dbuser = :su:__cx_literal_name is not null,
+				    privcnt = (select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows se where substring(:se:s_subject,1,2) = 'u:' and substring(:se:s_subject,3,32) = :ux:username),
+				    is_staff = (select count(1) from /apps/kardia/data/Kardia_DB/p_staff/rows staff where :ux:username = :staff:p_kardia_login)
+			    FROM
+				    /apps/kardia/data/Users.uxu ux, 
+				    /apps/kardia/data/Kardia_DB/sysusers/rows su
+			    WHERE
+				    :ux:username *= :su:__cx_literal_name and
+				    :ux:uid >= 200
+			    ORDER BY
+				    :ux:username asc
+			    HAVING
+				    (:parameters:show_all or :dbuser is not null)
+			    ";
+		    autoquery=onfirstreveal;
+		    replicasize=100;
+		    readahead=100;
+
+		    user_list_table_pane "widget/pane"
+			{
+			height = 449;
+			widget_class = table_bgnd;
+
+			user_list_table "widget/table"
+			    {
+			    x=0; y=0; height=447; width=298;
+
+			    t_userlogon "widget/table-column" { title="User"; fieldname=username; width=65; }
+			    t_userdesc "widget/table-column" { title="Name"; fieldname=description; width=130; }
+			    t_privcheck "widget/table-column" { title="Kardia"; fieldname=is_dbuser; width=45; type=check; align=center; }
+			    t_staffcheck "widget/table-column" { title="Staff"; fieldname=is_staff; width=35; type=check; align=center; }
+			    }
+			}
+		    }
+		}
+
+	    vert_sep "widget/pane"
+		{
+		x=320; y=10; width=2; height=533;
+		style=lowered;
+		}
+
+	    user_info_vbox "widget/vbox"
+		{
+		x=332; y=10; width=480; height=533;
+		spacing=8;
+		cellsize=20;
+
+		user_info_hdr "widget/component" { path="section_label.cmp"; text=runclient("User Information" + isnull(" for " + :user_info_osrc:username, "") + "..."); }
+
+		user_info_osrc "widget/osrc"
+		    {
+		    sql = " SELECT
+				    :ud:s_status,
+				    :ud:s_date_modified,
+				    :ux:uid,
+				    :ux:description,
+				    :ux:username,
+				    privlist = (select sum(condition(substring(:s_endorsement,1,7) == 'kardia:', substring(:s_endorsement,8), :s_endorsement) + ', ') - ', ' from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows se where substring(:se:s_subject,1,2) = 'u:' and substring(:se:s_subject,3,32) = :ux:username),
+				    dbuser_text = condition((select count(1) from /apps/kardia/data/Kardia_DB/sysusers/rows su where :su:__cx_literal_name = :ux:username), 'Yes', 'No')
+			    FROM
+				    /apps/kardia/data/Users.uxu ux,
+				    /apps/kardia/data/Kardia_DB/s_user_data/rows ud
+			    WHERE
+				    :ud:s_username =* :ux:username
+			    ";
+		    replicasize=2;
+		    readahead=2;
+
+		    user_link "widget/rule"
+			{
+			ruletype = osrc_relationship;
+			target = user_list_osrc;
+			key_1 = username;
+			key_objname = ux;
+			target_key_1 = username;
+			}
+
+		    user_info_vbox_2 "widget/vbox"
+			{
+			height=90;
+			spacing=0;
+			cellsize=18;
+
+			user_info_form "widget/form"
+			    {
+			    f_kardia "widget/component" { path="/sys/cmp/smart_field.cmp"; text="In Kardia?"; field=dbuser_text; ctl_type=label; }
+			    f_status "widget/component" { path="/sys/cmp/smart_field.cmp"; text="Last Status:"; field=s_status; ctl_type=label; }
+			    f_active "widget/component" { path="/sys/cmp/smart_field.cmp"; text="Last Activity:"; field=s_date_modified; ctl_type=label; }
+			    f_uxname "widget/component" { path="/sys/cmp/smart_field.cmp"; text="UNIX Descrip.:"; field=description; ctl_type=label; }
+			    f_uxuid "widget/component" { path="/sys/cmp/smart_field.cmp"; text="UNIX UID:"; field=uid; ctl_type=label; }
+			    }
+			}
+
+		    add_to_kardia_btn "widget/textbutton"
+			{
+			height=24; width=250; x=115;
+			text = runclient("Add " + :user_info_osrc:username + " to Kardia");
+			enabled = runclient(:user_info_osrc:dbuser_text == 'No');
+			//enabled = runclient(0);
+
+			add_cn "widget/connector"
+			    {
+			    event=Click;
+			    target=add_to_kardia_osrc;
+			    action=Query;
+			    query=runclient("select :objcontent from object /apps/kardia/modules/base/add_user.shl?NEWUSERNAME=" + :user_info_osrc:username);
+			    }
+			}
+
+		    add_to_kardia_osrc "widget/osrc"
+			{
+			sql = "";
+			autoquery=never;
+			readahead=2;
+			replicasize=2;
+
+			add_finished "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=user_list_osrc;
+			    action=Refresh;
+			    }
+			add_finished2 "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=user_info_osrc;
+			    action=Refresh;
+			    }
+			}
+
+		    reset_db_pw_btn "widget/textbutton"
+			{
+			height=24; width=250; x=115;
+			text = runclient("Reset Database Password");
+			enabled = runclient(:user_info_osrc:dbuser_text == 'Yes' and not :reset_db_pw_osrc:cx__pending);
+			//enabled = runclient(0);
+
+			reset_cn "widget/connector"
+			    {
+			    event=Click;
+			    target=reset_db_pw_osrc;
+			    action=Query;
+			    query=runclient("select :objcontent from object /apps/kardia/modules/base/reset_db_pw.shl?DBUSERNAME=" + :user_info_osrc:username);
+			    }
+			}
+
+		    reset_db_pw_osrc "widget/osrc"
+			{
+			sql = "";
+			autoquery=never;
+			readahead=2;
+			replicasize=2;
+			}
+
+		    sep1 "widget/autolayoutspacer" { height=8; }
+
+		    privs_hdr "widget/component" { path="section_label.cmp"; text="Privileges..."; }
+
+		    privs_form "widget/form"
+			{
+			f_privs "widget/component" { path="/sys/cmp/smart_field.cmp"; text="Privileges:"; field=privlist; ctl_type=label; height=60; }
+			}
+
+		    edit_privs_btn "widget/textbutton"
+			{
+			height=24; width=250; x=115;
+			text = runclient("Edit Privileges for " + :user_info_osrc:username + "...");
+			enabled = runclient(:user_info_osrc:dbuser_text == 'Yes');
+
+			edit_privs_cn1 "widget/connector"
+			    {
+			    event=Click;
+			    target=sec_tabs;
+			    action=SetTab;
+			    Tab=runclient("perm_tab");
+			    }
+
+			edit_privs_cn2 "widget/connector"
+			    {
+			    event=Click;
+			    target=user_dd;
+			    action=SetValue;
+			    Value=runclient(:user_info_osrc:username);
+			    }
+			}
+		    }
+
+		sep2 "widget/autolayoutspacer" { height=8; }
+
+		user_staff_hdr "widget/component" { path="section_label.cmp"; text="Staff Record..."; }
+
+		user_staff_osrc "widget/osrc"
+		    {
+		    sql = " SELECT
+				    :s:p_partner_key,
+				    :p:p_surname,
+				    :p:p_given_name,
+				    disp_name = '#' + :s:p_partner_key + ' (' + :p:p_surname + ', ' + :p:p_given_name + ')',
+				    active_text = condition(:s:p_is_staff, 'Yes', 'No')
+			    FROM
+				    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p
+			    WHERE
+				    :s:p_partner_key *= :p:p_partner_key
+			    LIMIT
+				    1
+			    ";
+		    replicasize=2;
+		    readahead=2;
+
+		    staff_link "widget/rule"
+			{
+			ruletype = osrc_relationship;
+			target = user_info_osrc;
+			key_1 = p_kardia_login;
+			key_objname = s;
+			target_key_1 = username;
+			}
+
+		    set_staffid "widget/connector"
+			{
+			event=EndQuery;
+			target=staff_partnerid;
+			action=SetValue;
+			Value=runclient(:user_staff_osrc:p_partner_key);
+			}
+
+		    staff_info_vbox "widget/vbox"
+			{
+			height=60;
+			spacing=0;
+			cellsize=18;
+
+			user_staff_form "widget/form"
+			    {
+			    f_staffname "widget/component" { path="/sys/cmp/smart_field.cmp"; text="Staff Name:"; field=disp_name; ctl_type=label; }
+			    f_isactive "widget/component" { path="/sys/cmp/smart_field.cmp"; text="Is Active?"; field=active_text; ctl_type=label; }
+			    }
+
+			link_staff_hbox "widget/hbox"
+			    {
+			    height=24;
+			    align=left;
+			    spacing=8;
+
+			    staff_partnerid "widget/component"
+				{
+				height=24;
+				width=250;
+				path="/apps/kardia/modules/base/editbox_table.cmp";
+				field='p_partner_key';
+				text='Staff ID:';
+				//label_width=70;
+				validate=1;
+				popup_width=300;
+				popup_height=210;
+				popup_sql = "
+					SELECT
+					    value = :s:p_partner_key,
+					    label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ','') + '(' + :s:p_partner_key + ')'
+					FROM
+					    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+					    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+					    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci1,
+					    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci2
+					WHERE
+					    :p:p_partner_key = :s:p_partner_key and
+					    :ci1:p_partner_key =* :s:p_partner_key and
+					    :ci1:p_record_status_code = 'A' and
+					    :ci1:p_contact_type = 'E' and
+					    :ci2:p_partner_key =* :p:p_partner_key and
+					    :ci2:p_record_status_code = 'A' and
+					    :ci2:p_contact_type = 'E' and
+					    :ci2:p_contact_id =* :s:p_preferred_email_id
+					GROUP BY
+					    :s:p_partner_key
+					";
+				search_field_list="p_partner_key,*p_given_name*,p_surname*";
+				key_name="p_partner_key";
+				search_objname="p";
+				object_name="Staff Partners";
+				popup_text="Choose Staff:";
+				//empty_desc = "required";
+				attach_point=editbox;
+
+				escape_pressed "widget/connector"
+				    {
+				    event = "BeforeKeyPress";
+				    event_condition = runclient(:Name = 'escape');
+				    event_cancel = runclient(:Name = 'escape');
+				    target = staff_partnerid;
+				    action = SetValue;
+				    Value = runclient(:user_staff_osrc:p_partner_key);
+				    }
+				return_pressed "widget/connector"
+				    {
+				    condition=0;
+				    event=BeforeKeyPress;
+				    event_condition = runclient(:Name = 'enter');
+				    event_cancel = runclient(:Name = 'enter');
+				    target=link_staff_osrc;
+				    action=QueryParam;
+				    link_old_partner_key = runclient(:user_staff_osrc:p_partner_key);
+				    link_new_partner_key = runclient(:staff_partnerid:content);
+				    link_user_name = runclient(:user_info_osrc:username);
+				    }
+				}
+
+			    link_staff_osrc "widget/osrc"
+				{
+				link_old_partner_key "widget/parameter" { type=string; }
+				link_new_partner_key "widget/parameter" { type=string; }
+				link_user_name "widget/parameter" { type=string; }
+
+				sql = " UPDATE
+						/apps/kardia/data/Kardia_DB/p_staff/rows
+					SET
+						:p_kardia_login = null
+					WHERE
+						:p_partner_key = :parameters:link_old_partner_key and
+						:p_kardia_login = :parameters:link_user_name
+					;
+
+					UPDATE
+						/apps/kardia/data/Kardia_DB/p_staff/rows
+					SET
+						:p_kardia_login = :parameters:link_user_name
+					WHERE
+						:p_partner_key = :parameters:link_new_partner_key
+					;
+
+					SELECT 1
+					";
+				replicasize=2;
+				readahead=2;
+				autoquery=never;
+
+				link_staff_done "widget/connector"
+				    {
+				    event=EndQuery;
+				    target=user_list_osrc;
+				    action=Refresh;
+				    }
+
+				link_staff_done2 "widget/connector"
+				    {
+				    event=EndQuery;
+				    target=user_staff_osrc;
+				    action=Refresh;
+				    }
+				}
+
+			    link_staff_btn "widget/textbutton"
+				{
+				height=24; width=180;
+				text = runclient(condition(char_length(:staff_partnerid:content) > 0, "Link Staff Record", "Unlink Staff Record"));
+				enabled = runclient(:user_info_osrc:dbuser_text == 'Yes' and :user_staff_osrc:p_partner_key != :staff_partnerid:content);
+
+				link_staff_cn "widget/connector"
+				    {
+				    event=Click;
+				    target=link_staff_osrc;
+				    action=QueryParam;
+				    link_old_partner_key = runclient(:user_staff_osrc:p_partner_key);
+				    link_new_partner_key = runclient(:staff_partnerid:content);
+				    link_user_name = runclient(:user_info_osrc:username);
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+
+	role_tab "widget/tabpage"
+	    {
+	    condition=0;
+	    title = "User Roles";
+
+	    role_label "widget/label" { x=10; y=10; width=802; height=40; text="Roles are not yet active.  When roles are activated, privileges will be assigned to roles, such as 'Gift Receiptor', and users will be allowed to engage in one or more permitted roles when logging in to Kardia.  Currently, privileges are directly assigned to users."; }
+	    }
+
+
+	perm_tab "widget/tabpage"
+	    {
+	    title = "Privileges";
+
+	    perm_vbox "widget/vbox"
+		{
+		x=10; y=10; width=802; height=533;
+		spacing=8;
+		cellsize=20;
+
+		perm_hdr "widget/component" { path="section_label.cmp"; text="Grant/Revoke Privileges and Contexts for Users..."; }
+
+		perm_mode_label "widget/label"
+		    {
+		    height=32;
+		    value = runclient(condition(:user_dd:value = '***' and :perm_dd:value = '***', "Currently only displaying permitted privileges.  To show denied privileges, and to add a privilege to a user, please first select the user and/or the privilege from the options below:", "Showing the permitted and denied privileges for the user, privilege, and/or context selected below."));
+		    }
+
+		perm_ctls_hbox "widget/hbox"
+		    {
+		    spacing=4;
+		    height=21;
+
+		    user_dd_label "widget/label" { align=right; width=50; text="User:"; }
+
+		    user_dd "widget/dropdown"
+			{
+			width=200;
+			bgcolor=white; 
+			mode=dynamic_server;
+			numdisplay=12;
+			hilight="#d0d0d0";
+			user_dd_hints "widget/hints" { style=notnull; }
+			refresh_on_user_chg "widget/connector" { event=DataChange; target=perm_osrc; action=QueryParam; }
+			sql = "select 'ALL', '***', 1; select :ux:username + ' (' + :ux:description + ')', :ux:username from /apps/kardia/data/Users.uxu ux, /apps/kardia/data/Kardia_DB/sysusers/rows su where :ux:username = :su:__cx_literal_name order by :ux:username asc";
+			//sql = "select 'ALL', '***', 1; select :ux:username + ' (' + :ux:description + ')', :username from /apps/kardia/data/Users.uxu ux where :uid >= 200 order by :username asc";
+			}
+
+		    perm_dd_label "widget/label" { align=right; width=90; text="Privilege:"; }
+
+		    perm_dd "widget/dropdown"
+			{
+			width=160;
+			bgcolor=white; 
+			mode=dynamic_server;
+			hilight="#d0d0d0";
+			perm_dd_hints "widget/hints" { style=notnull; }
+			refresh_on_perm_chg "widget/connector" { event=DataChange; target=perm_osrc; action=QueryParam; }
+			numdisplay=12;
+			sql = "select 'ALL', '***', 1; select :s_endorsement_desc, :s_endorsement from /apps/kardia/data/Kardia_DB/s_sec_endorsement_type/rows order by :s_endorsement_desc asc";
+			}
+
+		    cont_dd_label "widget/label" { align=right; width=70; text="Context:"; }
+
+		    cont_dd "widget/dropdown"
+			{
+			width=210;
+			bgcolor=white; 
+			mode=dynamic_server;
+			hilight="#d0d0d0";
+			cont_dd_hints "widget/hints" { style=notnull; }
+			refresh_on_cont_chg "widget/connector" { event=DataChange; target=perm_osrc; action=QueryParam; }
+			numdisplay=12;
+			sql = "select 'ALL', '***', 1; select :s_context + ' (' + :s_context_desc + ')', :s_context from /apps/kardia/data/Kardia_DB/s_sec_endorsement_context/rows order by :s_context asc";
+			}
+		    }
+
+		perm_table_pane "widget/pane"
+		    {
+		    widget_class = table_bgnd;
+		    height = 437;
+		    
+		    grant_osrc "widget/osrc"
+			{
+			gp1 "widget/parameter" { param_name=subject; type=string; }
+			gp2 "widget/parameter" { param_name=endorsement; type=string; }
+			gp3 "widget/parameter" { param_name=context; type=string; }
+
+			sql = "	INSERT INTO
+					/apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+				SELECT
+					s_subject = :parameters:subject,
+					s_endorsement = :parameters:endorsement,
+					s_context = :parameters:context,
+					s_date_created = getdate(),
+					s_created_by = user_name(),
+					s_date_modified = getdate(),
+					s_modified_by = user_name()
+				";
+			autoquery=never;
+
+			refresh_on_grant "widget/connector" { event=EndQuery; target=perm_osrc; action=RefreshObject; }
+			}
+
+		    revoke_osrc "widget/osrc"
+			{
+			rp1 "widget/parameter" { param_name=subject; type=string; }
+			rp2 "widget/parameter" { param_name=endorsement; type=string; }
+			rp3 "widget/parameter" { param_name=context; type=string; }
+
+			sql = "	DELETE FROM
+					/apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+				WHERE
+					:s_subject = :parameters:subject and
+					:s_endorsement = :parameters:endorsement and
+					:s_context = :parameters:context
+				";
+			autoquery=never;
+
+			refresh_on_revoke "widget/connector" { event=EndQuery; target=perm_osrc; action=RefreshObject; }
+			}
+
+		    perm_osrc "widget/osrc"
+			{
+			sp1 "widget/parameter" { param_name=puser; type=string; default=runclient(:user_dd:value); }
+			sp2 "widget/parameter" { param_name=pperm; type=string; default=runclient(:perm_dd:value); }
+			sp3 "widget/parameter" { param_name=pcont; type=string; default=runclient(:cont_dd:value); }
+
+			sql = "	SELECT
+					checked = '/sys/images/checkbox_checked.png',
+					cnt = (select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows se where :se:s_endorsement = 'sys_admin'),
+					:st:s_endorsement,
+					s_context = '',
+					s_subject = '** ALL **',
+					s_date_created = 'DEFAULT',
+					s_created_by = 'DEFAULT'
+				FROM
+					/apps/kardia/data/Kardia_DB/s_sec_endorsement_type/rows st
+				HAVING
+					:cnt = 0
+				LIMIT
+					0 -- disable this default-open mechanism for now
+				;
+					
+				SELECT
+					checked = condition(:se:s_date_created is null, '/sys/images/checkbox_unchecked.png', '/sys/images/checkbox_checked.png'),
+					-- checked = condition(:st:s_date_created is null, '/sys/images/checkbox_unchecked.png', '/sys/images/checkbox_checked.png'),
+					:st:s_endorsement,
+					:sc:s_context,
+					:st:s_endorsement_context_type,
+					:su:__cx_literal_suid,
+					s_subject = :ux:username,
+					:se:s_date_created,
+					:se:s_created_by
+				FROM
+					/apps/kardia/data/Kardia_DB/s_sec_endorsement_type/rows st,
+					/apps/kardia/data/Kardia_DB/s_sec_endorsement_context/rows sc,
+					/apps/kardia/data/Kardia_DB/sysusers/rows su,
+					/apps/kardia/data/Users.uxu ux,
+					/apps/kardia/data/Kardia_DB/s_sec_endorsement/rows se
+				WHERE
+					(:ux:username = :parameters:puser or :parameters:puser = '***') and
+					(:sc:s_context = :parameters:pcont or :parameters:pcont = '***') and
+					(:st:s_endorsement = :parameters:pperm or :parameters:pperm = '***') and
+					isnull(:ux:username,:st:s_endorsement) is not null and
+					isnull(:ux:username,:sc:s_context) is not null and
+					substring(:se:s_subject,1,2) = 'u:' and
+					substring(:se:s_subject,3,32) =* :ux:username and
+					:se:s_endorsement =* :st:s_endorsement and
+					:se:s_context =* :sc:s_context and
+					:ux:username = :su:__cx_literal_name and
+					:ux:uid >= 200
+				HAVING
+					(:checked = '/sys/images/checkbox_checked.png' or
+					:parameters:puser != '***' or
+					:parameters:pperm != '***' ) and
+					((:s_endorsement_context_type = :s_context) or
+					 (:s_endorsement_context_type + ':' = substring(:s_context, 1, char_length(:s_endorsement_context_type) + 1) and
+					  charindex(':', substring(:s_context, char_length(:s_endorsement_context_type) + 1 + 1, 999)) == 0))
+				ORDER BY
+					:sc:s_context
+				";
+			autoquery=onfirstreveal;
+			replicasize=100;
+			readahead=100;
+			use_having_clause=yes;
+
+			perm_table "widget/table"
+			    {
+			    x=0; y=0; width=800; height=435;
+			    t_check "widget/table-column" { title="Permit?"; fieldname=checked; width=70; type=image; align=center; }
+			    t_user "widget/table-column" { title="User"; fieldname=s_subject; width=100; }
+			    t_endorse "widget/table-column" { title="Privilege"; fieldname=s_endorsement; width=120; }
+			    t_context "widget/table-column" { title="Context"; fieldname=s_context; width=120; }
+			    t_who "widget/table-column" { title="Granted By"; fieldname=s_created_by; width=100; }
+			    t_whodate "widget/table-column" { title="Granted On"; fieldname=s_date_created; width=100; }
+
+			    grant_on_click_column "widget/connector"
+				{
+				event = Click;
+				event_condition = runclient(:Column == 'checked' and :ColumnValue == '/sys/images/checkbox_unchecked.png');
+				target = grant_osrc;
+				action = QueryParam;
+
+				subject = runclient('u:' + :s_subject);
+				endorsement = runclient(:s_endorsement);
+				context = runclient(:s_context);
+				}
+
+			    revoke_on_click_column "widget/connector"
+				{
+				event = Click;
+				event_condition = runclient(:Column == 'checked' and :ColumnValue == '/sys/images/checkbox_checked.png');
+				target = revoke_osrc;
+				action = QueryParam;
+
+				subject = runclient('u:' + :s_subject);
+				endorsement = runclient(:s_endorsement);
+				context = runclient(:s_context);
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+
+	context_tab "widget/tabpage"
+	    {
+	    title = "Contexts";
+
+	    context_vbox "widget/vbox"
+		{
+		x=10; y=10; width=802; height=533;
+		spacing=8;
+		cellsize=20;
+
+		context_hdr "widget/component" { path="section_label.cmp"; text="Manage Data Contexts..."; }
+
+		context_osrc "widget/osrc"
+		    {
+		    sql = "select * from /apps/kardia/data/Kardia_DB/s_sec_endorsement_context/rows sc";
+		    baseobj = "/apps/kardia/data/Kardia_DB/s_sec_endorsement_context/rows";
+		    readahead=30;
+		    replicasize=30;
+		    autoquery=onfirstreveal;
+
+		    reset_ct_on_data "widget/connector"
+			{
+			condition=0;
+			event=DataFocusChanged;
+			target = f_c_contexttype;
+			action = SetValue;
+			Value = runclient(substring(:context_osrc:s_context, 1, condition(charindex('=', :context_osrc:s_context) > 0, charindex('=', :context_osrc:s_context) - 1, char_length(:context_osrc:s_context))));
+			}
+		    reset_ctd_on_data "widget/connector"
+			{
+			condition=0;
+			event=DataFocusChanged;
+			target = f_c_contextvalue;
+			action = SetValue;
+			Value = runclient(condition(:context_osrc:s_context == '*', null, substring(:context_osrc:s_context, charindex('=', :context_osrc:s_context) + 1, char_length(:context_osrc:s_context))));
+			}
+
+		    context_hbox "widget/hbox"
+			{
+			height=505;
+			spacing=10;
+
+			context_table_pane "widget/pane"
+			    {
+			    width=350;
+			    widget_class=table_bgnd;
+
+			    context_table "widget/table"
+				{
+				x=0; y=0; width=348; height=503;
+
+				ct_context "widget/table-column" { title="Context"; fieldname=s_context; width=140; }
+				ct_desc "widget/table-column" { title="Description"; fieldname=s_context_desc; width=180; }
+				}
+			    }
+
+			context_fields_vbox "widget/vbox"
+			    {
+			    width=442;
+			    cellsize=20;
+			    spacing=8;
+
+			    context_faux_form "widget/form"
+				{
+				condition=0;
+				objectsource=null;
+				confirm_discard=no;
+				next_form=context_real_form;
+
+				f_c_contexttype "widget/component"
+				    {
+				    width=300;
+				    path="/sys/cmp/smart_field.cmp";
+				    ctl_type=dropdown;
+				    text="Context Type:";
+				    field=contexttype;
+				    sql = "select :s_endorsement_context_type, :s_endorsement_context_type from /apps/kardia/data/Kardia_DB/s_sec_endorsement_type/rows group by :s_endorsement_context_type";
+
+				    on_new_ct "widget/connector" { event=DataModify; target=f_c_context; action=SetValue; Value=runclient(condition(:Value == '*', '*', :Value + '=' + :f_c_contextvalue:value)); }
+				    }
+				//f_c_contextvalue "widget/component" { width=300; path="/sys/cmp/smart_field.cmp"; ctl_type=dynamicdropdown; text="Context Data:"; field=contextdata; }
+				f_c_contextvalue "widget/component"
+				    {
+				    width=300;
+				    path="/sys/cmp/smart_field.cmp";
+				    ctl_type=editbox;
+				    text="Context Data:";
+				    field=contextdata;
+				    }
+				}
+
+			    context_real_form "widget/form"
+				{
+				//next_form=context_faux_form;
+
+				f_c_context "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; text="Context:"; field=s_context; }
+				f_c_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; text="Description:"; field=s_context_desc; }
+				//f_c_context "widget/variable" { fieldname=s_context; type=string; }
+
+				meta "widget/component" { path="record_metadata_hidden.cmp"; }
+				}
+
+			    context_buttons "widget/hbox"
+				{
+				height=24;
+				spacing=8;
+				align=center;
+
+				new_btn "widget/textbutton"
+				    {
+				    height=24; width=100;
+				    text="New";
+				    enabled = runclient(:context_real_form:is_newable);
+				    on_new_context "widget/connector" { event=Click; target=context_real_form; action=New; }
+				    }
+
+				save_btn "widget/textbutton"
+				    {
+				    height=24; width=100;
+				    text="Save";
+				    enabled = runclient(:context_real_form:is_savable);
+				    on_save_context "widget/connector" { event=Click; target=context_real_form; action=Save; }
+				    }
+
+				cancel_btn "widget/textbutton"
+				    {
+				    height=24; width=100;
+				    text="Cancel";
+				    enabled = runclient(:context_real_form:is_discardable);
+				    on_discard_context "widget/connector" { event=Click; target=context_real_form; action=Discard; }
+				    }
+				}
+
+			    context_sep "widget/autolayoutspacer" { height=4; }
+
+			    context_perm_hdr "widget/component" { path="section_label.cmp"; text="Permissions that Apply to this Data Context..."; }
+
+			    ctxperms_osrc "widget/osrc"
+				{
+				sql = "	SELECT
+					    :t:s_endorsement,
+					    :t:s_endorsement_desc,
+					    :t:s_endorsement_context_type,
+					    granted_to = sum(substring(:e:s_subject, 3) + ',') -','
+					FROM
+					    /apps/kardia/data/Kardia_DB/s_sec_endorsement_context/rows c,
+					    /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows e,
+					    /apps/kardia/data/Kardia_DB/s_sec_endorsement_type/rows t
+					WHERE
+					    :e:s_endorsement =* :t:s_endorsement and
+					    ((:t:s_endorsement_context_type = :c:s_context) or
+					     (:t:s_endorsement_context_type + ':' = substring(:c:s_context, 1, char_length(:t:s_endorsement_context_type) + 1) and
+					      charindex(':', substring(:c:s_context, char_length(:t:s_endorsement_context_type) + 1 + 1, 999)) == 0))
+					GROUP BY
+					    :c:s_context,
+					    :t:s_endorsement
+					";
+				autoquery=never;
+				readahead=20;
+				replicasize=20;
+
+				ctxperm_link "widget/rule"
+				    {
+				    ruletype=osrc_relationship;
+				    target=context_osrc;
+				    key_objname=c;
+				    key_1=s_context;
+				    target_key_1=s_context;
+				    }
+
+				ctxperm_table_pane "widget/pane"
+				    {
+				    height=348;
+				    widget_class=table_bgnd;
+
+				    ctxperm_table "widget/table"
+					{
+					x=0; y=0; width=440; height=346;
+
+					//cp_name "widget/table-column" { title="Permission"; fieldname=s_endorsement; width=100; }
+					cp_desc "widget/table-column" { title="Permission"; fieldname=s_endorsement_desc; width=140; }
+					cp_who "widget/table-column" { title="Granted To"; fieldname=granted_to; width=180; }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+	activity_tab "widget/tabpage"
+	    {
+	    title = "Activity";
+
+	    kardia_users_list_vbox "widget/vbox"
+		{
+		x=10; y=10; width=245; height=533;
+		spacing=8;
+		cellsize=20;
+
+		k_user_list_hdr "widget/component" { path="section_label.cmp"; text="Kardia Users..."; }
+
+		k_user_list_searchbox "widget/editbox"
+		    {
+		    empty_description="type search, press [enter]";
+
+		    k_user_search_cn "widget/connector"
+			{
+			event=ReturnPressed;
+			target=k_user_list_osrc;
+			action=QueryText;
+			field_list="*description*,username";
+			query=runclient(:k_user_list_searchbox:content);
+			cx__case_insensitive = 1;
+			}
+		    }
+
+		k_user_list_osrc "widget/osrc"
+		    {
+		    sql = " SELECT
+				    :ux:description,
+				    :ux:username,
+				    is_online = (select count(1) from /sys/cx.sysinfo/session/users u where :u:name = :ux:username)
+			    FROM
+				    /apps/kardia/data/Users.uxu ux, 
+				    /apps/kardia/data/Kardia_DB/sysusers/rows su
+			    WHERE
+				    :ux:username = :su:__cx_literal_name and
+				    :ux:uid >= 200
+			    ORDER BY
+				    :ux:username asc
+			    ";
+		    autoquery=onfirstreveal;
+		    replicasize=100;
+		    readahead=100;
+
+		    k_user_list_table_pane "widget/pane"
+			{
+			height = 477;
+			widget_class = table_bgnd;
+
+			k_user_list_table "widget/table"
+			    {
+			    x=0; y=0; height=475; width=243;
+
+			    t_kuserlogon "widget/table-column" { title="User"; fieldname=username; width=65; }
+			    t_kuserdesc "widget/table-column" { title="Name"; fieldname=description; width=120; }
+			    t_konline "widget/table-column" { title="On?"; fieldname=is_online; type=check; width=35; }
+			    }
+			}
+		    }
+		}
+
+	    vert_sep2 "widget/pane"
+		{
+		x=265; y=10; width=2; height=533;
+		style=lowered;
+		}
+
+	    activity_vbox "widget/vbox"
+		{
+		x=277; y=10; width=535; height=533;
+		spacing=8;
+		cellsize=20;
+
+		user_activity_hdr "widget/component" { path="section_label.cmp"; text=runclient("Recent Activity for " + :k_user_list_osrc:username + "..."); }
+
+		user_act_osrc "widget/osrc"
+		    {
+		    sql = " SELECT
+				    *,
+				    last_act_txt = condition(dateadd(minute, 15, :s_last_seen) > getdate(), 'now', :s_last_seen)
+			    FROM
+				    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows lh
+			    ORDER BY
+				    :s_first_seen desc
+			    ";
+		    readahead=10;
+		    replicasize=10;
+
+		    activity_link "widget/rule"
+			{
+			ruletype = osrc_relationship;
+			target = k_user_list_osrc;
+			target_key_1 = username;
+			key_1 = s_username;
+			}
+
+		    user_act_pane "widget/pane"
+			{
+			height = 199;
+			widget_class = table_bgnd;
+
+			user_act_table "widget/table"
+			    {
+			    x=0; y=0; width=533; height=197;
+
+			    t_sessid "widget/table-column" { fieldname=s_sessionid; title="Session#"; width=100; }
+			    t_started "widget/table-column" { fieldname=s_first_seen; title="Started"; width=160; }
+			    t_ended "widget/table-column" { fieldname=last_act_txt; title="Last Activity"; width=160; }
+			    }
+			}
+		    }
+
+		sep3 "widget/autolayoutspacer" { height=8; }
+
+		user_apps_hdr "widget/component" { path="section_label.cmp"; text=runclient("Current Activity for " + :k_user_list_osrc:username + "..."); }
+
+		user_apps_osrc "widget/osrc"
+		    {
+		    sql = " SELECT
+				    :a:username,
+				    first_activity = substring(convert(string,:a:first_activity), 13),
+				    last_activity = substring(convert(string,:a:last_activity), 13),
+				    :s:last_ip,
+				    start_app_path_txt=condition(charindex('?',:g:start_app_path) > 0, substring(:g:start_app_path,1,charindex('?',:g:start_app_path) - 1), :g:start_app_path),
+				    app_path_txt=condition(charindex('?',:a:app_path) > 0, substring(:a:app_path,1,charindex('?',:a:app_path) - 1), :a:app_path),
+				    --app_path = :ap:cx__pathname,
+				    --title = isnull(:ap:title, condition(charindex('?',:a:app_path) > 0, substring(:a:app_path,1,charindex('?',:a:app_path) - 1), :a:app_path))
+				    title = isnull( (select :ap:title, :ap:cx__pathname from object wildcard /apps/kardia/modules/*/*.app ap having condition(charindex('?',:a:app_path) > 0, substring(:a:app_path,1,charindex('?',:a:app_path) - 1), :a:app_path) = :this:cx__pathname), condition(charindex('?',:a:app_path) > 0, substring(:a:app_path,1,charindex('?',:a:app_path) - 1), :a:app_path))
+			    FROM
+				    /sys/cx.sysinfo/session/apps a,
+				    /sys/cx.sysinfo/session/appgroups g,
+				    /sys/cx.sysinfo/session/sessions s
+				    --object wildcard /apps/kardia/modules/*/*.app ap
+			    WHERE
+				    :g:name = :a:group_id and
+				    :s:name = :a:session_id
+				    -- condition(charindex('?',:a:app_path) > 0, substring(:a:app_path,1,charindex('?',:a:app_path) - 1), :a:app_path) = :ap:cx__pathname
+			    --HAVING
+				--    :app_path_txt = :app_path
+			    ";
+		    readahead=20;
+		    replicasize=20;
+
+		    apps_link "widget/rule"
+			{
+			ruletype = osrc_relationship;
+			target = k_user_list_osrc;
+			target_key_1 = username;
+			key_1 = username;
+			key_objname = a;
+			}
+
+		    apps_pane "widget/pane"
+			{
+			height=253;
+			widget_class = table_bgnd;
+
+			apps_table "widget/table"
+			    {
+			    x=0; y=0; width=533; height=251;
+
+			    t_startedon "widget/table-column" { fieldname=first_activity; title="Started"; width=60; }
+			    t_laston "widget/table-column" { fieldname=last_activity; title="Last"; width=60; }
+			    t_ip "widget/table-column" { fieldname=last_ip; title="IP Address"; width=110; }
+			    t_app "widget/table-column" { fieldname=title; title="Application"; width=225; }
+			    }
+			}
+		    }
+
+		refresh_timer "widget/timer"
+		    {
+		    msec=60000;
+		    auto_reset=1;
+		    auto_start=1;
+		    interval_cn1 "widget/connector" { target=user_apps_osrc; event=Expire; action=Refresh; }
+		    interval_cn2 "widget/connector" { target=user_act_osrc; event=Expire; action=Refresh; }
+		    interval_cn3 "widget/connector" { target=k_user_list_osrc; event=Expire; action=Refresh; }
+		    }
+		}
+	    }
+	}
+    }

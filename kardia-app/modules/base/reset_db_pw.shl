@@ -1,0 +1,9 @@
+$Version=2$
+reset_db_pw "system/shell"
+{
+    program = "/usr/bin/sudo";
+    arg="sudo","/usr/local/sbin/helper_reset_db_pw.sh";
+    changeable="DBUSERNAME";
+    DBUSERNAME="";
+    require_endorsements = "system:from_application";
+}
