@@ -31,28 +31,35 @@ mailing_report "system/report"
 
     // Report Parameters
     ledger "report/parameter" { type=string; }
-    include_states "report/parameter" { type=string; badchars=" "; }
-    exclude_states "report/parameter" { type=string; badchars=" "; }
     include_lists "report/parameter" { type=string; badchars=" "; }
-    include_zips "report/parameter" { type=string; }
-    exclude_zips "report/parameter" { type=string; }
     include_cntrys "report/parameter" { type=string; }
     exclude_cntrys "report/parameter" { type=string; }
+    include_states "report/parameter" { type=string; badchars=" "; }
+    exclude_states "report/parameter" { type=string; badchars=" "; }
+    include_zips "report/parameter" { type=string; }
+    exclude_zips "report/parameter" { type=string; }
+    mincopies "report/parameter" { type=integer; default=0; }
+    maxcopies "report/parameter" { type=integer; default=99999999; }
     only_donors "report/parameter" { type=integer; }
     only_payees "report/parameter" { type=integer; }
     only_staff "report/parameter" { type=integer; }
+    include_obs "report/parameter" { type=integer; default=0; }
     only_postal "report/parameter" { type=integer; default=0; }
     only_okmail "report/parameter" { type=integer; default=0; }
     only_oksolicit "report/parameter" { type=integer; default=0; }
+
+    // Output settings
     cntry_fmt "report/parameter" { type=string; default='full'; }
-    include_obs "report/parameter" { type=integer; default=0; }
-    mincopies "report/parameter" { type=integer; default=0; }
-    maxcopies "report/parameter" { type=integer; default=99999999; }
 
     // Add-to-mailing-list Parameters
     list_code "report/parameter" { type=string; }
     list_desc "report/parameter" { type=string; default=runserver("Mailings List on " + getdate()); }
     list_type "report/parameter" { type=string; default="S"; }
+
+    // This report can modify data (the create/add-to mailing list feature).
+    // Therefore we can't allow direct access - must be via an app.  This
+    // prevents CSRF type attacks.
+    require_endorsements = "system:from_application";
 
     // Query to get site information
     site_qy "report/query"
