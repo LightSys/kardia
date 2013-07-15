@@ -1,0 +1,241 @@
+$Version=2$
+af_maint "widget/component-decl"
+    {
+    width=780;height=580;
+
+    ledger "widget/parameter" { type=string; default=null; }
+
+    search_vbox "widget/vbox"
+	{
+	x=0; y=0; width=200; height=174;
+	spacing=8;
+
+	search_hdr "widget/component"
+	    {
+	    height=26;
+	    path="section_label.cmp";
+	    text="Address Format Sets";
+	    }
+
+	search_box "widget/editbox"
+	    {
+	    condition=0;
+	    height=20;
+	    empty_description = "Type search and press ENTER";
+
+	    enter_cn "widget/connector"
+		{
+		event=ReturnPressed;
+		target=af_osrc;
+		action=QueryText;
+		query=runclient(:search_box:content);
+		field_list="p_address_set,*p_address_set_desc*";
+		cx__case_insensitive = 1;
+		}
+	    }
+
+	af_pane "widget/pane"
+	    {
+	    height=140;
+	    widget_class = "table_bgnd";
+
+	    af_osrc "widget/osrc"
+		{
+		sql = "select *, af_txt = :p_address_set + ' - ' + :p_address_set_desc from /apps/kardia/data/Kardia_DB/p_address_format_set/rows";
+		baseobj = "/apps/kardia/data/Kardia_DB/p_address_format_set/rows";
+		replicasize = 30;
+		readahead = 30;
+		autoquery = onload;
+
+		af_table "widget/table"
+		    {
+		    x=0; y=0; width=198; height=138;
+
+		    a_code "widget/table-column" { title="Format"; fieldname="af_txt"; width=174; }
+		    }
+		}
+	    }
+	}
+
+
+    oneformat_vbox "widget/vbox"
+	{
+	x=210; y=0; width=570; height=174;
+	spacing=8;
+
+	oneformat_form "widget/form"
+	    {
+	    objectsource=af_osrc;
+
+	    form_ctls "widget/component"
+		{
+		height=26;
+		path="/sys/cmp/form_controls.cmp";
+		object_name = "Format Set";
+		}
+
+	    af_code "widget/component" { height=20; width=200; path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=p_address_set; text="Addr Format:"; }
+	    af_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=p_address_set_desc; text="Description:"; }
+	    af_active "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=p_is_active; text="Active?"; }
+	    }
+
+	copy_btn "widget/textbutton"
+	    {
+	    width=250;
+	    x=160;
+	    height=24;
+	    text=runclient("Make a copy of " + :af_osrc:p_address_set);
+
+	    copy_cn "widget/connector" { event=Click; target=copy_window; action=Open; }
+	    }
+	}
+
+    sep "widget/pane" { x=0; y=186; height=2; width=780; style=lowered; }
+
+    list_tab "widget/tab"
+	{
+	x=0; y=197; height=360; width=780;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+
+	plugin_tabs "widget/repeat"
+	    {
+	    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_base_afset_*.cmp' order by :sequence";
+
+	    plugin_tab "widget/tabpage"
+		{
+		title = runserver(:plugin_tabs:title);
+
+		plugin_cmp "widget/component"
+		    {
+		    x=10;y=10;width=758;height=338;
+		    path = runserver(:plugin_tabs:path);
+		    formatset_osrc = af_osrc;
+		    ledger = runserver(:this:ledger);
+		    }
+		}
+	    }
+	}
+
+    copy_window "widget/childwindow"
+	{
+	width=500; height=250; x=140; y=165;
+	style=dialog;
+	toplevel=yes;
+	modal=yes;
+	titlebar=no;
+	visible=no;
+
+	copy_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=478; height=228;
+	    spacing=8;
+
+	    copy_lbl "widget/label" { height=20; font_size=15; style=bold; align=center; value=runclient("Make a copy of address format set " + :af_osrc:p_address_set); }
+
+	    copy_info "widget/label" { height=70; style=italic; text="This will make a copy of all of the address formats in this set, either overwriting or creating the new address format set specified below.  Warning: if the below set already exists, its address formats will be overwritten by the copy of this set."; }
+
+	    copy_form "widget/form"
+		{
+		objectsource=null;
+		caf_code "widget/component" { height=20; width=200; path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=p_address_set; text="Addr Format:"; }
+		caf_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=p_address_set_desc; text="Description:"; }
+		caf_active "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=p_is_active; text="Active?"; caf_act_hints "widget/hints" { style=notnull; default=1; } }
+		}
+
+	    copy_btn_hbox "widget/hbox"
+		{
+		height=24;
+		align=center;
+		spacing=8;
+
+		copy_docopy "widget/textbutton"
+		    {
+		    width=130; height=24;
+		    text="Make Copy";
+
+		    docopy_cn "widget/connector"
+			{
+			event=Click;
+			target=copy_osrc;
+			action=QueryParam;
+			new_code = runclient(:caf_code:content);
+			new_desc = runclient(:caf_desc:content);
+			new_isact = runclient(:caf_active:value);
+			old_code = runclient(:af_osrc:p_address_set);
+			}
+		    }
+		copy_cancel "widget/textbutton"
+		    {
+		    width=130; height=24;
+		    text="Cancel";
+		    cancel_cn "widget/connector" { event=Click; target=copy_window; action=Close; }
+		    }
+		}
+	    }
+	}
+
+    copy_osrc "widget/osrc"
+	{
+	new_code "widget/parameter" { type=string; }
+	new_desc "widget/parameter" { type=string; }
+	new_isact "widget/parameter" { type=integer; }
+	old_code "widget/parameter" { type=string; }
+
+	sql = "	DELETE
+		    /apps/kardia/data/Kardia_DB/p_address_format/rows
+		WHERE
+		    :p_address_set = :parameters:new_code
+		;
+
+		INSERT
+		    /apps/kardia/data/Kardia_DB/p_address_format_set/rows
+		SELECT
+		    p_address_set = :parameters:new_code,
+		    p_address_set_desc = :parameters:new_desc,
+		    p_is_active = :parameters:new_isact,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		;
+
+		UPDATE
+		    /apps/kardia/data/Kardia_DB/p_address_format_set/rows
+		SET
+		    :p_address_set_desc = :parameters:new_desc,
+		    :p_is_active = :parameters:new_isact,
+		    :s_date_modified = getdate(),
+		    :s_modified_by = user_name()
+		WHERE
+		    :p_address_set = :parameters:new_code
+		;
+
+		INSERT
+		    /apps/kardia/data/Kardia_DB/p_address_format/rows
+		SELECT
+		    p_address_set = :parameters:new_code,
+		    :p_country_code,
+		    :p_format,
+		    :s_date_created,
+		    :s_created_by,
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		FROM
+		    /apps/kardia/data/Kardia_DB/p_address_format/rows
+		WHERE
+		    :p_address_set = :parameters:old_code
+		";
+	autoquery=never;
+	replicasize=2;
+	readahead=2;
+
+	copy_done1 "widget/connector" { event=EndQuery; target=copy_window; action=Close; }
+	copy_done2 "widget/connector" { event=EndQuery; target=af_osrc; action=Refresh; }
+	}
+
+    dt_c "widget/variable" { form=oneformat_form; fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+    us_c "widget/variable" { form=oneformat_form; fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }
+    dt_m "widget/variable" { form=oneformat_form; fieldname="s_date_modified"; dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+    us_m "widget/variable" { form=oneformat_form; fieldname="s_modified_by"; us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+    }
