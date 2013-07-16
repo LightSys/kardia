@@ -634,6 +634,16 @@ security_policy "widget/component-decl"
 			    t_who "widget/table-column" { title="Granted By"; fieldname=s_created_by; width=100; }
 			    t_whodate "widget/table-column" { title="Granted On"; fieldname=s_date_created; width=100; }
 
+			    cannot_remove_sysadmin_from_self "widget/connector"
+				{
+				event = Click;
+				event_condition = runclient(:Column == 'checked' and :ColumnValue == '/sys/images/checkbox_checked.png' and :s_subject == user_name() and :s_endorsement == 'kardia:sys_admin');
+				event_delay = 0.2;
+				target = security_policy;
+				action = Alert;
+				Message = runclient("You cannot remove the 'kardia:sys_admin' privilege from yourself.  If you wish to transfer your system administrator privileges to someone else, first make them a system administrator, and then have them remove your system administrator privileges");
+				}
+
 			    grant_on_click_column "widget/connector"
 				{
 				event = Click;
@@ -649,7 +659,7 @@ security_policy "widget/component-decl"
 			    revoke_on_click_column "widget/connector"
 				{
 				event = Click;
-				event_condition = runclient(:Column == 'checked' and :ColumnValue == '/sys/images/checkbox_checked.png');
+				event_condition = runclient(:Column == 'checked' and :ColumnValue == '/sys/images/checkbox_checked.png' and (:s_subject != user_name() or :s_endorsement != 'kardia:sys_admin'));
 				target = revoke_osrc;
 				action = QueryParam;
 
