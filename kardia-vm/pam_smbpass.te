@@ -1,0 +1,20 @@
+
+module pam_smbpass 1.0;
+
+require {
+	type chkpwd_t;
+	type unconfined_t;
+	type local_login_t;
+	type samba_var_t;
+	type getty_t;
+	class process { siginh noatsecure rlimitinh };
+	class file write;
+}
+
+#============= getty_t ==============
+allow getty_t local_login_t:process { siginh rlimitinh noatsecure };
+
+#============= local_login_t ==============
+allow local_login_t chkpwd_t:process { siginh rlimitinh noatsecure };
+allow local_login_t samba_var_t:file write;
+allow local_login_t unconfined_t:process { siginh noatsecure };
