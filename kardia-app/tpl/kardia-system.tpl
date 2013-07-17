@@ -5,6 +5,7 @@ kardia "widget/template"
 	{
 	icon = "/apps/kardia/favicon.ico";
 	widget_template = runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+	add_endorsements_sql = "select endorsement = :s_endorsement, context = :s_context from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows where :s_subject = 'u:' + user_name()";
 	}
     tplMenuBar "widget/menu"
 	{
