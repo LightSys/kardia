@@ -8,8 +8,8 @@ kardia "widget/template"
 	background="/apps/kardia/images/bg/light_bgnd.jpg";
 	//background="/apps/kardia/images/bg/brown_bgnd.jpg";
 	linkcolor="#153f5f";
-	font_name = "Arial";
-	font_size = 12;
+	//font_name = "Arial";
+	//font_size = 12;
 	}
     tplDarkPage "widget/page"
 	{
