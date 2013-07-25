@@ -1,0 +1,51 @@
+$Version=2$
+initial_setup_site "widget/component-decl"
+    {
+    title = "Site Information";
+    completed_sql="SELECT is_completed=count(1) FROM OBJECT /apps/kardia/data/Site.struct where :site_name != 'SomeOrganization'";
+    short_name="Site";
+    sequence = 100;
+    width=690;
+    height=350;
+
+    site_osrc "widget/osrc"
+	{
+	sql = "Select * from OBJECT /apps/kardia/data/Site.struct";
+	baseobject = "/apps/kardia/data/Site.struct";
+        autoquery=onload;
+
+        site_form "widget/form"
+            {
+	    objectsource=site_osrc;
+
+            site_vbox1 "widget/vbox"
+		{
+                x=28; y=38; 
+		width=690; height=runserver( 350 - 38 );
+                spacing=4;
+                cellsize=20;
+
+		form_ctls "widget/component"
+                {
+                height=26;
+                path="/sys/cmp/form_controls.cmp";
+                object_name = "Site Information";
+                }
+
+
+		//site_name = "SomeOrganization";
+		//site_description = "Some Organization that is Testing Kardia";
+		//site_logo = "/apps/kardia/images/artwork/Kardia2011b-horiz-37.png";
+		//site_logo_width = 182;
+		//site_logo_height = 37;
+		//site_logo_background = white;
+		//site_report_logo = "/apps/kardia/images/artwork/Kardia2011b-horiz-37.png";
+
+                s_name "widget/component" { width=500; path="/sys/cmp/smart_field.cmp"; text="Site Name:"; field=site_name; ctl_type=editbox;  }
+                s_desc "widget/component" { width=500; path="/sys/cmp/smart_field.cmp"; text="Description:"; field=site_description; ctl_type=editbox; }
+                site_logo "widget/component" { width=500; path="/sys/cmp/smart_field.cmp"; text="Logo Location:"; field=site_logo; ctl_type=editbox; }
+		}
+	    }
+	}
+    }
+

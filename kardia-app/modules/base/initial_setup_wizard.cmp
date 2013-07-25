@@ -1,0 +1,153 @@
+$Version=2$
+initial_setup_wizard "widget/component-decl"
+    {
+    height=460;width=784;
+
+    main_title_lbl "widget/label"
+	{
+	x=8; y=8; width=300; height=20;
+	style=bold;
+	fgcolor="#153f5f";
+	font_size=14;
+	text = "Kardia Setup Wizard";
+	}
+
+    main_desc_lbl "widget/label"
+	{
+	x=8; y=32; width=530; height=20;
+	//style=bold;
+	fgcolor="black";
+	font_size=11;
+	text = "This wizard will help you set up Kardia for the first time";
+	}
+
+    checked_off_pane "widget/pane"
+	{
+	x=2; y=60;
+	height=400;
+	width=90;
+	style=raised;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+	status_lbl "widget/label"
+	    {
+	    x=8; y=8; width=50; height=20;
+	    style=bold;
+	    fgcolor="Black";
+	    font_size=11;
+	    text = "Status";
+	    }
+	checks_vbox "widget/vbox"
+	    {
+	    x=0; y=29; width=90; height=370;
+	    spacing=8;
+	    cellsize=20;
+	    checkmark_repeat "widget/repeat"
+		{
+		sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title, :completed_sql, :short_name, :sequence from object wildcard '/apps/kardia/modules/*/plugin_initial_setup_*.cmp' order by :sequence";
+		//checkmark_name "widget/component" { width=40; path="/sys/cmp/smart_field.cmp"; text=:checkmark_repeat:short_name; ctl_type=label;  }
+		check_osrc "widget/osrc"
+		    {
+		    sql = runserver("select is_completed = 0");
+		    //sql=runserver( :checkmark_repeat:completed_sql );
+		    autoquery=onload;
+		    }
+		checks_hbox "widget/hbox"
+		    {
+		    x=0; y=0; width=90; height=20;
+		    spacing=4;
+		    item_lbl "widget/label"
+			{
+			width=70; height=18;
+			//style=bold;
+			fgcolor="black";
+			font_size=11;
+			text = runserver(:checkmark_repeat:short_name);
+			}
+		    item_img "widget/image"
+			{
+			//condition=0;
+			y=2;
+			source=runclient( 
+			    condition (
+				:check_osrc:is_completed == 0, 
+				"/sys/images/green_check.gif",
+				"/sys/images/checkbox_unchecked.gif")
+			    );
+			height=10;
+			width=10;
+			}
+		    }
+		}
+	    }
+	}
+
+    //The tab window
+    wizard_tabs "widget/tab"
+	{
+	height=400; width=690; x=95; y=60;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+	//We use tab_location=none so there are no tabs.  Use forward back buttons
+	tab_location = none;
+
+	//Generate a tab for every file called plugin_initial_setup_*.cmp
+	plugin_tabs "widget/repeat"
+	    {
+
+	    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title, :short_name, :sequence from object wildcard '/apps/kardia/modules/*/plugin_initial_setup_*.cmp' order by :sequence";
+
+	    ////////////////////////////////////
+	    ////Define the actual tab for the wizard
+	    plugin_tab "widget/tabpage"
+		{
+		x=0; y=0;
+		height=400; 
+		width=490;
+		title = runserver(:plugin_tabs:title);
+
+		////////////////////
+		//Put the component (handed to us from the "repeat" widget above) into a tab
+		plugin_cmp "widget/component"
+		    {
+		    height=350; width=490; x=10; y=0;
+		    path = runserver(:plugin_tabs:path);
+		    fund_osrc = subfund_osrc;
+		    //ledger = runserver(:this:ledger);
+		    }
+
+		////////////////////////////
+		////  Back /////////////////
+		back_btn "widget/textbutton"
+		    {
+		    x=50;
+		    y=352;
+		    text="Back";
+		    back_con "widget/connector"
+			 {
+			 event=Click; 
+			 target=wizard_tabs; 
+			 action=SetTab; 
+			 TabIndex=runclient(:wizard_tabs:selected_index - 1); 
+			 }
+		    }
+
+		///////////////////////////////
+		////  Forward /////////////////
+		fwrd_btn "widget/textbutton"
+		    {
+		    x=200;
+		    y=352;
+		    text="Forward";
+		    fwd_con "widget/connector"
+			 {
+			 event=Click; 
+			 target=wizard_tabs; 
+			 action=SetTab; 
+			 TabIndex=runclient(:wizard_tabs:selected_index + 1); 
+			 }
+		    }
+		}
+	    }
+	}
+    }

@@ -1,0 +1,20 @@
+$Version=2$
+initial_setup_site "widget/component-decl"
+    {
+    title = "Site Security";
+    completed_sql="SELECT is_completed=0";
+    short_name="Site Security";
+    sequence = 110;
+    width=690;
+    height=350;
+
+    security_button "widget/textbutton"
+	{
+	    x=20;
+	    y=20;
+	    width=60;
+	    text="Push Me";
+	}
+
+    }
+
