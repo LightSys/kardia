@@ -1,6 +1,7 @@
 $Version=2$
 initial_setup_site "widget/component-decl"
     {
+    parenttab "widget/parameter" { type=object; find_container="widget/tab"; }
     title = "Site Information";
     completed_sql = "SELECT is_completed=count(1) FROM OBJECT /apps/kardia/data/Site.struct where :site_name != 'SomeOrganization'";
     short_name="Site";
@@ -18,12 +19,27 @@ initial_setup_site "widget/component-decl"
             {
 	    objectsource=site_osrc;
 
+//	    pass_upwards_cn "widget/connector"
+//		{
+//		source=site_form;
+//		event=DataSaved;
+//		target=parenttab;
+//		action=ItemChanged;
+//		}
+
             site_vbox1 "widget/vbox"
 		{
                 x=28; y=38; 
 		width=690; height=runserver( 350 - 38 );
-                spacing=4;
+                spacing=8;
                 cellsize=20;
+
+		site_lbl "widget/label"
+		    {
+		    width=600;
+		    height=40;
+		    text="Please fill in the information pertaining to your organization.  To add your own logo, you will need to upload it into the centrallix directory system and change the field to point to where it is.";
+		    }
 
 		form_ctls "widget/component"
 		    {

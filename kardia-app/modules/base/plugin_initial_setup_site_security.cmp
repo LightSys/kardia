@@ -2,7 +2,7 @@ $Version=2$
 initial_setup_site_security "widget/component-decl"
     {
     title = "Site Security";
-    completed_sql="SELECT is_completed=count(1) FROM /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows WHERE s_endorsement == 'kardia:sys_admin'";
+    completed_sql="SELECT is_completed=count(1) FROM /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows WHERE :s_endorsement == 'kardia:sys_admin'";
     short_name="Site Security";
     sequence = 110;
     width=690;

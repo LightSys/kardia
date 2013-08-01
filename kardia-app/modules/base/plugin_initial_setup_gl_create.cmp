@@ -27,7 +27,10 @@ initial_setup_site_security "widget/component-decl"
 	nledger "widget/parameter" { type=string;  default="none"; }
 	npartner "widget/parameter" { type=string;  default=""; }
 	year_start_date "widget/parameter" { type=datetime; }
-        sql = " INSERT
+	month_start_day "widget/parameter" { type=string; }
+        sql = " 
+		-- A security endorsement for the user
+		INSERT 
                         /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
                 SELECT
 			s_endorsement = 'kardia:ledger:' + :parameters:nledger,
@@ -38,6 +41,7 @@ initial_setup_site_security "widget/component-decl"
                         s_date_modified = getdate(),
                         s_modified_by = user_name();
 
+		-- The link between the ledger and the partner office
 		INSERT
 			/apps/kardia/data/Kardia_DB/a_ledger_office/rows
                 SELECT
@@ -48,6 +52,7 @@ initial_setup_site_security "widget/component-decl"
                         s_date_modified = getdate(),
                         s_modified_by = user_name();
 
+		-- The general ledger account
 		INSERT
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows
                 SELECT
@@ -67,6 +72,7 @@ initial_setup_site_security "widget/component-decl"
                         s_date_modified = getdate(),
                         s_modified_by = user_name();
 
+		--The year period
 		INSERT
 			/apps/kardia/data/Kardia_DB/a_period/rows
                 SELECT
@@ -75,14 +81,53 @@ initial_setup_site_security "widget/component-decl"
 			a_status = 'O',
 			a_summary_only = 1,
 			a_period_desc = 'Calendar Year ' + datepart(year, getdate()),
-			a_start_date = convert(datetime,'01/01/'+datepart(year, getdate())),
-			a_end_date = convert(datetime, '12/31/'+datepart(year, getdate())),
-			a_first_opened = convert(datetime,'01/01/'+datepart(year, getdate())),
+			a_start_date = convert(datetime, :parameters:year_start_date),
+			a_end_date = dateadd(
+			    minute, -1,
+			    dateadd(
+				year, 1, convert(datetime, :parameters:year_start_date) 
+				)
+			    ),
+			a_first_opened = getdate(),
 			s_date_created = getdate(),
 			s_created_by = user_name(),
                         s_date_modified = getdate(),
                         s_modified_by = user_name();
-		";
+
+		-- The month periods.  One entry per month up to and including the current month
+		INSERT
+			/apps/kardia/data/Kardia_DB/a_period/rows
+                SELECT
+			a_ledger_number = :parameters:nledger,
+			    -- a_period should be something like 2011.02
+			a_period = convert(string, datepart(year, getdate())) + '.' + right('00'+ (:id + 1),2),
+			a_parent_period = convert(string, datepart(year,getdate())) + 'YEAR',
+			a_status = 'O',
+			a_summary_only = 0,
+			a_period_desc = :full_name + ' of ' + datepart(year, getdate()),
+			a_start_date = convert(datetime, convert(string, (:id + 1)) + '/' + :parameters:month_start_day + '/' + datepart(year, getdate())),
+			-- This next date works nicely for all months except December.  We do Dec separately
+			-- Dec is month 11 if we start with January = 0
+			a_end_date = condition( :id == 11,
+			    dateadd(day, -1, 
+				convert(datetime, '1/'+ :parameters:month_start_day  +
+				'/' + (datepart(year, getdate() + 1)))
+				),
+			    dateadd(day, -1, 
+				convert(datetime, convert( string, :id + 2) + 
+				    '/' + :parameters:month_start_day + '/' + datepart(year, getdate())
+				    )
+				)
+			    ),
+			a_first_opened = getdate(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+		FROM 
+		    /apps/kardia/data/Months.csv/rows
+		WHERE 
+		   :id <  datepart(month, getdate())";
 	}
 
 
@@ -96,61 +141,84 @@ initial_setup_site_security "widget/component-decl"
 	text="Now we need to add more security for the new ledger, create a link between the ledger and the office record, and populate the GL with a lot of beginning records.  Good thing we can do a lot of stuff with one button-click!";
 	}
 
-    ledger_choice "widget/component" 
-	{ 
-	x=10; y=60; width=300; height = 20; 
-	path="/sys/cmp/smart_field.cmp"; 
-	text="Ledger:"; 
-	ctl_type=dropdown; 
-	sql=runserver("select :a_ledger_number, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows WHERE :a_ledger_number != 'DEMO'"); 
-	}
-
-    partner_choice "widget/component" 
-	{ 
-	x=10; y=90; width=300; height = 20; 
-	path="/sys/cmp/smart_field.cmp"; 
-	text="Office Record:"; 
-	ctl_type=dropdown; 
-	sql=runserver("SELECT :p_org_name, :p_partner_key FROM /apps/kardia/data/Kardia_DB/p_partner/rows WHERE :p_partner_class = 'OFC'");
-	}
-
-    year_period_start "widget/component"
+    info_vbox "widget/vbox"
 	{
-	x=10; y=120; width=300; height = 20; 
-	path="/sys/cmp/smart_field.cmp"; 
-	text="Year Period Start"; 
-	ctl_type=datetime; 
-	tooltip="The date when the new fiscal year starts.";
-	date_ony=1;
-	default_time="00:00:00";
-	initialdate=runserver("01/01/" + datepart(year,getdate()));
-	//initialdate=runserver( "01/01/2013" );
-	}
+	x=10; y=50;
+	width=300;
+	height=300;
+	spacing=20;
+	height=30;
 
-
-    security_button "widget/textbutton"
-	{
-	x=80;
-	y=200;
-	width=180;
-	height=40;
-	text=runclient( condition( 
-	    :ledger_choice:value is null, 
-	    "--Choose A Ledger Above--",
-	    condition( :partner_choice:value is null,
-		"--Choose a partner record--",
-		"Process "+ user_name()+ ", " + :ledger_choice:value +" and " + :partner_choice:value ) ) );
-	enabled=runclient( condition( :ledger_choice:value is null, 0, condition (:partner_choice:value is null, 0, 1 )  ) ); 
-
-	doit_con "widget/connector"
-	    {
-	    event=Click;
-	    action=QueryParam;
-	    target=add_records_osrc;
-	    nledger=runclient( :ledger_choice:value );
-	    npartner=runclient( :partner_choice:value );
-	    year_start_date=runclient( :year_period_start:value );
+	ledger_choice "widget/component" 
+	    { 
+	    path="/sys/cmp/smart_field.cmp"; 
+	    text="Ledger:"; 
+	    ctl_type=dropdown; 
+	    sql=runserver("select :a_ledger_number, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows WHERE :a_ledger_number != 'DEMO'"); 
 	    }
+
+	partner_choice "widget/component" 
+	    { 
+	    path="/sys/cmp/smart_field.cmp"; 
+	    text="Office Record:"; 
+	    ctl_type=dropdown; 
+	    sql=runserver("SELECT :p_org_name, :p_partner_key FROM /apps/kardia/data/Kardia_DB/p_partner/rows WHERE :p_partner_class = 'OFC'");
+	    }
+
+	year_period_start "widget/component"
+	    {
+	    path="/sys/cmp/smart_field.cmp"; 
+	    text="Year Period Start"; 
+	    ctl_type=datetime; 
+	    tooltip="The date when the new fiscal year starts.";
+	    date_ony=1;
+	    default_time="00:00:00";
+	    initialdate=runserver("01/01/" + datepart(year,getdate()));
+	    //initialdate=runserver( "01/01/2013" );
+	    }
+
+	day_period_start "widget/component"
+	    {
+	    path="/sys/cmp/smart_field.cmp"; 
+	    text="Month Day:"; 
+	    ctl_type=editbox; 
+	    tooltip="Which day of month do your financial periods start";
+	    dp_hints "widget/hints" { allowchars='0123456789'; default=runclient('1'); }
+	    }
+
+
+	security_button "widget/textbutton"
+	    {
+	    x=100;
+	    width=180;
+	    height=40;
+	    text=runclient( condition( 
+		:ledger_choice:value is null, 
+		"--Choose A Ledger Above--",
+		condition( :partner_choice:value is null,
+		    "--Choose a partner record--",
+		    "Process "+ user_name()+ ", " + :ledger_choice:value +" and " + :partner_choice:value ) ) );
+	    enabled=runclient( condition( :ledger_choice:value is null, 0, condition (:partner_choice:value is null, 0, 1 )  ) ); 
+
+	    doit_con "widget/connector"
+		{
+		event=Click;
+		action=QueryParam;
+		target=add_records_osrc;
+		nledger=runclient( :ledger_choice:value );
+		npartner=runclient( :partner_choice:value );
+		year_start_date=runclient( :year_period_start:value );
+		month_start_day=runclient( :day_period_start:value );
+		}
+	    }
+	}
+
+    dp_initial_val_cn "widget/connector"
+	{
+	    event=LoadComplete;
+	    target=day_period_start;
+	    action=SetValue;
+	    Value=1;
 	}
 
     }

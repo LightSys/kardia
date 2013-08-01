@@ -21,6 +21,7 @@ initial_setup_wizard "widget/component-decl"
 	text = "This wizard will help you set up Kardia for the first time";
 	}
 
+
     checked_off_pane "widget/pane"
 	{
 	x=2; y=60;
@@ -45,11 +46,11 @@ initial_setup_wizard "widget/component-decl"
 	    checkmark_repeat "widget/repeat"
 		{
 		sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title, :completed_sql, :short_name, :sequence from object wildcard '/apps/kardia/modules/*/plugin_initial_setup_*.cmp' order by :sequence";
-		//checkmark_name "widget/component" { width=40; path="/sys/cmp/smart_field.cmp"; text=:checkmark_repeat:short_name; ctl_type=label;  }
+
 		check_osrc "widget/osrc"
 		    {
-		    sql = runserver("select is_completed = 0");
-		    //sql=runserver( :checkmark_repeat:completed_sql );
+		    //sql = runserver("select is_completed = 0");
+		    sql=runserver( :checkmark_repeat:completed_sql );
 		    autoquery=onload;
 		    }
 		checks_hbox "widget/hbox"
@@ -63,15 +64,15 @@ initial_setup_wizard "widget/component-decl"
 			fgcolor="black";
 			font_size=11;
 			text = runserver(:checkmark_repeat:short_name);
-			cnt2 "widget/connector" { event=Click; target=wizard_tabs; action=SetTab; Tab=runclient(:checkmark_repeat:short_name); }
 			}
 		    item_img "widget/image"
 			{
-			//condition=0;
-			y=2;
+			condition=1;
+			x=0; y=2;
+			//source="/sys/images/green_check.gif";
 			source=runclient( 
 			    condition (
-				:check_osrc:is_completed == 0, 
+				:check_osrc:is_completed != 0, 
 				"/sys/images/green_check.gif",
 				"/sys/images/checkbox_unchecked.gif")
 			    );
@@ -83,6 +84,7 @@ initial_setup_wizard "widget/component-decl"
 	    }
 	}
 
+
     //The tab window
     wizard_tabs "widget/tab"
 	{
@@ -92,11 +94,14 @@ initial_setup_wizard "widget/component-decl"
 	//We use tab_location=none so there are no tabs.  Use forward back buttons
 	tab_location = none;
 
+	//Something that can fire off in the component to tell us something changed
+	ItemChanged "widget/component-decl-action" { }
+
 	//Generate a tab for every file called plugin_initial_setup_*.cmp
 	plugin_tabs "widget/repeat"
 	    {
 
-	    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title, :completed_sql, :short_name, :sequence from object wildcard '/apps/kardia/modules/*/plugin_initial_setup_*.cmp' order by :sequence";
+	    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title, :completed_sql, :short_name, :sequence from OBJECT wildcard '/apps/kardia/modules/*/plugin_initial_setup_*.cmp' ORDER BY :sequence";
 
 	    ////////////////////////////////////
 	    ////Define the actual tab for the wizard
@@ -105,7 +110,8 @@ initial_setup_wizard "widget/component-decl"
 		x=0; y=0;
 		height=400; 
 		width=490;
-		title = runclient(:plugin_tabs:short_name);
+		//title = runserver(:plugin_tabs:short_name);
+		title="page";
 
 		////////////////////
 		//Put the component (handed to us from the "repeat" widget above) into a tab
@@ -113,12 +119,11 @@ initial_setup_wizard "widget/component-decl"
 		    {
 		    height=350; width=490; x=10; y=0;
 		    path = runserver(:plugin_tabs:path);
-		    //fund_osrc = subfund_osrc;
-		    //ledger = runserver(:this:ledger);
+		    parenttab=wizard_tabs;
 		    }
 
 		////////////////////
-		/// Check to see if we can go forward
+		// Check to see if we can go forward
 		in_tab_check_osrc "widget/osrc"
 		    {
 		    //sql = runserver("select is_completed = 1");
@@ -159,6 +164,12 @@ initial_setup_wizard "widget/component-decl"
 			 action=SetTab; 
 			 TabIndex=runclient(:wizard_tabs:selected_index + 1); 
 			 }
+//		    ItemChanged_cn "widget/connector"
+//			{
+//			source = wizard_tabs;
+//			event = ItemChanged;
+//			action = Refresh;
+//			}
 		    }
 		}
 	    }
