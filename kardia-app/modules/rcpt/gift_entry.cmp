@@ -91,6 +91,7 @@ gift_entry "widget/component-decl"
 
 	    rcpt_link_rule "widget/rule"
 		{
+		condition=runserver(:this:by_donor == 0);
 		ruletype = osrc_relationship;
 		target = batch_osrc;
 		key_1 = a_ledger_number;
