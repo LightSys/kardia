@@ -58,11 +58,12 @@ initial_setup_wizard "widget/component-decl"
 		    spacing=4;
 		    item_lbl "widget/label"
 			{
-			width=70; height=18;
+			width=75; height=18;
 			//style=bold;
 			fgcolor="black";
 			font_size=11;
 			text = runserver(:checkmark_repeat:short_name);
+			cnt2 "widget/connector" { event=Click; target=wizard_tabs; action=SetTab; Tab=runclient(:checkmark_repeat:short_name); }
 			}
 		    item_img "widget/image"
 			{
@@ -95,7 +96,7 @@ initial_setup_wizard "widget/component-decl"
 	plugin_tabs "widget/repeat"
 	    {
 
-	    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title, :short_name, :sequence from object wildcard '/apps/kardia/modules/*/plugin_initial_setup_*.cmp' order by :sequence";
+	    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title, :completed_sql, :short_name, :sequence from object wildcard '/apps/kardia/modules/*/plugin_initial_setup_*.cmp' order by :sequence";
 
 	    ////////////////////////////////////
 	    ////Define the actual tab for the wizard
@@ -104,7 +105,7 @@ initial_setup_wizard "widget/component-decl"
 		x=0; y=0;
 		height=400; 
 		width=490;
-		title = runserver(:plugin_tabs:title);
+		title = runclient(:plugin_tabs:short_name);
 
 		////////////////////
 		//Put the component (handed to us from the "repeat" widget above) into a tab
@@ -112,9 +113,20 @@ initial_setup_wizard "widget/component-decl"
 		    {
 		    height=350; width=490; x=10; y=0;
 		    path = runserver(:plugin_tabs:path);
-		    fund_osrc = subfund_osrc;
+		    //fund_osrc = subfund_osrc;
 		    //ledger = runserver(:this:ledger);
 		    }
+
+		////////////////////
+		/// Check to see if we can go forward
+		in_tab_check_osrc "widget/osrc"
+		    {
+		    //sql = runserver("select is_completed = 1");
+		    //sql = runserver("select is_completed = 0");
+		    sql=runserver( :plugin_tabs:completed_sql );
+		    autoquery=onload;
+		    }
+
 
 		////////////////////////////
 		////  Back /////////////////
@@ -139,6 +151,7 @@ initial_setup_wizard "widget/component-decl"
 		    x=200;
 		    y=352;
 		    text="Forward";
+		    enabled=runclient( :in_tab_check_osrc:is_completed != 0 );
 		    fwd_con "widget/connector"
 			 {
 			 event=Click; 

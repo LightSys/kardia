@@ -1,19 +1,164 @@
 $Version=2$
-initial_setup_site "widget/component-decl"
+initial_setup_site_security "widget/component-decl"
     {
     title = "Site Security";
-    completed_sql="SELECT is_completed=0";
+    completed_sql="SELECT is_completed=count(1) FROM /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows WHERE s_endorsement == 'kardia:sys_admin'";
     short_name="Site Security";
     sequence = 110;
     width=690;
     height=350;
+    ////////////////////////////////////////////////////////
+    //Only do this component if we do not have partners yet.
+    //This is to keep someone from somehow running this 
+    //component after the system is running
+    condition=runserver(
+	condition(
+	    ( select count(1) from /apps/kardia/data/Kardia_DB/p_partner_key_cnt/rows ),
+	    0, 1)
+	);
+
+
+    //Initial security endorsements to add
+    //kardia:gift
+    //kardia:gift_amt
+    //kardia:gift_entry
+    //kardia:gift_manage
+    //kardia:gl_entry
+    //kardia:gl_manage
+    //kardia:pay_manage
+    //kardia:sys_admin
+    //system:from_application
+
+    add_endorsements_osrc "widget/osrc"
+        {
+        autoquery=never;
+        sql = " INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'kardia:sys_admin',
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+                ;
+		INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'kardia:gift',
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+		;
+		INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'kardia:gift_amt',
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+		;
+		INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'kardia:gift_entry',
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+		;
+		INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'kardia:gift_manage',
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+		;
+		INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'kardia:gl_entry',
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+		;
+		INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'kardia:gl_manage',
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+		;
+		INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'kardia:pay_manage',
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+                ;
+		INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'system:from_application',
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name()
+                ;
+		";
+	}
+
+
+    security_label "widget/label"
+	{
+	    x=10;
+	    y=10;
+	    width=600;
+	    height=80;
+	    font_size = 12;
+	    text="To proceed, we need to give the user running this wizard enough privilages to make the changes needed.  Later on in the wizard, you will be able to create a different user and transfer the admin rights to that user.  But for now, we only have one user in the system, and that is you.  Press the button below to give yourself lots of privilages.";
+	}
 
     security_button "widget/textbutton"
 	{
-	    x=20;
-	    y=20;
-	    width=60;
-	    text="Push Me";
+	    x=80;
+	    y=80;
+	    width=180;
+	    height=40;
+	    text=runserver( "Give "+ user_name()+ " Security Rights" );
+
+	    doit_con "widget/connector"
+		{
+		event=Click;
+		action=QueryParam;
+		target=add_endorsements_osrc;
+		}
 	}
 
     }

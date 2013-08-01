@@ -2,7 +2,7 @@ $Version=2$
 initial_setup_site "widget/component-decl"
     {
     title = "Site Information";
-    completed_sql="SELECT is_completed=count(1) FROM OBJECT /apps/kardia/data/Site.struct where :site_name != 'SomeOrganization'";
+    completed_sql = "SELECT is_completed=count(1) FROM OBJECT /apps/kardia/data/Site.struct where :site_name != 'SomeOrganization'";
     short_name="Site";
     sequence = 100;
     width=690;
@@ -26,11 +26,11 @@ initial_setup_site "widget/component-decl"
                 cellsize=20;
 
 		form_ctls "widget/component"
-                {
-                height=26;
-                path="/sys/cmp/form_controls.cmp";
-                object_name = "Site Information";
-                }
+		    {
+		    height=26;
+		    path="/sys/cmp/form_controls.cmp";
+		    object_name = "Site Information";
+		    }
 
 
 		//site_name = "SomeOrganization";

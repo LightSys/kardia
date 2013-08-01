@@ -1,0 +1,157 @@
+$Version=2$
+initial_setup_site_security "widget/component-decl"
+    {
+    title = "Site Security";
+    completed_sql="SELECT is_completed=count(1) FROM /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows WHERE substring(:s_endorsement,1,14) == 'kardia:ledger:'";
+    short_name="GL";
+    sequence = 150;
+    width=690;
+    height=350;
+    ////////////////////////////////////////////////////////
+    //Only do this component if there are no permissions set for any ledger
+    //This is to keep someone from somehow running this 
+    //component after the system has been initialized
+    condition=runserver(
+	condition(
+	    ( SELECT is_completed=count(1) FROM /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows WHERE substring(:s_endorsement,1,14) == 'kardia:ledger:' ),
+	    0, 1)
+	);
+
+
+    //Initial security endorsements to add
+    //kardia:ledger:[ledgerkey]
+
+    add_records_osrc "widget/osrc"
+        {
+        autoquery=never;
+	nledger "widget/parameter" { type=string;  default="none"; }
+	npartner "widget/parameter" { type=string;  default=""; }
+	year_start_date "widget/parameter" { type=datetime; }
+        sql = " INSERT
+                        /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows
+                SELECT
+			s_endorsement = 'kardia:ledger:' + :parameters:nledger,
+			s_context = 'kardia',
+			s_subject = 'u:' + user_name(),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name();
+
+		INSERT
+			/apps/kardia/data/Kardia_DB/a_ledger_office/rows
+                SELECT
+			a_ledger_number = :parameters:nledger,
+			p_office_partner_key =  :parameters:npartner,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name();
+
+		INSERT
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows
+                SELECT
+			a_cost_center = 'GEN000',
+			a_ledger_number = :parameters:nledger,
+			a_bal_cost_center = 'GEN000',
+			a_cost_center_class = 'ORG',
+			a_parent_cost_center = '',
+			a_reporting_level = 1,
+			a_is_posting = 1,
+			a_is_balancing = 1,
+			a_restricted_type = 'N',
+			a_cc_desc = 'General Fund',
+			p_office_partner_key =  :parameters:npartner,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name();
+
+		INSERT
+			/apps/kardia/data/Kardia_DB/a_period/rows
+                SELECT
+			a_ledger_number = :parameters:nledger,
+			a_period = '' + datepart(year,getdate()) + 'YEAR',
+			a_status = 'O',
+			a_summary_only = 1,
+			a_period_desc = 'Calendar Year ' + datepart(year, getdate()),
+			a_start_date = convert(datetime,'01/01/'+datepart(year, getdate())),
+			a_end_date = convert(datetime, '12/31/'+datepart(year, getdate())),
+			a_first_opened = convert(datetime,'01/01/'+datepart(year, getdate())),
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+                        s_date_modified = getdate(),
+                        s_modified_by = user_name();
+		";
+	}
+
+
+    security_label "widget/label"
+	{
+	x=10;
+	y=10;
+	width=600;
+	height=80;
+	font_size = 12;
+	text="Now we need to add more security for the new ledger, create a link between the ledger and the office record, and populate the GL with a lot of beginning records.  Good thing we can do a lot of stuff with one button-click!";
+	}
+
+    ledger_choice "widget/component" 
+	{ 
+	x=10; y=60; width=300; height = 20; 
+	path="/sys/cmp/smart_field.cmp"; 
+	text="Ledger:"; 
+	ctl_type=dropdown; 
+	sql=runserver("select :a_ledger_number, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows WHERE :a_ledger_number != 'DEMO'"); 
+	}
+
+    partner_choice "widget/component" 
+	{ 
+	x=10; y=90; width=300; height = 20; 
+	path="/sys/cmp/smart_field.cmp"; 
+	text="Office Record:"; 
+	ctl_type=dropdown; 
+	sql=runserver("SELECT :p_org_name, :p_partner_key FROM /apps/kardia/data/Kardia_DB/p_partner/rows WHERE :p_partner_class = 'OFC'");
+	}
+
+    year_period_start "widget/component"
+	{
+	x=10; y=120; width=300; height = 20; 
+	path="/sys/cmp/smart_field.cmp"; 
+	text="Year Period Start"; 
+	ctl_type=datetime; 
+	tooltip="The date when the new fiscal year starts.";
+	date_ony=1;
+	default_time="00:00:00";
+	initialdate=runserver("01/01/" + datepart(year,getdate()));
+	//initialdate=runserver( "01/01/2013" );
+	}
+
+
+    security_button "widget/textbutton"
+	{
+	x=80;
+	y=200;
+	width=180;
+	height=40;
+	text=runclient( condition( 
+	    :ledger_choice:value is null, 
+	    "--Choose A Ledger Above--",
+	    condition( :partner_choice:value is null,
+		"--Choose a partner record--",
+		"Process "+ user_name()+ ", " + :ledger_choice:value +" and " + :partner_choice:value ) ) );
+	enabled=runclient( condition( :ledger_choice:value is null, 0, condition (:partner_choice:value is null, 0, 1 )  ) ); 
+
+	doit_con "widget/connector"
+	    {
+	    event=Click;
+	    action=QueryParam;
+	    target=add_records_osrc;
+	    nledger=runclient( :ledger_choice:value );
+	    npartner=runclient( :partner_choice:value );
+	    year_start_date=runclient( :year_period_start:value );
+	    }
+	}
+
+    }
+

@@ -1,0 +1,68 @@
+$Version=2$
+initial_setup_p_partner_key_cnt "widget/component-decl"
+    {
+    title = "Partner Number";
+    completed_sql = "SELECT is_completed=count(1) FROM /apps/kardia/data/Kardia_DB/p_partner_key_cnt/rows ";
+    short_name="First Partner";
+    sequence = 120;
+    width=690;
+    height=350;
+
+    site_osrc "widget/osrc"
+	{
+	sql = "SELECT * FROM /apps/kardia/data/Kardia_DB/p_partner_key_cnt/rows";
+	baseobj = "/apps/kardia/data/Kardia_DB/p_partner_key_cnt/rows";
+        autoquery=onload;
+
+        site_form "widget/form"
+            {
+	    objectsource=site_osrc;
+
+
+            p_key_vbox1 "widget/vbox"
+		{
+                x=28; y=20; 
+		width=690; height=runserver( 350 - 20 );
+                spacing=4;
+                cellsize=20;
+
+		form_ctls "widget/component"
+		    {
+		    height=26;
+		    path="/sys/cmp/form_controls.cmp";
+		    object_name = "First Partner Key";
+		    }
+
+		p_key_label1 "widget/label"
+		    {
+		    x=0;
+		    y=0;
+		    width=600;
+		    height=20;
+		    font_size=11;
+		    text="Put your starting partner number in the box.  A good number is 1000000. Only make one record here.";
+		    }
+
+                np_partner_key "widget/component" { 
+		    width=500; 
+		    path="/sys/cmp/smart_field.cmp"; 
+		    text="First Partner Key:"; 
+		    field=p_partner_key; 
+		    ctl_type=editbox; 
+		    key_hints "widget/hints" 
+			{ 
+			allowchars="1234567890"; 
+			} 
+		    }
+
+		p_key_label2 "widget/label"
+		    {
+		    font_size=11;
+		    height=20;
+		    text="It helps to have your GL account numbers, fund account numbers, and reciept numbers all different so they are easy to tell apart by just glancing at a number.  The account numbers, hopefully, do not grow as fast as donor numbers do.  So we tend to put the donor numbers at the end of the numeric range.  If you have no clue, put 1,000,000 in the box (without the commas).";
+		    }
+		}
+	    }
+	}
+    }
+

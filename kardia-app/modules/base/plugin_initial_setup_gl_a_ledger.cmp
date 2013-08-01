@@ -1,0 +1,95 @@
+$Version=2$
+initial_setup_site "widget/component-decl"
+    {
+    title = "GL Ledger";
+    completed_sql = "SELECT is_completed=count(1) FROM /apps/kardia/data/Kardia_DB/a_ledger/rows WHERE :a_ledger_number != 'DEMO'";
+    short_name="Ledger";
+    sequence = 140;
+    width=690;
+    height=350;
+
+    ledger_osrc "widget/osrc"
+	{
+	sql = "SELECT * FROM /apps/kardia/data/Kardia_DB/a_ledger/rows";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_ledger/rows";
+        autoquery=onload;
+
+        ledger_form "widget/form"
+            {
+            objectsource=ledger_osrc;
+
+            ledger_vbox1 "widget/vbox"
+                {
+                x=28; y=20;
+                width=690; height=runserver( 350 - 20 );
+                spacing=4;
+                cellsize=20;
+
+                form_ctls "widget/component"
+                    {
+                    height=26;
+                    path="/sys/cmp/form_controls.cmp";
+                    object_name = "Ledger Record";
+                    }
+
+                ledger_label1 "widget/label"
+                    {
+                    x=0; y=0;
+                    width=600; height=60;
+                    font_size=11;
+                    text="You need to create a new ledger.  The name/number could be something like US (if you have multiple countries), MAIN, 001, etc.  The Ledger number will prefix the GL entries and other things.  Kardia can handle multiple ledgers simultaniously.  You only need to set up one at this time.";
+                    }
+                ledger_label2 "widget/label"
+                    {
+                    x=0; y=0;
+                    width=600; height=20;
+                    font_size=11;
+                    text="Press the 'New Record' key above (the button with the plus on it) to make a new GL record, and then enter the data.";
+                    }
+
+                ledger_number "widget/component" 
+		    {
+                    width=500;
+                    path="/sys/cmp/smart_field.cmp";
+                    text="Ledger Number:";
+                    field=a_ledger_number;
+		    tooltip="This is the ledger name / number.";
+		    }
+                ledger_next_batch "widget/component" 
+		    {
+                    width=500;
+                    path="/sys/cmp/smart_field.cmp";
+                    text="Next Batch Number:";
+                    field=a_next_batch_number;
+		    tooltip="The next batch number for the next GL batch.";
+		    next_batch_hints "widget/hints"
+			{ 
+			allowchars="1234567890"; 
+			} 
+
+		    }
+                ledger_description "widget/component" 
+		    {
+                    width=500;
+                    path="/sys/cmp/smart_field.cmp";
+                    text="Ledger Description:";
+                    field=a_ledger_description;
+		    tooltip="A short description for this GL (optional)";
+		    }
+                ledger_comment "widget/component" 
+		    {
+                    width=500;
+                    path="/sys/cmp/smart_field.cmp";
+                    text="Ledger Comment:";
+                    field=a_ledger_comment;
+		    tooltip="A comment for this GL (optional)";
+		    }
+		}
+		dt_c "widget/variable" { form=ledger_form; fieldname="s_date_created"; dt_c_hints "widget/hints" { default=runclient(getdate()); } }
+		us_c "widget/variable" { form=ledger_form; fieldname="s_created_by"; us_c_hints "widget/hints" { default=runclient(user_name()); } }
+		dt_m "widget/variable" { form=ledger_form; fieldname="s_date_modified"; dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+		us_m "widget/variable" { form=ledger_form; fieldname="s_modified_by"; us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+	    }
+	}
+    }
+
