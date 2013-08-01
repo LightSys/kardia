@@ -46,13 +46,14 @@ index "widget/page"
 	x=8;y=63;height=530;width=784;
 	//If there are any records in p_partner_key_cnt, we want to go
 	//to the main menu.  Otherwise, we need to go to the setup-wizard.
-	path=runserver(
-	    condition(
-		( select count(1) from /apps/kardia/data/Kardia_DB/p_partner_key_cnt/rows ),
-		"/apps/kardia/modules/base/whoson_and_tab_menu.cmp",
-		"/apps/kardia/modules/base/initial_setup_wizard.cmp"
-		)
-	    );
+//	path=runserver(
+//	    condition(
+//		( select count(1) from /apps/kardia/data/Kardia_DB/p_partner_key_cnt/rows ),
+//		"/apps/kardia/modules/base/whoson_and_tab_menu.cmp",
+//		"/apps/kardia/modules/base/initial_setup_wizard.cmp"
+//		)
+//	    );
+	path= "/apps/kardia/modules/base/initial_setup_wizard.cmp";
 	mode=dynamic;
 	multiple_instantiation=no;
 	auto_destroy=yes;
