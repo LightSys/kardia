@@ -8,6 +8,8 @@ initial_setup_p_partner_key_cnt "widget/component-decl"
     width=690;
     height=350;
 
+    ItemChanged "widget/component-decl-event" { }
+
     site_osrc "widget/osrc"
 	{
 	sql = "SELECT * FROM /apps/kardia/data/Kardia_DB/p_partner_key_cnt/rows";
@@ -18,6 +20,12 @@ initial_setup_p_partner_key_cnt "widget/component-decl"
             {
 	    objectsource=site_osrc;
 
+	    allow_fwd "widget/connector"
+		{
+		event=DataSaved;
+		action=ItemChanged;
+		target=initial_setup_p_partner_key_cnt;
+		}
 
             p_key_vbox1 "widget/vbox"
 		{
@@ -25,6 +33,7 @@ initial_setup_p_partner_key_cnt "widget/component-decl"
 		width=690; height=runserver( 350 - 20 );
                 spacing=4;
                 cellsize=20;
+
 
 		form_ctls "widget/component"
 		    {

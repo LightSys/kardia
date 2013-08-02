@@ -8,6 +8,25 @@ initial_setup_org "widget/component-decl"
     width=690;
     height=350;
 
+
+    ItemChanged "widget/component-decl-event" { }
+
+    is_completed_osrc "widget/osrc"
+	{
+	    sql="SELECT is_completed=count(1) FROM /apps/kardia/data/Kardia_DB/p_partner/rows WHERE :p_partner_class = 'OFC'";
+	    autoquery=onload;
+
+	    validated_cn "widget/connector"
+		{
+		event=EndQuery;
+		action="SetValue";
+		target=record_status_lbl;
+		Value=runclient( condition( :is_completed_osrc:is_completed > 0, 
+		    "Office records exist.  You may continue to the next part of the wizard.",
+		    "No office records exist."));
+		}
+	}
+
     org_instructions "widget/label"
 	{
 	x=10;
@@ -17,20 +36,23 @@ initial_setup_org "widget/component-decl"
 	width=690;
 	text="Here you need to set up a partner record for your organization.  Set the type to 'OFFICE'.  Leave the first name and last name blank, but put your organization's name in the org name field.  Put your orgs address in under 'work address'";
 	}
+
     org_instructions2 "widget/label"
 	{
 	x=10;
-	y=55;
+	y=50;
 	font_size=12;
 	height=20;
 	width=690;
 	text="You may also wish to add a partner record for yourself.  After making the office record and pressing 'Save', create a new 'Individual'.  Make sure you click 'staff' on the record that is you.";
 	}
+
+
     //Have a button to launch the add partner app
     launch_new_partner "widget/textbutton"
 	{
 	x=100;
-	y=150;
+	y=120;
 	text="Add Records";
 	
 	btn_click "widget/connector"
@@ -39,8 +61,47 @@ initial_setup_org "widget/component-decl"
 	    target=initial_setup_org;
 	    action=Launch;
 	    Source="/apps/kardia/modules/base/new_partner.app";
-	    //ledger=12345;
-	    return_to=initial_setup_org;
+	    }
+
+	allow_fwd "widget/connector"
+	    {
+	    source=launch_new_partner;
+	    event=Click;
+	    action=ItemChanged;
+	    target=initial_setup_org;
+	    }
+	}
+
+    record_status_lbl "widget/label"
+	{
+	x=10;
+	y=160;
+	width=600;
+	height=20;
+	font_size=12;
+	//text=runclient( "Hello" + " World" );
+	text="When you have added the records, pres 'validate' below";
+	}
+
+    check_if_complete "widget/textbutton"
+	{
+	x=100;
+	y=210;
+	text=runclient( condition( :is_completed_osrc:is_completed > 0, "--Validated--","Validate Records"));
+	
+	fwd_check1 "widget/connector"
+	    {
+	    source=check_if_complete;
+	    event=Click;
+	    action=ItemChanged;
+	    target=initial_setup_org;
+	    }
+	fwd_check2 "widget/connector"
+	    {
+	    source=check_if_complete;
+	    event=Click;
+	    action=Refresh;
+	    target=is_completed_osrc;
 	    }
 	}
     }

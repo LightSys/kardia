@@ -7,6 +7,9 @@ initial_setup_site_security "widget/component-decl"
     sequence = 110;
     width=690;
     height=350;
+
+    ItemChanged "widget/component-decl-event" { }
+
     ////////////////////////////////////////////////////////
     //Only do this component if we do not have partners yet.
     //This is to keep someone from somehow running this 
@@ -132,6 +135,12 @@ initial_setup_site_security "widget/component-decl"
                         s_modified_by = user_name()
                 ;
 		";
+	    allow_fwd "widget/connector"
+		{
+		event=EndQuery;
+		action=ItemChanged;
+		target=initial_setup_site_security;
+		}
 	}
 
 
@@ -159,6 +168,7 @@ initial_setup_site_security "widget/component-decl"
 		action=QueryParam;
 		target=add_endorsements_osrc;
 		}
+
 	}
 
     }

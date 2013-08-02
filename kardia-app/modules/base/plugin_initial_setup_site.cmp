@@ -1,13 +1,14 @@
 $Version=2$
 initial_setup_site "widget/component-decl"
     {
-    parenttab "widget/parameter" { type=object; find_container="widget/tab"; }
     title = "Site Information";
     completed_sql = "SELECT is_completed=count(1) FROM OBJECT /apps/kardia/data/Site.struct where :site_name != 'SomeOrganization'";
     short_name="Site";
     sequence = 100;
     width=690;
     height=350;
+
+    ItemChanged "widget/component-decl-event" { }
 
     site_osrc "widget/osrc"
 	{
@@ -19,13 +20,13 @@ initial_setup_site "widget/component-decl"
             {
 	    objectsource=site_osrc;
 
-//	    pass_upwards_cn "widget/connector"
-//		{
-//		source=site_form;
-//		event=DataSaved;
-//		target=parenttab;
-//		action=ItemChanged;
-//		}
+	    pass_upwards_cn "widget/connector"
+		{
+		source=site_form;
+		event=DataSaved;
+		target=initial_setup_site;
+		action=ItemChanged;
+		}
 
             site_vbox1 "widget/vbox"
 		{

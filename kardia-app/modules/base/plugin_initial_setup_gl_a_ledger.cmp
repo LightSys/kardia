@@ -1,5 +1,5 @@
 $Version=2$
-initial_setup_site "widget/component-decl"
+initial_setup_gl "widget/component-decl"
     {
     title = "GL Ledger";
     completed_sql = "SELECT is_completed=count(1) FROM /apps/kardia/data/Kardia_DB/a_ledger/rows WHERE :a_ledger_number != 'DEMO'";
@@ -7,6 +7,8 @@ initial_setup_site "widget/component-decl"
     sequence = 140;
     width=690;
     height=350;
+
+    ItemChanged "widget/component-decl-event" { }
 
     ledger_osrc "widget/osrc"
 	{
@@ -18,12 +20,21 @@ initial_setup_site "widget/component-decl"
             {
             objectsource=ledger_osrc;
 
+	    allow_fwd "widget/connector"
+                {
+		source=ledger_form;
+                event=DataSaved;
+                action=ItemChanged;
+                target=initial_setup_gl;
+                }
+
             ledger_vbox1 "widget/vbox"
                 {
                 x=28; y=20;
                 width=690; height=runserver( 350 - 20 );
                 spacing=4;
                 cellsize=20;
+
 
                 form_ctls "widget/component"
                     {

@@ -3,6 +3,8 @@ initial_setup_wizard "widget/component-decl"
     {
     height=460;width=784;
 
+//    RefreshChecks "widget/component-decl-event" { }
+
     main_title_lbl "widget/label"
 	{
 	x=8; y=8; width=300; height=20;
@@ -84,7 +86,6 @@ initial_setup_wizard "widget/component-decl"
 	    }
 	}
 
-
     //The tab window
     wizard_tabs "widget/tab"
 	{
@@ -93,9 +94,6 @@ initial_setup_wizard "widget/component-decl"
 	inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
 	//We use tab_location=none so there are no tabs.  Use forward back buttons
 	tab_location = none;
-
-	//Something that can fire off in the component to tell us something changed
-	ItemChanged "widget/component-decl-action" { }
 
 	//Generate a tab for every file called plugin_initial_setup_*.cmp
 	plugin_tabs "widget/repeat"
@@ -119,7 +117,21 @@ initial_setup_wizard "widget/component-decl"
 		    {
 		    height=350; width=490; x=10; y=0;
 		    path = runserver(:plugin_tabs:path);
-		    parenttab=wizard_tabs;
+
+		    detect_changed_fwd "widget/connector"
+			{
+			source=plugin_cmp;
+			event=ItemChanged;
+			target=in_tab_check_osrc;
+			action=Refresh;
+			}
+		    detect_changed_check "widget/connector"
+			{
+			source=plugin_cmp;
+			event=ItemChanged;
+			target=check_osrc;
+			action=Refresh;
+			}
 		    }
 
 		////////////////////
@@ -164,12 +176,6 @@ initial_setup_wizard "widget/component-decl"
 			 action=SetTab; 
 			 TabIndex=runclient(:wizard_tabs:selected_index + 1); 
 			 }
-//		    ItemChanged_cn "widget/connector"
-//			{
-//			source = wizard_tabs;
-//			event = ItemChanged;
-//			action = Refresh;
-//			}
 		    }
 		}
 	    }
