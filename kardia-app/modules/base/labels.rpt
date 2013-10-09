@@ -3,7 +3,7 @@ labels "system/report"
     {
     title = "Avery 5160 Labels";
     document_format="application/pdf";
-    resolution = 300;
+    resolution = 600;
     pagewidth=85;
     pageheight=66;
     marginleft=1.875;
@@ -65,7 +65,8 @@ labels "system/report"
 		    charindex(',' + rtrim(:m:m_list_code) + ',', " + quote(',' + :this:incl_lists + ',') + ") > 0 and
 		    charindex(',' + rtrim(:m:m_list_code) + ',', " + quote(',' + :this:incl_lists + ',') + ") > 0 and
 		    charindex(',' + rtrim(:m:m_list_code) + ',', " + quote(',' + :this:incl_lists + ',') + ") > 0 and
-		    :p:p_partner_key = :m:p_partner_key
+		    :p:p_partner_key = :m:p_partner_key and
+		    :m:m_membership_status = 'A'
 		    " + condition(:this:include_obs, "and (:p:p_status_code = 'O' or :p:p_status_code = 'A')", "and :p:p_status_code = 'A'") + "
 		    " + condition(:this:only_okmail, "and :p:p_no_mail = 0", "") + "
 		    " + condition(:this:only_oksolicit, "and :p:p_no_solicitations = 0", "") + "
