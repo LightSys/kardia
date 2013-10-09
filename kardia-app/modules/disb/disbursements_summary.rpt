@@ -59,14 +59,16 @@ disbursements_summary "system/report"
 	{
 	sql = runserver("
 		select
-			total = isnull(sum(:a_amount), $0.00)
+			total = $0 - isnull(sum(:a_amount), $0.00)
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t
 		where
 			:t:a_ledger_number = :this:ledger and
 			:t:a_origin = 'CD' and
 			:t:a_period = :this:period and
-			:t:a_account_code != '1111' and
+			charindex(' Disbursements', :t:a_comment) >= 2 and
+			charindex(' Disbursements', :t:a_comment) <= 6 and
+			-- :t:a_account_code != '1111' and
 			:t:a_batch_number = :disb_qy:batch
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		");
