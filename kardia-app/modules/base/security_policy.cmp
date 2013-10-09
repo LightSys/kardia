@@ -340,7 +340,7 @@ security_policy "widget/component-decl"
 					GROUP BY
 					    :s:p_partner_key
 					";
-				search_field_list="p_partner_key,*p_given_name*,p_surname*";
+				search_field_list="p_partner_key,*p_given_name*,*p_surname*";
 				key_name="p_partner_key";
 				search_objname="p";
 				object_name="Staff Partners";

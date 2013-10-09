@@ -65,7 +65,7 @@ plugin_base_mlist_members "widget/component-decl"
 		    event_condition=runclient(char_length(:search_eb:content) > 0);
 		    target=list_membership_osrc;
 		    action=QueryText;
-		    field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key";
+		    field_list="*p_given_name*,*p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key";
 		    objname=runclient("p");
 		    query=runclient(:search_eb:content);
 		    cx__case_insensitive = 1;
