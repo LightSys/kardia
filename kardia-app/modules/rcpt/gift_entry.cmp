@@ -91,6 +91,7 @@ gift_entry "widget/component-decl"
 
 	    rcpt_link_rule "widget/rule"
 		{
+		condition=runserver(:this:by_donor == 0);
 		ruletype = osrc_relationship;
 		target = batch_osrc;
 		key_1 = a_ledger_number;
@@ -121,7 +122,12 @@ gift_entry "widget/component-decl"
 
 		    t_rcpt "widget/table-column" { title="Rcpt#"; fieldname="a_receipt_number"; width=63; }
 		    t_don "widget/table-column" { title="Donor"; fieldname="viewname"; width=90; }
-		    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=82; align=right; }
+		    t_amt "widget/table-column"
+			{
+			require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+			endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+			title="Amount"; fieldname="a_amount"; width=82; align=right; 
+			}
 		    }
 		}
 	    }
@@ -153,7 +159,7 @@ gift_entry "widget/component-decl"
 		action=QueryText;
 		cx__case_insensitive = 1;
 		query=runclient(:srchbox:content);
-		field_list = runclient("p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*");
+		field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*");
 		}
 	    }
 
@@ -261,7 +267,12 @@ gift_entry "widget/component-decl"
 
 		    t_rcpt "widget/table-column" { title="Rcpt#"; fieldname="a_receipt_number"; width=63; }
 		    t_date "widget/table-column" { title="Date"; fieldname="viewdate"; width=97; }
-		    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=75; align=right; }
+		    t_amt "widget/table-column"
+			{
+			require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+			endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+			title="Amount"; fieldname="a_amount"; width=75; align=right; 
+			}
 		    }
 		}
 	    }
@@ -411,7 +422,7 @@ gift_entry "widget/component-decl"
 			popup_width=380;
 			popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
 			//search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*,*p_comments";
-			search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+			search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
 			key_name="p_partner_key";
 			object_name="Donor";
 			popup_text="Select a Donor:";
@@ -689,7 +700,12 @@ gift_entry "widget/component-decl"
 			    t_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=50; }
 			    t_cc_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=120; }
 			    t_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=120; }
-			    t_itemamt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
+			    t_itemamt "widget/table-column"
+				{
+				title="Amount"; fieldname="a_amount"; width=60; align=right; 
+				require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+				endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+				}
 			    t_pers "widget/table-column" { title="NDed"; fieldname="a_non_tax_deductible"; width=30; type=check; }
 			    t_anon "widget/table-column" { title="Conf"; fieldname="a_confidential"; width=30; type=check; }
 			    t_admin "widget/table-column" { title="Adm"; fieldname="admin"; width=35; }

@@ -5,6 +5,8 @@ TableMaintenance "widget/page"
     title = "Kardia - Table Maintenance";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl";
     bgcolor = "#e0e0e0";
+    require_endorsements="kardia:sys_admin";
+    endorsement_context="kardia:::";
 
     mnMain "widget/menu"
 	{

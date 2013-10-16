@@ -1,0 +1,12 @@
+$Version=2$
+report_field_include_obs "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "include_obs";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_obs "widget/component" { x=10; height=24; width=340; path="/sys/cmp/smart_field.cmp"; field="include_obs"; ctl_type='checkboxleft'; text="Include obsolete partners"; label_width=120; form=rpt_form; }
+    }

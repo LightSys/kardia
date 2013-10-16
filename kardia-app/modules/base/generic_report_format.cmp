@@ -1,0 +1,117 @@
+$Version=2$
+generic_report_format "widget/component-decl"
+    {
+    width=700;
+    height=398;
+
+    ledger "widget/parameter" { type=string; default=null; }
+    report_path "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    report_path_sep_csv "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    report_form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    expose_properties_for = f_docfmt;
+
+    format_vbox "widget/vbox"
+	{
+	x=0; y=0; width=700; height=398;
+	cellsize=24;
+	spacing=4;
+	column_width=350;
+
+	lbl2a "widget/label" { height=18; text="Report Output Options:"; style=bold; align=center; }
+
+	f_docfmt "widget/component"
+	    {
+	    condition = runserver(:this:report_path_sep_csv is null);
+	    height=24; 
+	    path="/sys/cmp/smart_field.cmp"; 
+	    field='document_format'; 
+	    ctl_type=dropdown; 
+	    text='Format:'; 
+	    sql = runserver("select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
+	    form=report_form;
+	    label_width=120;
+	    }
+
+	f_docfmt "widget/component"
+	    {
+	    condition = runserver(:this:report_path_sep_csv is not null);
+	    height=24; 
+	    path="/sys/cmp/smart_field.cmp"; 
+	    field='user_document_format'; 
+	    ctl_type=dropdown; 
+	    text='Format:'; 
+	    sql = runserver("select 'Separate Fields CSV','sep_csv'; select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
+	    form=report_form;
+	    label_width=120;
+	    }
+
+	cntry_hbox "widget/hbox"
+	    {
+	    condition=runserver(isnull(eval("(select :outer_type from " + :this:report_path + "?ls__type=system%2fstructure where :name = 'cntry_fmt')"), "") == 'report/parameter');
+	    height=24;
+	    spacing=4;
+
+	    cntry_label "widget/label" { width=116; text="Country Names:"; align=right; }
+	    f_cntry_dd "widget/dropdown"
+		{
+		width=230;
+		fl_width=40; 
+		bgcolor=white; 
+		fieldname="cntry_fmt";
+		mode=static;
+		hilight="#d0d0d0";
+		numdisplay=7;
+		form=report_form;
+
+		f_cntry_opt1 "widget/dropdownitem" { label="Full Country Name (default)"; value="full"; selected=yes; }
+		f_cntry_opt2 "widget/dropdownitem" { label="Kardia / ccTLD"; value="kardia"; }
+		f_cntry_opt3 "widget/dropdownitem" { label="ISO3166-1 Alpha-2"; value="iso_alpha2"; }
+		f_cntry_opt4 "widget/dropdownitem" { label="ISO3166-1 Alpha-3"; value="iso_alpha3"; }
+		f_cntry_opt5 "widget/dropdownitem" { label="FIPS 10-4"; value="fips10"; }
+		f_cntry_opt6 "widget/dropdownitem" { label="Blank"; value="none"; }
+		}
+	    }
+
+	format_repeat "widget/repeat"
+	    {
+	    sql = runserver("
+			select
+				:rp:name,
+				:rp:description,
+				:rp:type
+			from
+				" + :this:report_path + "?ls__type=system%2fstructure rp
+			where
+				:rp:outer_type = 'report/parameter' and
+				:rp:name != 'cntry_fmt' and
+				:rp:name != 'list_code' and
+				:rp:name != 'list_desc' and
+				:rp:name != 'list_type' and
+				isnull(:rp:groupname,'') == 'Format'
+			");
+
+	    get_fmt_cmp "widget/repeat"
+		{
+		sql = runserver("
+			select
+				path = isnull(first(:rf:cx__pathname), '/apps/kardia/modules/base/report_field_generic.cmp')
+			from
+				object wildcard '/apps/kardia/modules/*/report_field_*.cmp' rf
+			where
+				:rf:report_param = " + quote(:format_repeat:name) + "
+			");
+
+		one_format "widget/component"
+		    {
+		    path=runserver(:get_fmt_cmp:path);
+		    ledger=runserver(:this:ledger);
+		    rpt_form=report_form;
+		    field=runserver(:format_repeat:name);
+		    datatype=runserver(:format_repeat:type);
+		    text=runserver(isnull(:format_repeat:description, :format_repeat:name));
+		    }
+		}
+	    }
+	}
+    }

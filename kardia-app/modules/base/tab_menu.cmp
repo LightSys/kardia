@@ -84,6 +84,8 @@ tab_menu "widget/component-decl"
 				oneprog_link "widget/label"
 				    {
 				    widget_class = "link";
+				    allow_break = no;
+				    overflow_ellipsis = yes;
 				    width=150;
 				    text = runserver(:progs_rpt:func_name);
 				    tooltip = runserver(:progs_rpt:func_description);
@@ -96,8 +98,8 @@ tab_menu "widget/component-decl"
 					Multi = 1;
 					//Name = runclient(runserver(:progs_rpt:func_name));
 					Source = runclient(runserver("/apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :progs_rpt:func_file) + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
-					Width = runserver(:prog_h_w:width);
-					Height = runserver(:prog_h_w:height);
+					Width = runserver(round(:prog_h_w:width));
+					Height = runserver(round(:prog_h_w:height));
 					}
 				    }
 				}
@@ -141,6 +143,8 @@ tab_menu "widget/component-decl"
 				onerpt_link "widget/label"
 				    {
 				    widget_class = "link";
+				    allow_break = no;
+				    overflow_ellipsis = yes;
 				    width=150;
 				    text = runserver(:rpts_rpt:func_name);
 				    tooltip = runserver(:rpts_rpt:func_description);

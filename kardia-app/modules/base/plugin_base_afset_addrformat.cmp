@@ -1,0 +1,67 @@
+$Version=2$
+plugin_base_afset_addrformat "widget/component-decl"
+    {
+    title = "Address Format";
+    sequence = 100;
+    width=758;height=338;
+
+    formatset_osrc "widget/parameter" { type=object; }
+    ledger "widget/parameter" { type=string; }
+
+    search_hdr "widget/component"
+	{
+	x=0; y=0; width=188; height=20;
+	path="section_label.cmp";
+	text="Select Country:";
+	}
+
+    search_box "widget/editbox"
+	{
+	x=0; y=28; width=188; height=20;
+	empty_description = "Type search and press ENTER";
+
+	enter_cn "widget/connector"
+	    {
+	    event=ReturnPressed;
+	    target=countries_osrc;
+	    action=QueryText;
+	    query=runclient(:search_box:content);
+	    field_list="p_country_code,*p_country_name*";
+	    cx__case_insensitive = 1;
+	    }
+	}
+
+    countries_pane "widget/pane"
+	{
+	x=0;y=56;width=188;height=282;
+	widget_class = "table_bgnd";
+
+	countries_osrc "widget/osrc"
+	    {
+	    sql = "select *, sec_level_txt = condition(:p_security_level == 0, 'Normal', condition(:p_security_level == 1, 'High', 'Very High')) from /apps/kardia/data/Kardia_DB/p_country/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_country/rows";
+	    replicasize = 300;
+	    readahead = 300;
+	    autoquery = onload;
+
+	    countries_table "widget/table"
+		{
+		x=0; y=0; width=186; height=280;
+
+		c_code "widget/table-column" { title="Code"; fieldname="p_country_code"; width=45; }
+		c_name "widget/table-column" { title="Country Name"; fieldname="p_country_name"; width=130; }
+		}
+	    }
+	}
+
+    af_sep "widget/pane" { x=198; y=0; width=2; height=338; style=lowered; }
+
+    af_edit_cmp "widget/component"
+	{
+	x=210; y=0; width=548; height=338;
+	path="plugin_base_country_addrformat.cmp";
+	countries_osrc = countries_osrc;
+	formatset_osrc = formatset_osrc;
+	ledger = runserver(:this:ledger);
+	}
+    }

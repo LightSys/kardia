@@ -26,6 +26,7 @@ editbox_table "widget/component-decl"
     search_field_list "widget/parameter" { type=string; default="name"; }
     search_objname "widget/parameter" { type=string; }
     validate "widget/parameter" { type=integer; default=0; }
+    multiselect "widget/parameter" { type=integer; default=0; }
 
     pane "widget/pane"
 	{
@@ -136,6 +137,7 @@ editbox_table "widget/component-decl"
 	object_name = runserver(:this:object_name);
 	search_field_list = runserver(:this:search_field_list);
 	search_objname = runserver(:this:search_objname);
+	multiselect = runserver(:this:multiselect);
 
 	//opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Image=runclient("/apps/kardia/images/bg/blue_gradient2_h.png"); }
 	opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Color=runclient("#a8c1d8"); }

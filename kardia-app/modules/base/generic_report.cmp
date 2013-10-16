@@ -1,0 +1,568 @@
+$Version=2$
+generic_report "widget/component-decl"
+    {
+    width=750;
+    height=533;
+
+    window_container "widget/parameter" { type=object; find_container="widget/page"; }
+
+    ledger "widget/parameter" { type=string; default=null; }
+
+    report_title "widget/parameter" { type=string; default="Report"; }
+    mlist_tab "widget/parameter" { type=integer; default=0; }
+    custom_page "widget/parameter" { type=string; default=null; }
+    report_path "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    report_path_sep_csv "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    combine_criteria_format "widget/parameter" { type=integer; default=0; }
+    show_preview "widget/parameter" { type=integer; default=0; }
+
+    last_restored_paramset_id "widget/variable" { type = integer; value = -1; }
+
+    report_vbox "widget/vbox"
+	{
+	x=0; y=0; width=750; height=533;
+	spacing=9;
+
+	hdr_label "widget/label"
+	    {
+	    height=20;
+	    font_size=16;
+	    style=bold;
+	    text=runserver(:this:report_title);
+	    align=center;
+	    }
+
+	tab_pane "widget/pane"
+	    {
+	    height=470;
+	    style=flat;
+
+	    report_options_osrc "widget/osrc"
+		{
+		saved_id "widget/parameter" { type=integer; }
+		sql = "	SELECT
+			    *
+			FROM
+			    /apps/kardia/modules/base/r_saved_param_pivot.qyp
+			WHERE
+			    (:r_paramset_id = :parameters:saved_id or :parameters:saved_id is null)
+			LIMIT
+			    1
+			";
+		baseobj="/apps/kardia/modules/base/r_saved_param_pivot.qyp";
+		replicasize=2;
+		readahead=2;
+		autoquery=never;
+
+		report_form "widget/form"
+		    {
+		    allow_nodata = no;
+		    allow_new = yes;
+		    allow_query = no;
+		    allow_obscure = yes;
+		    enter_mode = nextfield;
+		    auto_focus = no;
+
+		    refresh_optionset_on_save "widget/connector" { event=DataSaved; target=saved_list_osrc; action=RefreshObject; }
+
+		    report_paramset_id "widget/variable" { form=report_form; fieldname=r_paramset_id; type=integer; }
+		    //report_name "widget/variable" { form=report_form; fieldname=name; type=string; }
+
+		    tabs "widget/tab"
+			{
+			x=0; y=0; width=750; height=445;
+			background="/apps/kardia/images/bg/light_bgnd2.jpg";
+			inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+
+			criteria_tabpage "widget/tabpage"
+			    {
+			    title = runserver(condition(:this:combine_criteria_format, "Criteria & Format", "Criteria"));
+
+			    criteria_img "widget/image" { source="/apps/kardia/images/tango/edit-find.png"; x=706; y=10; width=32; height=32; }
+
+			    criteria_label "widget/label" { x=10; y=20; width=350; height=20; text="Report Criteria:"; style=bold; align=center; }
+
+			    criteria_vbox "widget/vbox"
+				{
+				x=10; y=45; width=730; height=388;
+				cellsize=24;
+				spacing=4;
+				column_width=350;
+
+				criteria_repeat "widget/repeat"
+				    {
+				    sql = runserver("
+						select
+							:rp:name,
+							:rp:description,
+							:rp:type
+						from
+							" + :this:report_path + "?ls__type=system%2fstructure rp
+						where
+							:rp:outer_type = 'report/parameter' and
+							:rp:name != 'cntry_fmt' and
+							:rp:name != 'list_code' and
+							:rp:name != 'list_desc' and
+							:rp:name != 'list_type' and
+							isnull(:rp:groupname,'') != 'Format'
+						");
+
+				    get_cmp "widget/repeat"
+					{
+					sql = runserver("
+						select
+							path = isnull(first(:rf:cx__pathname), '/apps/kardia/modules/base/report_field_generic.cmp')
+						from
+							object wildcard '/apps/kardia/modules/*/report_field_*.cmp' rf
+						where
+							:rf:report_param = " + quote(:criteria_repeat:name) + "
+						");
+
+					one_criteria "widget/component"
+					    {
+					    condition=runserver(:criteria_repeat:description is null or char_length(:criteria_repeat:description) > 0);
+					    path=runserver(:get_cmp:path);
+					    ledger=runserver(:this:ledger);
+					    rpt_form=report_form;
+					    field=runserver(:criteria_repeat:name);
+					    datatype=runserver(:criteria_repeat:type);
+					    text=runserver(isnull(:criteria_repeat:description, :criteria_repeat:name));
+					    }
+					}
+				    }
+
+				format_fields_sep "widget/autolayoutspacer"
+				    {
+				    condition=runserver(:this:combine_criteria_format);
+				    height=4;
+				    }
+				format_fields "widget/component"
+				    {
+				    condition=runserver(:this:combine_criteria_format);
+				    path="/apps/kardia/modules/base/generic_report_format.cmp";
+				    x=10; y=10; width=700; height=100;
+				    report_path = runserver(:this:report_path);
+				    report_path_sep_csv = runserver(:this:report_path_sep_csv);
+				    ledger = runserver(:this:ledger);
+				    }
+				}
+
+			    preview_pane "widget/pane"
+				{
+				condition=runserver(:this:show_preview);
+				x=417; y=35;
+				width=257; height=332;
+				style=bordered;
+				border_color=black;
+				bgcolor="#e0e0e0";
+
+				preview_notyet "widget/label"
+				    {
+				    x=0; y=150; width=255; height=16;
+				    align=center;
+				    style=italic;
+				    font_size=9;
+				    fgcolor="#606060";
+				    text="(no preview yet)";
+				    }
+
+				preview_image "widget/image"
+				    {
+				    x=0; y=0;
+				    width=255; height=330;
+				    //source = "/apps/kardia/modules/base/labels.rpt?skip=0&include_partners=10001,10010&show_border=0&show_cnt=1&resolution=30&document_format=image%2fpng";
+				    }
+				}
+
+			    preview_btn "widget/textbutton"
+				{
+				condition=runserver(:this:show_preview);
+				x=474; y=372;
+				width=140; height=24;
+				text="Show Preview";
+
+				preview_action "widget/connector"
+				    {
+				    event=Click;
+				    target=report_form;
+				    action=Submit;
+				    Target=runclient('preview_image');
+				    Source=runclient(:generic_report:report_path);
+				    document_format=runclient('image/png');
+				    resolution=runclient(30);
+				    //show_border=runclient(1);
+				    }
+				}
+			    }
+
+			format_tabpage "widget/tabpage"
+			    {
+			    condition=runserver(not :this:combine_criteria_format);
+			    title = "Output & Formatting";
+
+			    format_img "widget/image" { source="/apps/kardia/images/tango/document-properties.png"; x=706; y=10; width=32; height=32; }
+
+			    format_fields "widget/component"
+				{
+				path="/apps/kardia/modules/base/generic_report_format.cmp";
+				x=10; y=20; width=700; height=388;
+				report_path = runserver(:this:report_path);
+				report_path_sep_csv = runserver(:this:report_path_sep_csv);
+				ledger = runserver(:this:ledger);
+				}
+			    }
+
+			mlist_tabpage "widget/tabpage"
+			    {
+			    condition=runserver(:this:mlist_tab);
+			    title = "Mailing List";
+			    mlist_vbox "widget/vbox"
+				{
+				x=10; y=10; width=700; height=378;
+				cellsize=24;
+				spacing=4;
+				lbl1a "widget/label" { x=120; height=18; text="Create or add report results to a mailing list:"; style=bold; }
+
+				f_list_code "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="list_code"; popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/"); popup_text="Choose List to Add To:"; text="List Code:"; attach_point=editbox; empty_desc = "list to create or add to"; label_width=120; popup_height=250; lists_hints2 "widget/hints" { badchars=" ,"; } }
+				//f_list_code "widget/component" { height=24; path="/sys/cmp/smart_field.cmp"; field="list_code"; text="List Code:"; empty_desc = "to create or add, type list code"; ctl_type=editbox; label_width=120; }
+				sep1b "widget/autolayoutspacer" { height=8; }
+				lbl1b "widget/label" { x=120; height=18; text="For a new list, please specify the following:"; style=bold; }
+				f_list_desc "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="list_desc"; text="List Description:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; }
+				f_list_type "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="list_type"; text="List Type:"; ctl_type=dropdown; label_width=120; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_type/rows where :tag != 'I'"; }
+				}
+			    }
+
+			saved_tabpage "widget/tabpage"
+			    {
+			    title = "Saved Options";
+
+			    saved_img "widget/image" { source="/apps/kardia/images/tango/document-save.png"; x=706; y=10; width=32; height=32; }
+
+			    saved_vbox "widget/vbox"
+				{
+				x=10; y=10; width=350; height=423;
+				cellsize=24;
+				spacing=8;
+
+				search_saved_hbox "widget/hbox"
+				    {
+				    height=20;
+				    spacing=4;
+				    //search_saved_label "widget/label" { text="Search Saved Options:"; width=150; align=right; }
+				    search_saved_eb "widget/editbox"
+					{
+					width=250;
+					empty_description="search saved options";
+					}
+				    }
+
+				//sep2 "widget/autolayoutspacer" { height=8; }
+
+				saved_list_pane "widget/pane"
+				    {
+				    height=170;
+				    widget_class=table_bgnd;
+
+				    saved_list_osrc "widget/osrc"
+					{
+					sql = runserver(" SELECT
+						    :r_paramset_id,
+						    :r_paramset_desc,
+						    :r_module,
+						    :r_file,
+						    :r_is_personal,
+						    :s_date_created,
+						    :s_created_by,
+						    date_txt = substring(convert(string,:s_date_created),1,11),
+						    option_txt = ( select sum(:r_param_name + ' = ' + :r_param_value + '\n') from /apps/kardia/data/Kardia_DB/r_saved_param/rows rp where :rp:r_paramset_id = :rs:r_paramset_id order by :r_param_name asc )
+						FROM
+						    /apps/kardia/data/Kardia_DB/r_saved_paramset/rows rs
+						WHERE
+						    '/apps/kardia/modules/' + :r_module + '/' + :r_file = " + quote(:this:report_path) + " and
+						    (:s_created_by = user_name() or
+						    :r_is_personal = 0)
+						ORDER BY
+						    :s_date_modified DESC
+						");
+					baseobj = "/apps/kardia/data/Kardia_DB/r_saved_paramset/rows";
+					replicasize = 40;
+					readahead = 40;
+
+					save_options_on_paramset_create_1 "widget/connector"
+					    {
+					    event=Created;
+					    target=report_paramset_id;
+					    action=SetValue;
+					    //Value=runclient(convert(string,:saved_list_osrc:r_paramset_id));
+					    Value=runclient(:saved_list_osrc:r_paramset_id);
+					    }
+					save_options_on_paramset_create_2 "widget/connector"
+					    {
+					    event=Created;
+					    target=report_form;
+					    action=Save;
+					    }
+
+					saved_list_table "widget/table"
+					    {
+					    x=0; y=0; width=348; height=168;
+
+					    st_desc "widget/table-column" { title="Option Set Name:"; fieldname=r_paramset_desc; width=150; }
+					    st_who "widget/table-column" { title="Saved By:"; fieldname=s_created_by; width=80; }
+					    st_date "widget/table-column" { title="Saved On:"; fieldname=date_txt; width=90; }
+					    }
+					}
+				    }
+
+				saved_item_form "widget/form"
+				    {
+				    objectsource=saved_list_osrc;
+
+				    set_file_on_new "widget/connector"
+					{
+					event=New;
+					target=sf_file;
+					action=SetValue;
+					Value=runclient(substring(:generic_report:report_path, char_length(:generic_report:report_path) - charindex('/',reverse(:generic_report:report_path)) + 2, 255));
+					}
+
+				    set_mod_on_new "widget/connector"
+					{
+					event=New;
+					target=sf_module;
+					action=SetValue;
+					Value=runclient(substring(:generic_report:report_path, 22, char_length(:generic_report:report_path) - 22 - char_length(:sf_file:value)));
+					}
+
+				    sf_optionname "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; ctl_type=editbox; text="Option Set Name:"; label_width=130; field=r_paramset_desc; }
+				    sf_private "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; ctl_type=checkbox; text="Show Only to Me?"; label_width=130; field=r_is_personal; sf_p_hints "widget/hints" { style=notnull; default=0; } }
+
+				    sf_module "widget/variable" { type=string; fieldname=r_module; }
+				    sf_file "widget/variable" { type=string; fieldname=r_file; }
+				    sf_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; visual=no; }
+				    }
+
+				save_cancel_hbox "widget/hbox"
+				    {
+				    height=24;
+				    align=center;
+				    spacing=4;
+
+				    save_item_btn "widget/textbutton"
+					{
+					height=24; width=100;
+					text="Save";
+					enabled=runclient(:saved_item_form:is_savable);
+
+					on_save "widget/connector" { event=Click; target=saved_item_form; action=Save; }
+					}
+				    cancel_item_btn "widget/textbutton"
+					{
+					height=24; width=100;
+					text="Cancel";
+					enabled=runclient(:saved_item_form:is_discardable);
+
+					on_cancel "widget/connector" { event=Click; target=saved_item_form; action=Discard; }
+					}
+				    }
+
+				sepline "widget/pane" { height=2; style=lowered; }
+
+				options_vbox "widget/vbox"
+				    {
+				    x=57;
+				    align=center;
+				    spacing=4;
+				    height=120;
+
+				    use_options_btn "widget/textbutton"
+					{
+					height=24; width=236;
+					text="Restore These Options";
+					enabled=runclient(:saved_item_form:form_mode == 'View');
+
+					clear_criteria_on_restore "widget/connector"
+					    {
+					    event=Click;
+					    target=report_form;
+					    action=Discard;
+					    }
+					load_criteria_on_restore "widget/connector"
+					    {
+					    event=Click;
+					    target=report_options_osrc;
+					    action=QueryParam;
+					    saved_id = runclient(:saved_list_osrc:r_paramset_id);
+					    }
+					set_criteria_header_on_restore "widget/connector"
+					    {
+					    event=Click;
+					    target=criteria_label;
+					    action=SetValue;
+					    Value=runclient("Report Criteria [" + :saved_list_osrc:r_paramset_desc + "]:");
+					    }
+					set_last_restored_id_on_restore "widget/connector"
+					    {
+					    event=Click;
+					    target=last_restored_paramset_id;
+					    action=SetValue;
+					    Value=runclient(:saved_list_osrc:r_paramset_id);
+					    }
+					switch_to_criteria_tab_on_restore "widget/connector"
+					    {
+					    event=Click;
+					    target=tabs;
+					    action=SetTab;
+					    Tab=runclient("criteria_tabpage");
+					    }
+					}
+
+				    new_options_btn "widget/textbutton"
+					{
+					height=24; width=236;
+					text="Save a New Option Set";
+					enabled=runclient((:saved_item_form:form_mode == 'View' or :saved_item_form:form_mode == 'NoData') and :report_form:is_savable);
+
+					new_optionset_on_new "widget/connector"
+					    {
+					    event=Click;
+					    target=saved_item_form;
+					    action=New;
+					    }
+					}
+
+				    update_options_btn "widget/textbutton"
+					{
+					height=24; width=236;
+					text="Update These Saved Options";
+					enabled=runclient(:saved_item_form:form_mode == 'View' and :last_restored_paramset_id:value = :saved_list_osrc:r_paramset_id and :report_form:form_mode == 'Modify' and :report_form:is_savable);
+
+					save_on_update_btn "widget/connector"
+					    {
+					    event=Click;
+					    target=report_form;
+					    action=Save;
+					    }
+					}
+
+				    delete_osrc "widget/osrc"
+					{
+					delete_id "widget/parameter" { type=integer; default=null; }
+
+					sql = "	DELETE
+						    /apps/kardia/modules/base/r_saved_param_pivot.qyp rp
+						WHERE
+						    :rp:r_paramset_id = :parameters:delete_id
+						";
+					autoquery=never;
+					replicasize=2;
+					readahead=2;
+					}
+
+				    delete_options_btn "widget/textbutton"
+					{
+					height=24; width=236;
+					text="Delete this Option Set";
+					enabled=runclient(:saved_item_form:form_mode == 'View');
+
+					on_delete_2 "widget/connector"
+					    {
+					    event=Click;
+					    target=delete_osrc;
+					    action=QueryParam;
+					    delete_id=runclient(:saved_list_osrc:r_paramset_id);
+					    }
+					on_delete_1 "widget/connector"
+					    {
+					    event=Click;
+					    target=saved_item_form;
+					    action=Delete;
+					    }
+					}
+				    }
+				}
+
+			    saved_vsep "widget/pane" { x=370; y=38; width=2; height=395; style=lowered; }
+
+			    saved_data_label "widget/label" { x=382; y=38; width=200; height=20; style=bold; text="Saved Option Data:"; }
+
+			    saved_data "widget/label" { x=382; y=66; height=367; width=355; value=runclient(isnull(:saved_list_osrc:option_txt, "(none)")); }
+			    }
+
+			history_tabpage "widget/tabpage"
+			    {
+			    condition = 0;
+			    title = "Report History";
+			    }
+
+			custom_tabpage "widget/tabpage"
+			    {
+			    condition=runserver(:this:custom_page is not null);
+			    title = "";
+			    }
+			}
+		    }
+		}
+	    }
+
+	//pn_sep2 "widget/pane" { height=2; style=lowered; }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=32;
+	    spacing=4;
+
+	    rpt_print "widget/textbutton"
+		{
+		width=100;
+		text="Print";
+
+		rpt_print_cn "widget/connector"
+		    {
+		    event="Click";
+		    event_condition=runclient(not (:format_fields:value = 'sep_csv'));
+		    target="report_form";
+		    action="Submit";
+		    Target=runclient("generic_report");
+		    NewPage=1;
+		    Source=runclient(:generic_report:report_path);
+		    Width=800;
+		    Height=600;
+		    document_format=runclient(isnull(:format_fields:value, 'application/pdf'));
+		    }
+
+		rpt_print_cn2 "widget/connector"
+		    {
+		    event="Click";
+		    event_condition=runclient(:format_fields:value = 'sep_csv');
+		    target="report_form";
+		    action="Submit";
+		    Target=runclient("generic_report");
+		    NewPage=1;
+		    Source=runclient(:generic_report:report_path_sep_csv);
+		    Width=800;
+		    Height=600;
+		    document_format=runclient('text/csv');
+		    }
+		}
+
+	    rpt_clear "widget/textbutton"
+		{
+		width=100;
+		text="Clear";
+		enabled=runclient(:report_form:is_savable or :report_form:form_mode != 'New');
+
+		on_clear "widget/connector" { event=Click; target=report_form; action=Discard; }
+		on_clear2 "widget/connector" { event=Click; target=report_form; action=Clear; }
+		}
+
+	    rpt_cancel "widget/textbutton"
+		{
+		width=100;
+		text="Cancel";
+
+		on_report_cancel "widget/connector" { event=Click; target=window_container; action=Close; }
+		}
+	    }
+	}
+    }

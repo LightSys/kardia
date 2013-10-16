@@ -157,6 +157,24 @@ inc_exp_balance "system/report"
 	    nullformat="-";
 	    moneyformat = "Z###,###,###.00-";
 
+	    ie_tbl_hdr2 "report/table-row"
+		{
+		font=helvetica;
+		fontsize=7;
+		header=yes;
+		//bottomborder=0.05;
+		h_cc "report/table-cell" { value=''; align=left; style=bold; }
+		h_desc "report/table-cell" { value=''; align=left; style=bold; }
+		h_bbal "report/table-cell" { value=runserver(''); align=right; style=bold; }
+		h_rev "report/table-cell" { value='-- Revenue --'; align=center; style=bold; colspan=3; }
+		//h_irev "report/table-cell" { value='IF Revenue'; align=right; style=bold; }
+		//h_wrev "report/table-cell" { value='WF Revenue'; align=right; style=bold; }
+		h_exp "report/table-cell" { value='-- Expense --'; align=center; style=bold; colspan=3; }
+		//h_iexp "report/table-cell" { value='IF Expense'; align=right; style=bold; }
+		//h_wexp "report/table-cell" { value='WF Expense'; align=right; style=bold; }
+		h_eq "report/table-cell" { value=''; align=right; style=bold; }
+		h_cur "report/table-cell" { value=runserver(''); align=right; style=bold; }
+		}
 	    ie_tbl_hdr "report/table-row"
 		{
 		font=helvetica;

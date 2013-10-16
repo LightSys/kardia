@@ -1,4 +1,38 @@
-Here's a list of things I did to prep the VM Image:
+Release Notes for the Beta 4 Image:
+    We upgraded the base VM Image to the latest Centos at the time (6.4)
+    There are many references to the Centos and VM versions
+	These should be put into one spot to be easier to change
+    Ended up needing to make a selinux policy file to get pam_smbpass to work
+	to install it (download pam_smbpass.te from git):
+	# checkmodule -M -m -o pam_smbpass.mod pam_smbpass.te
+	# semodule_package -o pam_smbpass.pp pam_smbpass.mod
+	# semodule -i pam_smbpass.pp
+    Moved many of the "Beta3 Prep" list-items into the initkardia.sh script
+    I added a number of rpms that I like to have around
+	screen, nmap, tcpdump, strace, locate, etc
+    Centos 6 tracks the MAC addresses and what eth# the are
+	added a script to yank the entries from /etc/udev/rules/
+    Needed to temporarily add rpmforge for the pam_smbpass rpm
+	disabled it, but left the repo there
+    In the Kardia.sh script:
+	I updated the sourceforge ssh key for the new repo
+	Changed a number of things to variables to make it easier update
+	Updated the wizard to let you skip options & take defaults
+    We had some issues with getting the time to register properly
+	Made sure /etc/adjtime had UTC in it
+	running "kardia.sh setTimezone" fixed it after that
+    TODO: (Ideas we had that are not in this release)
+	* Allow to get a tagged release (1.0, 1.1) from git instead of the
+	latest version.
+	    ? Can we pull a list of tagged versions so we can select from list
+	* Use variables or something to make the VM version consistent
+	* Pull the Centos version from /etc/redhat-release instead of hard-coded
+	* Generate /etc/issue.kardia so it uses variables to update versions
+	* Have one config file, or a function in kardia.sh that sets the
+	* version numbers so initkardia.sh can reference them
+
+=========================================================
+Release Notes for the Beta 3 Image:
 
     Removed some packages: kernel-devel redhat-lsb cups poppler poppler-utils mesa-libGL
     Installed: samba mysql-devel

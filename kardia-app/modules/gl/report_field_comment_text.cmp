@@ -1,0 +1,12 @@
+$Version=2$
+report_field_comment_text "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "comment_text";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_comm "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="comment_text"; text="Gift Comment:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; form=rpt_form; }
+    }

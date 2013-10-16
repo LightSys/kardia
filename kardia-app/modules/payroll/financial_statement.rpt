@@ -453,7 +453,7 @@ financial_statement "system/report"
 				),
 			wke = condition(:this:period <= '2009.02',
 				isnull(sum(condition(:i:a_payroll_item_type_code = 'WKE' or :i:a_payroll_item_type_code = 'MDE' or :i:a_payroll_item_type_code = 'SSE', :i:a_actual_amount, $0)), $0),
-				isnull(sum(condition(charindex(:i:a_payroll_item_type_code + ',', 'WKE,MDE,SSE,TRV,INS,') > 0, :i:a_actual_amount, $0)), $0)
+				isnull(sum(condition(charindex(:i:a_payroll_item_type_code + ',', 'WKE,MDE,SSE,TRV,INS,WCM,') > 0, :i:a_actual_amount, $0)), $0)
 				),
 			sal = isnull(sum(condition(:i:a_payroll_item_type_code = 'GRO' or :i:a_payroll_item_type_code = 'HOU', :i:a_actual_amount, $0)), $0)
 		FROM

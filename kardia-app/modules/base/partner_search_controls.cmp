@@ -33,7 +33,7 @@ partner_search_controls "widget/component-decl"
 	action=QueryText;
 	cx__case_insensitive=1;
 	//field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*";
-	field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
+	field_list="*p_given_name*,*p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
 	objname=runclient("p");
 	query=runclient(:name_eb:content);
 	}
@@ -88,7 +88,7 @@ partner_search_controls "widget/component-decl"
 			action=QueryText;
 			cx__case_insensitive=1;
 			//field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*";
-			field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
+			field_list="*p_given_name*,*p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
 			objname=runclient("p");
 			query=runclient(:name_eb:content);
 			}
@@ -133,7 +133,7 @@ partner_search_controls "widget/component-decl"
 			action=QueryText;
 			cx__case_insensitive=1;
 			//field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*";
-			field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
+			field_list="*p_given_name*,*p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,*p_comments*,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
 			objname=runclient("p");
 			query=runclient(:name_eb:content);
 			}

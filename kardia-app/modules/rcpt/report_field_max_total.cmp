@@ -1,0 +1,12 @@
+$Version=2$
+report_field_max_total "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "max_total";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_max "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="max_total"; text="Max. Total Gift:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; form=rpt_form; }
+    }

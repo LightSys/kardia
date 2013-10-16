@@ -1,0 +1,12 @@
+$Version=2$
+report_field_mincopies "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "mincopies";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_mincopy "widget/component" { height=24; path="/sys/cmp/smart_field.cmp"; field="mincopies"; text="Minimum Copies:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; width=220; tooltip="Only include subscribers who are receiving at least this number of copies of the publication."; form=rpt_form; }
+    }

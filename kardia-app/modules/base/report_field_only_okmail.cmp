@@ -1,0 +1,12 @@
+$Version=2$
+report_field_only_okmail "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "only_okmail";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_okmail "widget/component" { x=10; width=340; height=24; path="/sys/cmp/smart_field.cmp"; field="only_okmail"; ctl_type='checkboxleft'; text="Exclude 'no mail' partners"; label_width=120; form=rpt_form; }
+    }

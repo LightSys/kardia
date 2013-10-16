@@ -19,6 +19,7 @@ address_label_fmt "widget/component-decl"
 	    {
 	    x=2; y=0;
 	    height = 74; width = 294;
+	    fl_height = 1;
 	    style = bold;
 
 	    value = runclient(

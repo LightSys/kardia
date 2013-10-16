@@ -117,12 +117,13 @@ coamaint "widget/component-decl"
 
 	    btn_hbox "widget/hbox"
 		{
-		cellsize = 100; spacing=8; height=24;
+		cellsize = 130; spacing=8; height=24;
 
 		addfund_btn "widget/textbutton"
 		    {
 		    text = "Add Fund";
 		    enabled = runclient(:fund_form:is_newable);
+		    width = 130;
 
 		    addf_1 "widget/connector" { event=Click; target=adding_subfund; action=SetValue; Value=runclient(0); }
 		    addf_2 "widget/connector" { event=Click; target=fund_form; action=New; }
@@ -132,6 +133,7 @@ coamaint "widget/component-decl"
 		    {
 		    text = "Add Subfund";
 		    enabled = runclient(:fund_form:is_newable);
+		    width = 130;
 
 		    adds_1 "widget/connector" { event=Click; target=adding_subfund; action=SetValue; Value=runclient(1); }
 		    adds_2 "widget/connector" { event=Click; target=fund_form; action=New; }
@@ -141,6 +143,7 @@ coamaint "widget/component-decl"
 		    {
 		    text = "Edit Fund";
 		    enabled = runclient(:fund_form:is_editable);
+		    width = 130;
 
 		    editcn "widget/connector" { event=Click; target=fund_form; action=Edit; }
 		    }

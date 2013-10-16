@@ -31,7 +31,7 @@ staffmaint "widget/component-decl"
 		    target=staff_osrc;
 		    action=QueryText;
 		    cx__case_insensitive=1;
-		    field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key";
+		    field_list="*p_given_name*,*p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key";
 		    //objname=runclient("p");
 		    query=runclient(:search_eb:content);
 		    }
@@ -199,7 +199,7 @@ staffmaint "widget/component-decl"
 				popup_height=224;
 				popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + ']', '') + ' #' + :p:p_partner_key from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key and :pl:p_revision_id = 0";
 				//search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*,*p_comments";
-				search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+				search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
 				key_name="p_partner_key";
 				object_name="Partner";
 				popup_text="Select a Partner";
@@ -243,7 +243,7 @@ staffmaint "widget/component-decl"
 
 			    f_isstaff "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_is_staff'; ctl_type=checkbox; text='Active Staff?'; isstaff_hints "widget/hints" { default=runclient(1); style=notnull; } }
 			    f_kardialogin "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_kardia_login'; ctl_type=editbox; text='Kardia Login:'; empty_desc="optional"; } 
-			    f_kardiaweblogin "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_kardiaweb_login'; ctl_type=editbox; text='Web Login:'; empty_desc="optional"; } 
+			    f_kardiaweblogin "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_kardiaweb_login'; ctl_type=editbox; text='Kardia Web:'; empty_desc="optional"; } 
 			    f_prefemail "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; text="Pref. Email:"; field=p_preferred_email_id; ctl_type=dropdown; sql="select '','' where 0 = 1"; }
 			    f_rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 			    }

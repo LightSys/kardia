@@ -1,0 +1,12 @@
+$Version=2$
+report_field_show_amounts "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "show_amounts";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_showamt "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="show_amounts"; text="Show Amounts:"; ctl_type=checkbox; label_width=120; form=rpt_form; }
+    }

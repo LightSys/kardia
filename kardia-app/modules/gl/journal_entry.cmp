@@ -387,7 +387,7 @@ journal_entry "widget/component-decl"
 			    batch_total_lbl "widget/label"
 				{
 				width=150;
-				value = runclient("Batch Total: " + isnull(:batch_total_form:total, "(empty)"));
+				value = runclient("Batch Ttl: " + isnull(:batch_total_form:total, "(empty)"));
 				}
 			    }
 			}
@@ -414,7 +414,7 @@ journal_entry "widget/component-decl"
 			    jnl_total_lbl "widget/label"
 				{
 				width=150;
-				value = runclient("Journal Total: " + isnull(:jnl_total_form:total, "(empty)"));
+				value = runclient("Journal Ttl: " + isnull(:jnl_total_form:total, "(empty)"));
 				}
 			    }
 

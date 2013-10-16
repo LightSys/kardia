@@ -56,6 +56,11 @@ mailing_report "system/report"
     list_desc "report/parameter" { type=string; default=runserver("Mailings List on " + getdate()); }
     list_type "report/parameter" { type=string; default="S"; }
 
+    // This report can modify data (the create/add-to mailing list feature).
+    // Therefore we can't allow direct access - must be via an app.  This
+    // prevents CSRF type attacks.
+    require_endorsements = "system:from_application";
+
     // Query to get site information
     site_qy "report/query"
 	{

@@ -1,0 +1,12 @@
+$Version=2$
+report_field_only_postal "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "only_postal";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_postal "widget/component" { x=10; height=24; width=340; path="/sys/cmp/smart_field.cmp"; field="only_postal"; ctl_type='checkboxleft'; text="Exclude list members with email delivery"; label_width=120; form=rpt_form; }
+    }

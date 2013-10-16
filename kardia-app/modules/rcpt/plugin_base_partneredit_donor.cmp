@@ -132,6 +132,8 @@ plugin_base_partneredit_donor "widget/component-decl"
 
 	gifts_vbox "widget/vbox"
 	    {
+	    require_endorsements="kardia:gift";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    x=416; y=0; width=392; height=338;
 	    spacing=4;
 
@@ -188,7 +190,12 @@ plugin_base_partneredit_donor "widget/component-decl"
 			t_date "widget/table-column" { title="Date"; fieldname="date"; width=100; }
 			t_batno "widget/table-column" { title="Batch#"; fieldname="a_batch_number"; width=80; }
 			t_rcptno "widget/table-column" { title="Receipt"; fieldname="a_receipt_number"; width=80; }
-			t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=80; align=right; }
+			t_amt "widget/table-column"
+			    {
+			    require_endorsements="kardia:gift_amt";
+			    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+			    title="Amount"; fieldname="a_amount"; width=80; align=right; 
+			    }
 			t_stat "widget/table-column" { title="Status"; fieldname="stat"; width=80; align=right; }
 			//t_comm "widget/table-column" { title="Comment"; fieldname="a_comment"; width=174; }
 

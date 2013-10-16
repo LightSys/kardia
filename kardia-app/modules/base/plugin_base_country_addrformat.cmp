@@ -6,7 +6,26 @@ plugin_base_country_addrformat "widget/component-decl"
     width=548;height=338;
 
     countries_osrc "widget/parameter" { type=object; }
+    formatset_osrc "widget/parameter" { type=object; }
     ledger "widget/parameter" { type=string; }
+
+    set_osrc "widget/osrc"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/p_address_format_set/rows order by charindex(',' + rtrim(:p_address_set) + ',', ',STANDARD,') desc";
+	baseobj = "/apps/kardia/data/Kardia_DB/p_address_format_set/rows";
+	replicasize=20;
+	readahead=20;
+	autoquery=onload;
+
+	set_link_main "widget/rule"
+	    {
+	    condition=runserver(:this:formatset_osrc is not null);
+	    ruletype=osrc_relationship;
+	    target=formatset_osrc;
+	    key_1=p_address_set;
+	    target_key_1=p_address_set;
+	    }
+	}
 
     af_osrc "widget/osrc"
 	{
@@ -22,6 +41,14 @@ plugin_base_country_addrformat "widget/component-decl"
 	    target=countries_osrc;
 	    key_1=p_country_code;
 	    target_key_1=p_country_code;
+	    }
+
+	set_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=set_osrc;
+	    key_1=p_address_set;
+	    target_key_1=p_address_set;
 	    }
 
 	af_form "widget/form"
@@ -40,7 +67,30 @@ plugin_base_country_addrformat "widget/component-decl"
 		x=0; y=0; width=350; height=338;
 		spacing=8;
 
-		fmt_label "widget/label" { height=20; text="Edit Address Format:"; }
+		fmt_hbox "widget/hbox"
+		    {
+		    height = 20;
+		    fmt_label "widget/label" { width=200; text="Edit Address Format:"; }
+
+		    fmt_setlabel "widget/label"
+			{
+			condition=runserver(:this:formatset_osrc is not null);
+			width=150;
+			style=bold;
+			align=right;
+			value=runclient(:set_osrc:p_address_set);
+			}
+
+		    fmt_setselect "widget/dropdown"
+			{
+			condition=runserver(:this:formatset_osrc is null);
+			width=150;
+			mode=objectsource;
+			objectsource=set_osrc;
+			fieldname=p_address_set;
+			numdisplay=6;
+			}
+		    }
 
 		format "widget/textarea"
 		    {
@@ -109,8 +159,8 @@ plugin_base_country_addrformat "widget/component-decl"
 				    (:l:p_record_status_code = 'A' or :l:p_record_status_code = 'Q') and
 				    :l:p_revision_id = 0 and
 				    :l:p_country_code *= :c:p_country_code and
-				    :c:p_country_code *= :f:p_country_code and
-				    :f:p_address_set = 'STANDARD'
+				    :c:p_country_code *= :f:p_country_code -- and
+				    -- :f:p_address_set = 'STANDARD'
 			    ";
 		    baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
 		    replicasize=20;
@@ -125,23 +175,23 @@ plugin_base_country_addrformat "widget/component-decl"
 			key_1=p_country_code;
 			target_key_1=p_country_code;
 			}
+		    addrset_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=set_osrc;
+			key_objname=f;
+			key_1=p_address_set;
+			target_key_1=p_address_set;
+			}
 
 		    sep3 "widget/autolayoutspacer" { height=7; }
 
-		    preview_label "widget/label" { height=20; text="Preview Addresses:"; }
-
-		    location_addr_label "widget/component"
+		    preview_hbox "widget/hbox"
 			{
-			height=78;
-			path = "/apps/kardia/modules/base/address_label_fmt.cmp";
-			partner = addrs_osrc;
-			location = addrs_osrc;
-			}
-
-		    preview_scroll_hbox "widget/hbox"
-			{
-			height=18;
+			height=20;
 			spacing=4;
+
+			preview_label "widget/label" { width=306; text="Preview Addresses:"; }
 
 			prev_btn "widget/imagebutton"
 			    {
@@ -170,6 +220,14 @@ plugin_base_country_addrformat "widget/component-decl"
 
 			    next_cn "widget/connector" { event=Click; target=addrs_osrc; action=Next; }
 			    }
+			}
+
+		    location_addr_label "widget/component"
+			{
+			height=104;
+			path = "/apps/kardia/modules/base/address_label_fmt.cmp";
+			partner = addrs_osrc;
+			location = addrs_osrc;
 			}
 
 		    preview_results_tbl "widget/table"
