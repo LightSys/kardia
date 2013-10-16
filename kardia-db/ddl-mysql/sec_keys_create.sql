@@ -134,7 +134,16 @@ alter table i_eg_gift_import
 	add constraint i_eg_egift_idx unique  (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_kbatch_idx unique  (a_batch_number, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_edeposit_idx unique  (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid);
+
+alter table i_eg_gift_import
+	add constraint i_eg_kgiftbatch_idx unique  (a_batch_number, a_ledger_number, i_eg_trx_uuid);
+
+alter table i_eg_gift_import
+	add constraint i_eg_kfeebatch_idx unique  (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid);
+
+alter table i_eg_gift_import
+	add constraint i_eg_kdepbatch_idx unique  (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid);
 
 alter table c_chat
 	add constraint c_public_idx unique  (c_public, c_chat_id);

@@ -539,7 +539,19 @@ alter table i_eg_gift_import
 
 
 alter table i_eg_gift_import
-	drop index i_eg_kbatch_idx;
+	drop index i_eg_edeposit_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_kgiftbatch_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_kfeebatch_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_kdepbatch_idx;
 
 
 alter table c_message

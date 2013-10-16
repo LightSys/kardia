@@ -515,14 +515,17 @@ alter table a_subtrx_deposit drop index a_subtrx_dep_batch_idx;
 
 
 /* i_eg_gift_import */
+alter table i_eg_gift_import drop index i_eg_edeposit_idx;
 alter table i_eg_gift_import drop index i_eg_edonor_idx;
 alter table i_eg_gift_import drop index i_eg_efund_idx;
 alter table i_eg_gift_import drop index i_eg_egift_idx;
 /* drop index i_eg_gift_import.i_eg_gift_import_pk */ 
 /* go */
-alter table i_eg_gift_import drop index i_eg_kbatch_idx;
+alter table i_eg_gift_import drop index i_eg_kdepbatch_idx;
 alter table i_eg_gift_import drop index i_eg_kdonor_idx;
+alter table i_eg_gift_import drop index i_eg_kfeebatch_idx;
 alter table i_eg_gift_import drop index i_eg_kfund_idx;
+alter table i_eg_gift_import drop index i_eg_kgiftbatch_idx;
 
 
 /* c_message */

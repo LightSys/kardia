@@ -1800,16 +1800,18 @@ create table i_eg_gift_import (
         i_eg_gift_lastfour                    char(4)  not null,       /* Last four digits of account number (xml:last-four) --  */
         i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval (xml:recurring-interval) --  */
         i_eg_gift_date                        datetime  not null,      /* Date of gift (xml:given-on) --  */
-        i_eg_gift_trx_date                    datetime  null,          /* Date of transaction (xml:txn-date, not sure) --  */
+        i_eg_gift_trx_date                    datetime  null,          /* Date of transaction (xml:txn-date) --  */
         i_eg_gift_settlement_date             datetime  null,          /* Date of payment settlement (xml:settlement-date) --  */
         i_eg_receipt_desired                  varchar(255)  null,      /* The "Send My Receipt:" field --  */
         i_eg_anonymous                        varchar(255)  null,      /* The "Anonymous Gift:" field --  */
         i_eg_prayforme                        varchar(255)  null,      /* The "May We Pray For You?" field --  */
         i_eg_desig_name                       varchar(80)  not null,   /* Gift designation/purpose (xml:designation) --  */
         i_eg_desig_notes                      varchar(255)  null,      /* Notes provided by donor (xml:notes) --  */
-        i_eg_fee_amount                       decimal(14,4)  null,     /* Total transaction fees for this transaction --  */
-        i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account --  */
-        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. --  */
+        i_eg_net_amount                       decimal(14,4)  null,     /* Net gift (less fees for this transaction) (xml:net) --  */
+        i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account (xml:deposit-date) --  */
+        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. (xml:deposit-id) --  */
+        i_eg_deposit_gross_amt                decimal(14,4)  null,     /* gross amount of the deposit before fees (xml:deposit-gross) --  */
+        i_eg_deposit_amt                      decimal(14,4)  null,     /* net amount of the deposit (xml:deposit-net) --  */
         p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
         i_eg_donormap_confidence              integer  null,           /* Confidence of mapping: 0=none or guessed by system, 1=just this time, 9=remember this mapping for the future --  */
         a_cost_center                         char(20)  null,          /* Kardia fund assigned by import process --  */
@@ -1817,6 +1819,8 @@ create table i_eg_gift_import (
         a_account_code                        char(16)  null,          /* Kardia GL account code assigned by import process --  */
         i_eg_acctmap_confidence               integer  null,           /* Confidence of mapping: 0=none or guessed by system, 1=just this time, 9=remember this mapping for the future --  */
         a_batch_number                        integer  null,           /* Kardia GL batch used to process this gift record --  */
+        a_batch_number_fees                   integer  null,           /* Kardia GL batch used to process the fees for this gift record --  */
+        a_batch_number_deposit                integer  null,           /* Kardia GL batch used to process the deposit for this gift record --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
