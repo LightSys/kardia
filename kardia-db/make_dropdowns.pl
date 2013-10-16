@@ -2,20 +2,23 @@
 use Text::CSV;
 use File::Slurp;
 #################################
-# We have a number of dropdowns.
+# We have a number of dropdowns (code tables / validation tables)
 # Because we may need to have different sql
 # syntax for different databases (mysql, etc)
 # We might as well have a script to generate
 # sql.
 #
-# Run this file as:
-#
-#     ./make_dropdowns.pl
-#
 # A part of the Kardia software project.
 # Copyright (C) 2006-2013 LightSys Technology Services, Inc.
 # Provided under the GNU GPL, version 2 (or a later version of the GNU GPL
 # at your option)
+
+# Run this file as:
+#
+#     ./make_dropdowns.pl -b {backend}
+#
+# where {backend} is either "sybase" or "mysql", depending on what database
+# server you want to generate the DDL for.
 
 #################################
 # The default users we will add to the sql
