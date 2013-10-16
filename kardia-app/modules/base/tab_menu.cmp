@@ -7,15 +7,27 @@ tab_menu "widget/component-decl"
     main_tab "widget/tab"
 	{
 	x=0;y=0;height=530 - 24;width=558;
-	background="/apps/kardia/images/bg/light_bgnd.jpg";
-	inactive_background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	widget_class="light";
 
 	tabpage_rpt "widget/repeat"
 	    {
-	    sql = "select modname = :cx__pathpart4, :module_name, :module_abbrev, :module_description from object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' order by :module_sequence";
+	    sql = "select modname = :cx__pathpart4, :module_name, :module_abbrev, :module_description, :module_ui from object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' order by :module_sequence";
+
+	    main_tabpage_custom "widget/tabpage"
+		{
+		condition = runserver(:tabpage_rpt:module_ui is not null);
+		title = runserver(:tabpage_rpt:module_abbrev);
+
+		main_custom_cmp "widget/component"
+		    {
+		    x=8; y=8; width=540; height=489;
+		    path=runserver("/apps/kardia/modules/" + :tabpage_rpt:modname + "/" + :tabpage_rpt:module_ui);
+		    }
+		}
 
 	    main_tabpage "widget/tabpage"
 		{
+		condition = runserver(:tabpage_rpt:module_ui is null);
 		title = runserver(:tabpage_rpt:module_abbrev);
 
 		tab_lbl "widget/label"
