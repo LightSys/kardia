@@ -542,7 +542,7 @@ create table r_group_report_param (
         p_recipient_partner_key               char(10)  not null,      /* partner key of report recipient --  */
         r_report_id                           integer  not null,       /* represents a unique report of this type received by this partner (can be many) --  */
         r_param_name                          varchar(64)  not null,   /* name of the parameter --  */
-        r_param_value                         varchar(1024)  null,     /* value for the parameter (in string format). --  */
+        r_param_value                         varchar(900)  null,      /* value for the parameter (in string format). --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1766,6 +1766,57 @@ create table a_subtrx_cashxfer (
                                                                       /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* i_eg_gift_import */
+
+create table i_eg_gift_import (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
+        i_eg_gift_uuid                        char(36)  not null,      /* eGiving.com UUID for the gift record (xml:gift-id) --  */
+        i_eg_trx_uuid                         char(36)  not null,      /* eGiving.com UUID for the transaction record (xml:txn-id) --  */
+        i_eg_donor_uuid                       char(36)  not null,      /* eGiving.com UUID for the donor (xml:giver-id) --  */
+        i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) (xml:status) --  */
+        i_eg_returned_status                  varchar(16)  null,       /* Reason for a return (xml:returned-status) --  */
+        i_eg_processor                        varchar(80)  not null,   /* Name of payment processor (xml:processor) --  */
+        i_eg_donor_name                       varchar(80)  not null,   /* Name (given name and surname) of the donor (xml:name) --  */
+        i_eg_donor_addr1                      varchar(80)  null,       /* Address line 1 of donor. (xml:address-line-1) --  */
+        i_eg_donor_addr2                      varchar(80)  null,       /* Address line 2 of donor. (xml:address-line-2) --  */
+        i_eg_donor_city                       varchar(80)  null,       /* City of donor. (xml:city) --  */
+        i_eg_donor_state                      varchar(80)  null,       /* State of donor. (xml:state) --  */
+        i_eg_donor_postal                     varchar(80)  null,       /* Postal Code of donor. (xml:postal) --  */
+        i_eg_donor_country                    varchar(80)  null,       /* Country of donor. (xml:country) --  */
+        i_eg_donor_phone                      varchar(80)  null,       /* Phone number of donor. (xml:phone) --  */
+        i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. (xml:email) --  */
+        i_eg_gift_amount                      decimal(14,4)  not null,
+                                                                      /* amount of gift (xml:amount) --  */
+        i_eg_gift_pmt_type                    varchar(16)  not null,   /* Payment type (xml:payment-type) --  */
+        i_eg_gift_lastfour                    char(4)  not null,       /* Last four digits of account number (xml:last-four) --  */
+        i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval (xml:recurring-interval) --  */
+        i_eg_gift_date                        datetime  not null,      /* Date of gift (xml:given-on) --  */
+        i_eg_gift_trx_date                    datetime  null,          /* Date of transaction (xml:txn-date, not sure) --  */
+        i_eg_gift_settlement_date             datetime  null,          /* Date of payment settlement (xml:settlement-date) --  */
+        i_eg_receipt_desired                  varchar(255)  null,      /* The "Send My Receipt:" field --  */
+        i_eg_anonymous                        varchar(255)  null,      /* The "Anonymous Gift:" field --  */
+        i_eg_prayforme                        varchar(255)  null,      /* The "May We Pray For You?" field --  */
+        i_eg_desig_name                       varchar(80)  not null,   /* Gift designation/purpose (xml:designation) --  */
+        i_eg_desig_notes                      varchar(255)  null,      /* Notes provided by donor (xml:notes) --  */
+        i_eg_fee_amount                       decimal(14,4)  null,     /* Total transaction fees for this transaction --  */
+        i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account --  */
+        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. --  */
+        p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
+        i_eg_donormap_confidence              integer  null,           /* Confidence of mapping: 0=none or guessed by system, 1=just this time, 9=remember this mapping for the future --  */
+        a_cost_center                         char(20)  null,          /* Kardia fund assigned by import process --  */
+        i_eg_fundmap_confidence               integer  null,           /* Confidence of mapping: 0=none or guessed by system, 1=just this time, 9=remember this mapping for the future --  */
+        a_account_code                        char(16)  null,          /* Kardia GL account code assigned by import process --  */
+        i_eg_acctmap_confidence               integer  null,           /* Confidence of mapping: 0=none or guessed by system, 1=just this time, 9=remember this mapping for the future --  */
+        a_batch_number                        integer  null,           /* Kardia GL batch used to process this gift record --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

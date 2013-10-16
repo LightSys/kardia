@@ -268,6 +268,9 @@ alter table a_subtrx_deposit
 alter table a_subtrx_cashxfer
 	add constraint a_subtrx_cashxfer_pk primary key  (a_ledger_number, a_batch_number, a_journal_number);
 
+alter table i_eg_gift_import
+	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid);
+
 alter table c_message
 	add constraint c_message_pk primary key  (c_chat_id, c_message_id);
 

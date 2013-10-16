@@ -514,6 +514,17 @@ create  index a_subtrx_dep_batch_idx on a_subtrx_deposit (a_batch_number, a_ledg
 /* go */
 
 
+/* i_eg_gift_import */
+create  index i_eg_edonor_idx on i_eg_gift_import (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid);
+create  index i_eg_efund_idx on i_eg_gift_import (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid);
+create  index i_eg_egift_idx on i_eg_gift_import (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid);
+/* create  index i_eg_gift_import_pk on i_eg_gift_import (a_ledger_number, i_eg_trx_uuid)*/ 
+/* go */
+create  index i_eg_kbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_number, i_eg_trx_uuid);
+create  index i_eg_kdonor_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid);
+create  index i_eg_kfund_idx on i_eg_gift_import (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid);
+
+
 /* c_message */
 /* create  index c_message_pk on c_message (c_chat_id, c_message_id)*/ 
 /* go */

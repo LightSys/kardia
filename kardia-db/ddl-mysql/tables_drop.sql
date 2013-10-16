@@ -331,6 +331,10 @@ drop table a_subtrx_deposit;
 drop table a_subtrx_cashxfer;
 
 
+/* i_eg_gift_import */
+drop table i_eg_gift_import;
+
+
 /* c_message */
 drop table c_message;
 
