@@ -103,7 +103,7 @@ post_cr_batch "widget/component-decl"
 			m_complimentary=1,
 			m_show_contact=1,
 			m_reason_member='D',
-			m_comments = 'Donated to ' + :i:a_cost_center,
+			m_comments = 'Donated to ' + sum(:i:a_cost_center + ',') - ',',
 			s_date_created=getdate(),
 			s_created_by=user_name(),
 			s_date_modified=getdate(),
@@ -123,7 +123,8 @@ post_cr_batch "widget/component-decl"
 			:a:a_ledger_number = :i:a_ledger_number
 		GROUP BY
 			:g:p_donor_partner_id,
-			:i:a_cost_center
+			--:i:a_cost_center,
+			:a:m_list_code
 		HAVING
 			(select :m:m_membership_status from /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key) is null
 		;
