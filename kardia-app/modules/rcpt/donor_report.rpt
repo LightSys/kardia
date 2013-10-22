@@ -55,6 +55,7 @@ donor_report "system/report"
 
     show_amounts "report/parameter" { type=integer; default=1; groupid=2; groupname="Format"; }
     cntry_fmt "report/parameter" { type=string; default='blank'; groupid=2; groupname="Format"; }
+    contact_via "report/parameter" { type=string; default='postal'; groupid=2; groupname="Format"; }
 
     // Add-to-mailing-list Parameters
     list_code "report/parameter" { type=string; }
@@ -208,7 +209,9 @@ donor_report "system/report"
 			p_iso3166_2_code = isnull(:c:p_iso3166_2_code,''),
 			p_iso3166_3_code = isnull(:c:p_iso3166_3_code,''),
 			p_fips_code = isnull(:c:p_fips_code,''),
-			p_country_name = isnull(:c:p_country_name,'')
+			p_country_name = isnull(:c:p_country_name,''),
+			oneemail = (select :p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code == 'A' and :ci:p_contact_type == 'E' limit 1),
+			allemail = (select sum(:p_contact_data + ' / ') - ' / ' from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code == 'A' and :ci:p_contact_type == 'E')
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
@@ -238,6 +241,7 @@ donor_report "system/report"
 			" + condition(:this:min_total is null, "", ":gift_total >= " + :this:min_total + " and") + "
 			" + condition(:this:include_states is null, "", "charindex(:p_state_province, " + quote(:this:include_states) + ") > 0 and") + "
 			" + condition(:this:exclude_states is null, "", "charindex(:p_state_province, " + quote(:this:exclude_states) + ") == 0 and") + "
+			" + condition(:this:contact_via == 'oneemail' or :this:contact_via == 'allemail', "char_length(:oneemail) > 0 and ", "") + "
 			1 = 1
 		");
 			// " + condition(:this:max_total is null, "", ":gift_total <= " + :this:max_total + " and") + "
@@ -371,7 +375,18 @@ donor_report "system/report"
 
 		d_id "report/table-cell" { value=runserver(:donors_qy:p_partner_key); }
 		d_name "report/table-cell" { value=runserver(:donors_qy:acct_name); }
-		d_addr "report/table-cell" { value=runserver(isnull(:donors_qy:attn + " / ", "") + isnull(:donors_qy:p_in_care_of + " / ","") + isnull(:donors_qy:p_address_1 + " / ","") + isnull(:donors_qy:p_address_2 + " / ","") + isnull(:donors_qy:p_address_3 + " / ","") + isnull(:donors_qy:p_city + ", " + :donors_qy:p_state_province + " ","") + isnull(:donors_qy:p_postal_code + " ","") + isnull(condition(:this:cntry_fmt = 'full', :donors_qy:p_country_name, condition(:this:cntry_fmt = 'kardia', :donors_qy:p_country_code, condition(:this:cntry_fmt = 'fips10', :donors_qy:p_fips_code, condition(:this:cntry_fmt = 'iso_alpha2', :donors_qy:p_iso3166_2_code, condition(:this:cntry_fmt = 'iso_alpha3', :donors_qy:p_iso3166_3_code, ''))))),'')); }
+		d_addr "report/table-cell" { value=runserver(
+							condition(:this:contact_via == 'postal' or :this:contact_via == 'all',
+								isnull(:donors_qy:attn + " ", "") + isnull(:donors_qy:p_in_care_of + " ","") + isnull(:donors_qy:p_address_1 + " ","") + isnull(:donors_qy:p_address_2 + " ","") + isnull(:donors_qy:p_address_3 + " ","") + isnull(:donors_qy:p_city + ", " + :donors_qy:p_state_province + " ","") + isnull(:donors_qy:p_postal_code + " ","") + isnull(condition(:this:cntry_fmt = 'full', :donors_qy:p_country_name, condition(:this:cntry_fmt = 'kardia', :donors_qy:p_country_code, condition(:this:cntry_fmt = 'fips10', :donors_qy:p_fips_code, condition(:this:cntry_fmt = 'iso_alpha2', :donors_qy:p_iso3166_2_code, condition(:this:cntry_fmt = 'iso_alpha3', :donors_qy:p_iso3166_3_code, ''))))),'') + ' / ',
+								//isnull(:donors_qy:attn + " / ", "") + isnull(:donors_qy:p_in_care_of + " / ","") + isnull(:donors_qy:p_address_1 + " / ","") + isnull(:donors_qy:p_address_2 + " / ","") + isnull(:donors_qy:p_address_3 + " / ","") + isnull(:donors_qy:p_city + ", " + :donors_qy:p_state_province + " ","") + isnull(:donors_qy:p_postal_code + " ","") + isnull(condition(:this:cntry_fmt = 'full', :donors_qy:p_country_name, condition(:this:cntry_fmt = 'kardia', :donors_qy:p_country_code, condition(:this:cntry_fmt = 'fips10', :donors_qy:p_fips_code, condition(:this:cntry_fmt = 'iso_alpha2', :donors_qy:p_iso3166_2_code, condition(:this:cntry_fmt = 'iso_alpha3', :donors_qy:p_iso3166_3_code, ''))))),'') + ' / ',
+								'') +
+							condition(:this:contact_via == 'oneemail',
+								isnull(:donors_qy:oneemail, "") + ' / ',
+								'') +
+							condition(:this:contact_via == 'allemail' or :this:contact_via == 'all',
+								isnull(:donors_qy:allemail, "") + ' / ',
+								'')
+							    - ' / ' - ' / '); }
 		d_last "report/table-cell" { value=runserver(:donors_qy:last_gift); }
 		d_amt "report/table-cell" { value=runserver(condition(:this:show_amounts, :gift_qy:gift_total, '-')); font=courier; align=right; }
 		}

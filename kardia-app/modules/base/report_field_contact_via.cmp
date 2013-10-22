@@ -1,0 +1,36 @@
+$Version=2$
+report_field_contact_via "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "contact_via";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_cv_hbx "widget/hbox"
+	{
+	width=350; height=24; spacing=5;
+
+	f_cv_lbl "widget/label" { text="Contacts:"; align=right; width=115; }
+
+	f_cv_dd "widget/dropdown"
+	    {
+	    width=230;
+	    fl_width=40; 
+	    bgcolor=white; 
+	    fieldname="contact_via";
+	    mode=static;
+	    hilight="#d0d0d0";
+	    form=rpt_form;
+	    numdisplay=6;
+
+	    f_cv_opt1 "widget/dropdownitem" { label="Postal Only (default)"; value="postal"; }
+	    f_cv_opt2 "widget/dropdownitem" { label="One Email"; value="oneemail"; }
+	    f_cv_opt3 "widget/dropdownitem" { label="All Emails"; value="allemail"; }
+	    f_cv_opt4 "widget/dropdownitem" { label="All Contact Data"; value="all"; }
+
+	    //f_cv_dd_hints "widget/hints" { style=notnull; default=runclient("any"); }
+	    }
+	}
+    }
