@@ -61,15 +61,15 @@ security_policy "widget/component-decl"
 		    sql = " SELECT
 				    :ux:description,
 				    :ux:username,
-				    dbuser = :su:__cx_literal_name,
-				    is_dbuser = :su:__cx_literal_name is not null,
+				    dbuser = :su:username,
+				    is_dbuser = :su:username is not null,
 				    privcnt = (select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows se where substring(:se:s_subject,1,2) = 'u:' and substring(:se:s_subject,3,32) = :ux:username),
 				    is_staff = (select count(1) from /apps/kardia/data/Kardia_DB/p_staff/rows staff where :ux:username = :staff:p_kardia_login)
 			    FROM
 				    /apps/kardia/data/Users.uxu ux, 
-				    /apps/kardia/data/Kardia_DB/sysusers/rows su
+				    /apps/kardia/data/DBusers.qy su
 			    WHERE
-				    :ux:username *= :su:__cx_literal_name and
+				    :ux:username *= :su:username and
 				    :ux:uid >= 200
 			    ORDER BY
 				    :ux:username asc
@@ -121,7 +121,7 @@ security_policy "widget/component-decl"
 				    :ux:description,
 				    :ux:username,
 				    privlist = (select sum(condition(substring(:s_endorsement,1,7) == 'kardia:', substring(:s_endorsement,8), :s_endorsement) + ', ') - ', ' from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows se where substring(:se:s_subject,1,2) = 'u:' and substring(:se:s_subject,3,32) = :ux:username),
-				    dbuser_text = condition((select count(1) from /apps/kardia/data/Kardia_DB/sysusers/rows su where :su:__cx_literal_name = :ux:username), 'Yes', 'No')
+				    dbuser_text = condition((select count(1) from /apps/kardia/data/DBusers.qy su where :su:username = :ux:username), 'Yes', 'No')
 			    FROM
 				    /apps/kardia/data/Users.uxu ux,
 				    /apps/kardia/data/Kardia_DB/s_user_data/rows ud
@@ -481,7 +481,7 @@ security_policy "widget/component-decl"
 			hilight="#d0d0d0";
 			user_dd_hints "widget/hints" { style=notnull; }
 			refresh_on_user_chg "widget/connector" { event=DataChange; target=perm_osrc; action=QueryParam; }
-			sql = "select 'ALL', '***', 1; select :ux:username + ' (' + :ux:description + ')', :ux:username from /apps/kardia/data/Users.uxu ux, /apps/kardia/data/Kardia_DB/sysusers/rows su where :ux:username = :su:__cx_literal_name order by :ux:username asc";
+			sql = "select 'ALL', '***', 1; select :ux:username + ' (' + :ux:description + ')', :ux:username from /apps/kardia/data/Users.uxu ux, /apps/kardia/data/DBusers.qy su where :ux:username = :su:username order by :ux:username asc";
 			//sql = "select 'ALL', '***', 1; select :ux:username + ' (' + :ux:description + ')', :username from /apps/kardia/data/Users.uxu ux where :uid >= 200 order by :username asc";
 			}
 
@@ -587,14 +587,13 @@ security_policy "widget/component-decl"
 					:st:s_endorsement,
 					:sc:s_context,
 					:st:s_endorsement_context_type,
-					:su:__cx_literal_suid,
 					s_subject = :ux:username,
 					:se:s_date_created,
 					:se:s_created_by
 				FROM
 					/apps/kardia/data/Kardia_DB/s_sec_endorsement_type/rows st,
 					/apps/kardia/data/Kardia_DB/s_sec_endorsement_context/rows sc,
-					/apps/kardia/data/Kardia_DB/sysusers/rows su,
+					/apps/kardia/data/DBusers.qy su,
 					/apps/kardia/data/Users.uxu ux,
 					/apps/kardia/data/Kardia_DB/s_sec_endorsement/rows se
 				WHERE
@@ -607,7 +606,7 @@ security_policy "widget/component-decl"
 					substring(:se:s_subject,3,32) =* :ux:username and
 					:se:s_endorsement =* :st:s_endorsement and
 					:se:s_context =* :sc:s_context and
-					:ux:username = :su:__cx_literal_name and
+					:ux:username = :su:username and
 					:ux:uid >= 200
 				HAVING
 					(:checked = '/sys/images/checkbox_checked.png' or
@@ -900,9 +899,9 @@ security_policy "widget/component-decl"
 				    is_online = (select count(1) from /sys/cx.sysinfo/session/users u where :u:name = :ux:username)
 			    FROM
 				    /apps/kardia/data/Users.uxu ux, 
-				    /apps/kardia/data/Kardia_DB/sysusers/rows su
+				    /apps/kardia/data/DBusers.qy su
 			    WHERE
-				    :ux:username = :su:__cx_literal_name and
+				    :ux:username = :su:username and
 				    :ux:uid >= 200
 			    ORDER BY
 				    :ux:username asc
