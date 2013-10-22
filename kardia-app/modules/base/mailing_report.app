@@ -102,8 +102,34 @@ mailing_report "widget/page"
 		    width=340;
 		    spacing=3;
 
+		    f_dm_hbx "widget/hbox"
+			{
+			width=340; height=24; spacing=5;
+
+			f_dm_lbl "widget/label" { text="Delivered By:"; align=right; width=115; }
+
+			f_dm_dd "widget/dropdown"
+			    {
+			    width=220;
+			    fl_width=40; 
+			    bgcolor=white; 
+			    fieldname="deliverymode";
+			    mode=static;
+			    hilight="#d0d0d0";
+			    form=rpt_form;
+			    numdisplay=6;
+
+			    f_dm_opt1 "widget/dropdownitem" { label="Any Method (default)"; value="any"; }
+			    f_dm_opt2 "widget/dropdownitem" { label="Postal Requested or Unset"; value="postalorunset"; }
+			    f_dm_opt3 "widget/dropdownitem" { label="Postal Specifically Requested"; value="postal"; }
+			    f_dm_opt4 "widget/dropdownitem" { label="Email Requested or Unset"; value="emailorunset"; }
+			    f_dm_opt5 "widget/dropdownitem" { label="Email Specifically Requested"; value="email"; }
+
+			    //f_dm_dd_hints "widget/hints" { style=notnull; default=runclient("any"); }
+			    }
+			}
 		    f_obs "widget/component" { x=10; height=24; path="/sys/cmp/smart_field.cmp"; field="include_obs"; ctl_type='checkboxleft'; text="Include obsolete partners"; label_width=120; }
-		    f_postal "widget/component" { x=10; height=24; path="/sys/cmp/smart_field.cmp"; field="only_postal"; ctl_type='checkboxleft'; text="Exclude list members with email delivery"; label_width=120; }
+		    //f_postal "widget/component" { x=10; height=24; path="/sys/cmp/smart_field.cmp"; field="only_postal"; ctl_type='checkboxleft'; text="Exclude list members with email delivery"; label_width=120; }
 		    f_okmail "widget/component" { x=10; height=24; path="/sys/cmp/smart_field.cmp"; field="only_okmail"; ctl_type='checkboxleft'; text="Exclude 'no mail' partners"; label_width=120; }
 		    f_oksolicit "widget/component" { x=10; height=24; path="/sys/cmp/smart_field.cmp"; field="only_oksolicit"; ctl_type='checkboxleft'; text="Exclude 'no solicitations' partners"; label_width=120; }
 		    f_donors "widget/component" { x=10; height=24; path="/sys/cmp/smart_field.cmp"; field="only_donors"; ctl_type='checkboxleft'; text="Donors"; label_width=120; }
