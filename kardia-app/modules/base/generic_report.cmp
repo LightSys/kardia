@@ -566,6 +566,7 @@ generic_report "widget/component-decl"
 
 	    rpt_info "widget/label"
 		{
+		condition=runserver(:this:mlist_tab);
 		width=438;
 		y=2;
 		align=right;
