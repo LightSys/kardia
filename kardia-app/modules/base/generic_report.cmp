@@ -563,6 +563,15 @@ generic_report "widget/component-decl"
 
 		on_report_cancel "widget/connector" { event=Click; target=window_container; action=Close; }
 		}
+
+	    rpt_info "widget/label"
+		{
+		width=438;
+		y=2;
+		align=right;
+		style=bold;
+		value=runclient(condition(char_length(:f_list_code:value) > 0, 'Adding To List: ' + :f_list_code:value, ''));
+		}
 	    }
 	}
     }
