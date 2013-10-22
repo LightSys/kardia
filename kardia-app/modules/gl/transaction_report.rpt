@@ -130,6 +130,7 @@ transaction_report "system/report"
 			    condition(:this:sortby == "cca", ":t:a_cost_center, :t:a_account_code", "") +
 			    condition(:this:sortby == "acc", ":t:a_account_code, :t:a_cost_center", "") +
 			    condition(:this:sortby == "date", ":t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
+			    condition(:this:sortby == "pdate", ":t:a_period, :t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
 		"");
 	plus_sum "report/aggregate" { compute="isnull(sum(:plus_amt),$0)"; reset=0; }
 	minus_sum "report/aggregate" { compute="isnull(sum(:minus_amt),$0)"; reset=0; }

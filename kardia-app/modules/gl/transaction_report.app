@@ -105,9 +105,11 @@ transaction_report "widget/page"
 		    bgcolor=white; 
 		    fieldname="sortby";
 		    mode=static;
+		    numdisplay=6;
 		    hilight="#d0d0d0";
 
 		    f_sortby_opt1 "widget/dropdownitem" { label="Period / Batch / Journal / Transaction"; value="pbjt"; }
+		    f_sortby_opt2a "widget/dropdownitem" { label="Period / Date / Batch / Jnl / Trx"; value="pdate"; }
 		    f_sortby_opt2 "widget/dropdownitem" { label="Date / Batch / Journal / Transaction"; value="date"; }
 		    f_sortby_opt3 "widget/dropdownitem" { label="Cost Center / Account"; value="cca"; }
 		    f_sortby_opt4 "widget/dropdownitem" { label="Account / Cost Center"; value="acc"; }
@@ -115,7 +117,7 @@ transaction_report "widget/page"
 		    uncheck_show_per_subttl "widget/connector"
 			{
 			event = DataChange;
-			event_condition = runclient(:Value != 'pbjt');
+			event_condition = runclient(:Value != 'pbjt' and :Value != 'pdate');
 			target = f_persubttl;
 			action = SetValue;
 			Value = runclient(0);
