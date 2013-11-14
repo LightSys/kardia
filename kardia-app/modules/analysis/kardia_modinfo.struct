@@ -1,0 +1,8 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Donation Analysis";
+    module_abbrev = "Donation";
+    module_description = "Donation analysis system.";
+    module_sequence = 190;
+    }

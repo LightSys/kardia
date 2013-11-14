@@ -1,0 +1,31 @@
+$Version=2$
+payees_window "widget/component-decl"
+    {
+    width=800; height=600;
+
+    Open "widget/component-decl-action" { }
+    Open_cn "widget/connector" { event="Open"; target="payeewin"; action="Open"; Cascade=1; }
+
+    // the ledger we are working with
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    // Payroll detail screen
+    paydet "widget/parameter" { type=object; }
+
+    payeewin "widget/childwindow"
+	{
+	title = "Payees (for Payroll)";
+	width=780; height=550;
+	x=10; y=25;
+	visible = false;
+	icon = "/apps/kardia/images/icons/gift.gif";
+
+	payee_cmp "widget/component"
+	    {
+	    path = "/apps/kardia/modules/analysis/payees.cmp";
+	    width=778;height=525;
+	    ledger = runserver(:this:ledger);
+	    paydet = paydet;
+	    }
+	}
+    }

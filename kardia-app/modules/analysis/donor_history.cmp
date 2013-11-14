@@ -1,0 +1,93 @@
+$Version=2$
+financial_statement_cmp "widget/component-decl"
+    {
+    width=778; height=525;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+
+    page "widget/parameter" { type=object; find_container="widget/page"; }
+    fswin "widget/parameter" { type=object; find_container="widget/childwindow"; }
+
+    ledger_osrc "widget/osrc"
+	{
+	l_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
+	sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_ledger/rows where :a_ledger_number = :parameters:l_ledger");
+	baseobj = "/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	replicasize=10;
+	readahead=5;
+	autoquery = onload;
+	}
+
+    report_form "widget/form"
+	{
+	allow_nodata = no;
+	allow_new = no;
+	auto_focus = no;
+	allow_obscure = yes;
+
+	vb1 "widget/vbox"
+	    {
+	    x=8;y=8;width=762;height=207;
+	    fl_height = 0;
+	    spacing=4;
+	    lbl_opt "widget/label" 
+	        { 
+	        height=30; 
+	        font_size=16; 
+	        text="Donor History:"; 
+	        align=center; }
+
+	    pn_sep1 "widget/pane" { height=2; style=lowered; }
+
+	    f_ledger "widget/component" 
+	        { 
+	        width=350; height=24; 
+	        path="/sys/cmp/smart_field.cmp"; 
+	        field='ledger'; 
+	        ctl_type=label; 
+	        text='Ledger:'; 
+	        value=runserver(:this:ledger); 
+	        form=report_form; 
+	        label_width=120; 
+	        }
+	    f_costctr "widget/component" 
+	        { 
+	        width=350; height=24; 
+	        path="/apps/kardia/modules/base/editbox_tree.cmp"; 
+	        field="costctr"; 
+	        popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/"+:this:ledger+"/");
+	        popup_text="Donor:"; 
+	        text="Donor:"; 
+	        attach_point=editbox; 
+	        empty_desc = "required"; 
+	        label_width=120; 
+	        }
+	    f_year "widget/component"
+		{ 
+		width=350; height=24; 
+		path="/sys/cmp/smart_field.cmp"; 
+		field='year_period'; 
+		ctl_type=dropdown; 
+		text="Donation Period:"; 
+		form=report_form;
+		label_width=120;
+
+		year_sel_cn_1 "widget/connector"
+		    {
+		    event="DataChange";
+		    target=f_startperiod;
+		    }
+		}
+	    rpt_chart "widget/textbutton"
+	        {
+	        width=120; height=24;
+	        text="Chart";
+	        }
+            rpt_graph "widget/textbutton"
+       	        {
+                width=120; height=24;
+	        text="Graph";
+	        }
+	    }
+	}
+    }
