@@ -490,6 +490,13 @@ alter table a_motivational_code drop index a_motiv_code_parent;
 /* go */
 
 
+/* a_giving_pattern */
+alter table a_giving_pattern drop index a_givingp_donor_idx;
+alter table a_giving_pattern drop index a_givingp_fund_idx;
+/* drop index a_giving_pattern.a_givingp_pk */ 
+/* go */
+
+
 /* a_subtrx_cashdisb */
 alter table a_subtrx_cashdisb drop index a_subtrx_cashdisb_acct_idx;
 alter table a_subtrx_cashdisb drop index a_subtrx_cashdisb_batch_idx;

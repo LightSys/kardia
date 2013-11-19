@@ -256,6 +256,9 @@ alter table a_cc_auto_subscribe
 alter table a_motivational_code
 	add constraint a_motivational_code_pk primary key  (a_ledger_number, a_motivational_code);
 
+alter table a_giving_pattern
+	add constraint a_givingp_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id);
+
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
 

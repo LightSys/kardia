@@ -490,6 +490,13 @@ create  index a_motiv_code_parent on a_motivational_code (a_ledger_number, a_par
 /* go */
 
 
+/* a_giving_pattern */
+create  index a_givingp_donor_idx on a_giving_pattern (p_donor_partner_key, a_ledger_number, a_cost_center, a_pattern_id);
+create  index a_givingp_fund_idx on a_giving_pattern (a_cost_center, a_ledger_number, p_donor_partner_key, a_pattern_id);
+/* create  index a_givingp_pk on a_giving_pattern (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id)*/ 
+/* go */
+
+
 /* a_subtrx_cashdisb */
 create  index a_subtrx_cashdisb_acct_idx on a_subtrx_cashdisb (a_cash_account_code, a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
 create  index a_subtrx_cashdisb_batch_idx on a_subtrx_cashdisb (a_batch_number, a_ledger_number, a_disbursement_id, a_line_item);

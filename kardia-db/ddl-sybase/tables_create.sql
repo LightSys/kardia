@@ -1848,6 +1848,31 @@ create table a_motivational_code (
 go
 
 
+/* a_giving_pattern */
+print "Creating table a_giving_pattern"
+
+create table a_giving_pattern (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
+        p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
+        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
+        a_amount                              money  not null,         /* Amount of money the donor is giving --  */
+        a_interval                            integer  not null,       /* Month interval at which the donor is giving (1=monthly, 3=quarterly, 12=annually) --  */
+        a_is_active                           bit  default 1,          /* Is this giving pattern an active one? --  */
+        a_start_date                          datetime  not null,      /* Date that this donor began this current giving pattern --  */
+        a_end_date                            datetime  null,          /* Date that we expect the donor to end this giving pattern (NOT A LEGAL OBLIGATION ON THE DONOR'S PART) --  */
+        a_evaluation_date                     datetime  not null,      /* Date that this giving pattern was determined --  */
+        a_comment                             varchar(255)  null,      /* Giving pattern comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
 /* a_subtrx_cashdisb */
 print "Creating table a_subtrx_cashdisb"
 
@@ -1990,11 +2015,14 @@ create table i_eg_gift_import (
         i_eg_deposit_gross_amt                money  null,             /* gross amount of the deposit before fees (xml:deposit-gross) --  */
         i_eg_deposit_amt                      money  null,             /* net amount of the deposit (xml:deposit-net) --  */
         p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
-        i_eg_donormap_confidence              integer  null,           /* Confidence of mapping: 0=none or guessed by system, 1=just this time, 9=remember this mapping for the future --  */
+        i_eg_donormap_confidence              integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
+        i_eg_donormap_future                  integer  null,           /* Future applicability of donor mapping: 0=low, 1=medium, 2=high --  */
         a_cost_center                         char(20)  null,          /* Kardia fund assigned by import process --  */
-        i_eg_fundmap_confidence               integer  null,           /* Confidence of mapping: 0=none or guessed by system, 1=just this time, 9=remember this mapping for the future --  */
+        i_eg_fundmap_confidence               integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
+        i_eg_fundmap_future                   integer  null,           /* Future applicability of the fund mapping: 0=low, 1=medium, 2=high --  */
         a_account_code                        char(16)  null,          /* Kardia GL account code assigned by import process --  */
-        i_eg_acctmap_confidence               integer  null,           /* Confidence of mapping: 0=none or guessed by system, 1=just this time, 9=remember this mapping for the future --  */
+        i_eg_acctmap_confidence               integer  null,           /* Confidence of current mapping: 0=low, 1=medium, 2=high --  */
+        i_eg_acctmap_future                   integer  null,           /* Future usability of the account mapping: 0=low, 1=medium, 2=high --  */
         a_batch_number                        integer  null,           /* Kardia GL batch used to process this gift record --  */
         a_batch_number_fees                   integer  null,           /* Kardia GL batch used to process the fees for this gift record --  */
         a_batch_number_deposit                integer  null,           /* Kardia GL batch used to process the deposit for this gift record --  */

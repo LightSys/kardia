@@ -573,6 +573,15 @@ go
 /* go */
 
 
+/* a_giving_pattern */
+drop index a_giving_pattern.a_givingp_donor_idx
+go
+drop index a_giving_pattern.a_givingp_fund_idx
+go
+/* drop index a_giving_pattern.a_givingp_pk */ 
+/* go */
+
+
 /* a_subtrx_cashdisb */
 drop index a_subtrx_cashdisb.a_subtrx_cashdisb_acct_idx
 go

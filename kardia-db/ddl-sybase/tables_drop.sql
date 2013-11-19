@@ -395,6 +395,11 @@ drop table a_motivational_code
 go
 
 
+/* a_giving_pattern */
+drop table a_giving_pattern
+go
+
+
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb
 go

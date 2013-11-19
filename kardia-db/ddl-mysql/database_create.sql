@@ -5,9 +5,9 @@
 if not exists (select * from master.dbo.sysdevices where name = "kardia_data")
     /* If the physical device does not exist, make it */
            begin
-                  print 'Creating the LightSys DB device.'
-                   disk init name="kardia_data", physname="/usr/local/lightsys/lightsys.db",vdevno=4,size=131144
-                   disk init name="kardia_log", physname="/usr/local/lightsys/lightsys.log",vdevno=5,size=131144
+                  print 'Creating the Kardia DB device.'
+                   disk init name="kardia_data", physname="/usr/local/kardia/Kardia_DB.db",vdevno=4,size=262288
+                   disk init name="kardia_log", physname="/usr/local/kardia/Kardia_DB.log",vdevno=5,size=262288
            end
 go
 
@@ -24,5 +24,5 @@ else
 go
     
 /* create a new database */
-create database Kardia_DB on kardia_data=510 log on kardia_log=510
+create database Kardia_DB on kardia_data=1020 log on kardia_log=1020
 go

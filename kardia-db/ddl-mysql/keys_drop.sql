@@ -490,6 +490,10 @@ alter table a_motivational_code
 	drop index a_motiv_code_list;
 
 
+alter table a_giving_pattern
+	drop primary key;
+
+
 alter table a_subtrx_cashdisb
 	drop primary key;
 

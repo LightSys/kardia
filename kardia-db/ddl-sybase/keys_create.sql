@@ -498,6 +498,12 @@ alter table a_motivational_code
 	add constraint a_motivational_code_pk primary key clustered (a_ledger_number, a_motivational_code)
 go
 
+print "working on table a_giving_pattern"
+
+alter table a_giving_pattern
+	add constraint a_givingp_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id)
+go
+
 print "working on table a_subtrx_cashdisb"
 
 alter table a_subtrx_cashdisb

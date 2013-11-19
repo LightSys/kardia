@@ -315,6 +315,10 @@ drop table a_cc_auto_subscribe;
 drop table a_motivational_code;
 
 
+/* a_giving_pattern */
+drop table a_giving_pattern;
+
+
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb;
 

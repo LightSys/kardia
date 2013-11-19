@@ -1674,6 +1674,30 @@ create table a_motivational_code (
 );
 
 
+/* a_giving_pattern */
+
+create table a_giving_pattern (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
+        p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
+        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of money the donor is giving --  */
+        a_interval                            integer  not null,       /* Month interval at which the donor is giving (1=monthly, 3=quarterly, 12=annually) --  */
+        a_is_active                           bit  default 1,          /* Is this giving pattern an active one? --  */
+        a_start_date                          datetime  not null,      /* Date that this donor began this current giving pattern --  */
+        a_end_date                            datetime  null,          /* Date that we expect the donor to end this giving pattern (NOT A LEGAL OBLIGATION ON THE DONOR'S PART) --  */
+        a_evaluation_date                     datetime  not null,      /* Date that this giving pattern was determined --  */
+        a_comment                             varchar(255)  null,      /* Giving pattern comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* a_subtrx_cashdisb */
 
 create table a_subtrx_cashdisb (

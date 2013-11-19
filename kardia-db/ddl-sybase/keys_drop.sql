@@ -613,6 +613,11 @@ alter table a_motivational_code
 go
 
 
+alter table a_giving_pattern
+	drop constraint a_givingp_pk
+go
+
+
 alter table a_subtrx_cashdisb
 	drop constraint a_subtrx_cashdisb_pk
 go
