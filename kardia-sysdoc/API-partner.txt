@@ -159,7 +159,8 @@ OBJECT STRUCTURE...
 	    partner_id	    - id of the partner
 	    list_code	    - code for mailing list
 	    list_name	    - name of mailing list
-	    is_active	    - 1 if the subscription is active
+	    list_type	    - type of list (Publication/Issue/Selection)
+	    is_active	    - 1 if both the subscription and list are active
 
 	The following more detailed properties will be provided:
 
@@ -232,12 +233,20 @@ OBJECT STRUCTURE...
 	properties:
 
 	    partner_id	    - id of the partner
+	    partner_name    - first and last name (or org. name) of the
+			      partner
 	    contact_id	    - id of the contact
+	    contact	    - contact (email address, phone #, etc.)
+	    contact_type    - type of contact (Email, Phone, Cell, Fax, etc.)
 	    is_valid	    - 1 if the contact info is valid, 0 if not
 
 	The following more detailed properties will be provided:
 
+	    contact_type_code - single letter abbrev of type of contact
 	    address_id	    - the ID of the associated address, if any
+	    phone_country   - country code for phone number
+	    phone_area_city - area/city code for phone number
+	    contact_data    - remained of phone# or email address / etc.
 	    comments	    - comments about this contact info
 
 	The following 'system' properties will be provided:
