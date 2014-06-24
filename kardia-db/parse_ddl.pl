@@ -14,11 +14,16 @@
 # Where {backend} is either "sybase" or "mysql", depending on which database
 # server you want to generate DDL (data definition language, in SQL) for.
 #
+# Required CentOS 6 Perl packages:
+#
+#  perl-HTML-Parser
+#  perl-File-Slurp
+#
 require HTML::TokeParser;
 use LWP::UserAgent;
 use HTML::LinkExtor;
 use HTML::TokeParser;
-use Unicode::UTF8simple;
+#use Unicode::UTF8simple;
 use URI::URL;
 use Carp;
 use LWP;
@@ -38,7 +43,8 @@ $glob_backend="sybase";
 # This script retrieves from $uri when the -n (network) option is specified.
 $path="/root/kardia/petradocs/tables";
 $clustered="cluster";
-$uri="http://sourceforge.net/apps/mediawiki/kardia/index.php?title=kardia:NewTableList";
+#$uri="http://sourceforge.net/apps/mediawiki/kardia/index.php?title=kardia:NewTableList";
+$uri="https://www.codn.net/projects/kardia/wiki/index.php/Kardia:NewTableList";
 
 #################################
 # The default file names we will use.
@@ -141,9 +147,9 @@ sub pull_off_web() {
 #            $line=~s/".*//;
 #            @URLS[$#URLS+1]="https://myserver$line";
 #        }
-	if ($line =~ s/.*a href="(\/apps\/mediawiki\/kardia\/index.php\?title=kardia:NewTables_[^"]*).*/$1/) {
+	if ($line =~ s/.*a href="(\/projects\/kardia\/wiki\/index.php\/Kardia:NewTables_[^"]*).*/$1/) {
 	    $line=~s/".*//;
-            @URLS[$#URLS+1]="http://sourceforge.net$line";
+            @URLS[$#URLS+1]="https://www.codn.net$line";
 	}
     }
     $tablecount=0;
@@ -167,7 +173,10 @@ sub pull_off_web() {
         while ($flag == 1 ) {
             my @token = $p->get_tag("td","li");
             if ($token[0][0] ne "") {
-		if ($token[0][3] =~ /.*sfh_n_li.*/) {
+		if ($token[0][3] =~ /.*id=*/) {
+		    next;
+		}
+		if ($token[0][3] =~ /.*class=*/) {
 		    next;
 		}
 		#print $token[0][0] . ", " . $token[0][3] . "\n";
@@ -177,7 +186,7 @@ sub pull_off_web() {
                     $last_tag=$token[0][0];
                 }
                 my $text = $p->get_trimmed_text("/td","/li");
-                if ($count == 3) {
+                if ($count == 1) {
                     #Grabbing fields
                     if ($small_count==0) {
                         $small_count++;
@@ -218,7 +227,7 @@ sub pull_off_web() {
                         $glob_nulls{$table}{$field}=$nullinfo if($nullinfo ne "");
                     }
                 }
-                if ($count == 4) {
+                if ($count == 2) {
                     $order++;
                     #Indexes and keys
                     #print "$text\n";

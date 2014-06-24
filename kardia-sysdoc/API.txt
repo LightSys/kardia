@@ -1,0 +1,49 @@
+Document:   Kardia RESTful Web Services API
+Author:	    Greg Beeley (GRB)
+Date:	    09-Jun-2014
+-------------------------------------------------------------------------------
+
+OVERVIEW...
+
+    Kardia implements a data access API that is made available via Centrallix's
+    REST web services interface.  If you are not familiar with REST or with web
+    services, please read the Centrallix sysdoc file "JSON-REST.txt" for an
+    overview of the service in general and how to use the REST control options
+    cx__mode, cx__res_type, cx__res_format, and cx__res_attrs.
+
+
+ENDPOINTS...
+
+    Each Kardia module may implement one or more web services endpoints.  These
+    will be files named like "api_xyz.qyt" in the various module directories.
+    The system will locate all of these API files and expose them under a
+    Kardia object called "api" at the top level of the Kardia installation,
+    using the name "xyz" (in this example).
+
+    For instance, for the basic Donor data API, the module's endpoint file is
+    named "api_donor.qyt".  The API user need not know that the file is located
+    in the /apps/kardia/modules/rcpt/ directory.  Instead, Kardia will locate
+    all of the api_*.qyt files and make them show up under /apps/kardia/api.
+    For the donor API, this would show up under /apps/kardia/api/donor.  There
+    will be many API endpoints available under /apps/kardia/api.
+
+
+AUTHENTICATION...
+    
+    The web client accessing the API will need to authenticate with a supported
+    Centrallix method.  Currently, this is by using Basic HTTP authentication.
+    Consult your web client's documentation for how to log in using Basic HTTP
+    authentication via your software or library.
+
+
+SESSION COOKIES...
+
+    The Centrallix server will issue a session cookie via the Set-Cookie: HTTP
+    header.  This cookie, whenever present, should be retrieved by the web
+    services client and sent with all successive requests.  It is possible for
+    the server to send a replacement cookie, so whenever Set-Cookie: is
+    present, the web services client must save that cookie and send it on all
+    subsequent requests (until a new cookie is sent by the server or until the
+    web services end-user, if any, is finished with the current data viewing
+    session).  Consult your web client's documentation for how to save and
+    send these cookies; your web client may do this automatically.

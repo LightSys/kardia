@@ -1,0 +1,6 @@
+$Version=2$
+apis "system/query"
+    {
+    sql = "SELECT name = substring(:name,5,char_length(:name) - 8), realname=:name, * FROM subtree /apps/kardia/modules/ HAVING substring(:realname,1,4) = 'api_' and right(:realname,4) = '.qyt'";
+    name_expression = "substring(:name,5,char_length(:name) - 8)";
+    }

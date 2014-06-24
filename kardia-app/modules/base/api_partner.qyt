@@ -1,0 +1,273 @@
+$Version=2$
+api_partner "system/querytree"
+    {
+    Partners "system/querytree"
+	{
+	text = "Partners";
+
+	partner_list "system/querytree"
+	    {
+	    sql = " select
+			partner_id = :p:p_partner_key,
+			partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			partner_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=p,c=c'),
+			class = (select :text from /apps/kardia/data/Kardia_DB/_p_partner_class/rows pc where :pc:tag = :p:p_partner_class),
+			is_valid = condition(:p:p_status_code == 'A', 1, 0),
+			is_staff = condition((select :p_is_staff from /apps/kardia/data/Kardia_DB/p_staff/rows ps where :ps:p_partner_key = :p:p_partner_key) == 1, 1, 0),
+			is_payee = condition((select max(:p_allow_payments) from /apps/kardia/data/Kardia_DB/p_payee/rows pp where :pp:p_partner_key = :p:p_partner_key) == 1, 1, 0),
+			is_donor = condition((select max(:p_allow_contributions) from /apps/kardia/data/Kardia_DB/p_donor/rows pd where :pd:p_partner_key = :p:p_partner_key) == 1, 1, 0),
+			surname = :p:p_surname,
+			given_names = :p:p_given_name,
+			title = :p:p_title,
+			preferred_name = :p:p_preferred_name,
+			suffix = :p:p_suffix,
+			org_name = :p:p_org_name,
+			gender = (select :text from /apps/kardia/data/Kardia_DB/_p_partner_gender/rows pg where :pg:tag = :p:p_gender),
+			comments = :p:p_comments,
+			no_mail = :p:p_no_mail,
+			no_solicitations = :p:p_no_solicitations,
+			date_created = :p:s_date_created,
+			created_by = :p:s_created_by,
+			date_modified = :p:s_date_modified,
+			modified_by = :p:s_modified_by
+		    from
+			identity /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows l,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
+		    where
+			:l:p_revision_id = 0 and
+			:l:p_partner_key =* :p:p_partner_key and
+			:c:p_country_code =* :l:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = 'STANDARD'
+		    group by
+			:p:p_partner_key
+		    ";
+
+	    Addresses "system/querytree"
+		{
+		text = "Addresses";
+
+		address_list "system/querytree"
+		    {
+		    sql = " select
+				partner_id = :l:p_partner_key,
+				address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l'),
+				is_valid = condition(:l:p_record_status_code == 'A' and (:l:p_date_effective is null or :l:p_date_effective <= getdate()) and (:l:p_date_good_until is null or :l:p_date_good_until >= getdate()), 1, 0),
+				location_id = :l:p_location_id,
+				location_type = (select :text from /apps/kardia/data/Kardia_DB/_p_location_type/rows pl where :pl:tag = :l:p_location_type),
+				location_type_code = :l:p_location_type,
+				date_effective = :l:p_date_effective,
+				date_good_until = :l:p_date_good_until,
+				in_care_of = :l:p_in_care_of,
+				address_1 = :l:p_address_1,
+				address_2 = :l:p_address_2,
+				address_3 = :l:p_address_3,
+				city = :l:p_city,
+				state_province = :l:p_state_province,
+				postal_code = :l:p_postal_code,
+				country_code = :l:p_country_code,
+				country_iso2 = :c:p_iso3166_2_code,
+				country_iso3 = :c:p_iso3166_3_code,
+				country_fips104 = :c:p_fips_code,
+				country_name = :c:p_country_name,
+				comments = :l:p_location_comments,
+				date_created = :l:s_date_created,
+				created_by = :l:s_created_by,
+				date_modified = :l:s_date_modified,
+				modified_by = :l:s_modified_by
+			    from
+				identity /apps/kardia/data/Kardia_DB/p_location/rows l,
+				/apps/kardia/data/Kardia_DB/p_country/rows c,
+				/apps/kardia/data/Kardia_DB/p_address_format/rows af
+			    where
+				:l:p_partner_key = :partner_list:partner_id and
+				:l:p_revision_id = 0 and
+				:c:p_country_code =* :l:p_country_code and
+				:af:p_country_code =* :c:p_country_code and
+				:af:p_address_set = 'STANDARD'
+			    ";
+
+		    address_contacts "system/querytree"
+			{
+			text = "ContactInfo";
+
+			address_contactlist "system/querytree"
+			    {
+			    sql = " select
+					partner_id = :ci:p_partner_key,
+					contact_id = :ci:p_contact_id,
+					contact = isnull('+' + :ci:p_phone_country + ' ', '') + isnull('(' + :ci:p_phone_area_city + ') ', '') + isnull(:ci:p_contact_data,''),
+					contact_type = (select :text from /apps/kardia/data/Kardia_DB/_p_contact_type/rows pl where :pl:tag = :ci:p_contact_type),
+					is_valid = condition(:ci:p_record_status_code == 'A'),
+					contact_type_code = :ci:p_contact_type,
+					address_id = :ci:p_location_id,
+					phone_country = :ci:p_phone_country,
+					phone_area_city = :ci:p_phone_area_city,
+					contact_data = :ci:p_contact_data,
+					comments = :ci:p_contact_comments,
+					date_created = :ci:s_date_created,
+					created_by = :ci:s_created_by,
+					date_modified = :ci:s_date_modified,
+					modified_by = :ci:s_modified_by
+				    from
+					identity /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+				    where
+					:ci:p_partner_key = :partner_list:partner_id and
+					:ci:p_location_id = :address_list:location_id
+				    ";
+			    }
+			}
+		    }
+		}
+
+	    ContactInfo "system/querytree"
+		{
+		text = "ContactInfo";
+
+		contactlist "system/querytree"
+		    {
+		    sql = " select
+				partner_id = :ci:p_partner_key,
+				contact_id = :ci:p_contact_id,
+				contact = isnull('+' + :ci:p_phone_country + ' ', '') + isnull('(' + :ci:p_phone_area_city + ') ', '') + isnull(:ci:p_contact_data,''),
+				contact_type = (select :text from /apps/kardia/data/Kardia_DB/_p_contact_type/rows pl where :pl:tag = :ci:p_contact_type),
+				is_valid = condition(:ci:p_record_status_code == 'A',1,0),
+				contact_type_code = :ci:p_contact_type,
+				address_id = :ci:p_location_id,
+				phone_country = :ci:p_phone_country,
+				phone_area_city = :ci:p_phone_area_city,
+				contact_data = :ci:p_contact_data,
+				comments = :ci:p_contact_comments,
+				date_created = :ci:s_date_created,
+				created_by = :ci:s_created_by,
+				date_modified = :ci:s_date_modified,
+				modified_by = :ci:s_modified_by
+			    from
+				identity /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+			    where
+				:ci:p_partner_key = :partner_list:partner_id
+			    ";
+		    }
+		}
+
+	    Subscriptions "system/querytree"
+		{
+		text = "Subscriptions";
+
+		partner_subs_list "system/querytree"
+		    {
+		    sql = " select
+				partner_id = :m:p_partner_key,
+				list_code = :m:m_list_code,
+				list_name = :ml:m_list_description,
+				list_type = (select :text from /apps/kardia/data/Kardia_DB/_m_list_type/rows where :tag = :ml:m_list_type),
+				is_active = condition(:m:m_membership_status == 'A' and :ml:m_list_status == 'A',1,0),
+				location_id = :m:p_location_id,
+				contact_id = :m:p_contact_id,
+				delivery_method = (select :text from /apps/kardia/data/Kardia_DB/_m_delivery_method/rows where :tag = :m:m_delivery_method),
+				member_type = (select :text from /apps/kardia/data/Kardia_DB/_m_member_type/rows where :tag = :m:m_member_type),
+				num_issues_sub = :m:m_num_issues_sub,
+				num_issues_recv = :m:m_num_issues_recv,
+				start_date = :m:m_start_date,
+				end_date = :m:m_end_date,
+				hold_until_date = :m:m_hold_until_date,
+				renewal_date = :m:m_renewal_date,
+				cancel_date = :m:m_cancel_date,
+				notice_sent_date = :m:m_notice_sent_date,
+				status = (select :text from /apps/kardia/data/Kardia_DB/_m_membership_status/rows where :tag = :m:m_membership_status),
+				is_complimentary = :m:m_complimentary,
+				comments = :m:m_comments,
+				show_contact = :m:m_show_contact,
+				contact = :m:m_contact,
+				reason_member = (select :text from /apps/kardia/data/Kardia_DB/_m_member_reason/rows where :tag = :m:m_reason_member),
+				reason_cancel = (select :text from /apps/kardia/data/Kardia_DB/_m_cancel_reason/rows where :tag = :m:m_reason_cancel),
+				sort_order = :m:m_sort_order,
+				date_created = :m:s_date_created,
+				created_by = :m:s_created_by,
+				date_modified = :m:s_date_modified,
+				modified_by = :m:s_modified_by
+			    from
+				identity /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+				/apps/kardia/data/Kardia_DB/m_list/rows ml
+			    where
+				:m:p_partner_key = :partner_list:partner_id and
+				:ml:m_list_code = :m:m_list_code
+			    ";
+		    }
+		}
+	    }
+	}
+
+    ContactTypes "system/querytree"
+	{
+	text = "ContactTypes";
+
+	contacttype_list "system/querytree"
+	    {
+	    sql = " select
+			name = :text,
+			contact_type = :text,
+			contact_type_code = :tag
+		    from
+			/apps/kardia/data/Kardia_DB/_p_contact_type/rows
+		    order by
+			:text asc
+		    ";
+	    use_having=yes;
+
+	    type_contactlist "system/querytree"
+		{
+		sql = " select
+			    name = replace(replace(lower(isnull(:ci:p_phone_country, '') + isnull(:ci:p_phone_area_city, '') + isnull(:ci:p_contact_data,'')), ' ', ''), '-', ''),
+			    contact = isnull('+' + :ci:p_phone_country + ' ', '') + isnull('(' + :ci:p_phone_area_city + ') ', '') + isnull(:ci:p_contact_data,''),
+			    contact_type = (select :text from /apps/kardia/data/Kardia_DB/_p_contact_type/rows pl where :pl:tag = :ci:p_contact_type),
+			    contact_type_code = :ci:p_contact_type,
+			    phone_country = :ci:p_phone_country,
+			    phone_area_city = :ci:p_phone_area_city,
+			    contact_data = :ci:p_contact_data
+			from
+			    identity /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+			where
+			    :ci:p_contact_type = :contacttype_list:contact_type_code
+			group by 
+			    replace(replace(lower(isnull(:ci:p_phone_country, '') + isnull(:ci:p_phone_area_city, '') + isnull(:ci:p_contact_data,'')), ' ', ''), '-', '')
+			";
+		use_having = yes;
+
+		type_contact_partners "system/querytree"
+		    {
+		    text = "Partners";
+
+		    type_contact_partnerlist "system/querytree"
+			{
+			sql = "	select
+				    partner_id = :ci:p_partner_key,
+				    partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				    contact_id = :ci:p_contact_id,
+				    contact = isnull('+' + :ci:p_phone_country + ' ', '') + isnull('(' + :ci:p_phone_area_city + ') ', '') + isnull(:ci:p_contact_data,''),
+				    contact_type = (select :text from /apps/kardia/data/Kardia_DB/_p_contact_type/rows pl where :pl:tag = :ci:p_contact_type),
+				    is_valid = condition(:ci:p_record_status_code == 'A',1,0),
+				    address_id = :ci:p_location_id,
+				    phone_country = :ci:p_phone_country,
+				    phone_area_city = :ci:p_phone_area_city,
+				    contact_data = :ci:p_contact_data,
+				    comments = :ci:p_contact_comments,
+				    date_created = :ci:s_date_created,
+				    created_by = :ci:s_created_by,
+				    date_modified = :ci:s_date_modified,
+				    modified_by = :ci:s_modified_by
+				from
+				    identity /apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p
+				where
+				    replace(replace(lower(isnull(:ci:p_phone_country, '') + isnull(:ci:p_phone_area_city, '') + isnull(:ci:p_contact_data,'')), ' ', ''), '-', '') = :type_contactlist:name and
+				    :p:p_partner_key = :ci:p_partner_key
+				";
+			}
+		    }
+		}
+	    }
+	}
+    }
