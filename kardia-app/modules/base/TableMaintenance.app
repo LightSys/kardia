@@ -97,8 +97,10 @@ TableMaintenance "widget/page"
 	path = "/sys/cmp/window_container.cmp";
 	component = "/sys/cmp/generic_form.cmp";
 	mode = dynamic;
-	width=798; height=476; h=476;
+	width=898; height=625; h=525; w=798;
+	x=0; y=0;
 	multiple_instantiation = yes;
 	icon = "/sys/images/ico26a.gif";
+	toplevel = yes;
 	}
     }
