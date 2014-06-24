@@ -1,0 +1,200 @@
+$Version=2$
+partner_profile "widget/component-decl"
+    {
+    width=700;
+    height=580;
+
+    profile_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=700; height=580;
+	spacing=8;
+
+	profile_hdr_hbox "widget/hbox"
+	    {
+	    height=110;
+	    spacing=8;
+
+	    profile_hdr_image_box "widget/pane"
+		{
+		width=104;
+		style=bordered;
+		border_color=black;
+		bgcolor=white;
+
+		profile_hdr_image "widget/image"
+		    {
+		    x=5; y=5;
+		    width=94;
+		    height=100;
+		    source="/apps/kardia/images/artwork/persona.png";
+		    }
+		}
+
+	    profile_hdr_info "widget/vbox"
+		{
+		width=420;
+		spacing=0;
+
+		profile_hdr_name "widget/label"
+		    {
+		    height=24;
+		    font_size=20;
+		    style=bold;
+		    text = "Joseph Q. Applicant (\"Joe\")";
+		    }
+
+		profile_hdr_contact "widget/label"
+		    {
+		    height=70;
+		    text = "1234 Somewhere Ln.\nSeattle, WA  98000\nEmail: joseph@example.com\nCell:  425-555-1212";
+		    }
+
+		edit_profile "widget/label"
+		    {
+		    height=16;
+		    widget_class=link;
+		    text = "Click here to update name and contact info";
+		    }
+		}
+
+	    profile_tracks "widget/vbox"
+		{
+		width=160;
+		spacing=4;
+
+		track_1 "widget/pane"
+		    {
+		    height=36;
+		    style=bordered;
+		    border_color=black;
+		    border_radius=8;
+		    bgcolor="#20c070";
+
+		    track_1_hbox "widget/vbox"
+			{
+			x=3; y=3; height=30; width=152;
+			spacing=3;
+			track_1_track_label "widget/label" { widget_class=link; fgcolor=black; height=12; font_size=12; align=center; style=bold; text="Track: Missionary"; }
+			track_1_step_label "widget/label" { widget_class=link; fgcolor=black; height=12; font_size=10; align=center; text="Step: Candidate"; }
+			}
+		    }
+
+		track_2 "widget/pane"
+		    {
+		    height=36;
+		    style=bordered;
+		    border_color=black;
+		    border_radius=8;
+		    bgcolor="#2070c0";
+
+		    track_2_hbox "widget/vbox"
+			{
+			x=3; y=3; height=30; width=152;
+			spacing=3;
+			track_2_track_label "widget/label" { widget_class=link; fgcolor=black; height=12; font_size=12; align=center; style=bold; text="Track: Donor"; }
+			track_2_step_label "widget/label" { widget_class=link; fgcolor=black; height=12; font_size=10; align=center; text="Step: Active"; }
+			}
+		    }
+		}
+	    }
+
+	profile_sep "widget/pane" { height=2; style=lowered; }
+
+	profile_body_hbox "widget/hbox"
+	    {
+	    height=450;
+	    spacing=8;
+
+	    profile_data_vbox "widget/vbox"
+		{
+		fl_width=5;
+		width=250;
+		spacing=8;
+
+		profile_data_todo_pane "widget/pane"
+		    {
+		    condition=0;
+		    height=221;
+		    style=raised;
+		    border_radius=8;
+		    background="/apps/kardia/images/bg/light_bgnd2.jpg";
+		    }
+
+		profile_data_hilite_pane "widget/pane"
+		    {
+		    height=450;
+		    style=raised;
+		    border_radius=8;
+		    background="/apps/kardia/images/bg/light_bgnd2.jpg";
+
+		    profile_data_hilite_vbox "widget/vbox"
+			{
+			x=4; y=4; width=240; height=440;
+			spacing=8;
+
+			hilite_hdr "widget/label"
+			    {
+			    height=16;
+			    align=center;
+			    style=bold;
+			    text="Highlights...";
+			    }
+			}
+		    }
+		}
+
+	    profile_timeline_vbox "widget/vbox"
+		{
+		width=442;
+		spacing=8;
+
+		profile_timeline_menu "widget/menu"
+		    {
+		    widget_class="bar";
+		    height=24;
+
+		    profile_timeline_menu_add "widget/menu"
+			{
+			widget_class="popup";
+			label = "Add";
+
+			menu_add_contact "widget/menuitem" { label = "Contact"; }
+			menu_add_note "widget/menuitem" { label = "Prayer Need / Note"; }
+			menu_add_interest "widget/menuitem" { label = "Tag / Area of Interest"; }
+			menu_add_track "widget/menuitem" { label = "Engagement Track"; }
+			menu_add_req "widget/menuitem" { label = "Requirement"; }
+			menu_add_doc "widget/menuitem" { label = "Document / File / Photo"; }
+			menu_add_collab "widget/menuitem" { label = "Collaborator"; }
+			menu_add_todo "widget/menuitem" { label = "To-Do Item"; }
+			}
+
+		    profile_timeline_menu_view "widget/menu"
+			{
+			widget_class="popup";
+			label = "View";
+
+			menu_view_all "widget/menuitem" { label = "All"; checked=yes; }
+			menu_view_note "widget/menuitem" { label = "Only Prayer Needs / Notes"; checked=no; }
+			menu_view_track "widget/menuitem" { label = "Only Track and Step Progress"; checked=no; }
+			}
+
+		    profile_timeline_menu_sort "widget/menu"
+			{
+			widget_class="popup";
+			label = "Sort";
+
+			menu_sort_newest "widget/menuitem" { label = "By Most Recent"; checked=yes; }
+			menu_sort_type "widget/menuitem" { label = "By Kind"; checked=no; }
+			}
+
+		    profile_timeline_menu_reset "widget/menuitem"
+			{
+			label = "Reset";
+			onright = yes;
+			}
+		    }
+		}
+	    }
+	}
+    }

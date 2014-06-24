@@ -1,0 +1,8 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Engagement";
+    module_abbrev = "CRM";
+    module_description = "Structured Engagement (Constituent Relationship Management) system for Kardia";
+    module_sequence = 200;
+    }

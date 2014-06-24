@@ -1,0 +1,42 @@
+$Version=2$
+active_collab_list "widget/component-decl"
+    {
+    height=417; width=248;
+
+    title = "Active";
+    sequence = 10;
+
+    active_collab_osrc "widget/osrc"
+	{
+	sql = "
+	    select
+		    img='/apps/kardia/images/icons/person.gif',
+		    disp_name = 'Joseph Q. Applicant',
+		    last_date = '15-May-2014'
+	    ;
+
+	    select
+		    img='/apps/kardia/images/icons/person.gif',
+		    disp_name = 'Jane W. Applicant',
+		    last_date = '25-May-2014'
+	    ";
+	readahead=50;
+	replicasize=50;
+	
+	active_collab_table "widget/table"
+	    {
+	    x=0; y=0; width=248; height=417;
+	    rowheight = 20;
+	    mode=dynamicrow;
+	    allow_selection = yes;
+	    show_selection = yes;
+	    demand_scrollbar = yes;
+	    overlap_scrollbar = yes;
+	    colsep = 0;
+
+	    t_img "widget/table-column" { title=""; fieldname="img"; width=20; type=image; }
+	    t_name "widget/table-column" { title="Partner"; fieldname="disp_name"; width=128; }
+	    t_date "widget/table-column" { title="Last Contact"; fieldname="last_date"; width=100; }
+	    }
+	}
+    }

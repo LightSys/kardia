@@ -1,0 +1,140 @@
+$Version=2$
+
+// index.app for CRM module in Kardia.
+//
+// Copyright (C) 2014 LightSys Technology Services, Inc.
+// Written 23-May-2014 by Greg Beeley
+//
+// This file is free software, licensed under the GPL version 2, or at
+// your option, any later version released by the Free Software Foundation.
+// See the file COPYING accompanying this source file for further details.
+//
+// This is a component definition.  It is instantiated by placing a
+// component widget with the path of this file inside (for example) index.app.
+//
+list_and_profile "widget/component-decl"
+    {
+    // Below are the design width and height of the component.  If the 
+    // instantiation ("widget/component" widget) specifies a different width
+    // and height, then this component is scaled to fit the actual width and
+    // height.
+    //
+    width=980; height=580;
+
+    // Here we create an hbox, which arranges its child widgets horizontally.
+    // It is used so that the coordinates of each child object do not need to
+    // be specified individually, which improves maintainability.
+    //
+    list_profile_hbox "widget/hbox"
+	{
+	x=0; y=0; width=980; height=580;
+
+	// The spacing between child objects of this hbox.
+	//
+	spacing=10;
+
+	// Here is a vbox -- similar to hbox but vertical.  This particular
+	// one is used to display the active collaboration list and search
+	// controls.
+	//
+	list_vbox "widget/vbox"
+	    {
+	    width=258;
+	    spacing=8;
+
+	    list_tab_pane "widget/pane"
+		{
+		height=475;
+		style=flat;
+
+		list_tab "widget/tab"
+		    {
+		    x=0; y=0;
+		    height=450; width=258;
+		    background="/apps/kardia/images/bg/light_bgnd2.jpg";
+		    inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+
+		    plugin_tabs "widget/repeat"
+			{
+			sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_crm_sidebar_*.cmp'";
+
+			plugin_tab "widget/tabpage"
+			    {
+			    title = runserver(:plugin_tabs:title);
+
+			    plugin_cmp "widget/component"
+				{
+				height=417; width=248; x=4; y=4;
+				path = runserver(:plugin_tabs:path);
+				}
+			    }
+			}
+
+		    search_tab "widget/tabpage"
+			{
+			title = "Search";
+			}
+		    }
+		}
+
+	    //sep1 "widget/pane" { height=2; style=lowered; }
+
+	    basic_search_scope "widget/dropdown"
+		{
+		height=22;
+		bgcolor=white; 
+		mode=static;
+		hilight="#d0d0d0";
+		basic_dd_hints "widget/hints" { style=notnull; }
+
+		dd_all "widget/dropdownitem" { label="Search All Partners"; value="*"; }
+		dd_crm "widget/dropdownitem" { label="Search Partners Tracked in CRM"; value="C"; }
+		dd_mine "widget/dropdownitem" { label="Search My Active List"; value="A"; selected=yes; }
+		}
+
+	    basic_search_hbox "widget/hbox"
+		{
+		height=22;
+		spacing=4;
+
+		basic_search_editbox "widget/editbox"
+		    {
+		    width=232;
+		    empty_description="Quick Search";
+		    }
+
+		basic_search_ibutton "widget/imagebutton"
+		    {
+		    width=22;
+		    image="/apps/kardia/images/tango/system-search-22.png";
+		    }
+		}
+
+	    sep2 "widget/pane" { height=2; style=lowered; }
+
+	    adv_search_hbox "widget/hbox"
+		{
+		height=22;
+		align=center;
+
+		adv_search_button "widget/textbutton"
+		    {
+		    width=180;
+		    text="Advanced Search...";
+		    }
+		}
+	    }
+
+	sep "widget/pane"
+	    {
+	    width=2;
+	    style=lowered;
+	    }
+
+	profile_cmp "widget/component"
+	    {
+	    width=700;
+	    path = "partner_profile.cmp";
+	    }
+	}
+    }
