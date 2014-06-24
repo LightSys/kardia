@@ -140,6 +140,52 @@ create  index p_dc_username_idx on p_dup_check_tmp (s_username, p_partner_key);
 create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_code);
 
 
+/* e_contact_history_type */
+/* create  index e_cnt_hist_type_pk on e_contact_history_type (e_contact_history_type)*/ 
+/* go */
+
+
+/* e_contact_history */
+create  index e_cnt_hist_locpar_idx on e_contact_history (p_location_partner_key, e_contact_history_type, e_contact_history_id);
+create  index e_cnt_hist_par_idx on e_contact_history (p_partner_key, e_contact_history_type, e_contact_history_id);
+/* create  index e_cnt_hist_pk on e_contact_history (e_contact_history_id)*/ 
+/* go */
+create  index e_cnt_hist_type_idx on e_contact_history (e_contact_history_type, p_partner_key, e_contact_history_id);
+create  index e_cnt_hist_whom_idx on e_contact_history (e_whom, p_partner_key, e_contact_history_type, e_contact_history_id);
+
+
+/* e_activity */
+create  index e_act_par_idx on e_activity (p_partner_key, e_activity_group_id, e_activity_id);
+/* create  index e_act_pk on e_activity (e_activity_group_id, e_activity_id)*/ 
+/* go */
+create  index e_act_sort_idx on e_activity (e_sort_key, e_activity_group_id, e_activity_id);
+create  index e_act_type_idx on e_activity (e_activity_type, e_activity_group_id, e_activity_id);
+
+
+/* e_engagement_track */
+create  index e_trk_name_idx on e_engagement_track (e_track_name, e_track_id);
+/* create  index e_trk_pk on e_engagement_track (e_track_id)*/ 
+/* go */
+
+
+/* e_engagement_track_collab */
+/* create  index e_trkcoll_pk on e_engagement_track_collab (e_track_id, p_collab_partner_key)*/ 
+/* go */
+create  index e_trkcoll_ptnr_idx on e_engagement_track_collab (p_collab_partner_key, e_track_id);
+
+
+/* e_engagement_step */
+create  index e_step_name_idx on e_engagement_step (e_step_name, e_track_id, e_step_id);
+/* create  index e_step_pk on e_engagement_step (e_track_id, e_step_id)*/ 
+/* go */
+
+
+/* e_engagement_step_collab */
+/* create  index e_stepcoll_pk on e_engagement_step_collab (e_track_id, e_step_id, p_collab_partner_key)*/ 
+/* go */
+create  index e_stepcoll_ptnr_idx on e_engagement_step_collab (p_collab_partner_key, e_track_id, e_step_id);
+
+
 /* r_group */
 create  index r_grp_modfile_idx on r_group (r_group_module, r_group_file, r_group_name);
 /* create  index r_grp_pk on r_group (r_group_name)*/ 
@@ -533,6 +579,12 @@ create  index i_eg_kdonor_idx on i_eg_gift_import (p_donor_partner_key, a_ledger
 create  index i_eg_kfeebatch_idx on i_eg_gift_import (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid);
 create  index i_eg_kfund_idx on i_eg_gift_import (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid);
 create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_number, i_eg_trx_uuid);
+
+
+/* i_eg_giving_url */
+create  index i_eg_giveurl_revidx on i_eg_giving_url (a_cost_center, a_ledger_number);
+/* create  index i_eg_giving_url_pk on i_eg_giving_url (a_ledger_number, a_cost_center)*/ 
+/* go */
 
 
 /* c_message */

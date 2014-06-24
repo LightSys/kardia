@@ -140,6 +140,52 @@ alter table p_dup_check_tmp drop index p_dc_username_idx;
 alter table m_list_membership drop index m_lists_by_partner;
 
 
+/* e_contact_history_type */
+/* drop index e_contact_history_type.e_cnt_hist_type_pk */ 
+/* go */
+
+
+/* e_contact_history */
+alter table e_contact_history drop index e_cnt_hist_locpar_idx;
+alter table e_contact_history drop index e_cnt_hist_par_idx;
+/* drop index e_contact_history.e_cnt_hist_pk */ 
+/* go */
+alter table e_contact_history drop index e_cnt_hist_type_idx;
+alter table e_contact_history drop index e_cnt_hist_whom_idx;
+
+
+/* e_activity */
+alter table e_activity drop index e_act_par_idx;
+/* drop index e_activity.e_act_pk */ 
+/* go */
+alter table e_activity drop index e_act_sort_idx;
+alter table e_activity drop index e_act_type_idx;
+
+
+/* e_engagement_track */
+alter table e_engagement_track drop index e_trk_name_idx;
+/* drop index e_engagement_track.e_trk_pk */ 
+/* go */
+
+
+/* e_engagement_track_collab */
+/* drop index e_engagement_track_collab.e_trkcoll_pk */ 
+/* go */
+alter table e_engagement_track_collab drop index e_trkcoll_ptnr_idx;
+
+
+/* e_engagement_step */
+alter table e_engagement_step drop index e_step_name_idx;
+/* drop index e_engagement_step.e_step_pk */ 
+/* go */
+
+
+/* e_engagement_step_collab */
+/* drop index e_engagement_step_collab.e_stepcoll_pk */ 
+/* go */
+alter table e_engagement_step_collab drop index e_stepcoll_ptnr_idx;
+
+
 /* r_group */
 alter table r_group drop index r_grp_modfile_idx;
 /* drop index r_group.r_grp_pk */ 
@@ -533,6 +579,12 @@ alter table i_eg_gift_import drop index i_eg_kdonor_idx;
 alter table i_eg_gift_import drop index i_eg_kfeebatch_idx;
 alter table i_eg_gift_import drop index i_eg_kfund_idx;
 alter table i_eg_gift_import drop index i_eg_kgiftbatch_idx;
+
+
+/* i_eg_giving_url */
+alter table i_eg_giving_url drop index i_eg_giveurl_revidx;
+/* drop index i_eg_giving_url.i_eg_giving_url_pk */ 
+/* go */
 
 
 /* c_message */

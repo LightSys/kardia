@@ -479,6 +479,129 @@ create table m_list_membership (
 );
 
 
+/* e_contact_history_type */
+
+create table e_contact_history_type (
+        e_contact_history_type                integer  not null,       /* The unique ID of this contact history type --  */
+        e_short_name                          varchar(8)  not null,    /* Short name of the history type (such as "Phone" or "Pray" or "Note") --  */
+        e_description                         varchar(80)  not null,   /* The description of this history type --  */
+        e_user_selectable                     bit  not null,           /* Whether this type is selectable by the user when hand-entering a contact history item (otherwise, it is only used for auto-generated records) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_contact_history */
+
+create table e_contact_history (
+        e_contact_history_id                  integer  not null,       /* The unique ID of this contact history item --  */
+        p_partner_key                         char(10)  not null,      /* The partner key of the person that the organization contacted --  */
+        e_contact_history_type                integer  not null,       /* The unique ID of this contact history type --  */
+        p_contact_id                          integer  null,           /* The p_contact_info ID that was used for this contact (such as a phone number, email address, etc.) --  */
+        p_location_partner_key                char(10)  null,          /* The partner key of the location where the contact took place (may be the same as the p_partner_key in some cases) --  */
+        p_location_id                         integer  null,           /* The p_location ID where the contact physically took place (for in-person contacts) --  */
+        p_location_revision_id                integer  null,           /* The p_location revision ID where the contact physically took place (for in-person contacts) --  */
+        e_whom                                varchar(20)  null,       /* The user who made the contact; NULL if no particular user was involved --  */
+        e_subject                             varchar(255)  null,      /* A short description of the contact that took place --  */
+        e_contact_date                        datetime  not null,      /* The date and time that the contact took place --  */
+        e_notes                               varchar(900)  null,      /* Notes regarding this contact --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_activity */
+
+create table e_activity (
+        e_activity_group_id                   integer  not null,       /* A unique ID identifying the group of contact activity items that are being aggregated. --  */
+        e_activity_id                         integer  not null,       /* A unique ID identifying a single activity item within a group of items. --  */
+        p_partner_key                         char(10)  not null,      /* The partner involved in the activity --  */
+        e_sort_key                            varchar(20)  null,       /* A value we can use to sort this activity data, if needed --  */
+        e_activity_date                       datetime  not null,      /* The date that the activity took place --  */
+        e_activity_type                       char(4)  not null,       /* The type of activity. --  */
+        e_reference_info                      varchar(20)  null,       /* batch|giftid, or such). --  */
+        e_info                                varchar(900)  null,      /* Informational notes regarding this activity --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_track */
+
+create table e_engagement_track (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        e_track_name                          varchar(24)  not null,   /* A short name for the engagement track --  */
+        e_track_description                   varchar(255)  not null,  /* A description for the engagement track --  */
+        e_track_color                         varchar(32)  null,       /* Color to be used in presenting this track visually - RGB (i.e. '#f0f0f0') or named (i.e., 'green') --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_track_collab */
+
+create table e_engagement_track_collab (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        p_collab_partner_key                  char(10)  not null,      /* Partner key of the collaborator. If a Kardia user, the username must be tied to the partner key in the p_staff table. --  */
+        e_comments                            varchar(255)  null,      /* Comments about this collaborator's involvement in this track. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_step */
+
+create table e_engagement_step (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        e_step_id                             integer  not null,       /* A unique ID identifying the engagement step --  */
+        e_step_name                           varchar(32)  not null,   /* A short name for the engagement step --  */
+        e_step_description                    varchar(255)  not null,  /* A description for the engagement step --  */
+        e_step_sequence                       integer  not null,       /* What order the engagement steps come in. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_step_collab */
+
+create table e_engagement_step_collab (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        e_step_id                             integer  not null,       /* A unique ID identifying the engagement step --  */
+        p_collab_partner_key                  char(10)  not null,      /* Partner key of the collaborator. If a Kardia user, the username must be tied to the partner key in the p_staff table. --  */
+        e_comments                            varchar(255)  null,      /* Comments about this collaborator's involvement in this step. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* r_group */
 
 create table r_group (
@@ -1857,6 +1980,21 @@ create table i_eg_gift_import (
 );
 
 
+/* i_eg_giving_url */
+
+create table i_eg_giving_url (
+        a_ledger_number                       char(10)  not null,      /* ledger number for the fund --  */
+        a_cost_center                         char(20)  not null,      /* Kardia fund, or * to give a default URL for all funds in the ledger. --  */
+        i_eg_url                              varchar(255)  not null,  /* URL a donor can visit to give an online donation. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* c_message */
 
 create table c_message (
@@ -2043,6 +2181,24 @@ create table s_sec_endorsement_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:sys_admin" as s_endorsement, "System Admin" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl_entry" as s_endorsement, "Enter GL Journal Batches" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl_manage" as s_endorsement, "Manage GL" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb" as s_endorsement, "View Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb_entry" as s_endorsement, "Enter Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb_manage" as s_endorsement, "Manage Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift" as s_endorsement, "View Gift Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_amt" as s_endorsement, "View Gift Amounts" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_entry" as s_endorsement, "Enter Gift Batches" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_manage" as s_endorsement, "Manage Gift Receipting" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists" as s_endorsement, "View Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists_manage" as s_endorsement, "Manage Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:ptnr_manage" as s_endorsement, "Manage Partner System" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm" as s_endorsement, "View CRM Data" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm_entry" as s_endorsement, "Update CRM Info" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm_manage" as s_endorsement, "Manage CRM System" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:pay_manage" as s_endorsement, "Manage Payroll" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl" as s_endorsement, "View GL Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* s_sec_endorsement_context */
@@ -2057,6 +2213,7 @@ create table s_sec_endorsement_context (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into s_sec_endorsement_context (s_context,s_context_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia" as s_context, "Kardia" as s_context_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* s_mykardia */

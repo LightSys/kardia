@@ -158,6 +158,70 @@ alter table m_list_membership
 	drop primary key;
 
 
+alter table e_contact_history_type
+	drop primary key;
+
+
+alter table e_contact_history
+	drop primary key;
+
+
+alter table e_contact_history
+	drop index e_cnt_hist_type_idx;
+
+
+alter table e_contact_history
+	drop index e_cnt_hist_par_idx;
+
+
+alter table e_contact_history
+	drop index e_cnt_hist_locpar_idx;
+
+
+alter table e_contact_history
+	drop index e_cnt_hist_whom_idx;
+
+
+alter table e_activity
+	drop primary key;
+
+
+alter table e_activity
+	drop index e_act_type_idx;
+
+
+alter table e_activity
+	drop index e_act_par_idx;
+
+
+alter table e_activity
+	drop index e_act_sort_idx;
+
+
+alter table e_engagement_track
+	drop primary key;
+
+
+alter table e_engagement_track
+	drop index e_trk_name_idx;
+
+
+alter table e_engagement_track_collab
+	drop primary key;
+
+
+alter table e_engagement_step
+	drop primary key;
+
+
+alter table e_engagement_step
+	drop index e_step_name_idx;
+
+
+alter table e_engagement_step_collab
+	drop primary key;
+
+
 alter table r_group
 	drop primary key;
 
@@ -556,6 +620,10 @@ alter table i_eg_gift_import
 
 alter table i_eg_gift_import
 	drop index i_eg_kdepbatch_idx;
+
+
+alter table i_eg_giving_url
+	drop primary key;
 
 
 alter table c_message

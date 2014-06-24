@@ -43,6 +43,33 @@ alter table p_gazetteer
 alter table p_gazetteer
 	add constraint p_gaz_state_idx unique  (p_state_province, p_country_code, p_feature_type, p_feature_id);
 
+alter table e_contact_history
+	add constraint e_cnt_hist_type_idx unique  (e_contact_history_type, p_partner_key, e_contact_history_id);
+
+alter table e_contact_history
+	add constraint e_cnt_hist_par_idx unique  (p_partner_key, e_contact_history_type, e_contact_history_id);
+
+alter table e_contact_history
+	add constraint e_cnt_hist_locpar_idx unique  (p_location_partner_key, e_contact_history_type, e_contact_history_id);
+
+alter table e_contact_history
+	add constraint e_cnt_hist_whom_idx unique  (e_whom, p_partner_key, e_contact_history_type, e_contact_history_id);
+
+alter table e_activity
+	add constraint e_act_type_idx unique  (e_activity_type, e_activity_group_id, e_activity_id);
+
+alter table e_activity
+	add constraint e_act_par_idx unique  (p_partner_key, e_activity_group_id, e_activity_id);
+
+alter table e_activity
+	add constraint e_act_sort_idx unique  (e_sort_key, e_activity_group_id, e_activity_id);
+
+alter table e_engagement_track
+	add constraint e_trk_name_idx unique  (e_track_name, e_track_id);
+
+alter table e_engagement_step
+	add constraint e_step_name_idx unique  (e_step_name, e_track_id, e_step_id);
+
 alter table r_group
 	add constraint r_grp_modfile_idx unique  (r_group_module, r_group_file, r_group_name);
 

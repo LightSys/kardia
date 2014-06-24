@@ -91,6 +91,34 @@ drop table m_list;
 drop table m_list_membership;
 
 
+/* e_contact_history_type */
+drop table e_contact_history_type;
+
+
+/* e_contact_history */
+drop table e_contact_history;
+
+
+/* e_activity */
+drop table e_activity;
+
+
+/* e_engagement_track */
+drop table e_engagement_track;
+
+
+/* e_engagement_track_collab */
+drop table e_engagement_track_collab;
+
+
+/* e_engagement_step */
+drop table e_engagement_step;
+
+
+/* e_engagement_step_collab */
+drop table e_engagement_step_collab;
+
+
 /* r_group */
 drop table r_group;
 
@@ -337,6 +365,10 @@ drop table a_subtrx_cashxfer;
 
 /* i_eg_gift_import */
 drop table i_eg_gift_import;
+
+
+/* i_eg_giving_url */
+drop table i_eg_giving_url;
 
 
 /* c_message */

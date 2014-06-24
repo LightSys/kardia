@@ -76,6 +76,27 @@ alter table m_list
 alter table m_list_membership
 	add constraint m_list_membership_clustered_pk primary key  (m_list_code, p_partner_key);
 
+alter table e_contact_history_type
+	add constraint e_cnt_hist_type_pk primary key  (e_contact_history_type);
+
+alter table e_contact_history
+	add constraint e_cnt_hist_pk primary key  (e_contact_history_id);
+
+alter table e_activity
+	add constraint e_act_pk primary key  (e_activity_group_id, e_activity_id);
+
+alter table e_engagement_track
+	add constraint e_trk_pk primary key  (e_track_id);
+
+alter table e_engagement_track_collab
+	add constraint e_trkcoll_pk primary key  (e_track_id, p_collab_partner_key);
+
+alter table e_engagement_step
+	add constraint e_step_pk primary key  (e_track_id, e_step_id);
+
+alter table e_engagement_step_collab
+	add constraint e_stepcoll_pk primary key  (e_track_id, e_step_id, p_collab_partner_key);
+
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);
 
@@ -273,6 +294,9 @@ alter table a_subtrx_cashxfer
 
 alter table i_eg_gift_import
 	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid);
+
+alter table i_eg_giving_url
+	add constraint i_eg_giving_url_pk primary key  (a_ledger_number, a_cost_center);
 
 alter table c_message
 	add constraint c_message_pk primary key  (c_chat_id, c_message_id);
