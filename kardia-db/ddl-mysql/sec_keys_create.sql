@@ -70,6 +70,87 @@ alter table e_engagement_track
 alter table e_engagement_step
 	add constraint e_step_name_idx unique  (e_step_name, e_track_id, e_step_id);
 
+alter table e_partner_engagement
+	add constraint e_pareng_trackstep_idx unique  (e_track_id, e_step_id, p_partner_key, e_engagement_id, e_hist_id);
+
+alter table e_partner_engagement
+	add constraint e_pareng_start_idx unique  (e_started_by, p_partner_key, e_engagement_id, e_hist_id);
+
+alter table e_tag_activity
+	add constraint e_tagact_tagid_idx unique  (e_tag_id, p_partner_key, e_tag_activity_group, e_tag_activity_id);
+
+alter table e_tag_activity
+	add constraint e_tagact_ptnr_idx unique  (p_partner_key, e_tag_id, e_tag_activity_group, e_tag_activity_id);
+
+alter table e_document_type
+	add constraint e_doctype_parent_idx unique  (e_parent_doc_type_id, e_doc_type_id);
+
+alter table e_document
+	add constraint e_doc_work_idx unique  (e_workflow_state_id, e_document_id);
+
+alter table e_document
+	add constraint e_doc_type_idx unique  (e_doc_type_id, e_document_id);
+
+alter table e_document
+	add constraint e_doc_curpath_idx unique  (e_current_folder, e_current_filename, e_document_id);
+
+alter table e_document_comment
+	add constraint e_doccom_collab_idx unique  (e_collaborator, e_document_id, e_doc_comment_id);
+
+alter table e_document_comment
+	add constraint e_doccom_tgtcollab_idx unique  (e_target_collaborator, e_document_id, e_doc_comment_id);
+
+alter table e_document_comment
+	add constraint e_doccom_work_idx unique  (e_workflow_state_id, e_document_id, e_doc_comment_id);
+
+alter table e_workflow_type_step
+	add constraint e_workstep_type_idx unique  (e_workflow_id, e_workflow_step_id);
+
+alter table e_workflow_type_step
+	add constraint e_workstep_trig_idx unique  (e_workflow_step_trigger_type, e_workflow_step_trigger, e_workflow_step_id);
+
+alter table e_workflow
+	add constraint e_workinst_type_idx unique  (e_workflow_id, e_workflow_instance_id);
+
+alter table e_workflow
+	add constraint e_workinst_trig_idx unique  (e_workflow_trigger_type, e_workflow_trigger_id, e_workflow_instance_id);
+
+alter table e_workflow
+	add constraint e_workinst_steptrig_idx unique  (e_workflow_step_trigger_id, e_workflow_instance_id);
+
+alter table e_collaborator
+	add constraint e_collab_type_idx unique  (e_collab_type_id, e_collaborator, p_partner_key);
+
+alter table e_todo
+	add constraint e_todo_type_idx unique  (e_todo_type_id, e_todo_id);
+
+alter table e_todo
+	add constraint e_todo_collab_idx unique  (e_todo_collaborator, e_todo_id);
+
+alter table e_todo
+	add constraint e_todo_par_idx unique  (e_todo_partner, e_todo_id);
+
+alter table e_todo
+	add constraint e_todo_eng_idx unique  (e_todo_engagement_id, e_todo_id);
+
+alter table e_todo
+	add constraint e_todo_doc_idx unique  (e_todo_document_id, e_todo_id);
+
+alter table e_todo
+	add constraint e_todo_reqitem_idx unique  (e_todo_req_item_id, e_todo_id);
+
+alter table e_data_item_type
+	add constraint e_ditype_parent_idx unique  (e_parent_data_item_type_id, e_data_item_type_id);
+
+alter table e_data_item_group
+	add constraint e_digrp_type_idx unique  (e_data_item_type_id, e_data_item_group_id);
+
+alter table e_data_item
+	add constraint e_dataitem_type_idx unique  (e_data_item_type_id, e_data_item_id);
+
+alter table e_data_item
+	add constraint e_dataitem_group_idx unique  (e_data_item_group_id, e_data_item_id);
+
 alter table r_group
 	add constraint r_grp_modfile_idx unique  (r_group_module, r_group_file, r_group_name);
 

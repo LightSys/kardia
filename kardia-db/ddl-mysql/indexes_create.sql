@@ -186,6 +186,144 @@ create  index e_step_name_idx on e_engagement_step (e_step_name, e_track_id, e_s
 create  index e_stepcoll_ptnr_idx on e_engagement_step_collab (p_collab_partner_key, e_track_id, e_step_id);
 
 
+/* e_engagement_step_req */
+/* create  index e_req_pk on e_engagement_step_req (e_track_id, e_step_id, e_req_id)*/ 
+/* go */
+
+
+/* e_partner_engagement */
+/* create  index e_pareng_pk on e_partner_engagement (p_partner_key, e_engagement_id, e_hist_id)*/ 
+/* go */
+create  index e_pareng_start_idx on e_partner_engagement (e_started_by, p_partner_key, e_engagement_id, e_hist_id);
+create  index e_pareng_trackstep_idx on e_partner_engagement (e_track_id, e_step_id, p_partner_key, e_engagement_id, e_hist_id);
+
+
+/* e_partner_engagement_req */
+/* create  index e_parreq_pk on e_partner_engagement_req (p_partner_key, e_engagement_id, e_hist_id, e_req_item_id)*/ 
+/* go */
+
+
+/* e_tag_type */
+/* create  index e_tagtype_pk on e_tag_type (e_tag_id)*/ 
+/* go */
+
+
+/* e_tag_type_relationship */
+/* create  index e_tagtyperel_pk on e_tag_type_relationship (e_tag_id, e_rel_tag_id)*/ 
+/* go */
+
+
+/* e_tag */
+/* create  index e_tag_pk on e_tag (e_tag_id, p_partner_key)*/ 
+/* go */
+
+
+/* e_tag_activity */
+create  index e_tagact_gptnr_idx on e_tag_activity (e_tag_activity_group, p_partner_key, e_tag_id, e_tag_activity_id);
+create  index e_tagact_gtag_idx on e_tag_activity (e_tag_activity_group, e_tag_id, p_partner_key, e_tag_activity_id);
+/* create  index e_tagact_pk on e_tag_activity (e_tag_activity_group, e_tag_activity_id)*/ 
+/* go */
+create  index e_tagact_ptnr_idx on e_tag_activity (p_partner_key, e_tag_id, e_tag_activity_group, e_tag_activity_id);
+create  index e_tagact_tagid_idx on e_tag_activity (e_tag_id, p_partner_key, e_tag_activity_group, e_tag_activity_id);
+
+
+/* e_document_type */
+create  index e_doctype_parent_idx on e_document_type (e_parent_doc_type_id, e_doc_type_id);
+/* create  index e_doctype_pk on e_document_type (e_doc_type_id)*/ 
+/* go */
+
+
+/* e_document */
+create  index e_doc_curpath_idx on e_document (e_current_folder, e_current_filename, e_document_id);
+/* create  index e_doc_pk on e_document (e_document_id)*/ 
+/* go */
+create  index e_doc_type_idx on e_document (e_doc_type_id, e_document_id);
+create  index e_doc_work_idx on e_document (e_workflow_state_id, e_document_id);
+
+
+/* e_document_comment */
+create  index e_doccom_collab_idx on e_document_comment (e_collaborator, e_document_id, e_doc_comment_id);
+/* create  index e_doccom_pk on e_document_comment (e_document_id, e_doc_comment_id)*/ 
+/* go */
+create  index e_doccom_tgtcollab_idx on e_document_comment (e_target_collaborator, e_document_id, e_doc_comment_id);
+create  index e_doccom_work_idx on e_document_comment (e_workflow_state_id, e_document_id, e_doc_comment_id);
+
+
+/* e_partner_document */
+create  index e_pardoc_egagement_idx on e_partner_document (e_engagement_id, p_partner_key, e_document_id);
+/* create  index e_pardoc_pk on e_partner_document (e_document_id, p_partner_key)*/ 
+/* go */
+create  index e_pardoc_rev_idx on e_partner_document (p_partner_key, e_document_id);
+create  index e_pardoc_work_idx on e_partner_document (e_workflow_instance_id, p_partner_key, e_document_id);
+
+
+/* e_workflow_type */
+/* create  index e_work_pk on e_workflow_type (e_workflow_id)*/ 
+/* go */
+
+
+/* e_workflow_type_step */
+/* create  index e_workstep_pk on e_workflow_type_step (e_workflow_step_id)*/ 
+/* go */
+create  index e_workstep_trig_idx on e_workflow_type_step (e_workflow_step_trigger_type, e_workflow_step_trigger, e_workflow_step_id);
+create  index e_workstep_type_idx on e_workflow_type_step (e_workflow_id, e_workflow_step_id);
+
+
+/* e_workflow */
+/* create  index e_workinst_pk on e_workflow (e_workflow_instance_id)*/ 
+/* go */
+create  index e_workinst_steptrig_idx on e_workflow (e_workflow_step_trigger_id, e_workflow_instance_id);
+create  index e_workinst_trig_idx on e_workflow (e_workflow_trigger_type, e_workflow_trigger_id, e_workflow_instance_id);
+create  index e_workinst_type_idx on e_workflow (e_workflow_id, e_workflow_instance_id);
+
+
+/* e_collaborator_type */
+/* create  index e_collabtype_pk on e_collaborator_type (e_collab_type_id)*/ 
+/* go */
+
+
+/* e_collaborator */
+/* create  index e_collab_pk on e_collaborator (e_collaborator, p_partner_key)*/ 
+/* go */
+create  index e_collab_rev_idx on e_collaborator (p_partner_key, e_collaborator);
+create  index e_collab_type_idx on e_collaborator (e_collab_type_id, e_collaborator, p_partner_key);
+
+
+/* e_todo_type */
+/* create  index e_todotype_pk on e_todo_type (e_todo_type_id)*/ 
+/* go */
+
+
+/* e_todo */
+create  index e_todo_collab_idx on e_todo (e_todo_collaborator, e_todo_id);
+create  index e_todo_doc_idx on e_todo (e_todo_document_id, e_todo_id);
+create  index e_todo_eng_idx on e_todo (e_todo_engagement_id, e_todo_id);
+create  index e_todo_par_idx on e_todo (e_todo_partner, e_todo_id);
+/* create  index e_todo_pk on e_todo (e_todo_id)*/ 
+/* go */
+create  index e_todo_reqitem_idx on e_todo (e_todo_req_item_id, e_todo_id);
+create  index e_todo_type_idx on e_todo (e_todo_type_id, e_todo_id);
+
+
+/* e_data_item_type */
+create  index e_ditype_parent_idx on e_data_item_type (e_parent_data_item_type_id, e_data_item_type_id);
+/* create  index e_ditype_pk on e_data_item_type (e_data_item_type_id)*/ 
+/* go */
+
+
+/* e_data_item_group */
+/* create  index e_digrp_pk on e_data_item_group (e_data_item_group_id)*/ 
+/* go */
+create  index e_digrp_type_idx on e_data_item_group (e_data_item_type_id, e_data_item_group_id);
+
+
+/* e_data_item */
+create  index e_dataitem_group_idx on e_data_item (e_data_item_group_id, e_data_item_id);
+/* create  index e_dataitem_pk on e_data_item (e_data_item_id)*/ 
+/* go */
+create  index e_dataitem_type_idx on e_data_item (e_data_item_type_id, e_data_item_id);
+
+
 /* r_group */
 create  index r_grp_modfile_idx on r_group (r_group_module, r_group_file, r_group_name);
 /* create  index r_grp_pk on r_group (r_group_name)*/ 

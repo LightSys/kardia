@@ -94,6 +94,69 @@ grant select on ra to public;
 /* e_engagement_step_collab */
 
 
+/* e_engagement_step_req */
+
+
+/* e_partner_engagement */
+
+
+/* e_partner_engagement_req */
+
+
+/* e_tag_type */
+
+
+/* e_tag_type_relationship */
+
+
+/* e_tag */
+
+
+/* e_tag_activity */
+
+
+/* e_document_type */
+
+
+/* e_document */
+
+
+/* e_document_comment */
+
+
+/* e_partner_document */
+
+
+/* e_workflow_type */
+
+
+/* e_workflow_type_step */
+
+
+/* e_workflow */
+
+
+/* e_collaborator_type */
+
+
+/* e_collaborator */
+
+
+/* e_todo_type */
+
+
+/* e_todo */
+
+
+/* e_data_item_type */
+
+
+/* e_data_item_group */
+
+
+/* e_data_item */
+
+
 /* r_group */
 
 

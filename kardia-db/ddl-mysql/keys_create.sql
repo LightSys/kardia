@@ -97,6 +97,69 @@ alter table e_engagement_step
 alter table e_engagement_step_collab
 	add constraint e_stepcoll_pk primary key  (e_track_id, e_step_id, p_collab_partner_key);
 
+alter table e_engagement_step_req
+	add constraint e_req_pk primary key  (e_track_id, e_step_id, e_req_id);
+
+alter table e_partner_engagement
+	add constraint e_pareng_pk primary key  (p_partner_key, e_engagement_id, e_hist_id);
+
+alter table e_partner_engagement_req
+	add constraint e_parreq_pk primary key  (p_partner_key, e_engagement_id, e_hist_id, e_req_item_id);
+
+alter table e_tag_type
+	add constraint e_tagtype_pk primary key  (e_tag_id);
+
+alter table e_tag_type_relationship
+	add constraint e_tagtyperel_pk primary key  (e_tag_id, e_rel_tag_id);
+
+alter table e_tag
+	add constraint e_tag_pk primary key  (e_tag_id, p_partner_key);
+
+alter table e_tag_activity
+	add constraint e_tagact_pk primary key  (e_tag_activity_group, e_tag_activity_id);
+
+alter table e_document_type
+	add constraint e_doctype_pk primary key  (e_doc_type_id);
+
+alter table e_document
+	add constraint e_doc_pk primary key  (e_document_id);
+
+alter table e_document_comment
+	add constraint e_doccom_pk primary key  (e_document_id, e_doc_comment_id);
+
+alter table e_partner_document
+	add constraint e_pardoc_pk primary key  (e_document_id, p_partner_key);
+
+alter table e_workflow_type
+	add constraint e_work_pk primary key  (e_workflow_id);
+
+alter table e_workflow_type_step
+	add constraint e_workstep_pk primary key  (e_workflow_step_id);
+
+alter table e_workflow
+	add constraint e_workinst_pk primary key  (e_workflow_instance_id);
+
+alter table e_collaborator_type
+	add constraint e_collabtype_pk primary key  (e_collab_type_id);
+
+alter table e_collaborator
+	add constraint e_collab_pk primary key  (e_collaborator, p_partner_key);
+
+alter table e_todo_type
+	add constraint e_todotype_pk primary key  (e_todo_type_id);
+
+alter table e_todo
+	add constraint e_todo_pk primary key  (e_todo_id);
+
+alter table e_data_item_type
+	add constraint e_ditype_pk primary key  (e_data_item_type_id);
+
+alter table e_data_item_group
+	add constraint e_digrp_pk primary key  (e_data_item_group_id);
+
+alter table e_data_item
+	add constraint e_dataitem_pk primary key  (e_data_item_id);
+
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);
 

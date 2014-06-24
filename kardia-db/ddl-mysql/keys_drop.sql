@@ -222,6 +222,198 @@ alter table e_engagement_step_collab
 	drop primary key;
 
 
+alter table e_engagement_step_req
+	drop primary key;
+
+
+alter table e_partner_engagement
+	drop primary key;
+
+
+alter table e_partner_engagement
+	drop index e_pareng_trackstep_idx;
+
+
+alter table e_partner_engagement
+	drop index e_pareng_start_idx;
+
+
+alter table e_partner_engagement_req
+	drop primary key;
+
+
+alter table e_tag_type
+	drop primary key;
+
+
+alter table e_tag_type_relationship
+	drop primary key;
+
+
+alter table e_tag
+	drop primary key;
+
+
+alter table e_tag_activity
+	drop primary key;
+
+
+alter table e_tag_activity
+	drop index e_tagact_tagid_idx;
+
+
+alter table e_tag_activity
+	drop index e_tagact_ptnr_idx;
+
+
+alter table e_document_type
+	drop primary key;
+
+
+alter table e_document_type
+	drop index e_doctype_parent_idx;
+
+
+alter table e_document
+	drop primary key;
+
+
+alter table e_document
+	drop index e_doc_work_idx;
+
+
+alter table e_document
+	drop index e_doc_type_idx;
+
+
+alter table e_document
+	drop index e_doc_curpath_idx;
+
+
+alter table e_document_comment
+	drop primary key;
+
+
+alter table e_document_comment
+	drop index e_doccom_collab_idx;
+
+
+alter table e_document_comment
+	drop index e_doccom_tgtcollab_idx;
+
+
+alter table e_document_comment
+	drop index e_doccom_work_idx;
+
+
+alter table e_partner_document
+	drop primary key;
+
+
+alter table e_workflow_type
+	drop primary key;
+
+
+alter table e_workflow_type_step
+	drop primary key;
+
+
+alter table e_workflow_type_step
+	drop index e_workstep_type_idx;
+
+
+alter table e_workflow_type_step
+	drop index e_workstep_trig_idx;
+
+
+alter table e_workflow
+	drop primary key;
+
+
+alter table e_workflow
+	drop index e_workinst_type_idx;
+
+
+alter table e_workflow
+	drop index e_workinst_trig_idx;
+
+
+alter table e_workflow
+	drop index e_workinst_steptrig_idx;
+
+
+alter table e_collaborator_type
+	drop primary key;
+
+
+alter table e_collaborator
+	drop primary key;
+
+
+alter table e_collaborator
+	drop index e_collab_type_idx;
+
+
+alter table e_todo_type
+	drop primary key;
+
+
+alter table e_todo
+	drop primary key;
+
+
+alter table e_todo
+	drop index e_todo_type_idx;
+
+
+alter table e_todo
+	drop index e_todo_collab_idx;
+
+
+alter table e_todo
+	drop index e_todo_par_idx;
+
+
+alter table e_todo
+	drop index e_todo_eng_idx;
+
+
+alter table e_todo
+	drop index e_todo_doc_idx;
+
+
+alter table e_todo
+	drop index e_todo_reqitem_idx;
+
+
+alter table e_data_item_type
+	drop primary key;
+
+
+alter table e_data_item_type
+	drop index e_ditype_parent_idx;
+
+
+alter table e_data_item_group
+	drop primary key;
+
+
+alter table e_data_item_group
+	drop index e_digrp_type_idx;
+
+
+alter table e_data_item
+	drop primary key;
+
+
+alter table e_data_item
+	drop index e_dataitem_type_idx;
+
+
+alter table e_data_item
+	drop index e_dataitem_group_idx;
+
+
 alter table r_group
 	drop primary key;
 

@@ -119,6 +119,90 @@ drop table e_engagement_step;
 drop table e_engagement_step_collab;
 
 
+/* e_engagement_step_req */
+drop table e_engagement_step_req;
+
+
+/* e_partner_engagement */
+drop table e_partner_engagement;
+
+
+/* e_partner_engagement_req */
+drop table e_partner_engagement_req;
+
+
+/* e_tag_type */
+drop table e_tag_type;
+
+
+/* e_tag_type_relationship */
+drop table e_tag_type_relationship;
+
+
+/* e_tag */
+drop table e_tag;
+
+
+/* e_tag_activity */
+drop table e_tag_activity;
+
+
+/* e_document_type */
+drop table e_document_type;
+
+
+/* e_document */
+drop table e_document;
+
+
+/* e_document_comment */
+drop table e_document_comment;
+
+
+/* e_partner_document */
+drop table e_partner_document;
+
+
+/* e_workflow_type */
+drop table e_workflow_type;
+
+
+/* e_workflow_type_step */
+drop table e_workflow_type_step;
+
+
+/* e_workflow */
+drop table e_workflow;
+
+
+/* e_collaborator_type */
+drop table e_collaborator_type;
+
+
+/* e_collaborator */
+drop table e_collaborator;
+
+
+/* e_todo_type */
+drop table e_todo_type;
+
+
+/* e_todo */
+drop table e_todo;
+
+
+/* e_data_item_type */
+drop table e_data_item_type;
+
+
+/* e_data_item_group */
+drop table e_data_item_group;
+
+
+/* e_data_item */
+drop table e_data_item;
+
+
 /* r_group */
 drop table r_group;
 

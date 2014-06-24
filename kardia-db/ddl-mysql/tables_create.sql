@@ -505,7 +505,7 @@ create table e_contact_history (
         p_location_partner_key                char(10)  null,          /* The partner key of the location where the contact took place (may be the same as the p_partner_key in some cases) --  */
         p_location_id                         integer  null,           /* The p_location ID where the contact physically took place (for in-person contacts) --  */
         p_location_revision_id                integer  null,           /* The p_location revision ID where the contact physically took place (for in-person contacts) --  */
-        e_whom                                varchar(20)  null,       /* The user who made the contact; NULL if no particular user was involved --  */
+        e_whom                                char(10)  null,          /* The collaborator/user who made the contact; NULL if no particular user was involved --  */
         e_subject                             varchar(255)  null,      /* A short description of the contact that took place --  */
         e_contact_date                        datetime  not null,      /* The date and time that the contact took place --  */
         e_notes                               varchar(900)  null,      /* Notes regarding this contact --  */
@@ -593,6 +593,402 @@ create table e_engagement_step_collab (
         e_step_id                             integer  not null,       /* A unique ID identifying the engagement step --  */
         p_collab_partner_key                  char(10)  not null,      /* Partner key of the collaborator. If a Kardia user, the username must be tied to the partner key in the p_staff table. --  */
         e_comments                            varchar(255)  null,      /* Comments about this collaborator's involvement in this step. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_step_req */
+
+create table e_engagement_step_req (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        e_step_id                             integer  not null,       /* A unique ID identifying the engagement step --  */
+        e_req_id                              integer  not null,       /* The unique ID identifying the template requirement item. --  */
+        e_req_name                            varchar(255)  not null,  /* A description for the engagement step requirement --  */
+        e_due_days_from_step                  integer  null,           /* If applicable, how many days to set the due date at after the partner starts this step --  */
+        e_due_days_from_req                   integer  null,           /* If applicable, how many days to set the due date at after the partner completes another requirement --  */
+        e_due_days_from_req_id                integer  null,           /* If applicable, the requirement ID whose completion triggers the due date interval for this requirement --  */
+        e_req_whom                            char(1)  not null,       /* Who this requirement is fulfilled by: (P)artner, (O)rganization, or (E)ither. --  */
+        e_req_doc_type_id                     integer  null,           /* Does a document fulfill this step? If so, the corresponding document type ID is stored here. --  */
+        e_req_waivable                        bit  not null,           /* Can this requirement be waived? 0 if not, or 1 if so --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_partner_engagement */
+
+create table e_partner_engagement (
+        p_partner_key                         char(10)  not null,      /* The partner ID that is doing the engaging --  */
+        e_engagement_id                       integer  not null,       /* A unique ID for this partner's current engagement --  */
+        e_hist_id                             integer  not null,       /* An incrementing ID for showing the history of this engagement. --  */
+        e_track_id                            integer  not null,       /* The engagement track --  */
+        e_step_id                             integer  not null,       /* The current engagement step --  */
+        e_is_archived                         bit  not null,           /* Set to 0 if the engagement in this track is currently active, or 1 if it is archived/historical --  */
+        e_completion_status                   char(1)  not null,       /* Status of the step: (I)ncomplete, (C)omplete, (E)xited without completing the step --  */
+        e_desc                                varchar(40)  not null,   /* User-entered short description on this engagement track/step for this partner --  */
+        e_comments                            varchar(255)  null,      /* User-entered comments on this engagement track/step for this partner --  */
+        e_start_date                          datetime  not null,      /* The date the user entered this engagement track and/or step --  */
+        e_started_by                          char(10)  not null,      /* Collaborator partner ID that caused the track/step to begin --  */
+        e_completion_date                     datetime  null,          /* The date the user completed this engagement step --  */
+        e_completed_by                        char(10)  null,          /* Collaborator partner ID that caused the track/step to become complete --  */
+        e_exited_date                         datetime  null,          /* The date the user exited this engagement step (whether completed or not) --  */
+        e_exited_by                           char(10)  null,          /* Collaborator partner ID that caused the track/step to exit --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_partner_engagement_req */
+
+create table e_partner_engagement_req (
+        p_partner_key                         char(10)  not null,      /* The partner ID that is doing the engaging --  */
+        e_engagement_id                       integer  not null,       /* A unique ID for this partner's current engagement --  */
+        e_hist_id                             integer  not null,       /* An incrementing ID for showing the history of this engagement. --  */
+        e_req_item_id                         integer  not null,       /* An incrementing ID for this actual requirement item --  */
+        e_track_id                            integer  not null,       /* The engagement track id -- if copied from template --  */
+        e_step_id                             integer  not null,       /* The engagement track step id -- if copied from template --  */
+        e_req_id                              integer  null,           /* The engagement track requirement id -- if copied from template --  */
+        e_req_completion_status               char(1)  not null,       /* Status of the requirement: (I)ncomplete, (C)omplete, (W)aived --  */
+        e_req_name                            varchar(255)  not null,  /* A description for the engagement step requirement --  */
+        e_due_days_from_step                  integer  null,           /* If applicable, how many days to set the due date at after the partner starts this step --  */
+        e_due_days_from_req                   integer  null,           /* If applicable, how many days to set the due date at after the partner completes another requirement --  */
+        e_due_days_from_req_id                integer  null,           /* If applicable, the requirement ID whose completion triggers the due date interval for this requirement --  */
+        e_req_whom                            char(1)  not null,       /* Who this requirement is fulfilled by: (P)artner, (O)rganization, or (E)ither. --  */
+        e_req_doc_type_id                     integer  null,           /* Does a document fulfill this step? If so, the corresponding document type ID is stored here. --  */
+        e_req_waivable                        bit  not null,           /* Can this requirement be waived? 0 if not, or 1 if so --  */
+        e_req_doc_id                          integer  null,           /* Document ID used to fulfill this requirement --  */
+        e_completion_date                     datetime  null,          /* The date the user completed this engagement step --  */
+        e_completed_by                        char(10)  null,          /* Collaborator partner ID that caused the track/step to become complete --  */
+        e_waived_date                         datetime  null,          /* The date the user exited this engagement step (whether completed or not) --  */
+        e_waived_by                           char(10)  null,          /* Collaborator partner ID that caused the track/step to exit --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_tag_type */
+
+create table e_tag_type (
+        e_tag_id                              integer  not null,       /* ID of the tag --  */
+        e_tag_label                           varchar(40)  not null,   /* Short label for this tag. --  */
+        e_tag_desc                            varchar(255)  not null,  /* A full description of the tag. --  */
+        e_is_active                           bit  not null,           /* 1 if active, or 0 if not active. An inactive tag may still be present in the tag graph, but will not be available to the user to select. --  */
+        e_tag_threshold                       float  not null,         /* A value between 0.0 and 1.0 that indicates how strong a tag must be in order for it to actually be created in the tag graph for a partner. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_tag_type_relationship */
+
+create table e_tag_type_relationship (
+        e_tag_id                              integer  not null,       /* ID of the tag --  */
+        e_rel_tag_id                          integer  not null,       /* ID of the related tag --  */
+        e_rel_strength                        float  not null,         /* The strength of the relationship (0.0 to 1.0) --  */
+        e_rel_certainty                       float  not null,         /* The certainty of the relationship (0.0 to 1.0) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_tag */
+
+create table e_tag (
+        e_tag_id                              integer  not null,       /* ID of the tag --  */
+        p_partner_key                         char(10)  not null,      /* ID of the partner that has been thusly tagged --  */
+        e_tag_strength                        float  not null,         /* The strength of the tag (-1.0 to 1.0) - negative values mean disinterest, etc. --  */
+        e_tag_certainty                       float  not null,         /* The certainty of the tag (0.0 to 1.0) --  */
+        e_tag_volatility                      char(1)  not null,       /* The volatility of the tag: (P)ersistent - created by a user, (D)erived from other data, or merely (I)mplied from other tags. --  */
+        e_tag_origin                          varchar(8)  null,        /* If the tag was derived from other data, this is the type of the source of that data. Values for this are not yet defined. --  */
+        e_tag_comments                        varchar(255)  null,      /* Comments about this tag --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_tag_activity */
+
+create table e_tag_activity (
+        e_tag_activity_group                  integer  not null,       /* The group used for tag activity aggregation. --  */
+        e_tag_activity_id                     integer  not null,       /* ID of the activity item --  */
+        e_tag_id                              integer  not null,       /* ID of the tag --  */
+        p_partner_key                         char(10)  not null,      /* ID of the partner --  */
+        e_tag_strength                        float  not null,         /* The strength of the tag (-1.0 to 1.0) - negative values mean disinterest, etc. --  */
+        e_tag_certainty                       float  not null,         /* The certainty of the tag (0.0 to 1.0) --  */
+        e_tag_volatility                      char(1)  not null,       /* The volatility of the tag: (P)ersistent - created by a user, (D)erived from other data, or merely (I)mplied from other tags. --  */
+        e_tag_origin                          varchar(8)  null,        /* If the tag was derived from other data, this is the type of the source of that data. Values for this are not yet defined. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_document_type */
+
+create table e_document_type (
+        e_doc_type_id                         integer  not null,       /* The ID of the document type --  */
+        e_parent_doc_type_id                  integer  null,           /* The parent (more general) document type, for hierarchical organization of document types --  */
+        e_doc_type_label                      varchar(40)  not null,   /* A short label for the document type --  */
+        e_doc_type_desc                       varchar(255)  null,      /* A long description of the document type --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_document */
+
+create table e_document (
+        e_document_id                         integer  not null,       /* The ID of the document. --  */
+        e_doc_type_id                         integer  not null,       /* The ID of the document type --  */
+        e_title                               varchar(80)  not null,   /* The title of this document. --  */
+        e_orig_filename                       varchar(255)  not null,  /* The original filename of the document when it was uploaded --  */
+        e_current_folder                      varchar(255)  not null,  /* The pathname of the folder the document is currently stored in. --  */
+        e_current_filename                    varchar(255)  not null,  /* The current filename of the document, as stored. --  */
+        e_uploading_collaborator              char(10)  not null,      /* The collaborator or collaborator group that uploaded the document --  */
+        e_workflow_state_id                   integer  null,           /* The workflow state of this document, if any. This is used for workflow state chains triggered by the document upload itself rather than by the association of the document with a particular partner. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_document_comment */
+
+create table e_document_comment (
+        e_document_id                         integer  not null,       /* The ID of the document. --  */
+        e_doc_comment_id                      integer  not null,       /* The ID of the comment --  */
+        e_comments                            varchar(999)  not null,  /* Comments made about the document --  */
+        e_collaborator                        char(10)  not null,      /* The collaborator making the comments --  */
+        e_workflow_state_id                   integer  null,           /* The workflow state, if any, of the document at the time the comments were made. --  */
+        e_target_collaborator                 char(10)  null,          /* A target collaborator (or collaborator group) for the comments. If set, it will create a to-do item for that collaborator. --  */
+        e_target_review_period                integer  null,           /* The number of days the collaborator has to review the comments and acknowledge them (this sets a due date for the to-do item mentioned above). --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_partner_document */
+
+create table e_partner_document (
+        e_document_id                         integer  not null,       /* The ID of the document. --  */
+        p_partner_key                         char(10)  not null,      /* The partner that is associated with the document --  */
+        e_engagement_id                       integer  not null,       /* The current engagement ID (track instance) associated with this document --  */
+        e_workflow_instance_id                integer  null,           /* The current workflow instance associated with this document, if any --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_workflow_type */
+
+create table e_workflow_type (
+        e_workflow_id                         integer  not null,       /* The ID of the workflow --  */
+        e_workflow_label                      varchar(40)  not null,   /* A short label for the workflow --  */
+        e_workflow_desc                       varchar(255)  null,      /* A long description of the workflow --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_workflow_type_step */
+
+create table e_workflow_type_step (
+        e_workflow_step_id                    integer  not null,       /* A particular workflow step --  */
+        e_workflow_id                         integer  not null,       /* A particular workflow --  */
+        e_workflow_step_label                 varchar(40)  not null,   /* A short label for the workflow step --  */
+        e_workflow_step_desc                  varchar(255)  null,      /* A long description of the workflow step --  */
+        e_workflow_step_trigger               integer  null,           /* What triggers this workflow state. See the trigger type, below, for the context for this number (e.g. workflow step id or document id) --  */
+        e_workflow_step_trigger_type          varchar(4)  null,        /* The type of trigger for this workflow state: STEP for being triggered by another step, DOC for being triggered by the upload of a document type, DOCP for triggering when a document is associated with a partner. Other types will be added in the future. --  */
+        e_collaborator                        char(10)  not null,      /* The collaborator or collaborator group that is responsible for handling this workflow step. --  */
+        e_workflow_step_days                  integer  null,           /* The number of days the collaborator or collab group has to handle a document in this workflow step. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_workflow */
+
+create table e_workflow (
+        e_workflow_instance_id                integer  not null,       /* A particular workflow in progress --  */
+        e_workflow_id                         integer  not null,       /* The workflow that is in progress --  */
+        e_workflow_start                      datetime  not null,      /* The starting date of the entire workflow --  */
+        e_workflow_trigger_id                 integer  null,           /* The ID of the object triggering the entire workflow to start --  */
+        e_workflow_trigger_type               varchar(4)  null,        /* The type of the trigger for the workflow, such as DOC or DOCP --  */
+        e_workflow_step_id                    integer  not null,       /* The current step in the workflow that we are at --  */
+        e_workflow_step_start                 datetime  not null,      /* The starting date of the current workflow step --  */
+        e_workflow_step_trigger_id            integer  null,           /* The ID of the workflow step that triggered this step to begin --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_collaborator_type */
+
+create table e_collaborator_type (
+        e_collab_type_id                      integer  not null,       /* The collaboration type ID --  */
+        e_collab_type_label                   varchar(40)  not null,   /* A short collaboration type label --  */
+        e_collab_type_desc                    varchar(255)  null,      /* A description of this collaboration type --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_collaborator */
+
+create table e_collaborator (
+        e_collaborator                        char(10)  not null,      /* The ID (partner key) of the collaborator --  */
+        p_partner_key                         char(10)  not null,      /* The id (partner key) of the partner who is engaging --  */
+        e_collab_type_id                      integer  not null,       /* The collaboration type ID --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_todo_type */
+
+create table e_todo_type (
+        e_todo_type_id                        integer  not null,       /* The todo type ID --  */
+        e_todo_type_label                     varchar(40)  not null,   /* A short todo type label --  */
+        e_todo_type_desc                      varchar(255)  null,      /* A description of this todo type --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_todo */
+
+create table e_todo (
+        e_todo_id                             integer  not null,       /* The todo ID --  */
+        e_todo_type_id                        integer  not null,       /* The todo type ID --  */
+        e_todo_desc                           varchar(40)  not null,   /* The description of this todo --  */
+        e_todo_collaborator                   char(10)  not null,      /* The collaborator that needs to do this todo item --  */
+        e_todo_partner                        char(10)  null,          /* The engaging partner that this todo relates to --  */
+        e_todo_engagement_id                  integer  null,           /* The engagement ID, if any, that this todo relates to --  */
+        e_todo_document_id                    integer  null,           /* The document ID, if any, that this todo relates to --  */
+        e_todo_req_item_id                    integer  null,           /* The requirement item ID, if any, that this todo relates to --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_data_item_type */
+
+create table e_data_item_type (
+        e_data_item_type_id                   integer  not null,       /* The data item type ID --  */
+        e_parent_data_item_type_id            integer  null,           /* The parent data item type ID (hierarchy reference) --  */
+        e_data_item_type_label                varchar(40)  not null,   /* A short data item type label --  */
+        e_data_item_type_desc                 varchar(255)  null,      /* A description of this data item type --  */
+        e_data_item_type_highlight            integer  null,           /* Set to 0 or null to not highlight this item, or 1 to highlight it on the profile page --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_data_item_group */
+
+create table e_data_item_group (
+        e_data_item_group_id                  integer  not null,       /* The data item group ID --  */
+        e_data_item_type_id                   integer  null,           /* The data item type hierarchy that this group relates to --  */
+        e_data_item_group_name                varchar(80)  not null,   /* The name of this actual group --  */
+        e_data_item_group_desc                varchar(255)  null,      /* A description of this group --  */
+        p_partner_key                         char(10)  not null,      /* The engaging partner that this data item group is about --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_data_item */
+
+create table e_data_item (
+        e_data_item_id                        integer  not null,       /* The data item ID --  */
+        e_data_item_type_id                   integer  not null,       /* The data item type ID --  */
+        e_data_item_group_id                  integer  not null,       /* The data item group ID --  */
+        e_data_item_value                     varchar(999)  not null,  /* The value of this data item. --  */
+        e_data_item_highlight                 integer  null,           /* Set to 0 or null to not highlight this item, or 1 to highlight it on the profile page. Inherited from the data item type, but changeable for the particular data item. --  */
+        p_partner_key                         char(10)  not null,      /* The engaging partner that this data item is about (denormalized from the data item group table) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

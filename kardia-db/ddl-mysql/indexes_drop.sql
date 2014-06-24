@@ -186,6 +186,144 @@ alter table e_engagement_step drop index e_step_name_idx;
 alter table e_engagement_step_collab drop index e_stepcoll_ptnr_idx;
 
 
+/* e_engagement_step_req */
+/* drop index e_engagement_step_req.e_req_pk */ 
+/* go */
+
+
+/* e_partner_engagement */
+/* drop index e_partner_engagement.e_pareng_pk */ 
+/* go */
+alter table e_partner_engagement drop index e_pareng_start_idx;
+alter table e_partner_engagement drop index e_pareng_trackstep_idx;
+
+
+/* e_partner_engagement_req */
+/* drop index e_partner_engagement_req.e_parreq_pk */ 
+/* go */
+
+
+/* e_tag_type */
+/* drop index e_tag_type.e_tagtype_pk */ 
+/* go */
+
+
+/* e_tag_type_relationship */
+/* drop index e_tag_type_relationship.e_tagtyperel_pk */ 
+/* go */
+
+
+/* e_tag */
+/* drop index e_tag.e_tag_pk */ 
+/* go */
+
+
+/* e_tag_activity */
+alter table e_tag_activity drop index e_tagact_gptnr_idx;
+alter table e_tag_activity drop index e_tagact_gtag_idx;
+/* drop index e_tag_activity.e_tagact_pk */ 
+/* go */
+alter table e_tag_activity drop index e_tagact_ptnr_idx;
+alter table e_tag_activity drop index e_tagact_tagid_idx;
+
+
+/* e_document_type */
+alter table e_document_type drop index e_doctype_parent_idx;
+/* drop index e_document_type.e_doctype_pk */ 
+/* go */
+
+
+/* e_document */
+alter table e_document drop index e_doc_curpath_idx;
+/* drop index e_document.e_doc_pk */ 
+/* go */
+alter table e_document drop index e_doc_type_idx;
+alter table e_document drop index e_doc_work_idx;
+
+
+/* e_document_comment */
+alter table e_document_comment drop index e_doccom_collab_idx;
+/* drop index e_document_comment.e_doccom_pk */ 
+/* go */
+alter table e_document_comment drop index e_doccom_tgtcollab_idx;
+alter table e_document_comment drop index e_doccom_work_idx;
+
+
+/* e_partner_document */
+alter table e_partner_document drop index e_pardoc_egagement_idx;
+/* drop index e_partner_document.e_pardoc_pk */ 
+/* go */
+alter table e_partner_document drop index e_pardoc_rev_idx;
+alter table e_partner_document drop index e_pardoc_work_idx;
+
+
+/* e_workflow_type */
+/* drop index e_workflow_type.e_work_pk */ 
+/* go */
+
+
+/* e_workflow_type_step */
+/* drop index e_workflow_type_step.e_workstep_pk */ 
+/* go */
+alter table e_workflow_type_step drop index e_workstep_trig_idx;
+alter table e_workflow_type_step drop index e_workstep_type_idx;
+
+
+/* e_workflow */
+/* drop index e_workflow.e_workinst_pk */ 
+/* go */
+alter table e_workflow drop index e_workinst_steptrig_idx;
+alter table e_workflow drop index e_workinst_trig_idx;
+alter table e_workflow drop index e_workinst_type_idx;
+
+
+/* e_collaborator_type */
+/* drop index e_collaborator_type.e_collabtype_pk */ 
+/* go */
+
+
+/* e_collaborator */
+/* drop index e_collaborator.e_collab_pk */ 
+/* go */
+alter table e_collaborator drop index e_collab_rev_idx;
+alter table e_collaborator drop index e_collab_type_idx;
+
+
+/* e_todo_type */
+/* drop index e_todo_type.e_todotype_pk */ 
+/* go */
+
+
+/* e_todo */
+alter table e_todo drop index e_todo_collab_idx;
+alter table e_todo drop index e_todo_doc_idx;
+alter table e_todo drop index e_todo_eng_idx;
+alter table e_todo drop index e_todo_par_idx;
+/* drop index e_todo.e_todo_pk */ 
+/* go */
+alter table e_todo drop index e_todo_reqitem_idx;
+alter table e_todo drop index e_todo_type_idx;
+
+
+/* e_data_item_type */
+alter table e_data_item_type drop index e_ditype_parent_idx;
+/* drop index e_data_item_type.e_ditype_pk */ 
+/* go */
+
+
+/* e_data_item_group */
+/* drop index e_data_item_group.e_digrp_pk */ 
+/* go */
+alter table e_data_item_group drop index e_digrp_type_idx;
+
+
+/* e_data_item */
+alter table e_data_item drop index e_dataitem_group_idx;
+/* drop index e_data_item.e_dataitem_pk */ 
+/* go */
+alter table e_data_item drop index e_dataitem_type_idx;
+
+
 /* r_group */
 alter table r_group drop index r_grp_modfile_idx;
 /* drop index r_group.r_grp_pk */ 
