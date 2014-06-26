@@ -129,6 +129,7 @@ api_crm_config "system/querytree"
 				:etc:name,
 				partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 				partner_id = :etc:p_collab_partner_key,
+				track_name = :tracklist:track_name,
 				comments = :etc:e_comments,
 				date_created = :etc:s_date_created,
 				created_by = :etc:s_created_by,
