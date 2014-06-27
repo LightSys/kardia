@@ -154,6 +154,7 @@ create table p_address_format_set (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into p_address_format_set (p_address_set,p_address_set_desc,p_is_active,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "STANDARD" as p_address_set, "Standard Format Set" as p_address_set_desc, 1 as p_is_active, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* p_contact_info */
@@ -483,7 +484,7 @@ create table m_list_membership (
 
 create table e_contact_history_type (
         e_contact_history_type                integer  not null,       /* The unique ID of this contact history type --  */
-        e_short_name                          varchar(8)  not null,    /* Short name of the history type (such as "Phone" or "Pray" or "Note") --  */
+        e_short_name                          varchar(24)  not null,   /* Short name of the history type (such as "Phone" or "Pray" or "Note") --  */
         e_description                         varchar(80)  not null,   /* The description of this history type --  */
         e_user_selectable                     bit  not null,           /* Whether this type is selectable by the user when hand-entering a contact history item (otherwise, it is only used for auto-generated records) --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -493,6 +494,12 @@ create table e_contact_history_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_contact_history_type, 'Phone' as e_short_name, 'Phone Call' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_contact_history_type, 'Email' as e_short_name, 'Email Message' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_contact_history_type, 'Conversation' as e_short_name, 'In-Person Conversation' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_contact_history_type, 'Note' as e_short_name, 'Note' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_contact_history_type, 'Pray' as e_short_name, 'Prayer/Praise Item' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_contact_history_type, 'SignUp' as e_short_name, 'Sign Up List' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_contact_history */
@@ -545,6 +552,7 @@ create table e_engagement_track (
         e_track_name                          varchar(24)  not null,   /* A short name for the engagement track --  */
         e_track_description                   varchar(255)  not null,  /* A description for the engagement track --  */
         e_track_color                         varchar(32)  null,       /* Color to be used in presenting this track visually - RGB (i.e. '#f0f0f0') or named (i.e., 'green') --  */
+        e_track_status                        char(1)  not null,       /* Status of this engagement track: (A)ctive or (O)bsolete --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -781,7 +789,7 @@ create table e_document (
         e_current_folder                      varchar(255)  not null,  /* The pathname of the folder the document is currently stored in. --  */
         e_current_filename                    varchar(255)  not null,  /* The current filename of the document, as stored. --  */
         e_uploading_collaborator              char(10)  not null,      /* The collaborator or collaborator group that uploaded the document --  */
-        e_workflow_state_id                   integer  null,           /* The workflow state of this document, if any. This is used for workflow state chains triggered by the document upload itself rather than by the association of the document with a particular partner. --  */
+        e_workflow_instance_id                integer  null,           /* The workflow instance of this document, if any. This is used for workflow state chains triggered by the document upload itself rather than by the association of the document with a particular partner. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

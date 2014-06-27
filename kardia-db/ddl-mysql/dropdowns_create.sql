@@ -21,8 +21,10 @@ insert _p_contact_type values('F','Fax','','');
 insert _p_contact_type values('C','Cell','','');
 insert _p_contact_type values('P','Phone','','');
 insert _p_contact_type values('W','Web','Webpage','');
-insert _p_contact_type values('B','Blog','Blog url','');
+insert _p_contact_type values('B','Blog','Blog URL','');
 insert _p_contact_type values('S','Skype','','');
+insert _p_contact_type values('K','Facebook','','');
+insert _p_contact_type values('T','Twitter','','');
 create table _p_location_type (
   tag	char(1) not null,
   text	varchar(60) not null,
@@ -319,3 +321,50 @@ alter table _r_delivery_method add constraint pk__r_delivery_method primary key 
 insert _r_delivery_method values('E','Email','','');
 insert _r_delivery_method values('W','Web','','');
 insert _r_delivery_method values('P','Print','','');
+create table _e_track_status (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,__cx_osml_control varchar(255) null);
+alter table _e_track_status add constraint pk__e_track_status primary key  (tag);
+insert _e_track_status values('A','Active','','');
+insert _e_track_status values('O','Obsolete','','');
+create table _e_req_whom (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,__cx_osml_control varchar(255) null);
+alter table _e_req_whom add constraint pk__e_req_whom primary key  (tag);
+insert _e_req_whom values('P','Partner','','');
+insert _e_req_whom values('O','Organization','','');
+insert _e_req_whom values('E','Either','','');
+create table _e_completion_status (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,__cx_osml_control varchar(255) null);
+alter table _e_completion_status add constraint pk__e_completion_status primary key  (tag);
+insert _e_completion_status values('C','Complete','','');
+insert _e_completion_status values('I','Incomplete','','');
+insert _e_completion_status values('E','Exited','','');
+create table _e_req_completion_status (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,__cx_osml_control varchar(255) null);
+alter table _e_req_completion_status add constraint pk__e_req_completion_status primary key  (tag);
+insert _e_req_completion_status values('C','Complete','','');
+insert _e_req_completion_status values('I','Incomplete','','');
+insert _e_req_completion_status values('W','Waived','','');
+create table _e_tag_volatility (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,__cx_osml_control varchar(255) null);
+alter table _e_tag_volatility add constraint pk__e_tag_volatility primary key  (tag);
+insert _e_tag_volatility values('P','Persistent','','');
+insert _e_tag_volatility values('D','Derived','','');
+insert _e_tag_volatility values('I','Implied','','');
+create table _e_workflow_step_trigger_type (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,__cx_osml_control varchar(255) null);
+alter table _e_workflow_step_trigger_type add constraint pk__e_workflow_step_trigger_type primary key  (tag);
+insert _e_workflow_step_trigger_type values('STEP','Step Completion','','');
+insert _e_workflow_step_trigger_type values('DOC','Document Upload','','');
+insert _e_workflow_step_trigger_type values('DOCP','Document Associated','','');

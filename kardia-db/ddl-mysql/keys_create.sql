@@ -128,7 +128,7 @@ alter table e_document_comment
 	add constraint e_doccom_pk primary key  (e_document_id, e_doc_comment_id);
 
 alter table e_partner_document
-	add constraint e_pardoc_pk primary key  (e_document_id, p_partner_key);
+	add constraint e_pardoc_pk primary key  (e_document_id, p_partner_key, e_engagement_id);
 
 alter table e_workflow_type
 	add constraint e_work_pk primary key  (e_workflow_id);

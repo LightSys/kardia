@@ -86,7 +86,7 @@ alter table e_document_type
 	add constraint e_doctype_parent_idx unique  (e_parent_doc_type_id, e_doc_type_id);
 
 alter table e_document
-	add constraint e_doc_work_idx unique  (e_workflow_state_id, e_document_id);
+	add constraint e_doc_work_idx unique  (e_workflow_instance_id, e_document_id);
 
 alter table e_document
 	add constraint e_doc_type_idx unique  (e_doc_type_id, e_document_id);
