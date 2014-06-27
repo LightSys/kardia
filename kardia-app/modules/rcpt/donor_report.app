@@ -7,6 +7,9 @@ donor_report "widget/page"
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
+    require_one_endorsement="kardia:gift_manage","kardia:gift";
+    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
     period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
@@ -118,7 +121,18 @@ donor_report "widget/page"
 			    f_cntry_opt6 "widget/dropdownitem" { label="Blank (default for PDF)"; value="none"; selected=yes; }
 			    }
 			}
-		    f_showamt "widget/component" { width=340; height=24; path="/sys/cmp/smart_field.cmp"; field="show_amounts"; text="Show Amounts:"; ctl_type=checkbox; label_width=120; }
+		    f_showamt "widget/component"
+			{
+			require_one_endorsement="kardia:gift_manage","kardia:gift_amt";
+			endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+			width=340;
+			height=24;
+			path="/sys/cmp/smart_field.cmp";
+			field="show_amounts";
+			text="Show Amounts:";
+			ctl_type=checkbox;
+			label_width=120;
+			}
 		    }
 		}
 	    }

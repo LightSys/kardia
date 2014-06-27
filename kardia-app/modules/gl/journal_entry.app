@@ -9,6 +9,9 @@ journal_entry "widget/page"
 
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
+    require_one_endorsement="kardia:gl_manage","kardia:gl_entry";
+    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+
     background="/apps/kardia/images/bg/light_bgnd.jpg";
 
     glj_cmp "widget/component"

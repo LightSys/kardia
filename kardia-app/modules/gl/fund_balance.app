@@ -5,6 +5,8 @@ fund_balance "widget/page"
     height=550;
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+    require_one_endorsement="kardia:gl_manage","kardia:gl";
+    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 
     title = runserver("Fund Balances Report" + isnull(" - " + :this:ledger,""));
 
