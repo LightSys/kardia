@@ -7,6 +7,9 @@ fund_gift_list "widget/page"
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
+    require_one_endorsement="kardia:gift_manage","kardia:gift_amt";
+    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
     period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     costctr "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
@@ -42,7 +45,7 @@ fund_gift_list "widget/page"
 		field='user_document_format'; 
 		ctl_type=dropdown; 
 		text='Format:'; 
-		sql = runserver("select 'TntMPD Format','tntmpd'; select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
+		sql = runserver("select 'TntMPD Format','tntmpd'; select 'Separate Fields CSV','sep_csv'; select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
 		form=rpt_form;
 		label_width=120;
 		}
@@ -69,7 +72,7 @@ fund_gift_list "widget/page"
 		    rpt_print_cn "widget/connector"
 			{
 			event="Click";
-			event_condition=runclient(not (:f_docfmt:value = 'tntmpd'));
+			event_condition=runclient((not (:f_docfmt:value = 'tntmpd')) and (not (:f_docfmt:value = 'sep_csv')));
 			target="rpt_form";
 			action="Submit";
 			Target=runclient("fund_gift_list");
@@ -89,6 +92,19 @@ fund_gift_list "widget/page"
 			Target=runclient("fund_gift_list");
 			NewPage=1;
 			Source=runclient("/apps/kardia/modules/rcpt/fund_gift_list_tntmpd.rpt");
+			Width=800;
+			Height=600;
+			document_format=runclient('text/csv');
+			}
+		    rpt_print_cn3 "widget/connector"
+			{
+			event="Click";
+			event_condition=runclient(:f_docfmt:value = 'sep_csv');
+			target="rpt_form";
+			action="Submit";
+			Target=runclient("fund_gift_list");
+			NewPage=1;
+			Source=runclient("/apps/kardia/modules/rcpt/fund_gift_list_fields.rpt");
 			Width=800;
 			Height=600;
 			document_format=runclient('text/csv');

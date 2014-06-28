@@ -1,0 +1,736 @@
+$Version=2$
+fund_gift_list_fields "system/report"
+    {
+    title = "Gift List for Funds - Field Detail";
+
+    document_format="text/csv";
+    resolution = 300;
+    pagewidth=110;
+    pageheight=51;
+    marginleft=4.0;
+    marginright=4.0;
+    margintop=2;
+    marginbottom=2;
+
+    // Give it an intelligent filename
+    filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + '_detail.csv');
+
+    // Parameters for GL Fund Balance
+    ledger "report/parameter" { type=string; default=null; }
+    costctr "report/parameter" { type=string; default=null; }
+    period "report/parameter" { type=string; default=null; }
+    startday "report/parameter" { type=integer; default=1; }
+    endday "report/parameter" { type=integer; default=31; }
+    document_format2 "report/parameter" { type=string; default="text/csv"; }
+
+
+    // Get name of ledger
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    // Get period metadata (incl. start/end dates)
+    period_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		WHERE
+			:p:a_period = :this:period and
+			:p:a_ledger_number = :this:ledger
+		";
+	}
+
+    // Get name of cost center
+    costctr_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :this:ledger and :c:a_cost_center = :this:costctr";
+	}
+
+    // What costctrs are we reporting on?
+    cclist_qy2 "report/query"
+	{
+	sql = "	SELECT
+			cclist = ',' + sum(:c:a_cost_center + ','),
+			cnt = count(:c:a_cost_center)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		WHERE
+			:c:a_ledger_number = :this:ledger and
+			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr)
+		";
+	}
+
+    // What costctrs are we reporting on?
+    cclist_qy "report/query"
+	{
+	sql = "	SELECT
+			-- cclist = ',' + sum(:c:a_cost_center + ',')
+			:c:a_cost_center
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		WHERE
+			:c:a_ledger_number = :this:ledger and
+			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr)
+		";
+	}
+
+    // Which gift items match the cost ctr list?
+    item_qy "report/query"
+	{
+	sql = "	SELECT
+			items = ',' + sum(:i:name + ',')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		WHERE
+			:i:a_ledger_number = :this:ledger and
+			:i:a_period = :this:period and
+			:i:a_posted = 1 and
+			:i:a_amount != $0 and
+			-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+			:i:a_cost_center = :cclist_qy:a_cost_center
+		";
+	}
+
+    // Information about the donor - address, etc.
+    dinfo_qy "report/query"
+	{
+	sql = "	SELECT
+			:p:p_partner_key,
+			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			:p:p_org_name,
+			:p:p_surname,
+			:p:p_given_name,
+			:p:p_title,
+			:p:p_suffix,
+			:pl:p_in_care_of,
+			:pl:p_address_1,
+			:pl:p_address_2,
+			:pl:p_address_3,
+			:pl:p_city,
+			:pl:p_state_province,
+			:pl:p_postal_code,
+			:pl:p_country_code,
+			partner_changed = :p:s_date_modified,
+			addr_changed = :pl:s_date_modified,
+			-- p_country_name = upper(isnull(:c:p_country_name, '')),
+			p_country_name = upper(:c:p_country_name),
+			:af:p_format
+			-- phone = :pc:p_phone_country + ' ' + :pc:p_phone_area_city + ' ' + :pc:p_contact_data,
+			-- phone_changed = '' + datepart(month, :pc:s_date_modified) + '/' + datepart(day, :pc:s_date_modified) + '/' + datepart(year, :pc:s_date_modified)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows pl,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
+			-- /apps/kardia/data/Kardia_DB/p_contact_info/rows pc
+		WHERE
+			:p:p_partner_key = :gift_qy:id and
+			:pl:p_partner_key =* :p:p_partner_key and
+			:c:p_country_code =* :pl:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = 'STANDARD'
+			-- :pl:p_record_status_code != 'O' and
+			-- charindex(:pl:p_postal_status, 'KFNU') == 0 and
+			-- :pc:p_partner_key =* :p:p_partner_key and
+			-- charindex(:pc:p_contact_type, 'PC') > 0
+			-- :pc:p_record_status_code = 'A'
+		GROUP BY
+			:p:p_partner_key
+		";
+	}
+
+    // Query to retrieve list of gifts during this period
+    gift_qy "report/query"
+	{
+	sql = "	SELECT
+			id = :g:p_donor_partner_id,
+			display_date = isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
+			amount = :i:a_amount,
+			donation_id = :i:name,
+			designation = :i:a_cost_center + condition(:i:a_account_code != '4100' and :i:a_account_code != '2120', ':' + :i:a_account_code, ''),
+			:i:a_cost_center,
+			:i:a_motivational_code,
+			anon = :i:a_confidential,
+			comments = :i:a_comment,
+			donation_date = isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
+			account_date = :b:a_default_effective_date,
+			gift_type = :gt:text
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_batch/rows b,
+			/apps/kardia/data/Kardia_DB/_a_gift_type/rows gt
+		WHERE
+			:g:a_ledger_number = :this:ledger and
+			:g:a_period = :this:period and
+			:g:a_posted = 1 and
+			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) >= :this:startday and
+			-- datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
+			(datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday or isnull(:g:a_gift_postmark_date, :g:a_gift_received_date) < :period_qy:a_start_date) and
+			charindex(',' + rtrim(:g:a_ledger_number) + '|' + convert(string, :g:a_batch_number) + '|' + convert(string, :g:a_gift_number) + '|', :item_qy:items) > 0 and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_period = :g:a_period and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			:i:a_amount != $0 and
+			-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+			:i:a_cost_center = :cclist_qy:a_cost_center and
+			:b:a_ledger_number = :g:a_ledger_number and
+			:b:a_batch_number = :g:a_batch_number and
+			:gt:tag = :g:a_gift_type
+		ORDER BY
+			isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)
+		";
+	acct_sum "report/aggregate" { compute="sum(:amount)"; reset=1; }
+	acct_cnt "report/aggregate" { compute="count(:amount)"; reset=1; }
+	acct_agg "report/aggregate" { compute="first(:a_cost_center)"; reset=1; }
+	all_sum "report/aggregate" { compute="sum(:amount)"; reset=0; }
+	all_cnt "report/aggregate" { compute="count(:amount)"; reset=0; }
+	}
+
+    // Contact info
+    contact1_qy "report/query"
+	{
+	sql = "	SELECT
+			contact_data = first(condition( charindex(:ci:p_contact_type, 'PCF') > 0, condition( char_length(rtrim(:ci:p_phone_country)) > 0, rtrim(:ci:p_phone_country) + ' ', '') + condition( char_length(rtrim(:ci:p_phone_area_city)) > 0, rtrim(:ci:p_phone_area_city) + ' ', ''), '') + rtrim(:ci:p_contact_data)),
+			contact_changed = first(:ci:s_date_modified),
+			contact_type = first(:ct:text + isnull(' (' + isnull(:lt:text, :lt2:text) + ')', '')),
+			id = first(:ci:p_contact_id)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+			/apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
+			/apps/kardia/data/Kardia_DB/p_location/rows l,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt2
+		WHERE
+			:ci:p_partner_key = :gift_qy:id and
+			:ci:p_record_status_code == 'A' and
+			:ct:tag = :ci:p_contact_type and
+			convert(integer,:ci:p_location_id) *= :l:p_location_id and
+			:ci:p_partner_key *= :l:p_partner_key and
+			:l:p_location_type *= :lt:tag and
+			:l:p_revision_id = 0 and
+			convert(string,:ci:p_location_id) *= :lt2:tag
+		ORDER BY
+			:ci:s_date_modified desc
+		LIMIT
+			1
+		";
+	}
+
+    // Contact info
+    contact2_qy "report/query"
+	{
+	sql = "	SELECT
+			contact_data = first(condition( charindex(:ci:p_contact_type, 'PCF') > 0, condition( char_length(rtrim(:ci:p_phone_country)) > 0, rtrim(:ci:p_phone_country) + ' ', '') + condition( char_length(rtrim(:ci:p_phone_area_city)) > 0, rtrim(:ci:p_phone_area_city) + ' ', ''), '') + rtrim(:ci:p_contact_data)),
+			contact_changed = first(:ci:s_date_modified),
+			contact_type = first(:ct:text + isnull(' (' + isnull(:lt:text, :lt2:text) + ')', '')),
+			id = first(:ci:p_contact_id)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+			/apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
+			/apps/kardia/data/Kardia_DB/p_location/rows l,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt2
+		WHERE
+			:ci:p_partner_key = :gift_qy:id and
+			:ci:p_record_status_code == 'A' and
+			:ci:p_contact_id != isnull(:contact1_qy:id, -1) and
+			:ct:tag = :ci:p_contact_type and
+			convert(integer,:ci:p_location_id) *= :l:p_location_id and
+			:ci:p_partner_key *= :l:p_partner_key and
+			:l:p_location_type *= :lt:tag and
+			:l:p_revision_id = 0 and
+			convert(string,:ci:p_location_id) *= :lt2:tag
+		ORDER BY
+			:ci:s_date_modified desc
+		LIMIT
+			1
+		";
+	}
+
+    // Contact info
+    contact3_qy "report/query"
+	{
+	sql = "	SELECT
+			contact_data = first(condition( charindex(:ci:p_contact_type, 'PCF') > 0, condition( char_length(rtrim(:ci:p_phone_country)) > 0, rtrim(:ci:p_phone_country) + ' ', '') + condition( char_length(rtrim(:ci:p_phone_area_city)) > 0, rtrim(:ci:p_phone_area_city) + ' ', ''), '') + rtrim(:ci:p_contact_data)),
+			contact_changed = first(:ci:s_date_modified),
+			contact_type = first(:ct:text + isnull(' (' + isnull(:lt:text, :lt2:text) + ')', '')),
+			id = first(:ci:p_contact_id)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+			/apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
+			/apps/kardia/data/Kardia_DB/p_location/rows l,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt2
+		WHERE
+			:ci:p_partner_key = :gift_qy:id and
+			:ci:p_record_status_code == 'A' and
+			:ci:p_contact_id != isnull(:contact1_qy:id, -1) and :ci:p_contact_id != isnull(:contact2_qy:id, -1) and
+			:ct:tag = :ci:p_contact_type and
+			convert(integer,:ci:p_location_id) *= :l:p_location_id and
+			:ci:p_partner_key *= :l:p_partner_key and
+			:l:p_location_type *= :lt:tag and
+			:l:p_revision_id = 0 and
+			convert(string,:ci:p_location_id) *= :lt2:tag
+		ORDER BY
+			:ci:s_date_modified desc
+		LIMIT
+			1
+		";
+	}
+
+    // Contact info
+    contact4_qy "report/query"
+	{
+	sql = "	SELECT
+			contact_data = first(condition( charindex(:ci:p_contact_type, 'PCF') > 0, condition( char_length(rtrim(:ci:p_phone_country)) > 0, rtrim(:ci:p_phone_country) + ' ', '') + condition( char_length(rtrim(:ci:p_phone_area_city)) > 0, rtrim(:ci:p_phone_area_city) + ' ', ''), '') + rtrim(:ci:p_contact_data)),
+			contact_changed = first(:ci:s_date_modified),
+			contact_type = first(:ct:text + isnull(' (' + isnull(:lt:text, :lt2:text) + ')', '')),
+			id = first(:ci:p_contact_id)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+			/apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
+			/apps/kardia/data/Kardia_DB/p_location/rows l,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt2
+		WHERE
+			:ci:p_partner_key = :gift_qy:id and
+			:ci:p_record_status_code == 'A' and
+			:ci:p_contact_id != isnull(:contact1_qy:id, -1) and :ci:p_contact_id != isnull(:contact2_qy:id, -1) and :ci:p_contact_id != isnull(:contact3_qy:id, -1) and
+			:ct:tag = :ci:p_contact_type and
+			convert(integer,:ci:p_location_id) *= :l:p_location_id and
+			:ci:p_partner_key *= :l:p_partner_key and
+			:l:p_location_type *= :lt:tag and
+			:l:p_revision_id = 0 and
+			convert(string,:ci:p_location_id) *= :lt2:tag
+		ORDER BY
+			:ci:s_date_modified desc
+		LIMIT
+			1
+		";
+	}
+
+    // Contact info
+    contact5_qy "report/query"
+	{
+	sql = "	SELECT
+			contact_data = first(condition( charindex(:ci:p_contact_type, 'PCF') > 0, condition( char_length(rtrim(:ci:p_phone_country)) > 0, rtrim(:ci:p_phone_country) + ' ', '') + condition( char_length(rtrim(:ci:p_phone_area_city)) > 0, rtrim(:ci:p_phone_area_city) + ' ', ''), '') + rtrim(:ci:p_contact_data)),
+			contact_changed = first(:ci:s_date_modified),
+			contact_type = first(:ct:text + isnull(' (' + isnull(:lt:text, :lt2:text) + ')', '')),
+			id = first(:ci:p_contact_id)
+		FROM
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+			/apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
+			/apps/kardia/data/Kardia_DB/p_location/rows l,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows lt2
+		WHERE
+			:ci:p_partner_key = :gift_qy:id and
+			:ci:p_record_status_code == 'A' and
+			:ci:p_contact_id != isnull(:contact1_qy:id, -1) and :ci:p_contact_id != isnull(:contact2_qy:id, -1) and :ci:p_contact_id != isnull(:contact3_qy:id, -1) and :ci:p_contact_id != isnull(:contact4_qy:id, -1) and
+			:ct:tag = :ci:p_contact_type and
+			convert(integer,:ci:p_location_id) *= :l:p_location_id and
+			:ci:p_partner_key *= :l:p_partner_key and
+			:l:p_location_type *= :lt:tag and
+			:l:p_revision_id = 0 and
+			convert(string,:ci:p_location_id) *= :lt2:tag
+		ORDER BY
+			:ci:s_date_modified desc
+		LIMIT
+			1
+		";
+	}
+
+    // Alert the reports' reader that certain things have changed from last month.
+    changes_qy "report/query"
+	{
+	sql = "	SELECT
+			changes =
+			condition( isnull( (
+					    select 1
+					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :this:period and
+						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
+						-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+						:i:a_cost_center = :cclist_qy:a_cost_center
+					    limit 1
+					    ), 0) == 0, 'NEW DONOR\n', '') +
+			condition( isnull( (
+					    select 1
+					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :this:period and
+						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
+						-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0 and :i:a_amount = :gift_qy:amount
+						:i:a_cost_center = :cclist_qy:a_cost_center
+					    limit 1
+					    ), 0) == 0, 'NEW AMOUNT\n', '') +
+			condition( isnull( (
+					    select 1
+					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :this:period and
+						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
+						:i:a_cost_center = :gift_qy:designation
+					    limit 1
+					    ), 0) == 0, 'NEW DESIG\n', '') +
+			condition(:dinfo_qy:addr_changed >= :period_qy:a_start_date, 'ADDRESS\n', '') +
+			condition(:dinfo_qy:partner_changed >= :period_qy:a_start_date, 'NAME/INFO\n', '') +
+			(select isnull(sum(upper(isnull(:t:text,'')) + '\n'), '') from /apps/kardia/data/Kardia_DB/_p_contact_type/rows t, /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+			    where :t:tag = :ci:p_contact_type and :ci:p_partner_key = :gift_qy:id and :ci:s_date_modified >= :period_qy:a_start_date ) 
+			- '\n'
+		";
+	}
+
+    desig_info_qy "report/query"
+	{
+	sql = "select
+		    a_cc_desc = isnull(first(:a_cc_desc), '')
+		from
+		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		where
+		    :a_ledger_number = :this:ledger and 
+		    :a_cost_center = :gift_qy:a_cost_center
+		";
+	}
+
+    motive_info_qy "report/query"
+	{
+	sql = "select
+		    a_comments = isnull(first(:a_comments), '')
+		from
+		    /apps/kardia/data/Kardia_DB/a_motivational_code/rows mc
+		where
+		    :a_ledger_number = :this:ledger and 
+		    :a_motivational_code = :gift_qy:a_motivational_code
+		";
+	}
+
+    // Cost center list - entire report
+    form "report/form"
+	{
+	source = ledger_qy,period_qy,costctr_qy,cclist_qy2;
+
+	hdrimg "report/image"
+	    {
+	    x=89.85;y=0;height=4;width=12.15;
+	    source = /apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=102; height=4;
+	    font=helvetica;
+	    align=left;
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver(:this:costctr + ' - ' + condition(charindex("-Work", :costctr_qy:a_cc_desc) > 0, substring(:costctr_qy:a_cc_desc, 1, charindex("-Work", :costctr_qy:a_cc_desc) - 1), :costctr_qy:a_cc_desc) + "\n"); }
+	    t_d3 "report/data" { fontsize=10; style=bold; value = runserver("Statement Period: " + constrain(:this:startday,1,31) + '-' + constrain(:this:endday,1,datepart(day,:period_qy:a_end_date)) + ' ' + :period_qy:a_period_desc + "\n"); }
+	    t_d1 "report/data" { fontsize=8; value = runserver("Contributions Statement from " + :ledger_qy:a_ledger_desc + "\n"); }
+	    t_d2 "report/data" { fontsize=8; value = runserver("For Funds: " + substring(:cclist_qy2:cclist - ',', 2) + "\n"); }
+	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
+	    }
+	
+	// Table for gift list
+	gift_table "report/table"
+	    {
+	    x=0; width=102; height=0;
+	    colsep=1;
+	    nullformat="";
+	    moneyformat = "-###,###,##0.00";
+	    dateformat = "yyyy/MM/dd HH:mm";
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    source=cclist_qy,item_qy,gift_qy,dinfo_qy,contact1_qy,contact2_qy,contact3_qy,contact4_qy,contact5_qy,changes_qy,desig_info_qy,motive_info_qy;
+
+	    hdr "report/table-row"
+		{
+		header = yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		tg_ver "report/table-cell" { value='Record Ver'; width=1; }
+		tg_id "report/table-cell" { value='Donor ID'; width=1; }
+		tg_orgname "report/table-cell" { value='Org Name'; width=1; }
+		tg_surname "report/table-cell" { value='Surname'; width=1; }
+		tg_givenname "report/table-cell" { value='Given Name(s)'; width=1; }
+
+		tg_title "report/table-cell" { value='Title'; align=center; width=1; }
+		tg_suffix "report/table-cell" { value='Suffix'; align=center; width=1; }
+		tg_namechg "report/table-cell" { value='Last Change (Name)'; align=center; width=1; }
+		tg_ico "report/table-cell" { value='Care/Of'; align=center; width=1; }
+		tg_addr1 "report/table-cell" { value='Address 1'; align=center; width=1; }
+
+		tg_addr2 "report/table-cell" { value='Address 2'; align=center; width=1; }
+		tg_addr3 "report/table-cell" { value='Address 3'; align=center; width=1; }
+		tg_city "report/table-cell" { value='City'; align=center; width=1; }
+		tg_state "report/table-cell" { value='St/Prov'; align=center; width=1; }
+		tg_postal "report/table-cell" { value='Postal/Zip'; align=center; width=1; }
+
+		tg_country "report/table-cell" { value='Country'; align=center; width=1; }
+		tg_countrycode "report/table-cell" { value='Country Code'; align=center; width=1; }
+		tg_addrchg "report/table-cell" { value='Last Change (Address)'; align=center; width=1; }
+		tg_cont1id "report/table-cell" { value='Contact 1 ID'; align=center; width=1; }
+		tg_cont1 "report/table-cell" { value='Contact 1'; align=center; width=1; }
+
+		tg_cont1typ "report/table-cell" { value='Contact 1 Type'; align=center; width=1; }
+		tg_cont1chg "report/table-cell" { value='Last Change (Contact 1)'; align=center; width=1; }
+		tg_cont2id "report/table-cell" { value='Contact 2 ID'; align=center; width=1; }
+		tg_cont2 "report/table-cell" { value='Contact 2'; align=center; width=1; }
+		tg_cont2typ "report/table-cell" { value='Contact 2 Type'; align=center; width=1; }
+
+		tg_cont2chg "report/table-cell" { value='Last Change (Contact 2)'; align=center; width=1; }
+		tg_cont3id "report/table-cell" { value='Contact 3 ID'; align=center; width=1; }
+		tg_cont3 "report/table-cell" { value='Contact 3'; align=center; width=1; }
+		tg_cont3typ "report/table-cell" { value='Contact 3 Type'; align=center; width=1; }
+		tg_cont3chg "report/table-cell" { value='Last Change (Contact 3)'; align=center; width=1; }
+
+		tg_cont4id "report/table-cell" { value='Contact 4 ID'; align=center; width=1; }
+		tg_cont4 "report/table-cell" { value='Contact 4'; align=center; width=1; }
+		tg_cont4typ "report/table-cell" { value='Contact 4 Type'; align=center; width=1; }
+		tg_cont4chg "report/table-cell" { value='Last Change (Contact 4)'; align=center; width=1; }
+		tg_cont5id "report/table-cell" { value='Contact 5 ID'; align=center; width=1; }
+
+		tg_cont5 "report/table-cell" { value='Contact 5'; align=center; width=1; }
+		tg_cont5typ "report/table-cell" { value='Contact 5 Type'; align=center; width=1; }
+		tg_cont5chg "report/table-cell" { value='Last Change (Contact 5)'; align=center; width=1; }
+		tg_giftid "report/table-cell" { value='Gift ID'; width=1; }
+		tg_giftdate "report/table-cell" { value='Gift Date'; width=1; }
+
+		tg_acctdate "report/table-cell" { value='Accounting Date'; width=1; }
+		tg_currency "report/table-cell" { value='Currency'; align=center; width=1; }
+		tg_amt "report/table-cell" { value='Amount'; align=center; width=1; }
+		tg_type "report/table-cell" { value='Gift Type'; align=center; width=1; }
+		tg_desig "report/table-cell" { value='Designation'; align=center; width=1; }
+
+		tg_desigtxt "report/table-cell" { value='Designation Desc'; align=center; width=1; }
+		tg_motive "report/table-cell" { value='Motive Code'; width=1; }
+		tg_motivetxt "report/table-cell" { value='Motive Desc'; width=1; }
+		tg_comm "report/table-cell" { value='Donor Comments'; width=1; }
+		tg_chg "report/table-cell" { value='Changes This Month'; width=1; }
+		}
+
+	    onegift "report/table-row"
+		{
+		condition=runserver(not :gift_qy:anon);
+		allowbreak=no;
+		fontsize=9;
+		font=helvetica;
+		margintop = 0.8;
+
+		g_recver "report/table-cell" { value=runserver('2013111800G'); }
+		g_id "report/table-cell" { value=runserver(:gift_qy:id); }
+		g_orgname "report/table-cell" { value=runserver(:dinfo_qy:p_org_name); }
+		g_surname "report/table-cell" { value=runserver(:dinfo_qy:p_surname); }
+		g_givenname "report/table-cell" { value=runserver(:dinfo_qy:p_given_name); }
+
+		g_title "report/table-cell" { value=runserver(:dinfo_qy:p_title); }
+		g_suffix "report/table-cell" { value=runserver(:dinfo_qy:p_suffix); }
+		g_namechg "report/table-cell" { value=runserver(:dinfo_qy:partner_changed); }
+		g_ico "report/table-cell" { value=runserver(:dinfo_qy:p_in_care_of); }
+		g_addr1 "report/table-cell" { value=runserver(:dinfo_qy:p_address_1); }
+
+		g_addr2 "report/table-cell" { value=runserver(:dinfo_qy:p_address_2); }
+		g_addr3 "report/table-cell" { value=runserver(:dinfo_qy:p_address_3); }
+		g_city "report/table-cell" { value=runserver(:dinfo_qy:p_city); }
+		g_state "report/table-cell" { value=runserver(:dinfo_qy:p_state_province); }
+		g_postal "report/table-cell" { value=runserver(:dinfo_qy:p_postal_code); }
+
+		g_country "report/table-cell" { value=runserver(:dinfo_qy:p_country_name); }
+		g_countrycode "report/table-cell" { value=runserver(:dinfo_qy:p_country_code); }
+		g_addrchg "report/table-cell" { value=runserver(:dinfo_qy:addr_changed); }
+		g_cont1id "report/table-cell" { value=runserver(:contact1_qy:id); }
+		g_cont1 "report/table-cell" { value=runserver(:contact1_qy:contact_data); }
+
+		g_cont1typ "report/table-cell" { value=runserver(:contact1_qy:contact_type); }
+		g_cont1chg "report/table-cell" { value=runserver(:contact1_qy:contact_changed); }
+		g_cont2id "report/table-cell" { value=runserver(:contact2_qy:id); }
+		g_cont2 "report/table-cell" { value=runserver(:contact2_qy:contact_data); }
+		g_cont2typ "report/table-cell" { value=runserver(:contact2_qy:contact_type); }
+
+		g_cont2chg "report/table-cell" { value=runserver(:contact2_qy:contact_changed); }
+		g_cont3id "report/table-cell" { value=runserver(:contact3_qy:id); }
+		g_cont3 "report/table-cell" { value=runserver(:contact3_qy:contact_data); }
+		g_cont3typ "report/table-cell" { value=runserver(:contact3_qy:contact_type); }
+		g_cont3chg "report/table-cell" { value=runserver(:contact3_qy:contact_changed); }
+
+		g_cont4id "report/table-cell" { value=runserver(:contact4_qy:id); }
+		g_cont4 "report/table-cell" { value=runserver(:contact4_qy:contact_data); }
+		g_cont4typ "report/table-cell" { value=runserver(:contact4_qy:contact_type); }
+		g_cont4chg "report/table-cell" { value=runserver(:contact4_qy:contact_changed); }
+		g_cont5id "report/table-cell" { value=runserver(:contact5_qy:id); }
+
+		g_cont5 "report/table-cell" { value=runserver(:contact5_qy:contact_data); }
+		g_cont5typ "report/table-cell" { value=runserver(:contact5_qy:contact_type); }
+		g_cont5chg "report/table-cell" { value=runserver(:contact5_qy:contact_changed); }
+		g_giftid "report/table-cell" { value=runserver(:gift_qy:donation_id); }
+		g_giftdate "report/table-cell" { value=runserver(:gift_qy:donation_date); }
+
+		g_acctdate "report/table-cell" { value=runserver(:gift_qy:account_date); }
+		g_currency "report/table-cell" { value=runserver('USD'); }
+		g_amt "report/table-cell" { value=runserver(:gift_qy:amount); }
+		g_type "report/table-cell" { value=runserver(:gift_qy:gift_type); }
+		g_desig "report/table-cell" { value=runserver(:gift_qy:a_cost_center); }
+
+		g_desigtxt "report/table-cell" { value=runserver(:desig_info_qy:a_cc_desc); }
+		g_motive "report/table-cell" { value=runserver(:gift_qy:a_motivational_code); }
+		g_motivetxt "report/table-cell" { value=runserver(:motive_info_qy:a_comments); }
+		g_comm "report/table-cell" { value=runserver(:gift_qy:comments); }
+		g_chg "report/table-cell" { value=runserver(condition(charindex('NEW DONOR', :changes_qy:changes) > 0, 'NEW DONOR', :changes_qy:changes)); }
+
+		// old fields
+		//g_addr "report/table-cell" { value=runserver(condition(:gift_qy:anon, '(anonymous donor)', 
+		//	condition(char_length(rtrim(:dinfo_qy:p_given_name + :dinfo_qy:p_surname)) > 0, :dinfo_qy:p_given_name + ' ' + :dinfo_qy:p_surname + ' \n', '') +
+		//	condition(char_length(rtrim(:dinfo_qy:p_org_name)) > 0, :dinfo_qy:p_org_name + " \n", "") +
+		//	substitute(isnull(:dinfo_qy:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=dinfo_qy,p=dinfo_qy')
+		//	)); }
+		//g_cont "report/table-cell" { value=runserver(condition(:gift_qy:anon, '', :contact_qy:info)); font=helvetica; }
+		//g_amt "report/table-cell" { value=runserver(:gift_qy:amount); font=courier; align=right; }
+		//g_desig "report/table-cell" { value=runserver(:gift_qy:designation); font=courier; align=center; }
+		//g_comm "report/table-cell" { value=runserver(:gift_qy:comments); font=helvetica; }
+		//g_chg "report/table-cell" { value=runserver(condition(:gift_qy:anon, '', condition(charindex('NEW DONOR', :changes_qy:changes) > 0, 'NEW DONOR', :changes_qy:changes))); }
+		}
+
+	    onegift_anon "report/table-row"
+		{
+		condition=runserver(:gift_qy:anon);
+		allowbreak=no;
+		fontsize=9;
+		font=helvetica;
+		margintop = 0.8;
+
+		g_recver "report/table-cell" { value=runserver('2013111800A'); }
+		g_id "report/table-cell" { value=runserver('***ANONYMOUS'); }
+		g_orgname "report/table-cell" { value=runserver(''); }
+		g_surname "report/table-cell" { value=runserver(''); }
+		g_givenname "report/table-cell" { value=runserver(''); }
+
+		g_title "report/table-cell" { value=runserver(''); }
+		g_suffix "report/table-cell" { value=runserver(''); }
+		g_namechg "report/table-cell" { value=runserver(''); }
+		g_ico "report/table-cell" { value=runserver(''); }
+		g_addr1 "report/table-cell" { value=runserver(''); }
+
+		g_addr2 "report/table-cell" { value=runserver(''); }
+		g_addr3 "report/table-cell" { value=runserver(''); }
+		g_city "report/table-cell" { value=runserver(''); }
+		g_state "report/table-cell" { value=runserver(''); }
+		g_postal "report/table-cell" { value=runserver(''); }
+
+		g_country "report/table-cell" { value=runserver(''); }
+		g_countrycode "report/table-cell" { value=runserver(''); }
+		g_addrchg "report/table-cell" { value=runserver(''); }
+		g_cont1id "report/table-cell" { value=runserver(''); }
+		g_cont1 "report/table-cell" { value=runserver(''); }
+
+		g_cont1typ "report/table-cell" { value=runserver(''); }
+		g_cont1chg "report/table-cell" { value=runserver(''); }
+		g_cont2id "report/table-cell" { value=runserver(''); }
+		g_cont2 "report/table-cell" { value=runserver(''); }
+		g_cont2typ "report/table-cell" { value=runserver(''); }
+
+		g_cont2chg "report/table-cell" { value=runserver(''); }
+		g_cont3id "report/table-cell" { value=runserver(''); }
+		g_cont3 "report/table-cell" { value=runserver(''); }
+		g_cont3typ "report/table-cell" { value=runserver(''); }
+		g_cont3chg "report/table-cell" { value=runserver(''); }
+
+		g_cont4id "report/table-cell" { value=runserver(''); }
+		g_cont4 "report/table-cell" { value=runserver(''); }
+		g_cont4typ "report/table-cell" { value=runserver(''); }
+		g_cont4chg "report/table-cell" { value=runserver(''); }
+		g_cont5id "report/table-cell" { value=runserver(''); }
+
+		g_cont5 "report/table-cell" { value=runserver(''); }
+		g_cont5typ "report/table-cell" { value=runserver(''); }
+		g_cont5chg "report/table-cell" { value=runserver(''); }
+		g_giftid "report/table-cell" { value=runserver(:gift_qy:donation_id); }
+		g_giftdate "report/table-cell" { value=runserver(:gift_qy:donation_date); }
+
+		g_acctdate "report/table-cell" { value=runserver(:gift_qy:account_date); }
+		g_currency "report/table-cell" { value=runserver('USD'); }
+		g_amt "report/table-cell" { value=runserver(:gift_qy:amount); }
+		g_type "report/table-cell" { value=runserver(:gift_qy:gift_type); }
+		g_desig "report/table-cell" { value=runserver(:gift_qy:a_cost_center); }
+
+		g_desigtxt "report/table-cell" { value=runserver(:desig_info_qy:a_cc_desc); }
+		g_motive "report/table-cell" { value=runserver(:gift_qy:a_motivational_code); }
+		g_motivetxt "report/table-cell" { value=runserver(:motive_info_qy:a_comments); }
+		g_comm "report/table-cell" { value=runserver(:gift_qy:comments); }
+		g_chg "report/table-cell" { value=runserver(''); }
+		}
+
+	    all_total "report/table-row"
+		{
+		summary = yes;
+		allowbreak=no;
+		fontsize=9;
+		style=bold;
+		font=helvetica;
+		topborder=0.05;
+		marginbottom = 0.2;
+
+		s_recver "report/table-cell" { value=runserver('2013111800T'); }
+		s_id "report/table-cell" { value=runserver('***TOTAL'); }
+		s_orgname "report/table-cell" { value=runserver(''); }
+		s_surname "report/table-cell" { value=runserver(''); }
+		s_givenname "report/table-cell" { value=runserver(''); }
+
+		s_title "report/table-cell" { value=runserver(''); }
+		s_suffix "report/table-cell" { value=runserver(''); }
+		s_namechg "report/table-cell" { value=runserver(''); }
+		s_ico "report/table-cell" { value=runserver(''); }
+		s_addr1 "report/table-cell" { value=runserver(''); }
+
+		s_addr2 "report/table-cell" { value=runserver(''); }
+		s_addr3 "report/table-cell" { value=runserver(''); }
+		s_city "report/table-cell" { value=runserver(''); }
+		s_state "report/table-cell" { value=runserver(''); }
+		s_postal "report/table-cell" { value=runserver(''); }
+
+		s_country "report/table-cell" { value=runserver(''); }
+		s_countrycode "report/table-cell" { value=runserver(''); }
+		s_addrchg "report/table-cell" { value=runserver(''); }
+		s_cont1id "report/table-cell" { value=runserver(''); }
+		s_cont1 "report/table-cell" { value=runserver(''); }
+
+		s_cont1typ "report/table-cell" { value=runserver(''); }
+		s_cont1chg "report/table-cell" { value=runserver(''); }
+		s_cont2id "report/table-cell" { value=runserver(''); }
+		s_cont2 "report/table-cell" { value=runserver(''); }
+		s_cont2typ "report/table-cell" { value=runserver(''); }
+
+		s_cont2chg "report/table-cell" { value=runserver(''); }
+		s_cont3id "report/table-cell" { value=runserver(''); }
+		s_cont3 "report/table-cell" { value=runserver(''); }
+		s_cont3typ "report/table-cell" { value=runserver(''); }
+		s_cont3chg "report/table-cell" { value=runserver(''); }
+
+		s_cont4id "report/table-cell" { value=runserver(''); }
+		s_cont4 "report/table-cell" { value=runserver(''); }
+		s_cont4typ "report/table-cell" { value=runserver(''); }
+		s_cont4chg "report/table-cell" { value=runserver(''); }
+		s_cont5id "report/table-cell" { value=runserver(''); }
+
+		s_cont5 "report/table-cell" { value=runserver(''); }
+		s_cont5typ "report/table-cell" { value=runserver(''); }
+		s_cont5chg "report/table-cell" { value=runserver(''); }
+		s_giftid "report/table-cell" { value=runserver(''); }
+		s_giftdate "report/table-cell" { value=runserver(''); }
+
+		s_acctdate "report/table-cell" { value=runserver(''); }
+		s_currency "report/table-cell" { value=runserver('USD'); }
+		s_amt "report/table-cell" { value=runserver(:gift_qy:all_sum); }
+		s_type "report/table-cell" { value=runserver(''); }
+		s_desig "report/table-cell" { value=runserver(''); }
+
+		s_desigtxt "report/table-cell" { value=runserver(''); }
+		s_motive "report/table-cell" { value=runserver(''); }
+		s_motivetxt "report/table-cell" { value=runserver(''); }
+		s_comm "report/table-cell" { value=runserver(''); }
+		s_chg "report/table-cell" { value=runserver(''); }
+		}
+	    }
+	}
+    }
