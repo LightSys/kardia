@@ -18,7 +18,7 @@ cr_batches "widget/component-decl"
 	glpost_cn "widget/connector" { event=GLPosted; target=rcpt_osrc; action=Refresh; }
 	unpost_cn "widget/connector" { event=Unposted; target=rcpt_osrc; action=Refresh; }
 	glunpost_cn "widget/connector" { event=GLUnposted; target=rcpt_osrc; action=Refresh; }
-	setdate_cn1 "widget/connector" { event=SetSentDateComplete; target=cr_batches; action=Launch; Source=runclient(:receipts_rpt:value); Width=800; Height=600; ledger=runclient(:rcpt_osrc:a_ledger_number); batch_number=runclient(:rcpt_osrc:a_batch_number); types=runclient(:print_which_type:value); }
+	setdate_cn1 "widget/connector" { event=SetSentDateComplete; target=cr_batches; action=Launch; Source=runclient(:receipts_rpt:value); Width=800; Height=600; ledger=runclient(:rcpt_osrc:a_ledger_number); batch_number=runclient(:rcpt_osrc:a_batch_number); show_background=runclient(:show_bg:value); types=runclient(:print_which_type:value); }
 	setdate_cn2 "widget/connector" { event=SetSentDateComplete; target=rcpt_osrc; action=Refresh; }
 	}
 
@@ -87,14 +87,14 @@ cr_batches "widget/component-decl"
 	    style=dialog;
 	    titlebar=no;
 	    toplevel=yes;
-	    width=480; height=300;
-	    x=150; y=140;
+	    width=480; height=330;
+	    x=150; y=149;
 	    visible=no;
 	    modal=yes;
 
 	    print_vbox "widget/vbox"
 		{
-		width=458; height=230; x=10; y=10;
+		width=458; height=260; x=10; y=10;
 		spacing=10;
 
 		print_lbl "widget/label" { height=24; font_size=16; value=runclient("Print Batch " + :rcpt_osrc:a_batch_number + " of Receipts"); align=center; style=bold; }
@@ -121,6 +121,19 @@ cr_batches "widget/component-decl"
 			a_ledger_number = runclient(:rcpt_osrc:a_ledger_number);
 			a_batch_number = runclient(:rcpt_osrc:a_batch_number);
 			}
+		    }
+
+		show_bg "widget/component"
+		    {
+		    path="/sys/cmp/smart_field.cmp";
+		    ctl_type=checkbox;
+		    text="Print Background?"; 
+		    label_width=140; 
+		    height=20;
+		    
+		    show_bg_hints "widget/hints" { style=notnull; default=0; } 
+
+		    set_zero_on_open "widget/connector" { source=print_rcpt_window; event=Open; action=SetValue; Value=0; }
 		    }
 
 		print_info_osrc "widget/osrc"
@@ -181,7 +194,7 @@ cr_batches "widget/component-decl"
 
 	    print_ctls_hbox "widget/hbox"
 		{
-		width=458; height=24; x=10; y=250;
+		width=458; height=24; x=10; y=285;
 		spacing=10;
 		align=center;
 

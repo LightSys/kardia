@@ -1,0 +1,38 @@
+$Version=2$
+locked_field "widget/component-decl"
+    {
+    width=220;height=20;
+
+    expose_events_for = ctl;
+    expose_actions_for = ctl;
+    expose_properties_for = ctl;
+    apply_hints_to = ctl;
+
+    form "widget/parameter" { type=object; find_container="widget/form";}
+    field "widget/parameter" { type=string; }
+    text "widget/parameter" { type=string; }
+    label_width "widget/parameter" { type=integer; default=100; }
+
+    label_normal "widget/label"
+	{ 
+	x=0;y=0;height=20;width=runserver(:this:label_width - 5);
+	fl_width=0;
+	text=runserver(:this:text); 
+	align=right; 
+	allow_break=no;
+	overflow_ellipsis=yes;
+	}
+    locked_image "widget/image"
+	{
+	x=runserver(:this:label_width);y=2;
+	height=16;
+	width=16;
+	fl_width=0;
+	source="/apps/kardia/images/tango/lock-16x16.png";
+	}
+    ctl "widget/variable"
+	{
+	fieldname=runserver(:this:field); 
+	form=form; 
+	}
+    }
