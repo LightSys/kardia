@@ -355,6 +355,9 @@ grant select on ra to public;
 /* c_member */
 
 
+/* s_config */
+
+
 /* s_user_data */
 
 

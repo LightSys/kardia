@@ -742,6 +742,11 @@ create  index c_public_idx on c_chat (c_public, c_chat_id);
 create  index s_username_idx on c_member (s_username, c_chat_id);
 
 
+/* s_config */
+/* create  index s_config_pk on s_config (s_config_name)*/ 
+/* go */
+
+
 /* s_user_data */
 /* create  index s_user_data_pk on s_user_data (s_username)*/ 
 /* go */

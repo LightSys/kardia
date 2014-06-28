@@ -370,6 +370,9 @@ alter table c_chat
 alter table c_member
 	add constraint c_member_pk primary key  (c_chat_id, s_username);
 
+alter table s_config
+	add constraint s_config_pk primary key  (s_config_name);
+
 alter table s_user_data
 	add constraint s_user_data_pk primary key  (s_username);
 
