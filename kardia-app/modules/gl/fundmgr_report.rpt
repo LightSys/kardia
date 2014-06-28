@@ -1,0 +1,606 @@
+$Version=2$
+fundmgr_report "system/report"
+    {
+    title = "Fund Manager's Report";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    filename = runserver("FundMgrRpt-" + :this:manager_id + '-' + :this:period + "-" + isnull(:this:costctr, "ALL") + condition(:this:costctr is null, "", "-" + (select condition(charindex(',',:a_cc_desc) > 0, substring(:a_cc_desc, 1, charindex(',',:a_cc_desc) - 1), :a_cc_desc) from /apps/kardia/data/Kardia_DB/a_cost_center/rows where :a_ledger_number = :this:ledger and :a_cost_center = :this:costctr)) + ".pdf");
+
+    // Parameters for Fund Manager's Report
+    ledger "report/parameter" { type=string; default=null; }
+    costctr "report/parameter" { type=string; default=null; }
+    manager_id "report/parameter" { type=string; default=null; }
+    incl_fund_class "report/parameter" { type=string; default=null; }
+    excl_fund_class "report/parameter" { type=string; default=null; }
+    period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    unposted "report/parameter" { type=integer; default=0; }
+
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    period_qy "report/query"
+	{
+	sql = "select :p:a_period_desc, ref_period = min(:p2:a_period), :p:a_end_date, :p:a_start_date from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
+	}
+
+    manager_info_qy "report/query"
+	{
+	sql = "select *, mgr_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname,'')) from /apps/kardia/data/Kardia_DB/p_partner/rows p where :p:p_partner_key = :this:manager_id";
+	}
+
+    config_qy "report/query"
+	{
+	sql = "SELECT
+		    FmrSummAccts = (select isnull(:a_config_value, '') from  /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'FmrSummAccts')
+	    ";
+	}
+
+    cctrs_qy "report/query"
+	{
+	sql = runserver("
+		select 
+			cclist = sum(:cst:a_cost_center + ',') - ',',
+			cccnt = count(1)
+		from 
+			/apps/kardia/data/Kardia_DB/a_cc_staff/rows cst,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows cc
+		where
+			:cst:a_ledger_number = :this:ledger and
+			:cst:p_staff_partner_key = :this:manager_id and
+			:cc:a_ledger_number = :cst:a_ledger_number and
+			:cc:a_cost_center = :cst:a_cost_center
+			" + condition(:this:costctr is null, "", "and :cst:a_cost_center = :this:costctr") + "
+			" + condition(:this:incl_fund_class is null, "", "and charindex(',' + rtrim(:cc:a_cost_center_class) + ',', ',' + :this:incl_fund_class + ',') > 0") + "
+			" + condition(:this:excl_fund_class is null, "", "and charindex(',' + rtrim(:cc:a_cost_center_class) + ',', ',' + :this:excl_fund_class + ',') <= 0") + "
+		");
+	}
+
+    how_many_subcc_qy "report/query"
+	{
+	sql = "select cnt = count(1) from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :this:ledger and charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :cctrs_qy:cclist + ',') > 0";
+	}
+
+    subcc_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :this:ledger and charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :cctrs_qy:cclist + ',') > 0";
+	}
+
+    gift_and_admin_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			gifts = isnull(sum(condition((:tt:a_account_code = '4100' or :tt:a_account_code = '2120') and :tt:a_period = :this:period, :tt:a_amount, $0)), $0),
+			admin = isnull(sum(condition(:tt:a_account_code = '5700' and :tt:a_period = :this:period, :tt:a_amount, $0)), $0),
+			ytdgifts = isnull(sum(condition((:tt:a_account_code = '4100' or :tt:a_account_code = '2120'), :tt:a_amount, $0)), $0),
+			ytdadmin = isnull(sum(condition(:tt:a_account_code = '5700', :tt:a_amount, $0)), $0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows tt
+		WHERE
+			:tt:a_ledger_number = :this:ledger and
+			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			(:tt:a_account_code = '4100' or :tt:a_account_code = '2120' or :tt:a_account_code = '5700') and
+			:tt:a_origin = 'CR' and
+			:tt:a_transaction_type = 'T' and
+			:tt:a_period <= :this:period and :tt:a_period >= :period_qy:ref_period
+			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
+		");
+	}
+
+    detail_erq_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:tt:a_amount,
+			debit = condition(:tt:a_amount > $0, :tt:a_amount, null),
+			credit = condition(:tt:a_amount < $0, :tt:a_amount, null),
+			:tt:a_account_code,
+			:tt:a_account_category,
+			:tt:a_effective_date,
+			:a:a_acct_desc,
+			:tt:a_comment,
+			extname = rtrim(rtrim(:p:p_given_name) + ' ' + :p:p_surname)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
+			/apps/kardia/data/Kardia_DB/a_account/rows a,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			:tt:a_ledger_number = :this:ledger and
+			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			:tt:a_period = :this:period and
+			:a:a_ledger_number = :this:ledger and
+			:a:a_account_code = :tt:a_account_code and
+			:tt:a_transaction_type = 'T' and
+			:tt:a_account_code >= '3000' and
+			charindex(',' + rtrim(:tt:a_account_code) + ',', ',' + :config_qy:FmrSummAccts + ',') = 0 and
+			:tt:p_ext_partner_id *= :p:p_partner_key
+			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
+		ORDER BY
+			:tt:a_effective_date,
+			:tt:a_batch_number,
+			:tt:a_journal_number,
+			:tt:a_transaction_number
+		;
+
+		SELECT
+			a_amount = sum(:tt:a_amount),
+			debit = condition(sum(:tt:a_amount) > $0, sum(:tt:a_amount), null),
+			credit = condition(sum(:tt:a_amount) < $0, sum(:tt:a_amount), null),
+			:tt:a_account_code,
+			:tt:a_account_category,
+			-- a_effective_date = max(:tt:a_effective_date),
+			a_effective_date = :period_qy:a_end_date,
+			a_acct_desc = :a:a_acct_desc + ' (this month)',
+			a_comment = '',
+			extname = ''
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		WHERE
+			:tt:a_ledger_number = :this:ledger and
+			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			:tt:a_period = :this:period and
+			:a:a_ledger_number = :this:ledger and
+			:a:a_account_code = :tt:a_account_code and
+			:tt:a_transaction_type = 'T' and
+			:tt:a_account_code >= '3000' and
+			charindex(',' + rtrim(:tt:a_account_code) + ',', ',' + :config_qy:FmrSummAccts + ',') > 0
+			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
+		GROUP BY
+			:tt:a_account_code
+		HAVING
+			:a_amount != $0.00
+		");
+	debit_sum "report/aggregate" { compute="sum(:debit)"; reset=1; }
+	credit_sum "report/aggregate" { compute="sum(:credit)"; reset=1; }
+	}
+
+    accruals_list_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:trx:a_account_code,
+			:a:a_acct_desc,
+			amt = isnull(sum(:a_amount),$0),
+			chamt = isnull(sum(condition(:trx:a_period == :this:period, abs(:a_amount), $0)),$0),
+			bfamt = isnull(sum(condition(:trx:a_period != :this:period, :a_amount, $0)),$0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows trx,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		WHERE
+			:trx:a_ledger_number = :this:ledger and
+			:trx:a_cost_center = :subcc_qy:a_cost_center and
+			:trx:a_period <= :this:period and
+			:trx:a_period >= :period_qy:ref_period and
+			:a:a_ledger_number = :trx:a_ledger_number and
+			:a:a_account_code = :trx:a_account_code and
+			:trx:a_account_code >= '1000' and :trx:a_account_code <= '2999' and
+			:trx:a_account_code != '1900' and
+			(:trx:a_account_code == '2120' or (:trx:a_account_code < '2000' or :trx:a_account_code > '2999'))
+		GROUP BY
+			:trx:a_account_code
+		HAVING
+			:amt != $0 or :chamt != $0
+		");
+	}
+
+    new_detail_al_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:tt:a_amount,
+			debit = condition(:tt:a_amount > $0, :tt:a_amount, null),
+			credit = condition(:tt:a_amount < $0, :tt:a_amount, null),
+			:tt:a_account_code,
+			:tt:a_account_category,
+			:tt:a_effective_date,
+			:tt:a_comment,
+			extname = rtrim(rtrim(:p:p_given_name) + ' ' + :p:p_surname)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			:tt:a_ledger_number = :this:ledger and
+			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			:tt:a_period = :this:period and
+			:tt:a_transaction_type = 'T' and
+			:tt:a_account_code = :accruals_list_qy:a_account_code and
+			:tt:p_ext_partner_id *= :p:p_partner_key
+			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
+		ORDER BY
+			:tt:a_effective_date,
+			:tt:a_batch_number,
+			:tt:a_journal_number,
+			:tt:a_transaction_number
+		");
+			// where item -- (:tt:a_account_code != '1280' or :tt:a_origin != 'PP')
+	debit_sum "report/aggregate" { compute="sum(:debit)"; reset=1; }
+	credit_sum "report/aggregate" { compute="sum(:credit)"; reset=1; }
+	all_sum "report/aggregate" { compute="sum(:a_amount)"; reset=1; }
+	all_sum2 "report/aggregate" { compute="sum(:a_amount)"; reset=1; }
+	all_sum3 "report/aggregate" { compute="sum(:a_amount)"; reset=1; }
+	}
+
+    detail_al_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:tt:a_amount,
+			debit = condition(:tt:a_amount > $0, :tt:a_amount, null),
+			credit = condition(:tt:a_amount < $0, :tt:a_amount, null),
+			:tt:a_account_code,
+			:tt:a_account_category,
+			:tt:a_effective_date,
+			:a:a_acct_desc,
+			:tt:a_comment,
+			extname = rtrim(rtrim(:p:p_given_name) + ' ' + :p:p_surname)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
+			/apps/kardia/data/Kardia_DB/a_account/rows a,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			:tt:a_ledger_number = :this:ledger and
+			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			:tt:a_period = :this:period and
+			:a:a_ledger_number = :this:ledger and
+			:a:a_account_code = :tt:a_account_code and
+			:tt:a_transaction_type = 'T' and
+			:tt:a_account_code < '3000' and
+			:tt:a_account_code != '1900' and
+			:tt:p_ext_partner_id *= :p:p_partner_key and
+			((:tt:a_account_code == '2120' and :tt:a_origin != 'CR') or (:tt:a_account_code < '2000' or :tt:a_account_code > '2999'))
+			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
+		ORDER BY
+			:tt:a_effective_date,
+			:tt:a_batch_number,
+			:tt:a_journal_number,
+			:tt:a_transaction_number
+		");
+			// where item -- (:tt:a_account_code != '1280' or :tt:a_origin != 'PP')
+	debit_sum "report/aggregate" { compute="sum(:debit)"; reset=1; }
+	credit_sum "report/aggregate" { compute="sum(:credit)"; reset=1; }
+	}
+
+    summary_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			revenue = isnull(sum(condition(:a:a_acct_type == 'R' and :t:a_period = :this:period, :t:a_amount, $0.00)), $0.00),
+			expense = isnull(sum(condition(:a:a_acct_type == 'E' and :t:a_period = :this:period, :t:a_amount, $0.00)), $0.00), 
+			assets = isnull(sum(condition(:a:a_acct_type == 'A' and :t:a_transaction_type = 'T' and :t:a_period = :this:period, :t:a_amount, $0.00)), $0.00),
+			liabilities = isnull(sum(condition(:a:a_acct_type == 'L' and :t:a_transaction_type = 'T' and :t:a_period = :this:period, :t:a_amount, $0.00)), $0.00),
+			equity = isnull(sum(condition(:a:a_acct_type == 'Q' and :t:a_transaction_type = 'T' and :t:a_period = :this:period, :t:a_amount, $0.00)), $0.00),
+
+			openrevenue = isnull(sum(condition(:a:a_acct_type == 'R' and :t:a_period < :this:period, :t:a_amount, $0.00)), $0.00),
+			openexpense = isnull(sum(condition(:a:a_acct_type == 'E' and :t:a_period < :this:period, :t:a_amount, $0.00)), $0.00), 
+			openassets = isnull(sum(condition(:a:a_acct_type == 'A' and (:t:a_transaction_type = 'B' or :t:a_period < :this:period), :t:a_amount, $0.00)), $0.00),
+			openliabilities = isnull(sum(condition(:a:a_acct_type == 'L' and (:t:a_transaction_type = 'B' or :t:a_period < :this:period), :t:a_amount, $0.00)), $0.00),
+			openequity = isnull(sum(condition(:a:a_acct_type == 'Q' and (:t:a_transaction_type = 'B' or :t:a_period < :this:period), :t:a_amount, $0.00)), $0.00),
+
+			a_cc_disp = '' + :c:a_cost_center + ' - ' + :c:a_cc_desc,
+			:c:a_bal_cost_center,
+			:c:a_cc_desc,
+			last_trans = max(:t:a_effective_date)
+
+		FROM
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+
+		WHERE
+			:a:a_account_code = :t:a_account_code and 
+			:a:a_ledger_number = :t:a_ledger_number and 
+			:t:a_cost_center =* :c:a_cost_center and 
+			:t:a_ledger_number =* :c:a_ledger_number and
+			:t:a_period >= :period_qy:ref_period and
+			:t:a_period <= :this:period and
+			:c:a_ledger_number = :this:ledger and 
+			charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :cctrs_qy:cclist + ',') > 0
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		GROUP BY
+			:c:a_cost_center
+		");
+	}
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy,manager_info_qy,config_qy,period_qy,cctrs_qy,how_many_subcc_qy;
+	ffsep = yes;
+
+	hdrimg "report/image"
+	    {
+	    x=67.85;y=0;height=4;width=12.15;
+	    source=/apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=80; height=4;
+	    font=helvetica;
+	    align=left;
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver('Fund Manager: ' + :manager_info_qy:p_partner_key + " - " + :manager_info_qy:mgr_name + "\n"); }
+	    t_d3 "report/data" { fontsize=10; style=bold; value = runserver("Statement Period: " + :period_qy:a_period_desc + "\n"); }
+	    t_d1 "report/data" { fontsize=8; value = runserver("Fund Manager's Report from " + :ledger_qy:a_ledger_desc + "\n"); }
+	    //t_d2 "report/data" { fontsize=8; value = runserver("For Fund: " + :cctrs_qy:a_cc_desc + " (" + :cctrs_qy:a_cost_center + ")\n"); }
+	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
+	    t_d5 "report/data" { fontsize=8; condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    }
+
+	funds_summary "report/area"
+	    {
+	    x=0; width=80; height=2.5;
+	    font=helvetica;
+	    align=left;
+
+	    sep_line2 "report/image" { y=0.5; width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
+	    s2_d0 "report/data" { fontsize=12; style=bold; value = runserver("Balances By Fund for " + :period_qy:a_period_desc + ":"); }
+	    }
+
+	sumtbl "report/table"
+	    {
+	    x=10;width=80;height=0;
+	    columns=5;
+	    widths=24,13,13,13,13;
+	    colsep=1;
+	    source=summary_qy;
+	    moneyformat = "-$###,###,##0.00";
+	    font=helvetica;
+	    fontsize=8;
+
+	    sumtbl_hdr "report/table-row"
+		{
+		header=yes;
+
+		h2_lbl "report/table-cell" { value='Fund / Description'; style=bold; align=center; }
+		//h2_start "report/table-cell" { value=runserver('Beginning Balance\n' + :period_qy:a_period_desc); style=bold; align=center; }
+		h2_start "report/table-cell" { value=runserver('Beginning Balance'); style=bold; align=center; }
+		h2_rev "report/table-cell" { value=runserver('Income'); style=bold; align=center; }
+		h2_exp "report/table-cell" { value=runserver('Expense'); style=bold; align=center; }
+		h2_end "report/table-cell" { value=runserver('Ending Balance'); style=bold; align=center; }
+		}
+
+	    sumtbl_row1 "report/table-row"
+		{
+		font=courier;
+
+		d2_1_lbl "report/table-cell" { value=runserver(:summary_qy:a_cc_disp); style=bold; font=helvetica;}
+		d2_1_start "report/table-cell" { value=runserver($0 - (:summary_qy:openequity + :summary_qy:openrevenue + :summary_qy:openexpense)); align=right; }
+		d2_1_rev "report/table-cell" { value=runserver($0 - (:summary_qy:revenue)); align=right; }
+		d2_1_exp "report/table-cell" { value=runserver($0 - (:summary_qy:expense)); align=right; }
+		d2_1_end "report/table-cell" { value=runserver($0 - (:summary_qy:openequity + :summary_qy:openrevenue + :summary_qy:openexpense + :summary_qy:equity + :summary_qy:expense + :summary_qy:revenue)); align=right; }
+		}
+	    }
+
+	detail_form "report/form"
+	    {
+	    //source = subcc_qy;
+	    source = subcc_qy, gift_and_admin_qy;
+	    moneyformat="-###,###,##0.00";
+
+	    detail_hdr "report/area"
+		{
+		x=0; width=80; height=1.0;
+		font=helvetica;
+		align=left;
+
+		sep_line4 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
+		s4_d0 "report/data" { fontsize=12; style=bold; value = runserver(:subcc_qy:a_cost_center + " (" + :subcc_qy:a_cc_desc + ") Detail:"); }
+
+		//s4_d1 "report/data" { fontsize=8; style=bold; value="\n\nTotal Gifts:"; }
+		//s4_d2 "report/data" { fontsize=8; font=courier; xpos=12; value=runserver(ralign("" + ($0 - :gift_and_admin_qy:gifts), 11) + "\n"); }
+		//s4_d2 "report/data" { fontsize=8; font=courier; value=runserver(ralign("" + ($0 - :gift_and_admin_qy:gifts), 11) + "    "); }
+		//s4_d3 "report/data" { fontsize=8; style=bold; value="Less, Admin Fees:"; }
+		//s4_d4 "report/data" { fontsize=8; font=courier; xpos=12; value=runserver(ralign("" + :gift_and_admin_qy:admin, 11)); }
+		//s4_d4 "report/data" { fontsize=8; font=courier; value=runserver(ralign("" + :gift_and_admin_qy:admin, 11)); }
+		//s4_d5 "report/data" { fontsize=8; font=courier; moneyformat="0.00"; value=runserver(" (" + condition(:gift_and_admin_qy:gifts == $0, 0.0, ($0 - :gift_and_admin_qy:admin) / convert(double,:gift_and_admin_qy:gifts) * 100.0) + " %)\n"); }
+		//s4_d5 "report/data" { fontsize=8; font=courier; moneyformat="0.00"; value=runserver(" (" + condition(:gift_and_admin_qy:gifts == $0, 0.0, ($0 - :gift_and_admin_qy:admin) / convert(double,:gift_and_admin_qy:gifts) * 100.0) + " %)    "); }
+		//s4_d6 "report/data" { fontsize=8; style=bold; value="Net Gifts:"; }
+		//s4_d7 "report/data" { fontsize=8; font=courier; xpos=12; value=runserver(ralign("" + ($0 - (:gift_and_admin_qy:admin + :gift_and_admin_qy:gifts)), 11) + ""); }
+		}
+
+	    detail_ag_tbl "report/table"
+		{
+		x=0;width=56;height=0;
+		columns=5;
+		widths=10,11,11,9,11;
+		colsep=1;
+		moneyformat = "-###,###,##0.00";
+		dateformat = "MMM-dd";
+		nullformat = "";
+		font=helvetica;
+		fontsize=8;
+		nodatamsg=0;
+		margintop=0.5;
+
+		detail_ag_tbl_hdr "report/table-row"
+		    {
+		    header=yes;
+		    style=bold;
+		    margintop=0.1;
+		    marginbottom=0.0;
+
+		    dgt_h_lbl "report/table-cell" { value=''; align=center; }
+		    dgt_h_gross "report/table-cell" { value='Total Gifts'; align=center; }
+		    dgt_h_admin "report/table-cell" { value='Less, Admin Fees'; align=center; }
+		    dgt_h_adminp "report/table-cell" { value='(percent)'; align=center; }
+		    dgt_h_net "report/table-cell" { value='= Net Gifts'; align=center; }
+		    }
+
+		detail_ag_tbl_row1 "report/table-row"
+		    {
+		    font=courier;
+		    margintop=0.1;
+		    marginbottom=0.0;
+
+		    dgt_d1_lbl "report/table-cell" { value=runserver(:period_qy:a_period_desc); align=left; font=helvetica; style=bold; }
+		    dgt_d1_gross "report/table-cell" { value=runserver($0 - :gift_and_admin_qy:gifts); align=center; }
+		    dgt_d1_admin "report/table-cell" { value=runserver(:gift_and_admin_qy:admin); align=center; }
+		    dgt_d1_adminp "report/table-cell" { value=runserver("" + condition(:gift_and_admin_qy:gifts == $0, 0.0, ($0 - :gift_and_admin_qy:admin) / convert(double,:gift_and_admin_qy:gifts) * 100.0) + "%"); align=center; }
+		    dgt_d1_net "report/table-cell" { value=runserver($0 - (:gift_and_admin_qy:admin + :gift_and_admin_qy:gifts)); align=center; }
+		    }
+
+		detail_ag_tbl_row2 "report/table-row"
+		    {
+		    font=courier;
+		    margintop=0.1;
+		    marginbottom=0.0;
+
+		    dgt_d2_lbl "report/table-cell" { value=runserver("Year to Date"); align=left; font=helvetica; style=bold; }
+		    dgt_d2_gross "report/table-cell" { value=runserver($0 - :gift_and_admin_qy:ytdgifts); align=center; }
+		    dgt_d2_admin "report/table-cell" { value=runserver(:gift_and_admin_qy:ytdadmin); align=center; }
+		    dgt_d2_adminp "report/table-cell" { value=runserver("" + condition(:gift_and_admin_qy:ytdgifts == $0, 0.0, ($0 - :gift_and_admin_qy:ytdadmin) / convert(double,:gift_and_admin_qy:ytdgifts) * 100.0) + "%"); align=center; }
+		    dgt_d2_net "report/table-cell" { value=runserver($0 - (:gift_and_admin_qy:ytdadmin + :gift_and_admin_qy:ytdgifts)); align=center; }
+		    }
+		}
+
+	    //trx_det_hdr "report/data" { style=bold; value=runserver('\nTransactions for Expenses and Income:\n'); }
+	    detail_erq_tbl "report/table"
+		{
+		x=10;width=80;height=0;
+		columns=6;
+		widths=4,9,9,20,13,20;
+		colsep=1;
+		source=detail_erq_qy;
+		moneyformat = "-###,###,##0.00";
+		dateformat = "MMM-dd";
+		nullformat = "";
+		font=helvetica;
+		fontsize=8;
+		nodatamsg=0;
+		margintop=0.5;
+
+		detail_erq_tbl_hdr "report/table-row"
+		    {
+		    header=yes;
+		    style=bold;
+
+		    det_h_date "report/table-cell" { value='Date'; align=center; }
+		    det_h_debit "report/table-cell" { value='Debit'; align=center; }
+		    det_h_credit "report/table-cell" { value='Credit'; align=center; }
+		    det_h_acct "report/table-cell" { value='Income/Expense Type'; align=center; }
+		    det_h_whom "report/table-cell" { value='To/From Whom'; align=center; }
+		    det_h_comment "report/table-cell" { value='Income/Expense Comments'; align=center; }
+		    }
+
+		detail_erq_tbl_row "report/table-row"
+		    {
+		    font=courier;
+		    margintop = 0.04;
+		    marginbottom = 0.04;
+
+		    det_d_date "report/table-cell" { value=runserver(:detail_erq_qy:a_effective_date); }
+		    det_d_debit "report/table-cell" { value=runserver($0 - :detail_erq_qy:debit); align=right; }
+		    det_d_credit "report/table-cell" { value=runserver($0 - :detail_erq_qy:credit); align=right; }
+		    det_d_acct "report/table-cell" { value=runserver(:detail_erq_qy:a_account_code + ' - ' + :detail_erq_qy:a_acct_desc); font=helvetica; }
+		    det_d_whom "report/table-cell" { value=runserver(:detail_erq_qy:extname); font=helvetica; }
+		    det_d_comments "report/table-cell" { value=runserver(substring(:detail_erq_qy:a_comment,1,55)); font=helvetica; }
+		    }
+
+		detail_erq_tbl_sum "report/table-row"
+		    {
+		    summary=yes;
+		    font=courier;
+		    margintop = 0.04;
+		    marginbottom = 0.04;
+
+		    det_s_date "report/table-cell" { value=runserver('Total:'); style=bold; font=helvetica; }
+		    //det_s_debit "report/table-cell" { value=runserver($0 - (:detail_erq_qy:debit_sum + :gift_and_admin_qy:admin)); align=right; style=bold; }
+		    //det_s_credit "report/table-cell" { value=runserver($0 - :detail_erq_qy:credit_sum); align=right; style=bold; }
+		    det_s_debit "report/table-cell" { value=runserver($0 - :detail_erq_qy:debit_sum); align=right; style=bold; }
+		    det_s_credit "report/table-cell" { value=runserver($0 - :detail_erq_qy:credit_sum); align=right; style=bold; }
+		    det_s_acct "report/table-cell" { value=runserver(''); font=helvetica; style=bold; }
+		    det_s_whom "report/table-cell" { value=runserver(''); font=helvetica; }
+		    det_s_comments "report/table-cell" { value=runserver(''); font=helvetica; }
+		    }
+		}
+
+	    accruals_list_form "report/form"
+		{
+		source=accruals_list_qy;
+
+		accrual_name "report/data" { style=bold; value=runserver('\nTransactions for Account ' + :accruals_list_qy:a_account_code + ' - ' + :accruals_list_qy:a_acct_desc + ':\n'); }
+
+		detail_al_tbl "report/table"
+		    {
+		    x=0;width=67;height=0;
+		    columns=5;
+		    widths=4.5,9,9,13,25;
+		    colsep=1;
+		    source=new_detail_al_qy;
+		    moneyformat = "-###,###,##0.00";
+		    dateformat = "MMM-dd";
+		    nullformat = "";
+		    font=helvetica;
+		    fontsize=8;
+		    nodatamsg=0;
+		    margintop=0;
+		    marginleft=2;
+
+		    detail_al_tbl_hdr "report/table-row"
+			{
+			header=yes;
+			style=bold;
+
+			dat_h_date "report/table-cell" { value='Date'; align=center; }
+			dat_h_debit "report/table-cell" { value='Debit'; align=center; }
+			dat_h_credit "report/table-cell" { value='Credit'; align=center; }
+			det_h_whom "report/table-cell" { value='To/From Whom'; align=center; }
+			dat_h_comment "report/table-cell" { value='Comments'; align=center; }
+			}
+
+		    detail_al_tbl_bf "report/table-row"
+			{
+			header=yes;
+			margintop = 0.04;
+			marginbottom = 0.04;
+			style=bold;
+
+			dat_bf_date "report/table-cell" { value=runserver(:period_qy:a_start_date); align=left; font=courier; }
+			dat_bf_debit "report/table-cell" { value=runserver(condition(:accruals_list_qy:bfamt > $0, $0 - :accruals_list_qy:bfamt, '')); align=right; font=courier; }
+			dat_bf_credit "report/table-cell" { value=runserver(condition(:accruals_list_qy:bfamt <= $0, $0 - :accruals_list_qy:bfamt, '')); align=right; font=courier; }
+			det_bf_whom "report/table-cell" { value=''; align=center; }
+			dat_bf_comment "report/table-cell" { value='(BALANCE FORWARD)'; align=left; }
+			}
+
+		    detail_al_tbl_row "report/table-row"
+			{
+			font=courier;
+			margintop = 0.04;
+			marginbottom = 0.04;
+
+			dat_d_date "report/table-cell" { value=runserver(:new_detail_al_qy:a_effective_date); }
+			dat_d_debit "report/table-cell" { value=runserver($0 - :new_detail_al_qy:debit); align=right; }
+			dat_d_credit "report/table-cell" { value=runserver($0 - :new_detail_al_qy:credit); align=right; }
+			det_d_whom "report/table-cell" { value=runserver(:new_detail_al_qy:extname); font=helvetica; }
+			dat_d_comments "report/table-cell" { value=runserver(substring(:new_detail_al_qy:a_comment,1,55)); font=helvetica; }
+			}
+
+		    detail_al_tbl_sum "report/table-row"
+			{
+			summary=yes;
+			font=courier;
+			margintop = 0.04;
+			marginbottom = 0.04;
+
+			dat_s_date "report/table-cell" { value=runserver('Balance:'); style=bold; font=helvetica; }
+			dat_s_debit "report/table-cell" { value=runserver(condition(:new_detail_al_qy:all_sum > $0, $0 - (:new_detail_al_qy:all_sum2 + :accruals_list_qy:bfamt), '')); align=right; style=bold; }
+			dat_s_credit "report/table-cell" { value=runserver(condition(:new_detail_al_qy:all_sum3 <= $0, $0 - (:new_detail_al_qy:all_sum2 + :accruals_list_qy:bfamt), '')); align=right; style=bold; }
+			dat_s_whom "report/table-cell" { value=runserver(''); font=helvetica; }
+			dat_s_comments "report/table-cell" { value=runserver('(ENDING BALANCE)'); font=helvetica; style=bold; }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
