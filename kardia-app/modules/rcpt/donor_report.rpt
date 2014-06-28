@@ -53,7 +53,7 @@ donor_report "system/report"
     exclude_states "report/parameter" { type=string; }
     comment_text "report/parameter" { type=string; description="Gift Comment:"; }
 
-    show_amounts "report/parameter" { type=integer; default=1; groupid=2; groupname="Format"; }
+    show_amounts "report/parameter" { type=integer; default=0; groupid=2; groupname="Format"; }
     cntry_fmt "report/parameter" { type=string; default='blank'; groupid=2; groupname="Format"; }
     contact_via "report/parameter" { type=string; default='postal'; groupid=2; groupname="Format"; }
 
@@ -65,7 +65,7 @@ donor_report "system/report"
     // This report can modify data (the create/add-to mailing list feature).
     // Therefore we can't allow direct access - must be via an app.  This
     // prevents CSRF type attacks.
-    require_endorsements = "system:from_application";
+    require_endorsements = "system:from_appgroup";
 
     // Query to get site information
     site_qy "report/query"

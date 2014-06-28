@@ -61,7 +61,7 @@ mailing_report "system/report"
     // This report can modify data (the create/add-to mailing list feature).
     // Therefore we can't allow direct access - must be via an app.  This
     // prevents CSRF type attacks.
-    require_endorsements = "system:from_application";
+    require_endorsements = "system:from_appgroup";
 
     // Query to get site information
     site_qy "report/query"
