@@ -212,8 +212,8 @@ partner_search_controls "widget/component-decl"
 			p_partner_class_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_partner_class; text="Partner Type:"; lookup_width=305; tooltip=""; ctl_type="dropdown"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_partner_class/rows";}
 			p_title_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_title; text="Title:"; ctl_type="editbox"; tooltip="The Partners Title"; }
 			p_comments_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_comments; text="Comments:"; lookup_width=305; ctl_type="editbox"; tooltip=""; }
-			p_legacy_key_1_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_1; text="Legacy Key:"; ctl_type="editbox"; tooltip="Legacy Key 1"; }
-			p_legacy_key_2_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_2; text="Legacy Key 2:"; ctl_type="editbox"; tooltip="Legacy Key 2"; }
+			p_legacy_key_1_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_1; text=runserver(isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField1'), 'Legacy Key 1') + ':'); ctl_type="editbox"; tooltip=runserver('Legacy Value - ' + isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField1'), 'Legacy Key 1') ); }
+			p_legacy_key_2_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_2; text=runserver(isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField2'), 'Legacy Key 2') + ':'); ctl_type="editbox"; tooltip=runserver('Legacy Value - ' + isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField2'), 'Legacy Key 2') ); }
 			}
 		    }
 		}
