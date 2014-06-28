@@ -1,0 +1,34 @@
+$Version=2$
+report_field_layoutdir "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "layoutdir";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_ld_hbx "widget/hbox"
+	{
+	width=350; height=24; spacing=5;
+
+	f_ld_lbl "widget/label" { text="Layout By:"; align=right; width=115; }
+
+	f_ld_dd "widget/dropdown"
+	    {
+	    width=230;
+	    fl_width=40; 
+	    bgcolor=white; 
+	    fieldname="layoutdir";
+	    mode=static;
+	    hilight="#d0d0d0";
+	    form=rpt_form;
+	    numdisplay=6;
+
+	    f_dm_opt1 "widget/dropdownitem" { label="Rows (default)"; value="rows"; }
+	    f_dm_opt2 "widget/dropdownitem" { label="Columns"; value="cols"; }
+
+	    //f_dm_dd_hints "widget/hints" { style=notnull; default=runclient("any"); }
+	    }
+	}
+    }

@@ -1,0 +1,32 @@
+$Version=2$
+report_field_skip "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "skip";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_skip_editbox "widget/component"
+	{
+	height=24; width=235;
+	label_width=120;
+	path="/sys/cmp/smart_field.cmp";
+	field="skip";
+	text="Skip Over #:";
+	empty_desc = "";
+	ctl_type=editbox;
+	form=rpt_form;
+
+	set_layoutdir_cn "widget/connector"
+	    {
+	    event=KeyPress;
+	    event_condition=runclient(:Code == 67 or :Code == 99 or :Code == 82 or :Code == 114);
+	    target=rpt_form;
+	    action=SetValue;
+	    Field=runclient('layoutdir');
+	    Value=runclient(condition(:Code == 67 or :Code == 99, 'cols', 'rows'));
+	    }
+	}
+    }
