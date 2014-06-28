@@ -1,0 +1,184 @@
+$Version=2$
+api_crm_config "system/querytree"
+    {
+    Tracks "system/querytree"
+	{
+	text = "Tracks";
+
+	tracklist "system/querytree"
+	    {
+	    sql = " select
+			name = :e_track_name,
+			track_id = :e_track_id,
+			track_name = :e_track_name,
+			track_description = :e_track_description,
+			track_color = :e_track_color,
+			track_status = condition(:e_track_status == 'A', 'Active', 'Obsolete'),
+			date_created = :s_date_created,
+			created_by = :s_created_by,
+			date_modified = :s_date_modified,
+			modified_by = :s_modified_by
+		    from
+			/apps/kardia/data/Kardia_DB/e_engagement_track/rows
+		    ";
+	    use_having = yes;
+
+	    Steps "system/querytree"
+		{
+		text = "Steps";
+
+		steplist "system/querytree"
+		    {
+		    sql = " select
+				name = :s:e_step_name,
+				track_id = :s:e_track_id,
+				track_name = :tracklist:track_name,
+				step_id = :s:e_step_id,
+				step_name = :s:e_step_name,
+				step_description = :s:e_step_description,
+				step_sequence = :s:e_step_sequence,
+				date_created = :s:s_date_created,
+				created_by = :s:s_created_by,
+				date_modified = :s:s_date_modified,
+				modified_by = :s:s_modified_by
+			    from
+				/apps/kardia/data/Kardia_DB/e_engagement_step/rows s
+			    where
+				:s:e_track_id = :tracklist:track_id
+			    ";
+		    use_having = yes;
+
+		    StepCollaborators "system/querytree"
+			{
+			text = "Collaborators";
+
+			stepcollablist "system/querytree"
+			    {
+			    sql = " select
+					:esc:name,
+					partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+					partner_id = :esc:p_collab_partner_key,
+					track_name = :tracklist:track_name,
+					step_name = :steplist:step_name,
+					comments = :esc:e_comments,
+					date_created = :esc:s_date_created,
+					created_by = :esc:s_created_by,
+					date_modified = :esc:s_date_modified,
+					modified_by = :esc:s_modified_by
+				    from
+					identity /apps/kardia/data/Kardia_DB/e_engagement_step_collab/rows esc,
+					/apps/kardia/data/Kardia_DB/p_partner/rows p
+				    where
+					:esc:e_track_id = :tracklist:track_id and
+					:esc:e_step_id = :steplist:step_id and
+					:p:p_partner_key = :esc:p_collab_partner_key
+				    ";
+			    }
+			}
+
+		    StepReqs "system/querytree"
+			{
+			text = "Requirements";
+
+			reqlist "system/querytree"
+			    {
+			    sql = " select
+					name = :r:e_req_name,
+					requirement_name = :r:e_req_name,
+					requirement_id = :r:e_req_id,
+					step_id = :r:e_step_id,
+					step_name = :steplist:step_name,
+					track_id = :r:e_track_id,
+					track_name = :tracklist:track_name,
+					due_days_from_step = :r:e_due_days_from_step,
+					due_days_from_requirement = :r:e_due_days_from_req,
+					due_days_from_requirement_id = :r:e_due_days_from_req_id,
+					due_days_from_requirement_name = :r2:e_req_name,
+					fulfilled_by = condition(:r:e_req_whom == 'P', 'Partner', condition(:r:e_req_whom == 'O', 'Organization', 'Either')),
+					fulfilling_document_type_id = :r:e_req_doc_type_id,
+					fulfilling_document_type_name = :dt:e_doc_type_label,
+					waivable = :r:e_req_waivable,
+					date_created = :r:s_date_created,
+					created_by = :r:s_created_by,
+					date_modified = :r:s_date_modified,
+					modified_by = :r:s_modified_by
+				    from
+					identity /apps/kardia/data/Kardia_DB/e_engagement_step_req/rows r,
+					/apps/kardia/data/Kardia_DB/e_engagement_step_req/rows r2,
+					/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+				    where
+					:r:e_track_id = :tracklist:track_id and
+					:r:e_step_id = :steplist:step_id and
+					:r2:e_req_id =* :r:e_due_days_from_req_id and
+					:r2:e_track_id =* :r:e_track_id and
+					:r2:e_step_id =* :r:e_step_id and
+					:dt:e_doc_type_id =* :r:e_req_doc_type_id
+				    ";
+			    }
+			}
+		    }
+		}
+
+	    Collaborators "system/querytree"
+		{
+		text = "Collaborators";
+
+		trackcollablist "system/querytree"
+		    {
+		    sql = " select
+				:etc:name,
+				partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				partner_id = :etc:p_collab_partner_key,
+				track_name = :tracklist:track_name,
+				comments = :etc:e_comments,
+				date_created = :etc:s_date_created,
+				created_by = :etc:s_created_by,
+				date_modified = :etc:s_date_modified,
+				modified_by = :etc:s_modified_by
+			    from
+				identity /apps/kardia/data/Kardia_DB/e_engagement_track_collab/rows etc,
+				/apps/kardia/data/Kardia_DB/p_partner/rows p
+			    where
+				:etc:e_track_id = :tracklist:track_id and
+				:p:p_partner_key = :etc:p_collab_partner_key
+			    ";
+		    }
+		}
+	    }
+	}
+
+    TagTypes "system/querytree"
+	{
+	text = "TagTypes";
+	}
+
+    ContactHistTypes "system/querytree"
+	{
+	text = "ContactHistTypes";
+	}
+
+    CollaboratorTypes "system/querytree"
+	{
+	text = "CollaboratorTypes";
+	}
+
+    TodoTypes "system/querytree"
+	{
+	text = "TodoTypes";
+	}
+
+    WorkflowTypes "system/querytree"
+	{
+	text = "WorkflowTypes";
+	}
+
+    DataItemTypes "system/querytree"
+	{
+	text = "DataItemTypes";
+	}
+
+    DocumentTypes "system/querytree"
+	{
+	text = "DocumentTypes";
+	}
+    }

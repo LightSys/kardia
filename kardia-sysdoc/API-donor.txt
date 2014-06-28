@@ -40,6 +40,18 @@ OBJECT STRUCTURE...
 	    http://server/apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection
 	    http://server/apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 
+    /apps/kardia/api/donor/{donorid}/GivingInfo -- Information about places
+    or sub-entities within the organization to give to.  There will in most
+    cases just be one such entity within the organization; this is not a list
+    of available funds.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    giving_url	    - general URL to use to donate online
+	    giving_ledger   - ledger ID of this entity
+	    giving_ledger_desc - description of the entity
+
     /apps/kardia/api/donor/{donorid}/DonorInfo -- Information about one donor
 
 	This URL would be an element, not a collection.  It will have the
@@ -61,6 +73,7 @@ OBJECT STRUCTURE...
 	    gift_fund_desc  - description of fund donated to
 	    gift_ledger_desc- description of ledger
 	    gift_check_num  - check number of gift
+	    gift_type	    - type of gift (Check, Credit Card, etc.)
 	    gift_receipt_num- receipt number sent for the gift
 	    gift_non_tax_ded- 0 of tax deductible, 1 if not tax deductible
 
@@ -81,6 +94,7 @@ OBJECT STRUCTURE...
 	    gift_count	    - number of gifts given
 	    gift_total	    - total amount given
 	    recent_gift_date- date of most recent gift
+	    giving_url	    - URL to use to donate online to this fund
 
     /apps/kardia/api/donor/{donorid}/Years -- List of all years in which the
     donor has given a gift

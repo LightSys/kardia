@@ -238,7 +238,7 @@ create  index e_doc_curpath_idx on e_document (e_current_folder, e_current_filen
 /* create  index e_doc_pk on e_document (e_document_id)*/ 
 /* go */
 create  index e_doc_type_idx on e_document (e_doc_type_id, e_document_id);
-create  index e_doc_work_idx on e_document (e_workflow_state_id, e_document_id);
+create  index e_doc_work_idx on e_document (e_workflow_instance_id, e_document_id);
 
 
 /* e_document_comment */
@@ -251,10 +251,10 @@ create  index e_doccom_work_idx on e_document_comment (e_workflow_state_id, e_do
 
 /* e_partner_document */
 create  index e_pardoc_egagement_idx on e_partner_document (e_engagement_id, p_partner_key, e_document_id);
-/* create  index e_pardoc_pk on e_partner_document (e_document_id, p_partner_key)*/ 
+/* create  index e_pardoc_pk on e_partner_document (e_document_id, p_partner_key, e_engagement_id)*/ 
 /* go */
-create  index e_pardoc_rev_idx on e_partner_document (p_partner_key, e_document_id);
-create  index e_pardoc_work_idx on e_partner_document (e_workflow_instance_id, p_partner_key, e_document_id);
+create  index e_pardoc_rev_idx on e_partner_document (p_partner_key, e_document_id, e_engagement_id);
+create  index e_pardoc_work_idx on e_partner_document (e_workflow_instance_id, p_partner_key, e_document_id, e_engagement_id);
 
 
 /* e_workflow_type */

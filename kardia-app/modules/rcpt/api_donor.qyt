@@ -19,6 +19,7 @@ api_donors "system/querytree"
 			    gift_fund_desc = isnull(:cr:a_receipt_comment, :c:a_cc_desc),
 			    gift_ledger_desc = :l:a_ledger_desc,
 			    gift_check_num = :i:a_recv_document_id,
+			    gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt, /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :gt:tag = :g:a_gift_type and :g:a_ledger_number = :i:a_ledger_number and :g:a_batch_number = :i:a_batch_number and :g:a_gift_number = :i:a_gift_number),
 			    gift_receipt_num = :i:a_dn_receipt_number,
 			    gift_non_tax_ded = :i:a_non_tax_deductible
 			from
@@ -77,6 +78,7 @@ api_donors "system/querytree"
 				    gift_fund_desc = isnull(:cr:a_receipt_comment, :c:a_cc_desc),
 				    gift_ledger_desc = :l:a_ledger_desc,
 				    gift_check_num = :i:a_recv_document_id,
+				    gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt, /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :gt:tag = :g:a_gift_type and :g:a_ledger_number = :i:a_ledger_number and :g:a_batch_number = :i:a_batch_number and :g:a_gift_number = :i:a_gift_number),
 				    gift_receipt_num = :i:a_dn_receipt_number,
 				    gift_non_tax_ded = :i:a_non_tax_deductible
 				from
@@ -112,7 +114,8 @@ api_donors "system/querytree"
 				    ledger_desc = :l:a_ledger_desc,
 				    gift_count = count(1),
 				    gift_total = sum(:i:a_amount),
-				    recent_gift_date = max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))
+				    recent_gift_date = max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+				    giving_url = isnull((select :i_eg_url from /apps/kardia/data/Kardia_DB/i_eg_giving_url/rows where :a_ledger_number = :i:a_ledger_number and :a_cost_center = :i:a_cost_center), (select :i_eg_url from /apps/kardia/data/Kardia_DB/i_eg_giving_url/rows where :a_ledger_number = :i:a_ledger_number and :a_cost_center = '*'))
 				from
 				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 				    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
@@ -147,6 +150,7 @@ api_donors "system/querytree"
 					    gift_fund_desc = isnull(:cr:a_receipt_comment, :c:a_cc_desc),
 					    gift_ledger_desc = :l:a_ledger_desc,
 					    gift_check_num = :i:a_recv_document_id,
+					    gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt, /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :gt:tag = :g:a_gift_type and :g:a_ledger_number = :i:a_ledger_number and :g:a_batch_number = :i:a_batch_number and :g:a_gift_number = :i:a_gift_number),
 					    gift_receipt_num = :i:a_dn_receipt_number,
 					    gift_non_tax_ded = :i:a_non_tax_deductible
 					from
@@ -188,7 +192,8 @@ api_donors "system/querytree"
 			    ledger_desc = :l:a_ledger_desc,
 			    gift_count = count(1),
 			    gift_total = sum(:i:a_amount),
-			    recent_gift_date = max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))
+			    recent_gift_date = max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+			    giving_url = isnull((select :i_eg_url from /apps/kardia/data/Kardia_DB/i_eg_giving_url/rows where :a_ledger_number = :i:a_ledger_number and :a_cost_center = :i:a_cost_center), (select :i_eg_url from /apps/kardia/data/Kardia_DB/i_eg_giving_url/rows where :a_ledger_number = :i:a_ledger_number and :a_cost_center = '*'))
 			from
 			    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 			    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
@@ -222,6 +227,7 @@ api_donors "system/querytree"
 				    gift_fund_desc = isnull(:cr:a_receipt_comment, :c:a_cc_desc),
 				    gift_ledger_desc = :l:a_ledger_desc,
 				    gift_check_num = :i:a_recv_document_id,
+				    gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt, /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :gt:tag = :g:a_gift_type and :g:a_ledger_number = :i:a_ledger_number and :g:a_batch_number = :i:a_batch_number and :g:a_gift_number = :i:a_gift_number),
 				    gift_receipt_num = :i:a_dn_receipt_number,
 				    gift_non_tax_ded = :i:a_non_tax_deductible
 				from
@@ -284,6 +290,7 @@ api_donors "system/querytree"
 					    gift_fund_desc = isnull(:cr:a_receipt_comment, :c:a_cc_desc),
 					    gift_ledger_desc = :l:a_ledger_desc,
 					    gift_check_num = :i:a_recv_document_id,
+					    gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt, /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :gt:tag = :g:a_gift_type and :g:a_ledger_number = :i:a_ledger_number and :g:a_batch_number = :i:a_batch_number and :g:a_gift_number = :i:a_gift_number),
 					    gift_receipt_num = :i:a_dn_receipt_number,
 					    gift_non_tax_ded = :i:a_non_tax_deductible
 					from
@@ -309,6 +316,26 @@ api_donors "system/querytree"
 			    }
 			}
 		    }
+		}
+	    }
+
+	GivingInfo "system/querytree"
+	    {
+	    text = "GivingInfo";
+
+	    givinglist "system/querytree"
+		{
+		sql = " select
+			    giving_url = :egu:i_eg_url,
+			    giving_ledger = :l:a_ledger_number,
+			    giving_ledger_desc = :l:a_ledger_desc
+			from
+			    identity /apps/kardia/data/Kardia_DB/a_ledger/rows l,
+			    /apps/kardia/data/Kardia_DB/i_eg_giving_url/rows egu
+			where
+			    :egu:a_ledger_number =* :l:a_ledger_number and
+			    :egu:a_cost_center = '*'
+			";
 		}
 	    }
 

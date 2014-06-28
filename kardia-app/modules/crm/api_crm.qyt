@@ -1,0 +1,331 @@
+$Version=2$
+api_crm "system/querytree"
+    {
+    Engagement "system/querytree"
+	{
+	text = "Partners";
+
+	eng_list "system/querytree"
+	    {
+	    sql = " select
+			partner_id = :p:p_partner_key,
+			partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			partner_ref = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key,
+			class = (select :text from /apps/kardia/data/Kardia_DB/_p_partner_class/rows pc where :pc:tag = :p:p_partner_class),
+			is_valid = condition(:p:p_status_code == 'A', 1, 0),
+			date_created = :p:s_date_created,
+			created_by = :p:s_created_by,
+			date_modified = :p:s_date_modified,
+			modified_by = :p:s_modified_by
+		    from
+			identity /apps/kardia/data/Kardia_DB/p_partner/rows p
+		    ";
+
+	    Tags "system/querytree"
+		{
+		text = "Tags";
+
+		taglist "system/querytree"
+		    {
+		    sql = " select
+				name = :tt:e_tag_label,
+				tag_label = :tt:e_tag_label,
+				tag_type_id = :t:e_tag_id,
+				tag_strength = :t:e_tag_strength,
+				tag_certainty = :t:e_tag_certainty,
+				tag_volatility = condition(:t:e_tag_volatility == 'P', 'Persistent', condition(:t:e_tag_volatility == 'D', 'Derived', 'Implied')),
+				tag_origin = :t:e_tag_origin,
+				tag_comments = :t:e_tag_comments,
+				date_created = :t:s_date_created,
+				created_by = :t:s_created_by,
+				date_modified = :t:s_date_modified,
+				modified_by = :t:s_modified_by
+			    from
+				identity /apps/kardia/data/Kardia_DB/e_tag/rows t,
+				/apps/kardia/data/Kardia_DB/e_tag_type/rows tt
+			    where
+				:t:p_partner_key = :eng_list:partner_id and
+				:tt:e_tag_id = :t:e_tag_id and
+				:tt:e_is_active = 1
+			    ";
+		    use_having = yes;
+		    }
+		}
+
+	    Documents "system/querytree"
+		{
+		text = "Documents";
+
+		doclist "system/querytree"
+		    {
+		    sql = " select
+				document_id = :pd:e_document_id,
+				partner_id = :eng_list:partner_id,
+				partner_name = :eng_list:partner_name,
+				partner_ref = :eng_list:partner_ref,
+				num_uses = count(1),
+				document_type_id = :d:e_doc_type_id,
+				document_type = :dt:e_doc_type_label,
+				title = :d:e_title,
+				orig_filename = :d:e_orig_filename,
+				location = :d:e_current_folder + '/' + :d:e_current_filename,
+				uploading_collaborator_id = :d:e_uploading_collaborator,
+				uploading_collaborator = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				generic_workflow_instance_id = :d:e_workflow_instance_id,
+				generic_workflow = :wt:e_workflow_label + ':' + :ws:e_workflow_step_label,
+				date_created = :d:s_date_created,
+				created_by = :d:s_created_by,
+				date_modified = :d:s_date_modified,
+				modified_by = :d:s_modified_by
+			    from
+				/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+				identity /apps/kardia/data/Kardia_DB/e_document/rows d,
+				/apps/kardia/data/Kardia_DB/e_document_type/rows dt,
+				/apps/kardia/data/Kardia_DB/p_partner/rows p,
+				/apps/kardia/data/Kardia_DB/e_workflow/rows w,
+				/apps/kardia/data/Kardia_DB/e_workflow_type_step/rows ws,
+				/apps/kardia/data/Kardia_DB/e_workflow_type/rows wt
+			    where
+				:pd:p_partner_key = :eng_list:partner_id and
+				:d:e_document_id = :pd:e_document_id and
+				:dt:e_doc_type_id = :d:e_doc_type_id and
+				:p:p_partner_key = :d:e_uploading_collaborator and
+				:w:e_workflow_instance_id =* :d:e_workflow_instance_id and
+				:wt:e_workflow_id = :w:e_workflow_id and
+				:ws:e_workflow_id = :w:e_workflow_id and
+				:ws:e_workflow_step_id = :w:e_workflow_step_id
+			    group by
+				:pd:e_document_id
+			    ";
+
+		    Engagements "system/querytree"
+			{
+			text = "Engagements";
+
+			docenglist "system/querytree"
+			    {
+			    sql = " select
+					name = :et:e_track_name + '-' + :pe:e_engagement_id,
+					document_id = :pd:e_document_id,
+					partner_id = :pe:p_partner_key,
+					partner_name = :eng_list:partner_name,
+					partner_ref = :eng_list:partner_ref,
+					engagement_id = :pe:e_engagement_id,
+					engagement_description = :pe:e_desc,
+					engagement_track = :et:e_track_name,
+					engagement_step = :es:e_step_name,
+					workflow_instance_id = :pd:e_workflow_instance_id,
+					workflow = :wt:e_workflow_label + ':' + :ws:e_workflow_step_label,
+					date_created = :pe:s_date_created,
+					created_by = :pe:s_created_by,
+					date_modified = :pe:s_date_modified,
+					modified_by = :pe:s_modified_by
+				    from
+					identity /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+					/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+					/apps/kardia/data/Kardia_DB/e_engagement_track/rows et,
+					/apps/kardia/data/Kardia_DB/e_engagement_step/rows es,
+					/apps/kardia/data/Kardia_DB/e_workflow/rows w,
+					/apps/kardia/data/Kardia_DB/e_workflow_type_step/rows ws,
+					/apps/kardia/data/Kardia_DB/e_workflow_type/rows wt
+				    where
+					:pd:p_partner_key = :eng_list:partner_id and
+					:pd:e_document_id = :doclist:document_id and
+					:pe:e_engagement_id = :pd:e_engagement_id and
+					:pe:p_partner_key = :pd:p_partner_key and
+					:et:e_track_id = :pe:e_track_id and
+					:es:e_step_id = :pe:e_step_id and
+					:es:e_track_id = :pe:e_track_id and
+					:w:e_workflow_instance_id =* :pd:e_workflow_instance_id and
+					:wt:e_workflow_id = :w:e_workflow_id and
+					:ws:e_workflow_id = :w:e_workflow_id and
+					:ws:e_workflow_step_id = :w:e_workflow_step_id
+				    ";
+			    use_having = yes;
+			    }
+			}
+		    }
+		}
+
+	    ContactHistory "system/querytree"
+		{
+		text = "ContactHistory";
+
+		contlist "system/querytree"
+		    {
+		    sql = " select
+				partner_id = :h:p_partner_key,
+				partner_name = :eng_list:partner_name,
+				partner_ref = :eng_list:partner_ref,
+				collab_partner_id = :h:e_whom,
+				collab_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				collab_partner_ref = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key,
+				contact_history_id = :h:e_contact_history_id,
+				contact_history_type_id = :h:e_contact_history_type,
+				contact_history_type = :ht:e_short_name,
+				contact_history_type_desc = :ht:e_description,
+				subject = :h:e_subject,
+				notes = :h:e_notes,
+				contact_date = :h:e_contact_date,
+				meeting_place_ref = '/apps/kardia/api/partner/Partners/' + :h:p_location_partner_key,
+				meeting_place_id = :h:p_location_partner_key,
+				meeting_place = condition(char_length(isnull(:pm:p_org_name,'')) > 0, :pm:p_org_name, :pm:p_given_name + ' ' + :pm:p_surname),
+				meeting_address_ref = '/apps/kardia/api/partner/Partners/' + :h:p_location_partner_key + '/Addresses/' + :h:p_location_partner_key + '|' + :h:p_location_id + '|' + isnull(:h:p_location_revision_id,0),
+				meeting_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,c=c'),
+				contact_via_ref = '/apps/kardia/api/partner/Partners/' + :h:p_partner_key + '/ContactInfo/' + :h:p_partner_key + '|' + :h:p_contact_id,
+				contact_via = isnull('+' + :ci:p_phone_country + ' ', '') + isnull('(' + :ci:p_phone_area_city + ') ', '') + :ci:p_contact_data,
+				contact_via_type = (select :text from /apps/kardia/data/Kardia_DB/_p_contact_type/rows pl where :pl:tag = :ci:p_contact_type),
+				date_created = :h:s_date_created,
+				created_by = :h:s_created_by,
+				date_modified = :h:s_date_modified,
+				modified_by = :h:s_modified_by
+			    from
+				identity /apps/kardia/data/Kardia_DB/e_contact_history/rows h,
+				/apps/kardia/data/Kardia_DB/e_contact_history_type/rows ht,
+				/apps/kardia/data/Kardia_DB/p_partner/rows p,
+				/apps/kardia/data/Kardia_DB/p_partner/rows pm,
+				/apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+				/apps/kardia/data/Kardia_DB/p_location/rows l,
+				/apps/kardia/data/Kardia_DB/p_country/rows c,
+				/apps/kardia/data/Kardia_DB/p_address_format/rows af
+			    where
+				:h:p_partner_key = :eng_list:partner_id and
+				:ht:e_contact_history_type = :h:e_contact_history_type and
+				:p:p_partner_key =* :h:e_whom and
+				:pm:p_partner_key =* :h:p_location_partner_key and
+				:ci:p_partner_key =* :h:p_partner_key and
+				:ci:p_contact_id =* :h:p_contact_id and
+				:l:p_partner_key =* :h:p_location_partner_key and
+				:l:p_location_id =* :h:p_location_id and
+				:l:p_location_revision_id =* :h:p_revision_id and
+				:c:p_country_code =* :l:p_country_code and
+				:af:p_country_code =* :c:p_country_code and
+				:af:p_address_set = 'STANDARD'
+			    ";
+		    }
+		}
+
+	    Tracks "system/querytree"
+		{
+		text = "Tracks";
+
+		tracklist "system/querytree"
+		    {
+		    sql = " select
+				name = :et:e_track_name + '-' + :pe:e_engagement_id,
+				partner_id = :pe:p_partner_key,
+				partner_name = :eng_list:partner_name,
+				partner_ref = :eng_list:partner_ref,
+				engagement_id = :pe:e_engagement_id,
+				engagement_description = :pe:e_desc,
+				engagement_track = last(:et:e_track_name),
+				engagement_step = last(:es:e_step_name),
+				engagement_comments = last(:pe:e_comments),
+				is_archived = :pe:e_is_archived,
+				start_date = min(:pe:e_start_date),
+				completion_date = condition(max(:pe:e_completion_date) > max(:pe:e_exited_date), max(:pe:e_completion_date), null),
+				exited_date = condition(max(:pe:e_completion_date) <= max(:pe:e_exited_date), max(:pe:e_exited_date), null),
+				date_created = :pe:s_date_created,
+				created_by = :pe:s_created_by,
+				date_modified = :pe:s_date_modified,
+				modified_by = :pe:s_modified_by
+			    from
+				identity /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+				/apps/kardia/data/Kardia_DB/e_engagement_track/rows et,
+				/apps/kardia/data/Kardia_DB/e_engagement_step/rows es
+			    where
+				:pe:p_partner_key = :eng_list:partner_id and
+				:et:e_track_id = :pe:e_track_id and
+				:es:e_step_id = :pe:e_step_id and
+				:es:e_track_id = :pe:e_track_id
+			    group by
+				:pe:p_partner_key,
+				:pe:e_engagement_id
+			    order by
+				:pe:p_partner_key,
+				:pe:e_engagement_id,
+				:pe:e_hist_id
+			    ";
+		    use_having = yes;
+
+		    History "system/querytree"
+			{
+			text = "History";
+
+			histlist "system/querytree"
+			    {
+			    sql = " select
+					name = convert(string,:pe:e_hist_id),
+					history_id = :pe:e_hist_id,
+					partner_id = :pe:p_partner_key,
+					partner_name = :eng_list:partner_name,
+					partner_ref = :eng_list:partner_ref,
+					engagement_id = :pe:e_engagement_id,
+					engagement_description = :pe:e_desc,
+					engagement_track = :et:e_track_name,
+					engagement_step = :es:e_step_name,
+					engagement_comments = :pe:e_comments,
+					completion_status = condition(:pe:e_completion_status == 'I', 'Incomplete', condition(:pe:e_completion_status == 'E', 'Exited', 'Complete')),
+					start_date = :pe:e_start_date,
+					started_by_partner_id = :pe:e_started_by,
+					started_by_partner_ref = '/apps/kardia/api/partner/Partners/' + :pe:e_started_by,
+					started_by_partner = condition(char_length(isnull(:ps:p_org_name,'')) > 0, :ps:p_org_name, :ps:p_given_name + ' ' + :ps:p_surname),
+					completion_date = :pe:e_completion_date,
+					completed_by_partner_id = :pe:e_completed_by,
+					completed_by_partner_ref = '/apps/kardia/api/partner/Partners/' + :pe:e_completed_by,
+					completed_by_partner = condition(char_length(isnull(:pc:p_org_name,'')) > 0, :pc:p_org_name, :pc:p_given_name + ' ' + :pc:p_surname),
+					exited_date = :pe:e_exited_date,
+					exited_by_partner_id = :pe:e_exited_by,
+					exited_by_partner_ref = '/apps/kardia/api/partner/Partners/' + :pe:e_exited_by,
+					exited_by_partner = condition(char_length(isnull(:px:p_org_name,'')) > 0, :px:p_org_name, :px:p_given_name + ' ' + :px:p_surname),
+					date_created = :pe:s_date_created,
+					created_by = :pe:s_created_by,
+					date_modified = :pe:s_date_modified,
+					modified_by = :pe:s_modified_by
+				    from
+					identity /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+					/apps/kardia/data/Kardia_DB/e_engagement_track/rows et,
+					/apps/kardia/data/Kardia_DB/e_engagement_step/rows es,
+					/apps/kardia/data/Kardia_DB/p_partner/rows ps,
+					/apps/kardia/data/Kardia_DB/p_partner/rows pc,
+					/apps/kardia/data/Kardia_DB/p_partner/rows px
+				    where
+					:pe:p_partner_key = :eng_list:partner_id and
+					:pe:e_engagement_id = :tracklist:engagement_id and
+					:ps:p_partner_key =* :pe:e_started_by and
+					:px:p_partner_key =* :pe:e_exited_by and
+					:pc:p_partner_key =* :pe:e_completed_by and
+					:et:e_track_id = :pe:e_track_id and
+					:es:e_step_id = :pe:e_step_id and
+					:es:e_track_id = :pe:e_track_id
+				    order by
+					:pe:e_hist_id
+				    ";
+			    use_having = yes;
+			    }
+			}
+		    }
+		}
+
+	    Collaborators "system/querytree"
+		{
+		text = "Collaborators";
+		}
+
+	    Todos "system/querytree"
+		{
+		text = "Todos";
+		}
+
+	    Workflows "system/querytree"
+		{
+		text = "Workflows";
+		}
+
+	    DataGroups "system/querytree"
+		{
+		text = "DataGroups";
+		}
+	    }
+	}
+    }
