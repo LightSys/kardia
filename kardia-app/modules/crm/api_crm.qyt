@@ -223,6 +223,7 @@ api_crm "system/querytree"
 				engagement_comments = last(:pe:e_comments),
 				is_archived = :pe:e_is_archived,
 				start_date = min(:pe:e_start_date),
+				completion_status = :pe:e_completion_status,
 				completion_date = condition(max(:pe:e_completion_date) > max(:pe:e_exited_date), max(:pe:e_completion_date), null),
 				exited_date = condition(max(:pe:e_completion_date) <= max(:pe:e_exited_date), max(:pe:e_exited_date), null),
 				date_created = :pe:s_date_created,
