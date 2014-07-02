@@ -834,6 +834,10 @@ alter table c_member
 	drop primary key;
 
 
+alter table s_config
+	drop primary key;
+
+
 alter table s_user_data
 	drop primary key;
 

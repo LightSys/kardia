@@ -742,6 +742,11 @@ alter table c_chat drop index c_public_idx;
 alter table c_member drop index s_username_idx;
 
 
+/* s_config */
+/* drop index s_config.s_config_pk */ 
+/* go */
+
+
 /* s_user_data */
 /* drop index s_user_data.s_user_data_pk */ 
 /* go */

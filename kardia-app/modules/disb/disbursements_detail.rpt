@@ -42,6 +42,7 @@ disbursements_detail "system/report"
 			period = :d:a_period,
 			date = :d:a_effective_date,
 			check = first(:d:a_check_number),
+			disbid = first(:d:a_disbursement_id),
 			dacct = :d:a_account_code,
 			dcc = :d:a_cost_center,
 			dcash = :d:a_cash_account_code,
@@ -61,7 +62,8 @@ disbursements_detail "system/report"
 			:d:a_period <= :period_qy:endp and
 			:p:p_partner_key =* :d:a_payee_partner_key
 		group by
-			:d:a_period, :d:a_check_number, :d:a_batch_number"
+			-- :d:a_period, :d:a_check_number, :d:a_batch_number
+			:d:a_period, :d:a_check_number, :d:a_disbursement_id, :d:a_batch_number"
 		);
 
 	batch_agg "report/aggregate" { compute="last(:batch)"; reset=0; }
@@ -105,6 +107,7 @@ disbursements_detail "system/report"
 			:d:a_period = :disb_qy:period and
 			:d:a_batch_number = :disb_qy:batch and
 			:d:a_check_number = :disb_qy:check and
+			:d:a_disbursement_id = :disb_qy:disbid and
 			:a:a_ledger_number = :d:a_ledger_number and
 			:a:a_account_code = :d:a_account_code and
 			:c:a_ledger_number = :d:a_ledger_number and
@@ -179,6 +182,7 @@ disbursements_detail "system/report"
 		fontsize=8;
 		marginbottom=0.0;
 		style=bold;
+		allowbreak=no;
 		//margintop=0.8;
 		//topborder=0.05;
 
@@ -200,6 +204,7 @@ disbursements_detail "system/report"
 		fontsize=8;
 		marginbottom=0.0;
 		margintop=0.1;
+		allowbreak=no;
 
 		i_batch "report/table-cell" { value=runserver(''); align=left; }
 		i_ckno "report/table-cell" { value=runserver(''); align=left; }

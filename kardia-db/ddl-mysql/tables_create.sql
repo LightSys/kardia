@@ -2448,6 +2448,20 @@ create table c_member (
 );
 
 
+/* s_config */
+
+create table s_config (
+        s_config_name                         char(16)  not null,      /* configuration parameter name --  */
+        s_config_value                        varchar(900)  null,      /* configuration parameter value --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* s_user_data */
 
 create table s_user_data (

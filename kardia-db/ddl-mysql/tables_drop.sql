@@ -467,6 +467,10 @@ drop table c_chat;
 drop table c_member;
 
 
+/* s_config */
+drop table s_config;
+
+
 /* s_user_data */
 drop table s_user_data;
 

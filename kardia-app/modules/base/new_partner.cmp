@@ -22,6 +22,17 @@ new_partner "widget/component-decl"
     set_donor "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     set_payee "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     set_staff "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    set_given_name "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_surname "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_salutation "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_addr1 "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_addr2 "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_city "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_state_province "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_postal "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_country_code "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_email "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_phone "widget/parameter" { type=string; deploy_to_client=yes; }
 
     set_focus "widget/connector"
 	{
@@ -29,6 +40,19 @@ new_partner "widget/component-decl"
 	target=new_partner_form;
 	action=New;
 	}
+
+    set_given_name_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_given_name is not null); target=new_partner_form; action=SetValue; Field=runclient("p_given_name"); Value=runclient(:new_partner:set_given_name); }
+    set_surname_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_surname is not null); target=new_partner_form; action=SetValue; Field=runclient("p_surname"); Value=runclient(:new_partner:set_surname); }
+    set_salutation_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_salutation is not null); target=new_partner_form; action=SetValue; Field=runclient("p_preferred_name"); Value=runclient(:new_partner:set_salutation); }
+    set_addr1_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_addr1 is not null); target=new_location_form; action=SetValue; Field=runclient("p_address_1"); Value=runclient(:new_partner:set_addr1); }
+    set_addr2_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_addr2 is not null); target=new_location_form; action=SetValue; Field=runclient("p_address_2"); Value=runclient(:new_partner:set_addr2); }
+    set_city_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_city is not null); target=new_location_form; action=SetValue; Field=runclient("p_city"); Value=runclient(:new_partner:set_city); }
+    set_state_province_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_state_province is not null); target=new_location_form; action=SetValue; Field=runclient("p_state_province"); Value=runclient(:new_partner:set_state_province); }
+    set_postal_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_postal is not null); target=new_location_form; action=SetValue; Field=runclient("p_postal_code"); Value=runclient(:new_partner:set_postal); }
+    set_country_code_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_country_code is not null); target=new_location_form; action=SetValue; Field=runclient("p_country_code"); Value=runclient(:new_partner:set_country_code); }
+    set_email_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_email is not null); target=new_email_form; action=SetValue; Field=runclient("p_contact_data"); Value=runclient(:new_partner:set_email); }
+    set_phone_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_phone is not null); target=new_phone_form; action=SetValue; Field=runclient("p_contact_data"); Value=runclient(:new_partner:set_phone); }
+    set_phone_country_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_phone is not null and :new_partner:set_country_code = 'US'); target=new_phone_form; action=SetValue; Field=runclient("p_phone_country"); Value=runclient(1); }
 
     set_donor_cn "widget/connector"
 	{
@@ -715,9 +739,40 @@ new_partner "widget/component-decl"
 	    width=786;
 	    height=542;
 	    path="dup_check.cmp";
+	    usethis_button=runserver(:this:set_payee or :this:set_donor or :this:set_staff);
 
 	    close_cn "widget/connector" { event=ClosePressed; target=dup_scan_window; action=Close; }
 	    close_cn2 "widget/connector" { event=ClosePressed; target=dup_scan_done; action=SetValue; Value=1; }
+	    usethis_return_cn "widget/connector"
+		{
+		event=UseThisPressed;
+		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff);
+		target=return_to;
+		action=SetValue;
+		Value=runclient(:p_partner_key);
+		}
+	    usethis_return_cn2 "widget/connector"
+		{
+		event=UseThisPressed;
+		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff);
+		target=dup_scan_window;
+		action=Close;
+		}
+	    usethis_return_cn3 "widget/connector"
+		{
+		event=UseThisPressed;
+		event_condition=runclient(:new_partner_osrc:is_client_savable);
+		target=new_partner_osrc;
+		action=DiscardClients;
+		}
+	    usethis_return_cn4 "widget/connector"
+		{
+		event=UseThisPressed;
+		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff);
+		event_delay=0.2;
+		target=page;
+		action=Close;
+		}
 	    }
 	}
     }

@@ -32,8 +32,9 @@ fund_gift_list "widget/page"
 
 	    f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Center:"; attach_point=editbox; empty_desc = "required"; label_width=120; }
 
-	    f_period "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="period"; text="Period:"; empty_desc = "required"; ctl_type=dropdown; sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); label_width=120; }
+	    f_period "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="period"; text="Beginning Period:"; empty_desc = "required"; ctl_type=dropdown; sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); label_width=120; }
 	    f_startday "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="startday"; text="Start Day:"; ctl_type=editbox; empty_desc = "optional: 1 - 31"; label_width=120; }
+	    f_endperiod "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="endperiod"; text="Ending Period:"; empty_desc = "required"; ctl_type=dropdown; sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); label_width=120; }
 	    f_endday "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="endday"; text="End Day:"; ctl_type=editbox; empty_desc = "optional: 1 - 31"; label_width=120; }
 
 	    sep1 "widget/autolayoutspacer" { height=4; }

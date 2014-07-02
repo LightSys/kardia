@@ -10,5 +10,6 @@ TableRowHeights "application/filespec"
     // Column specifications.
     height "filespec/column" { type=integer id=1 }
     descrip "filespec/column" { type=string id=2 }
+    fontsize "filespec/column" { type=integer id=3 }
     }
 
