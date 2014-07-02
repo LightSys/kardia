@@ -19,6 +19,7 @@ fund_gift_list "system/report"
     ledger "report/parameter" { type=string; default=null; }
     costctr "report/parameter" { type=string; default=null; }
     period "report/parameter" { type=string; default=null; }
+    endperiod "report/parameter" { type=string; default=null; }
     startday "report/parameter" { type=integer; default=1; }
     endday "report/parameter" { type=integer; default=31; }
     document_format2 "report/parameter" { type=string; default="application/pdf"; }
@@ -31,7 +32,7 @@ fund_gift_list "system/report"
 	}
 
     // Get period metadata (incl. start/end dates)
-    period_qy "report/query"
+    startperiod_qy "report/query"
 	{
 	sql = "	SELECT
 			*
@@ -39,6 +40,17 @@ fund_gift_list "system/report"
 			/apps/kardia/data/Kardia_DB/a_period/rows p
 		WHERE
 			:p:a_period = :this:period and
+			:p:a_ledger_number = :this:ledger
+		";
+	}
+    endperiod_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		WHERE
+			:p:a_period = isnull(:this:endperiod,:this:period) and
 			:p:a_ledger_number = :this:ledger
 		";
 	}
@@ -53,13 +65,15 @@ fund_gift_list "system/report"
     cclist_qy2 "report/query"
 	{
 	sql = "	SELECT
-			cclist = ',' + sum(:c:a_cost_center + ','),
+			cclist = ',' + sum(:c:a_cost_center + ', '),
 			cnt = count(:c:a_cost_center)
 		FROM
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
 		WHERE
 			:c:a_ledger_number = :this:ledger and
 			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr)
+		ORDER BY
+			:c:a_cost_center asc
 		";
 	}
 
@@ -86,7 +100,8 @@ fund_gift_list "system/report"
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 		WHERE
 			:i:a_ledger_number = :this:ledger and
-			:i:a_period = :this:period and
+			:i:a_period >= :startperiod_qy:a_period and
+			:i:a_period <= :endperiod_qy:a_period and
 			:i:a_posted = 1 and
 			:i:a_amount != $0 and
 			-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
@@ -147,6 +162,8 @@ fund_gift_list "system/report"
 	sql = "	SELECT
 			id = :g:p_donor_partner_id,
 			display_date = isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
+			period_start_date = :p:a_start_date,
+			period = :g:a_period,
 			amount = :i:a_amount,
 			donation_id = :i:name,
 			designation = :i:a_cost_center + condition(:i:a_account_code != '4100' and :i:a_account_code != '2120', ':' + :i:a_account_code, ''),
@@ -156,28 +173,38 @@ fund_gift_list "system/report"
 			comments = :i:a_comment
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_period/rows p
 		WHERE
 			:g:a_ledger_number = :this:ledger and
-			:g:a_period = :this:period and
+			:g:a_period >= :startperiod_qy:a_period and
+			:g:a_period <= :endperiod_qy:a_period and
 			:g:a_posted = 1 and
-			datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) >= :this:startday and
+			(datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) >= :this:startday or (:g:a_period > :startperiod_qy:a_period)) and
 			-- datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
-			(datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday or isnull(:g:a_gift_postmark_date, :g:a_gift_received_date) < :period_qy:a_start_date) and
+			(datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday or isnull(:g:a_gift_postmark_date, :g:a_gift_received_date) < :endperiod_qy:a_start_date) and
 			charindex(',' + rtrim(:g:a_ledger_number) + '|' + convert(string, :g:a_batch_number) + '|' + convert(string, :g:a_gift_number) + '|', :item_qy:items) > 0 and
 			:i:a_ledger_number = :g:a_ledger_number and
-			:i:a_period = :g:a_period and
+			:i:a_period >= :startperiod_qy:a_period and
+			:i:a_period <= :endperiod_qy:a_period and
 			:i:a_batch_number = :g:a_batch_number and
 			:i:a_gift_number = :g:a_gift_number and
 			:i:a_amount != $0 and
 			-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
-			:i:a_cost_center = :cclist_qy:a_cost_center
+			:i:a_cost_center = :cclist_qy:a_cost_center and
+			:p:a_ledger_number = :i:a_ledger_number and
+			:p:a_period = :i:a_period
 		ORDER BY
+			:g:a_period,
 			isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)
 		";
 	acct_sum "report/aggregate" { compute="sum(:amount)"; reset=1; }
 	acct_cnt "report/aggregate" { compute="count(:amount)"; reset=1; }
 	acct_agg "report/aggregate" { compute="first(:a_cost_center)"; reset=1; }
+	acct_agg2 "report/aggregate" { compute="first(:a_cost_center)"; reset=1; }
+	per_sum "report/aggregate" { compute="sum(:amount)"; reset=1; }
+	per_cnt "report/aggregate" { compute="count(:amount)"; reset=1; }
+	per_agg "report/aggregate" { compute="first(:period)"; reset=1; }
 	all_sum "report/aggregate" { compute="sum(:amount)"; reset=0; }
 	all_cnt "report/aggregate" { compute="count(:amount)"; reset=0; }
 	}
@@ -205,7 +232,7 @@ fund_gift_list "system/report"
 			condition( isnull( (
 					    select 1
 					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :this:period and
+					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :startperiod_qy:a_period and
 						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
 						-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
 						:i:a_cost_center = :cclist_qy:a_cost_center
@@ -214,7 +241,7 @@ fund_gift_list "system/report"
 			condition( isnull( (
 					    select 1
 					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :this:period and
+					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :startperiod_qy:a_period and
 						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
 						-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0 and :i:a_amount = :gift_qy:amount
 						:i:a_cost_center = :cclist_qy:a_cost_center
@@ -223,15 +250,15 @@ fund_gift_list "system/report"
 			condition( isnull( (
 					    select 1
 					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :this:period and
+					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :startperiod_qy:a_period and
 						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
 						:i:a_cost_center = :gift_qy:a_cost_center
 					    limit 1
 					    ), 0) == 0, 'NEW DESIG\n', '') +
-			condition(:dinfo_qy:addr_changed >= :period_qy:a_start_date, 'ADDRESS\n', '') +
-			condition(:dinfo_qy:partner_changed >= :period_qy:a_start_date, 'NAME/INFO\n', '') +
+			condition(:dinfo_qy:addr_changed >= :startperiod_qy:a_start_date, 'ADDRESS\n', '') +
+			condition(:dinfo_qy:partner_changed >= :startperiod_qy:a_start_date, 'NAME/INFO\n', '') +
 			(select isnull(sum(upper(isnull(:t:text,'')) + '\n'), '') from /apps/kardia/data/Kardia_DB/_p_contact_type/rows t, /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
-			    where :t:tag = :ci:p_contact_type and :ci:p_partner_key = :gift_qy:id and :ci:s_date_modified >= :period_qy:a_start_date ) 
+			    where :t:tag = :ci:p_contact_type and :ci:p_partner_key = :gift_qy:id and :ci:s_date_modified >= :startperiod_qy:a_start_date ) 
 			- '\n'
 		";
 	}
@@ -239,7 +266,7 @@ fund_gift_list "system/report"
     // Cost center list - entire report
     form "report/form"
 	{
-	source = ledger_qy,period_qy,costctr_qy,cclist_qy2;
+	source = ledger_qy,startperiod_qy,endperiod_qy,costctr_qy,cclist_qy2;
 
 	hdrimg "report/image"
 	    {
@@ -253,9 +280,20 @@ fund_gift_list "system/report"
 	    font=helvetica;
 	    align=left;
 	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver(:this:costctr + ' - ' + condition(charindex("-Work", :costctr_qy:a_cc_desc) > 0, substring(:costctr_qy:a_cc_desc, 1, charindex("-Work", :costctr_qy:a_cc_desc) - 1), :costctr_qy:a_cc_desc) + "\n"); }
-	    t_d3 "report/data" { fontsize=10; style=bold; value = runserver("Statement Period: " + constrain(:this:startday,1,31) + '-' + constrain(:this:endday,1,datepart(day,:period_qy:a_end_date)) + ' ' + :period_qy:a_period_desc + "\n"); }
+	    t_d3a "report/data"
+		{
+		condition=runserver(:startperiod_qy:a_period == :endperiod_qy:a_period);
+		fontsize=10; style=bold;
+		value = runserver("Statement Period: " + constrain(:this:startday,1,31) + '-' + constrain(:this:endday,1,datepart(day,:startperiod_qy:a_end_date)) + ' ' + :startperiod_qy:a_period_desc + "\n");
+		}
+	    t_d3b "report/data"
+		{
+		condition=runserver(:startperiod_qy:a_period != :endperiod_qy:a_period);
+		fontsize=10; style=bold;
+		value = runserver("Statement Period: " + constrain(:this:startday,1,31) + ' ' + :startperiod_qy:a_period_desc + ' - ' + constrain(:this:endday,1,datepart(day,:endperiod_qy:a_end_date)) + ' ' + :endperiod_qy:a_period_desc + "\n");
+		}
 	    t_d1 "report/data" { fontsize=8; value = runserver("Contributions Statement from " + :ledger_qy:a_ledger_desc + "\n"); }
-	    t_d2 "report/data" { fontsize=8; value = runserver("For Funds: " + substring(:cclist_qy2:cclist - ',', 2) + "\n"); }
+	    t_d2 "report/data" { fontsize=8; value = runserver("For Funds: " + substring(:cclist_qy2:cclist - ', ', 2) + "\n"); }
 	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
 	    //t_d5 "report/data" { fontsize=8; condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
 
@@ -282,7 +320,7 @@ fund_gift_list "system/report"
 		    fontsize=8;
 		    bottomborder=0.05;
 
-		    tg_chg "report/table-cell" { value='Changes\nThis Month'; }
+		    tg_chg "report/table-cell" { value='Changes\nThis Period'; }
 		    tg_date "report/table-cell" { value='Gift Date'; }
 		    tg_id "report/table-cell" { value='Partner\nNumber'; }
 		    tg_addr "report/table-cell" { value='Name / Address'; }
@@ -300,7 +338,8 @@ fund_gift_list "system/report"
 		    margintop = 0.8;
 
 		    g_chg "report/table-cell" { value=runserver(condition(:gift_qy:anon, '', condition(charindex('NEW DONOR', :changes_qy:changes) > 0, 'NEW DONOR', :changes_qy:changes))); }
-		    g_date "report/table-cell" { value=runserver(:gift_qy:display_date); font=courier; dateformat = "dd-MMM"; }
+		    g_date "report/table-cell" { value=runserver(:gift_qy:display_date); font=courier; dateformat = "dd-MMM"; condition=runserver(datepart(month,:gift_qy:period_start_date) = datepart(month,:gift_qy:display_date)); }
+		    g_date2 "report/table-cell" { value=runserver(:gift_qy:display_date); font=courier; dateformat = "dd-MMM*"; condition=runserver(datepart(month,:gift_qy:period_start_date) != datepart(month,:gift_qy:display_date)); }
 		    g_id "report/table-cell" { value=runserver(condition(:gift_qy:anon, '', :gift_qy:id)); font=courier; }
 		    g_addr "report/table-cell" { value=runserver(condition(:gift_qy:anon, '(anonymous donor)', 
 			    condition(char_length(rtrim(:dinfo_qy:p_given_name + :dinfo_qy:p_surname)) > 0, :dinfo_qy:p_given_name + ' ' + :dinfo_qy:p_surname + ' \n', '') +
@@ -318,6 +357,27 @@ fund_gift_list "system/report"
 		    g_comm "report/table-cell" { value=runserver(:gift_qy:comments); font=helvetica; }
 		    }
 
+		per_subtotal "report/table-row"
+		    {
+		    summary = yes;
+		    summarize_for = runserver(:gift_qy:period);
+		    allowbreak=no;
+		    fontsize=9;
+		    style=bold;
+		    font=helvetica;
+		    topborder=0.05;
+		    marginbottom = 1.0;
+
+		    p_chg "report/table-cell" { value=runserver(''); }
+		    p_date "report/table-cell" { value=runserver(''); }
+		    p_id "report/table-cell" { value=runserver(''); }
+		    p_addr "report/table-cell" { value=runserver(''); }
+		    p_cont "report/table-cell" { value=runserver('Gifts for ' + :gift_qy:acct_agg2 + ' during ' + :gift_qy:per_agg + ':'); align=right; }
+		    p_amt "report/table-cell" { value=runserver(:gift_qy:per_sum); font=courier; align=right; }
+		    p_desig "report/table-cell" { value=runserver(''); }
+		    p_comm "report/table-cell" { value=runserver(''); }
+		    }
+
 		acct_subtotal "report/table-row"
 		    {
 		    summary = yes;
@@ -333,7 +393,7 @@ fund_gift_list "system/report"
 		    s_date "report/table-cell" { value=runserver(''); }
 		    s_id "report/table-cell" { value=runserver(''); }
 		    s_addr "report/table-cell" { value=runserver(''); }
-		    s_cont "report/table-cell" { value=runserver('' + :gift_qy:acct_cnt + ' GIFTS FOR ' + :gift_qy:acct_agg + ':'); align=right; }
+		    s_cont "report/table-cell" { value=runserver('' + :gift_qy:acct_cnt + ' Gifts for ' + :gift_qy:acct_agg + ':'); align=right; }
 		    s_amt "report/table-cell" { value=runserver(:gift_qy:acct_sum); font=courier; align=right; }
 		    s_desig "report/table-cell" { value=runserver(''); }
 		    s_comm "report/table-cell" { value=runserver(''); }
