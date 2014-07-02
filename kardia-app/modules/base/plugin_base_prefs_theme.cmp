@@ -1,0 +1,38 @@
+$Version=2$
+plugin_base_prefs_theme "widget/component-decl"
+    {
+    title="Theme";
+    width=460;
+    height=328;
+
+    expose_properties_for=th_form;
+    expose_actions_for=th_form;
+
+    prefs_vbox "widget/vbox"
+	{
+	x=0; y=0; width=460; height=328;
+	spacing=8;
+	cellsize=20;
+
+	//th_label "widget/component" { height=23; path="section_label.cmp"; text="Data Entry"; }
+
+	th_osrc "widget/osrc"
+	    {
+	    autoquery=onload;
+	    replicasize=2;
+	    readahead=1;
+	    sql = runserver("select :widget_template from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'page_style'");
+
+	    th_form "widget/form"
+		{
+		// Must state these explicitly since user can turn off modification!
+		allow_modify = yes;
+		allow_new = no;
+		allow_query = no;
+		allow_delete = no;
+
+		f_theme "widget/component" { x=30; width=350; text="Theme:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=widget_template; sql="select :title, :cx__pathname from object wildcard /apps/kardia/themes/*/tpl/*.tpl"; label_width=140; }
+		}
+	    }
+	}
+    }

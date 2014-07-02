@@ -1,0 +1,85 @@
+$Version=2$
+plugin_base_prefs_appearance "widget/component-decl"
+    {
+    title="Appearance";
+    width=460;
+    height=328;
+
+    expose_properties_for = pg_form;
+
+    Save "widget/component-decl-action" { }
+    Discard "widget/component-decl-action" { }
+
+    Save_cn1 "widget/connector" { event=Save; target=pg_form; action=Save; }
+    Save_cn2 "widget/connector" { event=Save; target=tb_form; action=Save; }
+    Discard_cn1 "widget/connector" { event=Discard; target=pg_form; action=Discard; }
+    Discard_cn2 "widget/connector" { event=Discard; target=tb_form; action=Discard; }
+
+    prefs_vbox "widget/vbox"
+	{
+	x=0; y=0; width=460; height=328;
+	spacing=8;
+	cellsize=20;
+
+	pg_osrc "widget/osrc"
+	    {
+	    autoquery=onload;
+	    replicasize=2;
+	    readahead=1;
+	    sql = runserver("select :font_size, :font_name, :show_diagnostics from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'page'");
+
+	    pg_form "widget/form"
+		{
+		// Must state these explicitly since user can turn off modification!
+		allow_modify = yes;
+		allow_new = no;
+		allow_query = no;
+		allow_delete = no;
+		autofocus = no;
+
+		f_fontname "widget/component" { x=30; width=350; text="Font:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=font_name; sql="select :font, :font from /apps/kardia/data/Fonts.csv/rows"; label_width=140; }
+		f_fontsize "widget/component"
+		    {
+		    x=30; width=350;
+		    text="Text Size:";
+		    path="/sys/cmp/smart_field.cmp";
+		    ctl_type=dropdown;
+		    field=font_size;
+		    sql="select :descrip, :fontsize from /apps/kardia/data/FontSizes.csv/rows";
+		    label_width=140;
+
+		    onchange "widget/connector"
+			{
+			event=DataModify;
+			target=f_rowheight;
+			action=SetValue;
+			Value=runclient(condition(:Value == 11, 16, condition(:Value == 12, 18, 20)));
+			}
+		    }
+		f_showdiag "widget/component" { x=30; width=350; text="Show Diagnostics:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=show_diagnostics; label_width=140; }
+		}
+	    }
+
+	tb_osrc "widget/osrc"
+	    {
+	    autoquery=onload;
+	    replicasize=2;
+	    readahead=1;
+	    sql = runserver("select :rowheight from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'table'");
+
+	    tb_form "widget/form"
+		{
+		// Must state these explicitly since user can turn off modification!
+		allow_modify = yes;
+		allow_new = no;
+		allow_query = no;
+		allow_delete = no;
+		autofocus = no;
+
+		//f_rowheight "widget/component" { x=30; width=350; text="Table Row Height:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=rowheight; sql="select :descrip, :height from /apps/kardia/data/TableRowHeights.csv/rows"; label_width=140; }
+		f_rowheight "widget/variable" { fieldname=rowheight; }
+		}
+	    }
+	}
+    //is_savable "widget/parameter" { type=integer; default=runclient(:pg_form:is_savable or :tb_form:is_savable); deploy_to_client=yes; }
+    }

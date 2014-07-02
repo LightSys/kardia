@@ -1,0 +1,40 @@
+$Version=2$
+plugin_base_prefs_dataentry "widget/component-decl"
+    {
+    title="Data Entry";
+    width=460;
+    height=328;
+
+    expose_properties_for=fm_form;
+    expose_actions_for=fm_form;
+
+    prefs_vbox "widget/vbox"
+	{
+	x=0; y=0; width=460; height=328;
+	spacing=8;
+	cellsize=20;
+
+	//fm_label "widget/component" { height=23; path="section_label.cmp"; text="Data Entry"; }
+
+	fm_osrc "widget/osrc"
+	    {
+	    autoquery=onload;
+	    replicasize=2;
+	    readahead=1;
+	    sql = runserver("select :enter_mode, :allow_delete, :allow_modify, :allow_new, :confirm_delete from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'form'");
+
+	    fm_form "widget/form"
+		{
+		// Must state these explicitly since user can turn off modification!
+		allow_modify = yes;
+		allow_new = no;
+		allow_query = no;
+		allow_delete = no;
+
+		f_entermode "widget/component" { x=30; width=350; text="[ENTER] Key:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=enter_mode; sql="select :descrip, :mode from /apps/kardia/data/EnterModes.csv/rows"; label_width=140; }
+		f_confirmdel "widget/component" { x=30; width=350; text="Confirm Deletes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=confirm_delete; label_width=140; }
+		f_allowmod "widget/component" { x=30; width=350; text="Allow Changes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=allow_modify; label_width=140; }
+		}
+	    }
+	}
+    }

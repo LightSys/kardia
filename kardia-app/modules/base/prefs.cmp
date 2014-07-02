@@ -57,9 +57,10 @@ prefs "widget/component-decl"
 		//enabled = runclient(:pg_form:is_savable or :tb_form:is_savable or :fm_form:is_savable);
 		enabled = runclient(max(:plugin_cmp:is_savable));
 		text = "Save";
-		apply_cn1 "widget/connector" { event=Click; target=pg_form; action=Save; }
-		apply_cn2 "widget/connector" { event=Click; target=tb_form; action=Save; }
-		apply_cn3 "widget/connector" { event=Click; target=fm_form; action=Save; }
+		apply_cn "widget/connector" { event=Click; target=plugin_cmp; action=Save; }
+		//apply_cn1 "widget/connector" { event=Click; target=pg_form; action=Save; }
+		//apply_cn2 "widget/connector" { event=Click; target=tb_form; action=Save; }
+		//apply_cn3 "widget/connector" { event=Click; target=fm_form; action=Save; }
 		}
 
 	    reset_btn "widget/textbutton"
@@ -67,9 +68,10 @@ prefs "widget/component-decl"
 		//enabled = runclient(:pg_form:is_savable or :tb_form:is_savable or :fm_form:is_savable);
 		enabled = runclient(max(:plugin_cmp:is_savable));
 		text = "Reset";
-		reset_cn1 "widget/connector" { event=Click; target=pg_form; action=Discard; }
-		reset_cn2 "widget/connector" { event=Click; target=tb_form; action=Discard; }
-		reset_cn3 "widget/connector" { event=Click; target=fm_form; action=Discard; }
+		reset_cn "widget/connector" { event=Click; target=plugin_cmp; action=Discard; }
+		//reset_cn1 "widget/connector" { event=Click; target=pg_form; action=Discard; }
+		//reset_cn2 "widget/connector" { event=Click; target=tb_form; action=Discard; }
+		//reset_cn3 "widget/connector" { event=Click; target=fm_form; action=Discard; }
 		}
 
 	    close_btn "widget/textbutton"

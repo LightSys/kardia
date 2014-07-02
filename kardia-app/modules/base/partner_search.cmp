@@ -308,7 +308,6 @@ partner_search_component "widget/component-decl"
 		height=203;
 		width=698;
 		mode=dynamicrow;
-		rowheight = 20;
 
 		cnPartnerSelected "widget/connector" 
 		    { 
