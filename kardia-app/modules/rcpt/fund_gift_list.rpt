@@ -360,7 +360,7 @@ fund_gift_list "system/report"
 		per_subtotal "report/table-row"
 		    {
 		    summary = yes;
-		    summarize_for = runserver(:gift_qy:period);
+		    summarize_for = runserver(:gift_qy:period + :cclist_qy:a_cost_center);
 		    allowbreak=no;
 		    fontsize=9;
 		    style=bold;
