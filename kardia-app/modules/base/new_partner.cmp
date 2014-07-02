@@ -739,7 +739,7 @@ new_partner "widget/component-decl"
 	    width=786;
 	    height=542;
 	    path="dup_check.cmp";
-	    usethis_button=1;
+	    usethis_button=runserver(:this:set_payee or :this:set_donor or :this:set_staff);
 
 	    close_cn "widget/connector" { event=ClosePressed; target=dup_scan_window; action=Close; }
 	    close_cn2 "widget/connector" { event=ClosePressed; target=dup_scan_done; action=SetValue; Value=1; }
