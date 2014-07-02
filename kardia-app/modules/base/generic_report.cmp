@@ -140,7 +140,7 @@ generic_report "widget/component-decl"
 				    {
 				    condition=runserver(:this:combine_criteria_format);
 				    path="/apps/kardia/modules/base/generic_report_format.cmp";
-				    x=10; y=10; width=700; height=100;
+				    x=10; y=10; width=700; height=120;
 				    report_path = runserver(:this:report_path);
 				    report_path_sep_csv = runserver(:this:report_path_sep_csv);
 				    ledger = runserver(:this:ledger);
@@ -216,6 +216,9 @@ generic_report "widget/component-decl"
 			    {
 			    condition=runserver(:this:mlist_tab);
 			    title = "Mailing List";
+
+			    mlist_img "widget/image" { source="/apps/kardia/images/tango/internet-mail.png"; x=706; y=10; width=32; height=32; }
+
 			    mlist_vbox "widget/vbox"
 				{
 				x=10; y=10; width=700; height=378;
@@ -249,10 +252,30 @@ generic_report "widget/component-decl"
 				    height=20;
 				    spacing=4;
 				    //search_saved_label "widget/label" { text="Search Saved Options:"; width=150; align=right; }
-				    search_saved_eb "widget/editbox"
+				    search_saved_form "widget/form"
 					{
-					width=250;
-					empty_description="search saved options";
+					allow_nodata = no;
+					allow_new = yes;
+					allow_query = no;
+					allow_obscure = yes;
+					enter_mode = nextfield;
+					auto_focus = no;
+
+					search_saved_eb "widget/editbox"
+					    {
+					    width=250;
+					    empty_description="search saved options";
+
+					    saved_search_cn "widget/connector"
+						{
+						event=ReturnPressed;
+						target=saved_list_osrc;
+						action=QueryText;
+						field_list="*r_paramset_desc*,s_created_by";
+						query=runclient(:search_saved_eb:content);
+						cx__case_insensitive = 1;
+						}
+					    }
 					}
 				    }
 

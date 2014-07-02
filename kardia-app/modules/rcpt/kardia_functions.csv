@@ -9,7 +9,7 @@ Gift History Search,APP,gift_history.app,Lookup a donor's gift history,""
 Fund Gift/Donor List,RPT,fund_gift_list.app,Print reports of donor and gift lists for a period for a given fund,""                
 Mailings for Gifts,RPT,monthly_gift_list.app,Lists a month's donors and what mailings they are subscribed to,""                                         
 Periodic Giving Statement,RPT,annual_statement.app,Print an Periodic Giving Statement for a Donor,                                 
-Donor Report,RPT,donor_report.app,"List Donors by gift totals, Funds, Accounts, and Locations",                                 
+Donor Report (old),RPT,donor_report.app,"List Donors by gift totals, Funds, Accounts, and Locations",""                         
+Donor Report,RPT,donor_report_test.app,"List Donors by gift totals, Funds, Accounts, and Locations",""                                      
 Receipt/Statement Types,APP,receipt_types.app,Add and Update Receipt Types,""                     
-Donor Report (BETA),RPT,donor_report_test.app,"List Donors by gift totals, Funds, Accounts, and Locations",                                 
 Gift Import,APP,gift_import.app,"Import gift data from external services",                             

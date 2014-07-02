@@ -5,15 +5,14 @@ index "widget/page"
     width=800;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
-
-    background="/apps/kardia/images/bg/light_bgnd3.jpg";
+    widget_class = "dark";
 
     pnHeader "widget/pane"
 	{
 	x=0;y=0;width=800;height=45;
 	style=flat;
 	//bgcolor=white;
-	background="/apps/kardia/images/bg/splash3.png";
+	widget_class="splash";
 
 	lblUsername "widget/label"
 	    {
@@ -35,10 +34,10 @@ index "widget/page"
 
     pnSeparator "widget/pane"
 	{
-	x=0;y=45;width=800;height=8;
+	x=0;y=45;width=800;
 	fl_height = 0;
 	style=flat;
-	background = "/apps/kardia/images/bg/blue_gradient2.png";
+	widget_class = "separator";
 	}
 
     menu_cmp "widget/component"

@@ -6,6 +6,9 @@ index "widget/page"
 	height=600;
 	widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
+	require_one_endorsement = "kardia:disb_manage","kardia:disb_entry";
+	endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+
 	ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
 
 	cnLoad "widget/connector"

@@ -1,7 +1,7 @@
 $Version=2$
 mysql_DB "application/mysql"
     {
-    server = "localhost";
+    server = "kardia.lightsys.org";
     database = "mysql";
     max_connections = 200;
 

@@ -7,6 +7,9 @@ donation_summary "widget/page"
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
+    require_one_endorsement="kardia:gift_manage","kardia:gift_amt";
+    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
     period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     year_period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }

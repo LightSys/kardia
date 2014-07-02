@@ -4,6 +4,8 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
     title = "Funds Managed";
     height=272;
     width=758;
+
+    sequence = 20;
     table_addon_title = "Funds";
     table_addon_field = "cclist";
     table_addon_width = 200;
@@ -165,9 +167,9 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 				    event=Click;
 				    event_condition=runclient(substring(:Column,1,5) == '_col_' and :ColumnValue == '/sys/images/checkbox_unchecked.png');
 				    target = rpt_ctls;
-				    action=ConnectReport;
+				    action=ConnectFundReport;
 
-				    // Parameters to ConnectReport
+				    // Parameters to ConnectFundReport
 				    method=runclient('E');
 				    param=runclient('costctr');
 				    value=runclient(:a_cost_center);
@@ -179,9 +181,9 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 				    event=Click;
 				    event_condition=runclient(substring(:Column,1,5) == '_col_' and :ColumnValue == '/sys/images/checkbox_checked.png');
 				    target = rpt_ctls;
-				    action=DisconnectReport;
+				    action=DisconnectFundReport;
 
-				    // Parameters to ConnectReport
+				    // Parameters to DisconnectFundReport
 				    method=runclient('E');
 				    param=runclient('costctr');
 				    value=runclient(:a_cost_center);

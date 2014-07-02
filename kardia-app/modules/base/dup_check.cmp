@@ -27,9 +27,13 @@ dup_check "widget/component-decl"
     //    - email domain mutual substring check and user part mutual substring
     //      check.
 
+    usethis_button "widget/parameter" { type=integer; default=0; }
+
     ScanForDups "widget/component-decl-action" { }
 
     ClosePressed "widget/component-decl-event" { }
+
+    UseThisPressed "widget/component-decl-event" { }
 
     ScanForDups_cn1 "widget/connector"
 	{
@@ -486,9 +490,19 @@ dup_check "widget/component-decl"
 	    spacing=8;
 	    align=center;
 
+	    usethisbtn "widget/textbutton"
+		{
+		condition=runserver(:this:usethis_button);
+		enabled=runclient(:dup_check_osrc:p_partner_key is not null);
+		width=130;
+		text = runclient(isnull("Use #" + :dup_check_osrc:p_partner_key, '(none selected)'));
+
+		usethis_cn "widget/connector" { event=Click; target=dup_check; action=UseThisPressed; p_partner_key=runclient(:dup_check_osrc:p_partner_key); }
+		}
+
 	    close_button "widget/textbutton"
 		{
-		width=100;
+		width=130;
 		text="Close";
 
 		close_cn "widget/connector" { event=Click; target=dup_check; action=ClosePressed; }

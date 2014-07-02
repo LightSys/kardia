@@ -259,6 +259,26 @@ OBJECT STRUCTURE...
 	Note that some contact types may contain forward slashes (/) in them,
 	such as URL-based contact types like a web page or blog address.
 	These forward slashes MUST be encoded as %2f instead of as a slash.
+	
+	
+	/apps/kardia/api/partner/Staff -- List of all partners in the system who are staff members
+
+	This is a collection URL.  Each Staff object returned will have the
+	following basic properties:
+
+	    partner_id	    - id of the partner (staff member)
+		is_staff		- 1 if staff, 0 if not (should never be 0)
+	    kardia_login	- the staff member's Kardia login name
+		kardiaweb_login	- the staff member's Kardia self-service website login
+		preferred_email_id - the id of the preferred email for receiving reports etc. from Kardia
+		preferred_location_id - the id of the preferred location for receiving reports etc. from Kardia
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the location data was created in Kardia
+	    created_by	    - username that created the data
+	    date_modified   - date the location data was modified in Kardia
+	    modified_by	    - username that modified the data
 
 
 EXAMPLE URLS...
@@ -315,3 +335,7 @@ EXAMPLE URLS...
     about each one:
 
 	http://server/apps/kardia/api/partner/ContactTypes/Email/greg.beeley@lightsys.org/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	The list of staff in the Kardia system:
+	
+	http://server/apps/kardia/api/partner/Staff/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic

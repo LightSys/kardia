@@ -12,11 +12,13 @@ next_batch "widget/component-decl"
 	target=getbatch_osrc;
 	action=QueryParam;
 	ledger = runclient(:ledger);
+	cnt = runclient(isnull(:cnt,1));
 	}
 
     getbatch_osrc "widget/osrc"
 	{
 	ledger "widget/parameter" { type=string; }
+	cnt "widget/parameter" { type=integer; }
 	sql = "	select
 			:a_next_batch_number
 		from
@@ -27,7 +29,7 @@ next_batch "widget/component-decl"
 		update
 			/apps/kardia/data/Kardia_DB/a_ledger/rows
 		set
-			:a_next_batch_number = :a_next_batch_number + 1
+			:a_next_batch_number = :a_next_batch_number + :parameters:cnt
 		where
 			:a_ledger_number = :parameters:ledger
 		;

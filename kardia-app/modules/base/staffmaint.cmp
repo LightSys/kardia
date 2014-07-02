@@ -127,13 +127,12 @@ staffmaint "widget/component-decl"
 		    t_name "widget/table-column" { title="Name"; fieldname=disp_name; width=160; }
 		    t_email "widget/table-column" { title="Email"; fieldname=email; width=200; }
 		    t_kardia "widget/table-column" { title="Kardia"; fieldname=p_kardia_login; width=80; }
-		    t_kardiaweb "widget/table-column" { title="KardiaWeb"; fieldname=p_kardiaweb_login; width=80; }
+		    t_kardiaweb "widget/table-column" { title=runserver( (select isnull(:s_config_value, 'KardiaWeb') from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'KardiaWebName') ); fieldname=p_kardiaweb_login; width=80; }
 		    //t_cclist "widget/table-column" { title="Funds"; fieldname=cclist; width=200; }
 
 		    staff_cols_repeat "widget/repeat"
 			{
-			//condition=0;
-			sql = "select :table_addon_title, :table_addon_field, :table_addon_width from object wildcard '/apps/kardia/modules/*/plugin_base_staffmaint_*.cmp";
+			sql = "select :table_addon_title, :table_addon_field, :table_addon_width from object wildcard '/apps/kardia/modules/*/plugin_base_staffmaint_*.cmp' having :table_addon_title is not null";
 			t_addoncol "widget/table-column" { title=runserver(:staff_cols_repeat:table_addon_title); fieldname=runserver(:staff_cols_repeat:table_addon_field); width=runserver(:staff_cols_repeat:table_addon_width); }
 			}
 		    }
@@ -243,7 +242,7 @@ staffmaint "widget/component-decl"
 
 			    f_isstaff "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_is_staff'; ctl_type=checkbox; text='Active Staff?'; isstaff_hints "widget/hints" { default=runclient(1); style=notnull; } }
 			    f_kardialogin "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_kardia_login'; ctl_type=editbox; text='Kardia Login:'; empty_desc="optional"; } 
-			    f_kardiaweblogin "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_kardiaweb_login'; ctl_type=editbox; text='Kardia Web:'; empty_desc="optional"; } 
+			    f_kardiaweblogin "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_kardiaweb_login'; ctl_type=editbox; text=runserver( (select isnull(:s_config_value, 'KardiaWeb') from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'KardiaWebName') + ':'); empty_desc="optional"; } 
 			    f_prefemail "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; text="Pref. Email:"; field=p_preferred_email_id; ctl_type=dropdown; sql="select '','' where 0 = 1"; }
 			    f_rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 			    }
@@ -415,7 +414,7 @@ staffmaint "widget/component-decl"
 		    }
 		plugin_tabs "widget/repeat"
 		    {
-		    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_base_staffmaint_*.cmp'";
+		    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_base_staffmaint_*.cmp' order by :sequence";
 
 		    plugin_tab "widget/tabpage"
 			{

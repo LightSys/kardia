@@ -1,87 +1,47 @@
 $Version=2$
 prefs "widget/component-decl"
     {
-    width=498; height=475;
+    width=480;
+    height=405;
+    //width=498; height=475;
 
     page "widget/parameter" { type=object; find_container="widget/page"; }
 
     prefs_vbox "widget/vbox"
 	{
-	x=8;y=8;width=482;height=410;
+	x=0;y=0;width=480;height=405;
 	spacing=8;
 	cellsize=20;
 
-	pg_label "widget/component" { height=23; path="section_label.cmp"; text="Appearance"; }
+	main_label "widget/label" { height=24; text="Kardia Preferences"; style=bold; font_size=18; align=center; }
 
-	pg_osrc "widget/osrc"
+	main_tab "widget/tab"
 	    {
-	    autoquery=onload;
-	    replicasize=2;
-	    readahead=1;
-	    sql = runserver("select :font_size, :font_name, :show_diagnostics from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'page'");
+	    height=280;
+	    background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	    inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
 
-	    pg_form "widget/form"
+	    plugin_tabs "widget/repeat"
 		{
-		// Must state these explicitly since user can turn off modification!
-		allow_modify = yes;
-		allow_new = no;
-		allow_query = no;
-		allow_delete = no;
+		sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_base_prefs_*.cmp'";
 
-		f_fontname "widget/component" { x=30; width=350; text="Font:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=font_name; sql="select :font, :font from /apps/kardia/data/Fonts.csv/rows"; label_width=140; }
-		f_fontsize "widget/component" { x=30; width=350; text="Text Size:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=font_size; sql="select :descrip, :fontsize from /apps/kardia/data/FontSizes.csv/rows"; label_width=140; }
-		f_showdiag "widget/component" { x=30; width=350; text="Show Diagnostics:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=show_diagnostics; label_width=140; }
-		}
-	    }
+		plugin_tab "widget/tabpage"
+		    {
+		    title = runserver(:plugin_tabs:title);
 
-	tb_osrc "widget/osrc"
-	    {
-	    autoquery=onload;
-	    replicasize=2;
-	    readahead=1;
-	    sql = runserver("select :rowheight from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'table'");
-
-	    tb_form "widget/form"
-		{
-		// Must state these explicitly since user can turn off modification!
-		allow_modify = yes;
-		allow_new = no;
-		allow_query = no;
-		allow_delete = no;
-
-		f_rowheight "widget/component" { x=30; width=350; text="Table Row Height:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=rowheight; sql="select :descrip, :height from /apps/kardia/data/TableRowHeights.csv/rows"; label_width=140; }
-		}
-	    }
-
-	spa2 "widget/autolayoutspacer" { height=16; }
-
-	fm_label "widget/component" { height=23; path="section_label.cmp"; text="Data Entry"; }
-
-	fm_osrc "widget/osrc"
-	    {
-	    autoquery=onload;
-	    replicasize=2;
-	    readahead=1;
-	    sql = runserver("select :enter_mode, :allow_delete, :allow_modify, :allow_new, :confirm_delete from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'form'");
-
-	    fm_form "widget/form"
-		{
-		// Must state these explicitly since user can turn off modification!
-		allow_modify = yes;
-		allow_new = no;
-		allow_query = no;
-		allow_delete = no;
-
-		f_entermode "widget/component" { x=30; width=350; text="[ENTER] Key:"; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=enter_mode; sql="select :descrip, :mode from /apps/kardia/data/EnterModes.csv/rows"; label_width=140; }
-		f_confirmdel "widget/component" { x=30; width=350; text="Confirm Deletes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=confirm_delete; label_width=140; }
-		f_allowmod "widget/component" { x=30; width=350; text="Allow Changes:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=allow_modify; label_width=140; }
+		    plugin_cmp "widget/component"
+			{
+			height=278; width=460; x=10; y=10;
+			path = runserver(:plugin_tabs:path);
+			}
+		    }
 		}
 	    }
 	}
 
     prefctl_vbox "widget/vbox"
 	{
-	x=8;y=408;width=482;height=59;
+	x=8;y=358;width=482;height=59;
 	spacing=8;
 
 	restart_lbl "widget/label" { height=14; font_size=10; text="These settings will take effect the next time you log in."; }
@@ -94,7 +54,8 @@ prefs "widget/component-decl"
 
 	    apply_btn "widget/textbutton"
 		{
-		enabled = runclient(:pg_form:is_savable or :tb_form:is_savable or :fm_form:is_savable);
+		//enabled = runclient(:pg_form:is_savable or :tb_form:is_savable or :fm_form:is_savable);
+		enabled = runclient(max(:plugin_cmp:is_savable));
 		text = "Save";
 		apply_cn1 "widget/connector" { event=Click; target=pg_form; action=Save; }
 		apply_cn2 "widget/connector" { event=Click; target=tb_form; action=Save; }
@@ -103,7 +64,8 @@ prefs "widget/component-decl"
 
 	    reset_btn "widget/textbutton"
 		{
-		enabled = runclient(:pg_form:is_savable or :tb_form:is_savable or :fm_form:is_savable);
+		//enabled = runclient(:pg_form:is_savable or :tb_form:is_savable or :fm_form:is_savable);
+		enabled = runclient(max(:plugin_cmp:is_savable));
 		text = "Reset";
 		reset_cn1 "widget/connector" { event=Click; target=pg_form; action=Discard; }
 		reset_cn2 "widget/connector" { event=Click; target=tb_form; action=Discard; }

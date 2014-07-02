@@ -1,7 +1,7 @@
 $Version=2$
 Kardia_DB "application/mysql"
     {
-    server = "localhost";
+    server = "kardia.lightsys.org";
     database = "Kardia_DB";
     max_connections = 200;
     annot_table = "ra";

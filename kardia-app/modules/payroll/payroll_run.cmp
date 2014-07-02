@@ -173,7 +173,7 @@ payroll_run "widget/component-decl"
 			--	:p:a_period desc
 			");
 		//sql = runserver("select a_ref_period = (select first(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :p:a_ledger_number), :p:a_period, :p:a_period_desc, cnt = count(:i:a_payroll_id)  from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_payroll_item/rows i where :p:a_summary_only = 0 and :i:a_period =* :p:a_period  group by :p:a_period");
-		replicasize=72;
+		replicasize=84;
 		readahead=12;
 		autoquery=never;
 

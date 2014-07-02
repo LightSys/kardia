@@ -188,7 +188,7 @@ post_cd_batch "widget/component-decl"
 			:c:a_period,
 			:c:a_effective_date,
 			a_transaction_type='T',
-			a_cost_center = '0US000',
+			a_cost_center = '7000',
 			a_account_category='10',
 			a_account_code = :c:a_cash_account_code,
 			a_amount = $0 - sum(:c:a_amount),

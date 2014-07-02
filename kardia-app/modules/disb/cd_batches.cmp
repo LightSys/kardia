@@ -114,6 +114,8 @@ cd_batches "widget/component-decl"
 
 	new_disb "widget/textbutton"
 	    {
+	    require_one_endorsement="kardia:disb_manage","kardia:disb_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    width = 172;
 	    height = 40;
 	    text = "New Batch";
@@ -123,6 +125,8 @@ cd_batches "widget/component-decl"
 	    }
 	edit_disb "widget/textbutton"
 	    {
+	    require_one_endorsement="kardia:disb_manage","kardia:disb_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    width = 172;
 	    height = 40;
 	    text = "Edit Batch Details";
@@ -132,6 +136,8 @@ cd_batches "widget/component-decl"
 	    }
 	edit_cks "widget/textbutton"
 	    {
+	    require_one_endorsement="kardia:disb_manage","kardia:disb_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    width = 172;
 	    height = 40;
 	    text = runclient(condition(:disb_form:dpost == 1, "View", "Enter") + " Checks for #" + :disb_form:a_batch_number);
@@ -164,10 +170,27 @@ cd_batches "widget/component-decl"
 		}
 	    }
 
-	sep_line2 "widget/pane" { height=2; fl_height=0; style=lowered; }
-	posting_lbl "widget/label" { height=15; text="Posting"; align=center; style=bold; }
+	sep_line2 "widget/pane"
+	    {
+	    require_one_endorsement="kardia:disb_manage","kardia:disb_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    height=2;
+	    fl_height=0;
+	    style=lowered;
+	    }
+	posting_lbl "widget/label"
+	    {
+	    require_one_endorsement="kardia:disb_manage","kardia:disb_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    height=15;
+	    text="Posting";
+	    align=center;
+	    style=bold;
+	    }
 	post "widget/textbutton"
 	    {
+	    require_one_endorsement="kardia:disb_manage","kardia:disb_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    width = 172;
 	    height = 40;
 	    text = "Post Batch To CD Journal";
@@ -185,6 +208,8 @@ cd_batches "widget/component-decl"
 	    }
 	post_to_gl "widget/textbutton"
 	    {
+	    require_one_endorsement="kardia:disb_manage";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    width = 172;
 	    height = 40;
 	    text = "Post Batch To GL";
@@ -201,7 +226,14 @@ cd_batches "widget/component-decl"
 		}
 	    }
 
-	sep_line3 "widget/pane" { height=2; fl_height=0; style=lowered; }
+	sep_line3 "widget/pane"
+	    {
+	    require_one_endorsement="kardia:disb_manage","kardia:disb_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    height=2;
+	    fl_height=0;
+	    style=lowered;
+	    }
 	reporting_lbl "widget/label" { height=15; text="Reports and Printing"; align=center; style=bold; }
 	disbdet "widget/textbutton"
 	    {

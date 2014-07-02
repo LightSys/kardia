@@ -223,6 +223,7 @@ api_crm "system/querytree"
 				engagement_comments = last(:pe:e_comments),
 				is_archived = :pe:e_is_archived,
 				start_date = min(:pe:e_start_date),
+				completion_status = :pe:e_completion_status,
 				completion_date = condition(max(:pe:e_completion_date) > max(:pe:e_exited_date), max(:pe:e_completion_date), null),
 				exited_date = condition(max(:pe:e_completion_date) <= max(:pe:e_exited_date), max(:pe:e_exited_date), null),
 				date_created = :pe:s_date_created,
@@ -310,11 +311,121 @@ api_crm "system/querytree"
 	    Collaborators "system/querytree"
 		{
 		text = "Collaborators";
-		}
 
-	    Todos "system/querytree"
+		collaborator_list "system/querytree"
+		    {
+		    sql = " select
+			partner_id = :e:p_partner_key,
+			partner_name = :eng_list:partner_name,
+			partner_ref = :eng_list:partner_ref,
+			collaborator_id = :e:e_collaborator,
+			collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :e:e_collaborator),
+			collaborator_type_id = :e:e_collab_type_id, 
+			collaborator_type = (select :e_collab_type_label from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows where :e_collab_type_id = :e:e_collab_type_id),
+			date_created = :e:s_date_created,
+			created_by = :e:s_created_by,
+			date_modified = :e:s_date_modified,
+			modified_by = :e:s_modified_by
+		    from
+			identity
+			/apps/kardia/data/Kardia_DB/e_collaborator/rows e
+			
+		    where
+			:e:p_partner_key = :eng_list:partner_id
+		    ";
+		    }
+		}
+		
+		Collaboratees "system/querytree"
+		{
+		text = "Collaboratees";
+
+		collaboratee_list "system/querytree"
+		    {
+		    sql = " select
+			collaborator_id = :e:e_collaborator,
+			collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :e:e_collaborator),
+			collaborator_type_id = :e:e_collab_type_id, 
+			collaborator_type = (select :e_collab_type_label from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows where :e_collab_type_id = :e:e_collab_type_id),
+			partner_id = :e:p_partner_key,
+			partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :e:p_partner_key),
+			partner_ref = '/apps/kardia/api/partner/Partners/' + :e:p_partner_key,
+			date_created = :e:s_date_created,
+			created_by = :e:s_created_by,
+			date_modified = :e:s_date_modified,
+			modified_by = :e:s_modified_by
+		    from
+			identity
+			/apps/kardia/data/Kardia_DB/e_collaborator/rows e
+			
+		    where
+			:e:e_collaborator = :eng_list:partner_id
+		    ";
+		    }
+		}
+				
+		CollaboratorTodos "system/querytree"
+		{
+		text = "CollaboratorTodos";
+
+		collaborator_todo_list "system/querytree"
+		    {
+		    sql = " select
+			partner_id = :t:e_todo_partner,
+			partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :t:e_todo_partner),
+			partner_ref = '/apps/kardia/api/partner/Partners/' + :t:e_todo_partner,
+			todo_id = :t:e_todo_id,
+			todo_type_id = :t:e_todo_type_id,
+			todo_type =(select :e_todo_type_label from /apps/kardia/data/Kardia_DB/e_todo_type/rows where :e_todo_type_id = :t:e_todo_type_id),
+			desc = :t:e_todo_desc,
+			collaborator_id = :t:e_todo_collaborator,
+			engagement_id = :t:e_todo_engagement_id,
+			document_id = :t:e_todo_document_id,
+			req_item_id = :t:e_todo_req_item_id,
+			date_created = :t:s_date_created,
+			created_by = :t:s_created_by,
+			date_modified = :t:s_date_modified,
+			modified_by = :t:s_modified_by
+
+		    from
+			identity
+			/apps/kardia/data/Kardia_DB/e_todo/rows t
+		    where
+			:t:e_todo_collaborator = :eng_list:partner_id
+		    ";
+		    }
+		}
+		
+		Todos "system/querytree"
 		{
 		text = "Todos";
+
+		todo_list "system/querytree"
+		    {
+		    sql = " select
+			partner_id = :t:e_todo_partner,
+			partner_name = :eng_list:partner_name,
+			partner_ref = :eng_list:partner_ref,
+			todo_id = :t:e_todo_id,
+			todo_type_id = :t:e_todo_type_id,
+			todo_type =(select :e_todo_type_label from /apps/kardia/data/Kardia_DB/e_todo_type/rows where :e_todo_type_id = :t:e_todo_type_id),
+			desc = :t:e_todo_desc,
+			collaborator_id = :t:e_todo_collaborator,
+			engagement_id = :t:e_todo_engagement_id,
+			document_id = :t:e_todo_document_id,
+			req_item_id = :t:e_todo_req_item_id,
+			date_created = :t:s_date_created,
+			created_by = :t:s_created_by,
+			date_modified = :t:s_date_modified,
+			modified_by = :t:s_modified_by
+
+		    from
+			identity
+			/apps/kardia/data/Kardia_DB/e_todo/rows t
+		    where
+			:t:e_todo_partner = :eng_list:partner_id
+		    ";
+		    }
 		}
 
 	    Workflows "system/querytree"
@@ -327,5 +438,39 @@ api_crm "system/querytree"
 		text = "DataGroups";
 		}
 	    }
-	}
     }
+	
+	Todos "system/querytree"
+	{
+	text = "Todos";
+
+	all_todo_list "system/querytree"
+	    {
+	    sql = " select
+			partner_id = :t:e_todo_partner,
+			partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			partner_ref = '/apps/kardia/api/partner/Partners/' + :t:e_todo_partner,
+			todo_id = :t:e_todo_id,
+			todo_type_id = :t:e_todo_type_id,
+			todo_type =(select :e_todo_type_label from /apps/kardia/data/Kardia_DB/e_todo_type/rows where :e_todo_type_id = :t:e_todo_type_id),
+			
+			desc = :t:e_todo_desc,
+			collaborator_id = :t:e_todo_collaborator,
+			engagement_id = :t:e_todo_engagement_id,
+			document_id = :t:e_todo_document_id,
+			req_item_id = :t:e_todo_req_item_id,
+			date_created = :t:s_date_created,
+			created_by = :t:s_created_by,
+			date_modified = :t:s_date_modified,
+			modified_by = :t:s_modified_by
+
+		    from
+			identity
+			/apps/kardia/data/Kardia_DB/e_todo/rows t,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+			where
+			:p:p_partner_key = :t:e_todo_partner
+		    ";
+		}
+	}
+	}
