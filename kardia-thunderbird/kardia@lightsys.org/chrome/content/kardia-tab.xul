@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<window id="kardia-tab" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="Kardia" xmlns:html="http://www.w3.org/1999/xhtml">
+
+	<!-- favicon -->
+	<html:link rel="icon" href="chrome://kardia/content/images/kardia-icon.png"/>
+
+	<!-- JavaScript file -->
+	<script type="application/javascript" src="chrome://kardia/content/main-overlay.js"/>
+	<script type="application/javascript" src="chrome://kardia/content/kardia-tab.js"/>
+	
+	<!-- main -->
+	<vbox flex="1">
+		<!-- top panel -->
+		<hbox id="tab-top-panel" flex="1">
+			<vbox id="tab-todos">
+				<label class="tab-title" value="My To-Dos"/>
+			</vbox>
+			
+			<vbox id="tab-collaborators" flex="1">
+				<label class="tab-title" value="Collaborating With..."/>
+			</vbox>
+		</hbox>
+		
+		<splitter resizebefore="closest" state="open" id="tab-kardia-splitter"/>
+		
+		<!-- bottom panel -->
+		<vbox id="tab-bottom-panel" flex="1">
+			<!-- header with person's name -->
+			<hbox id="tab-name-box">
+				<label id="tab-bottom-name" value=""/>
+			</hbox>
+			
+			<!-- rest of bottom panel -->
+			<hbox id="tab-bottom-hbox" flex="1">
+				<!-- tags -->
+				<vbox id="tab-tags" class="tab-bottom-box" flex="1">
+					<label class="tab-title" value="Tags"/>
+					<!-- <vbox class="tab-tag-color-box" style="background-color:hsl(120,50%,50%);">
+						<label value="Uganda"/>
+					</vbox>-->
+				</vbox>
+				<!-- location and emails -->
+				<vbox flex="1">
+					<vbox id="tab-location" class="tab-bottom-box" flex="1">
+						<label class="tab-title" value="Location"/>
+						<label value="Time: 10:19:38 UTC-07:00 Mountain Time (US and Canada)"/>
+						<!-- addresses and link -->
+						<hbox id="tab-address-map">
+							<menulist id="tab-address-select" onclick="setMapLink();">
+								<menupopup id="tab-address-select-inner">
+								</menupopup>
+							</menulist>
+							<vbox>
+								<spacer flex="1"/>
+								<label id="tab-map-link" class="text-link" href="" value="View map ->"/>
+								<spacer flex="1"/>
+							</vbox>
+						</hbox>
+					</vbox>
+					<vbox id="tab-emails" class="tab-bottom-box" flex="1">
+						<label class="tab-title" value="Email"/>
+						<hbox>
+							<!-- choose email -->
+							<menulist id="tab-filter-select">
+								<menupopup id="tab-filter-select-inner">
+									<!--<menuitem label="greg.beeley@lightsys.org"/>
+									<menuitem label="dorinda.beeley@lightsys.org"/>  -->
+								</menupopup>
+							</menulist>
+							<vbox>
+								<spacer flex="1"/>
+								<label class="bold-text" value="View in inbox ->" onclick="quickFilter();"/>
+								<spacer flex="1"/>
+							</vbox>
+						</hbox>
+					</vbox>
+				</vbox>
+				<!-- giving -->
+				<vbox id="tab-giving" class="tab-bottom-box" flex="1">
+					<label class="tab-title" value="Giving"/>
+				</vbox>
+			</hbox>			
+		</vbox>
+	</vbox>
+
+</window>
