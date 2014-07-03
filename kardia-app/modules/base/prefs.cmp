@@ -66,7 +66,7 @@ prefs "widget/component-decl"
 	    reset_btn "widget/textbutton"
 		{
 		//enabled = runclient(:pg_form:is_savable or :tb_form:is_savable or :fm_form:is_savable);
-		enabled = runclient(max(:plugin_cmp:is_savable));
+		enabled = runclient(max(:plugin_cmp:is_discardable));
 		text = "Reset";
 		reset_cn "widget/connector" { event=Click; target=plugin_cmp; action=Discard; }
 		//reset_cn1 "widget/connector" { event=Click; target=pg_form; action=Discard; }
