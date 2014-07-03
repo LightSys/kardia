@@ -79,6 +79,18 @@ trial_balance "system/report"
 	ifxfr_sum_c "report/aggregate" { compute="sum(:cbal)"; where=":a_account_code == '1900'"; reset=0; }
 	}
 
+    glwide_cc_qy "report/query"
+	{
+	sql = runserver("
+		select
+			cclist = sum(:c:a_cost_center + ',')
+		from
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		where
+			:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr
+		");
+	}
+
     glwide_accts_qy "report/query"
 	{
 	sql = runserver("
@@ -94,7 +106,8 @@ trial_balance "system/report"
 			:tt:a_ledger_number = :this:ledger and
 			:tt:a_account_code = :a:a_account_code and
 			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
-			:a:a_ledger_number = :this:ledger
+			:a:a_ledger_number = :this:ledger and
+			(:glwide_cc_qy:cclist is null or charindex(',' + rtrim(:tt:a_cost_center) + ',', ',' + :glwide_cc_qy:cclist + ',') > 0)
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
 		group by
 			:tt:a_account_code
@@ -197,7 +210,7 @@ trial_balance "system/report"
 		marginbottom=1.0;
 		s3_cc "report/table-cell" { value=''; align=left; style=bold; }
 		s3_acct "report/table-cell" { value=''; align=left; style=bold; }
-		s3_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL ALL ACCTS ALL FUNDS ==>"); align=right; style=bold; }
+		s3_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL ALL FUNDS ALL ACCTS ==>"); align=right; style=bold; }
 		s3_bbal "report/table-cell" { value=runserver(:accts_qy:all_sum_b); align=right; style=bold; }
 		s3_chg "report/table-cell" { value=runserver((:accts_qy:all_sum_c - :accts_qy:all_sum_b)); align=right; style=bold; }
 		s3_cur "report/table-cell" { value=runserver(:accts_qy:all_sum_c); align=right; style=bold; }
@@ -224,7 +237,7 @@ trial_balance "system/report"
 	    {
 	    x=0; width=80; height=3;
 	    font=helvetica;
-	    value = "\n\nGL Accounts Summary:\n";
+	    value = runserver("\n\nGL Accounts Summary" + condition(:this:costctr is not null, " for " + :this:costctr, "") + ":\n");
 	    style=bold;
 	    }
 
@@ -235,7 +248,7 @@ trial_balance "system/report"
 	    columns=5;
 	    widths=4,46.8,9,9,9;
 	    colsep=0.8;
-	    source=glwide_accts_qy;
+	    source=glwide_cc_qy,glwide_accts_qy;
 	    topborder=0.3;
 	    bottomborder=0.3;
 	    nullformat="-";
@@ -275,7 +288,7 @@ trial_balance "system/report"
 		//bottomborder=0.05;
 		marginbottom=1.0;
 		s3_acct "report/table-cell" { value=''; align=left; style=bold; }
-		s3_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL ALL ACCTS ALL FUNDS ==>"); align=right; style=bold; }
+		s3_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL " + condition(:this:costctr is null, "ALL FUNDS", :this:costctr) + " ALL ACCTS ==>"); align=right; style=bold; }
 		s3_bbal "report/table-cell" { value=runserver(:glwide_accts_qy:all_sum_b); align=right; style=bold; }
 		s3_chg "report/table-cell" { value=runserver((:glwide_accts_qy:all_sum_c - :glwide_accts_qy:all_sum_b)); align=right; style=bold; }
 		s3_cur "report/table-cell" { value=runserver(:glwide_accts_qy:all_sum_c); align=right; style=bold; }
@@ -289,7 +302,7 @@ trial_balance "system/report"
 		//bottomborder=0.05;
 		marginbottom=1.0;
 		s2_acct "report/table-cell" { value=''; align=left; style=bold; }
-		s2_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL ALL FUNDS 1900 ACCT ==>"); align=right; style=bold; }
+		s2_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL " + condition(:this:costctr is null, "ALL FUNDS", :this:costctr) + " 1900 ACCT ==>"); align=right; style=bold; }
 		s2_bbal "report/table-cell" { value=runserver(:glwide_accts_qy:ifxfr_sum_b); align=right; style=bold; }
 		s2_chg "report/table-cell" { value=runserver((:glwide_accts_qy:ifxfr_sum_c - :glwide_accts_qy:ifxfr_sum_b)); align=right; style=bold; }
 		s2_cur "report/table-cell" { value=runserver(:glwide_accts_qy:ifxfr_sum_c); align=right; style=bold; }
