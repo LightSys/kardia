@@ -14,15 +14,56 @@
 	<!-- main -->
 	<vbox flex="1">
 		<!-- top panel -->
-		<hbox id="tab-top-panel" flex="1">
-			<vbox id="tab-todos">
-				<label class="tab-title" value="My To-Dos"/>
+		<vbox id="tab-top-panel" flex="1">			
+			<vbox id="tab-collaborators">
+				<hbox>
+					<label class="tab-title" value="Collaborating With..."/>
+					<spacer flex="1"/>
+					<!-- sort by -->
+					<vbox>
+						<spacer flex="1"/>
+						<label value="Sort by..." class="bold-text"/>
+						<spacer flex="1"/>
+					</vbox>
+					<radiogroup id="sort-by" orient="horizontal" oncommand="sortBy()" >
+						<radio id="sort-by-name" class="tab-sort-button" selected="true" value="name">
+							<label value="Name"/>
+							<image id="tab-sort-by-name" class="show-kardia-pane-arrow"/>
+						</radio>
+						<radio id="sort-by-id" class="tab-sort-button" value="id">
+							<label value="ID"/>
+							<image id="tab-sort-by-id" class="show-kardia-pane-arrow"/>
+						</radio>
+						<radio id="sort-by-date" class="tab-sort-button" value="date">
+							<label value="Date"/>
+							<image id="tab-sort-by-date" class="show-kardia-pane-arrow"/>
+						</radio>
+					</radiogroup>
+				</hbox>
+				<!-- filter by -->
+				<hbox class="top-bottom-margin">
+					<label value="Filter by..." class="bold-text"/>
+					<radiogroup id="filter-by-type" orient="horizontal" oncommand="filterBy()">
+						<radio id="filter-by-any" class="tab-filter-radio" selected="true" value="any">
+							<label value="Any of"/>
+						</radio>
+						<radio id="filter-by-all" class="tab-filter-radio" value="all">
+							<label value="All of"/>
+						</radio>
+					</radiogroup>
+				</hbox>
+				
+				<hbox class="top-bottom-margin" id="filter-by-tracks">	
+					<label value="Track:"/>
+				</hbox>
+				<hbox class="top-bottom-margin" id="filter-by-tags" style="margin-bottom:10px;">	
+					<label value="Tag:"/>
+				</hbox>
+				
+				<vbox id="tab-collaborators-inner" flex="1">
+				</vbox>
 			</vbox>
-			
-			<vbox id="tab-collaborators" flex="1">
-				<label class="tab-title" value="Collaborating With..."/>
-			</vbox>
-		</hbox>
+		</vbox>
 		
 		<splitter resizebefore="closest" state="open" id="tab-kardia-splitter"/>
 		
@@ -34,7 +75,7 @@
 			</hbox>
 			
 			<!-- rest of bottom panel -->
-			<hbox id="tab-bottom-hbox" flex="1">
+			<hbox id="tab-bottom-hbox" flex="1" style="visibility:hidden">
 				<!-- tags -->
 				<vbox id="tab-tags" class="tab-bottom-box" flex="1">
 					<label class="tab-title" value="Tags"/>
@@ -42,13 +83,20 @@
 						<label value="Uganda"/>
 					</vbox>-->
 				</vbox>
+				
+				<splitter resizebefore="closest" state="open" collapse="both" class="tab-splitter">
+					<vbox class="tab-splitter-vbox" flex="1">
+						<label value=""/>
+					</vbox>
+				</splitter>
+				
 				<!-- location and emails -->
 				<vbox flex="1">
-					<vbox id="tab-location" class="tab-bottom-box" flex="1">
+					<vbox id="tab-location" class="tab-bottom-box">
 						<label class="tab-title" value="Location"/>
 						<label value="Time: 10:19:38 UTC-07:00 Mountain Time (US and Canada)"/>
 						<!-- addresses and link -->
-						<hbox id="tab-address-map">
+						<hbox id="tab-address-map" style="visibility:hidden">
 							<menulist id="tab-address-select" onclick="setMapLink();">
 								<menupopup id="tab-address-select-inner">
 								</menupopup>
@@ -78,6 +126,13 @@
 						</hbox>
 					</vbox>
 				</vbox>
+				
+				<splitter resizebefore="closest" state="open" collapse="both" class="tab-splitter">
+					<vbox class="tab-splitter-vbox" flex="1">
+						<label value=""/>
+					</vbox>
+				</splitter>
+
 				<!-- giving -->
 				<vbox id="tab-giving" class="tab-bottom-box" flex="1">
 					<label class="tab-title" value="Giving"/>
@@ -85,5 +140,4 @@
 			</hbox>			
 		</vbox>
 	</vbox>
-
 </window>

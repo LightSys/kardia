@@ -6,40 +6,273 @@ var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequest
 	   .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
 	   .getInterface(Components.interfaces.nsIDOMWindow);
 	   
-doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.myId + "/CollaboratorTodos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(todoResp) {
-	// do this after request comes back
-	// get all the keys from the JSON file
-	var keys = [];
-	for(var k in todoResp) keys.push(k);
+window.addEventListener("load", loadStuff());
 
-	document.getElementById('tab-todos').innerHTML = '<label class="tab-title" value="My To-Dos"/>';
+// import todos
+function tabImportTodos() {
+	window.alert("todos imported");
 	
-	for (var i=0; i<keys.length; i++) {
-		if (keys[i] != "@id") {
-			document.getElementById("tab-todos").innerHTML += '<checkbox label="' + todoResp[keys[i]]['desc'] + ' for ' + todoResp[keys[i]]['partner_name'] + '"/>';
+}
+
+// sort collaborating with by
+function sortBy() {	
+	var what = document.getElementById("sort-by").selectedItem.value;
+	
+	if (mainWindow.sortCollaborateesBy == what) {
+		mainWindow.sortCollaborateesDescending = !mainWindow.sortCollaborateesDescending;
+		if (mainWindow.sortCollaborateesDescending) {
+			document.getElementById("tab-sort-by-" + what).setAttribute("class", "show-kardia-pane-arrow");
+		}
+		else {
+			document.getElementById("tab-sort-by-" + what).setAttribute("class", "hide-kardia-pane-arrow");
 		}
 	}
-}, false, "", "");
+	else {
+		mainWindow.sortCollaborateesBy = what;
+	}
+
+	reloadFilters();
+}
+
+// filter collaboratees
+function filterBy() {
+	mainWindow.filterBy = document.getElementById("filter-by-type").selectedItem.value;
+	reloadFilters();
+}
+
+// add the given item as a filter
+function addFilter(type, id) {
+	if (type == 'e') {
+		mainWindow.filterTracks[id] = document.getElementById("filter-by-e-" + id).checked;
+	}
+	else if (type == 't') {
+		mainWindow.filterTags[id] = document.getElementById("filter-by-t-" + id).checked;
+		mainWindow.filterTags[id+1] = document.getElementById("filter-by-t-" + id).checked;
+	}
+	reloadFilters();
+}
+
+// reload filters
+function reloadFilters() {
+	sortCollaboratees(mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.sortCollaborateesBy, mainWindow.sortCollaborateesDescending);
+		
+	// add to collaborators view	
+	document.getElementById("tab-collaborators-inner").innerHTML = '';
+	for (var i=0;i<mainWindow.collaborateeIds.length;i++) {					
+		var tracksSelected = false;
+		var tagsSelected = false;
+		for (var j=0;j<mainWindow.filterTracks.length;j++) {
+			if (mainWindow.filterTracks[j]) {
+				tracksSelected = true;
+				break;
+			}
+		}
+		for (var j=0;j<mainWindow.filterTags.length;j++) {
+			if (mainWindow.filterTags[j]) {
+				tagsSelected = true;
+				break;
+			}
+		}
+		
+		var addPerson = true;
+		// check tracks
+		if (tracksSelected) {
+			if (mainWindow.filterBy == "any") {
+				addPerson = false;
+				for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
+					if (mainWindow.filterTracks[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j])]) {
+						addPerson = true;
+						break;
+					}
+				}
+			}
+			else if (mainWindow.filterBy == "all") {
+				for (var j=0;j<mainWindow.filterTracks.length;j++) {
+					if (mainWindow.filterTracks[j]) {
+						if (mainWindow.collaborateeTracks[i].indexOf(mainWindow.trackList[j]) < 0) {
+							addPerson = false;
+							break;
+						}
+					}
+				}
+			}
+		}
+		// check tags
+		if (tagsSelected) {
+			if (mainWindow.filterBy == "any" && (!addPerson || !tracksSelected)) {
+				addPerson = false;
+				for (var j=0;j<mainWindow.collaborateeTags[i].length;j+=3) {
+					if (mainWindow.filterTags[mainWindow.tagList.indexOf(mainWindow.collaborateeTags[i][j])]) {
+						addPerson = true;
+						break;
+					}
+				}
+			}
+			else if (mainWindow.filterBy == "all") {			
+				for (var j=0;j<mainWindow.filterTags.length;j+=2) {
+					if (mainWindow.filterTags[j]) {	
+						if (mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1]) < 0) {
+							addPerson = false;
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		// add only if tag and track filters are valid
+		if (addPerson) {
+			var addString = '<hbox class="tab-collaborator" onclick="addCollaborator2(' + mainWindow.collaborateeIds[i] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[i] + '"/><label value="ID# ' + mainWindow.collaborateeIds[i] + '"/></vbox>';
 			
-doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.myId + "/Collaboratees?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collabResp) {
-	// do this after request comes back
-	// get all the keys from the JSON file
-	var keys = [];
-	for(var k in collabResp) keys.push(k);
-	
-	// save to arrays
-	for (var i=0; i<keys.length; i++) {
-		if (keys[i] != "@id") {
-			mainWindow.collaborateeIds.push(collabResp[keys[i]]['partner_id']);
-			mainWindow.collaborateeNames.push(collabResp[keys[i]]['partner_name']);						
+			if (mainWindow.collaborateeTracks[i].length > 1) {
+				addString += '<vbox>';
+				for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
+					if (mainWindow.collaborateeTracks[i][j] != "" && mainWindow.collaborateeTracks[i][j+1] != "") { 
+						addString += '<vbox class="tab-engagement-track-color-box" style="background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j])] + '"><label class="bold-text">' + mainWindow.collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + mainWindow.collaborateeTracks[i][j+1] + '</label></vbox>';
+					}
+				}
+				addString += '</vbox>';
+			}
+			addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>' + 
+			'<vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+			
+			document.getElementById("tab-collaborators-inner").innerHTML += addString;
+			// FIX STUB should also have recent activity
 		}
+	}	
+}
+
+// sort collaboratees
+function sortCollaboratees(names, ids, tracks, tags, sortBy, descending) {
+	// sort
+	var firstIndex;
+	var firstItem;
+	for (var i=0;i<names.length;i++) {
+		firstIndex = i;
+		if (sortBy == "name") {
+			// sort by first name
+			firstItem = names[i];
+			for (var j=i+1;j<names.length;j++) {
+				if ((descending && (firstItem > names[j])) || (!descending && (firstItem < names[j]))) {
+					firstIndex = j;
+					firstItem = names[j];
+				}
+			}
+		}
+		else if (sortBy == "id") {
+			// sort by id
+			firstItem = ids[i];
+			for (var j=i+1;j<ids.length;j++) {
+				if ((descending && (firstItem > ids[j])) || (!descending && (firstItem < ids[j]))) {
+					firstIndex = j;
+					firstItem = ids[j];
+				}
+			}
+		}
+		else {
+			// FIX STUB sort by date
+			window.alert("Sort by date is not available.");
+		}
+		
+		// move all other items around based on how we sorted names
+		
+		firstItem = names[firstIndex];
+		names[firstIndex] = names[i];
+		names[i] = firstItem;
+		
+		firstItem = ids[firstIndex];
+		ids[firstIndex] = ids[i];
+		ids[i] = firstItem;
+		
+		firstItem = tracks[firstIndex];
+		tracks[firstIndex] = tracks[i];
+		tracks[i] = firstItem;
+		
+		firstItem = tags[firstIndex];
+		tags[firstIndex] = tags[i];
+		tags[i] = firstItem;
 	}
 	
-	// get other info
-	mainWindow.getCollaborateeInfo(0);
-}, false, "", "");
+	// reload view
+	document.getElementById("tab-collaborators-inner").innerHTML = '';
+	for (var i=0;i<mainWindow.collaborateeIds.length;i++) {					
+		var addString = '<hbox class="tab-collaborator" onclick="addCollaborator2(' + mainWindow.collaborateeIds[i] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[i] + '"/><label value="ID# ' + mainWindow.collaborateeIds[i] + '"/></vbox>';
+		
+		if (mainWindow.collaborateeTracks[i].length > 1) {
+			addString += '<vbox>';
+			for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
+				if (mainWindow.collaborateeTracks[i][j] != "" && mainWindow.collaborateeTracks[i][j+1] != "") { 
+					addString += '<vbox class="tab-engagement-track-color-box" style="background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j])] + '"><label class="bold-text">' + mainWindow.collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + mainWindow.collaborateeTracks[i][j+1] + '</label></vbox>';
+				}
+			}
+			addString += '</vbox>';
+		}
+		addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>' + 
+		'<vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+		
+		document.getElementById("tab-collaborators-inner").innerHTML += addString;
+		// FIX STUB should also have recent activity
+	}
 
-document.getElementById("tab-bottom-name").value = mainWindow.names[mainWindow.selected];
+}
+
+function loadStuff() { 		
+	// get todos info
+	// get all todos and import into calendar
+	var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
+	prefs = prefs.getBranch("extensions.kardia.");
+		
+	doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.myId + "/CollaboratorTodos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(todoResp) {
+		// do this after request comes back
+		// get all the keys from the JSON file
+		var keys = [];
+		for(var k in todoResp) keys.push(k);
+		
+		// clear todos array
+		mainWindow.allTodos = new Array();
+		
+		// the key "@id" doesn't correspond to a note, so use all other keys to add note info to array
+		for (var i=0;i<keys.length;i++) {
+			if (keys[i] != "@id") {
+				mainWindow.allTodos.push(todoResp[keys[i]]['todo_id']);
+				mainWindow.allTodos.push(todoResp[keys[i]]['partner_name'] + "- " + todoResp[keys[i]]['desc']);
+				mainWindow.allTodos.push(getTodoDueDate(todoResp[keys[i]]['engagement_start_date'],todoResp[keys[i]]['req_item_due_days_from_step']));
+			}
+		}
+		
+		//import todos to calendar
+		mainWindow.importTodos();
+	}, true, prefs.getCharPref("username"), prefs.getCharPref("password"));
+			
+	doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.myId + "/Collaboratees?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collabResp) {
+		// do this after request comes back
+		// get all the keys from the JSON file
+		var keys = [];
+		for(var k in collabResp) keys.push(k);
+		
+		// refresh collaboratees
+		mainWindow.collaborateeIds = new Array();
+		mainWindow.collaborateeNames = new Array();
+		mainWindow.collaborateeTracks = new Array();
+		mainWindow.collaborateeTags = new Array();
+		mainWindow.collaborateeActivity = new Array();
+		
+		// save to arrays
+		for (var i=0; i<keys.length; i++) {
+			if (keys[i] != "@id") {
+				mainWindow.collaborateeIds.push(collabResp[keys[i]]['partner_id']);
+				mainWindow.collaborateeNames.push(collabResp[keys[i]]['partner_name']);						
+			}
+		}
+		
+		// get other info
+		getCollaborateeInfo2(0);
+	}, false, "", "");
+
+	if (mainWindow.names != null && mainWindow.names.length > 0) {
+		document.getElementById("tab-bottom-name").value = mainWindow.names[mainWindow.selected];
+	}
+}
 
 
 // does quick filter from this tab
@@ -47,10 +280,100 @@ function quickFilter() {
 	mainWindow.beginQuickFilter("E: " + document.getElementById("tab-filter-select").selectedItem.label);
 }
 
+// gets and displays other collaboratee info
+function getCollaborateeInfo2(index) {
+	doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(trackResp) {
+		// do this after request comes back
+		// get all the keys from the JSON file
+		
+		var keys = [];
+		for(var k in trackResp) keys.push(k);
+
+		// save to arrays
+		var tempArray = new Array();
+		for (var i=0;i<keys.length; i++) {
+			if (keys[i] != "@id" && trackResp[keys[i]]['is_archived'] != "1") {
+				tempArray.push(trackResp[keys[i]]['engagement_track']);
+				tempArray.push(trackResp[keys[i]]['engagement_step']);
+			}
+		}
+		mainWindow.collaborateeTracks.push(tempArray);
+		
+		doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tags?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(tagResp) {
+			// get tag info
+			// get all the keys from the JSON file
+			var keys = [];
+			for(var k in tagResp) keys.push(k);
+
+			// save to arrays
+			var tempArray = new Array();
+			for (var i=0; i<keys.length; i++) {
+				if (keys[i] != "@id") {
+					tempArray.push(tagResp[keys[i]]['tag_label']);
+					tempArray.push(tagResp[keys[i]]['tag_strength']);
+					tempArray.push(tagResp[keys[i]]['tag_certainty']);
+				}
+			}
+			mainWindow.collaborateeTags.push(tempArray);
+			
+			if (index+1 >= mainWindow.collaborateeIds.length) {			
+				document.getElementById("tab-tags").innerHTML = '<label class="tab-title" value="Tags"/>';
+
+				sortCollaboratees(mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.sortCollaborateesBy, mainWindow.sortCollaborateesDescending);		
+				
+				// add to collaborators view	
+				document.getElementById("tab-collaborators-inner").innerHTML = '';
+				for (var i=0;i<mainWindow.collaborateeIds.length;i++) {					
+					var addString = '<hbox class="tab-collaborator" onclick="addCollaborator2(' + mainWindow.collaborateeIds[i] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[i] + '"/><label value="ID# ' + mainWindow.collaborateeIds[i] + '"/></vbox>';
+					
+					if (mainWindow.collaborateeTracks[i].length > 1) {
+						addString += '<vbox>';
+						for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
+							if (mainWindow.collaborateeTracks[i][j] != "" && mainWindow.collaborateeTracks[i][j+1] != "") { 
+								addString += '<vbox class="tab-engagement-track-color-box" style="background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j])] + '"><label class="bold-text">' + mainWindow.collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + mainWindow.collaborateeTracks[i][j+1] + '</label></vbox>';
+							}
+						}
+						addString += '</vbox>';
+					}
+
+					addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>' + 
+					'<vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+					
+					document.getElementById("tab-collaborators-inner").innerHTML += addString;
+					// FIX STUB should also have recent activity
+				}	
+		
+				// add engagement track filter buttons
+				document.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
+				for (var i=0;i<mainWindow.trackList.length;i++) {
+					document.getElementById("filter-by-tracks").innerHTML += '<checkbox id="filter-by-e-' + i + '" class="tab-filter-checkbox" checked="false" label="' + mainWindow.trackList[i] + '" oncommand="addFilter(\'e\', ' + i + ')"/>';
+				}
+			
+				// add tag filter buttons
+				document.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
+				for (var i=0;i<mainWindow.tagList.length;i+=2) {
+					document.getElementById("filter-by-tags").innerHTML += '<checkbox id="filter-by-t-' + i + '" class="tab-filter-checkbox" checked="false" label="' + mainWindow.tagList[i+1] + '" oncommand="addFilter(\'t\', ' + i + ')"/>';
+				}				
+				
+				// reload Kardia tab
+				reload2(true);
+			}
+			else {
+				getCollaborateeInfo2(index+1);
+			}
+		}, false, "", "");
+	}, false, "", "");
+}
+
 // reloads Kardia pane
 function reload2(isDefault) {		
 	var whichDoc = mainWindow.document;
 
+	// reset Kardia tab sorting
+	mainWindow.sortCollaborateesBy = "name";
+	mainWindow.sortCollaborateesDescending = true;
+	mainWindow.filterBy = "any";
+	
 	// if 0 or > 1 emails are selected, we don't display partners, so hide Print context menu if that's the case
 	if ((mainWindow.emailAddresses.length < 1 || mainWindow.emailAddresses == null) && !showPane) {
 		whichDoc.getElementById('main-context').hidden = true;
@@ -259,22 +582,14 @@ function reload2(isDefault) {
 		}
 		whichDoc.getElementById("document-inner-box").innerHTML = docs;
 		
-		// get tags
-		doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[mainWindow.selected] + "/Tags?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(tagResp) {
-			// do this after request comes back
-			// get all the keys from the JSON file
-			var keys = [];
-			for(var k in tagResp) keys.push(k);
-			
-			// save to arrays
-			document.getElementById("tab-tags").innerHTML = '<label class="tab-title" value="Tags"/>';
-			
-			for (var i=0; i<keys.length; i++) {
-				if (keys[i] != "@id") {
-					document.getElementById("tab-tags").innerHTML += '<vbox class="tab-tag-color-box" style="background-color:hsl(46,100%,' + (100-50*tagResp[keys[i]]['tag_strength']) + '%);"><label value="' + tagResp[keys[i]]['tag_label'] + '"/></vbox>';
-				}
-			}
-		}, false, "", "");		
+		// reload Kardia tab tags
+		document.getElementById("tab-tags").innerHTML = "";
+		var tagsSelected = mainWindow.collaborateeIds.indexOf(mainWindow.ids[mainWindow.selected].toString());
+		
+		for (var i=0;i<mainWindow.collaborateeTags[tagsSelected].length;i+=3) {
+			var questionMark = (mainWindow.collaborateeTags[tagsSelected][i+2] <= 0.5) ? "?" : "";
+			document.getElementById("tab-tags").innerHTML += '<vbox class="tab-tag-color-box" style="background-color:hsl(46,100%,' + (100-50*mainWindow.collaborateeTags[tagsSelected][i+1]) + '%);"><label value="' + mainWindow.collaborateeTags[tagsSelected][i] + questionMark + '"/></vbox>';
+		}
 		
 		// reload list of emails in Kardia tab
 		document.getElementById("tab-filter-select-inner").innerHTML = "";

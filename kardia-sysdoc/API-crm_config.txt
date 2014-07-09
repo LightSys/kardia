@@ -148,7 +148,25 @@ OBJECT STRUCTURE...
 	    date_modified   - date the requirement was modified in Kardia
 	    modified_by	    - username that modified the requirement
 
+		
+	/apps/kardia/api/crm_config/Tags -- list of available smart tags
 
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    tag_id	  		- the numerical ID identifying the tag
+	    tag_label	    - the short name or label for this track
+	    tag_desc		- the description of the track
+	    is_active	    - 1 if the tag is active, 0 otherwise
+	    tag_threshold	- value between 0.0 and 1.0;
+						how strong tag must be in order to be created in partner's tag graph
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the track was created in Kardia
+	    created_by	    - username that created the track
+	    date_modified   - date the track was modified in Kardia
+	    modified_by	    - username that modified the track
 
 EXAMPLE URLS...
 
@@ -183,3 +201,7 @@ EXAMPLE URLS...
     A list of requirements for a given step, with detail about each:
 
 	http://server/apps/kardia/api/crm_config/Tracks/Volunteer/Steps/Inquiry/Requirements?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+	The list of tags in the system, with information about each:
+	
+	http://192.168.42.128:800/apps/kardia/api/crm_config/TagTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic

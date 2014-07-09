@@ -245,10 +245,6 @@
 			<menuitem id="mailContext-kardia-convert-note" label="Kardia note..." oncommand="newNote('',content.getSelection().toString())" accesskey="n" />
 		</menupopup>
 	</menu>
-  
-	<!-- don't think we're using this <window id="test-window" title="test title" orient="horizontal" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-		<label value="test"/>
-	</window> -->
 	
 	<!-- toolbarbutton for opening Kardia tab -->
 	<toolbarpalette id="MailToolbarPalette">

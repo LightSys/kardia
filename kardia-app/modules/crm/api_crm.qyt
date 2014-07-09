@@ -380,8 +380,10 @@ api_crm "system/querytree"
 			desc = :t:e_todo_desc,
 			collaborator_id = :t:e_todo_collaborator,
 			engagement_id = :t:e_todo_engagement_id,
+			engagement_start_date = (select :e_start_date from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows where :e_engagement_id = :t:e_todo_engagement_id and :e_is_archived = 0),
 			document_id = :t:e_todo_document_id,
 			req_item_id = :t:e_todo_req_item_id,
+			req_item_due_days_from_step = (select :e_due_days_from_step from /apps/kardia/data/Kardia_DB/e_engagement_step_req/rows where :e_req_id = :t:e_todo_req_item_id),
 			date_created = :t:s_date_created,
 			created_by = :t:s_created_by,
 			date_modified = :t:s_date_modified,
@@ -453,7 +455,6 @@ api_crm "system/querytree"
 			todo_id = :t:e_todo_id,
 			todo_type_id = :t:e_todo_type_id,
 			todo_type =(select :e_todo_type_label from /apps/kardia/data/Kardia_DB/e_todo_type/rows where :e_todo_type_id = :t:e_todo_type_id),
-			
 			desc = :t:e_todo_desc,
 			collaborator_id = :t:e_todo_collaborator,
 			engagement_id = :t:e_todo_engagement_id,

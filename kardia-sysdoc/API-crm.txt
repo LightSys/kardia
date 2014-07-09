@@ -332,9 +332,11 @@ OBJECT STRUCTURE...
 		desc			- the description (text) of the todo item
 		collaborator_id - the partner id of the collaborator that needs to do this todo item
 		engagement_id	- the numerical id of the engagement item this todo relates to
+		engagement_start_date - the date when the last engagement step was entered
 		document_id		- the numerical id of the document this todo relates to
 		req_item_id		- the numerical id of the requirement item this todo relates to		
-
+		req_item_due_days_from_step - how many days the requirement item
+									will be due after the engagement step was started
 	The following 'system' properties will be provided:
 
 	    date_created    - date the todo was added to the partner

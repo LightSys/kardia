@@ -150,6 +150,23 @@ api_crm_config "system/querytree"
     TagTypes "system/querytree"
 	{
 	text = "TagTypes";
+	tracklist "system/querytree"
+	    {
+	    sql = " select
+			tag_id = :e_tag_id,
+			tag_label = :e_tag_label,
+			tag_desc = :e_tag_desc,
+			is_active = :e_is_active,
+			tag_threshold = :e_tag_threshold,
+			date_created = :s_date_created,
+			created_by = :s_created_by,
+			date_modified = :s_date_modified,
+			modified_by = :s_modified_by
+		    from
+			/apps/kardia/data/Kardia_DB/e_tag_type/rows
+		    ";
+		}
+		
 	}
 
     ContactHistTypes "system/querytree"

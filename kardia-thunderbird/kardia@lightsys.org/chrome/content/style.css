@@ -9,6 +9,10 @@
 /* splitter in Kardia tab */
 #tab-kardia-splitter {-moz-appearance:none; background-image:none; width:1px; min-width:1px; border:0px; background-color:#ffffff;}
 
+/* splitters in bottom of Kardia tab */
+.tab-splitter {-moz-appearance:none; border:1px solid black; background-image:none; width:3px; min-width:1px; border:0px; background-color:#ffffff;}
+.tab-splitter-vbox {width:0px; border-left:1px solid rgba(80,80,80,0.5); margin-bottom:5px;}
+
 /* main box that contains everything but splitter */
 #main-box {background-color:white; border-right:1px solid rgba(44,70,102,0.5);}
 
@@ -65,7 +69,7 @@
 .close-kardia-pane-x {width:8px; list-style-image: url("chrome://kardia/content/images/close-kardia-x.png");}
 .choose-partner-dropdown-arrow {width:10px; list-style-image: url("chrome://kardia/content/images/choose-partner-arrow.png");}
 .kardia-tab {width:15px; list-style-image: url("chrome://kardia/content/images/kardia-tab.png");}
-.tab-select-partner {height:10px; list-style-image: url("chrome://kardia/content/images/tab-select-partner.png");}
+.tab-select-partner {margin-right:5px; height:10px; list-style-image: url("chrome://kardia/content/images/tab-select-partner.png");}
 
 /* Kardia tab */
 /* top and bottom panels */
@@ -78,14 +82,34 @@
 /* Collaborating With panel */
 #tab-collaborators {padding:5px; margin: 10px 10px 10px 10px; background-color: #f5f5f5}
 
+/* Filter By panels with top and bottom margin */
+.top-bottom-margin {margin:2px 0 2px 0}
+
+/* button that allows sorting by name, id, date */
+.tab-sort-button {-moz-appearance:none; border:0px; border-radius:5px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0 5px 0 0; margin:0 2px 0 2px;}
+.tab-sort-button[selected="true"]{background-color:#cccccc}
+
+/* button that allows filter by any or all */
+.tab-filter-radio {-moz-appearance:none; border:0px; border-radius:5px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0px; margin:0 2px 0 2px;}
+.tab-filter-radio[selected="true"]{background-color:#cccccc}
+
+/* checkbox that allows selection of filters */
+.tab-filter-checkbox {-moz-appearance:none; border:0px; border-radius:5px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0px; margin:0 2px 0 2px;}
+.tab-filter-checkbox[checked="true"]{background-color:#cccccc}
+.tab-filter-checkbox  .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}
+.tab-filter-checkbox[checked="true"] .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}
+
+/* item with no padding or margin */
+.no-margin-padding { padding:0px; margin:0px;}
+
 /* individual person in Collaborating With panel */
 .tab-collaborator {border-radius:2px; background-color:#ffffff; margin-bottom:2px; padding:3px;}
 
 /* box with person's name in Collaborating With */
-.tab-collaborator-name {border-radius:2px; margin-right:3px; background-image: linear-gradient(#ffffff, #eeeeee);}
+.tab-collaborator-name {border-radius:2px; margin-right:3px; background-image: linear-gradient(#fafafa, #dddddd);}
 
 /* engagement tracks in Collaborating With */
-.tab-engagement-track-color-box{border-radius:5px; background-color:#cccccc; margin:0px 5px 0px 0px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))}
+.tab-engagement-track-color-box{border-radius:5px; background-color:#cccccc; margin:1px 5px 1px 0px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))}
 
 /* tags in bottom panel */
 .tab-tag-color-box{border-radius:2px; background-color:#cccccc; margin-bottom:4px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))}

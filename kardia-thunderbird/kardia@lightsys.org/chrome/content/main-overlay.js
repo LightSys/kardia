@@ -1,6 +1,4 @@
 // Stubs to be removed/fixed are marked with comment // FIX STUB
-// Also, remove Sam Froese
-//
 //
 
 // selected email header and number of emails selected (for comparing to see if we need to find users and reload Kardia pane)
@@ -28,6 +26,7 @@ var collaborateeIds = [];
 var collaborateeNames = [];
 var collaborateeTracks = [];
 var collaborateeActivity = [];
+var collaborateeTags = [];
 
 // which partner is selected and list of your own emails (so these aren't searched in Kardia)
 var selected = 0;
@@ -36,6 +35,9 @@ var selfEmails;
 // colors for engagement tracks
 var trackList = new Array();
 var trackColors = new Array();
+
+// list of tags
+var tagList = new Array();
 
 // can the person log in to Kardia?  if not, don't try
 var loginValid = false;
@@ -50,6 +52,13 @@ var myCal;
 
 // my ID for finding self as collaborator, etc
 var myId = "";
+
+// how to sort list of collaborating with
+var sortCollaborateesBy = "name";
+var sortCollaborateesDescending = true;
+var filterBy = "any";
+var filterTracks = [];
+var filterTags = [];
 
 // what to do when Thunderbird starts up
 window.addEventListener("load", function() { 
@@ -93,76 +102,122 @@ window.addEventListener("load", function() {
 				if (keys[i] != "@id") {
 					trackList.push(trackListResp[keys[i]]['track_name']);
 					trackColors.push(trackListResp[keys[i]]['track_color']);
+					filterTracks.push(false);
 				}
 			}
 		}, true, loginInfo2[0], loginInfo2[1]);
 		
-		// get all todos and import into calendar
-		doHttpRequest("apps/kardia/api/crm/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (allTodosResp) {
-			// do this after request comes back
+		// get list of tags
+		doHttpRequest("apps/kardia/api/crm_config/TagTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (tagResp) {
 			// get all the keys from the JSON file
 			var keys = [];
-			for(var k in allTodosResp) keys.push(k);
-
-			// the key "@id" doesn't correspond to a note, so use all other keys to add note info to array
+			for(var k in tagResp) keys.push(k);
+			
+			// the key "@id" doesn't correspond to a tag, so use all other keys to save tags
 			for (var i=0;i<keys.length;i++) {
-				if (keys[i] != "@id") {
-					allTodos.push(allTodosResp[keys[i]]['todo_id']);
-					allTodos.push(allTodosResp[keys[i]]['partner_name'] + "- " + allTodosResp[keys[i]]['desc']);
+				if (keys[i] != "@id" && tagResp[keys[i]]['is_active']) {
+					tagList.push(tagResp[keys[i]]['tag_id']);
+					tagList.push(tagResp[keys[i]]['tag_label']);
+					filterTags.push(false);
+					filterTags.push(false);
 				}
 			}
-
-			//import todos to calendar
-			importTodos();
 		}, true, loginInfo2[0], loginInfo2[1]);
 		
-		// reload the Kardia pane so it's blank at first
-		reload(true);
-		
-		// get my ID
+		// get my ID		
 		findStaff(loginInfo2[0], loginInfo2[1], function() {
-			var kardiaTab;
-			for (var i=0;i<document.getElementById("tabmail").tabModes["contentTab"].tabs.length;i++) {
-				if (document.getElementById("tabmail").tabModes["contentTab"].tabs[i].title == "Kardia") {
-					kardiaTab = document.getElementById("tabmail").tabModes["contentTab"].tabs[i];
-					break;
-				}
-			}
-			
-			kardiaTab.browser.contentDocument.defaultView.doHttpRequest("apps/kardia/api/crm/Partners/" + myId + "/CollaboratorTodos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(todoResp) {
+			// get all todos and import into calendar
+			doHttpRequest("apps/kardia/api/crm/Partners/" + myId + "/CollaboratorTodos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(todoResp) {
 				// do this after request comes back
 				// get all the keys from the JSON file
 				var keys = [];
 				for(var k in todoResp) keys.push(k);
+				
+				// clear todos array
+				allTodos = new Array();
+				
+				// the key "@id" doesn't correspond to a note, so use all other keys to add note info to array
+				for (var i=0;i<keys.length;i++) {
+					if (keys[i] != "@id") {
+						allTodos.push(todoResp[keys[i]]['todo_id']);
+						allTodos.push(todoResp[keys[i]]['partner_name'] + "- " + todoResp[keys[i]]['desc']);
+						allTodos.push(getTodoDueDate(todoResp[keys[i]]['engagement_start_date'],todoResp[keys[i]]['req_item_due_days_from_step']));
+					}
+				}
+				
+				//import todos to calendar
+				importTodos();
+				
+				var kardiaTab;
+				for (var i=0;i<document.getElementById("tabmail").tabModes["contentTab"].tabs.length;i++) {
+					if (document.getElementById("tabmail").tabModes["contentTab"].tabs[i].title == "Kardia") {
+						kardiaTab = document.getElementById("tabmail").tabModes["contentTab"].tabs[i];
+						break;
+					}
+				}
 
-				kardiaTab.browser.contentDocument.getElementById('tab-todos').innerHTML = '<label class="tab-title" value="My To-Dos"/>';
-				
-				for (var i=0; i<keys.length; i++) {
-					if (keys[i] != "@id") {
-						kardiaTab.browser.contentDocument.getElementById("tab-todos").innerHTML += '<checkbox label="' + todoResp[keys[i]]['desc'] + ' for ' + todoResp[keys[i]]['partner_name'] + '"/>';
-					}
-				}
-			}, false, "", "");
+				kardiaTab.browser.contentDocument.defaultView.doHttpRequest("apps/kardia/api/crm/Partners/" + myId + "/CollaboratorTodos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(todoResp) {
+					// do this after request comes back
+					// get all the keys from the JSON file
+					var keys = [];
+					for(var k in todoResp) keys.push(k);
+
+					kardiaTab.browser.contentDocument.getElementById('tab-todos').innerHTML = '<label class="tab-title" value="My To-Dos"/>';
 					
-			kardiaTab.browser.contentDocument.defaultView.doHttpRequest("apps/kardia/api/crm/Partners/" + myId + "/Collaboratees?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collabResp) {
-				// do this after request comes back
-				// get all the keys from the JSON file
-				var keys = [];
-				for(var k in collabResp) keys.push(k);
-				
-				// save to arrays
-				for (var i=0; i<keys.length; i++) {
-					if (keys[i] != "@id") {
-						collaborateeIds.push(collabResp[keys[i]]['partner_id']);
-						collaborateeNames.push(collabResp[keys[i]]['partner_name']);						
+					for (var i=0; i<keys.length; i++) {
+						if (keys[i] != "@id") {
+							kardiaTab.browser.contentDocument.getElementById("tab-todos").innerHTML += '<checkbox label="' + todoResp[keys[i]]['desc'] + ' for ' + todoResp[keys[i]]['partner_name'] + '"/>';
+						}
 					}
-				}
-				
-				// get other info
-				getCollaborateeInfo(0);
-			}, false, "", "");
+				}, false, "", "");
+						
+				kardiaTab.browser.contentDocument.defaultView.doHttpRequest("apps/kardia/api/crm/Partners/" + myId + "/Collaboratees?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collabResp) {
+					// do this after request comes back
+					// refresh collaboratees
+					collaborateeIds = new Array();
+					collaborateeNames = new Array();
+					collaborateeTracks = new Array();
+					collaborateeActivity = new Array();
+					collaborateeTags = new Array();
+					
+					// get all the keys from the JSON file
+					var keys = [];
+					for(var k in collabResp) keys.push(k);
+					
+					// save to arrays
+					for (var i=0; i<keys.length; i++) {
+						if (keys[i] != "@id") {
+							collaborateeIds.push(collabResp[keys[i]]['partner_id']);
+							collaborateeNames.push(collabResp[keys[i]]['partner_name']);	
+						}
+					}
+					
+					// reload the Kardia pane so it's blank at first
+					reload(true);
+			
+					// get other info
+					getCollaborateeInfo(0);
+				}, false, "", "");
+			}, true, loginInfo2[0], loginInfo2[1]);
 		});			
 	});
+	
+	// make calendar reload whenever prefs change
+	var todosObserver = {
+		register: function() {
+			this.branch = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.kardia.");
+			this.branch.addObserver("", this, false);
+		},
+		unregister: function() {
+			this.branch.removeObserver("", this);
+		},
+		observe: function (aSubject, aTopic, aData) {
+			if (aData == "importTodoAsEvent" || aData == "showTodosWithNoDate") {
+				importTodos();
+			}
+		}
+	}
+	todosObserver.register();
 
 }, false);
 
@@ -296,6 +351,11 @@ function reload(isDefault) {
 			break;
 		}
 	}
+	
+		// reset Kardia tab sorting
+	sortCollaborateesBy = "name";
+	sortCollaborateesDescending = true;
+	filterBy = "any";
 
 	// if 0 or > 1 emails are selected, we don't display partners, so hide Print context menu if that's the case
 	if (emailAddresses.length < 1 || emailAddresses == null) {
@@ -509,21 +569,11 @@ function reload(isDefault) {
 		document.getElementById("document-inner-box").innerHTML = docs;
 		
 		// reload Kardia tab tags
-		doHttpRequest("apps/kardia/api/crm/Partners/" + ids[selected] + "/Tags?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(tagResp) {
-			// do this after request comes back
-			// get all the keys from the JSON file
-			var keys = [];
-			for(var k in tagResp) keys.push(k);
-			
-			// save to arrays
-			kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML = '<label class="tab-title" value="Tags"/>';
-			
-			for (var i=0; i<keys.length; i++) {
-				if (keys[i] != "@id") {
-					kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML += '<vbox class="tab-tag-color-box" style="background-color:hsl(46,100%,' + (100-50*tagResp[keys[i]]['tag_strength']) + '%);"><label value="' + tagResp[keys[i]]['tag_label'] + '"/></vbox>';
-				}
-			}
-		}, false, "", "");
+		kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML = "";
+		for (var i=0;i<collaborateeTags[selected].length;i+=3) {
+			var questionMark = (collaborateeTags[selected][i+2] <= 0.5) ? "?" : "";
+			kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML += '<vbox class="tab-tag-color-box" style="background-color:hsl(46,100%,' + (100-50*collaborateeTags[selected][i+1]) + '%);"><label value="' + collaborateeTags[selected][i] + questionMark + '"/></vbox>';
+		}
 		
 		// reload list of emails in Kardia tab
 		kardiaTab.browser.contentDocument.getElementById("tab-filter-select-inner").innerHTML = "";
@@ -1070,41 +1120,77 @@ function getCollaborateeInfo(index) {
 		// get all the keys from the JSON file
 		var keys = [];
 		for(var k in trackResp) keys.push(k);
-		
+
 		// save to arrays
-		var i=0;
-		while (i<keys.length && keys[i] == "@id") {
-			i++;
-		}
-		if (i == keys.length) {
-			collaborateeTracks.push(["",""]);
-		}
-		else {
-			var tempArray = new Array();
-			tempArray.push(trackResp[keys[i]]['engagement_track']);
-			tempArray.push(trackResp[keys[i]]['engagement_step']);
-			collaborateeTracks.push(tempArray);
-		}
-		
-		if (index+1 >= collaborateeIds.length) {
-			// add to collaborators view
-			kardiaTab.browser.contentDocument.getElementById("tab-collaborators").innerHTML = '<label class="tab-title" value="Collaborating With..."/>';
-			for (var i=0;i<collaborateeIds.length;i++) {					
-				var addString = '<hbox class="tab-collaborator"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + collaborateeNames[i] + '"/><label value="ID# ' + collaborateeIds[i] + '"/></vbox>';
-				
-				if (collaborateeTracks[i][0] != "" && collaborateeTracks[i][1] != "") { 
-					addString += '<vbox class="tab-engagement-track-color-box" style="background-color:' + trackColors[trackList.indexOf(collaborateeTracks[i][0])] + '"><label class="bold-text">' + collaborateeTracks[i][0] + '</label><label>Engagement Step: ' + collaborateeTracks[i][1] + '</label></vbox>';
-				}
-				addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>' + 
-				'<toolbarbutton id="collab-button-' + i + '" onclick="addCollaborator2(' + collaborateeIds[i] + ')" class="tab-choose-person"><image class="tab-select-partner"/></toolbarbutton></hbox>';
-				
-				kardiaTab.browser.contentDocument.getElementById("tab-collaborators").innerHTML += addString;
-				// FIX STUB should also have recent activity
+		var tempArray = new Array();
+		for (var i=0;i<keys.length; i++) {
+			if (keys[i] != "@id" && trackResp[keys[i]]['is_archived'] != "1") {
+				tempArray.push(trackResp[keys[i]]['engagement_track']);
+				tempArray.push(trackResp[keys[i]]['engagement_step']);
 			}
 		}
-		else {
-			getCollaborateeInfo(index+1);
-		}
+		collaborateeTracks.push(tempArray);
+		
+		kardiaTab.browser.contentDocument.defaultView.doHttpRequest("apps/kardia/api/crm/Partners/" + collaborateeIds[index] + "/Tags?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(tagResp) {
+			// get tag info
+			// get all the keys from the JSON file
+			var keys = [];
+			for(var k in tagResp) keys.push(k);
+
+			// save to arrays
+			var tempArray = new Array();
+			for (var i=0; i<keys.length; i++) {
+				if (keys[i] != "@id") {
+					tempArray.push(tagResp[keys[i]]['tag_label']);
+					tempArray.push(tagResp[keys[i]]['tag_strength']);
+					tempArray.push(tagResp[keys[i]]['tag_certainty']);
+				}
+			}
+			collaborateeTags.push(tempArray);
+			
+			if (index+1 >= collaborateeIds.length) {
+				kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML = '<label class="tab-title" value="Tags"/>';
+				kardiaTab.browser.contentDocument.defaultView.sortCollaboratees(collaborateeNames, collaborateeIds, collaborateeTracks, collaborateeTags, sortCollaborateesBy, sortCollaborateesDescending);
+				// add to collaborators view	
+				kardiaTab.browser.contentDocument.getElementById("tab-collaborators-inner").innerHTML = '';
+				for (var i=0;i<collaborateeIds.length;i++) {					
+					var addString = '<hbox class="tab-collaborator" onclick="addCollaborator2(' + collaborateeIds[i] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + collaborateeNames[i] + '"/><label value="ID# ' + collaborateeIds[i] + '"/></vbox>';
+					
+					if (collaborateeTracks[i].length > 1) {
+						addString += '<vbox>';
+						for (var j=0;j<collaborateeTracks[i].length;j+=2) {
+							if (collaborateeTracks[i][j] != "" && collaborateeTracks[i][j+1] != "") { 
+								addString += '<vbox class="tab-engagement-track-color-box" style="background-color:' + trackColors[trackList.indexOf(collaborateeTracks[i][j])] + '"><label class="bold-text">' + collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + collaborateeTracks[i][j+1] + '</label></vbox>';
+							}
+						}
+						addString += '</vbox>';
+					}
+					addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>' + 
+					'<vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+					
+					kardiaTab.browser.contentDocument.getElementById("tab-collaborators-inner").innerHTML += addString;
+					// FIX STUB should also have recent activity
+				}
+					
+				// add engagement track filter buttons
+				kardiaTab.browser.contentDocument.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
+				for (var i=0;i<trackList.length;i++) {
+					kardiaTab.browser.contentDocument.getElementById("filter-by-tracks").innerHTML += '<checkbox id="filter-by-e-' + i + '" class="tab-filter-checkbox" checked="false" label="' + trackList[i] + '" oncommand="addFilter(\'e\', ' + i + ')"/>';
+				}
+				
+				// add tag filter buttons
+				kardiaTab.browser.contentDocument.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
+				for (var i=0;i<tagList.length;i+=2) {
+					kardiaTab.browser.contentDocument.getElementById("filter-by-tags").innerHTML += '<checkbox id="filter-by-t-' + i + '" class="tab-filter-checkbox" checked="false" label="' + tagList[i+1] + '" oncommand="addFilter(\'t\', ' + i + ')"/>';
+				}
+				
+				// reload the Kardia pane so it's blank at first
+				reload(true);
+			}
+			else {
+				getCollaborateeInfo(index+1);
+			}								
+		}, false, "", "");		
 	}, false, "", "");
 }
 				
@@ -1153,98 +1239,178 @@ function newTodo(text) {
 // import todos into Lightning calendar
 function importTodos() {
 	// reload calendar
-	// not properly commented yet
 	var calendarManager = Components.classes["@mozilla.org/calendar/manager;1"].getService(Components.interfaces.calICalendarManager);
-	
-	// see if Kardia calendar exists; if so, we would want to use it
-	// we actually delete it because we can't delete all events for some reason
+
+	// see if Kardia calendar exists; if so, we want to use it
 	var cals = calendarManager.getCalendars({});
 	for (var i=0;i<calendarManager.calendarCount;i++) {
 		if (cals[i].name == "Kardia") {
 			// store it to myCal
 			myCal = cals[i];
-			// delete it
-			calendarManager.unregisterCalendar(cals[i]);
-			calendarManager.deleteCalendar(cals[i]);
 			break;
 		}
 	}
-	//if (myCal == null) {	// this line would be put back if we didn't delete the calendar
+	if (myCal == null) {
+		// create a new calendar if the Kardia one didn't exist
 		var ioService = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
-		var file1 = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
-		file1.append("extensions");
-		file1.append("kardia@lightsys.org");
-		file1.append("kardia.ics");
-		var uri = ioService.newFileURI(file1); 
+		var preUri = ioService.newURI("chrome://kardia/content/kardia-calendar.ics", null, null);
+		var uri = Components.classes["@mozilla.org/chrome/chrome-registry;1"].getService(Components.interfaces.nsIChromeRegistry).convertChromeURL(preUri);
 		myCal = calendarManager.createCalendar("storage",uri);
 		calendarManager.registerCalendar(myCal);
 		myCal.name = "Kardia";
-	//}
-	//myCal.getItems(Components.interfaces.calICalendar.ITEM_FILTER_ALL_ITEMS,0,null,null,listener);
-			
-	/*// supposed to delete all items but keeps interfering with adding
+	}
 	
-	var timesCalled = 0;
+	var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
+	prefs = prefs.getBranch("extensions.kardia.");
+	var addToEvents = (prefs.getCharPref("importTodoAsEvent")=="e");
+	var addTodosWithNoDate = prefs.getBoolPref("showTodosWithNoDate");
+	
+	var item;
+	var todoAdded = new Array();
+	for (var i=0;i<allTodos.length;i++) {
+		todoAdded.push(false);
+	}
+			
 	var listener = {
         onOperationComplete: function(aCalendar, aStatus, aOperationType, aId, aDetail)
         {
-			// nothing
+			// add ones that weren't added
+			for (var i=0;i<allTodos.length;i+=3) {
+				if (!todoAdded[i]) {					
+					if (addToEvents) {
+						item = (cal.createEvent());
+					}
+					else {
+						item = (cal.createTodo());
+					}
+					item.id = allTodos[i];
+					item.title = allTodos[i+1];
+					item.setProperty("DESCRIPTION", "");
+					item.clearAlarms();
+			
+					var date = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
+					if (allTodos[i+2] == "") {
+						if (addTodosWithNoDate) {
+							date.icalString = toIcalString(new Date());
+						}
+						else {
+							continue;
+						}
+					}
+					else {
+						date.icalString = allTodos[i+2];
+					}
+					
+					if (addToEvents) {
+						item.startDate = date;
+						item.endDate = item.startDate.clone();
+						item.removeAllAttendees();
+					}
+					else if (allTodos[i+2] != "") {
+						item.dueDate = date;
+					}
+
+					item.calendar = myCal;
+					item.makeImmutable();
+					
+					myCal.addItem(item, null);
+				}
+			}
         },
         onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems)
-        {
-            if (timesCalled > 0) {
-				this.onGetResult = function() {};
-			}
-			else {
-				if (!Components.isSuccessCode(aStatus)) {
-					aborted = true;
-					return;
+        {		
+			for (var i=0; i<aCount; i++) {
+				// update item if it exists
+				var j;
+				var deleted = false;
+				for (j=0;j<allTodos.length;j+=3) {
+					if (aItems[i].id == allTodos[j]) {// item already exists
+						item = aItems[i].clone();
+						todoAdded[j] = true;
+						todoAdded[j+1] = true;
+						todoAdded[j+2] = true;
+						item.id = allTodos[j];
+						item.title = allTodos[j+1];
+						item.setProperty("DESCRIPTION", "");
+						item.clearAlarms();
+		
+						var date = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
+						if (allTodos[j+2] == "") {
+							if (addTodosWithNoDate) {
+								date.icalString = toIcalString(new Date());
+							}
+							else {
+								continue;
+							}
+						}
+						else {
+							date.icalString = allTodos[j+2];
+						}	
+						if (addToEvents) {
+							item.startDate = date;
+							item.endDate = item.startDate.clone();
+							item.removeAllAttendees();
+						}
+						else if (allTodos[j+2] != "") {
+							item.dueDate = date;
+						}
+						item.calendar = myCal;
+						item.makeImmutable();
+						myCal.modifyItem(item, aItems[i], null);
+						deleted = true;
+						break;
+					}
 				}
-				for (var i=0; i<aCount; i++) {
-					// delete all items
+				if (!deleted) {
 					myCal.deleteItem(aItems[i], null);
-					document.getElementById("main-box").innerHTML += aItems[i].startDate;
-				}  
-			}
-			timesCalled++;
-			
+				}
+			}			
         }
     };
 	
-	myCal.getItems(Components.interfaces.calICalendar.ITEM_FILTER_ALL_ITEMS,0,null,null,listener);
-	
-	
-	for (var i=10;i<30;i++) {				
-		var event = Components.classes["@mozilla.org/calendar/event;1"].createInstance(Components.interfaces.calIEvent);
-		var startDate = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-		var endDate = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-		var year = "2014";
-		var month = "06";
-		var day = i;
-		var startHour = 6 + 6; // add 6 for Denver-UTC conversion
-		var endHour = 18 + 6;
-		startDate.icalString = year + month + day + "T" + startHour + "0000Z";
-		endDate.icalString = year + month + day + "T" + endHour + "0000Z";
+	var deleteListener = {
+        onOperationComplete: function(aCalendar, aStatus, aOperationType, aId, aDetail)
+        {
+			// add/update events
+			if (addToEvents) {
+				myCal.getItems(myCal.ITEM_FILTER_TYPE_EVENT,0,null,null,listener);
+			}
+			else {
+				myCal.getItems(myCal.ITEM_FILTER_TYPE_TODO | myCal.ITEM_FILTER_COMPLETED_ALL,0,null,null,listener);
+			}
+        },
+        onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems)
+        {		
+			window.alert(aCount + aItemType);
 
-		event.title = (i-9) + " Kardia event";
-		event.startDate = startDate;
-		event.endDate = endDate;
-
-		myCal.addItem(event, null);
+			// delete all of the other type
+			for (var i=0; i<aCount; i++) {
+				myCal.deleteItem(aItems[i], null);
+			}	
+        }
+    };
+	
+	//TODO don't delete everything (we have to in this case to make it work)
+	if (addToEvents) {
+		myCal.getItems(myCal.ITEM_FILTER_TYPE_TODO | myCal.ITEM_FILTER_COMPLETED_ALL,0,null,null,deleteListener);
+		// todos will not delete
 	}
-	*/
-	
-	// create and add todo
-	for (var i=0;i<allTodos.length;i+=2) {
-		var todo = Components.classes["@mozilla.org/calendar/todo;1"].createInstance(Components.interfaces.calITodo);
-		// commented out because the Kardia todos don't have due dates
-		//var date = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-		//date.icalString = toIcalString(new Date());		
-		todo.title = allTodos[i+1];
-		todo.dueDate = null;// if item has due date, put date instead of null
-		todo.calendar = myCal;
-		todo.id = allTodos[i];
-		myCal.addItem(todo, null);
+	else {
+		myCal.getItems(myCal.ITEM_FILTER_TYPE_EVENT,0,null,null,deleteListener);
+	}
+}
+
+// format todo due date appropriately
+function getTodoDueDate(dateArray, addDays) {
+	if (dateArray == null || addDays == null) {
+		return "";
+	}
+	else {
+		var date = new Date(dateArray["year"], dateArray["month"]-1, dateArray["day"]+addDays, dateArray["hour"], dateArray["minute"], dateArray["second"]);
+		var dateString = date.toISOString();
+		dateString = dateString.replace(/-/g, "").replace(/:/g, "");
+		dateString = dateString.substring(0,dateString.length-5) + "Z";
+		return dateString;
 	}
 }
 
@@ -1282,7 +1448,6 @@ function toIcalString(date) {
 	var dateString = date.toISOString();
 	dateString = dateString.replace(/-/g, "").replace(/:/g, "");
 	dateString = dateString.substring(0,dateString.length-5) + "Z";
-	window.alert(dateString);
 	return dateString;
 }
 
@@ -1503,7 +1668,8 @@ function showKardiaTab() {
 	for (var i=0;i<document.getElementById("tabmail").tabModes["contentTab"].tabs.length;i++) {
 		if (document.getElementById("tabmail").tabModes["contentTab"].tabs[i].title == "Kardia") {
 			tabExists = true;
-			document.getElementById("tabmail").tabContainer.selectedIndex = i;
+			// switch to it, if it exists
+			document.getElementById("tabmail").tabContainer.selectedIndex = document.getElementById("tabmail").tabInfo.indexOf(document.getElementById("tabmail").tabModes["contentTab"].tabs[i]);
 			break;
 		}
 	}
@@ -1586,6 +1752,8 @@ function findStaff(username, password, doAfter) {
 		}
 		doAfter();
 	}, true, username, password);
+	
+	reload(true);
 }
 
 // should tell Kardia to record this email

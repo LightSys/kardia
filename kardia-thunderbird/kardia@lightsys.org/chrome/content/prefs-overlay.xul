@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<overlay id="kardia" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  
+	<!-- preferences window for Kardia todo import settings -->
+	<prefwindow id="MailPreferences">
+		<prefpane id="paneKardia" label="Kardia" image="chrome://kardia/content/images/prefs-image.png">
+			<preferences>
+				<preference id="extensions.kardia.importTodoAsEvent" name="extensions.kardia.importTodoAsEvent" type="string"/>
+				<preference id="extensions.kardia.showTodosWithNoDate" name="extensions.kardia.showTodosWithNoDate" type="bool"/>
+			</preferences>
+			<vbox>
+				<hbox>
+					<vbox>
+						<spacer flex="1"/>
+						<label value="Import Kardia to-do items as"/>
+						<spacer flex="1"/>
+					</vbox>
+					<radiogroup orient="horizontal" preference="extensions.kardia.importTodoAsEvent" >
+						<radio label="events" value="e"/>
+						<radio label="tasks" value="t"/>
+					</radiogroup>
+				</hbox>
+				<checkbox label="Import Kardia to-do items that have no due date" preference="extensions.kardia.showTodosWithNoDate"/>
+			</vbox>
+		</prefpane>
+	</prefwindow>
+	
+</overlay>
