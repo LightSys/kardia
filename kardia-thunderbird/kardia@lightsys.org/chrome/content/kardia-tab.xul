@@ -56,8 +56,12 @@
 				<hbox class="top-bottom-margin" id="filter-by-tracks">	
 					<label value="Track:"/>
 				</hbox>
-				<hbox class="top-bottom-margin" id="filter-by-tags" style="margin-bottom:10px;">	
+				<hbox class="top-bottom-margin" id="filter-by-tags">	
 					<label value="Tag:"/>
+				</hbox>
+				<hbox class="top-bottom-margin" id="filter-by-data" style="margin-bottom:10px;">	
+					<label value="Data items:"/>
+					<label id="tab-data-instruction" value="click a data item to add it as a filter" style="font-style:italic"/>
 				</hbox>
 				
 				<vbox id="tab-collaborators-inner" flex="1">
@@ -79,22 +83,16 @@
 				<!-- tags -->
 				<vbox id="tab-tags" class="tab-bottom-box" flex="1">
 					<label class="tab-title" value="Tags"/>
-					<!-- <vbox class="tab-tag-color-box" style="background-color:hsl(120,50%,50%);">
-						<label value="Uganda"/>
-					</vbox>-->
 				</vbox>
 				
 				<splitter resizebefore="closest" state="open" collapse="both" class="tab-splitter">
-					<vbox class="tab-splitter-vbox" flex="1">
-						<label value=""/>
-					</vbox>
+					<vbox class="tab-splitter-vbox" flex="1"/>
 				</splitter>
 				
 				<!-- location and emails -->
 				<vbox flex="1">
 					<vbox id="tab-location" class="tab-bottom-box">
 						<label class="tab-title" value="Location"/>
-						<label value="Time: 10:19:38 UTC-07:00 Mountain Time (US and Canada)"/>
 						<!-- addresses and link -->
 						<hbox id="tab-address-map" style="visibility:hidden">
 							<menulist id="tab-address-select" onclick="setMapLink();">
@@ -114,8 +112,6 @@
 							<!-- choose email -->
 							<menulist id="tab-filter-select">
 								<menupopup id="tab-filter-select-inner">
-									<!--<menuitem label="greg.beeley@lightsys.org"/>
-									<menuitem label="dorinda.beeley@lightsys.org"/>  -->
 								</menupopup>
 							</menulist>
 							<vbox>
@@ -128,11 +124,18 @@
 				</vbox>
 				
 				<splitter resizebefore="closest" state="open" collapse="both" class="tab-splitter">
-					<vbox class="tab-splitter-vbox" flex="1">
-						<label value=""/>
-					</vbox>
+					<vbox class="tab-splitter-vbox" flex="1"/>
 				</splitter>
 
+				<!-- data items -->
+				<vbox id="tab-data-items" class="tab-bottom-box" flex="1">
+					<label class="tab-title" value="Data Items"/>
+				</vbox>
+				
+				<splitter resizebefore="closest" state="open" collapse="both" class="tab-splitter">
+					<vbox class="tab-splitter-vbox" flex="1"/>
+				</splitter>
+				
 				<!-- giving -->
 				<vbox id="tab-giving" class="tab-bottom-box" flex="1">
 					<label class="tab-title" value="Giving"/>

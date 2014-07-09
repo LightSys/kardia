@@ -163,10 +163,32 @@ OBJECT STRUCTURE...
 
 	The following 'system' properties will be provided:
 
-	    date_created    - date the track was created in Kardia
-	    created_by	    - username that created the track
-	    date_modified   - date the track was modified in Kardia
-	    modified_by	    - username that modified the track
+	    date_created    - date the tag was created in Kardia
+	    created_by	    - username that created the tag
+	    date_modified   - date the tag was modified in Kardia
+	    modified_by	    - username that modified the tag
+		
+		
+	/apps/kardia/api/crm_config/DataItemTypes -- list of types of data items
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    type_id	  		- the numerical ID identifying the data item type
+	    type_label	    - the short name or label for this data item type
+		parent_type_id	- the ID of the parent data item type
+		parent_type_label	- the short name or label for the parent data item type
+	    type_desc		- the description of the data item type
+		type_highlight	- 1 if the tag is highlighted, 0 otherwise
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item type was created in Kardia
+	    created_by	    - username that created the data item type
+	    date_modified   - date the date item type was modified in Kardia
+	    modified_by	    - username that modified the data item type
+		
+		
 
 EXAMPLE URLS...
 
@@ -204,4 +226,8 @@ EXAMPLE URLS...
 
 	The list of tags in the system, with information about each:
 	
-	http://192.168.42.128:800/apps/kardia/api/crm_config/TagTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	http://server/apps/kardia/api/crm_config/TagTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	The list of data item types in the system, with information about each:
+	
+	http://server/apps/kardia/api/crm_config/DataItemTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic

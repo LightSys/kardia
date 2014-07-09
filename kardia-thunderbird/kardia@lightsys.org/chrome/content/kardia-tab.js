@@ -41,20 +41,41 @@ function filterBy() {
 }
 
 // add the given item as a filter
-function addFilter(type, id) {
+function addFilter(type, id, fromClick) {
+	if (fromClick) {
+		document.getElementById("filter-by-" + type + "-" + id).checked = true;
+	}
 	if (type == 'e') {
 		mainWindow.filterTracks[id] = document.getElementById("filter-by-e-" + id).checked;
 	}
-	else if (type == 't') {
+	else if (type == 't') {	
 		mainWindow.filterTags[id] = document.getElementById("filter-by-t-" + id).checked;
-		mainWindow.filterTags[id+1] = document.getElementById("filter-by-t-" + id).checked;
+		mainWindow.filterTags[id*1+1] = document.getElementById("filter-by-t-" + id).checked;
+	}
+	else if (type == 'd') {
+		if (mainWindow.filterData.indexOf(id) < 0) {
+			mainWindow.filterData.push(id);
+			
+			// hide instructions
+			document.getElementById("tab-data-instruction").style.display = "none";
+			
+			// add data filter
+			document.getElementById("filter-by-data").innerHTML += '<hbox id="filter-by-' + id + '" class="tab-filter-radio" style="background-color:#cccccc"><vbox style="margin-left:5px;" onclick="removeDataFilter(\'' + id + '\')"><spacer flex="1"/><image class="close-kardia-pane-x"/><spacer flex="1"/></vbox><label value="' + id + '"/></hbox>';
+		}
 	}
 	reloadFilters();
 }
 
+// remove given data filter
+function removeDataFilter(what) {
+	mainWindow.filterData.splice(mainWindow.filterData.indexOf(what),1);
+	var element = document.getElementById("filter-by-" + what);
+	element.parentNode.removeChild(element);
+}
+
 // reload filters
 function reloadFilters() {
-	sortCollaboratees(mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.sortCollaborateesBy, mainWindow.sortCollaborateesDescending);
+	sortCollaboratees(mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.collaborateeData, mainWindow.sortCollaborateesBy, mainWindow.sortCollaborateesDescending);
 		
 	// add to collaborators view	
 	document.getElementById("tab-collaborators-inner").innerHTML = '';
@@ -108,7 +129,7 @@ function reloadFilters() {
 					}
 				}
 			}
-			else if (mainWindow.filterBy == "all") {			
+			else if (mainWindow.filterBy == "all" && addPerson) {			
 				for (var j=0;j<mainWindow.filterTags.length;j+=2) {
 					if (mainWindow.filterTags[j]) {	
 						if (mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1]) < 0) {
@@ -119,8 +140,28 @@ function reloadFilters() {
 				}
 			}
 		}
+		// check data items
+		if (mainWindow.filterData.length > 0) {
+			if (mainWindow.filterBy == "any" && (!addPerson || (!tracksSelected && !tagsSelected))) {
+				addPerson = false;
+				for (var j=0;j<mainWindow.filterData.length;j++) {
+					if (mainWindow.collaborateeData[i].indexOf(mainWindow.filterData[j]) >= 0) {
+						addPerson = true;
+						break;
+					}
+				}
+			}
+			else if (mainWindow.filterBy == "all" && addPerson) {			
+				for (var j=0;j<mainWindow.filterData.length;j++) {
+					if (mainWindow.collaborateeData[i].indexOf(mainWindow.filterData[j]) < 0) {
+						addPerson = false;
+						break;
+					}
+				}
+			}
+		}
 		
-		// add only if tag and track filters are valid
+		// add only if tag, track, and data item filters are valid
 		if (addPerson) {
 			var addString = '<hbox class="tab-collaborator" onclick="addCollaborator2(' + mainWindow.collaborateeIds[i] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[i] + '"/><label value="ID# ' + mainWindow.collaborateeIds[i] + '"/></vbox>';
 			
@@ -128,13 +169,26 @@ function reloadFilters() {
 				addString += '<vbox>';
 				for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
 					if (mainWindow.collaborateeTracks[i][j] != "" && mainWindow.collaborateeTracks[i][j+1] != "") { 
-						addString += '<vbox class="tab-engagement-track-color-box" style="background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j])] + '"><label class="bold-text">' + mainWindow.collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + mainWindow.collaborateeTracks[i][j+1] + '</label></vbox>';
+						var filterIndex = mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j]);
+						addString += '<vbox onclick="addFilter(\'e\',\'' + filterIndex + '\', true)" class="tab-engagement-track-color-box" style="background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j])] + '"><label class="bold-text">' + mainWindow.collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + mainWindow.collaborateeTracks[i][j+1] + '</label></vbox>';
+					}
+					
+				}
+				addString += '</vbox>';
+			}
+			addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>';
+						
+			if (mainWindow.collaborateeData[i].length > 1) {
+				addString += '<vbox>';
+				for (var j=0;j<mainWindow.collaborateeData[i].length;j+=2) {
+					if (mainWindow.collaborateeData[i][j+1] == "1") { 
+						addString += '<button oncommand="addFilter(\'d\',\'' + mainWindow.collaborateeData[i][j] + '\', false);" class="highlighted" label="' + mainWindow.collaborateeData[i][j] + '"/>';
 					}
 				}
 				addString += '</vbox>';
 			}
-			addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>' + 
-			'<vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+			
+			addString += '<spacer flex="2"/><vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
 			
 			document.getElementById("tab-collaborators-inner").innerHTML += addString;
 			// FIX STUB should also have recent activity
@@ -143,7 +197,7 @@ function reloadFilters() {
 }
 
 // sort collaboratees
-function sortCollaboratees(names, ids, tracks, tags, sortBy, descending) {
+function sortCollaboratees(names, ids, tracks, tags, data, sortBy, descending) {
 	// sort
 	var firstIndex;
 	var firstItem;
@@ -191,6 +245,10 @@ function sortCollaboratees(names, ids, tracks, tags, sortBy, descending) {
 		firstItem = tags[firstIndex];
 		tags[firstIndex] = tags[i];
 		tags[i] = firstItem;
+		
+		firstItem = data[firstIndex];
+		data[firstIndex] = data[i];
+		data[i] = firstItem;
 	}
 	
 	// reload view
@@ -207,8 +265,19 @@ function sortCollaboratees(names, ids, tracks, tags, sortBy, descending) {
 			}
 			addString += '</vbox>';
 		}
-		addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>' + 
-		'<vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+		addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>';
+						
+		if (mainWindow.collaborateeData[i].length > 1) {
+			addString += '<vbox>';
+			for (var j=0;j<mainWindow.collaborateeData[i].length;j+=2) {
+				if (mainWindow.collaborateeData[i][j+1] == "1") { 
+					addString += '<button oncommand="addFilter(\'d\',\'' + mainWindow.collaborateeData[i][j] + '\', false);" class="highlighted" label="' + mainWindow.collaborateeData[i][j] + '"/>';
+				}
+			}
+			addString += '</vbox>';
+		}
+		
+		addString += '<spacer flex="2"/><vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
 		
 		document.getElementById("tab-collaborators-inner").innerHTML += addString;
 		// FIX STUB should also have recent activity
@@ -256,6 +325,7 @@ function loadStuff() {
 		mainWindow.collaborateeTracks = new Array();
 		mainWindow.collaborateeTags = new Array();
 		mainWindow.collaborateeActivity = new Array();
+		mainWindow.collaborateeData = new Array();
 		
 		// save to arrays
 		for (var i=0; i<keys.length; i++) {
@@ -316,51 +386,80 @@ function getCollaborateeInfo2(index) {
 			}
 			mainWindow.collaborateeTags.push(tempArray);
 			
-			if (index+1 >= mainWindow.collaborateeIds.length) {			
-				document.getElementById("tab-tags").innerHTML = '<label class="tab-title" value="Tags"/>';
+			// get data items
+			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(dataResp) {
+				// get all the keys from the JSON file
+				var keys = [];
+				for(var k in dataResp) keys.push(k);
 
-				sortCollaboratees(mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.sortCollaborateesBy, mainWindow.sortCollaborateesDescending);		
-				
-				// add to collaborators view	
-				document.getElementById("tab-collaborators-inner").innerHTML = '';
-				for (var i=0;i<mainWindow.collaborateeIds.length;i++) {					
-					var addString = '<hbox class="tab-collaborator" onclick="addCollaborator2(' + mainWindow.collaborateeIds[i] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[i] + '"/><label value="ID# ' + mainWindow.collaborateeIds[i] + '"/></vbox>';
-					
-					if (mainWindow.collaborateeTracks[i].length > 1) {
-						addString += '<vbox>';
-						for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
-							if (mainWindow.collaborateeTracks[i][j] != "" && mainWindow.collaborateeTracks[i][j+1] != "") { 
-								addString += '<vbox class="tab-engagement-track-color-box" style="background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j])] + '"><label class="bold-text">' + mainWindow.collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + mainWindow.collaborateeTracks[i][j+1] + '</label></vbox>';
-							}
-						}
-						addString += '</vbox>';
+				// save to arrays
+				var tempArray = new Array();
+				for (var i=0; i<keys.length; i++) {
+					if (keys[i] != "@id") {
+						tempArray.push(dataResp[keys[i]]['item_type_label'] + ": " + dataResp[keys[i]]['item_value']);
+						tempArray.push(dataResp[keys[i]]['item_highlight']);
 					}
-
-					addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>' + 
-					'<vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
-					
-					document.getElementById("tab-collaborators-inner").innerHTML += addString;
-					// FIX STUB should also have recent activity
-				}	
-		
-				// add engagement track filter buttons
-				document.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
-				for (var i=0;i<mainWindow.trackList.length;i++) {
-					document.getElementById("filter-by-tracks").innerHTML += '<checkbox id="filter-by-e-' + i + '" class="tab-filter-checkbox" checked="false" label="' + mainWindow.trackList[i] + '" oncommand="addFilter(\'e\', ' + i + ')"/>';
 				}
-			
-				// add tag filter buttons
-				document.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
-				for (var i=0;i<mainWindow.tagList.length;i+=2) {
-					document.getElementById("filter-by-tags").innerHTML += '<checkbox id="filter-by-t-' + i + '" class="tab-filter-checkbox" checked="false" label="' + mainWindow.tagList[i+1] + '" oncommand="addFilter(\'t\', ' + i + ')"/>';
-				}				
+				mainWindow.collaborateeData.push(tempArray);
 				
-				// reload Kardia tab
-				reload2(true);
-			}
-			else {
-				getCollaborateeInfo2(index+1);
-			}
+				if (index+1 >= mainWindow.collaborateeIds.length) {			
+					document.getElementById("tab-tags").innerHTML = '<label class="tab-title" value="Tags"/>';
+
+					sortCollaboratees(mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.collaborateeData, mainWindow.sortCollaborateesBy, mainWindow.sortCollaborateesDescending);		
+					
+					// add to collaborators view	
+					document.getElementById("tab-collaborators-inner").innerHTML = '';
+					for (var i=0;i<mainWindow.collaborateeIds.length;i++) {					
+						var addString = '<hbox class="tab-collaborator" onclick="addCollaborator2(' + mainWindow.collaborateeIds[i] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[i] + '"/><label value="ID# ' + mainWindow.collaborateeIds[i] + '"/></vbox>';
+						
+						if (mainWindow.collaborateeTracks[i].length > 1) {
+							addString += '<vbox>';
+							for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
+								if (mainWindow.collaborateeTracks[i][j] != "" && mainWindow.collaborateeTracks[i][j+1] != "") { 
+									var filterIndex = mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j]);
+									addString += '<vbox onclick="addFilter(\'e\',\'' + filterIndex + '\', true)" class="tab-engagement-track-color-box" style="background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j])] + '"><label class="bold-text">' + mainWindow.collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + mainWindow.collaborateeTracks[i][j+1] + '</label></vbox>';
+								}
+							}
+							addString += '</vbox>';
+						}
+
+						addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>';
+						
+						if (mainWindow.collaborateeData[i].length > 1) {
+							addString += '<vbox>';
+							for (var j=0;j<mainWindow.collaborateeData[i].length;j+=2) {
+								if (mainWindow.collaborateeData[i][j+1] == "1") { 
+									addString += '<button oncommand="addFilter(\'d\',\'' + mainWindow.collaborateeData[i][j] + '\', false);" class="highlighted" label="' + mainWindow.collaborateeData[i][j] + '"/>';
+								}
+							}
+							addString += '</vbox>';
+						}
+						
+						addString += '<spacer flex="2"/><vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+						
+						document.getElementById("tab-collaborators-inner").innerHTML += addString;
+						// FIX STUB should also have recent activity
+					}	
+			
+					// add engagement track filter buttons
+					document.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
+					for (var i=0;i<mainWindow.trackList.length;i++) {
+						document.getElementById("filter-by-tracks").innerHTML += '<checkbox id="filter-by-e-' + i + '" class="tab-filter-checkbox" checked="false" label="' + mainWindow.trackList[i] + '" oncommand="addFilter(\'e\', ' + i + ', false)"/>';
+					}
+				
+					// add tag filter buttons
+					document.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
+					for (var i=0;i<mainWindow.tagList.length;i+=2) {
+						document.getElementById("filter-by-tags").innerHTML += '<checkbox id="filter-by-t-' + i + '" class="tab-filter-checkbox" checked="false" label="' + mainWindow.tagList[i+1] + '" oncommand="addFilter(\'t\', ' + i + ', false)"/>';
+					}				
+					
+					// reload Kardia tab
+					reload2(true);
+				}
+				else {
+					getCollaborateeInfo2(index+1);
+				}
+			}, false, "", "");	
 		}, false, "", "");
 	}, false, "", "");
 }
@@ -588,7 +687,20 @@ function reload2(isDefault) {
 		
 		for (var i=0;i<mainWindow.collaborateeTags[tagsSelected].length;i+=3) {
 			var questionMark = (mainWindow.collaborateeTags[tagsSelected][i+2] <= 0.5) ? "?" : "";
-			document.getElementById("tab-tags").innerHTML += '<vbox class="tab-tag-color-box" style="background-color:hsl(46,100%,' + (100-50*mainWindow.collaborateeTags[tagsSelected][i+1]) + '%);"><label value="' + mainWindow.collaborateeTags[tagsSelected][i] + questionMark + '"/></vbox>';
+			var filterIndex = mainWindow.tagList.indexOf(mainWindow.collaborateeTags[tagsSelected][i])-1;
+			document.getElementById("tab-tags").innerHTML += '<vbox onclick="addFilter(\'t\',\'' + filterIndex + '\', true)" class="tab-tag-color-box" style="background-color:hsl(46,100%,' + (100-50*mainWindow.collaborateeTags[tagsSelected][i+1]) + '%);"><label value="' + mainWindow.collaborateeTags[tagsSelected][i] + questionMark + '"/></vbox>';
+		}
+		
+		// reload Kardia tab data items
+		document.getElementById("tab-data-items").innerHTML = '<label class="tab-title" value="Data Items"/>';
+		for (var i=0;i<mainWindow.collaborateeData[tagsSelected].length;i+=2) {
+			if (mainWindow.collaborateeData[tagsSelected][i+1].toString() == "0") {
+				document.getElementById("tab-data-items").innerHTML += '<vbox onclick="addFilter(\'d\',\'' + mainWindow.collaborateeData[selected][i] + '\', false);"><label>' + mainWindow.collaborateeData[tagsSelected][i] + '</label></vbox>';
+			}
+			else {
+				// highlight it
+				document.getElementById("tab-data-items").innerHTML += '<vbox class="highlighted" onclick="addFilter(\'d\',\'' + mainWindow.collaborateeData[selected][i] + '\', false);"><label>' + mainWindow.collaborateeData[tagsSelected][i] + '</label></vbox>';
+			}
 		}
 		
 		// reload list of emails in Kardia tab

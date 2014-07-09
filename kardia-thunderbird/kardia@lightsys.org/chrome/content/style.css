@@ -34,7 +34,7 @@
 #cant-connect {display:none;}
 
 /* box around engagement track */
-.engagement-track-color-box{border-radius:2px; margin-top:2px; margin-right:5px; background-color:#cccccc; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))} /* previous: #afe7a0, #81d969 */
+.engagement-track-color-box{border-radius:3px; margin-top:2px; margin-right:5px; background-color:#cccccc; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))} /* previous: #afe7a0, #81d969 */
 
 /* checkboxes for collapsible items like Engagement Tracks look like arrows */
 .twisty-checkbox[checked="true"] .checkbox-check {border:0px; -moz-appearance:none; background-image:url(chrome://global/skin/tree/twisty-open.png);}
@@ -52,10 +52,13 @@
 .thin {-moz-appearance:scale-horizontal; margin-top:0px; margin-bottom:-2px;}
 
 /* bottom button that shows or hides Kardia pane */
-#show-kardia-pane-button {-moz-appearance:none; border:none; border-radius:2px; padding-top:0px; padding-bottom:0px; background-color:#edf5fc;}
+#show-kardia-pane-button {-moz-appearance:none; border:none; border-radius:3px; padding-top:0px; padding-bottom:0px; background-color:#edf5fc;}
 
 /* bold text */
 .bold-text {font-weight:bold;}
+
+/* highlighted label/button */
+.highlighted {-moz-appearance:none; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#fff4a3; border:0px; padding:0px; margin:1px 0 1px 0;}
 
 /* images */
 .note-image {width:15px; list-style-image: url("chrome://kardia/content/images/note-image.png");}
@@ -86,15 +89,15 @@
 .top-bottom-margin {margin:2px 0 2px 0}
 
 /* button that allows sorting by name, id, date */
-.tab-sort-button {-moz-appearance:none; border:0px; border-radius:5px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0 5px 0 0; margin:0 2px 0 2px;}
+.tab-sort-button {-moz-appearance:none; border:0px; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0 5px 0 0; margin:0 2px 0 2px;}
 .tab-sort-button[selected="true"]{background-color:#cccccc}
 
 /* button that allows filter by any or all */
-.tab-filter-radio {-moz-appearance:none; border:0px; border-radius:5px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0px; margin:0 2px 0 2px;}
+.tab-filter-radio {-moz-appearance:none; border:0px; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0px; margin:0 2px 0 2px;}
 .tab-filter-radio[selected="true"]{background-color:#cccccc}
 
 /* checkbox that allows selection of filters */
-.tab-filter-checkbox {-moz-appearance:none; border:0px; border-radius:5px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0px; margin:0 2px 0 2px;}
+.tab-filter-checkbox {-moz-appearance:none; border:0px; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0px; margin:0 2px 0 2px;}
 .tab-filter-checkbox[checked="true"]{background-color:#cccccc}
 .tab-filter-checkbox  .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}
 .tab-filter-checkbox[checked="true"] .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}
@@ -102,17 +105,20 @@
 /* item with no padding or margin */
 .no-margin-padding { padding:0px; margin:0px;}
 
+/* button that is just an x */
+.tab-data-x-button {-moz-appearance:none; padding:0px; border:0px; background-color:none; width:16px; background-image:none;}
+
 /* individual person in Collaborating With panel */
-.tab-collaborator {border-radius:2px; background-color:#ffffff; margin-bottom:2px; padding:3px;}
+.tab-collaborator {border-radius:3px; background-color:#ffffff; margin-bottom:2px; padding:3px;}
 
 /* box with person's name in Collaborating With */
-.tab-collaborator-name {border-radius:2px; margin-right:3px; background-image: linear-gradient(#fafafa, #dddddd);}
+.tab-collaborator-name {border-radius:3px; margin-right:3px; background-image: linear-gradient(#fafafa, #dddddd);}
 
 /* engagement tracks in Collaborating With */
-.tab-engagement-track-color-box{border-radius:5px; background-color:#cccccc; margin:1px 5px 1px 0px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))}
+.tab-engagement-track-color-box{border-radius:3px; background-color:#cccccc; margin:1px 5px 1px 0px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))}
 
 /* tags in bottom panel */
-.tab-tag-color-box{border-radius:2px; background-color:#cccccc; margin-bottom:4px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))}
+.tab-tag-color-box{border-radius:3px; background-color:#cccccc; margin-bottom:4px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))}
 
 /* button you click to choose the person */
 .tab-choose-person {padding:4px;}

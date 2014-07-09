@@ -150,7 +150,7 @@ api_crm_config "system/querytree"
     TagTypes "system/querytree"
 	{
 	text = "TagTypes";
-	tracklist "system/querytree"
+	tagtypelist "system/querytree"
 	    {
 	    sql = " select
 			tag_id = :e_tag_id,
@@ -188,10 +188,29 @@ api_crm_config "system/querytree"
 	{
 	text = "WorkflowTypes";
 	}
-
-    DataItemTypes "system/querytree"
+    	
+	DataItemTypes "system/querytree"
 	{
 	text = "DataItemTypes";
+	dataitemtypelist "system/querytree"
+	    {
+	    sql = " select
+			type_id = :d:e_data_item_type_id,
+			type_label = :d:e_data_item_type_label,
+			parent_type_id = :d:e_parent_data_item_type_id,
+			parent_label = (select :e_data_item_type_label from /apps/kardia/data/Kardia_DB/e_data_item_type/rows where :e_data_item_type_id = :d:e_parent_data_item_type_id),
+			type_desc = :d:e_data_item_type_desc,
+			type_highlight = :d:e_data_item_type_highlight,
+			date_created = :d:s_date_created,
+			created_by = :d:s_created_by,
+			date_modified = :d:s_date_modified,
+			modified_by = :d:s_modified_by
+
+		    from
+			identity
+			/apps/kardia/data/Kardia_DB/e_data_item_type/rows d
+			";
+		}
 	}
 
     DocumentTypes "system/querytree"

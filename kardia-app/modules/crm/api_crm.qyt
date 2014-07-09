@@ -439,7 +439,37 @@ api_crm "system/querytree"
 		{
 		text = "DataGroups";
 		}
-	    }
+		
+		DataItems "system/querytree"
+		{
+		text="DataItems";
+		
+		data_item_list "system/querytree"
+		    {
+		    sql = " select
+			partner_id = :d:p_partner_key,
+			partner_name = :eng_list:partner_name,
+			partner_ref = :eng_list:partner_ref,
+			item_id = :d:e_data_item_id,
+			item_type_id = :d:e_data_item_type_id,
+			item_type_label = (select :e_data_item_type_label from /apps/kardia/data/Kardia_DB/e_data_item_type/rows where :e_data_item_type_id = :d:e_data_item_type_id),
+			item_group_id = :d:e_data_item_group_id,
+			item_value = :d:e_data_item_value,
+			item_highlight = :d:e_data_item_highlight,
+			date_created = :d:s_date_created,
+			created_by = :d:s_created_by,
+			date_modified = :d:s_date_modified,
+			modified_by = :d:s_modified_by
+
+		    from
+			identity
+			/apps/kardia/data/Kardia_DB/e_data_item/rows d
+		    where
+			:d:p_partner_key = :eng_list:partner_id
+		    ";
+		    }
+		}
+		}
     }
 	
 	Todos "system/querytree"

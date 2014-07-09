@@ -27,6 +27,7 @@ var collaborateeNames = [];
 var collaborateeTracks = [];
 var collaborateeActivity = [];
 var collaborateeTags = [];
+var collaborateeData = [];
 
 // which partner is selected and list of your own emails (so these aren't searched in Kardia)
 var selected = 0;
@@ -59,6 +60,7 @@ var sortCollaborateesDescending = true;
 var filterBy = "any";
 var filterTracks = [];
 var filterTags = [];
+var filterData = [];
 
 // what to do when Thunderbird starts up
 window.addEventListener("load", function() { 
@@ -179,6 +181,7 @@ window.addEventListener("load", function() {
 					collaborateeTracks = new Array();
 					collaborateeActivity = new Array();
 					collaborateeTags = new Array();
+					collaborateeData = new Array();
 					
 					// get all the keys from the JSON file
 					var keys = [];
@@ -572,7 +575,20 @@ function reload(isDefault) {
 		kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML = "";
 		for (var i=0;i<collaborateeTags[selected].length;i+=3) {
 			var questionMark = (collaborateeTags[selected][i+2] <= 0.5) ? "?" : "";
-			kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML += '<vbox class="tab-tag-color-box" style="background-color:hsl(46,100%,' + (100-50*collaborateeTags[selected][i+1]) + '%);"><label value="' + collaborateeTags[selected][i] + questionMark + '"/></vbox>';
+			var filterIndex = tagList.indexOf(collaborateeTags[selected][i+1]-1);
+			kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML += '<vbox onclick="addFilter(\'t\',\'' + filterIndex + '\', true)" class="tab-tag-color-box" style="background-color:hsl(46,100%,' + (100-50*collaborateeTags[selected][i+1]) + '%);"><label value="' + collaborateeTags[selected][i] + questionMark + '"/></vbox>';
+		}
+		
+		// reload Kardia tab data items
+		kardiaTab.browser.contentDocument.getElementById("tab-data-items").innerHTML = '<label class="tab-title" value="Data Items"/>';
+		for (var i=0;i<collaborateeData[selected].length;i+=2) {
+			if (collaborateeData[selected][i+1].toString() == "0") {
+				kardiaTab.browser.contentDocument.getElementById("tab-data-items").innerHTML += '<vbox onclick="addFilter(\'d\',\'' + collaborateeData[selected][i] + '\', false);"><label>' + collaborateeData[selected][i] + '</label></vbox>';
+			}
+			else {
+				// highlight it
+				kardiaTab.browser.contentDocument.getElementById("tab-data-items").innerHTML += '<vbox onclick="highlighted" oncommand="addFilter(\'d\',\'' + collaborateeData[selected][i] + '\', false);"><label>' + collaborateeData[selected][i] + '</label></vbox>';
+			}
 		}
 		
 		// reload list of emails in Kardia tab
@@ -1131,6 +1147,7 @@ function getCollaborateeInfo(index) {
 		}
 		collaborateeTracks.push(tempArray);
 		
+		// get tags
 		kardiaTab.browser.contentDocument.defaultView.doHttpRequest("apps/kardia/api/crm/Partners/" + collaborateeIds[index] + "/Tags?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(tagResp) {
 			// get tag info
 			// get all the keys from the JSON file
@@ -1148,48 +1165,78 @@ function getCollaborateeInfo(index) {
 			}
 			collaborateeTags.push(tempArray);
 			
-			if (index+1 >= collaborateeIds.length) {
-				kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML = '<label class="tab-title" value="Tags"/>';
-				kardiaTab.browser.contentDocument.defaultView.sortCollaboratees(collaborateeNames, collaborateeIds, collaborateeTracks, collaborateeTags, sortCollaborateesBy, sortCollaborateesDescending);
-				// add to collaborators view	
-				kardiaTab.browser.contentDocument.getElementById("tab-collaborators-inner").innerHTML = '';
-				for (var i=0;i<collaborateeIds.length;i++) {					
-					var addString = '<hbox class="tab-collaborator" onclick="addCollaborator2(' + collaborateeIds[i] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + collaborateeNames[i] + '"/><label value="ID# ' + collaborateeIds[i] + '"/></vbox>';
-					
-					if (collaborateeTracks[i].length > 1) {
-						addString += '<vbox>';
-						for (var j=0;j<collaborateeTracks[i].length;j+=2) {
-							if (collaborateeTracks[i][j] != "" && collaborateeTracks[i][j+1] != "") { 
-								addString += '<vbox class="tab-engagement-track-color-box" style="background-color:' + trackColors[trackList.indexOf(collaborateeTracks[i][j])] + '"><label class="bold-text">' + collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + collaborateeTracks[i][j+1] + '</label></vbox>';
-							}
-						}
-						addString += '</vbox>';
+			// get data items
+			kardiaTab.browser.contentDocument.defaultView.doHttpRequest("apps/kardia/api/crm/Partners/" + collaborateeIds[index] + "/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(dataResp) {
+				// get all the keys from the JSON file
+				var keys = [];
+				for(var k in dataResp) keys.push(k);
+
+				// save to arrays
+				var tempArray = new Array();
+				for (var i=0; i<keys.length; i++) {
+					if (keys[i] != "@id") {
+						tempArray.push(dataResp[keys[i]]['item_type_label'] + ": " + dataResp[keys[i]]['item_value']);
+						tempArray.push(dataResp[keys[i]]['item_highlight']);
 					}
-					addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>' + 
-					'<vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+				}
+				collaborateeData.push(tempArray);
+			
+				if (index+1 >= collaborateeIds.length) {
+					kardiaTab.browser.contentDocument.getElementById("tab-tags").innerHTML = '<label class="tab-title" value="Tags"/>';
+					kardiaTab.browser.contentDocument.defaultView.sortCollaboratees(collaborateeNames, collaborateeIds, collaborateeTracks, collaborateeTags, collaborateeData, sortCollaborateesBy, sortCollaborateesDescending);
 					
-					kardiaTab.browser.contentDocument.getElementById("tab-collaborators-inner").innerHTML += addString;
-					// FIX STUB should also have recent activity
-				}
+					// add to collaborators view	
+					kardiaTab.browser.contentDocument.getElementById("tab-collaborators-inner").innerHTML = '';
+					for (var i=0;i<collaborateeIds.length;i++) {					
+						var addString = '<hbox class="tab-collaborator" onclick="addCollaborator2(' + collaborateeIds[i] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + collaborateeNames[i] + '"/><label value="ID# ' + collaborateeIds[i] + '"/></vbox>';
+						
+						if (collaborateeTracks[i].length > 1) {
+							addString += '<vbox>';
+							for (var j=0;j<collaborateeTracks[i].length;j+=2) {
+								if (collaborateeTracks[i][j] != "" && collaborateeTracks[i][j+1] != "") { 
+									var filterIndex = trackList.indexOf(collaborateeTracks[i][j]);
+									addString += '<vbox onclick="addFilter(\'e\',\'' + filterIndex + '\', true)" class="tab-engagement-track-color-box" style="background-color:' + trackColors[trackList.indexOf(collaborateeTracks[i][j])] + '"><label class="bold-text">' + collaborateeTracks[i][j] + '</label><label>Engagement Step: ' + collaborateeTracks[i][j+1] + '</label></vbox>';
+								}
+							}
+							addString += '</vbox>';
+						}
+						addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>';
+						
+						if (collaborateeData[i].length > 1) {
+							addString += '<vbox>';
+							for (var j=0;j<collaborateeData[i].length;j+=2) {
+								if (collaborateeData[i][j+1] == "1") { 
+									addString += '<button oncommand="addFilter(\'d\',\'' + collaborateeData[i][j] + '\', false);" class="highlighted" label="' + collaborateeData[i][j] + '"/>';
+								}
+							}
+							addString += '</vbox>';
+						}
+						
+						addString += '<spacer flex="2"/><vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+						
+						kardiaTab.browser.contentDocument.getElementById("tab-collaborators-inner").innerHTML += addString;
+						// FIX STUB should also have recent activity
+					}
+						
+					// add engagement track filter buttons
+					kardiaTab.browser.contentDocument.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
+					for (var i=0;i<trackList.length;i++) {
+						kardiaTab.browser.contentDocument.getElementById("filter-by-tracks").innerHTML += '<checkbox id="filter-by-e-' + i + '" class="tab-filter-checkbox" checked="false" label="' + trackList[i] + '" oncommand="addFilter(\'e\', ' + i + ', false)"/>';
+					}
 					
-				// add engagement track filter buttons
-				kardiaTab.browser.contentDocument.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
-				for (var i=0;i<trackList.length;i++) {
-					kardiaTab.browser.contentDocument.getElementById("filter-by-tracks").innerHTML += '<checkbox id="filter-by-e-' + i + '" class="tab-filter-checkbox" checked="false" label="' + trackList[i] + '" oncommand="addFilter(\'e\', ' + i + ')"/>';
+					// add tag filter buttons
+					kardiaTab.browser.contentDocument.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
+					for (var i=0;i<tagList.length;i+=2) {
+						kardiaTab.browser.contentDocument.getElementById("filter-by-tags").innerHTML += '<checkbox id="filter-by-t-' + i + '" class="tab-filter-checkbox" checked="false" label="' + tagList[i+1] + '" oncommand="addFilter(\'t\', ' + i + ', false)"/>';
+					}
+					
+					// reload the Kardia pane so it's blank at first
+					reload(true);
 				}
-				
-				// add tag filter buttons
-				kardiaTab.browser.contentDocument.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
-				for (var i=0;i<tagList.length;i+=2) {
-					kardiaTab.browser.contentDocument.getElementById("filter-by-tags").innerHTML += '<checkbox id="filter-by-t-' + i + '" class="tab-filter-checkbox" checked="false" label="' + tagList[i+1] + '" oncommand="addFilter(\'t\', ' + i + ')"/>';
-				}
-				
-				// reload the Kardia pane so it's blank at first
-				reload(true);
-			}
-			else {
-				getCollaborateeInfo(index+1);
-			}								
+				else {
+					getCollaborateeInfo(index+1);
+				}	
+			}, false, "", "");	
 		}, false, "", "");		
 	}, false, "", "");
 }
