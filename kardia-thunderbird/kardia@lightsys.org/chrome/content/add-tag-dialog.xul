@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<!-- dialog to allow users to add new engagement tracks -->
+<dialog id="add-tag-dialog"
+        title="New Tag"
+        buttons="cancel,accept"
+        ondialogaccept="return saveTag();"
+        ondialogcancel="return cancelTag();"
+		onload="startDialog();"
+        persist="screenX screenY width height"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+		
+<!-- script that makes buttons work -->
+<script type="application/javascript" src="chrome://kardia/content/add-tag-dialog.js"/>
+
+    <!-- vbox holds dropdown menus -->
+	<vbox>
+		<label value="Select Tag:"/>
+		<!-- menulist has options of engagement tracks to select -->
+		<menulist id="outer-select-tag">
+			<menupopup id="select-tag-type">
+			</menupopup>
+		</menulist>
+		<hbox>
+			<textbox type='number' min='0' max='100' value='100' increment='5' width='35px' id="tag-magnitude"/>
+			<vbox>
+				<spacer flex="1"/>
+				<label value='% magnitude'/>
+				<spacer flex="1"/>
+			</vbox>			
+		</hbox>
+		<hbox>
+			<textbox type='number' min='0' max='100' value='100' increment='5' width='35px' id="tag-certainty"/>
+			<vbox>
+				<spacer flex="1"/>
+				<label value='% certainty'/>
+				<spacer flex="1"/>
+			</vbox>
+		</hbox>
+	</vbox>
+	
+</dialog>
