@@ -16,7 +16,7 @@
 	<label id="tab-cant-connect" value="Could not connect to Kardia."/>
 	<vbox id="tab-main" flex="1" style="visibility:hidden">
 		<!-- top panel -->
-		<vbox id="tab-top-panel" flex="1">			
+		<vbox id="tab-top-panel">			
 			<vbox id="tab-collaborators" flex="1">
 				<hbox>
 					<label class="tab-title" value="Collaborating With..."/>
@@ -106,7 +106,7 @@
 			<!-- rest of bottom panel -->
 			<hbox id="tab-bottom-hbox" flex="1" style="visibility:hidden">
 				<!-- tags -->
-				<vbox id="tab-tags" class="tab-bottom-box" flex="1">
+				<vbox id="tab-tags" class="tab-bottom-box">
 					<label class="tab-title" value="Tags"/>
 				</vbox>
 				
@@ -115,8 +115,8 @@
 				</splitter>
 				
 				<!-- location and emails -->
-				<vbox flex="1">
-					<vbox id="tab-location" class="tab-bottom-box">
+				<vbox class="tab-bottom-box">
+					<vbox id="tab-location">
 						<label class="tab-title" value="Location"/>
 						<!-- addresses and link -->
 						<hbox id="tab-address-map" style="visibility:hidden">
@@ -131,7 +131,7 @@
 							</vbox>
 						</hbox>
 					</vbox>
-					<vbox id="tab-emails" class="tab-bottom-box" flex="1">
+					<vbox id="tab-emails" flex="1">
 						<label class="tab-title" value="Email"/>
 						<hbox>
 							<!-- choose email -->
@@ -153,7 +153,7 @@
 				</splitter>
 
 				<!-- data items -->
-				<vbox id="tab-data-items" class="tab-bottom-box" flex="1">
+				<vbox id="tab-data-items" class="tab-bottom-box">
 					<label class="tab-title" value="Data Items"/>
 				</vbox>
 				
@@ -168,16 +168,58 @@
 					
 					<tree flex="2" id="giving-tree" style="visibility:hidden">
 						<treecols>
-							<treecol id="tab-giving-date" label="Date" sort="?tab-giving-date" flex="1"/>
-							<treecol id="tab-giving-amount" label="Amount" sort="?tab-giving-amount" flex="1"/>
-							<treecol id="tab-giving-fund" label="Fund" sort="?tab-giving-fund" flex="1"/>
+							<treecol id="tab-giving-date" label="Date" sort="?tab-giving-date" width="60px"/>
+							<splitter class="tab-splitter"/>
+							<treecol id="tab-giving-amount" label="Amount" sort="?tab-giving-amount" width="60px"/>
+				 			<splitter class="tab-splitter"/>
+							<treecol id="tab-giving-fund" label="Fund" sort="?tab-giving-fund" width="60px"/>
+							<splitter class="tab-splitter"/>
 							<treecol id="tab-giving-type" label="Type" sort="?tab-giving-type" flex="1"/>
 						</treecols>
 						<treechildren id="giving-tree-children">
 						</treechildren>
 					</tree>
 					
-					<vbox id="tab-funds" flex="1" style="margin-top:10px; visibility:hidden;">
+					<splitter class="tab-splitter" style="border-bottom:1px solid rgba(80,80,80,0.5);"/>
+
+					<vbox id="tab-funds">
+						<hbox id="tab-filter-gifts-header" class="top-bottom-margin">
+							<label value="Filter gifts by..." class="bold-text"/>
+							<radiogroup id="filter-gifts-by-type" orient="horizontal" oncommand="reloadGifts()">
+								<radio id="filter-gifts-by-any" class="tab-filter-radio" selected="true" value="any" tooltiptext="Show gifts that meet any of your criteria">
+									<label value="Any of"/>
+								</radio>
+								<radio id="filter-gifts-by-all" class="tab-filter-radio" value="all" tooltiptext="Only show gifts that meet all your criteria">
+									<label value="All of"/>
+								</radio>
+							</radiogroup>
+						</hbox>
+						<hbox id="tab-filter-gifts-fund" class="top-bottom-margin">
+							<label value="Fund: "/>
+						</hbox>
+	
+						<hbox id="tab-filter-gifts-type"  class="top-bottom-margin">
+							<label value="Type: "/>
+						</hbox>
+						<hbox class="top-bottom-margin">
+							<label value="Amount: "/>
+							<textbox id="tab-filter-gifts-min-amount" value="0" type="number" decimalplaces="2" hidespinbuttons="true" width="60px" onchange="reloadGifts()"/>
+							<label value="to"/>
+							<textbox id="tab-filter-gifts-max-amount" value="100" type="number" decimalplaces="2" hidespinbuttons="true" disabled="true" width="60px" onchange="reloadGifts()"/>
+							<checkbox id="tab-filter-gifts-no-max-amount" checked="true" label="No maximum" oncommand="toggleGiftMaxAmount()"/>
+						</hbox>
+						<hbox class="top-bottom-margin">
+							<label value="Received on or after:"/>
+							<datepicker id="tab-filter-gifts-min-date" type="popup" disabled="true" onchange="window.setTimeout(function() {reloadGifts();})"/>
+							<checkbox id="tab-filter-gifts-no-min-date" checked="true" label="No start date" oncommand="toggleGiftDateRange()"/>
+						</hbox>
+						<hbox class="top-bottom-margin">
+							<label value="Received on or before:"/>
+							<datepicker id="tab-filter-gifts-max-date" type="popup" disabled="true" onchange="window.setTimeout(function() {reloadGifts();})"/>
+							<checkbox id="tab-filter-gifts-no-max-date" checked="true" label="No end date" oncommand="toggleGiftDateRange()"/>
+						</hbox>
+						<vbox id="tab-funds-filter-partners">
+						</vbox>
 					</vbox>
 				</vbox>
 			</hbox>			

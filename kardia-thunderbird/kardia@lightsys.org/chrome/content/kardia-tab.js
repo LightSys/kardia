@@ -87,6 +87,23 @@ function addFilter(type, id, fromClick) {
 	reloadFilters(false);
 }
 
+// add the given item as a filter for the gift display
+function addGiftFilter(type, id) {	
+	if (type == 'f') {
+		// add to gift filters
+		mainWindow.giftFilterFunds[id] = !mainWindow.giftFilterFunds[id];
+		document.getElementById("filter-gifts-by-f-" + id).checked = mainWindow.giftFilterFunds[id];
+	}
+	else if (type == 't') {
+		// add to gift filters
+		mainWindow.giftFilterTypes[id] = !mainWindow.giftFilterTypes[id];
+		document.getElementById("filter-gifts-by-t-" + id).checked = mainWindow.giftFilterTypes[id];
+	}
+
+	// reload filters/sorting
+	reloadGifts();
+}
+
 // remove given data filter
 function removeFilter(type,what) {
 	if (type == 'd') {

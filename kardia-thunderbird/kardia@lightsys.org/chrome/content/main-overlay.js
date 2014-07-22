@@ -1,8 +1,13 @@
+// TO DO on Monday
+//move the thing that happens on click to both the click and the listener (put in function)
+//duplicates in list with multi-email select
+
 // Stubs to be removed/fixed are marked with comment // FIX STUB
 //
 
-// number of emails selected (for comparing to see if we need to find users and reload Kardia pane)
+// selected messages and number of emails selected (for comparing to see if we need to find users and reload Kardia pane)
 var numSelected = 0;
+var selectedMessages = null;
 
 // list of currently displayable addresses, names, ids, etc
 var emailAddresses = [];
@@ -23,6 +28,7 @@ var tags = [];
 var data = [];
 var gifts = [];
 var funds = [];
+var types = [];
 
 // stuff for Kardia tab-- people you're collaborating with
 var collaborateeIds = [];
@@ -93,6 +99,10 @@ var filterTracks = [];
 var filterTags = [];
 var filterData = [];
 var filterFunds = [];
+
+// filters for gift display in bottom pane
+var giftFilterFunds = [];
+var giftFilterTypes = [];
 
 // keep track of Kardia tab and this window
 var kardiaTab;
@@ -174,13 +184,12 @@ window.addEventListener("close", function() {
 	prefs.setCharPref("password","");
 }, false);
 
-gMessageListeners.push({
-  onEndHeaders: function () {},
-  onEndAttachments: function () {},
-  onBeforeShowHeaderPane: function () {},
-  onStartHeaders: function () {
+//gMessageListeners.push({
+//  onEndHeaders: function () {},
+//  onStartHeaders: function ()
+  window.addEventListener("click", function(){
 	// if 0 or > 1 email selected, don't search Kardia
-	if (gFolderDisplay.selectedCount != 1 && numSelected == 1) {
+	if (gFolderDisplay.selectedCount < 1 && numSelected >= 1) {
 		// clear all partner info
 		selected = 0;
 		emailAddresses = new Array();
@@ -200,13 +209,14 @@ gMessageListeners.push({
 		data = new Array();
 		gifts = new Array();
 		funds = new Array();
+		types = new Array();
 		
 		// show a blank Kardia pane
 		reload(true);
 	}
 	
-	// if one email is selected 
-	if (gFolderDisplay.selectedCount == 1) {
+	// if one or more emails are selected 
+	if (gFolderDisplay.selectedCount >= 1 && !headersMatch(selectedMessages, gFolderDisplay.selectedMessages)) {
 		// select the 0th partner and generate a new list of partners
 		selected = 0;
 			
@@ -216,15 +226,20 @@ gMessageListeners.push({
 		var recipientAddresses = {};
 		var ccAddresses = {};
 		var bccAddresses = {};
-		parser.parseHeadersWithArray(gFolderDisplay.selectedMessage.author, senderAddress, {}, {});
-		parser.parseHeadersWithArray(gFolderDisplay.selectedMessage.recipients, recipientAddresses, {}, {});
-		parser.parseHeadersWithArray(gFolderDisplay.selectedMessage.ccList, ccAddresses, {}, {});
-		parser.parseHeadersWithArray(gFolderDisplay.selectedMessage.bccList, bccAddresses, {}, {});
-				
-		// combine list of addresses
-		var allAddresses = senderAddress.value.concat(recipientAddresses.value);
-		allAddresses = allAddresses.concat(ccAddresses.value);
-		allAddresses = allAddresses.concat(bccAddresses.value);
+		var allAddresses = new Array();
+		for (var i=0; i<gFolderDisplay.selectedMessages.length; i++) {
+			parser.parseHeadersWithArray(gFolderDisplay.selectedMessages[i].author, senderAddress, {}, {});
+			parser.parseHeadersWithArray(gFolderDisplay.selectedMessages[i].recipients, recipientAddresses, {}, {});
+			parser.parseHeadersWithArray(gFolderDisplay.selectedMessages[i].ccList, ccAddresses, {}, {});
+			parser.parseHeadersWithArray(gFolderDisplay.selectedMessages[i].bccList, bccAddresses, {}, {});
+							
+			// combine list of addresses
+			allAddresses = allAddresses.concat(senderAddress.value);
+			allAddresses = allAddresses.concat(recipientAddresses.value);
+			allAddresses = allAddresses.concat(ccAddresses.value);
+			allAddresses = allAddresses.concat(bccAddresses.value);
+		}
+		
 		// remove duplicates and self
 		allAddresses = parser.removeDuplicateAddresses(allAddresses, selfEmails, true).toLowerCase();
 
@@ -235,7 +250,7 @@ gMessageListeners.push({
 			var addressArray = allAddresses.split(", ");
 			addressArray.sort();
 		}
-
+				
 		// save email addresses and initialize other information about partner
 		emailAddresses = addressArray;
 		names = new Array(emailAddresses.length);
@@ -254,6 +269,7 @@ gMessageListeners.push({
 		data = new Array(emailAddresses.length);
 		gifts = new Array(emailAddresses.length);
 		funds = new Array(emailAddresses.length);
+		types = new Array(emailAddresses.length);
 
 		// remove blank (and therefore invalid) partners
 		for (var i=0;i<emailAddresses.length;i++) {
@@ -275,6 +291,7 @@ gMessageListeners.push({
 				data.splice(i,1);
 				gifts.splice(i,1);
 				funds.splice(i,1);
+				types.splice(i,1);
 				i--;
 			}
 		}
@@ -286,12 +303,32 @@ gMessageListeners.push({
 			//mainWindow.gifts[i] = ["5/2014", "$99.99", "Fund One", "6/2014", "$9.99", "Fund Two","7/2014", "$0.99", "Fund One", "3/2014", "$199.99", "Fund Two"];
 			//mainWindow.funds[i] = ["Fund One","Fund Two"];
 		}
+		// save headers
+		selectedMessages = gFolderDisplay.selectedMessages;
+		
+		//window.alert(selectedMessages[0].subject + "\n" + gFolderDisplay.selectedMessages[0].subject + "\n" + (selectedMessages === gFolderDisplay.selectedMessages));
+		
 		// get data from Kardia
 		findUser(0);
 	}	
 	// save number of emails selected so we can see if the number of emails selected has changed later
 	numSelected = gFolderDisplay.selectedCount;	
-}});
+}, false);//});
+
+// do email header lists match?
+function headersMatch(first, second) {
+	if (first == null || second == null || first.length != second.length) {
+		return false;
+	}
+	else {
+		for (var k in first) {
+			if (!Object.is(first[k], second[k])) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
 
 // reloads Kardia pane
 function reload(isDefault) {			
@@ -346,7 +383,7 @@ function reload(isDefault) {
 			}
 			
 			// move all other items around based on how we sorted names
-			var arraysToMove = [mainWindow.emailAddresses, mainWindow.ids, mainWindow.addresses, mainWindow.phoneNumbers, mainWindow.allEmailAddresses, mainWindow.websites, mainWindow.engagementTracks, mainWindow.recentActivity, mainWindow.todos, mainWindow.notes, mainWindow.collaborators, mainWindow.documents, mainWindow.tags, mainWindow.data, mainWindow.gifts, mainWindow.funds];
+			var arraysToMove = [mainWindow.emailAddresses, mainWindow.ids, mainWindow.addresses, mainWindow.phoneNumbers, mainWindow.allEmailAddresses, mainWindow.websites, mainWindow.engagementTracks, mainWindow.recentActivity, mainWindow.todos, mainWindow.notes, mainWindow.collaborators, mainWindow.documents, mainWindow.tags, mainWindow.data, mainWindow.gifts, mainWindow.funds, mainWindow.types];
 			
 			for (var j=0;j<arraysToMove.length;j++) {
 				firstItem = arraysToMove[j][firstIndex];
@@ -509,10 +546,22 @@ function reload(isDefault) {
 				kardiaTab.document.getElementById("giving-tree-children").innerHTML += '<treeitem><treerow><treecell label="' + mainWindow.gifts[mainWindow.selected][i] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+1] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+2] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+3] + '"/></treerow></treeitem>';
 			}
 			
-			// display funds
-			kardiaTab.document.getElementById("tab-funds").innerHTML = '<label class="bold-text" value="Filter partners by fund"/>';
+			// display fund filters for gifts
+			kardiaTab.document.getElementById("tab-filter-gifts-fund").innerHTML = '<label value="Fund: "/>';
 			for (var i=0;i<mainWindow.funds[mainWindow.selected].length;i++) {
-				kardiaTab.document.getElementById("tab-funds").innerHTML += '<vbox tooltiptext="Click to filter partners by this fund" class="tab-fund" onclick="addFilter(\'f\',\'' + mainWindow.funds[mainWindow.selected][i] + '\', false);"><label>' + mainWindow.funds[mainWindow.selected][i] + '</label></vbox>';
+				kardiaTab.document.getElementById("tab-filter-gifts-fund").innerHTML += '<checkbox id="filter-gifts-by-f-' + i + '" tooltiptext="Click to filter gifts by this fund" class="tab-filter-checkbox" oncommand="addGiftFilter(\'f\',\'' + i + '\');" label="' + mainWindow.funds[mainWindow.selected][i] + '"/>';
+			}
+
+			// display type filters for gifts
+			kardiaTab.document.getElementById("tab-filter-gifts-type").innerHTML = '<label value="Type: "/>';
+			for (var i=0;i<mainWindow.types[mainWindow.selected].length;i++) {
+				kardiaTab.document.getElementById("tab-filter-gifts-type").innerHTML += '<checkbox id="filter-gifts-by-t-' + i + '" tooltiptext="Click to filter gifts by this type" class="tab-filter-checkbox" oncommand="addGiftFilter(\'t\',\'' + i + '\');" label="' + mainWindow.types[mainWindow.selected][i] + '"/>';
+			}
+			
+			// display funds
+			kardiaTab.document.getElementById("tab-funds-filter-partners").innerHTML = '<label class="bold-text" value="Filter partners by fund"/>';
+			for (var i=0;i<mainWindow.funds[mainWindow.selected].length;i++) {
+				kardiaTab.document.getElementById("tab-funds-filter-partners").innerHTML += '<vbox tooltiptext="Click to filter partners by this fund" class="tab-fund" onclick="addFilter(\'f\',\'' + mainWindow.funds[mainWindow.selected][i] + '\');"><label>' + mainWindow.funds[mainWindow.selected][i] + '</label></vbox>';
 			}
 			
 			// display dropdown list of person's emails
@@ -527,7 +576,7 @@ function reload(isDefault) {
 				kardiaTab.document.getElementById("tab-address-map").style.visibility="visible";
 				kardiaTab.document.getElementById("tab-address-select-inner").innerHTML = "";
 				for (var i=0;i<mainWindow.addresses[mainWindow.selected].length;i++) {
-					kardiaTab.document.getElementById("tab-address-select-inner").innerHTML += '<menuitem label="' + mainWindow.addresses[mainWindow.selected][i] + '"/>';
+					kardiaTab.document.getElementById("tab-address-select-inner").innerHTML += '<menuitem label="' + mainWindow.addresses[mainWindow.selected][i] + '" style="text-overflow:ellipsis;width:200px;"/>';
 				}
 				kardiaTab.document.getElementById("tab-address-select").selectedIndex = 0;
 				kardiaTab.document.getElementById("tab-map-link").href = "http://www.google.com/maps/place/" + encodeURIComponent(kardiaTab.document.getElementById("tab-address-select").selectedItem.label.substring(3,kardiaTab.document.getElementById("tab-address-select").selectedItem.label.length));
@@ -857,6 +906,7 @@ function findUser(index) {
 					data.splice(index,1);
 					gifts.splice(index,1);
 					funds.splice(index,1);
+					types.splice(index,1);
 				}
 				
 				// how many extra partners did we add from this email address?
@@ -883,6 +933,7 @@ function findUser(index) {
 						data.splice(index+1,0,[]);
 						gifts.splice(index+1,0,[]);
 						funds.splice(index+1,0,[]);
+						types.splice(index+1,0,[]);
 						numExtra++;
 					}
 				}
@@ -915,7 +966,21 @@ function findUser(index) {
 				data.splice(index,1);	
 				gifts.splice(index,1);	
 				funds.splice(index,1);	
-				reload(true);
+				types.splice(index,1);	
+				
+				// if we aren't at the end of the list of email addresses, find partners for the next address
+				if (index < emailAddresses.length) {
+					findUser(index);
+				}
+				else {
+					// start getting the other information about all the partners we found
+					if (emailAddresses.length > 0) {
+						getOtherInfo(0, true);
+					}
+					else {
+						reload(false);
+					}
+				}
 			}
 		};
 		
@@ -1101,9 +1166,16 @@ function getOtherInfo(index, isDefault) {
 											var tempArray = new Array();
 											for (var i=0; i<keys.length; i++) {
 												if (keys[i] != "@id") {
-													tempArray.push(tagResp[keys[i]]['tag_label']);
-													tempArray.push(tagResp[keys[i]]['tag_strength']);
-													tempArray.push(tagResp[keys[i]]['tag_certainty']);
+													// see where we should insert it in the list
+													var insertHere = tempArray.length;
+													for (var j=0;j<tempArray.length;j+=3) {
+														if (parseFloat(tagResp[keys[i]]['tag_strength']) >= parseFloat(tempArray[j+1])) {
+															// insert tag before
+															insertHere = j;
+															break;
+														}
+													}
+													tempArray.splice(insertHere,0,tagResp[keys[i]]['tag_label'],tagResp[keys[i]]['tag_strength'],tagResp[keys[i]]['tag_certainty']);
 												}
 											}
 											mainWindow.tags[index] = tempArray;
@@ -1151,7 +1223,19 @@ function getOtherInfo(index, isDefault) {
 																	}
 																	tempArray.push(formatGift(giftResp[keys[i]]['gift_amount']['wholepart'], giftResp[keys[i]]['gift_amount']['fractionpart']));
 																	tempArray.push(giftResp[keys[i]]['gift_fund_desc']);
-																	tempArray.push(giftResp[keys[i]]['gift_type']);
+																	
+																	// if check, display check number
+																	if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'].trim() != "") {
+																		tempArray.push(giftResp[keys[i]]['gift_type'] + " (#" + giftResp[keys[i]]['gift_check_num'] + ")");
+																	}
+																	else {
+																		tempArray.push(giftResp[keys[i]]['gift_type']);
+																	}
+																	// save gift type to types array
+																	if (mainWindow.types[index].indexOf(giftResp[keys[i]]['gift_type']) < 0) {
+																		mainWindow.types[index].push(giftResp[keys[i]]['gift_type']);
+																		mainWindow.giftFilterTypes.push(false);
+																	}
 																}
 															}
 															mainWindow.gifts[index] = tempArray;
@@ -1162,11 +1246,16 @@ function getOtherInfo(index, isDefault) {
 																var keys = [];
 																for(var k in fundResp) keys.push(k);
 
+																// reset gift filter list
+																mainWindow.giftFilterFunds = new Array();
+																mainWindow.giftFilterTypes = new Array();
+																
 																// save funds
 																var tempArray = new Array();
 																for (var i=0; i<keys.length; i++) {
 																	if (keys[i] != "@id") {
 																		tempArray.push(fundResp[keys[i]]['fund_desc']);
+																		mainWindow.giftFilterFunds.push(false);
 																	}
 																}
 																mainWindow.funds[index] = tempArray;
@@ -1234,9 +1323,16 @@ function getCollaborateeInfo(index) {
 			var tempArray = new Array();
 			for (var i=0; i<keys.length; i++) {
 				if (keys[i] != "@id") {
-					tempArray.push(tagResp[keys[i]]['tag_label']);
-					tempArray.push(tagResp[keys[i]]['tag_strength']);
-					tempArray.push(tagResp[keys[i]]['tag_certainty']);
+					// see where we should insert it in the list
+					var insertHere = tempArray.length;
+					for (var j=0;j<tempArray.length;j+=3) {
+						if (parseFloat(tagResp[keys[i]]['tag_strength']) >= parseFloat(tempArray[j+1])) {
+							// insert tag before
+							insertHere = j;
+							break;
+						}
+					}
+					tempArray.splice(insertHere,0,tagResp[keys[i]]['tag_label'],tagResp[keys[i]]['tag_strength'],tagResp[keys[i]]['tag_certainty']);
 				}
 			}
 			mainWindow.collaborateeTags.push(tempArray);
@@ -1282,7 +1378,14 @@ function getCollaborateeInfo(index) {
 									}
 									tempArray.push(formatGift(giftResp[keys[i]]['gift_amount']['wholepart'], giftResp[keys[i]]['gift_amount']['fractionpart']));
 									tempArray.push(giftResp[keys[i]]['gift_fund_desc']);
-									tempArray.push(giftResp[keys[i]]['gift_type']);
+									
+									// if check, display check number
+									if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'].trim() != "") {
+										tempArray.push(giftResp[keys[i]]['gift_type'] + " (#" + giftResp[keys[i]]['gift_check_num'] + ")");
+									}
+									else {
+										tempArray.push(giftResp[keys[i]]['gift_type']);
+									}																	
 								}
 							}
 							mainWindow.collaborateeGifts.push(tempArray);
@@ -1301,9 +1404,7 @@ function getCollaborateeInfo(index) {
 								mainWindow.collaborateeFunds.push(tempArray);
 															
 								// if we've done all the collaboratees, start loading the Kardia tab stuff
-								if (index+1 >= mainWindow.collaborateeIds.length) {								
-									Application.console.log(mainWindow.collaborateeGifts);
-									Application.console.log(mainWindow.collaborateeFunds);
+								if (index+1 >= mainWindow.collaborateeIds.length) {
 									// sort and reload Collaborating With panel
 									kardiaTab.sortCollaboratees(false);
 									
@@ -1603,6 +1704,7 @@ function addCollaborator(collaboratorId) {
 		mainWindow.data.push([]);
 		mainWindow.gifts.push([]);
 		mainWindow.funds.push([]);
+		mainWindow.types.push([]);
 		mainWindow.selected = mainWindow.ids.length-1;
 		// get information about them from Kardia
 		getOtherInfo(mainWindow.ids.length-1, false);
@@ -2041,6 +2143,8 @@ function getTrackTagStaff(username, password) {
 	mainWindow.filterTags = new Array();
 	mainWindow.filterData = new Array();
 	mainWindow.filterFunds = new Array();
+	mainWindow.giftFilterFunds = new Array();
+	mainWindow.giftFilterTypes = new Array();
 	
 	if (kardiaTab != null) {
 		kardiaTab.document.getElementById("tab-main").style.visibility = "visible";
@@ -2098,4 +2202,131 @@ function formatGift(dollars, fraction) {
 		cents = "0" + cents;
 	}
 	return "$" + dollars + "." + cents;
+}
+
+// enable/disable gifts max amount textbox
+function toggleGiftMaxAmount() {
+	kardiaTab.document.getElementById('tab-filter-gifts-max-amount').disabled = kardiaTab.document.getElementById('tab-filter-gifts-no-max-amount').checked;	 
+	reloadGifts();	
+}
+
+// enable/disable gifts min/max date textboxes
+function toggleGiftDateRange() {
+	kardiaTab.document.getElementById('tab-filter-gifts-min-date').disabled = kardiaTab.document.getElementById('tab-filter-gifts-no-min-date').checked;	 
+	kardiaTab.document.getElementById('tab-filter-gifts-max-date').disabled = kardiaTab.document.getElementById('tab-filter-gifts-no-max-date').checked;	 
+	reloadGifts();	
+}
+
+// reload gifts
+function reloadGifts() {
+	// display gifts
+	kardiaTab.document.getElementById("giving-tree-children").innerHTML = "";
+	var filterByAll = (document.getElementById("filter-gifts-by-type").selectedItem.value == "all");
+	Application.console.log(filterByAll);
+	
+	for (var i=0;i<mainWindow.gifts[mainWindow.selected].length;i+=4) {
+		var displayGift = true;
+		if (parseFloat(mainWindow.gifts[mainWindow.selected][i+1].substring(1,mainWindow.gifts[mainWindow.selected][i+1].length)) < parseFloat(kardiaTab.document.getElementById('tab-filter-gifts-min-amount').value)) {
+			displayGift = false;
+		}
+		else if (!kardiaTab.document.getElementById('tab-filter-gifts-no-max-amount').checked && parseFloat(mainWindow.gifts[mainWindow.selected][i+1].substring(1,mainWindow.gifts[mainWindow.selected][i+1].length)) > parseFloat(kardiaTab.document.getElementById('tab-filter-gifts-max-amount').value))
+		{
+			 displayGift = false;
+		}
+
+		var currentDate = mainWindow.gifts[mainWindow.selected][i];
+		var currentDateObject;
+		var minDate;
+		var minDateObject;
+		var maxDate;
+		var maxDateObject;
+
+		if(currentDate != null) {
+			var currentDateObject = new Date(currentDate.substring(currentDate.indexOf('/',currentDate.indexOf('/')+1)+1,currentDate.indexOf('/',currentDate.indexOf('/')+1)+5),currentDate.substring(0,currentDate.indexOf('/'))-1, currentDate.substring(currentDate.indexOf('/')+1,currentDate.indexOf('/',currentDate.indexOf('/')+1)));
+		}
+		if (!kardiaTab.document.getElementById('tab-filter-gifts-no-min-date').checked) {
+			// get min date as a Date object
+			minDateObject = kardiaTab.document.getElementById('tab-filter-gifts-min-date').dateValue;
+		}
+		if (!kardiaTab.document.getElementById('tab-filter-gifts-no-max-date').checked) {
+			// get max date as a Date object
+			maxDateObject = kardiaTab.document.getElementById('tab-filter-gifts-max-date').dateValue;
+		}
+
+		// check dates
+		// only check if no gift boundaries, or if "all" is selected
+		var noAmountSelected = (parseFloat(kardiaTab.document.getElementById('tab-filter-gifts-min-amount').value)*1 == 0 && kardiaTab.document.getElementById('tab-filter-gifts-no-max-amount').checked);
+		var noDateSelected = (kardiaTab.document.getElementById('tab-filter-gifts-no-min-date').checked && kardiaTab.document.getElementById('tab-filter-gifts-no-max-date').checked);
+
+		if (filterByAll || noAmountSelected) {
+			if (currentDateObject != null && ((!kardiaTab.document.getElementById('tab-filter-gifts-no-min-date').checked && currentDateObject < minDateObject) || (!kardiaTab.document.getElementById('tab-filter-gifts-no-max-date').checked && currentDateObject > maxDateObject))) {
+				displayGift = false;
+			}
+		}
+
+		// check fund filters
+		var fundsSelected = false;
+		for (var j=0;j<mainWindow.giftFilterFunds.length;j++) {
+			if (mainWindow.giftFilterFunds[j]) {
+				fundsSelected = true;
+				break;
+			}
+		}
+		if (fundsSelected) {
+			// if "filter by any" and it's false or it's only true because we haven't yet filtered by something else (date, amount)
+			if (!filterByAll && (!displayGift || (noAmountSelected && noDateSelected))) {
+				displayGift = false;
+				for (var j=0;j<mainWindow.giftFilterFunds.length;j++) {
+					if (mainWindow.giftFilterFunds[j] && mainWindow.gifts[mainWindow.selected][i+2] == mainWindow.funds[mainWindow.selected][j]) {
+						displayGift = true;
+						break;
+					}
+				}
+			}
+			// else if "filter by all" and displayGift is true
+			else if (filterByAll && displayGift) {
+				for (var j=0;j<mainWindow.giftFilterFunds.length;j++) {
+					if (mainWindow.giftFilterFunds[j] && mainWindow.gifts[mainWindow.selected][i+2] != mainWindow.funds[mainWindow.selected][j]) {
+						displayGift = false;
+						break;
+					}
+				}
+			}	
+		}
+
+		// check type filters
+		var typeSelected = false;
+		for (var j=0;j<mainWindow.giftFilterTypes.length;j++) {
+			if (mainWindow.giftFilterTypes[j]) {
+				typeSelected = true;
+				break;
+			}
+		}
+		if (typeSelected) {
+			// if "filter by any" and it's false or it's only true because we haven't yet filtered by something else (date, amount, fund)
+			if (!filterByAll && (!displayGift || (noAmountSelected && noDateSelected && !fundsSelected))) {
+				displayGift = false;
+				for (var j=0;j<mainWindow.giftFilterTypes.length;j++) {
+					if (mainWindow.giftFilterTypes[j] && mainWindow.gifts[mainWindow.selected][i+3].indexOf(mainWindow.types[mainWindow.selected][j]) >= 0) {
+						displayGift = true;
+						break;
+					}
+				}
+			}
+			// else if "filter by all" and displayGift is true
+			else if (filterByAll && displayGift) {
+				for (var j=0;j<mainWindow.giftFilterTypes.length;j++) {
+					if (mainWindow.giftFilterTypes[j] && mainWindow.gifts[mainWindow.selected][i+3].indexOf(mainWindow.types[mainWindow.selected][j]) < 0) {
+						displayGift = false;
+						break;
+					}
+				}
+			}	
+		}	
+
+		// do amount, date, or type filters say not to display the gift?
+		if (displayGift) {
+			kardiaTab.document.getElementById("giving-tree-children").innerHTML += '<treeitem><treerow><treecell label="' + mainWindow.gifts[mainWindow.selected][i] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+1] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+2] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+3] + '"/></treerow></treeitem>';
+		}
+	}
 }

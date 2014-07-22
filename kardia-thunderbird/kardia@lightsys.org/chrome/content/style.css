@@ -142,11 +142,16 @@
 /* link you click to go to map */
 #tab-map-link {font-weight:bold;}
 
+/* box for gift filters */
+#tab-funds {margin-top:10px; visibility:hidden; overflow:hidden;}
+
 /* fund that you can click on */
 .tab-fund {-moz-appearance:none; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; border:0px; padding:0px; margin:1px 0 1px 0;}
 
 /* tree of giving results */
 #giving-tree {-moz-appearance:none; border:0px;}
+
+/* grayed out date pickers */
 
 /* section titles */
 .tab-title {font-weight: bold; font-size:18px}
