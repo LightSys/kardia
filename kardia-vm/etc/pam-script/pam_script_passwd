@@ -29,7 +29,9 @@ fi
 
 # Synchronize MySQL password.  We just set it to the default password, and
 # Centrallix will take care of the actual sync for us.
+# work with both user@localhost and user@% (anywhere)
 mysql --user=root -e "SET PASSWORD FOR '$PAM_USER'@'localhost' = PASSWORD('newuserpass');" 2>/dev/null >/dev/null
+mysql --user=root -e "SET PASSWORD FOR '$PAM_USER'@'%' = PASSWORD('newuserpass');" 2>/dev/null >/dev/null
 
 # Report success.
 exit 0
