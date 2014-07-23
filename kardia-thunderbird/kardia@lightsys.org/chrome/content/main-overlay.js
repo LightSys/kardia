@@ -1,8 +1,10 @@
-// TO DO on Monday
-//move the thing that happens on click to both the click and the listener (put in function)
-//duplicates in list with multi-email select
-
-// Stubs to be removed/fixed are marked with comment // FIX STUB
+// TO DO on Wednesday: fix multi-select email thing
+//
+//
+//
+//
+//
+// // Stubs to be removed/fixed are marked with comment // FIX STUB
 //
 
 // selected messages and number of emails selected (for comparing to see if we need to find users and reload Kardia pane)
@@ -184,10 +186,15 @@ window.addEventListener("close", function() {
 	prefs.setCharPref("password","");
 }, false);
 
-//gMessageListeners.push({
-//  onEndHeaders: function () {},
-//  onStartHeaders: function ()
-  window.addEventListener("click", function(){
+gMessageListeners.push({
+	onEndHeaders: function () {},
+	onStartHeaders: function() {findEmails();}
+});
+
+window.addEventListener("click", function() {findEmails();}, false);
+
+// what we do to find email addresses from selected messages
+function findEmails() {
 	// if 0 or > 1 email selected, don't search Kardia
 	if (gFolderDisplay.selectedCount < 1 && numSelected >= 1) {
 		// clear all partner info
@@ -295,7 +302,7 @@ window.addEventListener("close", function() {
 				i--;
 			}
 		}
-		
+
 		// add fake data (really, we should be getting it from Kardia, but we can't until all the CRM stuff is available)
 		// FIX STUB by removing this fake stuff
 		for (var i=0;i<emailAddresses.length;i++) {
@@ -306,14 +313,12 @@ window.addEventListener("close", function() {
 		// save headers
 		selectedMessages = gFolderDisplay.selectedMessages;
 		
-		//window.alert(selectedMessages[0].subject + "\n" + gFolderDisplay.selectedMessages[0].subject + "\n" + (selectedMessages === gFolderDisplay.selectedMessages));
-		
 		// get data from Kardia
 		findUser(0);
 	}	
 	// save number of emails selected so we can see if the number of emails selected has changed later
 	numSelected = gFolderDisplay.selectedCount;	
-}, false);//});
+}		  
 
 // do email header lists match?
 function headersMatch(first, second) {
@@ -508,10 +513,17 @@ function reload(isDefault) {
 			// display tags
 			kardiaTab.document.getElementById("tab-tags").innerHTML = '<label class="tab-title" value="Tags"/>';
 
-			for (var i=0;i<mainWindow.tags[mainWindow.selected].length;i+=3) {
+			for (var i=0;i<mainWindow.tags[mainWindow.selected].length;i+=3) {	
 				var questionMark = (mainWindow.tags[mainWindow.selected][i+2] <= 0.5) ? "?" : "";
 				var filterIndex = mainWindow.tagList.indexOf(mainWindow.tags[mainWindow.selected][i])-1;
-				kardiaTab.document.getElementById("tab-tags").innerHTML += '<vbox onclick="addFilter(\'t\',\'' + filterIndex + '\', true)" class="tab-tag-color-box" tooltiptext="Click to filter by this tag" style="background-color:hsl(46,100%,' + (100-50*mainWindow.tags[mainWindow.selected][i+1]) + '%);"><label value="' + mainWindow.tags[mainWindow.selected][i] + questionMark + '"/></vbox>';
+				// if positive, use green tags
+				if (parseFloat(mainWindow.tags[mainWindow.selected][i+1]) >= 0) {
+					kardiaTab.document.getElementById("tab-tags").innerHTML += '<vbox onclick="addFilter(\'t\',\'' + filterIndex + '\', true)" class="tab-tag-color-box" tooltiptext="Click to filter by this tag" style="background-color:hsl(86,75%,' + (100-60*mainWindow.tags[mainWindow.selected][i+1]) + '%);"><label value="' + mainWindow.tags[mainWindow.selected][i] + questionMark + '"/></vbox>';
+				}
+				else {
+					// red tags
+					kardiaTab.document.getElementById("tab-tags").innerHTML += '<vbox onclick="addFilter(\'t\',\'' + filterIndex + '\', true)" class="tab-tag-color-box" tooltiptext="Click to filter by this tag" style="background-color:hsl(8,100%,' + (100-40*(-1*mainWindow.tags[mainWindow.selected][i+1])) + '%);"><label value="' + mainWindow.tags[mainWindow.selected][i] + questionMark + '"/></vbox>';
+				}
 			}
 			kardiaTab.document.getElementById("tab-tags").innerHTML += '<hbox><spacer flex="1"/><button class="new-button" label="New Tag..." oncommand="newTag()" tooltiptext="Add tag to this partner"/></hbox>';
 			
@@ -538,30 +550,30 @@ function reload(isDefault) {
 				kardiaTab.document.getElementById("tab-no-giving-history").style.display = "none";
 				kardiaTab.document.getElementById("giving-tree").style.visibility = "visible";
 				kardiaTab.document.getElementById("tab-funds").style.visibility = "visible";
-			}
 			
-			// display gifts
-			kardiaTab.document.getElementById("giving-tree-children").innerHTML = "";
-			for (var i=0;i<mainWindow.gifts[mainWindow.selected].length;i+=4) {
-				kardiaTab.document.getElementById("giving-tree-children").innerHTML += '<treeitem><treerow><treecell label="' + mainWindow.gifts[mainWindow.selected][i] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+1] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+2] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+3] + '"/></treerow></treeitem>';
-			}
-			
-			// display fund filters for gifts
-			kardiaTab.document.getElementById("tab-filter-gifts-fund").innerHTML = '<label value="Fund: "/>';
-			for (var i=0;i<mainWindow.funds[mainWindow.selected].length;i++) {
-				kardiaTab.document.getElementById("tab-filter-gifts-fund").innerHTML += '<checkbox id="filter-gifts-by-f-' + i + '" tooltiptext="Click to filter gifts by this fund" class="tab-filter-checkbox" oncommand="addGiftFilter(\'f\',\'' + i + '\');" label="' + mainWindow.funds[mainWindow.selected][i] + '"/>';
-			}
-
-			// display type filters for gifts
-			kardiaTab.document.getElementById("tab-filter-gifts-type").innerHTML = '<label value="Type: "/>';
-			for (var i=0;i<mainWindow.types[mainWindow.selected].length;i++) {
-				kardiaTab.document.getElementById("tab-filter-gifts-type").innerHTML += '<checkbox id="filter-gifts-by-t-' + i + '" tooltiptext="Click to filter gifts by this type" class="tab-filter-checkbox" oncommand="addGiftFilter(\'t\',\'' + i + '\');" label="' + mainWindow.types[mainWindow.selected][i] + '"/>';
-			}
-			
-			// display funds
-			kardiaTab.document.getElementById("tab-funds-filter-partners").innerHTML = '<label class="bold-text" value="Filter partners by fund"/>';
-			for (var i=0;i<mainWindow.funds[mainWindow.selected].length;i++) {
-				kardiaTab.document.getElementById("tab-funds-filter-partners").innerHTML += '<vbox tooltiptext="Click to filter partners by this fund" class="tab-fund" onclick="addFilter(\'f\',\'' + mainWindow.funds[mainWindow.selected][i] + '\');"><label>' + mainWindow.funds[mainWindow.selected][i] + '</label></vbox>';
+				// display gifts
+				kardiaTab.document.getElementById("giving-tree-children").innerHTML = "";
+				for (var i=0;i<mainWindow.gifts[mainWindow.selected].length;i+=4) {
+					kardiaTab.document.getElementById("giving-tree-children").innerHTML += '<treeitem><treerow><treecell label="' + mainWindow.gifts[mainWindow.selected][i] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+1] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+2] + '"/><treecell label="' + mainWindow.gifts[mainWindow.selected][i+3] + '"/></treerow></treeitem>';
+				}
+				
+				// display fund filters for gifts
+				kardiaTab.document.getElementById("tab-filter-gifts-fund").innerHTML = '<label value="Fund: "/>';
+				for (var i=0;i<mainWindow.funds[mainWindow.selected].length;i++) {
+					kardiaTab.document.getElementById("tab-filter-gifts-fund").innerHTML += '<checkbox id="filter-gifts-by-f-' + i + '" tooltiptext="Click to filter gifts by this fund" class="tab-filter-checkbox" oncommand="addGiftFilter(\'f\',\'' + i + '\');" label="' + mainWindow.funds[mainWindow.selected][i] + '"/>';
+				}
+	
+				// display type filters for gifts
+				kardiaTab.document.getElementById("tab-filter-gifts-type").innerHTML = '<label value="Type: "/>';
+				for (var i=0;i<mainWindow.types[mainWindow.selected].length;i++) {
+					kardiaTab.document.getElementById("tab-filter-gifts-type").innerHTML += '<checkbox id="filter-gifts-by-t-' + i + '" tooltiptext="Click to filter gifts by this type" class="tab-filter-checkbox" oncommand="addGiftFilter(\'t\',\'' + i + '\');" label="' + mainWindow.types[mainWindow.selected][i] + '"/>';
+				}
+				
+				// display funds
+				kardiaTab.document.getElementById("tab-funds-filter-partners").innerHTML = '<label class="bold-text" value="Filter partners by fund"/>';
+				for (var i=0;i<mainWindow.funds[mainWindow.selected].length;i++) {
+					kardiaTab.document.getElementById("tab-funds-filter-partners").innerHTML += '<vbox tooltiptext="Click to filter partners by this fund" class="tab-fund" onclick="addFilter(\'f\',\'' + mainWindow.funds[mainWindow.selected][i] + '\');"><label>' + mainWindow.funds[mainWindow.selected][i] + '</label></vbox>';
+				}
 			}
 			
 			// display dropdown list of person's emails
@@ -862,7 +874,7 @@ function printPartner(whichPartner) {
 }
 
 // find partner in Kardia based on the email address found at position "index" in the list of email addresses
-function findUser(index) {		
+function findUser(index) {	
 	// don't try to access Kardia if the Thunderbird user's Kardia login is invalid
 	if (loginValid) {		
 		// remove dashes from email address so Kardia will take it
@@ -883,8 +895,11 @@ function findUser(index) {
 				var keys = [];
 				for(var k in emailResp) keys.push(k);
 							
+				// how many extra partners did we add from this email address?
+				var numExtra = 0;
+				
 				// if the first partner found isn't already in the list, add them to the list
-				if (arrayContains(ids, emailResp[keys[1]]['partner_id'], 1) < 0) {
+				if (ids.indexOf(emailResp[keys[1]]['partner_id']) < 0) {
 					ids[index] = emailResp[keys[1]]['partner_id'];
 				}
 				else {
@@ -907,10 +922,8 @@ function findUser(index) {
 					gifts.splice(index,1);
 					funds.splice(index,1);
 					types.splice(index,1);
+					numExtra--;
 				}
-				
-				// how many extra partners did we add from this email address?
-				var numExtra = 0;
 				
 				// add the other partners we found with this email
 				for (var i=2;i<keys.length;i++) {
@@ -1103,7 +1116,6 @@ function getOtherInfo(index, isDefault) {
 							}
 							// store temporary array to permanent array
 							mainWindow.documents[index] = documentArray;
-							
 							// get notes/prayer information
 							doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/ContactHistory?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (noteResp) {
 								// get all the keys from the JSON file
@@ -1213,6 +1225,7 @@ function getOtherInfo(index, isDefault) {
 
 															// save gifts
 															var tempArray = new Array();
+															mainWindow.types[index] = new Array();
 															for (var i=0; i<keys.length; i++) {
 																if (keys[i] != "@id") {
 																	if (giftResp[keys[i]]['gift_date'] != null) {
@@ -1272,6 +1285,11 @@ function getOtherInfo(index, isDefault) {
 														}, false, "", "");
 													}
 													else {
+														// not a donor, so add blank info
+														mainWindow.gifts[index] = new Array();
+														mainWindow.types[index] = new Array();
+														mainWindow.funds[index] = new Array();
+
 														// if there are more partners left to get info about, go to the next one
 														if (index+1 < mainWindow.emailAddresses.length) {
 															getOtherInfo(index+1, true);
@@ -2222,7 +2240,6 @@ function reloadGifts() {
 	// display gifts
 	kardiaTab.document.getElementById("giving-tree-children").innerHTML = "";
 	var filterByAll = (document.getElementById("filter-gifts-by-type").selectedItem.value == "all");
-	Application.console.log(filterByAll);
 	
 	for (var i=0;i<mainWindow.gifts[mainWindow.selected].length;i+=4) {
 		var displayGift = true;

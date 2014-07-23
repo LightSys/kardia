@@ -166,7 +166,7 @@
 					<label class="tab-title" value="Giving"/>
 					<label id="tab-no-giving-history" value="no giving history" style="font-style:italic; display:none;"/>
 					
-					<tree flex="2" id="giving-tree" style="visibility:hidden">
+					<tree id="giving-tree" style="visibility:hidden">
 						<treecols>
 							<treecol id="tab-giving-date" label="Date" sort="?tab-giving-date" width="60px"/>
 							<splitter class="tab-splitter"/>
@@ -182,7 +182,7 @@
 					
 					<splitter class="tab-splitter" style="border-bottom:1px solid rgba(80,80,80,0.5);"/>
 
-					<vbox id="tab-funds">
+					<vbox id="tab-funds" flex="1">
 						<hbox id="tab-filter-gifts-header" class="top-bottom-margin">
 							<label value="Filter gifts by..." class="bold-text"/>
 							<radiogroup id="filter-gifts-by-type" orient="horizontal" oncommand="reloadGifts()">
