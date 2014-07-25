@@ -1,0 +1,11 @@
+
+module user_pw2 1.0;
+
+require {
+	type passwd_t;
+	type user_home_t;
+	class dir search;
+}
+
+#============= passwd_t ==============
+allow passwd_t user_home_t:dir search;

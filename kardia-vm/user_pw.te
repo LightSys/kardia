@@ -1,0 +1,24 @@
+
+module user_pw 1.0;
+
+require {
+	type chkpwd_t;
+	type passwd_t;
+	type user_devpts_t;
+	type samba_share_t;
+	type user_home_t;
+	class process { siginh noatsecure rlimitinh };
+	class lnk_file read;
+	class dir getattr;
+	class file { read write open };
+	class chr_file { read write };
+}
+
+#============= chkpwd_t ==============
+allow chkpwd_t user_devpts_t:chr_file { read write };
+
+#============= passwd_t ==============
+allow passwd_t chkpwd_t:process { siginh rlimitinh noatsecure };
+allow passwd_t samba_share_t:lnk_file read;
+allow passwd_t user_home_t:dir getattr;
+allow passwd_t user_home_t:file { read write open };
