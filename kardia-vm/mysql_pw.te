@@ -1,0 +1,28 @@
+
+module mysql_pw 1.0;
+
+require {
+	type mysqld_db_t;
+	type passwd_t;
+	type mysqld_etc_t;
+	type mysqld_var_run_t;
+	type mysqld_t;
+	class sock_file write;
+	class unix_stream_socket connectto;
+	class file { read getattr open };
+	class dir search;
+}
+
+#============= passwd_t ==============
+
+#!!!! This avc is allowed in the current policy
+allow passwd_t mysqld_db_t:dir search;
+
+#!!!! This avc is allowed in the current policy
+allow passwd_t mysqld_etc_t:file { read getattr open };
+
+#!!!! This avc is allowed in the current policy
+allow passwd_t mysqld_t:unix_stream_socket connectto;
+
+#!!!! This avc is allowed in the current policy
+allow passwd_t mysqld_var_run_t:sock_file write;
