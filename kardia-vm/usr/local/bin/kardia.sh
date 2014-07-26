@@ -116,6 +116,18 @@ if Root; then
     * Root password is in the PDF documentation.
     * Then run "kardia.sh" to get started.
     " > /etc/issue.kardia-init
+
+    psp=/usr/local/src/kardia-git/kardia-vm/etc/pam-script/pam_script_passwd
+    if [ -f "$psp" ]; then
+	psphome=/etc/pam-script/pam_script_passwd
+	if [ ! -f "$psphome" ]; then
+	    cp "$psp" "$psphome"
+	fi
+	psphome2=/usr/local/etc/pam-script.d/pam_script_passwd
+	if [ ! -f "$psphome2" ]; then
+	    ln -s "$psphome" "$psphome"
+	fi
+    fi
 fi
 
 # Init stuff

@@ -145,7 +145,7 @@ function cleanFiles
     cxinc="/usr/local/include/cxlib/"
     cxetc="/etc/init.d/centrallix"
     kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess"
-    gitfiles="/usr/local/src/cx_git /usr/local/kardia_git"
+    gitfiles="/usr/local/src/cx-git /usr/local/src/kardia-git"
 	echo "Cleaning up Filesystem"
 	echo "  Cleaning up history"
 	echo "kardia.sh" > /root/.bash_history
@@ -161,13 +161,14 @@ function cleanFiles
 	echo "  Cleaning up installed Centrallix files"
 	chkconfig centrallix off 2>/dev/null
 	for file in $cxfiles $cxlibx $cxinc $cxetc $kardiash $gitfiles; do
-	    if [ -e "$file" -o -d "$file" ]; then
+	    if [ -f "$file" -o -d "$file" ]; then
 		echo "    $file"
 		rm -rf "$file"
 	    fi
 	done
 	echo "Uninstalling old kernel versions"
 	rpm -qa kernel* | grep -v `uname -r` | while read line; do 
+	    echo "Removing package: $line"
 	    rpm -e $line; 
 	done
 
@@ -181,12 +182,15 @@ function cleanUsers
 	#remove users
 	echo "Removing any Kardia Users"
 	for USERNAME in $(grep -- '- Kardia:' /etc/passwd | sed 's/^\([^:]*\):[^:]*:\([^:]*\):.*/\1/'); do
+		killall -u $USERNAME
 		echo "  removing Kardia user $USERNAME"
 		userdel -r $USERNAME
 		echo "  removing mysql user $USERNAME"
 		mysql -e "DROP USER $USERNAME@'localhost';" 2> /dev/null
 		mysql -e "DROP USER $USERNAME@'%';" 2> /dev/null
 	done
+	echo "Dropping Kardia_DB"
+	mysql -e "DROP DATABASE Kardia_DB;" 2>/dev/null
 }
 
 ###################

@@ -22,16 +22,18 @@ PATH="$PATH:/usr/local/bin:/usr/local/sbin"
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 export LD_LIBRARY_PATH
 
-# Synchronize Centrallix password, if any.
-if [ -f "/home/$PAM_USER/cxinst/etc/centrallix/cxpasswd" ]; then
-    builtin echo -n "$PAM_AUTHTOK" | cxpasswd -f "/home/$PAM_USER/cxinst/etc/centrallix/cxpasswd" -u "$PAM_USER" -P
-fi
+if [ "$PAM_USER" != "root" ]; then
+    # Synchronize Centrallix password, if any.
+    if [ -f "/home/$PAM_USER/cxinst/etc/centrallix/cxpasswd" ]; then
+	builtin echo -n "$PAM_AUTHTOK" | cxpasswd -f "/home/$PAM_USER/cxinst/etc/centrallix/cxpasswd" -u "$PAM_USER" -P
+    fi
 
-# Synchronize MySQL password.  We just set it to the default password, and
-# Centrallix will take care of the actual sync for us.
-# work with both user@localhost and user@% (anywhere)
-mysql --user=root -e "SET PASSWORD FOR '$PAM_USER'@'localhost' = PASSWORD('newuserpass');" 2>/dev/null >/dev/null
-mysql --user=root -e "SET PASSWORD FOR '$PAM_USER'@'%' = PASSWORD('newuserpass');" 2>/dev/null >/dev/null
+    # Synchronize MySQL password.  We just set it to the default password, and
+    # Centrallix will take care of the actual sync for us.
+    # work with both user@localhost and user@% (anywhere)
+    mysql --user=root -e "SET PASSWORD FOR '$PAM_USER'@'localhost' = PASSWORD('newuserpass');" 2>/dev/null >/dev/null
+    mysql --user=root -e "SET PASSWORD FOR '$PAM_USER'@'%' = PASSWORD('newuserpass');" 2>/dev/null >/dev/null
+fi
 
 # Report success.
 exit 0
