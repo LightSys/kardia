@@ -56,6 +56,9 @@ var tagList = new Array();
 // can the person log in to Kardia?  if not, don't try
 var loginValid = false;
 
+// authentication key for PATCH requests
+var akey = "";
+
 // constant server address (in case it needs to be changed); it is currently connected to the VM
 // FIX STUB
 const server = "http://192.168.42.128:800/";
@@ -134,7 +137,7 @@ window.addEventListener("load", function() {
 	}
 	
 	// get username/password
-    var loginInfo = getLogin(false, function(loginInfo2) {
+  	var loginInfo = getLogin(false, false, function(loginInfo2) {
 
 		// store username/password in preferences (this is only important if getLogin() returned something valid)
 		var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
@@ -188,10 +191,10 @@ window.addEventListener("close", function() {
 
 gMessageListeners.push({
 	onEndHeaders: function () {},
-	onStartHeaders: function() {findEmails();}
-});
+	onStartHeaders: function() {if (loginValid) {findEmails();}}
+	});
 
-window.addEventListener("click", function() {findEmails();}, false);
+window.addEventListener("click", function() {if (loginValid) {findEmails();}}, false);
 
 // what we do to find email addresses from selected messages
 function findEmails() {
@@ -257,7 +260,7 @@ function findEmails() {
 			var addressArray = allAddresses.split(", ");
 			addressArray.sort();
 		}
-				
+
 		// save email addresses and initialize other information about partner
 		emailAddresses = addressArray;
 		names = new Array(emailAddresses.length);
@@ -302,6 +305,8 @@ function findEmails() {
 				i--;
 			}
 		}
+		// remove all Kardia buttons in the email message
+		clearKardiaButton();
 
 		// add fake data (really, we should be getting it from Kardia, but we can't until all the CRM stuff is available)
 		// FIX STUB by removing this fake stuff
@@ -543,8 +548,8 @@ function reload(isDefault) {
 			if (mainWindow.gifts[mainWindow.selected].length <= 0) {
 				// show that there is no giving history
 				kardiaTab.document.getElementById("tab-no-giving-history").style.display = "inline";
-				kardiaTab.document.getElementById("giving-tree").style.visibility = "hidden";
-				kardiaTab.document.getElementById("tab-funds").style.visibility = "hidden";
+				kardiaTab.document.getElementById("giving-tree").style.visibility = "collapse";
+				kardiaTab.document.getElementById("tab-funds").style.visibility = "collapse";
 			}
 			else {
 				kardiaTab.document.getElementById("tab-no-giving-history").style.display = "none";
@@ -951,11 +956,15 @@ function findUser(index) {
 					}
 				}
 				
+				
 				// if we aren't at the end of the list of email addresses, find partners for the next address
 				if (index+1+numExtra < emailAddresses.length) {
 					findUser(index+1+numExtra);
 				}
 				else {
+					// add little Kardia icon in email
+					addKardiaButton();
+				
 					// start getting the other information about all the partners we found
 					getOtherInfo(0, true);
 				}
@@ -988,6 +997,9 @@ function findUser(index) {
 				else {
 					// start getting the other information about all the partners we found
 					if (emailAddresses.length > 0) {
+						// add little Kardia icon in email
+						addKardiaButton();
+						
 						getOtherInfo(0, true);
 					}
 					else {
@@ -1759,7 +1771,7 @@ function arrayContains(array, value, numAllowed) {
 }
 
 // get Thunderbird user's Kardia login information
-function getLogin(alreadyFailed, doAfter) {
+function getLogin(prevSaved, prevFail, doAfter) {
 	var username = "";
 	var password = "";
 	
@@ -1793,8 +1805,9 @@ function getLogin(alreadyFailed, doAfter) {
 						return [username, password];
 					}
 					else {
-						// we didn't get success status, so close Kardia pane
-						toggleKardiaVisibility(2);
+						// we didn't get success status, so ask for login again
+						myLoginManager.removeLogin(logins[0]);
+						getLogin(true, true, doAfter);
 					}
 				}
 			};
@@ -1811,7 +1824,7 @@ function getLogin(alreadyFailed, doAfter) {
 	// ask for login info if it's not stored in Login Manager
 	if (username == "" && password == "") {
 		// open the login dialog
-		var returnValues = {username:"", password:"", cancel:false, showFailMessage:alreadyFailed};
+		var returnValues = {username:"", password:"", cancel:false, prevSaved:prevSaved, prevFail:prevFail, save:false};
 		openDialog("chrome://kardia/content/login-dialog.xul", "Login to Kardia", "resizable=yes,chrome,modal,centerscreen=yes", returnValues);
 		
 		// get the username and password from the dialog's return values
@@ -1835,12 +1848,35 @@ function getLogin(alreadyFailed, doAfter) {
 							kardiaTab.document.getElementById("tab-main").style.visibility = "visible";
 							kardiaTab.document.getElementById("tab-cant-connect").style.display="none";
 						}
+
+						if (returnValues.save) {
+							// save username/password
+							var passwordManager = Components.classes["@mozilla.org/login-manager;1"].getService(
+								Components.interfaces.nsILoginManager
+							);
+							var nsLoginInfo = new Components.Constructor(
+								"@mozilla.org/login-manager/loginInfo;1",
+								Components.interfaces.nsILoginInfo,
+								"init"
+							);
+							var formLoginInfo = new nsLoginInfo(
+								"chrome://kardia",
+								null,
+								"Kardia Login",
+								username,
+								password,
+								"",
+								""
+							);
+							passwordManager.addLogin(formLoginInfo);
+						}
+						
 						doAfter([username, password]);
 						return [username, password];
 					}
 					else {
 						// we didn't get success status, so ask the user to log in again (they can click cancel to stop this loop)
-						getLogin(true, doAfter);
+						getLogin(false, true, doAfter);
 					}
 				}
 			};
@@ -1855,7 +1891,7 @@ function getLogin(alreadyFailed, doAfter) {
 		else if (!returnValues.cancel && username.trim() == '') {
 			// blank username, so no need to even try logging in
 			//ask the user to log in again (they can click cancel to stop this loop)
-			getLogin(true, doAfter);
+			getLogin(false, true, doAfter);
 		}
 		else {
 			// the user cancelled the dialog box, so their login isn't valid and we should close the Kardia pane
@@ -2347,3 +2383,142 @@ function reloadGifts() {
 		}
 	}
 }
+
+window.addEventListener("click", function() {if (loginValid) {patchTest(false, "", "");}}, false);
+
+// patch test function TODO FIX STUB
+function patchTest(authenticate, username, password) {
+	// create HTTP request
+	var httpRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+	var httpUrl = server + "?cx__mode=appinit&cx__appname=TBext";
+	var httpResp;
+	
+	httpRequest.onreadystatechange  = function(aEvent) {
+		// if the request went through and we got success status
+		if(httpRequest.readyState == 4 && httpRequest.status == 200) {
+			// parse the JSON returned from the request
+			var httpResp = JSON.parse(httpRequest.responseText);
+			akey = httpResp['akey'];
+			
+			// add keep-alive ping
+			window.setInterval(function() {
+				// ping server
+				var pingRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+				var pingUrl = server + "INTERNAL/ping?cx__akey=" + akey;
+			
+				pingRequest.onreadystatechange = function(aEvent) {
+					// if the request went through and we got success status
+					if(pingRequest.readyState == 4 && pingRequest.status == 200) {
+						// check status
+						var resp = pingRequest.responseText;
+						if (resp.substring(resp.indexOf("TARGET")+7,resp.length-7) == "ERR") {
+							// key expired, get a new one
+							var newHttpRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+							var newHttpUrl = server + "?cx__mode=appinit&cx__appname=TBext";
+							var newHttpResp;	
+							newHttpRequest.onreadystatechange  = function(aEvent) {
+								// if the request went through and we got success status
+								if(newHttpRequest.readyState == 4 && newHttpRequest.status == 200) {
+									// parse the JSON returned from the request
+									var newHttpResp = JSON.parse(newHttpRequest.responseText);
+									akey = newHttpResp['akey'];
+								}
+							}
+							newHttpRequest.onerror = function(aEvent) {};
+							newHttpRequest.open("GET", newHttpUrl, true);
+							newHttpRequest.send();						
+						}
+					}
+					else if (pingRequest.readyState == 4 && pingRequest.status != 200) {
+						// failed
+					}
+				};
+
+				// do nothing if the http request errors
+				pingRequest.onerror = function(aEvent) {};
+				
+				// send http request
+				pingRequest.open("GET", pingUrl, true);
+				pingRequest.send();
+				
+			},httpResp['watchdogtimer']*500);
+
+			// actually send info
+			var httpRequest2 = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+			var httpUrl2 = server + "apps/kardia/api/partner/Partners/100003?cx__mode=rest&cx__res_format=attrs&cx__akey=" + akey;
+			
+			httpRequest2.onreadystatechange  = function(aEvent) {
+				// if the request went through and we got success status
+				if(httpRequest2.readyState == 4 && httpRequest2.status == 200) {
+					// done
+				}
+				else if (httpRequest2.readyState == 4 && httpRequest2.status != 200) {
+					// failed
+				}
+			};
+			// do nothing if the http request errors
+			httpRequest2.onerror = function(aEvent) {};
+			
+			// send http request
+			httpRequest2.open("PATCH", httpUrl2, true);
+			httpRequest2.setRequestHeader("Content-type","application/json");
+			httpRequest2.send('{"surname":"Beeley"}');
+		}
+		else if (httpRequest2.readyState == 4 && httpRequest2.status != 200) {
+			// failed
+		}
+	};
+	// do nothing if the http request errors
+	httpRequest.onerror = function(aEvent) {};
+	
+	// send http request; send username and password if our parameter says we should
+	if (authenticate) {
+		httpRequest.open("GET", httpUrl, true, username, password);
+	}
+	else {
+		// don't
+		httpRequest.open("GET", httpUrl, true);
+	}
+	httpRequest.send(null);
+
+}
+
+// find email header components and insert little Kardia logo buttons to take them to Kardia pane
+function addKardiaButton(){
+	var headersArray = [gExpandedHeaderView.from.textNode.childNodes, gExpandedHeaderView.to.textNode.childNodes, gExpandedHeaderView.cc.textNode.childNodes, gExpandedHeaderView.bcc.textNode.childNodes];
+	for (var j=0;j<headersArray.length;j++) {
+		var nodeArray = headersArray[j];
+	
+		for (var i=0;i<nodeArray.length;i++) {
+			// check if the email address is in the list
+			var email = nodeArray[i].getAttribute('emailAddress').toLowerCase();
+			if (email != null && email != "" && mainWindow.emailAddresses !== null && mainWindow.emailAddresses.length > 0 && mainWindow.emailAddresses.indexOf(email) >= 0) {
+				// make it visible
+				nodeArray[i].setAttribute("kardiaShowing","");
+						  
+				// set onclick
+				nodeArray[i].setAttribute("kardiaOnclick","mainWindow.selected = mainWindow.emailAddresses.indexOf('" + email + "'); reload(false);");
+			}
+			else {
+				// hide it
+				nodeArray[i].setAttribute("kardiaShowing","display:none");
+			}
+		}
+	}
+}
+
+// remove all the Kardia logo buttons
+function clearKardiaButton(){
+	var headersArray = [gExpandedHeaderView.from.textNode.childNodes, gExpandedHeaderView.to.textNode.childNodes, gExpandedHeaderView.cc.textNode.childNodes, gExpandedHeaderView.bcc.textNode.childNodes];
+	for (var j=0;j<headersArray.length;j++) {
+		var nodeArray = headersArray[j];
+	
+		for (var i=0;i<nodeArray.length;i++) {
+			// hide it
+				nodeArray[i].setAttribute("kardiaShowing","display:none");
+		}
+	}
+}
+	
+
+

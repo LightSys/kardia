@@ -151,7 +151,7 @@
 /* tree of giving results */
 #giving-tree {-moz-appearance:none; border:0px; height:100px;}
 
-/* grayed out date pickers */
-
 /* section titles */
 .tab-title {font-weight: bold; font-size:18px}
+
+mail-emailaddress {-moz-binding:url('chrome://kardia/content/email-binding.xml#kardia-mail-emailaddress')}
