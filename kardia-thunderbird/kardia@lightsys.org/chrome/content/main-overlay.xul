@@ -18,7 +18,7 @@
 			<sidebarheader id="sidebarheader-allow-close" align="center">
 				<label id="titleLabel" value="Kardia Relationships"/>
 				<spacer flex="1"/>
-				<toolbarbutton id="closeSidebar" oncommand="toggleKardiaVisibility(1)">
+				<toolbarbutton id="closeSidebar" oncommand="toggleKardiaVisibility(1)" tooltiptext="Close Kardia pane">
 					<vbox>
 						<image class="close-kardia-pane-x"/>
 						<spacer flex="1"/>
@@ -36,7 +36,7 @@
 				<spacer flex="1"/>
 				
 				<!-- toolbarbutton allows selection of different partners-->
-				<toolbarbutton id="choose-partner-dropdown-button" type="menu" style="display:none;">
+				<toolbarbutton id="choose-partner-dropdown-button" type="menu" style="display:none;" tooltiptext="Choose partner to view">
 					<panel id="choose-partner-dropdown-menu" class="partner-button">
 						<!--<button id="partner-button0" class="partner-button" label="Sam Froese, ID# 100999" oncommand="choosePartner('Sam Froese')"/>
 						<button id="partner-button1" class="partner-button" label="Other Person, ID# 999998" oncommand="choosePartner('Other Person')"/>
@@ -76,7 +76,7 @@
 							</vbox> -->
 							<hbox>
 								<spacer flex="1"/>
-								<button class="new-button" label="New Track..." oncommand="newTrack()"/>
+								<button class="new-button" label="New Track..." oncommand="newTrack()" tooltiptext="Add engagement track to this partner"/>
 							</hbox>
 						</vbox>
 					</hbox>
@@ -123,7 +123,7 @@
 							</hbox> -->
 							<hbox>
 								<spacer flex="1"/>
-								<button class="new-button" label="New Note/Prayer..." oncommand="newNote()"/>
+								<button class="new-button" label="New Note/Prayer..." oncommand="newNote()" tooltiptext="Create new note/prayer for this partner"/>
 							</hbox>
 						</vbox>
 					</hbox>

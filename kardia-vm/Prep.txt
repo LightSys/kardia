@@ -1,3 +1,27 @@
+Release Notes for the 1.0 Image:
+    The VM is Centos 7
+    Created selinux policies for pam-script
+      You can add them by doing the following from the kardia_vm dir:
+ 	for a in *.te; do
+	 file=${a/.te}
+	 checkmodule -M -m -o $file.mod file.te
+	 semodule_package -o $file.pp file.mod
+	 semodule -i $file.pp
+	done
+    smp_pass did not exist for Centos 7 yet.
+    modified kardia.sh to use "net addr" instead of ifconfig
+    modified kardia.sh to use firewalld instead of lokkit
+    modified kardia.sh to use systemd instead of init
+    modified kardia.sh to use NetworkManager
+    used chrony so it handles VM time better
+    Centos 7 uses mariadb instead of mysql.  Made changes to that end
+    rolled into Centrallix a few changes for Centos 7
+    some nicer kardia.sh options
+	see the info Centrallix is using
+	fail wizard if network is broken
+	allow access to mysql from outside the VM
+    made the initkardia.sh script more functional
+
 Release Notes for the Beta 4 Image:
     We upgraded the base VM Image to the latest Centos at the time (6.4)
     There are many references to the Centos and VM versions
