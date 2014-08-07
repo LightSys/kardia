@@ -6,7 +6,7 @@ api_fundmanager "system/querytree"
 	sql = " select
 		    manager_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 		    manager_id = :cs:p_staff_partner_key,
-			manager_login = (select :p_kardia_login from /apps/kardia/data/Kardia_DB/p_staff/rows/ s where :s:p_partner_key = :cs:p_staff_partner_key),
+			manager_login = :s:p_kardia_login,
 		    fund_cnt = count(1)
 		from
 		    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
