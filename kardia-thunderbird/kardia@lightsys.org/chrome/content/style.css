@@ -61,12 +61,16 @@
 .highlighted {-moz-appearance:none; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#fff4a3; border:0px; padding:0px; margin:1px 0 1px 0;}
 
 /* images */
+.edit-image {width:12px; list-style-image: url("chrome://kardia/content/images/edit-image.png");}
+.edit-image:hover {width:12px; list-style-image: url("chrome://kardia/content/images/edit-image-hover.png"); cursor:pointer;}
 .note-image {width:15px; list-style-image: url("chrome://kardia/content/images/note-image.png");}
 .email-image {width:15px; list-style-image: url("chrome://kardia/content/images/email-image.png");}
 .team-image {width:15px; list-style-image: url("chrome://kardia/content/images/team-image.png");}
 .individual-image {width:15px; list-style-image: url("chrome://kardia/content/images/individual-image.png");}
 .document-image {width:15px; list-style-image: url("chrome://kardia/content/images/document-image.png");}
 .kardia-icon {width:16px; list-style-image: url("chrome://kardia/content/images/kardia-icon.png");}
+.kardia-email-icon {width:16px; list-style-image: url("chrome://kardia/content/images/kardia-icon.png");}
+.kardia-email-icon:hover {width:16px; list-style-image: url("chrome://kardia/content/images/kardia-icon-hover.png"); cursor:pointer;}
 .show-kardia-pane-arrow {width:10px; list-style-image: url("chrome://kardia/content/images/show-kardia-arrow.png");}
 .hide-kardia-pane-arrow {width:10px; list-style-image: url("chrome://kardia/content/images/hide-kardia-arrow.png");}
 .close-kardia-pane-x {width:8px; list-style-image: url("chrome://kardia/content/images/close-kardia-x.png");}
@@ -112,6 +116,10 @@
 /* button that is just an x */
 .tab-data-x-button {-moz-appearance:none; padding:0px; border:0px; background-color:none; width:16px; background-image:none;}
 
+/* box that turns light gray when you hover over it */
+.hover-box {margin-right:5px; border-bottom:1px solid rgba(200,200,200,0.2);}
+.hover-box:hover {background-color:#fafafa}
+
 /* individual person in Collaborating With panel */
 .tab-collaborator {border-radius:3px; background-color:#ffffff; margin-bottom:2px; padding:3px;}
 
@@ -154,4 +162,5 @@
 /* section titles */
 .tab-title {font-weight: bold; font-size:18px}
 
+/* binding for Kardia buttons */
 mail-emailaddress {-moz-binding:url('chrome://kardia/content/email-binding.xml#kardia-mail-emailaddress')}

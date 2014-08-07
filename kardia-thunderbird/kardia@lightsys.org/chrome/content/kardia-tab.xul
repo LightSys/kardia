@@ -5,7 +5,7 @@
 <window id="kardia-tab" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="Kardia" xmlns:html="http://www.w3.org/1999/xhtml">
 
 	<!-- favicon -->
-	<html:link rel="icon" href="chrome://kardia/content/images/kardia-icon.png"/>
+	<html:link rel="icon" href="chrome://kardia/content/images/kardia-icon-square.png"/>
 
 	<!-- JavaScript file -->
 	<script type="application/javascript" src="chrome://kardia/content/main-overlay.js"/>
@@ -64,21 +64,27 @@
 				<hbox class="top-bottom-margin">
 					<vbox>
 						<spacer flex="1"/>
-						<label value='Only filter using tags with at least'/>
+						<label value='Only filter using tags with ' style="margin-right:0px;padding-right:0px;"/>
 						<spacer flex="1"/>
 					</vbox>
-					<textbox type='number' min='0' max='100' value='0' increment='5' width='35px' oncommand="reloadFilters(false)" id="filter-by-magnitude"/>
+					<textbox type='number' min='-100' max='100' value='-100' increment='5' width='35px' onchange="reloadFilters(false)" id="filter-by-magnitude-min"/>
 					<vbox>
 						<spacer flex="1"/>
-						<label value='% interest and'/>
+						<label value='to' style="margin:0px;padding:0px;"/>
 						<spacer flex="1"/>
-					</vbox>
-					<textbox type='number' min='0' max='100' value='0' increment='5' width='35px' oncommand="reloadFilters()" id='filter-by-certainty'/>
+			 		</vbox>
+					<textbox type='number' min='-100' max='100' value='100' increment='5' width='35px' onchange="reloadFilters(false)" id="filter-by-magnitude-max"/>
 					<vbox>
 						<spacer flex="1"/>
-						<label value='% certainty'/>
+						<label value='% interest and at least' style="margin:0 2px 0 0;padding:0px;"/>
 						<spacer flex="1"/>
 					</vbox>
+					<textbox type='number' min='0' max='100' value='0' increment='5' width='35px' onchange="reloadFilters()" id='filter-by-certainty'/>
+					<vbox>
+						<spacer flex="1"/>
+						<label value='% certainty' style="margin:0px;padding:0px;"/>
+						<spacer flex="1"/>
+			 		</vbox>
 				</hbox>
 				<hbox class="top-bottom-margin" id="filter-by-data">	
 					<label value="Data items:"/>

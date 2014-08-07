@@ -17,7 +17,14 @@
 
     <!-- vbox holds labels and text boxes -->
 	<vbox>
-		<label value="Note/Prayer Title:"/>
+		<label value="Select Type:"/>
+		<!-- menulist has options of note types to select -->
+		<menulist id="outer-select-note-type">
+			<menupopup id="select-note-type">
+			</menupopup>
+		</menulist>
+  
+ 		<label value="Note/Prayer Title:"/>
 		<textbox id="note-title"/>
 		<label value="Description:"/>
 		<textbox id="note-text" multiline="true" cols="6"/>

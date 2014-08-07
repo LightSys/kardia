@@ -9,12 +9,12 @@ function startDialog() {
 	// generate list
 	document.getElementById("select-track-type").innerHTML = "";
 	for (var i=0;i<window.arguments[0].length;i++) {
-		document.getElementById("select-track-type").innerHTML += '<menuitem label="' + window.arguments[0][i] + '"/>';
+		document.getElementById("select-track-type").innerHTML += '<menuitem label="' + window.arguments[1][i] + '" value="' + window.arguments[0][i] + '"/>';
 	}
 	document.getElementById("outer-select-track").selectedIndex = 0;
 	
 	// set server to appropriate value
-	server = window.arguments[1];
+	server = window.arguments[2];
 	
 	// generate step list
 	setSteps();
@@ -25,8 +25,10 @@ function startDialog() {
 
 // when you click "OK" on the Add Engagement Track dialog, send results to main script
 function saveTrack(){
-	window.arguments[2].track = document.getElementById("outer-select-track").selectedItem.label;
-	window.arguments[2].step = document.getElementById("outer-select-step").selectedItem.label;
+	window.arguments[3].track = document.getElementById("outer-select-track").selectedItem.label;
+	window.arguments[3].trackNum = document.getElementById("outer-select-track").selectedItem.value;
+	window.arguments[3].step = document.getElementById("outer-select-step").selectedItem.label;
+	window.arguments[3].stepNum = document.getElementById("outer-select-step").selectedItem.value;
 	return true;
 }
 
@@ -61,14 +63,15 @@ function setSteps() {
 				for (var i=0;i<keys.length;i++) {
 					if (keys[i] != "@id") {
 						stepList.push(stepResp[keys[i]]['step_name']);
+						stepList.push(stepResp[keys[i]]['step_id']);
 					}
 				}
 				steps[index] = stepList;
 		
 				// set the steps in the list
 				document.getElementById("select-step-type").innerHTML = "";
-				for (var i=0;i<steps[index].length;i++) {
-					document.getElementById("select-step-type").innerHTML += '<menuitem label="' + steps[index][i] + '"/>';
+				for (var i=0;i<steps[index].length;i+=2) {
+					document.getElementById("select-step-type").innerHTML += '<menuitem label="' + steps[index][i] + '" value="' + steps[index][i+1] + '"/>';
 				}
 				document.getElementById("outer-select-step").selectedIndex = 0;
 			}
@@ -83,8 +86,8 @@ function setSteps() {
 	else {
 		// set steps from stored info
 		document.getElementById("select-step-type").innerHTML = "";
-		for (var i=0;i<steps[index].length;i++) {
-			document.getElementById("select-step-type").innerHTML += '<menuitem label="' + steps[index][i] + '"/>';
+		for (var i=0;i<steps[index].length;i+=2) {
+			document.getElementById("select-step-type").innerHTML += '<menuitem label="' + steps[index][i] + '" value="' + steps[index][i+1] + '"/>';
 		}
 		document.getElementById("outer-select-step").selectedIndex = 0;
 	}

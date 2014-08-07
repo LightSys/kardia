@@ -11,7 +11,15 @@ var kardiaTab = this;
 
 window.addEventListener('load', function() {
 	if (mainWindow.loginValid) {
-		mainWindow.getTrackTagStaff(mainWindow.prefs.getCharPref("username"), mainWindow.prefs.getCharPref("password"));
+		
+		if (kardiaTab != null) {
+			kardiaTab.document.getElementById("tab-main").style.visibility = "visible";
+			kardiaTab.document.getElementById("tab-cant-connect").style.display="none";
+			kardiaTab.document.getElementById("filter-by-tracks").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Track:"/>';
+			kardiaTab.document.getElementById("filter-by-tags").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Tag:"/>';
+			kardiaTab.document.getElementById("filter-by-data").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Data items:"/>';
+			kardiaTab.reloadFilters(true);
+		}
 	}
 }, false);
 
@@ -167,13 +175,14 @@ function reloadFilters(addButtons) {
 		// check tags
 		if (tagsSelected) {
 			// find magnitude and certainty thresholds
-			var tagMagThreshold = kardiaTab.document.getElementById("filter-by-magnitude").value/100;
+			var tagMagMin = kardiaTab.document.getElementById("filter-by-magnitude-min").value/100;
+			var tagMagMax = kardiaTab.document.getElementById("filter-by-magnitude-max").value/100;
 			var tagCertThreshold = kardiaTab.document.getElementById("filter-by-certainty").value/100;
 			
 			if (mainWindow.filterBy == "any" && (!addPerson || !tracksSelected)) {
 				addPerson = false;
 				for (var j=0;j<mainWindow.collaborateeTags[i].length;j+=3) {
-					if (mainWindow.filterTags[mainWindow.tagList.indexOf(mainWindow.collaborateeTags[i][j])] && mainWindow.collaborateeTags[i][j+1]*1 >= tagMagThreshold && mainWindow.collaborateeTags[i][j+2]*1 >= tagCertThreshold) {
+					if (mainWindow.filterTags[mainWindow.tagList.indexOf(mainWindow.collaborateeTags[i][j])] && mainWindow.collaborateeTags[i][j+1]*1 >= tagMagMin && mainWindow.collaborateeTags[i][j+1]*1 <= tagMagMax && mainWindow.collaborateeTags[i][j+2]*1 >= tagCertThreshold) {
 						addPerson = true;
 						break;
 					}
@@ -182,7 +191,7 @@ function reloadFilters(addButtons) {
 			else if (mainWindow.filterBy == "all" && addPerson) {
 				for (var j=0;j<mainWindow.filterTags.length;j+=2) {
 					if (mainWindow.filterTags[j]) {	
-						if (mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1]) < 0 || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1])+1]*1 < tagMagThreshold || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1])+1]*1 < tagCertThreshold) {
+						if (mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1]) < 0 || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1])+1]*1 < tagMagMin || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1])+1]*1 > tagMagMax || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1])+1]*1 < tagCertThreshold) {
 							addPerson = false;
 							break;
 						}

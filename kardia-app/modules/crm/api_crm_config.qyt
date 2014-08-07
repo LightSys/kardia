@@ -172,6 +172,21 @@ api_crm_config "system/querytree"
     ContactHistTypes "system/querytree"
 	{
 	text = "ContactHistTypes";
+	tracktypelist "system/querytree"
+		{
+		sql = " select
+			id = :e_contact_history_type,
+			label = :e_short_name,
+			desc = :e_description,
+			user_selectable = :e_user_selectable,
+			date_created = :s_date_created,
+			created_by = :s_created_by,
+			date_modified = :s_date_modified,
+			modified_by = :s_modified_by
+			from
+			/apps/kardia/data/Kardia_DB/e_contact_history_type/rows
+			";
+		}
 	}
 
     CollaboratorTypes "system/querytree"
@@ -217,4 +232,29 @@ api_crm_config "system/querytree"
 	{
 	text = "DocumentTypes";
 	}
-    }
+	
+	Countries "system/querytree"
+	{
+	text = "Countries";
+	countrylist "system/querytree"
+		{
+		sql = " select
+			country_code = :c:p_country_code,
+			iso3166_2_code = :c:p_iso3166_2_code,
+			iso3166_3_code = :c:p_iso3166_3_code,
+			fips_code = :c:p_fips_code,
+			name = :c:p_country_name,
+			is_valid = condition(:c:p_record_status_code == 'A', 1, 0),
+			date_created = :c:s_date_created,
+			created_by = :c:s_created_by,
+			date_modified = :c:s_date_modified,
+			modified_by = :c:s_modified_by
+
+			from
+			identity
+			/apps/kardia/data/Kardia_DB/p_country/rows c
+			";
+		}
+	}
+	}
+		

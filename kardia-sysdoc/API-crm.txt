@@ -250,12 +250,14 @@ OBJECT STRUCTURE...
 			      step with the partner
 	    started_by_partner_id - the ID of the above
 	    started_by_partner_ref - a link to more detail about the above
-	    completion_date - the completion date of this step, if any
+	    simple_completion_date - the completion date of this step with no condition involved
+		completion_date - the completion date of this step, if any
 	    completed_by_partner - the name of the collaborator who completed
 			      this step with the partner
 	    completed_by_partner_id - the ID of the above
 	    completed_by_partner_ref - a link to more detail about the above
-	    exited_date	    - the exit date of this step (if any)
+	    simple_exited_date - the exit date of this step with no condition involved
+		exited_date	    - the exit date of this step (if any)
 	    exited_by_partner - the name of the collaborator who exited (i.e.,
 			      canceled out of) this step with the partner
 	    exited_by_partner_id - the ID of the above
@@ -337,6 +339,10 @@ OBJECT STRUCTURE...
 		req_item_id		- the numerical id of the requirement item this todo relates to		
 		req_item_due_days_from_step - how many days the requirement item
 									will be due after the engagement step was started
+		req_item_completion_status - "i" if the item is incomplete, "c" if complete, "w" if waived
+		req_item_completion_date - the date the item was completed
+		req_item_completed_by - username that caused the item to become completed
+
 	The following 'system' properties will be provided:
 
 	    date_created    - date the todo was added to the partner
@@ -363,7 +369,12 @@ OBJECT STRUCTURE...
 		engagement_id	- the numerical id of the engagement item this todo relates to
 		document_id		- the numerical id of the document this todo relates to
 		req_item_id		- the numerical id of the requirement item this todo relates to		
-
+		req_item_due_days_from_step - how many days the requirement item
+									will be due after the engagement step was started
+		req_item_completion_status - "i" if the item is incomplete, "c" if complete, "w" if waived
+		req_item_completion_date - the date the item was completed
+		req_item_completed_by - username that caused the item to become completed
+		
 	The following 'system' properties will be provided:
 
 	    date_created    - date the todo was added to the partner

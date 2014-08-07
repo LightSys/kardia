@@ -24,10 +24,10 @@
 			</menupopup>
 		</menulist>
 		<hbox>
-			<textbox type='number' min='0' max='100' value='100' increment='5' width='35px' id="tag-magnitude"/>
+			<textbox type='number' min='-100' max='100' value='100' increment='5' width='35px' id="tag-magnitude"/>
 			<vbox>
 				<spacer flex="1"/>
-				<label value='% magnitude'/>
+				<label value='% strength'/>
 				<spacer flex="1"/>
 			</vbox>			
 		</hbox>
