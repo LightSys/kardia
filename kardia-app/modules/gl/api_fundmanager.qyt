@@ -127,6 +127,7 @@ api_fundmanager "system/querytree"
 					:t:a_account_code >= '3000' and
 					:t:a_account_code <= '5999'
 				    ";
+			    use_having = yes;
 			    }
 			}
 		    }
