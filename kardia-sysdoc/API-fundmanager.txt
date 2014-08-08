@@ -67,9 +67,9 @@ OBJECT STRUCTURE...
 	    subfund_list    - a comma-separated list of all subfunds that
 			      belong to this fund (including this fund itself)
 
-    /apps/kardia/api/fundmanager/{partnerid}/Funds/{fundname}/BalancesByPeriod
-    -- List of accounting periods for this fund during the last three to four
-    years.  Normally there is one accounting period per month.
+    /apps/kardia/api/fundmanager/{partnerid}/Funds/{fundname}/Periods -- List
+    of accounting periods for this fund during the last three to four years.
+    Normally there is one accounting period per month.
 
 	This is a collection URL.  Each Contact object returned will have the
 	following properties:
@@ -79,8 +79,9 @@ OBJECT STRUCTURE...
 	    period_desc     - description of the period
 	    ref_period	    - the reference period (usually January of the year)
 
-    /apps/kardia/api/fundmanager/{partnerid}/Funds/{fundname}/BalancesByPeriod/{periodname}/Balances
-    -- The starting and ending balances for the particular fund in that period
+    /apps/kardia/api/fundmanager/{partnerid}/Funds/{fundname}/Periods/{periodname}/Balances
+    -- The starting and ending balances for the particular fund (with all
+    subfunds rolled in) in that period.
 
 	This is an element URL, not a collection.  The Balances object will
 	have the following properties:
@@ -91,6 +92,89 @@ OBJECT STRUCTURE...
 			      versa.
 	    balance	    - the current (or ending) balance for the fund in
 			      that particular period.
+
+    /apps/kardia/api/fundmanager/{partnerid}/Funds/{fundname}/Periods/{periodname}/Transactions
+    -- A list of transactions for the fund (including all subfunds) which
+    occurred in the given period.
+
+	This is a collection URL.  Properties are:
+
+	    amount	    - the amount of the transaction.  This number will
+			      be positive for a debit, and negative for a
+			      credit.
+	    debit	    - the debit amount of the transaction.
+	    credit	    - the credit amount of the transaction.
+	    fund	    - the specific fund (could be a sub fund).
+	    fund_desc	    - the description of the fund
+	    account	    - the general ledger account code (classification)
+	    account_desc    - the description of the account code
+	    trx_date	    - the posting date of the transaction
+	    comments	    - comments associated with the transaction
+	    to_from_id	    - the partner id that the transaction is
+			      associated with (for instance, if the
+			      transaction is a payment, this is who the
+			      payment was sent to)
+	    to_from	    - the partner name of the above
+
+    /apps/kardia/api/fundmanager/{partnerid}/Funds/{fundname}/Subfunds -- List
+    of all subsidiary funds under the given fund.  This list will correspond
+    with the 'subfund_list' property of the fund.
+
+	This is a collection URL.  Properties:
+
+	    name	    - combined id of fund and ledger
+	    fund            - id of the fund
+	    ledger     	    - id of the accounting ledger the fund belongs to
+	    fund_desc       - a short description of the fund
+	    ledger_desc	    - a short description of the accounting ledger
+	    fund_class	    - a description of the class of the fund
+
+    /apps/kardia/api/fundmanager/{partnerid}/Funds/{fundname}/Subfunds/{subfundname}/Periods -- List
+    of accounting periods for this fund during the last three to four years.
+    Normally there is one accounting period per month.
+
+	This is a collection URL.  Each Contact object returned will have the
+	following properties:
+
+	    name	    - combined id of period and accounting ledger
+	    period    	    - id of the period, such as "2014.01"
+	    period_desc     - description of the period
+	    ref_period	    - the reference period (usually January of the year)
+
+    /apps/kardia/api/fundmanager/{partnerid}/Funds/{fundname}/Subfunds/{subfundname}/Periods/{periodname}/Balances
+    -- The starting and ending balances for the particular fund in that period.
+
+	This is an element URL, not a collection.  The Balances object will
+	have the following properties:
+
+	    start_balance   - the balance in the fund when the period opens.
+			      Note that this number will be negative when the
+			      fund has a positive balance in it, and vice
+			      versa.
+	    balance	    - the current (or ending) balance for the fund in
+			      that particular period.
+
+    /apps/kardia/api/fundmanager/{partnerid}/Funds/{fundname}/Subfunds/{subfundname}/Periods/{periodname}/Transactions
+    -- A list of transactions for the fund which occurred in the given period.
+
+	This is a collection URL.  Properties are:
+
+	    amount	    - the amount of the transaction.  This number will
+			      be positive for a debit, and negative for a
+			      credit.
+	    debit	    - the debit amount of the transaction.
+	    credit	    - the credit amount of the transaction.
+	    fund	    - the specific fund
+	    fund_desc	    - the description of the fund
+	    account	    - the general ledger account code (classification)
+	    account_desc    - the description of the account code
+	    trx_date	    - the posting date of the transaction
+	    comments	    - comments associated with the transaction
+	    to_from_id	    - the partner id that the transaction is
+			      associated with (for instance, if the
+			      transaction is a payment, this is who the
+			      payment was sent to)
+	    to_from	    - the partner name of the above
 
 
 EXAMPLE URLS...
@@ -117,8 +201,27 @@ EXAMPLE URLS...
 
     A list of recent accounting periods for the given fund:
 
-	http://server/apps/kardia/api/fundmanager/100000/Funds/7000|DEMO/BalancesByPeriod?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	http://server/apps/kardia/api/fundmanager/100000/Funds/7000|DEMO/Periods?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 
-    The balances for a given fund in a given accounting period:
+    The balances for a given fund, with all subfund balances included,  in a
+    given accounting period:
 
-	http://server/apps/kardia/api/fundmanager/100000/Funds/7000|DEMO/BalancesByPeriod/2014.01|LS/Balances?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic
+	http://server/apps/kardia/api/fundmanager/100000/Funds/7000|DEMO/Periods/2014.01|LS/Balances?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic
+
+    The transactions for a given fund in a given accounting period, including
+    all transactions for all sub-funds:
+
+	http://server/apps/kardia/api/fundmanager/100000/Funds/7000|DEMO/Periods/2014.01|LS/Transactions?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of subfunds for a given fund:
+
+	http://server/apps/kardia/api/fundmanager/100000/Funds/7000|DEMO/Subfunds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    The balances for a given subfund in a given accounting period:
+
+	http://server/apps/kardia/api/fundmanager/100000/Funds/7000|DEMO/Subfunds/7010|DEMO/Periods/2014.01|LS/Balances?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic
+
+    The transactions for a given subfund in a given accounting period:
+
+	http://server/apps/kardia/api/fundmanager/100000/Funds/7000|DEMO/Subfunds/7010|DEMO/Periods/2014.01|LS/Transactions?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
