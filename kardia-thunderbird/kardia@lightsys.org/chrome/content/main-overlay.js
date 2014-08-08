@@ -460,7 +460,7 @@ function reload(isDefault) {
 			contactInfoHTML += "<hbox class='hover-box'><vbox flex='1'><label class='text-link' tooltiptext='Click to compose email' context='emailContextMenu' onclick='if (event.button == 0) sendEmail(\"" + mainWindow.allEmailAddresses[mainWindow.selected][i] + "\")'>" + mainWindow.allEmailAddresses[mainWindow.selected][i] + "</label></vbox><vbox><spacer height='3px'/><image class='edit-image' onclick='editContactInfo(\"E\",\"" + mainWindow.allEmailAddresses[mainWindow.selected][i+1] + "\");'/><spacer flex='1'/></vbox><spacer width='3px'/></hbox>";
 		}
 		for (var i=0;i<mainWindow.websites[mainWindow.selected].length;i+=2) {
-			contactInfoHTML += "<hbox class='hover-box'><vbox flex='1'><label class='text-link' tooltiptext='Click to open website' context='websiteContextMenu' onclick='if (event.button == 0) openUrl(\"" + mainWindow.websites[mainWindow.selected][i] + "\",true);'>" + mainWindow.websites[mainWindow.selected][i] + "</label></vbox><vbox><spacer height='3px'/><image class='edit-image' onclick='editContactInfo(\"W\",\"" + mainWindow.allEmailAddresses[mainWindow.selected][i+1] + "\");'/><spacer flex='1'/></vbox><spacer width='3px'/></hbox>";
+			contactInfoHTML += "<hbox class='hover-box'><vbox flex='1'><label class='text-link' tooltiptext='Click to open website' context='websiteContextMenu' onclick='if (event.button == 0) openUrl(\"" + mainWindow.websites[mainWindow.selected][i] + "\",true);'>" + mainWindow.websites[mainWindow.selected][i] + "</label></vbox><vbox><spacer height='3px'/><image class='edit-image' onclick='editContactInfo(\"W\",\"" + mainWindow.websites[mainWindow.selected][i+1] + "\");'/><spacer flex='1'/></vbox><spacer width='3px'/></hbox>";
 		}
 		contactInfoHTML += '<hbox><spacer flex="1"/><button class="new-button" label="New Contact Info..." oncommand="newContactInfo()" tooltiptext="Create new contact information item for this partner"/></hbox>';
 		mainWindow.document.getElementById("contact-info-inner-box").innerHTML = contactInfoHTML;
@@ -2035,14 +2035,98 @@ function showKardiaTab() {
 // allows user to edit contact information item
 function editContactInfo(type, id) {
 	// variable where we store our return values
-	var returnValues = {type:type, locationId:"", info:""};
+	var returnValues = {type:type, locationId:"", info:"", setInactive:false};
 	
 	// open dialog
-	openDialog("chrome://kardia/content/edit-contact-dialog.xul", "Edit Contact Info", "resizable,chrome, modal,centerscreen",returnValues,countryMenu);
-
-	if (returnValues.type != "q" && loginValid) {
+	openDialog("chrome://kardia/content/edit-contact-dialog.xul", "Edit Contact Info", "resizable,chrome, modal,centerscreen",returnValues,countryMenu,server,mainWindow.ids[mainWindow.selected],id);
 	
-	}			  
+	// format today's date
+	var date = new Date();
+	var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
+			  
+	var status_code = "A";
+	if (returnValues.setInactive) status_code = "O";
+			  
+	if (type == "A" && loginValid) {
+		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/Addresses/' + mainWindow.ids[mainWindow.selected] + "|" + id + "|0",'{"location_type_code":"' + returnValues.locationId + '","address_1":"' + returnValues.info.address1 + '","address_2":"' + returnValues.info.address2 + '","address_3":"' + returnValues.info.address3 + '","city":"' + returnValues.info.city + '","state_province":"' + returnValues.info.state + '","country_code":"' + returnValues.info.country + '","postal_code":"' + returnValues.info.zip + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+			
+			var addressLocation = mainWindow.addresses[mainWindow.selected].indexOf(parseInt(id));
+			if (returnValues.setInactive) {
+				// remove
+				mainWindow.addresses[mainWindow.selected].splice(addressLocation-1,2);
+
+				//reload to display
+				reload(false);
+				kardiaTab.reloadFilters(false);
+			}
+			else {
+				// save
+				doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[mainWindow.selected] + "/Addresses?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(contactResp) {
+					// get all the keys from the JSON file
+					for(var k in contactResp) {
+						if (k == mainWindow.ids[mainWindow.selected] + "|" + id + "|0") {				
+							mainWindow.addresses[mainWindow.selected][addressLocation-1] = contactResp[k]['location_type_code'] + ": " + contactResp[k]['address'] + "\n" + contactResp[k]['country_name'];
+
+							//reload to display
+							reload(false);
+							kardiaTab.reloadFilters(false);
+							break;
+							
+						}
+					}	
+				}, false, "", "");  
+			}
+		});
+	}	
+	else if (type == "P" && loginValid) {
+		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo/' + mainWindow.ids[mainWindow.selected] + "|" + id,'{"phone_area_city":"' + returnValues.info.areaCode + '","contact_data":"' + returnValues.info.number + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+			
+			var phoneLocation = mainWindow.phoneNumbers[mainWindow.selected].indexOf(parseInt(id));
+			if (returnValues.setInactive) {
+				// remove
+				mainWindow.phoneNumbers[mainWindow.selected].splice(phoneLocation-1,2);
+			}
+			else {
+				// save
+				mainWindow.phoneNumbers[mainWindow.selected][phoneLocation-1] = returnValues.type + ": (" + returnValues.info.areaCode + ") " + returnValues.info.number;
+			}				
+
+			//reload to display
+			reload(false);
+			kardiaTab.reloadFilters(false);
+		});
+	}	
+	else if ((type == "E" || type == "W") && loginValid) {
+		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo/' + mainWindow.ids[mainWindow.selected] + "|" + id,'{"contact_data":"' + returnValues.info + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+			
+			if (type == "E") {
+				var contactLocation = mainWindow.allEmailAddresses[mainWindow.selected].indexOf(parseInt(id));
+				if (returnValues.setInactive) {
+					// remove
+					mainWindow.allEmailAddresses[mainWindow.selected].splice(contactLocation-1,2);
+				}
+				else {
+					// save
+					mainWindow.allEmailAddresses[mainWindow.selected][contactLocation-1] = returnValues.type + ": " + returnValues.info;
+				}
+			}
+			else {
+				var contactLocation = mainWindow.websites[mainWindow.selected].indexOf(parseInt(id));
+				if (returnValues.setInactive) {
+					// remove
+					mainWindow.websites[mainWindow.selected].splice(contactLocation-1,2);
+				}
+				else {
+					// save
+					mainWindow.websites[mainWindow.selected][contactLocation-1] = returnValues.type + ": " + returnValues.info;
+				}
+			}		  
+
+			//reload to display
+			reload(false);
+			kardiaTab.reloadFilters(false);
+		});
+	}				
 }
 
 //opens dialog for user to add new contact information item
@@ -2076,8 +2160,8 @@ function newContactInfo() {
 						if (keys[i] != "@id" && contactDate.toString() == date.toString()) {
 							// add to address array
 							mainWindow.addresses[mainWindow.selected].push(contactResp[keys[i]]['location_type_code'] + ": " + contactResp[keys[i]]['address'] + "\n" + contactResp[keys[i]]['country_name']);
-							mainWindow.addresses[mainWindow.selected].puush(contactResp[keys[i]]['location_id']);
-						
+							mainWindow.addresses[mainWindow.selected].push(contactResp[keys[i]]['location_id']);
+
 							//reload to display
 							reload(false);
 							kardiaTab.reloadFilters(false);
@@ -2791,17 +2875,22 @@ function getAuthToken(authenticate, username, password, doAfter) {
 
 
 // send the given data to Kardia using patch
-function doPatchHttpRequest(url, data, authenticate, username, password) {
+function doPatchHttpRequest(url, data, authenticate, username, password, doAfter) {
 	// get authentication token if we don't have it yet
 	getAuthToken(authenticate, username, password, function() {
 		// actually send info
 		var httpRequest2 = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
 		var httpUrl2 = server + url + "?cx__mode=rest&cx__res_format=attrs&cx__akey=" + akey;
-	
+		Application.console.log(httpUrl2);
+
 		httpRequest2.onreadystatechange  = function(aEvent) {
+			// TODO FIX STUB remove this
+			Application.console.log(httpRequest2.status);
+			
 			// if the request went through and we got success status
 			if(httpRequest2.readyState == 4 && httpRequest2.status == 200) {
 				// done
+				doAfter();
 			}
 			else if (httpRequest2.readyState == 4 && httpRequest2.status != 200) {
 				// failed
@@ -2826,6 +2915,7 @@ function doPostHttpRequest(url, data, authenticate, username, password, doAfter)
 		var httpUrl2 = server + url + "?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection&cx__akey=" + akey;
 
 		httpRequest2.onreadystatechange = function(aEvent) {
+			// TODO FIX STUB
 			Application.console.log(httpRequest2.status);
 			
 			// if the request went through and we got success status
