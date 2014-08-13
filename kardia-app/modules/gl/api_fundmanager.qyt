@@ -90,7 +90,7 @@ api_fundmanager "system/querytree"
 						identity /apps/kardia/data/Kardia_DB/a_transaction/rows tt,
 						/apps/kardia/data/Kardia_DB/a_account/rows a,
 						/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-						/apps/kardia/data/Kardia_DB/p_partner/rows p
+	/apps/kardia/data/Kardia_DB/p_partner/rows p
 					WHERE
 						:tt:a_ledger_number = :fundlist:ledger and
 						charindex(',' + rtrim(:tt:a_cost_center) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
@@ -101,8 +101,7 @@ api_fundmanager "system/querytree"
 						:a:a_account_code = :tt:a_account_code and
 						:c:a_ledger_number = :tt:a_ledger_number and
 						:c:a_cost_center = :tt:a_cost_center and
-						:p:p_partner_key =* :tt:p_ext_partner_id
-					ORDER BY
+						:p:p_partner_key =* :tt:p_ext_partner_id 					ORDER BY
 						:tt:a_effective_date,
 						:tt:a_batch_number,
 						:tt:a_journal_number,
