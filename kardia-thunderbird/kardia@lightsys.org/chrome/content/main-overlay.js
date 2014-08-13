@@ -22,6 +22,7 @@ var collaborators = [];
 var documents = [];
 var tags = [];
 var data = [];
+var dataGroups = [];
 var gifts = [];
 var funds = [];
 var types = [];
@@ -54,6 +55,13 @@ var noteTypeList = new Array();
 // list of countries
 var countryMenu = "";
 var countryIndex = 0;
+var countries = new Array();
+
+// list of all partners, for adding collaborators
+var partnerList = new Array();
+
+// list of collaborator types
+var collabTypeList = new Array();
 
 // can the person log in to Kardia?  if not, don't try
 var loginValid = false;
@@ -114,6 +122,7 @@ var giftFilterTypes = [];
 // keep track of Kardia tab and this window
 var kardiaTab;
 var mainWindow = this;
+var dataTab;
 
 var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.kardia.");
 		
@@ -219,6 +228,7 @@ function findEmails() {
 		documents = new Array();
 		tags = new Array();
 		data = new Array();
+		dataGroups = new Array();
 		gifts = new Array();
 		funds = new Array();
 		types = new Array();
@@ -279,6 +289,7 @@ function findEmails() {
 		documents = new Array(emailAddresses.length);
 		tags = new Array(emailAddresses.length);
 		data = new Array(emailAddresses.length);
+		dataGroups = new Array(emailAddresses.length);
 		gifts = new Array(emailAddresses.length);
 		funds = new Array(emailAddresses.length);
 		types = new Array(emailAddresses.length);
@@ -301,6 +312,7 @@ function findEmails() {
 				documents.splice(i,1);
 				tags.splice(i,1);
 				data.splice(i,1);
+				dataGroups.splice(i,1);
 				gifts.splice(i,1);
 				funds.splice(i,1);
 				types.splice(i,1);
@@ -395,7 +407,7 @@ function reload(isDefault) {
 			}
 			
 			// move all other items around based on how we sorted names
-			var arraysToMove = [mainWindow.emailAddresses, mainWindow.ids, mainWindow.addresses, mainWindow.phoneNumbers, mainWindow.allEmailAddresses, mainWindow.websites, mainWindow.engagementTracks, mainWindow.recentActivity, mainWindow.todos, mainWindow.notes, mainWindow.collaborators, mainWindow.documents, mainWindow.tags, mainWindow.data, mainWindow.gifts, mainWindow.funds, mainWindow.types];
+			var arraysToMove = [mainWindow.emailAddresses, mainWindow.ids, mainWindow.addresses, mainWindow.phoneNumbers, mainWindow.allEmailAddresses, mainWindow.websites, mainWindow.engagementTracks, mainWindow.recentActivity, mainWindow.todos, mainWindow.notes, mainWindow.collaborators, mainWindow.documents, mainWindow.tags, mainWindow.data, mainWindow.dataGroups, mainWindow.gifts, mainWindow.funds, mainWindow.types];
 			
 			for (var j=0;j<arraysToMove.length;j++) {
 				firstItem = arraysToMove[j][firstIndex];
@@ -492,8 +504,8 @@ function reload(isDefault) {
 		
 		// display notes
 		var noteText = "";
-		for (var i=mainWindow.notes[mainWindow.selected].length-1;i>=0;i-=2) {
-			noteText += '<hbox><vbox><spacer height="3"/><image class="note-image"/><spacer flex="1"/></vbox><vbox width="100" flex="1"><description flex="1">' + mainWindow.notes[mainWindow.selected][i-1] + '</description><description flex="1">' + mainWindow.notes[mainWindow.selected][i] + '</description></vbox></hbox>';
+		for (var i=mainWindow.notes[mainWindow.selected].length-1;i>=0;i-=3) {
+			noteText += '<hbox class="hover-box"><vbox><spacer height="3"/><image class="note-image"/><spacer flex="1"/></vbox><vbox width="100" flex="1"><description flex="1">' + mainWindow.notes[mainWindow.selected][i-2] + '</description><description flex="1">' + mainWindow.notes[mainWindow.selected][i-1] + '</description></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editNote(\'' + mainWindow.notes[mainWindow.selected][i-2] + '\',' + mainWindow.notes[mainWindow.selected][i] + ');"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
 		}
 		noteText += '<hbox><spacer flex="1"/><button class="new-button" label="New Note/Prayer..." tooltiptext="Create new note/prayer for this partner" oncommand="newNote(\'\',\'\')"/></hbox>';	
 		mainWindow.document.getElementById("notes-prayer-inner-box").innerHTML = noteText;
@@ -510,6 +522,8 @@ function reload(isDefault) {
 			}
 			collaboratorText += '<spacer flex="1"/></vbox><label tooltiptext="Click to view collaborator" width="100" flex="1" class="text-link" onclick="addCollaborator(' + mainWindow.collaborators[mainWindow.selected][i+1] + ')">' + mainWindow.collaborators[mainWindow.selected][i+2] +'</label></hbox>';
 		}
+		collaboratorText += '<hbox><spacer flex="1"/><button class="new-button" label="New Collaborator..." tooltiptext="Create new collaborator for this partner" oncommand="newCollaborator()"/></hbox>';	
+		
 		mainWindow.document.getElementById("collaborator-inner-box").innerHTML = collaboratorText;	
 		
 		// display documents
@@ -538,17 +552,11 @@ function reload(isDefault) {
 			}
 			kardiaTab.document.getElementById("tab-tags").innerHTML += '<hbox><spacer flex="1"/><button class="new-button" label="New Tag..." oncommand="newTag()" tooltiptext="Add tag to this partner"/></hbox>';
 			
-			// display data items
+			// display data item group
 			kardiaTab.document.getElementById("tab-data-items").innerHTML = '<label class="tab-title" value="Data Items"/>';
-			for (var i=0;i<mainWindow.data[mainWindow.selected].length;i+=2) {
-				if (mainWindow.data[mainWindow.selected][i+1].toString() == "0") {
-					// not highlighted, so don't highlight the data item
-					kardiaTab.document.getElementById("tab-data-items").innerHTML += '<vbox tooltiptext="Click to filter by this data item" onclick="addFilter(\'d\',\'' + mainWindow.data[mainWindow.selected][i] + '\', false);"><label>' + mainWindow.data[mainWindow.selected][i] + '</label></vbox>';
-				}
-				else {
-					// highlight it
-					kardiaTab.document.getElementById("tab-data-items").innerHTML += '<vbox tooltiptext="Click to filter by this data item" class="highlighted" onclick="addFilter(\'d\',\'' + mainWindow.data[mainWindow.selected][i] + '\', false);"><label>' + mainWindow.data[mainWindow.selected][i] + '</label></vbox>';
-				}
+			
+			for (var i=0;i<mainWindow.dataGroups[mainWindow.selected].length;i+=2) {
+				kardiaTab.document.getElementById("tab-data-items").innerHTML += '<label class="new-button" value="' + mainWindow.dataGroups[mainWindow.selected][i+1] + '..." onclick="openDataTab(\'' + mainWindow.dataGroups[mainWindow.selected][i] + '\',\'' + mainWindow.dataGroups[mainWindow.selected][i+1] + '\')"/>';
 			}
 			
 			if (mainWindow.gifts[mainWindow.selected].length <= 0) {
@@ -819,7 +827,7 @@ function printPartner(whichPartner) {
 	for (var i=1;i<mainWindow.todos[whichPartner].length;i+=2) {
 		todosPrintString += "</br>&#x2610  " + mainWindow.todos[whichPartner][i];
 	}
-	for (var i=0;i<mainWindow.notes[whichPartner].length;i+=2) {
+	for (var i=0;i<mainWindow.notes[whichPartner].length;i+=3) {
 		notesPrintString += '</br>' + mainWindow.notes[whichPartner][i] + '&nbsp;&nbsp;(' + mainWindow.notes[whichPartner][i+1]+ ")";
 	}
 	for (var i=0;i<mainWindow.collaborators[whichPartner].length;i+=3) {
@@ -832,7 +840,8 @@ function printPartner(whichPartner) {
 		var questionMark = (mainWindow.tags[whichPartner][i+2] <= 0.5) ? "?" : "";
 		tagsPrintString += '</br><span style="background-color:hsl(46,100%,' + (100-50*mainWindow.tags[whichPartner][i+1]) + '%);">' + mainWindow.tags[whichPartner][i] + questionMark + '</span>';
 	}	
-	for (var i=0;i<mainWindow.data[whichPartner].length;i+=2) {
+	// FIX STUB print data by group
+	for (var i=0;i<mainWindow.data[whichPartner].length;i+=3) {
 		if (mainWindow.data[whichPartner][i+1].toString() == "0") {
 			// not highlighted, so don't highlight the data item
 			dataPrintString += '</br>' + mainWindow.data[whichPartner][i];
@@ -930,6 +939,7 @@ function findUser(index) {
 					documents.splice(index,1);
 					tags.splice(index,1);
 					data.splice(index,1);
+					dataGroups.splice(index,1);
 					gifts.splice(index,1);
 					funds.splice(index,1);
 					types.splice(index,1);
@@ -955,6 +965,7 @@ function findUser(index) {
 						documents.splice(index+1,0,[]);
 						tags.splice(index+1,0,[]);
 						data.splice(index+1,0,[]);
+						dataGroups.splice(index+1,0,[]);
 						gifts.splice(index+1,0,[]);
 						funds.splice(index+1,0,[]);
 						types.splice(index+1,0,[]);
@@ -992,6 +1003,7 @@ function findUser(index) {
 				documents.splice(index,1);		
 				tags.splice(index,1);	
 				data.splice(index,1);	
+				dataGroups.splice(index,1);
 				gifts.splice(index,1);	
 				funds.splice(index,1);	
 				types.splice(index,1);	
@@ -1151,6 +1163,7 @@ function getOtherInfo(index, isDefault) {
 									if (keys[i] != "@id") {
 										noteArray.push(noteResp[keys[i]]['subject'] + "- " + noteResp[keys[i]]['notes']);
 										noteArray.push(new Date(noteResp[keys[i]]['date_modified']['year'], noteResp[keys[i]]['date_modified']['month']-1, noteResp[keys[i]]['date_modified']['day'], noteResp[keys[i]]['date_modified']['hour'], noteResp[keys[i]]['date_modified']['minute'], noteResp[keys[i]]['date_modified']['second']).toLocaleString());
+										noteArray.push(noteResp[keys[i]]['contact_history_id']);
 									}
 								}
 								// store temporary array to permanent array
@@ -1221,12 +1234,20 @@ function getOtherInfo(index, isDefault) {
 												var keys = [];
 												for(var k in dataResp) keys.push(k);
 
+												mainWindow.dataGroups[index] = new Array();
 												// save data items
 												var tempArray = new Array();
 												for (var i=0; i<keys.length; i++) {
 													if (keys[i] != "@id") {
 														tempArray.push(dataResp[keys[i]]['item_type_label'] + ": " + dataResp[keys[i]]['item_value']);
 														tempArray.push(dataResp[keys[i]]['item_highlight']);
+														tempArray.push(dataResp[keys[i]]['item_group_id']);
+
+														// store data group if it doesn't already exist
+														if (mainWindow.dataGroups[index].indexOf(dataResp[keys[i]]['item_group_id']) < 0) {
+															mainWindow.dataGroups[index].push(dataResp[keys[i]]['item_group_id']);
+															mainWindow.dataGroups[index].push(dataResp[keys[i]]['item_group_name']);
+														}
 													}
 												}
 												mainWindow.data[index] = tempArray;
@@ -1390,6 +1411,8 @@ function getCollaborateeInfo(index) {
 					if (keys[i] != "@id") {
 						tempArray.push(dataResp[keys[i]]['item_type_label'] + ": " + dataResp[keys[i]]['item_value']);
 						tempArray.push(dataResp[keys[i]]['item_highlight']);
+						tempArray.push(dataResp[keys[i]]['item_group_id']);
+						// FIX STUB store groups if needed
 					}
 				}
 				mainWindow.collaborateeData.push(tempArray);
@@ -1784,6 +1807,7 @@ function addCollaborator(collaboratorId) {
 		mainWindow.documents.push([]);
 		mainWindow.tags.push([]);
 		mainWindow.data.push([]);
+		mainWindow.dataGroups.push([]);
 		mainWindow.gifts.push([]);
 		mainWindow.funds.push([]);
 		mainWindow.types.push([]);
@@ -2038,7 +2062,7 @@ function editContactInfo(type, id) {
 	var returnValues = {type:type, locationId:"", info:"", setInactive:false};
 	
 	// open dialog
-	openDialog("chrome://kardia/content/edit-contact-dialog.xul", "Edit Contact Info", "resizable,chrome, modal,centerscreen",returnValues,countryMenu,server,mainWindow.ids[mainWindow.selected],id);
+	openDialog("chrome://kardia/content/edit-contact-dialog.xul", "Edit Contact Info", "resizable,chrome, modal,centerscreen",returnValues,countryMenu,server,mainWindow.ids[mainWindow.selected],id,countries);
 	
 	// format today's date
 	var date = new Date();
@@ -2047,7 +2071,7 @@ function editContactInfo(type, id) {
 	var status_code = "A";
 	if (returnValues.setInactive) status_code = "O";
 			  
-	if (type == "A" && loginValid) {
+	if (returnValues.type == "A" && loginValid) {
 		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/Addresses/' + mainWindow.ids[mainWindow.selected] + "|" + id + "|0",'{"location_type_code":"' + returnValues.locationId + '","address_1":"' + returnValues.info.address1 + '","address_2":"' + returnValues.info.address2 + '","address_3":"' + returnValues.info.address3 + '","city":"' + returnValues.info.city + '","state_province":"' + returnValues.info.state + '","country_code":"' + returnValues.info.country + '","postal_code":"' + returnValues.info.zip + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
 			
 			var addressLocation = mainWindow.addresses[mainWindow.selected].indexOf(parseInt(id));
@@ -2078,7 +2102,7 @@ function editContactInfo(type, id) {
 			}
 		});
 	}	
-	else if (type == "P" && loginValid) {
+	else if (returnValues.type == "P" && loginValid) {
 		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo/' + mainWindow.ids[mainWindow.selected] + "|" + id,'{"phone_area_city":"' + returnValues.info.areaCode + '","contact_data":"' + returnValues.info.number + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
 			
 			var phoneLocation = mainWindow.phoneNumbers[mainWindow.selected].indexOf(parseInt(id));
@@ -2096,7 +2120,7 @@ function editContactInfo(type, id) {
 			kardiaTab.reloadFilters(false);
 		});
 	}	
-	else if ((type == "E" || type == "W") && loginValid) {
+	else if ((returnValues.type == "E" || returnValues.type == "W") && loginValid) {
 		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo/' + mainWindow.ids[mainWindow.selected] + "|" + id,'{"contact_data":"' + returnValues.info + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
 			
 			if (type == "E") {
@@ -2126,7 +2150,7 @@ function editContactInfo(type, id) {
 			reload(false);
 			kardiaTab.reloadFilters(false);
 		});
-	}				
+	}
 }
 
 //opens dialog for user to add new contact information item
@@ -2354,6 +2378,27 @@ function newTrack() {
 	}
 }
 
+// opens dialog for user to edit note/prayer
+function editNote(text, key) {
+	// where we save returned values	
+	var returnValues = {title:text.substring(0,text.indexOf('-')), desc:text.substring(text.indexOf('-')+2,text.length), saveNote:true};
+
+	// open dialog
+	openDialog("chrome://kardia/content/edit-note-prayer.xul", "Edit Note/Prayer", "resizable,chrome, modal,centerscreen", returnValues);
+
+	if (returnValues.saveNote && loginValid) {
+		var date = new Date();
+		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
+		
+		doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactHistory/' + key,'{"subject":"' + returnValues.title + '","notes":"' + returnValues.desc + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+			
+			var noteIndex = mainWindow.notes[mainWindow.selected].indexOf(parseInt(key))-2;
+			mainWindow.notes[mainWindow.selected][noteIndex] = returnValues.title + "- " + returnValues.desc;
+			reload(false);
+		});
+	}
+}
+
 // opens dialog for user to add new note/prayer
 function newNote(title, desc) {
 	// where we save returned values	
@@ -2367,8 +2412,53 @@ function newNote(title, desc) {
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 		
 		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactHistory','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_contact_history_type":' + returnValues.type + ',"e_subject":"' + returnValues.title + '","e_notes":"' + returnValues.desc + '","e_contact_date":' + dateString + ',"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
-			notes[selected].push(returnValues.title + "- " + returnValues.desc);
-			notes[selected].push(new Date().toLocaleString());
+			
+			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[mainWindow.selected] + "/ContactHistory?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(noteResp) {
+				// the key "@id" doesn't correspond to a document, so use all other keys to find newest item
+				var noteIndex = 0;
+				for (var k in noteResp) {
+					if (k != "@id" && noteResp[k]['date_created'] != null) {
+						var noteDate = new Date(noteResp[k]['date_created']['year'],(noteResp[k]['date_created']['month']-1),noteResp[k]['date_created']['day'],noteResp[k]['date_created']['hour'],noteResp[k]['date_created']['minute'],noteResp[k]['date_created']['second']);
+						
+						// is this the note we're looking for?
+						if (noteDate.toString() == date.toString()) {
+							// add to notes array
+							notes[selected].push(returnValues.title + "- " + returnValues.desc);
+							notes[selected].push(date.toLocaleString());
+							notes[selected].push(noteResp[k]['contact_history_id']);
+
+							//reload to display
+							reload(false);
+							break;
+						}
+					}
+				}	
+			}, false, "", "");
+		});
+	}
+}
+
+// opens dialog for user to add new collaborator
+function newCollaborator() {
+	// variable where we store our return values
+	var returnValues = {id:"", name:"", type:0};
+	
+	Application.console.log(partnerList);
+	Application.console.log(collabTypeList);
+	
+	// open dialog
+	openDialog("chrome://kardia/content/add-collaborator.xul", "New Tag", "resizable,chrome, modal,centerscreen", returnValues, partnerList, collabTypeList);
+
+	if (returnValues.id != "" && returnValues.id != null && loginValid) {
+		var date = new Date();
+		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
+		
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Collaborators','{"e_collaborator":"' + returnValues.id + '","p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_collab_type_id":' + returnValues.type + ',"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+			mainWindow.collaborators[mainWindow.selected].push(returnValues.type);
+			mainWindow.collaborators[mainWindow.selected].push(returnValues.id);
+			mainWindow.collaborators[mainWindow.selected].push(returnValues.name);
+			// fix stub- add to collaboratees
+
 			reload(false);
 		});
 	}
@@ -2565,6 +2655,9 @@ function getTrackTagStaff(username, password) {
 	mainWindow.noteTypeList = new Array();
 	mainWindow.countryMenu = "";
 	mainWindow.countryIndex = 0;
+	mainWindow.countries = new Array();
+	mainWindow.partnerList = new Array();
+	mainWindow.collabTypeList = new Array();
 	mainWindow.filterTags = new Array();
 	mainWindow.filterData = new Array();
 	mainWindow.filterFunds = new Array();
@@ -2638,6 +2731,7 @@ function getTrackTagStaff(username, password) {
 					// the key "@id" doesn't correspond to a country, so use all other keys to save countries
 					for (var i=0;i<keys.length;i++) {
 						if (keys[i] != "@id") {
+							countries.push(countryResp[keys[i]]['country_code']);
 							countryMenu += '<menuitem label="' + countryResp[keys[i]]['name'] + '" value="' + countryResp[keys[i]]['country_code'] + '"/>';
 							if (countryResp[keys[i]]['country_code'] == "US") {
 								countryIndex = i-1;
@@ -2645,10 +2739,40 @@ function getTrackTagStaff(username, password) {
 						}
 					}
 					
-					// get my ID		
-					findStaff(username, password, function() {
-						getMyInfo(username, password);
-					});
+					doHttpRequest("apps/kardia/api/partner/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (partnerResp) {
+					
+						for(var k in partnerResp) {
+							// the key "@id" doesn't correspond to a partner, so use all other keys to save partners
+							if (k != "@id") {
+								// see where we should insert partner in the list
+								var insertHere = partnerList.length;
+								for (var j=0;j<partnerList.length;j+=2) {
+									if (partnerResp[k]["partner_name"] <= partnerList[j]) {
+										// insert partner before
+										insertHere = j;
+										break;
+									}
+								}
+								partnerList.splice(insertHere,0,partnerResp[k]["partner_name"],partnerResp[k]["partner_id"]);	
+							}
+						}
+						
+						doHttpRequest("apps/kardia/api/crm_config/CollaboratorTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collabResp) {
+					
+							for(var k in collabResp) {
+								// the key "@id" doesn't correspond to a partner, so use all other keys to save partners
+								if (k != "@id") {
+									collabTypeList.push(collabResp[k]["label"])
+								  	collabTypeList.push(collabResp[k]["id"]);
+								}
+							}
+
+							// get my ID		
+							findStaff(username, password, function() {
+								getMyInfo(username, password);
+							});
+						}, false, "", "");
+					}, false, "", "");
 				}, false, "", "");
 			}, false, "", "");
 		}, false, "", "");
@@ -2979,3 +3103,15 @@ function clearKardiaButton(){
 		}
 	}
 }
+
+// add new tab to display given data
+function openDataTab(groupId, groupName) {
+	var dataItemString = "?title=" + mainWindow.names[mainWindow.selected] + ": " + groupName;
+	for (var i=0;i<mainWindow.data[mainWindow.selected].length;i+=3) {
+		if (mainWindow.data[mainWindow.selected][i+2] == groupId) {
+			dataItemString += '&' + (i/3) + '=' + mainWindow.data[mainWindow.selected][i];
+			dataItemString += '&' + (i/3) + 'b=' + mainWindow.data[mainWindow.selected][i+1];
+		}
+	}
+	mainWindow.document.getElementById("tabmail").openTab("contentTab", {contentPage: "chrome://kardia/content/data-item-group.xul" + dataItemString});
+}	

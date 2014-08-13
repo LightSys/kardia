@@ -383,7 +383,7 @@ OBJECT STRUCTURE...
 	    modified_by	    - username that modified the todo	
 
 
-/apps/kardia/api/crm/Partners/{partnerid}/DataItems -- A list of all
+	/apps/kardia/api/crm/Partners/{partnerid}/DataItems -- A list of all
     todo items that relate to this partner
 
 	This is a collection URL; each returned element will have the
@@ -397,6 +397,7 @@ OBJECT STRUCTURE...
 	    item_type_id 	- the numerical id of the data item type
 		item_type_label	- the short name or label of the data item type
 		item_group_id	- the numerical id of the data item group
+		item_group_name	- the name of the data item group
 		item_value 		- the value of the data item
 		item_highlight	- 1 if the data item is highlighted, 0 otherwise
 
@@ -405,7 +406,55 @@ OBJECT STRUCTURE...
 	    date_created    - date the data item was added to the partner
 	    created_by	    - username that added the data item
 	    date_modified   - date the data item was modified in Kardia
-	    modified_by	    - username that modified the data item				
+	    modified_by	    - username that modified the data item	
+
+		
+	/apps/kardia/api/crm/Partners/{partnerid}/DataGroups -- A list of all
+    data item groups that relate to this partner
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+							more information about the partner is needed.
+	    group_d 		- the numerical id of the data item group
+		group_name		- the name of the data item group
+		group_desc		- the description (text) of the data item group
+		type_id			- the numerical id of the data item type associated with the group
+		
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item group was added to the partner
+	    created_by	    - username that added the data item group
+	    date_modified   - date the data item group was modified in Kardia
+	    modified_by	    - username that modified the data item group	
+		
+		
+	/apps/kardia/api/crm/Partners/{partnerid}/DataGroups/{groupid}/DataItems -- A list of all
+    data items that are in this data item group
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+							more information about the partner is needed.
+	    item_id 		- the numerical id of the data item
+	    item_type_id 	- the numerical id of the data item type
+		item_type_label	- the short name or label of the data item type
+		item_group_id	- the numerical id of the data item group
+		item_value 		- the value of the data item
+		item_highlight	- 1 if the data item is highlighted, 0 otherwise
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item was added to the partner
+	    created_by	    - username that added the data item
+	    date_modified   - date the data item was modified in Kardia
+	    modified_by	    - username that modified the data item	
 	
 	
 	/apps/kardia/api/crm/Todos -- list of todo items in the CRM system.
@@ -495,6 +544,14 @@ OBJECT STRUCTURE...
 	A list of the todo items associated with a partner, with detail about each:
 	
 	http://server/apps/kardia/api/crm/Partners/100000/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	A list of the data item groups associated with a partner, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/DataGroups?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	A list of the data items from one data item group, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/DataGroups/100001/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 	
 	A list of all todo items in the system:
 	

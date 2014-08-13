@@ -192,6 +192,20 @@ api_crm_config "system/querytree"
     CollaboratorTypes "system/querytree"
 	{
 	text = "CollaboratorTypes";
+	collabtypelist "system/querytree"
+		{
+		sql = " select
+			id = :e_collab_type_id,
+			label = :e_collab_type_label,
+			desc = :e_collab_type_desc,
+			date_created = :s_date_created,
+			created_by = :s_created_by,
+			date_modified = :s_date_modified,
+			modified_by = :s_modified_by
+			from
+			/apps/kardia/data/Kardia_DB/e_collaborator_type/rows
+			";
+		}
 	}
 
     TodoTypes "system/querytree"
@@ -253,6 +267,8 @@ api_crm_config "system/querytree"
 			from
 			identity
 			/apps/kardia/data/Kardia_DB/p_country/rows c
+			group by
+			:c:p_country_name
 			";
 		}
 	}

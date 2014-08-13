@@ -43,6 +43,7 @@
 
 /* "New Track" and "New Note/Prayer" buttons look like regular text, but bold */
 .new-button {-moz-appearance:none; border:0px; font-weight:bold; background:none;}
+.new-button:hover {cursor:pointer;}
 
 /* Collaborator and document buttons look like regular text */
 /* currently unused */
@@ -164,3 +165,9 @@
 
 /* binding for Kardia buttons */
 mail-emailaddress {-moz-binding:url('chrome://kardia/content/email-binding.xml#kardia-mail-emailaddress')}
+
+/* main area in data items tab */
+#main-data {background-color:#ffffff; padding:10px;}
+
+/* person's name in data items tab */
+#data-item-name {background-color:#ffffff; padding:10px 10px 0 10px; margin:0px;}

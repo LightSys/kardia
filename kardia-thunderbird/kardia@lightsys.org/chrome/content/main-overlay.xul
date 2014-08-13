@@ -25,7 +25,7 @@
 					</vbox>
 				</toolbarbutton>
 			</sidebarheader>
-					
+
 			<!-- hbox with partner's name and ID, plus a button that allows you to select a different partner -->
 			<hbox id="choose-partner-box" context="main-context">
 				<vbox id="name-and-id">
@@ -260,8 +260,8 @@
 			<vbox>
 				<spacer height="1"/>
 				<image class="kardia-tab"/>
-			</vbox>
-		</toolbarbutton>
+			</vbox> 
+ 		</toolbarbutton>	 
 	</toolbarpalette>
 
 </overlay>

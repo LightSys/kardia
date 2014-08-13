@@ -132,7 +132,7 @@
 							</menulist>
 							<vbox>
 								<spacer flex="1"/>
-								<label id="tab-map-link" class="text-link" href="" value="View map ->" tooltiptext="View location in Google Maps" context="maplink-context"/>
+								<label id="tab-map-link" class="text-link" href="" value="View map..." tooltiptext="View location in Google Maps" context="maplink-context"/>
 								<spacer flex="1"/>
 							</vbox>
 						</hbox>
@@ -147,7 +147,7 @@
 							</menulist>
 							<vbox>
 								<spacer flex="1"/>
-								<label class="text-link" style="font-weight:bold;" value="View in inbox ->" onclick="quickFilter();" tooltiptext="View all messages involving this email address"/>
+								<label class="text-link" style="font-weight:bold;" value="View in inbox..." onclick="quickFilter();" tooltiptext="View all messages involving this email address"/>
 								<spacer flex="1"/>
 							</vbox>
 						</hbox>
@@ -161,6 +161,10 @@
 				<!-- data items -->
 				<vbox id="tab-data-items" class="tab-bottom-box">
 					<label class="tab-title" value="Data Items"/>
+					<hbox>
+						<spacer flex="1"/>
+						<label class="new-button" value="New Data Item..." onclick="newDataItem()"/>
+					</hbox>
 				</vbox>
 				
 				<splitter resizebefore="closest" state="open" collapse="both" class="tab-splitter">

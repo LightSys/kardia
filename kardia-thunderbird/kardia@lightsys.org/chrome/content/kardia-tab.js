@@ -56,16 +56,16 @@ function sortBy() {
 function addFilter(type, id, fromClick) {	
 	// if a button was clicked to add the filter, set the corresponding checkbox to checked
 	if (fromClick) {
-		document.getElementById("filter-by-" + type + "-" + id).checked = true;
+		kardiaTab.document.getElementById("filter-by-" + type + "-" + id).checked = true;
 	}
 	if (type == 'e') {
 		// add to engagement track filters
-		mainWindow.filterTracks[id] = document.getElementById("filter-by-e-" + id).checked;
+		mainWindow.filterTracks[id] = kardiaTab.document.getElementById("filter-by-e-" + id).checked;
 	}
 	else if (type == 't') {	
 		// add to tag filters
-		mainWindow.filterTags[id] = document.getElementById("filter-by-t-" + id).checked;
-		mainWindow.filterTags[id*1+1] = document.getElementById("filter-by-t-" + id).checked;
+		mainWindow.filterTags[id] = kardiaTab.document.getElementById("filter-by-t-" + id).checked;
+		mainWindow.filterTags[id*1+1] = kardiaTab.document.getElementById("filter-by-t-" + id).checked;
 	}
 	else if (type == 'd') {
 		// add to data filters
@@ -73,10 +73,10 @@ function addFilter(type, id, fromClick) {
 			mainWindow.filterData.push(id);
 			
 			// hide instructions
-			document.getElementById("tab-data-instruction").style.display = "none";
+			kardiaTab.document.getElementById("tab-data-instruction").style.display = "none";
 			
 			// add data filter
-			document.getElementById("filter-by-data").innerHTML += '<hbox id="filter-by-d-' + id + '" class="tab-filter-radio" style="background-color:#cccccc"><vbox style="margin-left:5px;" onclick="removeFilter(\'d\',\'' + id + '\')"><spacer flex="1"/><image class="close-kardia-pane-x"/><spacer flex="1"/></vbox><label value="' + id + '"/></hbox>';
+			kardiaTab.document.getElementById("filter-by-data").innerHTML += '<hbox id="filter-by-d-' + id + '" class="tab-filter-radio" style="background-color:#cccccc"><vbox style="margin-left:5px;" onclick="removeFilter(\'d\',\'' + id + '\')"><spacer flex="1"/><image class="close-kardia-pane-x"/><spacer flex="1"/></vbox><label value="' + id + '"/></hbox>';
 		}
 	}
 	else if (type == 'f') {
@@ -85,10 +85,10 @@ function addFilter(type, id, fromClick) {
 			mainWindow.filterFunds.push(id);
 			
 			// hide instructions
-			document.getElementById("tab-funds-instruction").style.display = "none";
+			kardiaTab.document.getElementById("tab-funds-instruction").style.display = "none";
 			
 			// add fund filter
-			document.getElementById("filter-by-funds").innerHTML += '<hbox id="filter-by-f-' + id + '" class="tab-filter-radio" style="background-color:#cccccc"><vbox style="margin-left:5px;" onclick="removeFilter(\'f\',\'' + id + '\')"><spacer flex="1"/><image class="close-kardia-pane-x"/><spacer flex="1"/></vbox><label value="' + id + '"/></hbox>';
+			kardiaTab.document.getElementById("filter-by-funds").innerHTML += '<hbox id="filter-by-f-' + id + '" class="tab-filter-radio" style="background-color:#cccccc"><vbox style="margin-left:5px;" onclick="removeFilter(\'f\',\'' + id + '\')"><spacer flex="1"/><image class="close-kardia-pane-x"/><spacer flex="1"/></vbox><label value="' + id + '"/></hbox>';
 		}
 	}	
 	// reload filters/sorting
@@ -343,10 +343,11 @@ function reloadCollaboratee(index) {
 	// FIX STUB should not be hard-coded
 	addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>';
 					
+	// FIX STUB should this even be here?  change to groups?
 	// add highlighted data items
 	if (mainWindow.collaborateeData[index].length > 1) {
 		addString += '<vbox>';
-		for (var j=0;j<mainWindow.collaborateeData[index].length;j+=2) {
+		for (var j=0;j<mainWindow.collaborateeData[index].length;j+=3) {
 			if (mainWindow.collaborateeData[index][j+1] == "1") { 
 				addString += '<button tooltiptext="Click to filter by this data item" oncommand="addFilter(\'d\',\'' + mainWindow.collaborateeData[index][j] + '\', false);" class="highlighted" label="' + mainWindow.collaborateeData[index][j] + '"/>';
 			}

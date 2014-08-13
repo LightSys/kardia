@@ -449,6 +449,58 @@ api_crm "system/querytree"
 	    DataGroups "system/querytree"
 		{
 		text = "DataGroups";
+		
+		data_group_list "system/querytree"
+			{
+			sql = "select
+			partner_id = :g:p_partner_key,
+			partner_name = :eng_list:partner_name,
+			partner_ref = :eng_list:partner_ref,
+			group_id = :g:e_data_item_group_id,
+			group_name = :g:e_data_item_group_name,
+			group_desc = :g:e_data_item_group_desc,
+			type_id = :g:e_data_item_type_id,
+			date_created = :g:s_date_created,
+			created_by = :g:s_created_by,
+			date_modified = :g:s_date_modified,
+			modified_by = :g:s_modified_by
+			from
+			identity
+			/apps/kardia/data/Kardia_DB/e_data_item_group/rows g
+			where
+			:g:p_partner_key = :eng_list:partner_id
+			";
+			
+			DataItems "system/querytree"
+			{
+			text = "DataItems";
+
+			data_group_item_list "system/querytree"
+				{
+				sql = " select
+				partner_id = :d:p_partner_key,
+				partner_name = :eng_list:partner_name,
+				partner_ref = :eng_list:partner_ref,
+				item_id = :d:e_data_item_id,
+				item_type_id = :d:e_data_item_type_id,
+				item_type_label = (select :e_data_item_type_label from /apps/kardia/data/Kardia_DB/e_data_item_type/rows where :e_data_item_type_id = :d:e_data_item_type_id),
+				item_group_id = :d:e_data_item_group_id,
+				item_value = :d:e_data_item_value,
+				item_highlight = :d:e_data_item_highlight,
+				date_created = :d:s_date_created,
+				created_by = :d:s_created_by,
+				date_modified = :d:s_date_modified,
+				modified_by = :d:s_modified_by
+				from
+				identity
+				/apps/kardia/data/Kardia_DB/e_data_item/rows d
+				where
+				:d:p_partner_key = :eng_list:partner_id and
+				:d:e_data_item_group_id = :data_group_list:e_data_item_group_id
+				";
+				}
+			}
+			}
 		}
 		
 		DataItems "system/querytree"
@@ -465,6 +517,7 @@ api_crm "system/querytree"
 			item_type_id = :d:e_data_item_type_id,
 			item_type_label = (select :e_data_item_type_label from /apps/kardia/data/Kardia_DB/e_data_item_type/rows where :e_data_item_type_id = :d:e_data_item_type_id),
 			item_group_id = :d:e_data_item_group_id,
+			item_group_name = (select :e_data_item_group_name from /apps/kardia/data/Kardia_DB/e_data_item_group/rows where :e_data_item_group_id = :d:e_data_item_group_id),
 			item_value = :d:e_data_item_value,
 			item_highlight = :d:e_data_item_highlight,
 			date_created = :d:s_date_created,
