@@ -87,6 +87,7 @@ OBJECT STRUCTURE...
 	    location_type   - Home/Work/School/Vacation/etc
 	    address	    - the formatted address
 	    is_valid	    - 1 if the address is valid, 0 if not
+		location_status_code - "A" if the address is currently active or "O" if it's obsolete
 
 	And the following more detailed properties:
 
@@ -126,6 +127,7 @@ OBJECT STRUCTURE...
 	    contact	    - contact (email address, phone #, etc.)
 	    contact_type    - type of contact (Email, Phone, Cell, Fax, etc.)
 	    is_valid	    - 1 if the contact info is valid, 0 if not
+		record_status_code - "A" if the contact info is active, "O" if obsolete
 
 	The following more detailed properties will be provided:
 
