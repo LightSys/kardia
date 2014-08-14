@@ -162,7 +162,7 @@ activity "system/query"
 		e_activity_date = :pe:e_start_date,
 		e_activity_type = 'TRK',
 		e_reference_info = :pe:p_partner_key + '|' + :pe:e_engagement_id + '|' + :pe:e_hist_id,
-		e_info = 'Began engagement track ' + :et:e_track_name + ' step ' + :es:e_step_name + isnull(' (' + :pe:e_desc + ')', ''),
+		e_info = 'Began engagement track ' + :et:e_track_name + ' step ' + :es:e_step_name + condition(char_length(:pe:e_desc) > 0, ' (' + :pe:e_desc + ')', ''),
 		s_date_created = getdate(),
 		s_created_by = user_name(),
 		s_date_modified = getdate(),
