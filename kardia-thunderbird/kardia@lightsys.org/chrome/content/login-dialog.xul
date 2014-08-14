@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<!-- dialog to ask user for username/password -->
+<dialog id="login-dialog"
+        title="Login to Kardia"
+        buttons="cancel,accept"
+		onload="doOnLoginLoad();"
+        ondialogaccept="return login();"
+        ondialogcancel="return cancel();"
+        persist="screenX screenY width height"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+		
+<!-- script that makes buttons work -->
+<script type="application/javascript" src="chrome://kardia/content/login-dialog.js"/>
+
+    <!-- vbox holds content -->
+	<vbox>
+		<label id="login-failed-label"></label>
+		<hbox>
+			<label value="Username:"/>
+			<textbox id="username-text"/>
+		</hbox>
+		<hbox>
+			<label value="Password:"/>
+			<textbox id="password-text" type="password"/>
+		</hbox>
+		<checkbox id="save-password" checked="false" label="Save password using Password Manager"/>
+	</vbox>
+	
+</dialog>

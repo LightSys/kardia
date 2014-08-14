@@ -1,0 +1,253 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<window id="kardia-tab" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="Kardia" xmlns:html="http://www.w3.org/1999/xhtml">
+
+	<!-- favicon -->
+	<html:link rel="icon" href="chrome://kardia/content/images/kardia-icon-square.png"/>
+
+	<!-- JavaScript file -->
+	<script type="application/javascript" src="chrome://kardia/content/main-overlay.js"/>
+	<script type="application/javascript" src="chrome://kardia/content/kardia-tab.js"/>
+	
+	<!-- main -->
+	<vbox flex="1">
+	<label id="tab-cant-connect" value="Could not connect to Kardia."/>
+	<vbox id="tab-main" flex="1" style="visibility:hidden">
+		<!-- top panel -->
+		<vbox id="tab-top-panel">			
+			<vbox id="tab-collaborators" flex="1">
+				<hbox>
+					<label class="tab-title" value="Collaborating With..."/>
+					<spacer flex="1"/>
+					<!-- sort by -->
+					<vbox>
+						<spacer flex="1"/>
+						<label value="Sort by..." class="bold-text"/>
+						<spacer flex="1"/>
+					</vbox>
+					<radiogroup id="sort-by" orient="horizontal" oncommand="sortBy()" >
+						<radio id="sort-by-name" class="tab-sort-button" selected="true" value="name" tooltiptext="Sort partners by first name">
+							<label value="Name"/>
+							<image id="tab-sort-by-name" class="show-kardia-pane-arrow"/>
+						</radio>
+						<radio id="sort-by-id" class="tab-sort-button" value="id" tooltiptext="Sort partners by Kardia ID number">
+							<label value="ID"/>
+							<image id="tab-sort-by-id" class="show-kardia-pane-arrow"/>
+						</radio>
+						<radio id="sort-by-date" class="tab-sort-button" value="date" tooltiptext="Sort partners by recent activity date">
+							<label value="Date"/>
+							<image id="tab-sort-by-date" class="show-kardia-pane-arrow"/>
+						</radio>
+					</radiogroup>
+				</hbox>
+				<!-- filter by -->
+				<hbox class="top-bottom-margin">
+					<label value="Filter by..." class="bold-text"/>
+					<radiogroup id="filter-by-type" orient="horizontal" oncommand="filterBy()">
+						<radio id="filter-by-any" class="tab-filter-radio" selected="true" value="any" tooltiptext="Show partners that meet any of your criteria">
+							<label value="Any of"/>
+						</radio>
+						<radio id="filter-by-all" class="tab-filter-radio" value="all" tooltiptext="Only show partners that meet all your criteria">
+							<label value="All of"/>
+						</radio>
+					</radiogroup>
+				</hbox>
+				
+				<hbox class="top-bottom-margin" id="filter-by-tracks">	
+					<label value="Track:"/>
+				</hbox>
+				<hbox class="top-bottom-margin" id="filter-by-tags">	
+					<label value="Tag:"/>
+				</hbox>
+				<hbox class="top-bottom-margin">
+					<vbox>
+						<spacer flex="1"/>
+						<label value='Only filter using tags with ' style="margin-right:0px;padding-right:0px;"/>
+						<spacer flex="1"/>
+					</vbox>
+					<textbox type='number' min='-100' max='100' value='-100' increment='5' width='35px' onchange="reloadFilters(false)" id="filter-by-magnitude-min"/>
+					<vbox>
+						<spacer flex="1"/>
+						<label value='to' style="margin:0px;padding:0px;"/>
+						<spacer flex="1"/>
+			 		</vbox>
+					<textbox type='number' min='-100' max='100' value='100' increment='5' width='35px' onchange="reloadFilters(false)" id="filter-by-magnitude-max"/>
+					<vbox>
+						<spacer flex="1"/>
+						<label value='% interest and at least' style="margin:0 2px 0 0;padding:0px;"/>
+						<spacer flex="1"/>
+					</vbox>
+					<textbox type='number' min='0' max='100' value='0' increment='5' width='35px' onchange="reloadFilters()" id='filter-by-certainty'/>
+					<vbox>
+						<spacer flex="1"/>
+						<label value='% certainty' style="margin:0px;padding:0px;"/>
+						<spacer flex="1"/>
+			 		</vbox>
+				</hbox>
+				<hbox class="top-bottom-margin" id="filter-by-data">	
+					<label value="Data items:"/>
+					<label id="tab-data-instruction" value="click a data item to add it as a filter" style="font-style:italic"/>
+				</hbox>
+				<hbox class="top-bottom-margin" id="filter-by-funds" style="margin-bottom:10px;">	
+					<label value="Fund contributions:"/>
+					<label id="tab-funds-instruction" value="click a fund to add it as a filter" style="font-style:italic"/>
+				</hbox>
+				
+				<vbox id="tab-collaborators-inner" flex="1">
+				</vbox>
+			</vbox>
+		</vbox>
+		
+		<splitter resizebefore="closest" state="open" id="tab-kardia-splitter"/>
+		
+		<!-- bottom panel -->
+		<vbox id="tab-bottom-panel" flex="1" context="print-context">
+			<!-- header with person's name -->
+			<hbox id="tab-name-box">
+				<label id="tab-bottom-name" value=""/>
+			</hbox>
+			
+			<!-- rest of bottom panel -->
+			<hbox id="tab-bottom-hbox" flex="1" style="visibility:hidden">
+				<!-- tags -->
+				<vbox id="tab-tags" class="tab-bottom-box">
+					<label class="tab-title" value="Tags"/>
+				</vbox>
+				
+				<splitter resizebefore="closest" state="open" collapse="both" class="tab-splitter">
+					<vbox class="tab-splitter-vbox" flex="1"/>
+				</splitter>
+				
+				<!-- location and emails -->
+				<vbox class="tab-bottom-box">
+					<vbox id="tab-location">
+						<label class="tab-title" value="Location"/>
+						<!-- addresses and link -->
+						<hbox id="tab-address-map" style="visibility:hidden">
+							<menulist id="tab-address-select" oncommand="setMapLink();">
+								<menupopup id="tab-address-select-inner">
+								</menupopup>
+							</menulist>
+							<vbox>
+								<spacer flex="1"/>
+								<label id="tab-map-link" class="text-link" href="" value="View map..." tooltiptext="View location in Google Maps" context="maplink-context"/>
+								<spacer flex="1"/>
+							</vbox>
+						</hbox>
+					</vbox>
+					<vbox id="tab-emails" flex="1">
+						<label class="tab-title" value="Email"/>
+						<hbox>
+							<!-- choose email -->
+							<menulist id="tab-filter-select">
+								<menupopup id="tab-filter-select-inner">
+								</menupopup>
+							</menulist>
+							<vbox>
+								<spacer flex="1"/>
+								<label class="text-link" style="font-weight:bold;" value="View in inbox..." onclick="quickFilter();" tooltiptext="View all messages involving this email address"/>
+								<spacer flex="1"/>
+							</vbox>
+						</hbox>
+					</vbox>
+				</vbox>
+				
+				<splitter resizebefore="closest" state="open" collapse="both" class="tab-splitter">
+					<vbox class="tab-splitter-vbox" flex="1"/>
+				</splitter>
+
+				<!-- data items -->
+				<vbox id="tab-data-items" class="tab-bottom-box">
+					<label class="tab-title" value="Data Items"/>
+					<hbox>
+						<spacer flex="1"/>
+						<label class="new-button" value="New Data Item..." onclick="newDataItem()"/>
+					</hbox>
+				</vbox>
+				
+				<splitter resizebefore="closest" state="open" collapse="both" class="tab-splitter">
+					<vbox class="tab-splitter-vbox" flex="1"/>
+				</splitter>
+				
+				<!-- giving -->
+				<vbox id="tab-giving" class="tab-bottom-box" flex="1">
+					<label class="tab-title" value="Giving"/>
+					<label id="tab-no-giving-history" value="no giving history" style="font-style:italic; display:none;"/>
+					
+					<tree id="giving-tree" style="visibility:hidden">
+						<treecols>
+							<treecol id="tab-giving-date" label="Date" sort="?tab-giving-date" width="60px"/>
+							<splitter class="tab-splitter"/>
+							<treecol id="tab-giving-amount" label="Amount" sort="?tab-giving-amount" width="60px"/>
+				 			<splitter class="tab-splitter"/>
+							<treecol id="tab-giving-fund" label="Fund" sort="?tab-giving-fund" width="60px"/>
+							<splitter class="tab-splitter"/>
+							<treecol id="tab-giving-type" label="Type" sort="?tab-giving-type" flex="1"/>
+						</treecols>
+						<treechildren id="giving-tree-children">
+						</treechildren>
+					</tree>
+					
+					<splitter class="tab-splitter" style="border-bottom:1px solid rgba(80,80,80,0.5);"/>
+
+					<vbox id="tab-funds" flex="1">
+						<hbox id="tab-filter-gifts-header" class="top-bottom-margin">
+							<label value="Filter gifts by..." class="bold-text"/>
+							<radiogroup id="filter-gifts-by-type" orient="horizontal" oncommand="reloadGifts()">
+								<radio id="filter-gifts-by-any" class="tab-filter-radio" selected="true" value="any" tooltiptext="Show gifts that meet any of your criteria">
+									<label value="Any of"/>
+								</radio>
+								<radio id="filter-gifts-by-all" class="tab-filter-radio" value="all" tooltiptext="Only show gifts that meet all your criteria">
+									<label value="All of"/>
+								</radio>
+							</radiogroup>
+						</hbox>
+						<hbox id="tab-filter-gifts-fund" class="top-bottom-margin">
+							<label value="Fund: "/>
+						</hbox>
+	
+						<hbox id="tab-filter-gifts-type"  class="top-bottom-margin">
+							<label value="Type: "/>
+						</hbox>
+						<hbox class="top-bottom-margin">
+							<label value="Amount: "/>
+							<textbox id="tab-filter-gifts-min-amount" value="0" type="number" decimalplaces="2" hidespinbuttons="true" width="60px" onchange="reloadGifts()"/>
+							<label value="to"/>
+							<textbox id="tab-filter-gifts-max-amount" value="100" type="number" decimalplaces="2" hidespinbuttons="true" disabled="true" width="60px" onchange="reloadGifts()"/>
+							<checkbox id="tab-filter-gifts-no-max-amount" checked="true" label="No maximum" oncommand="toggleGiftMaxAmount()"/>
+						</hbox>
+						<hbox class="top-bottom-margin">
+							<label value="Received on or after:"/>
+							<datepicker id="tab-filter-gifts-min-date" type="popup" disabled="true" onchange="window.setTimeout(function() {reloadGifts();})"/>
+							<checkbox id="tab-filter-gifts-no-min-date" checked="true" label="No start date" oncommand="toggleGiftDateRange()"/>
+						</hbox>
+						<hbox class="top-bottom-margin">
+							<label value="Received on or before:"/>
+							<datepicker id="tab-filter-gifts-max-date" type="popup" disabled="true" onchange="window.setTimeout(function() {reloadGifts();})"/>
+							<checkbox id="tab-filter-gifts-no-max-date" checked="true" label="No end date" oncommand="toggleGiftDateRange()"/>
+						</hbox>
+						<vbox id="tab-funds-filter-partners">
+						</vbox>
+					</vbox>
+				</vbox>
+			</hbox>			
+		</vbox>
+	</vbox>
+	</vbox>
+			
+	<!-- context menus-->
+	<popupset>
+		<!-- print -->
+		<menupopup id="print-context">
+			<menuitem label="Print..." oncommand="printPartner();" accesskey="P" />
+		</menupopup>
+		
+		<!-- open map link -->
+		<menupopup id="maplink-context">
+			<menuitem label="Open Link In Browser" oncommand="openUrl(document.popupNode.href,false);" accesskey="O" />
+			<menuitem label="Copy Link Location" oncommand="copyMapLocation()" accesskey="L" />
+		</menupopup>
+	</popupset>
+</window>

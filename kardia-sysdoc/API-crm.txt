@@ -250,11 +250,13 @@ OBJECT STRUCTURE...
 			      step with the partner
 	    started_by_partner_id - the ID of the above
 	    started_by_partner_ref - a link to more detail about the above
+	    simple_completion_date - the completion date of this step with no condition involved
 	    completion_date - the completion date of this step, if any
 	    completed_by_partner - the name of the collaborator who completed
 			      this step with the partner
 	    completed_by_partner_id - the ID of the above
 	    completed_by_partner_ref - a link to more detail about the above
+	    simple_exited_date - the exit date of this step with no condition involved
 	    exited_date	    - the exit date of this step (if any)
 	    exited_by_partner - the name of the collaborator who exited (i.e.,
 			      canceled out of) this step with the partner
@@ -326,14 +328,24 @@ OBJECT STRUCTURE...
 	    partner_name    - the name (org or first/last) of the partner
 	    partner_ref	    - a pathname to the main partner element, in case
 			      more information about the partner is needed.
-	    todo_id 		- the numerical id of the todo item
-	    todo_type_id 	- the numerical id of the todo type
-	    todo_type		- the name of the todo type
-	    desc			- the description (text) of the todo item
-	    collaborator_id - the partner id of the collaborator that needs to do this todo item
-	    engagement_id	- the numerical id of the engagement item this todo relates to
-	    document_id		- the numerical id of the document this todo relates to
-	    req_item_id		- the numerical id of the requirement item this todo relates to		
+	    todo_id 	    - the numerical id of the todo item
+	    todo_type_id    - the numerical id of the todo type
+	    todo_type	    - the name of the todo type
+	    desc	    - the description (text) of the todo item
+	    collaborator_id - the partner id of the collaborator that needs to do this
+			      todo item
+	    engagement_id   - the numerical id of the engagement item this todo relates
+			      to
+	    engagement_start_date - the date when the last engagement step was entered
+	    document_id	    - the numerical id of the document this todo relates to
+	    req_item_id	    - the numerical id of the requirement item this todo
+			      relates to
+	    req_item_due_days_from_step - how many days the requirement item
+			      will be due after the engagement step was started
+	    req_item_completion_status - "I" if the item is incomplete, "C" if
+			      complete, "W" if waived
+	    req_item_completion_date - the date the item was completed
+	    req_item_completed_by - username that caused the item to become completed
 
 	The following 'system' properties will be provided:
 
@@ -344,7 +356,7 @@ OBJECT STRUCTURE...
 		
 		
 	/apps/kardia/api/crm/Partners/{partnerid}/Todos -- A list of all
-    todo items that currently relate to this partner
+    todo items that relate to this partner
 
 	This is a collection URL; each returned element will have the
 	following properties:
@@ -353,21 +365,106 @@ OBJECT STRUCTURE...
 	    partner_name    - the name (org or first/last) of the partner
 	    partner_ref	    - a pathname to the main partner element, in case
 			      more information about the partner is needed.
-	    todo_id 		- the numerical id of the todo item
-	    todo_type_id 	- the numerical id of the todo type
-	    todo_type		- the name of the todo type
-	    desc			- the description (text) of the todo item
-	    collaborator_id - the partner id of the collaborator that needs to do this todo item
-	    engagement_id	- the numerical id of the engagement item this todo relates to
-	    document_id		- the numerical id of the document this todo relates to
-	    req_item_id		- the numerical id of the requirement item this todo relates to		
-
+	    todo_id 	    - the numerical id of the todo item
+	    todo_type_id    - the numerical id of the todo type
+	    todo_type	    - the name of the todo type
+	    desc	    - the description (text) of the todo item
+	    collaborator_id - the partner id of the collaborator that needs to
+			      do this todo item
+	    engagement_id   - the numerical id of the engagement item this todo
+			      relates to
+	    document_id	    - the numerical id of the document this todo relates
+			      to
+	    req_item_id	    - the numerical id of the requirement item this todo
+			      relates to		
+	    req_item_due_days_from_step - how many days the requirement item
+			      will be due after the engagement step was started
+	    req_item_completion_status - "I" if the item is incomplete, "C" if
+			      complete, "W" if waived
+	    req_item_completion_date - the date the item was completed
+	    req_item_completed_by - username that caused the item to become
+			      completed
+		
 	The following 'system' properties will be provided:
 
 	    date_created    - date the todo was added to the partner
 	    created_by	    - username that added the todo
 	    date_modified   - date the todo was modified in Kardia
-	    modified_by	    - username that modified the todo		
+	    modified_by	    - username that modified the todo	
+
+
+	/apps/kardia/api/crm/Partners/{partnerid}/DataItems -- A list of all
+    todo items that relate to this partner
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    item_id 	    - the numerical id of the data item
+	    item_type_id    - the numerical id of the data item type
+	    item_type_label - the short name or label of the data item type
+	    item_group_id   - the numerical id of the data item group
+	    item_group_name - the name of the data item group
+	    item_value 	    - the value of the data item
+	    item_highlight  - 1 if the data item is highlighted, 0 otherwise
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item was added to the partner
+	    created_by	    - username that added the data item
+	    date_modified   - date the data item was modified in Kardia
+	    modified_by	    - username that modified the data item	
+
+		
+	/apps/kardia/api/crm/Partners/{partnerid}/DataGroups -- A list of all
+    data item groups that relate to this partner
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    group_d 	    - the numerical id of the data item group
+	    group_name	    - the name of the data item group
+	    group_desc	    - the description (text) of the data item group
+	    type_id	    - the numerical id of the data item type associated with the group
+		
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item group was added to the partner
+	    created_by	    - username that added the data item group
+	    date_modified   - date the data item group was modified in Kardia
+	    modified_by	    - username that modified the data item group	
+		
+		
+	/apps/kardia/api/crm/Partners/{partnerid}/DataGroups/{groupid}/DataItems -- A list of all
+    data items that are in this data item group
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    item_id 	    - the numerical id of the data item
+	    item_type_id    - the numerical id of the data item type
+	    item_type_label - the short name or label of the data item type
+	    item_group_id   - the numerical id of the data item group
+	    item_value 	    - the value of the data item
+	    item_highlight  - 1 if the data item is highlighted, 0 otherwise
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item was added to the partner
+	    created_by	    - username that added the data item
+	    date_modified   - date the data item was modified in Kardia
+	    modified_by	    - username that modified the data item	
 	
 	
 	/apps/kardia/api/crm/Todos -- list of todo items in the CRM system.
@@ -395,9 +492,6 @@ OBJECT STRUCTURE...
 	    date_modified   - date the todo was modified in Kardia
 	    modified_by	    - username that modified the todo
 
-		
-	
-	
 	
 EXAMPLE URLS...
 
@@ -458,9 +552,19 @@ EXAMPLE URLS...
 	
 	http://server/apps/kardia/api/crm/Partners/100000/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 	
+    A list of the data item groups associated with a partner, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/DataGroups?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+    A list of the data items from one data item group, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/DataGroups/100001/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
     A list of all todo items in the system:
 	
 	http://server/apps/kardia/api/crm/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 	
+    A list of the data items associated with a partner, with detail about each:
 	
-	
+	http://server/apps/kardia/api/crm/Partners/100003/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+

@@ -1,0 +1,219 @@
+Document:   Kardia REST API for Gift Designations Data
+Author:	    Greg Beeley (GRB)
+Date:	    08-Aug-2014
+-------------------------------------------------------------------------------
+
+OVERVIEW...
+
+    This document describes the gift designation data API for Kardia.  If you
+    are not already familiar with web services, REST, and the Kardia REST API
+    system, please first read "JSON-REST.txt" in centrallix-sysdoc, and read
+    "API.txt" in this documentation directory.
+
+    The purpose of this API is to provide access to gift information in a
+    fund-specific context.
+
+
+ENDPOINT...
+
+    The endpoint of this API will be:
+
+	/apps/kardia/api/designation
+
+    Of course, the needed protocol (http or https) and server address (such as
+    server.lightsys.org:843) will need to be added to the URL, to give
+    something like:
+
+	https://server.lightsys.org:843/apps/kardia/api/designation?cx__mode=rest
+
+
+OBJECT STRUCTURE...
+
+    The following are example paths to various types of collections of objects
+    in the designation data API:
+
+    /apps/kardia/api/designation/Funds -- list of gift designations (funds)
+
+	Please note that you may not have permission to view the entire list
+	of designations, or even permission to view a particular fund or
+	any funds at all.  This is determined by the Kardia system itself.
+
+	Example REST queries:
+
+	    http://server/apps/kardia/api/designation/Funds?cx__mode=rest&cx__res_type=collection
+	    http://server/apps/kardia/api/designation/Funds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+	Objects in this collection have the same properties as the specific
+	elements shown in the next item below.
+
+    /apps/kardia/api/designation/Funds/{fundname} -- information about one fund
+    (designation):
+
+	This URL would be an element, not a collection.  It will have the
+	following properties:
+
+	    name	    - combined id of fund and ledger
+	    fund            - id of the fund
+	    ledger     	    - id of the accounting ledger the fund belongs to
+	    fund_desc       - a short description of the fund
+	    ledger_desc	    - a short description of the accounting ledger
+	    subfund_list    - a comma-separated list of all subfunds that
+			      belong to this fund (including this fund itself)
+
+    /apps/kardia/api/designation/Funds/{fundname}/Gifts -- List of all gifts
+    given to the particular fund, including gifts given to sub-funds.
+
+	This is a collection URL.  Each Gift object returned will have the
+	following properties:
+
+	    gift_date	    - date of gift
+	    gift_amount	    - monetary amount of the gift
+	    gift_fund	    - id of fund donated to
+	    gift_ledger	    - ledger id of fund donated to
+	    gift_fund_desc  - description of fund donated to
+	    gift_ledger_desc- description of ledger
+	    gift_check_num  - check number of gift
+	    gift_type	    - type of gift (Check, Credit Card, etc.)
+	    gift_receipt_num- receipt number sent for the gift
+	    gift_non_tax_ded- 0 of tax deductible, 1 if not tax deductible
+	    donor	    - the name of the donor
+	    donor_id	    - the ID of the donor
+	    donor_address   - the current mailing address of the donor
+
+    /apps/kardia/api/designation/Funds/{fundname}/Years -- a list of all years
+    in which gifts were given to the fund (or to its subfunds):
+
+	Objects in this collection URL will have the following properties:
+
+	    year	    - the numeric year
+	    gift_count	    - the number of gifts in the year
+	    gift_total	    - the total given to the fund/subfunds in the year
+	    first_gift_date - the first date a gift was given in the year
+	    last_gift_date  - the last date a gift was given in the year
+
+    /apps/kardia/api/designation/Funds/{fundname}/Years/{year}/Gifts -- a list
+    of all gifts given to the fund (and subfunds) in the given year.
+
+	The objects in this collection URL will have the same properties as
+	objects in the non-year-specific collection URL.
+
+    /apps/kardia/api/designation/Funds/{fundname}/Years/{year}/Periods -- a
+    list of accounting periods in the given year (whether or not those periods
+    have gifts in them to this fund or subfunds):
+
+	This is a collection URL.  Properties:
+
+	    name	    - combined id of period and accounting ledger
+	    period    	    - id of the period, such as "2014.01"
+	    period_desc     - description of the period
+	    ref_period	    - the reference period (usually January of the year)
+
+    /apps/kardia/api/designation/Funds/{fundname}/Years/{year}/Periods/{periodname}/Gifts
+    -- a list of all gifts given to the fund/subfunds in the particular period.
+
+	The objects in this collection URL will have the same properties as
+	objects in the non-year-specific collection URL.
+
+    /apps/kardia/api/designation/Funds/{fundname}/Subfunds/ -- a list of
+    subfunds for the given fund.
+
+	The objects in this collection URL will have the same properties as
+	objects in the main fund list URL.
+
+    /apps/kardia/api/designation/Funds/{fundname}/Subfunds/{fundname}/Gifts
+    -- List of all gifts given to the particular fund.
+
+	This is a collection URL.  Each Gift object returned will have the
+	same properties as the non-subfund Gifts collection.
+
+    /apps/kardia/api/designation/Funds/{fundname}/Subfunds/{fundname}/Years
+    -- a list of all years in which gifts were given to the fund.
+
+	Objects in this collection URL will have the same properties as the
+	non-subfund Years collection.
+
+    /apps/kardia/api/designation/Funds/{fundname}/Subfunds/{fundname}/Years/{year}/Gifts
+    -- a list of all gifts given to the fund in the given year.
+
+	The objects in this collection URL will have the same properties as
+	objects in the equivalent non-subfund Gifts collection URL.
+
+    /apps/kardia/api/designation/Funds/{fundname}/Subfunds/{fundname}/Years/{year}/Periods
+    -- a list of accounting periods in the given year (whether or not those
+    periods have gifts in them to this fund):
+
+	This is a collection URL.  Properties will be the same as that of the
+	non-subfund-specific Periods URL.
+
+    /apps/kardia/api/designation/Funds/{fundname}/Subfunds/{fundname}/Years/{year}/Periods/{periodname}/Gifts
+    -- a list of all gifts given to the fund in the particular period.
+
+	The objects in this collection URL will have the same properties as
+	objects in the non-subfund/year-specific collection URL.
+
+
+EXAMPLE URLS...
+
+    The list of designations (funds) in the system:
+
+	http://server/apps/kardia/api/designation/Funds?cx__mode=rest&cx__res_type=collection
+
+    The list of designations (funds) along with information about each fund:
+
+	http://server/apps/kardia/api/designation/Funds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Information about one designation/fund:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO?cx__mode=rest&cx__res_format=attrs
+
+    Information about one fund in 'full' attribute mode:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=full
+
+    A list of gifts for a given fund (subfunds included), with information
+    about each gift:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of years in which a gift was given to the fund or its subfunds:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Years?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of the gifts given to the fund/subfunds in the given year:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Years/2014/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of the accounting periods in the given year (whether or not the
+    period had any gifts in it):
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Years/2014/Periods?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of the gifts given to the fund/subfunds in the given period:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Years/2014/Periods/2014.01|LS/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of subfunds for a given fund:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Subfunds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of gifts for a given subfund, with information about each gift:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Subfunds/7010|DEMO/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of years in which a gift was given to the subfund:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Subfunds/7010|DEMO/Years?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of the gifts given to the subfund in the given year:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Subfunds/7010|DEMO/Years/2014/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of the accounting periods in the given year (whether or not the
+    period had any gifts in it):
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Subfunds/7010|DEMO/Years/2014/Periods?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of the gifts given to the subfund in the given period:
+
+	http://server/apps/kardia/api/designation/Funds/7000|DEMO/Subfunds/7010|DEMO/Years/2014/Periods/2014.01|LS/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+

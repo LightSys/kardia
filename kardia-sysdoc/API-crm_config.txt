@@ -148,7 +148,99 @@ OBJECT STRUCTURE...
 	    date_modified   - date the requirement was modified in Kardia
 	    modified_by	    - username that modified the requirement
 
+		
+	/apps/kardia/api/crm_config/Tags -- list of available smart tags
 
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    tag_id	  		- the numerical ID identifying the tag
+	    tag_label	    - the short name or label for this track
+	    tag_desc		- the description of the track
+	    is_active	    - 1 if the tag is active, 0 otherwise
+	    tag_threshold	- value between 0.0 and 1.0;
+						how strong tag must be in order to be created in partner's tag graph
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the tag was created in Kardia
+	    created_by	    - username that created the tag
+	    date_modified   - date the tag was modified in Kardia
+	    modified_by	    - username that modified the tag
+		
+		
+	/apps/kardia/api/crm_config/ContactHistTypes -- list of types of data items
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    id = :e_contact_history_type,
+			label = :e_short_name,
+			desc = :e_description,
+			user_selectable = :e_user_selectable
+			date_created = :s_date_created,
+			created_by = :s_created_by,
+			date_modified = :s_date_modified,
+			modified_by = :s_modified_by
+			from
+			/apps/kardia/data/Kardia_DB/e_contact_history_type/rows
+			
+			
+		id	  		- the numerical ID identifying the contact history item type
+	    label	    - the short name or label for this contact history item type
+	    desc		- the description of the contact history item type
+		user_selectable	- 1 if the type can be selected by a user entering a contact history item,
+						  0 if only used for auto-generated records
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item type was created in Kardia
+	    created_by	    - username that created the data item type
+	    date_modified   - date the date item type was modified in Kardia
+	    modified_by	    - username that modified the data item type
+		
+		
+	/apps/kardia/api/crm_config/DataItemTypes -- list of types of data items
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    type_id	  		- the numerical ID identifying the data item type
+	    type_label	    - the short name or label for this data item type
+		parent_type_id	- the ID of the parent data item type
+		parent_type_label	- the short name or label for the parent data item type
+	    type_desc		- the description of the data item type
+		type_highlight	- 1 if the tag is highlighted, 0 otherwise
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item type was created in Kardia
+	    created_by	    - username that created the data item type
+	    date_modified   - date the date item type was modified in Kardia
+	    modified_by	    - username that modified the data item type
+		
+	
+	/apps/kardia/api/crm_config/Countries -- list of countries
+	
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    country_code	- the country code (ISO 3166-1 Alpha-2 With UK exception)
+		iso3166_2_code	- the ISO 3166-1 Alpha-2 country code
+		iso3166_3_code	- the ISO 3166-1 Alpha-3 country code
+		fips_code		- the two-letter country code used by FIPS 10-4 / CIA World Factbook
+						  / Joshua Project / HIS-ROG3
+		name 			- the country name
+		is_valid		- 1 if the country is valid (active), 0 otherwise (obsolete)
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the country was created in Kardia
+	    created_by	    - username that created the country
+	    date_modified   - date the country was modified in Kardia
+	    modified_by	    - username that modified the country
+	
+	
 
 EXAMPLE URLS...
 
@@ -183,3 +275,19 @@ EXAMPLE URLS...
     A list of requirements for a given step, with detail about each:
 
 	http://server/apps/kardia/api/crm_config/Tracks/Volunteer/Steps/Inquiry/Requirements?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+	The list of tags in the system, with information about each:
+	
+	http://server/apps/kardia/api/crm_config/TagTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	The list of contact history types in the system, with information about each:
+	
+	http://server/apps/kardia/api/crm_config/ContactHistTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	The list of data item types in the system, with information about each:
+	
+	http://server/apps/kardia/api/crm_config/DataItemTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	The list of countries in the system, with information about each:
+	
+	http://server/apps/kardia/api/crm_config/Countries?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
