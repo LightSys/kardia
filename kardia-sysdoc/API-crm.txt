@@ -280,9 +280,9 @@ OBJECT STRUCTURE...
 	    partner_ref	    - a pathname to the main partner element, in case
 			      more information about the partner is needed.
 	    collaborator_id - the partner id of the collaborator
-		collaborator_name - the name of the collaborator
+	    collaborator_name - the name of the collaborator
 	    collaborator_type_id - the numerical id of the collaborator type
-		collaborator_type - the name of the collaborator type
+	    collaborator_type - the name of the collaborator type
 
 	The following 'system' properties will be provided:
 
@@ -299,10 +299,10 @@ OBJECT STRUCTURE...
 	following properties:
 
 	    collaborator_id - the partner id of the collaborator
-		collaborator_name - the name of the collaborator
+	    collaborator_name - the name of the collaborator
 	    collaborator_type_id - the numerical id of the collaborator type
-		collaborator_type - the name of the collaborator type
-		partner_id	    - partner id of the partner being collaborated with
+	    collaborator_type - the name of the collaborator type
+	    partner_id	    - partner id of the partner being collaborated with
 	    partner_name    - the name (org or first/last) of the partner
 	    partner_ref	    - a pathname to the main partner element, in case
 			      more information about the partner is needed.
@@ -328,12 +328,12 @@ OBJECT STRUCTURE...
 			      more information about the partner is needed.
 	    todo_id 		- the numerical id of the todo item
 	    todo_type_id 	- the numerical id of the todo type
-		todo_type		- the name of the todo type
-		desc			- the description (text) of the todo item
-		collaborator_id - the partner id of the collaborator that needs to do this todo item
-		engagement_id	- the numerical id of the engagement item this todo relates to
-		document_id		- the numerical id of the document this todo relates to
-		req_item_id		- the numerical id of the requirement item this todo relates to		
+	    todo_type		- the name of the todo type
+	    desc			- the description (text) of the todo item
+	    collaborator_id - the partner id of the collaborator that needs to do this todo item
+	    engagement_id	- the numerical id of the engagement item this todo relates to
+	    document_id		- the numerical id of the document this todo relates to
+	    req_item_id		- the numerical id of the requirement item this todo relates to		
 
 	The following 'system' properties will be provided:
 
@@ -355,12 +355,12 @@ OBJECT STRUCTURE...
 			      more information about the partner is needed.
 	    todo_id 		- the numerical id of the todo item
 	    todo_type_id 	- the numerical id of the todo type
-		todo_type		- the name of the todo type
-		desc			- the description (text) of the todo item
-		collaborator_id - the partner id of the collaborator that needs to do this todo item
-		engagement_id	- the numerical id of the engagement item this todo relates to
-		document_id		- the numerical id of the document this todo relates to
-		req_item_id		- the numerical id of the requirement item this todo relates to		
+	    todo_type		- the name of the todo type
+	    desc			- the description (text) of the todo item
+	    collaborator_id - the partner id of the collaborator that needs to do this todo item
+	    engagement_id	- the numerical id of the engagement item this todo relates to
+	    document_id		- the numerical id of the document this todo relates to
+	    req_item_id		- the numerical id of the requirement item this todo relates to		
 
 	The following 'system' properties will be provided:
 
@@ -381,12 +381,12 @@ OBJECT STRUCTURE...
 			      more information about the partner is needed.
 	    todo_id 		- the numerical id of the todo item
 	    todo_type_id 	- the numerical id of the todo type
-		todo_type		- the name of the todo type
-		desc			- the description (text) of the todo item
-		collaborator_id - the partner id of the collaborator that needs to do this todo item
-		engagement_id	- the numerical id of the engagement item this todo relates to
-		document_id		- the numerical id of the document this todo relates to
-		req_item_id		- the numerical id of the requirement item this todo
+	    todo_type		- the name of the todo type
+	    desc			- the description (text) of the todo item
+	    collaborator_id - the partner id of the collaborator that needs to do this todo item
+	    engagement_id	- the numerical id of the engagement item this todo relates to
+	    document_id		- the numerical id of the document this todo relates to
+	    req_item_id		- the numerical id of the requirement item this todo
 
 	The following 'system' properties will be provided:
 
@@ -399,7 +399,7 @@ OBJECT STRUCTURE...
 	
 	
 	
-	EXAMPLE URLS...
+EXAMPLE URLS...
 
     The list of engaging partners in the system:
 
@@ -442,23 +442,23 @@ OBJECT STRUCTURE...
 
 	http://server/apps/kardia/api/crm/Partners/100000/Tracks/Volunteer-1/History?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 
-	A list of the collaborators related to a partner, with detail about each:
+    A list of the collaborators related to a partner, with detail about each:
 	
 	http://server/apps/kardia/api/crm/Partners/100000/Collaborators?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 	
-	A list of the people a partner is collaborating with, with detail about each:
+    A list of the people a partner is collaborating with, with detail about each:
 	
 	http://server/apps/kardia/api/crm/Partners/100000/Collaboratees?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 	
-	A list of the todo items that a collaborator is supposed to do, with detail about each:
+    A list of the todo items that a collaborator is supposed to do, with detail about each:
 	
 	http://server/apps/kardia/api/crm/Partners/100000/CollaboratorTodos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 	
-	A list of the todo items associated with a partner, with detail about each:
+    A list of the todo items associated with a partner, with detail about each:
 	
 	http://server/apps/kardia/api/crm/Partners/100000/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 	
-	A list of all todo items in the system:
+    A list of all todo items in the system:
 	
 	http://server/apps/kardia/api/crm/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 	

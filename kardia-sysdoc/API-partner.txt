@@ -267,11 +267,11 @@ OBJECT STRUCTURE...
 	following basic properties:
 
 	    partner_id	    - id of the partner (staff member)
-		is_staff		- 1 if staff, 0 if not (should never be 0)
+	    is_staff		- 1 if staff, 0 if not (should never be 0)
 	    kardia_login	- the staff member's Kardia login name
-		kardiaweb_login	- the staff member's Kardia self-service website login
-		preferred_email_id - the id of the preferred email for receiving reports etc. from Kardia
-		preferred_location_id - the id of the preferred location for receiving reports etc. from Kardia
+	    kardiaweb_login	- the staff member's Kardia self-service website login
+	    preferred_email_id - the id of the preferred email for receiving reports etc. from Kardia
+	    preferred_location_id - the id of the preferred location for receiving reports etc. from Kardia
 
 	The following 'system' properties will be provided:
 
@@ -336,6 +336,6 @@ EXAMPLE URLS...
 
 	http://server/apps/kardia/api/partner/ContactTypes/Email/greg.beeley@lightsys.org/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
 	
-	The list of staff in the Kardia system:
+    The list of staff in the Kardia system:
 	
 	http://server/apps/kardia/api/partner/Staff/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
