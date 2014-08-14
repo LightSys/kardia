@@ -526,6 +526,28 @@ api_crm "system/querytree"
 			    ";
 		    }
 		}
+
+	    Activity "system/querytree"
+		{
+		text = "Activity";
+
+		activity_list "system/querytree"
+		    {
+		    sql = runserver("
+			    SELECT
+				name = :e_activity_type + '|' + :e_reference_info,
+				whom = :e_whom,
+				initiated_by = condition(:e_initiation == 'C', 'Collaborator', 'Partner'),
+				activity_date = :e_activity_date,
+				activity_type = :e_activity_type,
+				reference_info = :e_reference_info,
+				info = :e_info
+			    FROM
+				identity '/apps/kardia/modules/crm/activity.qy?partner_key=" + escape(:eng_list:partner_id,"'","") + "'
+			    ");
+		    use_having = yes;
+		    }
+		}
 	    }
 	}
 	

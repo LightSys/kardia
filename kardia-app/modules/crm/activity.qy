@@ -36,17 +36,18 @@ activity "system/query"
 		e_activity_date = :p:s_date_created,
 		e_activity_type = 'PAR',
 		e_reference_info = :p:p_partner_key,
-		e_info = 'Added to Kardia' + isnull(' (' + :ac:p_acquisition_name + ')', ''),
+		-- e_info = 'Added to Kardia' + isnull(' (' + :ac:p_acquisition_name + ')', ''),
+		e_info = 'Added to Kardia',
 		s_date_created = getdate(),
 		s_created_by = user_name(),
 		s_date_modified = getdate(),
 		s_modified_by = user_name()
 	    from
-		/apps/kardia/data/Kardia_DB/p_partner/rows p,
-		/apps/kardia/data/Kardia_DB/p_acquisition_code/rows ac
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+		-- /apps/kardia/data/Kardia_DB/p_acquisition_code/rows ac
 	    where
-		:p:p_partner_key = :parameters:partner_key and
-		:ac:p_acquisition_code =* :p:p_acquisition_code
+		:p:p_partner_key = :parameters:partner_key
+		-- :ac:p_acquisition_code =* :p:p_acquisition_code
 	    ;
 
 	    -- Various contact records (contact history)
@@ -161,7 +162,7 @@ activity "system/query"
 		e_activity_date = :pe:e_start_date,
 		e_activity_type = 'TRK',
 		e_reference_info = :pe:p_partner_key + '|' + :pe:e_engagement_id + '|' + :pe:e_hist_id,
-		e_info = 'Began engagement track ' + :et:e_track_name + ' step ' + :es:e_step_name,
+		e_info = 'Began engagement track ' + :et:e_track_name + ' step ' + :es:e_step_name + isnull(' (' + :pe:e_desc + ')', ''),
 		s_date_created = getdate(),
 		s_created_by = user_name(),
 		s_date_modified = getdate(),
