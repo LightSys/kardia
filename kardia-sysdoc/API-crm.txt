@@ -285,6 +285,7 @@ OBJECT STRUCTURE...
 		collaborator_name - the name of the collaborator
 	    collaborator_type_id - the numerical id of the collaborator type
 		collaborator_type - the name of the collaborator type
+		collaborator_is_individual	- 1 if the collaborator is an individual or household, 0 otherwise
 
 	The following 'system' properties will be provided:
 
