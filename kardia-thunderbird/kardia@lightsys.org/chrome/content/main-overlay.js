@@ -513,11 +513,12 @@ function reload(isDefault) {
 		// display collaborators
 		var collaboratorText = "";
 		for (var i=0;i<mainWindow.collaborators[mainWindow.selected].length;i+=3) {
-			// if it's a team/group, show team image  TODO should this be a company?
-			if (mainWindow.collaborators[mainWindow.selected][i] == 1) {
+			// if it's a team/group, show team image 
+			if (mainWindow.collaborators[mainWindow.selected][i] == 0) {
 				collaboratorText += '<hbox><vbox><image class="team-image"/>';
 			}
-			else { //if (collaborators[mainWindow.selected][i] == "i") {	//show individual image		// this is commented out so we have a default case
+			else {
+				//show individual image
 				collaboratorText += '<hbox><vbox><image class="individual-image"/>';
 			}
 			collaboratorText += '<spacer flex="1"/></vbox><label tooltiptext="Click to view collaborator" width="100" flex="1" class="text-link" onclick="addCollaborator(' + mainWindow.collaborators[mainWindow.selected][i+1] + ')">' + mainWindow.collaborators[mainWindow.selected][i+2] +'</label></hbox>';
@@ -552,13 +553,21 @@ function reload(isDefault) {
 			}
 			kardiaTab.document.getElementById("tab-tags").innerHTML += '<hbox><spacer flex="1"/><button class="new-button" label="New Tag..." oncommand="newTag()" tooltiptext="Add tag to this partner"/></hbox>';
 			
-			// display data item group
-			kardiaTab.document.getElementById("tab-data-items").innerHTML = '<label class="tab-title" value="Data Items"/>';
+			// display data item groups
+			if (mainWindow.dataGroups[mainWindow.selected].length > 0) {
+				kardiaTab.document.getElementById("tab-data-items").innerHTML = '<label class="tab-title" value="Data Items"/>';
 			
-			for (var i=0;i<mainWindow.dataGroups[mainWindow.selected].length;i+=2) {
-				kardiaTab.document.getElementById("tab-data-items").innerHTML += '<label class="new-button" value="' + mainWindow.dataGroups[mainWindow.selected][i+1] + '..." onclick="openDataTab(\'' + mainWindow.dataGroups[mainWindow.selected][i] + '\',\'' + mainWindow.dataGroups[mainWindow.selected][i+1] + '\')"/>';
+				for (var i=0;i<mainWindow.dataGroups[mainWindow.selected].length;i+=2) {
+					kardiaTab.document.getElementById("tab-data-items").innerHTML += '<label class="new-button" value="' + mainWindow.dataGroups[mainWindow.selected][i+1] + '..." onclick="openDataTab(\'' + mainWindow.dataGroups[mainWindow.selected][i] + '\',\'' + mainWindow.dataGroups[mainWindow.selected][i+1] + '\')"/>';
+				}
+				// show data items
+				kardiaTab.document.getElementById("tab-data-items").style.visibility="visible";
 			}
-			
+			else {
+				// hide data items
+				kardiaTab.document.getElementById("tab-data-items").style.visibility="collapse";
+			}
+
 			if (mainWindow.gifts[mainWindow.selected].length <= 0) {
 				// show that there is no giving history
 				kardiaTab.document.getElementById("tab-no-giving-history").style.display = "inline";
@@ -604,9 +613,9 @@ function reload(isDefault) {
 			
 			// display dropdown list of addresses and link to map
 			if (mainWindow.addresses[mainWindow.selected].length > 0) {
-				kardiaTab.document.getElementById("tab-address-map").style.visibility="visible";
+				kardiaTab.document.getElementById("tab-location").style.visibility="visible";
 				kardiaTab.document.getElementById("tab-address-select-inner").innerHTML = "";
-				for (var i=0;i<mainWindow.addresses[mainWindow.selected].length;i++) {
+				for (var i=0;i<mainWindow.addresses[mainWindow.selected].length;i+=2) {
 					kardiaTab.document.getElementById("tab-address-select-inner").innerHTML += '<menuitem label="' + mainWindow.addresses[mainWindow.selected][i] + '" style="text-overflow:ellipsis;width:200px;"/>';
 				}
 				kardiaTab.document.getElementById("tab-address-select").selectedIndex = 0;
@@ -614,7 +623,7 @@ function reload(isDefault) {
 			}
 			else {
 				// the person has no addresses, so don't show address stuff
-				kardiaTab.document.getElementById("tab-address-map").style.visibility="none";
+				kardiaTab.document.getElementById("tab-location").style.visibility="collapse";
 			}
 		}
 	}
@@ -780,10 +789,6 @@ function printPartner(whichPartner) {
 	if (whichPartner == null) {
 		whichPartner = mainWindow.selected;
 	}
-	// problems and possible to dos:
-	// icons could be added next to notes, collaborators, documents?  They must be unicode characters
-	// the fact that we don't want to see printWindow means that the print dialog pops up in the very top of the screen, which is sort of annoying
-	
 	// open new hidden window where we'll put content to print
 	var printWindow = window.open("about:blank", "test-window", "chrome,left=0,top=-1000,width=500,height=800,toolbar=0,scrollbars=0,status=0");
 	
@@ -1179,7 +1184,7 @@ function getOtherInfo(index, isDefault) {
 									var collaboratorArray = new Array();
 									for (var i=0;i<keys.length;i++) {
 										if (keys[i] != "@id") {
-											collaboratorArray.push(collaboratorResp[keys[i]]['collaborator_type_id']);
+											collaboratorArray.push(collaboratorResp[keys[i]]['collaborator_is_individual']);
 											collaboratorArray.push(collaboratorResp[keys[i]]['collaborator_id']);
 											collaboratorArray.push(collaboratorResp[keys[i]]['collaborator_name']);
 										}
@@ -2454,10 +2459,11 @@ function newCollaborator() {
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 		
 		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Collaborators','{"e_collaborator":"' + returnValues.id + '","p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_collab_type_id":' + returnValues.type + ',"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+			// FIX STUB change type to individual/group
 			mainWindow.collaborators[mainWindow.selected].push(returnValues.type);
 			mainWindow.collaborators[mainWindow.selected].push(returnValues.id);
 			mainWindow.collaborators[mainWindow.selected].push(returnValues.name);
-			// fix stub- add to collaboratees
+			// FIX STUB- add to collaboratees
 
 			reload(false);
 		});
