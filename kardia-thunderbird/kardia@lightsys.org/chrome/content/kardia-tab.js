@@ -286,7 +286,7 @@ function sortCollaboratees(addButtons) {
 		}
 		
 		// move all items around based on how we sorted the names/ids/whatever
-		var arraysToMove = [mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.collaborateeData, mainWindow.collaborateeGifts, mainWindow.collaborateeFunds];
+		var arraysToMove = [mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.collaborateeActivity, mainWindow.collaborateeData, mainWindow.collaborateeGifts, mainWindow.collaborateeFunds];
 			
 		for (var j=0;j<arraysToMove.length;j++) {
 			firstItem = arraysToMove[j][firstIndex];
@@ -339,11 +339,17 @@ function reloadCollaboratee(index) {
 		}
 		addString += '</vbox>';
 	}
-	// add recent activity
-	// FIX STUB should not be hard-coded
-	addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + '2:35p: Hard-Coded Recent Activity' + '</label></hbox>';
+
+	if (mainWindow.collaborateeActivity[index].length > 0) {
+		addString += '<vbox flex="1">';
+		// add recent activity
+		for (var j=1;j<mainWindow.collaborateeActivity[index].length;j+=3) {
+
+			addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label flex="1">' + mainWindow.collaborateeActivity[index][j] + '</label></hbox>';
+		}
+		addString += '</vbox>';
+	}
 					
-	// FIX STUB should this even be here?  change to groups?
 	// add highlighted data items
 	if (mainWindow.collaborateeData[index].length > 1) {
 		addString += '<vbox>';
@@ -360,62 +366,6 @@ function reloadCollaboratee(index) {
 	// display the partner
 	kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML += addString;
 }
-
-/*// load todos and collaboratees when the tab is opened
-function loadStuff() { 		
-	// get all todos and import into calendar
-	var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
-	prefs = prefs.getBranch("extensions.kardia.");
-	
-	// get todos
-	doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.myId + "/CollaboratorTodos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(todoResp) {
-		// get all the keys from the JSON file
-		var keys = [];
-		for(var k in todoResp) keys.push(k);
-		
-		// clear todos array
-		mainWindow.allTodos = new Array();
-		
-		// the key "@id" doesn't correspond to a note, so use all other keys to add note info to array
-		for (var i=0;i<keys.length;i++) {
-			if (keys[i] != "@id") {
-				mainWindow.allTodos.push(todoResp[keys[i]]['todo_id']);
-				mainWindow.allTodos.push(todoResp[keys[i]]['partner_name'] + "- " + todoResp[keys[i]]['desc']);
-				mainWindow.allTodos.push(getTodoDueDate(todoResp[keys[i]]['engagement_start_date'],todoResp[keys[i]]['req_item_due_days_from_step']));
-			}
-		}
-		
-		//import todos to calendar
-		mainWindow.importTodos();
-	}, true, prefs.getCharPref("username"), prefs.getCharPref("password"));
-			
-	// get collaboratees
-	doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.myId + "/Collaboratees?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collabResp) {
-		// get all the keys from the JSON file
-		var keys = [];
-		for(var k in collabResp) keys.push(k);
-		
-		// refresh collaboratees list
-		mainWindow.collaborateeIds = new Array();
-		mainWindow.collaborateeNames = new Array();
-		mainWindow.collaborateeTracks = new Array();
-		mainWindow.collaborateeTags = new Array();
-		mainWindow.collaborateeActivity = new Array();
-		mainWindow.collaborateeData = new Array();
-		
-		// save to arrays
-		for (var i=0; i<keys.length; i++) {
-			if (keys[i] != "@id") {
-				mainWindow.collaborateeIds.push(collabResp[keys[i]]['partner_id']);
-				mainWindow.collaborateeNames.push(collabResp[keys[i]]['partner_name']);						
-			}
-		}
-		
-		// get other info
-		getCollaborateeInfo(0);
-	}, false, "", "");
-}
-*/
 
 // does quick filter from this tab
 function quickFilter() {

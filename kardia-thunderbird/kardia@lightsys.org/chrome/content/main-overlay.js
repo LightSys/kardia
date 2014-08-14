@@ -322,13 +322,6 @@ function findEmails() {
 		// remove all Kardia buttons in the email message
 		clearKardiaButton();
 
-		// add fake data (really, we should be getting it from Kardia, but we can't until all the CRM stuff is available)
-		// FIX STUB by removing this fake stuff
-		for (var i=0;i<emailAddresses.length;i++) {
-			mainWindow.recentActivity[i] = ["e","2:35p: Hard coded Recent Activity","e","11:40a: Re: Hard coded Recent Activity"];
-			//mainWindow.gifts[i] = ["5/2014", "$99.99", "Fund One", "6/2014", "$9.99", "Fund Two","7/2014", "$0.99", "Fund One", "3/2014", "$199.99", "Fund Two"];
-			//mainWindow.funds[i] = ["Fund One","Fund Two"];
-		}
 		// save headers
 		selectedMessages = gFolderDisplay.selectedMessages;
 		
@@ -484,13 +477,11 @@ function reload(isDefault) {
 		}
 		tracks += '<hbox><spacer flex="1"/><button class="new-button" label="New Track..." oncommand="newTrack()" tooltiptext="Add engagement track to this partner"/></hbox>';
 		mainWindow.document.getElementById("engagement-tracks-inner-box").innerHTML = tracks;				
-				
+		
 		// display recent activity
 		var recent = "";
 		for (var i=0;i<mainWindow.recentActivity[mainWindow.selected].length;i+=2) {
-			if (mainWindow.recentActivity[mainWindow.selected][i] == "e") {
-				recent += '<hbox><vbox><image class="email-image"/><spacer flex="1"/></vbox><label width="100" flex="1">' + mainWindow.recentActivity[mainWindow.selected][i+1] + '</label></hbox>';
-			}
+			recent += '<hbox class="hover-box"><label width="100" flex="1">' + mainWindow.recentActivity[mainWindow.selected][i+1] + '</label></hbox>';
 		}
 		mainWindow.document.getElementById("recent-activity-inner-box").innerHTML = recent;	
 		
@@ -1167,7 +1158,7 @@ function getOtherInfo(index, isDefault) {
 								for (var i=0;i<keys.length;i++) {
 									if (keys[i] != "@id") {
 										noteArray.push(noteResp[keys[i]]['subject'] + "- " + noteResp[keys[i]]['notes']);
-										noteArray.push(new Date(noteResp[keys[i]]['date_modified']['year'], noteResp[keys[i]]['date_modified']['month']-1, noteResp[keys[i]]['date_modified']['day'], noteResp[keys[i]]['date_modified']['hour'], noteResp[keys[i]]['date_modified']['minute'], noteResp[keys[i]]['date_modified']['second']).toLocaleString());
+										noteArray.push(datetimeToString(noteResp[keys[i]]['date_modified']));
 										noteArray.push(noteResp[keys[i]]['contact_history_id']);
 									}
 								}
@@ -1256,8 +1247,7 @@ function getOtherInfo(index, isDefault) {
 													}
 												}
 												mainWindow.data[index] = tempArray;
-											
-												// FIX STUB get recent activity
+
 												doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(activityResp) {
 													// get all the keys from the JSON file
 													var keys = [];
@@ -1495,7 +1485,7 @@ function getCollaborateeInfo(index) {
 								Application.console.log("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic");
 								doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(activityResp) {
 									// get all the keys from the JSON file
-									/*var keys = [];
+									var keys = [];
 									for(var k in activityResp) keys.push(k);
 									// save activity
 									var tempArray = new Array();
@@ -1507,7 +1497,7 @@ function getCollaborateeInfo(index) {
 												
 										}
 									}
-									mainWindow.collaborateeActivity.push(tempArray);*/
+									mainWindow.collaborateeActivity.push(tempArray);
 									
 									// if we've done all the collaboratees, start loading the Kardia tab stuff
 									if (index+1 >= mainWindow.collaborateeIds.length) {
@@ -2497,13 +2487,16 @@ function newCollaborator() {
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 		
 		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Collaborators','{"e_collaborator":"' + returnValues.id + '","p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_collab_type_id":' + returnValues.type + ',"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
-			// FIX STUB change type to individual/group
-			mainWindow.collaborators[mainWindow.selected].push(returnValues.type);
-			mainWindow.collaborators[mainWindow.selected].push(returnValues.id);
-			mainWindow.collaborators[mainWindow.selected].push(returnValues.name);
-			// FIX STUB- add to collaboratees
-
-			reload(false);
+			// get collaborator info
+			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[mainWindow.selected] + "/Collaborators?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(collabResp) {
+				// add to collaborators array
+				mainWindow.collaborators[mainWindow.selected].push(collabResp[returnValues.id + "|" + mainWindow.ids[mainWindow.selected]]['collaborator_is_individual']);
+				mainWindow.collaborators[mainWindow.selected].push(returnValues.id);
+				mainWindow.collaborators[mainWindow.selected].push(returnValues.name);
+				
+				//reload to display
+				reload(false);
+			}, false, "", "");
 		});
 	}
 }
@@ -2708,15 +2701,6 @@ function getTrackTagStaff(username, password) {
 	mainWindow.giftFilterFunds = new Array();
 	mainWindow.giftFilterTypes = new Array();
 	
-	if (kardiaTab != null) {
-		kardiaTab.document.getElementById("tab-main").style.visibility = "visible";
-		kardiaTab.document.getElementById("tab-cant-connect").style.display="none";
-		kardiaTab.document.getElementById("filter-by-tracks").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Track:"/>';
-		kardiaTab.document.getElementById("filter-by-tags").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Tag:"/>';
-		kardiaTab.document.getElementById("filter-by-data").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Data items:"/>';
-		kardiaTab.reloadFilters(true);
-	}
-
 	// get list of engagement tracks and their colors
 	doHttpRequest("apps/kardia/api/crm_config/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (trackListResp) {
 		// get all the keys from the JSON file
@@ -2803,6 +2787,15 @@ function getTrackTagStaff(username, password) {
 						
 						doHttpRequest("apps/kardia/api/crm_config/CollaboratorTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collabResp) {
 					
+							if (kardiaTab != null) {
+								kardiaTab.document.getElementById("tab-main").style.visibility = "visible";
+								kardiaTab.document.getElementById("tab-cant-connect").style.display="none";
+								kardiaTab.document.getElementById("filter-by-tracks").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Track:"/>';
+								kardiaTab.document.getElementById("filter-by-tags").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Tag:"/>';
+								kardiaTab.document.getElementById("filter-by-data").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Data items:"/>';
+								kardiaTab.reloadFilters(true);
+							}
+							
 							for(var k in collabResp) {
 								// the key "@id" doesn't correspond to a partner, so use all other keys to save partners
 								if (k != "@id") {
@@ -3052,9 +3045,6 @@ function doPatchHttpRequest(url, data, authenticate, username, password, doAfter
 		Application.console.log(httpUrl2);
 
 		httpRequest2.onreadystatechange  = function(aEvent) {
-			// TODO FIX STUB remove this
-			Application.console.log(httpRequest2.status);
-			
 			// if the request went through and we got success status
 			if(httpRequest2.readyState == 4 && httpRequest2.status == 200) {
 				// done
@@ -3083,9 +3073,6 @@ function doPostHttpRequest(url, data, authenticate, username, password, doAfter)
 		var httpUrl2 = server + url + "?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection&cx__akey=" + akey;
 
 		httpRequest2.onreadystatechange = function(aEvent) {
-			// TODO FIX STUB
-			Application.console.log(httpRequest2.status);
-			
 			// if the request went through and we got success status
 			if(httpRequest2.readyState == 4) {
 				// done
@@ -3158,4 +3145,10 @@ function openDataTab(groupId, groupName) {
 		}
 	}
 	mainWindow.document.getElementById("tabmail").openTab("contentTab", {contentPage: "chrome://kardia/content/data-item-group.xul" + dataItemString});
-}	
+}
+
+// convert JSON datetime to formatted string
+function datetimeToString(date) {
+	var dateObj = new Date(date['year'], date['month']-1, date['day'], date['hour'], date['minute'], date['second']);
+	return dateObj.toLocaleTimeString() + ' ' + date['month'] + '/' + date['day'] + '/' + date['year'];
+}
