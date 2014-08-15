@@ -1430,75 +1430,75 @@ function getCollaborateeInfo(index) {
 				}
 				mainWindow.collaborateeData.push(tempArray);
 			
-				doHttpRequest("apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection", function(donorResp) {
+				// get recent activity
+				doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(activityResp) {
 					// get all the keys from the JSON file
 					var keys = [];
-					for (var k in donorResp) keys.push(k);
-					
-					// is the partner a donor?
-					if (keys.indexOf(mainWindow.collaborateeIds[index]) >= 0) {
-						// get gifts
-						doHttpRequest("apps/kardia/api/donor/" + mainWindow.collaborateeIds[index] + "/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(giftResp) {
-							// get all the keys from the JSON file
-							var keys = [];
-							for(var k in giftResp) keys.push(k);
+					for(var k in activityResp) keys.push(k);
 
-							// save gifts
-							var tempArray = new Array();
-							for (var i=0; i<keys.length; i++) {
-								if (keys[i] != "@id") {
-									if (giftResp[keys[i]]['gift_date'] != null) {
-										tempArray.push(giftResp[keys[i]]['gift_date']['month'] + "/" + giftResp[keys[i]]['gift_date']['day'] + "/" + giftResp[keys[i]]['gift_date']['year']);
-									}
-									else {
-										tempArray.push("n/a");
-									}
-									tempArray.push(formatGift(giftResp[keys[i]]['gift_amount']['wholepart'], giftResp[keys[i]]['gift_amount']['fractionpart']));
-									tempArray.push(giftResp[keys[i]]['gift_fund_desc']);
+					// save activity
+					var tempArray = new Array();
+					for (var i=0; (i<keys.length && tempArray.length<6); i++) {
+						if (keys[i] != "@id") {
+							tempArray.push(activityResp[keys[i]]['activity_type']);
+							tempArray.push(datetimeToString(activityResp[keys[i]]['activity_date']) + ": " + activityResp[keys[i]]['info']);
+							tempArray.push(activityResp[keys[i]]['activity_date']);
+								
+						}
+					}
+					mainWindow.collaborateeActivity.push(tempArray);
 									
-									// if check, display check number
-									if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'].trim() != "") {
-										tempArray.push(giftResp[keys[i]]['gift_type'] + " (#" + giftResp[keys[i]]['gift_check_num'] + ")");
-									}
-									else {
-										tempArray.push(giftResp[keys[i]]['gift_type']);
-									}																	
-								}
-							}
-							mainWindow.collaborateeGifts.push(tempArray);
+									
+					doHttpRequest("apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection", function(donorResp) {
+						// get all the keys from the JSON file
+						var keys = [];
+						for (var k in donorResp) keys.push(k);
 						
-							doHttpRequest("apps/kardia/api/donor/" + mainWindow.collaborateeIds[index] + "/Funds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(fundResp) {
+						// is the partner a donor?
+						if (keys.indexOf(mainWindow.collaborateeIds[index]) >= 0) {
+							// get gifts
+							doHttpRequest("apps/kardia/api/donor/" + mainWindow.collaborateeIds[index] + "/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(giftResp) {
 								// get all the keys from the JSON file
 								var keys = [];
-								for(var k in fundResp) keys.push(k);
-								
+								for(var k in giftResp) keys.push(k);
+
+								// save gifts
 								var tempArray = new Array();
 								for (var i=0; i<keys.length; i++) {
 									if (keys[i] != "@id") {
-										tempArray.push(fundResp[keys[i]]['fund_desc']);
+										if (giftResp[keys[i]]['gift_date'] != null) {
+											tempArray.push(giftResp[keys[i]]['gift_date']['month'] + "/" + giftResp[keys[i]]['gift_date']['day'] + "/" + giftResp[keys[i]]['gift_date']['year']);
+										}
+										else {
+											tempArray.push("n/a");
+										}
+										tempArray.push(formatGift(giftResp[keys[i]]['gift_amount']['wholepart'], giftResp[keys[i]]['gift_amount']['fractionpart']));
+										tempArray.push(giftResp[keys[i]]['gift_fund_desc']);
+										
+										// if check, display check number
+										if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'].trim() != "") {
+											tempArray.push(giftResp[keys[i]]['gift_type'] + " (#" + giftResp[keys[i]]['gift_check_num'] + ")");
+										}
+										else {
+											tempArray.push(giftResp[keys[i]]['gift_type']);
+										}																	
 									}
 								}
-								mainWindow.collaborateeFunds.push(tempArray);
-															
-								// TODO FIX STUB
-								// get recent activity
-								Application.console.log("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic");
-								doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(activityResp) {
+								mainWindow.collaborateeGifts.push(tempArray);
+							
+								doHttpRequest("apps/kardia/api/donor/" + mainWindow.collaborateeIds[index] + "/Funds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(fundResp) {
 									// get all the keys from the JSON file
 									var keys = [];
-									for(var k in activityResp) keys.push(k);
-									// save activity
+									for(var k in fundResp) keys.push(k);
+									
 									var tempArray = new Array();
-									for (var i=0; (i<keys.length && tempArray.length<6); i++) {
+									for (var i=0; i<keys.length; i++) {
 										if (keys[i] != "@id") {
-											tempArray.push(activityResp[keys[i]]['activity_type']);
-											tempArray.push(datetimeToString(activityResp[keys[i]]['activity_date']) + ": " + activityResp[keys[i]]['info']);
-											tempArray.push(activityResp[keys[i]]['activity_date']);
-												
+											tempArray.push(fundResp[keys[i]]['fund_desc']);
 										}
 									}
-									mainWindow.collaborateeActivity.push(tempArray);
-									
+									mainWindow.collaborateeFunds.push(tempArray);
+																
 									// if we've done all the collaboratees, start loading the Kardia tab stuff
 									if (index+1 >= mainWindow.collaborateeIds.length) {
 										// sort and reload Collaborating With panel
@@ -1513,26 +1513,26 @@ function getCollaborateeInfo(index) {
 									}	
 								}, false, "", "");
 							}, false, "", "");
-						}, false, "", "");
-					}
-					else {
-						mainWindow.collaborateeGifts.push(new Array());
-						mainWindow.collaborateeFunds.push(new Array());
-						// TODO hide gift area
-						// if we've done all the collaboratees, start loading the Kardia tab stuff
-						if (index+1 >= mainWindow.collaborateeIds.length) {								
-							// sort and reload Collaborating With panel
-							kardiaTab.sortCollaboratees(false);
-							
-							// reload the Kardia pane so it's blank at first
-							reload(false);
 						}
 						else {
-							// go to the next person
-							getCollaborateeInfo(index+1);
-						}	
-					}
-				}, false, "", "");				
+							mainWindow.collaborateeGifts.push(new Array());
+							mainWindow.collaborateeFunds.push(new Array());
+							// TODO hide gift area
+							// if we've done all the collaboratees, start loading the Kardia tab stuff
+							if (index+1 >= mainWindow.collaborateeIds.length) {								
+								// sort and reload Collaborating With panel
+								kardiaTab.sortCollaboratees(false);
+								
+								// reload the Kardia pane so it's blank at first
+								reload(false);
+							}
+							else {
+								// go to the next person
+								getCollaborateeInfo(index+1);
+							}	
+						}
+					}, false, "", "");	
+				}, false, "", "");			
 			}, false, "", "");	
 		}, false, "", "");		
 	}, false, "", "");

@@ -77,7 +77,7 @@
 .close-kardia-pane-x {width:8px; list-style-image: url("chrome://kardia/content/images/close-kardia-x.png");}
 .choose-partner-dropdown-arrow {width:10px; list-style-image: url("chrome://kardia/content/images/choose-partner-arrow.png");}
 .kardia-tab {width:15px; list-style-image: url("chrome://kardia/content/images/kardia-tab.png");}
-.tab-select-partner {margin-right:5px; height:10px; list-style-image: url("chrome://kardia/content/images/tab-select-partner.png");}
+.tab-select-partner {margin-right:5px; margin-left:5px; height:10px; list-style-image: url("chrome://kardia/content/images/tab-select-partner.png");}
 
 /* Kardia tab */
 /* main */

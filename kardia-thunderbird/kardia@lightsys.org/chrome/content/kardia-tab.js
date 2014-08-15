@@ -340,12 +340,11 @@ function reloadCollaboratee(index) {
 		addString += '</vbox>';
 	}
 
-	if (mainWindow.collaborateeActivity[index].length > 0) {
+	if (mainWindow.collaborateeActivity[index] != null && mainWindow.collaborateeActivity[index].length > 0) {
 		addString += '<vbox flex="1">';
 		// add recent activity
 		for (var j=1;j<mainWindow.collaborateeActivity[index].length;j+=3) {
-
-			addString += '<hbox flex="1"><vbox><image class="email-image"/><spacer flex="1"/></vbox><label flex="1">' + mainWindow.collaborateeActivity[index][j] + '</label></hbox>';
+			addString += '<label flex="1">' + mainWindow.collaborateeActivity[index][j] + '</label>';
 		}
 		addString += '</vbox>';
 	}
