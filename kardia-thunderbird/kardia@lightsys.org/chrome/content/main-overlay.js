@@ -1,4 +1,3 @@
-// // Stubs to be removed/fixed are marked with comment // FIX STUB
 // Places where features can be added are marked with comment //FEATURE
 
 // selected messages and number of emails selected (for comparing to see if we need to find users and reload Kardia pane)
@@ -73,29 +72,49 @@ var akey = "";
 var server = "";
 
 // calendar stuff
-Components.utils.import("resource://calendar/modules/calUtils.jsm");
-var myCal;
+// FEATURE: not needed unless you add to-do items
+/*Components.utils.import("resource://calendar/modules/calUtils.jsm");
+var myCal;*/
 
-var kardiaCalObserver = {
+// FEATURE: theoretically, this would be where we send edits from Lightning calendar to Kardia 
+/*var kardiaCalObserver = {
 	onStartBatch: function() { },
 	onEndBatch: function() { },
 	onLoad: function(aCalendar) { },
 	onAddItem: function(aItem) {
-		// FIX STUB
-		// send to Kardia 
+		// delete it
+		aItem.calendar.deleteItem(aItem);
+		window.alert("You cannot add a to-do this way. Please use the \"Add To-Do\" button.");
+		Application.console.log('working');
+		Application.console.log('worked');
 	},
 	onModifyItem: function(aNewItem, aOldItem) {
-		// FIX STUB
 		// send to Kardia
+		// format today's date
+		var date = new Date();
+		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
+
+		var dueDateString = "";
+		if (aNewItem.dueDate != null) {
+			var dueDateString = '{"year":' + aNewItem.dueDate.getFullYear() + ',"month":' + (aNewItem.dueDate.getMonth()+1) + ',"day":' + aNewItem.dueDate.getDate() + ',"hour":' + aNewItem.dueDate.getHours() + ',"minute":' + aNewItem.dueDate.getMinutes() + ',"second":' + aNewItem.dueDate.getSeconds() + '}';
+		}
+		
+		doPatchHttpRequest('apps/kardia/api/crm/Todos/' + aOldItem.id, '{"desc":"' + aNewItem.title + '"due_date":' + dueDateString + ',"date_modified":"' + dateString + '","modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		// TODO add due date
+		// display item
+			if (mainWindow.document.getElementById("to-do-item-" + aDeletedItem.id) != null) {
+				mainWindow.document.getElementById("to-do-item-" + aDeletedItem.id).label=aNewItem.title;
+			}
+		});	
 	},
 	onDeleteItem: function(aDeletedItem) {
 	   if (loginValid) {
 		// send to Kardia
-			// format today's date
-			var date = new Date();
-			var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}'
+		// format today's date
+		var date = new Date();
+		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 			
-			doPatchHttpRequest('apps/kardia/api/crm/Todos/' + aDeletedItem.id, '{"status_code":"c","completion_date":' + dateString + ',"req_item_completed_by":"' + prefs.getCharPref("username") + '"}', false, "", "");
+		doPatchHttpRequest('apps/kardia/api/crm/Todos/' + aDeletedItem.id, '{"status_code":"c","completion_date":' + dateString + ',"req_item_completed_by":"' + prefs.getCharPref("username") + '"}', false, "", "");
 			if (mainWindow.document.getElementById("to-do-item-" + aDeletedItem.id) != null) {
 				mainWindow.document.getElementById("to-do-item-" + aDeletedItem.id).style.display="none";
 			}
@@ -107,7 +126,7 @@ var kardiaCalObserver = {
 	},
 	onPropertyChanged: function(aCalendar, aName, aValue, aOldValue) {},
 	onPropertyDeleting: function(aCalendar, aName) {}
-}
+}*/
 
 // my ID for finding self as collaborator, etc
 var myId = "";
@@ -496,7 +515,8 @@ function reload(isDefault) {
 		for (var i=0;i<mainWindow.todos[mainWindow.selected].length;i+=2) {
 			toDoText += '<checkbox id="to-do-item-' + mainWindow.todos[mainWindow.selected][i] + '" oncommand="deleteTodo(' + mainWindow.todos[mainWindow.selected][i] + ')" label="' + mainWindow.todos[mainWindow.selected][i+1] + '"/>';
 		}
-		toDoText += '<hbox><spacer flex="1"/><button class="new-button" label="New To-Do..." oncommand="newTodo()" tooltiptext="Create new to-do item for this partner"/></hbox>'; 
+		// FEATURE: uncomment this when adding to-do items is implemented
+		// toDoText += '<hbox><spacer flex="1"/><button class="new-button" label="New To-Do..." oncommand="newTodo()" tooltiptext="Create new to-do item for this partner"/></hbox>'; 
 		mainWindow.document.getElementById("to-dos-inner-box").innerHTML = toDoText;	
 		
 		// display notes
@@ -1575,6 +1595,8 @@ function deleteTodo(todoId) {
 	myCal.getItems(Components.interfaces.calICalendar.ITEM_FILTER_ALL_ITEMS,0,null,null,listener);
 }
 
+// FEATURE: this is where adding new to-do items should go
+/*
 function newTodo() {
 	var text = "demo";
 	
@@ -1587,7 +1609,7 @@ function newTodo() {
 	var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 
 	// post the new todo
-	// TODO FIX STUB add todo types, collaborator, engagement id
+	// TODO add todo types, collaborator, engagement id
 	doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Todos','{"e_todo_partner":"' + mainWindow.ids[mainWindow.selected] + '","e_todo_desc":"' + text + '","e_todo_collaborator":"' + '100002' + '","e_todo_type_id":0,"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
 
 		doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[mainWindow.selected] + "/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(todoResp) {
@@ -1603,19 +1625,21 @@ function newTodo() {
 					
 					// is this the todo we're looking for?
 					if (keys[i] != "@id" && todoDate.toString() == date.toString()) {
-						// find last id used in Kardia and increment
 						todo.id = todoResp[keys[i]]['todo_id'];
 	
 						todo.dueDate = null;
 						todo.calendar = myCal;
 						createTodoWithDialog(myCal, null, text, todo);
+						// TODO get due date of todo
 						
 						// add to todos array
 						mainWindow.todos[mainWindow.selected].push(todo.id);
 						mainWindow.todos[mainWindow.selected].push(mainWindow.names[mainWindow.selected] + '- ' + text);
-						mainWindow.todos[mainWindow.selected].push(null);
-						// TODO FIX STUB add date
-						// TODO 
+						
+						// add to all todos
+						mainWindow.allTodos[mainWindow.selected].push(todo.id);
+						mainWindow.allTodos[mainWindow.selected].push(mainWindow.names[mainWindow.selected] + '- ' + text);
+						mainWindow.allTodos[mainWindow.selected].push(todo.dueDate); 
 					
 						// add recent activity and reload
 						reloadActivity(mainWindow.ids[mainWindow.selected])
@@ -1628,10 +1652,12 @@ function newTodo() {
 			}	
 		}, false, "", "");
 	});
-}
+}*/
 
+
+// FEATURE: importing to-do items into the Lightning calendar should go here
 // import todos into Lightning calendar
-function importTodos() {
+/*function importTodos() {
 	// reload calendar
 	var calendarManager = Components.classes["@mozilla.org/calendar/manager;1"].getService(Components.interfaces.calICalendarManager);
 
@@ -1811,7 +1837,7 @@ function importTodos() {
 		// delete events
 		myCal.getItems(myCal.ITEM_FILTER_TYPE_EVENT,0,null,null,deleteListener);
 	}
-}
+}*/
 
 // format todo due date for calendar use
 function getTodoDueDate(dateArray, addDays) {
@@ -2688,12 +2714,18 @@ function getMyInfo(username, password) {
 			if (keys[i] != "@id" && todoResp[keys[i]]['status_code'].toLowerCase() == 'i') {
 				mainWindow.allTodos.push(todoResp[keys[i]]['todo_id']);
 				mainWindow.allTodos.push(todoResp[keys[i]]['partner_name'] + "- " + todoResp[keys[i]]['desc']);
-				mainWindow.allTodos.push(getTodoDueDate(todoResp[keys[i]]['engagement_start_date'],todoResp[keys[i]]['req_item_due_days_from_step']));
+				if (todoResp[keys[i]]['req_item_id'] != null) {
+					mainWindow.allTodos.push(getTodoDueDate(todoResp[keys[i]]['engagement_start_date'],todoResp[keys[i]]['req_item_due_days_from_step']));
+				}
+				else {
+					mainWindow.allTodos.push(todoResp[keys[i]]['due_date']);
+				}			
 			}
 		}
 		
+		// FEATURE this is part of importing to-do items
 		//import todos to calendar
-		mainWindow.importTodos();
+		//mainWindow.importTodos();
 		
 		doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.myId + "/Collaboratees?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collabResp) {
 
@@ -3248,5 +3280,3 @@ function reloadActivity(partnerId) {
 		}
 	}, false, "", "");
 }
-
-

@@ -11,6 +11,7 @@
 				<preference id="extensions.kardia.importTodoAsEvent" name="extensions.kardia.importTodoAsEvent" type="string"/>
 				<preference id="extensions.kardia.showTodosWithNoDate" name="extensions.kardia.showTodosWithNoDate" type="bool"/>
 				<preference id="extensions.kardia.refreshInterval" name="extensions.kardia.refreshInterval" type="int"/>
+				<preference id="extensions.kardia.server" name="extensions.kardia.server" type="string"/>
 			</preferences>
 			<vbox>
 				<hbox>
@@ -37,6 +38,14 @@
 						<label value="minutes"/>
 						<spacer flex="1"/>
 					</vbox>
+		 		</hbox>
+		 		<hbox>
+					<vbox>
+						<spacer flex="1"/>
+						<label value="Kardia server and port:"/>
+						<spacer flex="1"/>
+					</vbox>
+					<textbox preference="extensions.kardia.server" width="200px"/>
 				</hbox>
 			</vbox>
 		</prefpane>
