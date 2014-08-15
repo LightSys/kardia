@@ -1,5 +1,3 @@
-// Places where features can be added are marked with comment //FEATURE
-
 // selected messages and number of emails selected (for comparing to see if we need to find users and reload Kardia pane)
 var numSelected = 0;
 var selectedMessages = null;
