@@ -358,9 +358,10 @@ function reload(isDefault) {
 		mainWindow.document.getElementById("choose-partner-dropdown-button").style.display = "none";
 		
 		mainWindow.document.getElementById("main-content-box").style.visibility = "hidden";
-		mainWindow.document.getElementById("bottom-separator").style.visibility = "hidden";
-		mainWindow.document.getElementById("record-this-email").style.visibility = "hidden";
-		mainWindow.document.getElementById("record-future-emails").style.visibility = "hidden";
+		// FEATURE: Uncomment the following when recording emails in Kardia is impmented
+		// mainWindow.document.getElementById("bottom-separator").style.visibility = "hidden";
+		// mainWindow.document.getElementById("record-this-email").style.visibility = "hidden";
+		// mainWindow.document.getElementById("record-future-emails").style.visibility = "hidden";
 		
 		if (kardiaTab != null) {
 			kardiaTab.document.getElementById("tab-bottom-hbox").style.visibility = "hidden";
@@ -416,9 +417,10 @@ function reload(isDefault) {
 
 		// show content boxes in case they're hidden
 		mainWindow.document.getElementById("main-content-box").style.visibility = "visible";
-		mainWindow.document.getElementById("bottom-separator").style.visibility = "visible";
-		mainWindow.document.getElementById("record-this-email").style.visibility = "visible";
-		mainWindow.document.getElementById("record-future-emails").style.visibility = "visible";
+		// FEATURE: Uncomment the following when recording emails in Kardia is impmented
+		// mainWindow.document.getElementById("bottom-separator").style.visibility = "visible";
+		// mainWindow.document.getElementById("record-this-email").style.visibility = "visible";
+		// mainWindow.document.getElementById("record-future-emails").style.visibility = "visible";
 		
 		// show name and id of selected partner
 		mainWindow.document.getElementById("name-label").value = mainWindow.names[mainWindow.selected];
@@ -836,7 +838,6 @@ function printPartner(whichPartner) {
 		var questionMark = (mainWindow.tags[whichPartner][i+2] <= 0.5) ? "?" : "";
 		tagsPrintString += '</br><span style="background-color:hsl(46,100%,' + (100-50*mainWindow.tags[whichPartner][i+1]) + '%);">' + mainWindow.tags[whichPartner][i] + questionMark + '</span>';
 	}	
-	// FIX STUB print data by group
 	for (var i=0;i<mainWindow.data[whichPartner].length;i+=3) {
 		if (mainWindow.data[whichPartner][i+1].toString() == "0") {
 			// not highlighted, so don't highlight the data item
@@ -2561,33 +2562,29 @@ function findStaff(username, password, doAfter) {
 	reload(true);
 }
 
+// FEATURE: Recording emails in Kardia will go here when implemented
+/*
 // tell Kardia to record this email; we can't do anything yet because we can't send data to Kardia
 function recordThisEmail() {	
 	// if the box is currently checked, it's about to be unchecked, so don't record the email
 	if (document.getElementById("record-this-email").checked) {
-		// FIX STUB
-		window.alert("You are no longer recording this email in Kardia.");
+		// don't record this email
 	}
 	else {
-		// do record it
-		// FIX STUB
-		window.alert("You are now recording this email in Kardia.");
+		// record this email
 	}
 }
 
-// tell Kardia to record future emails with this person; we can't do anything yet because we can't send data to Kardia
+// tell Kardia to record future emails with this person
 function recordFutureEmails() {
 	// if the box is currently checked, it's about to be unchecked, so don't record future emails
 	if (document.getElementById("record-future-emails").checked) {
-		// FIX STUB
-		window.alert("You are no longer recording future emails with this person in Kardia.");
+		// stop recording emails
 	}
 	else {
-		// don't record them
-		// FIX STUB
-		window.alert("You are now recording future emails with this person in Kardia.");
+		// start recording emails
 	}
-}
+}*/
 
 // get info from Kardia with the given parameters
 // url - the portion of the url not including the server
@@ -3151,4 +3148,9 @@ function openDataTab(groupId, groupName) {
 function datetimeToString(date) {
 	var dateObj = new Date(date['year'], date['month']-1, date['day'], date['hour'], date['minute'], date['second']);
 	return dateObj.toLocaleTimeString() + ' ' + date['month'] + '/' + date['day'] + '/' + date['year'];
+}
+
+// convert JSON datetime to Date object
+function datetimeToDate(date) {
+	return new Date(date['year'], date['month']-1, date['day'], date['hour'], date['minute'], date['second']);
 }

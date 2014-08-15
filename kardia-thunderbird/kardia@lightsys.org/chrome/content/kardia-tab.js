@@ -281,8 +281,14 @@ function sortCollaboratees(addButtons) {
 			}
 		}
 		else {
-			// FIX STUB sort by date (we can't do this until recent activity is available)
-			window.alert("Sort by date is not available.");
+			// sort by date
+			firstItem = datetimeToDate(mainWindow.collaborateeActivity[i][2]);
+			for (var j=i+1;j<mainWindow.collaborateeActivity.length;j++) {
+				if ((mainWindow.sortCollaborateesDescending && (firstItem < datetimeToDate(mainWindow.collaborateeActivity[j][2]))) || (!mainWindow.sortCollaborateesDescending && (firstItem > datetimeToDate(mainWindow.collaborateeActivity[j][2])))) {
+					firstIndex = j;
+					firstItem = datetimeToDate(mainWindow.collaborateeActivity[j][2]);
+				}
+			}
 		}
 		
 		// move all items around based on how we sorted the names/ids/whatever

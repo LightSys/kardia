@@ -169,13 +169,12 @@
 					</hbox>	
 				</vbox>
 			</vbox>		
-			<!-- separator before checkboxes -->
-			<!--<spacer flex="0"/> -->
-			<separator id="bottom-separator" orient="horizontal" class="thin"/>
 			
-			<!-- checkboxes to record this email/future emails-->
+			<!-- FEATURE: When recording emails in Kardia is implemented, uncomment this -->
+			<!--
+			<separator id="bottom-separator" orient="horizontal" class="thin"/>
 			<checkbox id="record-this-email" checked="true" onclick="recordThisEmail()" label="Record this email in Kardia"/>
-			<checkbox id="record-future-emails" checked="true" onclick="recordFutureEmails()" label="Record future emails with this person"/>
+			<checkbox id="record-future-emails" checked="true" onclick="recordFutureEmails()" label="Record future emails with this person"/>-->
 		
 		</vbox>
 	</hbox>
