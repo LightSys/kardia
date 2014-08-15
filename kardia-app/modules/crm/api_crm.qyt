@@ -379,10 +379,16 @@ api_crm "system/querytree"
 				todo_type_id = :t:e_todo_type_id,
 				todo_type =(select :e_todo_type_label from /apps/kardia/data/Kardia_DB/e_todo_type/rows where :e_todo_type_id = :t:e_todo_type_id),
 				desc = :t:e_todo_desc,
+				comments = :t:e_todo_comments,
 				collaborator_id = :t:e_todo_collaborator,
 				engagement_id = :t:e_todo_engagement_id,
 				engagement_start_date = (select :e_start_date from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows where :e_engagement_id = :t:e_todo_engagement_id and :e_is_archived = 0),
 				document_id = :t:e_todo_document_id,
+				status_code = :t:e_todo_status,
+				status = condition(:t:e_todo_status == 'C', 'Completed', condition(:t:e_todo_status == 'X', 'Canceled', 'Incomplete')),
+				completion_date = :t:e_todo_completion_date,
+				canceled_date = :t:e_todo_canceled_date,
+				due_date = :t:e_todo_due_date,
 				req_item_id = :t:e_todo_req_item_id,
 				req_item_due_days_from_step = :r:e_due_days_from_step,
 				req_item_completion_status = :r:e_req_completion_status,
@@ -397,7 +403,7 @@ api_crm "system/querytree"
 				/apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows r
 			    where
 				:t:e_todo_collaborator = :eng_list:partner_id and
-				:r:e_req_id = :t:e_todo_req_item_id
+				:r:e_req_id =* :t:e_todo_req_item_id
 			    ";
 		    }
 		}
@@ -416,9 +422,15 @@ api_crm "system/querytree"
 				todo_type_id = :t:e_todo_type_id,
 				todo_type =(select :e_todo_type_label from /apps/kardia/data/Kardia_DB/e_todo_type/rows where :e_todo_type_id = :t:e_todo_type_id),
 				desc = :t:e_todo_desc,
+				comments = :t:e_todo_comments,
 				collaborator_id = :t:e_todo_collaborator,
 				engagement_id = :t:e_todo_engagement_id,
 				document_id = :t:e_todo_document_id,
+				status_code = :t:e_todo_status,
+				status = condition(:t:e_todo_status == 'C', 'Completed', condition(:t:e_todo_status == 'X', 'Canceled', 'Incomplete')),
+				completion_date = :t:e_todo_completion_date,
+				canceled_date = :t:e_todo_canceled_date,
+				due_date = :t:e_todo_due_date,
 				req_item_id = :t:e_todo_req_item_id,
 				req_item_due_days_from_step = :r:e_due_days_from_step,
 				req_item_completion_status = :r:e_req_completion_status,
@@ -433,7 +445,7 @@ api_crm "system/querytree"
 				/apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows r
 			    where
 				:t:e_todo_partner = :eng_list:partner_id and
-				:r:e_req_item_id = :t:e_todo_req_item_id
+				:r:e_req_item_id =* :t:e_todo_req_item_id
 			    ";
 		    }
 		}
@@ -565,9 +577,15 @@ api_crm "system/querytree"
 			todo_type_id = :t:e_todo_type_id,
 			todo_type =(select :e_todo_type_label from /apps/kardia/data/Kardia_DB/e_todo_type/rows where :e_todo_type_id = :t:e_todo_type_id),
 			desc = :t:e_todo_desc,
+			comments = :t:e_todo_comments,
 			collaborator_id = :t:e_todo_collaborator,
 			engagement_id = :t:e_todo_engagement_id,
 			document_id = :t:e_todo_document_id,
+			status_code = :t:e_todo_status,
+			status = condition(:t:e_todo_status == 'C', 'Completed', condition(:t:e_todo_status == 'X', 'Canceled', 'Incomplete')),
+			completion_date = :t:e_todo_completion_date,
+			canceled_date = :t:e_todo_canceled_date,
+			due_date = :t:e_todo_due_date,
 			req_item_id = :t:e_todo_req_item_id,
 			date_created = :t:s_date_created,
 			created_by = :t:s_created_by,
@@ -575,10 +593,9 @@ api_crm "system/querytree"
 			modified_by = :t:s_modified_by
 
 		    from
-			identity
-			/apps/kardia/data/Kardia_DB/e_todo/rows t,
+			identity /apps/kardia/data/Kardia_DB/e_todo/rows t,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p
-			where
+		    where
 			:p:p_partner_key = :t:e_todo_partner
 		    ";
 	    }
