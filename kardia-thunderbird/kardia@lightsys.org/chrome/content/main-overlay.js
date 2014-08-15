@@ -1,5 +1,5 @@
 // // Stubs to be removed/fixed are marked with comment // FIX STUB
-//
+// Places where features can be added are marked with comment //FEATURE
 
 // selected messages and number of emails selected (for comparing to see if we need to find users and reload Kardia pane)
 var numSelected = 0;
@@ -69,9 +69,8 @@ var loginValid = false;
 // authentication key for PATCH requests
 var akey = "";
 
-// constant server address (in case it needs to be changed); it is currently connected to the VM
-// FIX STUB
-const server = "http://192.168.42.128:800/";
+// server address
+var server = "";
 
 // calendar stuff
 Components.utils.import("resource://calendar/modules/calUtils.jsm");
@@ -83,18 +82,25 @@ var kardiaCalObserver = {
 	onLoad: function(aCalendar) { },
 	onAddItem: function(aItem) {
 		// FIX STUB
-		// send to Kardia? or delete item
-		//window.alert("Item added: " + aItem.title);
+		// send to Kardia 
 	},
 	onModifyItem: function(aNewItem, aOldItem) {
 		// FIX STUB
 		// send to Kardia
-		//window.alert("Item modified: " + aNewItem.title);
 	},
 	onDeleteItem: function(aDeletedItem) {
+	   if (loginValid) {
 		// send to Kardia
-		// FIX STUB
-		//window.alert("Item deleted: " + aDeletedItem.title);
+			// format today's date
+			var date = new Date();
+			var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}'
+			
+			doPatchHttpRequest('apps/kardia/api/crm/Todos/' + aDeletedItem.id, '{"status_code":"c","completion_date":' + dateString + ',"req_item_completed_by":"' + prefs.getCharPref("username") + '"}', false, "", "");
+			if (mainWindow.document.getElementById("to-do-item-" + aDeletedItem.id) != null) {
+				mainWindow.document.getElementById("to-do-item-" + aDeletedItem.id).style.display="none";
+			}
+		}
+	
 	},
 	onError: function(aCalendar, aErrNo, aMessage) {
 		Application.console.log(aMessage);
@@ -151,22 +157,20 @@ window.addEventListener("load", function() {
   	var loginInfo = getLogin(false, false, function(loginInfo2) {
 
 		// store username/password in preferences (this is only important if getLogin() returned something valid)
-		var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
-		prefs = prefs.getBranch("extensions.kardia.");
 		prefs.setCharPref("username",loginInfo2[0]);
 		prefs.setCharPref("password",loginInfo2[1]);
 		
 		//see how many email addresses the person has
-		var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-		var smtpServers = prefs.getCharPref("mail.smtpservers");
+		var prefs2 = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		var smtpServers = prefs2.getCharPref("mail.smtpservers");
 		smtpServers = smtpServers.split(",");
 		
 		// store list of self emails to array so we don't search them in Kardia
 		selfEmails = new Array();
 		for (var i=0;i<smtpServers.length;i++) {
-			selfEmails[i] = prefs.getCharPref("mail.smtpserver." + smtpServers[i] + ".username");
+			selfEmails[i] = prefs2.getCharPref("mail.smtpserver." + smtpServers[i] + ".username");
 			if (selfEmails[i].indexOf("@") < 0) {
-				selfEmails[i] += "@" + prefs.getCharPref("mail.smtpserver." + smtpServers[i] + ".hostname");
+				selfEmails[i] += "@" + prefs2.getCharPref("mail.smtpserver." + smtpServers[i] + ".hostname");
 			}
 		}
 		
@@ -487,6 +491,7 @@ function reload(isDefault) {
 		}
 		mainWindow.document.getElementById("recent-activity-inner-box").innerHTML = recent;	
 		
+		Application.console.log(mainWindow.todos[mainWindow.selected]);
 		// display todos
 		var toDoText = "";
 		for (var i=0;i<mainWindow.todos[mainWindow.selected].length;i+=2) {
@@ -1193,7 +1198,7 @@ function getOtherInfo(index, isDefault) {
 										// the key "@id" doesn't correspond to a note, so use all other keys to add note info to temporary array
 										var todosArray = new Array();
 										for (var i=0;i<keys.length;i++) {
-											if (keys[i] != "@id" && todosResp[keys[i]]['req_item_completion_status'].toLowerCase() != 'c') {
+											if (keys[i] != "@id" && todosResp[keys[i]]['status_code'].toLowerCase() == 'i') {
 												todosArray.push(todosResp[keys[i]]['todo_id']);
 												todosArray.push(todosResp[keys[i]]['desc']);
 											}
@@ -1546,7 +1551,7 @@ function deleteTodo(todoId) {
 	var date = new Date();
 	var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}'
 	
-	doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Todos/' + todoId, '{"req_item_completion_status":"c","req_item_completion_date":' + dateString + ',"req_item_completed_by":"' + prefs.getCharPref("username") + '"}', false, "", "");
+	doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Todos/' + todoId, '{"status_code":"c","completion_date":' + dateString + ',"req_item_completed_by":"' + prefs.getCharPref("username") + '"}', false, "", "");
 	document.getElementById("to-do-item-" + todoId).style.display="none";
 	
 	var listener = {
@@ -1884,6 +1889,7 @@ function arrayContains(array, value, numAllowed) {
 function getLogin(prevSaved, prevFail, doAfter) {
 	var username = "";
 	var password = "";
+	server = prefs.getCharPref("server");
 	
 	// attempt to log in using username/password saved by Login Manager
 	// get Login Manager 
@@ -1923,7 +1929,11 @@ function getLogin(prevSaved, prevFail, doAfter) {
 			};
 			
 			// do nothing if the login request errors
-			loginRequest.onerror = function() {};
+			loginRequest.onerror = function() {
+				// we didn't get success status, so ask for login again
+				myLoginManager.removeLogin(logins[0]);
+				getLogin(true, true, doAfter);
+			};
 			
 			// send the login HTTP request
 			loginRequest.open("GET", loginUrl, true, username, password);
@@ -1932,21 +1942,23 @@ function getLogin(prevSaved, prevFail, doAfter) {
 	}
 	
 	// ask for login info if it's not stored in Login Manager
-	if (username == "" && password == "") {
+	if ((username == "" && password == "") || server == "" || server == null) {
 		// open the login dialog
-		var returnValues = {username:"", password:"", cancel:false, prevSaved:prevSaved, prevFail:prevFail, save:false};
+		var returnValues = {username:username, password:password, cancel:false, prevSaved:prevSaved, prevFail:prevFail, save:false, server:server};
 		openDialog("chrome://kardia/content/login-dialog.xul", "Login to Kardia", "resizable=yes,chrome,modal,centerscreen=yes", returnValues);
 		
 		// get the username and password from the dialog's return values
 		username = returnValues.username;
 		password = returnValues.password;
-
+		server = returnValues.server;
+		if (server.substring(0,4) != "http") {
+			server = "http://" + server;
+		}
 		// if the user didn't cancel the dialog box, test the login
 		if (!returnValues.cancel && username.trim() != '') {
 			// try logging in to Kardia using a HTTP request
 			var loginRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
 			var loginResp;
-			var loginUrl = server;
 			
 			loginRequest.onreadystatechange = function(aEvent) {
 				// if the HTTP request is done
@@ -1959,6 +1971,8 @@ function getLogin(prevSaved, prevFail, doAfter) {
 							kardiaTab.document.getElementById("tab-cant-connect").style.display="none";
 						}
 
+						prefs.setCharPref("server",server);
+						
 						if (returnValues.save) {
 							// save username/password
 							var passwordManager = Components.classes["@mozilla.org/login-manager;1"].getService(
@@ -1995,7 +2009,7 @@ function getLogin(prevSaved, prevFail, doAfter) {
 			loginRequest.onerror = function() {};
 			
 			// send the login HTTP request
-			loginRequest.open("GET", loginUrl, false, username, password);
+			loginRequest.open("GET", server, false, username, password);
 			loginRequest.send(null);
 		}
 		else if (!returnValues.cancel && username.trim() == '') {
@@ -2348,10 +2362,7 @@ function editTrack(name,step) {
 			var idLocation = mainWindow.collaborateeIds.indexOf(mainWindow.ids[mainWindow.selected].toString());
 			trackIndex = mainWindow.collaborateeTracks[idLocation].indexOf(name.substring(0,name.lastIndexOf('-')));
 			mainWindow.collaborateeTracks[idLocation][trackIndex+1] = returnValues.step;
-	
-			Application.console.log(mainWindow.engagementTracks[mainWindow.selected]);
-			Application.console.log(mainWindow.collaborateeTracks[idLocation]);
-				
+
 			reload(false);
 			kardiaTab.reloadFilters(false);
 		});
@@ -2477,9 +2488,6 @@ function newCollaborator() {
 	// variable where we store our return values
 	var returnValues = {id:"", name:"", type:0};
 	
-	Application.console.log(partnerList);
-	Application.console.log(collabTypeList);
-	
 	// open dialog
 	openDialog("chrome://kardia/content/add-collaborator.xul", "New Tag", "resizable,chrome, modal,centerscreen", returnValues, partnerList, collabTypeList);
 
@@ -2594,7 +2602,7 @@ function recordFutureEmails() {
 function doHttpRequest(url, doAfter, authenticate, username, password) {
 	// create HTTP request to get whatever we need
 	var httpRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-	var httpUrl = server + url;
+	var httpUrl = mainWindow.server + url;
 	var httpResp;
 	
 	httpRequest.onreadystatechange  = function(aEvent) {
@@ -2635,7 +2643,7 @@ function getMyInfo(username, password) {
 		
 		// the key "@id" doesn't correspond to a note, so use all other keys to add note info to array
 		for (var i=0;i<keys.length;i++) {
-			if (keys[i] != "@id") {
+			if (keys[i] != "@id" && todoResp[keys[i]]['status_code'].toLowerCase() == 'i') {
 				mainWindow.allTodos.push(todoResp[keys[i]]['todo_id']);
 				mainWindow.allTodos.push(todoResp[keys[i]]['partner_name'] + "- " + todoResp[keys[i]]['desc']);
 				mainWindow.allTodos.push(getTodoDueDate(todoResp[keys[i]]['engagement_start_date'],todoResp[keys[i]]['req_item_due_days_from_step']));
@@ -3039,7 +3047,6 @@ function doPatchHttpRequest(url, data, authenticate, username, password, doAfter
 		// actually send info
 		var httpRequest2 = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
 		var httpUrl2 = server + url + "?cx__mode=rest&cx__res_format=attrs&cx__akey=" + akey;
-		Application.console.log(httpUrl2);
 
 		httpRequest2.onreadystatechange  = function(aEvent) {
 			// if the request went through and we got success status
@@ -3077,7 +3084,7 @@ function doPostHttpRequest(url, data, authenticate, username, password, doAfter)
 			}
 		};
 		// do nothing if the http request errors
-		httpRequest2.onerror = function(aEvent) {Application.console.log('failure');};
+		httpRequest2.onerror = function(aEvent) {};
 		
 		// send http request
 		httpRequest2.open("POST", httpUrl2, true);
@@ -3154,3 +3161,4 @@ function datetimeToString(date) {
 function datetimeToDate(date) {
 	return new Date(date['year'], date['month']-1, date['day'], date['hour'], date['minute'], date['second']);
 }
+

@@ -19,6 +19,12 @@
 	<vbox>
 		<label id="login-failed-label"></label>
 		<hbox>
+			<label value="Server:"/>
+			<textbox id="server-text"/>
+			<label value="Port:"/>
+			<textbox id="port-text" value="800"/>
+		</hbox>
+		<hbox>
 			<label value="Username:"/>
 			<textbox id="username-text"/>
 		</hbox>

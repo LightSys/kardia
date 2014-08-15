@@ -334,7 +334,6 @@ function sortCollaboratees(addButtons) {
 function reloadCollaboratee(index) {
 	// add basic info
 	var addString = '<hbox class="tab-collaborator" tooltiptext="Click to view this partner" onclick="addCollaborator(' + mainWindow.collaborateeIds[index] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[index] + '"/><label value="ID# ' + mainWindow.collaborateeIds[index] + '"/></vbox>';
-	
 	// add tracks if the partner has them
 	if (mainWindow.collaborateeTracks[index].length > 1) {
 		addString += '<vbox>';
