@@ -346,7 +346,7 @@ function reloadCollaboratee(index) {
 	}
 
 	if (mainWindow.collaborateeActivity[index] != null && mainWindow.collaborateeActivity[index].length > 0) {
-		addString += '<vbox flex="1">';
+		addString += '<vbox id="collaboratee-activity-' + mainWindow.collaborateeIds[index] + '" flex="1">';
 		// add recent activity
 		for (var j=1;j<mainWindow.collaborateeActivity[index].length;j+=3) {
 			addString += '<label flex="1">' + mainWindow.collaborateeActivity[index][j] + '</label>';

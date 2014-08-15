@@ -491,7 +491,6 @@ function reload(isDefault) {
 		}
 		mainWindow.document.getElementById("recent-activity-inner-box").innerHTML = recent;	
 		
-		Application.console.log(mainWindow.todos[mainWindow.selected]);
 		// display todos
 		var toDoText = "";
 		for (var i=0;i<mainWindow.todos[mainWindow.selected].length;i+=2) {
@@ -1618,7 +1617,10 @@ function newTodo() {
 						// TODO FIX STUB add date
 						// TODO 
 					
-						//reload to display
+						// add recent activity and reload
+						reloadActivity(mainWindow.ids[mainWindow.selected])
+					  
+					  	//reload to display
 						reload(false);
 						break;
 					}
@@ -2127,6 +2129,9 @@ function editContactInfo(type, id) {
 				// remove
 				mainWindow.addresses[mainWindow.selected].splice(addressLocation-1,2);
 
+				// add recent activity and reload
+				reloadActivity(mainWindow.ids[mainWindow.selected])
+				
 				//reload to display
 				reload(false);
 				kardiaTab.reloadFilters(false);
@@ -2139,7 +2144,10 @@ function editContactInfo(type, id) {
 						if (k == mainWindow.ids[mainWindow.selected] + "|" + id + "|0") {				
 							mainWindow.addresses[mainWindow.selected][addressLocation-1] = contactResp[k]['location_type_code'] + ": " + contactResp[k]['address'] + "\n" + contactResp[k]['country_name'];
 
-							//reload to display
+							// add recent activity and reload
+							reloadActivity(mainWindow.ids[mainWindow.selected])
+						  
+						  	//reload to display
 							reload(false);
 							kardiaTab.reloadFilters(false);
 							break;
@@ -2163,6 +2171,9 @@ function editContactInfo(type, id) {
 				mainWindow.phoneNumbers[mainWindow.selected][phoneLocation-1] = returnValues.type + ": (" + returnValues.info.areaCode + ") " + returnValues.info.number;
 			}				
 
+			// add recent activity and reload
+			reloadActivity(mainWindow.ids[mainWindow.selected])
+				  
 			//reload to display
 			reload(false);
 			kardiaTab.reloadFilters(false);
@@ -2194,6 +2205,9 @@ function editContactInfo(type, id) {
 				}
 			}		  
 
+			// add recent activity and reload
+			reloadActivity(mainWindow.ids[mainWindow.selected])
+					  
 			//reload to display
 			reload(false);
 			kardiaTab.reloadFilters(false);
@@ -2234,7 +2248,10 @@ function newContactInfo() {
 							mainWindow.addresses[mainWindow.selected].push(contactResp[keys[i]]['location_type_code'] + ": " + contactResp[keys[i]]['address'] + "\n" + contactResp[keys[i]]['country_name']);
 							mainWindow.addresses[mainWindow.selected].push(contactResp[keys[i]]['location_id']);
 
-							//reload to display
+							// add recent activity and reload
+							reloadActivity(mainWindow.ids[mainWindow.selected])
+					  
+					  		//reload to display
 							reload(false);
 							kardiaTab.reloadFilters(false);
 							break;
@@ -2266,7 +2283,10 @@ function newContactInfo() {
 							mainWindow.phoneNumbers[mainWindow.selected].push(returnValues.type + ": (" + returnValues.info.areaCode + ") " + returnValues.info.number);
 							mainWindow.phoneNumbers[mainWindow.selected].push(contactResp[keys[i]]['contact_id']);
 						
-							//reload to display
+							// add recent activity and reload
+							reloadActivity(mainWindow.ids[mainWindow.selected])
+					  
+					  		//reload to display
 							reload(false);
 							kardiaTab.reloadFilters(false);
 							break;
@@ -2304,7 +2324,10 @@ function newContactInfo() {
 								mainWindow.websites[mainWindow.selected].push(contactResp[keys[i]]['contact_id']);
 							}
 
-							//reload to display
+							// add recent activity and reload
+							reloadActivity(mainWindow.ids[mainWindow.selected])
+					  
+					  		//reload to display
 							reload(false);
 							kardiaTab.reloadFilters(false);
 							break;
@@ -2345,6 +2368,8 @@ function editTrack(name,step) {
 		trackIndex = mainWindow.collaborateeTracks[idLocation].indexOf(name.substring(0,name.lastIndexOf('-')));
 		mainWindow.collaborateeTracks[idLocation].splice(trackIndex, 2);
 		
+		// add recent activity and reload
+		reloadActivity(mainWindow.ids[mainWindow.selected])
 		reload(false);
 		kardiaTab.reloadFilters(false);
 	}
@@ -2363,6 +2388,8 @@ function editTrack(name,step) {
 			trackIndex = mainWindow.collaborateeTracks[idLocation].indexOf(name.substring(0,name.lastIndexOf('-')));
 			mainWindow.collaborateeTracks[idLocation][trackIndex+1] = returnValues.step;
 
+			// add recent activity and reload
+			reloadActivity(mainWindow.ids[mainWindow.selected])
 			reload(false);
 			kardiaTab.reloadFilters(false);
 		});
@@ -2411,6 +2438,9 @@ function newTrack() {
 								mainWindow.collaborateeTracks[idLocation].push(returnValues.step);
 							}
 						
+							// add recent activity
+							reloadActivity(mainWindow.ids[mainWindow.selected]);
+							
 							//reload to display
 							reload(false);
 							kardiaTab.reloadFilters(false);
@@ -2439,6 +2469,9 @@ function editNote(text, key) {
 			
 			var noteIndex = mainWindow.notes[mainWindow.selected].indexOf(parseInt(key))-2;
 			mainWindow.notes[mainWindow.selected][noteIndex] = returnValues.title + "- " + returnValues.desc;
+						
+			// add recent activity and reload
+			reloadActivity(mainWindow.ids[mainWindow.selected]);
 			reload(false);
 		});
 	}
@@ -2472,7 +2505,10 @@ function newNote(title, desc) {
 							notes[selected].push(date.toLocaleString());
 							notes[selected].push(noteResp[k]['contact_history_id']);
 
-							//reload to display
+							// add recent activity and reload
+							reloadActivity(mainWindow.ids[mainWindow.selected])
+					  
+					  		//reload to display
 							reload(false);
 							break;
 						}
@@ -2503,6 +2539,9 @@ function newCollaborator() {
 				mainWindow.collaborators[mainWindow.selected].push(returnValues.id);
 				mainWindow.collaborators[mainWindow.selected].push(returnValues.name);
 				
+				// add recent activity and reload
+				reloadActivity(mainWindow.ids[mainWindow.selected])
+					  
 				//reload to display
 				reload(false);
 			}, false, "", "");
@@ -2526,6 +2565,9 @@ function newTag() {
 			mainWindow.tags[mainWindow.selected].push(returnValues.tag);
 			mainWindow.tags[mainWindow.selected].push(returnValues.magnitude);
 			mainWindow.tags[mainWindow.selected].push(returnValues.certainty);
+			
+			// add recent activity and reload
+			reloadActivity(mainWindow.ids[mainWindow.selected])
 			reload(false);
 		});
 	}
@@ -3161,4 +3203,50 @@ function datetimeToString(date) {
 function datetimeToDate(date) {
 	return new Date(date['year'], date['month']-1, date['day'], date['hour'], date['minute'], date['second']);
 }
+
+// reload recent activity
+function reloadActivity(partnerId) {
+	doHttpRequest("apps/kardia/api/crm/Partners/" + partnerId + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(activityResp) {
+ 		// where this partner is located in the main window list
+		var mainIndex = mainWindow.ids.indexOf(partnerId);
+		var tabIndex = mainWindow.collaborateeIds.indexOf(partnerId);
+		// get all the keys from the JSON file
+ 		var keys = [];
+
+ 		for(var k in activityResp) keys.push(k);
+
+ 		// save recent activity
+ 		var tempArray = new Array();
+		var tempCollaborateeArray = new Array();
+
+ 		for (var i=0; (i<keys.length && tempArray.length<6); i++) {
+ 			if (keys[i] != "@id") {
+ 				tempArray.push(activityResp[keys[i]]['activity_type']);
+ 				tempArray.push(datetimeToString(activityResp[keys[i]]['activity_date']) + ": " + activityResp[keys[i]]['info']);
+
+				if (tempCollaborateeArray.length<6) {
+					tempCollaborateeArray.push(activityResp[keys[i]]['activity_type']);
+ 					tempCollaborateeArray.push(datetimeToString(activityResp[keys[i]]['activity_date']) + ": " + activityResp[keys[i]]['info']);
+					tempCollaborateeArray.push(activityResp[keys[i]]['activity_date']);
+				}
+ 			}
+ 		}
+ 		mainWindow.recentActivity[mainIndex] = tempArray;
+		mainWindow.collaborateeActivity[tabIndex] = tempCollaborateeArray;
+		
+		// display recent activity in panel
+		var recent = "";
+		for (var i=0;i<mainWindow.recentActivity[mainIndex].length;i+=2) {
+			recent += '<hbox class="hover-box"><label width="100" flex="1">' + mainWindow.recentActivity[mainIndex][i+1] + '</label></hbox>';
+		}
+		mainWindow.document.getElementById("recent-activity-inner-box").innerHTML = recent;	
+
+		// display recent activity in tab
+		kardiaTab.document.getElementById("collaboratee-activity-" + partnerId).innerHTML = "";
+		for (var j=1;j<mainWindow.collaborateeActivity[tabIndex].length;j+=3) {
+			kardiaTab.document.getElementById("collaboratee-activity-" + partnerId).innerHTML += '<label flex="1">' + mainWindow.collaborateeActivity[tabIndex][j] + '</label>';
+		}
+	}, false, "", "");
+}
+
 
