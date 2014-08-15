@@ -150,11 +150,19 @@ alter table p_partner_sort_tmp
 	drop primary key;
 
 
+alter table p_acquisition_code
+	drop primary key;
+
+
 alter table m_list
 	drop primary key;
 
 
 alter table m_list_membership
+	drop primary key;
+
+
+alter table e_contact_autorecord
 	drop primary key;
 
 

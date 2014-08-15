@@ -420,6 +420,30 @@ create table p_partner_sort_tmp (
 );
 
 
+/* p_acquisition_code */
+
+create table p_acquisition_code (
+        p_acquisition_code                    char(3)  not null,       /* The 3-character acquisition code for how we originally came in contact with the person --  */
+        p_acquisition_name                    varchar(32)  not null,   /* A brief description or label for the acquisition code --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'CNV' as p_acquisition_code, 'Data Conversion' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'OTH' as p_acquisition_code, 'Other Reason' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'DON' as p_acquisition_code, 'New Donor' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'PAR' as p_acquisition_code, 'Missionary Partner' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'PAY' as p_acquisition_code, 'New Payee' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'STA' as p_acquisition_code, 'New Staff Member' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'MIS' as p_acquisition_code, 'New Missionary' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'EVT' as p_acquisition_code, 'Met at an Event' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNI' as p_acquisition_code, 'Met at a College or University' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'RAN' as p_acquisition_code, 'Met at Random / Divine Appointment' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+
+
 /* m_list */
 
 create table m_list (
@@ -480,6 +504,26 @@ create table m_list_membership (
 );
 
 
+/* e_contact_autorecord */
+
+create table e_contact_autorecord (
+        p_partner_key                         char(10)  not null,      /* The partner ID that is doing the engaging --  */
+        e_collaborator_id                     char(10)  not null,      /* The collaborator that the partner communicated with --  */
+        e_contact_history_type                integer  not null,       /* The type of the contact to automatically record (email / phone / etc), or "ALL" to apply to all types --  */
+        e_contact_id                          integer  not null,       /* The contact info id (p_contact_info) to auto record, or (-1) to apply to ALL contact records relevant to the history type above. --  */
+        e_engagement_id                       integer  null,           /* The engagement that this contact is in regard to (null if general or pre-engagement) --  */
+        e_auto_record                         bit  not null,           /* Whether to auto-record: 1=yes, 0=no --  */
+        e_auto_record_apply_all               bit  not null,           /* Whether this auto-record record applies to just this collaborator (0) or to ALL collaborators (1). The auto_record setting for a specific collaborator will override one set for all collaborators. If more than one 'all collaborators' record is present and they conflict, then the default is ON (1), to automatically record the contacts. --  */
+        e_comments                            varchar(255)  null,      /* User-entered comments on this engagement track/step for this partner --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* e_contact_history_type */
 
 create table e_contact_history_type (
@@ -513,6 +557,7 @@ create table e_contact_history (
         p_location_id                         integer  null,           /* The p_location ID where the contact physically took place (for in-person contacts) --  */
         p_location_revision_id                integer  null,           /* The p_location revision ID where the contact physically took place (for in-person contacts) --  */
         e_whom                                char(10)  null,          /* The collaborator/user who made the contact; NULL if no particular user was involved --  */
+        e_initiation                          char(1)  null,           /* Set to 'P' if the engaging partner initiated the contact, or 'C' if the collaborator (organization) initiated the contact --  */
         e_subject                             varchar(255)  null,      /* A short description of the contact that took place --  */
         e_contact_date                        datetime  not null,      /* The date and time that the contact took place --  */
         e_notes                               varchar(900)  null,      /* Notes regarding this contact --  */
@@ -531,6 +576,8 @@ create table e_activity (
         e_activity_group_id                   integer  not null,       /* A unique ID identifying the group of contact activity items that are being aggregated. --  */
         e_activity_id                         integer  not null,       /* A unique ID identifying a single activity item within a group of items. --  */
         p_partner_key                         char(10)  not null,      /* The partner involved in the activity --  */
+        e_whom                                char(10)  null,          /* The collaborator (with the organization) that was involved in the communication, if any. --  */
+        e_initiation                          char(1)  null,           /* Set to 'P' if the engaging partner initiated the activity, or 'C' if the collaborator (organization) initiated the activity. --  */
         e_sort_key                            varchar(20)  null,       /* A value we can use to sort this activity data, if needed --  */
         e_activity_date                       datetime  not null,      /* The date that the activity took place --  */
         e_activity_type                       char(4)  not null,       /* The type of activity. --  */
@@ -823,7 +870,8 @@ create table e_document_comment (
 create table e_partner_document (
         e_document_id                         integer  not null,       /* The ID of the document. --  */
         p_partner_key                         char(10)  not null,      /* The partner that is associated with the document --  */
-        e_engagement_id                       integer  not null,       /* The current engagement ID (track instance) associated with this document --  */
+        e_pardoc_assoc_id                     integer  not null,       /* The current engagement ID (track instance) associated with this document --  */
+        e_engagement_id                       integer  null,           /* The current engagement ID (track instance) associated with this document --  */
         e_workflow_instance_id                integer  null,           /* The current workflow instance associated with this document, if any --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -940,6 +988,11 @@ create table e_todo (
         e_todo_id                             integer  not null,       /* The todo ID --  */
         e_todo_type_id                        integer  not null,       /* The todo type ID --  */
         e_todo_desc                           varchar(40)  not null,   /* The description of this todo --  */
+        e_todo_comments                       varchar(900)  null,      /* Misc comments about this todo item --  */
+        e_todo_status                         char(1)  not null,       /* To-do item status: (I)ncomplete, (C)omplete, or (X) for canceled. --  */
+        e_todo_completion_date                datetime  null,          /* Completion date for a To-do that has been completed. --  */
+        e_todo_canceled_date                  datetime  null,          /* Cancellation date for a To-do that has been canceled. --  */
+        e_todo_due_date                       datetime  null,          /* Due date for this to-do item --  */
         e_todo_collaborator                   char(10)  not null,      /* The collaborator that needs to do this todo item --  */
         e_todo_partner                        char(10)  null,          /* The engaging partner that this todo relates to --  */
         e_todo_engagement_id                  integer  null,           /* The engagement ID, if any, that this todo relates to --  */

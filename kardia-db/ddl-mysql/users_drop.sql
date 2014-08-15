@@ -63,10 +63,16 @@ revoke select on ra to public;
 /* p_partner_sort_tmp */
 
 
+/* p_acquisition_code */
+
+
 /* m_list */
 
 
 /* m_list_membership */
+
+
+/* e_contact_autorecord */
 
 
 /* e_contact_history_type */

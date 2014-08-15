@@ -83,12 +83,20 @@ drop table p_dup_check_tmp;
 drop table p_partner_sort_tmp;
 
 
+/* p_acquisition_code */
+drop table p_acquisition_code;
+
+
 /* m_list */
 drop table m_list;
 
 
 /* m_list_membership */
 drop table m_list_membership;
+
+
+/* e_contact_autorecord */
+drop table e_contact_autorecord;
 
 
 /* e_contact_history_type */
