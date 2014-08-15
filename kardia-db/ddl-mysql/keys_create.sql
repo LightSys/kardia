@@ -70,11 +70,17 @@ alter table p_dup_check_tmp
 alter table p_partner_sort_tmp
 	add constraint p_sort_pk primary key  (p_partner_key,s_username,p_sort_session_id);
 
+alter table p_acquisition_code
+	add constraint p_acqcode_pk primary key  (p_acquisition_code);
+
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
 
 alter table m_list_membership
 	add constraint m_list_membership_clustered_pk primary key  (m_list_code, p_partner_key);
+
+alter table e_contact_autorecord
+	add constraint e_autorec_pk primary key  (p_partner_key, e_collaborator_id, e_contact_history_type, e_contact_id);
 
 alter table e_contact_history_type
 	add constraint e_cnt_hist_type_pk primary key  (e_contact_history_type);
@@ -128,7 +134,7 @@ alter table e_document_comment
 	add constraint e_doccom_pk primary key  (e_document_id, e_doc_comment_id);
 
 alter table e_partner_document
-	add constraint e_pardoc_pk primary key  (e_document_id, p_partner_key, e_engagement_id);
+	add constraint e_pardoc_pk primary key  (e_document_id, p_partner_key, e_pardoc_assoc_id);
 
 alter table e_workflow_type
 	add constraint e_work_pk primary key  (e_workflow_id);

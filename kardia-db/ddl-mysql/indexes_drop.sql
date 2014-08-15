@@ -129,6 +129,11 @@ alter table p_dup_check_tmp drop index p_dc_username_idx;
 /* go */
 
 
+/* p_acquisition_code */
+/* drop index p_acquisition_code.p_acqcode_pk */ 
+/* go */
+
+
 /* m_list */
 /* drop index m_list.m_list_pk */ 
 /* go */
@@ -138,6 +143,14 @@ alter table p_dup_check_tmp drop index p_dc_username_idx;
 /* drop index m_list_membership.m_list_membership_clustered_pk */ 
 /* go */
 alter table m_list_membership drop index m_lists_by_partner;
+
+
+/* e_contact_autorecord */
+alter table e_contact_autorecord drop index e_autorec_collab_idx;
+alter table e_contact_autorecord drop index e_autorec_collabhist_idx;
+alter table e_contact_autorecord drop index e_autorec_histtype_idx;
+/* drop index e_contact_autorecord.e_autorec_pk */ 
+/* go */
 
 
 /* e_contact_history_type */

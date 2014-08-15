@@ -129,6 +129,11 @@ create  index p_dc_username_idx on p_dup_check_tmp (s_username, p_partner_key);
 /* go */
 
 
+/* p_acquisition_code */
+/* create  index p_acqcode_pk on p_acquisition_code (p_acquisition_code)*/ 
+/* go */
+
+
 /* m_list */
 /* create  index m_list_pk on m_list (m_list_code)*/ 
 /* go */
@@ -138,6 +143,14 @@ create  index p_dc_username_idx on p_dup_check_tmp (s_username, p_partner_key);
 /* create  index m_list_membership_clustered_pk on m_list_membership (m_list_code, p_partner_key)*/ 
 /* go */
 create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_code);
+
+
+/* e_contact_autorecord */
+create  index e_autorec_collab_idx on e_contact_autorecord (e_collaborator_id, p_partner_key, e_contact_history_type, e_contact_id);
+create  index e_autorec_collabhist_idx on e_contact_autorecord (e_collaborator_id, e_contact_history_type, p_partner_key, e_contact_id);
+create  index e_autorec_histtype_idx on e_contact_autorecord (p_partner_key, e_contact_history_type, e_collaborator_id, e_contact_id);
+/* create  index e_autorec_pk on e_contact_autorecord (p_partner_key, e_collaborator_id, e_contact_history_type, e_contact_id)*/ 
+/* go */
 
 
 /* e_contact_history_type */
@@ -250,11 +263,11 @@ create  index e_doccom_work_idx on e_document_comment (e_workflow_state_id, e_do
 
 
 /* e_partner_document */
-create  index e_pardoc_egagement_idx on e_partner_document (e_engagement_id, p_partner_key, e_document_id);
-/* create  index e_pardoc_pk on e_partner_document (e_document_id, p_partner_key, e_engagement_id)*/ 
+create  index e_pardoc_egagement_idx on e_partner_document (e_engagement_id, p_partner_key, e_document_id, e_pardoc_assoc_id);
+/* create  index e_pardoc_pk on e_partner_document (e_document_id, p_partner_key, e_pardoc_assoc_id)*/ 
 /* go */
-create  index e_pardoc_rev_idx on e_partner_document (p_partner_key, e_document_id, e_engagement_id);
-create  index e_pardoc_work_idx on e_partner_document (e_workflow_instance_id, p_partner_key, e_document_id, e_engagement_id);
+create  index e_pardoc_rev_idx on e_partner_document (p_partner_key, e_document_id, e_pardoc_assoc_id);
+create  index e_pardoc_work_idx on e_partner_document (e_workflow_instance_id, p_partner_key, e_document_id, e_pardoc_assoc_id);
 
 
 /* e_workflow_type */
