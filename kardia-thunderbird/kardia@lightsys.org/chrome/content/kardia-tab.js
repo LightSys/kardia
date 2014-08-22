@@ -23,13 +23,17 @@ window.addEventListener('load', function() {
 	}
 }, false);
 
-// filter collaboratees
+/**
+ * Get filter criteria and filter partners you're collaborating with
+ */
 function filterBy() {
 	mainWindow.filterBy = document.getElementById("filter-by-type").selectedItem.value;
 	reloadFilters(false);
 }
 
-// sort collaborating with by whatever the buttons say
+/**
+ * Sort partners we're collaborating with by whatever the user has selected
+ */
 function sortBy() {	
 	// find out what we're sorting by
 	var what = document.getElementById("sort-by").selectedItem.value;
@@ -52,7 +56,14 @@ function sortBy() {
 	reloadFilters(false);
 }
 
-// add the given item as a filter
+/**
+ * Add the given item as a filter
+ *
+ * @param type  		character representing the type of filter to be added (e for engagement track, t for tag, d for data item, f for fund)
+ * @param id			the numerical id of the item to be added as a filter
+ * @param fromClick		boolean value telling whether this filter was added by the user clicking a button (if so, we need to check checkboxes)
+ */
+ // add the given item as a filter
 function addFilter(type, id, fromClick) {	
 	// if a button was clicked to add the filter, set the corresponding checkbox to checked
 	if (fromClick) {
@@ -95,7 +106,12 @@ function addFilter(type, id, fromClick) {
 	reloadFilters(false);
 }
 
-// add the given item as a filter for the gift display
+/**
+ * Add the given item as a filter for the gift display
+ *
+ * @param type  character representing the type of filter to be added (f for funds, t for type of gift)
+ * @param id	numerical id of the item to be added as a filter
+ */
 function addGiftFilter(type, id) {	
 	if (type == 'f') {
 		// add to gift filters
@@ -112,7 +128,12 @@ function addGiftFilter(type, id) {
 	reloadGifts();
 }
 
-// remove given data filter
+/**
+ * Remove the given data item or fund filter
+ *
+ * @param type  character representing the type of filter to be removed (d for data item, f for fund)
+ * @param what	numerical id of the item to be removed
+ */
 function removeFilter(type,what) {
 	if (type == 'd') {
 		mainWindow.filterData.splice(mainWindow.filterData.indexOf(what),1);
@@ -126,7 +147,11 @@ function removeFilter(type,what) {
 	reloadFilters(false);
 }
 
-// reload filters
+/**
+ * Reload all the partners being collaborated with based on the filters selected
+ *
+ * @param addButtons  boolean value telling whether the filter buttons need to be added (in other words, they don't exist yet)
+ */
 function reloadFilters(addButtons) {
 	sortCollaboratees(addButtons);
 	
@@ -253,7 +278,11 @@ function reloadFilters(addButtons) {
 	}
 }
 
-// sort collaboratees
+/**
+ * Sort the partners you're collaborating with by the criteria the user has selected
+ *
+ * @param addButtons  boolean value telling whether the filter buttons need to be added (in other words, they don't exist yet)
+ */
 function sortCollaboratees(addButtons) {
 	// sort by the criteria the user has selected
 	var firstIndex;
@@ -330,7 +359,11 @@ function sortCollaboratees(addButtons) {
 	}
 }
 
-// reload collaboratee at position "index"
+/**
+ * Reload the given partner you're collaborating with
+ *
+ * @param index  the index of the partner to reload
+ */
 function reloadCollaboratee(index) {
 	// add basic info
 	var addString = '<hbox class="tab-collaborator" tooltiptext="Click to view this partner" onclick="addCollaborator(' + mainWindow.collaborateeIds[index] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[index] + '"/><label value="ID# ' + mainWindow.collaborateeIds[index] + '"/></vbox>';
@@ -371,12 +404,17 @@ function reloadCollaboratee(index) {
 	kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML += addString;
 }
 
-// does quick filter from this tab
+/**
+ * Begin quick filter of the inbox from the Kardia tab
+ */
+ // does quick filter from this tab
 function quickFilter() {
 	mainWindow.beginQuickFilter("E: " + document.getElementById("tab-filter-select").selectedItem.label);
 }
 
-// set map link
+/**
+ * Set the link to Google Maps to the address the user has selected
+ */
 function setMapLink() {
 	kardiaTab.document.getElementById("tab-map-link").href = "http://www.google.com/maps/place/" + encodeURIComponent(kardiaTab.document.getElementById("tab-address-select").selectedItem.label.substring(3,kardiaTab.document.getElementById("tab-address-select").selectedItem.label.length));
 }
