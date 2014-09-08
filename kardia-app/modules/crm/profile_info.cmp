@@ -1,0 +1,56 @@
+$Version=2$
+profile_info "widget/component-decl"
+    {
+    width=380;
+    height=110;
+
+    partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    profile_info_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=380;
+	height=110;
+	spacing=0;
+
+	profile_hdr_name "widget/label"
+	    {
+	    height=24;
+	    font_size=20;
+	    style=bold;
+	    value = runclient(condition(char_length(:partner_osrc:p_given_name) > 1 or char_length(:partner_osrc:p_surname) > 1, isnull(:partner_osrc:p_given_name + ' ', '') + isnull(:partner_osrc:p_surname,'') + condition(char_length(:partner_osrc:p_salutation) > 1 and isnull(:partner_osrc:p_salutation,'') != isnull(:partner_osrc:p_given_name,''), ' (\"' + :partner_osrc:p_salutation + '\")', ''), :partner_osrc:p_org_name));
+	    }
+
+	profile_hdr_contact "widget/label"
+	    {
+	    height=72;
+	    font_size=11;
+	    value = runclient(:partner_osrc:p_city + ' ' + :partner_osrc:p_state_province + '\n' + :partner_osrc:contact_data);
+	    }
+
+	edit_profile_hbox "widget/hbox"
+	    {
+	    height=13;
+	    spacing=3;
+	    fl_height=0;
+	    
+	    edit_profile_btn "widget/imagebutton"
+		{
+		width=11; height=11;
+		image = "/apps/kardia/images/icons/pencil.png";
+
+		epb_click "widget/connector" { event=Click; target=profile_info; action=Launch; Source="/apps/kardia/modules/base/partner_window.app"; Width=844; Height=600; id=runclient(:partner_osrc:p_partner_key); }
+		}
+
+	    edit_profile "widget/label"
+		{
+		y=1;
+		font_size=11;
+		width=365;
+		widget_class=link;
+		text = "Click here to update name and contact info";
+		ep_click "widget/connector" { event=Click; target=profile_info; action=Launch; Source="/apps/kardia/modules/base/partner_window.app"; Width=844; Height=600; id=runclient(:partner_osrc:p_partner_key); }
+		}
+	    }
+	}
+    }

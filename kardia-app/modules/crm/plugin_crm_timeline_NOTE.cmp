@@ -1,0 +1,49 @@
+$Version=2$
+plugin_crm_timeline_NOTE "widget/component-decl"
+    {
+    width=418;
+    height=108;
+
+    e_reference_info "widget/parameter" { type=string; }
+    e_info "widget/parameter" { type=string; }
+    partner_key "widget/parameter" { type=string; }
+    shortdate "widget/parameter" { type=string; }
+
+    item_pane "widget/pane"
+	{
+	x=0; y=0;
+	height=108;
+	width=418;
+	style=bordered;
+	bgcolor=white;
+	border_color="#e0e0e0";
+	border_radius=2;
+	shadow_offset=1;
+	shadow_color="#c0c0c0";
+
+	item_hbox "widget/hbox"
+	    {
+	    x=3; y=1;
+	    width=400; height=102;
+	    spacing=8;
+
+	    item_icon "widget/image"
+		{
+		y=2;
+		width=26;
+		height=26;
+		source="/apps/kardia/images/tango/format-justify-left.png";
+		}
+
+	    item_text_vbox "widget/vbox"
+		{
+		width=350;
+		spacing=4;
+
+		item_desc "widget/label" { height=14; text=runserver(substring(:this:e_info,1,charindex('|',:this:e_info) - 1)); }
+		item_date "widget/label" { height=11; font_size=8; fgcolor="#a0a0a0"; text=runserver(:this:shortdate); }
+		item_text "widget/label" { height=66; text=runserver(substring(:this:e_info, charindex('|',:this:e_info) + 1)); }
+		}
+	    }
+	}
+    }

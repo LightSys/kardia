@@ -1,0 +1,42 @@
+$Version=2$
+cat_list "widget/component-decl"
+    {
+    height=417; width=248;
+
+    title = "Categories";
+    sequence = 30;
+
+    catlist_osrc "widget/osrc"
+	{
+	sql = "
+	    select
+		    img='/sys/images/checkbox_unchecked.png',
+		    do_what = 'Read Appl.',
+		    disp_name = 'Joseph Q. Applicant'
+	    ;
+
+	    select
+		    img='/sys/images/checkbox_unchecked.png',
+		    do_what = 'Interview',
+		    disp_name = 'Joseph Q. Applicant'
+	    ";
+	readahead=50;
+	replicasize=50;
+	
+	cat_table "widget/table"
+	    {
+	    x=0; y=0; width=248; height=417;
+	    rowheight = 20;
+	    mode=dynamicrow;
+	    allow_selection = yes;
+	    show_selection = yes;
+	    demand_scrollbar = yes;
+	    overlap_scrollbar = yes;
+	    colsep = 0;
+
+	    t_img "widget/table-column" { title=""; fieldname="img"; width=20; type=image; }
+	    t_what "widget/table-column" { title="To-Do Item"; fieldname="do_what"; width=100; }
+	    t_name "widget/table-column" { title="Partner"; fieldname="disp_name"; width=128; }
+	    }
+	}
+    }

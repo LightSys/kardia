@@ -1,0 +1,63 @@
+$Version=2$
+plugin_crm_timeline_TRK "widget/component-decl"
+    {
+    width=418;
+    height=34;
+
+    e_reference_info "widget/parameter" { type=string; }
+    e_info "widget/parameter" { type=string; }
+    partner_key "widget/parameter" { type=string; }
+    shortdate "widget/parameter" { type=string; }
+
+    item_pane "widget/pane"
+	{
+	x=0; y=0;
+	height=34;
+	width=418;
+	style=bordered;
+	bgcolor=white;
+	border_color="#e0e0e0";
+	border_radius=2;
+	shadow_offset=1;
+	shadow_color="#c0c0c0";
+
+	item_hbox "widget/hbox"
+	    {
+	    x=3; y=1;
+	    width=400; height=28;
+	    spacing=8;
+
+	    item_letter_pane "widget/pane"
+		{
+		y=2;
+		width=26;
+		height=26;
+		style=flat;
+		fl_width=0;
+		border_radius=2;
+		bgcolor=runserver("#e00000");
+
+		list_item_letter "widget/label"
+		    {
+		    fl_width=0;
+		    font_size=20;
+		    fgcolor=black;
+		    style=bold;
+		    x=3; y=0;
+		    align=center;
+		    height=20; width=20;
+		    text=runserver(substring(:this:e_info,24,1));
+		    }
+		}
+
+	    item_text_vbox "widget/vbox"
+		{
+		width=350;
+		spacing=4;
+
+		item_desc "widget/label" { height=14; text=runserver(:this:e_info); }
+		item_date "widget/label" { height=11; font_size=8; fgcolor="#a0a0a0"; text=runserver(:this:shortdate); }
+		}
+	    }
+	}
+    }

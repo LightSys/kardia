@@ -1,0 +1,89 @@
+$Version=2$
+profile_timeline "widget/component-decl"
+    {
+    width=442;
+    height=450;
+
+    partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    
+    profile_timeline_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=442; height=450;
+	spacing=8;
+
+	profile_timeline_menu "widget/menu"
+	    {
+	    widget_class="bar";
+	    height=24;
+
+	    profile_timeline_menu_add "widget/menu"
+		{
+		widget_class="popup";
+		label = "Add";
+
+		menu_add_contact "widget/menuitem" { label = "Contact"; }
+		menu_add_note "widget/menuitem" { label = "Prayer Need / Note"; }
+		menu_add_interest "widget/menuitem" { label = "Tag / Area of Interest"; }
+		menu_add_track "widget/menuitem" { label = "Engagement Track"; }
+		menu_add_req "widget/menuitem" { label = "Requirement"; }
+		menu_add_doc "widget/menuitem" { label = "Document / File / Photo"; }
+		menu_add_collab "widget/menuitem" { label = "Collaborator"; }
+		menu_add_todo "widget/menuitem" { label = "To-Do Item"; }
+		}
+
+	    profile_timeline_menu_view "widget/menu"
+		{
+		widget_class="popup";
+		label = "View";
+
+		menu_view_all "widget/menuitem" { label = "All"; checked=yes; }
+		menu_view_note "widget/menuitem" { label = "Only Prayer Needs / Notes"; checked=no; }
+		menu_view_track "widget/menuitem" { label = "Only Track and Step Progress"; checked=no; }
+		}
+
+	    profile_timeline_menu_sort "widget/menu"
+		{
+		widget_class="popup";
+		label = "Sort";
+
+		menu_sort_newest "widget/menuitem" { label = "By Most Recent"; checked=yes; }
+		menu_sort_type "widget/menuitem" { label = "By Kind"; checked=no; }
+		}
+
+	    profile_timeline_menu_reset "widget/menuitem"
+		{
+		label = "Reset";
+		onright = yes;
+
+		reload_on_reset "widget/connector" { event=Select; target=timeline_data; action=Instantiate; partner_key=runclient(:partner_osrc:p_partner_key); }
+		}
+	    }
+
+	timeline_scroll_pane "widget/pane"
+	    {
+	    height=418;
+	    style=flat;
+	    //style=bordered;
+	    //border_color="#e0e0e0";
+	    //border_radius=2;
+	    //bgcolor=white;
+
+	    timeline_scroll "widget/scrollpane"
+		{
+		x=0; y=0;
+		width=442; height=418;
+
+		timeline_data "widget/component"
+		    {
+		    width = 418;
+		    height = 418;
+		    mode = dynamic;
+		    path = "timeline.cmp";
+
+		    load_on_partner_change "widget/connector" { source=partner_osrc; event=EndQuery; action=Instantiate; partner_key=runclient(:partner_osrc:p_partner_key); }
+		    }
+		}
+	    }
+	}
+    }

@@ -1,0 +1,58 @@
+$Version=2$
+timeline "widget/component-decl"
+    {
+    width = 418;
+    height = 418;
+
+    partner_key "widget/parameter" { type=string; allowchars="0123456789"; }
+
+    timeline_vbox "widget/vbox"
+	{
+	x=0;
+	y=0;
+	width=418;
+	height=418;
+	spacing=8;
+
+	timeline_repeat "widget/repeat"
+	    {
+	    sql = runserver("
+			select
+			    :e:e_activity_date,
+			    :e:e_activity_type,
+			    :e:e_reference_info,
+			    :e:e_info,
+			    shortdate = substring(convert(string,:e:e_activity_date),1,11)
+			from
+			    '/apps/kardia/modules/crm/activity.qy?partner_key=" + :this:partner_key + "' e
+			");
+
+	    getcmp_repeat "widget/repeat"
+		{
+		sql = runserver("
+			    select
+				path = :c:cx__pathname,
+				module = :c:cx__pathpart4,
+				component = :c:cx__pathpart5,
+				:c:width,
+				:c:height
+			    from
+				object wildcard '/apps/kardia/modules/*/plugin_crm_timeline_" + :timeline_repeat:e_activity_type + ".cmp' c
+			    ");
+
+
+		timeline_item "widget/component"
+		    {
+		    height = runserver(:getcmp_repeat:height);
+		    path = runserver(:getcmp_repeat:path);
+		    partner_key = runserver(:this:partner_key);
+		    e_activity_date = runserver(:timeline_repeat:e_activity_date);
+		    shortdate = runserver(:timeline_repeat:shortdate);
+		    e_activity_type = runserver(:timeline_repeat:e_activity_type);
+		    e_reference_info = runserver(:timeline_repeat:e_reference_info);
+		    e_info = runserver(:timeline_repeat:e_info);
+		    }
+		}
+	    }
+	}
+    }

@@ -56,7 +56,7 @@ list_and_profile "widget/component-decl"
 
 		    plugin_tabs "widget/repeat"
 			{
-			sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_crm_sidebar_*.cmp'";
+			sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_crm_sidebar_*.cmp' order by :sequence";
 
 			plugin_tab "widget/tabpage"
 			    {
@@ -72,6 +72,7 @@ list_and_profile "widget/component-decl"
 
 		    search_tab "widget/tabpage"
 			{
+			condition=0;
 			title = "Search";
 			}
 		    }
