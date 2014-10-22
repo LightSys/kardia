@@ -23,7 +23,7 @@ iconbar "widget/component-decl"
 		active=1;
 		path="tab_button.cmp";
 		text = "My People";
-		image = "/apps/kardia/images/icons/openiconic-people.svg";
+		image = "/apps/kardia/images/icons/ionicons-people.svg";
 		}
 
 	    todo_btn "widget/component"
@@ -196,7 +196,7 @@ iconbar "widget/component-decl"
 		fl_width=0;
 		path="gen_button.cmp";
 		text = "Settings";
-		image="/apps/kardia/images/icons/ionicons-person-edit.svg";
+		image="/apps/kardia/images/icons/ionicons-gear.svg";
 		}
 	    }
 	}
