@@ -1,0 +1,203 @@
+$Version=2$
+iconbar "widget/component-decl"
+    {
+    width=1000;
+    height=74;
+
+    // Menubar
+    menu_pane "widget/pane"
+	{
+	x=0; y=0; width=1000; height=74;
+	fl_height=0;
+	widget_class = crm_iconbar;
+
+	icons_hbox "widget/hbox"
+	    {
+	    x=8; y=0; width=984; height=74;
+	    spacing=0;
+
+	    active_btn "widget/component"
+		{
+		width=70;
+		fl_width=0;
+		active=1;
+		path="tab_button.cmp";
+		text = "My People";
+		image = "/apps/kardia/images/icons/openiconic-people.svg";
+		}
+
+	    todo_btn "widget/component"
+		{
+		width=70;
+		fl_width=0;
+		path="tab_button.cmp";
+		text = "My Tasks";
+		image = "/apps/kardia/images/icons/openiconic-task.svg";
+		}
+
+	    search_btn "widget/component"
+		{
+		width=70;
+		fl_width=0;
+		path="tab_button.cmp";
+		text = "Search";
+		image="/apps/kardia/images/icons/ionicons-search.svg";
+		}
+
+	    sep1 "widget/autolayoutspacer" { width=22; fl_width=100; }
+
+	    newperson_btn "widget/component"
+		{
+		width=70;
+		fl_width=0;
+		path="gen_button.cmp";
+		text = "New Person";
+		image="/apps/kardia/images/icons/ionicons-person-add.svg";
+		}
+	    editperson_btn "widget/component"
+		{
+		width=70;
+		fl_width=0;
+		path="gen_button.cmp";
+		text = "Edit Person";
+		image="/apps/kardia/images/icons/ionicons-person-edit.svg";
+		}
+
+	    sep1b "widget/autolayoutspacer" { width=22; fl_width=100; }
+
+	    labels_vbox "widget/vbox"
+		{
+		width=50;
+		fl_width=0;
+		spacing=0;
+
+		sep2 "widget/autolayoutspacer" { height=26; }
+
+		add_manage "widget/label"
+		    {
+		    height=12;
+		    style=italic;
+		    text = "Add+Edit:";
+		    font_size=11;
+		    align=right;
+		    fgcolor = "#808080";
+		    }
+
+		sep3 "widget/autolayoutspacer" { height=20; }
+
+		on_timeline "widget/label"
+		    {
+		    height=12;
+		    style=italic;
+		    text = "Show:";
+		    font_size=11;
+		    align=right;
+		    fgcolor = "#808080";
+		    }
+		}
+
+	    sepn "widget/autolayoutspacer" { width=4; fl_width=0; }
+
+	    tags_btn "widget/component"
+		{
+		width=50;
+		fl_width=0;
+		active=1;
+		path="type_button.cmp";
+		text = "Tags";
+		image="/apps/kardia/images/icons/ionicons-pricetags.svg";
+		}
+
+	    gifts_btn "widget/component"
+		{
+		width=50;
+		fl_width=0;
+		active=0;
+		path="type_button.cmp";
+		text = "Gifts";
+		image="/apps/kardia/images/icons/openiconic-dollar.svg";
+		}
+
+	    social_btn "widget/component"
+		{
+		width=50;
+		fl_width=0;
+		active=1;
+		path="type_button.cmp";
+		text = "Social";
+		image="/apps/kardia/images/icons/ionicons-social.svg";
+		}
+
+	    contacts_btn "widget/component"
+		{
+		width=50;
+		fl_width=0;
+		active=1;
+		path="type_button.cmp";
+		text = "Contact";
+		image="/apps/kardia/images/icons/ionicons-contacts2.svg";
+		}
+
+	    ptodo_btn "widget/component"
+		{
+		width=50;
+		fl_width=0;
+		active=1;
+		path="type_button.cmp";
+		text = "To-Do";
+		image="/apps/kardia/images/icons/openiconic-bell.svg";
+		}
+
+	    notes_btn "widget/component"
+		{
+		width=50;
+		fl_width=0;
+		active=1;
+		path="type_button.cmp";
+		text = "Notes";
+		image="/apps/kardia/images/icons/ionicons-notes.svg";
+		}
+
+	    webf_btn "widget/component"
+		{
+		width=50;
+		fl_width=0;
+		active=1;
+		path="type_button.cmp";
+		text = "WForms";
+		image="/apps/kardia/images/icons/tumblicons-webform2.svg";
+		}
+
+	    form_btn "widget/component"
+		{
+		width=50;
+		fl_width=0;
+		active=1;
+		path="type_button.cmp";
+		text = "Files";
+		image="/apps/kardia/images/icons/tumblicons-file.svg";
+		}
+
+	    trk_btn "widget/component"
+		{
+		width=50;
+		fl_width=0;
+		active=1;
+		path="type_button.cmp";
+		text = "Tracks";
+		image="/apps/kardia/images/icons/ionicons-track.svg";
+		}
+
+	    sep1c "widget/autolayoutspacer" { width=22; fl_width=100; }
+
+	    settings_btn "widget/component"
+		{
+		width=70;
+		fl_width=0;
+		path="gen_button.cmp";
+		text = "Settings";
+		image="/apps/kardia/images/icons/ionicons-person-edit.svg";
+		}
+	    }
+	}
+    }

@@ -1,0 +1,27 @@
+$Version=2$
+crm "widget/component-decl"
+    {
+    width=1000;
+    height=600;
+    
+    // Icon menu bar at top of app
+    //
+    iconbar "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=74;
+	path = "iconbar.cmp";
+	}
+
+    // And here is the component containing the active collaboration list on
+    // the lefthand side and the Partner profile on the righthand side.  The
+    // path for the component is relative to the path of the application,
+    // unless the component's path begins with a slash.
+    //
+    list_and_profile "widget/component"
+	{
+	x = 10; y = 84;
+	width = 980; height = 506;
+	path = "list_and_profile.cmp";
+	}
+    }

@@ -4,105 +4,68 @@ profile_track_list "widget/component-decl"
     width=200;
     height=110;
 
-    partner_key "widget/parameter" { type=string; }
+    partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
-    list_vbox "widget/vbox"
+    tracklist_osrc "widget/osrc"
 	{
-	x=0; y=0;
-	width=200; height=110;
-	spacing=4;
+	sql = " select
+		    :pe:e_engagement_id,
+		    :pe:e_desc,
+		    :pe:e_comments,
+		    :et:e_track_name,
+		    :es:e_step_name,
+		    :et:e_track_color
+		from
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+		    /apps/kardia/data/Kardia_DB/e_engagement_track/rows et,
+		    /apps/kardia/data/Kardia_DB/e_engagement_step/rows es
+		where
+		    :pe:e_is_archived = 0 and
+		    :et:e_track_id = :pe:e_track_id and
+		    :es:e_step_id = :pe:e_step_id and
+		    :es:e_track_id = :pe:e_track_id
+		group by
+		    :pe:p_partner_key,
+		    :pe:e_engagement_id
+		";
+	readahead=10;
+	replicasize=20;
 
-	list_repeat "widget/repeat"
+	tracklist_link "widget/rule"
 	    {
-	    sql = runserver("
-		    select
-			:pe:e_engagement_id,
-			:pe:e_desc,
-			:pe:e_comments,
-			:et:e_track_name,
-			:es:e_step_name,
-			:et:e_track_color
-		    from
-			/apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
-			/apps/kardia/data/Kardia_DB/e_engagement_track/rows et,
-			/apps/kardia/data/Kardia_DB/e_engagement_step/rows es
-		    where
-			:pe:p_partner_key = " + quote(:this:partner_key) + " and
-			:pe:e_is_archived = 0 and
-			:et:e_track_id = :pe:e_track_id and
-			:es:e_step_id = :pe:e_step_id and
-			:es:e_track_id = :pe:e_track_id
-		    group by
-			:pe:p_partner_key,
-			:pe:e_engagement_id
-		    ");
+	    ruletype = osrc_relationship;
+	    target = partner_osrc;
+	    key_1 = p_partner_key;
+	    target_key_1 = p_partner_key;
+	    key_objname = pe;
+	    }
 
-	    list_item_pane "widget/pane"
-		{
-		height=34;
-		style=bordered;
-		bgcolor=white;
-		border_color="#e0e0e0";
-		border_radius=2;
-		shadow_offset=1;
-		shadow_color="#c0c0c0";
+	tracklist_table "widget/table"
+	    {
+	    x=0; y=0;
+	    width=200; height=110;
+	    height=418;
+	    width=442;
+	    row_border_color="#e0e0e0";
+	    row_border_radius=2;
+	    row_shadow_offset=1;
+	    row_shadow_color="#c0c0c0";
+	    demand_scrollbar = yes;
+	    overlap_scrollbar = yes;
+	    colsep = 0;
+	    titlebar = no;
+	    min_rowheight = 16;
+	    max_rowheight = 200;
+	    cellvspacing = 4;
+	    row1_bgcolor = white;
+	    row2_bgcolor = white;
+	    show_selection = yes;
+	    inner_padding = 2;
+	    rowhighlight_bgcolor = "#ffffc0";
+	    textcolorhighlight = "#000000";
 
-		list_item_hbox "widget/hbox"
-		    {
-		    x=3; y=2;
-		    width=196; height=28;
-		    spacing=4;
-
-		    list_item_letter_pane "widget/pane"
-			{
-			y=1;
-			width=26;
-			height=26;
-			style=flat;
-			fl_width=0;
-			border_radius=2;
-			bgcolor=runserver(:list_repeat:e_track_color);
-
-			list_item_letter "widget/label"
-			    {
-			    fl_width=0;
-			    font_size=20;
-			    fgcolor=black;
-			    style=bold;
-			    x=3; y=0;
-			    align=center;
-			    height=20; width=20;
-			    text=runserver(substring(:list_repeat:e_track_name,1,1));
-			    }
-			}
-
-		    list_item_descrip_vbox "widget/vbox"
-			{
-			width=164;
-			spacing=2;
-
-			list_item_title "widget/label"
-			    {
-			    height=13;
-			    font_size=11;
-			    text=runserver(:list_repeat:e_track_name + ' (' + :list_repeat:e_step_name + ')');
-			    style=bold;
-			    align=center;
-			    allow_break=no;
-			    overflow_ellipsis=yes;
-			    }
-			list_item_text "widget/label"
-			    {
-			    height=13;
-			    font_size=11;
-			    text=runserver(:list_repeat:e_desc);
-			    align=center;
-			    allow_break=no;
-			    overflow_ellipsis=yes;
-			    }
-			}
-		    }
-		}
+	    t_letter "widget/table-column" { value=runclient(substring(:tracklist_osrc:e_track_name, 1, 1)); font_size=22; style=bold; padding=3; bgcolor=runclient(:tracklist_osrc:e_track_color); border_radius=4; width=40; align=center; }
+	    t_trackname "widget/table-column" { value=runclient(:tracklist_osrc:e_track_name + ' (' + :tracklist_osrc:e_step_name + ')'); style=bold; caption_value=runclient(:tracklist_osrc:e_desc); align=center; width=160; caption_align=center; caption_style=italic; }
 	    }
 	}
     }

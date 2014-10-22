@@ -1,0 +1,45 @@
+$Version=2$
+tab_button "widget/component-decl"
+    {
+    width=70; height=74;
+
+    image "widget/parameter" { type=string; }
+    text "widget/parameter" { type=string; }
+    active "widget/parameter" { type=integer; default=0; }
+
+    pane "widget/pane"
+	{
+	x=0; y=0;
+	width=70; height=74;
+	style=flat;
+	background=runserver(condition(:this:active,"/apps/kardia/images/bg/lsblue_gradient.png",null));
+
+	vbox "widget/vbox"
+	    {
+	    x=0; y=10;
+	    width=70; height=60;
+	    spacing=0;
+
+	    btn "widget/textbutton"
+		{
+		width=70;
+		height=50;
+		fl_width=0;
+		image=runserver(:this:image);
+		text=runserver(:this:text);
+		fgcolor1=white;
+		fgcolor2="#404040";
+		background=null;
+		widget_class=crm_iconbutton;
+		}
+
+	    arrow "widget/image"
+		{
+		source = "/apps/kardia/images/icons/openiconic-chevron-bottom.svg";
+		width = 12;
+		height = 12;
+		x = 29;
+		}
+	    }
+	}
+    }

@@ -20,7 +20,7 @@ partner_profile "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
 		    /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct
 		where
-		    :p:p_partner_key = '56151' and
+		    :p:p_partner_key = '100639' and
 		    :p:p_record_status_code = 'A' and
 		    :l:p_partner_key =* :p:p_partner_key and
 		    :l:p_revision_id = 0 and
@@ -70,8 +70,7 @@ partner_profile "widget/component-decl"
 		    fl_width=0;
 		    width=200;
 		    height=110;
-		    mode=dynamic;
-		    path="/apps/kardia/modules/crm/profile_track_list.cmp";
+		    path="profile_track_list.cmp";
 		    }
 		}
 
