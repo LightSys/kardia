@@ -39,6 +39,7 @@ next_receipt "widget/component-decl"
 		";
 	readahead = 2;
 	replicasize = 2;
+	autoquery = never;
 
 	gotit "widget/connector" { event=EndQuery; target=next_receipt; action=ReceiptNumber; receipt=runclient(:getrcpt_osrc:a_next_receipt_number); }
 	}

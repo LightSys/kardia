@@ -35,6 +35,7 @@ next_partner "widget/component-decl"
 		";
 	readahead = 2;
 	replicasize = 2;
+	autoquery = never;
 
 	gotit "widget/connector" { event=EndQuery; target=next_partner; action=PartnerKey; p_partner_key=runclient(:getpartner_osrc:p_partner_key); }
 	}
