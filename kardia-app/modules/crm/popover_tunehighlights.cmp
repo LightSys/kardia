@@ -1,0 +1,194 @@
+$Version=2$
+popover_tunehighlights "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+
+    TuneComplete "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
+    onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen3 "widget/connector" { event=Open; target=name_var; action=SetValue; Value=runclient(:hname); }
+    onOpen4 "widget/connector" { event=Open; target=type_var; action=SetValue; Value=runclient(:htype); }
+    onOpen5 "widget/connector" { event=Open; target=dir_var; action=SetValue; Value=runclient(:direction); }
+    onOpen6 "widget/connector" { event=Open; target=role_var; action=SetValue; Value=runclient(:role); }
+    onOpeny "widget/connector" { event=Open; target=tune_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
+
+    name_var "widget/variable" { type=string; }
+    type_var "widget/variable" { type=string; }
+    dir_var "widget/variable" { type=string; }
+    partner_var "widget/variable" { type=string; }
+    collab_var "widget/variable" { type=string; }
+    role_var "widget/variable" { type=string; }
+
+    tune_win "widget/childwindow"
+	{
+	width=500; height=460;
+	x=250; y=89;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	on_tune_open "widget/connector" { event=Open; target=tune_form; action=New; }
+
+	tune_vbox "widget/vbox"
+	    {
+	    x=15; y=15;
+	    width=468; height=430;
+	    spacing=8;
+	    justify=all;
+
+	    tune_osrc "widget/osrc"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_data_highlight/rows dh
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/e_data_highlight/rows";
+		replicasize=50;
+		readahead=50;
+		autoquery=never;
+
+		tune_form "widget/form"
+		    {
+		    allow_search=no;
+		    allow_view=no;
+		    allow_modify=no;
+		    allow_new=yes;
+
+		    close_on_save "widget/connector" { event=DataSaved; target=tune_win; action=Close; }
+		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_tunehighlights; action=TuneComplete; }
+		    close_on_discard "widget/connector" { event=Discard; target=tune_win; action=Close; }
+
+		    hdr_label "widget/label" { height=40; font_size=16; style=bold; value=runclient("Adjust highlighting:\n'" + :name_var:value + "' of type '" + :type_var:value + "'..."); align=center; }
+
+		    whom_label "widget/label" { height=20; style=bold; text="To whom will this adjustment apply?"; }
+
+		    whom_all "widget/hbox"
+			{
+			require_endorsements="kardia:crm_manage";
+			endorsement_context="kardia";
+			height=16; x=32; spacing=8;
+			whom_all_cb "widget/checkbox" { width=16; whom_all_cb_hints "widget/hints" { style=notnull; } }
+			whom_all_label "widget/label" { width=300; value=runclient("All Kardia CRM Users"); }
+			}
+		    whom_role "widget/hbox"
+			{
+			require_endorsements="kardia:crm_manage";
+			endorsement_context="kardia";
+			height=16; x=32; spacing=8;
+			whom_role_cb "widget/checkbox" { width=16; whom_role_cb_hints "widget/hints" { style=notnull; } }
+			whom_role_label "widget/label" { width=300; value=runclient("All in role '" + isnull(:role_var:value, 'None') + "'"); }
+			}
+		    whom_me "widget/hbox"
+			{
+			height=16; x=32; spacing=8;
+			whom_me_cb "widget/checkbox" { width=16; whom_me_cb_hints "widget/hints" { style=notnull; } }
+			whom_me_label "widget/label" { width=300; value=runclient("To me"); }
+			}
+		    whom_me_role "widget/hbox"
+			{
+			height=16; x=32; spacing=8;
+			whom_me_role_cb "widget/checkbox" { width=16; whom_me_role_cb_hints "widget/hints" { style=notnull; } }
+			whom_me_role_label "widget/label" { width=300; value=runclient("To me, when I'm acting in role '" + isnull(:role_var:value,'None') + "'"); }
+			}
+
+		    spec_label "widget/label" { height=20; style=bold; text="How specific do you want to be?"; }
+
+		    spec_name "widget/hbox"
+			{
+			height=16; x=32; spacing=8;
+			spec_name_cb "widget/checkbox" { width=16; spec_name_cb_hints "widget/hints" { style=notnull; } }
+			spec_name_label "widget/label" { width=300; value=runclient("Just to item '" + :name_var:value + "'"); }
+			}
+		    spec_type "widget/hbox"
+			{
+			height=16; x=32; spacing=8;
+			spec_type_cb "widget/checkbox" { width=16; spec_type_cb_hints "widget/hints" { style=notnull; } }
+			spec_type_label "widget/label" { width=300; value=runclient("To everything of type '" + :type_var:value + "'"); }
+			}
+
+		    adj_label "widget/label" { height=20; style=bold; text="How important is this item to you?"; }
+
+		    adj_veryhigh "widget/hbox"
+			{
+			height=16; x=32; spacing=8;
+			adj_vh_cb "widget/checkbox" { width=16; adj_vh_cb_hints "widget/hints" { style=notnull; } }
+			adj_vh_label "widget/label" { width=300; value=runclient("Very important - top of the list"); }
+			}
+		    adj_high "widget/hbox"
+			{
+			height=16; x=32; spacing=8;
+			adj_h_cb "widget/checkbox" { width=16; adj_h_cb_hints "widget/hints" { style=notnull; } }
+			adj_h_label "widget/label" { width=300; value=runclient("Important"); }
+			}
+		    adj_neutral "widget/hbox"
+			{
+			height=16; x=32; spacing=8;
+			adj_n_cb "widget/checkbox" { width=16; adj_n_cb_hints "widget/hints" { style=notnull; } }
+			adj_n_label "widget/label" { width=300; value=runclient("Normal"); }
+			}
+		    adj_low "widget/hbox"
+			{
+			height=16; x=32; spacing=8;
+			adj_l_cb "widget/checkbox" { width=16; adj_l_cb_hints "widget/hints" { style=notnull; } }
+			adj_l_label "widget/label" { width=300; value=runclient("Unimportant - but still show it"); }
+			}
+		    adj_zero "widget/hbox"
+			{
+			height=16; x=32; spacing=8;
+			adj_z_cb "widget/checkbox" { width=16; adj_z_cb_hints "widget/hints" { style=notnull; } }
+			adj_z_label "widget/label" { width=300; value=runclient("Don't even display this item"); }
+			}
+
+		    partner "widget/variable" { fieldname=p_partner_key; partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
+		    collab_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+		    tune_btns "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=10;
+			fl_height=0;
+
+			add_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Adjust Highlight";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    enabled = runclient(:tune_form:is_savable);
+
+			    on_add "widget/connector" { event=Click; target=tune_form; action=Save; }
+			    }
+
+			cancel_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Cancel";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    on_cancel1 "widget/connector" { event=Click; target=tune_form; action=Discard; }
+			    on_cancel2 "widget/connector" { event=Click; target=tune_win; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
