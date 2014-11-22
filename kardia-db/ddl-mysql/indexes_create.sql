@@ -56,6 +56,12 @@ create  index p_af_country_idx on p_address_format (p_country_code, p_address_se
 /* p_partner_relationship */
 /* create  index p_partner_relationship_pk on p_partner_relationship (p_partner_key, p_relation_type, p_relation_key)*/ 
 /* go */
+create  index p_relate_reverse_idx on p_partner_relationship (p_relation_key, p_relation_type, p_partner_key);
+
+
+/* p_partner_relationship_type */
+/* create  index p_relat_type_pk on p_partner_relationship_type (p_relation_type)*/ 
+/* go */
 
 
 /* p_church */
@@ -134,15 +140,36 @@ create  index p_dc_username_idx on p_dup_check_tmp (s_username, p_partner_key);
 /* go */
 
 
+/* p_partner_search */
+/* create  index p_search_pk on p_partner_search (p_search_id)*/ 
+/* go */
+
+
+/* p_partner_search_stage */
+/* create  index p_searchstage_pk on p_partner_search_stage (p_search_id,p_search_stage_id)*/ 
+/* go */
+
+
+/* p_partner_search_results */
+create  index p_search_stage_idx on p_partner_search_results (s_username,p_search_session_id,p_search_stage_id,p_partner_key);
+/* create  index p_searchres_pk on p_partner_search_results (p_partner_key,s_username,p_search_session_id,p_search_stage_id)*/ 
+/* go */
+
+
+/* p_search_stage_criteria */
+/* create  index p_stage_criteria_pk on p_search_stage_criteria (p_search_id,p_search_stage_id,p_criteria_name)*/ 
+/* go */
+
+
 /* m_list */
 /* create  index m_list_pk on m_list (m_list_code)*/ 
 /* go */
 
 
 /* m_list_membership */
-/* create  index m_list_membership_clustered_pk on m_list_membership (m_list_code, p_partner_key)*/ 
+/* create  index m_list_membership_clustered_pk on m_list_membership (m_list_code, p_partner_key, m_hist_id)*/ 
 /* go */
-create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_code);
+create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_code, m_hist_id);
 
 
 /* e_contact_autorecord */
@@ -335,6 +362,18 @@ create  index e_dataitem_group_idx on e_data_item (e_data_item_group_id, e_data_
 /* create  index e_dataitem_pk on e_data_item (e_data_item_id)*/ 
 /* go */
 create  index e_dataitem_type_idx on e_data_item (e_data_item_type_id, e_data_item_id);
+
+
+/* e_highlights */
+/* create  index e_h_pk on e_highlights (e_highlight_user, e_highlight_partner, e_highlight_name)*/ 
+/* go */
+create  index e_h_prec_idx on e_highlights (e_highlight_user, e_highlight_partner, e_highlight_precedence, e_highlight_name);
+
+
+/* e_data_highlight */
+create  index e_dh_obj_idx on e_data_highlight (e_highlight_object_type, e_highlight_object_id, e_highlight_subject);
+/* create  index e_dh_pk on e_data_highlight (e_highlight_subject, e_highlight_object_type, e_highlight_object_id)*/ 
+/* go */
 
 
 /* r_group */

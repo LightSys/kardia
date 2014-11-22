@@ -82,6 +82,10 @@ alter table p_partner_relationship
 	drop primary key;
 
 
+alter table p_partner_relationship_type
+	drop primary key;
+
+
 alter table p_church
 	drop primary key;
 
@@ -151,6 +155,22 @@ alter table p_partner_sort_tmp
 
 
 alter table p_acquisition_code
+	drop primary key;
+
+
+alter table p_partner_search
+	drop primary key;
+
+
+alter table p_partner_search_stage
+	drop primary key;
+
+
+alter table p_partner_search_results
+	drop primary key;
+
+
+alter table p_search_stage_criteria
 	drop primary key;
 
 
@@ -420,6 +440,14 @@ alter table e_data_item
 
 alter table e_data_item
 	drop index e_dataitem_group_idx;
+
+
+alter table e_highlights
+	drop primary key;
+
+
+alter table e_data_highlight
+	drop primary key;
 
 
 alter table r_group
