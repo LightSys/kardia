@@ -52,6 +52,7 @@ profile_track_list "widget/component-decl"
 	    row_shadow_color="#c0c0c0";
 	    demand_scrollbar = yes;
 	    overlap_scrollbar = yes;
+	    initial_selection = no;
 	    colsep = 0;
 	    titlebar = no;
 	    min_rowheight = 16;
@@ -61,7 +62,7 @@ profile_track_list "widget/component-decl"
 	    row2_bgcolor = white;
 	    show_selection = yes;
 	    inner_padding = 2;
-	    rowhighlight_bgcolor = "#ffffc0";
+	    rowhighlight_bgcolor = "#fff090";
 	    textcolorhighlight = "#000000";
 
 	    t_letter "widget/table-column" { value=runclient(substring(:tracklist_osrc:e_track_name, 1, 1)); font_size=22; style=bold; padding=3; bgcolor=runclient(:tracklist_osrc:e_track_color); border_radius=4; width=40; align=center; }
