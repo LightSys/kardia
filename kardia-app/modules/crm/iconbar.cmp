@@ -4,6 +4,33 @@ iconbar "widget/component-decl"
     width=1000;
     height=74;
 
+    SidebarSelect "widget/component-decl-event" { }
+    TypesChange "widget/component-decl-event" { }
+    ButtonPressed "widget/component-decl-event" { }
+
+    ActivePageID "widget/parameter" { type=integer; default=1; }
+    EnabledTypes "widget/parameter" { type=string; default=""; deploy_to_client=yes; }
+    profile "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    DisableTabButtons "widget/component-decl-action" { }
+
+    types_change_event "widget/connector"
+	{
+	source=EnabledTypes;
+	event=DataChange;
+	target=iconbar;
+	action=TypesChange;
+	}
+
+    disable_all_buttons "widget/connector"
+	{
+	event=DisableTabButtons;
+	target=one_tabbutton;
+	action=SetBackground;
+	Image=runclient("/sys/images/trans_1.gif");
+	//Image=runclient(null);
+	}
+
     // Menubar
     menu_pane "widget/pane"
 	{
@@ -15,188 +42,273 @@ iconbar "widget/component-decl"
 	    {
 	    x=8; y=0; width=984; height=74;
 	    spacing=0;
+	    justify=all;
 
-	    active_btn "widget/component"
+	    tabicons "widget/repeat"
 		{
-		width=70;
-		fl_width=0;
-		active=1;
-		path="tab_button.cmp";
-		text = "My People";
-		image = "/apps/kardia/images/icons/ionicons-people.svg";
+		sql = "select :cx__rowid, :icon, :title from object wildcard '/apps/kardia/modules/*/plugin_crm_sidebar_*.cmp' order by :sequence";
+
+		one_tabbutton "widget/component"
+		    {
+		    width=48;
+		    fl_width=0;
+		    active=runserver(:tabicons:cx__rowid == 0);
+		    path="button_tab.cmp";
+		    text=runserver(:tabicons:title);
+		    image=runserver(:tabicons:icon);
+
+		    tabbutton_click0 "widget/connector"
+			{
+			event=Click;
+			target=iconbar;
+			action=TriggerEvent;
+			EventName=runclient("DisableTabButtons");
+			}
+
+		    tabbutton_click "widget/connector"
+			{
+			event=Click;
+			target=iconbar;
+			action=SidebarSelect;
+			PageID=runserver(:tabicons:cx__rowid + 1);
+			}
+
+		    tabbutton_click3 "widget/connector"
+			{
+			event=Click;
+			target=one_tabbutton;
+			action=SetBackground;
+			Image=runclient("/apps/kardia/images/bg/lsblue_gradient.png");
+			}
+		    }
 		}
 
-	    todo_btn "widget/component"
-		{
-		width=70;
-		fl_width=0;
-		path="tab_button.cmp";
-		text = "My Tasks";
-		image = "/apps/kardia/images/icons/openiconic-task.svg";
-		}
-
-	    search_btn "widget/component"
-		{
-		width=70;
-		fl_width=0;
-		path="tab_button.cmp";
-		text = "Search";
-		image="/apps/kardia/images/icons/ionicons-search.svg";
-		}
-
-	    sep1 "widget/autolayoutspacer" { width=22; fl_width=100; }
+	    sep1 "widget/autolayoutspacer" { width=24; fl_width=100; }
 
 	    newperson_btn "widget/component"
 		{
-		width=70;
+		width=48;
 		fl_width=0;
-		path="gen_button.cmp";
-		text = "New Person";
+		path="button_generic.cmp";
+		text = "New";
 		image="/apps/kardia/images/icons/ionicons-person-add.svg";
+		enabled = 1;
 		}
 	    editperson_btn "widget/component"
 		{
-		width=70;
+		width=48;
 		fl_width=0;
-		path="gen_button.cmp";
-		text = "Edit Person";
+		path="button_generic.cmp";
+		text = "Edit";
 		image="/apps/kardia/images/icons/ionicons-person-edit.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		}
 
-	    sep1b "widget/autolayoutspacer" { width=22; fl_width=100; }
+	    sep1b "widget/autolayoutspacer" { width=24; fl_width=100; }
 
 	    labels_vbox "widget/vbox"
 		{
-		width=50;
+		width=42;
 		fl_width=0;
 		spacing=0;
 
-		sep2 "widget/autolayoutspacer" { height=26; }
+		sep2 "widget/autolayoutspacer" { height=13; }
 
-		add_manage "widget/label"
+		add_manage_pane "widget/pane"
 		    {
-		    height=12;
-		    style=italic;
-		    text = "Add+Edit:";
-		    font_size=11;
-		    align=right;
-		    fgcolor = "#808080";
+		    style=flat;
+		    fl_width=0;
+		    border_radius=5;
+		    width=64;
+		    bgcolor="#334466";
+		    height=39;
+
+		    add_manage "widget/label"
+			{
+			x=0; y=7;
+			width=40;
+			height=20;
+			style=italic;
+			text = "Add+\nEdit:";
+			font_size=11;
+			align=right;
+			fgcolor = "#a0a0a0";
+			}
 		    }
 
-		sep3 "widget/autolayoutspacer" { height=20; }
+		sep3 "widget/autolayoutspacer" { height=5; }
 
-		on_timeline "widget/label"
+		on_timeline_pane "widget/pane"
 		    {
-		    height=12;
-		    style=italic;
-		    text = "Show:";
-		    font_size=11;
-		    align=right;
-		    fgcolor = "#808080";
+		    style=flat;
+		    fl_width=0;
+		    border_radius=5;
+		    width=64;
+		    bgcolor="#334466";
+		    height=15;
+
+		    on_timeline "widget/label"
+			{
+			x=0; y=1;
+			width=40;
+			height=12;
+			style=italic;
+			text = "Show:";
+			font_size=11;
+			align=right;
+			fgcolor = "#a0a0a0";
+			}
 		    }
 		}
 
 	    sepn "widget/autolayoutspacer" { width=4; fl_width=0; }
 
+	    rels_btn "widget/component"
+		{
+		width=48;
+		fl_width=0;
+		type = "REL";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
+		text = "Relate";
+		image="/apps/kardia/images/icons/ionicons-relationships3.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
+		}
+
 	    tags_btn "widget/component"
 		{
-		width=50;
+		width=48;
 		fl_width=0;
-		active=1;
-		path="type_button.cmp";
+		type = "TAG";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
 		text = "Tags";
 		image="/apps/kardia/images/icons/ionicons-pricetags.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		}
 
 	    gifts_btn "widget/component"
 		{
-		width=50;
+		width=48;
 		fl_width=0;
-		active=0;
-		path="type_button.cmp";
+		type = "GIFT";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
 		text = "Gifts";
 		image="/apps/kardia/images/icons/openiconic-dollar.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		}
 
 	    social_btn "widget/component"
 		{
-		width=50;
+		width=48;
 		fl_width=0;
-		active=1;
-		path="type_button.cmp";
+		type = "SOC";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
 		text = "Social";
 		image="/apps/kardia/images/icons/ionicons-social.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		}
 
 	    contacts_btn "widget/component"
 		{
-		width=50;
+		width=48;
 		fl_width=0;
-		active=1;
-		path="type_button.cmp";
+		type = "CONT";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
 		text = "Contact";
 		image="/apps/kardia/images/icons/ionicons-contacts2.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
+
+		do_contact "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Contact'); Origin=contacts_btn; }
 		}
 
 	    ptodo_btn "widget/component"
 		{
-		width=50;
+		width=48;
 		fl_width=0;
-		active=1;
-		path="type_button.cmp";
-		text = "To-Do";
+		type = "TASK";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
+		text = "ToDo";
 		image="/apps/kardia/images/icons/openiconic-bell.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
+
+		do_todo "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('ToDo'); Origin=ptodo_btn; }
 		}
 
 	    notes_btn "widget/component"
 		{
-		width=50;
+		width=48;
 		fl_width=0;
-		active=1;
-		path="type_button.cmp";
+		type = "NOTE";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
 		text = "Notes";
 		image="/apps/kardia/images/icons/ionicons-notes.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
+
+		do_notes "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Notes'); Origin=notes_btn; }
 		}
 
 	    webf_btn "widget/component"
 		{
-		width=50;
+		width=48;
 		fl_width=0;
-		active=1;
-		path="type_button.cmp";
-		text = "WForms";
+		type = "DATA";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
+		text = "Data";
 		image="/apps/kardia/images/icons/tumblicons-webform2.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		}
 
 	    form_btn "widget/component"
 		{
-		width=50;
+		width=48;
 		fl_width=0;
-		active=1;
-		path="type_button.cmp";
+		type = "FILE";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
 		text = "Files";
 		image="/apps/kardia/images/icons/tumblicons-file.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		}
 
 	    trk_btn "widget/component"
 		{
-		width=50;
+		width=48;
 		fl_width=0;
-		active=1;
-		path="type_button.cmp";
+		type = "TRK";
+		enabled_types = EnabledTypes;
+		init_enabled_types = runserver(:this:EnabledTypes);
+		path="button_type.cmp";
 		text = "Tracks";
 		image="/apps/kardia/images/icons/ionicons-track.svg";
+		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		}
 
-	    sep1c "widget/autolayoutspacer" { width=22; fl_width=100; }
+	    sep1c "widget/autolayoutspacer" { width=24; fl_width=100; }
 
 	    settings_btn "widget/component"
 		{
-		width=70;
+		width=48;
 		fl_width=0;
-		path="gen_button.cmp";
-		text = "Settings";
+		path="button_generic.cmp";
+		text = "Menu";
 		image="/apps/kardia/images/icons/ionicons-gear.svg";
+		enabled = 1;
 		}
 	    }
 	}

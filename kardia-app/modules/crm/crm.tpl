@@ -10,7 +10,8 @@ crm_tpl "widget/template"
 	shadow_radius=12;
 	shadow_offset=2;
 	//border_radius=8;
-	bgcolor="black";
+	//bgcolor="black";
+	background="/apps/kardia/images/bg/charcoal_gradient.png";
 	}
     button "widget/textbutton"
 	{
