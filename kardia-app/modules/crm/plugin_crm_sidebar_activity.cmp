@@ -1,0 +1,17 @@
+$Version=2$
+activity_list "widget/component-decl"
+    {
+    height=417; width=248;
+
+    title = "Activity";
+    icon = "/apps/kardia/images/icons/ionicons-people.svg";
+    sequence = 40;
+
+    PartnerSelected "widget/component-decl-event" { }
+
+    activity_vbox "widget/vbox"
+	{
+	x=0; y=0; width=248; height=413;
+	spacing=8;
+	}
+    }

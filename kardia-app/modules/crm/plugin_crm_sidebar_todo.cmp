@@ -3,40 +3,168 @@ todo_list "widget/component-decl"
     {
     height=417; width=248;
 
-    title = "To-Do";
+    title = "Tasks";
+    icon = "/apps/kardia/images/icons/openiconic-task.svg";
     sequence = 20;
+
+    PartnerSelected "widget/component-decl-event" { }
+    EditTask "widget/component-decl-event" { }
+
+    RefreshTasks "widget/component-decl-action" { }
+    onRefreshTasks "widget/connector"
+	{
+	event=RefreshTasks;
+	target=todo_osrc;
+	action=Refresh;
+	}
 
     todo_osrc "widget/osrc"
 	{
-	sql = "
-	    select
-		    img='/sys/images/checkbox_unchecked.png',
-		    do_what = 'Read Appl.',
-		    disp_name = 'Joseph Q. Applicant'
-	    ;
-
-	    select
-		    img='/sys/images/checkbox_unchecked.png',
-		    do_what = 'Interview',
-		    disp_name = 'Joseph Q. Applicant'
-	    ";
+	sql = "	select
+		    img = condition(:t:e_todo_status = 'I', '/sys/images/dotted_check.gif', condition(:t:e_todo_status = 'C', '/sys/images/green_check.gif', '/sys/images/red_x.gif')),
+		    partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		    days_til_due = datediff(day, getdate(), :t:e_todo_due_date),
+		    :t:e_todo_id,
+		    :t:e_todo_type_id,
+		    :tt:e_todo_type_label,
+		    :tt:e_todo_type_desc,
+		    :t:e_todo_desc,
+		    :t:e_todo_comments,
+		    :t:e_todo_status,
+		    :t:e_todo_completion_date,
+		    :t:e_todo_canceled_date,
+		    :t:e_todo_due_date,
+		    :t:e_todo_collaborator,
+		    :t:e_todo_partner,
+		    :t:e_todo_engagement_id,
+		    :t:e_todo_document_id,
+		    :t:e_todo_req_item_id,
+		    :t:s_date_created,
+		    :t:s_created_by,
+		    :t:s_date_modified,
+		    :t:s_modified_by
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+		    identity /apps/kardia/data/Kardia_DB/e_todo/rows t,
+		    /apps/kardia/data/Kardia_DB/e_todo_type/rows tt,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :s:p_kardia_login = user_name() and 
+		    :t:e_todo_collaborator = :s:p_partner_key and
+		    (:t:e_todo_status = 'I' or
+		     dateadd(day, 1, isnull(:t:e_todo_canceled_date, :t:e_todo_completion_date)) > getdate()) and
+		    :tt:e_todo_type_id = :t:e_todo_type_id and
+		    :p:p_partner_key = :t:e_todo_partner
+		order by
+		    :t:e_todo_due_date asc
+		";
 	readahead=50;
 	replicasize=50;
 	
 	todo_table "widget/table"
 	    {
 	    x=0; y=0; width=248; height=417;
-	    rowheight = 20;
+	    min_rowheight=16;
+	    max_rowheight=64;
 	    mode=dynamicrow;
 	    allow_selection = yes;
 	    show_selection = yes;
+	    initial_selection = no;
 	    demand_scrollbar = yes;
 	    overlap_scrollbar = yes;
 	    colsep = 0;
+	    titlebar = no;
+	    //row_border_color="#e0e0e0";
+	    row_border_radius=4;
+	    //row_shadow_offset=1;
+	    //row_shadow_color="#c0c0c0";
+	    inner_padding = 2;
+	    rowhighlight_bgcolor = "#fff090";
+	    textcolorhighlight = "#000000";
+	    cellvspacing = 4;
+	    row1_bgcolor = "#f8f8f8";
+	    row2_bgcolor = "#f8f8f8";
 
-	    t_img "widget/table-column" { title=""; fieldname="img"; width=20; type=image; }
-	    t_what "widget/table-column" { title="To-Do Item"; fieldname="do_what"; width=100; }
-	    t_name "widget/table-column" { title="Partner"; fieldname="disp_name"; width=128; }
+	    onclick "widget/connector" { event=Click; target=todo_list; action=PartnerSelected; partner_key=runclient(:e_todo_partner); }
+
+	    inactive_task_detail "widget/table-row-detail"
+		{
+		height=60;
+		width=248;
+		display_for=runclient(:todo_osrc:e_todo_status != 'I');
+
+		reactivate_label "widget/label"
+		    {
+		    x=32; y=8;
+		    height=24;
+		    width=212;
+		    fl_width=30;
+		    //style=italic;
+		    font_size=11;
+		    value=runclient("This task has been " + condition(:todo_osrc:e_todo_status == 'C', 'completed', 'canceled') + ".  Click below to re-activate this task.");
+		    }
+		reactivate_btn "widget/textbutton"
+		    {
+		    x=32; y=36;
+		    width=150; height=24;
+		    fl_width=30;
+		    text = "Reactivate";
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+
+		    on_reactivate "widget/connector" { event=Click; target=todo_osrc; action=Modify; e_todo_status=runclient('I'); e_todo_completion_date=runclient(null); e_todo_canceled_date=runclient(null); }
+		    }
+		}
+
+	    active_task_detail "widget/table-row-detail"
+		{
+		height=60;
+		width=248;
+		display_for=runclient(:todo_osrc:e_todo_status == 'I');
+
+		complete_btn "widget/textbutton"
+		    {
+		    x=32; y=8;
+		    width=100; height=24;
+		    fl_width=30;
+		    text = "Complete";
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+
+		    on_complete "widget/connector" { event=Click; target=todo_osrc; action=Modify; e_todo_status=runclient('C'); e_todo_completion_date=runclient(getdate()); }
+		    }
+
+		cancel_btn "widget/textbutton"
+		    {
+		    x=136; y=8;
+		    width=100; height=24;
+		    fl_width=30;
+		    text = "Cancel";
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+
+		    on_cancel "widget/connector" { event=Click; target=todo_osrc; action=Modify; e_todo_status=runclient('X'); e_todo_canceled_date=runclient(getdate()); }
+		    }
+
+		edittask_btn "widget/textbutton"
+		    {
+		    x=32; y=36;
+		    width=138; height=24;
+		    fl_width=30;
+		    text = "Edit/Reassign";
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+
+		    on_edittask "widget/connector" { event=Click; target=todo_list; action=EditTask; todo_id=runclient(:todo_osrc:e_todo_id); partner=runclient(:todo_osrc:e_todo_partner); origin=edittask_btn; }
+		    }
+		}
+
+	    t_img "widget/table-column" { fieldname="img"; width=24; type=image; image_maxwidth=16; image_maxheight=16; align=center; }
+	    t_name "widget/table-column" { value=runclient(substring(convert(string,:todo_osrc:e_todo_due_date),1,11) + ': ' + :todo_osrc:e_todo_type_label + ' - ' + :todo_osrc:partner_name); width=208; caption_value=runclient(:todo_osrc:e_todo_desc); caption_textcolor="#9b8707"; style=bold; font_size=12; caption_style=italic; wrap=yes; textcolor=runclient(condition(:todo_osrc:days_til_due < 0 and :todo_osrc:e_todo_status == 'I', '#ff0000',condition(:todo_osrc:days_til_due == 0 and :todo_osrc:e_todo_status == 'I', '#a00000', '#000000'))); }
 	    }
 	}
     }
