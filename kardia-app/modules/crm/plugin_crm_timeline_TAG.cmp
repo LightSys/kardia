@@ -1,0 +1,8 @@
+$Version=2$
+plugin_crm_timeline_TAG "widget/component-decl"
+    {
+    width=434;
+    height=0;
+    icon = "/apps/kardia/images/icons/ionicons-pricetags.svg";
+    type = "TAG";
+    }
