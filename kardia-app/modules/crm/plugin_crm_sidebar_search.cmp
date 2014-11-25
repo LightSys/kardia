@@ -156,6 +156,7 @@ search "widget/component-decl"
 		    {
 		    width=240;
 		    height=32;
+		    display_for=runclient(not :search_osrc:in_crm_collab_me);
 
 		    add_btn "widget/textbutton"
 			{
