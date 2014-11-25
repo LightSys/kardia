@@ -28,6 +28,14 @@ timeline "system/query"
 		s_modified_by = user_name()
 	    ;
 
+	    -- Clean up
+	    delete
+		/apps/kardia/data/Kardia_DB/e_activity/rows
+	    where
+		:s_created_by = user_name() and
+		dateadd(hour,1,:s_date_created) < getdate()
+	    ;
+
 	    -- Partner added to system
 	    insert
 		/apps/kardia/data/Kardia_DB/e_activity/rows
@@ -326,23 +334,18 @@ timeline "system/query"
 		:es:e_step_id = :pe:e_step_id
 	    ;
 
-	    -- Return the list to the user
+	    -- Return the ID to the user
 	    select
-		*
-	    from
-		/apps/kardia/data/Kardia_DB/e_activity/rows
-	    where
-		:e_activity_group_id = :activitygroup:id and
-		:e_activity_type != 'HEAD'
-	    order by
-		:e_sort_key,
-		:e_activity_date desc
-	    ;
-
-	    -- Clean up
-	    delete
-		/apps/kardia/data/Kardia_DB/e_activity/rows
-	    where
-		:e_activity_group_id = :activitygroup:id
+		name = 'ActivityGroupID',
+		activity_group_id = :activitygroup:id
+		--*
+	    --from
+		--/apps/kardia/data/Kardia_DB/e_activity/rows
+	    --where
+		--:e_activity_group_id = :activitygroup:id and
+		--:e_activity_type != 'HEAD'
+	    --order by
+		--:e_sort_key,
+		--:e_activity_date desc
 	    ";
     }

@@ -190,18 +190,11 @@ partner_profile "widget/component-decl"
 
 			    profile_timeline "widget/component"
 				{
-				height=389;
+				height=429;
 				path="profile_timeline.cmp";
 				iconbar = iconbar;
 				profile = partner_profile;
 				collaborator_osrc = collaborator_osrc;
-				}
-
-			    profile_timeline_graph "widget/image"
-				{
-				height=32;
-				fl_width=10;
-				source=runclient("/apps/kardia/modules/crm/timeline_svg.rpt?partner=" + :profile_osrc:p_partner_key + "&cclist=" + :collaborator_osrc:cclist);
 				}
 			    }
 

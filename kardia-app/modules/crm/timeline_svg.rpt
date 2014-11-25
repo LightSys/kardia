@@ -12,13 +12,14 @@ timeline_svg "system/report"
     text_pagebreak = no;
 
     // Partner ID
-    partner "report/parameter" { type=string; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; default=""; }
-    cclist "report/parameter" { type=string; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:-"; default=""; }
+    //partner "report/parameter" { type=string; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; default=""; }
+    //cclist "report/parameter" { type=string; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:-"; default=""; }
+    id "report/parameter" { type=integer; }
 
     // First and last dates for events
     first_last_qy "report/query"
 	{
-	sql = runserver("select first_date=min(:e_activity_date), last_date=max(:e_activity_date) from '/apps/kardia/modules/crm/timeline.qy?partner_key=" + :this:partner + "&my_cclist=" + :this:cclist + "'");
+	sql = runserver("select first_date=min(:e_activity_date), last_date=max(:e_activity_date) from /apps/kardia/data/Kardia_DB/e_activity/rows where :e_activity_group_id = :this:id");
 	}
 
     // Optimum date block interval
