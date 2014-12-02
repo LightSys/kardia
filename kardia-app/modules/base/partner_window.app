@@ -10,10 +10,10 @@ partner_window "widget/page"
 
     // If needing to pre-load a particular partner record, use this parameter.
     id "widget/parameter" { type=string; default=null; }
-
     search "widget/parameter" { type=string; default=null; }
-
     ledger "widget/parameter" { type=string; default=null; }
+    send_refresh "widget/parameter" { type=integer; default=0; }
+    send_refresh_to "widget/parameter" { type=object; }
 
     this_form_cmp "widget/component" 
 	{ 
@@ -24,5 +24,7 @@ partner_window "widget/page"
 	id = runserver(:this:id);
 	ledger = runserver(:this:ledger);
 	search = runserver(:this:search);
+	send_refresh = runserver(:this:send_refresh);
+	send_refresh_to = send_refresh_to;
 	}
     }
