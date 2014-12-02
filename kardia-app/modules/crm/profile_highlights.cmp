@@ -1,0 +1,198 @@
+$Version=2$
+profile_highlights "widget/component-decl"
+    {
+    width=250;
+    height=450;
+
+    // Refresh of our data
+    Refresh "widget/component-decl-action" { }
+
+    // When we need a popover...
+    TuneHighlights "widget/component-decl-event" { }
+    EditTask "widget/component-decl-event" { }
+
+    // Iconbar passed in so we can access the 'EnabledTypes' property it has
+    iconbar "widget/parameter" { type=object; deploy_to_client=yes; }
+    profile "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    // Collaborator osrc provides us information about the logged-in user
+    collaborator_osrc "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    // Currently selected partner
+    partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    onRefresh "widget/connector" { event=Refresh; target=highlights_osrc; action=Refresh; }
+    
+    profile_highlights_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=250; height=450;
+	spacing=8;
+
+	highlights_scroll_pane "widget/pane"
+	    {
+	    height=450;
+	    style=flat;
+
+	    highlights_osrc "widget/osrc"
+		{
+		enabled_types "widget/parameter" { type=string; default=runclient(:iconbar:EnabledTypes); }
+
+		sql = " select
+			    detail_height = :c:height,
+			    :h:e_highlight_name,
+			    :h:e_highlight_type,
+			    :h:e_highlight_data,
+			    :h:e_highlight_reference_info,
+			    :h:e_highlight_precedence,
+			    :h:e_highlight_strength,
+			    :h:e_highlight_certainty
+			from
+			    '/apps/kardia/modules/crm/highlights.qy?partner_key=000000&my_cclist=&my_role=&my_id=' h,
+			    object wildcard '/apps/kardia/modules/crm/plugin_crm_highlights_*.cmp' c
+			where
+			    charindex(:h:e_highlight_type, :parameters:enabled_types) > 0 and
+			    :c:type = :h:e_highlight_type and
+			    (:c:highlight_name is null or :c:highlight_name = :h:e_highlight_name)
+			";
+		readahead=50;
+		replicasize=50;
+		autoquery=never;
+		baseobj = "/apps/kardia/modules/crm/highlights.qy?partner_key=000000&my_cclist=&my_role=&my_id=";
+
+		refresh_on_partner_change "widget/connector" { source=partner_osrc; event=EndQuery; action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/highlights.qy?partner_key=" + :partner_osrc:p_partner_key + "&my_cclist=" + :collaborator_osrc:cclist + "&my_role=" + isnull(:partner_osrc:collab_role,'None') + "&my_id=" + isnull(:collaborator_osrc:p_partner_key, '')); }
+
+		refresh_on_options_change "widget/connector" { source=iconbar; event=TypesChange; action=Refresh; }
+
+		highlights_table "widget/table"
+		    {
+		    x=0; y=0;
+		    height=450;
+		    width=250;
+		    //row_border_color="#e0e0e0";
+		    row_border_radius=4;
+		    //row_shadow_offset=1;
+		    //row_shadow_color="#c0c0c0";
+		    demand_scrollbar = yes;
+		    overlap_scrollbar = yes;
+		    initial_selection = no;
+		    colsep = 0;
+		    titlebar = no;
+		    min_rowheight = 12;
+		    max_rowheight = 200;
+		    cellvspacing = 0;
+		    row1_bgcolor = white;
+		    row2_bgcolor = white;
+		    show_selection = yes;
+		    inner_padding = 1;
+		    rowhighlight_bgcolor = "#fff090";
+		    textcolorhighlight = "#000000";
+
+		    detail_rows "widget/repeat"
+			{
+			sql = "	select
+				    path = :cx__pathname,
+				    :type,
+				    :highlight_name,
+				    :height
+				from
+				    object wildcard '/apps/kardia/modules/crm/plugin_crm_highlights_*.cmp'
+				";
+
+			detail_item "widget/table-row-detail"
+			    {
+			    condition=runserver(:detail_rows:height > 0);
+			    display_for=runclient(:highlights_osrc:e_highlight_type == runserver(:detail_rows:type) and (runserver(:detail_rows:highlight_name) is null or runserver(:detail_rows:highlight_name) = :highlights_osrc:e_highlight_name));
+			    height=runserver(:detail_rows:height + 8);
+			    width=250;
+
+			    detail_cmp "widget/component"
+				{
+				x=4; y=4;
+				width=242;
+				height=runserver(:detail_rows:height);
+				fl_height=0;
+				path = runserver(:detail_rows:path);
+				partner_osrc = partner_osrc;
+				highlights_osrc = highlights_osrc;
+				profile = profile;
+				collaborator_osrc = collaborator_osrc;
+
+				on_reassign "widget/connector"
+				    {
+				    event=EditTask;
+				    target=profile_highlights;
+				    action=EditTask;
+				    todo_id=runclient(:todo_id);
+				    partner=runclient(:partner);
+				    origin=runclient(:origin);
+				    }
+				}
+			    }
+			}
+
+		    detail_thumbs "widget/table-row-detail"
+			{
+			height=30;
+			width=250;
+
+			detail_thumbs_pane "widget/pane"
+			    {
+			    x=4; y=4;
+			    height=25; width=240;
+			    style=flat;
+			    border_radius=6;
+			    bgcolor = "#fff7c2";
+
+			    detail_thumbs_hbox "widget/hbox"
+				{
+				x=4; y=0;
+				height=24; width=232;
+				justify=all;
+				spacing=10;
+
+				thumbs_label "widget/label" { y=6; width=156; text="Important to You?"; align=right; style=italic; font_size=11; }
+				thumbs_up "widget/imagebutton"
+				    {
+				    y=2; width=18; height=18;
+				    image="/apps/kardia/images/icons/openiconic-thumb-up.svg"; 
+
+				    on_up "widget/connector"
+					{
+					event=Click;
+					target=profile_highlights;
+					action=TuneHighlights;
+					direction=runclient("up");
+					origin=detail_thumbs_pane;
+					hname=runclient(:highlights_osrc:e_highlight_name);
+					htype=runclient(:highlights_osrc:e_highlight_type);
+					}
+				    }
+
+				thumbs_down "widget/imagebutton"
+				    {
+				    y=8; width=18; height=18;
+				    image="/apps/kardia/images/icons/openiconic-thumb-down.svg"; 
+
+				    on_down "widget/connector"
+					{
+					event=Click;
+					target=profile_highlights;
+					action=TuneHighlights;
+					direction=runclient("up");
+					origin=detail_thumbs_pane;
+					hname=runclient(:highlights_osrc:e_highlight_name);
+					htype=runclient(:highlights_osrc:e_highlight_type);
+					}
+				    }
+				}
+			    }
+			}
+
+		    h_name "widget/table-column" { title=""; value=runclient(:highlights_osrc:e_highlight_name + ':'); width=100; align=right; style=bold; wrap=yes; }
+		    h_data "widget/table-column" { title="Description"; fieldname="e_highlight_data"; width=150; wrap=yes; textcolor=runclient(condition(:highlights_osrc:e_highlight_strength > 0.0, '#00a000', condition(:highlights_osrc:e_highlight_strength < 0.0, '#a00000', '#000000'))); }
+		    }
+		}
+	    }
+	}
+    }

@@ -6,6 +6,10 @@ p_location_component "widget/component-decl"
     //This osrc is a parameter passed in from the outside
     sync_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
+    // Refresh if we make a change
+    send_refresh "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    send_refresh_to "widget/parameter" { type=object; deploy_to_client=yes; }
+
     Sync "widget/component-decl-action" {  }
     OpenForms "widget/component-decl-action" {  }
     OpenForms_cn1 "widget/connector"
@@ -243,6 +247,15 @@ p_location_component "widget/component-decl"
 			{
 			allow_query = no;
 
+			send_refresh_on_save "widget/connector"
+			    {
+			    condition=runserver(:this:send_refresh);
+			    event=DataSaved;
+			    //event_condition=runclient(:p_location_component:send_refresh);
+			    target=send_refresh_to;
+			    action=Refresh;
+			    }
+
 			auto_new_on_new_partner "widget/connector"
 			    {
 			    source=sync_osrc;
@@ -358,6 +371,15 @@ p_location_component "widget/component-decl"
 			contact_form "widget/form"
 			    {
 			    allow_query = no;
+
+			    send_refresh_on_save2 "widget/connector"
+				{
+				condition=runserver(:this:send_refresh);
+				event=DataSaved;
+				//event_condition=runclient(:p_location_component:send_refresh);
+				target=send_refresh_to;
+				action=Refresh;
+				}
 
 			    contact_hdr "widget/component"
 				{

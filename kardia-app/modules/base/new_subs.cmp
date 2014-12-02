@@ -113,6 +113,8 @@ new_subs "widget/component-decl"
 	    readahead=50;
 	    autoquery=onfirstreveal;
 
+	    refresh_on_modify "widget/connector" { event=Modified; action=Refresh; }
+
 	    new_subs_pane "widget/pane"
 		{
 		height=230;
@@ -436,6 +438,7 @@ new_subs "widget/component-decl"
 			}
 		    delete_cn2 "widget/connector"
 			{
+			condition=0;
 			event=Click;
 			target=new_subs_osrc;
 			action=Refresh;
@@ -468,6 +471,7 @@ new_subs "widget/component-decl"
 			}
 		    activate_cn2 "widget/connector"
 			{
+			condition=0;
 			event=Click;
 			target=new_subs_osrc;
 			action=Refresh;

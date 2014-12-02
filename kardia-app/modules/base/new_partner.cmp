@@ -19,6 +19,7 @@ new_partner "widget/component-decl"
     page "widget/parameter" { type=object; find_container="widget/page"; }
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     return_to "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
+    set_return "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     set_donor "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     set_payee "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     set_staff "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
@@ -168,7 +169,7 @@ new_partner "widget/component-decl"
 		return_to_cn "widget/connector"
 		    {
 		    event=DataSaved;
-		    event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff);
+		    event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff or :new_partner:set_return);
 		    event_delay=0.3;
 		    target=return_to;
 		    action=SetValue;
@@ -739,14 +740,14 @@ new_partner "widget/component-decl"
 	    width=786;
 	    height=542;
 	    path="dup_check.cmp";
-	    usethis_button=runserver(:this:set_payee or :this:set_donor or :this:set_staff);
+	    usethis_button=runserver(:this:set_payee or :this:set_donor or :this:set_staff or :this:set_return);
 
 	    close_cn "widget/connector" { event=ClosePressed; target=dup_scan_window; action=Close; }
 	    close_cn2 "widget/connector" { event=ClosePressed; target=dup_scan_done; action=SetValue; Value=1; }
 	    usethis_return_cn "widget/connector"
 		{
 		event=UseThisPressed;
-		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff);
+		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff or :new_partner:set_return);
 		target=return_to;
 		action=SetValue;
 		Value=runclient(:p_partner_key);
@@ -754,7 +755,7 @@ new_partner "widget/component-decl"
 	    usethis_return_cn2 "widget/connector"
 		{
 		event=UseThisPressed;
-		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff);
+		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff or :new_partner:set_return);
 		target=dup_scan_window;
 		action=Close;
 		}
@@ -768,7 +769,7 @@ new_partner "widget/component-decl"
 	    usethis_return_cn4 "widget/connector"
 		{
 		event=UseThisPressed;
-		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff);
+		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff or :new_partner:set_return);
 		event_delay=0.2;
 		target=page;
 		action=Close;

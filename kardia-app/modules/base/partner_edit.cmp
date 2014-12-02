@@ -15,6 +15,10 @@ p_partner_component "widget/component-decl"
 
     page "widget/parameter" { type=object; find_container="widget/page"; }
 
+    // Refresh if we make a change
+    send_refresh "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    send_refresh_to "widget/parameter" { type=object; deploy_to_client=yes; }
+
     // If pre-loading a record, trigger the osrc here.
     preload_primary_partner "widget/connector"
 	{
@@ -158,6 +162,15 @@ p_partner_component "widget/component-decl"
 	    allow_query = no;
 
 	    partner_key_internal "widget/variable" { fieldname=p_partner_key; type=string; }
+
+	    send_refresh_on_save "widget/connector"
+		{
+		condition=runserver(:this:send_refresh);
+		event=DataSaved;
+		//event_condition=runclient(:p_partner_component:send_refresh);
+		target=send_refresh_to;
+		action=Refresh;
+		}
 
 	    p_partner_vbox "widget/vbox"
 		{
@@ -315,6 +328,8 @@ p_partner_component "widget/component-decl"
                             {
                             path="/apps/kardia/modules/base/p_location.cmp";
                             x=10; y=10; width=806; height=338;
+			    send_refresh = runserver(:this:send_refresh);
+			    send_refresh_to = send_refresh_to;
                             }
                         }
                     partner_rest_tab "widget/tabpage"

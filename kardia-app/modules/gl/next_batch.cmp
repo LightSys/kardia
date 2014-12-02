@@ -41,6 +41,7 @@ next_batch "widget/component-decl"
 		";
 	readahead = 2;
 	replicasize = 2;
+	autoquery = never;
 
 	gotit "widget/connector" { event=EndQuery; target=next_batch; action=BatchNumber; batch=runclient(:getbatch_osrc:a_next_batch_number); }
 	}

@@ -1,0 +1,38 @@
+$Version=2$
+plugin_crm_timeline_REL "widget/component-decl"
+    {
+    width=434;
+    height=16;
+    icon = "/apps/kardia/images/icons/ionicons-relationships3.svg";
+    type = "REL";
+
+    profile "widget/parameter" { type=object; deploy_to_client=yes; }
+    timeline_osrc "widget/parameter" { type=object; deploy_to_client=yes; }
+    partner_osrc "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    jump_link "widget/label"
+	{
+	x=38; y=4;
+	height=12;
+	width=396;
+	widget_class=link;
+	fl_width=30;
+	//align=center;
+	value = runclient("View " + substring(:timeline_osrc:e_info, charindex('  ', :timeline_osrc:e_info) + 2) + "'s profile");
+
+	onclick "widget/connector"
+	    {
+	    event=Click;
+	    target = profile;
+	    action=TriggerEvent;
+	    EventName=runclient('SelectPartner');
+	    // aaaa|bb|ccccccc
+	    // first = 1, (5-1)
+	    // last = 15 - 8 + 2, null
+	    partner_key = runclient(condition(charindex(:partner_osrc:p_partner_key, :timeline_osrc:e_reference_info) == 1,
+		    substring(:timeline_osrc:e_reference_info, char_length(:timeline_osrc:e_reference_info) - charindex('|', reverse(:timeline_osrc:e_reference_info)) + 2),
+		    substring(:timeline_osrc:e_reference_info, 1, charindex('|', :timeline_osrc:e_reference_info) - 1)
+		));
+	    }
+	}
+    }

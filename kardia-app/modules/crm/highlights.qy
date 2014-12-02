@@ -1,0 +1,378 @@
+$Version=2$
+highlights "system/query"
+    {
+    partner_key "query/parameter" { type=string; }
+    my_cclist "query/parameter" { type=string; }
+    my_role "query/parameter" { type=string; }
+    my_id "query/parameter" { type=string; }
+
+    sql = " delete
+		/apps/kardia/data/Kardia_DB/e_highlights/rows
+	    where
+		:e_highlight_user = user_name() and
+		:e_highlight_partner = :parameters:partner_key
+	    ;
+
+	    -- REL - relationships
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'REL' + :pr:name,
+		e_highlight_name = condition(:pr:p_partner_key == :parameters:partner_key, :prt:p_relation_type_label, :prt:p_relation_type_rev_label),
+		e_highlight_type = 'REL',
+		e_highlight_data = condition(:pr:p_partner_key == :parameters:partner_key,
+			condition(char_length(:p2:p_org_name) > 1, :p2:p_org_name, isnull(condition(char_length(:p2:p_preferred_name) > 0, :p2:p_preferred_name, :p2:p_given_name) + ' ', '') + isnull(:p2:p_surname,'')),
+			condition(char_length(:p1:p_org_name) > 1, :p1:p_org_name, isnull(condition(char_length(:p1:p_preferred_name) > 0, :p1:p_preferred_name, :p1:p_given_name) + ' ', '') + isnull(:p1:p_surname,''))),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_relationship/rows pr,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p1,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p2,
+		/apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows prt
+	    where
+		(:pr:p_partner_key = :parameters:partner_key or :pr:p_relation_key = :parameters:partner_key) and
+		:p1:p_partner_key = :pr:p_partner_key and
+		:p2:p_partner_key = :pr:p_relation_key and
+		:prt:p_relation_type = :pr:p_relation_type
+	    ;
+
+	    -- DATA - show various data items (form items)
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'DATA' + :di:name,
+		e_highlight_name = :dit:e_data_item_type_label,
+		e_highlight_type = 'DATA',
+		e_highlight_reference_info = convert(string, :di:e_data_item_id),
+		e_highlight_data = :di:e_data_item_value,
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_data_item/rows di,
+		/apps/kardia/data/Kardia_DB/e_data_item_type/rows dit
+	    where
+		:di:p_partner_key = :parameters:partner_key and
+		:dit:e_data_item_type_id = :di:e_data_item_type_id
+	    ;
+
+	    -- TAG - highlight tags applied to the person
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'TAG' + :t:name,
+		e_highlight_name = :tt:e_tag_label,
+		e_highlight_type = 'TAG',
+		e_highlight_reference_info = :t:name,
+		--e_highlight_data = condition(:t:e_tag_strength > 0.7 and :t:e_tag_certainty > 0.7, 'YES', condition(:t:e_tag_strength < -0.7 and :t:e_tag_certainty > 0.7, 'NO', condition(:t:e_tag_strength > 0.5, 'Possible YES - ASK', condition(:t:e_tag_strength < -0.5, 'Possible NO: ASK', condition(:t:e_tag_strength > 0.3, '))))) + isnull(' (' + :t:e_tag_comments + ')', ''),
+		e_highlight_data = condition(:t:e_tag_certainty < 0.5 and abs(:t:e_tag_strength) >= 0.5, 'ASK: ', '') + condition(abs(:t:e_tag_strength) >= 0.7, '', condition(abs(:t:e_tag_strength) >= 0.5, 'Mostly ', condition(abs(:t:e_tag_strength) >= 0.3, 'Somewhat ', 'Very Little '))) + condition(:t:e_tag_strength > 0, 'YES', 'NO') + condition(:t:e_tag_certainty < 0.9, ' - ' + condition(:t:e_tag_certainty >= 0.7, 'Very Likely', condition(:t:e_tag_certainty >= 0.5, 'Likely', condition(:t:e_tag_certainty >= 0.3, 'Possible', 'Unknown'))), '') + isnull(' (' + :t:e_tag_comments + ')', ''),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = :t:e_tag_strength,
+		e_highlight_certainty = :t:e_tag_certainty,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_tag/rows t,
+		/apps/kardia/data/Kardia_DB/e_tag_type/rows tt
+	    where
+		:t:p_partner_key = :parameters:partner_key and
+		:tt:e_tag_id = :t:e_tag_id and
+		abs(:t:e_tag_strength) >= :tt:e_tag_threshold
+	    ;
+
+	    -- TASK - various todo types
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'TASK' + :t:name,
+		e_highlight_name = :tt:e_todo_type_label,
+		e_highlight_type = 'TASK',
+		e_highlight_reference_info = convert(string, :t:e_todo_id),
+		e_highlight_data = isnull('By ' + substring(convert(string,:t:e_todo_due_date),1,11) + ': ','') + :t:e_todo_desc + isnull('\n(assigned to: ' + (select condition(:t:e_todo_collaborator == :parameters:my_id, 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 0, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) from /apps/kardia/data/Kardia_DB/p_partner/rows p where :p:p_partner_key = :t:e_todo_collaborator) + ')', ''),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = condition(:t:e_todo_collaborator == :parameters:my_id, -1.0, 0.0),
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_todo/rows t,
+		/apps/kardia/data/Kardia_DB/e_todo_type/rows tt
+	    where
+		:t:e_todo_partner = :parameters:partner_key and
+		:t:e_todo_status = 'I' and
+		:tt:e_todo_type_id = :t:e_todo_type_id
+	    ;
+
+	    -- NOTE
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'NOTE' + :ch:name,
+		e_highlight_name = :ch:e_subject,
+		e_highlight_type = 'NOTE',
+		e_highlight_data = substring(convert(string,:ch:e_contact_date),1,11) + ' - ' + :ch:e_notes,
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_contact_history/rows ch
+	    where
+		:ch:p_partner_key = :parameters:partner_key and
+		(:ch:e_contact_history_type = 4 or :ch:e_contact_history_type = 5)
+	    ;
+
+	    -- ADDR / Address
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'ADDR' + :l:name,
+		e_highlight_name = isnull(:lt:text + ' ','') + 'Address',
+		e_highlight_type = 'ADDR',
+		e_highlight_data = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,c=c'),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_location/rows l,
+		/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+		/apps/kardia/data/Kardia_DB/p_country/rows c,
+		/apps/kardia/data/Kardia_DB/p_address_format/rows af
+	    where
+		:l:p_partner_key = :parameters:partner_key and
+		:l:p_revision_id = 0 and
+		:l:p_record_status_code = 'A' and
+		:lt:tag =* :l:p_location_type and
+		:l:p_country_code *= :c:p_country_code and
+		:af:p_country_code =* :c:p_country_code and
+		:af:p_address_set = 'STANDARD'
+	    order by
+		:l:s_date_modified desc
+	    ;
+
+	    -- GIFT / Giving This Year
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-THIS',
+		e_highlight_name = 'Giving This Year',
+		e_highlight_type = 'GIFT',
+		e_highlight_data = convert(string, sum(:g:a_amount)),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+	    where
+		:g:p_donor_partner_id = :parameters:partner_key and
+		substring(:g:a_period,1,4) = convert(string, datepart(year,getdate()))
+	    ;
+
+	    -- GIFT / Giving Last Year
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-LAST',
+		e_highlight_name = 'Giving Last Year',
+		e_highlight_type = 'GIFT',
+		e_highlight_data = convert(string, sum(:g:a_amount)),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+	    where
+		:g:p_donor_partner_id = :parameters:partner_key and
+		substring(:g:a_period,1,4) = convert(string, datepart(year,getdate()) - 1)
+	    ;
+
+	    -- GIFT / Giving All-Time
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-ALL',
+		e_highlight_name = 'Giving All-Time',
+		e_highlight_type = 'GIFT',
+		e_highlight_data = convert(string, sum(:g:a_amount)),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+	    where
+		:g:p_donor_partner_id = :parameters:partner_key
+	    ;
+
+	    -- GIFT / First Gift
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-DATES',
+		e_highlight_name = 'Giving Dates',
+		e_highlight_type = 'GIFT',
+		e_highlight_data = condition(min(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) = max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)), substring(convert(string, min(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))),1,11),  substring(convert(string, min(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))),1,11) + ' - ' +  substring(convert(string, max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))),1,11)),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+	    where
+		:g:p_donor_partner_id = :parameters:partner_key
+	    ;
+
+	    -- GIFT / Giving Funds
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-FUNDS',
+		e_highlight_name = 'Giving Funds',
+		e_highlight_type = 'GIFT',
+		e_highlight_data = sum(first(:i:a_cost_center + ' - ' + :c:a_cc_desc) + '\n') - '\n',
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+	    where
+		:i:p_dn_donor_partner_id = :parameters:partner_key and
+		:c:a_ledger_number = :i:a_ledger_number and
+		:c:a_cost_center = :i:a_cost_center
+	    group by
+		:i:a_ledger_number,
+		:i:a_cost_center
+	    ;
+
+	    -- Update highlight precedence via system-wide settings
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_highlights/rows h,
+		/apps/kardia/data/Kardia_DB/e_data_highlight/rows dh
+	    set
+		:h:e_highlight_precedence = :h:e_highlight_precedence * :dh:e_highlight_precedence
+	    where
+		:dh:e_highlight_object_id = :h:e_highlight_name and
+		:dh:e_highlight_object_type = :h:e_highlight_type and
+		:dh:e_highlight_subject = '*' and
+		:h:e_highlight_user = user_name() and
+		:h:e_highlight_partner = :parameters:partner_key
+	    ;
+
+	    -- Update highlight precedence for the user's role
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_highlights/rows h,
+		/apps/kardia/data/Kardia_DB/e_data_highlight/rows dh
+	    set
+		:h:e_highlight_precedence = :h:e_highlight_precedence * :dh:e_highlight_precedence
+	    where
+		:dh:e_highlight_object_id = :h:e_highlight_name and
+		:dh:e_highlight_object_type = :h:e_highlight_type and
+		:dh:e_highlight_subject = 'r:' + :parameters:my_role and
+		:h:e_highlight_user = user_name() and
+		:h:e_highlight_partner = :parameters:partner_key
+	    ;
+
+	    -- Update highlight precedence for the user's own preferences
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_highlights/rows h,
+		/apps/kardia/data/Kardia_DB/e_data_highlight/rows dh
+	    set
+		:h:e_highlight_precedence = :h:e_highlight_precedence * :dh:e_highlight_precedence
+	    where
+		:dh:e_highlight_object_id = :h:e_highlight_name and
+		:dh:e_highlight_object_type = :h:e_highlight_type and
+		:dh:e_highlight_subject = 'u:' + user_name() and
+		:h:e_highlight_user = user_name() and
+		:h:e_highlight_partner = :parameters:partner_key
+	    ;
+
+	    -- Update highlight precedence for the user's own role-specific preferences
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_highlights/rows h,
+		/apps/kardia/data/Kardia_DB/e_data_highlight/rows dh
+	    set
+		:h:e_highlight_precedence = :h:e_highlight_precedence * :dh:e_highlight_precedence
+	    where
+		:dh:e_highlight_object_id = :h:e_highlight_name and
+		:dh:e_highlight_object_type = :h:e_highlight_type and
+		:dh:e_highlight_subject = 'ur:' + user_name() + ':' + :parameters:my_role and
+		:h:e_highlight_user = user_name() and
+		:h:e_highlight_partner = :parameters:partner_key
+	    ;
+
+	    -- Return the list to the user
+	    select
+		*
+	    from
+		/apps/kardia/data/Kardia_DB/e_highlights/rows
+	    where
+		:e_highlight_user = user_name() and
+		:e_highlight_partner = :parameters:partner_key
+	    order by
+		:e_highlight_precedence desc,
+		:e_highlight_type asc,
+		:e_highlight_name asc
+	    ";
+    }

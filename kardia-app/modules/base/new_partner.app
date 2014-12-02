@@ -9,6 +9,7 @@ new_partner "widget/page"
 
     ledger "widget/parameter" { type=string; default=null; }
     return_to "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
+    set_return "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     set_donor "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     set_payee "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     set_staff "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
@@ -32,6 +33,7 @@ new_partner "widget/page"
 	path="/apps/kardia/modules/base/new_partner.cmp"; 
 	ledger = runserver(:this:ledger);
 	return_to = return_to;
+	set_return=runserver(:this:set_return);
 	set_donor=runserver(:this:set_donor);
 	set_payee=runserver(:this:set_payee);
 	set_staff=runserver(:this:set_staff);

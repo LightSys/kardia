@@ -4,127 +4,296 @@ partner_profile "widget/component-decl"
     width=700;
     height=580;
 
-    profile_osrc "widget/osrc"
+    // Iconbar passed in so we can access the 'EnabledTypes' property it has
+    iconbar "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    // Collaborator osrc provides us information about the logged-in user
+    collaborator_osrc "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    // Exported data
+    expose_properties_for = profile_osrc;
+
+    // Events generated
+    TuneHighlights "widget/component-decl-event" { }
+    EditTask "widget/component-decl-event" { }
+    EditCollab "widget/component-decl-event" { }
+    TrackSelected "widget/component-decl-event" { }
+
+    // Actions we support
+    SelectPartner "widget/component-decl-action" { }
+    AdvancedSearch "widget/component-decl-action" { }
+    Refresh "widget/component-decl-action" { }
+    RefreshCollab "widget/component-decl-action" { }
+
+    on_Select1 "widget/connector" { event=SelectPartner; target=profile_osrc; action=QueryParam; partner_key=runclient(:partner_key); }
+    on_Select2 "widget/connector" { event=SelectPartner; target=profile_tab; action=SetTab; TabIndex=2; }
+    on_Select3 "widget/connector"
 	{
-	sql = "	select
-		    :p:p_partner_key,
-		    :p:p_surname,
-		    :p:p_given_name,
-		    :p:p_org_name,
-		    :l:p_city,
-		    :l:p_state_province,
-		    contact_data = sum(:ct:text + ': ' + isnull('+' + :c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + isnull(:c:p_contact_data,'') + '\n') - '\n'
-		from
-		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
-		    /apps/kardia/data/Kardia_DB/p_location/rows l,
-		    /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
-		    /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct
-		where
-		    :p:p_partner_key = '56151' and
-		    :p:p_record_status_code = 'A' and
-		    :l:p_partner_key =* :p:p_partner_key and
-		    :l:p_revision_id = 0 and
-		    :l:p_record_status_code = 'A' and
-		    :c:p_partner_key =* :p:p_partner_key and
-		    :c:p_record_status_code = 'A' and
-		    :ct:tag = :c:p_contact_type
-		limit
-		    1
-		";
-	autoquery = onload;
-	replicasize = 2;
-	readahead = 2;
+	condition=0;
+	event=SelectPartner;
+	target=profile_timeline_graph;
+	action=SetTab;
+	TabIndex=2;
+	}
 
-	load_tracks "widget/connector" { event=EndQuery; target=profile_tracks; action=Instantiate; partner_key=runclient(:profile_osrc:p_partner_key); }
+    on_AdvSearch "widget/connector" { event=AdvancedSearch; target=profile_tab; action=SetTab; TabIndex=3; }
 
-	profile_vbox "widget/vbox"
+    on_Refresh0 "widget/connector" { event=Refresh; target=profile_osrc; action=Refresh; }
+    on_Refresh1 "widget/connector" { event=Refresh; target=profile_info; action=Refresh; }
+    on_Refresh2 "widget/connector" { event=Refresh; target=profile_timeline; action=Refresh; }
+    on_Refresh3 "widget/connector" { event=Refresh; target=profile_highlights; action=Refresh; }
+    on_RefreshCollab "widget/connector" { event=RefreshCollab; target=collab_info; action=Refresh; }
+
+    profile_tab "widget/tab"
+	{
+	x=0; y=0;
+	width=700; height=580;
+	tab_location=none;
+	border_style=none;
+	background=null;
+	bgcolor=null;
+
+	logo_tab "widget/tabpage"
 	    {
-	    x=0; y=0;
-	    width=700; height=580;
-	    spacing=8;
-
-	    profile_hdr_hbox "widget/hbox"
+	    logo_vbox "widget/vbox"
 		{
-		height=110;
-		spacing=8;
+		x=166; y=0;
+		width=368; height=580;
+		spacing=10;
+		align=center;
 
-		profile_photo "widget/component"
+		logo "widget/image"
 		    {
-		    width=104;
-		    fl_height=0;
-		    fl_width=0;
-		    path="profile_picture.cmp";
+		    height=75;
+		    x=4;
+		    source="/apps/kardia/images/artwork/Kardia2011b-horiz-75.png";
 		    }
 
-		profile_info "widget/component"
+		inst "widget/label"
 		    {
-		    width=380;
-		    fl_width=10;
-		    fl_height=0;
-		    path="profile_info.cmp";
-		    }
-
-		profile_tracks "widget/component"
-		    {
-		    fl_height=0;
-		    fl_width=0;
-		    width=200;
-		    height=110;
-		    mode=dynamic;
-		    path="/apps/kardia/modules/crm/profile_track_list.cmp";
+		    height=44;
+		    text="See Clearly. Go Deep.\n\n\nSelect a Person to the left, or add a new Person using the 'New' button at the top of this screen";
+		    style=italic;
+		    align=center;
 		    }
 		}
-
-	    profile_sep "widget/pane" { height=2; style=lowered; }
-
-	    profile_body_hbox "widget/hbox"
+	    }
+	main_tab "widget/tabpage"
+	    {
+	    profile_osrc "widget/osrc"
 		{
-		height=450;
-		spacing=8;
+		partner_key "widget/parameter" { type=string; }
 
-		profile_data_vbox "widget/vbox"
+		sql = "	select
+			    :p:p_partner_key,
+			    partnername = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			    :p:p_surname,
+			    :p:p_given_name,
+			    :p:p_org_name,
+			    :l:p_city,
+			    :l:p_state_province,
+			    collab_role = (select :ct:e_collab_type_label from /apps/kardia/data/Kardia_DB/p_staff/rows s, /apps/kardia/data/Kardia_DB/e_collaborator/rows c, /apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct where :s:p_kardia_login = user_name() and :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :s:p_partner_key and :ct:e_collab_type_id = :c:e_collab_type_id)
+			from
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			    /apps/kardia/data/Kardia_DB/p_location/rows l
+			where
+			    :p:p_partner_key = :parameters:partner_key and
+			    :p:p_record_status_code = 'A' and
+			    :l:p_partner_key =* :p:p_partner_key and
+			    :l:p_revision_id = 0 and
+			    :l:p_record_status_code = 'A'
+			limit
+			    1
+			";
+		autoquery = never;
+		replicasize = 2;
+		readahead = 2;
+
+		load_tracks "widget/connector" { event=EndQuery; target=profile_tracks; action=Instantiate; partner_key=runclient(:profile_osrc:p_partner_key); }
+
+		profile_vbox "widget/vbox"
 		    {
-		    fl_width=5;
-		    width=250;
+		    x=0; y=0;
+		    width=700; height=580;
 		    spacing=8;
 
-		    profile_data_todo_pane "widget/pane"
+		    profile_hdr_hbox "widget/hbox"
 			{
-			condition=0;
-			height=221;
-			style=raised;
-			border_radius=8;
-			background="/apps/kardia/images/bg/light_bgnd2.jpg";
+			height=110;
+			spacing=10;
+
+			profile_photo "widget/component"
+			    {
+			    width=104;
+			    fl_height=0;
+			    fl_width=0;
+			    path="profile_picture.cmp";
+			    }
+
+			profile_info_vbox "widget/vbox"
+			    {
+			    width=376;
+			    fl_width=10;
+			    fl_height=0;
+			    spacing=6;
+
+			    profile_info "widget/component"
+				{
+				height=92;
+				fl_width=10;
+				fl_height=0;
+				path="profile_info.cmp";
+				}
+
+			    collab_info "widget/component"
+				{
+				height=12;
+				fl_height=0;
+				path="profile_collab.cmp";
+
+				on_editcollab "widget/connector"
+				    {
+				    event=EditCollab;
+				    target=partner_profile;
+				    action=EditCollab;
+				    origin=runclient(:origin);
+				    }
+				}
+			    }
+
+			profile_tracks "widget/component"
+			    {
+			    fl_height=0;
+			    fl_width=0;
+			    width=200;
+			    height=110;
+			    path="profile_track_list.cmp";
+
+			    on_track_click "widget/connector"
+				{
+				event=TrackSelected;
+				target=partner_profile;
+				action=TrackSelected;
+				engagement_id=runclient(:engagement_id);
+				origin=runclient(:origin);
+				}
+			    }
 			}
 
-		    profile_data_hilite_pane "widget/pane"
-			{
-			height=450;
-			style=raised;
-			border_radius=8;
-			background="/apps/kardia/images/bg/light_bgnd2.jpg";
+		    profile_sep "widget/autolayoutspacer" { height=4; }
 
-			profile_data_hilite_vbox "widget/vbox"
+		    profile_body_hbox "widget/hbox"
+			{
+			height=448;
+			spacing=10;
+
+			timeline_vbox "widget/vbox"
 			    {
-			    x=4; y=4; width=240; height=440;
+			    width=429;
 			    spacing=8;
 
-			    hilite_hdr "widget/label"
+			    timeline_hdr "widget/pane"
 				{
-				height=16;
-				align=center;
-				style=bold;
-				text="Highlights...";
+				style=flat; height=13; 
+				background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				border_radius=4;
+
+				timeline_label "widget/label"
+				    {
+				    x=0; y=0;
+				    width=438; height=12;
+				    text="Activity Timeline";
+				    align=center;
+				    style=bold;
+				    font_size=11;
+				    fgcolor=white;
+				    }
+				}
+
+			    profile_timeline "widget/component"
+				{
+				height=429;
+				path="profile_timeline.cmp";
+				iconbar = iconbar;
+				profile = partner_profile;
+				collaborator_osrc = collaborator_osrc;
+				}
+			    }
+
+			vertsep "widget/image"
+			    {
+			    width=1;
+			    height=448;
+			    fl_height=100;
+			    fl_width=0;
+			    source="/apps/kardia/images/bg/lsblue_vertsep.png";
+			    }
+
+			highlights_vbox "widget/vbox"
+			    {
+			    width=250;
+			    spacing=8;
+
+			    highlights_hdr "widget/pane"
+				{
+				style=flat; height=13; 
+				background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				border_radius=4;
+
+				highlights_label "widget/label"
+				    {
+				    x=0; y=0;
+				    width=250; height=12;
+				    text="Highlights";
+				    align=center;
+				    style=bold;
+				    font_size=11;
+				    fgcolor=white;
+				    }
+				}
+
+			    profile_highlights "widget/component"
+				{
+				height=429;
+				path="profile_highlights.cmp";
+				iconbar = iconbar;
+				profile = partner_profile;
+				collaborator_osrc = collaborator_osrc;
+
+				on_tune "widget/connector"
+				    {
+				    event=TuneHighlights;
+				    target=partner_profile;
+				    action=TuneHighlights;
+
+				    direction=runclient(:direction);
+				    origin=runclient(:origin);
+				    hname=runclient(:hname);
+				    htype=runclient(:htype);
+				    }
+
+				on_reassign "widget/connector"
+				    {
+				    event=EditTask;
+				    target=partner_profile;
+				    action=EditTask;
+				    todo_id=runclient(:todo_id);
+				    partner=runclient(:partner);
+				    origin=runclient(:origin);
+				    }
 				}
 			    }
 			}
 		    }
+		}
+	    }
 
-		profile_timeline "widget/component"
-		    {
-		    width=442;
-		    path="profile_timeline.cmp";
-		    }
+	adv_search_tab "widget/tabpage"
+	    {
+	    adv_search_cmp "widget/component"
+		{
+		x=0; y=0; width=700; height=580;
+		path="advanced_search.cmp";
 		}
 	    }
 	}

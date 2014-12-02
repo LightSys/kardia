@@ -56,6 +56,12 @@ alter table p_address_format drop index p_af_country_idx;
 /* p_partner_relationship */
 /* drop index p_partner_relationship.p_partner_relationship_pk */ 
 /* go */
+alter table p_partner_relationship drop index p_relate_reverse_idx;
+
+
+/* p_partner_relationship_type */
+/* drop index p_partner_relationship_type.p_relat_type_pk */ 
+/* go */
 
 
 /* p_church */
@@ -131,6 +137,27 @@ alter table p_dup_check_tmp drop index p_dc_username_idx;
 
 /* p_acquisition_code */
 /* drop index p_acquisition_code.p_acqcode_pk */ 
+/* go */
+
+
+/* p_partner_search */
+/* drop index p_partner_search.p_search_pk */ 
+/* go */
+
+
+/* p_partner_search_stage */
+/* drop index p_partner_search_stage.p_searchstage_pk */ 
+/* go */
+
+
+/* p_partner_search_results */
+alter table p_partner_search_results drop index p_search_stage_idx;
+/* drop index p_partner_search_results.p_searchres_pk */ 
+/* go */
+
+
+/* p_search_stage_criteria */
+/* drop index p_search_stage_criteria.p_stage_criteria_pk */ 
 /* go */
 
 
@@ -335,6 +362,19 @@ alter table e_data_item drop index e_dataitem_group_idx;
 /* drop index e_data_item.e_dataitem_pk */ 
 /* go */
 alter table e_data_item drop index e_dataitem_type_idx;
+
+
+/* e_highlights */
+alter table e_highlights drop index e_h_nt_idx;
+/* drop index e_highlights.e_h_pk */ 
+/* go */
+alter table e_highlights drop index e_h_prec_idx;
+
+
+/* e_data_highlight */
+alter table e_data_highlight drop index e_dh_obj_idx;
+/* drop index e_data_highlight.e_dh_pk */ 
+/* go */
 
 
 /* r_group */

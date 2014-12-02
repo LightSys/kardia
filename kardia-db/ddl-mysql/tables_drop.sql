@@ -35,6 +35,10 @@ drop table p_contact_info;
 drop table p_partner_relationship;
 
 
+/* p_partner_relationship_type */
+drop table p_partner_relationship_type;
+
+
 /* p_church */
 drop table p_church;
 
@@ -85,6 +89,22 @@ drop table p_partner_sort_tmp;
 
 /* p_acquisition_code */
 drop table p_acquisition_code;
+
+
+/* p_partner_search */
+drop table p_partner_search;
+
+
+/* p_partner_search_stage */
+drop table p_partner_search_stage;
+
+
+/* p_partner_search_results */
+drop table p_partner_search_results;
+
+
+/* p_search_stage_criteria */
+drop table p_search_stage_criteria;
 
 
 /* m_list */
@@ -209,6 +229,14 @@ drop table e_data_item_group;
 
 /* e_data_item */
 drop table e_data_item;
+
+
+/* e_highlights */
+drop table e_highlights;
+
+
+/* e_data_highlight */
+drop table e_data_highlight;
 
 
 /* r_group */

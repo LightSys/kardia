@@ -1,0 +1,25 @@
+$Version=2$
+plugin_crm_highlights_TASK "widget/component-decl"
+    {
+    width=242;
+    height=28;
+    type = "TASK";
+
+    highlights_osrc "widget/parameter" { type=object; }
+    partner_osrc "widget/parameter" { type=object; }
+
+    EditTask "widget/component-decl-event" { }
+
+    edittask_btn "widget/textbutton"
+	{
+	x=100; y=4;
+	width=138; height=24;
+	fl_width=30;
+	text = "Edit/Reassign";
+	background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	fgcolor1=white;
+	fgcolor2=black;
+
+	on_edittask "widget/connector" { event=Click; target=plugin_crm_highlights_TASK; action=EditTask; todo_id=runclient(:highlights_osrc:e_highlight_reference_info); partner=runclient(:partner_osrc:p_partner_key); origin=edittask_btn; }
+	}
+    }

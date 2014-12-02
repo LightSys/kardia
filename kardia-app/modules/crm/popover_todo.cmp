@@ -1,0 +1,174 @@
+$Version=2$
+popover_todo "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+
+    TaskEdited "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
+    onOpen1b "widget/connector" { event=Open; target=partnername_var; action=SetValue; Value=runclient(:partnername); }
+    onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen3 "widget/connector" { event=Open; target=todoitem_var; action=SetValue; Value=runclient(:todo_id); }
+    onOpen4 "widget/connector" { event=Open; target=isnew_var; action=SetValue; Value=runclient(:is_new); }
+    onOpen5 "widget/connector" { event=Open; target=reassign_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
+
+    partner_var "widget/variable" { type=string; }
+    partnername_var "widget/variable" { type=string; }
+    collab_var "widget/variable" { type=string; }
+    todoitem_var "widget/variable" { type=string; }
+    isnew_var "widget/variable" { type=integer; }
+
+    reassign_win "widget/childwindow"
+	{
+	width=500; height=294;
+	x=250; y=89;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	reload_collabs_on_open "widget/connector"
+	    {
+	    event=Open;
+	    target=todo_assign;
+	    action=SetItems;
+	    SQL=runclient(" select 
+				label = condition(:s:p_kardia_login == user_name(), 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, condition(char_length(isnull(:p:p_preferred_name,'')) > 0, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' (' + :ct:e_collab_type_label + ')',
+				value = :c:e_collaborator,
+				selected = condition(:s:p_kardia_login == user_name(), 1, 0)
+			    from
+				/apps/kardia/data/Kardia_DB/e_collaborator/rows c,
+				/apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct,
+				/apps/kardia/data/Kardia_DB/p_partner/rows p,
+				/apps/kardia/data/Kardia_DB/p_staff/rows s
+			    where
+				:c:p_partner_key = " + quote(:partner_var:value) + " and
+				:ct:e_collab_type_id = :c:e_collab_type_id and
+				:p:p_partner_key = :c:e_collaborator and
+				:s:p_partner_key =* :p:p_partner_key");
+	    }
+
+	clear_on_reassign_open "widget/connector"
+	    {
+	    event=Open;
+	    event_condition=runclient(isnull(:isnew_var:value,0) == 1);
+	    target=reassign_osrc;
+	    action=Clear;
+	    }
+	new_on_reassign_open "widget/connector"
+	    {
+	    event=Open;
+	    event_condition=runclient(isnull(:isnew_var:value,0) == 1);
+	    target=reassign_form;
+	    action=New;
+	    }
+	query_on_reassign_open "widget/connector"
+	    {
+	    event=Open;
+	    event_condition=runclient(isnull(:isnew_var:value,0) == 0);
+	    target=reassign_osrc;
+	    action=QueryParam;
+	    e_todo_id=runclient(:todoitem_var:value);
+	    }
+
+	todo_icon "widget/image"
+	    {
+	    x=12; y=12;
+	    width=24; height=24;
+	    source="/apps/kardia/images/icons/openiconic-bell.svg";
+	    }
+
+	reassign_vbox "widget/vbox"
+	    {
+	    x=15; y=15;
+	    width=468; height=262;
+	    spacing=10;
+
+	    reassign_osrc "widget/osrc"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_todo/rows t
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/e_todo/rows";
+		replicasize=50;
+		readahead=50;
+		autoquery=never;
+
+		reassign_form "widget/form"
+		    {
+		    allow_search=no;
+		    allow_view=yes;
+		    allow_modify=yes;
+		    allow_new=yes;
+
+		    close_on_save "widget/connector" { event=DataSaved; target=reassign_win; action=Close; }
+		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_todo; action=TaskEdited; }
+		    close_on_discard "widget/connector" { event=Discard; target=reassign_win; action=Close; }
+
+		    hdr_label "widget/label" { height=24; font_size=16; style=bold; value=runclient(condition(isnull(:isnew_var:value,0), "New Task regarding " + :partnername_var:value + "...", "Edit / Reassign Task...")); align=center; }
+
+		    todo_type "widget/component" { field=e_todo_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="Task Type:"; ctl_type=dropdown; sql="select :e_todo_type_label, :e_todo_type_id from /apps/kardia/data/Kardia_DB/e_todo_type/rows order by :e_todo_type_label"; width=350; label_width=100; todo_type_hints "widget/hints" { style=notnull; } }
+
+		    todo_assign "widget/component" { field=e_todo_collaborator; path="/sys/cmp/smart_field.cmp"; height=20; text="Assigned To:"; ctl_type=dropdown; sql="select null,null"; width=350; label_width=100; todo_assign_hints "widget/hints" { style=notnull; } }
+
+		    todo_due_date "widget/component" { field=e_todo_due_date; path="/sys/cmp/smart_field.cmp"; height=20; text="Due Date:"; ctl_type=datetime; width=350; label_width=100; }
+
+		    todo_id "widget/variable" { fieldname=e_todo_id; }
+		    todo_partner "widget/variable" { fieldname=e_todo_partner; todo_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
+		    todo_stat "widget/variable" { fieldname=e_todo_status; todo_stat_hints "widget/hints" { default=runclient('I'); } }
+
+		    todo_desc "widget/component" { field=e_todo_desc; path="/sys/cmp/smart_field.cmp"; height=20; text="Subject:"; ctl_type=editbox; label_width=100; }
+
+		    todo_comm "widget/component" { field=e_todo_comments; path="/sys/cmp/smart_field.cmp"; height=60; text="Comments:"; ctl_type=textarea; label_width=100; }
+
+		    todo_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+		    reassign_btns "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=10;
+
+			add_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Save";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    enabled = runclient(:reassign_form:is_savable);
+
+			    on_add "widget/connector" { event=Click; target=reassign_form; action=Save; }
+			    }
+
+			cancel_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Cancel";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    on_cancel1 "widget/connector" { event=Click; target=reassign_form; action=Discard; }
+			    on_cancel2 "widget/connector" { event=Click; target=reassign_win; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

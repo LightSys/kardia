@@ -555,7 +555,7 @@ api_crm "system/querytree"
 				reference_info = :e_reference_info,
 				info = :e_info
 			    FROM
-				identity '/apps/kardia/modules/crm/activity.qy?partner_key=" + escape(:eng_list:partner_id,"'","") + "'
+				identity '/apps/kardia/modules/crm/timeline.qy?partner_key=" + escape(:eng_list:partner_id,"'","") + "'
 			    ");
 		    use_having = yes;
 		    }
