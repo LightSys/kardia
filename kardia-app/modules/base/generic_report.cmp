@@ -252,28 +252,34 @@ generic_report "widget/component-decl"
 				    height=20;
 				    spacing=4;
 				    //search_saved_label "widget/label" { text="Search Saved Options:"; width=150; align=right; }
-				    search_saved_form "widget/form"
+				    search_saved_osrc "widget/osrc"
 					{
-					allow_nodata = no;
-					allow_new = yes;
-					allow_query = no;
-					allow_obscure = yes;
-					enter_mode = nextfield;
-					auto_focus = no;
+					sql = "select 1";
+					autoquery=never;
 
-					search_saved_eb "widget/editbox"
+					search_saved_form "widget/form"
 					    {
-					    width=250;
-					    empty_description="search saved options";
+					    allow_nodata = no;
+					    allow_new = yes;
+					    allow_query = no;
+					    allow_obscure = yes;
+					    enter_mode = nextfield;
+					    auto_focus = no;
 
-					    saved_search_cn "widget/connector"
+					    search_saved_eb "widget/editbox"
 						{
-						event=ReturnPressed;
-						target=saved_list_osrc;
-						action=QueryText;
-						field_list="*r_paramset_desc*,s_created_by";
-						query=runclient(:search_saved_eb:content);
-						cx__case_insensitive = 1;
+						width=250;
+						empty_description="search saved options";
+
+						saved_search_cn "widget/connector"
+						    {
+						    event=ReturnPressed;
+						    target=saved_list_osrc;
+						    action=QueryText;
+						    field_list="*r_paramset_desc*,s_created_by";
+						    query=runclient(:search_saved_eb:content);
+						    cx__case_insensitive = 1;
+						    }
 						}
 					    }
 					}
@@ -317,6 +323,13 @@ generic_report "widget/component-decl"
 					    target=report_paramset_id;
 					    action=SetValue;
 					    //Value=runclient(convert(string,:saved_list_osrc:r_paramset_id));
+					    Value=runclient(:saved_list_osrc:r_paramset_id);
+					    }
+					set_id_on_paramset_create "widget/connector"
+					    {
+					    event=Created;
+					    target=saved_id;
+					    action=SetValue;
 					    Value=runclient(:saved_list_osrc:r_paramset_id);
 					    }
 					save_options_on_paramset_create_2 "widget/connector"
@@ -410,9 +423,33 @@ generic_report "widget/component-decl"
 					    target=report_form;
 					    action=Discard;
 					    }
-					load_criteria_on_restore "widget/connector"
+					reset_saved_id_on_restore_null "widget/connector"
 					    {
 					    event=Click;
+					    event_condition=runclient(:saved_list_osrc:option_txt is null);
+					    target=saved_id;
+					    action=SetValue;
+					    Value=runclient(:saved_list_osrc:r_paramset_id);
+					    }
+					new_criteria_on_restore_null "widget/connector"
+					    {
+					    event=Click;
+					    event_condition=runclient(:saved_list_osrc:option_txt is null);
+					    target=report_form;
+					    action=New;
+					    }
+					set_id_on_restore_null "widget/connector"
+					    {
+					    event=Click;
+					    event_condition=runclient(:saved_list_osrc:option_txt is null);
+					    target=report_paramset_id;
+					    action=SetValue;
+					    Value=runclient(:saved_list_osrc:r_paramset_id);
+					    }
+					load_criteria_on_restore2 "widget/connector"
+					    {
+					    event=Click;
+					    event_condition=runclient(:saved_list_osrc:option_txt is not null);
 					    target=report_options_osrc;
 					    action=QueryParam;
 					    saved_id = runclient(:saved_list_osrc:r_paramset_id);
@@ -444,7 +481,7 @@ generic_report "widget/component-decl"
 					{
 					height=24; width=236;
 					text="Save a New Option Set";
-					enabled=runclient((:saved_item_form:form_mode == 'View' or :saved_item_form:form_mode == 'NoData') and :report_form:is_savable);
+					enabled=runclient((:saved_item_form:form_mode == 'View' or :saved_item_form:form_mode == 'NoData') and :report_form:is_savable and :report_form:form_mode == 'New');
 
 					new_optionset_on_new "widget/connector"
 					    {
@@ -458,7 +495,7 @@ generic_report "widget/component-decl"
 					{
 					height=24; width=236;
 					text="Update These Saved Options";
-					enabled=runclient(:saved_item_form:form_mode == 'View' and :last_restored_paramset_id:value = :saved_list_osrc:r_paramset_id and :report_form:form_mode == 'Modify' and :report_form:is_savable);
+					enabled=runclient(:saved_item_form:form_mode == 'View' and :last_restored_paramset_id:value = :saved_list_osrc:r_paramset_id and (:report_form:form_mode == 'Modify' or :report_form:form_mode == 'New') and :report_form:is_savable);
 
 					save_on_update_btn "widget/connector"
 					    {
@@ -576,7 +613,7 @@ generic_report "widget/component-decl"
 		enabled=runclient(:report_form:is_savable or :report_form:form_mode != 'New');
 
 		on_clear "widget/connector" { event=Click; target=report_form; action=Discard; }
-		on_clear2 "widget/connector" { event=Click; target=report_form; action=Clear; }
+		on_clear2 "widget/connector" { event=Click; target=report_form; action=New; }
 		}
 
 	    rpt_cancel "widget/textbutton"
