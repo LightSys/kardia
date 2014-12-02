@@ -19,6 +19,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'REL' + :pr:name,
 		e_highlight_name = condition(:pr:p_partner_key == :parameters:partner_key, :prt:p_relation_type_label, :prt:p_relation_type_rev_label),
 		e_highlight_type = 'REL',
 		e_highlight_data = condition(:pr:p_partner_key == :parameters:partner_key,
@@ -43,12 +44,67 @@ highlights "system/query"
 		:prt:p_relation_type = :pr:p_relation_type
 	    ;
 
+	    -- DATA - show various data items (form items)
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'DATA' + :di:name,
+		e_highlight_name = :dit:e_data_item_type_label,
+		e_highlight_type = 'DATA',
+		e_highlight_reference_info = convert(string, :di:e_data_item_id),
+		e_highlight_data = :di:e_data_item_value,
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_data_item/rows di,
+		/apps/kardia/data/Kardia_DB/e_data_item_type/rows dit
+	    where
+		:di:p_partner_key = :parameters:partner_key and
+		:dit:e_data_item_type_id = :di:e_data_item_type_id
+	    ;
+
+	    -- TAG - highlight tags applied to the person
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'TAG' + :t:name,
+		e_highlight_name = :tt:e_tag_label,
+		e_highlight_type = 'TAG',
+		e_highlight_reference_info = :t:name,
+		--e_highlight_data = condition(:t:e_tag_strength > 0.7 and :t:e_tag_certainty > 0.7, 'YES', condition(:t:e_tag_strength < -0.7 and :t:e_tag_certainty > 0.7, 'NO', condition(:t:e_tag_strength > 0.5, 'Possible YES - ASK', condition(:t:e_tag_strength < -0.5, 'Possible NO: ASK', condition(:t:e_tag_strength > 0.3, '))))) + isnull(' (' + :t:e_tag_comments + ')', ''),
+		e_highlight_data = condition(:t:e_tag_certainty < 0.5 and abs(:t:e_tag_strength) >= 0.5, 'ASK: ', '') + condition(abs(:t:e_tag_strength) >= 0.7, '', condition(abs(:t:e_tag_strength) >= 0.5, 'Mostly ', condition(abs(:t:e_tag_strength) >= 0.3, 'Somewhat ', 'Very Little '))) + condition(:t:e_tag_strength > 0, 'YES', 'NO') + condition(:t:e_tag_certainty < 0.9, ' - ' + condition(:t:e_tag_certainty >= 0.7, 'Very Likely', condition(:t:e_tag_certainty >= 0.5, 'Likely', condition(:t:e_tag_certainty >= 0.3, 'Possible', 'Unknown'))), '') + isnull(' (' + :t:e_tag_comments + ')', ''),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = :t:e_tag_strength,
+		e_highlight_certainty = :t:e_tag_certainty,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_tag/rows t,
+		/apps/kardia/data/Kardia_DB/e_tag_type/rows tt
+	    where
+		:t:p_partner_key = :parameters:partner_key and
+		:tt:e_tag_id = :t:e_tag_id and
+		abs(:t:e_tag_strength) >= :tt:e_tag_threshold
+	    ;
+
 	    -- TASK - various todo types
 	    insert
 		/apps/kardia/data/Kardia_DB/e_highlights/rows h
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'TASK' + :t:name,
 		e_highlight_name = :tt:e_todo_type_label,
 		e_highlight_type = 'TASK',
 		e_highlight_reference_info = convert(string, :t:e_todo_id),
@@ -75,6 +131,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'NOTE' + :ch:name,
 		e_highlight_name = :ch:e_subject,
 		e_highlight_type = 'NOTE',
 		e_highlight_data = substring(convert(string,:ch:e_contact_date),1,11) + ' - ' + :ch:e_notes,
@@ -98,6 +155,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'ADDR' + :l:name,
 		e_highlight_name = isnull(:lt:text + ' ','') + 'Address',
 		e_highlight_type = 'ADDR',
 		e_highlight_data = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,c=c'),
@@ -131,6 +189,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-THIS',
 		e_highlight_name = 'Giving This Year',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = convert(string, sum(:g:a_amount)),
@@ -154,6 +213,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-LAST',
 		e_highlight_name = 'Giving Last Year',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = convert(string, sum(:g:a_amount)),
@@ -177,6 +237,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-ALL',
 		e_highlight_name = 'Giving All-Time',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = convert(string, sum(:g:a_amount)),
@@ -199,6 +260,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-DATES',
 		e_highlight_name = 'Giving Dates',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = condition(min(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) = max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)), substring(convert(string, min(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))),1,11),  substring(convert(string, min(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))),1,11) + ' - ' +  substring(convert(string, max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))),1,11)),
@@ -221,6 +283,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-FUNDS',
 		e_highlight_name = 'Giving Funds',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = sum(first(:i:a_cost_center + ' - ' + :c:a_cc_desc) + '\n') - '\n',
@@ -252,7 +315,9 @@ highlights "system/query"
 	    where
 		:dh:e_highlight_object_id = :h:e_highlight_name and
 		:dh:e_highlight_object_type = :h:e_highlight_type and
-		:dh:e_highlight_subject = '*'
+		:dh:e_highlight_subject = '*' and
+		:h:e_highlight_user = user_name() and
+		:h:e_highlight_partner = :parameters:partner_key
 	    ;
 
 	    -- Update highlight precedence for the user's role
@@ -264,7 +329,9 @@ highlights "system/query"
 	    where
 		:dh:e_highlight_object_id = :h:e_highlight_name and
 		:dh:e_highlight_object_type = :h:e_highlight_type and
-		:dh:e_highlight_subject = 'r:' + :parameters:my_role
+		:dh:e_highlight_subject = 'r:' + :parameters:my_role and
+		:h:e_highlight_user = user_name() and
+		:h:e_highlight_partner = :parameters:partner_key
 	    ;
 
 	    -- Update highlight precedence for the user's own preferences
@@ -276,7 +343,9 @@ highlights "system/query"
 	    where
 		:dh:e_highlight_object_id = :h:e_highlight_name and
 		:dh:e_highlight_object_type = :h:e_highlight_type and
-		:dh:e_highlight_subject = 'u:' + user_name()
+		:dh:e_highlight_subject = 'u:' + user_name() and
+		:h:e_highlight_user = user_name() and
+		:h:e_highlight_partner = :parameters:partner_key
 	    ;
 
 	    -- Update highlight precedence for the user's own role-specific preferences
@@ -288,7 +357,9 @@ highlights "system/query"
 	    where
 		:dh:e_highlight_object_id = :h:e_highlight_name and
 		:dh:e_highlight_object_type = :h:e_highlight_type and
-		:dh:e_highlight_subject = 'ur:' + user_name() + ':' + :parameters:my_role
+		:dh:e_highlight_subject = 'ur:' + user_name() + ':' + :parameters:my_role and
+		:h:e_highlight_user = user_name() and
+		:h:e_highlight_partner = :parameters:partner_key
 	    ;
 
 	    -- Return the list to the user

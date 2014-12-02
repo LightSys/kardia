@@ -16,11 +16,14 @@ partner_profile "widget/component-decl"
     // Events generated
     TuneHighlights "widget/component-decl-event" { }
     EditTask "widget/component-decl-event" { }
+    EditCollab "widget/component-decl-event" { }
+    TrackSelected "widget/component-decl-event" { }
 
     // Actions we support
     SelectPartner "widget/component-decl-action" { }
     AdvancedSearch "widget/component-decl-action" { }
     Refresh "widget/component-decl-action" { }
+    RefreshCollab "widget/component-decl-action" { }
 
     on_Select1 "widget/connector" { event=SelectPartner; target=profile_osrc; action=QueryParam; partner_key=runclient(:partner_key); }
     on_Select2 "widget/connector" { event=SelectPartner; target=profile_tab; action=SetTab; TabIndex=2; }
@@ -35,9 +38,11 @@ partner_profile "widget/component-decl"
 
     on_AdvSearch "widget/connector" { event=AdvancedSearch; target=profile_tab; action=SetTab; TabIndex=3; }
 
-    on_Refresh1 "widget/connector" { event=Refresh; target=profile_osrc; action=Refresh; }
+    on_Refresh0 "widget/connector" { event=Refresh; target=profile_osrc; action=Refresh; }
+    on_Refresh1 "widget/connector" { event=Refresh; target=profile_info; action=Refresh; }
     on_Refresh2 "widget/connector" { event=Refresh; target=profile_timeline; action=Refresh; }
     on_Refresh3 "widget/connector" { event=Refresh; target=profile_highlights; action=Refresh; }
+    on_RefreshCollab "widget/connector" { event=RefreshCollab; target=collab_info; action=Refresh; }
 
     profile_tab "widget/tab"
 	{
@@ -145,6 +150,14 @@ partner_profile "widget/component-decl"
 				height=12;
 				fl_height=0;
 				path="profile_collab.cmp";
+
+				on_editcollab "widget/connector"
+				    {
+				    event=EditCollab;
+				    target=partner_profile;
+				    action=EditCollab;
+				    origin=runclient(:origin);
+				    }
 				}
 			    }
 
@@ -155,6 +168,15 @@ partner_profile "widget/component-decl"
 			    width=200;
 			    height=110;
 			    path="profile_track_list.cmp";
+
+			    on_track_click "widget/connector"
+				{
+				event=TrackSelected;
+				target=partner_profile;
+				action=TrackSelected;
+				engagement_id=runclient(:engagement_id);
+				origin=runclient(:origin);
+				}
 			    }
 			}
 
@@ -268,6 +290,11 @@ partner_profile "widget/component-decl"
 
 	adv_search_tab "widget/tabpage"
 	    {
+	    adv_search_cmp "widget/component"
+		{
+		x=0; y=0; width=700; height=580;
+		path="advanced_search.cmp";
+		}
 	    }
 	}
     }

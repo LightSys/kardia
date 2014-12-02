@@ -4,6 +4,9 @@ profile_info "widget/component-decl"
     width=380;
     height=110;
 
+    Refresh "widget/component-decl-action" { }
+    onRefresh "widget/connector" { event=Refresh; target=partner_info_osrc; action=Refresh; }
+
     partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
     partner_info_osrc "widget/osrc"

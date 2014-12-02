@@ -6,6 +6,8 @@ profile_track_list "widget/component-decl"
 
     partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
+    TrackSelected "widget/component-decl-event" { }
+
     tracklist_osrc "widget/osrc"
 	{
 	sql = " select
@@ -47,7 +49,7 @@ profile_track_list "widget/component-decl"
 	    height=418;
 	    width=442;
 	    row_border_color="#e0e0e0";
-	    row_border_radius=2;
+	    row_border_radius=3;
 	    row_shadow_offset=1;
 	    row_shadow_color="#c0c0c0";
 	    demand_scrollbar = yes;
@@ -65,7 +67,16 @@ profile_track_list "widget/component-decl"
 	    rowhighlight_bgcolor = "#fff090";
 	    textcolorhighlight = "#000000";
 
-	    t_letter "widget/table-column" { value=runclient(substring(:tracklist_osrc:e_track_name, 1, 1)); font_size=22; style=bold; padding=3; bgcolor=runclient(:tracklist_osrc:e_track_color); border_radius=4; width=40; align=center; }
+	    on_track_click "widget/connector"
+		{
+		event=Click;
+		target=profile_track_list;
+		action=TrackSelected;
+		engagement_id=runclient(:tracklist_osrc:e_engagement_id);
+		origin=tracklist_table;
+		}
+
+	    t_letter "widget/table-column" { value=runclient(substring(:tracklist_osrc:e_track_name, 1, 1)); font_size=20; style=bold; padding=3; bgcolor=runclient(:tracklist_osrc:e_track_color); border_radius=4; width=36; align=center; }
 	    t_trackname "widget/table-column" { value=runclient(:tracklist_osrc:e_track_name + ' (' + :tracklist_osrc:e_step_name + ')'); style=bold; caption_value=runclient(:tracklist_osrc:e_desc); align=center; width=160; caption_align=center; caption_style=italic; }
 	    }
 	}

@@ -9,6 +9,14 @@ people_list "widget/component-decl"
 
     PartnerSelected "widget/component-decl-event" { }
 
+    Refresh "widget/component-decl-action" { }
+    onRefresh "widget/connector"
+	{
+	event=Refresh;
+	target=active_collab_osrc;
+	action=Refresh;
+	}
+
     people_vbox "widget/vbox"
 	{
 	x=0; y=0; width=248; height=413;
@@ -23,6 +31,10 @@ people_list "widget/component-decl"
 			collaborator_type = (select :e_collab_type_label from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows where :e_collab_type_id = :c:e_collab_type_id),
 			partner_id = :c:p_partner_key,
 			partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:p_partner_key),
+			role_id = :c:e_collab_type_id,
+			role_name = :ct:e_collab_type_desc,
+			track_ids = (select sum('X' + :pe:e_track_id + 'X') from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe where :pe:p_partner_key = :c:p_partner_key and :pe:e_is_archived = 0 group by :pe:e_track_id),
+			track_names = (select sum(first(:t:e_track_name) + ', ') - ', ' from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe, /apps/kardia/data/Kardia_DB/e_engagement_track/rows t where :pe:p_partner_key = :c:p_partner_key and :pe:e_is_archived = 0 and :t:e_track_id = :pe:e_track_id group by :pe:e_track_id),
 			img = isnull( ( select
 				    path = :d:e_current_folder + '/' + :d:e_current_filename
 				from
@@ -39,16 +51,19 @@ people_list "widget/component-decl"
 				limit
 				    1
 				), '/apps/kardia/images/artwork/persona.png'),
-			last_date = substring(convert(string,getdate()),1,11)
+			last_date = substring(convert(string, (select max(:e_contact_date) from /apps/kardia/data/Kardia_DB/e_contact_history/rows ch where :ch:p_partner_key = :c:p_partner_key) ),1,11)
 		    from
 			identity /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
-			/apps/kardia/data/Kardia_DB/p_staff/rows s
+			/apps/kardia/data/Kardia_DB/p_staff/rows s,
+			/apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct
 		    where
 			:c:e_collaborator = :s:p_partner_key and
-			:s:p_kardia_login = user_name()
+			:s:p_kardia_login = user_name() and
+			:ct:e_collab_type_id = :c:e_collab_type_id
 		    ";
 	    readahead=50;
 	    replicasize=50;
+	    use_having_clause=1;
 	    
 	    active_collab_table "widget/table"
 		{
@@ -77,8 +92,22 @@ people_list "widget/component-decl"
 
 		onclick "widget/connector" { event=Click; target=people_list; action=PartnerSelected; partner_key=runclient(:partner_id); }
 
-		t_img "widget/table-column" { title=""; fieldname="img"; width=40; type=image; image_maxwidth=32; image_maxheight=32; align=center; }
-		t_name "widget/table-column" { title="Partner"; fieldname="partner_name"; width=208; caption_fieldname=last_date; caption_textcolor="#9b8707"; style=bold; font_size=18; caption_style=italic; }
+		t_img "widget/table-column" { fieldname="img"; width=40; type=image; image_maxwidth=32; image_maxheight=32; align=center; }
+		t_name "widget/table-column"
+		    {
+		    fieldname="partner_name";
+		    width=208;
+		    caption_value=runclient(
+			    isnull('Tracks: ' + :active_collab_osrc:track_names + '\n', '') +
+			    isnull('My Role: ' + :active_collab_osrc:role_name + '\n', '') +
+			    isnull('Last Communication: ' + :active_collab_osrc:last_date + '\n', '')
+			    );
+		    caption_textcolor="#9b8707";
+		    style=bold;
+		    font_size=18;
+		    caption_style=italic;
+		    wrap=yes;
+		    }
 		}
 	    }
 
@@ -88,21 +117,55 @@ people_list "widget/component-decl"
 	    height=24;
 	    width=240;
 	    mode=dynamic_server;
+	    numdisplay=16;
 	    sql = " select
 			'All of My People',
-			'*',
+			'A',
 			1
 		    ;
 
 		    select
-			:e_collab_type_label,
-			convert(string,:e_collab_type_id),
+			'My Role: ' + :e_collab_type_label,
+			'R' + convert(string,:e_collab_type_id),
 			0
 		    from
 			/apps/kardia/data/Kardia_DB/e_collaborator_type/rows
+		    ;
+
+		    select
+			'Track: ' + :e_track_name,
+			'T' + convert(string,:e_track_id),
+			0
+		    from
+			/apps/kardia/data/Kardia_DB/e_engagement_track/rows
 		    ";
 
 	    role_dd_hints "widget/hints" { style=notnull; }
+
+	    on_role_select_all "widget/connector"
+		{
+		event=DataChange;
+		event_condition=runclient(substring(:Value,1,1) == 'A');
+		target=active_collab_osrc;
+		action=QueryParam;
+		}
+	    on_role_select_role "widget/connector"
+		{
+		event=DataChange;
+		event_condition=runclient(substring(:Value,1,1) == 'R');
+		target=active_collab_osrc;
+		action=QueryParam;
+		role_id=runclient(convert(integer,substring(:Value,2)));
+		}
+	    on_role_select_track "widget/connector"
+		{
+		event=DataChange;
+		event_condition=runclient(substring(:Value,1,1) == 'T');
+		target=active_collab_osrc;
+		action=QueryText;
+		query=runclient('X' + substring(:Value,2) + 'X');
+		field_list="*track_ids*";
+		}
 	    }
 	}
     }

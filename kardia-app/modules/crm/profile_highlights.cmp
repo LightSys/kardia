@@ -57,6 +57,7 @@ profile_highlights "widget/component-decl"
 			";
 		readahead=50;
 		replicasize=50;
+		autoquery=never;
 		baseobj = "/apps/kardia/modules/crm/highlights.qy?partner_key=000000&my_cclist=&my_role=&my_id=";
 
 		refresh_on_partner_change "widget/connector" { source=partner_osrc; event=EndQuery; action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/highlights.qy?partner_key=" + :partner_osrc:p_partner_key + "&my_cclist=" + :collaborator_osrc:cclist + "&my_role=" + isnull(:partner_osrc:collab_role,'None') + "&my_id=" + isnull(:collaborator_osrc:p_partner_key, '')); }

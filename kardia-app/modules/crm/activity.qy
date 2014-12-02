@@ -1,0 +1,75 @@
+$Version=2$
+activity "system/query"
+    {
+    //collab_id "query/parameter" { type=string; }
+    //my_cclist "query/parameter" { type=string; }
+
+    sql = " declare object activitygroup;
+
+	    -- Get a new ID for the activity group
+	    select
+		:activitygroup:id = isnull(max(:e_activity_group_id),0) + 1
+	    from
+		/apps/kardia/data/Kardia_DB/e_activity/rows
+	    ;
+
+	    -- Insert a header record to reserve the group ID.
+	    -- We will need locking around this in the future.
+	    insert
+		/apps/kardia/data/Kardia_DB/e_activity/rows
+	    select
+		e_activity_group_id = :activitygroup:id,
+		p_partner_key = 'ACTIVITY',
+		e_activity_date = getdate(),
+		e_activity_type = 'HEAD',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    ;
+
+	    -- Clean up
+	    delete
+		/apps/kardia/data/Kardia_DB/e_activity/rows
+	    where
+		:s_created_by = user_name() and
+		:e_sort_key = 'ACTIVITY'
+	    ;
+
+	    -- Who's online on the CRM system
+	    insert
+		/apps/kardia/data/Kardia_DB/e_activity/rows
+	    select
+		e_activity_group_id = :activitygroup:id,
+		p_partner_key = :s:p_partner_key,
+		e_activity_date = :a:last_activity,
+		e_activity_type = 'USER',
+		e_sort_key = 'ACTIVITY',
+		e_reference_info = :a:username,
+		e_info = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 0, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + '\n' + isnull(:ud:s_status,''),
+		e_whom = :s:p_partner_key,
+		e_initiation = 'C',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/sys/cx.sysinfo/session/apps a,
+		/apps/kardia/data/Kardia_DB/p_staff/rows s,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p,
+		/apps/kardia/data/Kardia_DB/s_user_data/rows ud
+	    where
+		charindex('/apps/kardia/modules/crm', :a:app_path) > 0 and
+		:s:p_kardia_login = :a:username and
+		:p:p_partner_key = :s:p_partner_key and
+		:ud:s_username =* :a:username
+	    group by
+		:a:username
+	    ;
+
+	    -- Return the ID to the user
+	    select
+		name = 'ActivityGroupID',
+		activity_group_id = :activitygroup:id
+	    ";
+    }

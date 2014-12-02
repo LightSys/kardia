@@ -125,6 +125,7 @@ popover_todo "widget/component-decl"
 		    todo_due_date "widget/component" { field=e_todo_due_date; path="/sys/cmp/smart_field.cmp"; height=20; text="Due Date:"; ctl_type=datetime; width=350; label_width=100; }
 
 		    todo_id "widget/variable" { fieldname=e_todo_id; }
+		    todo_partner "widget/variable" { fieldname=e_todo_partner; todo_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
 		    todo_stat "widget/variable" { fieldname=e_todo_status; todo_stat_hints "widget/hints" { default=runclient('I'); } }
 
 		    todo_desc "widget/component" { field=e_todo_desc; path="/sys/cmp/smart_field.cmp"; height=20; text="Subject:"; ctl_type=editbox; label_width=100; }

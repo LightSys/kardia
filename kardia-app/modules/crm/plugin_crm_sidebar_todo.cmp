@@ -164,7 +164,22 @@ todo_list "widget/component-decl"
 		}
 
 	    t_img "widget/table-column" { fieldname="img"; width=24; type=image; image_maxwidth=16; image_maxheight=16; align=center; }
-	    t_name "widget/table-column" { value=runclient(substring(convert(string,:todo_osrc:e_todo_due_date),1,11) + ': ' + :todo_osrc:e_todo_type_label + ' - ' + :todo_osrc:partner_name); width=208; caption_value=runclient(:todo_osrc:e_todo_desc); caption_textcolor="#9b8707"; style=bold; font_size=12; caption_style=italic; wrap=yes; textcolor=runclient(condition(:todo_osrc:days_til_due < 0 and :todo_osrc:e_todo_status == 'I', '#ff0000',condition(:todo_osrc:days_til_due == 0 and :todo_osrc:e_todo_status == 'I', '#a00000', '#000000'))); }
+	    t_name "widget/table-column"
+		{
+		width=208;
+		wrap=yes;
+
+		// Main value
+		textcolor=runclient(condition(:todo_osrc:days_til_due < 0 and :todo_osrc:e_todo_status == 'I', '#ff0000',condition(:todo_osrc:days_til_due == 0 and :todo_osrc:e_todo_status == 'I', '#a00000', '#000000')));
+		value=runclient(substring(convert(string,:todo_osrc:e_todo_due_date),1,11) + ': ' + :todo_osrc:e_todo_type_label + ' - ' + :todo_osrc:partner_name);
+		style=bold;
+		font_size=12;
+
+		// Caption
+		caption_value=runclient(condition(:todo_osrc:days_til_due < 0 and :todo_osrc:e_todo_status == 'I', 'PAST DUE: ',condition(:todo_osrc:days_til_due == 0 and :todo_osrc:e_todo_status == 'I', 'DUE: ', '')) + :todo_osrc:e_todo_desc);
+		caption_textcolor=runclient(condition(:todo_osrc:days_til_due < 0 and :todo_osrc:e_todo_status == 'I', '#ff0000',condition(:todo_osrc:days_til_due == 0 and :todo_osrc:e_todo_status == 'I', '#a00000', '#9b8707')));
+		caption_style=italic;
+		}
 	    }
 	}
     }

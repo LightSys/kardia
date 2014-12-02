@@ -13,6 +13,15 @@ sidebar "widget/component-decl"
     AddPerson "widget/component-decl-event" { }
     EditTask "widget/component-decl-event" { }
 
+    // Refresh partners
+    Refresh "widget/component-decl-action" { }
+    onRefresh "widget/connector"
+	{
+	event=Refresh;
+	target=plugin_cmp;
+	action=Refresh;
+	}
+
     // Refresh the tasks list
     RefreshTasks "widget/component-decl-action" { }
     onRefreshTasks "widget/connector"
@@ -97,6 +106,8 @@ sidebar "widget/component-decl"
 				target=sidebar;
 				action=AddPerson;
 				Origin=runclient(:Origin);
+				partner=runclient(:partner);
+				partnername=runclient(:partnername);
 				}
 
 			    on_reassign "widget/connector"

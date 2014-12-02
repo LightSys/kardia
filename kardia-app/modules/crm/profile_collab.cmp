@@ -6,6 +6,12 @@ profile_collab "widget/component-decl"
 
     partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
+    EditCollab "widget/component-decl-event" { }
+
+    Refresh "widget/component-decl-action" { }
+
+    onRefresh "widget/connector" { event=Refresh; target=collab_info_osrc; action=Refresh; }
+
     collab_info_osrc "widget/osrc"
 	{
 	partner_key "widget/parameter" { type=string; }
@@ -41,9 +47,18 @@ profile_collab "widget/component-decl"
 		{
 		x=0; y=0;
 		width=380; height=18;
+		widget_class=link;
 		style=italic;
 		fgcolor="#6080c0";
-		value = runclient('Working with: ' + :collabs_form:txt);
+		value = runclient('Working with: ' + isnull(:collabs_form:txt, 'none assigned'));
+
+		edit_collab_on_click "widget/connector"
+		    {
+		    event=Click;
+		    target=profile_collab;
+		    action=EditCollab;
+		    origin=collabs_label;
+		    }
 		}
 	    }
 	}

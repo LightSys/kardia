@@ -40,7 +40,7 @@ crm "widget/component-decl"
 	    height=74;
 	    fl_height=0;
 	    path = "iconbar.cmp";
-	    EnabledTypes="REL,TAG,GIFT,CONT,TASK,NOTE,DATA,FILE,TRK,PAR,ADDR";
+	    EnabledTypes="REL,TAG,GIFT,COMM,CONT,TASK,NOTE,DATA,FILE,TRK,PAR,ADDR";
 	    profile = profile_cmp;
 
 	    select_sidebar "widget/connector"
@@ -89,6 +89,53 @@ crm "widget/component-decl"
 		is_new=1;
 		partnername=runclient(:profile_cmp:partnername);
 		}
+	    newpartner_cn "widget/connector"
+		{
+		event=NewPartner;
+		target=crm;
+		action=Launch;
+		Width=844;
+		Height=600;
+		Source="/apps/kardia/modules/base/new_partner.app";
+		return_to=newperson_popover;
+		set_return=1;
+		}
+	    newpartner2_cn "widget/connector"
+		{
+		event=NewPartner;
+		target=newperson_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient('top');
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		}
+	    editpartner_cn "widget/connector"
+		{
+		event=EditPartner;
+		target=crm;
+		action=Launch;
+		Width=844;
+		Height=600;
+		Source="/apps/kardia/modules/base/partner_window.app";
+		id=runclient(:profile_cmp:p_partner_key);
+		send_refresh=1;
+		send_refresh_to=profile_cmp;
+		//return_to=f_rcpt_donorid;
+		//set_donor=1;
+		//ledger=runclient(:gift_entry:ledger);
+		}
+	    newtrk_cn "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == 'Tracks');
+		target=newtrack_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient('top');
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		partnername=runclient(:profile_cmp:partnername);
+		}
 	    }
 
 	iconsep "widget/autolayoutspacer" { height=2; fl_height=0; }
@@ -134,9 +181,9 @@ crm "widget/component-decl"
 		    action=Open;
 		    PointAt=runclient(:Origin);
 		    PointSide=runclient("left");
-		    partner=runclient(:profile_cmp:p_partner_key);
+		    partner=runclient(:partner);
 		    collaborator=runclient(:collaborator_osrc:p_partner_key);
-		    partnername=runclient(:profile_cmp:partnername);
+		    partnername=runclient(:partnername);
 		    }
 
 		onEditTask "widget/connector"
@@ -189,8 +236,41 @@ crm "widget/component-decl"
 		    collaborator=runclient(:collaborator_osrc:p_partner_key);
 		    todo_id=runclient(:todo_id);
 		    }
+
+		on_EditCollab "widget/connector"
+		    {
+		    event=EditCollab;
+		    target=popover_collab;
+		    action=Open;
+		    PointAt=runclient(:origin);
+		    PointSide=runclient('top');
+		    PointOffset=runclient(64);
+		    partner=runclient(:profile_cmp:p_partner_key);
+		    partnername=runclient(:profile_cmp:partnername);
+		    collaborator=runclient(:collaborator_osrc:p_partner_key);
+		    }
+		on_TrackSelect "widget/connector"
+		    {
+		    event=TrackSelected;
+		    target=track_popover;
+		    action=Open;
+		    PointAt=runclient(:origin);
+		    PointSide=runclient('top');
+		    PointOffset=runclient(20);
+		    engagement_id=runclient(:engagement_id);
+		    partner=runclient(:profile_cmp:p_partner_key);
+		    partnername=runclient(:profile_cmp:partnername);
+		    collaborator=runclient(:collaborator_osrc:p_partner_key);
+		    }
 		}
 	    }
+	}
+
+    popover_collab "widget/component"
+	{
+	x=0; y=0; width=1000; height=600;
+	path="popover_collab.cmp";
+	on_collabchange "widget/connector" { event=CollabChanged; target=profile_cmp; action=RefreshCollab; }
 	}
 
     popover_todo "widget/component"
@@ -233,6 +313,33 @@ crm "widget/component-decl"
 	path="popover_addperson.cmp";
 	on_person_add1 "widget/connector" { event=PersonAdded; target=profile_cmp; action=Refresh; }
 	on_person_add2 "widget/connector" { event=PersonAdded; target=sidebar_cmp; action=Refresh; }
+	}
+
+    newperson_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_newperson.cmp";
+	on_newperson_add1 "widget/connector" { event=PersonAdded; target=profile_cmp; action=Refresh; }
+	on_newperson_add2 "widget/connector" { event=PersonAdded; target=sidebar_cmp; action=Refresh; }
+	}
+
+    newtrack_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_addtrack.cmp";
+	on_newtrk_add1 "widget/connector" { event=TrackAdded; target=profile_cmp; action=Refresh; }
+	on_newtrk_add2 "widget/connector" { event=TrackAdded; target=sidebar_cmp; action=Refresh; }
+	}
+
+    track_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_track.cmp";
+	on_trk_upd1 "widget/connector" { event=TrackUpdated; target=profile_cmp; action=Refresh; }
+	on_trk_upd2 "widget/connector" { event=TrackUpdated; target=sidebar_cmp; action=Refresh; }
 	}
     }
 
