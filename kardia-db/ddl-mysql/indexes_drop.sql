@@ -365,6 +365,7 @@ alter table e_data_item drop index e_dataitem_type_idx;
 
 
 /* e_highlights */
+alter table e_highlights drop index e_h_nt_idx;
 /* drop index e_highlights.e_h_pk */ 
 /* go */
 alter table e_highlights drop index e_h_prec_idx;

@@ -446,6 +446,10 @@ alter table e_highlights
 	drop primary key;
 
 
+alter table e_highlights
+	drop index e_h_nt_idx;
+
+
 alter table e_data_highlight
 	drop primary key;
 

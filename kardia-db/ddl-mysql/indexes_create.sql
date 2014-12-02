@@ -365,9 +365,10 @@ create  index e_dataitem_type_idx on e_data_item (e_data_item_type_id, e_data_it
 
 
 /* e_highlights */
-/* create  index e_h_pk on e_highlights (e_highlight_user, e_highlight_partner, e_highlight_name)*/ 
+create  index e_h_nt_idx on e_highlights (e_highlight_type, e_highlight_name, e_highlight_user, e_highlight_partner, e_highlight_id);
+/* create  index e_h_pk on e_highlights (e_highlight_user, e_highlight_partner, e_highlight_id)*/ 
 /* go */
-create  index e_h_prec_idx on e_highlights (e_highlight_user, e_highlight_partner, e_highlight_precedence, e_highlight_name);
+create  index e_h_prec_idx on e_highlights (e_highlight_user, e_highlight_partner, e_highlight_precedence, e_highlight_id);
 
 
 /* e_data_highlight */

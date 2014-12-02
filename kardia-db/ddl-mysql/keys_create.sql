@@ -182,7 +182,7 @@ alter table e_data_item
 	add constraint e_dataitem_pk primary key  (e_data_item_id);
 
 alter table e_highlights
-	add constraint e_h_pk primary key  (e_highlight_user, e_highlight_partner, e_highlight_name);
+	add constraint e_h_pk primary key  (e_highlight_user, e_highlight_partner, e_highlight_id);
 
 alter table e_data_highlight
 	add constraint e_dh_pk primary key  (e_highlight_subject, e_highlight_object_type, e_highlight_object_id);

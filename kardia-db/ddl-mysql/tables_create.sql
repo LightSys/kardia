@@ -1158,7 +1158,8 @@ create table e_data_item (
 create table e_highlights (
         e_highlight_user                      varchar(20)  not null,   /* The user that is viewing highlights. --  */
         e_highlight_partner                   char(10)  not null,      /* The partner for whom highlights are being viewed. --  */
-        e_highlight_name                      varchar(32)  not null,   /* The name of the data being displayed --  */
+        e_highlight_id                        varchar(64)  not null,   /* A unique name to identify the specific highlight. --  */
+        e_highlight_name                      varchar(64)  not null,   /* The name of the data being displayed --  */
         e_highlight_type                      varchar(20)  not null,   /* The general type of the data being displayed --  */
         e_highlight_data                      varchar(900)  not null,  /* The data to be displayed --  */
         e_highlight_reference_info            varchar(255)  null,      /* Reference info to underlying data (e.g., primary key of underlying record) --  */
