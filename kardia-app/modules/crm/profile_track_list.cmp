@@ -6,6 +6,14 @@ profile_track_list "widget/component-decl"
 
     partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
+    Refresh "widget/component-decl-action" { }
+    onRefresh "widget/connector"
+	{
+	event=Refresh;
+	target=tracklist_osrc;
+	action=Refresh;
+	}
+
     TrackSelected "widget/component-decl-event" { }
 
     tracklist_osrc "widget/osrc"

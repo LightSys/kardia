@@ -7,6 +7,8 @@ activity_list "widget/component-decl"
     icon = "/apps/kardia/images/icons/openiconic-clock.svg";
     sequence = 40;
 
+    Refresh "widget/component-decl-action" { }
+    RefreshTasks "widget/component-decl-action" { }
     PartnerSelected "widget/component-decl-event" { }
 
     refresh_timer "widget/timer"
@@ -36,7 +38,7 @@ activity_list "widget/component-decl"
 
     activity_vbox "widget/vbox"
 	{
-	x=0; y=0; width=248; height=413;
+	x=2; y=2; width=244; height=409;
 	spacing=8;
 
 	activity_data_osrc "widget/osrc"
@@ -49,6 +51,12 @@ activity_list "widget/component-decl"
 			info_1 = substring(:e:e_info, 1, charindex('\n', :e:e_info) - 1),
 			info_2 = substring(:e:e_info, charindex('\n', :e:e_info) + 1),
 			shortdate = substring(convert(string,:e:e_activity_date),1,11),
+			textdate = condition(datediff(minute,:e:e_activity_date,getdate()) = 0, 'now',
+				    condition(datediff(minute,:e:e_activity_date,getdate()) = 1, '' + 'a minute ago', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 60, '' + datediff(minute,:e:e_activity_date,getdate()) + ' minutes ago', 
+				    condition(datediff(hour,:e:e_activity_date,getdate()) = 1, 'an hour ago', 
+				    condition(datediff(hour,:e:e_activity_date,getdate()) < 24, '' + datediff(hour,:e:e_activity_date,getdate()) + ' hours ago', 
+				    substring(convert(string,:e:e_activity_date),1,17)))))),
 			img = isnull( ( select
 				    path = :d:e_current_folder + '/' + :d:e_current_filename
 				from
@@ -79,7 +87,7 @@ activity_list "widget/component-decl"
 
 	    activity_table "widget/table"
 		{
-		height=385;
+		height=381;
 		min_rowheight=16;
 		max_rowheight=64;
 		allow_selection = yes;
@@ -98,7 +106,15 @@ activity_list "widget/component-decl"
 		row2_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#6080c0", "#f8f8f8"));
 
 		t_img "widget/table-column" { fieldname="img"; width=34; type=image; image_maxwidth=26; image_maxheight=26; align=center; }
-		t_name "widget/table-column" { fieldname="info_1"; width=208; caption_fieldname=info_2; style=bold; font_size=15; wrap=yes; }
+		t_name "widget/table-column"
+		    {
+		    fieldname="info_1";
+		    width=208;
+		    caption_value=runclient(condition(char_length(:activity_data_osrc:info_2) > 1, :activity_data_osrc:info_2 + '\n', '') + :activity_data_osrc:textdate);
+		    style=bold;
+		    font_size=15;
+		    wrap=yes;
+		    }
 		}
 	    }
 
@@ -124,11 +140,11 @@ activity_list "widget/component-decl"
 		    height=20;
 		    spacing=4;
 
-		    status_lbl "widget/label" { width=64; 
+		    status_lbl "widget/label" { width=72; 
 			//value=runclient(isnull(condition(charindex(' ', :usrdat_osrc:description) > 0, substring(:usrdat_osrc:description, 1, charindex(' ', :usrdat_osrc:description) - 1), :usrdat_osrc:description) + ' is:', ''));
 			text="My Status:";
 			align=right; }
-		    status_eb "widget/editbox" { width=179; tooltip="What are you doing right now?"; fieldname=s_status; empty_description="What are you doing now?"; }
+		    status_eb "widget/editbox" { width=168; tooltip="What are you doing right now?"; fieldname=s_status; empty_description="What are you doing now?"; }
 		    }
 
 		status_who "widget/variable" { fieldname=s_username; status_who_hints "widget/hints" { default=runclient(user_name()); } }

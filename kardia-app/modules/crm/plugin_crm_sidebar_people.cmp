@@ -9,6 +9,7 @@ people_list "widget/component-decl"
 
     PartnerSelected "widget/component-decl-event" { }
 
+    RefreshTasks "widget/component-decl-action" { }
     Refresh "widget/component-decl-action" { }
     onRefresh "widget/connector"
 	{
@@ -26,11 +27,11 @@ people_list "widget/component-decl"
 	    {
 	    sql = " select
 			collaborator_id = :c:e_collaborator,
-			collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:e_collaborator),
+			collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:e_collaborator),
 			collaborator_type_id = :c:e_collab_type_id, 
 			collaborator_type = (select :e_collab_type_label from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows where :e_collab_type_id = :c:e_collab_type_id),
 			partner_id = :c:p_partner_key,
-			partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:p_partner_key),
+			partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:p_partner_key),
 			role_id = :c:e_collab_type_id,
 			role_name = :ct:e_collab_type_desc,
 			track_ids = (select sum('X' + :pe:e_track_id + 'X') from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe where :pe:p_partner_key = :c:p_partner_key and :pe:e_is_archived = 0 group by :pe:e_track_id),
@@ -45,7 +46,7 @@ people_list "widget/component-decl"
 				    :dt:e_doc_type_label = 'Profile Photo' and
 				    :d:e_doc_type_id = :dt:e_doc_type_id and
 				    :pd:e_document_id = :d:e_document_id and
-				    :pd:p_partner_key = :c:e_collaborator
+				    :pd:p_partner_key = :c:p_partner_key
 				order by
 				    :pd:s_date_modified desc
 				limit
@@ -104,7 +105,7 @@ people_list "widget/component-decl"
 			    );
 		    caption_textcolor="#9b8707";
 		    style=bold;
-		    font_size=18;
+		    font_size=15;
 		    caption_style=italic;
 		    wrap=yes;
 		    }

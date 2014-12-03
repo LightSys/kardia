@@ -51,9 +51,9 @@ profile_highlights "widget/component-decl"
 			    '/apps/kardia/modules/crm/highlights.qy?partner_key=000000&my_cclist=&my_role=&my_id=' h,
 			    object wildcard '/apps/kardia/modules/crm/plugin_crm_highlights_*.cmp' c
 			where
-			    charindex(:h:e_highlight_type, :parameters:enabled_types) > 0 and
-			    :c:type = :h:e_highlight_type and
-			    (:c:highlight_name is null or :c:highlight_name = :h:e_highlight_name)
+			    charindex(rtrim(:h:e_highlight_type), :parameters:enabled_types) > 0 and
+			    :c:type = rtrim(:h:e_highlight_type) and
+			    (:c:highlight_name is null or :c:highlight_name = rtrim(:h:e_highlight_name))
 			";
 		readahead=50;
 		replicasize=50;

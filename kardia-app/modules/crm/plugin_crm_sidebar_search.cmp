@@ -10,6 +10,8 @@ search "widget/component-decl"
     PartnerSelected "widget/component-decl-event" { }
     AdvancedSearch "widget/component-decl-event" { }
     AddPerson "widget/component-decl-event" { }
+    Refresh "widget/component-decl-action" { }
+    RefreshTasks "widget/component-decl-action" { }
 
     search_vbox "widget/vbox"
 	{
@@ -92,7 +94,7 @@ search "widget/component-decl"
 	    only_crm "widget/parameter" { type=integer; default=runclient(:search_only_crm:value); }
 	    sql = " SELECT
 			    :p:p_partner_key,
-			    nm = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			    nm = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 			    loc = isnull(:pl:p_city + ', ','') + isnull(:pl:p_state_province + ' ','') + isnull(:pl:p_postal_code, ''),
 			    in_crm_collab = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key),
 			    in_crm_collab_me = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c, /apps/kardia/data/Kardia_DB/p_staff/rows s where :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :s:p_partner_key and :s:p_kardia_login = user_name()),

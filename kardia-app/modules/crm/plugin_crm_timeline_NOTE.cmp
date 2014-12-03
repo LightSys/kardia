@@ -8,6 +8,7 @@ plugin_crm_timeline_NOTE "widget/component-decl"
 
     partner_osrc "widget/parameter" { type=object; }
     timeline_osrc "widget/parameter" { type=object; }
+    timeline_data_osrc "widget/parameter" { type=object; }
     collaborator_osrc "widget/parameter" { type=object; }
 
     timeline_notes_vbox "widget/vbox"
@@ -41,8 +42,8 @@ plugin_crm_timeline_NOTE "widget/component-decl"
 
 	    timeline_notes_form "widget/form"
 		{
-		after_save "widget/connector" { event=DataSaved; target=timeline_osrc; action=Refresh; }
-		after_delete "widget/connector" { event=DataDeleted; target=timeline_osrc; action=Refresh; }
+		after_save "widget/connector" { event=DataSaved; target=timeline_data_osrc; action=Refresh; }
+		after_delete "widget/connector" { event=DataDeleted; target=timeline_data_osrc; action=Refresh; }
 
 		tnote_subj "widget/component" { field=e_subject; path="/sys/cmp/smart_field.cmp"; height=20; text="Subject:"; ctl_type=editbox; label_width=70; }
 		tnote_notes "widget/component" { field=e_notes; path="/sys/cmp/smart_field.cmp"; height=80; text="Notes:"; ctl_type=textarea; label_width=70; }

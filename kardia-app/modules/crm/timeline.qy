@@ -72,8 +72,8 @@ timeline "system/query"
 		e_reference_info = :pr:name,
 		e_info = condition(:pr:p_partner_key == :parameters:partner_key, :prt:p_relation_type_rev_label, :prt:p_relation_type_label) + ' of ' + condition(:pr:p_partner_key == :parameters:partner_key, :prt:p_relation_type_label, :prt:p_relation_type_rev_label) + '  ' +
 		    condition(:pr:p_partner_key == :parameters:partner_key,
-			condition(char_length(:p2:p_org_name) > 1, :p2:p_org_name, isnull(condition(char_length(:p2:p_preferred_name) > 0, :p2:p_preferred_name, :p2:p_given_name) + ' ', '') + isnull(:p2:p_surname,'')),
-			condition(char_length(:p1:p_org_name) > 1, :p1:p_org_name, isnull(condition(char_length(:p1:p_preferred_name) > 0, :p1:p_preferred_name, :p1:p_given_name) + ' ', '') + isnull(:p1:p_surname,''))) +
+			condition(char_length(:p2:p_org_name) > 1, :p2:p_org_name, isnull(condition(char_length(:p2:p_preferred_name) > 1, :p2:p_preferred_name, :p2:p_given_name) + ' ', '') + isnull(:p2:p_surname,'')),
+			condition(char_length(:p1:p_org_name) > 1, :p1:p_org_name, isnull(condition(char_length(:p1:p_preferred_name) > 1, :p1:p_preferred_name, :p1:p_given_name) + ' ', '') + isnull(:p1:p_surname,''))) +
 		    isnull('\n' + :pr:p_relation_comments, ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :pr:s_created_by),
 		e_initiation = 'C',
@@ -112,7 +112,8 @@ timeline "system/query"
 	    from
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
 	    where
-		:g:p_donor_partner_id = :parameters:partner_key
+		:g:p_donor_partner_id = :parameters:partner_key and
+		:g:a_posted = 1
 	    having
 		has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1)) or
 		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1))
@@ -141,7 +142,8 @@ timeline "system/query"
 		:i:p_dn_donor_partner_id = :parameters:partner_key and
 		:cc:a_ledger_number = :i:a_ledger_number and
 		:cc:a_cost_center = :i:a_cost_center and
-		charindex(',' + :i:a_ledger_number + '|' + :i:a_cost_center + ',', ',' + :parameters:my_cclist + ',') > 0
+		charindex(',' + :i:a_ledger_number + '|' + :i:a_cost_center + ',', ',' + :parameters:my_cclist + ',') > 0 and
+		:i:a_posted = 1
 	    having
 		not has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1)) and
 		not has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1))
@@ -156,7 +158,7 @@ timeline "system/query"
 		e_activity_date = :t:s_date_created,
 		e_activity_type = 'TAG',
 		e_reference_info = '' + :t:e_tag_id,
-		e_info = :tt:e_tag_desc + ' (strength ' + convert(integer,round(:t:e_tag_strength * 100,0)) + '%, certainty ' + convert(integer,round(:t:e_tag_certainty * 100,0)) + '%)' + condition(char_length(:t:e_tag_comments) > 0, ' - ' + :t:e_tag_comments, ''),
+		e_info = :tt:e_tag_desc + ' (strength ' + convert(integer,round(:t:e_tag_strength * 100,0)) + '%, certainty ' + convert(integer,round(:t:e_tag_certainty * 100,0)) + '%)' + condition(char_length(:t:e_tag_comments) > 1, ' - ' + :t:e_tag_comments, ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :t:s_created_by),
 		e_initiation = 'C',
 		s_date_created = getdate(),
@@ -172,16 +174,16 @@ timeline "system/query"
 		:tt:e_tag_id = :t:e_tag_id
 	    ;
 
-	    -- Communications / Mailings
+	    -- Communications / Mailings - Subscriptions
 	    insert
 		/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
 		e_activity_group_id = :activitygroup:id,
 		p_partner_key = :parameters:partner_key,
-		e_activity_date = :m:s_date_created,
+		e_activity_date = isnull(:m:m_start_date, :m:s_date_created),
 		e_activity_type = 'COMM',
 		e_reference_info = :m:name,
-		e_info = 'Subscribed to \"' + :ml:m_list_description + '\"',
+		e_info = 'Subscribed to \"' + :ml:m_list_description + '\"' + isnull(' (Reason: ' + :mmr:text + ')', ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :m:s_created_by),
 		e_initiation = 'C',
 		s_date_created = getdate(),
@@ -190,12 +192,42 @@ timeline "system/query"
 		s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
-		/apps/kardia/data/Kardia_DB/m_list/rows ml
+		/apps/kardia/data/Kardia_DB/m_list/rows ml,
+		/apps/kardia/data/Kardia_DB/_m_member_reason/rows mmr
 	    where
 		:m:p_partner_key = :parameters:partner_key and
 		:ml:m_list_code = :m:m_list_code and
-		:m:m_membership_status = 'A' and
-		:ml:m_list_type = 'P'
+		(:m:m_membership_status = 'A' or :m:m_membership_status = 'C' or :m:m_membership_status = 'E') and
+		:ml:m_list_type = 'P' and
+		:mmr:tag =* :m:m_reason_member
+	    ;
+
+	    -- Communications / Mailings - Unsubscribe/Expire/Cancel
+	    insert
+		/apps/kardia/data/Kardia_DB/e_activity/rows
+	    select
+		e_activity_group_id = :activitygroup:id,
+		p_partner_key = :parameters:partner_key,
+		e_activity_date = isnull(:m:m_cancel_date, :m:s_date_modified),
+		e_activity_type = 'COMM',
+		e_reference_info = :m:name + '|U',
+		e_info = 'Unsubscribed from \"' + :ml:m_list_description + '\"' + condition(:m:m_membership_status = 'C', ' - Canceled' + isnull(' due to ' + :mcr:text, ''), ''),
+		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :m:s_modified_by),
+		e_initiation = 'C',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+		/apps/kardia/data/Kardia_DB/m_list/rows ml,
+		/apps/kardia/data/Kardia_DB/_m_cancel_reason/rows mcr
+	    where
+		:m:p_partner_key = :parameters:partner_key and
+		:ml:m_list_code = :m:m_list_code and
+		(:m:m_membership_status = 'C' or :m:m_membership_status = 'E') and
+		:ml:m_list_type = 'P' and
+		:mcr:tag =* :m:m_reason_cancel
 	    ;
 
 	    -- Communications / Mailings -- specific Issues of a Mailing
@@ -263,7 +295,7 @@ timeline "system/query"
 		e_activity_date = :ch:e_contact_date,
 		e_activity_type = 'NOTE',
 		e_reference_info = '' + :ch:e_contact_history_id,
-		e_info = :ct:e_description + ': ' + :ch:e_subject + '\n' + :ch:e_notes,
+		e_info = :ct:e_description + ': ' + isnull(:ch:e_subject + '\n', '') + isnull(:ch:e_notes, ''),
 		e_whom = :ch:e_whom,
 		e_initiation = :ch:e_initiation,
 		s_date_created = getdate(),
@@ -370,7 +402,7 @@ timeline "system/query"
 		e_activity_date = :pe:e_start_date,
 		e_activity_type = 'TRK',
 		e_reference_info = :pe:p_partner_key + '|' + :pe:e_engagement_id + '|' + :pe:e_hist_id,
-		e_info = 'Began engagement track \"' + :et:e_track_name + '\", step \"' + :es:e_step_name + '\"' + condition(char_length(:pe:e_desc) > 0, ': ' + :pe:e_desc + '', ''),
+		e_info = 'Began engagement track \"' + :et:e_track_name + '\", step \"' + :es:e_step_name + '\"' + condition(char_length(:pe:e_desc) > 1, ': ' + :pe:e_desc + '', ''),
 		e_whom = :pe:e_started_by,
 		e_initiation = 'C',
 		s_date_created = getdate(),

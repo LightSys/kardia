@@ -42,6 +42,7 @@ partner_profile "widget/component-decl"
     on_Refresh1 "widget/connector" { event=Refresh; target=profile_info; action=Refresh; }
     on_Refresh2 "widget/connector" { event=Refresh; target=profile_timeline; action=Refresh; }
     on_Refresh3 "widget/connector" { event=Refresh; target=profile_highlights; action=Refresh; }
+    on_Refresh4 "widget/connector" { event=Refresh; target=profile_tracks; action=Refresh; }
     on_RefreshCollab "widget/connector" { event=RefreshCollab; target=collab_info; action=Refresh; }
 
     profile_tab "widget/tab"
@@ -86,7 +87,7 @@ partner_profile "widget/component-decl"
 
 		sql = "	select
 			    :p:p_partner_key,
-			    partnername = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			    partnername = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 			    :p:p_surname,
 			    :p:p_given_name,
 			    :p:p_org_name,
@@ -109,7 +110,7 @@ partner_profile "widget/component-decl"
 		replicasize = 2;
 		readahead = 2;
 
-		load_tracks "widget/connector" { event=EndQuery; target=profile_tracks; action=Instantiate; partner_key=runclient(:profile_osrc:p_partner_key); }
+		//load_tracks "widget/connector" { event=EndQuery; target=profile_tracks; action=Instantiate; partner_key=runclient(:profile_osrc:p_partner_key); }
 
 		profile_vbox "widget/vbox"
 		    {
