@@ -24,8 +24,8 @@ index "widget/page"
     // from the menu.
     //
     title = "Kardia CRM - Structured Engagement";
-    width = 1000;
-    height = 600;
+    width = 1200;
+    height = 700;
     max_requests = 6;
 
     // This is the template to use -- it is much like a CSS stylesheet,
@@ -53,8 +53,9 @@ index "widget/page"
     crm "widget/component"
 	{
 	x=0; y=0;
-	width=1000; height=600;
+	width=1200; height=700;
 	path="crm.cmp";
+	us = crm;
 	}
     }
 
