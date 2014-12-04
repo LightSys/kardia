@@ -15,24 +15,29 @@ timeline_svg "system/report"
     //partner "report/parameter" { type=string; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; default=""; }
     //cclist "report/parameter" { type=string; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:-"; default=""; }
     id "report/parameter" { type=integer; }
+    image_width "report/parameter" { type=double; default=450.0; }
+    timeline_width "report/parameter" { type=double; default=430.0; }
+    timeline_start "report/parameter" { type=double; default=439.0; }
 
     // First and last dates for events
     first_last_qy "report/query"
 	{
-	sql = runserver("select first_date=min(:e_activity_date), last_date=max(:e_activity_date) from /apps/kardia/data/Kardia_DB/e_activity/rows where :e_activity_group_id = :this:id");
+	sql = runserver("select first_date=min(:e_activity_date), last_date=dateadd(year,1,max(:e_activity_date)) from /apps/kardia/data/Kardia_DB/e_activity/rows where :e_activity_group_id = :this:id");
+   // We add a year here because we want to be able to see UP TO the next year.
 	}
 
     // Optimum date block interval
     interval_qy "report/query"
 	{
-	sql = "select range = datediff(year,:first_last_qy:first_date,getdate()) + 1, interval = condition((datediff(year,:first_last_qy:first_date,getdate()) + 1) / 10 > 0, (datediff(year,:first_last_qy:first_date,getdate()) + 1) / 9, 1)";
+	sql = "select range = datediff(year,:first_last_qy:first_date,:first_last_qy:last_date), interval = condition((datediff(year,:first_last_qy:first_date,:first_last_qy:last_date) + 1) / 10 > 0, (datediff(year,:first_last_qy:first_date,:first_last_qy:last_date) + 1) / 9, 1)";
 	}
 
     // Date bars
     datebar_qy "report/query"
 	{
 	// A dummy source just to nab N records
-	sql = runserver("select :name from /apps/kardia/modules/base limit " + :interval_qy:range);
+	sql = runserver("select :name from /apps/kardia/modules/base limit " + (:interval_qy:range + 1));
+	// Range is plus 1 because we're plotting an extra year.
 	}
 
     main_form "report/form"
@@ -49,7 +54,7 @@ timeline_svg "system/report"
 	datebars_begin "report/area"
 	    {
 	    width=255; height=0;
-	    value=runserver('<g stroke="rgb(224,224,224)" shape-rendering="crispEdges">\n');
+	    value=runserver('<g stroke="rgb(0,0,0)" shape-rendering="crispEdges">\n');
 	    //value=runserver('<g stroke="rgb(224,224,224)">\n');
 	    }
 
@@ -60,7 +65,7 @@ timeline_svg "system/report"
 	    one_datebar "report/area"
 		{
 		width=255; height=0;
-		value=runserver('<line x1="' + (449 - :datebar_qy:cx__rowid * (450 / :interval_qy:range)) + 'px" y1="0" x2="' + (449 - :datebar_qy:cx__rowid * (450 / :interval_qy:range)) + 'px" y2="31px" stroke-width="1px"' +  condition(((:datebar_qy:cx__rowid) / :interval_qy:interval) * :interval_qy:interval == :datebar_qy:cx__rowid, '', ' stroke-dasharray="1,3"') + '/>\n');
+		value=runserver('<line x1="' + (:this:timeline_start - ((1.0 * :datebar_qy:cx__rowid) * (:this:timeline_width / :interval_qy:range))) + 'px" y1="0" x2="' + (:this:timeline_start - ((1.0 * :datebar_qy:cx__rowid) * (:this:timeline_width / :interval_qy:range))) + 'px" y2="22px" stroke-width="1px"' +  condition(((:datebar_qy:cx__rowid) / :interval_qy:interval) * :interval_qy:interval == :datebar_qy:cx__rowid, '', ' stroke-dasharray="1,3"') + '/>\n');
 		}
 	    }
 
@@ -80,7 +85,7 @@ timeline_svg "system/report"
 		{
 		width=255; height=0;
 		condition=runserver(((:datebar_qy:cx__rowid) / :interval_qy:interval) * :interval_qy:interval == :datebar_qy:cx__rowid);
-		value=runserver('<text x="' + (449 - :datebar_qy:cx__rowid * (450 / :interval_qy:range) + 2) + 'px" y="31px" font-family="Arial,Helvetica,Sans-serif" font-size="9">' + (datepart(year,getdate()) - :datebar_qy:cx__rowid) + '</text>\n');
+		value=runserver('<text x="' + ((:this:timeline_start) - ((1.0 * :datebar_qy:cx__rowid) * (:this:timeline_width / :interval_qy:range)) - 10) + 'px" y="31px" font-family="Arial,Helvetica,Sans-serif" font-size="9">' + (datepart(year,:first_last_qy:last_date) - :datebar_qy:cx__rowid) + '</text>\n');
 		}
 	    }
 
