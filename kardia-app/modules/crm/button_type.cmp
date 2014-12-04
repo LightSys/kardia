@@ -1,7 +1,7 @@
 $Version=2$
 button_type "widget/component-decl"
     {
-    width=48; height=74;
+    width=48; height=76;
 
     image "widget/parameter" { type=string; }
     text "widget/parameter" { type=string; }
@@ -76,14 +76,14 @@ button_type "widget/component-decl"
     pane "widget/pane"
 	{
 	x=0; y=0;
-	width=48; height=74;
+	width=48; height=76;
 	style=flat;
 	background=runserver(condition(charindex(:this:type,:this:init_enabled_types) > 0, "/apps/kardia/images/bg/lsblue_gradient.png",null));
 
 	vbox "widget/vbox"
 	    {
 	    x=0; y=10;
-	    width=48; height=60;
+	    width=48; height=66;
 	    spacing=0;
 
 	    btn "widget/textbutton"
@@ -102,7 +102,7 @@ button_type "widget/component-decl"
 
 	    check_pane "widget/pane"
 		{
-		height=12;
+		height=16;
 		style=flat;
 
 		onMouseDown1 "widget/connector" { event=MouseDown; target=all_timer; action=SetTimer; Time=500; AutoReset=1; }

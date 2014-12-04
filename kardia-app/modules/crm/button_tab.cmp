@@ -1,7 +1,7 @@
 $Version=2$
 button_tab "widget/component-decl"
     {
-    width=48; height=74;
+    width=48; height=76;
 
     image "widget/parameter" { type=string; }
     text "widget/parameter" { type=string; deploy_to_client=yes; }
@@ -71,7 +71,7 @@ button_tab "widget/component-decl"
     pane "widget/pane"
 	{
 	x=0; y=0;
-	width=48; height=74;
+	width=48; height=76;
 	style=flat;
 	background=runserver(condition(:this:active,"/apps/kardia/images/bg/lsblue_gradient.png",null));
 

@@ -2,7 +2,7 @@ $Version=2$
 iconbar "widget/component-decl"
     {
     width=1000;
-    height=74;
+    height=76;
 
     SidebarSelect "widget/component-decl-event" { }
     TypesChange "widget/component-decl-event" { }
@@ -86,13 +86,13 @@ iconbar "widget/component-decl"
     // Menubar
     menu_pane "widget/pane"
 	{
-	x=0; y=0; width=1000; height=74;
+	x=0; y=0; width=1000; height=76;
 	fl_height=0;
 	widget_class = crm_iconbar;
 
 	icons_hbox "widget/hbox"
 	    {
-	    x=8; y=0; width=984; height=74;
+	    x=8; y=0; width=984; height=76;
 	    spacing=0;
 	    justify=all;
 

@@ -45,7 +45,7 @@ crm "widget/component-decl"
 	//
 	iconbar "widget/component"
 	    {
-	    height=74;
+	    height=76;
 	    fl_height=0;
 	    path = "iconbar.cmp";
 	    EnabledTypes="REL,TAG,GIFT,COMM,CONT,TASK,NOTE,DATA,FILE,TRK,PAR,ADDR";
@@ -155,7 +155,7 @@ crm "widget/component-decl"
 	list_profile_hbox "widget/hbox"
 	    {
 	    x=10;
-	    width=980; height=502;
+	    width=980; height=500;
 
 	    // The spacing between child objects of this hbox.
 	    //
