@@ -33,7 +33,7 @@ search "widget/component-decl"
 		enter_pressed_do_search "widget/connector"
 		    {
 		    event=BeforeKeyPress;
-		    event_condition=runclient(:Name == 'enter');
+		    event_condition=runclient(:Name == 'enter' and char_length(:search_edit:content) > 2);
 		    event_cancel=runclient(:Name == 'enter');
 		    target=search_osrc;
 		    action=QueryText;
@@ -56,6 +56,7 @@ search "widget/component-decl"
 		btn_do_search "widget/connector"
 		    {
 		    event=Click;
+		    event_condition=runclient(char_length(:search_edit:content) > 2);
 		    target=search_osrc;
 		    action=QueryText;
 		    cx__case_insensitive = 1;
@@ -79,7 +80,7 @@ search "widget/component-decl"
 	    redo_search_on_change "widget/connector"
 		{
 		event=DataChange;
-		event_condition=runclient(char_length(:search_edit:content) > 0);
+		event_condition=runclient(char_length(:search_edit:content) > 2);
 		target=search_osrc;
 		action=QueryText;
 		cx__case_insensitive = 1;
@@ -120,8 +121,12 @@ search "widget/component-decl"
 			    /apps/kardia/data/Kardia_DB/p_location/rows pl
 		    WHERE
 			    :p:p_partner_key *= :pl:p_partner_key and
+			    :pl:p_revision_id = 0 and
+			    :pl:p_record_status_code = 'A' and
 			    :p:p_record_status_code = 'A' and
 			    :p:p_status_code = 'A'
+		    GROUP BY
+			    :p:p_partner_key
 		    HAVING
 			    (not :parameters:only_crm) or
 			    :in_crm_collab > 0 or
