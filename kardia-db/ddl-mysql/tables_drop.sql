@@ -239,6 +239,10 @@ drop table e_highlights;
 drop table e_data_highlight;
 
 
+/* e_seen */
+drop table e_seen;
+
+
 /* r_group */
 drop table r_group;
 

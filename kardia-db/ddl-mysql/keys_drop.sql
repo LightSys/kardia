@@ -454,6 +454,10 @@ alter table e_data_highlight
 	drop primary key;
 
 
+alter table e_seen
+	drop primary key;
+
+
 alter table r_group
 	drop primary key;
 

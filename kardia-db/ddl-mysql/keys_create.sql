@@ -187,6 +187,9 @@ alter table e_highlights
 alter table e_data_highlight
 	add constraint e_dh_pk primary key  (e_highlight_subject, e_highlight_object_type, e_highlight_object_id);
 
+alter table e_seen
+	add constraint e_seen_pk primary key  (e_object_type,e_object_id,e_whom);
+
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);
 

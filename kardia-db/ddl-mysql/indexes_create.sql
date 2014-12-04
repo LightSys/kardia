@@ -377,6 +377,11 @@ create  index e_dh_obj_idx on e_data_highlight (e_highlight_object_type, e_highl
 /* go */
 
 
+/* e_seen */
+/* create  index e_seen_pk on e_seen (e_object_type,e_object_id,e_whom)*/ 
+/* go */
+
+
 /* r_group */
 create  index r_grp_modfile_idx on r_group (r_group_module, r_group_file, r_group_name);
 /* create  index r_grp_pk on r_group (r_group_name)*/ 

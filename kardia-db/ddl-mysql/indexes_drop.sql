@@ -377,6 +377,11 @@ alter table e_data_highlight drop index e_dh_obj_idx;
 /* go */
 
 
+/* e_seen */
+/* drop index e_seen.e_seen_pk */ 
+/* go */
+
+
 /* r_group */
 alter table r_group drop index r_grp_modfile_idx;
 /* drop index r_group.r_grp_pk */ 

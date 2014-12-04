@@ -1191,6 +1191,21 @@ create table e_data_highlight (
 );
 
 
+/* e_seen */
+
+create table e_seen (
+        e_object_type                         varchar(32)  not null,   /* The type of object that has been viewed --  */
+        e_object_id                           varchar(32)  not null,   /* A unique ID identifying the object viewed --  */
+        e_whom                                char(10)  not null,      /* The collaborator who saw the object --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* r_group */
 
 create table r_group (
