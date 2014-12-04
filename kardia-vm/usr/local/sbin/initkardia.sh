@@ -183,8 +183,10 @@ function cleanUsers
 	echo "Removing any Kardia Users"
 	for USERNAME in $(grep -- '- Kardia:' /etc/passwd | sed 's/^\([^:]*\):[^:]*:\([^:]*\):.*/\1/'); do
 		killall -u $USERNAME
-		echo "  removing Kardia user $USERNAME"
+		echo "  removing Kardia user $USERNAME from linux"
 		userdel -r $USERNAME
+		echo "  removing Kardia user $USERNAME from samba"
+		pdbedit -u $USERNAMR -x
 		echo "  removing mysql user $USERNAME"
 		mysql -e "DROP USER $USERNAME@'localhost';" 2> /dev/null
 		mysql -e "DROP USER $USERNAME@'%';" 2> /dev/null
