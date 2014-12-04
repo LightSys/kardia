@@ -17,6 +17,9 @@ iconbar "widget/component-decl"
     prev_enabled_types "widget/variable" { value=""; }
     processing_toggle_off "widget/variable" { value=0; }
 
+    SetNumber "widget/component-decl-action" { }
+    onSetNumber "widget/connector" { event=SetNumber; target=one_tabbutton; action=SetNumber; Number=runclient(:Number); Which=runclient(:Which); Color=runclient(:Color); }
+
     DisableTabButtons "widget/component-decl-action" { }
 
     types_change_event "widget/connector"

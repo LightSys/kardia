@@ -39,6 +39,7 @@ profile_highlights "widget/component-decl"
 		enabled_types "widget/parameter" { type=string; default=runclient(:iconbar:EnabledTypes); }
 
 		sql = " select
+			    name = :h:e_highlight_id,
 			    detail_height = :c:height,
 			    :h:e_highlight_name,
 			    :h:e_highlight_type,

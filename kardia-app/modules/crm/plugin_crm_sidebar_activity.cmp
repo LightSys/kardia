@@ -32,7 +32,8 @@ activity_list "widget/component-decl"
 	readahead=2;
 	indicates_activity=no;
 
-	on_endquery "widget/connector" { event=EndQuery; target=activity_data_osrc; action=QueryParam; e_activity_group_id=runclient(:activity_osrc:activity_group_id); }
+	//on_endquery "widget/connector" { event=EndQuery; target=activity_data_osrc; action=QueryParam; e_activity_group_id=runclient(:activity_osrc:activity_group_id); }
+	on_endquery "widget/connector" { event=EndQuery; target=activity_data_osrc; action=Refresh; }
 	on_endquery_start_timer "widget/connector" { event=EndQuery; target=refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
 	}
 
@@ -43,7 +44,9 @@ activity_list "widget/component-decl"
 
 	activity_data_osrc "widget/osrc"
 	    {
+	    activity_id "widget/parameter" { type=integer; default=runclient(:activity_osrc:activity_group_id); }
 	    sql = " select
+			name = :e:e_reference_info,
 			:e:e_activity_date,
 			:e:e_activity_type,
 			:e:e_reference_info,
@@ -54,9 +57,14 @@ activity_list "widget/component-decl"
 			textdate = condition(datediff(minute,:e:e_activity_date,getdate()) = 0, 'now',
 				    condition(datediff(minute,:e:e_activity_date,getdate()) = 1, '' + 'a minute ago', 
 				    condition(datediff(minute,:e:e_activity_date,getdate()) < 60, '' + datediff(minute,:e:e_activity_date,getdate()) + ' minutes ago', 
-				    condition(datediff(hour,:e:e_activity_date,getdate()) = 1, 'an hour ago', 
-				    condition(datediff(hour,:e:e_activity_date,getdate()) < 24, '' + datediff(hour,:e:e_activity_date,getdate()) + ' hours ago', 
-				    substring(convert(string,:e:e_activity_date),1,17)))))),
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 120, 'an hour ago', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 720, '' + (datediff(minute,:e:e_activity_date,getdate()) / 60) + ' hours ago', 
+				    condition(datediff(day,:e:e_activity_date,getdate()) = 1, 'yesterday', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 1440, '' + (datediff(minute,:e:e_activity_date,getdate()) / 60) + ' hours ago', 
+				    condition(datediff(day,:e:e_activity_date,getdate()) < 7, '' + datediff(day,:e:e_activity_date,getdate()) + ' days ago', 
+
+				    substring(convert(string,:e:e_activity_date),1,11)
+				    )))))))),
 			img = isnull( ( select
 				    path = :d:e_current_folder + '/' + :d:e_current_filename
 				from
@@ -78,7 +86,8 @@ activity_list "widget/component-decl"
 		    order by
 			:e:e_activity_date desc
 		    where
-			:e:e_activity_type != 'HEAD'
+			:e:e_activity_type != 'HEAD' and
+			:e:e_activity_group_id = :parameters:activity_id
 		    ";
 	    autoquery=never;
 	    readahead=50;

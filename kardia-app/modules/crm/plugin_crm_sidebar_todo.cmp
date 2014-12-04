@@ -7,8 +7,11 @@ todo_list "widget/component-decl"
     icon = "/apps/kardia/images/icons/openiconic-task.svg";
     sequence = 20;
 
+    collaborator_osrc "widget/parameter" { type=object; }
+
     PartnerSelected "widget/component-decl-event" { }
     EditTask "widget/component-decl-event" { }
+    SetNumber "widget/component-decl-event" { }
 
     Refresh "widget/component-decl-action" { }
     RefreshTasks "widget/component-decl-action" { }
@@ -17,6 +20,46 @@ todo_list "widget/component-decl"
 	event=RefreshTasks;
 	target=todo_osrc;
 	action=Refresh;
+	}
+
+    task_refresh_timer "widget/timer"
+	{
+	auto_start=0;
+	auto_reset=1;
+	msec=30000;
+
+	on_refresh "widget/connector" { event=Expire; target=todo_osrc; action=Refresh; }
+	}
+
+    task_stats_osrc "widget/osrc"
+	{
+	sql = "	select
+		    incomplete_cnt = count(condition(:t:e_todo_status = 'I', 1, null)),
+		    incomplete_today_cnt = count(condition(:t:e_todo_status = 'I' and datediff('day',getdate(),:t:e_todo_due_date) = 0, 1, null)),
+		    incomplete_overdue_cnt = count(condition(:t:e_todo_status = 'I' and datediff('day',getdate(),:t:e_todo_due_date) < 0, 1, null)),
+		    complete_today_cnt = count(condition(:t:e_todo_status = 'C' and datediff('day',getdate(),:t:e_todo_completion_date) = 0, 1, null)),
+		    min_days_til_due = min(condition(:t:e_todo_status = 'I', datediff(day, getdate(), :t:e_todo_due_date), null))
+		from
+		    identity /apps/kardia/data/Kardia_DB/e_todo/rows t
+		where
+		    (:t:e_todo_status = 'I' or
+		     dateadd(day, 1, isnull(:t:e_todo_canceled_date, :t:e_todo_completion_date)) > getdate())
+		";
+	replicasize=2;
+	readahead=2;
+	indicates_activity=no;
+
+	set_cnt_on_load "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=todo_list;
+	    action=SetNumber;
+	    Which=runclient("Tasks");
+	    Number=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0 or :task_stats_osrc:incomplete_today_cnt > 0 or :task_stats_osrc:complete_today_cnt = 0, :task_stats_osrc:incomplete_cnt, '+' + :task_stats_osrc:complete_today_cnt));
+	    Color=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0, 'red', condition(:task_stats_osrc:incomplete_today_cnt > 0, '#800000',condition(:task_stats_osrc:complete_today_cnt > 0, '#00c000', 'black'))));
+	    }
+
+	on_endquery_start_timer "widget/connector" { event=EndQuery; target=task_refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
 	}
 
     todo_osrc "widget/osrc"
@@ -45,13 +88,10 @@ todo_list "widget/component-decl"
 		    :t:s_date_modified,
 		    :t:s_modified_by
 		from
-		    /apps/kardia/data/Kardia_DB/p_staff/rows s,
 		    identity /apps/kardia/data/Kardia_DB/e_todo/rows t,
 		    /apps/kardia/data/Kardia_DB/e_todo_type/rows tt,
 		    /apps/kardia/data/Kardia_DB/p_partner/rows p
 		where
-		    :s:p_kardia_login = user_name() and 
-		    :t:e_todo_collaborator = :s:p_partner_key and
 		    (:t:e_todo_status = 'I' or
 		     dateadd(day, 1, isnull(:t:e_todo_canceled_date, :t:e_todo_completion_date)) > getdate()) and
 		    :tt:e_todo_type_id = :t:e_todo_type_id and
@@ -61,7 +101,32 @@ todo_list "widget/component-decl"
 		";
 	readahead=50;
 	replicasize=50;
-	
+	indicates_activity=no;
+
+	collab_link "widget/rule"
+	    {
+	    ruletype = osrc_relationship;
+	    target=collaborator_osrc;
+	    key_1=e_todo_collaborator;
+	    target_key_1=p_partner_key;
+	    key_objname=t;
+	    }
+
+	stats_link "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=task_stats_osrc;
+	    action=QueryParam;
+	    e_todo_collaborator=runclient(:todo_osrc:e_todo_collaborator);
+	    }
+	stats_link2 "widget/connector"
+	    {
+	    event=Modified;
+	    target=task_stats_osrc;
+	    action=QueryParam;
+	    e_todo_collaborator=runclient(:todo_osrc:e_todo_collaborator);
+	    }
+
 	todo_table "widget/table"
 	    {
 	    x=0; y=0; width=248; height=417;
@@ -177,7 +242,7 @@ todo_list "widget/component-decl"
 		font_size=12;
 
 		// Caption
-		caption_value=runclient(condition(:todo_osrc:days_til_due < 0 and :todo_osrc:e_todo_status == 'I', 'PAST DUE: ',condition(:todo_osrc:days_til_due == 0 and :todo_osrc:e_todo_status == 'I', 'DUE: ', '')) + :todo_osrc:e_todo_desc);
+		caption_value=runclient(condition(:todo_osrc:days_til_due < 0 and :todo_osrc:e_todo_status == 'I', 'PAST DUE: ',condition(:todo_osrc:days_til_due == 0 and :todo_osrc:e_todo_status == 'I', 'DUE: ', '')) + :todo_osrc:e_todo_desc + condition(char_length(:todo_osrc:e_todo_comments) > 1, '\n' + :todo_osrc:e_todo_comments, ''));
 		caption_textcolor=runclient(condition(:todo_osrc:days_til_due < 0 and :todo_osrc:e_todo_status == 'I', '#ff0000',condition(:todo_osrc:days_til_due == 0 and :todo_osrc:e_todo_status == 'I', '#a00000', '#9b8707')));
 		caption_style=italic;
 		}

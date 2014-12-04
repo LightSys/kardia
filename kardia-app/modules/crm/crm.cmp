@@ -167,6 +167,16 @@ crm "widget/component-decl"
 		path = "sidebar.cmp";
 		collaborator_osrc = collaborator_osrc;
 
+		onSetNumber "widget/connector"
+		    {
+		    event=SetNumber;
+		    target=iconbar;
+		    action=SetNumber;
+		    Number=runclient(:Number);
+		    Which=runclient(:Which);
+		    Color=runclient(:Color);
+		    }
+
 		onPartnerSelect "widget/connector"
 		    {
 		    event=PartnerSelected;

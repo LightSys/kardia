@@ -12,6 +12,7 @@ sidebar "widget/component-decl"
     AdvancedSearch "widget/component-decl-event" { }
     AddPerson "widget/component-decl-event" { }
     EditTask "widget/component-decl-event" { }
+    SetNumber "widget/component-decl-event" { }
 
     // Refresh partners
     Refresh "widget/component-decl-action" { }
@@ -118,6 +119,16 @@ sidebar "widget/component-decl"
 				origin=runclient(:origin);
 				todo_id=runclient(:todo_id);
 				partner=runclient(:partner);
+				}
+
+			    on_setnumber "widget/connector"
+				{
+				event=SetNumber;
+				target=sidebar;
+				action=SetNumber;
+				Number=runclient(:Number);
+				Which=runclient(:Which);
+				Color=runclient(:Color);
 				}
 			    }
 			}

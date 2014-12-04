@@ -119,7 +119,8 @@ search "widget/component-decl"
 			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
 			    /apps/kardia/data/Kardia_DB/p_location/rows pl
 		    WHERE
-			    :p:p_partner_key *= :pl:p_partner_key
+			    :p:p_partner_key *= :pl:p_partner_key and
+			    :p:p_record_status_code = 'A'
 		    HAVING
 			    (not :parameters:only_crm) or
 			    :in_crm_collab > 0 or
