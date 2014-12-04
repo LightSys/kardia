@@ -316,8 +316,11 @@ function manageUser
 		sleep 1
 		return 1
 	    fi
+	    echo "useradd"
 	    /usr/sbin/useradd -c "$N_REALNAME - Kardia" "$N_USER"
+	    echo "smbpasswd"
 	    smbpasswd -a -n "$N_USER"
+	    echo "smbpasswd done"
 	    if [ ! -f "/home/$N_USER/.ssh/known_hosts" ]; then
 		mkdir "/home/$N_USER/.ssh"
 		/bin/chown "$N_USER". "/home/$N_USER/.ssh"
@@ -332,12 +335,14 @@ function manageUser
 	    echo "Setting an initial password for $N_USER..."
 	    echo ""
 	    mysql -e "CREATE USER '$N_USER'@'%' IDENTIFIED BY 'newuserpass';"
-	    mysql -e "CREATE USER '$N_USER'@'localhost IDENTIFIED BY 'newuserpass';"
+	    mysql -e "CREATE USER '$N_USER'@'localhost' IDENTIFIED BY 'newuserpass';"
 	    mysql -e "GRANT ALL ON Kardia_DB.* TO '$N_USER'@'%';"
 	    mysql -e "GRANT ALL ON Kardia_DB.* TO '$N_USER'@'localhost';"
 	    mysql -e "GRANT SELECT ON mysql.user TO '$N_USER'@'%';"
 	    mysql -e "GRANT SELECT ON mysql.user TO '$N_USER'@'localhost';"
 	    mysql -e "FLUSH PRIVILEGES;"
+
+	    echo "prompting for password" 
 
 	    /usr/bin/passwd "$N_USER" < /dev/tty
 
