@@ -247,6 +247,73 @@ function updateFirewall
     sleep 0.5
     }
 
+function genCertificate
+    {
+    lookupStatus
+    cd $CXETC
+    #Generate a passphrase
+    export PASSPHRASE=$(head -c 500 /dev/urandom | tr -dc a-z0-9A-Z | head -c 60; echo)
+    # Certificate details; replace items in angle brackets with your own info
+    subj="
+    C=LS
+    ST=LightSys
+    O=LightSys
+    localityName=LightSys
+    commonName=$IPADDR
+    organizationalUnitName=
+    emailAddress=root@$HOST
+    "
+    echo "generating the private key"
+    # Generate the server private key
+    openssl genrsa -des3 -out centrallix.key -passout env:PASSPHRASE 2048
+     
+    echo "generating the CSR"
+    # Generate the CSR
+    openssl req \
+    -new \
+    -batch \
+    -subj "$(echo -n "$subj" | tr "\n" "/" | sed 's/ *//g')" \
+    -key centrallix.key \
+    -out centrallix.csr \
+    -passin env:PASSPHRASE
+    cp centrallix.key centrallix.key.org
+
+    echo "Stripping the password"
+    # Strip the password so we don't have to type it every time we restart Apache
+    openssl rsa -in centrallix.key.org -out centrallix.key -passin env:PASSPHRASE
+
+    echo "Generating the cert" 
+    # Generate the cert (good for 10 years)
+    openssl x509 -req -days 3650 -in centrallix.csr -signkey centrallix.key -out centrallix.crt
+    }
+
+function checkCert
+    {
+    lookupStatus
+    todo=0
+    certfile=$CXETC/centrallix.crt
+    keyfile=$CXETC/centrallix.key
+    sed -i'' "s#ssl_key =.*#ssl_key = \"$certfile\";#;s#ssl_crt =.*#ssl_crt = \"$certfile\";#" $CXCONF
+    if [ ! -d $CXETC ]; then
+	mkdir -p $CXETC
+    fi
+    if [ ! -f $keyfile ]; then
+	echo "No SSL key found. Generating one"
+	todo=1
+    elif [ ! -f $certfile ]; then
+	echo "No SSL certificate found. Generating one"
+	todo=1
+    else
+	certip=$(openssl x509 -in $certfile -subject -noout | sed 's/.*CN=\([^\/]*\).*/\1/')
+	if [ "$certip" != "$IPADDR" ]; then
+	    echo "SSL Certificate IP mismatch.  re-generating certificate"
+	    todo=1
+	fi
+    fi
+    if [ "$todo" = "1" ]; then
+	genCertificate
+    fi
+    }
 
 # Manage or add a user
 function manageUser
@@ -1530,10 +1597,12 @@ function lookupStatus
     fi
     if [ "$DEVMODE" = "root" ]; then
 	CXCONF=/usr/local/etc/centrallix.conf
+	CXETC=/usr/local/etc/centrallix
 	CXBIN=/usr/local/sbin/centrallix
 	CXLOG=/var/log/centrallix-screen.log
     else
 	CXCONF="/home/$USER/cxinst/etc/centrallix.conf"
+	CXETC="/home/$USER/cxinst/etc/centrallix"
 	CXBIN="/home/$USER/cxinst/sbin/centrallix"
 	CXLOG="/home/$USER/centrallix-screen.log"
     fi
@@ -1750,6 +1819,8 @@ function cxStart
     lookupStatus
 
     startStopNotSane && return 1
+
+    checkCert #rebuild the SSL certificate if needed
 
     case "$RUNMODE" in
 	service)
@@ -2255,6 +2326,7 @@ function menuDevel
 	DSTR="dialog --backtitle '$TITLE' --title 'Development Tools' --menu 'Development Tool Options (Workflow:$WKFMODE / Dev:$DEVMODE / Run:$RUNMODE)' 19 72 14"
 	DSTR="$DSTR Build '(Re)Compile Centrallix and Centrallix-Lib'"
 	DSTR="$DSTR DBBuild '(Re)Build the Kardia Database'"
+	DSTR="$DSTR Cert 'Check the SSL certificate and rebuild if needed'"
 	if [ "$USER" != root -o "$WKFMODE" = shared ]; then
 	    DSTR="$DSTR Status 'Repository Modification Status'"
 	else
@@ -2292,6 +2364,19 @@ function menuDevel
 		;;
 	    Commit)
 		commitAndPush
+		;;
+	    Cert)
+		#Do we stop and start centrallix?
+	        AUTORESTART=no
+	        if [ "$CXRUNNING" != "" ]; then
+		     AUTORESTART=yes
+		     cxStop
+	        fi
+		checkCert
+		# Auto restart?
+		if [ "$AUTORESTART" = yes ]; then
+		    cxStart
+		fi
 		;;
 	    Status)
 		if [ "$WKFMODE" = shared -o "$USER" = root ]; then
@@ -2538,14 +2623,18 @@ function doSystemUpdate
 		chmod 755 /usr/local/bin/kardia.sh
 		chown root.root /usr/local/bin/kardia.sh
 		cd "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/"
-		for UPFILE in /vmupgrade*.sh; do
+		(
+		for UPFILE in ./vmupgrade*.sh; do
 		    if [ ! -f /usr/local/sbin/"$UPFILE" ]; then
-			/bin/cp "$UPFILE" /usr/local/sbin/"$UPFILE"
-			chmod 755 "$UPFILE"
-			chown root.root "$UPFILE"
-			/usr/local/sbin/"$UPFILE"
+			if [ -f "$UPFILE" ]; then
+			    /bin/cp "$UPFILE" /usr/local/sbin/"$UPFILE"
+			    chmod 755 "$UPFILE"
+			    chown root.root "$UPFILE"
+			    /usr/local/sbin/"$UPFILE"
+			fi
 		    fi
 		done
+		) 2> /dev/null #the above gives errors if no vmupgrade files exist
 		echo "Successfully updated menu system.  Press [ENTER] to continue..."
 		read ANS
 		exec /usr/local/bin/kardia.sh
