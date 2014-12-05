@@ -140,7 +140,7 @@ function cleanSSH
 # Clean up the contents of history and other files
 function cleanFiles
 {
-    cxfiles="/usr/local/sbin/centrallix /usr/local/sbin/cxpasswd"
+    cxfiles="/usr/local/sbin/centrallix /usr/local/sbin/cxpasswd /usr/local/etc/centrallix"
     cxlibs="/usr/local/lib/StPar* /usr/local/centrallix/ /usr/local/libCentrallix*"
     cxinc="/usr/local/include/cxlib/"
     cxetc="/etc/init.d/centrallix"
