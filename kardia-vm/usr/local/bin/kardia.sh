@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-#
+# version: 1.0.1
+# os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
 # called by the superuser.  Don't give the user account too much control.
@@ -204,6 +205,112 @@ function AsRoot
 	else
 	    /usr/bin/sudo "$@"
 	fi
+    fi
+    }
+
+#determine what OS we have
+function GetOSInfo
+    {
+    #This function is based on multiple sources, but seems to have
+    #originated with something Novel once used. Scripts using some
+    #of this base code can be found all over the Internet.
+    OS=`uname -s`
+    REV=`uname -r`
+    export OSSTR="Linux" #a default if we cannot figure it out
+
+    if [ "${OS}" = "SunOS" ] ; then
+	OS="Solaris"
+	OSSTR="${OS} ${REV}"
+    elif [ "${OS}" = "AIX" ] ; then
+	OSSTR="${OS} `oslevel`"
+    elif [ "${OS}" = "Linux" ] ; then
+	if [ -f /etc/os-release ] ; then
+	    DIST=`cat /etc/os-release | grep "^NAME=" | sed 's/.*=//;s/ .*//'`
+	    REV=`cat /etc/os-release | grep VERSION_ID | sed 's/.*=//;s/ .*//'`
+	elif [ -f /etc/redhat-release ] ; then
+	    DIST=`cat /etc/redhat-release | sed 's/ .*//'`
+	    REV=`cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//`
+	elif [ -f /etc/SuSE-release ] ; then
+	    DIST=`cat /etc/SuSE-release | tr "\n" ' '| sed s/VERSION.*//`
+	    REV=`cat /etc/SuSE-release | tr "\n" ' ' | sed s/.*=\ //`
+	elif [ -f /etc/mandrake-release ] ; then
+	    DIST='Mandrake'
+	    REV=`cat /etc/mandrake-release | sed s/.*release\ // | sed s/\ .*//`
+	elif [ -f /etc/debian_version ] ; then
+	    DIST="Debian `cat /etc/debian_version`"
+	    REV=""
+	fi
+	if [ -f /etc/UnitedLinux-release ] ; then
+	    DIST="${DIST}[`cat /etc/UnitedLinux-release | tr "\n" ' ' | sed s/VERSION.*//`]"
+	fi
+	OSSTR=$(echo "${DIST} ${REV}" | sed 's/\"//g' | tr '[:upper:]' '[:lower:]')
+    fi
+    }
+
+#Update the Kardia.sh program and run any auto-update scripts we need to run
+#
+function UpdateMenus
+    {
+    lookupStatus
+    GetOSInfo
+    os_string=$(echo $OSSTR | sed 's/ /_/g')
+
+    if [ -d "$BASEDIR/src/kardia-git/kardia-vm" ]; then
+	if [ "$WKFMODE" = "individual" ]; then
+	    # In 'individual' workflow.  Update the shared repo regardless
+	    # of 'Source' update setting.
+	    repoPull "$BASEDIR/src/kardia-git"
+	fi
+	#We want to use an OS Specific kardia.sh if it exists
+	filename="$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia.sh"
+	if [ -f "$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia-${os_string}.sh" ]; then
+	    filename="$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia-${os_string}.sh"
+	fi
+	#see what we have now & compare to what we have
+	this_fn="/usr/local/bin/kardia.sh"
+	if [ -f "$filename" ]; then
+	    kardiavm_version=$(head $filename | grep version | sed 's/.*://;s/ //g')
+	    this_version=$(head $this_fn | grep version | sed 's/.*://;s/ //g')
+	    this_os=$(head $this_fn | grep os | sed 's/.*://;s/ //g')
+	    todo=0
+	    [ "$this_version" != "$kardiavm_version" ] && todo=1
+	    [ "$this_os" != $os_string ] && todo=1
+	    if [ "$todo" = "1" ]; then
+		/bin/mv -f /usr/local/bin/kardia.sh /usr/local/bin/kardia.sh.old
+		/bin/cp "$filename" /usr/local/bin/kardia.sh
+		chmod 755 /usr/local/bin/kardia.sh
+		chown root.root /usr/local/bin/kardia.sh
+		if [ -d "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/$os_string" ]; then
+		(
+		cd "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/$os_string"
+		    for UPFILE in ./vmupgrade*.sh; do
+			if [ ! -f /usr/local/sbin/"$UPFILE" ]; then
+			    if [ -f "$UPFILE" ]; then
+				/bin/cp "$UPFILE" /usr/local/sbin/"$UPFILE"
+				chmod 755 "$UPFILE"
+				chown root.root "$UPFILE"
+				/usr/local/sbin/"$UPFILE"
+			    fi
+			fi
+		    done
+		    ) 2> /dev/null #the above gives errors if no vmupgrade files exist
+		fi
+		echo "Successfully updated menu system.  Press [ENTER] to continue..."
+		read ANS
+		exec /usr/local/bin/kardia.sh
+	    else
+		echo "Menus are already up to date.  Press [ENTER] to continue..."
+		read ANS
+	    fi
+	else
+	    echo "Failed to update shared repository.  Cannot update menus."
+	    echo "Press [ENTER] to continue."
+	    read ANS
+	fi
+    else
+	echo "Shared repository does not exist.  Cannot update menus."
+	echo "Press [ENTER] to continue."
+	read ANS
     fi
     }
 
@@ -991,6 +1098,8 @@ function repoInitShared
 	CXORIGIN="git://git.code.sf.net/p/centrallix/git"
 	KORIGIN="git://git.code.sf.net/p/kardia/git"
     fi
+    [ -z "$CXORIGIN" ] && repoSetOrigin
+    [ -z "$KORIGIN" ] && repoSetOrigin
     cd $BASEDIR/src || return 1
     /bin/rm -rf cx-git 2>/dev/null
     /bin/rm -rf kardia-git 2>/dev/null
@@ -2611,43 +2720,7 @@ function doSystemUpdate
 
     # Update menu interface?
     if [ "${SEL%%Menus*}" != "$SEL" ]; then
-	if [ -d "$BASEDIR/src/kardia-git/kardia-vm" ]; then
-	    if [ "$WKFMODE" = "individual" ]; then
-		# In 'individual' workflow.  Update the shared repo regardless
-		# of 'Source' update setting.
-		repoPull "$BASEDIR/src/kardia-git"
-	    fi
-	    if [ -f "$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia.sh" ]; then
-		/bin/mv -f /usr/local/bin/kardia.sh /usr/local/bin/kardia.sh.old
-		/bin/cp "$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia.sh" /usr/local/bin/kardia.sh
-		chmod 755 /usr/local/bin/kardia.sh
-		chown root.root /usr/local/bin/kardia.sh
-		cd "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/"
-		(
-		for UPFILE in ./vmupgrade*.sh; do
-		    if [ ! -f /usr/local/sbin/"$UPFILE" ]; then
-			if [ -f "$UPFILE" ]; then
-			    /bin/cp "$UPFILE" /usr/local/sbin/"$UPFILE"
-			    chmod 755 "$UPFILE"
-			    chown root.root "$UPFILE"
-			    /usr/local/sbin/"$UPFILE"
-			fi
-		    fi
-		done
-		) 2> /dev/null #the above gives errors if no vmupgrade files exist
-		echo "Successfully updated menu system.  Press [ENTER] to continue..."
-		read ANS
-		exec /usr/local/bin/kardia.sh
-	    else
-		echo "Failed to update shared repository.  Cannot update menus."
-		echo "Press [ENTER] to continue."
-		read ANS
-	    fi
-	else
-	    echo "Shared repository does not exist.  Cannot update menus."
-	    echo "Press [ENTER] to continue."
-	    read ANS
-	fi
+	AsRoot UpdateMenus
     fi
     }
 
