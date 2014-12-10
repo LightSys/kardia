@@ -3100,7 +3100,7 @@ function doSetupGuide
 		sg09SetSFUser
 		;;
 	    10)
-		sg09SetSFUser
+		sg10UpdateStuff
 		;;
 	    11)
 		if [ "$DEVMODE" = root ]; then
@@ -3228,9 +3228,9 @@ function sg09SetSFUser
 
 function sg10UpdateStuff
     {
-    dialog --backtitle "$TITLE" --title "Step Ten:  Download OS Updates" --yes-label OK --no-label Back --yesno "Any OS needs to download updates.  We like to start this VM as fully updated as possible.  Would you like to downloadOperating System Updates?" 0 0
+    dialog --backtitle "$TITLE" --title "Step Ten:  Download OS Updates" --yes-label OK --no-label Skip --yesno "Every OS needs to download updates at some time.  We like to start this VM as fully updated as possible.  Would you like to check to see if we need to download operating system and kardia.sh updates?" 0 0
     if [ "$?" != 0 ]; then
-	return 1
+	return 0
     fi
     doUpdates
     UpdateMenus
@@ -3258,7 +3258,9 @@ function sgYoureDone
     lookupStatus
     dialog --backtitle "$TITLE" --title "You're done!" --yes-label OK --no-label Back --yesno "You will now return to the normal menu, where all of these getting started options (and more) are available as well.
     
-If you're developing as users (rather than as root), you will want to quit, logout, and then log back in as your normal user account." 0 0
+If you're developing as users (rather than as root), you will want to quit, logout, and then log back in as your normal user account.
+
+If the menu was updated during the system update, you may want to quit and re-run kardia.sh" 0 0
     if [ "$?" != 0 ]; then
 	return 1
     fi

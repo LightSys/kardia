@@ -1,2 +1,2 @@
 #!/bin/bash
-/usr/local/bin/kardia.sh cleanup $@
+/usr/local/bin/kardia.sh doCleanup $@
