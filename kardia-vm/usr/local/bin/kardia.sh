@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.2
+# version: 1.0.3
 # os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
@@ -254,6 +254,8 @@ function UpdateMenus
     lookupStatus
     GetOSInfo
     os_string=$(echo $OSSTR | sed 's/ /_/g')
+    echo
+    echo "Updating the kardia.sh menu system to the latest version in git."
 
     if [ -d "$BASEDIR/src/kardia-git/kardia-vm" ]; then
 	if [ "$WKFMODE" = "individual" ]; then
@@ -273,6 +275,8 @@ function UpdateMenus
 	    this_version=$(head $this_fn | grep version | sed 's/.*://;s/ //g')
 	    this_os=$(head $this_fn | grep os | sed 's/.*://;s/ //g')
 	    todo=0
+	    echo "  Installed=$this_version"
+	    echo "  Latest=$kardiavm_version"
 	    [ "$this_version" != "$kardiavm_version" ] && todo=1
 	    [ "$this_os" != $os_string ] && todo=1
 	    if [ "$todo" = "1" ]; then
@@ -3096,8 +3100,11 @@ function doSetupGuide
 		sg09SetSFUser
 		;;
 	    10)
+		sg09SetSFUser
+		;;
+	    11)
 		if [ "$DEVMODE" = root ]; then
-		    sg10RootBuildRun
+		    sg11RootBuildRun
 		else
 		    dialog --backtitle "$TITLE" --title "Switching to a user..." --yes-label OK --no-label Back --yesno "The remaining steps need to be done as a normal user, not as root.  On the next screen, you'll pick a user to do the final steps." 0 0
 		    if [ "$?" = 0 ]; then
@@ -3105,10 +3112,10 @@ function doSetupGuide
 		    fi
 		fi
 		;;
-	    11)
+	    12)
 		sgYoureDone
 		;;
-	    12)
+	    13)
 		return 0
 		;;
 	esac
@@ -3219,8 +3226,17 @@ function sg09SetSFUser
     repoSetStatus "$BASEDIR/src"
     }
 
+function sg10UpdateStuff
+    {
+    dialog --backtitle "$TITLE" --title "Step Ten:  Download OS Updates" --yes-label OK --no-label Back --yesno "Any OS needs to download updates.  We like to start this VM as fully updated as possible.  Would you like to downloadOperating System Updates?" 0 0
+    if [ "$?" != 0 ]; then
+	return 1
+    fi
+    doUpdates
+    UpdateMenus
+    }
 
-function sg10RootBuildRun
+function sg11RootBuildRun
     {
     dialog --backtitle "$TITLE" --title "Step Ten:  Build and Run Centrallix/Kardia" --yes-label Build --no-label Skip --yesno "Finally, you can build and run Centrallix and Kardia.  This will compile the source code, install Centrallix, build the Kardia database, and start the Centrallix server on port 800." 0 0
     if [ "$?" = 0 ]; then
