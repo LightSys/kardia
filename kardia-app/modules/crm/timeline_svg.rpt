@@ -17,7 +17,9 @@ timeline_svg "system/report"
     id "report/parameter" { type=integer; }
     image_width "report/parameter" { type=double; default=450.0; }
     timeline_width "report/parameter" { type=double; default=430.0; }
-    timeline_end "report/parameter" { type=double; default=439.0; }
+    timeline_end "report/parameter" { type=double; default=440.0; }
+    timeline_start "report/parameter" { type=double; default=10.0; }
+    prev_x "report/parameter" { type = double; default=0.0; }
 
     // First and last dates for events
     first_last_qy "report/query"
@@ -29,6 +31,7 @@ timeline_svg "system/report"
     // Optimum date block interval
     interval_qy "report/query"
 	{
+	// TODO: Add option to change between last_date and getdate().
 	sql = "select range = datediff(year,:first_last_qy:first_date,:first_last_qy:last_date), interval = condition((datediff(year,:first_last_qy:first_date,:first_last_qy:last_date) + 1) / 10 > 0, (datediff(year,:first_last_qy:first_date,:first_last_qy:last_date) + 1) / 9, 1)";
 	}
 
@@ -43,8 +46,45 @@ timeline_svg "system/report"
     entrydate_qy "report/query"
 	{
 	// Select all the dates from entries
-	sql = runserver("select :e_activity_date from /apps/kardia/data/Kardia_DB/e_activity/rows where :e_activity_group_id = :this:id");
+	sql = "select :e_activity_date, :e_activity_type from /apps/kardia/data/Kardia_DB/e_activity/rows where :e_activity_group_id = :this:id order by :e_activity_date";
 	}
+
+    entrycompute_qy "report/query"
+	{
+	// Computes the x value for the entires
+	sql =  'declare object comp ;
+		select  :comp:year_percent = ((1.0 * (datepart(year,:entrydate_qy:e_activity_date) - datepart(year,:first_last_qy:first_date))) / (datepart(year,:first_last_qy:last_date) - datepart(year,:first_last_qy:first_date))) ; 
+		select :comp:month_percent = (1.0 * (datepart(month,:entrydate_qy:e_activity_date) - 1) / 12 / :interval_qy:range) ; 
+		select :comp:day_percent = (1.0 * (datepart(day,:entrydate_qy:e_activity_date) - 1) / 365 / :interval_qy:range) ; 
+		select :comp:full_percent = (:comp:year_percent + :comp:month_percent + :comp:day_percent) ; 
+		select :comp:x_value = (:comp:full_percent * :this:timeline_width + :this:timeline_start) ;
+		select :comp:drawgreenline = (\'<line x1="\' + :comp:x_value + \'px" y1="5px" x2="\' + :comp:x_value + \'px" y2="18px" stroke-width="1px"/>\n\') ;
+		select :comp:drawredtag = (\'<rect x="\' + (:comp:x_value - 2) + \'" y="2" rx="2" ry="2" width="4" height="8" style="fill:rgb(230,0,0);stroke-width:0;" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n<polygon points="\' + (:comp:x_value - 2) + \',9 \' + (:comp:x_value + 2) + \',9 \' + (:comp:x_value) + \',12" style="fill:rgb(230,0,0);stroke-width:0" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n\') ;
+		select :comp:draworangetag = (\'<rect x="\' + (:comp:x_value - 2) + \'" y="2" rx="2" ry="2" width="4" height="8" style="fill:rgb(220,170,20);stroke-width:0;" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n<polygon points="\' + (:comp:x_value - 2) + \',9 \' + (:comp:x_value + 2) + \',9 \' + (:comp:x_value) + \',12" style="fill:rgb(220,170,20);stroke-width:0" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n\') ;
+select :comp:drawgreentag = (\'<rect x="\' + (:comp:x_value - 1) + \'" y="10" width="2" height="0" style="fill:rgb(220,140,0);stroke-width:0;" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n<rect x="\' + (:comp:x_value - 2) + \'" y="2" rx="2" ry="2" width="4" height="8" style="fill:rgb(0,180,0);stroke-width:0;" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n<polygon points="\' + (:comp:x_value - 2) + \',9 \' + (:comp:x_value + 2) + \',9 \' + (:comp:x_value) + \',12" style="fill:rgb(0,180,0);stroke-width:0" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n\') ;
+		select :comp:drawbluetag = (\'<rect x="\' + (:comp:x_value - 2) + \'" y="2" rx="2" ry="2" width="4" height="8" style="fill:rgb(0,0,250);stroke-width:0;" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n<polygon points="\' + (:comp:x_value - 2) + \',9 \' + (:comp:x_value + 2) + \',9 \' + (:comp:x_value) + \',12" style="fill:rgb(0,0,250);stroke-width:0" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n\') ;
+		select :comp:drawpurpletag = (\'<rect x="\' + (:comp:x_value - 2) + \'" y="2" rx="2" ry="2" width="4" height="8" style="fill:rgb(200,41,256);stroke-width:0;" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n<polygon points="\' + (:comp:x_value - 2) + \',9 \' + (:comp:x_value + 2) + \',9 \' + (:comp:x_value) + \',12" style="fill:rgb(200,41,256);stroke-width:0" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n\') ;
+		select :comp:drawblacktag = (\'<rect x="\' + (:comp:x_value - 2) + \'" y="2" rx="2" ry="2" width="4" height="8" style="fill:black;stroke-width:0;" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n<polygon points="\' + (:comp:x_value - 2) + \',9 \' + (:comp:x_value + 2) + \',9 \' + (:comp:x_value) + \',12" style="fill:black;stroke-width:0" \' + condition(((:entrydate_qy:cx__rowid / 2.0) - ((:entrydate_qy:cx__rowid - 1) / 2)) == .5, "transform=\\"rotate(180, " + :comp:x_value + ", 12)\\"", "") + \' />\n\') ;
+		select :comp:drawdottedredline = (\'<line x1="\' + :comp:x_value + \'px" y1="0px" x2="\' + :comp:x_value + \'px" y2="22px" stroke="rgb(220,0,0)" stroke-width="1px" stroke-dasharray="3,2"/>\n\') ;
+		select :comp:drawdottedblueline = (\'<line x1="\' + :comp:x_value + \'px" y1="0px" x2="\' + :comp:x_value + \'px" y2="22px" stroke="rgb(0,0,220)" stroke-width="1px" stroke-dasharray="3,2"/>\n\') ;
+		select :comp:drawdottedyellowline = (\'<line x1="\' + :comp:x_value + \'px" y1="0px" x2="\' + :comp:x_value + \'px" y2="22px" stroke="rgb(220,180,0)" stroke-width="1px" stroke-dasharray="3,2"/>\n\') ;
+		select :comp:drawbluearrow = (\'<polygon points="\' + (:comp:x_value - 3) + \',11 \' + (:comp:x_value - 7) + \',6 \' + (:comp:x_value + 9) + \',11 \' + (:comp:x_value - 7) + \',16" style="fill:blue;stroke-width:0px" />\n\') ;
+		select draw_green_line		= :comp:drawgreenline,
+		       draw_red_tag		= :comp:drawredtag,
+		       draw_orange_tag		= :comp:draworangetag,
+		       draw_green_tag		= :comp:drawgreentag,
+		       draw_blue_tag		= :comp:drawbluetag,
+		       draw_purple_tag		= :comp:drawpurpletag,
+		       draw_black_tag		= :comp:drawblacktag,
+		       draw_blue_arrow		= :comp:drawbluearrow,
+		       draw_dotted_red_line	= :comp:drawdottedredline,
+		       draw_dotted_blue_line	= :comp:drawdottedblueline,
+		       draw_dotted_yellow_line	= :comp:drawdottedyellowline
+		       ';
+	}
+		//("transform=\"rotate(180, " + :comp:x_value + ", 12)\"")
+		//select :comp:conditionalformating = condition(:entrydate_qy:cx__rowid == 0, \'stroke="rgb(220,0,0)"\',"") ;
+		//\' + (conditional(:internal_was_tag == 1, \'transform="rotate(0, \' + :comp:x_value + \', 12)"\', "")) + \' />\n\') , :comp:wastag = conditional(:internal_was_tag == 0, "1", "0") ;
 
     main_form "report/form"
 	{
@@ -60,7 +100,7 @@ timeline_svg "system/report"
 	datebars_begin "report/area"
 	    {
 	    width=255; height=0;
-	    value=runserver('<g stroke="rgb(0,0,0)" shape-rendering="crispEdges">\n');
+	    value=runserver('<g stroke="rgb(175,175,175)" shape-rendering="crispEdges">\n');
 	    //value=runserver('<g stroke="rgb(224,224,224)">\n');
 	    }
 
@@ -101,33 +141,38 @@ timeline_svg "system/report"
 	entrydates_begin "report/area"
 	    {
 	    width=255; height=0;
-	    value=runserver('<g stroke="rgb(0,200,0)" shape-rendering="crispEdges">\n');
+	    value=runserver('<g stroke="rgb(0,200,0)" >\n');
 	    //value=runserver('<g stroke="rgb(224,224,224)">\n');
 	    }
 
 	entrydates_form "report/form"
 	    {
-	    source = entrydate_qy;
+	    source = entrydate_qy, entrycompute_qy;
 	    
 	    one_entry "report/area"
 		{
 		width=255; height=0;
-		condition=runserver(:entrydate_qy:cx__rowid != 0);
-		// The first query is always the current date so skip it.
-		//sql = "select year_percent = (datediff(year,:first_last_qy:first_date,:entrydate_qy:e_activity_date) / datediff(year,:first_last_qy:last_date,:first_last_qy:first_date)) , month_percent = (datepart(month,:entrydate_qy:e_activity_date) / 12 / :interval_qy:range) , day_percent = (datepart(day,:entrydate_qy:e_activity_date) / 365 / :interval_qy:range)";
-		//sql = "select full_percentage =:one_entry:year_percent + :one_entry:month_percent + :one_entry:day_percent";
-		//value=runserver('<line x1="' + ((:one_entry:year_percent + :one_entry:month_percent + :one_entry:day_pecent) * 430 + 10) + 'px" y1="10px" x2="' + ((:one_entry:year_percent + :one_entry:month_percent + :one_entry:day_pecent) * 430 + 10) + 'px" y2="20px" stroke-width="1px"/>\n');
-		// The above code was an atempt at using variables to make the code more 
-		//	readable. I've currently abandonded it as using the variables 
-		//	always made the line show up as "NULL" for some reason.
-		value=runserver('<line x1="' + ((((1.0 * (datepart(year,:entrydate_qy:e_activity_date) - datepart(year,:first_last_qy:first_date))) / (datepart(year,:first_last_qy:last_date) - datepart(year,:first_last_qy:first_date))) * 430 + 9) + ((1.0 * (datepart(month,:entrydate_qy:e_activity_date) - 1) / 12 / :interval_qy:range) * 430) + ((1.0 * (datepart(day,:entrydate_qy:e_activity_date) - 1) / 365 / :interval_qy:range) * 430)) + 'px" y1="5px" x2="' + ((((1.0 * (datepart(year,:entrydate_qy:e_activity_date) - datepart(year,:first_last_qy:first_date))) / (datepart(year,:first_last_qy:last_date) - datepart(year,:first_last_qy:first_date))) * 430 + 9) + ((1.0 * (datepart(month,:entrydate_qy:e_activity_date) - 1) / 12 / :interval_qy:range) * 430) + ((1.0 * (datepart(day,:entrydate_qy:e_activity_date) - 1) / 365 / :interval_qy:range) * 430)) + 'px" y2="18px" stroke-width="1px"/>\n');
-		// This nastyness is extreamly unreadable, I know. I will do what I can, but it may have to stay that way.
+		value=runserver( condition(
+			    :entrydate_qy:e_activity_type == 'HEAD',	:draw_dotted_red_line,	    condition( // Today's date
+			    :entrydate_qy:e_activity_type == 'PAR',	:draw_dotted_blue_line,	    condition( // Partner added to system
+			    :entrydate_qy:e_activity_type == 'REL',	:draw_blue_tag,		    condition( // Relationship
+			    :entrydate_qy:e_activity_type == 'GIFT',	:draw_green_tag,	    condition( // Donation
+			    :entrydate_qy:e_activity_type == 'TAG',	:draw_red_tag,		    condition( // Tag added
+			    :entrydate_qy:e_activity_type == 'COMM',	:draw_blue_tag,		    condition( // Communication
+			    :entrydate_qy:e_activity_type == 'CONT',	:draw_blue_tag,		    condition( // Contact (email, phone call, etc.)
+			    :entrydate_qy:e_activity_type == 'NOTE',	:draw_purple_tag,	    condition( // Note
+			    :entrydate_qy:e_activity_type == 'FILE',	:draw_orange_tag,	    condition( // File uploaded
+			    :entrydate_qy:e_activity_type == 'ADDR',	:draw_dotted_yellow_line,   condition( // Address changed
+			    :entrydate_qy:e_activity_type == 'DATA',	:draw_orange_tag,	    condition( // Data Item/group activity
+			    :entrydate_qy:e_activity_type == 'TRK',	:draw_blue_arrow,	    condition( // New Track
+			    1,						:draw_black_tag,	    "ERROR"    // The default option. (Should always be true)
+				))))))))))))));
+		//value=runserver('<line x1="' + :x_val + 'px" y1="5px" x2="' + :x_val + 'px" y2="18px" stroke-width="1px" ' + :conditional_formating + '/>\n');
 		//value=runserver('<line x1="' + datepart(month,:entrydate_qy:e_activity_date) + 'px" y1="' + datepart(day,:entrydate_qy:e_activity_date) + 'px" x2="' +  datepart(year,:entrydate_qy:e_activity_date) + 'px" y2="18px" stroke-width="1px"/>\n');
 		// Some hack code to see what date is outputting when
 		}
 	    }
-	entrydates_end "report/area"
-	    {
+	entrydates_end "report/area" {
 	    width=255; height=0;
 	    value=runserver('</g>\n');
 	    }
