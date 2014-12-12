@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.4
+# version: 1.0.5
 # os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
@@ -408,7 +408,7 @@ function checkCert
     todo=0
     certfile=$CXETC/centrallix.crt
     keyfile=$CXETC/centrallix.key
-    sed -i'' "s#ssl_key =.*#ssl_key = \"$certfile\";#;s#ssl_crt =.*#ssl_crt = \"$certfile\";#" $CXCONF
+    sed -i'' "s#ssl_key =.*#ssl_key = \"$keyfile\";#;s#ssl_crt =.*#ssl_crt = \"$certfile\";#" $CXCONF
     if [ ! -d $CXETC ]; then
 	mkdir -p $CXETC
     fi
@@ -707,7 +707,7 @@ function setTimezone
 	done
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
 	if [ "$SEL" != "" ]; then
-	    echo $SEL
+	    #echo $SEL
 	    timedatectl set-timezone "$SEL"
 	    break
 	fi
@@ -2446,7 +2446,7 @@ function menuDevel
     while true; do
 	lookupStatus
 
-	DSTR="dialog --backtitle '$TITLE' --title 'Development Tools' --menu 'Development Tool Options (Workflow:$WKFMODE / Dev:$DEVMODE / Run:$RUNMODE)' 19 72 14"
+	DSTR="dialog --backtitle '$TITLE' --title 'Development Tools' --menu 'Development Tool Options (Workflow:$WKFMODE / Dev:$DEVMODE / Run:$RUNMODE)' 21 76 14"
 	DSTR="$DSTR Build '(Re)Compile Centrallix and Centrallix-Lib'"
 	DSTR="$DSTR DBBuild '(Re)Build the Kardia Database'"
 	DSTR="$DSTR Cert 'Check the SSL certificate and rebuild if needed'"
@@ -2464,10 +2464,10 @@ function menuDevel
 	if [ "$USER" != root -o "$DEVMODE" != users ]; then
 	    StartStoppable && DSTR="$DSTR '---' ''"
 	    if [ "$CXRUNNING" = "" ]; then
-		StartStoppable && DSTR="$DSTR Start 'Start Centrallix (port $CXPORT)'"
+		StartStoppable && DSTR="$DSTR Start 'Start Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
 	    else
 		StartStoppable && DSTR="$DSTR Restart 'Restart Centrallix'"
-		StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (port $CXPORT)'"
+		StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
 	    fi
 	    StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
 	    StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
@@ -3030,7 +3030,7 @@ function displyCentrallixConnectInfo
     dialog --backtitle "$TITLE" --title "Centrallix Connection Info" --msgbox "$DispMessage:
 
     URL:   http://$IPADDR:$CXPORT/
-    URL:   https://$IPADDR:$CXPORT/" 0 0
+    URL:   https://$IPADDR:$CXSSLPORT/" 0 0
     }
 
 function doSetupGuideUser
