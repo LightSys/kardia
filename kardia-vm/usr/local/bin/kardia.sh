@@ -408,7 +408,7 @@ function checkCert
     todo=0
     certfile=$CXETC/centrallix.crt
     keyfile=$CXETC/centrallix.key
-    sed -i'' "s#ssl_key =.*#ssl_key = \"$keyfile\";#;s#ssl_crt =.*#ssl_crt = \"$certfile\";#" $CXCONF
+    sed -i'' "s#ssl_key =.*#ssl_key = \"$keyfile\";#;s#ssl_cert =.*#ssl_cert = \"$certfile\";#" $CXCONF
     if [ ! -d $CXETC ]; then
 	mkdir -p $CXETC
     fi
