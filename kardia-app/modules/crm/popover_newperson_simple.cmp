@@ -1,0 +1,128 @@
+$Version=2$
+popover_newperson_simple "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+    SetValue "widget/component-decl-action" { }
+
+    PersonAdded "widget/component-decl-event" { }
+    AdvancedAddPerson "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen2 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(null); }
+    onOpen3 "widget/connector" { event=Open; target=newp_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
+
+    onSetValue1 "widget/connector" { event=SetValue; target=partner_var; action=SetValue; Value=runclient(:Value); }
+    onSetValue2 "widget/connector" { event=SetValue; target=partnername_osrc; action=QueryParam; p_partner_key=runclient(:Value); }
+    onSetValue3 "widget/connector" { event=SetValue; target=newp_form; action=New; }
+
+    collab_var "widget/variable" { type=string; }
+
+    partner_var "widget/variable" { type=string; }
+
+    partnername_osrc "widget/osrc"
+	{
+	sql = "	select
+		    nametxt = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)
+		from
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		";
+	autoquery=never;
+	readahead=2;
+	replicasize=2;
+	}
+
+    newp_win "widget/childwindow"
+	{
+	width=500; height=180;
+	x=250; y=89;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	newp_vbox "widget/vbox"
+	    {
+	    x=15; y=15;
+	    width=468; height=148;
+	    spacing=10;
+
+	    newp_osrc "widget/osrc"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_collaborator/rows c
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/e_collaborator/rows";
+		replicasize=50;
+		readahead=50;
+		autoquery=never;
+
+		newp_form "widget/form"
+		    {
+		    allow_search=no;
+		    allow_view=no;
+		    allow_modify=no;
+		    allow_new=yes;
+
+		    close_on_save "widget/connector" { event=DataSaved; target=newp_win; action=Close; }
+		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_newperson_simple; action=PersonAdded; }
+		    close_on_discard "widget/connector" { event=Discard; target=newp_win; action=Close; }
+
+		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("New Person..."); align=center; }
+
+		    explain_label "widget/label" { height=40; style=italic; value=runclient(condition(:partner_var:value is null, "Add a new person via the popup window, and once the new person or organization is added, they can be added to My People here.", "Add person #" + :partner_var:value + isnull(" (" + :partnername_osrc:nametxt + ")", "") + " to My People:")); }
+
+		    collab_type "widget/component" { field=e_collab_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="My Role:"; ctl_type=dropdown; sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label"; width=250; label_width=70; collab_type_hints "widget/hints" { style=notnull; } }
+
+		    collab_partner "widget/variable" { fieldname=p_partner_key; collab_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
+		    collab_me "widget/variable" { fieldname=e_collaborator; collab_me_hints "widget/hints" { default=runclient(:collab_var:value); } }
+		    collab_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+		    newp_btns "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=10;
+
+			add_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Add to My People";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    enabled = runclient(:newp_form:is_savable and :collab_type:value is not null and :partner_var:value is not null);
+
+			    on_add "widget/connector" { event=Click; target=newp_form; action=Save; }
+			    }
+
+			cancel_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Cancel";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    on_cancel1 "widget/connector" { event=Click; target=newp_form; action=Discard; }
+			    on_cancel2 "widget/connector" { event=Click; target=newp_win; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
