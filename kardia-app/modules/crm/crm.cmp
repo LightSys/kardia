@@ -273,8 +273,8 @@ crm "widget/component-decl"
 		    target=track_popover;
 		    action=Open;
 		    PointAt=runclient(:origin);
-		    PointSide=runclient('top');
-		    PointOffset=runclient(20);
+		    PointSide=runclient('right');
+		    //PointOffset=runclient(20);
 		    engagement_id=runclient(:engagement_id);
 		    partner=runclient(:profile_cmp:p_partner_key);
 		    partnername=runclient(:profile_cmp:partnername);
@@ -340,6 +340,35 @@ crm "widget/component-decl"
 	path="popover_newperson.cmp";
 	on_newperson_add1 "widget/connector" { event=PersonAdded; target=profile_cmp; action=Refresh; }
 	on_newperson_add2 "widget/connector" { event=PersonAdded; target=sidebar_cmp; action=Refresh; }
+	}
+
+    newperson_simple_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_newperson_simple.cmp";
+	on_simnewperson_add1 "widget/connector" { event=PersonAdded; target=profile_cmp; action=Refresh; }
+	on_simnewperson_add2 "widget/connector" { event=PersonAdded; target=sidebar_cmp; action=Refresh; }
+	advnewpartner_cn "widget/connector"
+	    {
+	    event=AdvancedAddPerson;
+	    target=crm;
+	    action=Launch;
+	    Width=844;
+	    Height=600;
+	    Source="/apps/kardia/modules/base/new_partner.app";
+	    return_to=newperson_popover;
+	    set_return=1;
+	    }
+	advnewpartner2_cn "widget/connector"
+	    {
+	    event=AdvancedAddPerson;
+	    target=newperson_popover;
+	    action=Open;
+	    PointAt=runclient(:Origin);
+	    PointSide=runclient('top');
+	    collaborator=runclient(:collaborator_osrc:p_partner_key);
+	    }
 	}
 
     newtrack_popover "widget/component"
