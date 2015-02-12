@@ -157,7 +157,7 @@ timeline_svg "system/report"
 	hdr "report/area"
 	    {
 	    x=0; y=0; width=255; height=0;
-	    value=runserver('<?xml version="1.0" standalone="no"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n<svg width=" ' + :this:image_width + 'px" height="32px" viewBox="0 0 ' + :this:image_width + 'px 32px" xmlns="http://www.w3.org/2000/svg" version="1.1">\n');
+	    value=runserver('<?xml version="1.0" standalone="no"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n<svg width="' + :this:image_width + 'px" height="32px" viewBox="0 0 ' + :this:image_width + 'px 32px" xmlns="http://www.w3.org/2000/svg" version="1.1">\n');
 	    }
 
 	// Draw lines corresponding to each year on the visual timeline
