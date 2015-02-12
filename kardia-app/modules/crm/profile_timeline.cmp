@@ -7,6 +7,9 @@ profile_timeline "widget/component-decl"
     // Refresh of our data
     Refresh "widget/component-decl-action" { }
 
+    // Our events
+    EditTask "widget/component-decl-event" { }
+
     // Iconbar passed in so we can access the 'EnabledTypes' property it has
     iconbar "widget/parameter" { type=object; deploy_to_client=yes; }
     profile "widget/parameter" { type=object; deploy_to_client=yes; }
@@ -148,6 +151,16 @@ profile_timeline "widget/component-decl"
 				timeline_data_osrc = timeline_data_osrc;
 				profile = profile;
 				collaborator_osrc = collaborator_osrc;
+
+				on_reassign "widget/connector"
+				    {
+				    event=EditTask;
+				    target=profile_timeline;
+				    action=EditTask;
+				    todo_id=runclient(:todo_id);
+				    partner=runclient(:partner);
+				    origin=runclient(:origin);
+				    }
 				}
 			    }
 			}

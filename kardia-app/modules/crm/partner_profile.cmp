@@ -218,6 +218,17 @@ partner_profile "widget/component-decl"
 				iconbar = iconbar;
 				profile = partner_profile;
 				collaborator_osrc = collaborator_osrc;
+
+				on_reassign_tl "widget/connector"
+				    {
+				    event=EditTask;
+				    target=partner_profile;
+				    action=EditTask;
+				    todo_id=runclient(:todo_id);
+				    partner=runclient(:partner);
+				    origin=runclient(:origin);
+				    side=runclient('left');
+				    }
 				}
 			    }
 
@@ -281,6 +292,7 @@ partner_profile "widget/component-decl"
 				    todo_id=runclient(:todo_id);
 				    partner=runclient(:partner);
 				    origin=runclient(:origin);
+				    side=runclient('right');
 				    }
 				}
 			    }
