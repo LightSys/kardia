@@ -24,6 +24,7 @@ todo_list "widget/component-decl"
 
     task_refresh_timer "widget/timer"
 	{
+	condition=0;
 	auto_start=0;
 	auto_reset=1;
 	msec=30000;
@@ -59,7 +60,7 @@ todo_list "widget/component-decl"
 	    Color=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0, 'red', condition(:task_stats_osrc:incomplete_today_cnt > 0, '#800000',condition(:task_stats_osrc:complete_today_cnt > 0, '#00c000', 'black'))));
 	    }
 
-	on_endquery_start_timer "widget/connector" { event=EndQuery; target=task_refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
+	//on_endquery_start_timer "widget/connector" { event=EndQuery; target=task_refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
 	}
 
     todo_osrc "widget/osrc"
@@ -102,6 +103,7 @@ todo_list "widget/component-decl"
 	readahead=50;
 	replicasize=50;
 	indicates_activity=no;
+	refresh_interval=30000;
 
 	collab_link "widget/rule"
 	    {
@@ -117,14 +119,14 @@ todo_list "widget/component-decl"
 	    event=EndQuery;
 	    target=task_stats_osrc;
 	    action=QueryParam;
-	    e_todo_collaborator=runclient(:todo_osrc:e_todo_collaborator);
+	    e_todo_collaborator=runclient(:collaborator_osrc:p_partner_key);
 	    }
 	stats_link2 "widget/connector"
 	    {
 	    event=Modified;
 	    target=task_stats_osrc;
 	    action=QueryParam;
-	    e_todo_collaborator=runclient(:todo_osrc:e_todo_collaborator);
+	    e_todo_collaborator=runclient(:collaborator_osrc:p_partner_key);
 	    }
 
 	todo_table "widget/table"

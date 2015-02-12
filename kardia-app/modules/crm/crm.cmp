@@ -99,6 +99,7 @@ crm "widget/component-decl"
 		}
 	    newpartner_cn "widget/connector"
 		{
+		condition=0;
 		event=NewPartner;
 		target=crm;
 		action=Launch;
@@ -111,7 +112,7 @@ crm "widget/component-decl"
 	    newpartner2_cn "widget/connector"
 		{
 		event=NewPartner;
-		target=newperson_popover;
+		target=newperson_simple_popover;
 		action=Open;
 		PointAt=runclient(:Origin);
 		PointSide=runclient('top');
@@ -137,6 +138,18 @@ crm "widget/component-decl"
 		event=ButtonPressed;
 		event_condition=runclient(:Button == 'Tracks');
 		target=newtrack_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient('top');
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		partnername=runclient(:profile_cmp:partnername);
+		}
+	    newtag_cn "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == 'Tags');
+		target=tags_popover;
 		action=Open;
 		PointAt=runclient(:Origin);
 		PointSide=runclient('top');
@@ -249,7 +262,7 @@ crm "widget/component-decl"
 		    target=popover_todo;
 		    action=Open;
 		    PointAt=runclient(:origin);
-		    PointSide=runclient('right');
+		    PointSide=runclient(:side);
 		    partner=runclient(:partner);
 		    collaborator=runclient(:collaborator_osrc:p_partner_key);
 		    todo_id=runclient(:todo_id);
@@ -347,8 +360,24 @@ crm "widget/component-decl"
 	x=0; y=0;
 	width=1000; height=600;
 	path="popover_newperson_simple.cmp";
-	on_simnewperson_add1 "widget/connector" { event=PersonAdded; target=profile_cmp; action=Refresh; }
-	on_simnewperson_add2 "widget/connector" { event=PersonAdded; target=sidebar_cmp; action=Refresh; }
+	//on_simnewperson_add1 "widget/connector" { event=PersonAdded; target=profile_cmp; action=Refresh; }
+	//on_simnewperson_add2 "widget/connector" { event=PersonAdded; target=sidebar_cmp; action=Refresh; }
+	on_simnewperson_add1 "widget/connector"
+	    {
+	    event=PersonAdded;
+	    target=newperson_popover;
+	    action=Open;
+	    PointAt=runclient(:Origin);
+	    PointSide=runclient('top');
+	    collaborator=runclient(:collaborator_osrc:p_partner_key);
+	    }
+	on_simnewperson_add2 "widget/connector"
+	    {
+	    event=PersonAdded;
+	    target=newperson_popover;
+	    action=SetValue;
+	    Value=runclient(:PartnerID);
+	    }
 	advnewpartner_cn "widget/connector"
 	    {
 	    event=AdvancedAddPerson;
@@ -369,6 +398,13 @@ crm "widget/component-decl"
 	    PointSide=runclient('top');
 	    collaborator=runclient(:collaborator_osrc:p_partner_key);
 	    }
+	onPartnerSelect2 "widget/connector"
+	    {
+	    event=PartnerSelected;
+	    target=profile_cmp;
+	    action=SelectPartner;
+	    partner_key = runclient(:partner_key);
+	    }
 	}
 
     newtrack_popover "widget/component"
@@ -387,6 +423,15 @@ crm "widget/component-decl"
 	path="popover_track.cmp";
 	on_trk_upd1 "widget/connector" { event=TrackUpdated; target=profile_cmp; action=Refresh; }
 	on_trk_upd2 "widget/connector" { event=TrackUpdated; target=sidebar_cmp; action=Refresh; }
+	}
+
+    tags_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_managetags.cmp";
+	on_tag_upd1 "widget/connector" { event=TagsUpdated; target=profile_cmp; action=Refresh; }
+	on_tag_upd2 "widget/connector" { event=TagsUpdated; target=sidebar_cmp; action=Refresh; }
 	}
     }
 

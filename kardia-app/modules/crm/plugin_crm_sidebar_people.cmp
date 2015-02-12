@@ -8,6 +8,7 @@ people_list "widget/component-decl"
     sequence = 10;
 
     PartnerSelected "widget/component-decl-event" { }
+    SetNumber "widget/component-decl-event" { }
 
     RefreshTasks "widget/component-decl-action" { }
     Refresh "widget/component-decl-action" { }
@@ -16,6 +17,31 @@ people_list "widget/component-decl"
 	event=Refresh;
 	target=active_collab_osrc;
 	action=Refresh;
+	}
+
+    people_stats_osrc "widget/osrc"
+	{
+	sql = "	select
+		    new_today_cnt = count(1)
+		from
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :p:s_created_by = user_name() and
+		    :p:s_date_created >= dateadd(day, -1, getdate())
+		";
+	replicasize=2;
+	readahead=2;
+	indicates_activity=no;
+
+	set_cnt_on_load "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=people_list;
+	    action=SetNumber;
+	    Which=runclient("New");
+	    Number=runclient(condition(:people_stats_osrc:new_today_cnt > 0, '+' + :people_stats_osrc:new_today_cnt, ''));
+	    Color=runclient(condition(:people_stats_osrc:new_today_cnt > 0, '#00c000', 'black'));
+	    }
 	}
 
     people_vbox "widget/vbox"
@@ -65,13 +91,22 @@ people_list "widget/component-decl"
 	    readahead=50;
 	    replicasize=50;
 	    use_having_clause=1;
+	    refresh_interval=30000;
 	    
+	    stats_link "widget/connector"
+		{
+		event=EndQuery;
+		target=people_stats_osrc;
+		action=QueryParam;
+		//e_todo_collaborator=runclient(:collaborator_osrc:p_partner_key);
+		}
+
 	    active_collab_table "widget/table"
 		{
 		height=381;
 		//rowheight = 20;
 		min_rowheight=16;
-		max_rowheight=64;
+		max_rowheight=72;
 		mode=dynamicrow;
 		allow_selection = yes;
 		show_selection = yes;

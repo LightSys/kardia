@@ -4,7 +4,7 @@ button_generic "widget/component-decl"
     width=48; height=76;
 
     image "widget/parameter" { type=string; }
-    text "widget/parameter" { type=string; }
+    text "widget/parameter" { type=string; deploy_to_client=yes; }
     active "widget/parameter" { type=integer; default=0; }
 
     enabled "widget/parameter" { type=integer; deploy_to_client=yes; }
@@ -12,6 +12,25 @@ button_generic "widget/component-decl"
     expose_properties_for = btn;
     expose_events_for = btn;
     expose_actions_for = btn;
+
+    SetNumber "widget/component-decl-action" { }
+    onSetNumber1 "widget/connector"
+	{
+	event_condition=runclient(:Which == :text:value);
+	event=SetNumber; target=num_visib_var; action=SetValue; Value=runclient(condition(:Number > 0, 'yes', 'no'));
+	}
+    onSetNumber2 "widget/connector"
+	{
+	event_condition=runclient(:Which == :text:value);
+	event=SetNumber; target=num_color_var; action=SetValue; Value=runclient(isnull(:Color, 'red'));
+	}
+    onSetNumber3 "widget/connector"
+	{
+	event_condition=runclient(:Which == :text:value);
+	event=SetNumber; target=number_label; action=SetValue; Value=runclient(:Number);
+	}
+    num_visib_var "widget/variable" { type=string; default='no'; }
+    num_color_var "widget/variable" { type=string; default='red'; }
 
     pane "widget/pane"
 	{
@@ -23,7 +42,7 @@ button_generic "widget/component-decl"
 	vbox "widget/vbox"
 	    {
 	    x=0; y=10;
-	    width=48; height=60;
+	    width=48; height=62;
 	    spacing=0;
 
 	    btn "widget/textbutton"
@@ -39,6 +58,19 @@ button_generic "widget/component-decl"
 		background=null;
 		widget_class=crm_iconbutton;
 		enabled=runclient(:button_generic:enabled);
+		}
+	    number_label "widget/label"
+		{
+		height=12;
+		font_size=9;
+		fgcolor=white;
+		bgcolor=runclient(isnull(:num_color_var:value, 'red'));
+		border_color=white;
+		border_radius=4;
+		padding=1;
+		text="";
+		visible=runclient(isnull(:num_visib_var:value, 'no'));
+		align=center;
 		}
 	    }
 	}
