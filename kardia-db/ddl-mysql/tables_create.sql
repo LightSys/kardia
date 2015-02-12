@@ -1052,6 +1052,8 @@ create table e_collaborator (
         e_collaborator                        char(10)  not null,      /* The ID (partner key) of the collaborator --  */
         p_partner_key                         char(10)  not null,      /* The id (partner key) of the partner who is engaging --  */
         e_collab_type_id                      integer  not null,       /* The collaboration type ID --  */
+        e_silence_interval                    integer  null,           /* The number of days without communication FROM a partner before a task item is generated for re-contacting the partner. Communication here can include all non-note contact history types, as well as financial gifts received. --  */
+        e_recontact_interval                  integer  null,           /* Assuming the e_silence_interval, above, is met, this is the number of days since OUR last communication TO the partner before another task item is generated to re-contact the partner --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1197,6 +1199,29 @@ create table e_seen (
         e_object_type                         varchar(32)  not null,   /* The type of object that has been viewed --  */
         e_object_id                           varchar(32)  not null,   /* A unique ID identifying the object viewed --  */
         e_whom                                char(10)  not null,      /* The collaborator who saw the object --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_trackactivity */
+
+create table e_trackactivity (
+        p_partner_key                         char(10)  not null,      /* The partner whose track information we are displaying --  */
+        e_username                            varchar(20)  not null,   /* The username of the user viewing the partner --  */
+        e_sort_key                            varchar(32)  not null,   /* Controls the display order (steps by sequence, requirements by step sequence and req ID) --  */
+        e_track_id                            integer  not null,       /* The ID of the track being displayed --  */
+        e_step_id                             integer  not null,       /* The ID of the step being displayed --  */
+        e_object_type                         char(1)  not null,       /* 'S' for step and 'R' for requirement --  */
+        e_completion_status                   char(1)  not null,       /* I/C/E for steps, I/C/W for requirements --  */
+        e_object_name                         varchar(32)  not null,   /* The "name" of the step or requirement being displayed (for linkage to a data editing form) --  */
+        e_object_label                        varchar(64)  not null,   /* The main visual label for the step or requirement --  */
+        e_object_desc                         varchar(255)  not null,  /* The brief description of the step or requirement --  */
+        e_object_comm                         varchar(900)  null,      /* Any comments associated with the step or requirement --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

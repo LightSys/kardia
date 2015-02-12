@@ -190,6 +190,9 @@ alter table e_data_highlight
 alter table e_seen
 	add constraint e_seen_pk primary key  (e_object_type,e_object_id,e_whom);
 
+alter table e_trackactivity
+	add constraint e_trkact_pk primary key  (p_partner_key,e_username,e_sort_key);
+
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);
 

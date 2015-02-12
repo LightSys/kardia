@@ -458,6 +458,10 @@ alter table e_seen
 	drop primary key;
 
 
+alter table e_trackactivity
+	drop primary key;
+
+
 alter table r_group
 	drop primary key;
 

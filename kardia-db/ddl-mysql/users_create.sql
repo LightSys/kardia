@@ -187,6 +187,9 @@ grant select on ra to public;
 /* e_seen */
 
 
+/* e_trackactivity */
+
+
 /* r_group */
 
 

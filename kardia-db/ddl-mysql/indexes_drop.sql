@@ -382,6 +382,11 @@ alter table e_data_highlight drop index e_dh_obj_idx;
 /* go */
 
 
+/* e_trackactivity */
+/* drop index e_trackactivity.e_trkact_pk */ 
+/* go */
+
+
 /* r_group */
 alter table r_group drop index r_grp_modfile_idx;
 /* drop index r_group.r_grp_pk */ 

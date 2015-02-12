@@ -243,6 +243,10 @@ drop table e_data_highlight;
 drop table e_seen;
 
 
+/* e_trackactivity */
+drop table e_trackactivity;
+
+
 /* r_group */
 drop table r_group;
 
