@@ -109,7 +109,7 @@ public class MainActivity extends Activity {
 			
 			String returnVal = GET(testUrl[0]);
 			
-			if(returnVal != null && !returnVal.equals("")){
+			if(returnVal != null && !returnVal.equals("") && !returnVal.contains("Unauthorized")){
 				publishProgress(1);
 				DataPull();
 				return returnVal; //TODO: replace with something else

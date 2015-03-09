@@ -338,6 +338,9 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		
 		while(c.moveToNext()){
 			Fund fund = new Fund();
+            if (c.getString(0) == null) {
+                break;
+            }
 			fund.setId(Integer.parseInt(c.getString(0)));
 			fund.setName(c.getString(1));
 			fund.setFund_desc(c.getString(2));
