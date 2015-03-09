@@ -107,9 +107,9 @@
 
 /* checkbox that allows selection of filters */
 .tab-filter-checkbox {-moz-appearance:none; border:0px; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0px; margin:0 2px 0 2px;}
-.tab-filter-checkbox[checkState="1"]{background-color:#cccccc}
-/*.tab-filter-checkbox  .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}
-.tab-filter-checkbox[checkState="1"] .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}*/
+.tab-filter-checkbox[checked="true"]{background-color:#cccccc}
+.tab-filter-checkbox  .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}
+.tab-filter-checkbox[checked="true"] .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}
 
 /* item with no padding or margin */
 .no-margin-padding { padding:0px; margin:0px;}

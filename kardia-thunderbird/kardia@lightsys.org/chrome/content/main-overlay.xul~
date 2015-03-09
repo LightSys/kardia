@@ -112,7 +112,7 @@
 					
 					<!-- to-dos box -->
 					<hbox>
-					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(3)" label="To-Dos:"/>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(3)" label="*To-Dos:"/>
 					  <spacer flex="1"/>
 					</hbox>
 					<hbox id="to-dos-box">

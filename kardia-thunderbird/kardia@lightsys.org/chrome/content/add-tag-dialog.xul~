@@ -24,7 +24,7 @@
 			</menupopup>
 		</menulist>
 		<hbox>
-			<textbox type='number' min='-100' max='100' value='100' increment='5' width='60px' id="tag-magnitude"/>
+			<textbox type='number' min='-100' max='100' value='100' increment='5' width='35px' id="tag-magnitude"/>
 			<vbox>
 				<spacer flex="1"/>
 				<label value='% strength'/>
@@ -32,7 +32,7 @@
 			</vbox>			
 		</hbox>
 		<hbox>
-			<textbox type='number' min='0' max='100' value='100' increment='5' width='60px' id="tag-certainty"/>
+			<textbox type='number' min='0' max='100' value='100' increment='5' width='35px' id="tag-certainty"/>
 			<vbox>
 				<spacer flex="1"/>
 				<label value='% certainty'/>
