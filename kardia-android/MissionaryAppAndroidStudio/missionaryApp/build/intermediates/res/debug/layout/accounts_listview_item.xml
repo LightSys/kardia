@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="80dp" >
+
+    <TextView android:text="This is The title"
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="25dp"
+        android:textSize="22sp" />
+
+    <TextView
+        android:id="@+id/textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="120dp"
+        android:layout_marginTop="92dp"
+        android:text="Balance:"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/balance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/textview"
+        android:layout_marginLeft="62dp"
+        android:text="$15000.00"
+        android:textColor="#2AE82D"
+        android:textSize="15sp" />
+
+</RelativeLayout>
+<!-- From: file:/Users/hannahbrown/AndroidStudioProjects/kardia-git/kardia-android/MissionaryAppAndroidStudio/missionaryApp/src/main/res/layout/accounts_listview_item.xml -->

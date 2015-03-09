@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    
+    <!-- Donor Quick-info programmatically added here -->
+    
+    <RelativeLayout android:id="@+id/donor_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+    	android:layout_alignParentLeft="true" />
+    
+    <!-- List of funds -->
+    
+    <RelativeLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentTop="true"
+        android:layout_below="@+id/donor_bar" >
+
+        <ListView
+            android:id="@+id/info_list"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"/>
+        
+    </RelativeLayout>
+
+    
+
+
+</RelativeLayout>
+<!-- From: file:/Users/hannahbrown/AndroidStudioProjects/kardia-git/kardia-android/MissionaryAppAndroidStudio/missionaryApp/src/main/res/layout/split_view.xml -->
