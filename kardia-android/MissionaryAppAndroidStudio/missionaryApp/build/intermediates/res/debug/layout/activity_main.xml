@@ -54,12 +54,28 @@
 
     </TableRow>
 
-    <Button
-        android:id="@+id/accounts"
+    <TableRow
+        android:id="@+id/tableRow3"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.34"
-        android:text="Accounts"
-        android:onClick="goToListPage" />
+        android:layout_weight="0.33" >
+
+        <Button
+            android:id="@+id/prayers"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.5"
+            android:text="Prayers"
+            android:onClick="goToListPage" />
+
+        <Button
+            android:id="@+id/accounts"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.5"
+            android:text="Accounts"
+            android:onClick="goToListPage" />
+
+    </TableRow>
 
 </TableLayout><!-- From: file:/Users/hannahbrown/AndroidStudioProjects/kardia-git/kardia-android/MissionaryAppAndroidStudio/missionaryApp/src/main/res/layout/activity_main.xml -->
