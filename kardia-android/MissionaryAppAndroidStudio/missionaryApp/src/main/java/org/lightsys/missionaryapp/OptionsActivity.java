@@ -43,8 +43,13 @@ public class OptionsActivity extends ActionBarActivity{
 		break;
 		case 2131034196 : arg.putInt(ListActivity.ARG_TYPE, 3);
 		break;
-		case 2131034197 : arg.putInt(ListActivity.ARG_TYPE, 4);
+        case 2131230792 : arg.putInt(ListActivity.ARG_TYPE, 4);
+        break;
+		case 2131034197 : arg.putInt(ListActivity.ARG_TYPE, 5);
 		break;
+        default:
+        System.out.println(viewId);
+        break;
 		}
 		listPage.setArguments(arg);
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();

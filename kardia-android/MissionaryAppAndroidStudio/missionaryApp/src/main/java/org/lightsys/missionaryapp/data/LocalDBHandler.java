@@ -236,6 +236,12 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		return null;
 	}
 
+    //should return: id, short name, long description;
+    public ArrayList<HashMap<String, String>> getDisplayPrayers() {
+        // TODO WRITE THE METHOD.
+        return null;
+    }
+
 	//should return: id, name, amount/balance (whole and part) 
 	public ArrayList<HashMap<String, String>> getDisplayAccounts() {
 		// TODO WRITE THE METHOD.
