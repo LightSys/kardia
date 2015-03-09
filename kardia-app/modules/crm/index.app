@@ -24,8 +24,9 @@ index "widget/page"
     // from the menu.
     //
     title = "Kardia CRM - Structured Engagement";
-    width = 1000;
-    height = 600;
+    width = 1200;
+    height = 700;
+    max_requests = 6;
 
     // This is the template to use -- it is much like a CSS stylesheet,
     // providing basic information about the look and feel of the 
@@ -33,12 +34,12 @@ index "widget/page"
     // preferences, which also includes the template for the overall
     // theme that is in use.
     //
-    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl", "/apps/kardia/modules/crm/crm.tpl";
 
     // Background image for the window.
     //
     //background = "/apps/kardia/images/bg/light_bgnd.jpg";
-    bgcolor="#f0f0f0";
+    bgcolor="#ffffff";
     background = null;
 
     // Security control -- only users with the "kardia:crm" endorsement are
@@ -47,16 +48,14 @@ index "widget/page"
     require_endorsements = "kardia:crm";
     endorsement_context = "kardia";
 
-    // And here is the component containing the active collaboration list on
-    // the lefthand side and the Partner profile on the righthand side.  The
-    // path for the component is relative to the path of the application,
-    // unless the component's path begins with a slash.
+    // Main CRM interface
     //
-    list_and_profile "widget/component"
+    crm "widget/component"
 	{
-	x = 10; y = 10;
-	width = 980; height = 580;
-	path = "list_and_profile.cmp";
+	x=0; y=0;
+	width=1200; height=700;
+	path="crm.cmp";
+	us = crm;
 	}
     }
 

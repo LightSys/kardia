@@ -1,0 +1,166 @@
+$Version=2$
+activity_list "widget/component-decl"
+    {
+    height=417; width=248;
+
+    title = "Activity";
+    icon = "/apps/kardia/images/icons/openiconic-clock.svg";
+    sequence = 40;
+
+    Refresh "widget/component-decl-action" { }
+    RefreshTasks "widget/component-decl-action" { }
+    PartnerSelected "widget/component-decl-event" { }
+
+    refresh_timer "widget/timer"
+	{
+	auto_start=0;
+	auto_reset=1;
+	msec=30000;
+
+	on_refresh "widget/connector" { event=Expire; target=activity_osrc; action=Refresh; }
+	}
+
+    activity_osrc "widget/osrc"
+	{
+	sql = "	select
+		    :activity_group_id
+		from
+		    /apps/kardia/modules/crm/activity.qy
+		";
+	autoquery=onfirstreveal;
+	replicasize=2;
+	readahead=2;
+	indicates_activity=no;
+
+	//on_endquery "widget/connector" { event=EndQuery; target=activity_data_osrc; action=QueryParam; e_activity_group_id=runclient(:activity_osrc:activity_group_id); }
+	on_endquery "widget/connector" { event=EndQuery; target=activity_data_osrc; action=Refresh; }
+	on_endquery_start_timer "widget/connector" { event=EndQuery; target=refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
+	}
+
+    activity_vbox "widget/vbox"
+	{
+	x=2; y=2; width=244; height=409;
+	spacing=8;
+
+	activity_data_osrc "widget/osrc"
+	    {
+	    activity_id "widget/parameter" { type=integer; default=runclient(:activity_osrc:activity_group_id); }
+	    sql = " select
+			name = :e:e_reference_info,
+			:e:e_activity_date,
+			:e:e_activity_type,
+			:e:e_reference_info,
+			:e:e_info,
+			info_1 = substring(:e:e_info, 1, charindex('\n', :e:e_info) - 1),
+			info_2 = substring(:e:e_info, charindex('\n', :e:e_info) + 1),
+			shortdate = substring(convert(string,:e:e_activity_date),1,11),
+			textdate = condition(datediff(minute,:e:e_activity_date,getdate()) = 0, 'now',
+				    condition(datediff(minute,:e:e_activity_date,getdate()) = 1, '' + 'a minute ago', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 60, '' + datediff(minute,:e:e_activity_date,getdate()) + ' minutes ago', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 120, 'an hour ago', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 720, '' + (datediff(minute,:e:e_activity_date,getdate()) / 60) + ' hours ago', 
+				    condition(datediff(day,:e:e_activity_date,getdate()) = 1, 'yesterday', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 1440, '' + (datediff(minute,:e:e_activity_date,getdate()) / 60) + ' hours ago', 
+				    condition(datediff(day,:e:e_activity_date,getdate()) < 7, '' + datediff(day,:e:e_activity_date,getdate()) + ' days ago', 
+
+				    substring(convert(string,:e:e_activity_date),1,11)
+				    )))))))),
+			img = isnull( ( select
+				    path = :d:e_current_folder + '/' + :d:e_current_filename
+				from
+				    /apps/kardia/data/Kardia_DB/e_document/rows d,
+				    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+				    /apps/kardia/data/Kardia_DB/e_document_type/rows dt
+				where
+				    :dt:e_doc_type_label = 'Profile Photo' and
+				    :d:e_doc_type_id = :dt:e_doc_type_id and
+				    :pd:e_document_id = :d:e_document_id and
+				    :pd:p_partner_key = :e:p_partner_key
+				order by
+				    :pd:s_date_modified desc
+				limit
+				    1
+				), '/apps/kardia/images/artwork/persona.png')
+		    from
+			/apps/kardia/data/Kardia_DB/e_activity/rows e
+		    order by
+			:e:e_activity_date desc
+		    where
+			:e:e_activity_type != 'HEAD' and
+			:e:e_activity_group_id = :parameters:activity_id
+		    ";
+	    autoquery=never;
+	    readahead=50;
+	    replicasize=50;
+	    indicates_activity=no;
+
+	    activity_table "widget/table"
+		{
+		height=381;
+		min_rowheight=16;
+		max_rowheight=64;
+		allow_selection = yes;
+		show_selection = yes;
+		initial_selection = no;
+		demand_scrollbar = yes;
+		overlap_scrollbar = yes;
+		titlebar = no;
+		colsep = 0;
+		row_border_radius=4;
+		inner_padding = 2;
+		cellvspacing = 4;
+		rowhighlight_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#334466", "#fff090"));
+		textcolorhighlight = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', '#ffffff', "#000000"));
+		row1_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#6080c0", "#f8f8f8"));
+		row2_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#6080c0", "#f8f8f8"));
+
+		t_img "widget/table-column" { fieldname="img"; width=34; type=image; image_maxwidth=26; image_maxheight=26; align=center; }
+		t_name "widget/table-column"
+		    {
+		    fieldname="info_1";
+		    width=208;
+		    caption_value=runclient(condition(char_length(:activity_data_osrc:info_2) > 1, :activity_data_osrc:info_2 + '\n', '') + :activity_data_osrc:textdate);
+		    style=bold;
+		    font_size=15;
+		    wrap=yes;
+		    }
+		}
+	    }
+
+	stat_osrc "widget/osrc"
+	    {
+	    sql = runserver("select * from /apps/kardia/data/Kardia_DB/s_user_data/rows where :s_username = " + quote(user_name()));
+	    baseobj = "/apps/kardia/data/Kardia_DB/s_user_data/rows";
+	    replicasize=2;
+	    readahead=2;
+	    autoquery=onfirstreveal;
+
+	    stat_form "widget/form"
+		{
+		allow_query = no;
+		allow_nodata = no;
+		confirm_discard = no;
+		auto_focus = no;
+
+		save_cn "widget/connector" { event=DataSaved; target=activity_osrc; action=Refresh; }
+
+		status_hbox "widget/hbox"
+		    {
+		    height=20;
+		    spacing=4;
+
+		    status_lbl "widget/label" { width=72; 
+			//value=runclient(isnull(condition(charindex(' ', :usrdat_osrc:description) > 0, substring(:usrdat_osrc:description, 1, charindex(' ', :usrdat_osrc:description) - 1), :usrdat_osrc:description) + ' is:', ''));
+			text="My Status:";
+			align=right; }
+		    status_eb "widget/editbox" { width=168; tooltip="What are you doing right now?"; fieldname=s_status; empty_description="What are you doing now?"; }
+		    }
+
+		status_who "widget/variable" { fieldname=s_username; status_who_hints "widget/hints" { default=runclient(user_name()); } }
+
+		status_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+		}
+	    }
+	}
+    }
+

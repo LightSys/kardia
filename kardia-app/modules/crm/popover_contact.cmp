@@ -1,0 +1,194 @@
+$Version=2$
+popover_contact "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+
+    ContactAdded "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
+    onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen3 "widget/connector" { event=Open; target=contact_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
+
+    partner_var "widget/variable" { type=string; }
+    collab_var "widget/variable" { type=string; }
+
+    contact_win "widget/childwindow"
+	{
+	width=500; height=428;
+	x=250; y=89;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	on_contact_open "widget/connector" { event=Open; target=contact_form; action=New; }
+
+	contact_icon "widget/image"
+	    {
+	    x=12; y=12;
+	    width=24; height=24;
+	    source="/apps/kardia/images/icons/ionicons-contacts2.svg";
+	    }
+
+	contact_vbox "widget/vbox"
+	    {
+	    x=15; y=15;
+	    width=468; height=396;
+	    spacing=10;
+
+	    contact_osrc "widget/osrc"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_contact_history/rows e
+			where
+			    :e:e_contact_history_type != 4 and :e:e_contact_history_type != 5
+			order by
+			    isnull(:e:e_contact_date, :e:s_date_created) asc
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/e_contact_history/rows";
+		replicasize=50;
+		readahead=50;
+		autoquery=never;
+
+		contact_form "widget/form"
+		    {
+		    allow_search=no;
+		    allow_view=no;
+		    allow_modify=no;
+		    allow_new=yes;
+		    next_form=followup_form;
+
+		    close_on_save "widget/connector" { event=DataSaved; target=contact_win; action=Close; }
+		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_contact; action=ContactAdded; }
+		    discard_followup_on_discard "widget/connector" { event=Discard; event_condition=runclient(:FromKeyboard); target=followup_form; action=Discard; }
+		    close_on_discard "widget/connector" { event=Discard; target=contact_win; action=Close; }
+
+		    reload_ids_on_new "widget/connector"
+			{
+			event=New;
+			target=contact_id;
+			action=SetItems;
+			SQL=runclient("select label = :ct:text + ': ' + isnull('+' + :c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + isnull(:c:p_contact_data,''), value=:c:p_contact_id from /apps/kardia/data/Kardia_DB/p_contact_info/rows c, /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct where :c:p_partner_key = " + quote(:partner_var:value) + " and :ct:tag = :c:p_contact_type and :c:p_record_status_code = 'A'");
+			}
+
+		    reload_collabs_on_new "widget/connector"
+			{
+			event=New;
+			target=followup_collab;
+			action=SetItems;
+			SQL=runclient("	select 
+					    label = condition(:s:p_kardia_login == user_name(), 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(isnull(:p:p_preferred_name,'')) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' (' + :ct:e_collab_type_label + ')',
+					    value = :c:e_collaborator,
+					    selected = condition(:s:p_kardia_login == user_name(), 1, 0)
+					from
+					    /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
+					    /apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct,
+					    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+					    /apps/kardia/data/Kardia_DB/p_staff/rows s
+					where
+					    :c:p_partner_key = " + quote(:partner_var:value) + " and
+					    :ct:e_collab_type_id = :c:e_collab_type_id and
+					    :p:p_partner_key = :c:e_collaborator and
+					    :s:p_partner_key =* :p:p_partner_key");
+			}
+
+		    hdr_label "widget/label" { height=20; font_size=16; style=bold; text="Record a Contact with this Person:"; align=center; }
+
+		    contact_type "widget/component" { field=e_contact_history_type; path="/sys/cmp/smart_field.cmp"; height=20; text="Type:"; ctl_type=dropdown; sql="select :e_description, :e_contact_history_type from /apps/kardia/data/Kardia_DB/e_contact_history_type/rows where :e_contact_history_type != 4 and :e_contact_history_type != 5"; width=250; label_width=100; contact_type_hints "widget/hints" { style=notnull; } }
+		    contact_id "widget/component" { field=e_contact_id; path="/sys/cmp/smart_field.cmp"; height=20; text="Contact Via:"; ctl_type=dropdown; sql="select null,null"; width=350; label_width=100; }
+
+		    contact_partner "widget/variable" { fieldname=p_partner_key; contact_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
+		    contact_whom "widget/variable" { fieldname=e_whom; contact_whom_hints "widget/hints" { default=runclient(:collab_var:value); } }
+		    contact_date "widget/component" { field=e_contact_date; path="/sys/cmp/smart_field.cmp"; height=20; text="Date:"; ctl_type=datetime; label_width=100; contact_date_hints "widget/hints" { default=runclient(getdate()); } width=250; }
+		    contact_subj "widget/component" { field=e_subject; path="/sys/cmp/smart_field.cmp"; height=20; text="Subject:"; ctl_type=editbox; label_width=100; }
+		    contact_notes "widget/component" { field=e_notes; path="/sys/cmp/smart_field.cmp"; height=100; text="Notes:"; ctl_type=textarea; label_width=100; }
+
+		    cont_f_sep "widget/image" { height=1; x=100; width=368; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+		    followup_osrc "widget/osrc"
+			{
+			sql = "select * from /apps/kardia/data/Kardia_DB/e_todo/rows t";
+			baseobj = "/apps/kardia/data/Kardia_DB/e_todo/rows";
+			autoquery = never;
+
+			followup_form "widget/form"
+			    {
+			    allow_search=no;
+			    allow_view=no;
+			    allow_modify=no;
+			    allow_new=yes;
+			    next_form=contact_form;
+
+			    discard_contact_on_discard "widget/connector" { event=Discard; event_condition=runclient(:FromKeyboard); target=contact_form; action=Discard; }
+
+			    followup_typeid "widget/variable" { fieldname=e_todo_type_id; todo_type_hints "widget/hints" { default=runclient(1); } }
+			    followup_status "widget/variable" { fieldname=e_todo_status; todo_stat_hints "widget/hints" { default=runclient('I'); } }
+			    default_desc_on_new "widget/connector"
+				{
+				event=New;
+				target=followup_desc;
+				action=SetValue;
+				Value=runclient("Followup from " + isnull(:contact_type:label, "Contact") + " on " + isnull(substring(:contact_date:value,1,12), substring(convert(string,getdate()),1,11)));
+				}
+
+			    followup_date "widget/component" { field=e_todo_due_date; path="/sys/cmp/smart_field.cmp"; height=20; text="Followup Date:"; ctl_type=datetime; label_width=100; width=250; }
+			    followup_partner "widget/variable" { fieldname=e_todo_partner; todo_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
+			    followup_collab "widget/component" { field = e_todo_collaborator; path = "/sys/cmp/smart_field.cmp"; height=20; text = "Followup By:"; ctl_type = dropdown; sql = "select null, null"; width=350; label_width=100; }
+			    followup_desc "widget/component" { field=e_todo_desc; path="/sys/cmp/smart_field.cmp"; height=20; text="Followup Note:"; ctl_type=editbox; label_width=100; }
+			    followup_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; visual=no; }
+			    }
+			}
+
+		    contact_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+		    contact_btns "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=10;
+
+			addcontact_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Record Contact";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    enabled = runclient(:contact_form:is_savable and :contact_type:value is not null and char_length(:contact_subj:content) > 0);
+
+			    on_add "widget/connector" { event=Click; target=contact_form; action=Save; }
+			    on_add2 "widget/connector" { event=Click; event_condition=runclient(:followup_form:is_savable); target=followup_form; action=Save; }
+			    }
+
+			cancelcontact_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Cancel Contact";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    on_cancel1 "widget/connector" { event=Click; target=contact_form; action=Discard; }
+			    on_cancel2 "widget/connector" { event=Click; target=followup_form; action=Discard; }
+			    on_cancel3 "widget/connector" { event=Click; target=contact_win; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

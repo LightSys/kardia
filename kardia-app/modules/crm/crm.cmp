@@ -1,0 +1,437 @@
+$Version=2$
+crm "widget/component-decl"
+    {
+    width=1000;
+    height=600;
+    
+    // Self-refrerence
+    us "widget/parameter" { type=object; }
+
+    // Master refresh
+    Refresh "widget/component-decl-action" { }
+    onRefresh1 "widget/connector" { event=Refresh; target=profile_cmp; action=Refresh; }
+    onRefresh2 "widget/connector" { event=Refresh; target=sidebar_cmp; action=Refresh; }
+
+    // This gives us information about the currently logged-in
+    // user (i.e., the collaborator).
+    //
+    collaborator_osrc "widget/osrc"
+	{
+	sql = "	select
+		    :s:p_partner_key,
+		    nametxt = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+		    cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number), '')
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :s:p_kardia_login = user_name() and
+		    :p:p_partner_key = :s:p_partner_key
+		limit
+		    1
+		";
+	autoquery=onload;
+	readahead = 2;
+	replicasize = 2;
+	}
+
+    crm_vbox "widget/vbox"
+	{
+	x=0;y=0;
+	width=1000; height=600;
+	spacing=6;
+
+	// Icon menu bar at top of app
+	//
+	iconbar "widget/component"
+	    {
+	    height=76;
+	    fl_height=0;
+	    path = "iconbar.cmp";
+	    EnabledTypes="REL,TAG,GIFT,COMM,CONT,TASK,NOTE,DATA,FILE,TRK,PAR,ADDR";
+	    profile = profile_cmp;
+
+	    select_sidebar "widget/connector"
+		{
+		event=SidebarSelect;
+		target=sidebar_cmp;
+		action=SetTab;
+		TabIndex=runclient(:PageID);
+		}
+
+	    on_contact "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == 'Contact');
+		target=contact_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient("top");
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		}
+
+	    on_notes "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == 'Notes');
+		target=notes_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient("top");
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		}
+
+	    on_newtask "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == 'ToDo');
+		target=popover_todo;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient('top');
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		todo_id=runclient(null);
+		is_new=1;
+		partnername=runclient(:profile_cmp:partnername);
+		}
+	    newpartner_cn "widget/connector"
+		{
+		condition=0;
+		event=NewPartner;
+		target=crm;
+		action=Launch;
+		Width=844;
+		Height=600;
+		Source="/apps/kardia/modules/base/new_partner.app";
+		return_to=newperson_popover;
+		set_return=1;
+		}
+	    newpartner2_cn "widget/connector"
+		{
+		event=NewPartner;
+		target=newperson_simple_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient('top');
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		}
+	    editpartner_cn "widget/connector"
+		{
+		event=EditPartner;
+		target=crm;
+		action=Launch;
+		Width=844;
+		Height=600;
+		Source="/apps/kardia/modules/base/partner_window.app";
+		id=runclient(:profile_cmp:p_partner_key);
+		send_refresh=1;
+		send_refresh_to=us;
+		//return_to=f_rcpt_donorid;
+		//set_donor=1;
+		//ledger=runclient(:gift_entry:ledger);
+		}
+	    newtrk_cn "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == 'Tracks');
+		target=newtrack_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient('top');
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		partnername=runclient(:profile_cmp:partnername);
+		}
+	    newtag_cn "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == 'Tags');
+		target=tags_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient('top');
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		partnername=runclient(:profile_cmp:partnername);
+		}
+	    }
+
+	iconsep "widget/autolayoutspacer" { height=2; fl_height=0; }
+
+	// Here we create an hbox, which arranges its child widgets horizontally.
+	// It is used so that the coordinates of each child object do not need to
+	// be specified individually, which improves maintainability.
+	//
+	list_profile_hbox "widget/hbox"
+	    {
+	    x=10;
+	    width=980; height=500;
+
+	    // The spacing between child objects of this hbox.
+	    //
+	    spacing=10;
+
+	    sidebar_cmp "widget/component"
+		{
+		width=258;
+		path = "sidebar.cmp";
+		collaborator_osrc = collaborator_osrc;
+
+		onSetNumber "widget/connector"
+		    {
+		    event=SetNumber;
+		    target=iconbar;
+		    action=SetNumber;
+		    Number=runclient(:Number);
+		    Which=runclient(:Which);
+		    Color=runclient(:Color);
+		    }
+
+		onPartnerSelect "widget/connector"
+		    {
+		    event=PartnerSelected;
+		    target=profile_cmp;
+		    action=SelectPartner;
+		    partner_key = runclient(:partner_key);
+		    }
+
+		onAdvancedSearch "widget/connector"
+		    {
+		    event=AdvancedSearch;
+		    target=profile_cmp;
+		    action=AdvancedSearch;
+		    }
+
+		onAddPerson "widget/connector"
+		    {
+		    event=AddPerson;
+		    target=addperson_popover;
+		    action=Open;
+		    PointAt=runclient(:Origin);
+		    PointSide=runclient("left");
+		    partner=runclient(:partner);
+		    collaborator=runclient(:collaborator_osrc:p_partner_key);
+		    partnername=runclient(:partnername);
+		    }
+
+		onEditTask "widget/connector"
+		    {
+		    event=EditTask;
+		    target=popover_todo;
+		    action=Open;
+		    PointAt=runclient(:origin);
+		    PointSide=runclient('left');
+		    partner=runclient(:partner);
+		    collaborator=runclient(:collaborator_osrc:p_partner_key);
+		    todo_id=runclient(:todo_id);
+		    }
+		}
+
+	    vertsep "widget/autolayoutspacer" { width=1; }
+
+	    profile_cmp "widget/component"
+		{
+		width=701;
+		path = "partner_profile.cmp";
+		iconbar = iconbar;
+		collaborator_osrc = collaborator_osrc;
+
+		on_tune "widget/connector"
+		    {
+		    event=TuneHighlights;
+		    target=popover_tunehighlights;
+		    action=Open;
+
+		    PointAt=runclient(:origin);
+		    PointSide=runclient('right');
+
+		    direction=runclient(:direction);
+		    hname=runclient(:hname);
+		    htype=runclient(:htype);
+		    partner=runclient(:profile_cmp:p_partner_key);
+		    collaborator=runclient(:collaborator_osrc:p_partner_key);
+		    role=runclient(:profile_cmp:collab_role);
+		    }
+
+		onEditTask2 "widget/connector"
+		    {
+		    event=EditTask;
+		    target=popover_todo;
+		    action=Open;
+		    PointAt=runclient(:origin);
+		    PointSide=runclient(:side);
+		    partner=runclient(:partner);
+		    collaborator=runclient(:collaborator_osrc:p_partner_key);
+		    todo_id=runclient(:todo_id);
+		    }
+
+		on_EditCollab "widget/connector"
+		    {
+		    event=EditCollab;
+		    target=popover_collab;
+		    action=Open;
+		    PointAt=runclient(:origin);
+		    PointSide=runclient('top');
+		    PointOffset=runclient(64);
+		    partner=runclient(:profile_cmp:p_partner_key);
+		    partnername=runclient(:profile_cmp:partnername);
+		    collaborator=runclient(:collaborator_osrc:p_partner_key);
+		    }
+		on_TrackSelect "widget/connector"
+		    {
+		    event=TrackSelected;
+		    target=track_popover;
+		    action=Open;
+		    PointAt=runclient(:origin);
+		    PointSide=runclient('right');
+		    //PointOffset=runclient(20);
+		    engagement_id=runclient(:engagement_id);
+		    partner=runclient(:profile_cmp:p_partner_key);
+		    partnername=runclient(:profile_cmp:partnername);
+		    collaborator=runclient(:collaborator_osrc:p_partner_key);
+		    }
+		}
+	    }
+	}
+
+    popover_collab "widget/component"
+	{
+	x=0; y=0; width=1000; height=600;
+	path="popover_collab.cmp";
+	on_collabchange "widget/connector" { event=CollabChanged; target=profile_cmp; action=RefreshCollab; }
+	}
+
+    popover_todo "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_todo.cmp";
+	on_assignchange "widget/connector" { event=TaskEdited; target=profile_cmp; action=Refresh; }
+	on_assignchange2 "widget/connector" { event=TaskEdited; target=sidebar_cmp; action=RefreshTasks; }
+	}
+
+    popover_tunehighlights "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_tunehighlights.cmp";
+	on_tuned "widget/connector" { event=TuneComplete; target=profile_cmp; action=Refresh; }
+	}
+
+    contact_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_contact.cmp";
+	on_contact_add "widget/connector" { event=ContactAdded; target=profile_cmp; action=Refresh; }
+	}
+
+    notes_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_notes.cmp";
+	on_note_add "widget/connector" { event=NoteAdded; target=profile_cmp; action=Refresh; }
+	}
+
+    addperson_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_addperson.cmp";
+	on_person_add1 "widget/connector" { event=PersonAdded; target=profile_cmp; action=Refresh; }
+	on_person_add2 "widget/connector" { event=PersonAdded; target=sidebar_cmp; action=Refresh; }
+	}
+
+    newperson_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_newperson.cmp";
+	on_newperson_add1 "widget/connector" { event=PersonAdded; target=profile_cmp; action=Refresh; }
+	on_newperson_add2 "widget/connector" { event=PersonAdded; target=sidebar_cmp; action=Refresh; }
+	}
+
+    newperson_simple_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_newperson_simple.cmp";
+	//on_simnewperson_add1 "widget/connector" { event=PersonAdded; target=profile_cmp; action=Refresh; }
+	//on_simnewperson_add2 "widget/connector" { event=PersonAdded; target=sidebar_cmp; action=Refresh; }
+	on_simnewperson_add1 "widget/connector"
+	    {
+	    event=PersonAdded;
+	    target=newperson_popover;
+	    action=Open;
+	    PointAt=runclient(:Origin);
+	    PointSide=runclient('top');
+	    collaborator=runclient(:collaborator_osrc:p_partner_key);
+	    }
+	on_simnewperson_add2 "widget/connector"
+	    {
+	    event=PersonAdded;
+	    target=newperson_popover;
+	    action=SetValue;
+	    Value=runclient(:PartnerID);
+	    }
+	advnewpartner_cn "widget/connector"
+	    {
+	    event=AdvancedAddPerson;
+	    target=crm;
+	    action=Launch;
+	    Width=844;
+	    Height=600;
+	    Source="/apps/kardia/modules/base/new_partner.app";
+	    return_to=newperson_popover;
+	    set_return=1;
+	    }
+	advnewpartner2_cn "widget/connector"
+	    {
+	    event=AdvancedAddPerson;
+	    target=newperson_popover;
+	    action=Open;
+	    PointAt=runclient(:Origin);
+	    PointSide=runclient('top');
+	    collaborator=runclient(:collaborator_osrc:p_partner_key);
+	    }
+	onPartnerSelect2 "widget/connector"
+	    {
+	    event=PartnerSelected;
+	    target=profile_cmp;
+	    action=SelectPartner;
+	    partner_key = runclient(:partner_key);
+	    }
+	}
+
+    newtrack_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_addtrack.cmp";
+	on_newtrk_add1 "widget/connector" { event=TrackAdded; target=profile_cmp; action=Refresh; }
+	on_newtrk_add2 "widget/connector" { event=TrackAdded; target=sidebar_cmp; action=Refresh; }
+	}
+
+    track_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_track.cmp";
+	on_trk_upd1 "widget/connector" { event=TrackUpdated; target=profile_cmp; action=Refresh; }
+	on_trk_upd2 "widget/connector" { event=TrackUpdated; target=sidebar_cmp; action=Refresh; }
+	}
+
+    tags_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_managetags.cmp";
+	on_tag_upd1 "widget/connector" { event=TagsUpdated; target=profile_cmp; action=Refresh; }
+	on_tag_upd2 "widget/connector" { event=TagsUpdated; target=sidebar_cmp; action=Refresh; }
+	}
+    }
+

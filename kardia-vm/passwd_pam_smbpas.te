@@ -1,0 +1,11 @@
+
+module passwd_pam_smbpas 1.0;
+
+require {
+	type passwd_t;
+	type samba_var_t;
+	class file write;
+}
+
+#============= passwd_t ==============
+allow passwd_t samba_var_t:file write;

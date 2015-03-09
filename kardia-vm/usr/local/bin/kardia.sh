@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-#
+# version: 1.0.5
+# os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
 # called by the superuser.  Don't give the user account too much control.
@@ -18,6 +19,9 @@
 \builtin export LD_LIBRARY_PATH=
 
 FIX_SCREEN_DRAINBAMAGE=yes
+
+CX_GITREPO="git.code.sf.net/p/centrallix/git"
+K_GITREPO="git.code.sf.net/p/kardia/git"
 
 # We need to set the umask to 002, so that we give write permission to
 # the kardia_src group for the shared repository.  This could be made
@@ -91,6 +95,7 @@ VERSION="1.0"
 TITLE="Kardia/Centrallix VM Appliance $VERSION  (C) LightSys"
 Root || TITLE="[$USER]  $TITLE"
 Root && TITLE="** ROOT **  $TITLE"
+export QUICKMODE=no
 
 
 if Root; then
@@ -207,6 +212,116 @@ function AsRoot
     fi
     }
 
+#determine what OS we have
+function GetOSInfo
+    {
+    #This function is based on multiple sources, but seems to have
+    #originated with something Novel once used. Scripts using some
+    #of this base code can be found all over the Internet.
+    OS=`uname -s`
+    REV=`uname -r`
+    export OSSTR="Linux" #a default if we cannot figure it out
+
+    if [ "${OS}" = "SunOS" ] ; then
+	OS="Solaris"
+	OSSTR="${OS} ${REV}"
+    elif [ "${OS}" = "AIX" ] ; then
+	OSSTR="${OS} `oslevel`"
+    elif [ "${OS}" = "Linux" ] ; then
+	if [ -f /etc/os-release ] ; then
+	    DIST=`cat /etc/os-release | grep "^NAME=" | sed 's/.*=//;s/ .*//'`
+	    REV=`cat /etc/os-release | grep VERSION_ID | sed 's/.*=//;s/ .*//'`
+	elif [ -f /etc/redhat-release ] ; then
+	    DIST=`cat /etc/redhat-release | sed 's/ .*//'`
+	    REV=`cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//`
+	elif [ -f /etc/SuSE-release ] ; then
+	    DIST=`cat /etc/SuSE-release | tr "\n" ' '| sed s/VERSION.*//`
+	    REV=`cat /etc/SuSE-release | tr "\n" ' ' | sed s/.*=\ //`
+	elif [ -f /etc/mandrake-release ] ; then
+	    DIST='Mandrake'
+	    REV=`cat /etc/mandrake-release | sed s/.*release\ // | sed s/\ .*//`
+	elif [ -f /etc/debian_version ] ; then
+	    DIST="Debian `cat /etc/debian_version`"
+	    REV=""
+	fi
+	if [ -f /etc/UnitedLinux-release ] ; then
+	    DIST="${DIST}[`cat /etc/UnitedLinux-release | tr "\n" ' ' | sed s/VERSION.*//`]"
+	fi
+	OSSTR=$(echo "${DIST} ${REV}" | sed 's/\"//g' | tr '[:upper:]' '[:lower:]')
+    fi
+    }
+
+#Update the Kardia.sh program and run any auto-update scripts we need to run
+#
+function UpdateMenus
+    {
+    lookupStatus
+    GetOSInfo
+    os_string=$(echo $OSSTR | sed 's/ /_/g')
+    echo
+    echo "Updating the kardia.sh menu system to the latest version in git."
+
+    if [ -d "$BASEDIR/src/kardia-git/kardia-vm" ]; then
+	if [ "$WKFMODE" = "individual" ]; then
+	    # In 'individual' workflow.  Update the shared repo regardless
+	    # of 'Source' update setting.
+	    repoPull "$BASEDIR/src/kardia-git"
+	fi
+	#We want to use an OS Specific kardia.sh if it exists
+	filename="$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia.sh"
+	if [ -f "$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia-${os_string}.sh" ]; then
+	    filename="$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia-${os_string}.sh"
+	fi
+	#see what we have now & compare to what we have
+	this_fn="/usr/local/bin/kardia.sh"
+	if [ -f "$filename" ]; then
+	    kardiavm_version=$(head $filename | grep version | sed 's/.*://;s/ //g')
+	    this_version=$(head $this_fn | grep version | sed 's/.*://;s/ //g')
+	    this_os=$(head $this_fn | grep os | sed 's/.*://;s/ //g')
+	    todo=0
+	    echo "  Installed=$this_version"
+	    echo "  Latest=$kardiavm_version"
+	    [ "$this_version" != "$kardiavm_version" ] && todo=1
+	    [ "$this_os" != $os_string ] && todo=1
+	    if [ "$todo" = "1" ]; then
+		/bin/mv -f /usr/local/bin/kardia.sh /usr/local/bin/kardia.sh.old
+		/bin/cp "$filename" /usr/local/bin/kardia.sh
+		chmod 755 /usr/local/bin/kardia.sh
+		chown root.root /usr/local/bin/kardia.sh
+		if [ -d "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/$os_string" ]; then
+		(
+		cd "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/$os_string"
+		    for UPFILE in ./vmupgrade*.sh; do
+			if [ ! -f /usr/local/sbin/"$UPFILE" ]; then
+			    if [ -f "$UPFILE" ]; then
+				/bin/cp "$UPFILE" /usr/local/sbin/"$UPFILE"
+				chmod 755 "$UPFILE"
+				chown root.root "$UPFILE"
+				/usr/local/sbin/"$UPFILE"
+			    fi
+			fi
+		    done
+		    ) 2> /dev/null #the above gives errors if no vmupgrade files exist
+		fi
+		echo "Successfully updated menu system.  Press [ENTER] to continue..."
+		read ANS
+		exec /usr/local/bin/kardia.sh
+	    else
+		echo "Menus are already up to date.  Press [ENTER] to continue..."
+		read ANS
+	    fi
+	else
+	    echo "Failed to update shared repository.  Cannot update menus."
+	    echo "Press [ENTER] to continue."
+	    read ANS
+	fi
+    else
+	echo "Shared repository does not exist.  Cannot update menus."
+	echo "Press [ENTER] to continue."
+	read ANS
+    fi
+    }
+
 # Run a Git command, but also print the command on the screen so that the
 # user has a chance to learn Git commands.
 function doGit
@@ -247,6 +362,73 @@ function updateFirewall
     sleep 0.5
     }
 
+function genCertificate
+    {
+    lookupStatus
+    cd $CXETC
+    #Generate a passphrase
+    export PASSPHRASE=$(head -c 500 /dev/urandom | tr -dc a-z0-9A-Z | head -c 60; echo)
+    # Certificate details; replace items in angle brackets with your own info
+    subj="
+    C=LS
+    ST=LightSys
+    O=LightSys
+    localityName=LightSys
+    commonName=$IPADDR
+    organizationalUnitName=
+    emailAddress=root@$HOST
+    "
+    echo "generating the private key"
+    # Generate the server private key
+    openssl genrsa -des3 -out centrallix.key -passout env:PASSPHRASE 2048
+     
+    echo "generating the CSR"
+    # Generate the CSR
+    openssl req \
+    -new \
+    -batch \
+    -subj "$(echo -n "$subj" | tr "\n" "/" | sed 's/ *//g')" \
+    -key centrallix.key \
+    -out centrallix.csr \
+    -passin env:PASSPHRASE
+    cp centrallix.key centrallix.key.org
+
+    echo "Stripping the password"
+    # Strip the password so we don't have to type it every time we restart Apache
+    openssl rsa -in centrallix.key.org -out centrallix.key -passin env:PASSPHRASE
+
+    echo "Generating the cert" 
+    # Generate the cert (good for 10 years)
+    openssl x509 -req -days 3650 -in centrallix.csr -signkey centrallix.key -out centrallix.crt
+    }
+
+function checkCert
+    {
+    lookupStatus
+    todo=0
+    certfile=$CXETC/centrallix.crt
+    keyfile=$CXETC/centrallix.key
+    sed -i'' "s#ssl_key =.*#ssl_key = \"$keyfile\";#;s#ssl_cert =.*#ssl_cert = \"$certfile\";#" $CXCONF
+    if [ ! -d $CXETC ]; then
+	mkdir -p $CXETC
+    fi
+    if [ ! -f $keyfile ]; then
+	echo "No SSL key found. Generating one"
+	todo=1
+    elif [ ! -f $certfile ]; then
+	echo "No SSL certificate found. Generating one"
+	todo=1
+    else
+	certip=$(openssl x509 -in $certfile -subject -noout | sed 's/.*CN=\([^\/]*\).*/\1/')
+	if [ "$certip" != "$IPADDR" ]; then
+	    echo "SSL Certificate IP mismatch.  re-generating certificate"
+	    todo=1
+	fi
+    fi
+    if [ "$todo" = "1" ]; then
+	genCertificate
+    fi
+    }
 
 # Manage or add a user
 function manageUser
@@ -316,8 +498,11 @@ function manageUser
 		sleep 1
 		return 1
 	    fi
+	    echo "useradd"
 	    /usr/sbin/useradd -c "$N_REALNAME - Kardia" "$N_USER"
+	    echo "smbpasswd"
 	    smbpasswd -a -n "$N_USER"
+	    echo "smbpasswd done"
 	    if [ ! -f "/home/$N_USER/.ssh/known_hosts" ]; then
 		mkdir "/home/$N_USER/.ssh"
 		/bin/chown "$N_USER". "/home/$N_USER/.ssh"
@@ -332,12 +517,14 @@ function manageUser
 	    echo "Setting an initial password for $N_USER..."
 	    echo ""
 	    mysql -e "CREATE USER '$N_USER'@'%' IDENTIFIED BY 'newuserpass';"
-	    mysql -e "CREATE USER '$N_USER'@'localhost IDENTIFIED BY 'newuserpass';"
+	    mysql -e "CREATE USER '$N_USER'@'localhost' IDENTIFIED BY 'newuserpass';"
 	    mysql -e "GRANT ALL ON Kardia_DB.* TO '$N_USER'@'%';"
 	    mysql -e "GRANT ALL ON Kardia_DB.* TO '$N_USER'@'localhost';"
 	    mysql -e "GRANT SELECT ON mysql.user TO '$N_USER'@'%';"
 	    mysql -e "GRANT SELECT ON mysql.user TO '$N_USER'@'localhost';"
 	    mysql -e "FLUSH PRIVILEGES;"
+
+	    echo "prompting for password" 
 
 	    /usr/bin/passwd "$N_USER" < /dev/tty
 
@@ -520,9 +707,8 @@ function setTimezone
 	done
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
 	if [ "$SEL" != "" ]; then
-	    cp -a /usr/share/zoneinfo/posix/"$SEL" /etc/localtime
-	    SEL=$(echo -n "$SEL" | sed 's/\//\\\//g')
-	    sed "s/^ZONE=.*/ZONE=\"$SEL\"/" < /etc/sysconfig/clock > /etc/sysconfig/clock.new && /bin/mv -f /etc/sysconfig/clock.new /etc/sysconfig/clock
+	    #echo $SEL
+	    timedatectl set-timezone "$SEL"
 	    break
 	fi
     done
@@ -575,7 +761,7 @@ function menuSystem
 		setTimezone
 		;;
 	    Wizard)
-		AsRoot doSetupGuide
+		AsRoot chooseSetupGuide
 		;;
 	esac
     done
@@ -603,15 +789,15 @@ function repoSetStatus
     RVAL=$?
     if [ "$RVAL" = "0" ]; then
 	if [ "$N_CXUSER" = "" ]; then
-	    doGit config remote.origin.url "git://git.code.sf.net/p/centrallix/git"
+	    doGit config remote.origin.url "$CX_GITREPO"
 	else
-	    doGit config remote.origin.url "ssh://$N_CXUSER@git.code.sf.net/p/centrallix/git"
+	    doGit config remote.origin.url "ssh://$N_CXUSER@$CX_GITREPO"
 	fi
 	cd "$1/kardia-git"
 	if [ "$N_CXUSER" = "" ]; then
-	    doGit config remote.origin.url "git://git.code.sf.net/p/kardia/git"
+	    doGit config remote.origin.url "$K_GITREPO"
 	else
-	    doGit config remote.origin.url "ssh://$N_CXUSER@git.code.sf.net/p/kardia/git"
+	    doGit config remote.origin.url "ssh://$N_CXUSER@$K_GITREPO"
 	fi
     fi
     }
@@ -860,11 +1046,11 @@ function repoSetOrigin
 	CXORIGIN="$BASEDIR/src/cx-git"
 	KORIGIN="$BASEDIR/src/kardia-git"
     elif [ "$2" = "READONLY" ]; then
-	CXORIGIN="git://git.code.sf.net/p/centrallix/git"
-	KORIGIN="git://git.code.sf.net/p/kardia/git"
+	CXORIGIN="git://$CX_GITREPO"
+	KORIGIN="git://$K_GITREPO"
     else
 	CXORIGIN="ssh://$2@git.code.sf.net/p/centrallix/git"
-	KORIGIN="ssh://$2@git.code.sf.net/p/kardia/git"
+	KORIGIN="ssh://$2@$K_GITREPO"
     fi
 
     # Set the origin...
@@ -889,11 +1075,11 @@ function repoInitUser
 	CXORIGIN="$BASEDIR/src/cx-git"
 	KORIGIN="$BASEDIR/src/kardia-git"
     elif [ "$2" = "READONLY" ]; then
-	CXORIGIN="git://git.code.sf.net/p/centrallix/git"
-	KORIGIN="git://git.code.sf.net/p/kardia/git"
+	CXORIGIN="git://$CX_GITREPO"
+	KORIGIN="git://$K_GITREPO"
     else
 	CXORIGIN="ssh://$2@git.code.sf.net/p/centrallix/git"
-	KORIGIN="ssh://$2@git.code.sf.net/p/kardia/git"
+	KORIGIN="ssh://$2@$K_GITREPO"
     fi
 
     echo "Cloning new repository for $RUSER..."
@@ -916,9 +1102,11 @@ function repoInitShared
     KORIGIN=$(cd $BASEDIR/src/kardia-git 2>/dev/null; git config --get remote.origin.url 2>/dev/null)
     CXMETHOD=${CXORIGIN%%:*}
     if [ "$CXMETHOD" != "ssh" ]; then
-	CXORIGIN="git://git.code.sf.net/p/centrallix/git"
-	KORIGIN="git://git.code.sf.net/p/kardia/git"
+	CXORIGIN="git://$CX_GITREPO"
+	KORIGIN="git://$K_GITREPO"
     fi
+    [ -z "$CXORIGIN" ] && repoSetOrigin
+    [ -z "$KORIGIN" ] && repoSetOrigin
     cd $BASEDIR/src || return 1
     /bin/rm -rf cx-git 2>/dev/null
     /bin/rm -rf kardia-git 2>/dev/null
@@ -1525,10 +1713,12 @@ function lookupStatus
     fi
     if [ "$DEVMODE" = "root" ]; then
 	CXCONF=/usr/local/etc/centrallix.conf
+	CXETC=/usr/local/etc/centrallix
 	CXBIN=/usr/local/sbin/centrallix
 	CXLOG=/var/log/centrallix-screen.log
     else
 	CXCONF="/home/$USER/cxinst/etc/centrallix.conf"
+	CXETC="/home/$USER/cxinst/etc/centrallix"
 	CXBIN="/home/$USER/cxinst/sbin/centrallix"
 	CXLOG="/home/$USER/centrallix-screen.log"
     fi
@@ -1697,6 +1887,13 @@ function screenCheck
     }
 
 
+function screenPassCtrlC
+    {
+    sleep 0.2
+    screen -S Centrallix -p 0 -X stuff ""
+    sleep 0.2
+    }
+
 function cxStop
     {
     lookupStatus
@@ -1712,7 +1909,7 @@ function cxStop
 	console)
 	    screenCheck
 	    echo "Stopping Centrallix in a console..."
-	    screen -S Centrallix -p 0 -X stuff ""
+	    screenPassCtrlC
 	    sleep 0.1
 	    killall -u "$USER" centrallix 2>/dev/null
 	    sleep 0.1
@@ -1722,7 +1919,7 @@ function cxStop
 	    screenCheck
 	    echo "Stopping Centrallix running under (gdb) in a console..."
 	    if [ "$GDBRUNNING" != "" ]; then
-		screen -S Centrallix -p 0 -X stuff ""
+		screenPassCtrlC
 		screen -S Centrallix -p 0 -X stuff "quit"
 		sleep 0.1
 		screen -S Centrallix -p 0 -X stuff "y"
@@ -1746,6 +1943,8 @@ function cxStart
 
     startStopNotSane && return 1
 
+    checkCert #rebuild the SSL certificate if needed
+
     case "$RUNMODE" in
 	service)
 	    Root || echo "You must be root to start/stop the service"
@@ -1755,14 +1954,14 @@ function cxStart
 	console)
 	    screenCheck
 	    echo "Starting Centrallix in a console..."
-	    screen -S Centrallix -p 0 -X stuff ""
+	    screenPassCtrlC
 	    screen -S Centrallix -p 0 -X stuff "$CXBIN -c $CXCONF"
 	    sleep 0.5
 	    ;;
 	gdb)
 	    screenCheck
 	    echo "Starting Centrallix under (gdb) in a console..."
-	    screen -S Centrallix -p 0 -X stuff ""
+	    screenPassCtrlC
 	    screen -S Centrallix -p 0 -X stuff "gdb $CXBIN"
 	    sleep 0.1
 	    screen -S Centrallix -p 0 -X stuff "set pagination off"
@@ -1889,11 +2088,11 @@ function menuWorkflowMode
 	for HOMEDIR in /home/*; do
 	    if [ -d "$HOMEDIR/cx-git" ]; then
 		cd "$HOMEDIR/cx-git"
-		doGit config remote.origin.url "git://git.code.sf.net/p/centrallix/git"
+		doGit config remote.origin.url "git://$CX_GITREPO"
 	    fi
 	    if [ -d "$HOMEDIR/kardia-git" ]; then
 		cd "$HOMEDIR/kardia-git"
-		doGit config remote.origin.url "git://git.code.sf.net/p/kardia/git"
+		doGit config remote.origin.url "git://$K_GITREPO"
 	    fi
 	done
 	echo "Press ENTER to continue..."
@@ -2247,9 +2446,10 @@ function menuDevel
     while true; do
 	lookupStatus
 
-	DSTR="dialog --backtitle '$TITLE' --title 'Development Tools' --menu 'Development Tool Options (Workflow:$WKFMODE / Dev:$DEVMODE / Run:$RUNMODE)' 19 72 14"
+	DSTR="dialog --backtitle '$TITLE' --title 'Development Tools' --menu 'Development Tool Options (Workflow:$WKFMODE / Dev:$DEVMODE / Run:$RUNMODE)' 21 76 14"
 	DSTR="$DSTR Build '(Re)Compile Centrallix and Centrallix-Lib'"
 	DSTR="$DSTR DBBuild '(Re)Build the Kardia Database'"
+	DSTR="$DSTR Cert 'Check the SSL certificate and rebuild if needed'"
 	if [ "$USER" != root -o "$WKFMODE" = shared ]; then
 	    DSTR="$DSTR Status 'Repository Modification Status'"
 	else
@@ -2264,10 +2464,10 @@ function menuDevel
 	if [ "$USER" != root -o "$DEVMODE" != users ]; then
 	    StartStoppable && DSTR="$DSTR '---' ''"
 	    if [ "$CXRUNNING" = "" ]; then
-		StartStoppable && DSTR="$DSTR Start 'Start Centrallix (port $CXPORT)'"
+		StartStoppable && DSTR="$DSTR Start 'Start Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
 	    else
 		StartStoppable && DSTR="$DSTR Restart 'Restart Centrallix'"
-		StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (port $CXPORT)'"
+		StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
 	    fi
 	    StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
 	    StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
@@ -2287,6 +2487,19 @@ function menuDevel
 		;;
 	    Commit)
 		commitAndPush
+		;;
+	    Cert)
+		#Do we stop and start centrallix?
+	        AUTORESTART=no
+	        if [ "$CXRUNNING" != "" ]; then
+		     AUTORESTART=yes
+		     cxStop
+	        fi
+		checkCert
+		# Auto restart?
+		if [ "$AUTORESTART" = yes ]; then
+		    cxStart
+		fi
 		;;
 	    Status)
 		if [ "$WKFMODE" = shared -o "$USER" = root ]; then
@@ -2521,38 +2734,286 @@ function doSystemUpdate
 
     # Update menu interface?
     if [ "${SEL%%Menus*}" != "$SEL" ]; then
-	if [ -d "$BASEDIR/src/kardia-git/kardia-vm" ]; then
-	    if [ "$WKFMODE" = "individual" ]; then
-		# In 'individual' workflow.  Update the shared repo regardless
-		# of 'Source' update setting.
-		repoPull "$BASEDIR/src/kardia-git"
+	AsRoot UpdateMenus
+    fi
+    }
+
+########################
+## Cleanup stuff #################
+## Prep the vm for distribution ##
+##################################
+
+#########
+## YUM ##
+function vm_prep_cleanYum
+{
+	echo "Cleaning YUM"
+	yum clean all
+	echo
+}
+
+#################
+# Etc directory #
+function vm_prep_setupEtc
+{
+	mkdir -p /etc/samba /etc/pam-script
+	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia"
+	directory="/usr/local/src/kardia-git/kardia-vm/etc/"
+	echo "Settting Up the ETC directory"
+	for file in $files; do
+	    if [  ! -e "/etc/$file" ]; then
+		echo -n "$file dne "
+		if [ -e "$directory$file" ]; then
+		    echo "copying from $directory"
+		    cp "$directory$file" /etc/$file
+		else
+		    echo "not in $directory.  Left undone"
+		fi
 	    fi
-	    if [ -f "$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia.sh" ]; then
-		/bin/mv -f /usr/local/bin/kardia.sh /usr/local/bin/kardia.sh.old
-		/bin/cp "$BASEDIR/src/kardia-git/kardia-vm/usr/local/bin/kardia.sh" /usr/local/bin/kardia.sh
-		chmod 755 /usr/local/bin/kardia.sh
-		chown root.root /usr/local/bin/kardia.sh
-		cd "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/"
-		for UPFILE in /vmupgrade*.sh; do
-		    if [ ! -f /usr/local/sbin/"$UPFILE" ]; then
-			/bin/cp "$UPFILE" /usr/local/sbin/"$UPFILE"
-			chmod 755 "$UPFILE"
-			chown root.root "$UPFILE"
-			/usr/local/sbin/"$UPFILE"
-		    fi
-		done
-		echo "Successfully updated menu system.  Press [ENTER] to continue..."
-		read ANS
-		exec /usr/local/bin/kardia.sh
-	    else
-		echo "Failed to update shared repository.  Cannot update menus."
-		echo "Press [ENTER] to continue."
-		read ANS
-	    fi
+	done
+	if [ -e /etc/issue.kardia-init ]; then
+	    cat /etc/issue.kardia-init > /etc/issue
 	else
-	    echo "Shared repository does not exist.  Cannot update menus."
-	    echo "Press [ENTER] to continue."
-	    read ANS
+	    echo "ERROR: issue.kardia-init does not exist!"
+	    echo "Either run kardia.sh or download the kardia git repo"
+	    echo "This VM will not be ready until that file is in place"
+	    exit
+	fi
+	cat /etc/samba/smb.conf.noshares /etc/samba/smb.conf.onerepo > /etc/samba/smb.conf 2> /dev/null
+	[ -f /etc/ssh/sshd_config.kardia ] && cat /etc/ssh/sshd_config.kardia > /etc/ssh/sshd_config
+	if [ -n "`grep PRELINKING=yes /etc/sysconfig/prelink 2>/dev/null`" ]; then
+	    echo Turning off prelinking
+	    sed -ri 's/PRELINKING=yes/PRELINKING=no/' /etc/sysconfig/prelink
+	fi
+	####################
+	# Add control groups
+	echo "Adding control groups"
+	[ -z "`grep kardia_src /etc/group`" ] && groupadd kardia_src
+	[ -z "`grep kardia_ssh /etc/group`" ] && groupadd kardia_ssh
+	[ -z "`grep kardia_root /etc/group`" ] && groupadd kardia_root
+	echo
+
+	####################
+	# Set the hostname
+	echo "Changing the VM Hostname"
+	N_HOST="KardiaVM"
+	echo "$N_HOST" > /etc/hostname
+	/bin/hostname "$N_HOST"
+	echo
+}
+
+###########
+# SELINUX ##################################################
+function vm_prep_setupSelinux
+{
+    #Change the sysconfig file selinux enabled line to "enabled"
+    echo "Ensuring SELINUX is enabled"
+    sed -i -e "s/^SELINUX=.*/SELINUX=enabled/" /etc/sysconfig/selinux
+    # Enable sharing of home directories
+    echo "Enable sharing of home directories in selinux (long process)"
+    setsebool -P samba_enable_home_dirs on
+    echo "Workaround for selinux bug that forbids sharing /usr/local/src"
+    # Workaround for selinux bug that forbids sharing /usr/local/src
+    chcon -t usr_t /usr/local/src
+    echo
+}
+
+###################
+### NETWORKING ##########################
+# Set the network files to correct values
+function vm_prep_cleanNetwork
+{
+	echo "Cleaning out the MAC addresses from the config file"
+	for addrfile in /etc/sysconfig/network-scripts/ifcfg-e*; do
+		echo -n "cleaning up: $addrfile "
+		#remove the MAC address line.  The MAC should be regenerated
+		#when the VM is cloned.  If this is left here, the VM will
+		#not start the interface
+		sed -i -e "/HWADDR/d" $addrfile
+
+		#remove the UUID line.  The UUID is like the MAC in that
+		#it will be changed when cloned.  If this is left here, the VM will
+		#not start the interface
+		sed -i -e "/UUID/d" $addrfile
+
+		#Make sure the interface starts on boot
+		sed -i -e "s/ONBOOT=.*/ONBOOT=yes/" $addrfile
+
+		echo "done"
+	done
+	echo "Cleaning up firewall"
+	for a in `firewall-cmd --list-ser`; do 
+		if [ $a != "ssh" -a $a != "dhcpv6-client" ]; then 
+			echo "  removing service $a"
+			firewall-cmd --remove-service $a
+			firewall-cmd --perm --remove-service $a
+		fi; 
+	done
+	for a in `firewall-cmd --list-port`; do 
+		echo "  removing port $a"
+		firewall-cmd --remove-port $a
+		firewall-cmd --perm --remove-port $a
+	done
+	echo
+}
+
+
+###########
+# SELINUX ##################################################
+#Change the sysconfig file selinux enabled line to "enabled"
+function vm_prep_cleanSelinux
+{
+	echo "Ensuring SELINUX is enabled"
+	sed -i -e "s/^SELINUX=.*/SELINUX=enabled/" /etc/sysconfig/selinux
+	echo
+}
+
+###########
+### SSH #######################################################
+# Remove the server ssh keys.  They will be regenerated on boot
+# also remove the root ssh keys and authorized hosts files
+function vm_prep_cleanSSH
+{
+	echo "Removing ssh keys and ssh info"
+	rm -vf /etc/ssh/*key*
+	rm -rvf /root/.ssh
+	echo
+}
+
+
+###########
+## FILES #########################################
+# Clean up the contents of history and other files
+function vm_prep_cleanFiles
+{
+    cxfiles="/usr/local/sbin/centrallix /usr/local/sbin/cxpasswd /usr/local/etc/centrallix"
+    cxlibs="/usr/local/lib/StPar* /usr/local/centrallix/ /usr/local/libCentrallix*"
+    cxinc="/usr/local/include/cxlib/"
+    cxetc="/etc/init.d/centrallix"
+    kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess"
+    gitfiles="/usr/local/src/cx-git /usr/local/src/kardia-git"
+	echo "Cleaning up Filesystem"
+	echo "  Cleaning up history"
+	echo "kardia.sh" > /root/.bash_history
+	echo "  Cleaning root git info"
+	echo > /root/.gitconfig
+	echo "  Cleaning root cxhistory"
+	echo > /root/.cxhistory
+	echo "  Cleaning root mysql_history"
+	echo > /root/.mysql_history
+	echo "  Cleaning root less history"
+	echo > /root/.lesshst
+	echo "  Cleaning root vim history"
+	echo > /root/.viminfo
+
+	#remove the file that says Kardia has been initialized
+	rm /usr/local/src/.initialized 2> /dev/null
+
+	#remove any entries in the udev rules. This file is auto written
+	tfile=/etc/udev/rules.d/70-persistent-net.rules
+	if [ -e $tfile ]; then
+		echo > $tfile
+	fi
+	echo "  Cleaning up installed Centrallix files"
+	chkconfig centrallix off 2>/dev/null
+	for file in $cxfiles $cxlibx $cxinc $cxetc $kardiash $gitfiles; do
+	    if [ -f "$file" -o -d "$file" ]; then
+		echo "    $file"
+		rm -rf "$file"
+	    fi
+	done
+	echo "Uninstalling old kernel versions"
+	rpm -qa kernel* | grep -v `uname -r` | while read line; do 
+	    echo "Removing package: $line"
+	    rpm -e $line; 
+	done
+	echo "Removing old log files"
+	find /var/log -name *-$(date +%Y)* -type f -print0 | xargs -0 rm -f --
+
+	echo 
+}
+
+######################
+###  Kardia Users  #######################################
+function vm_prep_cleanUsers
+{
+	#remove users
+	echo "Removing any Kardia Users"
+	for USERNAME in $(grep -- '- Kardia:' /etc/passwd | sed 's/^\([^:]*\):[^:]*:\([^:]*\):.*/\1/'); do
+		killall -u $USERNAME
+		echo "  removing Kardia user $USERNAME from linux"
+		userdel -r $USERNAME
+		echo "  removing Kardia user $USERNAME from samba"
+		pdbedit -u $USERNAMR -x
+		echo "  removing mysql user $USERNAME"
+		mysql -e "DROP USER $USERNAME@'localhost';" 2> /dev/null
+		mysql -e "DROP USER $USERNAME@'%';" 2> /dev/null
+	done
+	echo "Dropping Kardia_DB"
+	mysql -e "DROP DATABASE Kardia_DB;" 2>/dev/null
+}
+
+###################
+### Empty Space #######################################
+# Fill the empty space on the disk for easy compressing 
+function vm_prep_cleanEmptySpace
+{
+	echo "Filling remainder of HD with zeroes.  This takes some time"
+	partitions=`df | egrep -v "none|Filesystem|tmpfs" | sed 's/.* //'`
+	for a in $partitions; do
+		echo "partition $a"
+		file="$a/zerofile"
+		if [ -f $file ]; then
+			echo "Oops.  $file already exists. Delete it or something"
+		else
+			echo -n "Wait... filling in $file with zeros "
+			dd if=/dev/zero of=$file bs=1024 2>/dev/null
+			echo -n "done - Deleting $file "
+			rm -f $file
+			echo "deleted"
+		fi
+	done
+	echo "This VM should now compress very nicely"
+}
+
+function doCleanup
+    {
+    if [ $# -eq 0 ]; then
+	#make sure things are copied over from the repo
+	vm_prep_setupEtc
+	#clean out yum cache
+	vm_prep_cleanYum
+	#clean up network settings
+	vm_prep_cleanNetwork
+	#make sure selinux is enabled
+	vm_prep_cleanSelinux
+	#wipe ssh keys
+	vm_prep_cleanSSH
+	#clean up .history files and any extra users
+	vm_prep_cleanFiles
+	#remove Kardia users
+	vm_prep_cleanUsers
+	#zero out empty space so it compresses nicely
+	vm_prep_cleanEmptySpace
+	#
+	echo "This VM is prepped to be rolled out"
+	echo "Ensure the root password is set to what the PDF says it will be"
+    else
+	command="$1"
+	wholecmd="$@"
+	if [ "$command" != "" ]; then
+	    if [ "$(type -t $command)" = "function" ]; then
+		"$wholecmd"
+		exit
+	    elif [ "$(type -t vm_prep_$command)" = "function" ]; then
+		vm_prep_"$wholecmd"
+	    elif [ "$(type -t vm_prep_clean$command)" = "function" ]; then
+		vm_prep_clean"$wholecmd"
+		exit
+	    elif [ "$(type -t vm_prep_setup$command)" = "function" ]; then
+		vm_prep_setup"$wholecmd"
+		exit
+	    fi
 	fi
     fi
     }
@@ -2569,7 +3030,7 @@ function displyCentrallixConnectInfo
     dialog --backtitle "$TITLE" --title "Centrallix Connection Info" --msgbox "$DispMessage:
 
     URL:   http://$IPADDR:$CXPORT/
-    URL:   https://$IPADDR:$CXPORT/" 0 0
+    URL:   https://$IPADDR:$CXSSLPORT/" 0 0
     }
 
 function doSetupGuideUser
@@ -2610,10 +3071,26 @@ URL:   http://$IPADDR:$CXPORT/" 0 0
     return 0
     }
 
-
-# Setup Guide (aka "Wizard") for first-time run.
-function doSetupGuide
+function chooseSetupGuide
     {
+    while true; do
+	sg00DevelopOrJustLook
+	if [ "$?" = "0" ]; then
+	    doQuickSetupGuide
+	else
+	    doSetupGuide
+	fi
+	if [ "$?" = "0" ]; then
+	    return 0
+	fi
+    done
+    }
+
+# Set it up for kardia testing only
+function doQuickSetupGuide
+    {
+    export SLOWMODDE=yes
+    export STEPNUM="One"
     updateFirewall
     STEP=1
     while true; do
@@ -2622,46 +3099,38 @@ function doSetupGuide
 	fi
 	case $STEP in
 	    1)
+		STEPNUM=One
 		sg01SetRootPassword
 		;;
 	    2)
+		STEPNUM=Two
 		sg02SetHostname
 		;;
 	    3)
+		STEPNUM=Three
 		sg03SetTimezone
 		;;
 	    4)
+		STEPNUM=Four
 		sg04AddUsers
 		;;
 	    5)
-		sg05SetWorkMode
-		;;
-	    6)
-		sg06SetDevMode
-		;;
-	    7)
-		sg07SetRunMode
-		;;
-	    8)
+		STEPNUM=Five
 		sg08InitRepo
 		;;
-	    9)
-		sg09SetSFUser
+	    6)
+		STEPNUM=Six
+		sg10UpdateStuff
 		;;
-	    10)
-		if [ "$DEVMODE" = root ]; then
-		    sg10RootBuildRun
-		else
-		    dialog --backtitle "$TITLE" --title "Switching to a user..." --yes-label OK --no-label Back --yesno "The remaining steps need to be done as a normal user, not as root.  On the next screen, you'll pick a user to do the final steps." 0 0
-		    if [ "$?" = 0 ]; then
-			AsUser doSetupGuideUser
-		    fi
-		fi
+	    7)
+		STEPNUM=Seven
+		sg11RootBuildRun
 		;;
-	    11)
+	    8)
+		STEPNUM=Eight
 		sgYoureDone
 		;;
-	    12)
+	    9)
 		return 0
 		;;
 	esac
@@ -2674,9 +3143,103 @@ function doSetupGuide
     }
 
 
+# Setup Guide (aka "Wizard") for first-time run.
+function doSetupGuide
+    {
+    updateFirewall
+    STEP=1
+    while true; do
+	if [ "$STEP" = 0 ]; then
+	    return 1
+	fi
+	case $STEP in
+	    1)
+		STEPNUM=One
+		sg01SetRootPassword
+		;;
+	    2)
+		STEPNUM=Two
+		sg02SetHostname
+		;;
+	    3)
+		STEPNUM=Three
+		sg03SetTimezone
+		;;
+	    4)
+		STEPNUM=Four
+		sg04AddUsers
+		;;
+	    5)
+		STEPNUM=Five
+		sg05SetWorkMode
+		;;
+	    6)
+		STEPNUM=Six
+		sg06SetDevMode
+		;;
+	    7)
+		STEPNUM=Seven
+		sg07SetRunMode
+		;;
+	    8)
+		STEPNUM=Eight
+		sg08InitRepo
+		;;
+	    9)
+		STEPNUM=Nine
+		sg09SetSFUser
+		;;
+	    10)
+		STEPNUM=Ten
+		sg10UpdateStuff
+		;;
+	    11)
+		STEPNUM=Eleven
+		if [ "$DEVMODE" = root ]; then
+		    sg11RootBuildRun
+		else
+		    dialog --backtitle "$TITLE" --title "Switching to a user..." --yes-label OK --no-label Back --yesno "The remaining steps need to be done as a normal user, not as root.  On the next screen, you'll pick a user to do the final steps." 0 0
+		    if [ "$?" = 0 ]; then
+			AsUser doSetupGuideUser
+		    fi
+		fi
+		;;
+	    12)
+		STEPNUM=Twelve
+		sgYoureDone
+		;;
+	    13)
+		return 0
+		;;
+	esac
+	if [ "$?" = "0" ]; then
+	    STEP=$(($STEP + 1))
+	else
+	    STEP=$(($STEP - 1))
+	fi
+    done
+    }
+
+function returnOK
+    {
+    return 0
+    }
+
+function sg00DevelopOrJustLook
+    {
+    dialog --backtitle "$TITLE" --title "Develop or just Looking?" --yes-label 'Developer' --no-label 'Just Looking' --yesno "Are you a developer, or just looking at Kardia?  Someone who is just viewing Kardia will have a number of default settings chosen for them." 0 0
+    if [ $? = 0 ]; then
+	export QUICKMODE="no"
+	return 1
+    else
+	export QUICKMODE="yes"
+    fi
+    return 0
+    }
+
 function sg01SetRootPassword
     {
-    dialog --backtitle "$TITLE" --title "Step One:  Set Root Password" --yes-label 'OK' --no-label 'Back' --yesno "First, we need to set the root (system administrator) password on the VM Appliance.  This is the password you'll use to log in as 'root' and perform administrative functions.  However, we recommend logging in as a normal user and using 'sudo' instead, or using the administrative functions on the menu, where possible.  Press ENTER to set the root password." 0 0
+    dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Set Root Password" --yes-label 'OK' --no-label 'Back' --yesno "First, we need to set the root (system administrator) password on the VM Appliance.  This is the password you'll use to log in as 'root' and perform administrative functions.  However, we recommend logging in as a normal user and using 'sudo' instead, or using the administrative functions on the menu, where possible.  Press ENTER to set the root password." 0 0
     if [ "$?" != 0 ]; then
 	return 1
     fi
@@ -2685,8 +3248,12 @@ function sg01SetRootPassword
     }
 
 function sg02SetHostname
-    {
-    dialog --backtitle "$TITLE" --title "Step Two:  Set the Hostname" --yes-label OK --no-label Back --yesno "Next, we'll set the system hostname.  This is important because it will, by default, show up in commits performed by users on the VM Appliance, and so we need something unique.  You can enter this in 'hostname' or 'hostname.domainname' format." 0 0
+    {  
+    if [ "$QUICKMODE" = "no" ]; then
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Set the Hostname" --yes-label OK --no-label Back --yesno "Next, we'll set the system hostname.  This is important because it will, by default, show up in commits performed by users on the VM Appliance, and so we need something unique.  You can enter this in 'hostname' or 'hostname.domainname' format." 0 0
+    else
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Set the Hostname" --yes-label OK --no-label Back --yesno "Next, we'll set the system hostname.  The VM will be active on your network, so choose a name that you will recognize.  You can use either the 'hostname' or 'hostname.domain. format." 0 0
+    fi
     if [ "$?" != 0 ]; then
 	return 1
     fi
@@ -2695,7 +3262,11 @@ function sg02SetHostname
 
 function sg03SetTimezone
     {
-    dialog --backtitle "$TITLE" --title "Step Three:  Set the Timezone" --yes-label OK --no-label Back --yesno "Next, we'll set the timezone.  This is important so that time stamps will show up correctly on files and on commit messages." 0 0
+    if [ "$QUICKMODE" = "no" ]; then
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Set the Timezone" --yes-label OK --no-label Back --yesno "Next, we'll set the timezone.  This is important so that time stamps will show up correctly on files and on commit messages." 0 0
+    else
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Set the Timezone" --yes-label OK --no-label Back --yesno "Next, we'll set the timezone. Kardia needs the time to be the same on the browser as on the server, and so the timezone needs to be correct. " 0 0
+    fi
     if [ "$?" != 0 ]; then
 	return 1
     fi
@@ -2704,16 +3275,24 @@ function sg03SetTimezone
 
 function sg04AddUsers
     {
-    dialog --backtitle "$TITLE" --title "Step Four:  Add One or More Users" --yes-label OK --no-label Back --yesno "You don't want to be doing work and making commits to the Kardia and Centrallix source code as root.  So, we need to add one or more users.  After you press ENTER here, you'll be presented with a screen where you can add users.  To allow the users to perform administrative functions (i.e., sudo to root), enter 'yes' for 'System Admin Privs'.  To allow users access to the source code repository (via the network shares or locally when logged into the VM Appliance), enter 'yes' for 'Allow Repository Access'.  To allow users to SSH in from outside the VM Appliance, enter 'yes' for 'SSH Access'." 0 0
-    if [ "$?" != 0 ]; then
-	return 1
+    if [ "$QUICKMODE" = "no" ]; then
+        dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Add One or More Users" --yes-label OK --no-label Back --yesno "You don't want to be doing work and making commits to the Kardia and Centrallix source code as root.  So, we need to add one or more users.  After you press ENTER here, you'll be presented with a screen where you can add users.  To allow the users to perform administrative functions (i.e., sudo to root), enter 'yes' for 'System Admin Privs'.  To allow users access to the source code repository (via the network shares or locally when logged into the VM Appliance), enter 'yes' for 'Allow Repository Access'.  To allow users to SSH in from outside the VM Appliance, enter 'yes' for 'SSH Access'." 0 0
+	if [ "$?" != 0 ]; then
+	   return 1
+	fi
+    fi
+    if [ "$QUICKMODE" = "yes" ]; then 
+        dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Add One or More Users" --yes-label OK --no-label Back --yesno "You need to add a user for Kardia.  Just specify a username (optional full name) and it will prompt for a password when you hit enter" 0 0
+	if [ "$?" != 0 ]; then
+	    return 1
+	fi
     fi
     menuUsers
     }
 
 function sg05SetWorkMode
     {
-    dialog --backtitle "$TITLE" --title "Step Five:  Set Workflow Mode" --yes-label OK --no-label Back --yesno "This VM Appliance supports three different workflow modes.  On the next screen you'll select one of these:
+    dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Set Workflow Mode" --yes-label OK --no-label Back --yesno "This VM Appliance supports three different workflow modes.  On the next screen you'll select one of these:
 
 Shared:  All users work from a common shared source code repository.  This is simplest, but it also means users can easily get in each others' way.  It is best for just one user, or for two or three users who are working exceptionally closely together in tight coordination.
 
@@ -2728,7 +3307,7 @@ Individual:  Users work strictly from their own private repositories, and commit
 
 function sg06SetDevMode
     {
-    dialog --backtitle "$TITLE" --title "Step Six:  Set Development Mode" --yes-label OK --no-label Back --yesno "You have a choice of two development modes: 'root' or 'users'.
+    dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Set Development Mode" --yes-label OK --no-label Back --yesno "You have a choice of two development modes: 'root' or 'users'.
 
 If you select 'root', then the Centrallix server process will run as root, on port 800, and accept logins from any user on the system.  Only users with 'System Admin Privs' will be able to view the Centrallix console or interact with the debugger.
 
@@ -2741,7 +3320,7 @@ If you select 'users', then each user will have his/her own Centrallix process, 
 
 function sg07SetRunMode
     {
-    dialog --backtitle "$TITLE" --title "Step Seven:  Set Run Mode" --yes-label OK --no-label Back --yesno "You have a choice of three run modes for Centrallix:
+    dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Set Run Mode" --yes-label OK --no-label Back --yesno "You have a choice of three run modes for Centrallix:
 
 Service:  Run Centrallix as a background service, as root.  This option is only available if you selected 'root' as the development mode.
 
@@ -2756,7 +3335,11 @@ GDB:  Run Centrallix in a console, using the GDB debugger.  This allows you to d
 
 function sg08InitRepo
     {
-    dialog --backtitle "$TITLE" --title "Step Eight:  Initialize the Shared Repository" --yes-label OK --no-label Back --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from SourceForge.  You'll need to separately initialize the per-user repositories if you are using 'team' or 'individual' workflow." 0 0
+    if [ "$QUICKMODE" = "no" ]; then
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --yes-label OK --no-label Back --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from SourceForge.  You'll need to separately initialize the per-user repositories if you are using 'team' or 'individual' workflow." 0 0
+    else
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --yes-label OK --no-label Back --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from SourceForge." 0 0
+    fi
     if [ "$?" != 0 ]; then
 	return 1
     fi
@@ -2765,17 +3348,26 @@ function sg08InitRepo
 
 function sg09SetSFUser
     {
-    dialog --backtitle "$TITLE" --title "Step Nine:  Set SourceForge.net Username" --yes-label OK --no-label Back --yesno "If you want to be able to commit changes back to SourceForge from the shared common repository, you'll need to supply a SourceForge username that has read/write access to Kardia and/or Centrallix.  Or, if you're just using the VM Appliance to 'try out' Kardia, you can leave the username blank to disallow pushes back to SourceForge from the shared repository." 0 0
+    dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Set SourceForge.net Username" --yes-label OK --no-label Back --yesno "If you want to be able to commit changes back to SourceForge from the shared common repository, you'll need to supply a SourceForge username that has read/write access to Kardia and/or Centrallix.  Or, if you're just using the VM Appliance to 'try out' Kardia, you can leave the username blank to disallow pushes back to SourceForge from the shared repository." 0 0
     if [ "$?" != 0 ]; then
 	return 1
     fi
     repoSetStatus "$BASEDIR/src"
     }
 
-
-function sg10RootBuildRun
+function sg10UpdateStuff
     {
-    dialog --backtitle "$TITLE" --title "Step Ten:  Build and Run Centrallix/Kardia" --yes-label Build --no-label Skip --yesno "Finally, you can build and run Centrallix and Kardia.  This will compile the source code, install Centrallix, build the Kardia database, and start the Centrallix server on port 800." 0 0
+    dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Download OS Updates" --yes-label OK --no-label Skip --yesno "Every OS needs to download updates at some time.  We like to start this VM as fully updated as possible.  Would you like to check to see if we need to download operating system and kardia.sh updates?" 0 0
+    if [ "$?" != 0 ]; then
+	return 0
+    fi
+    doUpdates
+    UpdateMenus
+    }
+
+function sg11RootBuildRun
+    {
+    dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Build and Run Centrallix/Kardia" --yes-label Build --no-label Skip --yesno "Finally, you can build and run Centrallix and Kardia.  This will compile the source code, install Centrallix, build the Kardia database, and start the Centrallix server on port 800." 0 0
     if [ "$?" = 0 ]; then
 	doBuild
 	doDataBuild
@@ -2795,7 +3387,9 @@ function sgYoureDone
     lookupStatus
     dialog --backtitle "$TITLE" --title "You're done!" --yes-label OK --no-label Back --yesno "You will now return to the normal menu, where all of these getting started options (and more) are available as well.
     
-If you're developing as users (rather than as root), you will want to quit, logout, and then log back in as your normal user account." 0 0
+If you're developing as users (rather than as root), you will want to quit, logout, and then log back in as your normal user account.
+
+If the menu was updated during the system update, you may want to quit and re-run kardia.sh" 0 0
     if [ "$?" != 0 ]; then
 	return 1
     fi
@@ -2821,7 +3415,7 @@ if Rootable; then
 	    dialog --backtitle "$TITLE" --title "Run the Setup Guide?" --yesno "Since this is your first time using the Kardia/Centrallix VM Appliance menus, you can get started quickly by using the Setup Guide.  Would you like to run the Setup Guide now?  If you select NO, you can re-run it later by typing 'kardia.sh doSetupGuide' at the root prompt." 0 0
 
 	    if [ $? = 0 ]; then
-		AsRoot doSetupGuide
+		AsRoot chooseSetupGuide
 	    fi
 	else
 	    dialog --backtitle "$TITLE" --title "Internet Required" --msgbox "The Internet is required to do the initial setup of Kardia, and we have been unable to contact the git repository.  We will be downloading centrallix and kardia from the git repository and building it them from the latest stable code.  This means that, without a connection to the Internet, this VM is pretty useless.  Please try to fix the Internet connection for this VM before proceeding.

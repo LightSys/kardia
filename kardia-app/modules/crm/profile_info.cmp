@@ -4,10 +4,106 @@ profile_info "widget/component-decl"
     width=380;
     height=110;
 
+    Refresh "widget/component-decl-action" { }
+    onRefresh "widget/connector" { event=Refresh; target=partner_info_osrc; action=Refresh; }
+
     partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    partner_info_osrc "widget/osrc"
+	{
+	partner_key "widget/parameter" { type=string; }
+
+	sql = "	select
+		    txt = condition(not (char_length(:p:p_org_name) > 1), isnull(:p:p_given_name + ' ', '') + isnull(:p:p_surname,'') + condition(char_length(:p:p_preferred_name) > 1 and isnull(:p:p_preferred_name,'') != isnull(:p:p_given_name,''), ' (\"' + :p:p_preferred_name + '\")', ''), :p:p_org_name),
+		    size = 'large'
+		from
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :p:p_partner_key = :parameters:partner_key
+		;
+
+		select
+		    txt = 'Attn: ' + isnull(:p:p_given_name + ' ', '') + isnull(:p:p_surname,''),
+		    size = 'medium'
+		from
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :p:p_partner_key = :parameters:partner_key and
+		    char_length(:p:p_org_name) > 1 and
+		    (char_length(:p:p_given_name) > 1 or
+		     char_length(:p:p_surname) > 1)
+		;
+
+		select
+		    txt = :l:p_city + ' ' + :l:p_state_province + ' (ID# ' + :l:p_partner_key + ')',
+		    size = 'medium'
+		from
+		    /apps/kardia/data/Kardia_DB/p_location/rows l
+		where
+		    :l:p_partner_key = :parameters:partner_key and
+		    :l:p_revision_id = 0
+		order by
+		    :l:p_record_status_code asc,
+		    :l:s_date_modified desc
+		limit
+		    1
+		;
+
+		select
+		    txt = :ct:text + ': ' + isnull('+' + :c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + isnull(:c:p_contact_data,''),
+		    size = 'small'
+		from
+		    /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
+		    /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct
+		where
+		    :c:p_partner_key = :parameters:partner_key and
+		    :ct:tag = :c:p_contact_type and
+		    :c:p_record_status_code = 'A'
+		";
+
+	readahead=16;
+	replicasize=16;
+
+	link "widget/rule"
+	    {
+	    ruletype = osrc_relationship;
+	    target = partner_osrc;
+	    key_1 = partner_key;
+	    target_key_1 = p_partner_key;
+	    }
+
+	table "widget/table"
+	    {
+	    x=0; y=0; width=300; height=110;
+	    fl_width=0;
+	    min_rowheight=10;
+	    max_rowheight=64;
+	    mode=dynamicrow;
+	    allow_selection = no;
+	    show_selection = no;
+	    initial_selection = no;
+	    demand_scrollbar = yes;
+	    overlap_scrollbar = yes;
+	    colsep = 0;
+	    titlebar = no;
+	    //row_border_color="#e0e0e0";
+	    row_border_radius=0;
+	    //row_shadow_offset=1;
+	    //row_shadow_color="#c0c0c0";
+	    inner_padding = 0;
+	    rowhighlight_bgcolor = "#fff090";
+	    textcolorhighlight = "#000000";
+	    cellvspacing = 0;
+	    row1_bgcolor = white;
+	    row2_bgcolor = white;
+
+	    col "widget/table-column" { fieldname=txt; style=runclient(condition(:partner_info_osrc:size != 'small', 'bold', '')); font_size=runclient(condition(:partner_info_osrc:size == 'large', 18, 11)); width=380; }
+	    }
+	}
 
     profile_info_vbox "widget/vbox"
 	{
+	condition=0;
 	x=0; y=0;
 	width=380;
 	height=110;
@@ -15,7 +111,7 @@ profile_info "widget/component-decl"
 
 	profile_hdr_name "widget/label"
 	    {
-	    height=24;
+	    height=26;
 	    font_size=20;
 	    style=bold;
 	    value = runclient(condition(char_length(:partner_osrc:p_given_name) > 1 or char_length(:partner_osrc:p_surname) > 1, isnull(:partner_osrc:p_given_name + ' ', '') + isnull(:partner_osrc:p_surname,'') + condition(char_length(:partner_osrc:p_salutation) > 1 and isnull(:partner_osrc:p_salutation,'') != isnull(:partner_osrc:p_given_name,''), ' (\"' + :partner_osrc:p_salutation + '\")', ''), :partner_osrc:p_org_name));
@@ -25,11 +121,12 @@ profile_info "widget/component-decl"
 	    {
 	    height=72;
 	    font_size=11;
-	    value = runclient(:partner_osrc:p_city + ' ' + :partner_osrc:p_state_province + '\n' + :partner_osrc:contact_data);
+	    value = runclient(:partner_osrc:p_city + ' ' + :partner_osrc:p_state_province + '\n\n' + :partner_osrc:contact_data);
 	    }
 
 	edit_profile_hbox "widget/hbox"
 	    {
+	    condition=0;
 	    height=13;
 	    spacing=3;
 	    fl_height=0;

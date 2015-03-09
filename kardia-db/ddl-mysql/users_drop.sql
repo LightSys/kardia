@@ -27,6 +27,9 @@ revoke select on ra to public;
 /* p_partner_relationship */
 
 
+/* p_partner_relationship_type */
+
+
 /* p_church */
 
 
@@ -64,6 +67,18 @@ revoke select on ra to public;
 
 
 /* p_acquisition_code */
+
+
+/* p_partner_search */
+
+
+/* p_partner_search_stage */
+
+
+/* p_partner_search_results */
+
+
+/* p_search_stage_criteria */
 
 
 /* m_list */
@@ -157,6 +172,18 @@ revoke select on ra to public;
 
 
 /* e_data_item */
+
+
+/* e_highlights */
+
+
+/* e_data_highlight */
+
+
+/* e_seen */
+
+
+/* e_trackactivity */
 
 
 /* r_group */

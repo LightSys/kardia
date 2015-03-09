@@ -9,7 +9,7 @@ api_crm "system/querytree"
 	    {
 	    sql = " select
 			partner_id = :p:p_partner_key,
-			partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 			partner_ref = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key,
 			class = (select :text from /apps/kardia/data/Kardia_DB/_p_partner_class/rows pc where :pc:tag = :p:p_partner_class),
 			is_valid = condition(:p:p_status_code == 'A', 1, 0),
@@ -70,7 +70,7 @@ api_crm "system/querytree"
 				orig_filename = :d:e_orig_filename,
 				location = :d:e_current_folder + '/' + :d:e_current_filename,
 				uploading_collaborator_id = :d:e_uploading_collaborator,
-				uploading_collaborator = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				uploading_collaborator = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 				generic_workflow_instance_id = :d:e_workflow_instance_id,
 				generic_workflow = :wt:e_workflow_label + ':' + :ws:e_workflow_step_label,
 				date_created = :d:s_date_created,
@@ -158,7 +158,7 @@ api_crm "system/querytree"
 				partner_name = :eng_list:partner_name,
 				partner_ref = :eng_list:partner_ref,
 				collab_partner_id = :h:e_whom,
-				collab_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				collab_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 				collab_partner_ref = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key,
 				contact_history_id = :h:e_contact_history_id,
 				contact_history_type_id = :h:e_contact_history_type,
@@ -169,7 +169,7 @@ api_crm "system/querytree"
 				contact_date = :h:e_contact_date,
 				meeting_place_ref = '/apps/kardia/api/partner/Partners/' + :h:p_location_partner_key,
 				meeting_place_id = :h:p_location_partner_key,
-				meeting_place = condition(char_length(isnull(:pm:p_org_name,'')) > 0, :pm:p_org_name, :pm:p_given_name + ' ' + :pm:p_surname),
+				meeting_place = condition(char_length(isnull(:pm:p_org_name,'')) > 1, :pm:p_org_name, :pm:p_given_name + ' ' + :pm:p_surname),
 				meeting_address_ref = '/apps/kardia/api/partner/Partners/' + :h:p_location_partner_key + '/Addresses/' + :h:p_location_partner_key + '|' + :h:p_location_id + '|' + isnull(:h:p_location_revision_id,0),
 				meeting_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,c=c'),
 				contact_via_ref = '/apps/kardia/api/partner/Partners/' + :h:p_partner_key + '/ContactInfo/' + :h:p_partner_key + '|' + :h:p_contact_id,
@@ -272,15 +272,15 @@ api_crm "system/querytree"
 					start_date = :pe:e_start_date,
 					started_by_partner_id = :pe:e_started_by,
 					started_by_partner_ref = '/apps/kardia/api/partner/Partners/' + :pe:e_started_by,
-					started_by_partner = condition(char_length(isnull(:ps:p_org_name,'')) > 0, :ps:p_org_name, :ps:p_given_name + ' ' + :ps:p_surname),
+					started_by_partner = condition(char_length(isnull(:ps:p_org_name,'')) > 1, :ps:p_org_name, :ps:p_given_name + ' ' + :ps:p_surname),
 					completion_date = :pe:e_completion_date,
 					completed_by_partner_id = :pe:e_completed_by,
 					completed_by_partner_ref = '/apps/kardia/api/partner/Partners/' + :pe:e_completed_by,
-					completed_by_partner = condition(char_length(isnull(:pc:p_org_name,'')) > 0, :pc:p_org_name, :pc:p_given_name + ' ' + :pc:p_surname),
+					completed_by_partner = condition(char_length(isnull(:pc:p_org_name,'')) > 1, :pc:p_org_name, :pc:p_given_name + ' ' + :pc:p_surname),
 					exited_date = :pe:e_exited_date,
 					exited_by_partner_id = :pe:e_exited_by,
 					exited_by_partner_ref = '/apps/kardia/api/partner/Partners/' + :pe:e_exited_by,
-					exited_by_partner = condition(char_length(isnull(:px:p_org_name,'')) > 0, :px:p_org_name, :px:p_given_name + ' ' + :px:p_surname),
+					exited_by_partner = condition(char_length(isnull(:px:p_org_name,'')) > 1, :px:p_org_name, :px:p_given_name + ' ' + :px:p_surname),
 					date_created = :pe:s_date_created,
 					created_by = :pe:s_created_by,
 					date_modified = :pe:s_date_modified,
@@ -321,7 +321,7 @@ api_crm "system/querytree"
 				partner_name = :eng_list:partner_name,
 				partner_ref = :eng_list:partner_ref,
 				collaborator_id = :e:e_collaborator,
-				collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :e:e_collaborator),
+				collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :e:e_collaborator),
 				collaborator_type_id = :e:e_collab_type_id, 
 				collaborator_type = (select :e_collab_type_label from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows where :e_collab_type_id = :e:e_collab_type_id),
 				collaborator_is_individual = condition(:p:p_partner_class == 'IND', 1, condition(:p:p_partner_class == 'HOU', 1, 0)),
@@ -347,11 +347,11 @@ api_crm "system/querytree"
 		    {
 		    sql = " select
 				collaborator_id = :e:e_collaborator,
-				collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :e:e_collaborator),
+				collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :e:e_collaborator),
 				collaborator_type_id = :e:e_collab_type_id, 
 				collaborator_type = (select :e_collab_type_label from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows where :e_collab_type_id = :e:e_collab_type_id),
 				partner_id = :e:p_partner_key,
-				partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :e:p_partner_key),
+				partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :e:p_partner_key),
 				partner_ref = '/apps/kardia/api/partner/Partners/' + :e:p_partner_key,
 				date_created = :e:s_date_created,
 				created_by = :e:s_created_by,
@@ -373,7 +373,7 @@ api_crm "system/querytree"
 		    {
 		    sql = " select
 				partner_id = :t:e_todo_partner,
-				partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 0, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :t:e_todo_partner),
+				partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :t:e_todo_partner),
 				partner_ref = '/apps/kardia/api/partner/Partners/' + :t:e_todo_partner,
 				todo_id = :t:e_todo_id,
 				todo_type_id = :t:e_todo_type_id,
@@ -555,7 +555,7 @@ api_crm "system/querytree"
 				reference_info = :e_reference_info,
 				info = :e_info
 			    FROM
-				identity '/apps/kardia/modules/crm/activity.qy?partner_key=" + escape(:eng_list:partner_id,"'","") + "'
+				identity '/apps/kardia/modules/crm/timeline.qy?partner_key=" + escape(:eng_list:partner_id,"'","") + "'
 			    ");
 		    use_having = yes;
 		    }
@@ -571,7 +571,7 @@ api_crm "system/querytree"
 	    {
 	    sql = " select
 			partner_id = :t:e_todo_partner,
-			partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 			partner_ref = '/apps/kardia/api/partner/Partners/' + :t:e_todo_partner,
 			todo_id = :t:e_todo_id,
 			todo_type_id = :t:e_todo_type_id,

@@ -31,6 +31,9 @@ alter table p_contact_info
 alter table p_partner_relationship
 	add constraint p_partner_relationship_pk primary key  (p_partner_key, p_relation_type, p_relation_key);
 
+alter table p_partner_relationship_type
+	add constraint p_relat_type_pk primary key  (p_relation_type);
+
 alter table p_church
 	add constraint p_church_pk primary key  (p_partner_key);
 
@@ -73,11 +76,23 @@ alter table p_partner_sort_tmp
 alter table p_acquisition_code
 	add constraint p_acqcode_pk primary key  (p_acquisition_code);
 
+alter table p_partner_search
+	add constraint p_search_pk primary key  (p_search_id);
+
+alter table p_partner_search_stage
+	add constraint p_searchstage_pk primary key  (p_search_id,p_search_stage_id);
+
+alter table p_partner_search_results
+	add constraint p_searchres_pk primary key  (p_partner_key,s_username,p_search_session_id,p_search_stage_id);
+
+alter table p_search_stage_criteria
+	add constraint p_stage_criteria_pk primary key  (p_search_id,p_search_stage_id,p_criteria_name);
+
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
 
 alter table m_list_membership
-	add constraint m_list_membership_clustered_pk primary key  (m_list_code, p_partner_key);
+	add constraint m_list_membership_clustered_pk primary key  (m_list_code, p_partner_key, m_hist_id);
 
 alter table e_contact_autorecord
 	add constraint e_autorec_pk primary key  (p_partner_key, e_collaborator_id, e_contact_history_type, e_contact_id);
@@ -165,6 +180,18 @@ alter table e_data_item_group
 
 alter table e_data_item
 	add constraint e_dataitem_pk primary key  (e_data_item_id);
+
+alter table e_highlights
+	add constraint e_h_pk primary key  (e_highlight_user, e_highlight_partner, e_highlight_id);
+
+alter table e_data_highlight
+	add constraint e_dh_pk primary key  (e_highlight_subject, e_highlight_object_type, e_highlight_object_id);
+
+alter table e_seen
+	add constraint e_seen_pk primary key  (e_object_type,e_object_id,e_whom);
+
+alter table e_trackactivity
+	add constraint e_trkact_pk primary key  (p_partner_key,e_username,e_sort_key);
 
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);

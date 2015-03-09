@@ -8,7 +8,13 @@ Release Notes for the 1.0 Image:
 	 semodule_package -o $file.pp file.mod
 	 semodule -i $file.pp
 	done
-    smp_pass did not exist for Centos 7 yet.
+    smb_pass did not exist for Centos 7 yet.
+      This was solved by recompiling samba.
+      We compiled the srpm on another machine and changed the spec
+	%global with_pam_smbpass 1
+      There was a "talloc" bug that gave a memory-leak error with every passwd change
+      We commented out a line in lib/util/talloc_stack.c
+	Line 199: DEBUG(0, ("no talloc stackframe at %s, leaking memory...
     modified kardia.sh to use "net addr" instead of ifconfig
     modified kardia.sh to use firewalld instead of lokkit
     modified kardia.sh to use systemd instead of init

@@ -151,6 +151,9 @@ alter table e_data_item
 alter table e_data_item
 	add constraint e_dataitem_group_idx unique  (e_data_item_group_id, e_data_item_id);
 
+alter table e_highlights
+	add constraint e_h_nt_idx unique  (e_highlight_type, e_highlight_name, e_highlight_user, e_highlight_partner, e_highlight_id);
+
 alter table r_group
 	add constraint r_grp_modfile_idx unique  (r_group_module, r_group_file, r_group_name);
 
