@@ -10,31 +10,30 @@ import java.util.Date;
 public class Prayer {
     private String Subject;
     private String Description;
-    private static int number = 0;
+    private int ID;
     private String date;
 
     public Prayer(){
         this.setDate();
-        number++;
     }
 
-    public Prayer(String Subject, String Description){
+    public Prayer(String Subject, String Description, int ID){
         this.setSubject(Subject);
         this.setDescription(Description);
         this.setDate();
-        number++;
+        this.setID(ID);
     }
 
-    public int getNumber() {
-        return number;
-    }
+    public int getID() {return ID;}
+
+    public void setID(int ID) {this.ID = ID;}
 
     public String getSubject() {
         return Subject;
     }
 
     public void setSubject(String Subject) {
-        this.Subject = Subject;
+      this.Subject = Subject;
     }
 
     public String getDescription() {
@@ -43,13 +42,13 @@ public class Prayer {
 
     public void setDescription(String Description) { this.Description = Description;}
 
-    public String getDate() {return (String)date;}
-
     public void Update(String text) {
         setDate();
         String newDescription = "\n\nUpdate " + getDate() + ": " + text;
         setDescription(newDescription);
     }
+
+    public String getDate() {return date;}
 
     public void setDate() {
         Date date1 = new Date();

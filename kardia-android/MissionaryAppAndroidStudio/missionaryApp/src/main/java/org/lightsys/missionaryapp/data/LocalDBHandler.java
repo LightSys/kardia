@@ -128,7 +128,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
         //Prayer Table
         String CREATE_PRAYER_TABLE = "CREATE TABLE " + TABLE_PRAYER + "(" +
                 COLUMN_DATE + " TEXT," + COLUMN_SUBJECT + " TEXT," +
-                COLUMN_PRAYERDESC + " TEXT)";
+                COLUMN_PRAYERDESC + " TEXT," + COLUMN_ID + "INTEGER)";
         db.execSQL(CREATE_PRAYER_TABLE);
 		
 		//MAP TABLE FOR GIFT AND DONOR (OR HAVE A DONOR ID WITHIN THE GIFT TABLE?)
@@ -224,10 +224,26 @@ public class LocalDBHandler extends SQLiteOpenHelper{
         values.put(COLUMN_DATE, prayer.getDate());
         values.put(COLUMN_SUBJECT, prayer.getSubject());
         values.put(COLUMN_PRAYERDESC, prayer.getDescription());
+        values.put(COLUMN_ID, prayer.getID());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         db.insert(TABLE_PRAYER, null, values);
+        db.close();
+    }
+
+    public void updatePrayer(int id, String update) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor c = db.rawQuery("SELECT * from " + TABLE_PRAYER + "WHERE ID = " + id, null);
+        ContentValues values = new ContentValues();
+        if (c.moveToNext()) {
+            String sub = c.getString(1);
+            String desc = c.getString(2);
+            db.delete(TABLE_PRAYER, "Integer.parseInt(values.getAsString(id)) = id", null);
+            Prayer prayer = new Prayer(sub, desc, id);
+            prayer.Update(update);
+            addPrayer(prayer);
+        }
         db.close();
     }
 	
@@ -264,7 +280,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	
 	//should return: id, name, image (if one), (maybe something else?)
 	public ArrayList<HashMap<String, String>> getDisplayDonors() {
-		// TODO WRITE THE METHOD (6).
+		// TODO WRITE THE METHOD (6) <!--Should be done-->.
         ArrayList<HashMap<String,String>> arrayList = new ArrayList();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_DONOR, null);
@@ -314,6 +330,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             hashMap.put("date", c.getString(0));
             hashMap.put("prayer_subject", c.getString(1));
             hashMap.put("prayer_desc", c.getString(2));
+            hashMap.put("id", c.getString(3));
             arrayList.add(hashMap);
         }
         return arrayList;
@@ -336,6 +353,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             hashMap.put("account_id", c.getString(1));
             hashMap.put("password", c.getString(2));
             hashMap.put("server_address", c.getString(3));
+            hashMap.put("account_balance", c.getString(4));
             arrayList.add(hashMap);
         }
 		return arrayList;
@@ -355,6 +373,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			account.setAccountName(c.getString(1));
 			account.setAccountPassword(c.getString(2));
 			account.setServerName(c.getString(3));
+            account.setAccountBalance(Integer.parseInt(c.getString(4)));
 		}
 		db.close();
 		return account;
@@ -618,6 +637,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             prayer.setDate(c.getString(0));
             prayer.setDescription(c.getString(1));
             prayer.setSubject(c.getString(2));
+            prayer.setID(Integer.parseInt(c.getString(3)));
         }
         db.close();
         return prayer;
@@ -642,6 +662,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             prayer.setDate(c.getString(0));
             prayer.setDescription(c.getString(1));
             prayer.setSubject(c.getString(2));
+            prayer.setID(Integer.parseInt(c.getString(3)));
         }
         db.close();
         return prayer;
