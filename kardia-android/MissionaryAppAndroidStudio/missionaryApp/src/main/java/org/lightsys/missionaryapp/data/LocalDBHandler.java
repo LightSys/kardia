@@ -24,7 +24,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			TABLE_PG_MAP = "period_gift_map",
 			TABLE_FG_MAP = "fund_gift_map",
 			TABLE_DG_MAP = "donor_gift_map",
-			TABLE_FP_MAP = "fund_period_map";
+			TABLE_FP_MAP = "fund_period_map",
+            TABLE_PRAYER = "prayer_requests";
 			
 	//table columns
 	private static final String COLUMN_ID = "id",
@@ -47,7 +48,9 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 				COLUMN_FUND_ID = "fund_id",
 				COLUMN_DONOR_ID = "donor_id",
 				COLUMN_FUND_CLASS = "fund_class",
-				COLUMN_ANNOTATION = "annotation";
+				COLUMN_ANNOTATION = "annotation",
+                COLUMN_SUBJECT = "prayer_subject",
+                COLUMN_PRAYERDESC = "prayer_desc";
 	
 	public LocalDBHandler(Context context, String name, CursorFactory factory, int version){
 		super(context, "missionary.db", factory, DATABASE_VERSION);
@@ -76,7 +79,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		db.execSQL(CREATE_GIFT_TABLE);
 		//PAYROLL TABLE
 		
-		//GERNAL TRANSFER TABLE? OR MAYBE SEPERATE TABLES?
+		//GENERAL TRANSFER TABLE? OR MAYBE SEPERATE TABLES?
 		
 		//DONOR TABLE
 		String CREATE_DONOR_TABLE = "CREATE TABLE " + TABLE_DONOR + "(" +
@@ -120,6 +123,12 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 				COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_FUND_ID + " INTEGER," +
 				COLUMN_PERIOD_ID + " INTEGER)";
 		db.execSQL(CREATE_FP_TABLE);
+
+        //Prayer Table
+        String CREATE_PRAYER_TABLE = "CREATE TABLE " + TABLE_PRAYER + "(" +
+                COLUMN_DATE + " TEXT," + COLUMN_SUBJECT + " TEXT," +
+                COLUMN_PRAYERDESC + " TEXT)";
+        db.execSQL(CREATE_PRAYER_TABLE);
 		
 		//MAP TABLE FOR GIFT AND DONOR (OR HAVE A DONOR ID WITHIN THE GIFT TABLE?)
 		
@@ -207,6 +216,18 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		db.insert(TABLE_FG_MAP, null, values);
 		db.close();
 	}
+
+    public void addPrayer(Prayer prayer) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_DATE, prayer.getDate());
+        values.put(COLUMN_SUBJECT, prayer.getSubject());
+        values.put(COLUMN_PRAYERDESC, prayer.getDescription());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.insert(TABLE_PRAYER, null, values);
+        db.close();
+    }
 	
 	/* *** Get Methods (Display Lists) *** */
 
@@ -222,11 +243,11 @@ public class LocalDBHandler extends SQLiteOpenHelper{
                 break;
             }
             HashMap<String, String> hashMap = new HashMap();
-            hashMap.put("ID", c.getString(0));
-            hashMap.put("Name", c.getString(1));
-            hashMap.put("AmountWhole", c.getString(4));
-            hashMap.put("AmountPart", c.getString(5));
-            hashMap.put("Date", c.getString(6));
+            hashMap.put("id", c.getString(0));
+            hashMap.put("name", c.getString(1));
+            hashMap.put("amount_whole", c.getString(4));
+            hashMap.put("amount_part", c.getString(5));
+            hashMap.put("date", c.getString(6));
             arrayList.add(hashMap);
         }
 		return arrayList;
@@ -242,7 +263,21 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//should return: id, name, image (if one), (maybe something else?)
 	public ArrayList<HashMap<String, String>> getDisplayDonors() {
 		// TODO WRITE THE METHOD (6).
-		return null;
+        ArrayList<HashMap<String,String>> arrayList = new ArrayList();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_DONOR, null);
+
+        while (c.moveToNext()) {
+            if (c.getString(0) == null) {
+                break;
+            }
+            HashMap<String, String> hashMap = new HashMap<String, String>();
+            hashMap.put("id", c.getString(0));
+            hashMap.put("name", c.getString(1));
+            hashMap.put("donor_image", c.getString(4));
+            arrayList.add(hashMap);
+        }
+        return arrayList;
 	}
 
 	//should return: id, name/title, date
@@ -263,8 +298,23 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 
     //should return: id, short name, long description;
     public ArrayList<HashMap<String, String>> getDisplayPrayers() {
-        // TODO WRITE THE METHOD (8).
-        return null;
+        // TODO WRITE THE METHOD (8) <!--Should be done-->.
+
+        ArrayList<HashMap<String, String>> arrayList = new ArrayList();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_PRAYER, null);
+
+        while (c.moveToNext()) {
+            if (c.getString(0) == null) {
+                break;
+            }
+            HashMap<String, String> hashMap = new HashMap<String, String>();
+            hashMap.put("date", c.getString(0));
+            hashMap.put("prayer_subject", c.getString(1));
+            hashMap.put("prayer_desc", c.getString(2));
+            arrayList.add(hashMap);
+        }
+        return arrayList;
     }
 
 	//should return: id, name, amount/balance (whole and part) 
@@ -280,10 +330,10 @@ public class LocalDBHandler extends SQLiteOpenHelper{
                 break;
             }
             HashMap<String, String> hashMap = new HashMap<String, String>();
-            hashMap.put("ID", c.getString(0));
-            hashMap.put("AccountName", c.getString(1));
-            hashMap.put("Password", c.getString(2));
-            hashMap.put("ServerName", c.getString(3));
+            hashMap.put("id", c.getString(0));
+            hashMap.put("account_id", c.getString(1));
+            hashMap.put("password", c.getString(2));
+            hashMap.put("server_address", c.getString(3));
             arrayList.add(hashMap);
         }
 		return arrayList;
@@ -555,6 +605,45 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		return id;
 		
 	}
+
+    public Prayer getPrayer() {
+        Prayer prayer = new Prayer();
+        String queryString = "SELECT * FROM " + TABLE_PRAYER;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+        if(c.moveToFirst()){
+            prayer.setDate(c.getString(0));
+            prayer.setDescription(c.getString(1));
+            prayer.setSubject(c.getString(2));
+        }
+        db.close();
+        return prayer;
+    }
+
+    public Prayer getPrayer(String type, String content) {
+        Prayer prayer = new Prayer();
+        String queryString = "SELECT * FROM " + TABLE_PRAYER + " WHERE ";
+
+        if(type.equals("date")){
+            queryString += COLUMN_DATE;
+        }
+        else if(type.equals("subject")){
+            queryString += COLUMN_SUBJECT;
+        }
+
+        queryString += " = " + content;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+        if(c.moveToFirst()){
+            prayer.setDate(c.getString(0));
+            prayer.setDescription(c.getString(1));
+            prayer.setSubject(c.getString(2));
+        }
+        db.close();
+        return prayer;
+    }
 	
 	
 	/* *** Delete Methods *** */
