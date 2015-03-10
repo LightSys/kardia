@@ -1,0 +1,20 @@
+Notes to help with continuing to develop the Kardia Thunderbird extension:
+
+1. Features to add- places that were set up for a feature to be added, but
+where the feature didn't make it there, are commented out and marked with //
+FEATURE for easy finding.  All the new feature locations are in
+main-overlay.js and main-overlay.xul.
+
+	A. We still need to allow Kardia to-do items to be edited, added, and
+deleted from the Lightning calendar.  We also need to import the to-dos to the
+Lightning calendar.  The array "allTodos" is set up for importing.  I'm not
+sure how much of the code for importing to-do items actually works.  Also, for
+any of my code to work, you will need to create an (empty) file called
+kardia.ics and add it to the main "kardia@lightsys.org" folder.
+
+	B. We also need to allow the user to choose to record the email currently
+being viewed in Kardia and to record all future emails from the given user.
+
+2. For displaying documents, the field e_current_folder must include the full
+folder path for the document, including the server address.  This could easily
+be modified, though.

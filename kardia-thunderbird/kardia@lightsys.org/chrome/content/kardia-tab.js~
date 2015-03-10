@@ -56,7 +56,7 @@ function sortBy() {
 function addFilter(type, id, fromClick) {	
 	// if a button was clicked to add the filter, set the corresponding checkbox to checked
 	if (fromClick) {
-		kardiaTab.document.getElementById("filter-by-" + type + "-" + id).checkState = 1;
+		kardiaTab.document.getElementById("filter-by-" + type + "-" + id).checked = true;
 	}
 	if (type == 'e') {
 		// add to engagement track filters

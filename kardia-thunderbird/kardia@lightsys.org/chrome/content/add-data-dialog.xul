@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<!-- dialog to allow users to add new data items -->
+<dialog id="add-track-dialog"
+        title="New Data Item"
+        buttons="cancel,accept"
+        ondialogaccept="return saveData();"
+        ondialogcancel="return cancelData();"
+		onload="onLoad();"
+        persist="screenX screenY width height"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+		
+<!-- script that makes buttons work -->
+<script type="application/javascript" src="chrome://kardia/content/add-data-dialog.js"/>
+
+    <!-- vbox holds labels and text boxes -->
+	<vbox>
+		<label value="Select Type:"/>
+		<!-- menulist has options of data item types to select -->
+		<menulist id="outer-select-data-type">
+			<menupopup id="select-data-type">
+			</menupopup>
+		</menulist>
+  
+ 		<label value="Data Item:"/>
+		<textbox id="data"/>
+		<checkbox id="highlight" label="Highlight" checked="false"/>
+	</vbox>
+	
+</dialog>
+

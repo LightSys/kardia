@@ -30,27 +30,15 @@
 					<radiogroup id="sort-by" orient="horizontal" oncommand="sortBy()" >
 						<radio id="sort-by-name" class="tab-sort-button" selected="true" value="name" tooltiptext="Sort partners by first name">
 							<label value="Name"/>
-							<vbox>
-							  <spacer flex="1"/>
-							  <image id="tab-sort-by-name" class="show-kardia-pane-arrow"/>
-							  <spacer flex="1"/>
-							</vbox>
+							<image id="tab-sort-by-name" class="show-kardia-pane-arrow"/>
 						</radio>
 						<radio id="sort-by-id" class="tab-sort-button" value="id" tooltiptext="Sort partners by Kardia ID number">
 							<label value="ID"/>
-							<vbox>
-							  <spacer flex="1"/>
-							  <image id="tab-sort-by-id" class="show-kardia-pane-arrow"/>
-							  <spacer flex="1"/>
-							</vbox>
+							<image id="tab-sort-by-id" class="show-kardia-pane-arrow"/>
 						</radio>
 						<radio id="sort-by-date" class="tab-sort-button" value="date" tooltiptext="Sort partners by recent activity date">
 							<label value="Date"/>
-							<vbox>
-							  <spacer flex="1"/>
-							  <image id="tab-sort-by-date" class="show-kardia-pane-arrow"/>
-							  <spacer flex="1"/>
-							</vbox>
+							<image id="tab-sort-by-date" class="show-kardia-pane-arrow"/>
 						</radio>
 					</radiogroup>
 				</hbox>
