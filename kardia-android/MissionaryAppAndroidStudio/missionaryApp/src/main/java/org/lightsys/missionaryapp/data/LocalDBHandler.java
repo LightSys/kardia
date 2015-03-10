@@ -25,7 +25,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			TABLE_FG_MAP = "fund_gift_map",
 			TABLE_DG_MAP = "donor_gift_map",
 			TABLE_FP_MAP = "fund_period_map",
-            TABLE_PRAYER = "prayer_requests";
+            TABLE_PRAYER = "prayer_requests",
+            TABLE_PRAYER_DONOR = "donors_praying";
 			
 	//table columns
 	private static final String COLUMN_ID = "id",
@@ -91,7 +92,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		
 		//Fund TABLE
 		String CREATE_FUND_TABLE = "CREATE TABLE " + TABLE_FUND + "(" +
-				COLUMN_ID + " INTGER PRIMARY KEY," + COLUMN_NAME + " TEXT," + 
+				COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," +
 				COLUMN_FUND_DESC + " TEXT," +
 				COLUMN_FUND_CLASS + " TEXT," + COLUMN_ANNOTATION + " TEXT)";
 		db.execSQL(CREATE_FUND_TABLE);
@@ -130,6 +131,11 @@ public class LocalDBHandler extends SQLiteOpenHelper{
                 COLUMN_DATE + " TEXT," + COLUMN_SUBJECT + " TEXT," +
                 COLUMN_PRAYERDESC + " TEXT," + COLUMN_ID + "INTEGER)";
         db.execSQL(CREATE_PRAYER_TABLE);
+
+        //Prayer-Donor Table
+        String CREATE_PRAYER_DONOR_TABLE = "CREATE TABLE " + TABLE_PRAYER_DONOR + "(" +
+                COLUMN_ID + " INTEGER," + COLUMN_DONOR_ID + " INTEGER)";
+        db.execSQL(CREATE_PRAYER_DONOR_TABLE);
 		
 		//MAP TABLE FOR GIFT AND DONOR (OR HAVE A DONOR ID WITHIN THE GIFT TABLE?)
 		
@@ -232,10 +238,20 @@ public class LocalDBHandler extends SQLiteOpenHelper{
         db.close();
     }
 
+    public void addPraying(Prayer prayer, Donor donor) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_ID, prayer.getID());
+        values.put(COLUMN_DONOR_ID, donor.getId());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.insert(TABLE_PRAYER_DONOR, null, values);
+        db.close();
+    }
+
     public void updatePrayer(int id, String update) {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor c = db.rawQuery("SELECT * from " + TABLE_PRAYER + "WHERE ID = " + id, null);
-        ContentValues values = new ContentValues();
         if (c.moveToNext()) {
             String sub = c.getString(1);
             String desc = c.getString(2);
@@ -253,14 +269,14 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//should return: id, name, amount (whole and part), date
 	public ArrayList<HashMap<String, String>> getDisplayGifts() {
 		// TODO WRITE THE METHOD <!--Should be done-->.
-        ArrayList<HashMap<String,String>> arrayList = new ArrayList();
+        ArrayList<HashMap<String,String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_GIFT, null);
         while (c.moveToNext()) {
             if (c.getString(0) == null) {
                 break;
             }
-            HashMap<String, String> hashMap = new HashMap();
+            HashMap<String, String> hashMap = new HashMap<String, String>();
             hashMap.put("id", c.getString(0));
             hashMap.put("name", c.getString(1));
             hashMap.put("amount_whole", c.getString(4));
@@ -281,7 +297,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//should return: id, name, image (if one), (maybe something else?)
 	public ArrayList<HashMap<String, String>> getDisplayDonors() {
 		// TODO WRITE THE METHOD (6) <!--Should be done-->.
-        ArrayList<HashMap<String,String>> arrayList = new ArrayList();
+        ArrayList<HashMap<String,String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_DONOR, null);
 
@@ -318,7 +334,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
     public ArrayList<HashMap<String, String>> getDisplayPrayers() {
         // TODO WRITE THE METHOD (8) <!--Should be done-->.
 
-        ArrayList<HashMap<String, String>> arrayList = new ArrayList();
+        ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_PRAYER, null);
 
@@ -340,7 +356,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	public ArrayList<HashMap<String, String>> getDisplayAccounts() {
 		// TODO WRITE THE METHOD <!--Should be done-->.
 
-        ArrayList<HashMap<String,String>> arrayList = new ArrayList();
+        ArrayList<HashMap<String,String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_ACCOUNT, null);
 
@@ -358,6 +374,38 @@ public class LocalDBHandler extends SQLiteOpenHelper{
         }
 		return arrayList;
 	}
+
+    public ArrayList<HashMap<String, String>> getDisplayPraying(Donor donor) {
+        ArrayList<HashMap<String,String>> arrayList = new ArrayList<HashMap<String, String>>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String qstring = "SELECT * FROM " + TABLE_PRAYER_DONOR + " WHERE " + COLUMN_DONOR_ID + " = " + donor.getId();
+        Cursor c = db.rawQuery(qstring, null);
+        while (c.moveToNext()) {
+            if(c.getString(0) == null) {
+                break;
+            }
+            HashMap<String, String> hashMap = new HashMap<String, String>();
+            hashMap.put("id", c.getString(0));
+            arrayList.add(hashMap);
+        }
+        return arrayList;
+    }
+
+    public ArrayList<HashMap<String, String>> getDisplayPraying(Prayer prayer) {
+        ArrayList<HashMap<String,String>> arrayList = new ArrayList<HashMap<String, String>>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String qstring = "SELECT * FROM " + TABLE_PRAYER_DONOR + " WHERE " + COLUMN_ID + " = " + prayer.getID();
+        Cursor c = db.rawQuery(qstring, null);
+        while (c.moveToNext()) {
+            if(c.getString(0) == null) {
+                break;
+            }
+            HashMap<String, String> hashMap = new HashMap<String, String>();
+            hashMap.put("id", c.getString(1));
+            arrayList.add(hashMap);
+        }
+        return arrayList;
+    }
 	
 	/* *** Get Methods *** */
 	
