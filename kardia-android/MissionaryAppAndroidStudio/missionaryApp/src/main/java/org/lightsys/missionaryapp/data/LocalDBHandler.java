@@ -213,10 +213,10 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//These methods (the next 5) need to return the id (from the local database) among other things
 	//should return: id, name, amount (whole and part), date
 	public ArrayList<HashMap<String, String>> getDisplayGifts() {
-		// TODO WRITE THE METHOD (4).
+		// TODO WRITE THE METHOD <!--Should be done-->.
         ArrayList<HashMap<String,String>> arrayList = new ArrayList();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT * FROM gifts WHERE id = ID", null);
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_GIFT, null);
         while (c.moveToNext()) {
             if (c.getString(0) == null) {
                 break;
@@ -224,8 +224,10 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             HashMap<String, String> hashMap = new HashMap();
             hashMap.put("ID", c.getString(0));
             hashMap.put("Name", c.getString(1));
-            hashMap.put("Amount", c.getString(100));
-
+            hashMap.put("AmountWhole", c.getString(4));
+            hashMap.put("AmountPart", c.getString(5));
+            hashMap.put("Date", c.getString(6));
+            arrayList.add(hashMap);
         }
 		return arrayList;
 	}
