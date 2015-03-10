@@ -9,6 +9,7 @@ import org.lightsys.missionaryapp.donorfragments.GiftDetailFrag;
 import org.lightsys.missionaryapp.optionsfragments.*;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -24,6 +25,8 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
+import static org.lightsys.missionaryapp.R.layout.activity_list;
 
 /**
  * This class is used to display any list-view in the app
@@ -41,27 +44,29 @@ public class ListActivity extends Fragment{
 	// 0 = gift, 1 = payroll, 2 = donors, 3 = reports, 4 = prayers, 5 = accounts
 	private static ArrayList<HashMap<String,String>> listitems;
 	private ListView listview;
-	@SuppressLint("WrongViewCast")
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
-		View v = inflater.inflate(R.layout.activity_list, container, false);
+		View v = inflater.inflate(activity_list, container, false);
 
 		Bundle args = getArguments();
 		
 		if(savedInstanceState != null){
-			display = savedInstanceState.getInt(ARG_TYPE);
+            System.out.println("savedInstance");
+            display = savedInstanceState.getInt(ARG_TYPE);
 		}else if(args != null){
-			display = args.getInt(ARG_TYPE);
+            System.out.println("args");
+            display = args.getInt(ARG_TYPE);
 		}
 
         TextView tv = (TextView)v.findViewById(R.id.title);
+		//tv.setText(display);
 		tv.setText(String.valueOf(display));
         listview = (ListView)v.findViewById(R.id.list);
-		listview.setAdapter(loadDisplay());
-		listview.setOnItemClickListener(new onItemClicked());
-		
-		return v;
+        listview.setAdapter(loadDisplay());
+        listview.setOnItemClickListener(new onItemClicked());
+
+        return v;
 	}
 	
 	//loads the appropriate list of items, based on option selected.
@@ -70,18 +75,23 @@ public class ListActivity extends Fragment{
 		String[] from;
 		int[] to;
 		int layout;
+
+        System.out.println("switching");
+
 		switch(display){
 		//Loads a list of the payroll items
 		case 1:
-			from = new String[]{"title", "date", "amount"};
+            System.out.println("payroll");
+            from = new String[]{"title", "date", "amount"};
 			to = new int[]{R.id.title, R.id.date, R.id.amount};
 			layout = R.layout.quickinfo_listview_item;
 			listitems = db.getDisplayPayroll();
-			break;
+            break;
 		
 		//Loads a list of the Donors 
 		case 2:
-			from = new String[]{"image", "name", "email", "cellnumber"};
+            System.out.println("donors");
+            from = new String[]{"image", "name", "email", "cellnumber"};
 			to = new int[]{R.id.quickContact, R.id.name, R.id.email, R.id.cellnumber};
 			layout = R.layout.donor_listview_item;
 			listitems = db.getDisplayDonors();
@@ -97,6 +107,7 @@ public class ListActivity extends Fragment{
 
         //Loads the prayers
         case 4:
+            System.out.println("prayers");
             from = new String[]{"title", "date", "description"};
             to = new int[]{R.id.title, R.id.date, R.id.description};
             layout = R.layout.prayer_listview_item;
@@ -105,7 +116,8 @@ public class ListActivity extends Fragment{
 
 		//Loads the accounts related to the Missionary's fund
 		case 5:
-			from = new String[]{"title", "balance"};
+            System.out.println("accounts");
+            from = new String[]{"title", "balance"};
 			to = new int[]{R.id.title, R.id.balance};
 			layout = R.layout.accounts_listview_item;
 			listitems = db.getDisplayAccounts();
@@ -113,12 +125,15 @@ public class ListActivity extends Fragment{
 		
 		//By default, loads a list of gifts given to the missionary's fund
 		default:
-			from = new String[]{"title", "date", "amount"};
+            System.out.println("gifts");
+            from = new String[]{"title", "date", "amount"};
 			to = new int[]{R.id.title, R.id.date, R.id.amount};
 			layout = R.layout.quickinfo_listview_item;
 			listitems = db.getDisplayGifts();
 			break;
 		}
+
+        System.out.println("done switching");
 
 		return new SimpleAdapter(getActivity(), listitems, layout, from, to);
 	}
@@ -144,7 +159,8 @@ public class ListActivity extends Fragment{
 			 * the user to the detailed gift in the DonorFrag
 			 */
 			case 0:
-				toFrag = new DonorFrag();
+				//toFrag = new DonorFrag();
+                toFrag = new DonorFrag();
 				sendArgs.putInt(DonorFrag.ARG_GIFT_ID, Integer.parseInt(listitems.get(position).get("id")));
 				sendArgs.putInt(DonorFrag.ARG_DONOR_ID, Integer.parseInt(listitems.get(position).get("donor_id")));
 				sendArgs.putInt(DonorFrag.ARG_TYPE, 1);
