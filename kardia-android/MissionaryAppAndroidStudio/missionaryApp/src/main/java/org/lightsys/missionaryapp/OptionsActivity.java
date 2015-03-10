@@ -29,49 +29,6 @@ public class OptionsActivity extends ActionBarActivity {
 		MenuItem logout = (MenuItem)findViewById(R.id.action_logout);
 	}
 
-    /*public void goToListPage(View v){
-        Bundle arg = new Bundle();
-        int page = v.getId();
-        Fragment listPage = new ListActivity();
-
-
-        switch(page){
-            case 2131034192: //Gifts
-                System.out.println(page);
-                //listPage = new GiftDetailFrag();
-                arg.putInt(ListActivity.ARG_TYPE, 0);
-                break;
-            case 2131034193: //Payroll
-                System.out.println(page);
-                listPage = new PayrollFragment();
-                break;
-            case 2131034195: //Donors
-                System.out.println(page);
-                listPage = new DonorFragment();
-                break;
-            case 2131034196: //Reports
-                System.out.println(page);
-                listPage = new ReportFragment();
-                break;
-            case 2131230792: //Prayers
-                System.out.println(page);
-                listPage = new PrayerFragment();
-                break;
-            case 2131034197: //Accounts
-                System.out.println(page);
-                listPage = new AccountFragment();
-                break;
-            default:
-                listPage = new PageFragment();
-                break;
-        }
-        listPage.setArguments(arg);
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, listPage);
-        transaction.addToBackStack("ToListPage" + page);
-        transaction.commit();
-    }*/
-
 	public void goToListPage(View v){
 		int viewId = v.getId();
 		
@@ -79,20 +36,24 @@ public class OptionsActivity extends ActionBarActivity {
 		Bundle arg = new Bundle();
 		
 		switch(viewId){
-		case 2131034192 :
-            System.out.println(viewId);
+		case 2131034192:
             arg.putInt(ListActivity.ARG_TYPE, 0);
             break;
-		case 2131034193 : arg.putInt(ListActivity.ARG_TYPE, 1);
-		break;
-		case 2131034195 : arg.putInt(ListActivity.ARG_TYPE, 2);
-		break;
-		case 2131034196 : arg.putInt(ListActivity.ARG_TYPE, 3);
-		break;
-        case 2131230792 : arg.putInt(ListActivity.ARG_TYPE, 4);
-        break;
-		case 2131034197 : arg.putInt(ListActivity.ARG_TYPE, 5);
-		break;
+		case 2131034193:
+            arg.putInt(ListActivity.ARG_TYPE, 1);
+		    break;
+		case 2131034195:
+            arg.putInt(ListActivity.ARG_TYPE, 2);
+		    break;
+		case 2131034196:
+            arg.putInt(ListActivity.ARG_TYPE, 3);
+		    break;
+        case 2131230792:
+            arg.putInt(ListActivity.ARG_TYPE, 4);
+            break;
+		case 2131034197:
+            arg.putInt(ListActivity.ARG_TYPE, 5);
+		    break;
 		}
 		listPage.setArguments(arg);
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();

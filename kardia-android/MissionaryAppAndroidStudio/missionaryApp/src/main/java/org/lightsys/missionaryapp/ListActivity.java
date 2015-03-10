@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 import org.lightsys.missionaryapp.data.LocalDBHandler;
 import org.lightsys.missionaryapp.donorfragments.DonorFrag;
+import org.lightsys.missionaryapp.donorfragments.GiftDetailFrag;
+import org.lightsys.missionaryapp.optionsfragments.*;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -17,7 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
@@ -42,7 +46,7 @@ public class ListActivity extends Fragment{
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
 		View v = inflater.inflate(R.layout.activity_list, container, false);
-		
+
 		Bundle args = getArguments();
 		
 		if(savedInstanceState != null){
@@ -50,9 +54,10 @@ public class ListActivity extends Fragment{
 		}else if(args != null){
 			display = args.getInt(ARG_TYPE);
 		}
-		TextView tv = (TextView)v.findViewById(R.id.title);
-		tv.setText(display);
-		listview = (ListView)v.findViewById(R.id.list);
+
+        TextView tv = (TextView)v.findViewById(R.id.title);
+		tv.setText(String.valueOf(display));
+        listview = (ListView)v.findViewById(R.id.list);
 		listview.setAdapter(loadDisplay());
 		listview.setOnItemClickListener(new onItemClicked());
 		
