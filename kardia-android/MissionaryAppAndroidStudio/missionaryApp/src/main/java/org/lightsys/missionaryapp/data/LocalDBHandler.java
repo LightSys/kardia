@@ -213,39 +213,78 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//These methods (the next 5) need to return the id (from the local database) among other things
 	//should return: id, name, amount (whole and part), date
 	public ArrayList<HashMap<String, String>> getDisplayGifts() {
-		// TODO WRITE THE METHOD.
-		return null;
+		// TODO WRITE THE METHOD (4).
+        ArrayList<HashMap<String,String>> arrayList = new ArrayList();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM gifts WHERE id = ID", null);
+        while (c.moveToNext()) {
+            if (c.getString(0) == null) {
+                break;
+            }
+            HashMap<String, String> hashMap = new HashMap();
+            hashMap.put("ID", c.getString(0));
+            hashMap.put("Name", c.getString(1));
+            hashMap.put("Amount", c.getString(100));
+
+        }
+		return arrayList;
 	}
 
 	//(not sure what else is to be stored or displayed for payroll yet)
 	//should return: id, name  
 	public ArrayList<HashMap<String, String>> getDisplayPayroll() {
-		// TODO WRITE THE METHOD.
+		// TODO WRITE THE METHOD (5).
 		return null;
 	}
 	
 	//should return: id, name, image (if one), (maybe something else?)
 	public ArrayList<HashMap<String, String>> getDisplayDonors() {
-		// TODO WRITE THE METHOD.
+		// TODO WRITE THE METHOD (6).
 		return null;
 	}
 
 	//should return: id, name/title, date
 	public ArrayList<HashMap<String, String>> getDisplayReports() {
-		// TODO WRITE THE METHOD.
+		// TODO WRITE THE METHOD (7).
+        /*ArrayList<> arrayList = new ArrayList(HashMap<>());
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM accounts", null);
+        while (c.moveToNext()) {
+            if(c.getString(0) == null) {
+                break;
+            }
+            HashMap hashMap = new HashMap();
+            hashMap.put()
+        }*/
 		return null;
 	}
 
     //should return: id, short name, long description;
     public ArrayList<HashMap<String, String>> getDisplayPrayers() {
-        // TODO WRITE THE METHOD.
+        // TODO WRITE THE METHOD (8).
         return null;
     }
 
 	//should return: id, name, amount/balance (whole and part) 
 	public ArrayList<HashMap<String, String>> getDisplayAccounts() {
-		// TODO WRITE THE METHOD.
-		return null;
+		// TODO WRITE THE METHOD <!--Should be done-->.
+
+        ArrayList<HashMap<String,String>> arrayList = new ArrayList();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM accounts", null);
+
+        while (c.moveToNext()) {
+            if (c.getString(0) == null) {
+                break;
+            }
+            HashMap<String, String> hashMap = new HashMap<String, String>();
+            hashMap.put("ID", c.getString(0));
+            hashMap.put("AccountName", c.getString(1));
+            hashMap.put("Password", c.getString(2));
+            hashMap.put("ServerName", c.getString(3));
+            arrayList.add(hashMap);
+        }
+		return arrayList;
 	}
 	
 	/* *** Get Methods *** */
