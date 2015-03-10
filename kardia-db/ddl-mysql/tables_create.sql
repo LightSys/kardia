@@ -1193,12 +1193,30 @@ create table e_data_highlight (
 );
 
 
-/* e_seen */
+/* e_ack */
 
-create table e_seen (
-        e_object_type                         varchar(32)  not null,   /* The type of object that has been viewed --  */
-        e_object_id                           varchar(32)  not null,   /* A unique ID identifying the object viewed --  */
-        e_whom                                char(10)  not null,      /* The collaborator who saw the object --  */
+create table e_ack (
+        e_ack_id                              integer  not null,       /* The unique ID of this acknowledgement --  */
+        e_object_type                         varchar(32)  not null,   /* The type of object that has been acknowledged --  */
+        e_object_id                           varchar(32)  not null,   /* A unique ID identifying the object acknowledged --  */
+        e_ack_type                            integer  not null,       /* The type of acknowledgement (viewed, prayed, comment, like, etc.) --  */
+        e_ack_comments                        varchar(900)  null,      /* A unique ID identifying the object acknowledged --  */
+        e_whom                                char(10)  not null,      /* The collaborator who acknowledged the object --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_ack_type */
+
+create table e_ack_type (
+        e_ack_type                            integer  not null,       /* The unique ID of this ack type --  */
+        e_ack_type_label                      varchar(40)  not null,   /* The short name of the acknowledgement type --  */
+        e_ack_type_desc                       varchar(255)  not null,  /* The description of the acknowledgement type --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
