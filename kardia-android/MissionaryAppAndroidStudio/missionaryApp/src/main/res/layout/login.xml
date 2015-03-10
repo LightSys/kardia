@@ -20,7 +20,7 @@
         android:layout_marginTop="15dp"
         android:ems="10"
         android:hint="@string/username"
-        android:text="hannahbrown" >
+        android:text="" >
 
         <requestFocus />
     </EditText>
@@ -52,7 +52,7 @@
         android:ems="10"
         android:hint="ID"
         android:inputType="number"
-        android:text="100004" />
+        android:text="" />
 
     <Button
         android:id="@+id/login"
