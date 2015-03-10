@@ -33,6 +33,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 				COLUMN_ACCOUNT_ID = "account_id",
 				COLUMN_PASSWORD = "password",
 				COLUMN_SERVERADDRESS = "server_address",
+                COLUMN_ACCOUNT_BALANCE = "account_balance",
 				COLUMN_GIFTFUND = "gift_fund",
 				COLUMN_GIFTFUNDDESC = "gift_fund_desc",
 				COLUMN_AMOUNTWHOLE = "amount_whole",
@@ -66,7 +67,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		String CREATE_ACCOUNTS_TABLE = "CREATE TABLE " + TABLE_ACCOUNT + "(" +
 				COLUMN_ID +" INTEGER PRIMARY KEY, " + COLUMN_NAME + " TEXT, " 
 				+ COLUMN_PASSWORD + " TEXT," + COLUMN_SERVERADDRESS + " TEXT,"
-				+ COLUMN_ACCOUNT_ID + " INTEGER)";
+				+ COLUMN_ACCOUNT_ID + " INTEGER" + COLUMN_ACCOUNT_BALANCE + " INTEGER)";
 		db.execSQL(CREATE_ACCOUNTS_TABLE);
 		
 		//GIFT TABLE
@@ -147,6 +148,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		values.put(COLUMN_PASSWORD, account.getAccountPassword());
 		values.put(COLUMN_SERVERADDRESS, account.getServerName());
 		values.put(COLUMN_ACCOUNT_ID, account.getAccountID());
+        values.put(COLUMN_ACCOUNT_BALANCE, account.getAccountBalance());
 		
 		SQLiteDatabase db = this.getWritableDatabase();
 		
