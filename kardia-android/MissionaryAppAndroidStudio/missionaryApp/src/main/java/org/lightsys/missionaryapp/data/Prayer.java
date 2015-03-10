@@ -1,5 +1,7 @@
 package org.lightsys.missionaryapp.data;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -9,7 +11,7 @@ public class Prayer {
     private String Subject;
     private String Description;
     private static int number = 0;
-    private Date date;
+    private String date;
 
     public Prayer(){
         this.setDate();
@@ -41,7 +43,20 @@ public class Prayer {
 
     public void setDescription(String Description) { this.Description = Description;}
 
-    public Date getDate() {return date;}
+    public String getDate() {return (String)date;}
 
-    public void setDate() {this.date = new Date();}
+    public void Update(String text) {
+        setDate();
+        String newDescription = "\n\nUpdate " + getDate() + ": " + text;
+        setDescription(newDescription);
+    }
+
+    public void setDate() {
+        Date date1 = new Date();
+        Format formatter = new SimpleDateFormat("MM-dd-yyyy");
+        this.date = formatter.format(date1);
+    }
+    public void setDate(String date) {
+        this.date = date;
+    }
 }
