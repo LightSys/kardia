@@ -271,7 +271,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 
         ArrayList<HashMap<String,String>> arrayList = new ArrayList();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT * FROM accounts", null);
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_ACCOUNT, null);
 
         while (c.moveToNext()) {
             if (c.getString(0) == null) {
@@ -294,7 +294,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		
 		SQLiteDatabase db = this.getReadableDatabase();
 		
-		Cursor c = db.rawQuery("SELECT * FROM accounts", null);
+		Cursor c = db.rawQuery("SELECT * FROM " + TABLE_ACCOUNT, null);
 		
 		if(c.moveToFirst()){
 			account.setId(Integer.parseInt(c.getString(0)));
@@ -311,7 +311,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		
 		SQLiteDatabase db = this.getReadableDatabase();
 		
-		Cursor c = db.rawQuery("SELECT * FROM accounts", null);
+		Cursor c = db.rawQuery("SELECT * FROM " + TABLE_ACCOUNT, null);
 		Log.d("BasicAuth", "Returned accounts by \"hasAccount\": " + c.getCount());
 		if(c.moveToFirst()){
 			accountExists = true;
