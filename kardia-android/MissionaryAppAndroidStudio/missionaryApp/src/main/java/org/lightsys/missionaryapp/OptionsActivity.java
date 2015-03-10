@@ -1,6 +1,5 @@
 package org.lightsys.missionaryapp;
 
-import org.lightsys.missionaryapp.data.LocalDBHandler;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,16 +10,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-/**
- * This is used to determine which content the user wants
- * to access.
- * 
- * @author Andrew Cameron
- *
- */
-public class OptionsActivity extends ActionBarActivity{
+import org.lightsys.missionaryapp.data.LocalDBHandler;
+import org.lightsys.missionaryapp.optionsfragments.AccountFragment;
+import org.lightsys.missionaryapp.optionsfragments.DonorFragment;
+import org.lightsys.missionaryapp.optionsfragments.GiftFragment;
+import org.lightsys.missionaryapp.optionsfragments.PayrollFragment;
+import org.lightsys.missionaryapp.optionsfragments.PrayerFragment;
+import org.lightsys.missionaryapp.optionsfragments.ReportFragment;
 
-	@Override
+public class OptionsActivity extends ActionBarActivity {
+
+    @Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
@@ -28,35 +28,40 @@ public class OptionsActivity extends ActionBarActivity{
 		MenuItem logout = (MenuItem)findViewById(R.id.action_logout);
 	}
 
-    public Fragment create(int page){
+    public void goToListPage(View v){
         Bundle args = new Bundle();
+        int page = v.getId();
         Fragment listPage = new ListActivity();
 
+
         switch(page){
-            case 0:
-                args.putInt(ListActivity.ARG_TYPE, 0);
+            case 2131034192: //Gifts
+                listPage = new GiftFragment();
                 break;
-            case 1:
-                args.putInt(ListActivity.ARG_TYPE, 1);
+            case 1: //Payroll
+                listPage = new PayrollFragment();
                 break;
-            case 2:
-                args.putInt(ListActivity.ARG_TYPE, 2);
+            case 2: //Donors
+                listPage = new DonorFragment();
                 break;
-            case 3:
-                args.putInt(ListActivity.ARG_TYPE, 3);
+            case 3: //Reports
+                listPage = new ReportFragment();
                 break;
-            case 4:
-                args.putInt(ListActivity.ARG_TYPE, 4);
+            case 4: //Prayers
+                listPage = new PrayerFragment();
                 break;
-            case 5:
-                args.putInt(ListActivity.ARG_TYPE, 5);
+            case 5: //Accounts
+                listPage = new AccountFragment();
                 break;
             default:
+                listPage = new PageFragment();
                 break;
         }
         listPage.setArguments(args);
-
-        return listPage;
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, listPage);
+        transaction.addToBackStack("ToListPage" + page);
+        transaction.commit();
     }
 
 	/*public void goToListPage(View v){
@@ -85,7 +90,25 @@ public class OptionsActivity extends ActionBarActivity{
 		transaction.addToBackStack("ToListPage" + viewId);
 		transaction.commit();
 	}*/
-	
+
+    public static class PageFragment extends Fragment{
+        public static final String ARG_PAGE = "ARG_PAGE";
+
+
+        public static PageFragment create(int page) {
+            Bundle args = new Bundle();
+            args.putInt(ARG_PAGE, page);
+            PageFragment fragment = new PageFragment();
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+        }
+    }
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 

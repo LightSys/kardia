@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/prayer_list"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
 
     <TextView
         android:id="@+id/prayerHeader"
@@ -13,15 +12,6 @@
         android:text="Prayers"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-
-   <!-- <ListView android:id="@+id/prayer_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-
-    </ListView>-->
-
-
     <TextView android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -29,13 +19,13 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="8dp"
         android:textSize="21sp"
-        android:text="Prayer Title"/>
+        android:text="Prayer Title" />
 
     <TextView android:id="@+id/date"
         android:text="Aug. 12 1976"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
+        android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_marginLeft="20dp"
         android:layout_marginBottom="1dp"
@@ -48,8 +38,13 @@
         android:layout_below="@+id/name"
         android:layout_marginTop="5dp"
         android:textSize="16sp"
-        android:text="Prayer Description"/>
+        android:text="Prayer Description" />
 
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_alignParentBottom="true"/>
 
-</LinearLayout>
+</RelativeLayout>
