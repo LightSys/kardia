@@ -29,35 +29,42 @@ public class OptionsActivity extends ActionBarActivity {
 	}
 
     public void goToListPage(View v){
-        Bundle args = new Bundle();
+        Bundle arg = new Bundle();
         int page = v.getId();
         Fragment listPage = new ListActivity();
 
 
         switch(page){
             case 2131034192: //Gifts
-                listPage = new GiftFragment();
+                System.out.println(page);
+                //listPage = new GiftFragment();
+                arg.putInt(ListActivity.ARG_TYPE, 0);
                 break;
-            case 1: //Payroll
+            case 2131034193: //Payroll
+                System.out.println(page);
                 listPage = new PayrollFragment();
                 break;
-            case 2: //Donors
+            case 2131034195: //Donors
+                System.out.println(page);
                 listPage = new DonorFragment();
                 break;
-            case 3: //Reports
+            case 2131034196: //Reports
+                System.out.println(page);
                 listPage = new ReportFragment();
                 break;
-            case 4: //Prayers
+            case 2131230792: //Prayers
+                System.out.println(page);
                 listPage = new PrayerFragment();
                 break;
-            case 5: //Accounts
+            case 2131034197: //Accounts
+                System.out.println(page);
                 listPage = new AccountFragment();
                 break;
             default:
                 listPage = new PageFragment();
                 break;
         }
-        listPage.setArguments(args);
+        listPage.setArguments(arg);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, listPage);
         transaction.addToBackStack("ToListPage" + page);
