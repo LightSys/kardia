@@ -20,7 +20,6 @@ import android.widget.TextView;
  * @author Andrew Cameron
  */
 public class GiftDetailFrag extends Fragment {
-
 	final static String ARG_GIFT_ID = "gift_id";
 	int gift_id = -1;
 	View v;
@@ -51,7 +50,7 @@ public class GiftDetailFrag extends Fragment {
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 1);
 		Gift g = db.getGift(gift_id);
 		
-		to.setText("Gift to: " + g.getGift_fund_desc());
+		to.setText("Gift from: " + g.getGift_fund_desc());
 		date.setText("Date: " + g.formatedDate());
 		amount.setText("Amount" + g.amountToString());
 		summary.setText("Check Number: " + g.getGift_check_num());

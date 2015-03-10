@@ -145,7 +145,7 @@ public class MainActivity extends Activity {
 	private void DataPull(){
 		LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
 		
-		db.addAccount(new Account(User_Name, Password, Host_Name, Integer.parseInt(User_Id)));
+		db.addAccount(new Account(User_Name, Password, Host_Name, Integer.parseInt(User_Id), Integer.parseInt(User_Id)));
 		
 		loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" 
 				+ User_Id + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));

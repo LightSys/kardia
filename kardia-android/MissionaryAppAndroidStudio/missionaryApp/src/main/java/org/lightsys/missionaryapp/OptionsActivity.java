@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.lightsys.missionaryapp.data.LocalDBHandler;
+import org.lightsys.missionaryapp.donorfragments.GiftDetailFrag;
 import org.lightsys.missionaryapp.optionsfragments.AccountFragment;
 import org.lightsys.missionaryapp.optionsfragments.DonorFragment;
 import org.lightsys.missionaryapp.optionsfragments.GiftFragment;
@@ -28,7 +29,7 @@ public class OptionsActivity extends ActionBarActivity {
 		MenuItem logout = (MenuItem)findViewById(R.id.action_logout);
 	}
 
-    public void goToListPage(View v){
+    /*public void goToListPage(View v){
         Bundle arg = new Bundle();
         int page = v.getId();
         Fragment listPage = new ListActivity();
@@ -37,7 +38,7 @@ public class OptionsActivity extends ActionBarActivity {
         switch(page){
             case 2131034192: //Gifts
                 System.out.println(page);
-                //listPage = new GiftFragment();
+                //listPage = new GiftDetailFrag();
                 arg.putInt(ListActivity.ARG_TYPE, 0);
                 break;
             case 2131034193: //Payroll
@@ -69,17 +70,19 @@ public class OptionsActivity extends ActionBarActivity {
         transaction.replace(R.id.container, listPage);
         transaction.addToBackStack("ToListPage" + page);
         transaction.commit();
-    }
+    }*/
 
-	/*public void goToListPage(View v){
+	public void goToListPage(View v){
 		int viewId = v.getId();
 		
 		Fragment listPage = new ListActivity();
 		Bundle arg = new Bundle();
 		
 		switch(viewId){
-		case 2131034192 : arg.putInt(ListActivity.ARG_TYPE, 0);
-        break;
+		case 2131034192 :
+            System.out.println(viewId);
+            arg.putInt(ListActivity.ARG_TYPE, 0);
+            break;
 		case 2131034193 : arg.putInt(ListActivity.ARG_TYPE, 1);
 		break;
 		case 2131034195 : arg.putInt(ListActivity.ARG_TYPE, 2);
@@ -96,7 +99,7 @@ public class OptionsActivity extends ActionBarActivity {
 		transaction.replace(R.id.container, listPage);
 		transaction.addToBackStack("ToListPage" + viewId);
 		transaction.commit();
-	}*/
+	}
 
     public static class PageFragment extends Fragment{
         public static final String ARG_PAGE = "ARG_PAGE";
