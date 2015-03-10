@@ -6,17 +6,50 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/prayerHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|center_vertical"
         android:text="Prayers"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <ListView
-        android:id="@+id/prayer_list"
+
+   <!-- <ListView android:id="@+id/prayer_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
+        android:layout_height="match_parent">
+
+
+    </ListView>-->
+
+
+    <TextView android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:textSize="21sp"
+        android:text="Prayer Title"/>
+
+    <TextView android:id="@+id/date"
+        android:text="Aug. 12 1976"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="1dp"
+        android:textSize="16sp" />
+
+    <TextView android:id="@+id/description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="12dp"
+        android:layout_below="@+id/name"
+        android:layout_marginTop="5dp"
+        android:textSize="16sp"
+        android:text="Prayer Description"/>
+
+
 
 </LinearLayout>

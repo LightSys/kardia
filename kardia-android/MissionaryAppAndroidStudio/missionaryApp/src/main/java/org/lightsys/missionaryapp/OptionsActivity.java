@@ -27,8 +27,39 @@ public class OptionsActivity extends ActionBarActivity{
 		
 		MenuItem logout = (MenuItem)findViewById(R.id.action_logout);
 	}
-	
-	public void goToListPage(View v){
+
+    public Fragment create(int page){
+        Bundle args = new Bundle();
+        Fragment listPage = new ListActivity();
+
+        switch(page){
+            case 0:
+                args.putInt(ListActivity.ARG_TYPE, 0);
+                break;
+            case 1:
+                args.putInt(ListActivity.ARG_TYPE, 1);
+                break;
+            case 2:
+                args.putInt(ListActivity.ARG_TYPE, 2);
+                break;
+            case 3:
+                args.putInt(ListActivity.ARG_TYPE, 3);
+                break;
+            case 4:
+                args.putInt(ListActivity.ARG_TYPE, 4);
+                break;
+            case 5:
+                args.putInt(ListActivity.ARG_TYPE, 5);
+                break;
+            default:
+                break;
+        }
+        listPage.setArguments(args);
+
+        return listPage;
+    }
+
+	/*public void goToListPage(View v){
 		int viewId = v.getId();
 		
 		Fragment listPage = new ListActivity();
@@ -36,7 +67,7 @@ public class OptionsActivity extends ActionBarActivity{
 		
 		switch(viewId){
 		case 2131034192 : arg.putInt(ListActivity.ARG_TYPE, 0);
-		break;
+        break;
 		case 2131034193 : arg.putInt(ListActivity.ARG_TYPE, 1);
 		break;
 		case 2131034195 : arg.putInt(ListActivity.ARG_TYPE, 2);
@@ -47,16 +78,13 @@ public class OptionsActivity extends ActionBarActivity{
         break;
 		case 2131034197 : arg.putInt(ListActivity.ARG_TYPE, 5);
 		break;
-        default:
-        System.out.println(viewId);
-        break;
 		}
 		listPage.setArguments(arg);
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 		transaction.replace(R.id.container, listPage);
 		transaction.addToBackStack("ToListPage" + viewId);
 		transaction.commit();
-	}
+	}*/
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

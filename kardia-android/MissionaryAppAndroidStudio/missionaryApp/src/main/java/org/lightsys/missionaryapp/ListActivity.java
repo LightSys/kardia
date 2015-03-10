@@ -6,6 +6,7 @@ import java.util.HashMap;
 import org.lightsys.missionaryapp.data.LocalDBHandler;
 import org.lightsys.missionaryapp.donorfragments.DonorFrag;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -33,10 +34,11 @@ public class ListActivity extends Fragment{
 	private static final String Tag = "LA";
 	public static final String ARG_TYPE = "display_type";
 	public static int display = 0;
-	// 0 = gift, 1 = payroll, 2 = donors, 3 = reports, 4 = accounts
+	// 0 = gift, 1 = payroll, 2 = donors, 3 = reports, 4 = prayers, 5 = accounts
 	private static ArrayList<HashMap<String,String>> listitems;
 	private ListView listview;
-	@Override
+	@SuppressLint("WrongViewCast")
+    @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
 		View v = inflater.inflate(R.layout.activity_list, container, false);
@@ -74,7 +76,7 @@ public class ListActivity extends Fragment{
 		
 		//Loads a list of the Donors 
 		case 2:
-			from = new String[]{"image","name", "email", "cellnumber"};
+			from = new String[]{"image", "name", "email", "cellnumber"};
 			to = new int[]{R.id.quickContact, R.id.name, R.id.email, R.id.cellnumber};
 			layout = R.layout.donor_listview_item;
 			listitems = db.getDisplayDonors();
@@ -87,9 +89,17 @@ public class ListActivity extends Fragment{
 			layout = R.layout.report_listview_item;
 			listitems = db.getDisplayReports();
 			break;
-		
+
+        //Loads the prayers
+        case 4:
+            from = new String[]{"title", "date", "description"};
+            to = new int[]{R.id.title, R.id.date, R.id.description};
+            layout = R.layout.prayer_listview_item;
+            listitems = db.getDisplayPrayers();
+            break;
+
 		//Loads the accounts related to the Missionary's fund
-		case 4:
+		case 5:
 			from = new String[]{"title", "balance"};
 			to = new int[]{R.id.title, R.id.balance};
 			layout = R.layout.accounts_listview_item;
@@ -97,7 +107,7 @@ public class ListActivity extends Fragment{
 			break;
 		
 		//By default, loads a list of gifts given to the missionary's fund
-		default : 
+		default:
 			from = new String[]{"title", "date", "amount"};
 			to = new int[]{R.id.title, R.id.date, R.id.amount};
 			layout = R.layout.quickinfo_listview_item;
@@ -171,7 +181,12 @@ public class ListActivity extends Fragment{
 			case 3:
 				//Take to the report pdf.
 				break;
-			
+
+            // Prayers
+            case 4:
+                //Take to prayers
+                break;
+
 			/*
 			 * if the accounts were being displayed,
 			 * take the user to the list of items for that
@@ -179,7 +194,7 @@ public class ListActivity extends Fragment{
 			 * TODO: Figure out what falls under this category,
 			 * so you can handle the click events properly/go to the right place.
 			 */
-			case 4:
+			case 5:
 				break;
 			}
 		}
