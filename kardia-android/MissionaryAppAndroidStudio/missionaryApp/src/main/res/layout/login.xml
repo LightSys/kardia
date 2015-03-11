@@ -33,7 +33,7 @@
         android:ems="10"
         android:hint="@string/password"
         android:inputType="textPassword"
-        android:text="" />
+        android:text="Purple95" />
 
     <EditText
         android:id="@+id/serveraddress"

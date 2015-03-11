@@ -26,8 +26,6 @@ import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import static org.lightsys.missionaryapp.R.layout.activity_list;
-
 /**
  * This class is used to display any list-view in the app
  * It currently is set up to cover any of the five options
@@ -47,7 +45,7 @@ public class ListActivity extends Fragment{
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
-		View v = inflater.inflate(activity_list, container, false);
+		View v = inflater.inflate(R.layout.activity_list, container, false);
 
 		Bundle args = getArguments();
 		
@@ -61,7 +59,8 @@ public class ListActivity extends Fragment{
 
         TextView tv = (TextView)v.findViewById(R.id.title);
 		//tv.setText(display);
-		tv.setText(String.valueOf(display));
+		//tv.setText(String.valueOf(display));
+        tv.setText("R.layout.activity" + display);
         listview = (ListView)v.findViewById(R.id.list);
         listview.setAdapter(loadDisplay());
         listview.setOnItemClickListener(new onItemClicked());
