@@ -59,8 +59,8 @@ public class ListActivity extends Fragment{
 
         TextView tv = (TextView)v.findViewById(R.id.title);
 		//tv.setText(display);
-		//tv.setText(String.valueOf(display));
-        tv.setText("R.layout.activity" + display);
+		tv.setText(String.valueOf(display));
+        //tv.setText("R.layout.activity" + display);
         listview = (ListView)v.findViewById(R.id.list);
         listview.setAdapter(loadDisplay());
         listview.setOnItemClickListener(new onItemClicked());
