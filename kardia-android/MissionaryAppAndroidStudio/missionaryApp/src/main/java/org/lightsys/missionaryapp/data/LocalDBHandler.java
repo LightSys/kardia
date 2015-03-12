@@ -280,8 +280,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             }
             System.out.println("Gathering data");
             HashMap<String, String> hashMap = new HashMap<String, String>();
-            hashMap.put("id", c.getString(0));
-            hashMap.put("name", c.getString(1));
+            //hashMap.put("id", c.getString(0));
+            hashMap.put("title", c.getString(1));
             hashMap.put("amount_whole", c.getString(4));
             hashMap.put("amount_part", c.getString(5));
             hashMap.put("date", c.getString(6));
@@ -348,7 +348,6 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 
         ArrayList<HashMap<String, String>> arrayList = new ArrayList();
         SQLiteDatabase db = this.getReadableDatabase();
-
         /*Cursor c = db.rawQuery("SELECT * FROM " + TABLE_PRAYER, null);
 
         while (c.moveToNext()) {

@@ -110,7 +110,7 @@ public class ListActivity extends Fragment {
 		switch (display) {
 			//Loads a list of gifts
 			case 0:
-                from = new String[]{"id", "title", "amount_whole", "amount_part", "date",};
+                from = new String[]{"title", "amount_whole", "amount_part", "date",};
 				to = new int[]{R.id.title, R.id.date, R.id.amount};
 				layout = R.layout.gift_listview_item;
 				listitems = db.getDisplayGifts();
@@ -134,8 +134,8 @@ public class ListActivity extends Fragment {
 
 			//Loads the accounts related to the Missionary's fund
 			case 3:
-				from = new String[]{"title", "balance"};
-				to = new int[]{R.id.title, R.id.balance};
+				from = new String[]{"account_id", "balance"};
+				to = new int[]{R.id.account_id, R.id.balance};
 				layout = R.layout.accounts_listview_item;
 				listitems = db.getDisplayAccounts();
 				break;
