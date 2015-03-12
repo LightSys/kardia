@@ -34,7 +34,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 				COLUMN_ACCOUNT_ID = "account_id",
 				COLUMN_PASSWORD = "password",
 				COLUMN_SERVERADDRESS = "server_address",
-                COLUMN_ACCOUNT_BALANCE = "account_balance",
+                //COLUMN_ACCOUNT_BALANCE = "account_balance",
 				COLUMN_GIFTFUND = "gift_fund",
 				COLUMN_GIFTFUNDDESC = "gift_fund_desc",
 				COLUMN_AMOUNTWHOLE = "amount_whole",
@@ -68,7 +68,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		String CREATE_ACCOUNTS_TABLE = "CREATE TABLE " + TABLE_ACCOUNT + "(" +
 				COLUMN_ID +" INTEGER PRIMARY KEY, " + COLUMN_NAME + " TEXT, " 
 				+ COLUMN_PASSWORD + " TEXT," + COLUMN_SERVERADDRESS + " TEXT,"
-				+ COLUMN_ACCOUNT_ID + " INTEGER" + COLUMN_ACCOUNT_BALANCE + " INTEGER)";
+				+ COLUMN_ACCOUNT_ID + " INTEGER)";// + COLUMN_ACCOUNT_BALANCE + " INTEGER)";
 		db.execSQL(CREATE_ACCOUNTS_TABLE);
 		
 		//GIFT TABLE
@@ -154,7 +154,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		values.put(COLUMN_PASSWORD, account.getAccountPassword());
 		values.put(COLUMN_SERVERADDRESS, account.getServerName());
 		values.put(COLUMN_ACCOUNT_ID, account.getAccountID());
-        values.put(COLUMN_ACCOUNT_BALANCE, account.getAccountBalance());
+        //values.put(COLUMN_ACCOUNT_BALANCE, account.getAccountBalance());
 		
 		SQLiteDatabase db = this.getWritableDatabase();
 		
@@ -269,13 +269,16 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//should return: id, name, amount (whole and part), date
 	public ArrayList<HashMap<String, String>> getDisplayGifts() {
 		// TODO WRITE THE METHOD <!--Should be done-->.
+        System.out.println("getDisplayGifts()");
         ArrayList<HashMap<String,String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_GIFT, null);
         while (c.moveToNext()) {
             if (c.getString(0) == null) {
+                System.out.println("c.getString()");
                 break;
             }
+            System.out.println("Gathering data");
             HashMap<String, String> hashMap = new HashMap<String, String>();
             hashMap.put("id", c.getString(0));
             hashMap.put("name", c.getString(1));
@@ -284,7 +287,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             hashMap.put("date", c.getString(6));
             arrayList.add(hashMap);
         }
-		return arrayList;
+        System.out.println("end while");
+        return arrayList;
 	}
 
 	//(not sure what else is to be stored or displayed for payroll yet)
@@ -378,7 +382,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             hashMap.put("account_id", c.getString(1));
             hashMap.put("password", c.getString(2));
             hashMap.put("server_address", c.getString(3));
-            hashMap.put("account_balance", c.getString(4));
+            //hashMap.put("account_balance", c.getString(4));
             arrayList.add(hashMap);
         }
 		return arrayList;
