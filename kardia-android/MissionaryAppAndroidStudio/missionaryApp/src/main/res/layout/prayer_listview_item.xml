@@ -36,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Prayer Title"
-                android:id="@+id/short_prayer_title"
+                android:id="@+id/prayer_subject"
                 android:layout_gravity="left|top" />
 
             <TextView
@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="Description"
-                android:id="@+id/description"
+                android:id="@+id/prayer_desc"
                 android:layout_gravity="left|center_vertical" />
         </FrameLayout>
 

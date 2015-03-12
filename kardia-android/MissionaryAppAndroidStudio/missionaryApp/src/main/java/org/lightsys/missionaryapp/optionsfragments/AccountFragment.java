@@ -54,7 +54,7 @@ public class AccountFragment extends Fragment {
 
     private void updateAccountsView(int account_id) {
         TextView account_name = (TextView)getActivity().findViewById(R.id.account_id);
-        TextView balance = (TextView)getActivity().findViewById(R.id.balance);
+        TextView balance = (TextView)getActivity().findViewById(R.id.account_balance);
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
         Account a = db.getAccount();

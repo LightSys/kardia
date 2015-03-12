@@ -27,7 +27,7 @@
         android:textSize="15sp"/>
 
     <TextView
-        android:id="@+id/balance"
+        android:id="@+id/account_balance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/textview"

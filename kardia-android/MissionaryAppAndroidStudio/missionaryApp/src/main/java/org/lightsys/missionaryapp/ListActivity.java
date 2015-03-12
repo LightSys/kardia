@@ -126,16 +126,16 @@ public class ListActivity extends Fragment {
 
 			//Loads the prayers
 			case 2:
-				from = new String[]{"title", "date", "description"};
-				to = new int[]{R.id.title, R.id.date, R.id.description};
+				from = new String[]{"prayer_subject", "date", "prayer_desc"};
+				to = new int[]{R.id.prayer_subject, R.id.date, R.id.prayer_desc};
 				layout = R.layout.prayer_listview_item;
 				listitems = db.getDisplayPrayers();
 				break;
 
 			//Loads the accounts related to the Missionary's fund
 			case 3:
-				from = new String[]{"account_id", "balance"};
-				to = new int[]{R.id.account_id, R.id.balance};
+				from = new String[]{"account_id", "account_balance"};
+				to = new int[]{R.id.account_id, R.id.account_balance};
 				layout = R.layout.accounts_listview_item;
 				listitems = db.getDisplayAccounts();
 				break;
