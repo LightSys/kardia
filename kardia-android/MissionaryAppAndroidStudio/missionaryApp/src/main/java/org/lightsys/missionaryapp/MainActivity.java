@@ -151,12 +151,16 @@ public class MainActivity extends Activity {
 				+ User_Id + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 		
 		for(Fund f : db.getFunds()){
-			loadPeriods(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "/Funds/" 
-					+ f.getName() + "/Periods?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getId());
-			
+            String string = f.getName();
+            string = string.replace("|", "%7C");
+            loadPeriods(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "/Funds/"
+                    + string + "/Periods?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getId());
+
 			for(Period p : db.getPeriods(f.getId())){
-				loadTransactions(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "/Funds/" + f.getName() + "/Periods/" 
-						+ p.getName() + "/Transactions?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getId());
+                String string2 = p.getName();
+                string2 = string2.replace("|", "%7C");
+				loadTransactions(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "/Funds/" + string + "/Periods/"
+						+ string2 + "/Transactions?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getId());
 			}
 		}
 	}
