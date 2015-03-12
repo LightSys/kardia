@@ -10,7 +10,9 @@
         android:id="@+id/tableRow1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.33" >
+        android:layout_weight="0.5">
+        <!--Change when other buttons implemented
+        android:layout_weight="0.33" >-->
 
         <Button
             android:id="@+id/gifts"
@@ -21,22 +23,6 @@
             android:onClick="goToListPage" />
 
         <Button
-            android:id="@+id/payroll"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.5"
-            android:text="Payroll"
-            android:onClick="goToListPage" />
-
-    </TableRow>
-
-    <TableRow
-        android:id="@+id/tableRow2"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.33" >
-
-        <Button
             android:id="@+id/donors"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -44,21 +30,17 @@
             android:text="Donors"
             android:onClick="goToListPage" />
 
-        <Button
-            android:id="@+id/reports"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.5"
-            android:text="Reports"
-            android:onClick="goToListPage" />
+
 
     </TableRow>
 
     <TableRow
-        android:id="@+id/tableRow3"
+        android:id="@+id/tableRow2"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.33" >
+        android:layout_weight="0.5">
+        <!--Change when other buttons implemented
+        android:layout_weight="0.33" >-->
 
         <Button
             android:id="@+id/prayers"
@@ -77,5 +59,29 @@
             android:onClick="goToListPage" />
 
     </TableRow>
+
+<!--    <TableRow
+        android:id="@+id/tableRow3"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.33" >
+
+        <Button
+            android:id="@+id/payroll"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.5"
+            android:text="Payroll"
+            android:onClick="goToListPage" />
+
+        <Button
+            android:id="@+id/reports"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.5"
+            android:text="Reports"
+            android:onClick="goToListPage" />
+
+    </TableRow>-->
 
 </TableLayout>

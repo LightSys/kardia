@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.lightsys.missionaryapp.R;
-import org.lightsys.missionaryapp.R.id;
-import org.lightsys.missionaryapp.R.layout;
-import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.data.LocalDBHandler;
 import org.lightsys.missionaryapp.donorfragments.DonorBar;
 
@@ -18,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 
 /**
  * The DonorFrag consists of both the DonorBar and
@@ -74,7 +70,7 @@ public class DonorFragment extends Fragment {
             ArrayList<HashMap<String,String>> itemList = null/*db.getDonorHistory(donor_id)*/;
             String[] from = {"title","date","amount"};
             int[] to = {R.id.title, R.id.date, R.id.amount};
-            SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.quickinfo_listview_item, from, to);
+            SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item, from, to);
         }
         else{
             Bundle giftArgs = new Bundle();

@@ -10,4 +10,24 @@
     <string name="search">Search</string>
     <string name="logout">Logout</string>
 
+    <!--Layout IDs-->
+    <!--<string name="gift_layout">R.layout.gift_listview_item</string>-->
+    <string name="gift_layout">Gifts</string>
+    <!--<string name="payroll_layout">R.layout.payroll_listview_item</string>-->
+    <string name="payroll_layout">Payroll</string>
+    <!--<string name="donor_layout">R.layout.donor_listview_item</string>-->
+    <string name="donor_layout">Donors</string>
+    <!--<string name="report_layout">R.layout.report_listview_item</string>-->
+    <string name="report_layout">Reports</string>
+    <!--<string name="prayer_layout">R.layout.prayer_listview_item</string>-->
+    <string name="prayer_layout">Prayers</string>
+    <!--<string name="accounts_layout">R.layout.accounts_listview_item</string>-->
+    <string name="accounts_layout">Accounts</string>
+
+    <!--<string-array name="layout_ids">
+        <item>
+
+        </item>
+    </string-array>-->
+
 </resources>

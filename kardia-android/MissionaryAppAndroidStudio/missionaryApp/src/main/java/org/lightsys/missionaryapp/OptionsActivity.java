@@ -34,29 +34,31 @@ public class OptionsActivity extends ActionBarActivity {
 		
 		Fragment listPage = new ListActivity();
 		Bundle arg = new Bundle();
-		
+
+        // 0 = gift, 1 = donors, 2 = prayers, 3 = accounts, 4 = payroll, 5 = reports
 		switch(viewId){
 		case 2131230788: //Gifts
             arg.putInt(ListActivity.ARG_TYPE, 0);
             break;
-		case 2131230789: //Payroll
-            arg.putInt(ListActivity.ARG_TYPE, 1);
-		    break;
 		case 2131230791: //Donors
             arg.putInt(ListActivity.ARG_TYPE, 2);
 		    break;
-		case 2131230792: //Reports
-            System.out.println(viewId);
-            arg.putInt(ListActivity.ARG_TYPE, 3);
-		    break;
+
         case 2131230794: //Prayers
             arg.putInt(ListActivity.ARG_TYPE, 4);
             break;
 		case 2131230795: //Accounts
             arg.putInt(ListActivity.ARG_TYPE, 5);
 		    break;
+        //TODO: Reimplement
+        case 2131230789: //Payroll
+            arg.putInt(ListActivity.ARG_TYPE, 1);
+            break;
+        //TODO: Reimplement
+        case 2131230792: //Reports
+            arg.putInt(ListActivity.ARG_TYPE, 3);
+            break;
         default:
-            System.out.println(viewId);
             break;
 		}
 		listPage.setArguments(arg);

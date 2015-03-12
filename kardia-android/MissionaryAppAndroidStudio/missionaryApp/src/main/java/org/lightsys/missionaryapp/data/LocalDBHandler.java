@@ -345,7 +345,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
         ArrayList<HashMap<String, String>> arrayList = new ArrayList();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_PRAYER, null);
+        /*Cursor c = db.rawQuery("SELECT * FROM " + TABLE_PRAYER, null);
 
         while (c.moveToNext()) {
             if (c.getString(0) == null) {
@@ -357,7 +357,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             hashMap.put("prayer_desc", c.getString(2));
             hashMap.put("id", c.getString(3));
             arrayList.add(hashMap);
-        }
+        }*/
         return arrayList;
     }
 

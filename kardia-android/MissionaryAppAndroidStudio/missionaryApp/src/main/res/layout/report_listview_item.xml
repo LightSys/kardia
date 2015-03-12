@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
     	android:layout_height="80dp"
-        android:id="@+id/activity3">
+        android:id="@+id/report_layout">
     
     <TextView android:id="@+id/time"
         android:layout_width="wrap_content"
