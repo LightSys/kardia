@@ -291,7 +291,11 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//should return: id, name  
 	public ArrayList<HashMap<String, String>> getDisplayPayroll() {
 		// TODO WRITE THE METHOD (5).
-		return null;
+        ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
+        HashMap<String,String> hashMap = new HashMap<String, String>();
+        hashMap.put("Hello", "Hello");
+        arrayList.add(hashMap);
+		return arrayList;
 	}
 	
 	//should return: id, name, image (if one), (maybe something else?)
@@ -327,7 +331,11 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             HashMap hashMap = new HashMap();
             hashMap.put()
         }*/
-		return null;
+        ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
+        HashMap<String,String> hashMap = new HashMap<String, String>();
+        hashMap.put("Hello", "Hello");
+        arrayList.add(hashMap);
+        return arrayList;
 	}
 
     //should return: id, short name, long description;
