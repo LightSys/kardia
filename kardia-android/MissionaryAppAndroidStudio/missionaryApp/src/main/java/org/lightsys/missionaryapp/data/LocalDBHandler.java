@@ -83,7 +83,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         //DONOR TABLE
         String CREATE_DONOR_TABLE = "CREATE TABLE " + TABLE_DONOR + "(" +
-                COLUMN_NAME + " INTEGER PRIMARY KEY," + COLUMN_ANNOTATION + " TEXT," +
+                COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," +
                 COLUMN_EMAIL + " TEXT," + COLUMN_CELLNUMBER + " TEXT," +
                 COLUMN_DONORIMAGE + " BOLB)";
         db.execSQL(CREATE_DONOR_TABLE);
@@ -224,8 +224,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     public void addDonor(Donor donor) {
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME, donor.getId());
-        values.put(COLUMN_ANNOTATION, donor.getName());
+        values.put(COLUMN_ID, donor.getId());
+        values.put(COLUMN_NAME, donor.getName());
         SQLiteDatabase db = this.getWritableDatabase();
 
         db.insert(TABLE_DONOR, null, values);
