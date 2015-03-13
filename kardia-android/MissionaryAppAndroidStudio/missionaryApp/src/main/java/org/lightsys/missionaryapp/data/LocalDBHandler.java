@@ -11,6 +11,8 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 
 public class LocalDBHandler extends SQLiteOpenHelper {
 
@@ -75,7 +77,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         //GIFT TABLE
         String CREATE_GIFT_TABLE = "CREATE TABLE " + TABLE_GIFT + "(" +
-                COLUMN_ID + " INTEGER PRIMARY KEY, " + COLUMN_NAME + " TEXT, " +
+                COLUMN_GIFT_ID + " INTEGER PRIMARY KEY, " + COLUMN_NAME + " TEXT, " +
                 COLUMN_GIFTFUND + " TEXT, " + COLUMN_GIFTFUNDDESC + " TEXT, " +
                 COLUMN_AMOUNTWHOLE + " INTEGER, " + COLUMN_AMOUNTPART + " INTEGER, " +
                 COLUMN_DATE + " TEXT, " + COLUMN_CHECKNUM + " TEXT)";
@@ -267,9 +269,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void updatePrayer(int id, String update) {
+    public void updatePrayer(int id, String update, String url) {
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor c = db.rawQuery("SELECT * from " + TABLE_PRAYER + "WHERE ID = " + id, null);
+        Cursor c = db.rawQuery("SELECT * from " + TABLE_PRAYER + " WHERE " + COLUMN_PRAYER_ID + " = " + id, null);
+        String newText;
         if (c.moveToNext()) {
             String sub = c.getString(1);
             String desc = c.getString(2);
@@ -277,6 +280,13 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             Prayer prayer = new Prayer(sub, desc, id);
             prayer.Update(update);
             addPrayer(prayer);
+            newText = prayer.getDescription();
+            try {
+                JSONObject jsonObject = new JSONObject(url);
+                jsonObject.put("note_text", newText);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         c.close();
         db.close();
@@ -502,7 +512,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     public Gift getGift(int id) {
         Gift gift = new Gift();
 
-        String qString = "SELECT * FROM gifts WHERE id = " + id;
+        String qString = "SELECT * FROM " + TABLE_GIFT + " WHERE " + COLUMN_GIFT_ID + " = " + id;
 
         SQLiteDatabase db = this.getReadableDatabase();
 

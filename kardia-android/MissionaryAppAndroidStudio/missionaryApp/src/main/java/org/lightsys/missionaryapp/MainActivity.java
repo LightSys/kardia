@@ -146,14 +146,16 @@ public class MainActivity extends Activity {
 
         loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/"
                 + User_Id + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
-
+        System.out.println("How many funds? " + db.getFunds());
         for (Fund f : db.getFunds()) {
+            System.out.println("Looking at new fund: " + f.getName());
             String string = f.getName();
             string = string.replace("|", "%7C");
             loadPeriods(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "/Funds/"
                     + string + "/Periods?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getId());
 
             for (Period p : db.getPeriods(f.getId())) {
+                System.out.println("Looking at new Period");
                 String string2 = p.getName();
                 string2 = string2.replace("|", "%7C");
                 loadTransactions(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "/Funds/" + string + "/Periods/"
@@ -254,6 +256,7 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
         }
+        db.close();
     }
 
     private void loadPeriods(String value, int fund_id) {
@@ -291,6 +294,7 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
         }
+        db.close();
     }
 
     private void loadTransactions(String value, int fund_id) {
@@ -310,6 +314,7 @@ public class MainActivity extends Activity {
             try {
                 if (!tempTransactions.getString(x).equals("@id")) {
                     JSONObject transactionObj = json.getJSONObject(tempTransactions.getString(x));
+                    System.out.println("There is a transaction here!");
                     JSONObject date = transactionObj.getJSONObject("trx_date");
                     JSONObject amount = transactionObj.getJSONObject("amount");
 
@@ -333,6 +338,7 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
         }
+        db.close();
     }
 
     private void loadDonors(String value) {
@@ -356,8 +362,8 @@ public class MainActivity extends Activity {
                     Donor temp = new Donor();
                     temp.setName(fundObj.getString("partner_name"));
                     temp.setId(fundObj.getInt("name"));
-                    temp.setEmail(fundObj.getString("email"));
-                    temp.setCellNumber(fundObj.getString("cellnumber"));
+                    //temp.setEmail(fundObj.getString("email"));
+                    //temp.setCellNumber(fundObj.getString("cellnumber"));
 
                     if(!donors.contains(temp)){
                         db.addDonor(temp);
@@ -367,6 +373,7 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
         }
+        db.close();
     }
 
     private void loadPrayers(String value) {
@@ -402,6 +409,7 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
         }
+        db.close();
     }
 
     private void loadWhoPrays(String value, Prayer prayer) {
@@ -438,5 +446,6 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
         }
+        db.close();
     }
 }
