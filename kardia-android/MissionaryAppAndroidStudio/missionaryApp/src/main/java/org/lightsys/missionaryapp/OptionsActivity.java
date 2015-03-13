@@ -11,13 +11,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.lightsys.missionaryapp.data.LocalDBHandler;
-import org.lightsys.missionaryapp.donorfragments.GiftDetailFrag;
-import org.lightsys.missionaryapp.optionsfragments.AccountFragment;
-import org.lightsys.missionaryapp.optionsfragments.DonorFragment;
-import org.lightsys.missionaryapp.optionsfragments.GiftFragment;
-import org.lightsys.missionaryapp.optionsfragments.PayrollFragment;
-import org.lightsys.missionaryapp.optionsfragments.PrayerFragment;
-import org.lightsys.missionaryapp.optionsfragments.ReportFragment;
 
 public class OptionsActivity extends ActionBarActivity {
 

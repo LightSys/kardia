@@ -67,9 +67,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         //ACCOUNT TABLE
         String CREATE_ACCOUNTS_TABLE = "CREATE TABLE " + TABLE_ACCOUNT + "(" +
-                COLUMN_ID + " INTEGER PRIMARY KEY, " + COLUMN_NAME + " TEXT, "
-                + COLUMN_PASSWORD + " TEXT," + COLUMN_SERVERADDRESS + " TEXT,"
-                + COLUMN_ACCOUNT_ID + " INTEGER)";
+                COLUMN_ID + " INTEGER PRIMARY KEY, " + COLUMN_NAME + " TEXT, " +
+                COLUMN_PASSWORD + " TEXT," + COLUMN_SERVERADDRESS + " TEXT," +
+                COLUMN_ACCOUNT_ID + " INTEGER)";
         db.execSQL(CREATE_ACCOUNTS_TABLE);
 
         //GIFT TABLE
@@ -151,6 +151,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     public void addAccount(Account account) {
         ContentValues values = new ContentValues();
+        values.put(COLUMN_ID, account.getId());
         values.put(COLUMN_NAME, account.getAccountName());
         values.put(COLUMN_PASSWORD, account.getAccountPassword());
         values.put(COLUMN_SERVERADDRESS, account.getServerName());
@@ -376,7 +377,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    //should return: id, name, amount/balance (whole and part)
+    //should return: id, name, password, server address, account id
     public ArrayList<HashMap<String, String>> getDisplayAccounts() {
         // TODO WRITE THE METHOD <!--Should be done-->.
 
@@ -390,9 +391,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             }
             HashMap<String, String> hashMap = new HashMap<String, String>();
             hashMap.put("id", c.getString(0));
-            hashMap.put("account_id", c.getString(1));
+            hashMap.put("name", c.getString(1));
             hashMap.put("password", c.getString(2));
             hashMap.put("server_address", c.getString(3));
+            hashMap.put("account_id", c.getString(4));
             arrayList.add(hashMap);
         }
         c.close();
