@@ -130,13 +130,13 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         //Prayer Table
         String CREATE_PRAYER_TABLE = "CREATE TABLE " + TABLE_PRAYER + "(" +
                 COLUMN_DATE + " TEXT," + COLUMN_SUBJECT + " TEXT," +
-                COLUMN_PRAYERDESC + " TEXT," + COLUMN_PRAYER_ID + "INTEGER)";
+                COLUMN_PRAYERDESC + " TEXT," + COLUMN_PRAYER_ID + " INTEGER)";
         db.execSQL(CREATE_PRAYER_TABLE);
 
         //Prayer-Donor Table
         String CREATE_PRAYER_DONOR_TABLE = "CREATE TABLE " + TABLE_PRAYER_DONOR + "(" +
-                COLUMN_REPLY_ID + " INTEGER," + COLUMN_NAME + " TEXT," + COLUMN_DATE + "TEXT,"
-                + COLUMN_ANNOTATION + "TEXT," + COLUMN_PRAYER_ID + "INTEGER)";
+                COLUMN_REPLY_ID + " INTEGER," + COLUMN_NAME + " TEXT," + COLUMN_DATE + " TEXT,"
+                + COLUMN_ANNOTATION + " TEXT, " + COLUMN_PRAYER_ID + " INTEGER)";
         db.execSQL(CREATE_PRAYER_DONOR_TABLE);
 
         //MAP TABLE FOR GIFT AND DONOR (OR HAVE A DONOR ID WITHIN THE GIFT TABLE?)
@@ -315,10 +315,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             }
             HashMap<String, String> hashMap = new HashMap<String, String>();
             hashMap.put("id", c.getString(0));
-            hashMap.put("title", c.getString(1));
-            hashMap.put("amount_whole", c.getString(4));
-            hashMap.put("amount_part", c.getString(5));
-            hashMap.put("date", c.getString(6));
+            hashMap.put("name", c.getString(1));
+            hashMap.put("description", c.getString(2));
+            hashMap.put("class", c.getString(3));
+            hashMap.put("annotation", c.getString(4));
             arrayList.add(hashMap);
         }
         return arrayList;
@@ -799,17 +799,11 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return arrayList;
     }
 
-    public Prayer getPrayer(String type, String content) {
+    public Prayer getPrayer(int id) {
         Prayer prayer = new Prayer();
         String queryString = "SELECT * FROM " + TABLE_PRAYER + " WHERE ";
 
-        if (type.equals("date")) {
-            queryString += COLUMN_DATE;
-        } else if (type.equals("subject")) {
-            queryString += COLUMN_SUBJECT;
-        }
-
-        queryString += " = " + content;
+        queryString += COLUMN_PRAYER_ID + " = " + id;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(queryString, null);
