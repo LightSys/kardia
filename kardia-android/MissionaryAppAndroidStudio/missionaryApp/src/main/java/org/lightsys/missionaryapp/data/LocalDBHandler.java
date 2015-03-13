@@ -249,10 +249,13 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void addPraying(Prayer prayer, Donor donor) {
+    public void addPraying(PrayerReplies prayerReplies) {
         ContentValues values = new ContentValues();
-        values.put(COLUMN_ID, prayer.getID());
-        values.put(COLUMN_DONOR_ID, donor.getId());
+        values.put(COLUMN_ID, prayerReplies.getID());
+        values.put(COLUMN_NAME, prayerReplies.getName());
+        values.put(COLUMN_DATE, prayerReplies.getDate());
+        values.put(COLUMN_ANNOTATION, prayerReplies.getComment());
+        values.put(COLUMN_PRAYER_ID, prayerReplies.getPrayerID());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -421,14 +424,17 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     public ArrayList<HashMap<String, String>> getDisplayPraying(Prayer prayer) {
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
-        String qstring = "SELECT * FROM " + TABLE_PRAYER_DONOR + " WHERE " + COLUMN_ID + " = " + prayer.getID();
+        String qstring = "SELECT * FROM " + TABLE_PRAYER_DONOR + " WHERE " + COLUMN_PRAYER_ID + " = " + prayer.getID();
         Cursor c = db.rawQuery(qstring, null);
         while (c.moveToNext()) {
             if (c.getString(0) == null) {
                 break;
             }
             HashMap<String, String> hashMap = new HashMap<String, String>();
-            hashMap.put("id", c.getString(1));
+            hashMap.put("id", c.getString(0));
+            hashMap.put("name", c.getString(1));
+            hashMap.put("date", c.getString(2));
+            hashMap.put("annotation", c.getString(3));
             arrayList.add(hashMap);
         }
         c.close();
@@ -796,6 +802,26 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.close();
         c.close();
         return prayer;
+    }
+
+    public ArrayList<PrayerReplies> getPeoplePraying(Prayer prayer) {
+        ArrayList<PrayerReplies> arrayList = new ArrayList<PrayerReplies>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String qstring = "SELECT * FROM " + TABLE_PRAYER_DONOR + " WHERE " + COLUMN_PRAYER_ID + " = " + prayer.getID();
+        Cursor c = db.rawQuery(qstring, null);
+        while (c.moveToNext()) {
+            if (c.getString(0) == null) {
+                break;
+            }
+            PrayerReplies prayerReplies = new PrayerReplies();
+            prayerReplies.setID(c.getInt(0));
+            prayerReplies.setName(c.getString(1));
+            prayerReplies.setDate(c.getString(2));
+            prayerReplies.setComment(c.getString(3));
+            arrayList.add(prayerReplies);
+        }
+        c.close();
+        return arrayList;
     }
 	
 	

@@ -23,6 +23,7 @@ import org.lightsys.missionaryapp.data.LocalDBHandler;
 import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.data.Prayer;
+import org.lightsys.missionaryapp.data.PrayerReplies;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -172,7 +173,7 @@ public class MainActivity extends Activity {
 
         for (Prayer p : db.getPrayers()) {
             loadWhoPrays(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + User_Id + "/Notes/" + p.getID() +
-                    "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
+                    "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), p);
         }
 
 	}
@@ -404,9 +405,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void loadWhoPrays(String value){
+    private void loadWhoPrays(String value, Prayer prayer){
         LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
-        ArrayList<Prayer> existingPrayers = db.getPrayers();
+        ArrayList<PrayerReplies> existingPrayers = db.getPeoplePraying(prayer);
 
         JSONObject json = null;
         try{
@@ -421,15 +422,15 @@ public class MainActivity extends Activity {
                 if(!tempPrayer.getString(x).equals("@id")){
                     JSONObject fundObj = json.getJSONObject(tempPrayer.getString(x));
 
-                    Prayer temp = new Prayer();
-                    temp.setSubject(fundObj.getString("note_subject"));
-                    temp.setDescription(fundObj.getString("note_text"));
-                    temp.setDate(fundObj.getString("note_date"));
-                    temp.setID(fundObj.getInt("note_id"));
+                    PrayerReplies temp = new PrayerReplies();
+                    temp.setComment(fundObj.getString("prayedfor_comments"));
+                    temp.setPrayerID(fundObj.getInt("note_id"));
+                    temp.setDate(fundObj.getString("prayedfor_date"));
+                    temp.setID(fundObj.getInt("prayedfor_id"));
+                    temp.setName(fundObj.getString("supporter_partner_name"));
 
-                    if(!existingPrayers.contains(temp.getSubject())){
-                        db.addPrayer(temp);
-                        System.out.println("New Prayer:\n" + temp.toString());
+                    if(!existingPrayers.contains(temp.getID())){
+                        db.addPraying(temp);
                     }
                 }
             }catch(Exception e){
