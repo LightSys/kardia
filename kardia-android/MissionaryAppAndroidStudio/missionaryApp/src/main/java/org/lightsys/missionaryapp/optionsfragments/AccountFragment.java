@@ -5,15 +5,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.lightsys.missionaryapp.R;
 import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.data.LocalDBHandler;
-
-import java.util.ArrayList;
 
 /**
  * Created by Breven on 3/10/2015.
@@ -35,7 +31,7 @@ public class AccountFragment extends Fragment {
             account_id = savedInstanceState.getInt(ARG_ACCOUNT_ID);
         }
 
-        return inflater.inflate(R.layout.accounts_listview_item, container, false);
+        return inflater.inflate(R.layout.funds_listview_item, container, false);
     }
 
     /*@Override

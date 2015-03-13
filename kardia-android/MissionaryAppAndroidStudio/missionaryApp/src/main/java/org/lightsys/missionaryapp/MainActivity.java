@@ -35,11 +35,10 @@ import android.widget.Toast;
 /**
  * This activity is used to login and load the user's information
  * or send them to the OptionsActivity if they are already loged in
- * 
+ *
  * @author Andrew Cameron
  */
 public class MainActivity extends Activity {
-
 	private EditText username, password, serveraddress, userid;
 	private static String Host_Name, Password, User_Name, User_Id;
 	
@@ -156,7 +155,7 @@ public class MainActivity extends Activity {
             loadPeriods(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "/Funds/"
                     + string + "/Periods?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getId());
 
-			for(Period p : db.getPeriods(f.getId())){
+            for (Period p : db.getPeriods(f.getId())) {
                 String string2 = p.getName();
                 string2 = string2.replace("|", "%7C");
 				loadTransactions(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "/Funds/" + string + "/Periods/"
