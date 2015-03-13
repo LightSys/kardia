@@ -15,6 +15,11 @@ public class Donor {
 		this.email = email;
 		this.cellnumber = cellnumber;
 	}
+
+    public Donor(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 	
 	public void setId(int id){
 		this.id = id;

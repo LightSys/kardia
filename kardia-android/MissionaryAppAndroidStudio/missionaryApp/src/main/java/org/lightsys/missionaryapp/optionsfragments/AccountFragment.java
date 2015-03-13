@@ -38,7 +38,7 @@ public class AccountFragment extends Fragment {
         return inflater.inflate(R.layout.accounts_listview_item, container, false);
     }
 
-    @Override
+    /*@Override
     public void onStart(){
         super.onStart();
 
@@ -63,7 +63,7 @@ public class AccountFragment extends Fragment {
         balance.setText(a.getAccountBalance());
 
         this.account_id = account_id;
-    }
+    }*/
 
     @Override
     public void onSaveInstanceState(Bundle outState){

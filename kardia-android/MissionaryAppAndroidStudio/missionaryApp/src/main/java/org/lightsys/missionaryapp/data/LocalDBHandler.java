@@ -34,7 +34,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             COLUMN_ACCOUNT_ID = "account_id",
             COLUMN_PASSWORD = "password",
             COLUMN_SERVERADDRESS = "server_address",
-            COLUMN_ACCOUNT_BALANCE = "account_balance",
             COLUMN_GIFTFUND = "gift_fund",
             COLUMN_GIFTFUNDDESC = "gift_fund_desc",
             COLUMN_AMOUNTWHOLE = "amount_whole",
@@ -68,7 +67,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         String CREATE_ACCOUNTS_TABLE = "CREATE TABLE " + TABLE_ACCOUNT + "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY, " + COLUMN_NAME + " TEXT, "
                 + COLUMN_PASSWORD + " TEXT," + COLUMN_SERVERADDRESS + " TEXT,"
-                + COLUMN_ACCOUNT_ID + " INTEGER" + COLUMN_ACCOUNT_BALANCE + " INTEGER)";
+                + COLUMN_ACCOUNT_ID + " INTEGER)";
         db.execSQL(CREATE_ACCOUNTS_TABLE);
 
         //GIFT TABLE
@@ -153,7 +152,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_PASSWORD, account.getAccountPassword());
         values.put(COLUMN_SERVERADDRESS, account.getServerName());
         values.put(COLUMN_ACCOUNT_ID, account.getAccountID());
-        values.put(COLUMN_ACCOUNT_BALANCE, account.getAccountBalance());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -224,6 +222,16 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void addDonor(Donor donor) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_ID, donor.getId());
+        values.put(COLUMN_NAME, donor.getName());
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.insert(TABLE_DONOR, null, values);
+        db.close();
+    }
+
     public void addPrayer(Prayer prayer) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_DATE, prayer.getDate());
@@ -259,6 +267,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             prayer.Update(update);
             addPrayer(prayer);
         }
+        c.close();
         db.close();
     }
 	
@@ -287,6 +296,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             arrayList.add(hashMap);
         }
         System.out.println("end while");
+        c.close();
         return arrayList;
     }
 
@@ -320,6 +330,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             hashMap.put("quickContact", c.getString(4));
             arrayList.add(hashMap);
         }
+        c.close();
         return arrayList;
     }
 
@@ -382,9 +393,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             hashMap.put("account_id", c.getString(1));
             hashMap.put("password", c.getString(2));
             hashMap.put("server_address", c.getString(3));
-            hashMap.put("account_balance", c.getString(4));
             arrayList.add(hashMap);
         }
+        c.close();
         return arrayList;
     }
 
@@ -401,6 +412,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             hashMap.put("id", c.getString(0));
             arrayList.add(hashMap);
         }
+        c.close();
         return arrayList;
     }
 
@@ -417,6 +429,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             hashMap.put("id", c.getString(1));
             arrayList.add(hashMap);
         }
+        c.close();
         return arrayList;
     }
 	
@@ -434,9 +447,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             account.setAccountName(c.getString(1));
             account.setAccountPassword(c.getString(2));
             account.setServerName(c.getString(3));
-            account.setAccountBalance(Integer.parseInt(c.getString(4)));
         }
         db.close();
+        c.close();
         return account;
     }
 
@@ -451,6 +464,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             accountExists = true;
         }
         db.close();
+        c.close();
         return accountExists;
     }
 
@@ -476,14 +490,39 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             gift.setGift_check_num(c.getString(7));
         }
         db.close();
+        c.close();
         return gift;
+    }
+
+    public ArrayList<Donor> getDonor() {
+
+        ArrayList<Donor> arrayList = new ArrayList<Donor>();
+
+        String qString = "SELECT * FROM " + TABLE_DONOR;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor c = db.rawQuery(qString, null);
+
+        while (c.moveToNext()) {
+            Donor donor = new Donor();
+            donor.setId(Integer.parseInt(c.getString(0)));
+            donor.setName(c.getString(1));
+            donor.setEmail(c.getString(2));
+            donor.setCellNumber(c.getString(3));
+            donor.setImage(c.getString(4).getBytes());
+            arrayList.add(donor);
+
+        }
+        db.close();
+        c.close();
+        return arrayList;
     }
 
     public Donor getDonor(int id) {
         Donor donor = new Donor();
 
-        String qString = "SELECT * FROM " + TABLE_DONOR + " WHERE "
-                + COLUMN_ID + " = " + id;
+        String qString = "SELECT * FROM " + TABLE_DONOR;
 
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -495,8 +534,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             donor.setEmail(c.getString(2));
             donor.setCellNumber(c.getString(3));
             donor.setImage(c.getString(4).getBytes());
+
         }
         db.close();
+        c.close();
         return donor;
     }
 
@@ -523,6 +564,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             funds.add(fund);
         }
         db.close();
+        c.close();
         return funds;
     }
 
@@ -544,6 +586,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             fund.setAnnotation(c.getString(4));
         }
         db.close();
+        c.close();
         return fund;
     }
 
@@ -560,6 +603,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             fundNames.add(c.getString(0));
         }
         db.close();
+        c.close();
         return fundNames;
     }
 
@@ -585,6 +629,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             periods.add(period);
         }
         db.close();
+        c.close();
         return periods;
     }
 
@@ -602,6 +647,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             periodNames.add(c.getString(0));
         }
         db.close();
+        c.close();
         return periodNames;
     }
 
@@ -621,6 +667,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             periodNames.add(c.getString(0));
         }
         db.close();
+        c.close();
         return periodNames;
     }
 
@@ -638,6 +685,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             id = Integer.parseInt(c.getString(0));
         }
         db.close();
+        c.close();
         return id;
     }
 
@@ -654,6 +702,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             transactions.add(c.getString(0));
         }
         db.close();
+        c.close();
         return transactions;
     }
 
@@ -682,6 +731,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             id = Integer.parseInt(c.getString(0));
         }
         db.close();
+        c.close();
         return id;
 
     }
@@ -699,6 +749,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             prayer.setID(Integer.parseInt(c.getString(3)));
         }
         db.close();
+        c.close();
         return prayer;
     }
 
@@ -723,6 +774,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             prayer.setID(Integer.parseInt(c.getString(3)));
         }
         db.close();
+        c.close();
         return prayer;
     }
 	
@@ -745,7 +797,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     }
 
     /**
-     * @param pre-made query statement
      * @return a list of gifts that match the search
      */
     public ArrayList<Gift> getSearchResults(String searchStatement) {
@@ -773,6 +824,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             gifts.add(temp);
         }
         db.close();
+        c.close();
         return gifts;
     }
 }
