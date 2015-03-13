@@ -146,7 +146,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
-	
+
 	/* *** Add Methods *** */
 
     public void addAccount(Account account) {
@@ -280,16 +280,13 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     //should return: id, name, amount (whole and part), date
     public ArrayList<HashMap<String, String>> getDisplayGifts() {
         // TODO WRITE THE METHOD <!--Should be done-->.
-        System.out.println("getDisplayGifts()");
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_GIFT, null);
         while (c.moveToNext()) {
             if (c.getString(0) == null) {
-                System.out.println("c.getString()");
                 break;
             }
-            System.out.println("Gathering data");
             HashMap<String, String> hashMap = new HashMap<String, String>();
             //hashMap.put("id", c.getString(0));
             hashMap.put("title", c.getString(1));
@@ -298,7 +295,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             hashMap.put("date", c.getString(6));
             arrayList.add(hashMap);
         }
-        System.out.println("end while");
+
         c.close();
         return arrayList;
     }
