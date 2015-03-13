@@ -347,8 +347,8 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
         JSONArray tempDonors = json.names();
-
         for (int x = 0; x < tempDonors.length(); x++) {
+
             try {
                 if (!tempDonors.getString(x).equals("@id")) {
                     JSONObject fundObj = json.getJSONObject(tempDonors.getString(x));
@@ -395,7 +395,7 @@ public class MainActivity extends Activity {
 
                     if(!existingPrayers.contains(temp)){
                         db.addPrayer(temp);
-                        System.out.println("New Prayer:\n" + temp.toString());
+
                     }
                 }
             } catch (Exception e) {
@@ -417,6 +417,7 @@ public class MainActivity extends Activity {
         JSONArray tempPrayer = json.names();
 
         for (int x = 0; x < tempPrayer.length(); x++) {
+
             try {
                 if (!tempPrayer.getString(x).equals("@id")) {
                     JSONObject fundObj = json.getJSONObject(tempPrayer.getString(x));

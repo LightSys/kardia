@@ -128,15 +128,15 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_FP_TABLE);
 
         //Prayer Table
-        String CREATE_PRAYER_TABLE = "CREATE TABLE " + TABLE_PRAYER + "(" +
-                COLUMN_DATE + " TEXT," + COLUMN_SUBJECT + " TEXT," +
-                COLUMN_PRAYERDESC + " TEXT," + COLUMN_PRAYER_ID + " INTEGER)";
+        String CREATE_PRAYER_TABLE = "CREATE TABLE " + TABLE_PRAYER + "(" + COLUMN_PRAYER_ID +
+                " INTEGER PRIMARY KEY," + COLUMN_SUBJECT + " TEXT," +
+                COLUMN_PRAYERDESC + " TEXT," + COLUMN_DATE + " TEXT)";
         db.execSQL(CREATE_PRAYER_TABLE);
 
         //Prayer-Donor Table
         String CREATE_PRAYER_DONOR_TABLE = "CREATE TABLE " + TABLE_PRAYER_DONOR + "(" +
-                COLUMN_REPLY_ID + " INTEGER," + COLUMN_NAME + " TEXT," + COLUMN_DATE + " TEXT,"
-                + COLUMN_ANNOTATION + " TEXT, " + COLUMN_PRAYER_ID + " INTEGER)";
+                COLUMN_REPLY_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," + COLUMN_DATE + " TEXT,"
+                + COLUMN_ANNOTATION + " TEXT," + COLUMN_PRAYER_ID + " INTEGER)";
         db.execSQL(CREATE_PRAYER_DONOR_TABLE);
 
         //MAP TABLE FOR GIFT AND DONOR (OR HAVE A DONOR ID WITHIN THE GIFT TABLE?)
@@ -245,7 +245,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_DATE, prayer.getDate());
         values.put(COLUMN_SUBJECT, prayer.getSubject());
         values.put(COLUMN_PRAYERDESC, prayer.getDescription());
-        values.put(COLUMN_PRAYER_ID, prayer.getID());
+        //values.put(COLUMN_PRAYER_ID, prayer.getID());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -394,10 +394,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
                 break;
             }
             HashMap<String, String> hashMap = new HashMap<String, String>();
-            hashMap.put("date", c.getString(0));
+            hashMap.put("date", c.getString(3));
             hashMap.put("prayer_subject", c.getString(1));
             hashMap.put("prayer_desc", c.getString(2));
-            hashMap.put("prayer_id", c.getString(3));
+            hashMap.put("prayer_id", c.getString(0));
             arrayList.add(hashMap);
         }
         return arrayList;
@@ -524,6 +524,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         c.close();
         return gift;
     }
+
+
 
     public ArrayList<Donor> getDonor() {
 
@@ -773,10 +775,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(queryString, null);
         if (c.moveToFirst()) {
-            prayer.setDate(c.getString(0));
+            prayer.setDate(c.getString(3));
             prayer.setDescription(c.getString(1));
             prayer.setSubject(c.getString(2));
-            prayer.setID(Integer.parseInt(c.getString(3)));
+            prayer.setID(Integer.parseInt(c.getString(0)));
         }
         db.close();
         c.close();
@@ -791,10 +793,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         Cursor c = db.rawQuery(queryString, null);
         while (c.moveToNext()) {
             Prayer prayer = new Prayer();
-            prayer.setDate(c.getString(0));
+            prayer.setDate(c.getString(3));
             prayer.setDescription(c.getString(1));
             prayer.setSubject(c.getString(2));
-            prayer.setID(Integer.parseInt(c.getString(3)));
+            //prayer.setID(Integer.parseInt(c.getString(0)));
         }
         db.close();
         c.close();
@@ -810,10 +812,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(queryString, null);
         if (c.moveToFirst()) {
-            prayer.setDate(c.getString(0));
+            prayer.setDate(c.getString(3));
             prayer.setDescription(c.getString(1));
             prayer.setSubject(c.getString(2));
-            prayer.setID(Integer.parseInt(c.getString(3)));
+            prayer.setID(Integer.parseInt(c.getString(0)));
         }
         db.close();
         c.close();
@@ -849,7 +851,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         String[] delStrings = {
                 TABLE_ACCOUNT,
                 TABLE_GIFT,
-                TABLE_DONOR
+                TABLE_DONOR,
+                TABLE_PRAYER,
+                TABLE_PRAYER_DONOR,
+                TABLE_FUND
         };
 
         for (String s : delStrings) {
