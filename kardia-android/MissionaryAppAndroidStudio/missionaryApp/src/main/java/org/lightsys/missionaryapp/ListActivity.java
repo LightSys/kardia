@@ -110,7 +110,7 @@ public class ListActivity extends Fragment {
 		switch (display) {
 			//Loads a list of gifts
 			case 0:
-                from = new String[]{"title", "amount_whole", "amount_part", "date",};
+                from = new String[]{"title", "date", "amount", "amount_whole", "amount_part"};
 				to = new int[]{R.id.title, R.id.date, R.id.amount};
 				layout = R.layout.gift_listview_item;
 				listitems = db.getDisplayGifts();

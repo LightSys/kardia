@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
     android:id="@+id/prayer_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center_vertical"
@@ -12,18 +13,18 @@
         android:layout_gravity="center_horizontal"></FrameLayout>
 
     <TextView
+        android:id="@+id/prayer_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_gravity="center_horizontal"
         android:text="Prayers"
-        android:id="@+id/prayer_header"
-        android:layout_gravity="center_horizontal" />
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:layout_gravity="center_horizontal"
+        android:orientation="vertical"
         android:weightSum="1">
 
         <FrameLayout
@@ -32,28 +33,28 @@
             android:layout_gravity="center_horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Prayer Title"
                 android:id="@+id/prayer_subject"
-                android:layout_gravity="left|top" />
-
-            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Aug. 12, 1976"
+                android:layout_gravity="left|top"
+                android:text="Prayer Title"
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+            <TextView
                 android:id="@+id/date"
-                android:layout_gravity="right|top" />
-
-            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Description"
+                android:layout_gravity="right|top"
+                android:text="Aug. 12, 1976"
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
+
+            <TextView
                 android:id="@+id/prayer_desc"
-                android:layout_gravity="left|center_vertical" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left|center_vertical"
+                android:text="Description"
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
         </FrameLayout>
 
         <FrameLayout
@@ -62,12 +63,12 @@
             android:layout_gravity="center_horizontal">
 
             <Button
+                android:id="@+id/new_prayer_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add New Prayer"
-                android:id="@+id/new_prayer_button"
                 android:layout_gravity="center_horizontal|bottom"
-                android:clickable="true" />
+                android:clickable="true"
+                android:text="Add New Prayer"/>
         </FrameLayout>
 
     </LinearLayout>
