@@ -10,9 +10,7 @@
         android:id="@+id/tableRow1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.5">
-        <!--Change when other buttons implemented
-        android:layout_weight="0.33" >-->
+        android:layout_weight="0.33" >
 
         <Button
             android:id="@+id/gifts"
@@ -38,9 +36,7 @@
         android:id="@+id/tableRow2"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.5">
-        <!--Change when other buttons implemented
-        android:layout_weight="0.33" >-->
+        android:layout_weight="0.33" >
 
         <Button
             android:id="@+id/prayers"
@@ -51,22 +47,30 @@
             android:onClick="goToListPage" />
 
         <Button
-            android:id="@+id/accounts"
+            android:id="@+id/funds"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_weight="0.5"
-            android:text="Accounts"
+            android:text="Funds"
             android:onClick="goToListPage" />
 
     </TableRow>
 
-<!--    <TableRow
+    <TableRow
         android:id="@+id/tableRow3"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.33" >
 
         <Button
+            android:id="@+id/accounts"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.5"
+            android:text="Account"
+            android:onClick="goToListPage" />
+
+        <!--<Button
             android:id="@+id/payroll"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -80,8 +84,8 @@
             android:layout_height="fill_parent"
             android:layout_weight="0.5"
             android:text="Reports"
-            android:onClick="goToListPage" />
+            android:onClick="goToListPage" />-->
 
-    </TableRow>-->
+    </TableRow>
 
 </TableLayout>

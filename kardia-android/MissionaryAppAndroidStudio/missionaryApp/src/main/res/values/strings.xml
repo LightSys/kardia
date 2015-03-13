@@ -21,8 +21,9 @@
     <string name="report_layout">Reports</string>
     <!--<string name="prayer_layout">R.layout.prayer_listview_item</string>-->
     <string name="prayer_layout">Prayers</string>
-    <!--<string name="accounts_layout">R.layout.accounts_listview_item</string>-->
+    <!--<string name="accounts_layout">R.layout.funds_listview_item</string>-->
     <string name="accounts_layout">Accounts</string>
+    <string name="funds_layout">Funds</string>
 
     <string name="date_range">Date Range</string>
     <string name="choose_date">Choose Date</string>
@@ -30,5 +31,8 @@
     <string name="by_amount">By Amount</string>
     <string name="amount_range">Amount Range</string>
     <string name="by_check_number">By Check Number</string>
+
+    <string name="server_ip">Server IP</string>
+    <string name="account_id">Account ID</string>
 
 </resources>
