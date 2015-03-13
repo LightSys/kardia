@@ -58,4 +58,11 @@ public class Prayer {
     public void setDate(String date) {
         this.date = date;
     }
+
+    @Override
+    public String toString() {
+        String string = "Subject: " + this.getSubject() + "\nDesc: " + this.getDescription()
+        + "\nDate: " + this.getDate() + "\nID: " + this.getID();
+        return string;
+    }
 }
