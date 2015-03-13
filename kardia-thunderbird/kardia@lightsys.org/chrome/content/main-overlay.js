@@ -149,6 +149,9 @@ var kardiaTab;
 var mainWindow = this;
 var dataTab;
 
+// is the window being refreshed?
+var refreshing = false;
+
 var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.kardia.");
 		
 updateKardia();
@@ -156,12 +159,23 @@ updateKardia();
 //update periodically based on preferences
 function updateKardia() {
 	window.setTimeout(function() {
-		if (loginValid) {
+		if (loginValid && !refreshing) {
 			// completely refresh/reload
 			getTrackTagStaff(prefs.getCharPref("username"), prefs.getCharPref("password"));
 		}
 		updateKardia();
 	}, 60000*prefs.getIntPref("refreshInterval"));
+}
+
+// manually update
+function manualUpdate() {
+  document.getElementById("manual-refresh").style.backgroundColor = "#cccccc";
+  setTimeout(function() {document.getElementById("manual-refresh").style.backgroundColor = "#ffffff";},200);
+  
+  if (mainWindow.loginValid && !mainWindow.refreshing) {
+	// completely refresh/reload
+	mainWindow.getTrackTagStaff(mainWindow.prefs.getCharPref("username"), mainWindow.prefs.getCharPref("password"));
+  }
 }
 	
 // what to do when Thunderbird starts up
@@ -381,7 +395,7 @@ function reload(isDefault) {
 		mainWindow.document.getElementById("choose-partner-dropdown-button").style.display = "none";
 		
 		mainWindow.document.getElementById("main-content-box").style.visibility = "hidden";
-		// FEATURE: Uncomment the following when recording emails in Kardia is impmented
+		// FEATURE: Uncomment the following when recording emails in Kardia is implemented
 		// mainWindow.document.getElementById("bottom-separator").style.visibility = "hidden";
 		// mainWindow.document.getElementById("record-this-email").style.visibility = "hidden";
 		// mainWindow.document.getElementById("record-future-emails").style.visibility = "hidden";
@@ -1528,11 +1542,16 @@ function getCollaborateeInfo(index) {
 									if (index+1 >= mainWindow.collaborateeIds.length) {
 										// sort and reload Collaborating With panel
 										kardiaTab.sortCollaboratees(false);
+										mainWindow.refreshing = false;
+										kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
 										
 										// reload the Kardia pane so it's blank at first
 										reload(false);
 									}
 									else {
+										// reload
+										kardiaTab.sortSomeCollaboratees(index);
+										
 										// go to the next person
 										getCollaborateeInfo(index+1);
 									}	
@@ -1547,11 +1566,16 @@ function getCollaborateeInfo(index) {
 							if (index+1 >= mainWindow.collaborateeIds.length) {								
 								// sort and reload Collaborating With panel
 								kardiaTab.sortCollaboratees(false);
+								mainWindow.refreshing = false;
+								kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
 								
 								// reload the Kardia pane so it's blank at first
 								reload(false);
 							}
 							else {
+								// reload
+								kardiaTab.sortSomeCollaboratees(index);
+								
 								// go to the next person
 								getCollaborateeInfo(index+1);
 							}	
@@ -2547,6 +2571,8 @@ function newNote(title, desc) {
 
 // opens dialog for user to add new collaborator
 function newCollaborator() {
+	if (partnerList.length <= 0) mainWindow.alert("No partners found! refreshing="+refreshing);
+	
 	// variable where we store our return values
 	var returnValues = {id:"", name:"", type:0};
 	
@@ -2586,7 +2612,7 @@ function newTag() {
 	if (returnValues.tag != "") {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
-		
+				
 		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Tags','{"e_tag_id":' + returnValues.tagId + ',"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_tag_strength":' + returnValues.magnitude.toFixed(2) + ',"e_tag_certainty":' + returnValues.certainty.toFixed(1) + ',"e_tag_volatility":"P","s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
 			mainWindow.tags[mainWindow.selected].push(returnValues.tag);
 			mainWindow.tags[mainWindow.selected].push(returnValues.magnitude);
@@ -2759,6 +2785,11 @@ function getMyInfo(username, password) {
 
 // get e-track list, tag list, me as staff
 function getTrackTagStaff(username, password) {	
+	// set the fact that we are refreshing
+	mainWindow.refreshing = true;
+	kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.gif";
+										
+	
 	// reset Kardia tab sorting
 	mainWindow.sortCollaborateesBy = "name";
 	mainWindow.sortCollaborateesDescending = true;

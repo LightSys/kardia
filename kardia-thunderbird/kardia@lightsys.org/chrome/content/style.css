@@ -4,10 +4,10 @@
 #sidebarheader-allow-close {border-bottom:1px solid rgba(80,80,80,0.5);}
 
 /* splitter */
-#kardia-splitter {-moz-appearance:none; background-image:none; width:1px; min-width:1px; border:0px; background-color:#ffffff;}
+#kardia-splitter {-moz-appearance:none; background-image:none; width:1px; min-width:1px; border:0px; background-color:rgba(0,0,0,0.5);}
 
 /* splitter in Kardia tab */
-#tab-kardia-splitter {-moz-appearance:none; background-image:none; width:1px; min-width:1px; border:0px; background-color:#ffffff;}
+#tab-kardia-splitter {-moz-appearance:none; background-image:none; width:1px; min-width:1px; border:0px; background-color:rgba(0,0,0,0.5);}
 
 /* splitters in bottom of Kardia tab */
 .tab-splitter {-moz-appearance:none; border:1px solid black; background-image:none; width:3px; min-width:1px; border:0px; background-color:#ffffff;}
@@ -90,8 +90,12 @@
 /* Collaborating With panel */
 #tab-collaborators {padding:10px; margin: 0px; background-color: #f5f5f5}
 
+/* manual refresh button */
+#manual-refresh {-moz-appearance:none; min-width:1em; border:0px; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:1px;}
+
+
 /* Filter By panels with top and bottom margin */
-.top-bottom-margin {margin:2px 0 2px 0}
+.top-bottom-margin {margin:2px 0 2px 0;  display:block;}
 
 /* number boxes that allow thresholds */
 #filter-by-magnitude {margin:0px}

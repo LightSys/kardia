@@ -330,6 +330,70 @@ function sortCollaboratees(addButtons) {
 	}
 }
 
+//TEST
+// sort collaboratees
+function sortSomeCollaboratees(maxIndex) {
+	// sort by the criteria the user has selected
+	var firstIndex;
+	var firstItem;
+	for (var i=0;i<maxIndex;i++) {
+		firstIndex = i;
+		if (mainWindow.sortCollaborateesBy == "name") {
+			// sort by first name
+			firstItem = mainWindow.collaborateeNames[i];
+			for (var j=i+1;j<maxIndex;j++) {
+				if ((mainWindow.sortCollaborateesDescending && (firstItem > mainWindow.collaborateeNames[j])) || (!mainWindow.sortCollaborateesDescending && (firstItem < mainWindow.collaborateeNames[j]))) {
+					firstIndex = j;
+					firstItem = mainWindow.collaborateeNames[j];
+				}
+			}
+		}
+		else if (mainWindow.sortCollaborateesBy == "id") {
+			// sort by id
+			firstItem = mainWindow.collaborateeIds[i];
+			for (var j=i+1;j<maxIndex;j++) {
+				if ((mainWindow.sortCollaborateesDescending && (firstItem > mainWindow.collaborateeIds[j])) || (!mainWindow.sortCollaborateesDescending && (firstItem < mainWindow.collaborateeIds[j]))) {
+					firstIndex = j;
+					firstItem = mainWindow.collaborateeIds[j];
+				}
+			}
+		}
+		else {
+			// sort by date
+			firstItem = datetimeToDate(mainWindow.collaborateeActivity[i][2]);
+			for (var j=i+1;j<maxIndex;j++) {
+				if ((mainWindow.sortCollaborateesDescending && (firstItem < datetimeToDate(mainWindow.collaborateeActivity[j][2]))) || (!mainWindow.sortCollaborateesDescending && (firstItem > datetimeToDate(mainWindow.collaborateeActivity[j][2])))) {
+					firstIndex = j;
+					firstItem = datetimeToDate(mainWindow.collaborateeActivity[j][2]);
+				}
+			}
+		}
+		
+		// move all items around based on how we sorted the names/ids/whatever
+		var arraysToMove = [mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.collaborateeActivity, mainWindow.collaborateeData, mainWindow.collaborateeGifts, mainWindow.collaborateeFunds];
+			
+		for (var j=0;j<arraysToMove.length;j++) {
+			firstItem = arraysToMove[j][firstIndex];
+			arraysToMove[j][firstIndex] = arraysToMove[j][i];
+			arraysToMove[j][i] = firstItem;
+		}
+	}
+	
+	// if no collaboratees, display "no results"
+	if (maxIndex <= 0) {
+		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '<label class="bold-text" value="No results found."/>';
+	}
+	else {
+		// make list of collaboratees blank
+		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
+		// add collaboratees
+		for (var i=0;i<maxIndex;i++) {	
+			reloadCollaboratee(i);
+		}
+	}
+}
+// END TEST
+
 // reload collaboratee at position "index"
 function reloadCollaboratee(index) {
 	// add basic info

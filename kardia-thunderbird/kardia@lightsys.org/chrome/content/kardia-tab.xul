@@ -19,8 +19,12 @@
 		<vbox id="tab-top-panel">			
 			<vbox id="tab-collaborators" flex="1">
 				<hbox>
+					<!-- manual refresh button -->
+					<button id="manual-refresh" onclick="manualUpdate()" image="chrome://kardia/content/images/refresh.png"/>
+					
 					<label class="tab-title" value="Collaborating With..."/>
 					<spacer flex="1"/>
+					
 					<!-- sort by -->
 					<vbox>
 						<spacer flex="1"/>
@@ -112,7 +116,7 @@
 			</vbox>
 		</vbox>
 		
-		<splitter resizebefore="closest" state="open" id="tab-kardia-splitter"/>
+		<splitter style="border:1px solid white;" resizebefore="closest" state="open" id="tab-kardia-splitter"/>
 		
 		<!-- bottom panel -->
 		<vbox id="tab-bottom-panel" flex="1" context="print-context">
