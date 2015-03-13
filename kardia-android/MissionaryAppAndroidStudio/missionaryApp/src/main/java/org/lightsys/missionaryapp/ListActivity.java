@@ -30,7 +30,7 @@ public class ListActivity extends Fragment {
     private static final String Tag = "LA";
     public static final String ARG_TYPE = "display_type";
     public static int display = 0;
-    // 0 = gift, 1 = payroll, 2 = donors, 3 = reports, 4 = prayers, 5 = accounts
+    // 0 = gift, 1 = donors, 2 = prayers, 3 = funds, 4 = account, 5 = payroll, 6 = reports
     private static ArrayList<HashMap<String, String>> listitems;
     private ListView listview;
 
@@ -53,39 +53,32 @@ public class ListActivity extends Fragment {
         /*System.out.println(R.layout.report_listview_item);
 		System.out.println(R.layout.payroll_listview_item);*/
 
-        // 0 = gift, 1 = donors, 2 = prayers, 3 = accounts, 4 = payroll, 5 = reports
+        // 0 = gift, 1 = donors, 2 = prayers, 3 = funds, 4 = account, 5 = payroll, 6 = reports
         switch (display) {
             case 0: //gifts
-                //tv.setText(2130903067);
                 tv.setText(getString(R.string.gift_layout));
                 break;
             case 1: //donors
-                //tv.setText()
                 tv.setText(getString(R.string.donor_layout));
                 break;
             case 2: //prayers
-                //tv.setText(2130903066);
                 tv.setText(getString(R.string.prayer_layout));
                 break;
             case 3: //funds
                 tv.setText(getString(R.string.funds_layout));
                 break;
-            case 4: //accounts
-                //tv.setText();
-                tv.setText(getString(R.string.accounts_layout));
+            case 4: //account
+                tv.setText(getString(R.string.account_layout));
                 break;
             //TODO: Reimplement
             /*case 5: //payroll
-                //tv.setText(2130903071);
                 tv.setText(getString(R.string.payroll_layout));
                 break;
             //TODO: Reimplement
             case 6: //reports
-                //tv.setText(2130903063);
                 tv.setText(getString(R.string.report_layout));
                 break;*/
             default: //gift originally
-                //tv.setText(2130903067);
                 tv.setText("");
                 break;
         }
@@ -103,7 +96,7 @@ public class ListActivity extends Fragment {
         int[] to;
         int layout;
 
-        // 0 = gift, 1 = donors, 2 = prayers, 3 = accounts, 4 = payroll, 5 = reports
+        // 0 = gift, 1 = donors, 2 = prayers, 3 = funds, 4 = account, 5 = payroll, 6 = reports
         switch (display) {
             //Loads a list of gifts
             case 0:
@@ -139,8 +132,8 @@ public class ListActivity extends Fragment {
 
             //Loads the accounts related to the Missionary's fund
             case 4:
-                from = new String[]{"account_name", "password", "server_address", "account_id"};
-                to = new int[]{R.id.account_id, R.id.account_id};
+                from = new String[]{"name", "password", "serveraddress", "userid"};
+                to = new int[]{R.id.name, R.id.password, R.id.serveraddress, R.id.userid};
                 layout = R.layout.account_listview_item;
                 listitems = db.getDisplayAccounts();
                 break;
@@ -164,7 +157,7 @@ public class ListActivity extends Fragment {
 				listitems = db.getDisplayReports();
 				break;*/
 
-            //Used to load a list of gifts given to the missionary's fund
+            //Loads a blank Gift view
             default:
                 from = new String[]{};
                 to = new int[]{};
@@ -190,11 +183,12 @@ public class ListActivity extends Fragment {
             Fragment toFrag = null;
             Bundle sendArgs = new Bundle();
 
+            // 0 = gift, 1 = donors, 2 = prayers, 3 = funds, 4 = account, 5 = payroll, 6 = reports
             switch (display) {
 			/*If the Gifts were displayed, and clicked on, takes
 			* the user to the detailed gift in the DonorFrag
 			*/
-                case 0:
+                case 0: //Gifts
                     toFrag = new DonorFrag();
                     sendArgs.putInt(DonorFrag.ARG_GIFT_ID, Integer.parseInt(listitems.get(position).get("id")));
                     sendArgs.putInt(DonorFrag.ARG_DONOR_ID, Integer.parseInt(listitems.get(position).get("donor_id")));
@@ -240,6 +234,7 @@ public class ListActivity extends Fragment {
 			 * so you can handle the click events properly/go to the right place.
 			 */
                 case 4:
+                    //Take to account
                     break;
 
 			/* If the payroll (history) was being displayed... Then don't do anything?

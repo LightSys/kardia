@@ -22,36 +22,36 @@ import org.lightsys.missionaryapp.optionsfragments.ReportFragment;
 public class OptionsActivity extends ActionBarActivity {
 
     @Override
-	public void onCreate(Bundle savedInstanceState){
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		
-		MenuItem logout = (MenuItem)findViewById(R.id.action_logout);
-	}
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-	public void goToListPage(View v){
-		int viewId = v.getId();
-		
-		Fragment listPage = new ListActivity();
-		Bundle arg = new Bundle();
+        MenuItem logout = (MenuItem) findViewById(R.id.action_logout);
+    }
 
-        // 0 = gift, 1 = donors, 2 = prayers, 3 = accounts, 4 = payroll, 5 = reports
-		switch(viewId){
-		case 2131230800: //Gifts
-            arg.putInt(ListActivity.ARG_TYPE, 0);
-            break;
-		case 2131230791: //Donors
-            arg.putInt(ListActivity.ARG_TYPE, 1);
-		    break;
-        case 2131230797: //Prayers
-            arg.putInt(ListActivity.ARG_TYPE, 2);
-            break;
-        case 2131230798: //Funds
-            arg.putInt(ListActivity.ARG_TYPE, 3);
-            break;
-		case 2131230795: //Accounts
-            arg.putInt(ListActivity.ARG_TYPE, 4);
-		    break;
+    public void goToListPage(View v) {
+        int viewId = v.getId();
+
+        Fragment listPage = new ListActivity();
+        Bundle arg = new Bundle();
+
+        // 0 = gift, 1 = donors, 2 = prayers, 3 = funds, 4 = account, 5 = payroll, 6 = reports
+        switch (viewId) {
+            case 2131230794: //Gifts
+                arg.putInt(ListActivity.ARG_TYPE, 0);
+                break;
+            case 2131230800: //Donors
+                arg.putInt(ListActivity.ARG_TYPE, 4);
+                break;
+            case 2131230797: //Prayers
+                arg.putInt(ListActivity.ARG_TYPE, 2);
+                break;
+            case 2131230798: //Funds
+                arg.putInt(ListActivity.ARG_TYPE, 3);
+                break;
+            case 2131230795: //Account
+                arg.putInt(ListActivity.ARG_TYPE, 1);
+                break;
         /*//TODO: Reimplement
         case 2131230789: //Payroll
             arg.putInt(ListActivity.ARG_TYPE, 5);
@@ -60,18 +60,17 @@ public class OptionsActivity extends ActionBarActivity {
         case 2131230792: //Reports
             arg.putInt(ListActivity.ARG_TYPE, 6);
             break;*/
-        default:
-            System.out.println(viewId);
-            break;
-		}
-		listPage.setArguments(arg);
-		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-		transaction.replace(R.id.container, listPage);
-		transaction.addToBackStack("ToListPage" + viewId);
-		transaction.commit();
-	}
+            default:
+                break;
+        }
+        listPage.setArguments(arg);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, listPage);
+        transaction.addToBackStack("ToListPage" + viewId);
+        transaction.commit();
+    }
 
-    public static class PageFragment extends Fragment{
+    public static class PageFragment extends Fragment {
         public static final String ARG_PAGE = "ARG_PAGE";
 
 
@@ -89,26 +88,26 @@ public class OptionsActivity extends ActionBarActivity {
         }
     }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
 
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
-		switch(item.getItemId()){
-		case R.id.action_search:
-			break;
-		case R.id.action_logout:
-			LocalDBHandler db = new LocalDBHandler(OptionsActivity.this, null, null, 1);
-			db.deleteAll();
-			Intent intent = new Intent(this, MainActivity.class);
-			startActivity(intent);
-			finish();
-			break;
-		}
-		return true;
-	}
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_search:
+                break;
+            case R.id.action_logout:
+                LocalDBHandler db = new LocalDBHandler(OptionsActivity.this, null, null, 1);
+                db.deleteAll();
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+                finish();
+                break;
+        }
+        return true;
+    }
 }

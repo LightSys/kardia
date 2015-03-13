@@ -9,7 +9,7 @@
 
 
     <TextView
-        android:id="@+id/username_text"
+        android:id="@+id/name_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -18,12 +18,12 @@
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <TextView
-        android:id="@+id/username"
+        android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:text="@string/username"
+        android:text="+@string/name"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <TextView
@@ -42,25 +42,25 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
         android:password="true"
-        android:text="@string/password"
+        android:text="+@string/password"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <TextView
-        android:id="@+id/server_ip_text"
+        android:id="@+id/server_address_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="30dp"
-        android:text="Server IP:"
+        android:text="Server Address:"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <TextView
-        android:id="@+id/server_ip"
+        android:id="@+id/server_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:text="+@string/server_ip"
+        android:text="+@string/server_address"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <TextView
@@ -78,15 +78,15 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:text="@string/account_id"
+        android:text="+@string/account_id"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <Button
         android:id="@+id/change_password_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="70dp"
-        android:text="Change Password"/>
+        android:layout_gravity="center_horizontal|bottom"
+        android:text="Change Password"
+        android:layout_marginTop="30dp"/>
 
 </LinearLayout>
