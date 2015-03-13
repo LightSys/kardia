@@ -1,20 +1,24 @@
 // on load, center window on screen and load person options
 function onLoad() {
 	centerWindowOnScreen();
-	
-	// load collaborator options
-	document.getElementById("select-collaborator").innerHTML = "";
-	for (var i=0;i<window.arguments[1].length;i+=2) {
-		document.getElementById("select-collaborator").innerHTML += '<menuitem label="' + window.arguments[1][i] + ", #" + window.arguments[1][i+1] + '" value="' + window.arguments[1][i+1] + '"/>';
-	}
-	document.getElementById("outer-select-collaborator").selectedIndex = 0;
 
-	// load collaborator type options
-	document.getElementById("select-collab-type").innerHTML = "";
-	for (var i=0;i<window.arguments[2].length;i+=2) {
-		document.getElementById("select-collab-type").innerHTML += '<menuitem label="' + window.arguments[2][i] + '" value="' + window.arguments[2][i+1] + '"/>';
-	}
-	document.getElementById("outer-select-collab-type").selectedIndex = 0;
+	setTimeout(function() {
+	  
+	  // load collaborator options
+	  document.getElementById("select-collaborator").innerHTML = "";
+	  for (var i=0;i<window.arguments[1].length;i+=2) {
+		  document.getElementById("select-collaborator").innerHTML += '<menuitem label="' + window.arguments[1][i] + ", #" + window.arguments[1][i+1] + '" value="' + window.arguments[1][i+1] + '"/>';
+	  }
+	  document.getElementById("outer-select-collaborator").selectedIndex = 0;
+
+	  // load collaborator type options
+	  document.getElementById("select-collab-type").innerHTML = "";
+	  for (var i=0;i<window.arguments[2].length;i+=2) {
+		  document.getElementById("select-collab-type").innerHTML += '<menuitem label="' + window.arguments[2][i] + '" value="' + window.arguments[2][i+1] + '"/>';
+	  }
+	  document.getElementById("outer-select-collab-type").selectedIndex = 0;
+	
+	}, 1000);
 }
 
 //when you click "OK" on the Add Note/Prayer dialog, send textbox values to main script
