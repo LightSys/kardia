@@ -16,21 +16,19 @@ public class Account {
 	
 	public Account(){}
 	
-	public Account(int id, String AccountName, String AccountPassword, String ServerName, int AccountID, int AccountBalance){
+	public Account(int id, String AccountName, String AccountPassword, String ServerName, int AccountID){
 		this.setId(id);
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
 		this.setServerName(ServerName);
 		this.setAccountID(AccountID);
-        this.setAccountBalance(AccountBalance);
 	}
 	
-	public Account(String AccountName, String AccountPassword, String ServerName, int AccountID, int AccountBalance){
+	public Account(String AccountName, String AccountPassword, String ServerName, int AccountID){
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
 		this.setServerName(ServerName);
 		this.setAccountID(AccountID);
-        this.setAccountBalance(AccountBalance);
 	}
 
 	public int getId() {
@@ -73,11 +71,4 @@ public class Account {
 		return this.AccountID;
 	}
 
-    public void setAccountBalance(int AccountBalance){
-        this.AccountBalance = AccountBalance;
-    }
-
-    public int getAccountBalance(){
-        return this.AccountBalance;
-    }
 }

@@ -17,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.lightsys.missionaryapp.data.Account;
+import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.LocalDBHandler;
 import org.lightsys.missionaryapp.data.Period;
@@ -70,8 +71,7 @@ public class MainActivity extends Activity {
 		Host_Name = serveraddress.getText().toString();
 		User_Id = userid.getText().toString();
 		Log.d("BasicAuth", "About to attempt background task.");
-		
-		new DataConnection().execute("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic");
+            new DataConnection().execute("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic");
 		}
 	}
 	
@@ -106,8 +106,8 @@ public class MainActivity extends Activity {
 			
 			//Get list of transactions for the period:
 			// "http://" +  + ":800/apps/kardia/api/fundmanager/" +  + "/Funds/" +  + "/Periods/" +  + "/Transactions?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"
-			
-			String returnVal = GET(testUrl[0]);
+            System.out.println(testUrl[0]);
+            String returnVal = GET(testUrl[0]);
 			
 			if(returnVal != null && !returnVal.equals("") && !returnVal.contains("Unauthorized")){
 				publishProgress(1);
@@ -145,11 +145,11 @@ public class MainActivity extends Activity {
 	private void DataPull(){
 		LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
 		
-		db.addAccount(new Account(User_Name, Password, Host_Name, Integer.parseInt(User_Id), Integer.parseInt(User_Id)));
-		
-		loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" 
+		db.addAccount(new Account(User_Name, Password, Host_Name, Integer.parseInt(User_Id)));
+        System.out.println("1");
+        loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/"
 				+ User_Id + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
-		
+        System.out.println("2");
 		for(Fund f : db.getFunds()){
             String string = f.getName();
             string = string.replace("|", "%7C");
@@ -160,9 +160,12 @@ public class MainActivity extends Activity {
                 String string2 = p.getName();
                 string2 = string2.replace("|", "%7C");
 				loadTransactions(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + User_Id + "/Funds/" + string + "/Periods/"
-						+ string2 + "/Transactions?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getId());
+                        + string2 + "/Transactions?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getId());
 			}
 		}
+        System.out.println("3");
+        loadDonors(GET("http://"+ Host_Name + ":800/apps/kardia/api/donor?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
+        System.out.println("4");
 	}
 	
 	
@@ -326,4 +329,35 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
+    private void loadDonors(String value){
+        LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
+        ArrayList<Donor> donors = db.getDonor();
+
+
+        JSONObject json = null;
+        try{
+            json = new JSONObject(value);
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+        JSONArray tempDonors = json.names();
+        System.out.println(tempDonors.length());
+        for(int x = 0; x < tempDonors.length(); x++){
+            try{
+                if(!tempDonors.getString(x).equals("@id")){
+                    JSONObject fundObj = json.getJSONObject(tempDonors.getString(x));
+
+                    Donor temp = new Donor();
+                    temp.setName(fundObj.getString("annotation"));
+                    temp.setId(fundObj.getInt("name"));
+
+                    if(!donors.contains(temp.getName())){
+                        db.addDonor(temp);
+                    }
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
 }
