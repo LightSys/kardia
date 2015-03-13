@@ -20,7 +20,7 @@ import android.widget.TextView;
  * @author Andrew Cameron
  */
 public class GiftDetailFrag extends Fragment {
-	final static String ARG_GIFT_ID = "gift_id";
+	public final static String ARG_GIFT_ID = "gift_id";
 	int gift_id = -1;
 	View v;
 	

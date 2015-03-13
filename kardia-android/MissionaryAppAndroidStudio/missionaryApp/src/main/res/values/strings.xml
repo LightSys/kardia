@@ -24,10 +24,11 @@
     <!--<string name="accounts_layout">R.layout.accounts_listview_item</string>-->
     <string name="accounts_layout">Accounts</string>
 
-    <!--<string-array name="layout_ids">
-        <item>
-
-        </item>
-    </string-array>-->
+    <string name="date_range">Date Range</string>
+    <string name="choose_date">Choose Date</string>
+    <string name="_">" - "</string>
+    <string name="by_amount">By Amount</string>
+    <string name="amount_range">Amount Range</string>
+    <string name="by_check_number">By Check Number</string>
 
 </resources>
