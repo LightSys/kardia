@@ -7,12 +7,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import android.app.DatePickerDialog;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -32,7 +26,7 @@ import java.util.Calendar;
 /**
  * Created by Breven on 3/12/2015.
  */
-public class SearchActivity extends Fragment{
+public class SearchActivity extends Fragment {
 
     private Button date1, date2, search;
     private EditText amount1, amount2, checknum;
@@ -40,43 +34,43 @@ public class SearchActivity extends Fragment{
     private ToggleButton toggleDate, toggleAmount, toggleCheck;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.search_activity_layout, container, false);
 
-        date1 = (Button)v.findViewById(R.id.datepick1);
-        date2 = (Button)v.findViewById(R.id.datepick2);
-        search = (Button)v.findViewById(R.id.searchbtn);
-        amount1 = (EditText)v.findViewById(R.id.amount1);
-        amount2 = (EditText)v.findViewById(R.id.amount2);
-        checknum = (EditText)v.findViewById(R.id.checknum);
-        dateRange = (CheckBox)v.findViewById(R.id.dateRange);
-        amountRange = (CheckBox)v.findViewById(R.id.amountRange);
-        toggleDate = (ToggleButton)v.findViewById(R.id.toggleDate);
-        toggleAmount = (ToggleButton)v.findViewById(R.id.toggleAmount);
-        toggleCheck = (ToggleButton)v.findViewById(R.id.toggleCheck);
+        date1 = (Button) v.findViewById(R.id.datepick1);
+        date2 = (Button) v.findViewById(R.id.datepick2);
+        search = (Button) v.findViewById(R.id.searchbtn);
+        amount1 = (EditText) v.findViewById(R.id.amount1);
+        amount2 = (EditText) v.findViewById(R.id.amount2);
+        checknum = (EditText) v.findViewById(R.id.checknum);
+        dateRange = (CheckBox) v.findViewById(R.id.dateRange);
+        amountRange = (CheckBox) v.findViewById(R.id.amountRange);
+        toggleDate = (ToggleButton) v.findViewById(R.id.toggleDate);
+        toggleAmount = (ToggleButton) v.findViewById(R.id.toggleAmount);
+        toggleCheck = (ToggleButton) v.findViewById(R.id.toggleCheck);
 
-        search.setOnClickListener(new OnClickListener(){
+        search.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 doSearch();
             }
         });
 
-        dateRange.setOnClickListener(new OnClickListener(){
+        dateRange.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 changeDateRange();
             }
         });
 
-        amountRange.setOnClickListener(new OnClickListener(){
+        amountRange.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 changeAmountRange();
             }
         });
 
-        date1.setOnClickListener(new OnClickListener(){
+        date1.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -84,7 +78,7 @@ public class SearchActivity extends Fragment{
             }
         });
 
-        date2.setOnClickListener(new OnClickListener(){
+        date2.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -92,14 +86,14 @@ public class SearchActivity extends Fragment{
             }
         });
 
-        toggleDate.setOnClickListener(new OnClickListener(){
+        toggleDate.setOnClickListener(new OnClickListener() {
 
             @Override
-            public void onClick(View v){
-                if(toggleDate.isChecked()){
+            public void onClick(View v) {
+                if (toggleDate.isChecked()) {
                     dateRange.setEnabled(true);
                     date1.setEnabled(true);
-                }else{
+                } else {
                     dateRange.setChecked(false);
                     dateRange.setEnabled(false);
                     date1.setText("Choose Date");
@@ -110,14 +104,14 @@ public class SearchActivity extends Fragment{
             }
         });
 
-        toggleAmount.setOnClickListener(new OnClickListener(){
+        toggleAmount.setOnClickListener(new OnClickListener() {
 
             @Override
-            public void onClick(View v){
-                if(toggleAmount.isChecked()){
+            public void onClick(View v) {
+                if (toggleAmount.isChecked()) {
                     amountRange.setEnabled(true);
                     amount1.setEnabled(true);
-                }else{
+                } else {
                     amountRange.setChecked(false);
                     amountRange.setEnabled(false);
                     amount1.setText("");
@@ -128,13 +122,13 @@ public class SearchActivity extends Fragment{
             }
         });
 
-        toggleCheck.setOnClickListener(new OnClickListener(){
+        toggleCheck.setOnClickListener(new OnClickListener() {
 
             @Override
-            public void onClick(View v){
-                if(toggleCheck.isChecked()){
+            public void onClick(View v) {
+                if (toggleCheck.isChecked()) {
                     checknum.setEnabled(true);
-                }else{
+                } else {
                     checknum.setText("");
                     checknum.setEnabled(false);
                 }
@@ -143,7 +137,7 @@ public class SearchActivity extends Fragment{
         return v;
     }
 
-    public void openDatePicker(int btn_id){
+    public void openDatePicker(int btn_id) {
         Calendar c = Calendar.getInstance();
         int mYear = c.get(Calendar.YEAR);
         int mMonth = c.get(Calendar.MONTH);
@@ -154,7 +148,7 @@ public class SearchActivity extends Fragment{
         dialog.show();
     }
 
-    public void doSearch(){
+    public void doSearch() {
         LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 1);
 
         String selectStatement = "SELECT * FROM gifts";
@@ -162,33 +156,33 @@ public class SearchActivity extends Fragment{
         String amountSearch = "";
         String checkSearch = "";
 
-        if(toggleDate.isChecked()){
-            String sDate = (!date1.getText().toString().equals("Choose Date"))? date1.getText().toString() : "";
-            String eDate = (date2.isEnabled() && !date2.getText().toString().equals("Choose Date"))? date2.getText().toString() : "";
+        if (toggleDate.isChecked()) {
+            String sDate = (!date1.getText().toString().equals("Choose Date")) ? date1.getText().toString() : "";
+            String eDate = (date2.isEnabled() && !date2.getText().toString().equals("Choose Date")) ? date2.getText().toString() : "";
 
-            if(!sDate.equals("") && !eDate.equals("")){
+            if (!sDate.equals("") && !eDate.equals("")) {
                 dateSearch = " WHERE (gift_date BETWEEN '" + sDate + "' AND '" + eDate + "')";
-            }else if(!sDate.equals("")){
+            } else if (!sDate.equals("")) {
                 dateSearch = " WHERE (gift_date = '" + sDate + "')";
             }
 
             selectStatement += dateSearch;
         }
 
-        if(toggleAmount.isChecked()){
-            String sAmount = (!amount1.getText().toString().equals(""))? amount1.getText().toString() : "";
-            String eAmount = (amount2.isEnabled() && !amount2.getText().toString().equals(""))? amount2.getText().toString() : "";
+        if (toggleAmount.isChecked()) {
+            String sAmount = (!amount1.getText().toString().equals("")) ? amount1.getText().toString() : "";
+            String eAmount = (amount2.isEnabled() && !amount2.getText().toString().equals("")) ? amount2.getText().toString() : "";
 
-            if(!sAmount.equals("") && !eAmount.equals("")){
-                if(dateSearch.equals("")){
+            if (!sAmount.equals("") && !eAmount.equals("")) {
+                if (dateSearch.equals("")) {
                     amountSearch = " WHERE (gift_total_whole BETWEEN " + sAmount + " AND " + eAmount + ")";
-                }else{
+                } else {
                     amountSearch = " AND (gift_total_whole BETWEEN " + sAmount + " AND " + eAmount + ")";
                 }
-            }else if(!sAmount.equals("")){
-                if(dateSearch.equals("")){
+            } else if (!sAmount.equals("")) {
+                if (dateSearch.equals("")) {
                     amountSearch = " WHERE (gift_total_whole = " + sAmount + ")";
-                }else{
+                } else {
                     amountSearch = " AND (gift_total_whole = " + sAmount + ")";
                 }
             }
@@ -196,13 +190,13 @@ public class SearchActivity extends Fragment{
             selectStatement += amountSearch;
         }
 
-        if(toggleCheck.isChecked()){
-            String checkNum = (!checknum.getText().toString().equals(""))?checknum.getText().toString() : "";
+        if (toggleCheck.isChecked()) {
+            String checkNum = (!checknum.getText().toString().equals("")) ? checknum.getText().toString() : "";
 
-            if(!checkNum.equals("")){
-                if(dateSearch.equals("") && amountSearch.equals("")){
+            if (!checkNum.equals("")) {
+                if (dateSearch.equals("") && amountSearch.equals("")) {
                     checkSearch = " WHERE gift_check_num = " + checkNum;
-                }else{
+                } else {
                     checkSearch = " AND (gift_check_num = " + checkNum + ")";
                 }
             }
@@ -211,19 +205,19 @@ public class SearchActivity extends Fragment{
         }
         ArrayList<Gift> results = db.getSearchResults(selectStatement);
 
-        if(results.size() == 0){
+        if (results.size() == 0) {
             Toast.makeText(getActivity(), "0 Gifts found.", Toast.LENGTH_SHORT).show();
-        }else if(results.size() == 1){
+        } else if (results.size() == 1) {
             resetAll();
             Toast.makeText(getActivity(), "1 Gift found.", Toast.LENGTH_SHORT).show();
             sendToDetailedGift(results.get(0).getId());
-        }else{
+        } else {
             resetAll();
             Toast.makeText(getActivity(), results.size() + " Gift(s) found.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void resetAll(){
+    public void resetAll() {
         date1.setText("Choose Date");
         date1.setEnabled(false);
         date2.setText("Choose Date");
@@ -243,7 +237,7 @@ public class SearchActivity extends Fragment{
         toggleCheck.setChecked(false);
     }
 
-    public void sendToDetailedGift(int gift_id){
+    public void sendToDetailedGift(int gift_id) {
         Bundle args = new Bundle();
         args.putInt(GiftDetailFrag.ARG_GIFT_ID, gift_id);
 
@@ -256,30 +250,30 @@ public class SearchActivity extends Fragment{
         transaction.commit();
     }
 
-    public void changeDateRange(){
-        if(date2.isEnabled()){
+    public void changeDateRange() {
+        if (date2.isEnabled()) {
             date2.setText("Choose Date");
             date2.setEnabled(false);
-        }else{
+        } else {
             date2.setEnabled(true);
         }
     }
 
 
-    public void changeAmountRange(){
-        if(amount2.isEnabled()){
+    public void changeAmountRange() {
+        if (amount2.isEnabled()) {
             amount2.setText("");
             amount2.setEnabled(false);
-        }else{
+        } else {
             amount2.setEnabled(true);
         }
     }
 
-    private class mDateSetListener implements DatePickerDialog.OnDateSetListener{
+    private class mDateSetListener implements DatePickerDialog.OnDateSetListener {
 
         private int btn_id;
 
-        public mDateSetListener(int btn_id){
+        public mDateSetListener(int btn_id) {
             this.btn_id = btn_id;
         }
 
@@ -287,12 +281,12 @@ public class SearchActivity extends Fragment{
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
 
-            String month = (monthOfYear < 10)? "0" + monthOfYear : "" + monthOfYear;
-            String day = (dayOfMonth < 10)? "0" + dayOfMonth : "" + dayOfMonth;
+            String month = (monthOfYear < 10) ? "0" + monthOfYear : "" + monthOfYear;
+            String day = (dayOfMonth < 10) ? "0" + dayOfMonth : "" + dayOfMonth;
 
-            if(btn_id == 1){
+            if (btn_id == 1) {
                 date1.setText(year + "-" + month + "-" + day);
-            }else{
+            } else {
                 date2.setText(year + "-" + month + "-" + day);
             }
         }
