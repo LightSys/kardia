@@ -53,6 +53,7 @@ OBJECT STRUCTURE...
 	    note_id	    - the id of the missionary's prayer request
 	    note_subject    - the subject of the missionary's prayer request
 	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
 	    note_date	    - the date that the prayer request was posted
 	    supporter_partner_id - the ID of the missionary
 	    supporter_partner_name - the name of the missionary
@@ -80,6 +81,7 @@ OBJECT STRUCTURE...
 	    note_id	    - the id of the missionary's prayer request
 	    note_subject    - the subject of the missionary's prayer request
 	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
 	    note_date	    - the date that the prayer request was posted
 	    supporter_partner_id - the ID of the supporter
 	    supporter_partner_name - the name of the supporter
@@ -92,6 +94,7 @@ OBJECT STRUCTURE...
 	    note_id	    - the id of the missionary's prayer request
 	    note_subject    - the subject of the missionary's prayer request
 	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
 	    note_date	    - the date that the prayer request was posted
 
     /apps/kardia/api/missionary/{missionaryid}/Notes/{noteID}/Prayers --
@@ -106,6 +109,7 @@ OBJECT STRUCTURE...
 	    note_id	    - the id of the missionary's prayer request
 	    note_subject    - the subject of the missionary's prayer request
 	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
 	    note_date	    - the date that the prayer request was posted
 	    supporter_partner_id - the ID of the supporter
 	    supporter_partner_name - the name of the supporter
