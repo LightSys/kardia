@@ -278,7 +278,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         c.close();
         db.close();
     }
-	
+
 	/* *** Get Methods (Display Lists) *** */
 
     //These methods (the next 5) need to return the id (from the local database) among other things
