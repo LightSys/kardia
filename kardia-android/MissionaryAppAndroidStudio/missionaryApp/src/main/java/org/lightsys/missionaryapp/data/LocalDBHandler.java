@@ -52,7 +52,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             COLUMN_FUND_CLASS = "fund_class",
             COLUMN_ANNOTATION = "annotation",
             COLUMN_SUBJECT = "prayer_subject",
-            COLUMN_PRAYERDESC = "prayer_desc";
+            COLUMN_PRAYERDESC = "prayer_desc",
+            COLUMN_PRAYER_ID = "prayer_id";
 
     public LocalDBHandler(Context context, String name, CursorFactory factory, int version) {
         super(context, "missionary.db", factory, DATABASE_VERSION);
@@ -133,7 +134,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         //Prayer-Donor Table
         String CREATE_PRAYER_DONOR_TABLE = "CREATE TABLE " + TABLE_PRAYER_DONOR + "(" +
-                COLUMN_ID + " INTEGER," + COLUMN_DONOR_ID + " INTEGER)";
+                COLUMN_ID + " INTEGER," + COLUMN_NAME + " TEXT," + COLUMN_DATE + "TEXT,"
+                + COLUMN_ANNOTATION + "TEXT," + COLUMN_PRAYER_ID + "INTEGER)";
         db.execSQL(CREATE_PRAYER_DONOR_TABLE);
 
         //MAP TABLE FOR GIFT AND DONOR (OR HAVE A DONOR ID WITHIN THE GIFT TABLE?)
@@ -752,6 +754,24 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.close();
         c.close();
         return prayer;
+    }
+
+    public ArrayList<Prayer> getPrayers() {
+        ArrayList<Prayer> arrayList = new ArrayList<Prayer>();
+        String queryString = "SELECT * FROM " + TABLE_PRAYER;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+        while (c.moveToNext()) {
+            Prayer prayer = new Prayer();
+            prayer.setDate(c.getString(0));
+            prayer.setDescription(c.getString(1));
+            prayer.setSubject(c.getString(2));
+            prayer.setID(Integer.parseInt(c.getString(3)));
+        }
+        db.close();
+        c.close();
+        return arrayList;
     }
 
     public Prayer getPrayer(String type, String content) {

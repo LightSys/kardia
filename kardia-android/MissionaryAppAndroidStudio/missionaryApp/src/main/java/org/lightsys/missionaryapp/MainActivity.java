@@ -22,6 +22,7 @@ import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.LocalDBHandler;
 import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.Gift;
+import org.lightsys.missionaryapp.data.Prayer;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -163,7 +164,16 @@ public class MainActivity extends Activity {
 			}
 		}
 
-        loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/"+ User_Id + "/Supporters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
+        loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/"+ User_Id +
+                "/Supporters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
+
+        loadPrayers(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + User_Id +
+                "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
+
+        for (Prayer p : db.getPrayers()) {
+            loadWhoPrays(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + User_Id + "/Notes/" + p.getID() +
+                    "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
+        }
 
 	}
 	
@@ -352,6 +362,74 @@ public class MainActivity extends Activity {
 
                     if(!donors.contains(temp.getName())){
                         db.addDonor(temp);
+                    }
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void loadPrayers(String value){
+        LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
+        ArrayList<Prayer> existingPrayers = db.getPrayers();
+
+        JSONObject json = null;
+        try{
+            json = new JSONObject(value);
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+        JSONArray tempPrayer = json.names();
+
+        for(int x = 0; x < tempPrayer.length(); x++){
+            try{
+                if(!tempPrayer.getString(x).equals("@id")){
+                    JSONObject fundObj = json.getJSONObject(tempPrayer.getString(x));
+
+                    Prayer temp = new Prayer();
+                    temp.setSubject(fundObj.getString("note_subject"));
+                    temp.setDescription(fundObj.getString("note_text"));
+                    temp.setDate(fundObj.getString("note_date"));
+                    temp.setID(fundObj.getInt("note_id"));
+
+                    if(!existingPrayers.contains(temp.getSubject())){
+                        db.addPrayer(temp);
+                        System.out.println("New Prayer:\n" + temp.toString());
+                    }
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void loadWhoPrays(String value){
+        LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
+        ArrayList<Prayer> existingPrayers = db.getPrayers();
+
+        JSONObject json = null;
+        try{
+            json = new JSONObject(value);
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+        JSONArray tempPrayer = json.names();
+
+        for(int x = 0; x < tempPrayer.length(); x++){
+            try{
+                if(!tempPrayer.getString(x).equals("@id")){
+                    JSONObject fundObj = json.getJSONObject(tempPrayer.getString(x));
+
+                    Prayer temp = new Prayer();
+                    temp.setSubject(fundObj.getString("note_subject"));
+                    temp.setDescription(fundObj.getString("note_text"));
+                    temp.setDate(fundObj.getString("note_date"));
+                    temp.setID(fundObj.getInt("note_id"));
+
+                    if(!existingPrayers.contains(temp.getSubject())){
+                        db.addPrayer(temp);
+                        System.out.println("New Prayer:\n" + temp.toString());
                     }
                 }
             }catch(Exception e){
