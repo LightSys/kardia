@@ -27,7 +27,7 @@ public class DonorFrag extends Fragment {
 	public static final String ARG_TYPE = "type";
 	int type = 0; // 0 = history, 1 = specific gift
 	public static final String ARG_DONOR_ID = "donor_id";
-	int donor_id = -1;
+	int donor_id = 0;
 	public static final String ARG_GIFT_ID = "gift_id";
 	int gift_id = -1;
 	

@@ -208,7 +208,7 @@ public class ListActivity extends Fragment {
                 case 1:
                     toFrag = new DonorFrag();
                     sendArgs.putInt(DonorFrag.ARG_TYPE, 0);
-                    sendArgs.putInt(DonorFrag.ARG_DONOR_ID, Integer.parseInt(listitems.get(position).get("donor_id")));
+                    sendArgs.putInt(DonorFrag.ARG_DONOR_ID, Integer.parseInt(listitems.get(position).get("id")));
                     toFrag.setArguments(sendArgs);
 
                     transaction.replace(R.id.container, toFrag);

@@ -34,7 +34,7 @@ import android.widget.Toast;
 public class DonorBar extends Fragment{
 	
 	final static String ARG_DONOR_ID = "donor_id";
-	int donor_id = -1;
+	int donor_id = 0;
 	private View v;
 	private Donor donor;
 	
@@ -69,6 +69,7 @@ public class DonorBar extends Fragment{
 		name.setText(donor.getName());
 		email.setText(donor.getEmail());
 		cellnumber.setText(donor.getCellNumber());
+
 		if(donor.getDonorImg() != null){
 			Bitmap map = BitmapFactory.decodeByteArray(donor.getDonorImg(), 0, donor.getDonorImg().length);
 			donorImg.setImageBitmap(map);

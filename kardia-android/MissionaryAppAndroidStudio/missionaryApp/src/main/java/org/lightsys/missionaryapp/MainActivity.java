@@ -356,6 +356,8 @@ public class MainActivity extends Activity {
                     Donor temp = new Donor();
                     temp.setName(fundObj.getString("partner_name"));
                     temp.setId(fundObj.getInt("name"));
+                    temp.setEmail(fundObj.getString("email"));
+                    temp.setCellNumber(fundObj.getString("cellnumber"));
 
                     if(!donors.contains(temp)){
                         db.addDonor(temp);

@@ -9,11 +9,12 @@ public class Donor {
 	public Donor(){
 	}
 	
-	public Donor(int id, String name, String cellnumber, String email){
+	public Donor(int id, String name, String cellnumber, String email, byte[] donorImg){
 		this.id = id;
 		this.name = name;
 		this.email = email;
 		this.cellnumber = cellnumber;
+        this.donorImg = donorImg;
 	}
 
     public Donor(int id, String name) {
@@ -53,7 +54,7 @@ public class Donor {
 		return cellnumber;
 	}
 	
-	public void setImage(byte[] donorImg){
+	public void setDonorImage(byte[] donorImg){
 		this.donorImg = donorImg;
 	}
 	

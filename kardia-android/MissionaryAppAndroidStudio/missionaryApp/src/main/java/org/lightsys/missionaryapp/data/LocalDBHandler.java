@@ -231,6 +231,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_ID, donor.getId());
         values.put(COLUMN_NAME, donor.getName());
+        values.put(COLUMN_EMAIL, donor.getEmail());
+        values.put(COLUMN_CELLNUMBER, donor.getCellNumber());
+        values.put(COLUMN_DONORIMAGE, donor.getDonorImg());
         SQLiteDatabase db = this.getWritableDatabase();
 
         db.insert(TABLE_DONOR, null, values);
@@ -538,7 +541,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             donor.setName(c.getString(1));
             donor.setEmail(c.getString(2));
             donor.setCellNumber(c.getString(3));
-            donor.setImage(c.getString(4).getBytes());
+            donor.setDonorImage(c.getString(4).getBytes());
             arrayList.add(donor);
 
         }
@@ -561,8 +564,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             donor.setName(c.getString(1));
             donor.setEmail(c.getString(2));
             donor.setCellNumber(c.getString(3));
-            donor.setImage(c.getString(4).getBytes());
-
+            donor.setDonorImage(c.getString(4).getBytes());
         }
         db.close();
         c.close();
