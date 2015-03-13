@@ -36,5 +36,11 @@ public class Period {
 	public void setDate(String date){
 		this.date = date;
 	}
+
+    @Override
+    public String toString() {
+        String string = "";
+        return string;
+    }
 	
 }

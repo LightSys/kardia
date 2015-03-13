@@ -165,7 +165,7 @@ public class MainActivity extends Activity {
 			}
 		}
 
-        loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/"+ User_Id +
+        loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + User_Id +
                 "/Supporters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
 
         loadPrayers(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + User_Id +
@@ -361,7 +361,7 @@ public class MainActivity extends Activity {
                     temp.setName(fundObj.getString("partner_name"));
                     temp.setId(fundObj.getInt("name"));
 
-                    if(!donors.contains(temp.getName())){
+                    if(!donors.contains(temp)){
                         db.addDonor(temp);
                     }
                 }
@@ -391,10 +391,11 @@ public class MainActivity extends Activity {
                     Prayer temp = new Prayer();
                     temp.setSubject(fundObj.getString("note_subject"));
                     temp.setDescription(fundObj.getString("note_text"));
-                    temp.setDate(fundObj.getString("note_date"));
+                    JSONObject date = fundObj.getJSONObject("note_date");
+                    temp.setDate(date.getString("year") + "-" + date.getString("month") + "-" + date.getString("day"));
                     temp.setID(fundObj.getInt("note_id"));
 
-                    if(!existingPrayers.contains(temp.getSubject())){
+                    if(!existingPrayers.contains(temp)){
                         db.addPrayer(temp);
                         System.out.println("New Prayer:\n" + temp.toString());
                     }
@@ -425,11 +426,12 @@ public class MainActivity extends Activity {
                     PrayerReplies temp = new PrayerReplies();
                     temp.setComment(fundObj.getString("prayedfor_comments"));
                     temp.setPrayerID(fundObj.getInt("note_id"));
-                    temp.setDate(fundObj.getString("prayedfor_date"));
+                    JSONObject date = fundObj.getJSONObject("prayedfor_date");
+                    prayer.setDate(date.getString("year") + "-" + date.getString("month") + "-" + date.getString("day"));
                     temp.setID(fundObj.getInt("prayedfor_id"));
                     temp.setName(fundObj.getString("supporter_partner_name"));
 
-                    if(!existingPrayers.contains(temp.getID())){
+                    if(!existingPrayers.contains(temp)){
                         db.addPraying(temp);
                     }
                 }

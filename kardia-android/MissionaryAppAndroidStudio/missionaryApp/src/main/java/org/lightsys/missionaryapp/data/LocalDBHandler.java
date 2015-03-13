@@ -53,7 +53,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             COLUMN_ANNOTATION = "annotation",
             COLUMN_SUBJECT = "prayer_subject",
             COLUMN_PRAYERDESC = "prayer_desc",
-            COLUMN_PRAYER_ID = "prayer_id";
+            COLUMN_PRAYER_ID = "prayer_id",
+            COLUMN_REPLY_ID = "reply_id";
 
     public LocalDBHandler(Context context, String name, CursorFactory factory, int version) {
         super(context, "missionary.db", factory, DATABASE_VERSION);
@@ -129,12 +130,12 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         //Prayer Table
         String CREATE_PRAYER_TABLE = "CREATE TABLE " + TABLE_PRAYER + "(" +
                 COLUMN_DATE + " TEXT," + COLUMN_SUBJECT + " TEXT," +
-                COLUMN_PRAYERDESC + " TEXT," + COLUMN_ID + "INTEGER)";
+                COLUMN_PRAYERDESC + " TEXT," + COLUMN_PRAYER_ID + "INTEGER)";
         db.execSQL(CREATE_PRAYER_TABLE);
 
         //Prayer-Donor Table
         String CREATE_PRAYER_DONOR_TABLE = "CREATE TABLE " + TABLE_PRAYER_DONOR + "(" +
-                COLUMN_ID + " INTEGER," + COLUMN_NAME + " TEXT," + COLUMN_DATE + "TEXT,"
+                COLUMN_REPLY_ID + " INTEGER," + COLUMN_NAME + " TEXT," + COLUMN_DATE + "TEXT,"
                 + COLUMN_ANNOTATION + "TEXT," + COLUMN_PRAYER_ID + "INTEGER)";
         db.execSQL(CREATE_PRAYER_DONOR_TABLE);
 
@@ -241,7 +242,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_DATE, prayer.getDate());
         values.put(COLUMN_SUBJECT, prayer.getSubject());
         values.put(COLUMN_PRAYERDESC, prayer.getDescription());
-        values.put(COLUMN_ID, prayer.getID());
+        values.put(COLUMN_PRAYER_ID, prayer.getID());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -251,7 +252,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     public void addPraying(PrayerReplies prayerReplies) {
         ContentValues values = new ContentValues();
-        values.put(COLUMN_ID, prayerReplies.getID());
+        values.put(COLUMN_REPLY_ID, prayerReplies.getID());
         values.put(COLUMN_NAME, prayerReplies.getName());
         values.put(COLUMN_DATE, prayerReplies.getDate());
         values.put(COLUMN_ANNOTATION, prayerReplies.getComment());
@@ -301,6 +302,25 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         }
 
         c.close();
+        return arrayList;
+    }
+
+    public ArrayList<HashMap<String, String>> getDisplayFunds() {
+        ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_FUND, null);
+        while (c.moveToNext()) {
+            if (c.getString(0) == null) {
+                break;
+            }
+            HashMap<String, String> hashMap = new HashMap<String, String>();
+            hashMap.put("id", c.getString(0));
+            hashMap.put("title", c.getString(1));
+            hashMap.put("amount_whole", c.getString(4));
+            hashMap.put("amount_part", c.getString(5));
+            hashMap.put("date", c.getString(6));
+            arrayList.add(hashMap);
+        }
         return arrayList;
     }
 
@@ -364,7 +384,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         ArrayList<HashMap<String, String>> arrayList = new ArrayList();
         SQLiteDatabase db = this.getReadableDatabase();
-        /*Cursor c = db.rawQuery("SELECT * FROM " + TABLE_PRAYER, null);
+        Cursor c = db.rawQuery("SELECT * FROM " + TABLE_PRAYER, null);
 
         while (c.moveToNext()) {
             if (c.getString(0) == null) {
@@ -374,9 +394,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             hashMap.put("date", c.getString(0));
             hashMap.put("prayer_subject", c.getString(1));
             hashMap.put("prayer_desc", c.getString(2));
-            hashMap.put("id", c.getString(3));
+            hashMap.put("prayer_id", c.getString(3));
             arrayList.add(hashMap);
-        }*/
+        }
         return arrayList;
     }
 
@@ -431,7 +451,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
                 break;
             }
             HashMap<String, String> hashMap = new HashMap<String, String>();
-            hashMap.put("id", c.getString(0));
+            hashMap.put("reply_id", c.getString(0));
             hashMap.put("name", c.getString(1));
             hashMap.put("date", c.getString(2));
             hashMap.put("annotation", c.getString(3));
