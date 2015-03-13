@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import org.lightsys.missionaryapp.data.LocalDBHandler;
 import org.lightsys.missionaryapp.donorfragments.DonorFrag;
+import org.lightsys.missionaryapp.optionsfragments.FundFragment;
 import org.lightsys.missionaryapp.optionsfragments.PrayerFragment;
 
 import android.os.Bundle;
@@ -231,7 +232,14 @@ public class ListActivity extends Fragment {
                 // Funds
                 //TODO: Implement
                 case 3:
-                    //Take to funds
+                    toFrag = new FundFragment();
+                    sendArgs.putInt(FundFragment.ARG_TYPE, 0);
+                    sendArgs.putInt(FundFragment.ARG_DONOR_ID, Integer.parseInt(listitems.get(position).get("donor_id")));
+                    toFrag.setArguments(sendArgs);
+
+                    transaction.replace(R.id.container, toFrag);
+                    transaction.addToBackStack("ToFund" + listitems.get(position).get("name"));
+                    transaction.commit();
                     break;
 
 			/*

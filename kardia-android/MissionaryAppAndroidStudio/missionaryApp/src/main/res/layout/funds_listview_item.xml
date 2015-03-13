@@ -6,13 +6,13 @@
     android:layout_height="80dp">
 
     <TextView
-        android:id="@+id/account_id"
+        android:id="@+id/fund_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_margin="25dp"
-        android:text="This is The title"
+        android:text="Fund Name"
         android:textSize="22sp"/>
 
     <TextView

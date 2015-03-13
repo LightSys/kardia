@@ -242,9 +242,9 @@ public class MainActivity extends Activity {
 
                     Fund temp = new Fund();
                     temp.setName(fundObj.getString("name"));
-                    temp.setAnnotation(fundObj.getString("annotation"));
                     temp.setFund_desc(fundObj.getString("fund_desc"));
                     temp.setFund_class(fundObj.getString("fund_class"));
+                    temp.setAnnotation(fundObj.getString("annotation"));
 
                     if (!existingFunds.contains(temp.getName())) {
                         db.addFund(temp);
