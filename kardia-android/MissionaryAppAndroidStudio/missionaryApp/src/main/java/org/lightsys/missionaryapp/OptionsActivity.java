@@ -90,13 +90,18 @@ public class OptionsActivity extends ActionBarActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent;
+        Fragment fragment;
         switch (item.getItemId()) {
             case R.id.action_search:
+                setTitle("Search");
+                fragment = new SearchActivity();
+                getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
                 break;
             case R.id.action_logout:
                 LocalDBHandler db = new LocalDBHandler(OptionsActivity.this, null, null, 1);
                 db.deleteAll();
-                Intent intent = new Intent(this, MainActivity.class);
+                intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
                 finish();
                 break;
