@@ -106,7 +106,7 @@ public class MainActivity extends Activity {
 			
 			//Get list of transactions for the period:
 			// "http://" +  + ":800/apps/kardia/api/fundmanager/" +  + "/Funds/" +  + "/Periods/" +  + "/Transactions?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"
-            System.out.println(testUrl[0]);
+
             String returnVal = GET(testUrl[0]);
 			
 			if(returnVal != null && !returnVal.equals("") && !returnVal.contains("Unauthorized")){
@@ -146,10 +146,10 @@ public class MainActivity extends Activity {
 		LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
 		
 		db.addAccount(new Account(User_Name, Password, Host_Name, Integer.parseInt(User_Id)));
-        System.out.println("1");
+
         loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/"
 				+ User_Id + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
-        System.out.println("2");
+
 		for(Fund f : db.getFunds()){
             String string = f.getName();
             string = string.replace("|", "%7C");
@@ -163,9 +163,9 @@ public class MainActivity extends Activity {
                         + string2 + "/Transactions?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getId());
 			}
 		}
-        System.out.println("3");
-        loadDonors(GET("http://"+ Host_Name + ":800/apps/kardia/api/donor?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
-        System.out.println("4");
+
+        loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/"+ User_Id + "/Supporters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
+
 	}
 	
 	
@@ -341,14 +341,14 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
         JSONArray tempDonors = json.names();
-        System.out.println(tempDonors.length());
+
         for(int x = 0; x < tempDonors.length(); x++){
             try{
                 if(!tempDonors.getString(x).equals("@id")){
                     JSONObject fundObj = json.getJSONObject(tempDonors.getString(x));
 
                     Donor temp = new Donor();
-                    temp.setName(fundObj.getString("annotation"));
+                    temp.setName(fundObj.getString("partner_name"));
                     temp.setId(fundObj.getInt("name"));
 
                     if(!donors.contains(temp.getName())){
