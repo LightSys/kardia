@@ -632,6 +632,7 @@ insert into e_contact_history_type (e_contact_history_type,e_short_name,e_descri
 insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_contact_history_type, 'Note' as e_short_name, 'Note' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_contact_history_type, 'Pray' as e_short_name, 'Prayer/Praise Item' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_contact_history_type, 'SignUp' as e_short_name, 'Sign Up List' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 7 as e_contact_history_type, 'Update' as e_short_name, 'Update' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_contact_history */
@@ -1193,12 +1194,30 @@ create table e_data_highlight (
 );
 
 
-/* e_seen */
+/* e_ack */
 
-create table e_seen (
-        e_object_type                         varchar(32)  not null,   /* The type of object that has been viewed --  */
-        e_object_id                           varchar(32)  not null,   /* A unique ID identifying the object viewed --  */
-        e_whom                                char(10)  not null,      /* The collaborator who saw the object --  */
+create table e_ack (
+        e_ack_id                              integer  not null,       /* The unique ID of this acknowledgement --  */
+        e_object_type                         varchar(32)  not null,   /* The type of object that has been acknowledged --  */
+        e_object_id                           varchar(32)  not null,   /* A unique ID identifying the object acknowledged --  */
+        e_ack_type                            integer  not null,       /* The type of acknowledgement (viewed, prayed, comment, like, etc.) --  */
+        e_ack_comments                        varchar(900)  null,      /* A unique ID identifying the object acknowledged --  */
+        e_whom                                char(10)  not null,      /* The collaborator who acknowledged the object --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_ack_type */
+
+create table e_ack_type (
+        e_ack_type                            integer  not null,       /* The unique ID of this ack type --  */
+        e_ack_type_label                      varchar(40)  not null,   /* The short name of the acknowledgement type --  */
+        e_ack_type_desc                       varchar(255)  not null,  /* The description of the acknowledgement type --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
