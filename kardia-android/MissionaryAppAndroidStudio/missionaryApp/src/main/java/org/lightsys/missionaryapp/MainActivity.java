@@ -364,7 +364,8 @@ public class MainActivity extends Activity {
                     temp.setName(fundObj.getString("partner_name"));
                     temp.setId(fundObj.getInt("name"));
                     //temp.setEmail(fundObj.getString("email"));
-                    //temp.setCellNumber(fundObj.getString("cellnumber"));
+                    //temp.setCellNumber(fundObj.getString("cell_number"));
+                    //temp.setDonorImage(fundObj.getString("http://+@server_address/apps/kardia/api/crm/Partners/+@id/ProfilePicture/+@photo_filename?cx__mode=rest&cx__res_type=entity"));
 
                     if(!donors.contains(temp)){
                         db.addDonor(temp);
