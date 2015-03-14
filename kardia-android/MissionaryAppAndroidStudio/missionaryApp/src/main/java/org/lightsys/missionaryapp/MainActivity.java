@@ -280,6 +280,7 @@ public class MainActivity extends Activity {
                     Period period = new Period();
                     period.setName(periodObj.getString("name"));
                     period.setDate(periodObj.getString("period_desc"));
+                    period.setFundName("" + fund_id);
 
                     if (!existingPeriods.contains(period.getName())) {
                         db.addPeriod(period);

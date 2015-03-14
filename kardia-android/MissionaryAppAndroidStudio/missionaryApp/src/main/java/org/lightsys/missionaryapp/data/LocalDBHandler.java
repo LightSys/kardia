@@ -103,7 +103,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         //Period Table
         String CREATE_PERIOD_TABLE = "CREATE TABLE " + TABLE_PERIOD + "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," +
-                COLUMN_DATE + " TEXT)";
+                COLUMN_DATE + " TEXT," + COLUMN_FUND_ID + " TEXT)";
         db.execSQL(CREATE_PERIOD_TABLE);
 
         //Period Gift Map Table
@@ -183,6 +183,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, period.getName());
         values.put(COLUMN_DATE, period.getDate());
+        values.put(COLUMN_FUND_ID, period.getFundName());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -696,10 +697,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     public ArrayList<String> getPeriodNames(int fund_id) {
         ArrayList<String> periodNames = new ArrayList<String>();
 
-        String qString = "SELECT Y." + COLUMN_NAME + " FROM " + TABLE_PERIOD + " AS Y "
-                + "INNER JOIN " + TABLE_FP_MAP + " AS YFM ON Y."
-                + COLUMN_ID + " = YFM." + COLUMN_PERIOD_ID
-                + " WHERE YFM." + COLUMN_FUND_ID + " = " + fund_id;
+        String qString = "SELECT * FROM " + TABLE_PERIOD + " WHERE " + COLUMN_FUND_ID + " = " + fund_id;
 
         SQLiteDatabase db = this.getReadableDatabase();
 

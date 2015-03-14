@@ -4,6 +4,7 @@ public class Period {
 	private int Id;
 	private String name; // example: 2014.06|DEMO
 	private String date; // month and year example: June 2014
+    private String fundName;
 	
 	public Period(){}
 	
@@ -36,6 +37,10 @@ public class Period {
 	public void setDate(String date){
 		this.date = date;
 	}
+
+    public String getFundName() { return fundName; }
+
+    public void setFundName(String fundName) {this.fundName = fundName;}
 
     @Override
     public String toString() {
