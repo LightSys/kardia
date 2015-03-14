@@ -58,7 +58,10 @@
 				<vbox id="collapsible-items-box">	
 					
 					<!-- address, phone, cell, email, fax box -->
-					<checkbox class="twisty-checkbox" checked="true" onclick="toggleSectionDisplay(0)" label="Contact Information:"/>
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(0)" label="Contact Information:"/>
+					  <spacer flex="1"/>
+					</hbox>
 					<hbox id="contact-info-box">
 						<spacer width="10px"/>
 						<vbox id="contact-info-inner-box" width="100" flex="1">
@@ -70,7 +73,10 @@
 					</hbox>	
 					
 					<!-- engagement tracks box -->
-					<checkbox class="twisty-checkbox" checked="true" oncommand="toggleSectionDisplay(1)" label="Engagement Tracks:"/>
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(1)" label="Engagement Tracks:"/>
+					  <spacer flex="1"/>
+					</hbox>
 					<hbox id="engagement-tracks-box">
 						<spacer width="10px"/>
 						<vbox id="engagement-tracks-inner-box" width="100" flex="1">
@@ -86,7 +92,10 @@
 					</hbox>
 							
 					<!-- recent activity box -->
-					<checkbox class="twisty-checkbox" checked="true" onclick="toggleSectionDisplay(2)" label="Recent Activity:"/>
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(2)" label="Recent Activity:"/>
+					  <spacer flex="1"/>
+					</hbox>
 					<hbox id="recent-activity-box">
 						<spacer width="10px"/>
 						<vbox id="recent-activity-inner-box" width="100" flex="1">
@@ -102,7 +111,10 @@
 					</hbox>	
 					
 					<!-- to-dos box -->
-					<checkbox class="twisty-checkbox" checked="true" onclick="toggleSectionDisplay(3)" label="To-Dos:"/>
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(3)" label="To-Dos:"/>
+					  <spacer flex="1"/>
+					</hbox>
 					<hbox id="to-dos-box">
 						<spacer width="10px"/>
 						<vbox id="to-dos-inner-box" width="100" flex="1">
@@ -117,7 +129,10 @@
 					</hbox>	
 					
 					<!-- notes and prayer box -->
-					<checkbox class="twisty-checkbox" checked="true" onclick="toggleSectionDisplay(4)" label="Notes and Prayer:"/>
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(4)" label="Notes and Prayer:"/>
+					  <spacer flex="1"/>
+					</hbox>
 					<hbox id="notes-prayer-box">
 						<spacer width="10px"/>
 						<vbox id="notes-prayer-inner-box" width="100" flex="1">
@@ -137,7 +152,10 @@
 					</hbox>
 					
 					<!-- collaborators box -->
-					<checkbox class="twisty-checkbox" checked="true" onclick="toggleSectionDisplay(5)" label="Collaborators:"/>
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(5)" label="Collaborators:"/>
+					  <spacer flex="1"/>
+					</hbox>
 					<hbox id="collaborator-box">
 						<spacer width="10px"/>
 						<vbox id="collaborator-inner-box" width="100" flex="1">
@@ -153,7 +171,10 @@
 					</hbox>	
 					
 					<!-- documents box -->
-					<checkbox class="twisty-checkbox" checked="true" onclick="toggleSectionDisplay(6)" label="Documents:"/>
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(6)" label="Documents:"/>
+					  <spacer flex="1"/>
+					</hbox>
 					<hbox id="document-box">
 						<spacer width="10px"/>
 						<vbox id="document-inner-box" width="100" flex="1">

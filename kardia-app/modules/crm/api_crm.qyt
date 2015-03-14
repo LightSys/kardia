@@ -21,6 +21,7 @@ api_crm "system/querytree"
 			identity /apps/kardia/data/Kardia_DB/p_partner/rows p
 		    ";
 
+
 	    Tags "system/querytree"
 		{
 		text = "Tags";
@@ -546,6 +547,27 @@ api_crm "system/querytree"
 		activity_list "system/querytree"
 		    {
 		    sql = runserver("
+			    DECLARE OBJECT activity
+			    ;
+
+			    SELECT
+				:activity:cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number), '')
+			    FROM
+				/apps/kardia/data/Kardia_DB/p_staff/rows s,
+				/apps/kardia/data/Kardia_DB/p_partner/rows p
+			    WHERE
+				:s:p_kardia_login = user_name() and
+				:p:p_partner_key = :s:p_partner_key
+			    LIMIT
+				1
+			    ;
+
+			    SELECT
+				:activity:group_id = :activity_group_id
+			    FROM
+				identity '/apps/kardia/modules/crm/timeline.qy?partner_key=" + escape(:eng_list:partner_id,"'","") + "&my_cclist='
+			    ;
+
 			    SELECT
 				name = :e_activity_type + '|' + :e_reference_info,
 				whom = :e_whom,
@@ -555,9 +577,45 @@ api_crm "system/querytree"
 				reference_info = :e_reference_info,
 				info = :e_info
 			    FROM
-				identity '/apps/kardia/modules/crm/timeline.qy?partner_key=" + escape(:eng_list:partner_id,"'","") + "'
+				/apps/kardia/data/Kardia_DB/e_activity/rows a
+			    WHERE
+				:a:e_activity_group_id = :activity:group_id
 			    ");
 		    use_having = yes;
+		    }
+		}
+
+	    profile_pic "system/querytree"
+		{
+		sql = "	select
+			    name = 'ProfilePicture',
+			    photo_id = :pd:e_document_id,
+			    photo_type = :dt:e_doc_type_label,
+			    photo_title = :d:e_title,
+			    photo_filename = :d:e_current_filename,
+			    photo_folder = :d:e_current_folder,
+			    photo_date = :d:s_date_created
+			from
+			    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+			    identity /apps/kardia/data/Kardia_DB/e_document/rows d,
+			    /apps/kardia/data/Kardia_DB/e_document_type/rows dt
+			where
+			    :pd:p_partner_key = :eng_list:partner_id and
+			    :d:e_document_id = :pd:e_document_id and
+			    :dt:e_doc_type_id = :d:e_doc_type_id and
+			    :dt:e_doc_type_id = 1   -- 1 is the profile photo doc type id
+			";
+
+		use_having = yes;
+
+		profile_file "system/querytree"
+		    {
+		    sql = runserver("
+			    select
+				*
+			    from
+				identity object " + quote(:profile_pic:photo_folder + '/' + :profile_pic:photo_filename) + " f
+			    ");
 		    }
 		}
 	    }

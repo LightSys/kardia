@@ -23,17 +23,13 @@ window.addEventListener('load', function() {
 	}
 }, false);
 
-/**
- * Get filter criteria and filter partners you're collaborating with
- */
+// filter collaboratees
 function filterBy() {
 	mainWindow.filterBy = document.getElementById("filter-by-type").selectedItem.value;
 	reloadFilters(false);
 }
 
-/**
- * Sort partners we're collaborating with by whatever the user has selected
- */
+// sort collaborating with by whatever the buttons say
 function sortBy() {	
 	// find out what we're sorting by
 	var what = document.getElementById("sort-by").selectedItem.value;
@@ -56,27 +52,20 @@ function sortBy() {
 	reloadFilters(false);
 }
 
-/**
- * Add the given item as a filter
- *
- * @param type  		character representing the type of filter to be added (e for engagement track, t for tag, d for data item, f for fund)
- * @param id			the numerical id of the item to be added as a filter
- * @param fromClick		boolean value telling whether this filter was added by the user clicking a button (if so, we need to check checkboxes)
- */
- // add the given item as a filter
+// add the given item as a filter
 function addFilter(type, id, fromClick) {	
 	// if a button was clicked to add the filter, set the corresponding checkbox to checked
 	if (fromClick) {
-		kardiaTab.document.getElementById("filter-by-" + type + "-" + id).checked = true;
+		kardiaTab.document.getElementById("filter-by-" + type + "-" + id).checkState = 1;
 	}
 	if (type == 'e') {
 		// add to engagement track filters
-		mainWindow.filterTracks[id] = kardiaTab.document.getElementById("filter-by-e-" + id).checked;
+		mainWindow.filterTracks[id] = (kardiaTab.document.getElementById("filter-by-e-" + id).checkState==1);
 	}
 	else if (type == 't') {	
 		// add to tag filters
-		mainWindow.filterTags[id] = kardiaTab.document.getElementById("filter-by-t-" + id).checked;
-		mainWindow.filterTags[id*1+1] = kardiaTab.document.getElementById("filter-by-t-" + id).checked;
+		mainWindow.filterTags[id] = (kardiaTab.document.getElementById("filter-by-t-" + id).checkState==1);
+		mainWindow.filterTags[id*1+1] = (kardiaTab.document.getElementById("filter-by-t-" + id).checkState==1);
 	}
 	else if (type == 'd') {
 		// add to data filters
@@ -106,12 +95,7 @@ function addFilter(type, id, fromClick) {
 	reloadFilters(false);
 }
 
-/**
- * Add the given item as a filter for the gift display
- *
- * @param type  character representing the type of filter to be added (f for funds, t for type of gift)
- * @param id	numerical id of the item to be added as a filter
- */
+// add the given item as a filter for the gift display
 function addGiftFilter(type, id) {	
 	if (type == 'f') {
 		// add to gift filters
@@ -128,12 +112,7 @@ function addGiftFilter(type, id) {
 	reloadGifts();
 }
 
-/**
- * Remove the given data item or fund filter
- *
- * @param type  character representing the type of filter to be removed (d for data item, f for fund)
- * @param what	numerical id of the item to be removed
- */
+// remove given data filter
 function removeFilter(type,what) {
 	if (type == 'd') {
 		mainWindow.filterData.splice(mainWindow.filterData.indexOf(what),1);
@@ -147,11 +126,7 @@ function removeFilter(type,what) {
 	reloadFilters(false);
 }
 
-/**
- * Reload all the partners being collaborated with based on the filters selected
- *
- * @param addButtons  boolean value telling whether the filter buttons need to be added (in other words, they don't exist yet)
- */
+// reload filters
 function reloadFilters(addButtons) {
 	sortCollaboratees(addButtons);
 	
@@ -278,11 +253,7 @@ function reloadFilters(addButtons) {
 	}
 }
 
-/**
- * Sort the partners you're collaborating with by the criteria the user has selected
- *
- * @param addButtons  boolean value telling whether the filter buttons need to be added (in other words, they don't exist yet)
- */
+// sort collaboratees
 function sortCollaboratees(addButtons) {
 	// sort by the criteria the user has selected
 	var firstIndex;
@@ -348,22 +319,82 @@ function sortCollaboratees(addButtons) {
 		// add engagement track filter buttons
 		kardiaTab.document.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
 		for (var i=0;i<mainWindow.trackList.length;i++) {
-			kardiaTab.document.getElementById("filter-by-tracks").innerHTML += '<checkbox id="filter-by-e-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this engagement track" checked="false" label="' + mainWindow.trackList[i] + '" oncommand="addFilter(\'e\', ' + i + ', false)"/>';
+			kardiaTab.document.getElementById("filter-by-tracks").innerHTML += '<button id="filter-by-e-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this engagement track" type="checkbox" checkState="0" label="' + mainWindow.trackList[i] + '" oncommand="addFilter(\'e\', ' + i + ', false)"/>';
 		}
 		
 		// add tag filter buttons
 		kardiaTab.document.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
 		for (var i=0;i<mainWindow.tagList.length;i+=2) {
-			kardiaTab.document.getElementById("filter-by-tags").innerHTML += '<checkbox id="filter-by-t-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this tag" checked="false" label="' + mainWindow.tagList[i+1] + '" oncommand="addFilter(\'t\', ' + i + ', false)"/>';
+			kardiaTab.document.getElementById("filter-by-tags").innerHTML += '<button id="filter-by-t-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this tag" type="checkbox" checkState="0" label="' + mainWindow.tagList[i+1] + '" oncommand="addFilter(\'t\', ' + i + ', false)"/>';
 		}
 	}
 }
 
-/**
- * Reload the given partner you're collaborating with
- *
- * @param index  the index of the partner to reload
- */
+//TEST
+// sort collaboratees
+function sortSomeCollaboratees(maxIndex) {
+	// sort by the criteria the user has selected
+	var firstIndex;
+	var firstItem;
+	for (var i=0;i<maxIndex;i++) {
+		firstIndex = i;
+		if (mainWindow.sortCollaborateesBy == "name") {
+			// sort by first name
+			firstItem = mainWindow.collaborateeNames[i];
+			for (var j=i+1;j<maxIndex;j++) {
+				if ((mainWindow.sortCollaborateesDescending && (firstItem > mainWindow.collaborateeNames[j])) || (!mainWindow.sortCollaborateesDescending && (firstItem < mainWindow.collaborateeNames[j]))) {
+					firstIndex = j;
+					firstItem = mainWindow.collaborateeNames[j];
+				}
+			}
+		}
+		else if (mainWindow.sortCollaborateesBy == "id") {
+			// sort by id
+			firstItem = mainWindow.collaborateeIds[i];
+			for (var j=i+1;j<maxIndex;j++) {
+				if ((mainWindow.sortCollaborateesDescending && (firstItem > mainWindow.collaborateeIds[j])) || (!mainWindow.sortCollaborateesDescending && (firstItem < mainWindow.collaborateeIds[j]))) {
+					firstIndex = j;
+					firstItem = mainWindow.collaborateeIds[j];
+				}
+			}
+		}
+		else {
+			// sort by date
+			firstItem = datetimeToDate(mainWindow.collaborateeActivity[i][2]);
+			for (var j=i+1;j<maxIndex;j++) {
+				if ((mainWindow.sortCollaborateesDescending && (firstItem < datetimeToDate(mainWindow.collaborateeActivity[j][2]))) || (!mainWindow.sortCollaborateesDescending && (firstItem > datetimeToDate(mainWindow.collaborateeActivity[j][2])))) {
+					firstIndex = j;
+					firstItem = datetimeToDate(mainWindow.collaborateeActivity[j][2]);
+				}
+			}
+		}
+		
+		// move all items around based on how we sorted the names/ids/whatever
+		var arraysToMove = [mainWindow.collaborateeNames, mainWindow.collaborateeIds, mainWindow.collaborateeTracks, mainWindow.collaborateeTags, mainWindow.collaborateeActivity, mainWindow.collaborateeData, mainWindow.collaborateeGifts, mainWindow.collaborateeFunds];
+			
+		for (var j=0;j<arraysToMove.length;j++) {
+			firstItem = arraysToMove[j][firstIndex];
+			arraysToMove[j][firstIndex] = arraysToMove[j][i];
+			arraysToMove[j][i] = firstItem;
+		}
+	}
+	
+	// if no collaboratees, display "no results"
+	if (maxIndex <= 0) {
+		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '<label class="bold-text" value="No results found."/>';
+	}
+	else {
+		// make list of collaboratees blank
+		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
+		// add collaboratees
+		for (var i=0;i<maxIndex;i++) {	
+			reloadCollaboratee(i);
+		}
+	}
+}
+// END TEST
+
+// reload collaboratee at position "index"
 function reloadCollaboratee(index) {
 	// add basic info
 	var addString = '<hbox class="tab-collaborator" tooltiptext="Click to view this partner" onclick="addCollaborator(' + mainWindow.collaborateeIds[index] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[index] + '"/><label value="ID# ' + mainWindow.collaborateeIds[index] + '"/></vbox>';
@@ -404,17 +435,12 @@ function reloadCollaboratee(index) {
 	kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML += addString;
 }
 
-/**
- * Begin quick filter of the inbox from the Kardia tab
- */
- // does quick filter from this tab
+// does quick filter from this tab
 function quickFilter() {
 	mainWindow.beginQuickFilter("E: " + document.getElementById("tab-filter-select").selectedItem.label);
 }
 
-/**
- * Set the link to Google Maps to the address the user has selected
- */
+// set map link
 function setMapLink() {
 	kardiaTab.document.getElementById("tab-map-link").href = "http://www.google.com/maps/place/" + encodeURIComponent(kardiaTab.document.getElementById("tab-address-select").selectedItem.label.substring(3,kardiaTab.document.getElementById("tab-address-select").selectedItem.label.length));
 }

@@ -184,7 +184,10 @@ grant select on ra to public;
 /* e_data_highlight */
 
 
-/* e_seen */
+/* e_ack */
+
+
+/* e_ack_type */
 
 
 /* e_trackactivity */

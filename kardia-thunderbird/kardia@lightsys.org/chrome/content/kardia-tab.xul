@@ -19,8 +19,12 @@
 		<vbox id="tab-top-panel">			
 			<vbox id="tab-collaborators" flex="1">
 				<hbox>
+					<!-- manual refresh button -->
+					<button id="manual-refresh" onclick="manualUpdate()" image="chrome://kardia/content/images/refresh.png"/>
+					
 					<label class="tab-title" value="Collaborating With..."/>
 					<spacer flex="1"/>
+					
 					<!-- sort by -->
 					<vbox>
 						<spacer flex="1"/>
@@ -30,15 +34,27 @@
 					<radiogroup id="sort-by" orient="horizontal" oncommand="sortBy()" >
 						<radio id="sort-by-name" class="tab-sort-button" selected="true" value="name" tooltiptext="Sort partners by first name">
 							<label value="Name"/>
-							<image id="tab-sort-by-name" class="show-kardia-pane-arrow"/>
+							<vbox>
+							  <spacer flex="1"/>
+							  <image id="tab-sort-by-name" class="show-kardia-pane-arrow"/>
+							  <spacer flex="1"/>
+							</vbox>
 						</radio>
 						<radio id="sort-by-id" class="tab-sort-button" value="id" tooltiptext="Sort partners by Kardia ID number">
 							<label value="ID"/>
-							<image id="tab-sort-by-id" class="show-kardia-pane-arrow"/>
+							<vbox>
+							  <spacer flex="1"/>
+							  <image id="tab-sort-by-id" class="show-kardia-pane-arrow"/>
+							  <spacer flex="1"/>
+							</vbox>
 						</radio>
 						<radio id="sort-by-date" class="tab-sort-button" value="date" tooltiptext="Sort partners by recent activity date">
 							<label value="Date"/>
-							<image id="tab-sort-by-date" class="show-kardia-pane-arrow"/>
+							<vbox>
+							  <spacer flex="1"/>
+							  <image id="tab-sort-by-date" class="show-kardia-pane-arrow"/>
+							  <spacer flex="1"/>
+							</vbox>
 						</radio>
 					</radiogroup>
 				</hbox>
@@ -67,19 +83,19 @@
 						<label value='Only filter using tags with ' style="margin-right:0px;padding-right:0px;"/>
 						<spacer flex="1"/>
 					</vbox>
-					<textbox type='number' min='-100' max='100' value='-100' increment='5' width='35px' onchange="reloadFilters(false)" id="filter-by-magnitude-min"/>
+					<textbox type='number' min='-100' max='100' value='-100' increment='5' width='60px' onchange="reloadFilters(false)" id="filter-by-magnitude-min"/>
 					<vbox>
 						<spacer flex="1"/>
 						<label value='to' style="margin:0px;padding:0px;"/>
 						<spacer flex="1"/>
 			 		</vbox>
-					<textbox type='number' min='-100' max='100' value='100' increment='5' width='35px' onchange="reloadFilters(false)" id="filter-by-magnitude-max"/>
+					<textbox type='number' min='-100' max='100' value='100' increment='5' width='60px' onchange="reloadFilters(false)" id="filter-by-magnitude-max"/>
 					<vbox>
 						<spacer flex="1"/>
 						<label value='% interest and at least' style="margin:0 2px 0 0;padding:0px;"/>
 						<spacer flex="1"/>
 					</vbox>
-					<textbox type='number' min='0' max='100' value='0' increment='5' width='35px' onchange="reloadFilters()" id='filter-by-certainty'/>
+					<textbox type='number' min='0' max='100' value='0' increment='5' width='60px' onchange="reloadFilters()" id='filter-by-certainty'/>
 					<vbox>
 						<spacer flex="1"/>
 						<label value='% certainty' style="margin:0px;padding:0px;"/>
@@ -100,7 +116,7 @@
 			</vbox>
 		</vbox>
 		
-		<splitter resizebefore="closest" state="open" id="tab-kardia-splitter"/>
+		<splitter style="border:1px solid white;" resizebefore="closest" state="open" id="tab-kardia-splitter"/>
 		
 		<!-- bottom panel -->
 		<vbox id="tab-bottom-panel" flex="1" context="print-context">

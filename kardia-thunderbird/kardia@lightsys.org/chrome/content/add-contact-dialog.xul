@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<!-- dialog to allow users to add new engagement tracks -->
+<dialog id="add-track-dialog"
+        title="New Contact Info Item"
+        buttons="cancel,accept"
+        ondialogaccept="return saveTrack();"
+        ondialogcancel="return cancelTrack();"
+		onload="startDialog();"
+        persist="screenX screenY width height"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+		
+<!-- script that makes buttons work -->
+<script type="application/javascript" src="chrome://kardia/content/add-contact-dialog.js"/>
+
+    <!-- vbox holds dropdown menus -->
+	<vbox>
+		<label value="Select Contact Type:"/>
+		<!-- menulist has options of engagement tracks to select -->
+		<menulist id="outer-select-type">
+			<menupopup id="select-contact-type" oncommand="setFields();">
+				<menuitem label="Address" value="A"/>
+				<menuitem label="Email" value="E"/>
+				<menuitem label="Phone" value="P"/>
+				<menuitem label="Cell" value="C"/>
+				<menuitem label="Fax" value="F"/>
+				<menuitem label="Website" value="W"/>
+				<menuitem label="Blog" value="B"/>
+			</menupopup>
+		</menulist>
+
+		<vbox id="choose-location">
+			<label value="Select Contact Location:"/>
+			<!-- menulist has options of engagement tracks to select -->
+			<menulist id="outer-select-location">
+				<menupopup id="select-contact-location">
+					<menuitem label="Home" value="H"/>
+					<menuitem label="Work" value="W"/>
+					<menuitem label="Vacation" value="V"/>
+					<menuitem label="School" value="S"/>
+				</menupopup>
+			</menulist>
+ 		</vbox>
+		<grid id="address-fields">
+			<columns>
+				<column/>
+				<column flex="1"/>
+			</columns>
+			<rows>
+				<row>
+					<label value="Address:"/>
+					<vbox>
+						<textbox id="address1" value=""/>
+						<textbox id="address2" value=""/>
+						<textbox id="address3" value=""/>
+					</vbox>
+		 		</row>
+				<row>
+					<label value="City:"/>
+					<textbox id="city" value=""/>
+		 		</row>
+				<row>
+					<label value="State/Province:"/>
+					<hbox>
+						<textbox id="state" size="3" value=""/>
+						<label value="Zip/Postal Code:"/>
+						<textbox id="zip" size="7" value=""/>
+					</hbox>
+		 		</row>
+				<row>
+					<label value="Country:"/>
+		  			<menulist id="country">
+						<menupopup id="inner-country">
+						</menupopup>
+					</menulist>
+				</row>
+	 		</rows>
+ 		</grid>
+
+		<hbox id="phone-fields" style="visibility:collapse;">
+			<label value="Number:"/>
+			<textbox id="area-code" size="3"/>
+			<textbox id="phone-number" size="7" flex="1"/>
+ 		</hbox>
+		<hbox id="email-web-fields" style="visibility:collapse;">
+			<label value="Address:"/>
+			<textbox id="web-address" flex="1"/>
+		</hbox>
+	</vbox>
+	
+</dialog>
+
