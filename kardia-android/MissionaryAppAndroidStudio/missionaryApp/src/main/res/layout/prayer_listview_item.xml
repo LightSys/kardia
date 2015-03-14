@@ -5,7 +5,9 @@
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center_vertical"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingLeft="25dp"
+    android:paddingRight="25dp">
 
     <FrameLayout
         android:layout_width="fill_parent"
@@ -20,9 +22,10 @@
         android:weightSum="1">
 
         <FrameLayout
-            android:layout_width="375dp"
+            android:layout_width="fill_parent"
             android:layout_height="90dp"
-            android:layout_gravity="center_horizontal">
+            android:layout_gravity="center_horizontal"
+            >
 
             <TextView
                 android:id="@+id/prayer_subject"
