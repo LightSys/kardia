@@ -4,7 +4,7 @@
 
 <!-- dialog to allow users to add new engagement tracks -->
 <dialog id="add-track-dialog"
-        title="New Engagement Track"
+        title="Edit Engagement Track"
         buttons="cancel,accept"
         ondialogaccept="return saveTrack();"
         ondialogcancel="return cancelTrack();"
@@ -13,23 +13,25 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 		
 <!-- script that makes buttons work -->
-<script type="application/javascript" src="chrome://kardia/content/add-track-dialog.js"/>
+<script type="application/javascript" src="chrome://kardia/content/edit-track-dialog.js"/>
 
     <!-- vbox holds dropdown menus -->
 	<vbox>
-		<label value="Select Engagement Track:"/>
-		<!-- menulist has options of engagement tracks to select -->
-		<menulist id="outer-select-track">
-			<menupopup id="select-track-type" oncommand="setSteps();">
-			</menupopup>
-		</menulist>
+		<radiogroup id="edit-track-action">
+			<radio label="Complete track" value="c"/>
+			<radio label="Exit track without completion" value="e"/>
+			<radio label="Move to step:" value="n" selected="true"/>
+		</radiogroup>
 		
-		<label value="Select Engagement Step:"/>
-		<!-- menulist has options of engagement steps to select, once you select a track -->
-		<menulist id="outer-select-step">
-			<menupopup id="select-step-type">
-			</menupopup>
-		</menulist>
+		<hbox>
+			<spacer width="20px"/>
+			<!-- menulist has options of engagement steps to select -->
+			<menulist id="outer-select-step">
+				<menupopup id="select-step-type">
+				</menupopup>
+			</menulist>
+		</hbox>
 	</vbox>
 	
 </dialog>
+

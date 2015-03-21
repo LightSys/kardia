@@ -1,0 +1,159 @@
+Document:   Kardia REST API for Supporter Information
+Author:	    Greg Beeley (GRB)
+Date:	    12-Mar-2015
+-------------------------------------------------------------------------------
+
+OVERVIEW...
+
+    This document describes the simple supporter data API for Kardia.  If you
+    are not already familiar with web services, REST, and the Kardia REST API
+    system, please first read "JSON-REST.txt" in centrallix-sysdoc, and read
+    "API.txt" in this documentation directory.
+
+
+ENDPOINT...
+
+    The endpoint of this API will be:
+
+	/apps/kardia/api/supporter
+
+    Of course, the needed protocol (http or https) and server address (such as
+    server.lightsys.org:843) will need to be added to the URL, to give
+    something like:
+
+	https://server.lightsys.org:843/apps/kardia/api/supporter?cx__mode=rest
+
+
+OBJECT STRUCTURE...
+
+    The following are example paths to various types of collections of objects
+    in the supporter data API:
+
+    /apps/kardia/api/supporter -- list of supporters in the system
+
+	Please note that you may not have permission to view the entire list
+	of supporters, or even permission to view a particular supporter or any supporters
+	at all.  This is determined by the Kardia system itself.
+
+	Example REST queries:
+
+	    http://server/apps/kardia/api/supporter/?cx__mode=rest&cx__res_type=collection
+	    http://server/apps/kardia/api/supporter/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    /apps/kardia/api/supporter/{supporterid}/Prayers -- Information about the
+    prayers that the supporter has done (clicked 'i prayed' in an app, for
+    example).
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    prayedfor_id    - the ID of the "prayed for you" record
+	    prayedfor_comments - any comments left when the supporter prayed
+	    prayedfor_date  - the date/time that the supporter prayed
+	    note_id	    - the id of the missionary's prayer request
+	    note_subject    - the subject of the missionary's prayer request
+	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
+	    note_date	    - the date that the prayer request was posted
+	    missionary_partner_id - the ID of the missionary
+	    missionary_partner_name - the name of the missionary
+
+    /apps/kardia/api/supporter/{supporterid}/Missionaries -- A list of
+    missionaries.  The list may only include those missionaries the supporter
+    is supporting, or it may be more exhaustive, or permissions restrictions
+    may apply.
+
+	This URL is a collection.
+
+	    missionary_id   - the ID of the missionary
+	    missionary_name - the name of the missionary
+
+    /apps/kardia/api/supporter/{supporterid}/Missionaries/{missID}/Prayers/ --
+    A list of prayers that the supporter has given for the particular
+    missionary.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    prayedfor_id    - the ID of the "prayed for you" record
+	    prayedfor_comments - any comments left when the supporter prayed
+	    prayedfor_date  - the date/time that the supporter prayed
+	    note_id	    - the id of the missionary's prayer request
+	    note_subject    - the subject of the missionary's prayer request
+	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
+	    note_date	    - the date that the prayer request was posted
+	    missionary_partner_id - the ID of the missionary
+	    missionary_partner_name - the name of the missionary
+
+    /apps/kardia/api/supporter/{supporterid}/Missionaries/{missID}/Notes --
+    A list of prayer requests and updates that the missionary has posted.
+
+	This is a collection URL with the following properties:
+
+	    note_id	    - the id of the missionary's prayer request
+	    note_subject    - the subject of the missionary's prayer request
+	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
+	    note_date	    - the date that the prayer request was posted
+	    missionary_partner_id - the ID of the missionary
+	    missionary_partner_name - the name of the missionary
+
+    /apps/kardia/api/supporter/{supporterid}/Missionaries/{missID}/Notes/{noteID}/Prayers --
+    A list of prayers the supporter has done for the specific prayer request
+    for the specific missionary.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    prayedfor_id    - the ID of the "prayed for you" record
+	    prayedfor_comments - any comments left when the supporter prayed
+	    prayedfor_date  - the date/time that the supporter prayed
+	    note_id	    - the id of the missionary's prayer request
+	    note_subject    - the subject of the missionary's prayer request
+	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
+	    note_date	    - the date that the prayer request was posted
+	    missionary_partner_id - the ID of the missionary
+	    missionary_partner_name - the name of the missionary
+
+
+EXAMPLE URL'S...
+
+    The list of supporter ID's in the system:
+
+	http://server/apps/kardia/api/supporter/?cx__mode=rest&cx__res_type=collection
+
+    The list of supporter ID's along with information about each supporter:
+
+	http://server/apps/kardia/api/supporter/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Information about one supporter:
+
+	http://server/apps/kardia/api/supporter/100000?cx__mode=rest&cx__res_format=attrs
+
+    Information about one supporter in 'full' attribute mode:
+
+	http://server/apps/kardia/api/supporter/100000?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=full
+
+    All prayers made by a supporter, with detail about each prayer:
+
+	http://server/apps/kardia/api/supporter/100000/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of missionaries:
+
+	http://server/apps/kardia/api/supporter/100000/Missionaries/?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic
+
+    All prayers made by a supporter for a missionary, with detail about each prayer:
+
+	http://server/apps/kardia/api/supporter/100000/Missionaries/100001/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of prayer requests or updates a missionary has posted:
+
+	http://server/apps/kardia/api/supporter/100000/Missionaries/100001/Notes?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic
+
+    All prayers made by a supporter for a missionary for a specific request,
+    with detail about each prayer:
+
+	http://server/apps/kardia/api/supporter/100000/Missionaries/100001/Notes/1/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
