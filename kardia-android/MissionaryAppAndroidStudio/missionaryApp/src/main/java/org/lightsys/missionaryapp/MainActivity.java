@@ -144,6 +144,7 @@ public class MainActivity extends Activity {
 
         db.addAccount(new Account(User_Name, Password, Host_Name, Integer.parseInt(User_Id)));
 
+        //Loads funds from servers while loading start screen to display
         loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/"
                 + User_Id + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
         System.out.println("How many funds? " + db.getFunds());
@@ -163,9 +164,11 @@ public class MainActivity extends Activity {
             }
         }
 
+        //Loads donors from servers
         loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + User_Id +
                 "/Supporters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
 
+        //Loads prayers from servers
         loadPrayers(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + User_Id +
                 "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
 
@@ -224,7 +227,7 @@ public class MainActivity extends Activity {
         return result;
     }
 
-
+    //loading funds from the server
     private void loadFunds(String value) {
         LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
         ArrayList<String> existingFunds = db.getFundNames();
@@ -259,6 +262,7 @@ public class MainActivity extends Activity {
         db.close();
     }
 
+    //loading periods from the server
     private void loadPeriods(String value, int fund_id) {
         LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
         ArrayList<String> existingPeriods = db.getPeriodNames();
@@ -298,6 +302,7 @@ public class MainActivity extends Activity {
         db.close();
     }
 
+    //loading transactions from the server
     private void loadTransactions(String value, int fund_id) {
         LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
         ArrayList<String> existingTransactions = db.getTransactions();
@@ -342,6 +347,7 @@ public class MainActivity extends Activity {
         db.close();
     }
 
+    //loading donors from the server
     private void loadDonors(String value) {
         LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
         ArrayList<Donor> donors = db.getDonor();
@@ -378,6 +384,7 @@ public class MainActivity extends Activity {
         db.close();
     }
 
+    //loading prayers from the server
     private void loadPrayers(String value) {
         LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
         ArrayList<Prayer> existingPrayers = db.getPrayers();
@@ -414,6 +421,7 @@ public class MainActivity extends Activity {
         db.close();
     }
 
+    //loading the people who pray from the server
     private void loadWhoPrays(String value, Prayer prayer) {
         LocalDBHandler db = new LocalDBHandler(MainActivity.this, null, null, 1);
         ArrayList<PrayerReplies> existingPrayers = db.getPeoplePraying(prayer);

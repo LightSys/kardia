@@ -26,6 +26,8 @@ import java.util.Calendar;
 /**
  * Created by Breven on 3/12/2015.
  */
+//TODO IMPLEMENT METHOD
+//This method will allow the missionary to search for specific gifts
 public class SearchActivity extends Fragment {
 
     private Button date1, date2, search;

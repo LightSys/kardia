@@ -248,7 +248,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_DATE, prayer.getDate());
         values.put(COLUMN_SUBJECT, prayer.getSubject());
         values.put(COLUMN_PRAYERDESC, prayer.getDescription());
-        //values.put(COLUMN_PRAYER_ID, prayer.getID());
+        values.put(COLUMN_PRAYER_ID, prayer.getID());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -269,7 +269,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.insert(TABLE_PRAYER_DONOR, null, values);
         db.close();
     }
-
+    // TODO IMPLEMENT METHOD.
+    //This method will update the prayer request in the server
     public void updatePrayer(int id, String update, String url) {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor c = db.rawQuery("SELECT * from " + TABLE_PRAYER + " WHERE " + COLUMN_PRAYER_ID + " = " + id, null);
@@ -298,7 +299,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     //These methods (the next 5) need to return the id (from the local database) among other things
     //should return: id, name, amount (whole and part), date
     public ArrayList<HashMap<String, String>> getDisplayGifts() {
-        // TODO WRITE THE METHOD <!--Should be done-->.
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_GIFT, null);
@@ -319,6 +319,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return arrayList;
     }
 
+    //TODO IMPLEMENT METHOD.
+    //Will display the missionary's transactions
     public ArrayList<HashMap<String, String>> getDisplayFunds() {
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -341,7 +343,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     //(not sure what else is to be stored or displayed for payroll yet)
     //should return: id, name
     public ArrayList<HashMap<String, String>> getDisplayPayroll() {
-        // TODO WRITE THE METHOD (5).
+        // TODO WRITE THE METHOD.
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> hashMap = new HashMap<String, String>();
         hashMap.put("Hello", "Hello");
@@ -351,7 +353,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     //should return: id, name, image (if one), (maybe something else?)
     public ArrayList<HashMap<String, String>> getDisplayDonors() {
-        // TODO WRITE THE METHOD (6) <!--Should be done-->.
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + TABLE_DONOR, null);
@@ -374,7 +375,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     //should return: id, name/title, date
     public ArrayList<HashMap<String, String>> getDisplayReports() {
-        // TODO WRITE THE METHOD (7).
+        // TODO WRITE THE METHOD.
         /*ArrayList<> arrayList = new ArrayList(HashMap<>());
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM accounts", null);
@@ -394,7 +395,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     //should return: id, short name, long description;
     public ArrayList<HashMap<String, String>> getDisplayPrayers() {
-        // TODO WRITE THE METHOD (8) <!--Should be done-->.
 
         ArrayList<HashMap<String, String>> arrayList = new ArrayList();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -416,7 +416,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     //should return: id, name, password, server address, account id
     public ArrayList<HashMap<String, String>> getDisplayAccounts() {
-        // TODO WRITE THE METHOD <!--Should be done-->.
 
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -438,6 +437,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return arrayList;
     }
 
+    //TODO IMPLEMENT METHOD
+    //Will show what prayers a certain donor is praying for
     public ArrayList<HashMap<String, String>> getDisplayPraying(Donor donor) {
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -455,6 +456,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return arrayList;
     }
 
+    //TODO IMPLEMENT METHOD
+    //Will display the donors praying for a specific prayer request
     public ArrayList<HashMap<String, String>> getDisplayPraying(Prayer prayer) {
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<HashMap<String, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -776,6 +779,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     }
 
+    //TODO IMPLEMENT METHOD
+    //Will display most recent prayer
     public Prayer getPrayer() {
         Prayer prayer = new Prayer();
         String queryString = "SELECT * FROM " + TABLE_PRAYER;
@@ -793,6 +798,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return prayer;
     }
 
+    //Returns all prayer requests
     public ArrayList<Prayer> getPrayers() {
         ArrayList<Prayer> arrayList = new ArrayList<Prayer>();
         String queryString = "SELECT * FROM " + TABLE_PRAYER;
@@ -811,6 +817,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return arrayList;
     }
 
+    //Bring up prayer from id number
     public Prayer getPrayer(int id) {
         Prayer prayer = new Prayer();
         String queryString = "SELECT * FROM " + TABLE_PRAYER + " WHERE ";
@@ -830,6 +837,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return prayer;
     }
 
+    //returns everyone praying for a specific prayer request
     public ArrayList<PrayerReplies> getPeoplePraying(Prayer prayer) {
         ArrayList<PrayerReplies> arrayList = new ArrayList<PrayerReplies>();
         SQLiteDatabase db = this.getReadableDatabase();

@@ -12,6 +12,7 @@ import android.view.View;
 
 import org.lightsys.missionaryapp.data.LocalDBHandler;
 
+
 public class OptionsActivity extends ActionBarActivity {
 
     @Override
