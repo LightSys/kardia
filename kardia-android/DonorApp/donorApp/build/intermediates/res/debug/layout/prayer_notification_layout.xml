@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="@android:color/background_light">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="1dp"
+        android:background="@android:color/darker_gray">
+        >
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="20dp">
+            <TextView
+                android:id="@+id/notificationMessage"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_margin="10dp"
+                android:text="@string/notification_setting"/>
+
+            <Spinner
+                android:id="@+id/on_off"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:spinnerMode="dialog"
+                android:layout_marginRight="150dp"
+                android:entries="@array/notification_on_off"/>
+            <Spinner
+                android:id="@+id/times_day"
+                android:spinnerMode="dialog"
+                android:entries="@array/notification_options"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/on_off"
+                android:layout_alignParentLeft="true"
+                android:layout_margin="10dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/times_day"
+                android:layout_below="@id/on_off"
+                android:layout_margin="10dp"
+                android:text="@string/times_per_day"/>
+
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout><!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/layout/prayer_notification_layout.xml -->

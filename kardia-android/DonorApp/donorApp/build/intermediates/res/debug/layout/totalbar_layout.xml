@@ -1,0 +1,29 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:onClick="viewByYTDAmounts"
+    style="@style/customBottomBar" >
+
+    <TableRow 
+        android:id="@+id/tableRow1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal|center_vertical"
+        tools:ignore="UselessParent" >
+
+        <TextView
+            android:id="@+id/totalytd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#2ACA2D"
+            android:textSize="20sp" />
+    </TableRow>
+
+</RelativeLayout><!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/layout/totalbar_layout.xml -->
