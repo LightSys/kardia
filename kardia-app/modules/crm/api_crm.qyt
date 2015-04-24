@@ -580,6 +580,8 @@ api_crm "system/querytree"
 				/apps/kardia/data/Kardia_DB/e_activity/rows a
 			    WHERE
 				:a:e_activity_group_id = :activity:group_id
+			    ORDER BY
+				:a:e_activity_date desc
 			    ");
 		    use_having = yes;
 		    }

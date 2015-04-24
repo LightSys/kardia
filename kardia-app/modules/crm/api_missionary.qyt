@@ -39,6 +39,7 @@ api_missionary "system/querytree"
 			    /apps/kardia/data/Kardia_DB/p_partner/rows p
 			where
 			    :a:p_dn_partner_key = :missionaries:partner_id and
+			    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
 			    :a:e_object_type = 'e_contact_history' and
 			    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
 			    :p:p_partner_key = :a:e_whom and
@@ -84,6 +85,7 @@ api_missionary "system/querytree"
 				where
 				    :a:e_whom = :bysup_list:partner_id and
 				    :a:p_dn_partner_key = :missionaries:partner_id and
+				    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
 				    :a:e_object_type = 'e_contact_history' and
 				    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
 				    :ct:e_contact_history_type = :ch:e_contact_history_type
@@ -136,6 +138,7 @@ api_missionary "system/querytree"
 				    /apps/kardia/data/Kardia_DB/p_partner/rows p
 				where
 				    :a:p_dn_partner_key = :missionaries:partner_id and
+				    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
 				    :a:e_object_type = 'e_contact_history' and
 				    :a:e_object_id = convert(string, :needs_list:note_id) and
 				    :p:p_partner_key = :a:e_whom

@@ -391,6 +391,7 @@ iconbar "widget/component-decl"
 		text = "Menu";
 		image="/apps/kardia/images/icons/ionicons-gear.svg";
 		enabled = 1;
+		do_menu "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Menu'); Origin=settings_btn; }
 		}
 	    }
 	}

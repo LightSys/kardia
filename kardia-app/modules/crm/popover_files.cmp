@@ -1,11 +1,11 @@
 $Version=2$
-popover_todo "widget/component-decl"
+popover_files "widget/component-decl"
     {
     width=1000; height=600;
 
     Open "widget/component-decl-action" { }
 
-    TaskEdited "widget/component-decl-event" { }
+    FileUpdated "widget/component-decl-event" { }
 
     onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
     onOpen1b "widget/connector" { event=Open; target=partnername_var; action=SetValue; Value=runclient(:partnername); }
@@ -20,7 +20,7 @@ popover_todo "widget/component-decl"
     todoitem_var "widget/variable" { type=string; }
     isnew_var "widget/variable" { type=integer; }
 
-    reassign_win "widget/childwindow"
+    files_win "widget/childwindow"
 	{
 	width=500; height=294;
 	x=250; y=89;
