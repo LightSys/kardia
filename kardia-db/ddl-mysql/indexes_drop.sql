@@ -379,6 +379,8 @@ alter table e_data_highlight drop index e_dh_obj_idx;
 
 /* e_ack */
 alter table e_ack drop index e_ack_obj_idx;
+alter table e_ack drop index e_ack_par2_idx;
+alter table e_ack drop index e_ack_par3_idx;
 alter table e_ack drop index e_ack_par_idx;
 /* drop index e_ack.e_ack_pk */ 
 /* go */
