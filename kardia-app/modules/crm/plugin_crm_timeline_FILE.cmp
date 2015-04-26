@@ -2,7 +2,7 @@ $Version=2$
 plugin_crm_timeline_FILE "widget/component-decl"
     {
     width=434;
-    height=134;
+    height=162;
     icon = "/apps/kardia/images/tango/document-new.png";
     type = "FILE";
 
@@ -13,7 +13,7 @@ plugin_crm_timeline_FILE "widget/component-decl"
 
     comments_vbox "widget/vbox"
 	{
-	x=38; y=0; width=392; height=134;
+	x=38; y=0; width=392; height=162;
 	fl_width=30;
 	spacing=4;
 
@@ -163,11 +163,39 @@ plugin_crm_timeline_FILE "widget/component-decl"
 			:e_document_id = :parameters:document_id and
 			:p_partner_key = :parameters:partner
 		    ";
-	    autoquery=never;
+	    ttttttttt=never;
 	    readahead=2;
 	    replicasize=2;
 
 	    delete_done "widget/connector" { event=EndQuery; target=timeline_data_osrc; action=Refresh; }
+	    }
+
+	fileinfo_osrc "widget/osrc"
+	    {
+	    sql = " select
+			*
+		    from
+			/apps/kardia/data/Kardia_DB/e_document/rows
+		    ";
+	    replicasize=2;
+	    readahead=2;
+	    autoquery=never;
+
+	    filesync "widget/connector" { source=timeline_osrc; event=DataFocusChanged; action=QueryParam; e_document_id=runclient(convert(integer, :timeline_osrc:e_reference_info)); }
+	    }
+
+	download_btn "widget/textbutton"
+	    {
+	    width=150;
+	    height=24;
+	    text="Download this file";
+	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	    fgcolor1=white;
+	    fgcolor2=black;
+	    disable_color="#334466";
+	    enabled=runclient(:fileinfo_osrc:e_document_id is not null);
+
+	    on_dl "widget/connector" { event=Click; target=plugin_crm_timeline_FILE; action=Launch; Source=runclient(condition(substring(:fileinfo_osrc:e_current_folder,1,1) = '/', '', '/') + :fileinfo_osrc:e_current_folder + '/' + :fileinfo_osrc:e_current_filename); }
 	    }
 	}
     }
