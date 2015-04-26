@@ -2,17 +2,18 @@ $Version=2$
 plugin_crm_timeline_FILE "widget/component-decl"
     {
     width=434;
-    height=120;
+    height=134;
     icon = "/apps/kardia/images/tango/document-new.png";
     type = "FILE";
 
     partner_osrc "widget/parameter" { type=object; }
     timeline_osrc "widget/parameter" { type=object; }
+    timeline_data_osrc "widget/parameter" { type=object; }
     collaborator_osrc "widget/parameter" { type=object; }
 
     comments_vbox "widget/vbox"
 	{
-	x=38; y=0; width=392; height=120;
+	x=38; y=0; width=392; height=134;
 	fl_width=30;
 	spacing=4;
 
@@ -137,6 +138,36 @@ plugin_crm_timeline_FILE "widget/component-decl"
 
 		rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=comment_form; }
 		}
+	    }
+
+	dissoc_btn "widget/textbutton"
+	    {
+	    width=280;
+	    height=24;
+	    text=runclient("Delete File from " + :partner_osrc:partnername);
+	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	    fgcolor1=white;
+	    fgcolor2=black;
+	    disable_color="#334466";
+
+	    on_dissoc "widget/connector" { event=Click; event_confirm="Delete this file from this person?"; target=dissoc_osrc; action=QueryParam; document_id=runclient(convert(integer, :timeline_osrc:e_reference_info)); partner=runclient(:partner_osrc:p_partner_key); }
+	    }
+
+	dissoc_osrc "widget/osrc"
+	    {
+	    document_id "widget/parameter" { type=integer; }
+	    partner "widget/parameter" { type=string; }
+	    sql = " delete
+			/apps/kardia/data/Kardia_DB/e_partner_document/rows
+		    where
+			:e_document_id = :parameters:document_id and
+			:p_partner_key = :parameters:partner
+		    ";
+	    autoquery=never;
+	    readahead=2;
+	    replicasize=2;
+
+	    delete_done "widget/connector" { event=EndQuery; target=timeline_data_osrc; action=Refresh; }
 	    }
 	}
     }

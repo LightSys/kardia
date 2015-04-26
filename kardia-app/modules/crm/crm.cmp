@@ -157,6 +157,18 @@ crm "widget/component-decl"
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		partnername=runclient(:profile_cmp:partnername);
 		}
+	    newfile_cn "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == 'Files');
+		target=file_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient('top');
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		partnername=runclient(:profile_cmp:partnername);
+		}
 	    menu_cn "widget/connector"
 		{
 		event=ButtonPressed;
@@ -315,6 +327,7 @@ crm "widget/component-decl"
 	onItemSelect_1 "widget/connector" { event=ItemSelected; target=menu_overlay; action=Close; }
 	onItemSelect_Me "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'My Profile'); target=profile_cmp; action=SelectPartner; partner_key = runclient(:collaborator_osrc:p_partner_key); }
 	onItemSelect_Tags "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'Manage Tags'); target=config_tags; action=Open; }
+	onItemSelect_Tracks "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'Manage Tracks'); target=config_tracks; action=Open; }
 	}
 
     popover_collab "widget/component"
@@ -445,6 +458,14 @@ crm "widget/component-decl"
 	on_trk_upd2 "widget/connector" { event=TrackUpdated; target=sidebar_cmp; action=Refresh; }
 	}
 
+    file_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_files.cmp";
+	on_file_upd "widget/connector" { event=FileUpdated; target=profile_cmp; action=Refresh; }
+	}
+
     tags_popover "widget/component"
 	{
 	x=0; y=0;
@@ -459,6 +480,13 @@ crm "widget/component-decl"
 	x=0; y=0;
 	width=1000; height=600;
 	path="config_tags.cmp";
+	}
+
+    config_tracks "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="config_tracks.cmp";
 	}
     }
 

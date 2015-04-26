@@ -364,6 +364,7 @@ iconbar "widget/component-decl"
 		image="/apps/kardia/images/icons/tumblicons-file.svg";
 		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		ontoggle9 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
+		do_file "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Files'); Origin=form_btn; }
 		}
 
 	    trk_btn "widget/component"
