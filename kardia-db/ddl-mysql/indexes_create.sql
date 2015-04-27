@@ -377,8 +377,22 @@ create  index e_dh_obj_idx on e_data_highlight (e_highlight_object_type, e_highl
 /* go */
 
 
-/* e_seen */
-/* create  index e_seen_pk on e_seen (e_object_type,e_object_id,e_whom)*/ 
+/* e_ack */
+create  index e_ack_obj_idx on e_ack (e_object_type,e_object_id,e_ack_type,e_whom,e_ack_id);
+create  index e_ack_par2_idx on e_ack (p_dn_partner_key,e_ack_type,e_object_type,e_object_id,e_ack_id);
+create  index e_ack_par3_idx on e_ack (p_dn_partner_key,e_whom,e_ack_id);
+create  index e_ack_par_idx on e_ack (e_whom,e_ack_type,e_object_type,e_object_id,e_ack_id);
+/* create  index e_ack_pk on e_ack (e_ack_id)*/ 
+/* go */
+
+
+/* e_ack_type */
+/* create  index e_ackt_pk on e_ack_type (e_ack_type)*/ 
+/* go */
+
+
+/* e_trackactivity */
+/* create  index e_trkact_pk on e_trackactivity (p_partner_key,e_username,e_sort_key)*/ 
 /* go */
 
 

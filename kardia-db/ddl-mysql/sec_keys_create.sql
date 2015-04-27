@@ -154,6 +154,18 @@ alter table e_data_item
 alter table e_highlights
 	add constraint e_h_nt_idx unique  (e_highlight_type, e_highlight_name, e_highlight_user, e_highlight_partner, e_highlight_id);
 
+alter table e_ack
+	add constraint e_ack_obj_idx unique  (e_object_type,e_object_id,e_ack_type,e_whom,e_ack_id);
+
+alter table e_ack
+	add constraint e_ack_par_idx unique  (e_whom,e_ack_type,e_object_type,e_object_id,e_ack_id);
+
+alter table e_ack
+	add constraint e_ack_par2_idx unique  (p_dn_partner_key,e_ack_type,e_object_type,e_object_id,e_ack_id);
+
+alter table e_ack
+	add constraint e_ack_par3_idx unique  (p_dn_partner_key,e_whom,e_ack_id);
+
 alter table r_group
 	add constraint r_grp_modfile_idx unique  (r_group_module, r_group_file, r_group_name);
 

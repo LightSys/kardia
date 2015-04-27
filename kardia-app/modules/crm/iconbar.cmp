@@ -18,7 +18,8 @@ iconbar "widget/component-decl"
     processing_toggle_off "widget/variable" { value=0; }
 
     SetNumber "widget/component-decl-action" { }
-    onSetNumber "widget/connector" { event=SetNumber; target=one_tabbutton; action=SetNumber; Number=runclient(:Number); Which=runclient(:Which); Color=runclient(:Color); }
+    onSetNumber1 "widget/connector" { event=SetNumber; target=one_tabbutton; action=SetNumber; Number=runclient(:Number); Which=runclient(:Which); Color=runclient(:Color); }
+    onSetNumber2 "widget/connector" { event=SetNumber; target=newperson_btn; action=SetNumber; Number=runclient(:Number); Which=runclient(:Which); Color=runclient(:Color); }
 
     DisableTabButtons "widget/component-decl-action" { }
 
@@ -243,6 +244,7 @@ iconbar "widget/component-decl"
 		image="/apps/kardia/images/icons/ionicons-pricetags.svg";
 		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		ontoggle2 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
+		do_tags "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Tags'); Origin=tags_btn; }
 		}
 
 	    gifts_btn "widget/component"
@@ -362,6 +364,7 @@ iconbar "widget/component-decl"
 		image="/apps/kardia/images/icons/tumblicons-file.svg";
 		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		ontoggle9 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
+		do_file "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Files'); Origin=form_btn; }
 		}
 
 	    trk_btn "widget/component"
@@ -389,6 +392,7 @@ iconbar "widget/component-decl"
 		text = "Menu";
 		image="/apps/kardia/images/icons/ionicons-gear.svg";
 		enabled = 1;
+		do_menu "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Menu'); Origin=settings_btn; }
 		}
 	    }
 	}

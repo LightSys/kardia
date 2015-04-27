@@ -271,7 +271,7 @@ OBJECT STRUCTURE...
 	    modified_by	    - username that modified the step
 
 		
-	/apps/kardia/api/crm/Partners/{partnerid}/Collaborators -- A list of all
+    /apps/kardia/api/crm/Partners/{partnerid}/Collaborators -- A list of all
     collaborators that the partner currently has
 
 	This is a collection URL; each returned element will have the
@@ -295,7 +295,7 @@ OBJECT STRUCTURE...
 	    modified_by	    - username that modified the collaborator
 
 		
-	/apps/kardia/api/crm/Partners/{partnerid}/Collaboratees -- A list of all
+    /apps/kardia/api/crm/Partners/{partnerid}/Collaboratees -- A list of all
     people that this partner is acting as collaborator for (aka Collaboratees)
 
 	This is a collection URL; each returned element will have the
@@ -318,9 +318,9 @@ OBJECT STRUCTURE...
 	    modified_by	    - username that modified the collaborator
 		
 		
-	/apps/kardia/api/crm/Partners/{partnerid}/CollaboratorTodos -- A list
-	of all todo items that are supposed to be done by the collaborator with
-	the given partner id
+    /apps/kardia/api/crm/Partners/{partnerid}/CollaboratorTodos -- A list
+    of all todo items that are supposed to be done by the collaborator with
+    the given partner id
 
 	This is a collection URL; each returned element will have the
 	following properties:
@@ -356,7 +356,7 @@ OBJECT STRUCTURE...
 	    modified_by	    - username that modified the todo		
 		
 		
-	/apps/kardia/api/crm/Partners/{partnerid}/Todos -- A list of all
+    /apps/kardia/api/crm/Partners/{partnerid}/Todos -- A list of all
     todo items that relate to this partner
 
 	This is a collection URL; each returned element will have the
@@ -394,7 +394,7 @@ OBJECT STRUCTURE...
 	    modified_by	    - username that modified the todo	
 
 
-	/apps/kardia/api/crm/Partners/{partnerid}/DataItems -- A list of all
+    /apps/kardia/api/crm/Partners/{partnerid}/DataItems -- A list of all
     todo items that relate to this partner
 
 	This is a collection URL; each returned element will have the
@@ -420,7 +420,7 @@ OBJECT STRUCTURE...
 	    modified_by	    - username that modified the data item	
 
 		
-	/apps/kardia/api/crm/Partners/{partnerid}/DataGroups -- A list of all
+    /apps/kardia/api/crm/Partners/{partnerid}/DataGroups -- A list of all
     data item groups that relate to this partner
 
 	This is a collection URL; each returned element will have the
@@ -443,7 +443,7 @@ OBJECT STRUCTURE...
 	    modified_by	    - username that modified the data item group	
 		
 		
-	/apps/kardia/api/crm/Partners/{partnerid}/DataGroups/{groupid}/DataItems -- A list of all
+    /apps/kardia/api/crm/Partners/{partnerid}/DataGroups/{groupid}/DataItems -- A list of all
     data items that are in this data item group
 
 	This is a collection URL; each returned element will have the
@@ -466,9 +466,58 @@ OBJECT STRUCTURE...
 	    created_by	    - username that added the data item
 	    date_modified   - date the data item was modified in Kardia
 	    modified_by	    - username that modified the data item	
-	
-	
-	/apps/kardia/api/crm/Todos -- list of todo items in the CRM system.
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Activity -- a list of recent
+    activity associated with the partner.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    name 	    - A unique identifier for the activity item
+	    whom	    - The partner ID
+	    initiated_by    - Whether the activity was initiated by the
+			      Partner or Collaborator
+	    activity_date   - The date/time that the activity took place
+	    activity_type   - The type of activity (a 3- or 4- letter code)
+	    reference_info  - Information that can be used to look up the
+			      activity elsewhere (this is type-dependent)
+	    info	    - A string of text describing the activity item,
+			      possibly with a newline \n separating the
+			      title from the description of the activity.
+
+	The Activity resource should be considered an expensive operation to
+	retrieve, as the server must compile all activities from multiple
+	sources and aggregate them together before returning the data via this
+	API.
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/ProfilePicture -- information
+    about the partner's profile picture.
+
+	This URL is an element, and will be an object with the following
+	properties:
+
+	    photo_id	    - the ID of the photo
+	    photo_title	    - the title of the photo
+	    photo_filename  - the filename of the photo
+	    photo_folder    - the folder on the server where the photo exists
+	    photo_date	    - the date the photo was created
+	    photo_type	    - a short label for the type of photo
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/ProfilePicture/{filename} --
+    This is an Element URL for the image file for the profile picture.
+
+	This is an Element URL which represents the image.  It will have
+	image content and the following attributes:
+
+	    name	    - the file name
+	    last_modification - the last modification date of the file itself
+	    size	    - the size of the file
+
+
+    /apps/kardia/api/crm/Todos -- list of todo items in the CRM system.
 
 	This is a collection URL; each returned element will have the
 	following properties:
@@ -477,14 +526,14 @@ OBJECT STRUCTURE...
 	    partner_name    - the org or first/last name of the partner
 	    partner_ref	    - a pathname to the main partner element, in case
 			      more information about the partner is needed.
-	    todo_id 		- the numerical id of the todo item
-	    todo_type_id 	- the numerical id of the todo type
-	    todo_type		- the name of the todo type
-	    desc			- the description (text) of the todo item
+	    todo_id	    - the numerical id of the todo item
+	    todo_type_id    - the numerical id of the todo type
+	    todo_type	    - the name of the todo type
+	    desc	    - the description (text) of the todo item
 	    collaborator_id - the partner id of the collaborator that needs to do this todo item
-	    engagement_id	- the numerical id of the engagement item this todo relates to
-	    document_id		- the numerical id of the document this todo relates to
-	    req_item_id		- the numerical id of the requirement item this todo
+	    engagement_id   - the numerical id of the engagement item this todo relates to
+	    document_id	    - the numerical id of the document this todo relates to
+	    req_item_id	    - the numerical id of the requirement item this todo
 
 	The following 'system' properties will be provided:
 

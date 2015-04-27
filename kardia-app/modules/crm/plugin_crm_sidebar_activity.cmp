@@ -10,6 +10,9 @@ activity_list "widget/component-decl"
     Refresh "widget/component-decl-action" { }
     RefreshTasks "widget/component-decl-action" { }
     PartnerSelected "widget/component-decl-event" { }
+    SetNumber "widget/component-decl-event" { }
+
+    prev_lastrecord "widget/variable" { type=integer; }
 
     refresh_timer "widget/timer"
 	{
@@ -23,11 +26,21 @@ activity_list "widget/component-decl"
     activity_osrc "widget/osrc"
 	{
 	sql = "	select
-		    :activity_group_id
+		    :activity_group_id,
+		    new_cnt = ( select
+				    count(1)
+				from
+				    /apps/kardia/data/Kardia_DB/c_member/rows m1,
+				    /apps/kardia/data/Kardia_DB/c_message/rows msg
+				where
+				    :m1:s_username = user_name() and
+				    :msg:c_chat_id = :m1:c_chat_id and
+				    isnull(:m1:c_last_read_message_id,0) < :msg:c_message_id
+				)
 		from
 		    /apps/kardia/modules/crm/activity.qy
 		";
-	autoquery=onfirstreveal;
+	autoquery=onload;
 	replicasize=2;
 	readahead=2;
 	indicates_activity=no;
@@ -35,11 +48,21 @@ activity_list "widget/component-decl"
 	//on_endquery "widget/connector" { event=EndQuery; target=activity_data_osrc; action=QueryParam; e_activity_group_id=runclient(:activity_osrc:activity_group_id); }
 	on_endquery "widget/connector" { event=EndQuery; target=activity_data_osrc; action=Refresh; }
 	on_endquery_start_timer "widget/connector" { event=EndQuery; target=refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
+
+	set_cnt_on_load "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=activity_list;
+	    action=SetNumber;
+	    Which=runclient("Activity");
+	    Number=runclient(:activity_osrc:new_cnt);
+	    Color=runclient(condition(:activity_osrc:new_cnt > 0, 'red', 'black'));
+	    }
 	}
 
     activity_vbox "widget/vbox"
 	{
-	x=2; y=2; width=244; height=409;
+	x=2; y=2; width=244; height=413;
 	spacing=8;
 
 	activity_data_osrc "widget/osrc"
@@ -96,9 +119,9 @@ activity_list "widget/component-decl"
 
 	    activity_table "widget/table"
 		{
-		height=381;
+		height=413;
 		min_rowheight=16;
-		max_rowheight=64;
+		max_rowheight=72;
 		allow_selection = yes;
 		show_selection = yes;
 		initial_selection = no;
@@ -106,14 +129,25 @@ activity_list "widget/component-decl"
 		overlap_scrollbar = yes;
 		titlebar = no;
 		colsep = 0;
-		row_border_radius=4;
+		row_border_radius=6;
 		inner_padding = 2;
 		cellvspacing = 4;
-		rowhighlight_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#334466", "#fff090"));
-		textcolorhighlight = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', '#ffffff', "#000000"));
-		row1_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#6080c0", "#f8f8f8"));
-		row2_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#6080c0", "#f8f8f8"));
+		rowhighlight_shadow_color = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', '#6080c0', '#f8f8f8'));
+		rowhighlight_shadow_location = 'inside';
+		rowhighlight_shadow_radius = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', 6, 0));
+		rowhighlight_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#f0f0f0", "#fff090"));
+		textcolorhighlight = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', 'black', "#000000"));
+		row1_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#f0f0f0", "#f8f8f8"));
+		row2_bgcolor = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', "#f0f0f0", "#f8f8f8"));
+		//row1_bgcolor = runclient("#f8f8f8");
+		//row2_bgcolor = runclient("#f8f8f8");
+		//row1_border_color = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', '#6080c0', '#f8f8f8'));
+		//row2_border_color = runclient(condition(:activity_data_osrc:e_activity_type == 'USER', '#6080c0', '#f8f8f8'));
 
+		// Clicking on a single-partner collaboration event
+		onclick "widget/connector" { event=Click; event_condition=runclient(:e_activity_type == 'COLL' and charindex(',', :e_reference_info) = 0); target=activity_list; action=PartnerSelected; partner_key=runclient(substring(:e_reference_info, charindex('|',:e_reference_info) + 1)); }
+
+		// Columns in the activity table
 		t_img "widget/table-column" { fieldname="img"; width=34; type=image; image_maxwidth=26; image_maxheight=26; align=center; }
 		t_name "widget/table-column"
 		    {
@@ -124,41 +158,159 @@ activity_list "widget/component-decl"
 		    font_size=15;
 		    wrap=yes;
 		    }
-		}
-	    }
 
-	stat_osrc "widget/osrc"
-	    {
-	    sql = runserver("select * from /apps/kardia/data/Kardia_DB/s_user_data/rows where :s_username = " + quote(user_name()));
-	    baseobj = "/apps/kardia/data/Kardia_DB/s_user_data/rows";
-	    replicasize=2;
-	    readahead=2;
-	    autoquery=onfirstreveal;
-
-	    stat_form "widget/form"
-		{
-		allow_query = no;
-		allow_nodata = no;
-		confirm_discard = no;
-		auto_focus = no;
-
-		save_cn "widget/connector" { event=DataSaved; target=activity_osrc; action=Refresh; }
-
-		status_hbox "widget/hbox"
+		t_rowdetail_chat "widget/table-row-detail"
 		    {
-		    height=20;
-		    spacing=4;
+		    display_for=runclient(char_length(:activity_data_osrc:info_1) > 1 and :activity_data_osrc:e_reference_info != user_name());
+		    height=120;
+		    width=244;
 
-		    status_lbl "widget/label" { width=72; 
-			//value=runclient(isnull(condition(charindex(' ', :usrdat_osrc:description) > 0, substring(:usrdat_osrc:description, 1, charindex(' ', :usrdat_osrc:description) - 1), :usrdat_osrc:description) + ' is:', ''));
-			text="My Status:";
-			align=right; }
-		    status_eb "widget/editbox" { width=168; tooltip="What are you doing right now?"; fieldname=s_status; empty_description="What are you doing now?"; }
+		    t_chat_osrc "widget/osrc"
+			{
+			sql = "	select
+				    *
+				from
+				    /apps/kardia/modules/crm/chat.qy
+				";
+			baseobj="/apps/kardia/modules/crm/chat.qy";
+			autoquery=never;
+			readahead=40;
+			replicasize=40;
+			refresh_interval=10000;
+
+			chat_change_focus1 "widget/connector" { source=activity_data_osrc; event=DataFocusChanged; target=prev_lastrecord; action=SetValue; Value=0; }
+			//chat_change_focus2 "widget/connector" { source=activity_data_osrc; event=DataFocusChanged; event_condition=runclient(:activity_data_osrc:e_activity_type = 'USER'); action=Clear; }
+			chat_change_focus3 "widget/connector" { source=activity_data_osrc; event=DataFocusChanged; event_condition=runclient(:activity_data_osrc:e_activity_type = 'USER'); action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/chat.qy?focus_user=" + :activity_data_osrc:e_reference_info); }
+
+			scroll_end_on_load "widget/connector" { event_condition=runclient(:LastRecord != isnull(:prev_lastrecord:value,0)); event=EndQuery; target=t_chat_osrc; action=Last; }
+			save_last_rec "widget/connector" { event=EndQuery; target=prev_lastrecord; action=SetValue; Value=runclient(:LastRecord); }
+
+			t_chat_table "widget/table"
+			    {
+			    x=32; y=4; width=192; height=80;
+			    fl_x=0;
+			    min_rowheight=16;
+			    max_rowheight=72;
+			    allow_selection = no;
+			    show_selection = no;
+			    initial_selection = yes;
+			    demand_scrollbar = yes;
+			    overlap_scrollbar = yes;
+			    titlebar = no;
+			    colsep = 0;
+			    row_border_radius=4;
+			    inner_padding = 2;
+			    cellvspacing = 0;
+			    row1_bgcolor=runclient(condition(:t_chat_osrc:is_new, '#fff8c8', 'white'));
+			    row2_bgcolor=runclient(condition(:t_chat_osrc:is_new, '#fff8c8', 'white'));
+			    nodata_message="No messages yet.";
+			    nodata_message_textcolor="#808080";
+			    rowcache_size=40;
+
+			    t_chat_img "widget/table-column" { type=image; width=24; fieldname=img; image_maxheight=16; image_maxwidth=16; align=center; }
+			    t_chat_text "widget/table-column" { width=172; fieldname=message_txt; wrap=yes; font_size=10; style=runclient(condition(:t_chat_osrc:is_hdr, 'bold', 'plain')); caption_fieldname=date_txt; caption_font_size=10; caption_style=italic; caption_textcolor="#c0c0c0"; }
+			    }
+
+			t_chat_newosrc "widget/osrc"
+			    {
+			    sql = "select * from /apps/kardia/data/Kardia_DB/c_message/rows c";
+			    baseobj = "/apps/kardia/data/Kardia_DB/c_message/rows";
+			    autoquery=never;
+
+			    t_chat_form "widget/form"
+				{
+				allow_modify=no;
+				allow_view=no;
+				allow_new=yes;
+				allow_query=no;
+				allow_obscure=yes;
+
+				new_chatid_osrc "widget/osrc"
+				    {
+				    new_chatid_whom "widget/parameter" { type=string; }
+				    sql = " select
+						:c:c_chat_id
+					    from
+						/apps/kardia/data/Kardia_DB/c_member/rows m1,
+						/apps/kardia/data/Kardia_DB/c_member/rows m2,
+						/apps/kardia/data/Kardia_DB/c_chat/rows c
+					    where
+						:m1:s_username = user_name() and
+						:m2:s_username = :parameters:new_chatid_whom and
+						:c:c_chat_id = :m1:c_chat_id and
+						:m1:c_chat_id = :m2:c_chat_id
+					    having
+						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 2 and :parameters:new_chatid_whom != user_name()) or
+						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :parameters:new_chatid_whom = user_name())
+					    ";
+				    readahead=2;
+				    replicasize=2;
+				    autoquery=never;
+
+				    got_the_id "widget/connector" { event=EndQuery; target=chat_id; action=SetValue; Value=runclient(:new_chatid_osrc:c_chat_id); }
+				    }
+
+				on_save_refresh_list "widget/connector" { event=DataSaved; target=t_chat_osrc; action=Refresh; }
+				on_save_set_focus "widget/connector" { event=DataSaved; target=t_chat_editbox; action=SetFocus; }
+
+				on_new_get_the_id "widget/connector" { event=New; event_delay=0.1; target=new_chatid_osrc; action=QueryParam; new_chatid_whom=runclient(:activity_data_osrc:e_reference_info); }
+
+				t_chat_editbox "widget/editbox"
+				    {
+				    x=32; y=88; width=192; height=24;
+				    fieldname=c_message;
+				    empty_description="type a new message here";
+				    }
+				chat_id "widget/variable" { fieldname=c_chat_id; chat_id_hints "widget/hints" { default=runclient(:t_chat_osrc:c_chat_id); } }
+				chat_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				}
+			    }
+			}
 		    }
 
-		status_who "widget/variable" { fieldname=s_username; status_who_hints "widget/hints" { default=runclient(user_name()); } }
+		t_rowdetail_status "widget/table-row-detail"
+		    {
+		    display_for=runclient(char_length(:activity_data_osrc:info_1) > 1 and :activity_data_osrc:e_reference_info = user_name());
+		    height=60;
+		    width=244;
 
-		status_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+		    status_vbox "widget/vbox"
+			{
+			x=10; y=10;
+			fl_x=0;
+			width=224;
+			fl_width=100;
+			height=42;
+			spacing=4;
+
+			stat_osrc "widget/osrc"
+			    {
+			    sql = runserver("select * from /apps/kardia/data/Kardia_DB/s_user_data/rows where :s_username = " + quote(user_name()));
+			    baseobj = "/apps/kardia/data/Kardia_DB/s_user_data/rows";
+			    replicasize=2;
+			    readahead=2;
+			    autoquery=onfirstreveal;
+
+			    stat_form "widget/form"
+				{
+				allow_query = no;
+				allow_nodata = no;
+				confirm_discard = no;
+				auto_focus = no;
+
+				save_cn "widget/connector" { event=DataSaved; target=activity_osrc; action=Refresh; }
+
+
+				status_lbl "widget/label" { height=14; text="Update My Status:"; }
+				status_eb "widget/editbox" { height=24; tooltip="What are you doing right now?"; fieldname=s_status; empty_description="What are you doing now?"; }
+				}
+
+			    status_who "widget/variable" { fieldname=s_username; status_who_hints "widget/hints" { default=runclient(user_name()); } }
+
+			    status_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+			    }
+			}
+		    }
 		}
 	    }
 	}

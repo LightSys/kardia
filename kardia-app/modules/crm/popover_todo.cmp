@@ -116,6 +116,8 @@ popover_todo "widget/component-decl"
 		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_todo; action=TaskEdited; }
 		    close_on_discard "widget/connector" { event=Discard; target=reassign_win; action=Close; }
 
+		    clear_todoid_on_new "widget/connector" { event=New; event_delay=0.01; target=todo_id; action=SetValue; Value=runclient(null); }
+
 		    hdr_label "widget/label" { height=24; font_size=16; style=bold; value=runclient(condition(isnull(:isnew_var:value,0), "New Task regarding " + :partnername_var:value + "...", "Edit / Reassign Task...")); align=center; }
 
 		    todo_type "widget/component" { field=e_todo_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="Task Type:"; ctl_type=dropdown; sql="select :e_todo_type_label, :e_todo_type_id from /apps/kardia/data/Kardia_DB/e_todo_type/rows order by :e_todo_type_label"; width=350; label_width=100; todo_type_hints "widget/hints" { style=notnull; } }

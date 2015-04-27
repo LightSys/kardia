@@ -84,8 +84,28 @@ partner_profile "widget/component-decl"
 	    profile_osrc "widget/osrc"
 		{
 		partner_key "widget/parameter" { type=string; }
+		collab_key "widget/parameter" { type=string; default=runclient(:collaborator_osrc:p_partner_key); }
 
-		sql = "	select
+		sql = "	insert
+			    /apps/kardia/data/Kardia_DB/e_ack/rows
+			select
+			    e_object_type = 'e_collaborator',
+			    e_object_id = :parameters:collab_key + '|' + :parameters:partner_key,
+			    e_ack_type = 3, -- type 3 is 'Viewed'
+			    e_whom = :parameters:collab_key,
+			    p_dn_partner_key = :parameters:partner_key,
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+			on duplicate
+			    :e_object_id, :e_whom
+			update set
+			    :s_date_modified = getdate(),
+			    :s_modified_by = user_name()
+			;
+
+			select
 			    :p:p_partner_key,
 			    partnername = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 			    :p:p_surname,
@@ -218,6 +238,17 @@ partner_profile "widget/component-decl"
 				iconbar = iconbar;
 				profile = partner_profile;
 				collaborator_osrc = collaborator_osrc;
+
+				on_reassign_tl "widget/connector"
+				    {
+				    event=EditTask;
+				    target=partner_profile;
+				    action=EditTask;
+				    todo_id=runclient(:todo_id);
+				    partner=runclient(:partner);
+				    origin=runclient(:origin);
+				    side=runclient('left');
+				    }
 				}
 			    }
 
@@ -281,6 +312,7 @@ partner_profile "widget/component-decl"
 				    todo_id=runclient(:todo_id);
 				    partner=runclient(:partner);
 				    origin=runclient(:origin);
+				    side=runclient('right');
 				    }
 				}
 			    }

@@ -24,6 +24,7 @@ todo_list "widget/component-decl"
 
     task_refresh_timer "widget/timer"
 	{
+	condition=0;
 	auto_start=0;
 	auto_reset=1;
 	msec=30000;
@@ -56,10 +57,10 @@ todo_list "widget/component-decl"
 	    action=SetNumber;
 	    Which=runclient("Tasks");
 	    Number=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0 or :task_stats_osrc:incomplete_today_cnt > 0 or :task_stats_osrc:complete_today_cnt = 0, :task_stats_osrc:incomplete_cnt, '+' + :task_stats_osrc:complete_today_cnt));
-	    Color=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0, 'red', condition(:task_stats_osrc:incomplete_today_cnt > 0, '#800000',condition(:task_stats_osrc:complete_today_cnt > 0, '#00c000', 'black'))));
+	    Color=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0, 'red', condition(:task_stats_osrc:incomplete_today_cnt > 0, 'red',condition(:task_stats_osrc:complete_today_cnt > 0, '#00c000', 'black'))));
 	    }
 
-	on_endquery_start_timer "widget/connector" { event=EndQuery; target=task_refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
+	//on_endquery_start_timer "widget/connector" { event=EndQuery; target=task_refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
 	}
 
     todo_osrc "widget/osrc"
@@ -102,6 +103,7 @@ todo_list "widget/component-decl"
 	readahead=50;
 	replicasize=50;
 	indicates_activity=no;
+	refresh_interval=30000;
 
 	collab_link "widget/rule"
 	    {
@@ -117,21 +119,21 @@ todo_list "widget/component-decl"
 	    event=EndQuery;
 	    target=task_stats_osrc;
 	    action=QueryParam;
-	    e_todo_collaborator=runclient(:todo_osrc:e_todo_collaborator);
+	    e_todo_collaborator=runclient(:collaborator_osrc:p_partner_key);
 	    }
 	stats_link2 "widget/connector"
 	    {
 	    event=Modified;
 	    target=task_stats_osrc;
 	    action=QueryParam;
-	    e_todo_collaborator=runclient(:todo_osrc:e_todo_collaborator);
+	    e_todo_collaborator=runclient(:collaborator_osrc:p_partner_key);
 	    }
 
 	todo_table "widget/table"
 	    {
 	    x=0; y=0; width=248; height=417;
 	    min_rowheight=16;
-	    max_rowheight=64;
+	    max_rowheight=100;
 	    mode=dynamicrow;
 	    allow_selection = yes;
 	    show_selection = yes;

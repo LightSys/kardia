@@ -149,6 +149,30 @@ timeline "system/query"
 		not has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1))
 	    ;
 
+	    -- Task creation date
+	    insert
+		/apps/kardia/data/Kardia_DB/e_activity/rows
+	    select
+		e_activity_group_id = :activitygroup:id,
+		p_partner_key = :parameters:partner_key,
+		e_activity_date = :t:s_date_created,
+		e_activity_type = 'TASK',
+		e_reference_info = '' + :t:e_todo_id,
+		e_info = 'Task created: ' + :tt:e_todo_type_label + ' - ' + :t:e_todo_desc + condition(:t:e_todo_status == 'C', ' (Complete)', condition(:t:e_todo_status == 'X', ' (Canceled)', condition(datediff(day, getdate(), :t:e_todo_due_date) == 0, ' - DUE NOW', condition(datediff(day, getdate(), :t:e_todo_due_date) < 0, ' - OVERDUE', '')))) + condition(char_length(:t:e_todo_comments) > 1, '\n' + :t:e_todo_comments, ''),
+		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :t:s_created_by),
+		e_initiation = 'C',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_todo/rows t,
+		/apps/kardia/data/Kardia_DB/e_todo_type/rows tt
+	    where
+		:t:e_todo_partner = :parameters:partner_key and
+		:tt:e_todo_type_id = :t:e_todo_type_id
+	    ;
+
 	    -- Tags
 	    insert
 		/apps/kardia/data/Kardia_DB/e_activity/rows
@@ -158,7 +182,7 @@ timeline "system/query"
 		e_activity_date = :t:s_date_created,
 		e_activity_type = 'TAG',
 		e_reference_info = '' + :t:e_tag_id,
-		e_info = :tt:e_tag_desc + ' (strength ' + convert(integer,round(:t:e_tag_strength * 100,0)) + '%, certainty ' + convert(integer,round(:t:e_tag_certainty * 100,0)) + '%)' + condition(char_length(:t:e_tag_comments) > 1, ' - ' + :t:e_tag_comments, ''),
+		e_info = :tt:e_tag_desc + condition(:t:e_tag_strength != 1.0 or :t:e_tag_certainty != 1.0, ' (' + condition(:t:e_tag_strength != 1.0, 'strength ' + convert(integer,round(:t:e_tag_strength * 100,0)) + '%', '') + condition(:t:e_tag_certainty != 1.0 and :t:e_tag_strength != 1.0, ', ', '') + condition(:t:e_tag_certainty != 1.0, 'certainty ' + convert(integer,round(:t:e_tag_certainty * 100,0)) + '%', '') + ')', '') + condition(char_length(:t:e_tag_comments) > 1, ' - ' + :t:e_tag_comments, ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :t:s_created_by),
 		e_initiation = 'C',
 		s_date_created = getdate(),

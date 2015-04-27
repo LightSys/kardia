@@ -377,8 +377,22 @@ alter table e_data_highlight drop index e_dh_obj_idx;
 /* go */
 
 
-/* e_seen */
-/* drop index e_seen.e_seen_pk */ 
+/* e_ack */
+alter table e_ack drop index e_ack_obj_idx;
+alter table e_ack drop index e_ack_par2_idx;
+alter table e_ack drop index e_ack_par3_idx;
+alter table e_ack drop index e_ack_par_idx;
+/* drop index e_ack.e_ack_pk */ 
+/* go */
+
+
+/* e_ack_type */
+/* drop index e_ack_type.e_ackt_pk */ 
+/* go */
+
+
+/* e_trackactivity */
+/* drop index e_trackactivity.e_trkact_pk */ 
 /* go */
 
 

@@ -13,7 +13,7 @@ button_tab "widget/component-decl"
     onSetNumber1 "widget/connector"
 	{
 	event_condition=runclient(:Which == :text:value);
-	event=SetNumber; target=num_visib_var; action=SetValue; Value=runclient(condition(:Number > 0, 'yes', 'no'));
+	event=SetNumber; target=num_visib_var; action=SetValue; Value=runclient(condition(char_length(convert(string, :Number)) > 1 or :Number > 0, 'yes', 'no'));
 	}
     onSetNumber2 "widget/connector"
 	{
@@ -86,6 +86,7 @@ button_tab "widget/component-decl"
 		width=48;
 		height=50;
 		fl_width=0;
+		border_style=none;
 		image=runserver(:this:image);
 		text=runserver(:this:text);
 		fgcolor1=white;

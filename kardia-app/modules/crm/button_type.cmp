@@ -90,6 +90,7 @@ button_type "widget/component-decl"
 		{
 		width=48;
 		height=50;
+		border_style=none;
 		image=runserver(:this:image);
 		text=runserver(:this:text);
 		fgcolor1=white;

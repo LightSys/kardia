@@ -239,8 +239,16 @@ drop table e_highlights;
 drop table e_data_highlight;
 
 
-/* e_seen */
-drop table e_seen;
+/* e_ack */
+drop table e_ack;
+
+
+/* e_ack_type */
+drop table e_ack_type;
+
+
+/* e_trackactivity */
+drop table e_trackactivity;
 
 
 /* r_group */

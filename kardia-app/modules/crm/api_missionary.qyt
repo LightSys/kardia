@@ -1,0 +1,187 @@
+$Version=2$
+api_missionary "system/querytree"
+    {
+    missionaries "system/querytree"
+	{
+	sql = "	select
+		    partner_id = :s:p_partner_key,
+		    partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		    class = (select :text from /apps/kardia/data/Kardia_DB/_p_partner_class/rows pc where :pc:tag = :p:p_partner_class),
+		    is_valid = condition(:p:p_status_code == 'A', 1, 0)
+		from
+		    identity /apps/kardia/data/Kardia_DB/p_staff/rows s,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :s:p_partner_key = :p:p_partner_key
+		";
+
+	ack_label "system/querytree"
+	    {
+	    text = "Prayers";
+
+	    ack_list "system/querytree"
+		{
+		sql = " select
+			    prayedfor_id = :a:e_ack_id,
+			    prayedfor_comments = :a:e_ack_comments,
+			    prayedfor_date = :a:s_date_created,
+			    note_id = :ch:e_contact_history_id,
+			    note_subject = :ch:e_subject,
+			    note_text = :ch:e_notes,
+			    note_type = :ct:e_short_name,
+			    note_date = :ch:e_contact_date,
+			    supporter_partner_id = :p:p_partner_key,
+			    supporter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
+			    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+			    /apps/kardia/data/Kardia_DB/e_contact_history_type/rows ct,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p
+			where
+			    :a:p_dn_partner_key = :missionaries:partner_id and
+			    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
+			    :a:e_object_type = 'e_contact_history' and
+			    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
+			    :p:p_partner_key = :a:e_whom and
+			    :ct:e_contact_history_type = :ch:e_contact_history_type
+			";
+		}
+	    }
+
+	bysup_label "system/querytree"
+	    {
+	    text = "Supporters";
+
+	    bysup_list "system/querytree"
+		{
+		sql = " select
+			    partner_id = :p:p_partner_key,
+			    partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+			from
+			    identity /apps/kardia/data/Kardia_DB/p_partner/rows p
+			";
+		
+		acks_bysup_label "system/querytree"
+		    {
+		    text = "Prayers";
+
+		    acks_bysup_list "system/querytree"
+			{
+			sql = " select
+				    prayedfor_id = :a:e_ack_id,
+				    prayedfor_comments = :a:e_ack_comments,
+				    prayedfor_date = :a:s_date_created,
+				    note_id = :ch:e_contact_history_id,
+				    note_subject = :ch:e_subject,
+				    note_text = :ch:e_notes,
+				    note_type = :ct:e_short_name,
+				    note_date = :ch:e_contact_date,
+				    supporter_partner_id = :bysup_list:partner_id,
+				    supporter_partner_name = :bysup_list:partner_name
+				from
+				    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
+				    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+				    /apps/kardia/data/Kardia_DB/e_contact_history_type/rows ct
+				where
+				    :a:e_whom = :bysup_list:partner_id and
+				    :a:p_dn_partner_key = :missionaries:partner_id and
+				    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
+				    :a:e_object_type = 'e_contact_history' and
+				    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
+				    :ct:e_contact_history_type = :ch:e_contact_history_type
+				";
+			}
+		    }
+		}
+	    }
+
+	needs_label "system/querytree"
+	    {
+	    text = "Notes";
+
+	    needs_list "system/querytree"
+		{
+		sql = "	select
+			    note_id = :ch:e_contact_history_id,
+			    note_subject = :ch:e_subject,
+			    note_text = :ch:e_notes,
+			    note_type = :ct:e_short_name,
+			    note_date = :ch:e_contact_date
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+			    /apps/kardia/data/Kardia_DB/e_contact_history_type/rows ct
+			where
+			    :ch:p_partner_key = :missionaries:partner_id and
+			    (:ch:e_contact_history_type = 5 or :ch:e_contact_history_type = 7) and
+			    :ct:e_contact_history_type = :ch:e_contact_history_type
+			";
+
+		needs_prayers "system/querytree"
+		    {
+		    text = "Prayers";
+
+		    needs_prayers_list "system/querytree"
+			{
+			sql = " select
+				    prayedfor_id = :a:e_ack_id,
+				    prayedfor_comments = :a:e_ack_comments,
+				    prayedfor_date = :a:s_date_created,
+				    note_id = :needs_list:note_id,
+				    note_subject = :needs_list:note_subject,
+				    note_text = :needs_list:note_text,
+				    note_type = :needs_list:note_type,
+				    note_date = :needs_list:note_date,
+				    supporter_partner_id = :p:p_partner_key,
+				    supporter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+				from
+				    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p
+				where
+				    :a:p_dn_partner_key = :missionaries:partner_id and
+				    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
+				    :a:e_object_type = 'e_contact_history' and
+				    :a:e_object_id = convert(string, :needs_list:note_id) and
+				    :p:p_partner_key = :a:e_whom
+				";
+			}
+		    }
+		}
+	    }
+
+	letters_label "system/querytree"
+	    {
+	    text = "PrayerLetters";
+
+	    letters_list "system/querytree"
+		{
+		sql = "	select
+			    letter_id = :pd:e_document_id,
+			    letter_type = :dt:e_doc_type_label,
+			    letter_title = :d:e_title,
+			    letter_filename = :d:e_current_filename,
+			    letter_folder = :d:e_current_folder,
+			    letter_date = :d:s_date_created
+			from
+			    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+			    identity /apps/kardia/data/Kardia_DB/e_document/rows d,
+			    /apps/kardia/data/Kardia_DB/e_document_type/rows dt
+			where
+			    :pd:p_partner_key = :missionaries:partner_id and
+			    :d:e_document_id = :pd:e_document_id and
+			    :dt:e_doc_type_id = :d:e_doc_type_id and
+			    :dt:e_doc_type_id = 2   -- 2 is the prayer letter doc type id
+			";
+
+		letter_file "system/querytree"
+		    {
+		    sql = runserver("
+			    select
+				*
+			    from
+				identity object " + quote(:letters_list:letter_folder + '/' + :letters_list:letter_filename) + " f
+			    ");
+		    }
+		}
+	    }
+	}
+    }

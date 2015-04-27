@@ -83,7 +83,7 @@ mlist_maint "widget/component-decl"
 	    replicasize = 2;
 	    sql = " select
 			*,
-			n_members = (select count(1) from /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :l:m_list_code and :m:m_membership_status != 'D')
+			n_members = (select count(1) from /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :l:m_list_code and :m:m_membership_status = 'A')
 		    from
 			/apps/kardia/data/Kardia_DB/m_list/rows l
 		    ";

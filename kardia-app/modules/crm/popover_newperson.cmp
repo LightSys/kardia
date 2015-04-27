@@ -34,7 +34,7 @@ popover_newperson "widget/component-decl"
 
     newp_win "widget/childwindow"
 	{
-	width=500; height=180;
+	width=500; height=252;
 	x=250; y=89;
 	fl_y=0;
 	titlebar=no;
@@ -51,7 +51,7 @@ popover_newperson "widget/component-decl"
 	newp_vbox "widget/vbox"
 	    {
 	    x=15; y=15;
-	    width=468; height=148;
+	    width=468; height=220;
 	    spacing=10;
 
 	    newp_osrc "widget/osrc"
@@ -79,9 +79,12 @@ popover_newperson "widget/component-decl"
 
 		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("New Person..."); align=center; }
 
-		    explain_label "widget/label" { height=40; style=italic; value=runclient(condition(:partner_var:value is null, "Add a new person via the popup window, and once the new person or organization is added, they can be added to My People here.", "Add person #" + :partner_var:value + isnull(" (" + :partnername_osrc:nametxt + ")", "") + " to My People:")); }
+		    explain_label "widget/label" { height=40; style=italic; value=runclient(condition(:partner_var:value is null, "Add a new person via the popup window, and once the new person or organization is added, they can be added to My People here.", "Add " + isnull(:partnername_osrc:nametxt, "person") + " #" + :partner_var:value + " to My People:")); }
 
-		    collab_type "widget/component" { field=e_collab_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="My Role:"; ctl_type=dropdown; sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label"; width=250; label_width=70; collab_type_hints "widget/hints" { style=notnull; } }
+		    collab_type "widget/component" { field=e_collab_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="My Role:"; ctl_type=dropdown; sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label"; width=280; label_width=100; collab_type_hints "widget/hints" { style=notnull; } }
+
+		    silence_label "widget/label" { height=32; text="After how many days of no contact with this person do you want to receive a reminder to check back in with them?"; style=italic; }
+		    silence_field "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; width=200; label_width=100; field=e_silence_interval; ctl_type=editbox; text="Silence Days:"; }
 
 		    collab_partner "widget/variable" { fieldname=p_partner_key; collab_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
 		    collab_me "widget/variable" { fieldname=e_collaborator; collab_me_hints "widget/hints" { default=runclient(:collab_var:value); } }

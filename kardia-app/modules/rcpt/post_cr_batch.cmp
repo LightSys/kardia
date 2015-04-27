@@ -126,34 +126,37 @@ post_cr_batch "widget/component-decl"
 			--:i:a_cost_center,
 			:a:m_list_code
 		HAVING
-			(select :m:m_membership_status from /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key) is null
+			(select :m:m_membership_status
+			   from /apps/kardia/data/Kardia_DB/m_list_membership/rows m
+			  where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key and not (:m:m_membership_status = 'D' or (:m:m_membership_status = 'C' and :m:m_reason_cancel = 'G'))
+			) is null
 		;
 
-		UPDATE
-			IDENTITY /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-			/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a
-		SET
-			:m:m_membership_status = 'P',
-			:m:m_reason_member = 'D',
-			:m:m_comments = 'Re-donated to ' + :i:a_cost_center,
-			:m:s_date_modified = getdate(),
-			:m:s_modified_by = user_name()
-		WHERE
-			:g:a_period = :parameters:a_period and
-			:g:a_ledger_number = :parameters:a_ledger_number and
-			:g:a_batch_number = :parameters:a_batch_number and
-			:i:a_ledger_number = :g:a_ledger_number and
-			:i:a_batch_number = :g:a_batch_number and
-			:i:a_gift_number = :g:a_gift_number and
-			:a:a_cost_center = :i:a_cost_center and
-			:a:a_ledger_number = :i:a_ledger_number and
-			:m:m_list_code = :a:m_list_code and
-			:m:p_partner_key = :g:p_donor_partner_id and
-			(:m:m_membership_status = 'D' or
-			    (:m:m_membership_status = 'C' and :m:m_reason_cancel = 'G'))
-		;
+		--UPDATE
+		--	IDENTITY /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+		--	/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+		--	/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		--	/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a
+		--SET
+		--	:m:m_membership_status = 'P',
+		--	:m:m_reason_member = 'D',
+		--	:m:m_comments = 'Re-donated to ' + :i:a_cost_center,
+		--	:m:s_date_modified = getdate(),
+		--	:m:s_modified_by = user_name()
+		--WHERE
+		--	:g:a_period = :parameters:a_period and
+		--	:g:a_ledger_number = :parameters:a_ledger_number and
+		--	:g:a_batch_number = :parameters:a_batch_number and
+		--	:i:a_ledger_number = :g:a_ledger_number and
+		--	:i:a_batch_number = :g:a_batch_number and
+		--	:i:a_gift_number = :g:a_gift_number and
+		--	:a:a_cost_center = :i:a_cost_center and
+		--	:a:a_ledger_number = :i:a_ledger_number and
+		--	:m:m_list_code = :a:m_list_code and
+		--	:m:p_partner_key = :g:p_donor_partner_id and
+		--	(:m:m_membership_status = 'D' or
+		--	    (:m:m_membership_status = 'C' and :m:m_reason_cancel = 'G'))
+		--;
 
 		UPDATE
 		    identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,

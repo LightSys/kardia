@@ -18,7 +18,7 @@ popover_addperson "widget/component-decl"
 
     addp_win "widget/childwindow"
 	{
-	width=500; height=130;
+	width=500; height=202;
 	x=250; y=89;
 	fl_y=0;
 	titlebar=no;
@@ -37,7 +37,7 @@ popover_addperson "widget/component-decl"
 	addp_vbox "widget/vbox"
 	    {
 	    x=15; y=15;
-	    width=468; height=268;
+	    width=468; height=172;
 	    spacing=10;
 
 	    addp_osrc "widget/osrc"
@@ -65,7 +65,13 @@ popover_addperson "widget/component-decl"
 
 		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("Add " + :partnername_var:value + " to My People..."); align=center; }
 
-		    collab_type "widget/component" { field=e_collab_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="My Role:"; ctl_type=dropdown; sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label"; width=250; label_width=70; collab_type_hints "widget/hints" { style=notnull; } }
+		    collab_type "widget/component" { field=e_collab_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="My Role:"; ctl_type=dropdown; sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label"; width=300; label_width=120; collab_type_hints "widget/hints" { style=notnull; } }
+
+		    silence_label "widget/label" { height=32; text="After how many days of no contact with this person do you want to receive a reminder to check back in with them?"; style=italic; }
+		    silence_field "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; width=220; label_width=120; field=e_silence_interval; ctl_type=editbox; text="Silence Days:"; }
+
+		    //recontact_label "widget/label" { height=32; text="Once you've received the above reminder and contacted this person, after how many more days of no contact should you receive another reminder?"; style=italic; }
+		    //recontact_field "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; width=220; label_width=120; field=e_recontact_interval; ctl_type=editbox; text="Recontact Days:"; }
 
 		    collab_partner "widget/variable" { fieldname=p_partner_key; collab_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
 		    collab_me "widget/variable" { fieldname=e_collaborator; collab_me_hints "widget/hints" { default=runclient(:collab_var:value); } }

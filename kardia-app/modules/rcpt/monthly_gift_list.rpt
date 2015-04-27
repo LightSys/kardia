@@ -110,7 +110,8 @@ monthly_gift_list "system/report"
 		FROM
 			/apps/kardia/data/Kardia_DB/m_list_membership/rows m
 		WHERE
-			:m:p_partner_key = :donor_list_qy:p_donor_partner_id
+			:m:p_partner_key = :donor_list_qy:p_donor_partner_id and
+			:m:m_membership_status = 'A'
 		";
 	}
 

@@ -454,7 +454,31 @@ alter table e_data_highlight
 	drop primary key;
 
 
-alter table e_seen
+alter table e_ack
+	drop primary key;
+
+
+alter table e_ack
+	drop index e_ack_obj_idx;
+
+
+alter table e_ack
+	drop index e_ack_par_idx;
+
+
+alter table e_ack
+	drop index e_ack_par2_idx;
+
+
+alter table e_ack
+	drop index e_ack_par3_idx;
+
+
+alter table e_ack_type
+	drop primary key;
+
+
+alter table e_trackactivity
 	drop primary key;
 
 

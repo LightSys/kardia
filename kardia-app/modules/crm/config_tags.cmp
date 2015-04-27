@@ -1,0 +1,423 @@
+$Version=2$
+config_tags "widget/component-decl"
+    {
+    width = 1200;
+    height = 700;
+    widget_template="/apps/kardia/modules/crm/crm-dark.tpl";
+
+    Open "widget/component-decl-action" { }
+    onOpen "widget/connector" { event=Open; target=config_tags_window; action=Open; IsModal=1; }
+
+    config_tags_window "widget/childwindow"
+	{
+	width=700; height=500;
+	x=250; y=100;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#101010";
+
+	ct_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=678; height=478;
+	    spacing=8;
+
+	    ct_title "widget/label" { height=16; text="Manage Tags"; align=center; font_size=16; style=bold; fgcolor=white; }
+	    ct_sep "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+	    ct_sep2 "widget/autolayoutspacer" { height=1; }
+
+	    ct_hbox "widget/hbox"
+		{
+		height=406;
+		spacing=10;
+
+		ct_list_vbox "widget/vbox"
+		    {
+		    width=334;
+		    spacing=8;
+
+		    ct_list_label "widget/label" { height=12; text="Tags:"; style=bold; fgcolor=white; align=center; }
+
+		    ct_list_osrc "widget/osrc"
+			{
+			sql = "	select
+				    *
+				from
+				    /apps/kardia/data/Kardia_DB/e_tag_type/rows tt
+				order by
+				    :tt:e_tag_label
+				";
+			baseobj="/apps/kardia/data/Kardia_DB/e_tag_type/rows";
+			readahead=60;
+			replicasize=60;
+			autoquery=onfirstreveal;
+
+			ct_list_table "widget/table"
+			    {
+			    height=344;
+			    min_rowheight=16;
+			    max_rowheight=64;
+			    allow_selection = yes;
+			    show_selection = yes;
+			    initial_selection = no;
+			    demand_scrollbar = yes;
+			    overlap_scrollbar = yes;
+			    colsep = 0;
+			    titlebar = no;
+			    row_border_radius=6;
+			    inner_padding = 2;
+			    cellvspacing = 2;
+			    row1_bgcolor = "#181818";
+			    row2_bgcolor = "#202020";
+			    textcolor = white;
+			    rowhighlight_bgcolor = "#282828";
+			    rowhighlight_shadow_color = '#6080c0';
+			    rowhighlight_shadow_location = 'inside';
+			    rowhighlight_shadow_radius = 6;
+			    textcolorhighlight = white;
+
+			    ct_t_icon "widget/table-column" { value=runclient("/apps/kardia/images/icons/ionicons-pricetags.svg"); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
+			    ct_t_tagname "widget/table-column" { value=runclient(:ct_list_osrc:e_tag_label); style=bold; width=148; }
+			    ct_t_tagdesc "widget/table-column" { value=runclient(:ct_list_osrc:e_tag_desc); font_size=9; wrap=yes; width=160; }
+
+			    ct_t_detail "widget/table-row-detail"
+				{
+				width=334; height=84;
+
+				ct_edit_form "widget/form"
+				    {
+				    interlock_with=ct_addnew_form,cti_addnew_form,cti_edit_form;
+
+				    on_modify_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+				    on_delete_load_dd "widget/connector" { event=DataDeleted; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+
+				    ct_t_detail_vbox "widget/vbox"
+					{
+					x=24; y=2;
+					width=300; height=74;
+					spacing=4;
+
+					ct_sepbar "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+					ct_spacer "widget/autolayoutspacer" { height=1; }
+
+					ct_label "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_tag_label; text="Tag Label:"; height=20; label_width=90; }
+					ct_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_tag_desc; text="Description:"; height=20; label_width=90; }
+					ct_act_thres_hbox "widget/hbox"
+					    {
+					    height=20;
+					    spacing=8;
+					    ct_thres "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_tag_threshold; text="Threshold:"; height=20; label_width=90; width=125; }
+					    ct_active "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=e_is_active; text="Active?"; height=20; label_width=60; width=80; }
+					    //save_tag "widget/component" { width=18; path="/sys/cmp/save_btn.cmp"; object_name="Tag"; }
+					    //cancel_tag "widget/component" { width=18; path="/sys/cmp/cancel_btn.cmp"; object_name="Tag"; }
+					    //delete_tag "widget/component" { width=18; path="/sys/cmp/delete_btn.cmp"; object_name="Tag"; }
+					    }
+					ct_edit_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					}
+				    }
+				}
+			    }
+
+			ct_addnew_pane "widget/pane"
+			    {
+			    height=32;
+			    //bgcolor="#f8f8f8";
+			    border_radius=8;
+			    border_color="#334466";
+			    style=bordered;
+
+			    ct_addnew_hbox "widget/hbox"
+				{
+				x=5; y=5;
+				width=326;
+				height=24;
+				spacing=8;
+				align=center;
+
+				ct_addnew_form "widget/form"
+				    {
+				    allow_view = no;
+				    allow_query = no;
+				    allow_new = yes;
+
+				    on_new_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+
+				    ct_addnew_editbox "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					ctl_type=editbox;
+					field=e_tag_label;
+					width=242;
+					text="Add Tag:";
+					label_width=60;
+					}
+				    ct_addnew_btn "widget/textbutton"
+					{
+					condition=0;
+					width=76;
+					height=24;
+					text="Add";
+					enabled=runclient(:ct_addnew_form:is_savable);
+					background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					fgcolor1=white;
+					fgcolor2=black;
+					disable_color="#334466";
+
+					on_add "widget/connector" { event=Click; target=ct_addnew_form; action=Save; }
+					}
+				    
+				    ct_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				    ct_new_tagdesc "widget/variable" { fieldname=e_tag_desc; tagdesc_hints "widget/hints" { default=runclient(''); } }
+				    ct_new_active "widget/variable" { fieldname=e_is_active; active_hints "widget/hints" { default=runclient(1); } }
+				    ct_new_thresh "widget/variable" { fieldname=e_tag_threshold; threshold_hints "widget/hints" { default=runclient(0); } }
+				    }
+				}
+			    }
+			}
+		    }
+
+		ct_imply_vbox "widget/vbox"
+		    {
+		    width=334;
+		    spacing=8;
+
+		    ct_imply_label "widget/label" { height=12; value=runclient("Tag Implications" + isnull(" for " + :ct_list_osrc:e_tag_label, "") + ":"); style=bold; fgcolor=white; align=center; }
+		    ct_imply_osrc "widget/osrc"
+			{
+			parent_tagid "widget/parameter" { type=integer; }
+			sql = "	select
+				    img = condition(:tr:e_tag_id = :parameters:parent_tagid, 'ionicons-arrow-right-c.svg', 'ionicons-arrow-left-c.svg'),
+				    direction = condition(:tr:e_tag_id = :parameters:parent_tagid, 'Implies' + condition(:e_rel_strength < 0, ' Against', ''), 'Is Implied' + condition(:e_rel_strength < 0, ' Against', '') + ' By'),
+				    e_tag_label = condition(:tr:e_tag_id = :parameters:parent_tagid, :tt1:e_tag_label, :tt2:e_tag_label),
+				    e_tag_desc = condition(:tr:e_tag_id = :parameters:parent_tagid, :tt1:e_tag_desc, :tt2:e_tag_desc),
+				    e_tag_revlabel = condition(:tr:e_tag_id = :parameters:parent_tagid, :tt2:e_tag_label, :tt1:e_tag_label),
+				    e_tag_revdesc = condition(:tr:e_tag_id = :parameters:parent_tagid, :tt2:e_tag_desc, :tt1:e_tag_desc),
+				    description = condition(abs(:tr:e_rel_strength) >= 0.7, '', condition(abs(:tr:e_rel_strength) >= 0.5, 'Mostly ', condition(abs(:tr:e_rel_strength) >= 0.3, 'Somewhat ', 'Very Little '))) + condition(:tr:e_rel_strength > 0, 'YES', 'NO') + condition(:tr:e_rel_certainty < 0.9, ' - ' + condition(:tr:e_rel_certainty >= 0.7, 'Very Likely', condition(:tr:e_rel_certainty >= 0.5, 'Likely', condition(:tr:e_rel_certainty >= 0.3, 'Possible', 'Unknown'))), ''),
+				    :tr:e_rel_strength,
+				    :tr:e_rel_certainty,
+				    :tr:s_date_created,
+				    :tr:s_date_modified,
+				    :tr:s_created_by,
+				    :tr:s_modified_by
+				from
+				    identity /apps/kardia/data/Kardia_DB/e_tag_type_relationship/rows tr,
+				    /apps/kardia/data/Kardia_DB/e_tag_type/rows tt1,
+				    /apps/kardia/data/Kardia_DB/e_tag_type/rows tt2
+				where
+				    :tt1:e_tag_id =* :tr:e_rel_tag_id and
+				    :tt2:e_tag_id =* :tr:e_tag_id and
+				    (:tr:e_rel_tag_id = :parameters:parent_tagid or :tr:e_tag_id = :parameters:parent_tagid)
+				";
+			baseobj="/apps/kardia/data/Kardia_DB/e_tag_type_relationship/rows";
+			readahead=60;
+			replicasize=60;
+			autoquery=onfirstreveal;
+
+			ct_link "widget/rule"
+			    {
+			    ruletype = osrc_relationship;
+			    target = ct_list_osrc;
+			    key_1 = parent_tagid;
+			    target_key_1 = e_tag_id;
+			    }
+
+			ct_imply_table "widget/table"
+			    {
+			    height=344;
+			    min_rowheight=16;
+			    max_rowheight=64;
+			    allow_selection = yes;
+			    show_selection = yes;
+			    initial_selection = no;
+			    demand_scrollbar = yes;
+			    overlap_scrollbar = yes;
+			    colsep = 0;
+			    titlebar = no;
+			    row_border_radius=6;
+			    inner_padding = 2;
+			    cellvspacing = 2;
+			    row1_bgcolor = "#181818";
+			    row2_bgcolor = "#202020";
+			    textcolor = white;
+			    rowhighlight_bgcolor = "#282828";
+			    rowhighlight_shadow_color = '#6080c0';
+			    rowhighlight_shadow_location = 'inside';
+			    rowhighlight_shadow_radius = 6;
+			    textcolorhighlight = white;
+			    nodata_message = "(no implications for this tag)";
+			    nodata_message_textcolor = '#c0c0c0';
+
+			    ct_i_icon "widget/table-column" { value=runclient("/apps/kardia/images/icons/" + :ct_imply_osrc:img); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
+			    ct_i_tagname "widget/table-column" { value=runclient(:ct_imply_osrc:e_tag_label); style=bold; width=148; caption_value=runclient(:ct_imply_osrc:e_tag_desc); caption_font_size=9; caption_wrap=yes; width=160; }
+			    //ct_i_strength "widget/table-column" { value=runclient(:ct_imply_osrc:e_rel_strength); width=80; }
+			    //ct_i_certainty "widget/table-column" { value=runclient(:ct_imply_osrc:e_rel_certainty); width=80; }
+			    ct_i_descr "widget/table-column" { value=runclient(:ct_imply_osrc:description); width=160; }
+
+			    ct_i_detail "widget/table-row-detail"
+				{
+				width=334; height=124;
+
+				cti_edit_form "widget/form"
+				    {
+				    ct_i_detail_vbox "widget/vbox"
+					{
+					x=30; y=4;
+					width=292; height=112;
+					spacing=4;
+
+					cti_sepbar "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+					cti_spacer "widget/autolayoutspacer" { height=1; }
+
+					cti_explain "widget/label"
+					    {
+					    height=30;
+					    font_size=10;
+					    value=runclient(:ct_imply_osrc:e_tag_revlabel + ' ' + lower(:ct_imply_osrc:direction) + ' ' + :ct_imply_osrc:e_tag_label + '.  You can adjust the implication strength (negative to imply against) and certainty below.');
+					    fgcolor=white;
+					    }
+
+					cti_strength "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_rel_strength; text="Strength (-1.0 to 1.0):"; height=20; label_width=150; width=250; empty_description='-1.0 to 1.0'; }
+					cti_certainty "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_rel_certainty; text="Certainty (0.0 to 1.0):"; height=20; label_width=150; width=250; empty_description='0.0 to 1.0'; }
+					cti_delete "widget/textbutton"
+					    {
+					    x=98;
+					    width=100;
+					    height=24;
+					    text="Delete";
+					    enabled=runclient(not :ct_imply_osrc:is_client_savable);
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_delete "widget/connector" { event=Click; target=cti_edit_form; action=Delete; }
+					    }
+					cti_edit_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					}
+				    }
+				}
+			    }
+
+			cti_addnew_pane "widget/pane"
+			    {
+			    height=32;
+			    //bgcolor="#f8f8f8";
+			    border_radius=8;
+			    border_color="#334466";
+			    style=bordered;
+
+			    cti_addnew_hbox "widget/hbox"
+				{
+				x=5; y=5;
+				width=326;
+				height=24;
+				spacing=8;
+				align=center;
+
+				cti_addnew_form "widget/form"
+				    {
+				    allow_view = no;
+				    allow_query = no;
+				    allow_new = yes;
+
+				    cti_addnew_dd "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					ctl_type=dropdown;
+					sql = "select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label";
+					field=e_rel_tag_id;
+					width=282;
+					text="Add Implication:";
+					label_width=100;
+					numdisplay=8;
+					}
+				    cti_addnew_btn "widget/textbutton"
+					{
+					condition=0;
+					width=76;
+					height=24;
+					text="Add";
+					enabled=runclient(:cti_addnew_form:is_savable);
+					background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					fgcolor1=white;
+					fgcolor2=black;
+					disable_color="#334466";
+
+					on_iadd "widget/connector" { event=Click; target=cti_addnew_form; action=Save; }
+					}
+
+				    cti_new_tagid "widget/variable" { fieldname=e_tag_id; tagid_hints "widget/hints" { default=runclient(:ct_list_osrc:e_tag_id); } }
+
+				    cti_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				    cti_new_strength "widget/variable" { fieldname=e_rel_strength; itagstr_hints "widget/hints" { default=runclient(1); } }
+				    cti_new_certainty "widget/variable" { fieldname=e_rel_certainty; itagcer_hints "widget/hints" { default=runclient(1); } }
+				    }
+				}
+			    }
+			}
+		    }
+		}
+
+	    ct_ctl_hbox "widget/hbox"
+		{
+		height=24;
+		align=center;
+		spacing=10;
+
+		ct_save_all "widget/textbutton"
+		    {
+		    width=100;
+		    height=24;
+		    text=runclient(condition(:cti_addnew_form:is_savable or :ct_addnew_form:is_savable, "Save/Add", "Save"));
+		    //enabled=runclient(:cti_addnew_form:is_savable or :ct_addnew_form:is_savable or :ct_edit_form:is_savable or :cti_edit_form:is_savable);
+		    enabled=runclient(:ct_list_osrc:is_client_savable);
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+
+		    //on_save_1 "widget/connector" { event=Click; target=cti_addnew_form; action=Save; }
+		    on_save_2 "widget/connector" { event=Click; target=ct_list_osrc; action=SaveClients; }
+		    //on_save_3 "widget/connector" { event=Click; target=cti_edit_form; action=Save; }
+		    //on_save_4 "widget/connector" { event=Click; target=ct_edit_form; action=Save; }
+		    }
+		ct_discard_all "widget/textbutton"
+		    {
+		    width=100;
+		    height=24;
+		    text=runclient(condition(:cti_addnew_form:is_discardable or :ct_addnew_form:is_discardable or :ct_edit_form:is_discardable or :cti_edit_form:is_discardable, 'Cancel', 'Close'));
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+
+		    on_disc_1 "widget/connector" { event=Click; target=ct_list_osrc; action=DiscardClients; }
+		    on_disc_2 "widget/connector" { event=Click; target=config_tags_window; action=Close; }
+		    }
+		}
+	    }
+
+	ct_exit "widget/textbutton"
+	    {
+	    condition=0;
+	    x=650; y=10; width=40; height=20;
+	    text="[Done]";
+	    border_style=none;
+	    bgcolor="#101010";
+	    background=null;
+	    fgcolor1="#6080c0";
+	    fgcolor2=black;
+
+	    exit_cn0 "widget/connector" { event=Click; target=ct_addnew_form; action=Discard; }
+	    exit_cn1 "widget/connector" { event=Click; target=ct_edit_form; action=Discard; }
+	    exit_cn2 "widget/connector" { event=Click; target=config_tags_window; action=Close; }
+	    }
+	}
+    }
