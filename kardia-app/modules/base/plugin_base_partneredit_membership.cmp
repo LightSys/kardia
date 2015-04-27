@@ -250,8 +250,38 @@ m_list_membership_component "widget/component-decl"
 			popup_text="Select a Mailing:";
 			//attach_point=editbox;
 
+			on_list_change "widget/connector"
+			    {
+			    event=DataChange;
+			    target=memb_info_osrc;
+			    action=QueryParam;
+			    mio_list_id=runclient(:Value);
+			    mio_partner_key=runclient(:partner_osrc:p_partner_key);
+			    }
+
 			listcode_hints "widget/hints" { style=applyonchange; }
 			}
+
+		    memb_info_osrc "widget/osrc"
+			{
+			mio_list_id "widget/parameter" { type=string; }
+			mio_partner_key "widget/parameter" { type=string; }
+			sql = "	select
+				    deleted_cnt = isnull(sum(condition(:ml:m_membership_status == 'D', 1, 0)),0),
+				    deleted_last = max(condition(:ml:m_membership_status == 'D', :ml:s_date_modified, null)),
+				    active_cnt = isnull(sum(condition(:ml:m_membership_status == 'A', 1, 0)),0),
+				    canceled_cnt = isnull(sum(condition(:ml:m_membership_status == 'C', 1, 0)),0)
+				from
+				    /apps/kardia/data/Kardia_DB/m_list_membership/rows ml
+				where
+				    :ml:p_partner_key = :parameters:mio_partner_key and
+				    :ml:m_list_code = :parameters:mio_list_id
+				";
+			readahead=2;
+			replicasize=2;
+			autoquery=never;
+			}
+
 		    //list_code "widget/component" { height=20; label_width=90; path="/sys/cmp/smart_field.cmp"; field='m_list_code'; ctl_type=dropdown; text='List:'; sql=runserver("select :m_list_code + ': ' + :m_list_description, :m_list_code from /apps/kardia/data/Kardia_DB/m_list/rows where :m_list_type = 'P' order by :m_list_code"); } 
 		    reason "widget/component" { height=20; label_width=90; path="/sys/cmp/smart_field.cmp"; field='m_reason_member'; ctl_type=dropdown; text='Reason:'; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_member_reason/rows"; } 
 		    comment "widget/component" { height=20; label_width=90; path="/sys/cmp/smart_field.cmp"; field='m_comments'; ctl_type=editbox; text='Comments:'; } 
@@ -264,12 +294,39 @@ m_list_membership_component "widget/component-decl"
 			    {
 			    y=4; height=24; width=120;
 			    text = "Add";
-			    enabled = runclient(char_length(:f_listcode:content) > 0);
+			    enabled = runclient(char_length(:f_listcode:content) > 0 and char_length(:f_listcode:description) > 0 and :memb_info_osrc:active_cnt = 0);
 
 			    add_btn_cn "widget/connector" { event=Click; target=m_list_membership_form; action=Save; }
 			    }
 			}
 		    }
+		popover_memb_warn "widget/childwindow"
+		    {
+		    width=250; height=64;
+		    x=0; y=0;
+		    toplevel=yes;
+		    titlebar=no;
+		    visible=no;
+		    border_radius=8;
+		    border_style=solid;
+		    border_color=black;
+		    shadow_radius=8;
+		    shadow_color=black;
+		    shadow_offset=0;
+		    background=null;
+		    bgcolor=white;
+
+		    popover_message "widget/label" { x=0; y=25; width=248; height=14; align=center; text=""; }
+
+		    close_on_endquery "widget/connector" { source=f_listcode; event=DataModify; action=Close; }
+		    open_on_deleted "widget/connector" { source=memb_info_osrc; event=EndQuery; event_condition=runclient(:memb_info_osrc:deleted_cnt > 0); action=Open; PointAt=f_listcode; PointSide=runclient("left"); }
+		    msg_on_deleted "widget/connector" { source=memb_info_osrc; event=EndQuery; event_condition=runclient(:memb_info_osrc:deleted_cnt > 0); target=popover_message; action=SetValue; Value=runclient("previously deleted on " + substring(:memb_info_osrc:deleted_last,1,11)); }
+		    open_on_dup "widget/connector" { source=memb_info_osrc; event=EndQuery; event_condition=runclient(:memb_info_osrc:active_cnt > 0); action=Open; PointAt=f_listcode; PointSide=runclient("left"); }
+		    msg_on_dup "widget/connector" { source=memb_info_osrc; event=EndQuery; event_condition=runclient(:memb_info_osrc:active_cnt > 0); target=popover_message; action=SetValue; Value=runclient("already subscribed"); }
+
+		    close_on_form_change "widget/connector" { source=m_list_membership_form; event=ModeChange; action=Close; }
+		    }
+
 		}
 
 	    add_membership_label_pane "widget/pane"
