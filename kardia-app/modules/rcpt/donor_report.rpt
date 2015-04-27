@@ -172,6 +172,11 @@ donor_report "system/report"
 			s_created_by = user_name(),
 			s_date_modified = getdate(),
 			s_modified_by = user_name()
+		HAVING
+			(select :m:m_membership_status
+			   from /apps/kardia/data/Kardia_DB/m_list_membership/rows m
+			  where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key and :m:m_membership_status = 'A'
+			) is null
 		;
 
 		SELECT
@@ -180,7 +185,8 @@ donor_report "system/report"
 			/apps/kardia/data/Kardia_DB/m_list_membership/rows
 		WHERE
 			:m_list_code = :this:list_code and
-			:p_partner_key = :donors_qy:p_partner_key
+			:p_partner_key = :donors_qy:p_partner_key and
+			:m_membership_status = 'A'
 		"));
 	}
 

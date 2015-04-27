@@ -13,6 +13,7 @@ plugin_base_mlist_members "widget/component-decl"
 	sql = "SELECT 
 		:l:m_list_code, 
 		:l:p_partner_key,
+		:l:m_hist_id,
 		:l:m_num_copies,
 		-- :l:m_member_type,
 		:l:m_comments,
@@ -107,6 +108,7 @@ plugin_base_mlist_members "widget/component-decl"
 		    Height = 600;
 		    partner = runclient(:list_membership_osrc:p_partner_key);
 		    list = runclient(:list_membership_osrc:m_list_code);
+		    hist_id = runclient(:list_membership_osrc:m_hist_id);
 		    mlist_parent_osrc = list_membership_osrc;
 		    send_update = 1;
 		    //memb_osrc = memb_osrc;

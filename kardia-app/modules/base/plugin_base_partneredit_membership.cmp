@@ -15,23 +15,42 @@ m_list_membership_component "widget/component-decl"
         {
         sql="	SELECT
 			:m:m_list_description, :m:m_list_type, :m:m_list_status,
-			:l:p_postal_mode,
-			:l:m_membership_status, :l:m_comments,
-			:l:p_partner_key, :l:p_contact_id,
-			:l:m_list_code, :l:m_member_type, :l:m_contact, :l:p_location_id, :l:m_num_copies,
-			:l:m_num_issues_sub, :l:m_num_issues_recv, :l:m_start_date, :l:m_end_date,
-			:l:m_hold_until_date, :l:m_renewal_date, :l:m_cancel_date, :l:m_notice_sent_date,
-			:l:m_complimentary, :l:m_show_contact, :l:m_contact, :l:m_delivery_method,
-			:l:m_reason_member,
-			:l:m_reason_cancel,
-			:l:s_date_created, :l:s_created_by, :l:s_date_modified, :l:s_modified_by,
-			membstat = :ms:text + condition(:l:m_hold_until_date is null or :l:m_hold_until_date <= getdate(), '', '-OnHold'),
-			postmode = :pm:text,
+			:l:p_partner_key,
+			:l:m_list_code,
 			liststat = :ls:text,
-			cancel_txt = :cr:text,
-			member_txt = :mr:text,
-			sub_date_txt = substring(convert(string,:s_date_created),1,11),
-			delivery_txt = isnull(:dm:text, 'Postal Mail')
+			m_hist_id = first(:l:m_hist_id),
+			p_postal_mode = first(:l:p_postal_mode),
+			m_membership_status = first(:l:m_membership_status),
+			m_comments = first(isnull(:l:m_comments,'')),
+			p_contact_id = first(:l:p_contact_id),
+			m_member_type = first(:l:m_member_type),
+			m_contact = first(:l:m_contact),
+			p_location_id = first(:l:p_location_id),
+			m_num_copies = first(:l:m_num_copies),
+			m_num_issues_sub = first(:l:m_num_issues_sub),
+			m_num_issues_recv = first(:l:m_num_issues_recv),
+			m_start_date = first(:l:m_start_date),
+			m_end_date = first(:l:m_end_date),
+			m_hold_until_date = first(:l:m_hold_until_date),
+			m_renewal_date = first(:l:m_renewal_date),
+			m_cancel_date = first(:l:m_cancel_date),
+			m_notice_sent_date = first(:l:m_notice_sent_date),
+			m_complimentary = first(:l:m_complimentary),
+			m_show_contact = first(:l:m_show_contact),
+			m_contact = first(:l:m_contact),
+			m_delivery_method = first(:l:m_delivery_method),
+			m_reason_member = first(:l:m_reason_member),
+			m_reason_cancel = first(:l:m_reason_cancel),
+			s_date_created = first(:l:s_date_created),
+			s_created_by = first(:l:s_created_by),
+			s_date_modified = first(:l:s_date_modified),
+			s_modified_by = first(:l:s_modified_by),
+			membstat = first(:ms:text + condition(:l:m_hold_until_date is null or :l:m_hold_until_date <= getdate(), '', '-OnHold')),
+			postmode = first(:pm:text),
+			cancel_txt = first(:cr:text),
+			member_txt = first(:mr:text),
+			sub_date_txt = first(substring(convert(string,:s_date_created),1,11)),
+			delivery_txt = first(isnull(:dm:text, 'Postal Mail'))
 		FROM 
 			/apps/kardia/data/Kardia_DB/m_list_membership/rows l,
 			/apps/kardia/data/Kardia_DB/m_list/rows m,
@@ -51,8 +70,13 @@ m_list_membership_component "widget/component-decl"
 			:l:m_reason_member *= :mr:tag and
 			:l:m_delivery_method *= :dm:tag and
 			(:l:m_membership_status != 'D' or dateadd(day,1,:s_date_modified) > getdate())
+		GROUP BY
+			:l:m_list_code
 		ORDER BY
-			:l:s_date_created desc
+			isnull(charindex(:l:m_membership_status, 'APCED'), 0),
+			:l:s_date_modified desc
+		HAVING
+			:m_list_code is not null
 		";
 
         baseobj = "/apps/kardia/data/Kardia_DB/m_list_membership/rows";
@@ -311,6 +335,7 @@ m_list_membership_component "widget/component-decl"
 			Height = 600;
 			partner = runclient(:memb_osrc:p_partner_key);
 			list = runclient(:memb_osrc:m_list_code);
+			hist_id = runclient(:memb_osrc:m_hist_id);
 			mlist_parent_osrc = memb_osrc;
 			send_update = 1;
 			}
