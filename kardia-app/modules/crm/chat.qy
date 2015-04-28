@@ -137,6 +137,6 @@ chat "system/query"
 	    where
 		:m1:s_username = user_name()
 	    set
-		:m1:c_last_read_message_id = (select max(:msg:c_message_id) from /apps/kardia/data/Kardia_DB/c_member/rows m2, /apps/kardia/data/Kardia_DB/c_message/rows msg where :m2:s_username = :parameters:focus_user and :m1:c_chat_id = :m2:c_chat_id and :msg:c_chat_id = :m1:c_chat_id)
+		:m1:c_last_read_message_id = isnull((select max(:msg:c_message_id) from /apps/kardia/data/Kardia_DB/c_member/rows m2, /apps/kardia/data/Kardia_DB/c_message/rows msg where :m2:s_username = :parameters:focus_user and :m1:c_chat_id = :m2:c_chat_id and :msg:c_chat_id = :m1:c_chat_id), 0)
 	    ";
     }
