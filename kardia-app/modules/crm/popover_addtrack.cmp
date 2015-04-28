@@ -96,6 +96,7 @@ popover_addtrack "widget/component-decl"
 			width=250;
 			label_width=70;
 			track_type_hints "widget/hints" { style=notnull; }
+			numdisplay=10;
 
 			load_step_on_track_select "widget/connector"
 			    {
@@ -115,7 +116,7 @@ popover_addtrack "widget/component-decl"
 		    track_startdate "widget/variable" { fieldname=e_start_date; track_start_hints "widget/hints" { default=runclient(getdate()); } }
 		    track_archived "widget/variable" { fieldname=e_is_archived; track_arc_hints "widget/hints" { default=runclient(0); } }
 		    track_status "widget/variable" { fieldname=e_completion_status; track_comp_hints "widget/hints" { default=runclient('I'); } }
-		    track_desc "widget/component" { field=e_desc; path="/sys/cmp/smart_field.cmp"; width=300; height=20; text="Note:"; ctl_type=editbox; label_width=70; empty_desc="40 chars max"; }
+		    track_desc "widget/component" { field=e_desc; path="/sys/cmp/smart_field.cmp"; width=300; height=20; text="Note:"; ctl_type=editbox; label_width=70; empty_desc="required; 40 chars max"; }
 		    track_comments "widget/component" { field=e_comments; path="/sys/cmp/smart_field.cmp"; height=100; text="Comments:"; ctl_type=textarea; label_width=70; }
 		    track_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 

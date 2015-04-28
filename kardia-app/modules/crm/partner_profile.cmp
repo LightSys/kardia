@@ -153,7 +153,7 @@ partner_profile "widget/component-decl"
 
 			profile_info_vbox "widget/vbox"
 			    {
-			    width=376;
+			    width=326;
 			    fl_width=10;
 			    fl_height=0;
 			    spacing=6;
@@ -186,7 +186,7 @@ partner_profile "widget/component-decl"
 			    {
 			    fl_height=0;
 			    fl_width=0;
-			    width=200;
+			    width=250;
 			    height=110;
 			    path="profile_track_list.cmp";
 

@@ -128,7 +128,7 @@ post_cr_batch "widget/component-decl"
 		HAVING
 			(select :m:m_membership_status
 			   from /apps/kardia/data/Kardia_DB/m_list_membership/rows m
-			  where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key and not (:m:m_membership_status = 'D' or (:m:m_membership_status = 'C' and :m:m_reason_cancel = 'G'))
+			  where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key and not (:m:m_membership_status = 'D' or (:m:m_membership_status = 'C' and isnull(:m:m_reason_cancel,' ') = 'G'))
 			) is null
 		;
 

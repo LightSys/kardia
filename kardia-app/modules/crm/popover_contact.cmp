@@ -103,16 +103,16 @@ popover_contact "widget/component-decl"
 					    :s:p_partner_key =* :p:p_partner_key");
 			}
 
-		    hdr_label "widget/label" { height=20; font_size=16; style=bold; text="Record a Contact with this Person:"; align=center; }
+		    hdr_label "widget/label" { height=20; font_size=16; style=bold; text="Record an Interaction with this Person:"; align=center; }
 
-		    contact_type "widget/component" { field=e_contact_history_type; path="/sys/cmp/smart_field.cmp"; height=20; text="Type:"; ctl_type=dropdown; sql="select :e_description, :e_contact_history_type from /apps/kardia/data/Kardia_DB/e_contact_history_type/rows where :e_contact_history_type != 4 and :e_contact_history_type != 5"; width=250; label_width=100; contact_type_hints "widget/hints" { style=notnull; } }
-		    contact_id "widget/component" { field=e_contact_id; path="/sys/cmp/smart_field.cmp"; height=20; text="Contact Via:"; ctl_type=dropdown; sql="select null,null"; width=350; label_width=100; }
+		    contact_type "widget/component" { field=e_contact_history_type; path="/sys/cmp/smart_field.cmp"; height=20; text="Type:"; ctl_type=dropdown; sql="select :e_description, :e_contact_history_type from /apps/kardia/data/Kardia_DB/e_contact_history_type/rows where :e_contact_history_type != 4 and :e_contact_history_type != 5 order by :e_description"; numdisplay=10; width=250; label_width=110; contact_type_hints "widget/hints" { style=notnull; } }
+		    contact_id "widget/component" { field=e_contact_id; path="/sys/cmp/smart_field.cmp"; height=20; text="Interaction Via:"; ctl_type=dropdown; sql="select null,null"; width=350; label_width=110; numdisplay=10; }
 
 		    contact_partner "widget/variable" { fieldname=p_partner_key; contact_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
 		    contact_whom "widget/variable" { fieldname=e_whom; contact_whom_hints "widget/hints" { default=runclient(:collab_var:value); } }
-		    contact_date "widget/component" { field=e_contact_date; path="/sys/cmp/smart_field.cmp"; height=20; text="Date:"; ctl_type=datetime; label_width=100; contact_date_hints "widget/hints" { default=runclient(getdate()); } width=250; }
-		    contact_subj "widget/component" { field=e_subject; path="/sys/cmp/smart_field.cmp"; height=20; text="Subject:"; ctl_type=editbox; label_width=100; }
-		    contact_notes "widget/component" { field=e_notes; path="/sys/cmp/smart_field.cmp"; height=100; text="Notes:"; ctl_type=textarea; label_width=100; }
+		    contact_date "widget/component" { field=e_contact_date; path="/sys/cmp/smart_field.cmp"; height=20; text="Date:"; ctl_type=datetime; label_width=110; contact_date_hints "widget/hints" { default=runclient(getdate()); } width=250; }
+		    contact_subj "widget/component" { field=e_subject; path="/sys/cmp/smart_field.cmp"; height=20; text="Subject:"; ctl_type=editbox; label_width=110; }
+		    contact_notes "widget/component" { field=e_notes; path="/sys/cmp/smart_field.cmp"; height=100; text="Notes:"; ctl_type=textarea; label_width=110; }
 
 		    cont_f_sep "widget/image" { height=1; x=100; width=368; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
@@ -142,10 +142,10 @@ popover_contact "widget/component-decl"
 				Value=runclient("Followup from " + isnull(:contact_type:label, "Contact") + " on " + isnull(substring(:contact_date:value,1,12), substring(convert(string,getdate()),1,11)));
 				}
 
-			    followup_date "widget/component" { field=e_todo_due_date; path="/sys/cmp/smart_field.cmp"; height=20; text="Followup Date:"; ctl_type=datetime; label_width=100; width=250; }
+			    followup_date "widget/component" { field=e_todo_due_date; path="/sys/cmp/smart_field.cmp"; height=20; text="Followup Date:"; ctl_type=datetime; label_width=110; width=250; }
 			    followup_partner "widget/variable" { fieldname=e_todo_partner; todo_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
-			    followup_collab "widget/component" { field = e_todo_collaborator; path = "/sys/cmp/smart_field.cmp"; height=20; text = "Followup By:"; ctl_type = dropdown; sql = "select null, null"; width=350; label_width=100; }
-			    followup_desc "widget/component" { field=e_todo_desc; path="/sys/cmp/smart_field.cmp"; height=20; text="Followup Note:"; ctl_type=editbox; label_width=100; }
+			    followup_collab "widget/component" { field = e_todo_collaborator; path = "/sys/cmp/smart_field.cmp"; height=20; text = "Followup By:"; ctl_type = dropdown; sql = "select null, null"; width=350; label_width=110; }
+			    followup_desc "widget/component" { field=e_todo_desc; path="/sys/cmp/smart_field.cmp"; height=20; text="Followup Note:"; ctl_type=editbox; label_width=110; }
 			    followup_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; visual=no; }
 			    }
 			}

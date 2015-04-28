@@ -132,6 +132,7 @@ popover_collab "widget/component-decl"
 				    sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label";
 				    width=250;
 				    label_width=100;
+				    numdisplay=10;
 
 				    save_on_data_change "widget/connector" { event=DataChange; event_delay=0.05; target=editcollab_form; action=Save; }
 
