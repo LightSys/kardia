@@ -81,7 +81,7 @@
 
 /* Kardia tab */
 /* main */
-#tab-main {overflow-x:auto; overflow-y:auto; }
+#tab-main {overflow-x:auto; overflow-y:hidden; }
 
 /* top and bottom panels */
 #tab-top-panel {background-color:#eeeeee; border-bottom:1px solid rgba(80,80,80,0.5); overflow-y:auto;}
