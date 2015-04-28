@@ -97,7 +97,7 @@ popover_track "widget/component-decl"
 		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_track; action=TrackUpdated; }
 		    close_on_discard "widget/connector" { event=Discard; target=track_win; action=Close; }
 
-		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient(:track_osrc:e_track_name + ' - ' + :track_osrc:e_desc + "..."); align=center; }
+		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient('Track: ' + :track_osrc:e_track_name + ' - ' + :track_osrc:e_desc); align=center; }
 
 		    //steps_label "widget/label" { height=14; style=bold; value=runclient('Engagement Steps:'); }
 
@@ -165,7 +165,7 @@ popover_track "widget/component-decl"
 					e_completion_status = :er:e_req_completion_status,
 					e_object_name = :er:name,
 					e_object_label = :er:e_req_name,
-					e_object_desc = condition(:er:e_req_completion_status = 'C', 'Complete: ', condition(:er:e_req_completion_status = 'W', 'Waived: ', 'Incomplete')),
+					e_object_desc = condition(:er:e_req_completion_status = 'C', 'Complete: ', condition(:er:e_req_completion_status = 'W', 'Waived: ', 'Incomplete')) + ' (' + condition(:er:e_req_whom == 'P', 'Partner', condition(:er:e_req_whom == 'O', 'Organization', 'Either')) + ')',
 					e_object_comm = null,
 					:er:s_date_created,
 					:er:s_created_by,
@@ -183,14 +183,49 @@ popover_track "widget/component-decl"
 				    ;
 
 				    select
-					*
+					-- track activity
+					:ta:p_partner_key,
+					:ta:e_username,
+					:ta:e_sort_key,
+					:ta:e_track_id,
+					:ta:e_step_id,
+					:ta:e_object_type,
+					:ta:e_completion_status,
+					:ta:e_object_name,
+					:ta:e_object_label,
+					:ta:e_object_desc,
+					:ta:e_object_comm,
+
+					-- linked in e_partner_engagement_req data
+					:per:e_req_whom,
+					:per:e_req_waivable,
+					:per:e_req_completion_status,
+					:per:e_completion_date,
+					:per:e_waived_date,
+					req_s_date_modified = :per:s_date_modified,
+					req_s_modified_by = :per:s_modified_by,
+					:per:e_completed_by,
+					:per:e_waived_by,
+
+					-- linked in e_todo data
+					:t:e_todo_status,
+					:t:e_todo_completion_date,
+					:t:e_todo_canceled_date,
+					todo_s_date_modified = :t:s_date_modified,
+					todo_s_modified_by = :t:s_modified_by
 				    from
-					/apps/kardia/data/Kardia_DB/e_trackactivity/rows
+					/apps/kardia/data/Kardia_DB/e_trackactivity/rows ta,
+					/apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows per,
+					/apps/kardia/data/Kardia_DB/e_todo/rows t
 				    where
-					:p_partner_key = :parameters:step_partner and
-					:e_username = user_name()
+					:ta:p_partner_key = :parameters:step_partner and
+					:ta:e_username = user_name() and
+					:per:name =* :ta:e_object_name and
+					:t:e_todo_partner =* :per:p_partner_key and
+					:t:e_todo_engagement_id =* :per:e_engagement_id and
+					:t:e_todo_req_item_id =* :per:e_req_item_id
 				    order by
-					:e_sort_key asc
+					:ta:e_sort_key asc
 				    ";
 			    replicasize=20;
 			    readahead=20;
@@ -210,18 +245,86 @@ popover_track "widget/component-decl"
 				titlebar = no;
 				row_border_radius=4;
 				inner_padding = 1;
-				cellvspacing = 0;
-				row1_bgcolor = "#f8f8f8";
-				row2_bgcolor = "#f8f8f8";
-				row_border_radius=4;
+				cellvspacing = 2;
+				//row1_bgcolor = "#f8f8f8";
+				//row2_bgcolor = "#f8f8f8";
+				row_border_radius=6;
 				rowhighlight_bgcolor = "#fff090";
 				textcolorhighlight = "#000000";
+				row1_bgcolor=runclient(condition(:steplist_osrc:e_object_type == 'S', '#e0e0e0', '#f8f8f8'));
+				row2_bgcolor=runclient(condition(:steplist_osrc:e_object_type == 'S', '#e0e0e0', '#f8f8f8'));
 
 
-				t_stepcheck "widget/table-column" { value=runclient(condition(:steplist_osrc:e_object_type == 'S', condition(:steplist_osrc:e_completion_status = '-', '/sys/images/trans_1.gif', condition(:steplist_osrc:e_completion_status = 'I', '/sys/images/dotted_check.gif', condition(:steplist_osrc:e_completion_status == 'C', '/sys/images/green_check.gif', '/sys/images/red_x.gif'))), '/sys/images/trans_1.gif')); width=24; type=image; image_maxwidth=16; image_maxheight=16; align=left; }
+				t_stepcheck "widget/table-column" { value=runclient(condition(:steplist_osrc:e_object_type == 'S', condition(:steplist_osrc:e_completion_status = '-', '/sys/images/trans_1.gif', condition(:steplist_osrc:e_completion_status = 'I', '/apps/kardia/images/icons/ionicons-arrow-right-c.svg', condition(:steplist_osrc:e_completion_status == 'C', '/sys/images/green_check.gif', '/sys/images/red_x.gif'))), '/sys/images/trans_1.gif')); width=24; type=image; image_maxwidth=16; image_maxheight=16; align=left; }
 				t_reqcheck "widget/table-column" { value=runclient(condition(:steplist_osrc:e_object_type == 'R', '/sys/images/checkbox_unchecked.png', '/sys/images/trans_1.gif')); width=24; type=image; image_maxwidth=16; image_maxheight=16; align=left; }
-				t_stepname "widget/table-column" { value=runclient(condition(:steplist_osrc:e_object_type == 'S', '', '    ') + :steplist_osrc:e_object_label); width=150; style=runclient(condition(:steplist_osrc:e_object_type = 'S', 'bold', '')); }
-				t_datewho "widget/table-column" { value=runclient(:steplist_osrc:e_object_desc); width=348; wrap=yes; caption_style=italic; caption_textcolor="#606060"; caption_value=runclient(:steplist_osrc:e_object_comm); }
+				t_stepname "widget/table-column" { value=runclient(condition(:steplist_osrc:e_object_type == 'S', '', '') + :steplist_osrc:e_object_label); width=150; style=runclient(condition(:steplist_osrc:e_object_type = 'S', 'bold', '')); }
+				t_info "widget/table-column" { value=runclient(:steplist_osrc:e_object_desc); width=348; wrap=yes; caption_style=italic; caption_textcolor="#606060"; caption_value=runclient(:steplist_osrc:e_object_comm); }
+
+				t_detail_req "widget/table-row-detail"
+				    {
+				    display_for=runclient(:steplist_osrc:e_object_type == 'R' and :steplist_osrc:e_completion_status == 'I');
+				    width=550;
+				    height=34;
+
+				    t_detail_req_hbox "widget/hbox"
+					{
+					x=0; y=4; width=550; height=24;
+					spacing=8;
+					align=center;
+
+					complete_btn "widget/textbutton"
+					    {
+					    width=120; height=24;
+					    text="Complete";
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_complete "widget/connector"
+						{
+						event=Click;
+						target=steplist_osrc;
+						action=Modify;
+						e_todo_status=runclient('C');
+						e_todo_completion_date=runclient(getdate());
+						todo_s_date_modified=runclient(getdate());
+						todo_s_modified_by=runclient(user_name());
+						e_req_completion_status=runclient('C');
+						req_s_date_modified=runclient(getdate());
+						req_s_modified_by=runclient(user_name());
+						e_completion_date=runclient(getdate());
+						e_completed_by=runclient(:collab_var:value);
+						}
+					    }
+					waive_btn "widget/textbutton"
+					    {
+					    width=120; height=24;
+					    text="Waive";
+					    enabled=runclient(:steplist_osrc:e_req_waivable);
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_waive "widget/connector"
+						{
+						event=Click;
+						target=steplist_osrc;
+						action=Modify;
+						e_todo_status=runclient('X');
+						e_todo_canceled_date=runclient(getdate());
+						todo_s_date_modified=runclient(getdate());
+						todo_s_modified_by=runclient(user_name());
+						e_req_completion_status=runclient('W');
+						req_s_date_modified=runclient(getdate());
+						req_s_modified_by=runclient(user_name());
+						e_waived_date=runclient(getdate());
+						e_waived_by=runclient(:collab_var:value);
+						}
+					    }
+					}
+				    }
 				}
 			    }
 			}
@@ -259,7 +362,7 @@ popover_track "widget/component-decl"
 			cancel_btn "widget/textbutton"
 			    {
 			    height=24; width=150;
-			    text = "Cancel";
+			    text = runclient(condition(:track_form:is_discardable, "Cancel", "Close"));
 			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
 			    fgcolor1=white;
 			    fgcolor2=black;

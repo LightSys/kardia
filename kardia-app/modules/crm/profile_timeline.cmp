@@ -69,7 +69,7 @@ profile_timeline "widget/component-decl"
 		activity_id "widget/parameter" { type=integer; default=runclient(:timeline_data_osrc:activity_group_id); }
 
 		sql = " select
-			    name = :e:e_reference_info,
+			    name = :e_activity_type + ':' + :e:e_reference_info,
 			    img = :c:icon,
 			    detail_height = :c:height,
 			    :e:e_activity_date,

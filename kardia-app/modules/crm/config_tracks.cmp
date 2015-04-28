@@ -85,7 +85,7 @@ config_tracks "widget/component-decl"
 
 					ct_edit_form "widget/form"
 					    {
-					    interlock_with=ct_addnew_form,tc_addnew_form,tc_edit_form;
+					    interlock_with=ct_addnew_form,tc_addnew_form,tc_edit_form,cs_addnew_form,cs_edit_form,sc_edit_form,sc_addnew_form,req_edit_form,req_addnew_form;
 
 					    //on_modify_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
 					    //on_delete_load_dd "widget/connector" { event=DataDeleted; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
@@ -161,7 +161,8 @@ config_tracks "widget/component-decl"
 				    partnername = condition(char_length(:p:p_org_name) > 1, :p:p_org_name, isnull(condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ', '') + isnull(:p:p_surname,'')),
 				    :e_track_id,
 				    :p_collab_partner_key,
-				    --:e:e_collab_type_id,
+				    :e_collab_type_id,
+				    e_collab_type_desc = (select :e_collab_type_desc from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows et where :et:e_collab_type_id = :tc:e_collab_type_id),
 				    :e_comments,
 				    :s_date_created,
 				    :s_created_by,
@@ -219,7 +220,8 @@ config_tracks "widget/component-decl"
 				    nodata_message = "no collaborators yet";
 
 				    tc_t_icon "widget/table-column" { value=runclient(:tcoll_list_osrc:img); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
-				    tc_t_collabname "widget/table-column" { value=runclient(:tcoll_list_osrc:partnername); style=bold; width=308; }
+				    tc_t_collabname "widget/table-column" { value=runclient(:tcoll_list_osrc:partnername); style=bold; width=140; }
+				    tc_t_collabdesc "widget/table-column" { value=runclient(:tcoll_list_osrc:e_collab_type_desc); width=168; }
 
 				    tc_t_detail "widget/table-row-detail"
 					{
@@ -261,11 +263,11 @@ config_tracks "widget/component-decl"
 
 					tc_addnew_collabid "widget/component"
 					    {
-					    width=228;
+					    width=178;
 					    path="/apps/kardia/modules/base/editbox_table.cmp";
 					    field=p_collab_partner_key;
-					    text='Add Collab.:';
-					    label_width=90;
+					    text='Add:';
+					    label_width=40;
 					    popup_width=380;
 					    popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
 					    search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
@@ -274,6 +276,16 @@ config_tracks "widget/component-decl"
 					    popup_text="Select a Partner:";
 
 					    collab_hints "widget/hints" { style=applyonchange; }
+					    }
+
+					tc_addnew_collabtype "widget/dropdown"
+					    {
+					    width=114;
+					    height=24;
+					    fieldname=e_collab_type_id;
+					    numdisplay=10;
+					    mode=dynamic_server;
+					    sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label";
 					    }
 
 					tc_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
@@ -404,7 +416,8 @@ config_tracks "widget/component-decl"
 				    :e_track_id,
 				    :e_step_id,
 				    :p_collab_partner_key,
-				    --:e:e_collab_type_id,
+				    :e_collab_type_id,
+				    e_collab_type_desc = (select :e_collab_type_desc from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows et where :et:e_collab_type_id = :tc:e_collab_type_id),
 				    :e_comments,
 				    :s_date_created,
 				    :s_created_by,
@@ -464,7 +477,8 @@ config_tracks "widget/component-decl"
 				    nodata_message = "no collaborators yet";
 
 				    sc_t_icon "widget/table-column" { value=runclient(:scoll_list_osrc:img); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
-				    sc_t_collabname "widget/table-column" { value=runclient(:scoll_list_osrc:partnername); style=bold; width=308; }
+				    sc_t_collabname "widget/table-column" { value=runclient(:scoll_list_osrc:partnername); style=bold; width=140; }
+				    sc_t_collabdesc "widget/table-column" { value=runclient(:scoll_list_osrc:e_collab_type_desc); width=168; }
 
 				    sc_t_detail "widget/table-row-detail"
 					{
@@ -506,11 +520,11 @@ config_tracks "widget/component-decl"
 
 					sc_addnew_collabid "widget/component"
 					    {
-					    width=226;
+					    width=176;
 					    path="/apps/kardia/modules/base/editbox_table.cmp";
 					    field=p_collab_partner_key;
-					    text='Add Collab.:';
-					    label_width=90;
+					    text='Add:';
+					    label_width=40;
 					    popup_width=380;
 					    popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
 					    search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
@@ -519,6 +533,16 @@ config_tracks "widget/component-decl"
 					    popup_text="Select a Partner:";
 
 					    sc_collab_hints "widget/hints" { style=applyonchange; }
+					    }
+
+					sc_addnew_collabtype "widget/dropdown"
+					    {
+					    width=114;
+					    height=24;
+					    fieldname=e_collab_type_id;
+					    numdisplay=10;
+					    mode=dynamic_server;
+					    sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label";
 					    }
 
 					sc_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
@@ -692,11 +716,12 @@ config_tracks "widget/component-decl"
 		align=center;
 		spacing=10;
 
+		//ct_edit_form,ct_addnew_form,tc_addnew_form,tc_edit_form,cs_addnew_form,cs_edit_form,sc_edit_form,sc_addnew_form,req_edit_form,req_addnew_form;
 		ct_save_all "widget/textbutton"
 		    {
 		    width=100;
 		    height=24;
-		    text=runclient(condition(:ct_addnew_form:is_savable, "Save/Add", "Save"));
+		    text=runclient(condition(:ct_addnew_form:is_savable or :tc_addnew_form:is_savable or :cs_addnew_form:is_savable or :sc_addnew_form:is_savable or :req_addnew_form:is_savable, "Save/Add", "Save"));
 		    enabled=runclient(:track_list_osrc:is_client_savable);
 
 		    on_save_2 "widget/connector" { event=Click; target=track_list_osrc; action=SaveClients; }
@@ -705,7 +730,7 @@ config_tracks "widget/component-decl"
 		    {
 		    width=100;
 		    height=24;
-		    text=runclient(condition(:ct_addnew_form:is_discardable or :ct_edit_form:is_discardable, 'Cancel', 'Close'));
+		    text=runclient(condition(:ct_addnew_form:is_discardable or :ct_edit_form:is_discardable or :tc_addnew_form:is_discardable or :tc_edit_form:is_discardable or :cs_addnew_form:is_discardable or :cs_edit_form:is_discardable or :sc_edit_form:is_discardable or :sc_addnew_form:is_discardable or :req_edit_form:is_discardable or :req_addnew_form:is_discardable, 'Cancel', 'Close'));
 
 		    on_disc_1 "widget/connector" { event=Click; target=track_list_osrc; action=DiscardClients; }
 		    on_disc_2 "widget/connector" { event=Click; target=config_tracks_window; action=Close; }

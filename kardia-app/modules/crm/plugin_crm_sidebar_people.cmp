@@ -153,6 +153,7 @@ people_list "widget/component-decl"
 		cellvspacing = 4;
 		row1_bgcolor = runclient(condition(:active_collab_osrc:is_new == 1, "#80ff80", "#f8f8f8"));
 		row2_bgcolor = runclient(condition(:active_collab_osrc:is_new == 1, "#80ff80", "#f8f8f8"));
+		nodata_message = "(no people to show)";
 
 		onclick "widget/connector" { event=Click; target=people_list; action=PartnerSelected; partner_key=runclient(:partner_id); }
 
