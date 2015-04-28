@@ -168,6 +168,9 @@ popover_newperson_simple "widget/component-decl"
 			    person_class "widget/variable" { fieldname=p_partner_class; type=string; class_hints "widget/hints" { default=runclient('IND'); } }
 			    stat1 "widget/variable" { fieldname=p_status_code; type=string; stat1_hints "widget/hints" { default=runclient('A'); } }
 			    stat2 "widget/variable" { fieldname=p_record_status_code; type=string; stat2_hints "widget/hints" { default=runclient('A'); } }
+			    sur_first "widget/variable" { fieldname=p_surname_first; type=string; sf_hints "widget/hints" { default=runclient(0); } }
+			    no_solicit "widget/variable" { fieldname=p_no_solicitations; type=string; nosol_hints "widget/hints" { default=runclient(0); } }
+			    no_mail "widget/variable" { fieldname=p_no_mail; type=string; nomail_hints "widget/hints" { default=runclient(0); } }
 
 			    newperson_meta "widget/component" { visual=no; path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 			    }
