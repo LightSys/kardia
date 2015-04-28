@@ -554,7 +554,9 @@ function reload(isDefault) {
 			}
 			collaboratorText += '<spacer flex="1"/></vbox><label tooltiptext="Click to view collaborator" width="100" flex="1" class="text-link" onclick="addCollaborator(' + mainWindow.collaborators[mainWindow.selected][i+1] + ')">' + mainWindow.collaborators[mainWindow.selected][i+2] +'</label></hbox>';
 		}
-		collaboratorText += '<hbox><spacer flex="1"/><button class="new-button" label="New Collaborator..." tooltiptext="Create new collaborator for this partner" oncommand="newCollaborator()"/></hbox>';	
+		collaboratorText += '<hbox><spacer flex="1"/></hbox>';	
+      // Add new collaborator button muted for now untill fixed. Code below Includes it, code above removes it.
+		//collaboratorText += '<hbox><spacer flex="1"/><button class="new-button" label="New Collaborator..." tooltiptext="Create new collaborator for this partner" oncommand="newCollaborator()"/></hbox>';	
 		
 		mainWindow.document.getElementById("collaborator-inner-box").innerHTML = collaboratorText;	
 		
@@ -582,7 +584,9 @@ function reload(isDefault) {
 					kardiaTab.document.getElementById("tab-tags").innerHTML += '<vbox onclick="addFilter(\'t\',\'' + filterIndex + '\', true)" class="tab-tag-color-box" tooltiptext="Click to filter by this tag" style="background-color:hsl(8,100%,' + (100-40*(-1*mainWindow.tags[mainWindow.selected][i+1])) + '%);"><label value="' + mainWindow.tags[mainWindow.selected][i] + questionMark + '"/></vbox>';
 				}
 			}
-			kardiaTab.document.getElementById("tab-tags").innerHTML += '<hbox><spacer flex="1"/><button class="new-button" label="New Tag..." oncommand="newTag()" tooltiptext="Add tag to this partner"/></hbox>';
+			kardiaTab.document.getElementById("tab-tags").innerHTML += '<hbox><spacer flex="1"/></hbox>';
+         // New tag button muted for now.
+			//kardiaTab.document.getElementById("tab-tags").innerHTML += '<hbox><spacer flex="1"/><button class="new-button" label="New Tag..." oncommand="newTag()" tooltiptext="Add tag to this partner"/></hbox>';
 			
 			// display data item groups
 			if (mainWindow.dataGroups[mainWindow.selected].length > 0) {

@@ -57,6 +57,8 @@
 				<!-- vbox with all collapsible items like Engagement Tracks -->
 				<vbox id="collapsible-items-box">	
 					
+               <button class="new-button" label="Add new data" oncommand="newNote()" tooltiptext="Add new information to this partner's activity timeline"/>
+               <spacer flex="1"/>
 					<!-- address, phone, cell, email, fax box -->
 					<hbox>
 					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(0)" label="Contact Information:"/>
