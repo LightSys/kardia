@@ -10,6 +10,9 @@ profile_timeline "widget/component-decl"
     // Our events
     EditTask "widget/component-decl-event" { }
 
+    // Our events
+    TrackSelected "widget/component-decl-event" { }
+
     // Iconbar passed in so we can access the 'EnabledTypes' property it has
     iconbar "widget/parameter" { type=object; deploy_to_client=yes; }
     profile "widget/parameter" { type=object; deploy_to_client=yes; }
@@ -151,6 +154,15 @@ profile_timeline "widget/component-decl"
 				timeline_data_osrc = timeline_data_osrc;
 				profile = profile;
 				collaborator_osrc = collaborator_osrc;
+
+				on_track_click "widget/connector"
+				    {
+				    event=TrackSelected;
+				    target=profile_timeline;
+				    action=TrackSelected;
+				    engagement_id=runclient(:engagement_id);
+				    origin=runclient(:origin);
+				    }
 
 				on_reassign "widget/connector"
 				    {

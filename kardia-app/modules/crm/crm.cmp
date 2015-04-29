@@ -308,7 +308,8 @@ crm "widget/component-decl"
 		    target=track_popover;
 		    action=Open;
 		    PointAt=runclient(:origin);
-		    PointSide=runclient('right');
+		    PointSide=runclient(:point_side);
+		    Center=runclient(:center);
 		    //PointOffset=runclient(20);
 		    engagement_id=runclient(:engagement_id);
 		    partner=runclient(:profile_cmp:p_partner_key);

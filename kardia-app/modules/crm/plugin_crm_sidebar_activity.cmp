@@ -110,7 +110,8 @@ activity_list "widget/component-decl"
 			:e:e_activity_date desc
 		    where
 			:e:e_activity_type != 'HEAD' and
-			:e:e_activity_group_id = :parameters:activity_id
+			:e:e_activity_group_id = :parameters:activity_id and
+			:e:s_created_by = user_name()
 		    ";
 	    autoquery=never;
 	    readahead=50;

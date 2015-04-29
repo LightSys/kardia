@@ -11,7 +11,7 @@ popover_track "widget/component-decl"
     onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
     onOpen3 "widget/connector" { event=Open; target=partnername_var; action=SetValue; Value=runclient(:partnername); }
     onOpen4 "widget/connector" { event=Open; target=engagement_var; action=SetValue; Value=runclient(:engagement_id); }
-    onOpen5 "widget/connector" { event=Open; target=track_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); PointOffset=runclient(:PointOffset); }
+    onOpen5 "widget/connector" { event=Open; target=track_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); PointOffset=runclient(:PointOffset); Center=runclient(:Center); }
 
     partner_var "widget/variable" { type=string; }
     partnername_var "widget/variable" { type=string; }
