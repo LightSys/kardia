@@ -27,7 +27,7 @@
  		<label value="Note/Prayer Title:"/>
 		<textbox id="note-title"/>
 		<label value="Description:"/>
-		<textbox id="note-text" multiline="true" cols="6"/>
+		<textbox id="note-text" multiline="true" cols="20" rows="20"/>
 	</vbox>
 	
 </dialog>
