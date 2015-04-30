@@ -111,6 +111,7 @@ partner_profile "widget/component-decl"
 			    :p:p_surname,
 			    :p:p_given_name,
 			    :p:p_org_name,
+			    :p:p_comments,
 			    :l:p_city,
 			    :l:p_state_province,
 			    collab_role = (select :ct:e_collab_type_label from /apps/kardia/data/Kardia_DB/p_staff/rows s, /apps/kardia/data/Kardia_DB/e_collaborator/rows c, /apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct where :s:p_kardia_login = user_name() and :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :s:p_partner_key and :ct:e_collab_type_id = :c:e_collab_type_id)
