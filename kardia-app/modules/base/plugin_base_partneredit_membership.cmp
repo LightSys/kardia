@@ -177,6 +177,7 @@ m_list_membership_component "widget/component-decl"
 
             m_list_membership_ctl "widget/component"
                 {
+		condition=0;
                 x=0;y=0;width=831;height=24;
                 path="/sys/cmp/form_controls.cmp";
 		object_name="Membership";
@@ -185,8 +186,8 @@ m_list_membership_component "widget/component-decl"
                 }
 	    List_membership_table_pane "widget/pane"
 		{
-		x=0;y=27;
-		height=162;
+		x=0;y=0;
+		height=189;
 		width=831;
 		widget_class = "table_bgnd";
 
