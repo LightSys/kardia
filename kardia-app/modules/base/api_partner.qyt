@@ -222,15 +222,42 @@ api_partner "system/querytree"
 		    from
 			identity /apps/kardia/data/Kardia_DB/p_staff/rows s,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p
-			where
+		    where
 			:p:p_partner_key = :s:p_partner_key
-		    group by
-			:p:p_partner_key
 		    ";
-		}
+	    }
+	}
+
+    StaffLogins "system/querytree"
+	{
+	text = "StaffLogins";
+
+	staff_list "system/querytree"
+	    {
+	    sql = " select
+			name = :s:p_kardia_login,
+			partner_id = :s:p_partner_key,
+			is_staff = :s:p_is_staff,
+			kardia_login = :s:p_kardia_login,
+			kardiaweb_login = :s:p_kardiaweb_login,
+			preferred_email_id = :s:p_preferred_email_id,
+			preferred_location_id = :s:p_preferred_location_id,
+			date_created = :s:s_date_created,
+			created_by = :s:s_created_by,
+			date_modified = :s:s_date_modified,
+			modified_by = :s:s_modified_by
+		    from
+			identity /apps/kardia/data/Kardia_DB/p_staff/rows s,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		    where
+			:p:p_partner_key = :s:p_partner_key and
+			char_length(:s:p_kardia_login) > 1
+		    ";
+	    use_having = yes;
+	    }
 	}
 	
-	ContactTypes "system/querytree"
+    ContactTypes "system/querytree"
 	{
 	text = "ContactTypes";
 
