@@ -466,6 +466,14 @@ alter table e_ack
 	drop index e_ack_par_idx;
 
 
+alter table e_ack
+	drop index e_ack_par2_idx;
+
+
+alter table e_ack
+	drop index e_ack_par3_idx;
+
+
 alter table e_ack_type
 	drop primary key;
 

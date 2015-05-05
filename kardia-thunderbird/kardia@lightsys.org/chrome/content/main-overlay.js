@@ -485,6 +485,11 @@ function reload(isDefault) {
 			}
 			mainWindow.document.getElementById("choose-partner-dropdown-menu").innerHTML = partners;
 		}
+
+      // sets up the Add data button
+		var addData = "";
+		addData += '<button label="Add new info" oncommand="newNote(\'\',\'\')" tooltiptext="Add new information to this partner\'s activity timeline"/><spacer flex="1"/>';	
+		mainWindow.document.getElementById("new-data-button").innerHTML = addData;
 		
 		// display contact info based on selected partner
 		var contactInfoHTML = "";
@@ -531,6 +536,8 @@ function reload(isDefault) {
 		}
 		// FEATURE: uncomment this when adding to-do items is implemented
 		// toDoText += '<hbox><spacer flex="1"/><button class="new-button" label="New To-Do..." oncommand="newTodo()" tooltiptext="Create new to-do item for this partner"/></hbox>'; 
+		//mainWindow.document.getElementById("to-dos-inner-box").innerHTML = "";
+      // Muted for now #Muted
 		mainWindow.document.getElementById("to-dos-inner-box").innerHTML = toDoText;	
 		
 		// display notes
@@ -539,6 +546,8 @@ function reload(isDefault) {
 			noteText += '<hbox class="hover-box"><vbox><spacer height="3"/><image class="note-image"/><spacer flex="1"/></vbox><vbox width="100" flex="1"><description flex="1">' + mainWindow.notes[mainWindow.selected][i-2] + '</description><description flex="1">' + mainWindow.notes[mainWindow.selected][i-1] + '</description></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editNote(\'' + mainWindow.notes[mainWindow.selected][i-2] + '\',' + mainWindow.notes[mainWindow.selected][i] + ');"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
 		}
 		noteText += '<hbox><spacer flex="1"/><button class="new-button" label="New Note/Prayer..." tooltiptext="Create new note/prayer for this partner" oncommand="newNote(\'\',\'\')"/></hbox>';	
+		//mainWindow.document.getElementById("notes-prayer-inner-box").innerHTML = "";
+      // Muted for now #Muted
 		mainWindow.document.getElementById("notes-prayer-inner-box").innerHTML = noteText;
 		
 		// display collaborators
@@ -554,16 +563,22 @@ function reload(isDefault) {
 			}
 			collaboratorText += '<spacer flex="1"/></vbox><label tooltiptext="Click to view collaborator" width="100" flex="1" class="text-link" onclick="addCollaborator(' + mainWindow.collaborators[mainWindow.selected][i+1] + ')">' + mainWindow.collaborators[mainWindow.selected][i+2] +'</label></hbox>';
 		}
-		collaboratorText += '<hbox><spacer flex="1"/><button class="new-button" label="New Collaborator..." tooltiptext="Create new collaborator for this partner" oncommand="newCollaborator()"/></hbox>';	
+		collaboratorText += '<hbox><spacer flex="1"/></hbox>';	
+      // Add new collaborator button muted for now untill fixed. Code below Includes it, code above removes it.
+		//collaboratorText += '<hbox><spacer flex="1"/><button class="new-button" label="New Collaborator..." tooltiptext="Create new collaborator for this partner" oncommand="newCollaborator()"/></hbox>';	
 		
-		mainWindow.document.getElementById("collaborator-inner-box").innerHTML = collaboratorText;	
+		mainWindow.document.getElementById("collaborator-inner-box").innerHTML = "";	
+      // Muted for now #Muted
+		//mainWindow.document.getElementById("collaborator-inner-box").innerHTML = collaboratorText;	
 		
 		// display documents
 		var docs = "";
 		for (var i=0;i<mainWindow.documents[mainWindow.selected].length;i+=2) {
 			docs += '<hbox><vbox><image class="document-image"/><spacer flex="1"/></vbox><label tooltiptext="Click to open document" id="docLabel' + i + '" width="100" flex="1" class="text-link" context="documentContextMenu" onclick="if (event.button == 0) openDocument(\'' + mainWindow.documents[mainWindow.selected][i] + '\',false);">' + mainWindow.documents[mainWindow.selected][i+1] + '</label></hbox>';
 		}
-		mainWindow.document.getElementById("document-inner-box").innerHTML = docs;
+		mainWindow.document.getElementById("document-inner-box").innerHTML = "";
+      // #Muted
+		//mainWindow.document.getElementById("document-inner-box").innerHTML = docs;
 		
 		// if Kardia tab is open, add person's info to it, too
 		if (kardiaTab != null) {
@@ -582,7 +597,9 @@ function reload(isDefault) {
 					kardiaTab.document.getElementById("tab-tags").innerHTML += '<vbox onclick="addFilter(\'t\',\'' + filterIndex + '\', true)" class="tab-tag-color-box" tooltiptext="Click to filter by this tag" style="background-color:hsl(8,100%,' + (100-40*(-1*mainWindow.tags[mainWindow.selected][i+1])) + '%);"><label value="' + mainWindow.tags[mainWindow.selected][i] + questionMark + '"/></vbox>';
 				}
 			}
-			kardiaTab.document.getElementById("tab-tags").innerHTML += '<hbox><spacer flex="1"/><button class="new-button" label="New Tag..." oncommand="newTag()" tooltiptext="Add tag to this partner"/></hbox>';
+			kardiaTab.document.getElementById("tab-tags").innerHTML += '<hbox><spacer flex="1"/></hbox>';
+         // New tag button muted for now.
+			//kardiaTab.document.getElementById("tab-tags").innerHTML += '<hbox><spacer flex="1"/><button class="new-button" label="New Tag..." oncommand="newTag()" tooltiptext="Add tag to this partner"/></hbox>';
 			
 			// display data item groups
 			if (mainWindow.dataGroups[mainWindow.selected].length > 0) {

@@ -21,13 +21,31 @@ people_list "widget/component-decl"
 
     people_stats_osrc "widget/osrc"
 	{
+	collaborator "widget/parameter" { type=string; default=runclient(null); }
 	sql = "	select
-		    new_today_cnt = count(1)
-		from
-		    /apps/kardia/data/Kardia_DB/p_partner/rows p
-		where
-		    :p:s_created_by = user_name() and
-		    :p:s_date_created >= dateadd(day, -1, getdate())
+		    new_today_cnt = (select
+					count(1)
+				    from
+					/apps/kardia/data/Kardia_DB/p_partner/rows p
+				    where
+					:p:s_created_by = user_name() and
+					:p:s_date_created >= dateadd(day, -1, getdate())
+				    ),
+		    all_collab_cnt = (select
+					count(1)
+				    from
+					/apps/kardia/data/Kardia_DB/e_collaborator/rows c
+				    where
+					:c:e_collaborator = :parameters:collaborator
+				    ),
+		    new_collab_cnt = (select
+					count(1)
+				    from
+					/apps/kardia/data/Kardia_DB/e_collaborator/rows c
+				    where
+					:c:e_collaborator = :parameters:collaborator and
+					(select count(1) from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :parameters:collaborator) = 0
+				    )
 		";
 	replicasize=2;
 	readahead=2;
@@ -41,6 +59,15 @@ people_list "widget/component-decl"
 	    Which=runclient("New");
 	    Number=runclient(condition(:people_stats_osrc:new_today_cnt > 0, '+' + :people_stats_osrc:new_today_cnt, ''));
 	    Color=runclient(condition(:people_stats_osrc:new_today_cnt > 0, '#00c000', 'black'));
+	    }
+	set_unseencnt_on_load "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=people_list;
+	    action=SetNumber;
+	    Which=runclient("People");
+	    Number=runclient(condition(:people_stats_osrc:new_collab_cnt > 0, '' + (:people_stats_osrc:all_collab_cnt - :people_stats_osrc:new_collab_cnt) + '+' + :people_stats_osrc:new_collab_cnt, :people_stats_osrc:all_collab_cnt));
+	    Color=runclient(condition(:people_stats_osrc:new_collab_cnt > 0, 'red', 'black'));
 	    }
 	}
 
@@ -78,7 +105,8 @@ people_list "widget/component-decl"
 				limit
 				    1
 				), '/apps/kardia/images/artwork/persona.png'),
-			last_date = substring(convert(string, (select max(:e_contact_date) from /apps/kardia/data/Kardia_DB/e_contact_history/rows ch where :ch:p_partner_key = :c:p_partner_key) ),1,11)
+			last_date = substring(convert(string, (select max(:e_contact_date) from /apps/kardia/data/Kardia_DB/e_contact_history/rows ch where :ch:p_partner_key = :c:p_partner_key) ),1,11),
+			is_new = condition((select count(1) from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :c:e_collaborator) = 0, 1, 0)
 		    from
 			identity /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
 			/apps/kardia/data/Kardia_DB/p_staff/rows s,
@@ -98,7 +126,7 @@ people_list "widget/component-decl"
 		event=EndQuery;
 		target=people_stats_osrc;
 		action=QueryParam;
-		//e_todo_collaborator=runclient(:collaborator_osrc:p_partner_key);
+		collaborator=runclient(:active_collab_osrc:collaborator_id);
 		}
 
 	    active_collab_table "widget/table"
@@ -123,15 +151,16 @@ people_list "widget/component-decl"
 		rowhighlight_bgcolor = "#fff090";
 		textcolorhighlight = "#000000";
 		cellvspacing = 4;
-		row1_bgcolor = "#f8f8f8";
-		row2_bgcolor = "#f8f8f8";
+		row1_bgcolor = runclient(condition(:active_collab_osrc:is_new == 1, "#80ff80", "#f8f8f8"));
+		row2_bgcolor = runclient(condition(:active_collab_osrc:is_new == 1, "#80ff80", "#f8f8f8"));
+		nodata_message = "(no people to show)";
 
 		onclick "widget/connector" { event=Click; target=people_list; action=PartnerSelected; partner_key=runclient(:partner_id); }
 
 		t_img "widget/table-column" { fieldname="img"; width=40; type=image; image_maxwidth=32; image_maxheight=32; align=center; }
 		t_name "widget/table-column"
 		    {
-		    fieldname="partner_name";
+		    value=runclient(:active_collab_osrc:partner_name + condition(:active_collab_osrc:is_new = 1, ' (new)', ''));
 		    width=208;
 		    caption_value=runclient(
 			    isnull('Tracks: ' + :active_collab_osrc:track_names + '\n', '') +
@@ -161,6 +190,12 @@ people_list "widget/component-decl"
 		    ;
 
 		    select
+			'New People Only',
+			'N',
+			0
+		    ;
+
+		    select
 			'My Role: ' + :e_collab_type_label,
 			'R' + convert(string,:e_collab_type_id),
 			0
@@ -184,6 +219,14 @@ people_list "widget/component-decl"
 		event_condition=runclient(substring(:Value,1,1) == 'A');
 		target=active_collab_osrc;
 		action=QueryParam;
+		}
+	    on_role_select_new "widget/connector"
+		{
+		event=DataChange;
+		event_condition=runclient(substring(:Value,1,1) == 'N');
+		target=active_collab_osrc;
+		action=QueryParam;
+		is_new=1;
 		}
 	    on_role_select_role "widget/connector"
 		{

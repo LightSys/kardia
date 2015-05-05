@@ -5,7 +5,7 @@ api_missionary "system/querytree"
 	{
 	sql = "	select
 		    partner_id = :s:p_partner_key,
-		    partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		    partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 		    class = (select :text from /apps/kardia/data/Kardia_DB/_p_partner_class/rows pc where :pc:tag = :p:p_partner_class),
 		    is_valid = condition(:p:p_status_code == 'A', 1, 0)
 		from
@@ -31,7 +31,7 @@ api_missionary "system/querytree"
 			    note_type = :ct:e_short_name,
 			    note_date = :ch:e_contact_date,
 			    supporter_partner_id = :p:p_partner_key,
-			    supporter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+			    supporter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
 			from
 			    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
 			    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
@@ -39,6 +39,7 @@ api_missionary "system/querytree"
 			    /apps/kardia/data/Kardia_DB/p_partner/rows p
 			where
 			    :a:p_dn_partner_key = :missionaries:partner_id and
+			    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
 			    :a:e_object_type = 'e_contact_history' and
 			    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
 			    :p:p_partner_key = :a:e_whom and
@@ -55,7 +56,7 @@ api_missionary "system/querytree"
 		{
 		sql = " select
 			    partner_id = :p:p_partner_key,
-			    partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+			    partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
 			from
 			    identity /apps/kardia/data/Kardia_DB/p_partner/rows p
 			";
@@ -84,6 +85,7 @@ api_missionary "system/querytree"
 				where
 				    :a:e_whom = :bysup_list:partner_id and
 				    :a:p_dn_partner_key = :missionaries:partner_id and
+				    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
 				    :a:e_object_type = 'e_contact_history' and
 				    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
 				    :ct:e_contact_history_type = :ch:e_contact_history_type
@@ -130,12 +132,13 @@ api_missionary "system/querytree"
 				    note_type = :needs_list:note_type,
 				    note_date = :needs_list:note_date,
 				    supporter_partner_id = :p:p_partner_key,
-				    supporter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+				    supporter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
 				from
 				    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
 				    /apps/kardia/data/Kardia_DB/p_partner/rows p
 				where
 				    :a:p_dn_partner_key = :missionaries:partner_id and
+				    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
 				    :a:e_object_type = 'e_contact_history' and
 				    :a:e_object_id = convert(string, :needs_list:note_id) and
 				    :p:p_partner_key = :a:e_whom

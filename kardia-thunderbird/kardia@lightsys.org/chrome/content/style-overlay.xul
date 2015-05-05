@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://kardia/content/style.css" type="text/css"?>
+
+<overlay id="kardia" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script type="application/javascript" src="chrome://kardia/content/style-overlay.js"/>
+  
+  <hbox id="statusTextBox">
+    <button id="hellobutton" label="hello"/>
+  </hbox>
+</overlay>

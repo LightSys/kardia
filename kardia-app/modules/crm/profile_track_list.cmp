@@ -20,11 +20,11 @@ profile_track_list "widget/component-decl"
 	{
 	sql = " select
 		    :pe:e_engagement_id,
-		    :pe:e_desc,
-		    :pe:e_comments,
-		    :et:e_track_name,
-		    :es:e_step_name,
-		    :et:e_track_color
+		    e_desc = last(:pe:e_desc),
+		    e_comments = last(:pe:e_comments),
+		    e_track_name = last(:et:e_track_name),
+		    e_step_name = last(:es:e_step_name),
+		    e_track_color = last(:et:e_track_color)
 		from
 		    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
 		    /apps/kardia/data/Kardia_DB/e_engagement_track/rows et,
@@ -37,6 +37,12 @@ profile_track_list "widget/component-decl"
 		group by
 		    :pe:p_partner_key,
 		    :pe:e_engagement_id
+		order by
+		    :pe:p_partner_key,
+		    :pe:e_engagement_id,
+		    :pe:e_hist_id
+		having
+		    :e_engagement_id is not null
 		";
 	readahead=10;
 	replicasize=20;
@@ -67,9 +73,9 @@ profile_track_list "widget/component-decl"
 	    titlebar = no;
 	    min_rowheight = 16;
 	    max_rowheight = 200;
-	    cellvspacing = 4;
-	    row1_bgcolor = white;
-	    row2_bgcolor = white;
+	    cellvspacing = 3;
+	    row1_bgcolor = "#f8f8f8";
+	    row2_bgcolor = "#f8f8f8";
 	    show_selection = yes;
 	    inner_padding = 2;
 	    rowhighlight_bgcolor = "#fff090";

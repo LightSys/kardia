@@ -298,12 +298,12 @@ iconbar "widget/component-decl"
 		enabled_types = EnabledTypes;
 		init_enabled_types = runserver(:this:EnabledTypes);
 		path="button_type.cmp";
-		text = "Contact";
+		text = "Interact";
 		image="/apps/kardia/images/icons/ionicons-contacts2.svg";
 		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		ontoggle5 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
 
-		do_contact "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Contact'); Origin=contacts_btn; }
+		do_contact "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Interact'); Origin=contacts_btn; }
 		}
 
 	    ptodo_btn "widget/component"
@@ -314,12 +314,12 @@ iconbar "widget/component-decl"
 		enabled_types = EnabledTypes;
 		init_enabled_types = runserver(:this:EnabledTypes);
 		path="button_type.cmp";
-		text = "ToDo";
+		text = "Task";
 		image="/apps/kardia/images/icons/openiconic-bell.svg";
 		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		ontoggle6 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
 
-		do_todo "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('ToDo'); Origin=ptodo_btn; }
+		do_todo "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Task'); Origin=ptodo_btn; }
 		}
 
 	    notes_btn "widget/component"
@@ -364,6 +364,7 @@ iconbar "widget/component-decl"
 		image="/apps/kardia/images/icons/tumblicons-file.svg";
 		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		ontoggle9 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
+		do_file "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Files'); Origin=form_btn; }
 		}
 
 	    trk_btn "widget/component"
@@ -389,8 +390,9 @@ iconbar "widget/component-decl"
 		fl_width=0;
 		path="button_generic.cmp";
 		text = "Menu";
-		image="/apps/kardia/images/icons/ionicons-gear.svg";
+		image="/apps/kardia/images/icons/ionicons-hamburger.svg";
 		enabled = 1;
+		do_menu "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Menu'); Origin=settings_btn; }
 		}
 	    }
 	}

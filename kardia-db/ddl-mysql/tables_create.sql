@@ -1203,6 +1203,7 @@ create table e_ack (
         e_ack_type                            integer  not null,       /* The type of acknowledgement (viewed, prayed, comment, like, etc.) --  */
         e_ack_comments                        varchar(900)  null,      /* A unique ID identifying the object acknowledged --  */
         e_whom                                char(10)  not null,      /* The collaborator who acknowledged the object --  */
+        p_dn_partner_key                      char(10)  null,          /* (denormalization) the partner key of the person who created the object being acknowledged. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
