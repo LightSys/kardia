@@ -1,3 +1,6 @@
+// One global copy so both tabs can keep track
+var processingClicks = false;
+
 // keep track of this window and Kardia tab
 var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
 	   .getInterface(Components.interfaces.nsIWebNavigation)
@@ -409,14 +412,14 @@ function reloadCollaboratee(index) {
 		addString += '</vbox>';
 	}
 
-	if (mainWindow.collaborateeActivity[index] != null && mainWindow.collaborateeActivity[index].length > 0) {
-		addString += '<vbox id="collaboratee-activity-' + mainWindow.collaborateeIds[index] + '" flex="1">';
-		// add recent activity
-		for (var j=1;j<mainWindow.collaborateeActivity[index].length;j+=3) {
-			addString += '<label flex="1">' + mainWindow.collaborateeActivity[index][j] + '</label>';
-		}
-		addString += '</vbox>';
-	}
+	//if (mainWindow.collaborateeActivity[index] != null && mainWindow.collaborateeActivity[index].length > 0) {
+		//addString += '<vbox id="collaboratee-activity-' + mainWindow.collaborateeIds[index] + '" flex="1">';
+		//// add recent activity
+		//for (var j=1;j<mainWindow.collaborateeActivity[index].length;j+=3) {
+			//addString += '<label flex="1">' + mainWindow.collaborateeActivity[index][j] + '</label>';
+		//}
+		//addString += '</vbox>';
+	//}
 					
 	// add highlighted data items
 	if (mainWindow.collaborateeData[index].length > 1) {
