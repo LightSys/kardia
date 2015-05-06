@@ -3,7 +3,7 @@ if not errorlevel 1 (
    taskkill /IM thunderbird.exe
 )
 
-set FILETOZIP=C:\Users\Warren\Documents\LightSys\CentralixAndKardia\Thunderbird\KardiaExtension
+set FILETOZIP=\\192.168.145.128\kardia\kardia-thunderbird\kardia@lightsys.org
 set FINALDEST=C:\Users\Warren\Documents\LightSys\CentralixAndKardia\Thunderbird\versions\WIP\kardia@lightsys.org.xpi.zip
 set TEMPDIR=C:\Users\Warren\Documents\LightSys\CentralixAndKardia\Thunderbird\KardiaBatch\temp738
 

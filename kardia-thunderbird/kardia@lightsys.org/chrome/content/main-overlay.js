@@ -39,6 +39,7 @@ var collaborateeFunds = [];
 // which partner is selected and list of your own emails (so these aren't searched in Kardia)
 var selected = 0;
 var selfEmails;
+var processingClick = false;
 
 // colors for engagement tracks
 var trackList = new Array();
@@ -211,7 +212,7 @@ window.addEventListener("load", function() {
 	});
 	
 	// make calendar reload whenever prefs change
-	var todosObserver = {
+	var todosObserver = { // TumblerQ: Calender functions Muted? Why not this?
 		register: function() {
 			this.branch = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.kardia.");
 			this.branch.addObserver("", this, false);
@@ -247,7 +248,7 @@ window.addEventListener("click", function() {if (loginValid) {findEmails();}}, f
 // what we do to find email addresses from selected messages
 function findEmails() {
 	// if 0 or > 1 email selected, don't search Kardia
-	if (gFolderDisplay.selectedCount < 1 && numSelected >= 1) {
+	if (gFolderDisplay.selectedCount < 1 && numSelected >= 1) {   // TumblerQ: Logic doesn't match comment. This intended?
 		// clear all partner info
 		selected = 0;
 		emailAddresses = new Array();
@@ -546,9 +547,9 @@ function reload(isDefault) {
 			noteText += '<hbox class="hover-box"><vbox><spacer height="3"/><image class="note-image"/><spacer flex="1"/></vbox><vbox width="100" flex="1"><description flex="1">' + mainWindow.notes[mainWindow.selected][i-2] + '</description><description flex="1">' + mainWindow.notes[mainWindow.selected][i-1] + '</description></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editNote(\'' + mainWindow.notes[mainWindow.selected][i-2] + '\',' + mainWindow.notes[mainWindow.selected][i] + ');"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
 		}
 		noteText += '<hbox><spacer flex="1"/><button class="new-button" label="New Note/Prayer..." tooltiptext="Create new note/prayer for this partner" oncommand="newNote(\'\',\'\')"/></hbox>';	
-		//mainWindow.document.getElementById("notes-prayer-inner-box").innerHTML = "";
-      // Muted for now #Muted
-		mainWindow.document.getElementById("notes-prayer-inner-box").innerHTML = noteText;
+		mainWindow.document.getElementById("notes-prayer-inner-box").innerHTML = "";
+      // Muted for now #Muted (CAUTION: When unmuting this it could reintroduce bug #11)
+		//mainWindow.document.getElementById("notes-prayer-inner-box").innerHTML = noteText;
 		
 		// display collaborators
 		var collaboratorText = "";
@@ -674,7 +675,10 @@ function reload(isDefault) {
 				kardiaTab.document.getElementById("tab-location").style.visibility="collapse";
 			}
 		}
+      // Done loading, remove loading gif
 	}
+   mainWindow.document.getElementById('loading-gif-container').style.visibility = "collapse";
+   processingClick = false;
 }
 
 // copy location of clicked link to clipboard
@@ -947,6 +951,12 @@ function printPartner(whichPartner) {
 
 // find partner in Kardia based on the email address found at position "index" in the list of email addresses
 function findUser(index) {	
+   // Set loading gif state until finished loading partner
+   mainWindow.document.getElementById('loading-gif-container').style.visibility = "visible";
+   mainWindow.document.getElementById('main-content-box').style.visibility = "hidden";
+   mainWindow.document.getElementById('name-label').value = "Loading...";
+   mainWindow.document.getElementById('id-label').value = "";
+
 	// don't try to access Kardia if the Thunderbird user's Kardia login is invalid
 	if (loginValid) {		
 		// remove dashes from email address so Kardia will take it
@@ -1998,36 +2008,45 @@ function getTodoDueDate(dateArray, addDays) {
 
 // show collaborator based on their partner ID
 function addCollaborator(collaboratorId) {
-	// if the partner isn't already in the list, add them
-	if (arrayContains(mainWindow.ids, collaboratorId, 0) < 0) {
-		mainWindow.emailAddresses.push("");
-		mainWindow.names.push("");
-		mainWindow.ids.push(collaboratorId);
-		mainWindow.addresses.push([]);
-		mainWindow.phoneNumbers.push([]);
-		mainWindow.allEmailAddresses.push([]);
-		mainWindow.websites.push([]);
-		mainWindow.engagementTracks.push([]);
-		mainWindow.recentActivity.push([]);
-		mainWindow.todos.push([]);
-		mainWindow.notes.push([]);
-		mainWindow.collaborators.push([]);
-		mainWindow.documents.push([]);
-		mainWindow.tags.push([]);
-		mainWindow.data.push([]);
-		mainWindow.dataGroups.push([]);
-		mainWindow.gifts.push([]);
-		mainWindow.funds.push([]);
-		mainWindow.types.push([]);
-		mainWindow.selected = mainWindow.ids.length-1;
-		// get information about them from Kardia
-		getOtherInfo(mainWindow.ids.length-1, false);
-	}
-	else {
-		// the collaborator is already in the available partner list, so just select them
-		mainWindow.selected = arrayContains(mainWindow.ids, collaboratorId, 0);
-		reload(false);
-	}
+   if (!processingClick) {
+      processingClick = true;
+      // Set loading state untill finished loading partner
+      mainWindow.document.getElementById('loading-gif-container').style.visibility = "visible";
+      mainWindow.document.getElementById('main-content-box').style.visibility = "hidden";
+      mainWindow.document.getElementById('name-label').value = "Loading...";
+      mainWindow.document.getElementById('id-label').value = "";
+
+      // if the partner isn't already in the list, add them
+      if (arrayContains(mainWindow.ids, collaboratorId, 0) < 0) {
+         mainWindow.emailAddresses.push("");
+         mainWindow.names.push("");
+         mainWindow.ids.push(collaboratorId);
+         mainWindow.addresses.push([]);
+         mainWindow.phoneNumbers.push([]);
+         mainWindow.allEmailAddresses.push([]);
+         mainWindow.websites.push([]);
+         mainWindow.engagementTracks.push([]);
+         mainWindow.recentActivity.push([]);
+         mainWindow.todos.push([]);
+         mainWindow.notes.push([]);
+         mainWindow.collaborators.push([]);
+         mainWindow.documents.push([]);
+         mainWindow.tags.push([]);
+         mainWindow.data.push([]);
+         mainWindow.dataGroups.push([]);
+         mainWindow.gifts.push([]);
+         mainWindow.funds.push([]);
+         mainWindow.types.push([]);
+         mainWindow.selected = mainWindow.ids.length-1;
+         // get information about them from Kardia
+         getOtherInfo(mainWindow.ids.length-1, false);
+      }
+      else {
+         // the collaborator is already in the available partner list, so just select them
+         mainWindow.selected = arrayContains(mainWindow.ids, collaboratorId, 0);
+         reload(false);
+      }
+   }
 }
 
 // make Date into ical string  
@@ -3055,25 +3074,25 @@ function getTrackTagStaff(username, password) {
                               }
                            }
                            
-                           doHttpRequest("apps/kardia/api/partner/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (partnerResp) {
+                           //doHttpRequest("apps/kardia/api/partner/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (partnerResp) {
                            // If not 404
-                           if (partnerResp != null) {
+                           //if (partnerResp != null) {
                               
-                                 for(var k in partnerResp) {
-                                    // the key "@id" doesn't correspond to a partner, so use all other keys to save partners
-                                    if (k != "@id") {
-                                       // see where we should insert partner in the list
-                                       var insertHere = partnerList.length;
-                                       for (var j=0;j<partnerList.length;j+=2) {
-                                          if (partnerResp[k]["partner_name"] <= partnerList[j]) {
-                                             // insert partner before
-                                             insertHere = j;
-                                             break;
-                                          }
-                                       }
-                                       partnerList.splice(insertHere,0,partnerResp[k]["partner_name"],partnerResp[k]["partner_id"]);	
-                                    }
-                                 }
+                                 //for(var k in partnerResp) {
+                                    //// the key "@id" doesn't correspond to a partner, so use all other keys to save partners
+                                    //if (k != "@id") {
+                                       //// see where we should insert partner in the list
+                                       //var insertHere = partnerList.length;
+                                       //for (var j=0;j<partnerList.length;j+=2) {
+                                          //if (partnerResp[k]["partner_name"] <= partnerList[j]) {
+                                             //// insert partner before
+                                             //insertHere = j;
+                                             //break;
+                                          //}
+                                       //}
+                                       //partnerList.splice(insertHere,0,partnerResp[k]["partner_name"],partnerResp[k]["partner_id"]);	
+                                    //}
+                                 //}
                                  
                                  doHttpRequest("apps/kardia/api/crm_config/CollaboratorTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collabResp) {
                                  // If not 404
@@ -3104,10 +3123,10 @@ function getTrackTagStaff(username, password) {
                                        // 404, do nothing
                                     }
                                  }, false, "", "");
-                              } else {
-                                 // 404, do nothing
-                              }
-                           }, false, "", "");
+                              //} else {
+                                 //// 404, do nothing
+                              //}
+                           //}, false, "", "");
                         } else {
                            // 404, do nothing
                         }
