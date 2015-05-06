@@ -215,8 +215,26 @@ popover_files "widget/component-decl"
 					cr_partner=runclient(:partner_var:value);
 					}
 
-				    doctype "widget/component" { path="/sys/cmp/smart_field.cmp"; field=e_doc_type_id; ctl_type=dropdown; text="Document Type:"; sql="select :e_doc_type_label, :e_doc_type_id from /apps/kardia/data/Kardia_DB/e_document_type/rows dt order by :e_doc_type_label"; width=300; height=20; label_width=120; }
-				    doctitle "widget/component" { path="/sys/cmp/smart_field.cmp"; field=e_title; ctl_type=editbox; text="Title:"; height=20; label_width=120; }
+				    doc_hbox "widget/hbox"
+					{
+					height=44;
+					spacing=8;
+
+					doc_image "widget/image"
+					    {
+					    width=64;
+					    source=runclient(condition(charindex(',' + lower(right(:unassigned_files_osrc:filename,4)) + ',', ',.jpg,jpeg,.gif,.png,.svg,') > 0, '/apps/kardia/files/' + :unassigned_files_osrc:filename, '/apps/kardia/images/icons/tumblicons-file.svg'));
+					    }
+
+					doc_fields_vbox "widget/vbox"
+					    {
+					    width=480;
+					    spacing=4;
+					    doctype "widget/component" { path="/sys/cmp/smart_field.cmp"; field=e_doc_type_id; ctl_type=dropdown; text="Document Type:"; sql="select :e_doc_type_label, :e_doc_type_id from /apps/kardia/data/Kardia_DB/e_document_type/rows dt order by :e_doc_type_label"; width=300; height=20; label_width=120; }
+					    doctitle "widget/component" { path="/sys/cmp/smart_field.cmp"; field=e_title; ctl_type=editbox; text="Title:"; height=20; label_width=120; }
+					    }
+					}
+
 				    doc_orig_file "widget/variable" { fieldname=e_orig_filename; doc_orig_hints "widget/hints" { default=runclient(:unassigned_files_osrc:filename); } }
 				    doc_cur_fldr "widget/variable" { fieldname=e_current_folder; doc_fldr_hints "widget/hints" { default=runclient("/apps/kardia/files"); } }
 				    doc_collab "widget/variable" { fieldname=e_uploading_collaborator; doc_coll_hints "widget/hints" { default=runclient(:collab_var:value); } }
@@ -233,7 +251,7 @@ popover_files "widget/component-decl"
 				assign_btn "widget/textbutton"
 				    {
 				    width=330;
-				    text=runclient(condition(:doc_form:is_savable and :doctype:value and char_length(:doctitle:content) > 1, "Save & ", "") + "Assoc. With " + :partnername_var:value);
+				    text=runclient(condition(:doc_form:is_savable and isnull(:doctype:value,'') and char_length(:doctitle:content) > 1, "Save & ", "") + "Assoc. With " + :partnername_var:value);
 				    enabled=runclient(:unassigned_files_osrc:assign_name is null and ((:doc_form:is_savable and :doctype:value and char_length(:doctitle:content) > 1) or (:unassigned_files_osrc:e_title is not null and :unassigned_files_osrc:e_doc_type_id is not null)));
 				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
 				    fgcolor1=white;
