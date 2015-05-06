@@ -39,7 +39,6 @@ var collaborateeFunds = [];
 // which partner is selected and list of your own emails (so these aren't searched in Kardia)
 var selected = 0;
 var selfEmails;
-var processingClick = false;
 
 // colors for engagement tracks
 var trackList = new Array();
@@ -675,10 +674,10 @@ function reload(isDefault) {
 				kardiaTab.document.getElementById("tab-location").style.visibility="collapse";
 			}
 		}
-      // Done loading, remove loading gif
 	}
+   // Done loading, remove loading gif
    mainWindow.document.getElementById('loading-gif-container').style.visibility = "collapse";
-   processingClick = false;
+   kardiaTab.processingClick = false;
 }
 
 // copy location of clicked link to clipboard
@@ -951,151 +950,151 @@ function printPartner(whichPartner) {
 
 // find partner in Kardia based on the email address found at position "index" in the list of email addresses
 function findUser(index) {	
-   // Set loading gif state until finished loading partner
-   mainWindow.document.getElementById('loading-gif-container').style.visibility = "visible";
-   mainWindow.document.getElementById('main-content-box').style.visibility = "hidden";
-   mainWindow.document.getElementById('name-label').value = "Loading...";
-   mainWindow.document.getElementById('id-label').value = "";
+      // Set loading gif state until finished loading partner
+      mainWindow.document.getElementById('loading-gif-container').style.visibility = "visible";
+      mainWindow.document.getElementById('main-content-box').style.visibility = "hidden";
+      mainWindow.document.getElementById('name-label').value = "Loading...";
+      mainWindow.document.getElementById('id-label').value = "";
 
-	// don't try to access Kardia if the Thunderbird user's Kardia login is invalid
-	if (loginValid) {		
-		// remove dashes from email address so Kardia will take it
-		var emailAddress = emailAddresses[index].replace("-","");	
-		
-		// create HTTP request to get info about partners for the given email address; we don't use doHttpRequest because we want to do things if it fails
-		var emailRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-		var emailResp;
-		var emailUrl = server + "apps/kardia/api/partner/ContactTypes/Email/" + emailAddress + "/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic";
-		
-		emailRequest.onreadystatechange = function(aEvent) {
-			// if the request went through and result was returned, continue
-			if(emailRequest.readyState == 4 && emailRequest.status == 200) {
-				// parse the JSON file we received
-				emailResp = JSON.parse(emailRequest.responseText);
-				
-				// get the keys in the JSON file
-				var keys = [];
-				for(var k in emailResp) keys.push(k);
-							
-				// how many extra partners did we add from this email address?
-				var numExtra = 0;
-				
-				// if the first partner found isn't already in the list, add them to the list
-				if (ids.indexOf(emailResp[keys[1]]['partner_id']) < 0) {
-					ids[index] = emailResp[keys[1]]['partner_id'];
-				}
-				else {
-					// remove this email address because it's a duplicate
-					emailAddresses.splice(index,1);
-					names.splice(index,1);
-					ids.splice(index,1);
-					addresses.splice(index,1);
-					phoneNumbers.splice(index,1);
-					allEmailAddresses.splice(index,1);
-					websites.splice(index,1);
-					engagementTracks.splice(index,1);
-					recentActivity.splice(index,1);
-					todos.splice(index,1);
-					notes.splice(index,1);
-					collaborators.splice(index,1);
-					documents.splice(index,1);
-					tags.splice(index,1);
-					data.splice(index,1);
-					dataGroups.splice(index,1);
-					gifts.splice(index,1);
-					funds.splice(index,1);
-					types.splice(index,1);
-					numExtra--;
-				}
-				
-				// add the other partners we found with this email
-				for (var i=2;i<keys.length;i++) {
-					// if the partner found isn't already in the list, add them and increment numExtra
-					if (arrayContains(ids, emailResp[keys[i]]['partner_id'], 0) < 0) {
-						emailAddresses.splice(index+1,0,emailAddress);
-						names.splice(index+1,0,"");
-						ids.splice(index+1,0,emailResp[keys[i]]['partner_id']);
-						addresses.splice(index+1,0,[]);
-						phoneNumbers.splice(index+1,0,[]);
-						allEmailAddresses.splice(index+1,0,[]);
-						websites.splice(index+1,0,[]);
-						engagementTracks.splice(index+1,0,[]);
-						recentActivity.splice(index+1,0,[]);
-						todos.splice(index+1,0,[]);
-						notes.splice(index+1,0,[]);
-						collaborators.splice(index+1,0,[]);
-						documents.splice(index+1,0,[]);
-						tags.splice(index+1,0,[]);
-						data.splice(index+1,0,[]);
-						dataGroups.splice(index+1,0,[]);
-						gifts.splice(index+1,0,[]);
-						funds.splice(index+1,0,[]);
-						types.splice(index+1,0,[]);
-						numExtra++;
-					}
-				}
-				
-				
-				// if we aren't at the end of the list of email addresses, find partners for the next address
-				if (index+1+numExtra < emailAddresses.length) {
-					findUser(index+1+numExtra);
-				}
-				else {
-					// add little Kardia icon in email
-					addKardiaButton();
-				
-					// start getting the other information about all the partners we found
-					getOtherInfo(0, true);
-				}
-			}
-			else if (emailRequest.readyState == 4) {
-				// we didn't get the 200 success status, so no partners were found with this email; remove the partner and reload the Kardia pane
-				emailAddresses.splice(index,1);
-				names.splice(index,1);
-				ids.splice(index,1);
-				addresses.splice(index,1);
-				phoneNumbers.splice(index,1);
-				allEmailAddresses.splice(index,1);
-				websites.splice(index,1);
-				engagementTracks.splice(index,1);
-				recentActivity.splice(index,1);
-				todos.splice(index,1);
-				notes.splice(index,1);
-				collaborators.splice(index,1);
-				documents.splice(index,1);		
-				tags.splice(index,1);	
-				data.splice(index,1);	
-				dataGroups.splice(index,1);
-				gifts.splice(index,1);	
-				funds.splice(index,1);	
-				types.splice(index,1);	
-				
-				// if we aren't at the end of the list of email addresses, find partners for the next address
-				if (index < emailAddresses.length) {
-					findUser(index);
-				}
-				else {
-					// start getting the other information about all the partners we found
-					if (emailAddresses.length > 0) {
-						// add little Kardia icon in email
-						addKardiaButton();
-						
-						getOtherInfo(0, true);
-					}
-					else {
-						reload(false);
-					}
-				}
-			}
-		};
-		
-		// do nothing on error
-		emailRequest.onerror = function() {};
-		
-		// send the HTTP request
-		emailRequest.open("GET", emailUrl, true, prefs.getCharPref("username"), prefs.getCharPref("password"));
-		emailRequest.send(null);
-	}
+      // don't try to access Kardia if the Thunderbird user's Kardia login is invalid
+      if (loginValid) {		
+         // remove dashes from email address so Kardia will take it
+         var emailAddress = emailAddresses[index].replace("-","");	
+         
+         // create HTTP request to get info about partners for the given email address; we don't use doHttpRequest because we want to do things if it fails
+         var emailRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+         var emailResp;
+         var emailUrl = server + "apps/kardia/api/partner/ContactTypes/Email/" + emailAddress + "/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic";
+         
+         emailRequest.onreadystatechange = function(aEvent) {
+            // if the request went through and result was returned, continue
+            if(emailRequest.readyState == 4 && emailRequest.status == 200) {
+               // parse the JSON file we received
+               emailResp = JSON.parse(emailRequest.responseText);
+               
+               // get the keys in the JSON file
+               var keys = [];
+               for(var k in emailResp) keys.push(k);
+                        
+               // how many extra partners did we add from this email address?
+               var numExtra = 0;
+               
+               // if the first partner found isn't already in the list, add them to the list
+               if (ids.indexOf(emailResp[keys[1]]['partner_id']) < 0) {
+                  ids[index] = emailResp[keys[1]]['partner_id'];
+               }
+               else {
+                  // remove this email address because it's a duplicate
+                  emailAddresses.splice(index,1);
+                  names.splice(index,1);
+                  ids.splice(index,1);
+                  addresses.splice(index,1);
+                  phoneNumbers.splice(index,1);
+                  allEmailAddresses.splice(index,1);
+                  websites.splice(index,1);
+                  engagementTracks.splice(index,1);
+                  recentActivity.splice(index,1);
+                  todos.splice(index,1);
+                  notes.splice(index,1);
+                  collaborators.splice(index,1);
+                  documents.splice(index,1);
+                  tags.splice(index,1);
+                  data.splice(index,1);
+                  dataGroups.splice(index,1);
+                  gifts.splice(index,1);
+                  funds.splice(index,1);
+                  types.splice(index,1);
+                  numExtra--;
+               }
+               
+               // add the other partners we found with this email
+               for (var i=2;i<keys.length;i++) {
+                  // if the partner found isn't already in the list, add them and increment numExtra
+                  if (arrayContains(ids, emailResp[keys[i]]['partner_id'], 0) < 0) {
+                     emailAddresses.splice(index+1,0,emailAddress);
+                     names.splice(index+1,0,"");
+                     ids.splice(index+1,0,emailResp[keys[i]]['partner_id']);
+                     addresses.splice(index+1,0,[]);
+                     phoneNumbers.splice(index+1,0,[]);
+                     allEmailAddresses.splice(index+1,0,[]);
+                     websites.splice(index+1,0,[]);
+                     engagementTracks.splice(index+1,0,[]);
+                     recentActivity.splice(index+1,0,[]);
+                     todos.splice(index+1,0,[]);
+                     notes.splice(index+1,0,[]);
+                     collaborators.splice(index+1,0,[]);
+                     documents.splice(index+1,0,[]);
+                     tags.splice(index+1,0,[]);
+                     data.splice(index+1,0,[]);
+                     dataGroups.splice(index+1,0,[]);
+                     gifts.splice(index+1,0,[]);
+                     funds.splice(index+1,0,[]);
+                     types.splice(index+1,0,[]);
+                     numExtra++;
+                  }
+               }
+               
+               
+               // if we aren't at the end of the list of email addresses, find partners for the next address
+               if (index+1+numExtra < emailAddresses.length) {
+                  findUser(index+1+numExtra);
+               }
+               else {
+                  // add little Kardia icon in email
+                  addKardiaButton();
+               
+                  // start getting the other information about all the partners we found
+                  getOtherInfo(0, true);
+               }
+            }
+            else if (emailRequest.readyState == 4) {
+               // we didn't get the 200 success status, so no partners were found with this email; remove the partner and reload the Kardia pane
+               emailAddresses.splice(index,1);
+               names.splice(index,1);
+               ids.splice(index,1);
+               addresses.splice(index,1);
+               phoneNumbers.splice(index,1);
+               allEmailAddresses.splice(index,1);
+               websites.splice(index,1);
+               engagementTracks.splice(index,1);
+               recentActivity.splice(index,1);
+               todos.splice(index,1);
+               notes.splice(index,1);
+               collaborators.splice(index,1);
+               documents.splice(index,1);		
+               tags.splice(index,1);	
+               data.splice(index,1);	
+               dataGroups.splice(index,1);
+               gifts.splice(index,1);	
+               funds.splice(index,1);	
+               types.splice(index,1);	
+               
+               // if we aren't at the end of the list of email addresses, find partners for the next address
+               if (index < emailAddresses.length) {
+                  findUser(index);
+               }
+               else {
+                  // start getting the other information about all the partners we found
+                  if (emailAddresses.length > 0) {
+                     // add little Kardia icon in email
+                     addKardiaButton();
+                     
+                     getOtherInfo(0, true);
+                  }
+                  else {
+                     reload(false);
+                  }
+               }
+            }
+         };
+         
+         // do nothing on error
+         emailRequest.onerror = function() {};
+         
+         // send the HTTP request
+         emailRequest.open("GET", emailUrl, true, prefs.getCharPref("username"), prefs.getCharPref("password"));
+         emailRequest.send(null);
+      }
 }
 
 // get all other info about the partner whose information is stored at position index
@@ -2008,8 +2007,9 @@ function getTodoDueDate(dateArray, addDays) {
 
 // show collaborator based on their partner ID
 function addCollaborator(collaboratorId) {
-   if (!processingClick) {
-      processingClick = true;
+   // Don't process if we're already loading something
+   if (!kardiaTab.processingClick) {
+      kardiaTab.processingClick = true;
       // Set loading state untill finished loading partner
       mainWindow.document.getElementById('loading-gif-container').style.visibility = "visible";
       mainWindow.document.getElementById('main-content-box').style.visibility = "hidden";
@@ -2046,6 +2046,8 @@ function addCollaborator(collaboratorId) {
          mainWindow.selected = arrayContains(mainWindow.ids, collaboratorId, 0);
          reload(false);
       }
+   } else {
+      alert("processingClick = true");
    }
 }
 
