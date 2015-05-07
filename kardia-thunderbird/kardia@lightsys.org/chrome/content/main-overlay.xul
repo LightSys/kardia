@@ -26,6 +26,7 @@
 				</toolbarbutton>
 			</sidebarheader>
 
+
 			<!-- hbox with partner's name and ID, plus a button that allows you to select a different partner -->
 			<hbox id="choose-partner-box" context="main-context">
 				<vbox id="name-and-id">
@@ -48,7 +49,14 @@
 					</vbox>
 				</toolbarbutton>
 			</hbox>
-			
+		
+         <!--Loading gif-->
+         <vbox id="loading-gif-container" align="center" equalsize="always" style="visibility:collapse">
+            <spacer flex="1"/>
+            <image src='chrome://kardia/content/images/loading.gif' width='135' height='135' flex="1"/>
+            <spacer flex="1"/>
+         </vbox>
+
 			<!-- label that displays failure message -->
 			<label id="cant-connect" value="Could not connect to Kardia."/>
 			
@@ -143,7 +151,7 @@
 					<hbox id="notes-prayer-box">
 						 <spacer width="10px"/> 
 						 <vbox id="notes-prayer-inner-box" width="100" flex="1"> 
-							 notes/prayer item 
+							 <!--notes/prayer item -->
 							<!--<hbox>
 								<vbox>
 									<image class="note-image"/>
