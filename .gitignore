@@ -15,4 +15,8 @@ kardia-android/MissionaryAppAndroidStudio/missionaryApp/build/*
 kardia-android/MissionaryAppAndroidStudio/appcompat_v7_7/build/*
 kardia-android/MissionaryAppAndroidStudio/build/*
 kardia-android/MissionaryAppAndroidStudio/missionaryApp/src/main/java/org/lightsys/missionaryapp/.DS_Store
-kardia-android/*/*.iml
+kardia-android/**/*.iml
+kardia-android/**/local.properties
+kardia-android/**/.gradle
+kardia-android/**/build
+kardia-android/**/.idea
