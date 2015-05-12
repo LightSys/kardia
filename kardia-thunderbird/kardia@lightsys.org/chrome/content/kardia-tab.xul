@@ -12,13 +12,10 @@
 	<script type="application/javascript" src="chrome://kardia/content/kardia-tab.js"/>
 	
 	<!-- main -->
-	<vbox flex="1">
 	<label id="tab-cant-connect" value="Could not connect to Kardia."/>
 	<vbox id="tab-main" flex="1" style="visibility:hidden">
 		<!-- top panel -->
-		<vbox id="tab-top-panel">			
-			<vbox id="tab-collaborators" flex="1">
-				<hbox>
+				<hbox style="margin-bottom:2px;padding-bottom:2px;">
 					<!-- manual refresh button -->
 					<button id="manual-refresh" onclick="manualUpdate()" image="chrome://kardia/content/images/refresh.png"/>
 					
@@ -58,6 +55,10 @@
 						</radio>
 					</radiogroup>
 				</hbox>
+            <spacer flex="1"/>
+      <!--Tags and collaborators-->
+		<vbox id="tab-top-panel" maxheight="500" flex="100">
+			<vbox id="tab-collaborators" flex="1">
 				<!-- filter by -->
 				<hbox class="top-bottom-margin">
 					<label value="Filter by..." class="bold-text"/>
@@ -119,7 +120,7 @@
 		<splitter style="border:1px solid white;" resizebefore="closest" state="open" id="tab-kardia-splitter"/>
 		
 		<!-- bottom panel -->
-		<vbox id="tab-bottom-panel" flex="1" context="print-context">
+		<vbox id="tab-bottom-panel" flex="1" context="print-context" minheight="100" maxheight="500" height="150">
 			<!-- header with person's name -->
 			<hbox id="tab-name-box">
 				<label id="tab-bottom-name" value=""/>
@@ -249,7 +250,6 @@
 				</vbox>
 			</hbox>			
 		</vbox>
-	</vbox>
 	</vbox>
 			
 	<!-- context menus-->

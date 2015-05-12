@@ -12,6 +12,7 @@ profile_info "widget/component-decl"
     partner_info_osrc "widget/osrc"
 	{
 	partner_key "widget/parameter" { type=string; }
+	partner_comm "widget/parameter" { type=string; default=runclient(:partner_osrc:p_comments); }
 
 	sql = "	select
 		    txt = condition(not (char_length(:p:p_org_name) > 1), isnull(:p:p_given_name + ' ', '') + isnull(:p:p_surname,'') + condition(char_length(:p:p_preferred_name) > 1 and isnull(:p:p_preferred_name,'') != isnull(:p:p_given_name,''), ' (\"' + :p:p_preferred_name + '\")', ''), :p:p_org_name),
@@ -97,7 +98,7 @@ profile_info "widget/component-decl"
 	    row1_bgcolor = white;
 	    row2_bgcolor = white;
 
-	    col "widget/table-column" { fieldname=txt; style=runclient(condition(:partner_info_osrc:size != 'small', 'bold', '')); font_size=runclient(condition(:partner_info_osrc:size == 'large', 18, 11)); width=380; }
+	    col "widget/table-column" { fieldname=txt; style=runclient(condition(:partner_info_osrc:size != 'small', 'bold', '')); font_size=runclient(condition(:partner_info_osrc:size == 'large', 18, 11)); width=380; wrap=yes; }
 	    }
 	}
 

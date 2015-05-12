@@ -2,7 +2,26 @@ $Version=2$
 plugin_crm_timeline_TRK "widget/component-decl"
     {
     width=434;
-    height=0;
+    height=28;
     icon = "/apps/kardia/images/tango/start-here.png";
     type = "TRK";
+
+    TrackSelected "widget/component-decl-event" { }
+
+    partner_osrc "widget/parameter" { type=object; }
+    timeline_osrc "widget/parameter" { type=object; }
+    timeline_data_osrc "widget/parameter" { type=object; }
+    collaborator_osrc "widget/parameter" { type=object; }
+
+    detail_btn "widget/textbutton"
+	{
+	x=38; y=4; height=24; width=120;
+	text="View Details";
+	background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	fgcolor1=white;
+	fgcolor2=black;
+	disable_color="#334466";
+
+	on_detail "widget/connector" { event=Click; target=plugin_crm_timeline_TRK; action=TrackSelected; origin=detail_btn; engagement_id=runclient(convert(integer, substring(:timeline_osrc:e_reference_info, charindex('|', :timeline_osrc:e_reference_info) + 1))); }
+	}
     }

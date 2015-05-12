@@ -152,6 +152,7 @@ todo_list "widget/component-decl"
 	    cellvspacing = 4;
 	    row1_bgcolor = "#f8f8f8";
 	    row2_bgcolor = "#f8f8f8";
+	    nodata_message = "(no tasks right now)";
 
 	    onclick "widget/connector" { event=Click; target=todo_list; action=PartnerSelected; partner_key=runclient(:e_todo_partner); }
 

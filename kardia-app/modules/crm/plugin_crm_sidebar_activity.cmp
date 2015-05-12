@@ -110,7 +110,8 @@ activity_list "widget/component-decl"
 			:e:e_activity_date desc
 		    where
 			:e:e_activity_type != 'HEAD' and
-			:e:e_activity_group_id = :parameters:activity_id
+			:e:e_activity_group_id = :parameters:activity_id and
+			:e:s_created_by = user_name()
 		    ";
 	    autoquery=never;
 	    readahead=50;
@@ -151,8 +152,10 @@ activity_list "widget/component-decl"
 		t_img "widget/table-column" { fieldname="img"; width=34; type=image; image_maxwidth=26; image_maxheight=26; align=center; }
 		t_name "widget/table-column"
 		    {
+		    textcolor=runclient(condition(charindex('(offline)', :activity_data_osrc:info_1) > 0, '#808080', '#000000'));
 		    fieldname="info_1";
 		    width=208;
+		    caption_textcolor=runclient(condition(charindex('(offline)', :activity_data_osrc:info_1) > 0, '#808080', '#000000'));
 		    caption_value=runclient(condition(char_length(:activity_data_osrc:info_2) > 1, :activity_data_osrc:info_2 + '\n', '') + :activity_data_osrc:textdate);
 		    style=bold;
 		    font_size=15;

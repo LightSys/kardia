@@ -2,7 +2,7 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="style.css" type="text/css"?>
 
-<overlay id="kardia" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<overlay id="kardia V.0.91" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<!-- JavaScript file -->
 	<script type="application/javascript" src="chrome://kardia/content/main-overlay.js"/>
 
@@ -26,6 +26,7 @@
 				</toolbarbutton>
 			</sidebarheader>
 
+
 			<!-- hbox with partner's name and ID, plus a button that allows you to select a different partner -->
 			<hbox id="choose-partner-box" context="main-context">
 				<vbox id="name-and-id">
@@ -48,7 +49,14 @@
 					</vbox>
 				</toolbarbutton>
 			</hbox>
-			
+		
+         <!--Loading gif-->
+         <vbox id="loading-gif-container" align="center" equalsize="always" style="visibility:collapse">
+            <spacer flex="1"/>
+            <image src='chrome://kardia/content/images/loading.gif' width='135' height='135' flex="1"/>
+            <spacer flex="1"/>
+         </vbox>
+
 			<!-- label that displays failure message -->
 			<label id="cant-connect" value="Could not connect to Kardia."/>
 			
@@ -57,6 +65,10 @@
 				<!-- vbox with all collapsible items like Engagement Tracks -->
 				<vbox id="collapsible-items-box">	
 					
+               <vbox id="new-data-button">
+                  <button label="Add new info" oncommand="newNote()" tooltiptext="Add new information to this partner's activity timeline"/>
+                  <spacer flex="1"/>
+               </vbox>
 					<!-- address, phone, cell, email, fax box -->
 					<hbox>
 					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(0)" label="Contact Information:"/>
@@ -112,31 +124,34 @@
 					
 					<!-- to-dos box -->
 					<hbox>
-					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(3)" label="To-Dos:"/>
-					  <spacer flex="1"/>
+					    <!--#Muted-->
+					   <!--<button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(3)" label="To-Dos:"/> -->
+					   <!--<spacer flex="1"/> -->
 					</hbox>
 					<hbox id="to-dos-box">
-						<spacer width="10px"/>
-						<vbox id="to-dos-inner-box" width="100" flex="1">
+						 <spacer width="10px"/> 
+						 <vbox id="to-dos-inner-box" width="100" flex="1"> 
+						    <!--#Muted-->
 							<!--<checkbox id="to-do-item-0" label="To-Do Item 0 test test test test test test test"/>
 							<checkbox id="to-do-item-1" label="To-Do Item 1"/>
 							<checkbox id="to-do-item-2" label="To-Do Item 2"/> -->
-							<hbox>
-							<spacer flex="1"/>
-							<hbox><spacer flex="1"/><button class="new-button" label="New To-Do..." oncommand="newTodo()" tooltiptext="Create new to-do item for this partner"/></hbox>
-							</hbox>
-						</vbox>
+							<!--<hbox> -->
+							<!--<spacer flex="1"/> -->
+							<!--<hbox><spacer flex="1"/><button class="new-button" label="New To-Do..." oncommand="newTodo()" tooltiptext="Create new to-do item for this partner"/></hbox> -->
+							<!--</hbox> -->
+						 </vbox> 
 					</hbox>	
 					
 					<!-- notes and prayer box -->
 					<hbox>
-					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(4)" label="Notes and Prayer:"/>
-					  <spacer flex="1"/>
+					    <!--#Muted-->
+					   <!--<button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(4)" label="Notes and Prayer:"/> -->
+					   <!--<spacer flex="1"/> -->
 					</hbox>
 					<hbox id="notes-prayer-box">
-						<spacer width="10px"/>
-						<vbox id="notes-prayer-inner-box" width="100" flex="1">
-							<!-- notes/prayer item -->
+						 <spacer width="10px"/> 
+						 <vbox id="notes-prayer-inner-box" width="100" flex="1"> 
+							 <!--notes/prayer item -->
 							<!--<hbox>
 								<vbox>
 									<image class="note-image"/>
@@ -144,22 +159,24 @@
 								</vbox>
 								<description width="100" flex="1" id="note1">House Sale: Pray for their house sale situation and potential buyer's financing.</description>
 							</hbox> -->
-							<hbox>
-								<spacer flex="1"/>
-								<button class="new-button" label="New Note/Prayer..." oncommand="newNote()" tooltiptext="Create new note/prayer for this partner"/>
-							</hbox>
-						</vbox>
+							<!--#Muted-->
+							 <!--<hbox> -->
+								 <!--<spacer flex="1"/> -->
+								 <!--<button class="new-button" label="New Note/Prayer..." oncommand="newNote()" tooltiptext="Create new note/prayer for this partner"/> -->
+							 <!--</hbox> -->
+						 </vbox> 
 					</hbox>
 					
 					<!-- collaborators box -->
 					<hbox>
-					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(5)" label="Collaborators:"/>
-					  <spacer flex="1"/>
+					    <!--#Muted-->
+					   <!--<button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(5)" label="Collaborators:"/> -->
+					   <!--<spacer flex="1"/> -->
 					</hbox>
 					<hbox id="collaborator-box">
-						<spacer width="10px"/>
-						<vbox id="collaborator-inner-box" width="100" flex="1">
-							<!-- collaborator -->
+						 <spacer width="10px"/> 
+						 <vbox id="collaborator-inner-box" width="100" flex="1"> 
+							 <!--collaborator -->
 							<!--<hbox>
 								<vbox>
 									<image class="team-image"/>
@@ -167,17 +184,19 @@
 								</vbox>
 								<label width="100" flex="1" id="collaborator1">Support Budgeting Team</label>
 							</hbox> -->
-						</vbox>
+						 </vbox> 
 					</hbox>	
 					
 					<!-- documents box -->
 					<hbox>
-					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(6)" label="Documents:"/>
-					  <spacer flex="1"/>
+					    <!--#Muted-->
+					   <!--<button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(6)" label="Documents:"/> -->
+					   <!--<spacer flex="1"/> -->
 					</hbox>
 					<hbox id="document-box">
-						<spacer width="10px"/>
-						<vbox id="document-inner-box" width="100" flex="1">
+						 <spacer width="10px"/> 
+						 <vbox id="document-inner-box" width="100" flex="1"> 
+							<!--#Muted-->
 							<!-- document -->
 							<!--<hbox>
 								<vbox>
@@ -186,7 +205,7 @@
 								</vbox>
 								<label width="100" flex="1" id="document1">Application-SamFroese.pdf</label>
 							</hbox> -->
-						</vbox>
+						 </vbox> 
 					</hbox>	
 				</vbox>
 			</vbox>		

@@ -1,3 +1,6 @@
+// One global copy so both tabs can keep track
+var processingClicks = false;
+
 // keep track of this window and Kardia tab
 var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
 	   .getInterface(Components.interfaces.nsIWebNavigation)
@@ -30,7 +33,7 @@ function filterBy() {
 }
 
 // sort collaborating with by whatever the buttons say
-function sortBy() {	
+function sortBy() {
 	// find out what we're sorting by
 	var what = document.getElementById("sort-by").selectedItem.value;
 	

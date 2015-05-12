@@ -188,12 +188,12 @@ plugin_crm_timeline_FILE "widget/component-decl"
 	    {
 	    width=150;
 	    height=24;
-	    text="Download this file";
+	    text="View this file";
 	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
 	    fgcolor1=white;
 	    fgcolor2=black;
 	    disable_color="#334466";
-	    enabled=runclient(:fileinfo_osrc:e_document_id is not null);
+	    enabled=runclient(isnull(:fileinfo_osrc:e_document_id, -1) = isnull(convert(integer, :timeline_osrc:e_reference_info), -2));
 
 	    on_dl "widget/connector" { event=Click; target=plugin_crm_timeline_FILE; action=Launch; Source=runclient(condition(substring(:fileinfo_osrc:e_current_folder,1,1) = '/', '', '/') + :fileinfo_osrc:e_current_folder + '/' + :fileinfo_osrc:e_current_filename); }
 	    }

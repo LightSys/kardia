@@ -66,11 +66,29 @@ menu "widget/component-decl"
 
 		on_my_profile "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="My Profile"; }
 		}
+	    my_settings "widget/textbutton"
+		{
+		height=32; width=180;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-gear.svg";
+		image_position=left;
+		image_margin=6;
+		text = "My Settings";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_my_settings "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="My Settings"; }
+		}
 
 	    sep2 "widget/image" { height=1; width=180; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
 	    manage_tags "widget/textbutton"
 		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
 		width=180; height=32;
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-pricetags.svg";
@@ -87,6 +105,8 @@ menu "widget/component-decl"
 		}
 	    manage_tracks "widget/textbutton"
 		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
 		width=180; height=32;
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-track.svg";
@@ -103,6 +123,8 @@ menu "widget/component-decl"
 		}
 	    manage_roles "widget/textbutton"
 		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
 		width=180; height=32;
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-people.svg";
@@ -135,6 +157,8 @@ menu "widget/component-decl"
 		}
 	    manage_note "widget/textbutton"
 		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
 		width=180; height=32;
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-notes.svg";
@@ -151,6 +175,8 @@ menu "widget/component-decl"
 		}
 	    manage_cont "widget/textbutton"
 		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
 		width=180; height=32;
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-contacts2.svg";
@@ -167,6 +193,8 @@ menu "widget/component-decl"
 		}
 	    manage_task "widget/textbutton"
 		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
 		width=180; height=32;
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/openiconic-task.svg";

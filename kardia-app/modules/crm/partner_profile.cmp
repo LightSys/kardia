@@ -111,6 +111,7 @@ partner_profile "widget/component-decl"
 			    :p:p_surname,
 			    :p:p_given_name,
 			    :p:p_org_name,
+			    :p:p_comments,
 			    :l:p_city,
 			    :l:p_state_province,
 			    collab_role = (select :ct:e_collab_type_label from /apps/kardia/data/Kardia_DB/p_staff/rows s, /apps/kardia/data/Kardia_DB/e_collaborator/rows c, /apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct where :s:p_kardia_login = user_name() and :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :s:p_partner_key and :ct:e_collab_type_id = :c:e_collab_type_id)
@@ -153,7 +154,7 @@ partner_profile "widget/component-decl"
 
 			profile_info_vbox "widget/vbox"
 			    {
-			    width=376;
+			    width=326;
 			    fl_width=10;
 			    fl_height=0;
 			    spacing=6;
@@ -186,7 +187,7 @@ partner_profile "widget/component-decl"
 			    {
 			    fl_height=0;
 			    fl_width=0;
-			    width=200;
+			    width=250;
 			    height=110;
 			    path="profile_track_list.cmp";
 
@@ -197,6 +198,8 @@ partner_profile "widget/component-decl"
 				action=TrackSelected;
 				engagement_id=runclient(:engagement_id);
 				origin=runclient(:origin);
+				point_side=runclient('right');
+				center=runclient(null);
 				}
 			    }
 			}
@@ -248,6 +251,17 @@ partner_profile "widget/component-decl"
 				    partner=runclient(:partner);
 				    origin=runclient(:origin);
 				    side=runclient('left');
+				    }
+
+				on_track_click2 "widget/connector"
+				    {
+				    event=TrackSelected;
+				    target=partner_profile;
+				    action=TrackSelected;
+				    engagement_id=runclient(:engagement_id);
+				    origin=runclient(:origin);
+				    point_side=runclient(null);
+				    center=runclient('yes');
 				    }
 				}
 			    }

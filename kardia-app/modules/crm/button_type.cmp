@@ -109,6 +109,7 @@ button_type "widget/component-decl"
 		onMouseDown1 "widget/connector" { event=MouseDown; target=all_timer; action=SetTimer; Time=500; AutoReset=1; }
 		onMouseDown2 "widget/connector" { event=MouseDown; target=blocking_click; action=SetValue; Value=0; }
 		onMouseUp "widget/connector" { event=MouseUp; target=all_timer; action=CancelTimer; }
+		onMouseOut "widget/connector" { event=MouseOut; target=all_timer; action=CancelTimer; }
 		onClick "widget/connector" { event=Click; event_cancel=runclient(:blocking_click:value); target=blocking_click; action=SetValue; Value=0; }
 
 		onClick2 "widget/connector" { event=Click; target=button_type; action=TriggerEvent; EventName=runclient('Toggle'); Update=1; }

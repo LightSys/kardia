@@ -4,7 +4,7 @@ api_fundmanager "system/querytree"
     managerlist "system/querytree"
 	{
 	sql = " select
-		    manager_name = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		    manager_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 		    manager_id = :cs:p_staff_partner_key,
 			manager_login = :s:p_kardia_login,
 		    fund_cnt = count(1)
@@ -85,7 +85,7 @@ api_fundmanager "system/querytree"
 						trx_date = :tt:a_effective_date,
 						comments = :tt:a_comment,
 						to_from_id = :p:p_partner_key,
-						to_from = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+						to_from = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
 					FROM
 						identity /apps/kardia/data/Kardia_DB/a_transaction/rows tt,
 						/apps/kardia/data/Kardia_DB/a_account/rows a,
@@ -194,7 +194,7 @@ api_fundmanager "system/querytree"
 							trx_date = :tt:a_effective_date,
 							comments = :tt:a_comment,
 							to_from_id = :p:p_partner_key,
-							to_from = condition(char_length(isnull(:p:p_org_name,'')) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+							to_from = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
 						FROM
 							identity /apps/kardia/data/Kardia_DB/a_transaction/rows tt,
 							/apps/kardia/data/Kardia_DB/a_account/rows a,

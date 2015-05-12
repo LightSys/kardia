@@ -16,7 +16,7 @@ plugin_crm_timeline_ADDR "widget/component-decl"
 		    :l:p_purge_date,
 		    :l:p_postal_code,
 		    :l:p_date_effective,
-		    all=(:l:p_address_1 + condition(char_length(rtrim(:l:p_address_2)) > 0 , ' / ' + :l:p_address_2, '') + condition(char_length(rtrim(:l:p_address_3)) > 0, ' / ' + :l:p_address_3, '')),
+		    all=(:l:p_address_1 + condition(char_length(rtrim(:l:p_address_2)) > 1 , ' / ' + :l:p_address_2, '') + condition(char_length(rtrim(:l:p_address_3)) > 1, ' / ' + :l:p_address_3, '')),
 		    :l:p_in_care_of,
 		    :l:p_address_1,
 		    :l:p_address_2,
