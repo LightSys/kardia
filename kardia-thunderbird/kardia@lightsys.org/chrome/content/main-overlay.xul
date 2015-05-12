@@ -53,7 +53,7 @@
          <!--Loading gif-->
          <vbox id="loading-gif-container" align="center" equalsize="always" style="visibility:collapse">
             <spacer flex="1"/>
-            <image src='chrome://kardia/content/images/loading.gif' width='135' height='135' flex="1"/>
+            <image src='chrome://kardia/content/images/loading.gif' width='64' height='64' flex="1"/>
             <spacer flex="1"/>
          </vbox>
 
@@ -63,7 +63,7 @@
 			<vbox id="main-content-box" flex="1" context="main-context" style="visibility:hidden">
 				
 				<!-- vbox with all collapsible items like Engagement Tracks -->
-				<vbox id="collapsible-items-box">	
+				<vbox id="collapsible-items-box">
 					
                <vbox id="new-data-button">
                   <button label="Add new info" oncommand="newNote()" tooltiptext="Add new information to this partner's activity timeline"/>
