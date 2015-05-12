@@ -704,6 +704,7 @@ create table e_engagement_track (
 create table e_engagement_track_collab (
         e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
         p_collab_partner_key                  char(10)  not null,      /* Partner key of the collaborator. If a Kardia user, the username must be tied to the partner key in the p_staff table. --  */
+        e_collab_type_id                      integer  not null,       /* Type of collaborator --  */
         e_comments                            varchar(255)  null,      /* Comments about this collaborator's involvement in this track. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -737,6 +738,7 @@ create table e_engagement_step_collab (
         e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
         e_step_id                             integer  not null,       /* A unique ID identifying the engagement step --  */
         p_collab_partner_key                  char(10)  not null,      /* Partner key of the collaborator. If a Kardia user, the username must be tied to the partner key in the p_staff table. --  */
+        e_collab_type_id                      integer  not null,       /* Type of collaborator --  */
         e_comments                            varchar(255)  null,      /* Comments about this collaborator's involvement in this step. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -1226,6 +1228,9 @@ create table e_ack_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_ack_type, 'Prayed' as e_ack_type_label, 'Prayed' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_ack_type, 'Reply' as e_ack_type_label, 'Reply' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_ack_type, 'Comment' as e_ack_type_label, 'Comment' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_trackactivity */
