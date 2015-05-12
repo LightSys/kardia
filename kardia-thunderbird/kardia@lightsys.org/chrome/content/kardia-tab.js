@@ -322,13 +322,13 @@ function sortCollaboratees(addButtons) {
 		// add engagement track filter buttons
 		kardiaTab.document.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
 		for (var i=0;i<mainWindow.trackList.length;i++) {
-			kardiaTab.document.getElementById("filter-by-tracks").innerHTML += '<button id="filter-by-e-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this engagement track" type="checkbox" checkState="0" label="' + mainWindow.trackList[i] + '" oncommand="addFilter(\'e\', ' + i + ', false)"/>';
+			kardiaTab.document.getElementById("filter-by-tracks").innerHTML += '<button id="filter-by-e-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this engagement track" type="checkbox" checkState="0" label="' + kardiaTab.htmlEscape(mainWindow.trackList[i]) + '" oncommand="addFilter(\'e\', ' + i + ', false)"/>';
 		}
 		
 		// add tag filter buttons
 		kardiaTab.document.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
 		for (var i=0;i<mainWindow.tagList.length;i+=2) {
-			kardiaTab.document.getElementById("filter-by-tags").innerHTML += '<button id="filter-by-t-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this tag" type="checkbox" checkState="0" label="' + mainWindow.tagList[i+1] + '" oncommand="addFilter(\'t\', ' + i + ', false)"/>';
+			kardiaTab.document.getElementById("filter-by-tags").innerHTML += '<button id="filter-by-t-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this tag" type="checkbox" checkState="0" label="' + kardiaTab.htmlEscape(mainWindow.tagList[i+1]) + '" oncommand="addFilter(\'t\', ' + i + ', false)"/>';
 		}
 	}
 }
@@ -397,45 +397,55 @@ function sortSomeCollaboratees(maxIndex) {
 }
 // END TEST
 
+   var prevString;
 // reload collaboratee at position "index"
 function reloadCollaboratee(index) {
 	// add basic info
-	var addString = '<hbox class="tab-collaborator" tooltiptext="Click to view this partner" onclick="addCollaborator(' + mainWindow.collaborateeIds[index] + ')"><vbox class="tab-collaborator-name"><label class="bold-text" value="' + mainWindow.collaborateeNames[index] + '"/><label value="ID# ' + mainWindow.collaborateeIds[index] + '"/></vbox>';
+	var addString = '<hbox class="tab-collaborator" tooltiptext="Click to view this partner" onclick="addCollaborator(' + mainWindow.collaborateeIds[index] + ')">\n\t<vbox class="tab-collaborator-name">\n\t\t<label class="bold-text" value="' + htmlEscape(mainWindow.collaborateeNames[index]) + '"/>\n\t\t<label value="ID# ' + htmlEscape(mainWindow.collaborateeIds[index]) + '"/>\n\t</vbox>\n';
 	// add tracks if the partner has them
 	if (mainWindow.collaborateeTracks[index].length > 1) {
-		addString += '<vbox>';
+		addString += '\t<vbox>\n';
 		for (var j=0;j<mainWindow.collaborateeTracks[index].length;j+=2) {
 			if (mainWindow.collaborateeTracks[index][j] != "" && mainWindow.collaborateeTracks[index][j+1] != "") { 
-				addString += '<vbox class="tab-engagement-track-color-box" tooltiptext="Click to filter by this engagement track" onclick="addFilter(\'e\', ' + mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j]) + ', true)" style="background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j])] + '"><label class="bold-text">' + mainWindow.collaborateeTracks[index][j] + '</label><label>Engagement Step: ' + mainWindow.collaborateeTracks[index][j+1] + '</label></vbox>';
+				addString += '\t\t<vbox class="tab-engagement-track-color-box" tooltiptext="Click to filter by this engagement track" onclick="addFilter(\'e\', ' + htmlEscape(mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j])) + ', true)" style="background-color:' + htmlEscape(mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j])]) + '">\n\t\t\t<label class="bold-text">\n\t\t\t\t' + htmlEscape(mainWindow.collaborateeTracks[index][j]) + '\n\t\t\t</label>\n\t\t\t<label>\n\t\t\t\tEngagement Step: ' + htmlEscape(mainWindow.collaborateeTracks[index][j+1]) + '\n\t\t\t</label>\n\t\t</vbox>\n';
 			}
 		}
-		addString += '</vbox>';
+		addString += '\t</vbox>\n';
 	}
 
 	if (mainWindow.collaborateeActivity[index] != null && mainWindow.collaborateeActivity[index].length > 0) {
-		addString += '<vbox id="collaboratee-activity-' + mainWindow.collaborateeIds[index] + '" flex="1">';
+		addString += '\t<vbox id="collaboratee-activity-' + htmlEscape(mainWindow.collaborateeIds[index]) + '" flex="1">\n';
 		// add recent activity
 		for (var j=1;j<mainWindow.collaborateeActivity[index].length;j+=3) {
-			addString += '<label flex="1">' + mainWindow.collaborateeActivity[index][j] + '</label>';
+			addString += '\t\t<label flex="1">\n\t\t\t' + htmlEscape(mainWindow.collaborateeActivity[index][j]) + '\n\t\t</label>\n';
 		}
-		addString += '</vbox>';
+		addString += '\t</vbox>\n';
 	}
 					
 	// add highlighted data items
 	if (mainWindow.collaborateeData[index].length > 1) {
-		addString += '<vbox>';
+		addString += '\t<vbox>\n';
 		for (var j=0;j<mainWindow.collaborateeData[index].length;j+=3) {
 			if (mainWindow.collaborateeData[index][j+1] == "1") { 
-				addString += '<button tooltiptext="Click to filter by this data item" oncommand="addFilter(\'d\',\'' + mainWindow.collaborateeData[index][j] + '\', false);" class="highlighted" label="' + mainWindow.collaborateeData[index][j] + '"/>';
+				addString += '\t\t<button tooltiptext="Click to filter by this data item" oncommand="addFilter(\'d\',\'' + htmlEscape(mainWindow.collaborateeData[index][j]) + '\', false);" class="highlighted" label="' + htmlEscape(mainWindow.collaborateeData[index][j]) + '"/>\n';
 			}
 		}
-		addString += '</vbox>';
+		addString += '\t</vbox>\n';
 	}
 	
-	addString += '<spacer flex="2"/><vbox><spacer flex="1"/><image class="tab-select-partner"/><spacer flex="1"/></vbox></hbox>';
+	addString += '\t<spacer flex="2"/>\n\t<vbox>\n\t\t<spacer flex="1"/>\n\t\t<image class="tab-select-partner"/>\n\t\t<spacer flex="1"/>\n\t</vbox>\n</hbox>\n';
 	
 	// display the partner
-	kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML += addString;
+   kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML += addString;
+}
+
+function htmlEscape(str) {
+      return String(str)
+         .replace(/&/g, '&amp;')
+         .replace(/"/g, '&quot;')
+         .replace(/'/g, '&#39;')
+         .replace(/</g, '&lt;')
+         .replace(/>/g, '&gt;');
 }
 
 // does quick filter from this tab
