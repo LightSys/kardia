@@ -166,7 +166,7 @@ journal_entry "widget/component-decl"
 		    t_a_ctlacct "widget/table-column" { title="Ctl"; fieldname="a_account_category"; width=30; }
 		    t_a_acct "widget/table-column" { title="Account"; fieldname="a_acct_disp"; width=125; }
 		    t_a_amtp "widget/table-column" { title="Debit (+)"; fieldname="a_amount_plus"; width=90; align=right; }
-		    t_a_amtm "widget/table-column" { title="Credit (-)"; fieldname="a_amount_minus"; width=90; align=right; }
+		    t_a_amtm "widget/table-column" { title="Credit (-)"; fieldname="a_amount_minus"; width=90; align=right; textcolor=runclient('#ff0000'); }
 		    t_a_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=236; }
 		    }
 		}
@@ -178,7 +178,7 @@ journal_entry "widget/component-decl"
 
 		trx_vbx_1 "widget/vbox"
 		    {
-		    x=0;y=18;width=290;height=198;cellsize=20;spacing=5;
+		    x=0;y=18;width=330;height=198;cellsize=20;spacing=5;
 
 		    trx_jnl_hbox "widget/hbox"
 			{
@@ -201,12 +201,14 @@ journal_entry "widget/component-decl"
 
 			ccdesc_osrc "widget/osrc"
 			    {
-			    sql = "select a_cc_desc = isnull(first(:a_cc_desc),'**INVALID**') from /apps/kardia/data/Kardia_DB/a_cost_center/rows";
+			    ccdesc_param1 "widget/parameter" { type=string; param_name=a_cost_center; }
+			    ccdesc_param2 "widget/parameter" { type=string; param_name=a_ledger_number; }
+			    sql = "select a_cc_desc = isnull(first(:cc:a_cc_desc),'**INVALID**'), :parameters:a_cost_center from /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cc:a_cost_center = :parameters:a_cost_center and :cc:a_ledger_number = :parameters:a_ledger_number";
 			    autoquery = never;
 			    replicasize=2;
 			    readahead=2;
 
-			    cc_get_desc_2 "widget/connector" { event=EndQuery; target=f_trx_cc; action=SetValueDescription; Description=runclient(:ccdesc_osrc:a_cc_desc); }
+			    cc_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:ccdesc_osrc:a_cost_center = :f_trx_cc:content); target=f_trx_cc; action=SetValueDescription; Description=runclient(:ccdesc_osrc:a_cc_desc); }
 			    }
 			}
 		    f_trx_acct "widget/component"
@@ -232,12 +234,14 @@ journal_entry "widget/component-decl"
 
 			acdesc_osrc "widget/osrc"
 			    {
-			    sql = "select a_acct_desc = isnull(first(:a_acct_desc),'**INVALID**') from /apps/kardia/data/Kardia_DB/a_account/rows";
+			    acdesc_param1 "widget/parameter" { type=string; param_name=a_account_code; }
+			    acdesc_param2 "widget/parameter" { type=string; param_name=a_ledger_number; }
+			    sql = "select a_acct_desc = isnull(first(:ac:a_acct_desc),'**INVALID**'), :parameters:a_account_code from /apps/kardia/data/Kardia_DB/a_account/rows ac where :ac:a_ledger_number = :parameters:a_ledger_number and :ac:a_account_code = :parameters:a_account_code";
 			    autoquery = never;
 			    replicasize=2;
 			    readahead=2;
 
-			    ac_get_desc_2 "widget/connector" { event=EndQuery; target=f_trx_acct; action=SetValueDescription; Description=runclient(:acdesc_osrc:a_acct_desc); }
+			    ac_get_desc_2 "widget/connector" { event=EndQuery; target=f_trx_acct; event_condition=runclient(:acdesc_osrc:a_account_code = :f_trx_acct:content); action=SetValueDescription; Description=runclient(:acdesc_osrc:a_acct_desc); }
 			    }
 			}
 		    ctl_osrc "widget/osrc"
@@ -264,26 +268,28 @@ journal_entry "widget/component-decl"
 			    }
 			}
 		    f_trx_acctcat "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_account_category; text="Control:"; tooltip="GL Ctl Account Code"; label_width=90; popup_source = runserver("/apps/kardia/modules/gl/ctlacct.qyt/" + :this:ledger + "/"); popup_text="Select Control:"; }
-		    f_trx_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_amount; ctl_type=editbox; text="Amount:"; label_width=90; }
-		    sp1 "widget/autolayoutspacer" { height=0; }
-		    trx_post_mod_hbox "widget/hbox"
-			{
-			spacing=2; height=18;
-			f_trx_posted "widget/component" { width=120; path="/sys/cmp/smart_field.cmp"; field=a_posted; ctl_type=checkbox; text="Posted?"; label_width=90; type="readonly"; posted_hints "widget/hints" { default=runclient(0); style=readonly; } }
-			f_trx_mod_l "widget/label" { width=86; text="User Edit?"; align=right; }
-			f_trx_mod "widget/checkbox" { width=16; y=4; readonly=yes; fieldname="a_modified"; f_trx_mod_h "widget/hints" { style=readonly,alwaysdef; default=1; } }
-			}
-		    trx_corr_hbox "widget/hbox"
-			{
-			spacing=2; height=18;
-			f_trx_corr "widget/component" { width=120; path="/sys/cmp/smart_field.cmp"; field=a_corrected; ctl_type=checkbox; text="Corrected?"; label_width=90; type=readonly; correcting_hints "widget/hints" { default=runclient(0); style=readonly; } }
-			f_trx_corring "widget/component" { width=120; path="/sys/cmp/smart_field.cmp"; field=a_correcting; ctl_type=checkbox; text="Correcting?"; label_width=90; type=readonly; corrected_hints "widget/hints" { default=runclient(0); style=readonly; } }
-			}
+		    f_trx_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_amount; ctl_type=editbox; text="Amount:"; label_width=90; width=250; }
+		    comm_sep "widget/autolayoutspacer" { height=8; }
+		    f_trx_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=editbox; text="Comment:"; label_width=90; }
 		    }
-		f_trx_comm "widget/component" { x=290; width=310; y=160; height=20; path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=editbox; text="Comment:"; label_width=90; }
+		trx_post_mod_hbox "widget/hbox"
+		    {
+		    x=378; y=150; width=240;
+		    spacing=2; height=18;
+		    f_trx_posted "widget/component" { width=120; path="/sys/cmp/smart_field.cmp"; field=a_posted; ctl_type=checkbox; text="Posted?"; label_width=90; type="readonly"; posted_hints "widget/hints" { default=runclient(0); style=readonly; } }
+		    f_trx_mod_l "widget/label" { width=86; text="User Edit?"; align=right; }
+		    f_trx_mod "widget/checkbox" { width=16; y=4; readonly=yes; fieldname="a_modified"; f_trx_mod_h "widget/hints" { style=readonly,alwaysdef; default=1; } }
+		    }
+		trx_corr_hbox "widget/hbox"
+		    {
+		    x=378; y=170; width=240;
+		    spacing=2; height=18;
+		    f_trx_corr "widget/component" { width=120; path="/sys/cmp/smart_field.cmp"; field=a_corrected; ctl_type=checkbox; text="Corrected?"; label_width=90; type=readonly; correcting_hints "widget/hints" { default=runclient(0); style=readonly; } }
+		    f_trx_corring "widget/component" { width=120; path="/sys/cmp/smart_field.cmp"; field=a_correcting; ctl_type=checkbox; text="Correcting?"; label_width=90; type=readonly; corrected_hints "widget/hints" { default=runclient(0); style=readonly; } }
+		    }
 		trx_vbx_2 "widget/vbox"
 		    {
-		    x=320;y=18;width=280;height=198;cellsize=20;spacing=5;
+		    x=360;y=18;width=240;height=198;cellsize=20;spacing=5;
 
 		    f_trx_effdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field="a_effective_date"; ctl_type=datetime; text="Eff. Date:"; label_width=90; }
 		    f_trx_int_pid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_int_partner_id; ctl_type=editbox; text="Int. Partner:"; label_width=90; }
