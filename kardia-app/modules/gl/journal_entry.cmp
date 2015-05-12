@@ -166,7 +166,7 @@ journal_entry "widget/component-decl"
 		    t_a_ctlacct "widget/table-column" { title="Ctl"; fieldname="a_account_category"; width=30; }
 		    t_a_acct "widget/table-column" { title="Account"; fieldname="a_acct_disp"; width=125; }
 		    t_a_amtp "widget/table-column" { title="Debit (+)"; fieldname="a_amount_plus"; width=90; align=right; }
-		    t_a_amtm "widget/table-column" { title="Credit (-)"; fieldname="a_amount_minus"; width=90; align=right; }
+		    t_a_amtm "widget/table-column" { title="Credit (-)"; fieldname="a_amount_minus"; width=90; align=right; textcolor=runclient('#ff0000'); }
 		    t_a_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=236; }
 		    }
 		}
