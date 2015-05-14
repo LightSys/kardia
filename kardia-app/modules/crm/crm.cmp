@@ -69,6 +69,7 @@ crm "widget/component-decl"
 		PointSide=runclient("top");
 		partner=runclient(:profile_cmp:p_partner_key);
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		is_new=1;
 		}
 
 	    on_notes "widget/connector"
@@ -290,6 +291,19 @@ crm "widget/component-decl"
 		    todo_id=runclient(:todo_id);
 		    }
 
+		onEditContHist "widget/connector"
+		    {
+		    event=EditContactHistory;
+		    target=contact_popover;
+		    action=Open;
+		    PointAt=runclient(:origin);
+		    PointSide=runclient(:side);
+		    collaborator=runclient(:collaborator_osrc:p_partner_key);
+		    hist_id=runclient(:hist_id);
+		    partner=runclient(:partner);
+		    is_new=0;
+		    }
+
 		on_EditCollab "widget/connector"
 		    {
 		    event=EditCollab;
@@ -302,6 +316,7 @@ crm "widget/component-decl"
 		    partnername=runclient(:profile_cmp:partnername);
 		    collaborator=runclient(:collaborator_osrc:p_partner_key);
 		    }
+
 		on_TrackSelect "widget/connector"
 		    {
 		    event=TrackSelected;
