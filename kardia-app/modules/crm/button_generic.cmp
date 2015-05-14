@@ -69,6 +69,7 @@ button_generic "widget/component-decl"
 		border_color=white;
 		border_radius=4;
 		padding=1;
+		style=bold;
 		text="";
 		visible=runclient(isnull(:num_visib_var:value, 'no'));
 		align=center;
