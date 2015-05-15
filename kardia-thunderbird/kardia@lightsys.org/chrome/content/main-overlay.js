@@ -518,9 +518,12 @@ function reload(isDefault) {
 		// display engagement tracks
 		var tracks = "";
 		for (var i=0;i<mainWindow.engagementTracks[mainWindow.selected].length;i+=3) {
-			tracks += '<hbox class="engagement-track-color-box" style="background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.engagementTracks[mainWindow.selected][i])] + '"><vbox flex="1"><label class="bold-text">' + mainWindow.engagementTracks[mainWindow.selected][i] + '</label><label>Engagement Step: ' + mainWindow.engagementTracks[mainWindow.selected][i+1] + '</label></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editTrack(\'' + mainWindow.engagementTracks[mainWindow.selected][i+2] + '\',\'' + mainWindow.engagementTracks[mainWindow.selected][i+1] + '\')"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
+         // Taking out edit button for now. Uncomment this and delete next line to re-enable. #Muted
+			//tracks += '<hbox class="engagement-track-color-box" style="background-color:' + kardiaTab.htmlEscape(mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.engagementTracks[mainWindow.selected][i])]) + '"><vbox flex="1"><label class="bold-text">' + kardiaTab.htmlEscape(mainWindow.engagementTracks[mainWindow.selected][i]) + '</label><label>Engagement Step: ' + kardiaTab.htmlEscape(mainWindow.engagementTracks[mainWindow.selected][i+1]) + '</label></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editTrack(\'' + kardiaTab.htmlEscape(mainWindow.engagementTracks[mainWindow.selected][i+2]) + '\',\'' + kardiaTab.htmlEscape(mainWindow.engagementTracks[mainWindow.selected][i+1]) + '\')"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
+			tracks += '<hbox class="engagement-track-color-box" style="background-color:' + kardiaTab.htmlEscape(mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.engagementTracks[mainWindow.selected][i])]) + '"><vbox flex="1"><label class="bold-text">' + kardiaTab.htmlEscape(mainWindow.engagementTracks[mainWindow.selected][i]) + '</label><label>Engagement Step: ' + kardiaTab.htmlEscape(mainWindow.engagementTracks[mainWindow.selected][i+1]) + '</label></vbox><vbox><spacer height="3px"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
 		}
-		tracks += '<hbox><spacer flex="1"/><button class="new-button" label="New Track..." oncommand="newTrack()" tooltiptext="Add engagement track to this partner"/></hbox>';
+      // Muting this button for now #Muted
+		//tracks += '<hbox><spacer flex="1"/><button class="new-button" label="New Track..." oncommand="newTrack()" tooltiptext="Add engagement track to this partner"/></hbox>';
 		mainWindow.document.getElementById("engagement-tracks-inner-box").innerHTML = tracks;				
 		
 		// display recent activity
@@ -2702,8 +2705,7 @@ function newNote(title, desc) {
 	if (returnValues.saveNote && (returnValues.title.trim() != "" || returnValues.desc.trim() != "") && loginValid) {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
-		
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactHistory','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_contact_history_type":' + returnValues.type + ',"e_subject":"' + returnValues.title + '","e_notes":"' + returnValues.desc + '","e_contact_date":' + dateString + ',"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactHistory','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_contact_history_type":' + returnValues.type + ',"e_subject":"' + returnValues.title + '","e_notes":"' + returnValues.desc + '","e_whom":"' + mainWindow.myId + '","e_contact_date":' + dateString + ',"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
 			
 			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[mainWindow.selected] + "/ContactHistory?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(noteResp) {
          // If not 404
