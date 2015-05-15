@@ -5,6 +5,7 @@ plugin_crm_timeline_ADDR "widget/component-decl"
     height=60;
     icon = "/apps/kardia/images/tango/go-home.png";
     type = "ADDR";
+    iconbar_enabled = no;
 
     partner_osrc "widget/parameter" { type=object; }
     timeline_osrc "widget/parameter" { type=object; }

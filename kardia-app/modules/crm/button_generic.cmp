@@ -1,11 +1,13 @@
 $Version=2$
 button_generic "widget/component-decl"
     {
-    width=48; height=76;
+    width=runserver(condition(:this:direction == 'vertical', 48, 76));
+    height=runserver(condition(:this:direction == 'vertical', 76, 48));
 
     image "widget/parameter" { type=string; }
     text "widget/parameter" { type=string; deploy_to_client=yes; }
     active "widget/parameter" { type=integer; default=0; }
+    direction "widget/parameter" { type=string; default="vertical"; deploy_to_client=yes; }
 
     enabled "widget/parameter" { type=integer; deploy_to_client=yes; }
 
@@ -39,16 +41,19 @@ button_generic "widget/component-decl"
 	style=flat;
 	background=runserver(condition(:this:active,"/apps/kardia/images/bg/lsblue_gradient.png",null));
 
-	vbox "widget/vbox"
+	btn_layout "widget/vbox"
 	    {
-	    x=0; y=10;
-	    width=48; height=62;
+	    style=runserver(condition(:this:direction == 'vertical', 'vbox', 'hbox'));
+	    x=runserver(condition(:this:direction == 'vertical', 0, 10));
+	    y=runserver(condition(:this:direction == 'vertical', 10, 0));
+	    width=runserver(condition(:this:direction == 'vertical', 48, 66));
+	    height=runserver(condition(:this:direction == 'vertical', 66, 48));
 	    spacing=0;
 
 	    btn "widget/textbutton"
 		{
-		width=48;
-		height=50;
+		width=runserver(condition(:this:direction == 'vertical', 48, 50));
+		height=runserver(condition(:this:direction == 'vertical', 50, 48));
 		fl_width=0;
 		border_style=none;
 		image=runserver(:this:image);
@@ -62,7 +67,8 @@ button_generic "widget/component-decl"
 		}
 	    number_label "widget/label"
 		{
-		height=12;
+		height=runserver(condition(:this:direction == 'vertical', 12, null));
+		width=runserver(condition(:this:direction == 'vertical', null, 12));
 		font_size=9;
 		fgcolor=white;
 		bgcolor=runclient(isnull(:num_color_var:value, 'red'));

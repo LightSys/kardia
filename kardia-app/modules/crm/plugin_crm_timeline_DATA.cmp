@@ -5,6 +5,9 @@ plugin_crm_timeline_DATA "widget/component-decl"
     height=108;
     icon = "/apps/kardia/images/icons/tumblicons-webform2.svg";
     type = "DATA";
+    iconbar_icon = "/apps/kardia/images/icons/tumblicons-webform2.svg";
+    iconbar_label = "Data";
+    iconbar_sequence = 90;
 
     partner_osrc "widget/parameter" { type=object; }
     timeline_osrc "widget/parameter" { type=object; }

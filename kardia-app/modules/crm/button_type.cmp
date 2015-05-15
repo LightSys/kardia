@@ -1,13 +1,15 @@
 $Version=2$
 button_type "widget/component-decl"
     {
-    width=48; height=76;
+    width=runserver(condition(:this:direction == 'vertical', 48, 76));
+    height=runserver(condition(:this:direction == 'vertical', 76, 48));
 
     image "widget/parameter" { type=string; }
     text "widget/parameter" { type=string; }
     type "widget/parameter" { type=string; deploy_to_client=yes; }
     enabled_types "widget/parameter" { type=object; deploy_to_client=yes; }
     init_enabled_types "widget/parameter" { type=string; deploy_to_client=yes; }
+    direction "widget/parameter" { type=string; default="vertical"; deploy_to_client=yes; }
 
     enabled "widget/parameter" { type=integer; deploy_to_client=yes; }
 
@@ -47,7 +49,7 @@ button_type "widget/component-decl"
 	event=Toggle;
 	target=pane;
 	action=SetBackground;
-	Image=runclient(condition(charindex('openiconic-eye',:check:source) > 0, '/apps/kardia/images/bg/charcoal_gradient.png', '/apps/kardia/images/bg/lsblue_gradient.png'));
+	Image=runclient(condition(charindex('openiconic-eye',:check:source) > 0, '/apps/kardia/images/bg/charcoal_gradient', '/apps/kardia/images/bg/lsblue_gradient') + condition(:direction:value == 'vertical', '', '_horiz') + '.png');
 	}
     toggle_1 "widget/connector"
 	{
@@ -76,20 +78,24 @@ button_type "widget/component-decl"
     pane "widget/pane"
 	{
 	x=0; y=0;
-	width=48; height=76;
+	width=runserver(condition(:this:direction == 'vertical', 48, 76));
+	height=runserver(condition(:this:direction == 'vertical', 76, 48));
 	style=flat;
-	background=runserver(condition(charindex(:this:type,:this:init_enabled_types) > 0, "/apps/kardia/images/bg/lsblue_gradient.png",null));
+	background=runserver(condition(charindex(:this:type,:this:init_enabled_types) > 0, condition(:this:direction == 'vertical', "/apps/kardia/images/bg/lsblue_gradient.png", "/apps/kardia/images/bg/lsblue_gradient_horiz.png"),null));
 
-	vbox "widget/vbox"
+	button_layout "widget/autolayout"
 	    {
-	    x=0; y=10;
-	    width=48; height=66;
+	    style=runserver(condition(:this:direction == 'vertical', 'vbox', 'hbox'));
+	    x=runserver(condition(:this:direction == 'vertical', 0, 10));
+	    y=runserver(condition(:this:direction == 'vertical', 10, 0));
+	    width=runserver(condition(:this:direction == 'vertical', 48, 66));
+	    height=runserver(condition(:this:direction == 'vertical', 66, 48));
 	    spacing=0;
 
 	    btn "widget/textbutton"
 		{
-		width=48;
-		height=50;
+		width=runserver(condition(:this:direction == 'vertical', 48, 50));
+		height=runserver(condition(:this:direction == 'vertical', 50, 48));
 		border_style=none;
 		image=runserver(:this:image);
 		text=runserver(:this:text);
@@ -103,7 +109,8 @@ button_type "widget/component-decl"
 
 	    check_pane "widget/pane"
 		{
-		height=16;
+		height=runserver(condition(:this:direction == 'vertical', 16, null));
+		width=runserver(condition(:this:direction == 'vertical', null, 16));
 		style=flat;
 
 		onMouseDown1 "widget/connector" { event=MouseDown; target=all_timer; action=SetTimer; Time=500; AutoReset=1; }
@@ -119,8 +126,8 @@ button_type "widget/component-decl"
 		    source=runserver(condition(charindex(:this:type,:this:init_enabled_types) > 0, "/apps/kardia/images/icons/openiconic-eye.svg","/apps/kardia/images/icons/openiconic-x-grey.svg"));
 		    width = 12;
 		    height = 12;
-		    x = 18;
-		    y=0;
+		    x=runserver(condition(:this:direction == 'vertical', 18, 0));
+		    y=runserver(condition(:this:direction == 'vertical', 0, 18));
 		    }
 		}
 	    }
