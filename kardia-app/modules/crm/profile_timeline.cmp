@@ -9,6 +9,7 @@ profile_timeline "widget/component-decl"
 
     // Our events
     EditTask "widget/component-decl-event" { }
+    EditContactHistory "widget/component-decl-event" { }
 
     // Our events
     TrackSelected "widget/component-decl-event" { }
@@ -172,6 +173,16 @@ profile_timeline "widget/component-decl"
 				    todo_id=runclient(:todo_id);
 				    partner=runclient(:partner);
 				    origin=runclient(:origin);
+				    }
+
+				on_editcont "widget/connector"
+				    {
+				    event=EditContactHistory;
+				    target=profile_timeline;
+				    action=EditContactHistory;
+				    hist_id=runclient(:hist_id);
+				    origin=runclient(:origin);
+				    partner=runclient(:partner);
 				    }
 				}
 			    }
