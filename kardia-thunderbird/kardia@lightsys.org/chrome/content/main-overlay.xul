@@ -16,7 +16,7 @@
 			
 			<!-- header that allows you to close Kardia pane -->
 			<sidebarheader id="sidebarheader-allow-close" align="center">
-				<label id="titleLabel" value="Kardia Relationships"/>
+				<label id="titleLabel" value="Kardia CRM"/>
 				<spacer flex="1"/>
 				<toolbarbutton id="closeSidebar" oncommand="toggleKardiaVisibility(1)" tooltiptext="Close Kardia pane">
 					<vbox>
