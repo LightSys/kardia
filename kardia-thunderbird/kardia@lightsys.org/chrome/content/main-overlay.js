@@ -171,7 +171,9 @@ function updateKardia() {
 function manualUpdate() {
   document.getElementById("manual-refresh").style.backgroundColor = "#cccccc";
   setTimeout(function() {document.getElementById("manual-refresh").style.backgroundColor = "#ffffff";},200);
-  
+
+  if (mainWindow.refreshing) {
+  }
   if (mainWindow.loginValid && !mainWindow.refreshing) {
 	// completely refresh/reload
 	mainWindow.getTrackTagStaff(mainWindow.prefs.getCharPref("username"), mainWindow.prefs.getCharPref("password"));
@@ -180,6 +182,7 @@ function manualUpdate() {
 	
 // what to do when Thunderbird starts up
 window.addEventListener("load", function() { 
+
 	// set "show Kardia pane" arrow to the correct image, based on whether it's collapsed
 	if (document.getElementById("main-box").collapsed == true) {
 		document.getElementById("show-kardia-pane-button").style.backgroundColor = "rgba(0,0,0,0)";
@@ -207,7 +210,23 @@ window.addEventListener("load", function() {
 			}
 		}
 		
+      // Short term solution #FIX
+      var tabExistsOnStart = false;
+      for (var i=0;i<document.getElementById("tabmail").tabModes["contentTab"].tabs.length;i++) {
+         if (document.getElementById("tabmail").tabModes["contentTab"].tabs[i].title == "Kardia") {
+            tabExistsOnStart = true;
+            break;
+         }
+      }
+      // if not, open it
+      if (!tabExistsOnStart) {
+         document.getElementById("tabmail").openTab("contentTab", {title: "Kardia", contentPage: "chrome://kardia/content/kardia-tab.xul"});
+      }
+	   document.getElementById("tabmail").tabContainer.selectedIndex = 0;
+      kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
+      // End of short term solution
 		getTrackTagStaff(loginInfo2[0], loginInfo2[1]);
+
 	});
 	
 	// make calendar reload whenever prefs change
@@ -681,7 +700,9 @@ function reload(isDefault) {
 	}
    // Done loading, remove loading gif
    mainWindow.document.getElementById('loading-gif-container').style.visibility = "collapse";
-   kardiaTab.processingClick = false;
+   if (kardiaTab != null) {
+      kardiaTab.processingClick = false;
+   }
 }
 
 // copy location of clicked link to clipboard
@@ -1508,7 +1529,7 @@ function getOtherInfo(index, isDefault) {
 }
 
 // get info for one person you're collaborating with
-function getCollaborateeInfo(index) {	
+function getCollaborateeInfo(index) {
 	// get the person's engagement tracks
 	doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(trackResp) {
       // If not 404
@@ -1653,16 +1674,19 @@ function getCollaborateeInfo(index) {
                                              // if we've done all the collaboratees, start loading the Kardia tab stuff
                                              if (index+1 >= mainWindow.collaborateeIds.length) {
                                                 // sort and reload Collaborating With panel
-                                                kardiaTab.sortCollaboratees(false);
+                                                if (kardiaTab != null) {
+                                                   kardiaTab.sortCollaboratees(false);
+                                                   kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
+                                                }
                                                 mainWindow.refreshing = false;
-                                                kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
                                                 
                                                 // reload the Kardia pane so it's blank at first
                                                 reload(false);
-                                             }
-                                             else {
+                                             } else {
                                                 // reload
-                                                kardiaTab.sortSomeCollaboratees(index);
+                                                if (kardiaTab != null) {
+                                                   kardiaTab.sortSomeCollaboratees(index);
+                                                }
                                                 
                                                 // go to the next person
                                                 getCollaborateeInfo(index+1);
@@ -1675,24 +1699,27 @@ function getCollaborateeInfo(index) {
                                        // 404, do nothing
                                     }
                                  }, false, "", "");
-                              }
-                              else {
+                              } else {
                                  mainWindow.collaborateeGifts.push(new Array());
                                  mainWindow.collaborateeFunds.push(new Array());
                                  // TODO hide gift area
                                  // if we've done all the collaboratees, start loading the Kardia tab stuff
                                  if (index+1 >= mainWindow.collaborateeIds.length) {								
                                     // sort and reload Collaborating With panel
-                                    kardiaTab.sortCollaboratees(false);
+                                    if (kardiaTab != null) {
+                                       kardiaTab.sortCollaboratees(false);
+                                       kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
+                                    }
                                     mainWindow.refreshing = false;
-                                    kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
                                     
                                     // reload the Kardia pane so it's blank at first
                                     reload(false);
                                  }
                                  else {
                                     // reload
-                                    kardiaTab.sortSomeCollaboratees(index);
+                                    if (kardiaTab != null) {
+                                       kardiaTab.sortSomeCollaboratees(index);
+                                    }
                                     
                                     // go to the next person
                                     getCollaborateeInfo(index+1);
@@ -2013,7 +2040,9 @@ function getTodoDueDate(dateArray, addDays) {
 function addCollaborator(collaboratorId) {
    // Don't process if we're already loading something
    if (!kardiaTab.processingClick) {
-      kardiaTab.processingClick = true;
+      if (kardiaTab != null) {
+         kardiaTab.processingClick = true;
+      }
       // Set loading state untill finished loading partner
       mainWindow.document.getElementById('loading-gif-container').style.visibility = "visible";
       mainWindow.document.getElementById('main-content-box').style.visibility = "hidden";
@@ -2326,7 +2355,9 @@ function editContactInfo(type, id) {
 				
 				//reload to display
 				reload(false);
-				kardiaTab.reloadFilters(false);
+            if (kardiaTab != null) {
+               kardiaTab.reloadFilters(false);
+            }
 			}
 			else {
 				// save
@@ -2343,7 +2374,9 @@ function editContactInfo(type, id) {
                        
                         //reload to display
                         reload(false);
-                        kardiaTab.reloadFilters(false);
+                        if (kardiaTab != null) {
+                           kardiaTab.reloadFilters(false);
+                        }
                         break;
                         
                      }
@@ -2373,7 +2406,9 @@ function editContactInfo(type, id) {
 				  
 			//reload to display
 			reload(false);
-			kardiaTab.reloadFilters(false);
+         if (kardiaTab != null) {
+            kardiaTab.reloadFilters(false);
+         }
 		});
 	}	
 	else if ((returnValues.type == "E" || returnValues.type == "W") && loginValid) {
@@ -2407,7 +2442,9 @@ function editContactInfo(type, id) {
 					  
 			//reload to display
 			reload(false);
-			kardiaTab.reloadFilters(false);
+         if (kardiaTab != null) {
+            kardiaTab.reloadFilters(false);
+         }
 		});
 	}
 }
@@ -2452,7 +2489,9 @@ function newContactInfo() {
                     
                         //reload to display
                         reload(false);
-                        kardiaTab.reloadFilters(false);
+                        if (kardiaTab != null) {
+                           kardiaTab.reloadFilters(false);
+                        }
                         break;
                      }
                   }
@@ -2492,7 +2531,9 @@ function newContactInfo() {
                     
                         //reload to display
                         reload(false);
-                        kardiaTab.reloadFilters(false);
+                        if (kardiaTab != null) {
+                           kardiaTab.reloadFilters(false);
+                        }
                         break;
                      }
                   }
@@ -2538,7 +2579,9 @@ function newContactInfo() {
                     
                         //reload to display
                         reload(false);
-                        kardiaTab.reloadFilters(false);
+                        if (kardiaTab != null) {
+                           kardiaTab.reloadFilters(false);
+                        }
                         break;
                      }
                   }
@@ -2583,7 +2626,9 @@ function editTrack(name,step) {
 		// add recent activity and reload
 		//reloadActivity(mainWindow.ids[mainWindow.selected])
 		reload(false);
-		kardiaTab.reloadFilters(false);
+      if (kardiaTab != null) {
+         kardiaTab.reloadFilters(false);
+      }
 	}
 	else if (returnValues.action == 'n' && loginValid) {
 		// say completed on the old step
@@ -2603,7 +2648,9 @@ function editTrack(name,step) {
 			// add recent activity and reload
 			//reloadActivity(mainWindow.ids[mainWindow.selected])
 			reload(false);
-			kardiaTab.reloadFilters(false);
+         if (kardiaTab != null) {
+            kardiaTab.reloadFilters(false);
+         }
 		});
 	}
 }
@@ -2657,7 +2704,9 @@ function newTrack() {
                         
                         //reload to display
                         reload(false);
-                        kardiaTab.reloadFilters(false);
+                        if (kardiaTab != null) {
+                           kardiaTab.reloadFilters(false);
+                        }
                         break;
                      }
                   }
@@ -2700,6 +2749,10 @@ function newNote(title, desc) {
 	var returnValues = {title:title, desc:desc, saveNote:true, type:0};
 	
 	// open dialog
+   var stringthingy;
+   for (var w = 0; w < noteTypeList.length; w++) {
+      stringthingy += (noteTypeList[w] + "\n");
+   }
 	openDialog("chrome://kardia/content/add-note-prayer.xul", "New Note/Prayer", "resizable,chrome, modal,centerscreen", returnValues, noteTypeList);
 
 	if (returnValues.saveNote && (returnValues.title.trim() != "" || returnValues.desc.trim() != "") && loginValid) {
@@ -2981,9 +3034,10 @@ function getMyInfo(username, password) {
 function getTrackTagStaff(username, password) {	
 	// set the fact that we are refreshing
 	mainWindow.refreshing = true;
-	kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.gif";
+   if (kardiaTab != null) {
+	   kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.gif";
+   }
 										
-	
 	// reset Kardia tab sorting
 	mainWindow.sortCollaborateesBy = "name";
 	mainWindow.sortCollaborateesDescending = true;
@@ -3533,9 +3587,11 @@ function reloadActivity(partnerId) {
          mainWindow.document.getElementById("recent-activity-inner-box").innerHTML = recent;	
 
          // display recent activity in tab
-         kardiaTab.document.getElementById("collaboratee-activity-" + partnerId).innerHTML = "";
-         for (var j=1;j<mainWindow.collaborateeActivity[tabIndex].length;j+=3) {
-            kardiaTab.document.getElementById("collaboratee-activity-" + partnerId).innerHTML += '<label flex="1">' + htmlEscape(mainWindow.collaborateeActivity[tabIndex][j]) + '</label>';
+         if (kardiaTab != null) {
+            kardiaTab.document.getElementById("collaboratee-activity-" + partnerId).innerHTML = "";
+            for (var j=1;j<mainWindow.collaborateeActivity[tabIndex].length;j+=3) {
+               kardiaTab.document.getElementById("collaboratee-activity-" + partnerId).innerHTML += '<label flex="1">' + htmlEscape(mainWindow.collaborateeActivity[tabIndex][j]) + '</label>';
+            }
          }
       } else {
          // 404, do nothing
