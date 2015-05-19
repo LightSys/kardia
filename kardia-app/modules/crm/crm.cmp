@@ -7,6 +7,12 @@ crm "widget/component-decl"
     // Self-refrerence
     us "widget/parameter" { type=object; }
 
+    // Possible partner ID that the user wants to load immediately?
+    partner_key "widget/parameter" { type=string; deploy_to_client=yes; }
+
+    // Whether to display full UI or just one profile.
+    show_profile_only "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+
     // Master refresh
     Refresh "widget/component-decl-action" { }
     onRefresh1 "widget/connector" { event=Refresh; target=profile_cmp; action=Refresh; }
@@ -33,10 +39,22 @@ crm "widget/component-decl"
 	autoquery=onload;
 	readahead = 2;
 	replicasize = 2;
+
+	// Try to load the partner if one was given
+	on_load_view_partner "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:partner_key:value is not null);
+	    //event_confirm=runclient('Load partner # ' + isnull(:partner_key:value, 'NULL') + '?');
+	    target=profile_cmp;
+	    action=SelectPartner;
+	    partner_key = runclient(:partner_key:value);
+	    }
 	}
 
-    crm_vbox "widget/vbox"
+    crm_layout "widget/autolayout"
 	{
+	style=runserver(condition(:this:show_profile_only, 'hbox', 'vbox'));
 	x=0;y=0;
 	width=1000; height=600;
 	spacing=6;
@@ -45,14 +63,17 @@ crm "widget/component-decl"
 	//
 	iconbar "widget/component"
 	    {
-	    height=76;
-	    fl_height=0;
+	    width=runserver(condition(:this:show_profile_only, 76, 1000));
+	    height=runserver(condition(:this:show_profile_only, 600, 76));
+	    fl_height=runserver(condition(:this:show_profile_only, null, 0));
 	    path = "iconbar.cmp";
 	    EnabledTypes="REL,TAG,GIFT,COMM,CONT,TASK,NOTE,DATA,FILE,TRK,PAR,ADDR";
 	    profile = profile_cmp;
+	    show_profile_only=runserver(:this:show_profile_only);
 
 	    select_sidebar "widget/connector"
 		{
+		condition=runserver(not :this:show_profile_only);
 		event=SidebarSelect;
 		target=sidebar_cmp;
 		action=SetTab;
@@ -62,11 +83,11 @@ crm "widget/component-decl"
 	    on_contact "widget/connector"
 		{
 		event=ButtonPressed;
-		event_condition=runclient(:Button == 'Interact');
+		event_condition=runclient(:Button == '#Interact');
 		target=contact_popover;
 		action=Open;
 		PointAt=runclient(:Origin);
-		PointSide=runclient("top");
+		PointSide=runclient(condition(:show_profile_only:value, "left", "top"));
 		partner=runclient(:profile_cmp:p_partner_key);
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		is_new=1;
@@ -75,11 +96,11 @@ crm "widget/component-decl"
 	    on_notes "widget/connector"
 		{
 		event=ButtonPressed;
-		event_condition=runclient(:Button == 'Notes');
+		event_condition=runclient(:Button == '#Notes');
 		target=notes_popover;
 		action=Open;
 		PointAt=runclient(:Origin);
-		PointSide=runclient("top");
+		PointSide=runclient(condition(:show_profile_only:value, "left", "top"));
 		partner=runclient(:profile_cmp:p_partner_key);
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		}
@@ -87,7 +108,7 @@ crm "widget/component-decl"
 	    on_newtask "widget/connector"
 		{
 		event=ButtonPressed;
-		event_condition=runclient(:Button == 'Task');
+		event_condition=runclient(:Button == '#Task');
 		target=popover_todo;
 		action=Open;
 		PointAt=runclient(:Origin);
@@ -112,11 +133,12 @@ crm "widget/component-decl"
 		}
 	    newpartner2_cn "widget/connector"
 		{
+		condition=runserver(not :this:show_profile_only);
 		event=NewPartner;
 		target=newperson_simple_popover;
 		action=Open;
 		PointAt=runclient(:Origin);
-		PointSide=runclient('top');
+		PointSide=runclient(condition(:show_profile_only:value, "left", "top"));
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		}
 	    editpartner_cn "widget/connector"
@@ -137,11 +159,11 @@ crm "widget/component-decl"
 	    newtrk_cn "widget/connector"
 		{
 		event=ButtonPressed;
-		event_condition=runclient(:Button == 'Tracks');
+		event_condition=runclient(:Button == '#Tracks');
 		target=newtrack_popover;
 		action=Open;
 		PointAt=runclient(:Origin);
-		PointSide=runclient('top');
+		PointSide=runclient(condition(:show_profile_only:value, "left", "top"));
 		partner=runclient(:profile_cmp:p_partner_key);
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		partnername=runclient(:profile_cmp:partnername);
@@ -149,11 +171,11 @@ crm "widget/component-decl"
 	    newtag_cn "widget/connector"
 		{
 		event=ButtonPressed;
-		event_condition=runclient(:Button == 'Tags');
+		event_condition=runclient(:Button == '#Tags');
 		target=tags_popover;
 		action=Open;
 		PointAt=runclient(:Origin);
-		PointSide=runclient('top');
+		PointSide=runclient(condition(:show_profile_only:value, "left", "top"));
 		partner=runclient(:profile_cmp:p_partner_key);
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		partnername=runclient(:profile_cmp:partnername);
@@ -161,28 +183,29 @@ crm "widget/component-decl"
 	    newfile_cn "widget/connector"
 		{
 		event=ButtonPressed;
-		event_condition=runclient(:Button == 'Files');
+		event_condition=runclient(:Button == '#Files');
 		target=file_popover;
 		action=Open;
 		PointAt=runclient(:Origin);
-		PointSide=runclient('top');
+		PointSide=runclient(condition(:show_profile_only:value, "left", "top"));
 		partner=runclient(:profile_cmp:p_partner_key);
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		partnername=runclient(:profile_cmp:partnername);
 		}
 	    menu_cn "widget/connector"
 		{
+		condition=runserver(not :this:show_profile_only);
 		event=ButtonPressed;
 		event_condition=runclient(:Button == 'Menu');
 		target=menu_overlay;
 		action=Open;
-		open_x=runclient(:crm_vbox:width - 198);
+		open_x=runclient(:crm_layout:width - 198);
 		open_y=76;
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		}
 	    }
 
-	iconsep "widget/autolayoutspacer" { height=2; fl_height=0; }
+	iconsep "widget/autolayoutspacer" { height=2; fl_height=0; width=2; fl_width=0; }
 
 	// Here we create an hbox, which arranges its child widgets horizontally.
 	// It is used so that the coordinates of each child object do not need to
@@ -190,8 +213,10 @@ crm "widget/component-decl"
 	//
 	list_profile_hbox "widget/hbox"
 	    {
-	    x=10;
-	    width=980; height=500;
+	    x=runserver(condition(:this:show_profile_only, null, 10));
+	    y=runserver(condition(:this:show_profile_only, 10, null));
+	    width=runserver(condition(:this:show_profile_only, 904, 980));
+	    height=runserver(condition(:this:show_profile_only, 580, 500));
 
 	    // The spacing between child objects of this hbox.
 	    //
@@ -199,6 +224,7 @@ crm "widget/component-decl"
 
 	    sidebar_cmp "widget/component"
 		{
+		condition=runserver(not :this:show_profile_only);
 		width=258;
 		path = "sidebar.cmp";
 		collaborator_osrc = collaborator_osrc;
@@ -253,11 +279,15 @@ crm "widget/component-decl"
 		    }
 		}
 
-	    vertsep "widget/autolayoutspacer" { width=1; }
+	    vertsep "widget/autolayoutspacer"
+		{
+		condition=runserver(not :this:show_profile_only);
+		width=1;
+		}
 
 	    profile_cmp "widget/component"
 		{
-		width=701;
+		width=runserver(condition(:this:show_profile_only, 904, 701));
 		path = "partner_profile.cmp";
 		iconbar = iconbar;
 		collaborator_osrc = collaborator_osrc;
@@ -337,6 +367,7 @@ crm "widget/component-decl"
 
     menu_overlay "widget/component"
 	{
+	condition=runserver(not :this:show_profile_only);
 	x=800; y=0; width=200; height=600;
 	path="menu.cmp";
 
@@ -398,6 +429,7 @@ crm "widget/component-decl"
 
     newperson_popover "widget/component"
 	{
+	condition=runserver(not :this:show_profile_only);
 	x=0; y=0;
 	width=1000; height=600;
 	path="popover_newperson.cmp";
@@ -407,6 +439,7 @@ crm "widget/component-decl"
 
     newperson_simple_popover "widget/component"
 	{
+	condition=runserver(not :this:show_profile_only);
 	x=0; y=0;
 	width=1000; height=600;
 	path="popover_newperson_simple.cmp";
@@ -494,6 +527,7 @@ crm "widget/component-decl"
 
     config_tags "widget/component"
 	{
+	condition=runserver(not :this:show_profile_only);
 	x=0; y=0;
 	width=1000; height=600;
 	path="config_tags.cmp";
@@ -501,6 +535,7 @@ crm "widget/component-decl"
 
     config_tracks "widget/component"
 	{
+	condition=runserver(not :this:show_profile_only);
 	x=0; y=0;
 	width=1000; height=600;
 	path="config_tracks.cmp";

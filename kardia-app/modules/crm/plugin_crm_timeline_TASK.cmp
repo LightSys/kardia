@@ -5,6 +5,9 @@ plugin_crm_timeline_TASK "widget/component-decl"
     height=28;
     icon = "/apps/kardia/images/icons/openiconic-task.svg";
     type = "TASK";
+    iconbar_icon = "/apps/kardia/images/icons/openiconic-bell.svg";
+    iconbar_label = "Task";
+    iconbar_sequence = 70;
 
     timeline_osrc "widget/parameter" { type=object; }
     partner_osrc "widget/parameter" { type=object; }

@@ -5,6 +5,9 @@ plugin_crm_timeline_CONT "widget/component-decl"
     height=24;
     icon = "/apps/kardia/images/tango/contact-new.png";
     type = "CONT";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-contacts2.svg";
+    iconbar_label = "Interact";
+    iconbar_sequence = 60;
 
     EditContactHistory "widget/component-decl-event" { }
 

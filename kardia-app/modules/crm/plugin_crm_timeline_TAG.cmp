@@ -5,6 +5,9 @@ plugin_crm_timeline_TAG "widget/component-decl"
     height=24;
     icon = "/apps/kardia/images/icons/ionicons-pricetags.svg";
     type = "TAG";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-pricetags.svg";
+    iconbar_label = "Tags";
+    iconbar_sequence = 20;
 
     partner_osrc "widget/parameter" { type=object; }
     timeline_osrc "widget/parameter" { type=object; }

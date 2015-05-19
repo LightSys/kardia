@@ -5,6 +5,9 @@ plugin_crm_timeline_TRK "widget/component-decl"
     height=28;
     icon = "/apps/kardia/images/tango/start-here.png";
     type = "TRK";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-track.svg";
+    iconbar_label = "Tracks";
+    iconbar_sequence = 110;
 
     TrackSelected "widget/component-decl-event" { }
 

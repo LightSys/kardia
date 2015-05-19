@@ -5,6 +5,9 @@ plugin_crm_timeline_REL "widget/component-decl"
     height=16;
     icon = "/apps/kardia/images/icons/ionicons-relationships3.svg";
     type = "REL";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-relationships3.svg";
+    iconbar_label = "Relate";
+    iconbar_sequence = 10;
 
     profile "widget/parameter" { type=object; deploy_to_client=yes; }
     timeline_osrc "widget/parameter" { type=object; deploy_to_client=yes; }

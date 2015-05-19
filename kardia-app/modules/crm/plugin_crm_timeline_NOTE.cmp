@@ -5,6 +5,9 @@ plugin_crm_timeline_NOTE "widget/component-decl"
     height=134;
     icon = "/apps/kardia/images/tango/format-justify-left.png";
     type = "NOTE";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-notes.svg";
+    iconbar_label = "Notes";
+    iconbar_sequence = 80;
 
     partner_osrc "widget/parameter" { type=object; }
     timeline_osrc "widget/parameter" { type=object; }
