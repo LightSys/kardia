@@ -1,15 +1,18 @@
 package org.lightsys.donorapp;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.LocalDBHandler;
+import org.lightsys.donorapp.MainActivity;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -38,6 +41,7 @@ public class AccountsActivity extends Activity{
 	EditText accountName, accountPass, serverName, donorID;
 	TextView connectedAccounts;
 	ArrayList<Account> accounts = new ArrayList<Account>();
+
 	
 	/**
 	 * Creates the view, and loads any pre-existing accounts into the listview
@@ -54,7 +58,7 @@ public class AccountsActivity extends Activity{
 		serverName = (EditText)findViewById(R.id.servername_input);
 		donorID = (EditText)findViewById(R.id.donor_id_input);
 		connectedAccounts = (TextView)findViewById(R.id.textView2);
-		
+
 		loadAccountList();
 		
 		registerForContextMenu(accountsList);
@@ -111,13 +115,15 @@ public class AccountsActivity extends Activity{
 	 */
 	public void addAccount(View v){
 		LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
-		
+
+		accounts = db.getAccounts();
+
 		String aName = accountName.getText().toString();
 		String aPass = accountPass.getText().toString();
 		String sName = serverName.getText().toString();
         String dIdStr = donorID.getText().toString();
 		
-		for(Account a : db.getAccounts()){
+		for(Account a : accounts){
 			if(a.getAccountName().equals(aName) && a.getServerName().equals(sName)){
 				serverName.setError("This Account is already being stored.");
 				return;
@@ -144,12 +150,19 @@ public class AccountsActivity extends Activity{
 		
 		Account account = new Account(aName, aPass, sName, dId);
 		db.addAccount(account);
-		
+		accounts = db.getAccounts();
+
+		// Create new data connection
+		new DataConnection(this).execute("");
+
+
+
+		//reset data fields to blank
 		accountName.setText("");
 		accountPass.setText("");
 		serverName.setText("");
 		donorID.setText("");
-		
+
 		loadAccountList();
 	}
 	

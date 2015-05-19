@@ -7,6 +7,7 @@ import java.util.Calendar;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -103,26 +104,27 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	
 	/**
 	 * Creates all the tables used to store accounts and donor information
+	 * Called only when database is first created
 	 */
 	@Override
-	public void onCreate(SQLiteDatabase db){
-        db.execSQL( "DROP TABLE "+TABLE_UPDATE);
-        String CREATE_UPDATE_TABLE = "CREATE TABLE " + TABLE_UPDATE + "("
-                + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NOTE_ID + " TEXT,"
-                + COLUMN_DATE_RESPONSE + " TEXT,"
-                + COLUMN_DATE_POST + " TEXT,"+ COLUMN_TEXT + " TEXT,"
-                + COLUMN_SUBJECT + " TEXT,"+ COLUMN_MISSIONARY_ID + " TEXT)";
-        db.execSQL(CREATE_UPDATE_TABLE);
+	public void onCreate(SQLiteDatabase db) {
 
-        db.execSQL( "DROP TABLE "+TABLE_PRAYER);
-        String CREATE_PRAYER_REQUEST_TABLE = "CREATE TABLE " + TABLE_PRAYER + "("
-                + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NOTE_ID + " TEXT,"
-                + COLUMN_DATE_RESPONSE + " TEXT,"
-                + COLUMN_DATE_POST + " TEXT,"+ COLUMN_TEXT + " TEXT,"
-                + COLUMN_SUBJECT + " TEXT,"+ COLUMN_MISSIONARY_ID + " TEXT)";
-        db.execSQL(CREATE_PRAYER_REQUEST_TABLE);
+		String CREATE_UPDATE_TABLE = "CREATE TABLE " + TABLE_UPDATE + "("
+				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NOTE_ID + " TEXT,"
+				+ COLUMN_DATE_RESPONSE + " TEXT,"
+				+ COLUMN_DATE_POST + " TEXT,"+ COLUMN_TEXT + " TEXT,"
+				+ COLUMN_SUBJECT + " TEXT,"+ COLUMN_MISSIONARY_ID + " TEXT)";
+		db.execSQL(CREATE_UPDATE_TABLE);
 
-        String CREATE_TABLE_TIMESTAMP = "CREATE TABLE " + TABLE_TIMESTAMP + "("
+		String CREATE_PRAYER_REQUEST_TABLE = "CREATE TABLE " + TABLE_PRAYER + "("
+				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NOTE_ID + " TEXT,"
+				+ COLUMN_DATE_RESPONSE + " TEXT,"
+				+ COLUMN_DATE_POST + " TEXT,"+ COLUMN_TEXT + " TEXT,"
+				+ COLUMN_SUBJECT + " TEXT,"+ COLUMN_MISSIONARY_ID + " TEXT)";
+		db.execSQL(CREATE_PRAYER_REQUEST_TABLE);
+
+
+		String CREATE_TABLE_TIMESTAMP = "CREATE TABLE " + TABLE_TIMESTAMP + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_DATE + " TEXT)";
 		db.execSQL(CREATE_TABLE_TIMESTAMP);
 		
@@ -255,7 +257,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
         values.put(COLUMN_DATE_RESPONSE, request.getDate());
         values.put(COLUMN_DATE_POST, "10-3-2001"); //TODO: decide on initial value for response date
         values.put(COLUMN_SUBJECT,request.getSubject());
-        values.put(COLUMN_MISSIONARY_ID,"100000");//decide on initial value for missionary id
+        values.put(COLUMN_MISSIONARY_ID,"100000");//TODO: decide on initial value for missionary id
         values.put(COLUMN_NOTE_ID, request.getId());
 
         boolean add = true;
@@ -284,7 +286,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
         values.put(COLUMN_DATE_RESPONSE, update.getDate());
         values.put(COLUMN_DATE_POST, "10-3-2001"); //TODO: decide on initial value for response date
         values.put(COLUMN_SUBJECT,update.getSubject());
-        values.put(COLUMN_MISSIONARY_ID,"100000");//decide on initial value for missionary id
+        values.put(COLUMN_MISSIONARY_ID,"100000");//TODO: decide on initial value for missionary id
         values.put(COLUMN_NOTE_ID, update.getId());
         boolean add = true;
         for(Update r: getUpdates())
@@ -477,7 +479,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		
 		SQLiteDatabase db = this.getWritableDatabase();
 		
-		db.delete(TABLE_ACCOUNTS, null, null); 
+		db.delete(TABLE_TIMESTAMP, null, null);
 		db.close();
 	}
 	

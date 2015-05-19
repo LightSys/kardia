@@ -52,14 +52,16 @@
             android:id="@+id/dash1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/_" />
+            android:text="@string/_"
+            android:visibility="invisible" />
 
         <Button
             android:id="@+id/datepick2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="@string/choose_date" />
+            android:text="@string/choose_date"
+            android:visibility="invisible" />
 
     </TableRow>
 
@@ -112,7 +114,8 @@
             android:id="@+id/dash2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/_" />
+            android:text="@string/_"
+            android:visibility="invisible" />
 
         <EditText
             android:id="@+id/amount2"
@@ -122,7 +125,8 @@
             android:enabled="false"
             android:hint="00"
             android:inputType="numberDecimal"
-            tools:ignore="HardcodedText" />
+            tools:ignore="HardcodedText"
+            android:visibility="invisible" />
 
     </TableRow>
 

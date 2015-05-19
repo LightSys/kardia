@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -27,6 +28,7 @@ public class SearchActivity extends Fragment{
 	
 	private Button date1, date2, search;
 	private EditText amount1, amount2, checknum;
+	private TextView dash1, dash2;
 	private CheckBox dateRange, amountRange;
 	private ToggleButton toggleDate, toggleAmount, toggleCheck;
 	
@@ -45,10 +47,13 @@ public class SearchActivity extends Fragment{
 		toggleDate = (ToggleButton)v.findViewById(R.id.toggleDate);
 		toggleAmount = (ToggleButton)v.findViewById(R.id.toggleAmount);
 		toggleCheck = (ToggleButton)v.findViewById(R.id.toggleCheck);
+		dash1 = (TextView)v.findViewById(R.id.dash1);
+		dash2 = (TextView)v.findViewById(R.id.dash2);
+
 		
-		search.setOnClickListener(new OnClickListener(){
+		search.setOnClickListener(new OnClickListener() {
 			@Override
-			public void onClick(View v){
+			public void onClick(View v) {
 				doSearch();
 			}
 		});
@@ -97,6 +102,8 @@ public class SearchActivity extends Fragment{
 					date2.setText("Choose Date");
 					date1.setEnabled(false);
 					date2.setEnabled(false);
+					dash1.setVisibility(View.INVISIBLE);
+					date2.setVisibility(View.INVISIBLE);
 				}
 			}
 		});
@@ -115,6 +122,8 @@ public class SearchActivity extends Fragment{
 					amount2.setText("");
 					amount1.setEnabled(false);
 					amount2.setEnabled(false);
+					dash2.setVisibility(View.INVISIBLE);
+					amount2.setVisibility(View.INVISIBLE);
 				}
 			}
 		});
@@ -134,7 +143,7 @@ public class SearchActivity extends Fragment{
 		return v;
 	}
 	
-	public void openDatePicker(int btn_id){
+	public void openDatePicker(int btn_id) {
 		Calendar c = Calendar.getInstance();
 	    int mYear = c.get(Calendar.YEAR);
 	    int mMonth = c.get(Calendar.MONTH);
@@ -262,9 +271,13 @@ public class SearchActivity extends Fragment{
 	
 	public void changeDateRange(){
 		if(date2.isEnabled()){
+			date2.setVisibility(View.INVISIBLE);
+			dash1.setVisibility(View.INVISIBLE);
 			date2.setText("Choose Date");
 			date2.setEnabled(false);
 		}else{
+			dash1.setVisibility(View.VISIBLE);
+			date2.setVisibility(View.VISIBLE);
 			date2.setEnabled(true);
 		}
 	}
@@ -272,9 +285,13 @@ public class SearchActivity extends Fragment{
 	
 	public void changeAmountRange(){
 		if(amount2.isEnabled()){
+			amount2.setVisibility(View.INVISIBLE);
+			dash2.setVisibility(View.INVISIBLE);
 			amount2.setText("");
 			amount2.setEnabled(false);
 		}else{
+			dash2.setVisibility(View.VISIBLE);
+			amount2.setVisibility(View.VISIBLE);
 			amount2.setEnabled(true);
 		}
 	}

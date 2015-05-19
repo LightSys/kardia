@@ -36,13 +36,10 @@ public class FundList extends Fragment{
 	private SimpleAdapter adapter;
 	
 	/**
-	 * Pulls all relavent funds, and creates the view (including the bottom total bar)
+	 * Pulls all relevant funds, and creates the view (including the bottom total bar)
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		
-		//sets the title of the page
-		setTitle();
 		
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
 		funds = db.getFunds();
@@ -111,14 +108,7 @@ public class FundList extends Fragment{
 				transaction.commit();
 		}
 	}
-	
-	/**
-	 * Sets the title of the page to Fund List
-	 */
-	public void setTitle(){
-		getActivity().getActionBar().setTitle("Designations");
-	}
-	
+
 	/**
 	 * Sets the title of the page to <specific fund name>'s History
 	 * (Used when viewing the years donated to a fund)

@@ -45,12 +45,7 @@ public class PrayerRequestList extends Fragment {
 
 
         prayerRequests = db.getRequests();
-//        if(prayerRequests.isEmpty()){
-//            for (int i = 0; i < 9; i++) {
-//                prayerRequests.add(new PrayerRequest());
-//                prayerRequests.get(i).setId("100" + i);
-//            }
-//        }
+
         itemList = generateListItems();
         String[] from = {"prayerName", "prayerDate"};
         int[] to = {R.id.title,  R.id.date};

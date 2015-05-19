@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string-array name="categories">
         <item>Designations</item>
@@ -28,7 +28,7 @@
         <item>3</item>
         <item>4</item>
     </string-array>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
     <eat-comment/>
     <attr format="reference" name="actionBarDivider"/>
     <attr format="reference" name="actionBarItemBackground"/>
@@ -135,11 +135,11 @@
     <dimen name="abc_panel_menu_list_width">296dp</dimen>
     <dimen name="abc_search_view_preferred_width">320dip</dimen>
     <dimen name="abc_search_view_text_min_width">160dip</dimen>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/dimens.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/dimens.xml -->
     <eat-comment/>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
     <eat-comment/>
     <item name="dialog_fixed_height_major" type="dimen">80%</item>
     <item name="dialog_fixed_height_minor" type="dimen">100%</item>
@@ -152,10 +152,10 @@
     <item name="progress_circular" type="id"/>
     <item name="progress_horizontal" type="id"/>
     <integer name="abc_max_action_buttons">2</integer>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="_">" - "</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
     <eat-comment/>
     <string name="abc_action_bar_home_description">Navigate home</string>
     <string name="abc_action_bar_up_description">Navigate up</string>
@@ -170,22 +170,22 @@
     <string name="abc_searchview_description_voice">Voice search</string>
     <string name="abc_shareactionprovider_share_with">Share with</string>
     <string name="abc_shareactionprovider_share_with_application">Share with %s</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="account_page">Accounts Page</string>
     <string name="accounts_page">Accounts Page</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="action_forgot_password">Recover lost password</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="action_search">Search</string>
     <string name="action_settings">Settings</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="action_sign_in_register"><b>Sign in</b> or register</string>
     <string name="action_sign_in_short">Sign in</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="amount">Amount:</string>
     <string name="amount_range">Amount Range</string>
@@ -200,28 +200,28 @@
     <string name="drawer_closed">Drawer Closed</string>
     <string name="drawer_open">Drawer Open</string>
     <string name="edit_account">Edit Account</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="error_field_required">This field is required</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="home">Home</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="login_progress_signing_in">Signing in…</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="message">Message</string>
     <string name="notification_setting">Remind Me To Pray</string>
     <string name="password">password</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="search">Search</string>
     <string name="server_name">server name</string>
@@ -229,17 +229,17 @@
     <string name="subject_title">Subject:</string>
     <string name="submit">submit</string>
     <string name="times_per_day">time(s) per day</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="title_activity_login">Sign in</string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/strings.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="total_2014_ytd_">"Total (2014 YTD): "</string>
     <string name="type_contact">Type Of Contact:</string>
     <string name="username">username</string>
     <string name="view_pdf_receipt">View PDF Receipt</string>
     <string name="ytd">YTD: </string>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/styles.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/styles.xml -->
     <eat-comment/>
     <style name="AppBaseTheme" parent="Theme.AppCompat.Light">
         <!--
@@ -257,7 +257,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:padding">16dp</item>
     </style>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
     <eat-comment/>
     <style name="TextAppearance.AppCompat.Base.CompactMenu.Dialog" parent="android:TextAppearance.Medium">
         <item name="android:textColor">@android:color/primary_text_light</item>
@@ -834,7 +834,7 @@
     <style name="Widget.AppCompat.ProgressBar" parent="Widget.AppCompat.Base.ProgressBar"/>
     <style name="Widget.AppCompat.ProgressBar.Horizontal" parent="Widget.AppCompat.Base.ProgressBar.Horizontal"/>
     <style name="Widget.AppCompat.Spinner.DropDown.ActionBar" parent="Widget.AppCompat.Base.Spinner"/>
-    <!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/values/styles.xml -->
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/styles.xml -->
     <eat-comment/>
     <style name="customBottomBar" parent="@android:style/Widget.Button">
         <item name="android:shadowColor">#FFFFFF</item>

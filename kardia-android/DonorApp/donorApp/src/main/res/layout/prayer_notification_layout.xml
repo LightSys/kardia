@@ -46,10 +46,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@id/times_day"
-                android:layout_below="@id/on_off"
-                android:layout_margin="10dp"
-                android:text="@string/times_per_day"/>
+                android:text="@string/times_per_day"
+                android:layout_alignBottom="@+id/times_day"
+                android:layout_alignRight="@+id/times_day"
+                android:layout_alignEnd="@+id/times_day"/>
 
         </RelativeLayout>
     </LinearLayout>

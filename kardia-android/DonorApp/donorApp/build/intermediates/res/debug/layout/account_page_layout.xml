@@ -78,13 +78,15 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:textAppearance="?android:attr/textAppearanceMedium" />
+
     </TableRow>
 
     <ListView
         android:id="@+id/connected_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-       style="@style/listCustomBlue" >
+       style="@style/listCustomBlue"
+        android:layout_weight="1">
     </ListView>
 
-</LinearLayout><!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/layout/account_page_layout.xml -->
+</LinearLayout><!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout/account_page_layout.xml -->

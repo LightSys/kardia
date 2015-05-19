@@ -5,7 +5,7 @@ package org.lightsys.donorapp.data;
  *
  *  Stuff to know
  *      Update is a subtype of Note as defined by kardia api, PrayerRequest is the other subtype we use
- *      Update at least contains is, subject, text, dateSubmitted
+ *      Update at least contains id, subject, text, dateSubmitted
  *      ID serves as unique identifier
  */
 public class Update implements Comparable<Update>{
