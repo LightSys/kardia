@@ -79,6 +79,7 @@ public class EditAccountActivity extends Activity{
 				
 				db.updateAccount(id, editName.getText().toString(), editPass.getText().toString(), editServer.getText().toString(), newId);
 				Toast.makeText(EditAccountActivity.this, "Account updated.", Toast.LENGTH_SHORT).show();
+				new DataConnection(EditAccountActivity.this).execute("");
 				finish();
 			}
     	});

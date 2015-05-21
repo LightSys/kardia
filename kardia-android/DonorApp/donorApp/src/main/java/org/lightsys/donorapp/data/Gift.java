@@ -94,7 +94,7 @@ public class Gift {
 	public String formatedDate(){
 		String[] date = gift_date.split("-");
 		date[1] = getMonth(Integer.parseInt(date[1]));
-		return "" + date[0] + " " + date[1] + ", " + date[2];
+		return "" + date[1] + ", " + date[2] + "  " + date[0];
 	}
 	
 	private String getMonth(int num){

@@ -144,10 +144,33 @@ public class SearchActivity extends Fragment{
 	}
 	
 	public void openDatePicker(int btn_id) {
-		Calendar c = Calendar.getInstance();
-	    int mYear = c.get(Calendar.YEAR);
-	    int mMonth = c.get(Calendar.MONTH);
-	    int mDay = c.get(Calendar.DAY_OF_MONTH);
+		int mYear;
+		int mMonth;
+		int mDay;
+
+		// If calendar already has date, pull up that date
+		// Otherwise pull up today's date
+		String text1 = date1.getText().toString();
+		String text2 = date2.getText().toString();
+		if (btn_id == 1 && !text1.equals("Choose Date")) {
+			String[] splitDateStr1 = text1.split("-");
+			mYear = Integer.parseInt(splitDateStr1[0]);
+			//Subtract one to agree with DatePicker month standards, Jan = 0, Feb = 1, etc.
+			mMonth = Integer.parseInt(splitDateStr1[1]) - 1;
+			mDay = Integer.parseInt(splitDateStr1[2]);
+		} else if (btn_id == 2 && !text2.equals("Choose Date")) {
+			String[] splitDateStr2 = text2.split("-");
+			mYear = Integer.parseInt(splitDateStr2[0]);
+			//Subtract one to agree with DatePicker month standards, Jan = 0, Feb = 1, etc.
+			mMonth = Integer.parseInt(splitDateStr2[1]) - 1;
+			mDay = Integer.parseInt(splitDateStr2[2]);
+		} else {
+			Calendar c = Calendar.getInstance();
+			mYear = c.get(Calendar.YEAR);
+			mMonth = c.get(Calendar.MONTH);
+			mDay = c.get(Calendar.DAY_OF_MONTH);
+		}
+
 	    DatePickerDialog dialog = new DatePickerDialog(getActivity(),
 	            new mDateSetListener(btn_id), mYear, mMonth, mDay);
 	    dialog.show();
@@ -228,10 +251,14 @@ public class SearchActivity extends Fragment{
 		date1.setEnabled(false);
 		date2.setText("Choose Date");
 		date2.setEnabled(false);
+		date2.setVisibility(View.INVISIBLE);
+		dash1.setVisibility(View.INVISIBLE);
 		amount1.setText("");
 		amount1.setEnabled(false);
 		amount2.setText("");
 		amount2.setEnabled(false);
+		amount2.setVisibility(View.INVISIBLE);
+		dash2.setVisibility(View.INVISIBLE);
 		checknum.setText("");
 		checknum.setEnabled(false);
 		dateRange.setChecked(false);
@@ -307,7 +334,11 @@ public class SearchActivity extends Fragment{
 		@Override
 		public void onDateSet(DatePicker view, int year, int monthOfYear,
 				int dayOfMonth) {
-			
+
+			// DatePicker starts months at 0, January = 0, February = 1, etc
+			// Add one to make it standard with donorApp month counting
+			monthOfYear++;
+
 			String month = (monthOfYear < 10)? "0" + monthOfYear : "" + monthOfYear;
 			String day = (dayOfMonth < 10)? "0" + dayOfMonth : "" + dayOfMonth;
 			

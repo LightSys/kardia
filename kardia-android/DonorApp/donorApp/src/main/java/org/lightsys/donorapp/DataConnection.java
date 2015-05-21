@@ -97,7 +97,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             Password = a.getAccountPassword();
             AccountName = a.getAccountName();
             Account_ID = a.getId();
+
             loadNotes(db.getAccounts());
+
+            loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID +
+                    "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
+
+            loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID +
+                    "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
             for(Fund f : db.getFundsForAccount(Account_ID)){
 
@@ -127,7 +134,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         if (originalStamp == -1) {
             db.addTimeStamp("" + Calendar.getInstance().getTimeInMillis());
         } else {
-            Long currentStamp = Calendar.getInstance().getTimeInMillis();
+            long currentStamp = Calendar.getInstance().getTimeInMillis();
             db.updateTimeStamp("" + originalStamp, "" + currentStamp);
         }
     }
@@ -211,23 +218,21 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             try {
                 if(!tempFunds.getString(x).equals("@id")){
                     JSONObject fundObj = json.getJSONObject(tempFunds.getString(x));
+                    if (!TestFundNamesList.contains(fundObj.getString("fund"))) {
+                        JSONObject giftObj = fundObj.getJSONObject("gift_total");
+                        int[] gifttotal = {
+                                Integer.parseInt(giftObj.getString("wholepart")),
+                                Integer.parseInt(giftObj.getString("fractionpart"))
+                        };
+                        int giftcount = Integer.parseInt(fundObj.getString("gift_count"));
 
-                    JSONObject giftObj = fundObj.getJSONObject("gift_total");
-                    int[] gifttotal = {
-                            Integer.parseInt(giftObj.getString("wholepart")),
-                            Integer.parseInt(giftObj.getString("fractionpart"))
-                    };
-                    int giftcount = Integer.parseInt(fundObj.getString("gift_count"));
-
-                    Fund temp = new Fund();
-                    temp.setName(fundObj.getString("fund"));
-                    temp.setFullName(fundObj.getString("name"));
-                    temp.setFund_desc(fundObj.getString("fund_desc"));
-                    temp.setGift_count(giftcount);
-                    temp.setGift_total(gifttotal);
-                    temp.setGiving_url(fundObj.getString("giving_url"));
-
-                    if(!TestFundNamesList.contains(temp.getFullName())){ //returns only account specific fund names for testing
+                        Fund temp = new Fund();
+                        temp.setName(fundObj.getString("fund"));
+                        temp.setFullName(fundObj.getString("name"));
+                        temp.setFund_desc(fundObj.getString("fund_desc"));
+                        temp.setGift_count(giftcount);
+                        temp.setGift_total(gifttotal);
+                        temp.setGiving_url(fundObj.getString("giving_url"));
 
                         db.addFund(temp);
                         int fundId = db.getLastId("fund");
@@ -329,7 +334,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
         JSONArray tempYears = json.names();
 
-        for(int x = 0; x < tempYears.length() -1; x++){
+        for(int x = 0; x < tempYears.length(); x++){
 
             try{
                 if(!tempYears.getString(x).equals("@id")){
@@ -384,7 +389,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
         JSONArray tempYears = json.names();
 
-        for(int x = 0; x < tempYears.length() -1; x++){
+        for(int x = 0; x < tempYears.length(); x++){
 
             try{
                 if(!tempYears.getString(x).equals("@id")){
@@ -446,7 +451,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
         JSONArray tempGifts = json.names();
 
-        for(int i = 0; i < tempGifts.length() - 1; i++){
+        for(int i = 0; i < tempGifts.length(); i++){
             try{
                 if(!tempGifts.getString(i).equals("@id")){
                     JSONObject GiftObj = json.getJSONObject(tempGifts.getString(i));

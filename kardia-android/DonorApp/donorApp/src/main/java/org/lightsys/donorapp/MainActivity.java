@@ -246,10 +246,9 @@ public class MainActivity extends ActionBarActivity {
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 2:
-			setTitle("Donation");
 			Toast.makeText(MainActivity.this, "To Be Implemented: General Donation Link", Toast.LENGTH_SHORT).show();
 			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com")); //TODO: replace url with actually donation site
-			//startActivity(browserIntent);
+			startActivity(browserIntent);
 			break;
         case 3:
             setTitle("Updates");
@@ -279,6 +278,7 @@ public class MainActivity extends ActionBarActivity {
 			long currentDate = Calendar.getInstance().getTimeInMillis();
 			Log.w(Tag, "Updating the timestamp from: " + currentDate);
 			db.updateTimeStamp("" + db.getTimeStamp(), "" + currentDate);
+			refreshFragments();
 			break;
 		}
 		mDrawerList.setItemChecked(position, true);
@@ -326,13 +326,6 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onResume(){
 		super.onResume();
-		LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
-		ArrayList<Account> temp = db.getAccounts();
-		if(temp.size() > accts.size()){
-			new DataConnection(this).execute("");
-		}else if(temp.size() < accts.size()){
-			refreshFragments();
-		}
 	}
 
 	/**

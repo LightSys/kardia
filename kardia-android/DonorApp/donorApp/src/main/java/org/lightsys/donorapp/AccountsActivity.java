@@ -23,6 +23,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.donorapp.R;
 
@@ -72,6 +73,8 @@ public class AccountsActivity extends Activity{
 		LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
 		
 		accounts = db.getAccounts();
+
+		db.close();
 		
 		if(accounts.size() > 0){	
 			connectedAccounts.setText("Connected Accounts:");
@@ -105,7 +108,12 @@ public class AccountsActivity extends Activity{
 	 * @param v
 	 */
 	public void returnHome(View v){
-		finish();
+		LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
+		if (db.getAccounts().size() == 0) {
+			Toast.makeText(this, "Please connect an account", Toast.LENGTH_SHORT).show();
+		} else {
+			finish();
+		}
 	}
 	
 	/**
@@ -152,10 +160,10 @@ public class AccountsActivity extends Activity{
 		db.addAccount(account);
 		accounts = db.getAccounts();
 
+		db.close();
+
 		// Create new data connection
 		new DataConnection(this).execute("");
-
-
 
 		//reset data fields to blank
 		accountName.setText("");

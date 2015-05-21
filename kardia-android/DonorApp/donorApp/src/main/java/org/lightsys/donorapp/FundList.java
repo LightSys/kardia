@@ -3,8 +3,10 @@ package org.lightsys.donorapp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 import org.lightsys.donorapp.bottombar.TotalBar;
+import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Fund;
 import org.lightsys.donorapp.data.LocalDBHandler;
 
@@ -42,8 +44,12 @@ public class FundList extends Fragment{
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
-		funds = db.getFunds();
-		
+		ArrayList<Account> accounts = db.getAccounts();
+		for (Account a : accounts) {
+			int accountID = a.getId();
+			funds = db.getFundsForAccount(accountID);
+		}
+
 		View v = inflater.inflate(R.layout.activity_main, container, false);
 		
 		ArrayList<HashMap<String,String>>itemList = generateListItems();
@@ -113,7 +119,7 @@ public class FundList extends Fragment{
 	 * Sets the title of the page to <specific fund name>'s History
 	 * (Used when viewing the years donated to a fund)
 	 * 
-	 * @param The position of the fund selected within the list of funds
+	 * @param position, The position of the fund selected within the list of funds
 	 */
 	public void setHistoryTitle(int position){
 		getActivity().getActionBar().setTitle(funds.get(position).getName() + "'s History");

@@ -632,6 +632,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			accounts.add(temp);
 		}
+		c.close();
 		db.close();
 		return accounts;
 	}
@@ -676,6 +677,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			funds.add(temp);
 		}
+		c.close();
 		db.close();
 		return funds;
 	}
@@ -706,6 +708,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			temp.setGiving_url(c.getString(6));
 			temp.setFund_desc(c.getString(7));
 		}
+		c.close();
 		db.close();
 		return temp;
 	}
@@ -760,6 +763,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		while(c.moveToNext()){
 			fundNames.add(c.getString(0));
 		}
+		c.close();
 		db.close();
 		return fundNames;
 	}
@@ -796,6 +800,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			temp.setFund_desc(c.getString(7));
 			funds.add(temp);
 		}
+		c.close();
 		db.close();
 		return funds;
 	}
@@ -816,6 +821,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 
             requests.add(temp);
         }
+		c.close();
         db.close();
         return requests;
 
@@ -837,6 +843,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 
             updates.add(temp);
         }
+		c.close();
         db.close();
         return updates;
 
@@ -869,6 +876,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			gifts.add(temp);
 		}
+		c.close();
 		db.close();
 		return gifts;
 	}
@@ -899,6 +907,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			gift.setGift_date(c.getString(6));
 			gift.setGift_check_num(c.getString(7));
 		}
+		c.close();
 		db.close();
 		return gift;
 	}
@@ -925,6 +934,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		while(c.moveToNext()){
 			giftNames.add(c.getString(0));
 		}
+		c.close();
 		db.close();
 		return giftNames;
 	}
@@ -961,14 +971,15 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			gifts.add(temp);
 		}
+		c.close();
 		db.close();
 		return gifts;
 	}
 	
 	/**
 	 * 
-	 * @param Fund that the gift was given to
-	 * @param Year that the gift was given
+	 * @param Fund_ID that the gift was given to
+	 * @param Year_ID that the gift was given
 	 * @return a list of all gifts that were given during a certain year to a certain fund
 	 */
 	public ArrayList<Gift> getGiftsForFund(int Fund_ID, int Year_ID){
@@ -1002,6 +1013,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			gifts.add(temp);
 		}
+		c.close();
 		db.close();
 		return gifts;
 	}
@@ -1040,13 +1052,14 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			gifts.add(temp);
 		}
+		c.close();
 		db.close();
 		return gifts;
 	}
 	
 	/**
 	 * 
-	 * @param pre-made query statement
+	 * @param searchStatement, pre-made query statement
 	 * @return a list of gifts that match the search
 	 */
 	public ArrayList<Gift> getSearchResults(String searchStatement){
@@ -1073,6 +1086,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			gifts.add(temp);
 		}
+		c.close();
 		db.close();
 		return gifts;
 	}
@@ -1103,6 +1117,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			years.add(temp);
 		}
+		c.close();
 		db.close();
 		return years;
 	}
@@ -1134,6 +1149,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			years.add(temp);
 		}
+		c.close();
 		db.close();
 		return years;
 	}
@@ -1157,6 +1173,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			year.setId(Integer.parseInt(c.getString(0)));
 			year.setName(c.getString(1));
 		}
+		c.close();
 		db.close();
 		return year;
 	}
@@ -1177,6 +1194,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		while(c.moveToNext()){
 			yearNames.add(c.getString(0));
 		}
+		c.close();
 		db.close();
 		return yearNames;
 	}
@@ -1201,6 +1219,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		while(c.moveToNext()){
 			yearNames.add(c.getString(0));
 		}
+		c.close();
 		db.close();
 		return yearNames;
 	}
@@ -1225,13 +1244,14 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		while(c.moveToNext()){
 			yearNames.add(c.getString(0));
 		}
+		c.close();
 		db.close();
 		return yearNames;
 	}
 	
 	/**
 	 * Pulls the year and the total amount for the fund 
-	 * @param the fund to pull years for
+	 * @param Fund_ID, the fund to pull years for
 	 * @return a list of years associated with the fund
 	 */
 	public ArrayList<Year> getYears(int Fund_ID){
@@ -1260,6 +1280,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			
 			years.add(temp);
 		}
+		c.close();
 		db.close();
 		return years;
 	}
@@ -1269,8 +1290,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	 * @return the total year-to-date amount donated
 	 */
 	public String getYTDAmount(){
-		Calendar c = Calendar.getInstance();
-		int year = c.get(Calendar.YEAR);
+		Calendar cal = Calendar.getInstance();
+		int year = cal.get(Calendar.YEAR);
 		String queryString = "SELECT YA." + COLUMN_GIFTTOTALWHOLE
 				+ ", YA." + COLUMN_GIFTTOTALPART + " FROM " + TABLE_YEARACCOUNT_MAP
 				+ " AS YA INNER JOIN " + TABLE_YEAR + " AS Y ON YA." + COLUMN_YEAR_ID
@@ -1278,13 +1299,14 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		
 		SQLiteDatabase db = this.getReadableDatabase();
 		
-		Cursor cursor = db.rawQuery(queryString, null);
+		Cursor c = db.rawQuery(queryString, null);
 		String returnVal = "";
-		if(cursor.moveToFirst()){
-			returnVal = "$" + cursor.getString(0) + "." + cursor.getString(1);
+		if(c.moveToFirst()){
+			returnVal = "$" + c.getString(0) + "." + c.getString(1);
 		}else{
 			returnVal = "NA";
 		}
+		c.close();
 		db.close();
 		return returnVal;
 	}	

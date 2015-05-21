@@ -108,7 +108,7 @@ public class GiftList extends Fragment{
 			HashMap<String,String> hm = new HashMap<String,String>();
 			
 			hm.put("giftname", "Gift to: " + g.getGift_fund_desc());
-			hm.put("giftamount", "Amount: " + g.amountToString());
+			hm.put("giftamount", g.amountToString());
 			hm.put("giftdate", g.formatedDate());
 			
 			aList.add(hm);
