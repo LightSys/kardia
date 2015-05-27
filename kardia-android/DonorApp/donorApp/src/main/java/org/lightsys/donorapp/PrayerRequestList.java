@@ -42,9 +42,8 @@ public class PrayerRequestList extends Fragment {
 
         db = new LocalDBHandler(getActivity(), null, null, 9);
         accounts = db.getAccounts();
-
-
         prayerRequests = db.getRequests();
+        db.close();
 
         itemList = generateListItems();
         String[] from = {"prayerName", "prayerDate"};

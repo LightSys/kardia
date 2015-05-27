@@ -10,6 +10,7 @@ import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Fund;
 import org.lightsys.donorapp.data.LocalDBHandler;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -45,10 +46,13 @@ public class FundList extends Fragment{
 		
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
 		ArrayList<Account> accounts = db.getAccounts();
+
 		for (Account a : accounts) {
 			int accountID = a.getId();
 			funds = db.getFundsForAccount(accountID);
 		}
+
+		db.close();
 
 		View v = inflater.inflate(R.layout.activity_main, container, false);
 		
@@ -84,7 +88,7 @@ public class FundList extends Fragment{
 			
 			hm.put("fundtitle", f.getFund_desc());
 			hm.put("ytd", f.amountToString());
-			hm.put("yeartext", year + " YTD: ");
+			hm.put("yeartext", "Total:");
 			
 			aList.add(hm);
 		}
@@ -122,6 +126,6 @@ public class FundList extends Fragment{
 	 * @param position, The position of the fund selected within the list of funds
 	 */
 	public void setHistoryTitle(int position){
-		getActivity().getActionBar().setTitle(funds.get(position).getName() + "'s History");
+		getActivity().getActionBar().setTitle("Giving History to " + funds.get(position).getFund_desc());
 	}
 }

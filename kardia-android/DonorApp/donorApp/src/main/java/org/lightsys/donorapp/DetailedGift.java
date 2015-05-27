@@ -67,6 +67,7 @@ public class DetailedGift extends Fragment{
 
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
 		Gift g = db.getGift(gift_id);
+		db.close();
 		
 		title.setText("Gift to " + g.getGift_fund_desc());
 		date.setText("Date: " + g.formatedDate());

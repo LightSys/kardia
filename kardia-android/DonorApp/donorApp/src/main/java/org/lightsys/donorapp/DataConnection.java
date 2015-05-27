@@ -42,18 +42,51 @@ import java.util.Iterator;
  */
 public class DataConnection extends AsyncTask<String, Void, String> {
 
+    private Account account;
     private String Host_Name;
     private int Donor_ID;
     private String Password;
     private String AccountName;
     private int Account_ID;
     private Context dataContext;
+    private LocalDBHandler db;
+    AccountsActivity.ErrorType errorType = null;
 
     private static final String Tag = "DPS";
 
-    public DataConnection(Context context) {
+    public DataConnection(Context context, Account a) {
         super();
         dataContext = context;
+        account = a;
+    }
+
+    private boolean isValidAccount(Account a) {
+        boolean isValid = false;
+        Host_Name = a.getServerName();
+        Donor_ID = a.getDonorid();
+        Password = a.getAccountPassword();
+        AccountName = a.getAccountName();
+
+        try {
+            String test = GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID +
+                    "/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic");
+            // Unauthorized signals invalid ID
+            // 404 not found signals incorrect username or password
+            // Empty or null signals an incorrect server name
+            if (test.equals("") || test == null) {
+                errorType = AccountsActivity.ErrorType.Server;
+            } else if (!test.equals("<H1>Unauthorized</H1>")) {
+                errorType = AccountsActivity.ErrorType.Unauthorized;
+            } else if (!test.contains("404 Not Found")) {
+                errorType = AccountsActivity.ErrorType.NotFound;
+            } else {
+                isValid = true;
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return isValid;
     }
 
     @Override
@@ -90,43 +123,63 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * This method runs through each account stored to pull info
      */
     private void DataPull(){
-        LocalDBHandler db = new LocalDBHandler(dataContext, null, null, 9);
-        for(Account a : db.getAccounts()){
-            Host_Name = a.getServerName();
-            Donor_ID = a.getDonorid();
-            Password = a.getAccountPassword();
-            AccountName = a.getAccountName();
-            Account_ID = a.getId();
+        db = new LocalDBHandler(dataContext, null, null, 9);
+        Host_Name = account.getServerName();
+        Donor_ID = account.getDonorid();
+        Password = account.getAccountPassword();
+        AccountName = account.getAccountName();
+        Account_ID = account.getId();
+        boolean validAccount = true;
 
-            loadNotes(db.getAccounts());
 
-            loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID +
-                    "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
-
-            loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID +
-                    "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
-
-            for(Fund f : db.getFundsForAccount(Account_ID)){
-
-                String Fund_Name = "";
-                try {
-                    Fund_Name = URLEncoder.encode(f.getFullName(), "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+        //If account does not exist in the database, check to see if it is a valid account
+        //Set the validation field in the respective class that account is being tested in
+        ArrayList<Account> databaseAccounts = db.getAccounts();
+        if (!databaseAccounts.contains(account)) {
+            validAccount = isValidAccount(account);
+            if (dataContext.getClass() == AccountsActivity.class) {
+                if (!validAccount) {
+                    AccountsActivity.setErrorType(errorType);
                 }
-                int fundid = f.getID();
-
-                loadFundYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID + "/Funds/"
-                        + Fund_Name + "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), fundid);
-
-                for(Year y : db.getYears(fundid)){
-                    int yearid = y.getId();
-                    String Year = y.getName();
-
-                    loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID + "/Funds/"
-                                    + Fund_Name + "/Years/" + Year + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),
-                            yearid, fundid);
+                AccountsActivity.setValidation(validAccount);
+            } else if (dataContext.getClass() == EditAccountActivity.class) {
+                if (!validAccount) {
+                    EditAccountActivity.setErrorType(errorType);
                 }
+                EditAccountActivity.setValidation(validAccount);
+            }
+        }
+        if(!validAccount) {
+            return;
+        }
+        loadNotes(account);
+
+        loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID +
+                "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
+
+        loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID +
+                "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
+
+        for(Fund f : db.getFundsForAccount(Account_ID)){
+
+            String Fund_Name = "";
+            try {
+                Fund_Name = URLEncoder.encode(f.getFullName(), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            int fundid = f.getID();
+
+            loadFundYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID + "/Funds/"
+                    + Fund_Name + "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), fundid);
+
+            for(Year y : db.getYears(fundid)){
+                int yearid = y.getId();
+                String Year = y.getName();
+
+                loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Donor_ID + "/Funds/"
+                                + Fund_Name + "/Years/" + Year + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),
+                        yearid, fundid);
             }
         }
         // If no timestamp found, add timestamp, otherwise update timestamp
@@ -137,6 +190,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             long currentStamp = Calendar.getInstance().getTimeInMillis();
             db.updateTimeStamp("" + originalStamp, "" + currentStamp);
         }
+        db.close();
     }
 
     /**
@@ -204,7 +258,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      */
     public void loadFunds(String result) {
 
-        LocalDBHandler db = new LocalDBHandler(dataContext, null, null, 9);
         ArrayList<String> TestFundNamesList = db.getFundNames(Account_ID);
         JSONObject json = null;
         try{
@@ -218,7 +271,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             try {
                 if(!tempFunds.getString(x).equals("@id")){
                     JSONObject fundObj = json.getJSONObject(tempFunds.getString(x));
-                    if (!TestFundNamesList.contains(fundObj.getString("fund"))) {
+                    if (!TestFundNamesList.contains(fundObj.getString("name"))) {
                         JSONObject giftObj = fundObj.getJSONObject("gift_total");
                         int[] gifttotal = {
                                 Integer.parseInt(giftObj.getString("wholepart")),
@@ -245,69 +298,65 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
     }
 
-    private void loadNotes(ArrayList<Account> accounts)
+    private void loadNotes(Account account)
     {
-        LocalDBHandler db = new LocalDBHandler(dataContext, null, null, 9);
         try{
-            for(Account account :accounts)
-            {
-                String supporterID = ""+account.getDonorid();
-                String missionaryJSON = GET("http://" + Host_Name+ ":800/apps/kardia/api/supporter/"+supporterID+"/Missionaries?cx__mode=rest&cx__res_type=collection");
-                if(!missionaryJSON.contains("404")) {
-                    JSONObject missionaries = new JSONObject(missionaryJSON);
-                    Iterator<String> missionaryIDs = missionaries.keys();
-                    while (missionaryIDs.hasNext()) {
-                        String missionaryID = missionaryIDs.next();
-                        if (!missionaryID.contains("id")) {
-                            String request = "http://" + Host_Name + ":800/apps/kardia/api/missionary/" + missionaryID + "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic";
-                            String requestJSON = GET(request);
-                            JSONObject prayerRequest = new JSONObject(requestJSON);
-                            Iterator<String> requestKeys = prayerRequest.keys();
-                            while (requestKeys.hasNext()) {
-                                String prayerKey = requestKeys.next();
-                                if (!prayerKey.equals("@id")) {
-                                    JSONObject noteJSON = prayerRequest.getJSONObject(prayerKey);
-                                    boolean addNote = true;
+            String supporterID = ""+account.getDonorid();
+            String missionaryJSON = GET("http://" + Host_Name+ ":800/apps/kardia/api/supporter/"+supporterID+"/Missionaries?cx__mode=rest&cx__res_type=collection");
+            if(!missionaryJSON.contains("404")) {
+                JSONObject missionaries = new JSONObject(missionaryJSON);
+                Iterator<String> missionaryIDs = missionaries.keys();
+                while (missionaryIDs.hasNext()) {
+                    String missionaryID = missionaryIDs.next();
+                    if (!missionaryID.contains("id")) {
+                        String request = "http://" + Host_Name + ":800/apps/kardia/api/missionary/" + missionaryID + "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic";
+                        String requestJSON = GET(request);
+                        JSONObject prayerRequest = new JSONObject(requestJSON);
+                        Iterator<String> requestKeys = prayerRequest.keys();
+                        while (requestKeys.hasNext()) {
+                            String prayerKey = requestKeys.next();
+                            if (!prayerKey.equals("@id")) {
+                                JSONObject noteJSON = prayerRequest.getJSONObject(prayerKey);
 
-                                    if(noteJSON.getString("note_type").equals("Pray")) {
+                                if(noteJSON.getString("note_type").equals("Pray")) {
 
-                                        PrayerRequest tempRequest = new PrayerRequest();
-                                        tempRequest.setId(noteJSON.getString("note_id"));
-                                        tempRequest.setText(noteJSON.getString("note_text"));
-                                        tempRequest.setSubject(noteJSON.getString("note_subject"));
+                                    PrayerRequest tempRequest = new PrayerRequest();
+                                    tempRequest.setId(noteJSON.getString("note_id"));
+                                    tempRequest.setText(noteJSON.getString("note_text"));
+                                    tempRequest.setSubject(noteJSON.getString("note_subject"));
 
-                                        JSONObject date = new JSONObject(noteJSON.getString("note_date"));
-                                        String day = date.getString("day");
-                                        String month = date.getString("month");
-                                        String year = date.getString("year");
+                                    JSONObject date = new JSONObject(noteJSON.getString("note_date"));
+                                    String day = date.getString("day");
+                                    String month = date.getString("month");
+                                    String year = date.getString("year");
 
-                                        tempRequest.setDate(month + "-" + day + "-" + year);
+                                    tempRequest.setDate(month + "-" + day + "-" + year);
 
-                                        db.addRequest(tempRequest);
+                                    db.addRequest(tempRequest);
 
-                                    }
-                                    else if(noteJSON.getString("note_type").equals("Update"))
-                                    {
-                                        Update tempUpdate = new Update();
-                                        tempUpdate.setId(noteJSON.getString("note_id"));
-                                        tempUpdate.setText(noteJSON.getString("note_text"));
-                                        tempUpdate.setSubject(noteJSON.getString("note_subject"));
+                                }
+                                else if(noteJSON.getString("note_type").equals("Update"))
+                                {
+                                    Update tempUpdate = new Update();
+                                    tempUpdate.setId(noteJSON.getString("note_id"));
+                                    tempUpdate.setText(noteJSON.getString("note_text"));
+                                    tempUpdate.setSubject(noteJSON.getString("note_subject"));
 
-                                        JSONObject date = new JSONObject(noteJSON.getString("note_date"));
-                                        String day = date.getString("day");
-                                        String month = date.getString("month");
-                                        String year = date.getString("year");
+                                    JSONObject date = new JSONObject(noteJSON.getString("note_date"));
+                                    String day = date.getString("day");
+                                    String month = date.getString("month");
+                                    String year = date.getString("year");
 
-                                        tempUpdate.setDate(month + "-" + day + "-" + year);
+                                    tempUpdate.setDate(month + "-" + day + "-" + year);
 
-                                        db.addUpdate(tempUpdate);
-                                    }
+                                    db.addUpdate(tempUpdate);
                                 }
                             }
                         }
                     }
                 }
             }
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -323,7 +372,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      */
     private void loadFundYears(String result, int fundId){
 
-        LocalDBHandler db = new LocalDBHandler(dataContext, null, null, 9);
         ArrayList<String> TestYearNamesList = db.getYearNames();
         ArrayList<String> TestYearConnection = db.getYearNamesFund(fundId);
         JSONObject json = null;
@@ -378,7 +426,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      */
     private void loadYears(String result){
 
-        LocalDBHandler db = new LocalDBHandler(dataContext, null, null, 9);
         ArrayList<String> TestYearNamesList = db.getYearNames();
         ArrayList<String> YearsForAccount = db.getYearNamesAccount(Account_ID);
         JSONObject json = null;
@@ -441,7 +488,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      */
     private void loadGifts(String result, int Year_ID, int Fund_ID){
         Log.w(Tag, "Loading Gifts For Fund " + Fund_ID);
-        LocalDBHandler db = new LocalDBHandler(dataContext, null, null, 9);
         ArrayList<String> TestGiftNameList = db.getGiftNames(Fund_ID, Year_ID);
         JSONObject json = null;
         try {

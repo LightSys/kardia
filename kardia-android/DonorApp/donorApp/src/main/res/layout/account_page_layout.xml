@@ -46,7 +46,8 @@
         android:id="@+id/tableRow1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="right" >
+        android:gravity="right"
+        android:layout_gravity="center">
 
         <Button
             android:id="@+id/connect_button"
@@ -55,7 +56,9 @@
             android:onClick="addAccount"
             android:text="@string/connect"
             android:textStyle="bold"
-            style="@style/customBottomBar" />
+            style="@style/customBottomBar"
+            android:layout_gravity="center"
+            android:layout_marginRight="18dp" />
 
         <Button
             android:id="@+id/home_button"
@@ -64,7 +67,9 @@
             android:onClick="returnHome"
             android:text="@string/home"
             android:textStyle="bold"
-            style="@style/customBottomBar" />
+            style="@style/customBottomBar"
+            android:layout_gravity="center"
+            android:layout_marginRight="120dp" />
     </TableRow>
 
     <TableRow

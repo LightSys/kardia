@@ -235,6 +235,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	 */
 	public void addAccount(Account account){
 		ContentValues values = new ContentValues();
+		values.put(COLUMN_ID, account.getId());
 		values.put(COLUMN_ACCOUNTNAME, account.getAccountName());
 		values.put(COLUMN_ACCOUNTPASSWORD, account.getAccountPassword());
 		values.put(COLUMN_SERVERNAME, account.getServerName());
@@ -481,37 +482,6 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		
 		db.delete(TABLE_TIMESTAMP, null, null);
 		db.close();
-	}
-	
-	/**
-	 * Removes the account from the database, finds the account by the
-	 * accountName, and serverName
-	 * 
-	 * @param accountName, User name of the account
-	 * @param serverName, Server Address of the account
-	 * @return true if the account was deleted. false if it wasn't
-	 */
-	public boolean deleteAccount(String accountName, String serverName){
-		boolean result = false;
-		
-		String queryString = "SELECT * FROM " + TABLE_ACCOUNTS
-				+ " WHERE " + COLUMN_ACCOUNTNAME + " = \"" + accountName + "\" AND "
-				+ COLUMN_SERVERNAME + " = \"" + serverName + "\"";
-		
-		SQLiteDatabase db = this.getWritableDatabase();
-		
-		Cursor c = db.rawQuery(queryString, null);
-		
-		
-		
-		if(c.moveToFirst()){
-			int account_id = Integer.parseInt(c.getString(0));
-			db.delete(TABLE_ACCOUNTS, COLUMN_ID + " = ?", new String[]{String.valueOf(account_id)});
-			c.close();
-			result = true;
-		}
-		db.close();
-		return result;
 	}
 	
 	/**

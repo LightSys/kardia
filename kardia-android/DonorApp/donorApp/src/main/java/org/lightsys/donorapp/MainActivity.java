@@ -135,26 +135,29 @@ public class MainActivity extends ActionBarActivity {
 		LocalDBHandler dbh = new LocalDBHandler(this, null, null, 9);
 		accts = dbh.getAccounts();
 		
-		//Pull up account page if no accounts exist yet
+		//Delete timestamp if no accounts exist
+		//Launch login page to add account
 		if (savedInstanceState == null && accts.size() == 0) {
 			if(dbh.getTimeStamp() != -1){
 				dbh.deleteTimeStamp();
 			}
+			dbh.close();
 			Intent login = new Intent(MainActivity.this, AccountsActivity.class);
 			startActivity(login);
 		}
 		/*
-		 * if account(s) do exist then start the fund list activity
-		 * but check the time stamp, for whether or not to update data
+		 * if account(s) do exist check the time stamp, for whether or not to update data
+		 * send to fund list to begin
 		 */
 		else if(savedInstanceState == null){
 			long originalStamp = dbh.getTimeStamp();
 			long currentTime = Calendar.getInstance().getTimeInMillis();
+			dbh.close();
 			
 			if(currentTime > originalStamp + DAY_MILLI && originalStamp != -1){
-				Log.w(Tag, "Updating the timestamp from: " + originalStamp + ", to: " + currentTime);
-				new DataConnection(this).execute("");
-				dbh.updateTimeStamp("" + originalStamp, "" + currentTime);
+				for (Account a : accts) {
+					new DataConnection(this, a).execute("");
+				}
 			}
 			selectItem(0);
 		}
@@ -236,7 +239,7 @@ public class MainActivity extends ActionBarActivity {
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		switch(position){
 		case 0:
-			setTitle("Fund List");
+			setTitle("Designations");
 			fragment = new FundList();
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
@@ -248,7 +251,7 @@ public class MainActivity extends ActionBarActivity {
 		case 2:
 			Toast.makeText(MainActivity.this, "To Be Implemented: General Donation Link", Toast.LENGTH_SHORT).show();
 			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com")); //TODO: replace url with actually donation site
-			startActivity(browserIntent);
+			//startActivity(browserIntent);
 			break;
         case 3:
             setTitle("Updates");
@@ -273,11 +276,12 @@ public class MainActivity extends ActionBarActivity {
 			break;
 		case 8:
 			Toast.makeText(MainActivity.this, "Checking for updates...", Toast.LENGTH_LONG).show();
-			new DataConnection(this).execute("");
 			LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
-			long currentDate = Calendar.getInstance().getTimeInMillis();
-			Log.w(Tag, "Updating the timestamp from: " + currentDate);
-			db.updateTimeStamp("" + db.getTimeStamp(), "" + currentDate);
+			accts = db.getAccounts();
+			db.close();
+			for (Account a : accts) {
+				new DataConnection(this, a).execute("");
+			}
 			refreshFragments();
 			break;
 		}
@@ -326,6 +330,7 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onResume(){
 		super.onResume();
+		refreshFragments();
 	}
 
 	/**
@@ -338,7 +343,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	/**
-	 * Takes the user to the 'by year' view. Which shows the years donoated
+	 * Takes the user to the 'by year' view. Which shows the years donated
 	 * with the total amount donated per year.
 	 * 
 	 * @param v

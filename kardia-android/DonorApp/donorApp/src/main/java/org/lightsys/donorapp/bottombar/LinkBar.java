@@ -38,10 +38,11 @@ public class LinkBar extends Fragment {
 		
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
 		String temp_url = db.getFundById(fund_number).getGiving_url();
+		db.close();
 		
 		if(temp_url == null || temp_url.equals("")){
 			giving_url = "Unavailable";
-		}else if(temp_url.contains("http://") || temp_url.contains("https://")){
+		}else if(!temp_url.contains("http://") && !temp_url.contains("https://")){
 			giving_url = "http://" + giving_url;
 		}
 

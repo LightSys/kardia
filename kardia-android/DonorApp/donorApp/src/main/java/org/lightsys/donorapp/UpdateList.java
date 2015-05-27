@@ -39,9 +39,9 @@ public class UpdateList extends Fragment {
         View v = inflater.inflate(R.layout.activity_main, container, false);
 
         db = new LocalDBHandler(getActivity(), null, null, 9);
-
-
         updates = db.getUpdates();
+        db.close();
+
         itemList = generateListItems();
         String[] from = {"updateName",  "updateDate"};
         int[] to = {R.id.title, R.id.date};

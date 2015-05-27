@@ -28,7 +28,7 @@ public class SearchActivity extends Fragment{
 	
 	private Button date1, date2, search;
 	private EditText amount1, amount2, checknum;
-	private TextView dash1, dash2;
+	private TextView dash1, dash2, dollarSign1, dollarSign2;
 	private CheckBox dateRange, amountRange;
 	private ToggleButton toggleDate, toggleAmount, toggleCheck;
 	
@@ -49,8 +49,9 @@ public class SearchActivity extends Fragment{
 		toggleCheck = (ToggleButton)v.findViewById(R.id.toggleCheck);
 		dash1 = (TextView)v.findViewById(R.id.dash1);
 		dash2 = (TextView)v.findViewById(R.id.dash2);
+		dollarSign1 = (TextView)v.findViewById(R.id.dollarSign1);
+		dollarSign2 = (TextView)v.findViewById(R.id.dollarSign2);
 
-		
 		search.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -124,6 +125,7 @@ public class SearchActivity extends Fragment{
 					amount2.setEnabled(false);
 					dash2.setVisibility(View.INVISIBLE);
 					amount2.setVisibility(View.INVISIBLE);
+					dollarSign2.setVisibility(View.INVISIBLE);
 				}
 			}
 		});
@@ -232,6 +234,7 @@ public class SearchActivity extends Fragment{
 		selectStatement += checkSearch;
 		}
 		ArrayList<Gift> results = db.getSearchResults(selectStatement);
+		db.close();
 		
 		if(results.size() == 0){
 			Toast.makeText(getActivity(), "0 Gifts found.", Toast.LENGTH_SHORT).show();
@@ -239,10 +242,12 @@ public class SearchActivity extends Fragment{
 			resetAll();
 			Toast.makeText(getActivity(), "1 Gift found.", Toast.LENGTH_SHORT).show();
 			sendToDetailedGift(results.get(0).getId());
+			getActivity().setTitle("Gift");
 		}else{
 			resetAll();
-			Toast.makeText(getActivity(), results.size() + " Gift(s) found.", Toast.LENGTH_SHORT).show();
+			Toast.makeText(getActivity(), results.size() + " Gifts found.", Toast.LENGTH_SHORT).show();
 			sendToGiftList(selectStatement);
+			getActivity().setTitle("Gifts");
 		}
 	}
 	
@@ -259,6 +264,7 @@ public class SearchActivity extends Fragment{
 		amount2.setEnabled(false);
 		amount2.setVisibility(View.INVISIBLE);
 		dash2.setVisibility(View.INVISIBLE);
+		dollarSign2.setVisibility(View.INVISIBLE);
 		checknum.setText("");
 		checknum.setEnabled(false);
 		dateRange.setChecked(false);
@@ -314,11 +320,13 @@ public class SearchActivity extends Fragment{
 		if(amount2.isEnabled()){
 			amount2.setVisibility(View.INVISIBLE);
 			dash2.setVisibility(View.INVISIBLE);
+			dollarSign2.setVisibility(View.INVISIBLE);
 			amount2.setText("");
 			amount2.setEnabled(false);
 		}else{
 			dash2.setVisibility(View.VISIBLE);
 			amount2.setVisibility(View.VISIBLE);
+			dollarSign2.setVisibility(View.VISIBLE);
 			amount2.setEnabled(true);
 		}
 	}

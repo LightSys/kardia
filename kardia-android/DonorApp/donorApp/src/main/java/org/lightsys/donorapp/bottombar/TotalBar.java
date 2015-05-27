@@ -35,6 +35,7 @@ public class TotalBar extends Fragment {
 			year = Calendar.getInstance().get(Calendar.YEAR);
 		}
 		yearAmount = db.getYTDAmount();
+		db.close();
 		updateTotal(v);
 		return v;
 	}

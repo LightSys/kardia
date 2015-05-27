@@ -53,10 +53,19 @@ public class YTDList extends Fragment{
 		else if(args != null){
 			this.fund_id = args.getInt(ARG_FUND_ID);
 			years = db.getYears(fund_id);
+
+			//Only sets link bar if list is for specific fund, not for all years
+			LinkBar lb = new LinkBar();
+			lb.setArguments(args);
+
+			FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+			fragmentManager.beginTransaction().add(R.id.bottom_bar, lb).commit();
 		}
 		else{
 			years = db.getYears();
 		}
+
+		db.close();
 
 		View v = inflater.inflate(R.layout.activity_main, container, false);
 
@@ -69,12 +78,6 @@ public class YTDList extends Fragment{
 		ListView listview = (ListView)v.findViewById(R.id.info_list);
 		listview.setAdapter(adapter);
 		listview.setOnItemClickListener(new onFundClicked());
-
-		LinkBar lb = new LinkBar();
-		lb.setArguments(args);
-		
-		FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-		fragmentManager.beginTransaction().add(R.id.bottom_bar, lb).commit();
 		
 		return v;
 	}
@@ -117,6 +120,7 @@ public class YTDList extends Fragment{
 	 */
 	public void loadRelatedGifts(int position){
 		Bundle GiftArgs = new Bundle();
+		String yearName = years.get(position).getName();
 		
 		GiftArgs.putInt(GiftList.ARG_YEAR_ID, years.get(position).getId()); //Used to find what year to pull gifts for
 		
@@ -130,6 +134,14 @@ public class YTDList extends Fragment{
 		transaction.replace(R.id.content_frame, gList);
 		transaction.addToBackStack("ToGiftList");
 		transaction.commit();
+		if (fund_id != -1) {
+			LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+			String fundName = db.getFundById(fund_id).getFund_desc();
+			getActivity().setTitle("Gifts - " + yearName + " - " + fundName);
+		} else {
+			getActivity().setTitle("Gifts - " + yearName);
+		}
+
 	}
 	
 	/**

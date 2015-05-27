@@ -1,5 +1,6 @@
 package org.lightsys.donorapp;
 
+import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.LocalDBHandler;
 
 import android.app.Activity;
@@ -12,6 +13,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.donorapp.R;
+
+import java.util.ArrayList;
 
 /**
  * This activity recieves the selected account's user name, user password, 
@@ -26,9 +29,12 @@ import com.example.donorapp.R;
  *
  */
 public class EditAccountActivity extends Activity{
-	
+
+	String oldName, oldPass, oldServer, oldDonorId, name, pass, server, donorId;
 	EditText editName, editPass, editServer, editDonorId;
-	Button submit;
+	Button submit, cancel;
+	private static Boolean isValidAccount = null;
+	private static AccountsActivity.ErrorType errorType = null;
 	
 	/**
 	 * Loads current data for the selected account.
@@ -43,45 +49,117 @@ public class EditAccountActivity extends Activity{
     	editServer = (EditText)findViewById(R.id.serverName);
     	editDonorId = (EditText)findViewById(R.id.donorId);
     	submit = (Button)findViewById(R.id.submit);
+		cancel = (Button)findViewById(R.id.cancel);
+
+		// Adds EditTexts to text listener for resetting errors
+		editName.addTextChangedListener(new GenericTextWatcher(editName));
+		editPass.addTextChangedListener(new GenericTextWatcher(editPass));
+		editServer.addTextChangedListener(new GenericTextWatcher(editServer));
+		editDonorId.addTextChangedListener(new GenericTextWatcher(editDonorId));
     	
     	Intent intent = getIntent();
     	
     	final int id = intent.getIntExtra("theid", -1);
-    	editName.setText(intent.getStringExtra("oldname"));
-    	editPass.setText(intent.getStringExtra("oldpass"));
-    	editServer.setText(intent.getStringExtra("oldserver"));
-    	editDonorId.setText(intent.getIntExtra("olddonorid", -1) + "");
-    	
+
+		oldName = intent.getStringExtra("oldname");
+		oldPass = intent.getStringExtra("oldpass");
+		oldServer = intent.getStringExtra("oldserver");
+		oldDonorId = intent.getIntExtra("olddonorid", -1) + "";
+
+    	editName.setText(oldName);
+    	editPass.setText(oldPass);
+    	editServer.setText(oldServer);
+    	editDonorId.setText(oldDonorId);
+
+		cancel.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				finish();
+			}
+		});
+
     	submit.setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v) {
 				LocalDBHandler db = new LocalDBHandler(EditAccountActivity.this, null, null, 9);
-				
-				if(editName == null || editName.getText().toString().equals("")){
-					editName.setError("Invalid User Name");
+				name = editName.getText().toString();
+				pass = editPass.getText().toString();
+				server = editServer.getText().toString();
+				donorId = editDonorId.getText().toString();
+				ArrayList<Account> accounts = db.getAccounts();
+
+				int newId = Integer.parseInt(donorId);
+
+				for(Account a : accounts){
+					if(a.getAccountName().equals(name) && a.getServerName().equals(server) &&
+							a.getAccountPassword().equals(pass) && a.getDonorid() == newId){
+						Toast.makeText(EditAccountActivity.this, "Account already stored", Toast.LENGTH_LONG).show();
+						db.close();
+						return;
+					}
+				}
+				if(name == null || name.equals("")){
+					editName.setError("Invalid Username");
+					db.close();
 					return;
 				}	
-				if(editPass == null || editPass.getText().toString().equals("")){
+				if(pass == null || pass.equals("")){
 					editPass.setError("Invalid Password");
+					db.close();
 					return;
 				}	
-				if(editServer == null || editServer.getText().toString().equals("")){
+				if(server == null || server.equals("")){
 					editServer.setError("Invalid Server Address");
+					db.close();
 					return;
 				}	
-				if(editDonorId.getText().toString().equals("")){
-					editDonorId.setError("Invalid Donor Id.");
+				if(donorId == null || donorId.equals("")){
+					editDonorId.setError("Invalid Donor ID.");
+					db.close();
 					return;
 				}
-				
-				int newId = Integer.parseInt(editDonorId.getText().toString());
-				
-				db.updateAccount(id, editName.getText().toString(), editPass.getText().toString(), editServer.getText().toString(), newId);
-				Toast.makeText(EditAccountActivity.this, "Account updated.", Toast.LENGTH_SHORT).show();
-				new DataConnection(EditAccountActivity.this).execute("");
+
+				Account a = new Account(name, pass, server, newId);
+				new DataConnection(EditAccountActivity.this, a).execute("");
+				while (isValidAccount == null) {
+					continue;
+				}
+				if (isValidAccount) {
+					db.updateAccount(id, editName.getText().toString(), editPass.getText().toString(), editServer.getText().toString(), newId);
+					Toast.makeText(EditAccountActivity.this, "Account updated.", Toast.LENGTH_SHORT).show();
+					isValidAccount = null;
+					errorType = null;
+					db.close();
+				} else {
+					String errorStatement;
+					if (errorType == AccountsActivity.ErrorType.NotFound) {
+						errorStatement = "Username or Password is incorrect";
+					} else if (errorType == AccountsActivity.ErrorType.Server) {
+						errorStatement = "Could not connect to specified server";
+					} else if (errorType == AccountsActivity.ErrorType.Unauthorized) {
+						errorStatement = "No account with this Donor ID";
+					} else {
+						errorStatement = "Unknown issue. \n 1) Check Internet connection" +
+								"\n 2) Server may be down";
+					}
+					Toast.makeText(EditAccountActivity.this, "Connecting account failed. \n -" + errorStatement,
+							Toast.LENGTH_LONG).show();
+					isValidAccount = null;
+					errorType = null;
+					db.close();
+					return;
+				}
 				finish();
 			}
-    	});
+		});
+	}
+	public static void setValidation(boolean isValid) {
+		isValidAccount = isValid;
+	}
+
+	// Sets the error type if account is found to be invalid
+	public static void setErrorType(AccountsActivity.ErrorType error) {
+		errorType = error;
 	}
 }
