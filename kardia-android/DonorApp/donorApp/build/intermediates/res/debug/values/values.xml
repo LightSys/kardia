@@ -23,10 +23,10 @@
         <item>OFF</item>
     </string-array>
     <string-array name="notification_options">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
+        <item>Once per day</item>
+        <item>Twice per day</item>
+        <item>3 times per day</item>
+        <item>4 times per day</item>
     </string-array>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
     <eat-comment/>
@@ -215,7 +215,7 @@
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="message">Message</string>
-    <string name="notification_setting">Remind Me To Pray</string>
+    <string name="notification_setting">Prayer Notifications"</string>
     <string name="password">password</string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>

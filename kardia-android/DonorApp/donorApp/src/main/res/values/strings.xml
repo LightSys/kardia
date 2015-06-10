@@ -22,10 +22,10 @@
         <item>OFF</item>
     </string-array>
     <string-array name="notification_options">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
+        <item>Once per day</item>
+        <item>Twice per day</item>
+        <item>3 times per day</item>
+        <item>4 times per day</item>
     </string-array>
     <string name="app_name">Kardia Donor</string>
     <string name="action_settings">Settings</string>
@@ -58,7 +58,7 @@
     <string name="subject">subject</string>
     <string name="type_contact">Type Of Contact:</string>
     <string name="message">Message</string>
-    <string name="notification_setting">Remind Me To Pray</string>
+    <string name="notification_setting">Prayer Notifications"</string>
     <string name="times_per_day">time(s) per day</string>
 
 </resources>

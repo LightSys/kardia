@@ -69,9 +69,10 @@ public class YTDList extends Fragment{
 
 		View v = inflater.inflate(R.layout.activity_main, container, false);
 
+		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
-		String[] from = {"ytdtitle", "ytd"};
-		int[] to = {R.id.title, R.id.amount};
+		String[] from = {"ytdtitle", "ytdamount"};
+		int[] to = {R.id.subject, R.id.detail};
 
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 
@@ -93,7 +94,7 @@ public class YTDList extends Fragment{
 			HashMap<String,String> hm = new HashMap<String,String>();
 			
 			hm.put("ytdtitle", y.getName());
-			hm.put("ytd", y.amountToString()); 
+			hm.put("ytdamount", y.amountToString());
 			aList.add(hm);
 		}
 		
@@ -116,18 +117,16 @@ public class YTDList extends Fragment{
 	 * fund on a specific year.
 	 * (Still has a donation button at the bottom, for that specific fund)
 	 * So all it does is change what is displayed in the list.
-	 * @param position
+	 * @param position, position of list that was selected
 	 */
 	public void loadRelatedGifts(int position){
 		Bundle GiftArgs = new Bundle();
 		String yearName = years.get(position).getName();
 		
 		GiftArgs.putInt(GiftList.ARG_YEAR_ID, years.get(position).getId()); //Used to find what year to pull gifts for
-		
 		GiftArgs.putInt(GiftList.ARG_FUND_ID, this.fund_id); //send the fund id
 		
 		GiftList gList = new GiftList();
-		
 		gList.setArguments(GiftArgs);
 		
 		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
@@ -141,7 +140,6 @@ public class YTDList extends Fragment{
 		} else {
 			getActivity().setTitle("Gifts - " + yearName);
 		}
-
 	}
 	
 	/**

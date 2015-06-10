@@ -91,10 +91,13 @@ public class Gift {
 		}
 	}
 	
-	public String formatedDate(){
+	public String formattedDate(){
 		String[] date = gift_date.split("-");
 		date[1] = getMonth(Integer.parseInt(date[1]));
-		return "" + date[1] + ", " + date[2] + "  " + date[0];
+		if (date[2].substring(0,1).equals("0")) {
+			date[2] = date[2].substring(1);
+		}
+		return date[1] + " " + date[2] + ", " + date[0];
 	}
 	
 	private String getMonth(int num){

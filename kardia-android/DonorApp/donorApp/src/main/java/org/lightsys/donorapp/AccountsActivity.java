@@ -1,32 +1,22 @@
 package org.lightsys.donorapp;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import org.lightsys.donorapp.data.Account;
-import org.lightsys.donorapp.data.Fund;
+import org.lightsys.donorapp.data.DataConnection;
+import org.lightsys.donorapp.data.GenericTextWatcher;
 import org.lightsys.donorapp.data.LocalDBHandler;
-import org.lightsys.donorapp.MainActivity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v4.app.FragmentManager;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -41,21 +31,19 @@ import com.example.donorapp.R;
  * 
  * @author Andrew Cameron
  *
- * This class Activity handles user login, and editing of user accounts
- * Currently does not check the validity of servername or userid
- *
  */
 public class AccountsActivity extends Activity{
 
-	public static enum ErrorType {
+	// Specifies the type of error if an account does not connect
+	public enum ErrorType {
 		Unauthorized, Server, NotFound
-	};
+	}
 
 	ListView accountsList;
 	EditText accountName, accountPass, serverName, donorID;
 	TextView connectedAccounts;
 	ArrayList<Account> accounts = new ArrayList<Account>();
-	boolean accountAdded = false;
+
 	// Use Boolean abstraction to be able to set to null
 	// Null value signifies the async thread has not set the validation value
 	private static Boolean isValidAccount = null;
@@ -116,7 +104,6 @@ public class AccountsActivity extends Activity{
 			
 			aList.add(tempMap);
 		}
-		
 		String[] from = {"aName", "aServer"};
 		int[] to = {R.id.title, R.id.server};
 		SimpleAdapter adapter = new SimpleAdapter(this, aList, R.layout.account_listview_item, from, to);
@@ -129,12 +116,13 @@ public class AccountsActivity extends Activity{
 	 * This method just returns the user to the page that it was called from.
 	 * (from within the MainActivity)
 	 * 
-	 * @param v
+	 * @param v, current View
 	 */
 	public void returnHome(View v){
 		LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
 		ArrayList<Account> accounts = db.getAccounts();
 		db.close();
+		// If no accounts connected, do not close activity
 		if (accounts.size() == 0) {
 			Toast.makeText(this, "Please connect an account", Toast.LENGTH_SHORT).show();
 		} else {
@@ -143,9 +131,8 @@ public class AccountsActivity extends Activity{
 	}
 	
 	/**
-	 * Adds the account to the local database.
-	 * 
-	 * @param v
+	 * Adds the account to the local database from the text field on page.
+	 *
 	 */
 	public void addAccount(View v){
 		LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
@@ -158,7 +145,9 @@ public class AccountsActivity extends Activity{
         String dIdStr = donorID.getText().toString();
 
 		int dId = Integer.parseInt(dIdStr);
-		
+		int accountID = db.getLastId("account") + 1;
+
+		// If account already stored, display message and return
 		for(Account a : accounts){
 			if(a.getAccountName().equals(aName) && a.getServerName().equals(sName) &&
 					a.getAccountPassword().equals(aPass) && a.getDonorid() == dId){
@@ -166,57 +155,60 @@ public class AccountsActivity extends Activity{
 				db.close();
 				return;
 			}
-		}	
-		if(aName.equals("") || aName == null){
+		}
+		// If any field does not have information provided, set an error in that field and return
+		if(aName.equals("")){
 			accountName.setError("Invalid Username");
 			db.close();
 			return;
 		}	
-		if(aPass.equals("") || aPass == null){
+		if(aPass.equals("")){
 			accountPass.setError("Invalid Password");
 			db.close();
 			return;
 		}	
-		if(sName.equals("") || sName == null){
+		if(sName.equals("")){
 			serverName.setError("Invalid Server Address");
 			db.close();
 			return;
 		}	
-		if(dIdStr.equals("") || dIdStr == null){
+		if(dIdStr.equals("")){
 			donorID.setError("Invalid Donor ID.");
 			db.close();
 			return;
 		}
-		
-		Account account = new Account(aName, aPass, sName, dId);
-
+		Account account = new Account(accountID, aName, aPass, sName, dId);
 		// Execute data connection
 		new DataConnection(this, account).execute("");
 
+		// Wait for async task to signal whether account is valid or not
 		while(isValidAccount == null) {
 			continue;
 		}
 
 		if (isValidAccount) {
 			db.addAccount(account);
-			accountAdded = true;
+			// Set asynchronous flags back to null for next attempted account
 			isValidAccount = null;
 			errorType = null;
 			db.close();
 		} else {
+			// Set error statement based on error provided by async task
 			String errorStatement;
 			if (errorType == ErrorType.NotFound) {
-				errorStatement = "Username or Password is incorrect";
+				errorStatement = "No account with this Donor ID";
 			} else if (errorType == ErrorType.Server) {
 				errorStatement = "Could not connect to specified server";
 			} else if (errorType == ErrorType.Unauthorized) {
-				errorStatement = "No account with this Donor ID";
+				errorStatement = "Username or Password is incorrect";
 			} else {
 				errorStatement = "Unknown issue. \n 1) Check Internet connection" +
 						"\n 2) Server may be down";
 			}
 			Toast.makeText(AccountsActivity.this, "Connecting account failed. \n -" + errorStatement,
 					Toast.LENGTH_LONG).show();
+
+			// set async flags back to null for next account connection
 			isValidAccount = null;
 			errorType = null;
 			db.close();
@@ -248,16 +240,17 @@ public class AccountsActivity extends Activity{
 	 * This carries out the request made by the ContextMenu (above)...
 	 * If delete was selected, it will delete the account from the DB
 	 * If edit was selected, it will open the edit activity
+	 * @param item, item that was selected from menu (i.e. Delete, Edit, or Cancel)
 	 */
 	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
-				.getMenuInfo();
-		LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
+		AdapterView.AdapterContextMenuInfo info =
+				(AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
 
 		if (item.getTitle().equals("Delete")) {
-			
+
 			Account temp = accounts.get(info.position);
 
+			LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
 			db.deleteAccount(temp.getId());
 			db.close();
 			
@@ -265,9 +258,9 @@ public class AccountsActivity extends Activity{
 			
 		} else if (item.getTitle().equals("Edit")) {
 
-			db.close();
 			Account temp = accounts.get(info.position);
 
+			// Launch editAccountActivity and pass account details for activity set-up
 			Intent intent = new Intent(this, EditAccountActivity.class);
 			Log.w("BasicAuth", "The donor id being put into the intent: " + temp.getDonorid());
 			intent.putExtra("theid", temp.getId());
@@ -285,6 +278,7 @@ public class AccountsActivity extends Activity{
 	}
 	
 	/**
+	 * Called after returning from the Edit Accounts page
 	 * This refreshes the list of accounts. (in case a creation, edit or delete was made)
 	 */
 	@Override
@@ -292,13 +286,18 @@ public class AccountsActivity extends Activity{
 		loadAccountList();
 	}
 
-
-	// Sets the validity of the account attempting to be connected
+	/**
+	 * Sets the validity of the account attempting to be connected
+	 * @param isValid, if account was valid from validation
+	 */
 	public static void setValidation(boolean isValid) {
 		isValidAccount = isValid;
 	}
 
-	// Sets the error type if account is found to be invalid
+	/**
+	 * Sets the error type if account is found to be invalid
+	 * @param error, what error occurred
+	 */
 	public static void setErrorType(ErrorType error) {
 		errorType = error;
 	}

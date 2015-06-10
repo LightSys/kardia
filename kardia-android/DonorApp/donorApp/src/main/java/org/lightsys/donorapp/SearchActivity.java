@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -28,9 +29,10 @@ public class SearchActivity extends Fragment{
 	
 	private Button date1, date2, search;
 	private EditText amount1, amount2, checknum;
-	private TextView dash1, dash2, dollarSign1, dollarSign2;
+	private TextView dash1, dash2, dollarSign2;
 	private CheckBox dateRange, amountRange;
 	private ToggleButton toggleDate, toggleAmount, toggleCheck;
+	private TableRow dateRow, amountRow;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -47,9 +49,10 @@ public class SearchActivity extends Fragment{
 		toggleDate = (ToggleButton)v.findViewById(R.id.toggleDate);
 		toggleAmount = (ToggleButton)v.findViewById(R.id.toggleAmount);
 		toggleCheck = (ToggleButton)v.findViewById(R.id.toggleCheck);
+		dateRow = (TableRow)v.findViewById(R.id.dateRow);
+		amountRow = (TableRow)v.findViewById(R.id.amountRow);
 		dash1 = (TextView)v.findViewById(R.id.dash1);
 		dash2 = (TextView)v.findViewById(R.id.dash2);
-		dollarSign1 = (TextView)v.findViewById(R.id.dollarSign1);
 		dollarSign2 = (TextView)v.findViewById(R.id.dollarSign2);
 
 		search.setOnClickListener(new OnClickListener() {
@@ -93,18 +96,19 @@ public class SearchActivity extends Fragment{
 			
 			@Override
 			public void onClick(View v){
+				// If date search is activated, set respective fields to visible
+				// If date search is not activated, set fields to invisible and set to default
 				if(toggleDate.isChecked()){
-					dateRange.setEnabled(true);
-					date1.setEnabled(true);
+					dateRange.setVisibility(View.VISIBLE);
+					dateRow.setVisibility(View.VISIBLE);
 				}else{
 					dateRange.setChecked(false);
-					dateRange.setEnabled(false);
+					dateRange.setVisibility(View.INVISIBLE);
 					date1.setText("Choose Date");
 					date2.setText("Choose Date");
-					date1.setEnabled(false);
-					date2.setEnabled(false);
 					dash1.setVisibility(View.INVISIBLE);
 					date2.setVisibility(View.INVISIBLE);
+					dateRow.setVisibility(View.INVISIBLE);
 				}
 			}
 		});
@@ -113,19 +117,20 @@ public class SearchActivity extends Fragment{
 			
 			@Override
 			public void onClick(View v){
+				// If amount search is activated, set respective fields to visible
+				// If amount search is not activated, set fields to invisible and set to default
 				if(toggleAmount.isChecked()){
-					amountRange.setEnabled(true);
-					amount1.setEnabled(true);
+					amountRange.setVisibility(View.VISIBLE);
+					amountRow.setVisibility(View.VISIBLE);
 				}else{
 					amountRange.setChecked(false);
-					amountRange.setEnabled(false);
+					amountRange.setVisibility(View.INVISIBLE);
 					amount1.setText("");
 					amount2.setText("");
-					amount1.setEnabled(false);
-					amount2.setEnabled(false);
 					dash2.setVisibility(View.INVISIBLE);
 					amount2.setVisibility(View.INVISIBLE);
 					dollarSign2.setVisibility(View.INVISIBLE);
+					amountRow.setVisibility(View.INVISIBLE);
 				}
 			}
 		});
@@ -134,11 +139,13 @@ public class SearchActivity extends Fragment{
 			
 			@Override
 			public void onClick(View v){
+				// If check search is activated, set respective fields to visible
+				// If check search is not activated, set fields to invisible and set to default
 				if(toggleCheck.isChecked()){
-					checknum.setEnabled(true);
+					checknum.setVisibility(View.VISIBLE);
 				}else{
 					checknum.setText("");
-					checknum.setEnabled(false);
+					checknum.setVisibility(View.INVISIBLE);
 				}
 			}
 		});
@@ -185,7 +192,8 @@ public class SearchActivity extends Fragment{
 		String dateSearch = "";
 		String amountSearch = "";
 		String checkSearch = "";
-		
+
+		// Construct search by date statement
 		if(toggleDate.isChecked()){
 			String sDate = (!date1.getText().toString().equals("Choose Date"))? date1.getText().toString() : "";
 			String eDate = (date2.isEnabled() && !date2.getText().toString().equals("Choose Date"))? date2.getText().toString() : "";
@@ -195,10 +203,11 @@ public class SearchActivity extends Fragment{
 			}else if(!sDate.equals("")){
 				dateSearch = " WHERE (gift_date = '" + sDate + "')";
 			}
-		
+			// Concatenate date search statement onto search statement
 			selectStatement += dateSearch;
 		}
-		
+
+		// Construct amount search statement
 		if(toggleAmount.isChecked()){
 			String sAmount = (!amount1.getText().toString().equals(""))? amount1.getText().toString() : "";
 			String eAmount = (amount2.isEnabled() && !amount2.getText().toString().equals(""))? amount2.getText().toString() : "";
@@ -216,10 +225,11 @@ public class SearchActivity extends Fragment{
 					amountSearch = " AND (gift_total_whole = " + sAmount + ")";
 				}
 			}
-		
+			// Concatenate amount search statement to search statement
 			selectStatement += amountSearch;
 		}
-		
+
+		// Construct check search statement
 		if(toggleCheck.isChecked()){
 			String checkNum = (!checknum.getText().toString().equals(""))?checknum.getText().toString() : "";
 			
@@ -229,10 +239,11 @@ public class SearchActivity extends Fragment{
 				}else{
 					checkSearch = " AND (gift_check_num = " + checkNum + ")";
 				}
+			}
+			// Concatenate check search statement onto search statement
+			selectStatement += checkSearch;
 		}
-		
-		selectStatement += checkSearch;
-		}
+		// Do search for gifts with constructed search statement
 		ArrayList<Gift> results = db.getSearchResults(selectStatement);
 		db.close();
 		
@@ -253,27 +264,23 @@ public class SearchActivity extends Fragment{
 	
 	public void resetAll(){
 		date1.setText("Choose Date");
-		date1.setEnabled(false);
 		date2.setText("Choose Date");
-		date2.setEnabled(false);
 		date2.setVisibility(View.INVISIBLE);
 		dash1.setVisibility(View.INVISIBLE);
 		amount1.setText("");
-		amount1.setEnabled(false);
 		amount2.setText("");
-		amount2.setEnabled(false);
 		amount2.setVisibility(View.INVISIBLE);
 		dash2.setVisibility(View.INVISIBLE);
 		dollarSign2.setVisibility(View.INVISIBLE);
 		checknum.setText("");
-		checknum.setEnabled(false);
 		dateRange.setChecked(false);
-		dateRange.setEnabled(false);
 		amountRange.setChecked(false);
-		amountRange.setEnabled(false);
 		toggleDate.setChecked(false);
 		toggleAmount.setChecked(false);
 		toggleCheck.setChecked(false);
+		dateRow.setVisibility(View.INVISIBLE);
+		amountRow.setVisibility(View.INVISIBLE);
+		checknum.setVisibility(View.INVISIBLE);
 	}
 	
 	public void sendToDetailedGift(int gift_id){
@@ -303,31 +310,31 @@ public class SearchActivity extends Fragment{
 	}
 	
 	public void changeDateRange(){
-		if(date2.isEnabled()){
+		// If date range is activated, set respective fields as visible
+		// If date range is not activated, set fields to invisible and set to default
+		if(dateRange.isChecked()){
+			dash1.setVisibility(View.VISIBLE);
+			date2.setVisibility(View.VISIBLE);
+		}else{
 			date2.setVisibility(View.INVISIBLE);
 			dash1.setVisibility(View.INVISIBLE);
 			date2.setText("Choose Date");
-			date2.setEnabled(false);
-		}else{
-			dash1.setVisibility(View.VISIBLE);
-			date2.setVisibility(View.VISIBLE);
-			date2.setEnabled(true);
 		}
 	}
 	
 	
 	public void changeAmountRange(){
-		if(amount2.isEnabled()){
+		// If amount range is activated, set respective fields as visible
+		// If amount range is not activated, set fields to invisible and set to default
+		if(amountRange.isChecked()){
+			dash2.setVisibility(View.VISIBLE);
+			amount2.setVisibility(View.VISIBLE);
+			dollarSign2.setVisibility(View.VISIBLE);
+		}else{
 			amount2.setVisibility(View.INVISIBLE);
 			dash2.setVisibility(View.INVISIBLE);
 			dollarSign2.setVisibility(View.INVISIBLE);
 			amount2.setText("");
-			amount2.setEnabled(false);
-		}else{
-			dash2.setVisibility(View.VISIBLE);
-			amount2.setVisibility(View.VISIBLE);
-			dollarSign2.setVisibility(View.VISIBLE);
-			amount2.setEnabled(true);
 		}
 	}
 	
@@ -352,8 +359,8 @@ public class SearchActivity extends Fragment{
 			
 			if(btn_id == 1){
 				date1.setText(year + "-" + month + "-" + day);
-			}else{
-				date2.setText(year + "-" + month + "-" + day);
+			}else{ // btn_id == 2
+				date2.setText(year + "-" + month + "-" + year);
 			}
 		}
 	}

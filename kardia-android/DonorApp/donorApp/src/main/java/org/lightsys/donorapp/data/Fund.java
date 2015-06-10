@@ -21,7 +21,7 @@ public class Fund {
 		this.setID(ID);
 		this.setFullName(fullName);
 		this.setFund_desc(fund_desc);
-		this.setName(fund);
+		this.setName(fundName);
 		this.setGift_count(gift_count);
 		this.setGift_total(gift_total);
 		this.setGiving_url(giving_url);

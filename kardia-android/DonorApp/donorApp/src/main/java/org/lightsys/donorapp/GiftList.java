@@ -36,7 +36,8 @@ public class GiftList extends Fragment{
 	int fund_id = -1;
 	public static String ARG_GIFT_QUERY = "gift_query";
 	String query = "";
-	private ArrayList<Gift> gifts = new ArrayList<Gift>();;
+	private ArrayList<Gift> gifts = new ArrayList<Gift>();
+	private boolean isSpecificFund = false;
 	
 	/**
 	 * Grab the needed Ids, load data and view.
@@ -62,6 +63,7 @@ public class GiftList extends Fragment{
 				gifts = db.getSearchResults(query);
 			}
 			else if(this.fund_id != -1){
+				isSpecificFund = true;
 				gifts = db.getGiftsForFund(fund_id, year_id); // pull all the gifts for a certain fund during a certain year
 
 				//Sets donation link bar only if for a specific fund
@@ -83,15 +85,24 @@ public class GiftList extends Fragment{
 		db.close();
 		
 		View v = inflater.inflate(R.layout.activity_main, container, false);
-		
-		ArrayList<HashMap<String,String>> itemList = generateListItems();
-		String[] from = {"giftname", "giftamount", "giftdate"};
-		int[] to = {R.id.title, R.id.amount, R.id.date};
-		
-		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
-		
 		ListView listview = (ListView)v.findViewById(R.id.info_list);
-		listview.setAdapter(adapter);
+
+		// Map data fields to layout fields
+		ArrayList<HashMap<String,String>> itemList = generateListItems();
+
+		// If list is for specific fund, do not display fund for every list item
+		if (isSpecificFund) {
+			String[] from = {"giftdate", "giftamount"};
+			int[] to = {R.id.subject, R.id.detail};
+			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
+			listview.setAdapter(adapter);
+		} else {
+			String[] from = {"giftname", "giftdate", "giftamount"};
+			int[] to = {R.id.subject, R.id.date, R.id.detail};
+			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
+			listview.setAdapter(adapter);
+		}
+
 		listview.setOnItemClickListener(new onGiftClicked());
 		
 		return v;
@@ -108,9 +119,9 @@ public class GiftList extends Fragment{
 		for(Gift g : gifts){
 			HashMap<String,String> hm = new HashMap<String,String>();
 			
-			hm.put("giftname", "Gift to: " + g.getGift_fund_desc());
+			hm.put("giftname", g.getGift_fund_desc());
 			hm.put("giftamount", g.amountToString());
-			hm.put("giftdate", g.formatedDate());
+			hm.put("giftdate", g.formattedDate());
 			
 			aList.add(hm);
 		}

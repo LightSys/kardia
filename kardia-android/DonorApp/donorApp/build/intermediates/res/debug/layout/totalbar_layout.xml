@@ -13,17 +13,11 @@
         tools:ignore="UselessParent" >
 
         <TextView
-            android:id="@+id/totalytd"
+            android:id="@+id/viewytd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="20sp" />
 
-        <TextView
-            android:id="@+id/total"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#2ACA2D"
-            android:textSize="20sp" />
     </TableRow>
 
 </RelativeLayout><!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout/totalbar_layout.xml -->

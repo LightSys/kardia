@@ -1,6 +1,8 @@
 package org.lightsys.donorapp;
 
 import org.lightsys.donorapp.data.Account;
+import org.lightsys.donorapp.data.DataConnection;
+import org.lightsys.donorapp.data.GenericTextWatcher;
 import org.lightsys.donorapp.data.LocalDBHandler;
 
 import android.app.Activity;
@@ -91,6 +93,7 @@ public class EditAccountActivity extends Activity{
 
 				int newId = Integer.parseInt(donorId);
 
+				// If account already stored, display message and return
 				for(Account a : accounts){
 					if(a.getAccountName().equals(name) && a.getServerName().equals(server) &&
 							a.getAccountPassword().equals(pass) && a.getDonorid() == newId){
@@ -99,6 +102,7 @@ public class EditAccountActivity extends Activity{
 						return;
 					}
 				}
+				// If any of the fields are blank or invalid, set error and return
 				if(name == null || name.equals("")){
 					editName.setError("Invalid Username");
 					db.close();
@@ -120,31 +124,37 @@ public class EditAccountActivity extends Activity{
 					return;
 				}
 
-				Account a = new Account(name, pass, server, newId);
+				Account a = new Account(id, name, pass, server, newId);
+				// Execute data connection
 				new DataConnection(EditAccountActivity.this, a).execute("");
+
+				// Wait for async task to signal whether account is valid or not
 				while (isValidAccount == null) {
 					continue;
 				}
 				if (isValidAccount) {
 					db.updateAccount(id, editName.getText().toString(), editPass.getText().toString(), editServer.getText().toString(), newId);
 					Toast.makeText(EditAccountActivity.this, "Account updated.", Toast.LENGTH_SHORT).show();
+					// Set asynchronous flags back to null for next attempted account
 					isValidAccount = null;
 					errorType = null;
 					db.close();
 				} else {
+					// Set error statement based on error provided by async task
 					String errorStatement;
 					if (errorType == AccountsActivity.ErrorType.NotFound) {
-						errorStatement = "Username or Password is incorrect";
+						errorStatement = "No account with this Donor ID";
 					} else if (errorType == AccountsActivity.ErrorType.Server) {
 						errorStatement = "Could not connect to specified server";
 					} else if (errorType == AccountsActivity.ErrorType.Unauthorized) {
-						errorStatement = "No account with this Donor ID";
+						errorStatement = "Username or Password is incorrect";
 					} else {
 						errorStatement = "Unknown issue. \n 1) Check Internet connection" +
 								"\n 2) Server may be down";
 					}
 					Toast.makeText(EditAccountActivity.this, "Connecting account failed. \n -" + errorStatement,
 							Toast.LENGTH_LONG).show();
+					// set async flags back to null for next account connection
 					isValidAccount = null;
 					errorType = null;
 					db.close();
@@ -154,11 +164,19 @@ public class EditAccountActivity extends Activity{
 			}
 		});
 	}
+
+	/**
+	 * sets whether or not the account attempting to be updated is a valid account
+	 * @param isValid, boolean value if account if valid
+	 */
 	public static void setValidation(boolean isValid) {
 		isValidAccount = isValid;
 	}
 
-	// Sets the error type if account is found to be invalid
+	/**
+	 * sets the error type of an invalid account
+	 * @param error, the type of error causing the account connection to fail
+	 */
 	public static void setErrorType(AccountsActivity.ErrorType error) {
 		errorType = error;
 	}

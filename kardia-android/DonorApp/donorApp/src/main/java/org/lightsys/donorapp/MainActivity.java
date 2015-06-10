@@ -1,43 +1,19 @@
 package org.lightsys.donorapp;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.lightsys.donorapp.data.Account;
-import org.lightsys.donorapp.data.Fund;
-import org.lightsys.donorapp.data.Gift;
+import org.lightsys.donorapp.data.DataConnection;
 import org.lightsys.donorapp.data.LocalDBHandler;
-import org.lightsys.donorapp.data.PrayerRequest;
-import org.lightsys.donorapp.data.Update;
-import org.lightsys.donorapp.data.Year;
+
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -45,7 +21,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -65,8 +40,6 @@ import com.example.donorapp.R;
  * 
  */
 public class MainActivity extends ActionBarActivity {
-	private static final String Tag = "BasicAuth";
-	private String[] mCategories;
 	private DrawerLayout mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
 	private ListView mDrawerList;
@@ -94,7 +67,7 @@ public class MainActivity extends ActionBarActivity {
 
 		/* Setting up the Drawer Navigation */
 
-		mCategories = getResources().getStringArray(R.array.categories);
+		String [] mCategories = getResources().getStringArray(R.array.categories);
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow_v1, GravityCompat.START);
 
@@ -110,22 +83,22 @@ public class MainActivity extends ActionBarActivity {
 				R.string.drawer_closed){
 
 			public void onDrawerClosed(View view){
-				getActionBar().setTitle(mTitle);
+				getSupportActionBar().setTitle(mTitle);
 				invalidateOptionsMenu();
 			}
 
 			public void onDrawerOpened(View drawerView){
-				getActionBar().setTitle("Quick Nav");
+				getSupportActionBar().setTitle("Quick Nav");
 				invalidateOptionsMenu();
 			}
 		};
 
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-		getActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 		if(Build.VERSION.SDK_INT >= 14){
-			getActionBar().setHomeButtonEnabled(true);
+			getSupportActionBar().setHomeButtonEnabled(true);
 		}
 		
 		/* End of setting up the Drawer Navigation */
@@ -150,6 +123,7 @@ public class MainActivity extends ActionBarActivity {
 		 * send to fund list to begin
 		 */
 		else if(savedInstanceState == null){
+
 			long originalStamp = dbh.getTimeStamp();
 			long currentTime = Calendar.getInstance().getTimeInMillis();
 			dbh.close();
@@ -209,7 +183,7 @@ public class MainActivity extends ActionBarActivity {
 		//Handle App search
 		switch(item.getItemId()){
 			case R.id.action_search:
-				setTitle("Search");
+				setTitle("Gift Search");
 				fragment = new SearchActivity();
 				getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
 				break;
@@ -220,7 +194,6 @@ public class MainActivity extends ActionBarActivity {
 
 	/**
 	 * The listener for the drawer menu. waits for a drawer item to be clicked.
-	 * 
 	 */
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 
@@ -232,8 +205,7 @@ public class MainActivity extends ActionBarActivity {
 
 	/**
 	 * Drawer click responses.
-	 * 
-	 * @param position
+	 * @param position, position of the drawer that has been selected
 	 */
 	private void selectItem(int position) {
 		FragmentManager fragmentManager = getSupportFragmentManager();
@@ -264,7 +236,8 @@ public class MainActivity extends ActionBarActivity {
             fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
             break;
         case 5:
-           break;
+			// Get prayer letters from missionaries??
+            break;
         case 6:
             setTitle("Contact Missionary");
             fragment = new ContactMissionaryActivity();
@@ -282,7 +255,6 @@ public class MainActivity extends ActionBarActivity {
 			for (Account a : accts) {
 				new DataConnection(this, a).execute("");
 			}
-			refreshFragments();
 			break;
 		}
 		mDrawerList.setItemChecked(position, true);
@@ -296,7 +268,7 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void setTitle(CharSequence title) {
 		mTitle = title;
-		getActionBar().setTitle(mTitle);
+		getSupportActionBar().setTitle(mTitle);
 	}
 	
 	/**
@@ -304,39 +276,9 @@ public class MainActivity extends ActionBarActivity {
 	 * which allows them to refresh their view, to reflect a change in data.
 	 * (delete, update, or added items)
 	 */
-	public void refreshFragments(){
-		Fragment frags = getSupportFragmentManager().getFragments().get(0);
-		final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		ft.detach(frags);
-		ft.attach(frags);
-		ft.commit();
-	}
-
-
-//    public void setNotificationButtonClicked(View view)
-//    {
-//        try{
-//            ((PrayerRequestList)fragment).togglePopup(view);
-//        }
-//        catch (Exception e)
-//        {
-//            System.out.println(e);
-//        }
-//    }
-	/**
-	 * This is used to make sure that the content on screen is still up-to-date
-	 * in case an account was created with-in the account activity
-	 */
-	@Override
-	public void onResume(){
-		super.onResume();
-		refreshFragments();
-	}
 
 	/**
 	 * Takes the user to an application that can open/view a pdf.
-	 * 
-	 * @param v
 	 */
 	public void sendToPDF(View v) {
 		Toast.makeText(MainActivity.this, "Sorry, not implemented yet.", Toast.LENGTH_SHORT).show();
@@ -345,8 +287,6 @@ public class MainActivity extends ActionBarActivity {
 	/**
 	 * Takes the user to the 'by year' view. Which shows the years donated
 	 * with the total amount donated per year.
-	 * 
-	 * @param v
 	 */
 	public void viewByYTDAmounts(View v) {
 		setTitle("Donations By Year");
