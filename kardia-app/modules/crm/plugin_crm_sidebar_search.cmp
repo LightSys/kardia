@@ -13,6 +13,13 @@ search "widget/component-decl"
     Refresh "widget/component-decl-action" { }
     RefreshTasks "widget/component-decl-action" { }
 
+    onRefresh "widget/connector"
+	{
+	event=Refresh;
+	target=search_osrc;
+	action=Refresh;
+	}
+
     search_vbox "widget/vbox"
 	{
 	x=4; y=4;

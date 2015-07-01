@@ -10,7 +10,6 @@ package org.lightsys.donorapp;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,6 @@ import com.example.donorapp.R;
 
 import org.lightsys.donorapp.data.LocalDBHandler;
 import org.lightsys.donorapp.data.Update;
-import org.lightsys.donorapp.DetailedUpdate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +28,6 @@ import java.util.HashMap;
 public class UpdateList extends Fragment {
 
     private static ArrayList<Update> updates = new ArrayList<Update>();
-    private LocalDBHandler db;
     ArrayList<HashMap<String,String>> itemList;
 
     @Override
@@ -38,15 +35,16 @@ public class UpdateList extends Fragment {
 
         View v = inflater.inflate(R.layout.activity_main, container, false);
 
-        db = new LocalDBHandler(getActivity(), null, null, 9);
-
-
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
         updates = db.getUpdates();
-        itemList = generateListItems();
-        String[] from = {"updateName",  "updateDate"};
-        int[] to = {R.id.title, R.id.date};
+        db.close();
 
-        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.update_listview_item, from, to );
+        // Map data fields to layout fields
+        itemList = generateListItems();
+        String[] from = {"updateMissionary", "updateDate", "updateSubject"};
+        int[] to = {R.id.subject, R.id.date, R.id.detail};
+
+        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
 
         ListView listview = (ListView)v.findViewById(R.id.info_list);
         listview.setAdapter(adapter);
@@ -55,17 +53,12 @@ public class UpdateList extends Fragment {
         return v;
     }
 
-    public static ArrayList<Update> getUpdates()
-    {
-        return updates;
-    }
-
     private class onUpdateClicked implements AdapterView.OnItemClickListener {
 
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Bundle args = new Bundle();
-            args.putInt(DetailedUpdate.ARG_REQUEST_ID, updates.get(position).getIntId());
+            args.putInt(DetailedUpdate.ARG_UPDATE_ID, updates.get(position).getId());
 
             DetailedUpdate newFrag = new DetailedUpdate();
             newFrag.setArguments(args);
@@ -74,6 +67,7 @@ public class UpdateList extends Fragment {
             transaction.replace(R.id.content_frame, newFrag);
             transaction.addToBackStack("ToDetailedUpdateView");
             transaction.commit();
+            getActivity().setTitle("Update");
         }
     }
     // Generates hash for SimpleAdapter
@@ -83,8 +77,9 @@ public class UpdateList extends Fragment {
         for(Update p : updates){
             HashMap<String,String> hm = new HashMap<String,String>();
 
-            hm.put("updateName", p.getSubject());
-            hm.put("updateDate", p.formatedDate(p.getDate()));
+            hm.put("updateSubject", p.getSubject());
+            hm.put("updateDate", p.formattedDate());
+            hm.put("updateMissionary", p.getMissionaryName());
             aList.add(hm);
         }
         return aList;

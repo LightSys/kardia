@@ -5,4 +5,7 @@ plugin_crm_timeline_GIFT "widget/component-decl"
     height=0;
     icon = "/apps/kardia/images/icons/openiconic-dollar.svg";
     type = "GIFT";
+    iconbar_icon = "/apps/kardia/images/icons/openiconic-dollar.svg";
+    iconbar_label = "Gifts";
+    iconbar_sequence = 30;
     }

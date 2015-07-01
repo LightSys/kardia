@@ -445,14 +445,5 @@ timeline "system/query"
 	    select
 		name = 'ActivityGroupID',
 		activity_group_id = :activitygroup:id
-		--*
-	    --from
-		--/apps/kardia/data/Kardia_DB/e_activity/rows
-	    --where
-		--:e_activity_group_id = :activitygroup:id and
-		--:e_activity_type != 'HEAD'
-	    --order by
-		--:e_sort_key,
-		--:e_activity_date desc
 	    ";
     }

@@ -50,6 +50,7 @@ editbox_table "widget/component-decl"
 	    x=199; y=2; width=19; height=20;
 	    text="?";
 	    fl_height = 0;
+	    enabled=runclient(:form:is_enabled);
 
 	    btn_cn "widget/connector" { event=Click; target=win; action=Toggle; }
 	    btn_cn2 "widget/connector" { event=Click; target=eb; action=SetFocus; event_delay=0.1; }

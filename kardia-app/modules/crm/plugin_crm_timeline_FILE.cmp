@@ -5,6 +5,9 @@ plugin_crm_timeline_FILE "widget/component-decl"
     height=162;
     icon = "/apps/kardia/images/tango/document-new.png";
     type = "FILE";
+    iconbar_icon = "/apps/kardia/images/icons/tumblicons-file.svg";
+    iconbar_label = "Files";
+    iconbar_sequence = 100;
 
     partner_osrc "widget/parameter" { type=object; }
     timeline_osrc "widget/parameter" { type=object; }

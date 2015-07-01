@@ -4,32 +4,29 @@ package org.lightsys.donorapp.data;
  * Created by JoshWorkman on 3/9/2015.
  *
  * Stuff to know
- *      PrayerRequest is a subtype of Note as defined by kardia api, Update is the other subtype we use
- *      PrayerRequest at least contains is, subject, text, dateSubmitted
+ *      PrayerRequest is a subtype of Note as defined by kardia api, Update is the other subtype
+ *      PrayerRequest at least contains is, subject, text, dateSubmitted, missionaryName
  *      ID serves as unique identifier
- *      PrayerRequests are displayed through the PrayerRequestList class
- *
  */
 public class PrayerRequest implements Comparable<PrayerRequest> {
 
-   private String id;
-   private String subject;
-   private String text;
-   private String date;
-   private int missionaryId;
 
+    private int id;
+    private String subject;
+    private String text;
+    private String date;
+    private String missionaryName;
+    private boolean isPrayedFor;
 
-    public PrayerRequest()
-   {
-       subject = "Sample Prayer ";
-       text = "Default Explanatory Text";
-       date = "1-14-1997";
-       id = "100";
-   }
-    public String formatedDate(String strDate){
-        String[] date = strDate.split("-");
-        date[0] = getMonth(Integer.parseInt(date[0]));
-        return "" + date[1] + " " + date[0] + ", " + date[2];
+    public PrayerRequest() {}
+
+    public String formattedDate(){
+        String[] formattedDate = date.split("-");
+        formattedDate[1] = getMonth(Integer.parseInt(formattedDate[1]));
+        if (formattedDate[2].substring(0,1).equals("0")) {
+            formattedDate[2] = formattedDate[2].substring(1);
+        }
+        return formattedDate[1] + " " + formattedDate[2] + ",  " + formattedDate[0];
     }
 
     private String getMonth(int num){
@@ -48,6 +45,12 @@ public class PrayerRequest implements Comparable<PrayerRequest> {
             case 12: return "December";
             default: return "";
         }
+    }
+
+    public String getMissionaryName() {return missionaryName;}
+
+    public void setMissionaryName(String name) {
+        this.missionaryName = name;
     }
 
     public String getSubject() {
@@ -74,17 +77,23 @@ public class PrayerRequest implements Comparable<PrayerRequest> {
         this.date = date;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public String getId() { return this.id; }
+    public int getId() { return id; }
 
-    public int getIntId() { return Integer.parseInt(this.id);}
+    public boolean getIsPrayedFor() {
+        return isPrayedFor;
+    }
+
+    public void setIsPrayedFor(boolean isPrayedFor) {
+        this.isPrayedFor = isPrayedFor;
+    }
 
     public int compareTo(PrayerRequest p)
     {
-        boolean same = true;
+        boolean same = missionaryName.equals(p.getMissionaryName());
         same = same && subject.equals(p.getSubject());
         same = same && text.equals(p.getText());
         same = same && date.equals(p.getText());

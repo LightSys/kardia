@@ -9,10 +9,14 @@ popover_contact "widget/component-decl"
 
     onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
     onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen2b "widget/connector" { event=Open; target=hist_id; action=SetValue; Value=runclient(:hist_id); }
+    onOpen4 "widget/connector" { event=Open; target=is_new_var; action=SetValue; Value=runclient(:is_new); }
     onOpen3 "widget/connector" { event=Open; target=contact_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
 
     partner_var "widget/variable" { type=string; }
     collab_var "widget/variable" { type=string; }
+    hist_id "widget/variable" { type=integer; }
+    is_new_var "widget/variable" { type=integer; }
 
     contact_win "widget/childwindow"
 	{
@@ -30,7 +34,9 @@ popover_contact "widget/component-decl"
 	background=null;
 	bgcolor="#f8f8f8";
 
-	on_contact_open "widget/connector" { event=Open; target=contact_form; action=New; }
+	on_contact_open "widget/connector" { event=Open; event_condition=runclient(:is_new_var:value == 1); target=contact_form; action=New; }
+	on_contact_open2 "widget/connector" { event=Open; event_condition=runclient(:is_new_var:value == 0); target=contact_osrc; action=QueryParam; e_contact_history_id=runclient(convert(integer,:hist_id:value)); }
+	on_contact_open_setform "widget/connector" { event=Open; target=followup_form; action=Enable; Enabled=runclient(:is_new_var:value); }
 
 	contact_icon "widget/image"
 	    {
@@ -64,8 +70,8 @@ popover_contact "widget/component-decl"
 		contact_form "widget/form"
 		    {
 		    allow_search=no;
-		    allow_view=no;
-		    allow_modify=no;
+		    allow_view=yes;
+		    allow_modify=yes;
 		    allow_new=yes;
 		    next_form=followup_form;
 
@@ -74,17 +80,19 @@ popover_contact "widget/component-decl"
 		    discard_followup_on_discard "widget/connector" { event=Discard; event_condition=runclient(:FromKeyboard); target=followup_form; action=Discard; }
 		    close_on_discard "widget/connector" { event=Discard; target=contact_win; action=Close; }
 
-		    reload_ids_on_new "widget/connector"
+		    reload_ids_on_open "widget/connector"
 			{
-			event=New;
+			source=contact_win;
+			event=Open;
 			target=contact_id;
 			action=SetItems;
 			SQL=runclient("select label = :ct:text + ': ' + isnull('+' + :c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + isnull(:c:p_contact_data,''), value=:c:p_contact_id from /apps/kardia/data/Kardia_DB/p_contact_info/rows c, /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct where :c:p_partner_key = " + quote(:partner_var:value) + " and :ct:tag = :c:p_contact_type and :c:p_record_status_code = 'A'");
 			}
 
-		    reload_collabs_on_new "widget/connector"
+		    reload_collabs_on_open "widget/connector"
 			{
-			event=New;
+			source=contact_win;
+			event=Open;
 			target=followup_collab;
 			action=SetItems;
 			SQL=runclient("	select 
@@ -103,7 +111,7 @@ popover_contact "widget/component-decl"
 					    :s:p_partner_key =* :p:p_partner_key");
 			}
 
-		    hdr_label "widget/label" { height=20; font_size=16; style=bold; text="Record an Interaction with this Person:"; align=center; }
+		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient(condition(:is_new_var:value == 0, "Edit", "Record an") + " Interaction with this Person:"); align=center; }
 
 		    contact_type "widget/component" { field=e_contact_history_type; path="/sys/cmp/smart_field.cmp"; height=20; text="Type:"; ctl_type=dropdown; sql="select :e_description, :e_contact_history_type from /apps/kardia/data/Kardia_DB/e_contact_history_type/rows where :e_contact_history_type != 4 and :e_contact_history_type != 5 order by :e_description"; numdisplay=10; width=250; label_width=110; contact_type_hints "widget/hints" { style=notnull; } }
 		    contact_id "widget/component" { field=e_contact_id; path="/sys/cmp/smart_field.cmp"; height=20; text="Interaction Via:"; ctl_type=dropdown; sql="select null,null"; width=350; label_width=110; numdisplay=10; }
@@ -161,7 +169,7 @@ popover_contact "widget/component-decl"
 			addcontact_btn "widget/textbutton"
 			    {
 			    height=24; width=150;
-			    text = "Record Contact";
+			    text = runclient(condition(:is_new_var:value == 1, "Record Contact", "Save Changes"));
 			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
 			    fgcolor1=white;
 			    fgcolor2=black;
@@ -176,7 +184,7 @@ popover_contact "widget/component-decl"
 			cancelcontact_btn "widget/textbutton"
 			    {
 			    height=24; width=150;
-			    text = "Cancel Contact";
+			    text = runclient(condition(:is_new_var:value == 1, "Cancel Contact", "Cancel Changes"));
 			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
 			    fgcolor1=white;
 			    fgcolor2=black;

@@ -1,8 +1,8 @@
 $Version=2$
 iconbar "widget/component-decl"
     {
-    width=1000;
-    height=76;
+    width=runserver(condition(:this:show_profile_only, 76, 1000));
+    height=runserver(condition(:this:show_profile_only, 630, 76));
 
     SidebarSelect "widget/component-decl-event" { }
     TypesChange "widget/component-decl-event" { }
@@ -13,6 +13,8 @@ iconbar "widget/component-decl"
     ActivePageID "widget/parameter" { type=integer; default=1; }
     EnabledTypes "widget/parameter" { type=string; default=""; deploy_to_client=yes; }
     profile "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    show_profile_only "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
 
     prev_enabled_types "widget/variable" { value=""; }
     processing_toggle_off "widget/variable" { value=0; }
@@ -72,38 +74,46 @@ iconbar "widget/component-decl"
 	action=SetValue;
 	Value=runclient(:except + ',ADDR,PAR');
 	}
-    on_toggle_1 "widget/connector" { event=ToggleAll; target=rels_btn; action=Update; }
-    on_toggle_2 "widget/connector" { event=ToggleAll; target=tags_btn; action=Update; }
-    on_toggle_3 "widget/connector" { event=ToggleAll; target=gifts_btn; action=Update; }
-    on_toggle_3b "widget/connector" { event=ToggleAll; target=comms_btn; action=Update; }
-    //on_toggle_4 "widget/connector" { event=ToggleAll; target=social_btn; action=Update; }
-    on_toggle_5 "widget/connector" { event=ToggleAll; target=contacts_btn; action=Update; }
-    on_toggle_6 "widget/connector" { event=ToggleAll; target=ptodo_btn; action=Update; }
-    on_toggle_7 "widget/connector" { event=ToggleAll; target=notes_btn; action=Update; }
-    on_toggle_8 "widget/connector" { event=ToggleAll; target=webf_btn; action=Update; }
-    on_toggle_9 "widget/connector" { event=ToggleAll; target=form_btn; action=Update; }
-    on_toggle_10 "widget/connector" { event=ToggleAll; target=trk_btn; action=Update; }
+
+    on_toggle_all "widget/connector" { event=ToggleAll; target=one_type_btn; action=Update; }
 
     // Menubar
     menu_pane "widget/pane"
 	{
-	x=0; y=0; width=1000; height=76;
-	fl_height=0;
+	x=0; y=0;
+	width=runserver(condition(:this:show_profile_only, 76, 1000));
+	height=runserver(condition(:this:show_profile_only, 630, 76));
+	fl_height=runserver(condition(:this:show_profile_only, null, 0));
+	background=runserver(condition(:this:show_profile_only, "/apps/kardia/images/bg/charcoal_gradient_horiz.png", "/apps/kardia/images/bg/charcoal_gradient.png"));
 	widget_class = crm_iconbar;
 
-	icons_hbox "widget/hbox"
+	icons_hbox "widget/autolayout"
 	    {
-	    x=8; y=0; width=984; height=76;
+	    style=runserver(condition(:this:show_profile_only, "vbox", "hbox"));
+	    x=runserver(condition(:this:show_profile_only, 0, 8));
+	    y=runserver(condition(:this:show_profile_only, 8, 0));
+	    width=runserver(condition(:this:show_profile_only, 76, 984));
+	    height=runserver(condition(:this:show_profile_only, 614, 76));
+	    cellsize=48;
 	    spacing=0;
 	    justify=all;
 
+	    logo_icon "widget/image"
+		{
+		condition=runserver(:this:show_profile_only);
+		source="/apps/kardia/images/artwork/Kardia2011_transcorner.png";
+		x=10;
+		width=56;
+		height=38;
+		}
+
 	    tabicons "widget/repeat"
 		{
+		condition=runserver(not :this:show_profile_only);
 		sql = "select :cx__rowid, :icon, :title from object wildcard '/apps/kardia/modules/*/plugin_crm_sidebar_*.cmp' order by :sequence";
 
 		one_tabbutton "widget/component"
 		    {
-		    width=48;
 		    fl_width=0;
 		    active=runserver(:tabicons:cx__rowid == 0);
 		    path="button_tab.cmp";
@@ -136,11 +146,17 @@ iconbar "widget/component-decl"
 		    }
 		}
 
-	    sep1 "widget/autolayoutspacer" { width=24; fl_width=100; }
+	    sep1 "widget/autolayoutspacer"
+		{
+		width=24;
+		fl_width=100;
+		height=8;
+		fl_height=100;
+		}
 
 	    newperson_btn "widget/component"
 		{
-		width=48;
+		condition=runserver(not :this:show_profile_only);
 		fl_width=0;
 		path="button_generic.cmp";
 		text = "New";
@@ -150,19 +166,27 @@ iconbar "widget/component-decl"
 		}
 	    editperson_btn "widget/component"
 		{
-		width=48;
 		fl_width=0;
+		fl_height=0;
 		path="button_generic.cmp";
 		text = "Edit";
 		image="/apps/kardia/images/icons/ionicons-person-edit.svg";
 		enabled = runclient(char_length(:profile:p_partner_key) > 0);
+		direction = runserver(condition(:this:show_profile_only, 'horizontal', 'vertical'));
 		do_edit "widget/connector" { event=Click; target=iconbar; action=EditPartner; Origin=contacts_btn; }
 		}
 
-	    sep1b "widget/autolayoutspacer" { width=24; fl_width=100; }
+	    sep1b "widget/autolayoutspacer"
+		{
+		width=24;
+		height=8;
+		fl_width=100;
+		fl_height=100;
+		}
 
 	    labels_vbox "widget/vbox"
 		{
+		condition=runserver(not :this:show_profile_only);
 		width=42;
 		fl_width=0;
 		spacing=0;
@@ -216,177 +240,56 @@ iconbar "widget/component-decl"
 		    }
 		}
 
-	    sepn "widget/autolayoutspacer" { width=4; fl_width=0; }
-
-	    rels_btn "widget/component"
+	    sepn "widget/autolayoutspacer"
 		{
-		width=48;
+		condition=runserver(not :this:show_profile_only);
+		width=4;
 		fl_width=0;
-		type = "REL";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Relate";
-		image="/apps/kardia/images/icons/ionicons-relationships3.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle1 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
 		}
 
-	    tags_btn "widget/component"
+	    type_icons "widget/repeat"
 		{
-		width=48;
-		fl_width=0;
-		type = "TAG";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Tags";
-		image="/apps/kardia/images/icons/ionicons-pricetags.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle2 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
-		do_tags "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Tags'); Origin=tags_btn; }
+		sql = "	select
+			    :type,
+			    :iconbar_icon,
+			    :iconbar_label,
+			    :iconbar_sequence,
+			    :iconbar_enabled
+			from
+			    object wildcard /apps/kardia/modules/*/plugin_crm_timeline_*.cmp
+			where
+			    isnull(:iconbar_enabled, 'yes') = 'yes'
+			order by
+			    :iconbar_sequence
+			";
+
+		one_type_btn "widget/component"
+		    {
+		    fl_width=0;
+		    fl_height=0;
+		    type = runserver(:type_icons:type);
+		    enabled_types = EnabledTypes;
+		    init_enabled_types = runserver(:this:EnabledTypes);
+		    path="button_type.cmp";
+		    text = runserver(:type_icons:iconbar_label);
+		    image = runserver(:type_icons:iconbar_icon);
+		    enabled = runclient(char_length(:profile:p_partner_key) > 0);
+		    direction = runserver(condition(:this:show_profile_only, 'horizontal', 'vertical'));
+		    ontoggle "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
+		    do_click "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runserver('#' + :type_icons:iconbar_label); Origin=one_type_btn; }
+		    }
 		}
 
-	    gifts_btn "widget/component"
+	    sep1c "widget/autolayoutspacer"
 		{
-		width=48;
-		fl_width=0;
-		type = "GIFT";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Gifts";
-		image="/apps/kardia/images/icons/openiconic-dollar.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle3 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
+		condition=runserver(not :this:show_profile_only);
+		width=24;
+		fl_width=100;
 		}
-
-	    comms_btn "widget/component"
-		{
-		width=48;
-		fl_width=0;
-		type = "COMM";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Mail";
-		image="/apps/kardia/images/icons/openiconic-envelope-closed.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle3b "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
-		}
-
-	    social_btn "widget/component"
-		{
-		condition=0;
-		width=48;
-		fl_width=0;
-		type = "SOC";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Social";
-		image="/apps/kardia/images/icons/ionicons-social.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle4 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
-		}
-
-	    contacts_btn "widget/component"
-		{
-		width=48;
-		fl_width=0;
-		type = "CONT";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Interact";
-		image="/apps/kardia/images/icons/ionicons-contacts2.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle5 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
-
-		do_contact "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Interact'); Origin=contacts_btn; }
-		}
-
-	    ptodo_btn "widget/component"
-		{
-		width=48;
-		fl_width=0;
-		type = "TASK";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Task";
-		image="/apps/kardia/images/icons/openiconic-bell.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle6 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
-
-		do_todo "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Task'); Origin=ptodo_btn; }
-		}
-
-	    notes_btn "widget/component"
-		{
-		width=48;
-		fl_width=0;
-		type = "NOTE";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Notes";
-		image="/apps/kardia/images/icons/ionicons-notes.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle7 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
-
-		do_notes "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Notes'); Origin=notes_btn; }
-		}
-
-	    webf_btn "widget/component"
-		{
-		width=48;
-		fl_width=0;
-		type = "DATA";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Data";
-		image="/apps/kardia/images/icons/tumblicons-webform2.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle8 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
-		}
-
-	    form_btn "widget/component"
-		{
-		width=48;
-		fl_width=0;
-		type = "FILE";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Files";
-		image="/apps/kardia/images/icons/tumblicons-file.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle9 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
-		do_file "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Files'); Origin=form_btn; }
-		}
-
-	    trk_btn "widget/component"
-		{
-		width=48;
-		fl_width=0;
-		type = "TRK";
-		enabled_types = EnabledTypes;
-		init_enabled_types = runserver(:this:EnabledTypes);
-		path="button_type.cmp";
-		text = "Tracks";
-		image="/apps/kardia/images/icons/ionicons-track.svg";
-		enabled = runclient(char_length(:profile:p_partner_key) > 0);
-		ontoggle10 "widget/connector" { event=ToggleAll; target=iconbar; action=TriggerEvent; EventName=runclient('ToggleAll'); except=runclient(:except); }
-		do_tracks "widget/connector" { event=Click; target=iconbar; action=ButtonPressed; Button=runclient('Tracks'); Origin=trk_btn; }
-		}
-
-	    sep1c "widget/autolayoutspacer" { width=24; fl_width=100; }
 
 	    settings_btn "widget/component"
 		{
-		width=48;
+		condition=runserver(not :this:show_profile_only);
 		fl_width=0;
 		path="button_generic.cmp";
 		text = "Menu";
