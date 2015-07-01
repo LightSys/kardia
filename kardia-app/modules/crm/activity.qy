@@ -49,19 +49,12 @@ activity "system/query"
 		    :s_username = user_name()
 	    ;
 
-	    -- Get a new ID for the activity group
-	    select
-		:activitygroup:id = isnull(max(:e_activity_group_id),0) + 1
-	    from
-		/apps/kardia/data/Kardia_DB/e_activity/rows
-	    ;
-
 	    -- Insert a header record to reserve the group ID.
 	    -- We will need locking around this in the future.
 	    insert
 		/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		e_activity_id = 1,
 		p_partner_key = 'ACTIVITY',
 		e_activity_date = getdate(),
 		e_activity_type = 'HEAD',
@@ -70,6 +63,9 @@ activity "system/query"
 		s_created_by = user_name(),
 		s_date_modified = getdate(),
 		s_modified_by = user_name()
+	    ;
+	    select
+		:activitygroup:id = :__inserted:e_activity_group_id
 	    ;
 
 	    -- Clean up
