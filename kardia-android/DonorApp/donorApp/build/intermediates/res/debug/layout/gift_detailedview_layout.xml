@@ -7,52 +7,63 @@
 
     <Button
         android:id="@+id/connect_button"
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="80dp"
         android:textSize="20sp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
         android:text="@string/view_pdf_receipt"
         android:onClick="sendToPDF"
-        style="@style/customBottomBar" />
+        style="@style/customBottomBar"
+        android:layout_below="@+id/checknum"
+        android:layout_marginTop="18dp"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
+        android:layout_below="@+id/giftamount"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="41dp"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:layout_marginTop="40dp"
+        android:textSize="22sp" />
 
     <TextView
         android:id="@+id/giftamount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/date"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="48dp"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#2ACA2D" />
-
-    <TextView
-        android:id="@+id/summary"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/giftamount"
+        android:layout_below="@+id/fund"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:textSize="22sp"
+        android:textColor="#37AD00" />
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/checknum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/date"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/fund"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="78dp"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:layout_marginTop="40dp"
+        android:layout_marginRight="18dp"
+        android:layout_marginLeft="18dp"
+        android:textSize="26sp"
+        android:textAlignment="center"/>
+
+    <RelativeLayout
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true">
+    </RelativeLayout>
 
 </RelativeLayout>
-<!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/layout/gift_detailedview_layout.xml -->
+<!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout/gift_detailedview_layout.xml -->

@@ -1,10 +1,10 @@
 package org.lightsys.donorapp;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 
 import org.lightsys.donorapp.bottombar.TotalBar;
+import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Fund;
 import org.lightsys.donorapp.data.LocalDBHandler;
 
@@ -32,35 +32,39 @@ import com.example.donorapp.R;
 public class FundList extends Fragment{
 	
 	private ArrayList<Fund> funds;
-	private ListView listview;
-	private SimpleAdapter adapter;
 	
 	/**
-	 * Pulls all relavent funds, and creates the view (including the bottom total bar)
+	 * Pulls all relevant funds, and creates the view (including the bottom total bar)
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
-		//sets the title of the page
-		setTitle();
-		
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
-		funds = db.getFunds();
-		
+		ArrayList<Account> accounts = db.getAccounts();
+
+		// Loop through all accounts and pull all funds for each account
+		for (Account a : accounts) {
+			int accountID = a.getId();
+			funds = db.getFundsForAccount(accountID);
+		}
+
+		db.close();
+
 		View v = inflater.inflate(R.layout.activity_main, container, false);
-		
+
+		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>>itemList = generateListItems();
-		String[] from = {"fundtitle", "ytd", "yeartext"};
-		int[] to = {R.id.title, R.id.amount, R.id.text};
+		String[] from = {"fundtitle", "amount", "text"};
+		int[] to = {R.id.subject, R.id.detail, R.id.date};
 		
-		adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
+		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 		
-		listview = (ListView)v.findViewById(R.id.info_list);
+		ListView listview = (ListView)v.findViewById(R.id.info_list);
 		listview.setAdapter(adapter);
 		listview.setOnItemClickListener(new onFundClicked());
-		
+
+		// Create bottom bar
 		TotalBar tb = new TotalBar();
-		
 		FragmentManager fragmentManager = getFragmentManager();
 		fragmentManager.beginTransaction().replace(R.id.bottom_bar, tb).commit();
 		
@@ -75,17 +79,15 @@ public class FundList extends Fragment{
 	private ArrayList<HashMap<String,String>> generateListItems(){
 		
 		ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
-		int year = Calendar.getInstance().get(Calendar.YEAR);
 		for(Fund f : funds){
 			HashMap<String,String> hm = new HashMap<String,String>();
 			
 			hm.put("fundtitle", f.getFund_desc());
-			hm.put("ytd", f.amountToString());
-			hm.put("yeartext", year + " YTD: ");
+			hm.put("amount", f.amountToString());
+			hm.put("text", "(Total Given)");
 			
 			aList.add(hm);
 		}
-		
 		return aList;
 	}
 	
@@ -111,21 +113,14 @@ public class FundList extends Fragment{
 				transaction.commit();
 		}
 	}
-	
-	/**
-	 * Sets the title of the page to Fund List
-	 */
-	public void setTitle(){
-		getActivity().getActionBar().setTitle("Designations");
-	}
-	
+
 	/**
 	 * Sets the title of the page to <specific fund name>'s History
 	 * (Used when viewing the years donated to a fund)
 	 * 
-	 * @param The position of the fund selected within the list of funds
+	 * @param position, The position of the fund selected within the list of funds
 	 */
 	public void setHistoryTitle(int position){
-		getActivity().getActionBar().setTitle(funds.get(position).getName() + "'s History");
+		getActivity().getActionBar().setTitle(funds.get(position).getFund_desc() + " - Giving History");
 	}
 }

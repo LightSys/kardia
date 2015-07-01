@@ -1,8 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="100dp"
-    android:background="#D1E8E4"
-    android:onClick="viewByYTDAmounts" >
+    android:background="#D1E8E4">
 
 <Button
     android:id="@+id/sendButton"
@@ -14,4 +13,4 @@
     style="@style/customBottomBar"/>
 
 </RelativeLayout>
-<!-- From: file:/C:/Users/JoshWorkman/Desktop/LightSys/DonorApp/donorApp/src/main/res/layout-large/linkbar_layout.xml -->
+<!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout-large/linkbar_layout.xml -->
