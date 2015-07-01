@@ -149,10 +149,17 @@ var kardiaTab;
 var mainWindow = this;
 var dataTab;
 
+// How many processes are currently out to the server
+var processes = 0;
+var output = "";
+
 // is the window being refreshed?
 var refreshing = false;
 
 var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.kardia.");
+
+// Enables parallel loading of Collaboratees in the Kardia tab. (Not fully functional)
+var COLLABORATEES_PARALLEL = false;
 		
 updateKardia();
 
@@ -188,6 +195,10 @@ window.addEventListener("load", function() {
 		document.getElementById("show-kardia-pane-button").style.backgroundColor = "rgba(0,0,0,0)";
 		document.getElementById("show-hide-kardia-pane-arrow").innerHTML = "<image class=\"hide-kardia-pane-arrow\"/><spacer flex=\"1\"/>";
 	}
+
+   if (! document.getElementById("kardia-tab-button")) {
+      installButton("mail-menubar", "kardia-tab-button");
+   }
 	
 	// get username/password
   	var loginInfo = getLogin(false, false, function(loginInfo2) {
@@ -221,8 +232,8 @@ window.addEventListener("load", function() {
       // if not, open it
       if (!tabExistsOnStart) {
          document.getElementById("tabmail").openTab("contentTab", {title: "Kardia", contentPage: "chrome://kardia/content/kardia-tab.xul"});
+	      document.getElementById("tabmail").tabContainer.selectedIndex = 0;
       }
-	   document.getElementById("tabmail").tabContainer.selectedIndex = 0;
       kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
       // End of short term solution
 		getTrackTagStaff(loginInfo2[0], loginInfo2[1]);
@@ -246,6 +257,11 @@ window.addEventListener("load", function() {
 		}
 	}
 	todosObserver.register();
+
+   // sets up the open CRM button
+   var openCRM = "";
+   openCRM += '<button label="Open CRM web interface" oncommand="openURL(\'' + mainWindow.server + "/apps/kardia/modules/crm" + '\', false)" tooltiptext="Open CRM in default browser."/><spacer flex="1"/>';	
+   mainWindow.document.getElementById("open-CRM-button").innerHTML = openCRM;
 
 }, false);
 
@@ -386,7 +402,7 @@ function findEmails() {
 	}	
 	// save number of emails selected so we can see if the number of emails selected has changed later
 	numSelected = gFolderDisplay.selectedCount;	
-}		  
+}
 
 // do email header lists match?
 function headersMatch(first, second) {
@@ -404,7 +420,7 @@ function headersMatch(first, second) {
 }
 
 // reloads Kardia pane
-function reload(isDefault) {			
+function reload(isDefault) {
 	// if list of email addresses is empty or null, make everything in Kardia pane blank or hidden and hide Print context menu
 	if (mainWindow.emailAddresses.length < 1 || mainWindow.emailAddresses == null) {
 		mainWindow.document.getElementById('main-context').hidden = true;
@@ -510,6 +526,7 @@ function reload(isDefault) {
 		var addData = "";
 		addData += '<button label="Add new info" oncommand="newNote(\'\',\'\')" tooltiptext="Add new information to this partner\'s activity timeline"/><spacer flex="1"/>';	
 		mainWindow.document.getElementById("new-data-button").innerHTML = addData;
+
 		
 		// display contact info based on selected partner
 		var contactInfoHTML = "";
@@ -586,9 +603,9 @@ function reload(isDefault) {
 			}
 			collaboratorText += '<spacer flex="1"/></vbox><label tooltiptext="Click to view collaborator" width="100" flex="1" class="text-link" onclick="addCollaborator(' + mainWindow.collaborators[mainWindow.selected][i+1] + ')">' + mainWindow.collaborators[mainWindow.selected][i+2] +'</label></hbox>';
 		}
-		collaboratorText += '<hbox><spacer flex="1"/></hbox>';	
+		collaboratorText += '<hbox><spacer flex="1"/></hbox>';
       // Add new collaborator button muted for now untill fixed. Code below Includes it, code above removes it.
-		//collaboratorText += '<hbox><spacer flex="1"/><button class="new-button" label="New Collaborator..." tooltiptext="Create new collaborator for this partner" oncommand="newCollaborator()"/></hbox>';	
+		//collaboratorText += '<hbox><spacer flex="1"/><button class="new-button" label="New Collaborator..." tooltiptext="Create new collaborator for this partner" oncommand="newCollaborator()"/></hbox>';
 		
 		mainWindow.document.getElementById("collaborator-inner-box").innerHTML = "";	
       // Muted for now #Muted
@@ -703,13 +720,18 @@ function reload(isDefault) {
    if (kardiaTab != null) {
       kardiaTab.processingClick = false;
    }
+   if (kardiaTab != null) {
+      //alert("Finishing!!");
+      //kardiaTab.filterBy();
+   }
+
 }
 
 // copy location of clicked link to clipboard
 function copyLinkLocation() {
-	var websiteAddress = document.popupNode.textContent;
-    var clipboard = Components.classes["@mozilla.org/widget/clipboardhelper;1"].getService(Components.interfaces.nsIClipboardHelper);
-    clipboard.copyString(websiteAddress.substring(3,websiteAddress.length));
+   var websiteAddress = document.popupNode.textContent;
+   var clipboard = Components.classes["@mozilla.org/widget/clipboardhelper;1"].getService(Components.interfaces.nsIClipboardHelper);
+   clipboard.copyString(websiteAddress.substring(3,websiteAddress.length));
 }
 
 // copy location of clicked link to clipboard
@@ -728,6 +750,7 @@ function copyDocLinkLocation(idString) {
 
 // open the given URL in default browser
 function openUrl(url, isContact) {
+   console.log(url);
 	// if necessary, delete "W: " or "B: " prefix
 	if (isContact) {
 		url = url.substring(3,url.length);
@@ -1411,7 +1434,7 @@ function getOtherInfo(index, isDefault) {
                                                                                           tempArray.push(giftResp[keys[i]]['gift_fund_desc']);
                                                                                           
                                                                                           // if check, display check number
-                                                                                          if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'].trim() != "") {
+                                                                                          if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'] != null && giftResp[keys[i]]['gift_check_num'].trim() != "") {
                                                                                              tempArray.push(giftResp[keys[i]]['gift_type'] + " (#" + giftResp[keys[i]]['gift_check_num'] + ")");
                                                                                           }
                                                                                           else {
@@ -1530,10 +1553,13 @@ function getOtherInfo(index, isDefault) {
 
 // get info for one person you're collaborating with
 function getCollaborateeInfo(index) {
+   processes++;
+   var tabIndex = mainWindow.collaborateeIds.indexOf(mainWindow.collaborateeIds[index]);
 	// get the person's engagement tracks
 	doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(trackResp) {
       // If not 404
       if (trackResp != null) {
+         
          // get all the keys from the JSON file
          var keys = [];
          for(var k in trackResp) keys.push(k);
@@ -1546,7 +1572,13 @@ function getCollaborateeInfo(index) {
                tempArray.push(trackResp[keys[i]]['engagement_step']);
             }
          }
-         mainWindow.collaborateeTracks.push(tempArray);
+         if (COLLABORATEES_PARALLEL) {
+            mainWindow.collaborateeTracks.push(tempArray);
+            //mainWindow.collaborateeTracks.length++;
+            mainWindow.collaborateeTracks[index] = tempArray;
+         } else {
+            mainWindow.collaborateeTracks.push(tempArray);
+         }
          
          // get tags
          doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tags?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(tagResp) {
@@ -1572,7 +1604,12 @@ function getCollaborateeInfo(index) {
                      tempArray.splice(insertHere,0,tagResp[keys[i]]['tag_label'],tagResp[keys[i]]['tag_strength'],tagResp[keys[i]]['tag_certainty']);
                   }
                }
-               mainWindow.collaborateeTags.push(tempArray);
+               if (COLLABORATEES_PARALLEL) {
+                  mainWindow.collaborateeTags.length++;
+                  mainWindow.collaborateeTags[index] = tempArray;
+               } else {
+                  mainWindow.collaborateeTags.push(tempArray);
+               }
                
                // get data items
                doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(dataResp) {
@@ -1591,27 +1628,41 @@ function getCollaborateeInfo(index) {
                            tempArray.push(dataResp[keys[i]]['item_group_id']);
                         }
                      }
-                     mainWindow.collaborateeData.push(tempArray);
+                     if (COLLABORATEES_PARALLEL) {
+                        mainWindow.collaborateeData.push(tempArray);
+                        //mainWindow.collaborateeData.length++;
+                        mainWindow.collaborateeData[index] = tempArray;
+                     } else {
+                        mainWindow.collaborateeData.push(tempArray);
+                     }
                   
                      // get recent activity
                      doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(activityResp) {
                      // If not 404
                      if (activityResp != null) {
+                           var TempResp = activityResp;
                            // get all the keys from the JSON file
                            var keys = [];
-                           for(var k in activityResp) keys.push(k);
+                           for(var k in TempResp) {
+                              keys.push(k); 
+                           }
 
                            // save activity
                            var tempArray = new Array();
                            for (var i=0; (i<keys.length && tempArray.length<6); i++) {
                               if (keys[i] != "@id") {
-                                 tempArray.push(activityResp[keys[i]]['activity_type']);
-                                 tempArray.push(datetimeToString(activityResp[keys[i]]['activity_date']) + ": " + activityResp[keys[i]]['info']);
-                                 tempArray.push(activityResp[keys[i]]['activity_date']);
-                                    
+                                 tempArray.push(TempResp[keys[i]]['activity_type']);
+                                 tempArray.push(datetimeToString(TempResp[keys[i]]['activity_date']) + ": " + TempResp[keys[i]]['info']);
+                                 tempArray.push(TempResp[keys[i]]['activity_date']);
+
                               }
                            }
-                           mainWindow.collaborateeActivity.push(tempArray);
+                           if (COLLABORATEES_PARALLEL) {
+                              mainWindow.collaborateeActivity.length++;
+                              mainWindow.collaborateeActivity[index] = tempArray;
+                           } else {
+                              mainWindow.collaborateeActivity.push(tempArray);
+                           }
                                        
                                        
                            //doHttpRequest("apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection", function(donorResp) {
@@ -1646,7 +1697,7 @@ function getCollaborateeInfo(index) {
                                              tempArray.push(giftResp[keys[i]]['gift_fund_desc']);
                                              
                                              // if check, display check number
-                                             if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'].trim() != "") {
+                                             if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'] != null && giftResp[keys[i]]['gift_check_num'].trim() != "") {
                                                 tempArray.push(giftResp[keys[i]]['gift_type'] + " (#" + giftResp[keys[i]]['gift_check_num'] + ")");
                                              }
                                              else {
@@ -1654,7 +1705,12 @@ function getCollaborateeInfo(index) {
                                              }																	
                                           }
                                        }
-                                       mainWindow.collaborateeGifts.push(tempArray);
+                                       if (COLLABORATEES_PARALLEL) {
+                                          mainWindow.collaborateeGifts.length++;
+                                          mainWindow.collaborateeGifts[index] = tempArray;
+                                       } else {
+                                          mainWindow.collaborateeGifts.push(tempArray);
+                                       }
                                     
                                        doHttpRequest("apps/kardia/api/donor/" + mainWindow.collaborateeIds[index] + "/Funds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(fundResp) {
                                           // If not 404
@@ -1669,7 +1725,12 @@ function getCollaborateeInfo(index) {
                                                    tempArray.push(fundResp[keys[i]]['fund_desc']);
                                                 }
                                              }
-                                             mainWindow.collaborateeFunds.push(tempArray);
+                                             if (COLLABORATEES_PARALLEL) {
+                                                mainWindow.collaborateeFunds.length++;
+                                                mainWindow.collaborateeFunds[index] = tempArray;
+                                             } else {
+                                                mainWindow.collaborateeFunds.push(tempArray);
+                                             }
                                                                   
                                              // if we've done all the collaboratees, start loading the Kardia tab stuff
                                              if (index+1 >= mainWindow.collaborateeIds.length) {
@@ -1688,9 +1749,15 @@ function getCollaborateeInfo(index) {
                                                    kardiaTab.sortSomeCollaboratees(index);
                                                 }
                                                 
-                                                // go to the next person
-                                                getCollaborateeInfo(index+1);
-                                             }	
+                                                // go to the next person (only used in non-parallel mode)
+                                                processes--;
+                                                if (!COLLABORATEES_PARALLEL) {
+                                                   getCollaborateeInfo(index+1);
+                                                } else {
+                                                  //kardiaTab.reloadFilters(false);
+                                                }
+
+                                             }
                                           } else {
                                              // 404, do nothing
                                           }
@@ -1700,8 +1767,15 @@ function getCollaborateeInfo(index) {
                                     }
                                  }, false, "", "");
                               } else {
-                                 mainWindow.collaborateeGifts.push(new Array());
-                                 mainWindow.collaborateeFunds.push(new Array());
+                                 if (COLLABORATEES_PARALLEL) {
+                                    mainWindow.collaborateeGifts.length++;
+                                    mainWindow.collaborateeGifts[index] = new Array();
+                                    mainWindow.collaborateeFunds.length++;
+                                    mainWindow.collaborateeFunds[index] = new Array();
+                                 } else {
+                                    mainWindow.collaborateeGifts.push(new Array());
+                                    mainWindow.collaborateeFunds.push(new Array());
+                                 }
                                  // TODO hide gift area
                                  // if we've done all the collaboratees, start loading the Kardia tab stuff
                                  if (index+1 >= mainWindow.collaborateeIds.length) {								
@@ -1721,9 +1795,14 @@ function getCollaborateeInfo(index) {
                                        kardiaTab.sortSomeCollaboratees(index);
                                     }
                                     
-                                    // go to the next person
-                                    getCollaborateeInfo(index+1);
-                                 }	
+                                    // go to the next person (only used in non-parallel mode)
+                                    processes--;
+                                    if (!COLLABORATEES_PARALLEL) {
+                                       getCollaborateeInfo(index+1);
+                                    } else {
+                                       //kardiaTab.reloadFilters(false);
+                                    }
+                                 }
                               }
                            }, false, "", "");	
                         } else {
@@ -1737,13 +1816,13 @@ function getCollaborateeInfo(index) {
             } else {
                // 404, do nothing
             }
-         }, false, "", "");		
+         }, false, "", "");
       } else {
          // 404, do nothing
       }
 	}, false, "", "");
 }
-				
+
 // delete the todo with the given id
 function deleteTodo(todoId) {
 	// delete from Kardia		
@@ -1769,10 +1848,10 @@ function deleteTodo(todoId) {
 					myCal.deleteItem(aItems[i], null);
 					return;
 				}
-			}  
+			}
   		}
    };
-	
+
 	myCal.getItems(Components.interfaces.calICalendar.ITEM_FILTER_ALL_ITEMS,0,null,null,listener);
 }
 
@@ -2308,7 +2387,7 @@ function choosePartner(whichPartner) {
 	reload(false);
 }
 
-// Tumbler: Need to make this update tab after opens. Not sure why putting "updateKardia();" at the end doesn't work.
+// Tumbler: Need to make this update tab after opens.
 // shows Kardia tab-- select if it exists, open if it doesn't
 function showKardiaTab() {
 	// see if Kardia tab already exists
@@ -3017,9 +3096,19 @@ function getMyInfo(username, password) {
                      mainWindow.collaborateeNames.push(collabResp[keys[i]]['partner_name']);	
                   }
                }
-               
+
                // get other info
-               getCollaborateeInfo(0);
+               if (!COLLABORATEES_PARALLEL) { 
+                  getCollaborateeInfo(0);
+               }
+               // this is doing it in parallel. It seems good but there are problems with it right now.
+               //    (If you renable this make sure to change getCollaborateeInfo appropriatly)
+               for (var i=0; (i<keys.length-1 && COLLABORATEES_PARALLEL); i++) {
+                  getCollaborateeInfo(i);
+                  //sleep(1500);
+                  //DoTheThing(i); // !
+               }
+
             } else {
                // 404, do nothing
             }
@@ -3509,7 +3598,7 @@ function addKardiaButton(){
 }
 
 // remove all the Kardia logo buttons
-function clearKardiaButton(){
+function clearKardiaButton() {
 	// save list of header views in which we need to hide buttons
 	var headersArray = [gExpandedHeaderView.from.textNode.childNodes, gExpandedHeaderView.to.textNode.childNodes, gExpandedHeaderView.cc.textNode.childNodes, gExpandedHeaderView.bcc.textNode.childNodes];
 	// iterate through header views
@@ -3538,7 +3627,13 @@ function openDataTab(groupId, groupName) {
 
 // convert JSON datetime to formatted string
 function datetimeToString(date) {
-	var dateObj = new Date(date['year'], date['month']-1, date['day'], date['hour'], date['minute'], date['second']);
+   var year = ((date['year'] === undefined) ? 0 : date['year']);
+   var month = ((date['month'] === undefined) ? 0 : date['month']);
+   var day = ((date['day'] === undefined) ? 0 : date['day']);
+   var hour = ((date['hour'] === undefined) ? 0 : date['hour']);
+   var minute = ((date['minute'] === undefined) ? 0 : date['minute']);
+   var second = ((date['second'] === undefined) ? 0 : date['second']);
+	var dateObj = new Date(year, month-1, day, hour, minute, second);
 	return dateObj.toLocaleTimeString() + ' ' + date['month'] + '/' + date['day'] + '/' + date['year'];
 }
 
@@ -3607,4 +3702,40 @@ function htmlEscape(str) {
          .replace(/'/g, '&#39;')
          .replace(/</g, '&lt;')
          .replace(/>/g, '&gt;');
+}
+
+// installButton 
+//   Inserts a button (id) from ToolbarPalette into toolbarId
+function installButton(toolbarId, id) {
+        var toolbar = document.getElementById(toolbarId);
+
+        var toolbox = document.getElementById("mail-toolbox");
+        var palette = toolbox.palette;
+        
+        toolbar.appendChild(palette.getElementsByClassName("kardia-tab-buttonn").item(0));
+}
+
+function ServerReady() {
+   if (processes < 7) {
+      return true;
+   } else {
+      return false;
+   }
+}
+
+function DoTheThing(index) {
+   if (ServerReady()) {
+      getCollaborateeInfo(index);
+   } else {
+      setTimout(DoTheThing(index), 100);
+   }
+}
+
+function sleep(milliseconds) {
+   var start = new Date().getTime();
+   for (var i = 0; i < 1e7; i++) {
+      if ((new Date().getTime() - start) > milliseconds) {
+         break;
+      }     
+   }
 }
