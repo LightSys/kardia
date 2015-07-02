@@ -113,6 +113,7 @@ popover_files "widget/component-decl"
 			    :d:s_date_modified,
 			    :d:s_modified_by,
 			    :f:size,
+			    :f:owner,
 			    filename = :f:name,
 			    size_txt = condition(:f:size < 1024, '' + :f:size + ' bytes', condition(:f:size < (1024 * 1024), '' + (:f:size / 1024) + ' KB', '' + (:f:size / 1024 / 1024) + ' MB'))
 			from
@@ -125,7 +126,7 @@ popover_files "widget/component-decl"
 			    :pd:e_document_id =* :d:e_document_id and
 			    :p:p_partner_key = :pd:p_partner_key
 			having
-			    :p_partner_key is null or :age_mins < 60
+			    (:p_partner_key is null and :owner = user_name()) or :age_mins < 60
 			";
 		baseobj = "/apps/kardia/files";
 		replicasize=50;
