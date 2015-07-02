@@ -82,40 +82,4 @@ public class Gift {
 	public void setGift_check_num(String gift_check_num) {
 		this.gift_check_num = gift_check_num;
 	}
-	
-	public String amountToString(){
-		if(gift_amount[1] <= 9){
-			return "$" + gift_amount[0] + ".0" + gift_amount[1];
-		}else{
-			return "$" + gift_amount[0] + "." + gift_amount[1];
-		}
-	}
-	
-	public String formattedDate(){
-		String[] date = gift_date.split("-");
-		date[1] = getMonth(Integer.parseInt(date[1]));
-		if (date[2].substring(0,1).equals("0")) {
-			date[2] = date[2].substring(1);
-		}
-		return date[1] + " " + date[2] + ", " + date[0];
-	}
-	
-	private String getMonth(int num){
-		switch(num){
-		case 1: return "January";
-		case 2: return "February";
-		case 3: return "March";
-		case 4: return "April";
-		case 5: return "May";
-		case 6: return "June";
-		case 7: return "July";
-		case 8: return "August";
-		case 9: return "September";
-		case 10: return "October";
-		case 11: return "November";
-		case 12: return "December";
-		default: return "";
-		}
-	}
-	
 }

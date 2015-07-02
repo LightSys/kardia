@@ -12,7 +12,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginTop="20dp"
         android:textSize="20sp"
-        android:textAlignment="center"/>
+        android:gravity="center"/>
 
     <TextView
         android:id="@+id/subject"
@@ -22,7 +22,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="18dp"
         android:textSize="20sp"
-        android:textAlignment="center"/>
+        android:gravity="center"/>
 
     <TextView
         android:id="@+id/date"
@@ -31,8 +31,7 @@
         android:layout_below="@+id/subject"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="18dp"
-        android:textSize="18sp"
-        android:textAlignment="center"/>
+        android:textSize="18sp" />
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -40,6 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/date"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_marginTop="30dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
@@ -49,7 +49,6 @@
             android:id="@+id/text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
             android:textSize="18sp"
             android:paddingBottom="30dp"/>
     </ScrollView>

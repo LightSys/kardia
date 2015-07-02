@@ -47,7 +47,7 @@ MERGED from com.android.support:appcompat-v7:19.1.0:19:5
 		ADDED from AndroidManifest.xml:17:9
 	android:theme
 		ADDED from AndroidManifest.xml:19:9
-activity#org.lightsys.donorapp.MainActivity
+activity#org.lightsys.donorapp.views.MainActivity
 ADDED from AndroidManifest.xml:20:9
 	android:screenOrientation
 		ADDED from AndroidManifest.xml:23:13
@@ -67,7 +67,7 @@ category#android.intent.category.LAUNCHER
 ADDED from AndroidManifest.xml:27:5
 	android:name
 		ADDED from AndroidManifest.xml:27:15
-activity#org.lightsys.donorapp.AccountsActivity
+activity#org.lightsys.donorapp.views.AccountsActivity
 ADDED from AndroidManifest.xml:31:9
 	android:label
 		ADDED from AndroidManifest.xml:33:13
@@ -75,25 +75,29 @@ ADDED from AndroidManifest.xml:31:9
 		ADDED from AndroidManifest.xml:34:13
 	android:name
 		ADDED from AndroidManifest.xml:32:13
-activity#org.lightsys.donorapp.EditAccountActivity
+activity#org.lightsys.donorapp.views.EditAccountActivity
 ADDED from AndroidManifest.xml:37:9
 	android:label
 		ADDED from AndroidManifest.xml:39:13
 	android:name
 		ADDED from AndroidManifest.xml:38:13
-activity#org.lightsys.donorapp.PrayerNotificationActivity
+activity#org.lightsys.donorapp.views.PrayerNotificationActivity
 ADDED from AndroidManifest.xml:42:9
 	android:label
 		ADDED from AndroidManifest.xml:44:13
 	android:name
 		ADDED from AndroidManifest.xml:43:13
-receiver#org.lightsys.donorapp.data.NotifyAlarmReceiver
+activity#org.lightsys.donorapp.views.ContactMissionaryActivity
 ADDED from AndroidManifest.xml:47:9
 	android:name
 		ADDED from AndroidManifest.xml:48:13
-intent-filter#android.intent.action.BOOT_COMPLETED
-ADDED from AndroidManifest.xml:49:13
-action#android.intent.action.BOOT_COMPLETED
-ADDED from AndroidManifest.xml:50:17
+receiver#org.lightsys.donorapp.tools.NotifyAlarmReceiver
+ADDED from AndroidManifest.xml:51:9
 	android:name
-		ADDED from AndroidManifest.xml:50:25
+		ADDED from AndroidManifest.xml:52:13
+intent-filter#android.intent.action.BOOT_COMPLETED
+ADDED from AndroidManifest.xml:53:13
+action#android.intent.action.BOOT_COMPLETED
+ADDED from AndroidManifest.xml:54:17
+	android:name
+		ADDED from AndroidManifest.xml:54:25

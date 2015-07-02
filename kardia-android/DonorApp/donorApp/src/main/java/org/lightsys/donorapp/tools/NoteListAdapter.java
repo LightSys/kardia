@@ -1,4 +1,4 @@
-package org.lightsys.donorapp;
+package org.lightsys.donorapp.tools;
 
 import android.content.Context;
 import android.view.View;
@@ -19,22 +19,20 @@ import java.util.Map;
  * is not yet implemented in the database, yet the API should simplify that process. It is implemented
  * for UI.
  */
-public class PrayerAdapter extends SimpleAdapter {
+public class NoteListAdapter extends SimpleAdapter {
 
     Context context;
     final ArrayList<HashMap<String, String>> data;
-    final ArrayList<Boolean> prayedForData;
     ArrayList<View> views;
     String[] from;
     int[] to;
 
-    public PrayerAdapter(Context context, ArrayList<HashMap<String,String>> data,
-            ArrayList<Boolean> prayData, int resource, String[] from, int[] to) {
+    public NoteListAdapter(Context context, ArrayList<HashMap<String, String>> data,
+                            int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
         this.context = context;
         this.views = new ArrayList<View>();
         this.data = data;
-        this.prayedForData = prayData;
         this.from = from;
         this.to = to;
     }
@@ -47,21 +45,33 @@ public class PrayerAdapter extends SimpleAdapter {
      * @return - Formatted, inflated view
      */
     public View getView(final int position, View convertView, ViewGroup parent) {
-        PrayerLayout rowView = (PrayerLayout)convertView;
+        NoteListLayout rowView = (NoteListLayout)convertView;
         if(rowView == null) {
-            rowView = new PrayerLayout(this.context);
+            rowView = new NoteListLayout(this.context);
         }
 
         final Map<String, String> pieces = data.get(position);
-        rowView.setTitle(pieces.get("prayerSubject"));
-        rowView.setDate(pieces.get("prayerDate"));
-        rowView.setMissionaryNameView(pieces.get("prayerMissionary"));
+        rowView.setTitle(pieces.get("subject"));
+        rowView.setDate(pieces.get("date"));
+        rowView.setMissionaryNameView(pieces.get("missionary"));
+        rowView.setTextAboveButton(pieces.get("textAbove"));
+        rowView.setTextBelowButton(pieces.get("textBelow"));
 
-        if(prayedForData.get(position)){
-            rowView.setImage(R.drawable.new_praying_hands);
-        } else {
-            rowView.setImage(R.drawable.inactive_praying_hands);
+
+        // Set the icon to the right depending on what type the row is
+        // Four possibilities are inactive prayer, active prayer, update, or prayer letter
+        if (pieces.get("type").equals("Pray")) {
+            if(pieces.get("isPrayedFor").equals("inactive")){
+                rowView.setImage(R.drawable.inactive_praying_hands);
+            } else {
+                rowView.setImage(R.drawable.new_praying_hands);
+            }
+        } else if (pieces.get("type").equals("Update")) {
+            rowView.setImage(R.drawable.update_icon);
+        } else if (pieces.get("type").equals("Letter")) {
+            rowView.setImage(R.drawable.prayer_letter_icon);
         }
+
 
         views.add(rowView);
 

@@ -1,4 +1,4 @@
-package org.lightsys.donorapp.data;
+package org.lightsys.donorapp.tools;
 
 import android.text.Editable;
 import android.text.TextWatcher;

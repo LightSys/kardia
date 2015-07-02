@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,88 +7,108 @@
     android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat" >
 
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="18dp"
+            android:text="@string/add_new_account"
+            android:textSize="18sp"/>
+
+        <Button
+            android:id="@+id/finish_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="100dp"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="20dp"
+            android:textSize="16sp"
+            android:visibility="invisible"
+            android:text="@string/done"
+            android:textStyle="bold"
+            style="@style/customBottomBar" />
+    </TableRow>
+
+
     <EditText
         android:id="@+id/username_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
         android:ems="10"
         android:hint="@string/username"
-        android:textSize="22sp" />
+        android:singleLine="true"/>
 
     <EditText
         android:id="@+id/password_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="2dp"
         android:ems="10"
         android:hint="@string/password"
         android:inputType="textPassword"
-        android:textSize="22sp" />
+        android:singleLine="true"/>
 
     <EditText
         android:id="@+id/servername_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="2dp"
         android:ems="10"
         android:hint="@string/server_name"
-        android:textSize="22sp" />
+        android:singleLine="true"/>
 
     <EditText
         android:id="@+id/donor_id_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="2dp"
         android:ems="10"
         android:hint="@string/donor_id_ex_100001"
         android:inputType="number"
-        android:textSize="22sp" />
+        android:singleLine="true"/>
 
     <TableRow
         android:id="@+id/tableRow1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="right" >
+        android:layout_marginTop="18dp"
+        android:gravity="center">
 
         <Button
             android:id="@+id/connect_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="addAccount"
             android:text="@string/connect"
-            android:textSize="22sp"
+            android:textStyle="bold"
             style="@style/customBottomBar" />
-
-        <Button
-            android:id="@+id/home_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="returnHome"
-            android:text="@string/home"
-            android:textSize="22sp"
-            style="@style/customBottomBar"/>
 
     </TableRow>
 
     <TableRow
         android:id="@+id/tableRow2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp">
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:textSize="24sp" />
+            android:layout_marginLeft="6dp"
+            android:layout_marginStart="6dp"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
     </TableRow>
 
     <ListView
         android:id="@+id/connected_list"
+        style="@style/listCustomBlue"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/listCustomBlue" >
+        android:layout_height="0dp"
+        android:layout_weight="1">
     </ListView>
 
 </LinearLayout><!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout-large/account_page_layout.xml -->

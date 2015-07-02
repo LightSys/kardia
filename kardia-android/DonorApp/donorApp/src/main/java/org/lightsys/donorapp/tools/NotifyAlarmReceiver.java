@@ -1,4 +1,4 @@
-package org.lightsys.donorapp.data;
+package org.lightsys.donorapp.tools;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -8,9 +8,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.example.donorapp.R;
+
+import org.lightsys.donorapp.data.Note;
+import org.lightsys.donorapp.data.PrayerNotification;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,7 +49,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT >= 19) {
             LocalDBHandler db = new LocalDBHandler(context, null, null, 9);
             ArrayList<PrayerNotification> notifications = db.getNotifications();
-            PrayerRequest request;
+            Note request;
             Intent alarmIntent;
             PendingIntent pendingIntent;
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
@@ -54,7 +58,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
             for (PrayerNotification notification : notifications) {
                 // If notification time has not passed, set alarm
                 if (notification.getNotificationTime() > Calendar.getInstance().getTimeInMillis()) {
-                    request = db.getRequestForID(notification.getRequestID());
+                    request = db.getNoteForID(notification.getRequestID());
                     alarmIntent = new Intent(context, NotifyAlarmReceiver.class);
                     alarmIntent.putExtra("title", request.getMissionaryName());
                     alarmIntent.putExtra("message", request.getSubject());
@@ -77,7 +81,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
     private void sendNotification(Context context, Intent intent) {
         NotificationManager notificationManager = (NotificationManager)
                 context.getSystemService(context.NOTIFICATION_SERVICE);
-        Notification.Builder nBuild;
+        NotificationCompat.Builder nBuild;
         Notification n;
         String name, subject;
         int notificationID;
@@ -87,10 +91,11 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
         notificationID = intent.getIntExtra("id", 0);
 
         // Build the notification to be sent
-        nBuild = new Notification.Builder(context)
-                .setContentTitle("Reminder to Pray")
-                .setContentText(name + ": " + subject)
-                .setSmallIcon(R.drawable.kardiabeat_v2);
+        nBuild = new NotificationCompat.Builder(context)
+                .setContentTitle("Prayer Reminder")
+                .setContentText(name)
+                .setSmallIcon(R.drawable.kardiabeat_v2)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(subject));
 
         n = nBuild.build();
         notificationManager.notify(notificationID, n);

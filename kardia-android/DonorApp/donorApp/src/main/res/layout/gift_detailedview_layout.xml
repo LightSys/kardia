@@ -55,14 +55,15 @@
         android:layout_marginRight="18dp"
         android:layout_marginLeft="18dp"
         android:textSize="26sp"
-        android:textAlignment="center"/>
+        android:gravity="center"/>
 
     <RelativeLayout
         android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true">
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
     </RelativeLayout>
 
 </RelativeLayout>

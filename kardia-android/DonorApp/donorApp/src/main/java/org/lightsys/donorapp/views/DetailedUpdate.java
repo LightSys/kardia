@@ -1,4 +1,4 @@
-package org.lightsys.donorapp;
+package org.lightsys.donorapp.views;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,8 +9,9 @@ import android.widget.TextView;
 
 import com.example.donorapp.R;
 
-import org.lightsys.donorapp.data.LocalDBHandler;
-import org.lightsys.donorapp.data.Update;
+import org.lightsys.donorapp.data.Note;
+import org.lightsys.donorapp.tools.Formatter;
+import org.lightsys.donorapp.tools.LocalDBHandler;
 
 /**
  * Created by bosonBaas on 3/10/2015.
@@ -23,12 +24,9 @@ public class DetailedUpdate extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        if (savedInstanceState != null) {
-            update_id = savedInstanceState.getInt(ARG_UPDATE_ID);
-        }
-
-        return inflater.inflate(R.layout.update_detailedview_layout, container, false);
+        View v = inflater.inflate(R.layout.update_detailedview_layout, container, false);
+        getActivity().setTitle("Update");
+        return v;
     }
 
     public void onStart(){
@@ -47,7 +45,7 @@ public class DetailedUpdate extends Fragment {
     /**
      * This function sets the text for the gift's information
      *
-     * @param update_id, the gift's id.
+     * @param update_id, the update's id.
      */
     public void updateUpdateView(int update_id){
 
@@ -57,12 +55,12 @@ public class DetailedUpdate extends Fragment {
         TextView text = (TextView)getActivity().findViewById(R.id.text);
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
-        Update update = db.getUpdateForID(update_id);
+        Note update = db.getNoteForID(update_id);
         db.close();
 
         missionaryName.setText(update.getMissionaryName());
         subject.setText("Subject: " + update.getSubject());
-        date.setText("Date: " + update.formattedDate());
+        date.setText("Date Posted: " + Formatter.getFormattedDate(update.getDate()));
         text.setText(update.getText());
 
         this.update_id = update_id;

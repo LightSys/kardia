@@ -1,6 +1,6 @@
 package org.lightsys.donorapp.bottombar;
 
-import org.lightsys.donorapp.data.LocalDBHandler;
+import org.lightsys.donorapp.tools.LocalDBHandler;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -19,7 +19,7 @@ public class LinkBar extends Fragment {
 
 	public static String ARG_FUND_ID = "fund";
 	private static String giving_url = "";
-	int fund_number = -1;
+	int fund_id = -1;
 	
 	Button b;
 	
@@ -30,23 +30,23 @@ public class LinkBar extends Fragment {
 	
 		Bundle args = getArguments();
 		if(savedInstanceState != null){
-			fund_number = savedInstanceState.getInt(ARG_FUND_ID);
+			fund_id = savedInstanceState.getInt(ARG_FUND_ID);
 		}
 		else if(args != null){
-			this.fund_number = args.getInt(ARG_FUND_ID);
+			fund_id = args.getInt(ARG_FUND_ID);
 		}
 		
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
 
 		// Retrieve giving URL from database for specific fund
-		String temp_url = db.getFundById(fund_number).getGiving_url();
+		String temp_url = db.getFundById(fund_id).getGiving_url();
 		db.close();
 
 		// If URL not found, set to unavailable status
 		// If URL does not contain Web protocol, add it to the URL
-		if(temp_url == null || temp_url.equals("")){
+		if (temp_url == null || temp_url.equals("")) {
 			giving_url = "Unavailable";
-		}else if(!temp_url.contains("http://") && !temp_url.contains("https://")){
+		} else if (!temp_url.contains("http://") && !temp_url.contains("https://")) {
 			giving_url = "http://" + giving_url;
 		}
 
@@ -56,9 +56,9 @@ public class LinkBar extends Fragment {
 
 			@Override
 			public void onClick(View v) {
-				if(giving_url.equals("Unavailable")){
-					Toast.makeText(getActivity(), "A donation link was not provided for this fund.", Toast.LENGTH_SHORT).show();
-				}else{
+				if (giving_url.equals("Unavailable")) {
+					Toast.makeText(getActivity(), "Donation link unavailable for this fund", Toast.LENGTH_SHORT).show();
+				} else {
 					Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(giving_url));
 					startActivity(browserIntent);
 				}
@@ -75,6 +75,6 @@ public class LinkBar extends Fragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState){
 		super.onSaveInstanceState(outState);
-		outState.putInt(ARG_FUND_ID, fund_number);
+		outState.putInt(ARG_FUND_ID, fund_id);
 	}
 }

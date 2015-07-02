@@ -1,4 +1,4 @@
-package org.lightsys.donorapp;
+package org.lightsys.donorapp.views;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,10 +23,10 @@ import android.widget.Toast;
 
 import com.example.donorapp.R;
 
-import org.lightsys.donorapp.data.LocalDBHandler;
-import org.lightsys.donorapp.data.NotifyAlarmReceiver;
+import org.lightsys.donorapp.data.Note;
+import org.lightsys.donorapp.tools.LocalDBHandler;
+import org.lightsys.donorapp.tools.NotifyAlarmReceiver;
 import org.lightsys.donorapp.data.PrayerNotification;
-import org.lightsys.donorapp.data.PrayerRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ import java.util.Locale;
  */
 public class PrayerNotificationActivity extends Activity {
 
-    private PrayerRequest request;
+    private Note request;
     private ArrayList<String> alarmTimes = new ArrayList<String>();
     private String endDate;
     private final long DAY_IN_MILLIS = 86400000;
@@ -47,13 +48,16 @@ public class PrayerNotificationActivity extends Activity {
 
     private Spinner frequencySpinner;
     private TableRow dateRow, timeRow1, timeRow2, timeRow3, timeRow4;
-    private Button setNotificationButton, cancelButton, datePicker, timePicker1, timePicker2,
+    private Button datePicker, timePicker1, timePicker2,
             timePicker3, timePicker4;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.prayer_notification_layout);
+        if (getActionBar() != null) {
+            getActionBar().setTitle("Prayer Notification Setup");
+        }
 
         Bundle args = getIntent().getExtras();
 
@@ -69,7 +73,7 @@ public class PrayerNotificationActivity extends Activity {
 
         // For next ID, retrieve last ID from database and add 1
         LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
-        request = db.getRequestForID(requestid);
+        request = db.getNoteForID(requestid);
         notificationID = db.getLastId("notification") + 1;
         db.close();
 
@@ -84,8 +88,8 @@ public class PrayerNotificationActivity extends Activity {
         timePicker2 = (Button) this.findViewById(R.id.timePicker2);
         timePicker3 = (Button) this.findViewById(R.id.timePicker3);
         timePicker4 = (Button) this.findViewById(R.id.timePicker4);
-        setNotificationButton = (Button) this.findViewById(R.id.setNotification);
-        cancelButton = (Button) this.findViewById(R.id.cancel);
+        Button setNotificationButton = (Button) this.findViewById(R.id.setNotification);
+        Button cancelButton = (Button) this.findViewById(R.id.cancel);
 
 
         frequencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -108,6 +112,7 @@ public class PrayerNotificationActivity extends Activity {
                 if (inputIsValid) {
                     // Ask user if notifications should be set as they can not be edited later
                     new AlertDialog.Builder(PrayerNotificationActivity.this)
+                            .setCancelable(false)
                             .setTitle("Set Notifications")
                             .setMessage("Should we set these notifications? You will not be able to edit this later.")
                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -131,22 +136,8 @@ public class PrayerNotificationActivity extends Activity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Ask user if they are sure they do not want notifications
-                new AlertDialog.Builder(PrayerNotificationActivity.this)
-                        .setTitle("Cancel")
-                        .setMessage("Are you sure you would not like reminders to pray for this " +
-                                "request? You will not be able to set them later.")
-                        .setPositiveButton("Yes, I'm sure", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish();
-                            }
-                        })
-                        .setNegativeButton("No, let me set notifications", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
+                // Ask user to confirm leaving activity without setting notifications
+                showCancelConfirmation();
             }
         });
 
@@ -180,6 +171,32 @@ public class PrayerNotificationActivity extends Activity {
                 openTimePicker(4);
             }
         });
+    }
+
+    // Called when the user presses the back button on the bottom of the screen
+    @Override
+    public void onBackPressed() {
+        showCancelConfirmation();
+    }
+
+    // Displays a confirmation dialog asking whether they would like to leave the page
+    private void showCancelConfirmation() {
+        new AlertDialog.Builder(PrayerNotificationActivity.this)
+                .setCancelable(false)
+                .setTitle("Cancel")
+                .setMessage("Exit without setting notifications? You will not be able" +
+                        " to set any notifications later for this request.")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
     }
 
     /**
@@ -224,105 +241,14 @@ public class PrayerNotificationActivity extends Activity {
     /**
      * Sets notification with given data and exits the activity
      */
-    public void setNotification() {
-        remind(alarmTimes, endDate, request.getMissionaryName(), request.getSubject());
+    private void setNotification() {
+        new NotificationCreator().execute("");
         finish();
     }
 
     /**
-     * Sets alarms at specified times until the endDate for a specific request
-     * @param times, times in the day to set notifications (e.g. "7:00" = 7 a.m., "15:00" = 3 p.m.)
-     * @param date, last day to give notifications (given as "YYYY-MM-DD")
-     * @param title, title for notification to display
-     * @param message, message for notification to display
+     * Open the dialog enabling the user to set a date
      */
-    public void remind (ArrayList<String> times, String date, String title, String message)
-    {
-        PrayerNotification notification;
-        Intent alarmIntent;
-        PendingIntent pendingIntent;
-
-        LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-
-        String[] dateSplitStr = date.split("-");
-        Calendar c = Calendar.getInstance();
-        // Set year, month, and day of calendar for end date
-        c.set(Integer.parseInt(dateSplitStr[0]), Integer.parseInt(dateSplitStr[1])-1,
-                Integer.parseInt(dateSplitStr[2]));
-        long endDateinMillis = c.getTimeInMillis();
-        // Add 1 to ensure alarms set for current day get set
-        int numberOfDays = daysUntilFutureDate(endDateinMillis) + 1;
-
-        // alarm times will be set and stored in millisecond form
-        long alarmTime;
-
-        // Setting alarms requires sdk version 19 or higher
-        if (Build.VERSION.SDK_INT >= 19) {
-
-            // Loop through all times until the end date, setting a notification at each one
-            for (int i = 0; i < frequency; i++) {
-                String[] timeSplit = times.get(i).split(":");
-                c = Calendar.getInstance();
-                c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeSplit[0]));
-                c.set(Calendar.MINUTE, Integer.parseInt(timeSplit[1]));
-                c.set(Calendar.SECOND, 0);
-                alarmTime = c.getTimeInMillis();
-                for (int j = 0; j < numberOfDays; j++) {
-
-                    // If alarm time is not in the past, set alarm for notification
-                    if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
-
-                        alarmIntent = new Intent(this, NotifyAlarmReceiver.class);
-                        alarmIntent.putExtra("title", title);
-                        alarmIntent.putExtra("message", message);
-                        alarmIntent.putExtra("id", notificationID);
-
-                        pendingIntent = PendingIntent.getBroadcast(this, notificationID, alarmIntent, 0);
-
-                        notification = new PrayerNotification();
-                        notification.setId(notificationID);
-                        notification.setNotificationTime(alarmTime);
-                        notification.setRequest_id(requestid);
-
-                        db.addNotification(notification);
-
-                        // Set alarm and increment notification ID
-                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
-
-                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
-                        Log.w("tag", "Alarm set for: " + format.format(alarmTime) + ", ID:" +
-                        Integer.toString(notificationID) + ", Name:" + title);
-
-                        notificationID++;
-                    }
-                    // Add one day for next notification
-                    alarmTime += DAY_IN_MILLIS;
-                }
-            }
-        } else {
-            Toast.makeText(PrayerNotificationActivity.this, "Sorry, but your device " +
-                            "does not have the proper update to support this feature",
-                    Toast.LENGTH_LONG).show();
-        }
-        db.close();
-    }
-
-    /**
-     * return the number of days between today and a future date
-     * @param futureDate, future date in milliseconds
-     * @return number of days between today and future date
-     */
-    private int daysUntilFutureDate(long futureDate) {
-        long presentDate = Calendar.getInstance().getTimeInMillis();
-        // Add 100000 to ensure time delay does not throw off results
-        if (futureDate + 100000 > presentDate) {
-            return (int)((futureDate - presentDate) / DAY_IN_MILLIS);
-        } else {
-            return -1;
-        }
-    }
-
     private void openDatePicker() {
         int mYear;
         int mMonth;
@@ -368,6 +294,10 @@ public class PrayerNotificationActivity extends Activity {
         }
     }
 
+    /**
+     * open dialog allowing user to choose a time
+     * @param btn_id, which time button is being selected
+     */
     private void openTimePicker(int btn_id) {
         int hour;
         int minute;
@@ -469,6 +399,113 @@ public class PrayerNotificationActivity extends Activity {
                     timePicker4.setText(timeStr);
                     alarmTimes.set(3, timeStr24Hr);
                     break;
+            }
+        }
+    }
+
+    // Class uses an asynchronous thread to set alarms as it may take some time
+    private class NotificationCreator extends AsyncTask<String, Void, String> {
+
+        public NotificationCreator() {}
+
+        @Override
+        protected String doInBackground(String... params) {
+            remind(alarmTimes, endDate, request.getMissionaryName(), request.getSubject());
+            return null;
+        }
+
+        /**
+         * Sets alarms at specified times until the endDate for a specific request
+         * @param times, times in the day to set notifications (e.g. "7:00" = 7 a.m., "15:00" = 3 p.m.)
+         * @param date, last day to give notifications (given as "YYYY-MM-DD")
+         * @param title, title for notification to display
+         * @param message, message for notification to display
+         */
+        private void remind (ArrayList<String> times, String date, String title, String message)
+        {
+            PrayerNotification notification;
+            Intent alarmIntent;
+            PendingIntent pendingIntent;
+
+            LocalDBHandler db = new LocalDBHandler(PrayerNotificationActivity.this, null, null, 9);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+
+            String[] dateSplitStr = date.split("-");
+            Calendar c = Calendar.getInstance();
+            // Set year, month, and day of calendar for end date
+            c.set(Integer.parseInt(dateSplitStr[0]), Integer.parseInt(dateSplitStr[1])-1,
+                    Integer.parseInt(dateSplitStr[2]));
+            long endDateinMillis = c.getTimeInMillis();
+            // Add 1 to ensure alarms set for current day get set
+            int numberOfDays = daysUntilFutureDate(endDateinMillis) + 1;
+
+            // alarm times will be set and stored in millisecond form
+            long alarmTime;
+
+            // Setting alarms requires sdk version 19 or higher
+            if (Build.VERSION.SDK_INT >= 19) {
+
+                // Loop through all times until the end date, setting a notification at each one
+                for (int i = 0; i < frequency; i++) {
+                    String[] timeSplit = times.get(i).split(":");
+                    c = Calendar.getInstance();
+                    c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeSplit[0]));
+                    c.set(Calendar.MINUTE, Integer.parseInt(timeSplit[1]));
+                    c.set(Calendar.SECOND, 0);
+                    alarmTime = c.getTimeInMillis();
+                    for (int j = 0; j < numberOfDays; j++) {
+
+                        // If alarm time is not in the past, set alarm for notification
+                        if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
+
+                            alarmIntent = new Intent(PrayerNotificationActivity.this, NotifyAlarmReceiver.class);
+                            alarmIntent.putExtra("title", title);
+                            alarmIntent.putExtra("message", message);
+                            alarmIntent.putExtra("id", notificationID);
+
+                            pendingIntent = PendingIntent.getBroadcast(PrayerNotificationActivity.this,
+                                    notificationID, alarmIntent, 0);
+
+                            notification = new PrayerNotification();
+                            notification.setId(notificationID);
+                            notification.setNotificationTime(alarmTime);
+                            notification.setRequest_id(requestid);
+
+                            db.addNotification(notification);
+
+                            // Set alarm and increment notification ID
+                            alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
+
+                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
+                            Log.w("tag", "Alarm set for: " + format.format(alarmTime) + ", ID:" +
+                                    Integer.toString(notificationID) + ", Name:" + title);
+
+                            notificationID++;
+                        }
+                        // Add one day for next notification
+                        alarmTime += DAY_IN_MILLIS;
+                    }
+                }
+            } else {
+                Toast.makeText(PrayerNotificationActivity.this, "Sorry, but your device " +
+                                "does not have the proper update to support this feature",
+                        Toast.LENGTH_LONG).show();
+            }
+            db.close();
+        }
+
+        /**
+         * return the number of days between today and a future date
+         * @param futureDate, future date in milliseconds
+         * @return number of days between today and future date
+         */
+        private int daysUntilFutureDate(long futureDate) {
+            long presentDate = Calendar.getInstance().getTimeInMillis();
+            // Add 100000 to ensure time delay does not throw off results
+            if (futureDate + 100000 > presentDate) {
+                return (int)((futureDate - presentDate) / DAY_IN_MILLIS);
+            } else {
+                return -1;
             }
         }
     }

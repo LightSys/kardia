@@ -5,9 +5,7 @@
         <item>Designations</item>
         <item>Gifts</item>
         <item>Donate</item>
-        <item>Updates</item>
-        <item>Prayer Requests</item>
-        <item>Prayer Letters</item>
+        <item>Prayer Requests/Updates</item>
         <item>Contact Missionary</item>
         <item>Accounts</item>
         <item>Refresh</item>
@@ -34,19 +32,19 @@
     <string name="amount">Amount:</string>
     <string name="view_pdf_receipt">View PDF Receipt</string>
     <string name="donate_now">Donate</string>
-    <string name="accounts_page">Accounts Page</string>
+    <string name="accounts_page">Manage Accounts</string>
+    <string name="add_new_account">Add New Account:</string>
     <string name="password">password</string>
     <string name="username">username</string>
     <string name="server_name">server name</string>
-    <string name="home">Home</string>
+    <string name="done">Done</string>
     <string name="connect">Connect</string>
     <string name="edit_account">Edit Account</string>
     <string name="donor_id_ex_100001">Donor ID (ex. 100001)</string>
     <string name="drawer_open">Drawer Open</string>
     <string name="drawer_closed">Drawer Closed</string>
     <string name="action_search">Search</string>
-    <string name="submit">submit</string>
-    <string name="account_page">Accounts Page</string>
+    <string name="submit">Submit</string>
     <string name="search">Search</string>
     <string name="date_range">Date Range</string>
     <string name="choose_date">Choose Date</string>
@@ -60,5 +58,18 @@
     <string name="message">Message</string>
     <string name="notification_setting">Prayer Notifications"</string>
     <string name="times_per_day">time(s) per day</string>
+    <string name="cancel">Cancel</string>
+    <string name="from">From:</string>
+    <string name="name">name</string>
+    <string name="set">Set</string>
+    <string name="end_date">End Date: </string>
+    <string name="choose_time">Choose Time</string>
+    <string name="time1">Time #1: </string>
+    <string name="time2">Time #2: </string>
+    <string name="time3">Time #3: </string>
+    <string name="time4">Time #4: </string>
+    <string name="dollar_sign">$</string>
+    <string name="praying">Praying</string>
+    <string name="view_pdf">View Letter</string>
 
 </resources>
