@@ -764,6 +764,7 @@ gift_import "widget/component-decl"
 			dep_t_day "widget/dropdownitem" { label="Last 24 Hours"; value="24"; }
 			dep_t_thismo "widget/dropdownitem" { label=runserver(substring(convert(string,getdate()),4,8)); value="0     M0"; }
 			dep_t_lastmo "widget/dropdownitem" { label=runserver(substring(convert(string,dateadd(month,-1,getdate())),4,8)); value="0     M1"; }
+			dep_t_lastmo2 "widget/dropdownitem" { label=runserver(substring(convert(string,dateadd(month,-2,getdate())),4,8)); value="0     M2"; }
 			}
 		    }
 		dep_import_osrc "widget/osrc"

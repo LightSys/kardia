@@ -36,6 +36,9 @@ index "widget/page"
     //
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", "/apps/kardia/modules/crm/crm.tpl";
 
+    // Parameters that can be passed to this application
+    partner_key "widget/parameter" { type=string; }
+
     // Background image for the window.
     //
     //background = "/apps/kardia/images/bg/light_bgnd.jpg";
@@ -56,6 +59,7 @@ index "widget/page"
 	width=1200; height=700;
 	path="crm.cmp";
 	us = crm;
+	partner_key = runserver(:this:partner_key);
 	}
     }
 

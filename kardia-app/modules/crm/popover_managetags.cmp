@@ -97,7 +97,7 @@ popover_managetags "widget/component-decl"
 
 			    edittag_form "widget/form"
 				{
-				comment_box "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; label_width=70; text="Comment:"; ctl_type=editbox; field=e_tag_comments; }
+				comment_box "widget/component" { width=250; path="/sys/cmp/smart_field.cmp"; label_width=70; text="Comment:"; ctl_type=editbox; field=e_tag_comments; }
 				save_tag "widget/component" { width=18; path="/sys/cmp/save_btn.cmp"; object_name="Tag"; }
 				cancel_tag "widget/component" { width=18; path="/sys/cmp/cancel_btn.cmp"; object_name="Tag"; }
 				delete_tag "widget/component" { width=18; path="/sys/cmp/delete_btn.cmp"; object_name="Tag"; }

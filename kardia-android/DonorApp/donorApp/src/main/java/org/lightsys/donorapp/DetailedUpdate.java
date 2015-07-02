@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.example.donorapp.R;
 
+import org.lightsys.donorapp.data.LocalDBHandler;
 import org.lightsys.donorapp.data.Update;
 
 /**
@@ -17,11 +18,15 @@ import org.lightsys.donorapp.data.Update;
  */
 public class DetailedUpdate extends Fragment {
 
-    final static String ARG_REQUEST_ID = "request_id";
-    int request_id = -1;
+    final static String ARG_UPDATE_ID = "update_id";
+    int update_id = -1;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        if (savedInstanceState != null) {
+            update_id = savedInstanceState.getInt(ARG_UPDATE_ID);
+        }
 
         return inflater.inflate(R.layout.update_detailedview_layout, container, false);
     }
@@ -32,39 +37,35 @@ public class DetailedUpdate extends Fragment {
         Bundle args = getArguments();
 
         if(args != null){
-            updateUpdateView(args.getInt(ARG_REQUEST_ID));
+            updateUpdateView(args.getInt(ARG_UPDATE_ID));
         }
-        else if(request_id != -1){
-            updateUpdateView(request_id);
+        else if(update_id != -1){
+            updateUpdateView(update_id);
         }
     }
 
     /**
      * This function sets the text for the gift's information
      *
-     * @param id, the gift's id.
+     * @param update_id, the gift's id.
      */
-    public void updateUpdateView(int request_id){
-        TextView title = (TextView)getActivity().findViewById(R.id.title);
-        TextView date = (TextView)getActivity().findViewById(R.id.date);
-        //   TextView amount = (TextView)getActivity().findViewById(R.id.giftamount);
-        TextView summary = (TextView)getActivity().findViewById(R.id.summary);
+    public void updateUpdateView(int update_id){
 
-//        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
-//        Gift g = db.getGift(request_id);
-        Update update = null;
-        for(Update u:UpdateList.getUpdates())
-            if(u.getIntId() == request_id)
-            {
-                update = u;
-                break;
-            }
-         if(update!=null) {
-             title.setText(update.getSubject());
-             date.setText("Date: " + update.formatedDate(update.getDate()));
-             summary.setText("Update: " + update.getText());
-         }
-        this.request_id = request_id;
+        TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
+        TextView subject = (TextView)getActivity().findViewById(R.id.subject);
+        TextView date = (TextView)getActivity().findViewById(R.id.date);
+        TextView text = (TextView)getActivity().findViewById(R.id.text);
+
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+        Update update = db.getUpdateForID(update_id);
+        db.close();
+
+        missionaryName.setText(update.getMissionaryName());
+        subject.setText("Subject: " + update.getSubject());
+        date.setText("Date: " + update.formattedDate());
+        text.setText(update.getText());
+
+        this.update_id = update_id;
     }
 
     /**
@@ -74,6 +75,6 @@ public class DetailedUpdate extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
-        outState.putInt(ARG_REQUEST_ID, request_id);
+        outState.putInt(ARG_UPDATE_ID, update_id);
     }
 }

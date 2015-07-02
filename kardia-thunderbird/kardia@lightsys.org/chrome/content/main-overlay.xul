@@ -16,7 +16,7 @@
 			
 			<!-- header that allows you to close Kardia pane -->
 			<sidebarheader id="sidebarheader-allow-close" align="center">
-				<label id="titleLabel" value="Kardia Relationships"/>
+				<label id="titleLabel" value="Kardia CRM"/>
 				<spacer flex="1"/>
 				<toolbarbutton id="closeSidebar" oncommand="toggleKardiaVisibility(1)" tooltiptext="Close Kardia pane">
 					<vbox>
@@ -25,6 +25,7 @@
 					</vbox>
 				</toolbarbutton>
 			</sidebarheader>
+
 
 			<!-- hbox with partner's name and ID, plus a button that allows you to select a different partner -->
 			<hbox id="choose-partner-box" context="main-context">
@@ -48,14 +49,21 @@
 					</vbox>
 				</toolbarbutton>
 			</hbox>
-			
+		
+         <!--Loading gif-->
+         <vbox id="loading-gif-container" align="center" equalsize="always" style="visibility:collapse">
+            <spacer flex="1"/>
+            <image src='chrome://kardia/content/images/loading.gif' width='64' height='64' flex="1"/>
+            <spacer flex="1"/>
+         </vbox>
+
 			<!-- label that displays failure message -->
 			<label id="cant-connect" value="Could not connect to Kardia."/>
 			
 			<vbox id="main-content-box" flex="1" context="main-context" style="visibility:hidden">
 				
 				<!-- vbox with all collapsible items like Engagement Tracks -->
-				<vbox id="collapsible-items-box">	
+				<vbox id="collapsible-items-box">
 					
                <vbox id="new-data-button">
                   <button label="Add new info" oncommand="newNote()" tooltiptext="Add new information to this partner's activity timeline"/>
@@ -143,7 +151,7 @@
 					<hbox id="notes-prayer-box">
 						 <spacer width="10px"/> 
 						 <vbox id="notes-prayer-inner-box" width="100" flex="1"> 
-							 notes/prayer item 
+							 <!--notes/prayer item -->
 							<!--<hbox>
 								<vbox>
 									<image class="note-image"/>
@@ -200,7 +208,10 @@
 						 </vbox> 
 					</hbox>	
 				</vbox>
-			</vbox>		
+			</vbox>
+         <vbox id="open-CRM-button">
+            <button label="Open CRM web interface" oncommand="openUrl()" tooltiptext="Open CRM in default browser."/>
+         </vbox>
 			
 			<!-- FEATURE: When recording emails in Kardia is implemented, uncomment this -->
 			<!--
@@ -287,7 +298,7 @@
 	
 	<!-- toolbarbutton for opening Kardia tab -->
 	<toolbarpalette id="MailToolbarPalette">
-		<toolbarbutton id="kardia-tab-button" label="Kardia" tooltiptext="Switch to the Kardia tab" oncommand="showKardiaTab()">
+		<toolbarbutton id="kardia-tab-button" class="kardia-tab-buttonn" label="Kardia" tooltiptext="Switch to the Kardia tab" oncommand="showKardiaTab()">
 			<vbox>
 				<spacer height="1"/>
 				<image class="kardia-tab"/>

@@ -19,6 +19,8 @@ people_list "widget/component-decl"
 	action=Refresh;
 	}
 
+    collaborator_osrc "widget/parameter" { type=object; }
+
     people_stats_osrc "widget/osrc"
 	{
 	collaborator "widget/parameter" { type=string; default=runclient(null); }
@@ -116,8 +118,8 @@ people_list "widget/component-decl"
 			:s:p_kardia_login = user_name() and
 			:ct:e_collab_type_id = :c:e_collab_type_id
 		    ";
-	    readahead=50;
-	    replicasize=50;
+	    readahead=200;
+	    replicasize=200;
 	    use_having_clause=1;
 	    refresh_interval=30000;
 	    
@@ -126,7 +128,8 @@ people_list "widget/component-decl"
 		event=EndQuery;
 		target=people_stats_osrc;
 		action=QueryParam;
-		collaborator=runclient(:active_collab_osrc:collaborator_id);
+		//collaborator=runclient(:active_collab_osrc:collaborator_id);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		}
 
 	    active_collab_table "widget/table"

@@ -8,10 +8,12 @@ mlists "system/querytree"
 	    {
 	    source = "/apps/kardia/data/Kardia_DB/m_list/rows";
 	    where = ":m_list_parent is null and :m_list_type = 'P'";
+	    order = ":m_list_code";
 	    sub_pubs "system/querytree"
 		{
 		source = "/apps/kardia/data/Kardia_DB/m_list/rows";
 		where = ":m_list_parent = ::m_list_code";
+		order = ":m_list_code";
 		recurse = sub_pubs;
 		}
 	    }
@@ -23,10 +25,12 @@ mlists "system/querytree"
 	    {
 	    source = "/apps/kardia/data/Kardia_DB/m_list/rows";
 	    where = ":m_list_parent is null and :m_list_type = 'S'";
+	    order = ":m_list_code";
 	    sub_sels "system/querytree"
 		{
 		source = "/apps/kardia/data/Kardia_DB/m_list/rows";
 		where = ":m_list_parent = ::m_list_code";
+		order = ":m_list_code";
 		recurse = sub_sels;
 		}
 	    }

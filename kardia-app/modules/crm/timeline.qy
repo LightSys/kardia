@@ -6,19 +6,12 @@ timeline "system/query"
 
     sql = " declare object activitygroup;
 
-	    -- Get a new ID for the activity group
-	    select
-		:activitygroup:id = isnull(max(:e_activity_group_id),0) + 1
-	    from
-		/apps/kardia/data/Kardia_DB/e_activity/rows
-	    ;
-
 	    -- Insert a header record to reserve the group ID.
 	    -- We will need locking around this in the future.
 	    insert
 		/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		e_activity_id = 1,
 		p_partner_key = :parameters:partner_key,
 		e_activity_date = getdate(),
 		e_activity_type = 'HEAD',
@@ -26,6 +19,10 @@ timeline "system/query"
 		s_created_by = user_name(),
 		s_date_modified = getdate(),
 		s_modified_by = user_name()
+	    ;
+
+	    select
+		:activitygroup:id = :__inserted:e_activity_group_id
 	    ;
 
 	    -- Clean up
@@ -448,14 +445,5 @@ timeline "system/query"
 	    select
 		name = 'ActivityGroupID',
 		activity_group_id = :activitygroup:id
-		--*
-	    --from
-		--/apps/kardia/data/Kardia_DB/e_activity/rows
-	    --where
-		--:e_activity_group_id = :activitygroup:id and
-		--:e_activity_type != 'HEAD'
-	    --order by
-		--:e_sort_key,
-		--:e_activity_date desc
 	    ";
     }

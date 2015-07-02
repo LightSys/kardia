@@ -37,14 +37,15 @@ public class GiftList extends Fragment{
 	public static String ARG_GIFT_QUERY = "gift_query";
 	String query = "";
 	private ArrayList<Gift> gifts = new ArrayList<Gift>();
-	private LocalDBHandler db;
+	private boolean isSpecificFund = false;
 	
 	/**
 	 * Grab the needed Ids, load data and view.
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		
+
+		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
 		Bundle giftArgs = getArguments();
 		
 		if(savedInstanceState != null){
@@ -57,13 +58,20 @@ public class GiftList extends Fragment{
 			this.year_id = giftArgs.getInt(ARG_YEAR_ID);
 			this.fund_id = giftArgs.getInt(ARG_FUND_ID);
 			this.query = giftArgs.getString(ARG_GIFT_QUERY);
-			
-			db = new LocalDBHandler(getActivity(), null, null, 9);
+
 			if(this.query != null && !this.query.equals("")){
 				gifts = db.getSearchResults(query);
 			}
 			else if(this.fund_id != -1){
+				isSpecificFund = true;
 				gifts = db.getGiftsForFund(fund_id, year_id); // pull all the gifts for a certain fund during a certain year
+
+				//Sets donation link bar only if for a specific fund
+				LinkBar lb = new LinkBar();
+				lb.setArguments(giftArgs);
+
+				FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+				fragmentManager.beginTransaction().replace(R.id.bottom_bar, lb).commit();
 			}
 			else{
 				gifts = db.getGiftsForYear(year_id);//pulls all the gifts for a certain year
@@ -71,27 +79,31 @@ public class GiftList extends Fragment{
 		}
 		//This is used when dealing with the entire list of gifts... Pulls all gifts, and has a general donation link 
 		else{
-			db = new LocalDBHandler(getActivity(), null, null, 9);
 			gifts = db.getGifts(); // pull ALL gifts
 		}
+
+		db.close();
 		
 		View v = inflater.inflate(R.layout.activity_main, container, false);
-		
-		ArrayList<HashMap<String,String>> itemList = generateListItems();
-		String[] from = {"giftname", "giftamount", "giftdate"};
-		int[] to = {R.id.title, R.id.amount, R.id.date};
-		
-		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
-		
 		ListView listview = (ListView)v.findViewById(R.id.info_list);
-		listview.setAdapter(adapter);
+
+		// Map data fields to layout fields
+		ArrayList<HashMap<String,String>> itemList = generateListItems();
+
+		// If list is for specific fund, do not display fund for every list item
+		if (isSpecificFund) {
+			String[] from = {"giftdate", "giftamount"};
+			int[] to = {R.id.subject, R.id.detail};
+			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
+			listview.setAdapter(adapter);
+		} else {
+			String[] from = {"giftname", "giftdate", "giftamount"};
+			int[] to = {R.id.subject, R.id.date, R.id.detail};
+			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
+			listview.setAdapter(adapter);
+		}
+
 		listview.setOnItemClickListener(new onGiftClicked());
-		
-		LinkBar lb = new LinkBar();
-		lb.setArguments(giftArgs);
-		
-		FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-		fragmentManager.beginTransaction().replace(R.id.bottom_bar, lb).commit();
 		
 		return v;
 	}
@@ -107,9 +119,9 @@ public class GiftList extends Fragment{
 		for(Gift g : gifts){
 			HashMap<String,String> hm = new HashMap<String,String>();
 			
-			hm.put("giftname", "Gift to: " + g.getGift_fund_desc());
-			hm.put("giftamount", "Amount: " + g.amountToString());
-			hm.put("giftdate", g.formatedDate());
+			hm.put("giftname", g.getGift_fund_desc());
+			hm.put("giftamount", g.amountToString());
+			hm.put("giftdate", g.formattedDate());
 			
 			aList.add(hm);
 		}
@@ -135,6 +147,7 @@ public class GiftList extends Fragment{
 			transaction.replace(R.id.content_frame, newfrag);
 			transaction.addToBackStack("ToDetailedGiftView");
 			transaction.commit();
+			getActivity().setTitle("Gift");
 		}
 	}
 	

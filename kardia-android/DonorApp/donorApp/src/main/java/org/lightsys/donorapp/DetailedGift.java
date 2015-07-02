@@ -1,10 +1,12 @@
 package org.lightsys.donorapp;
 
+import org.lightsys.donorapp.bottombar.LinkBar;
 import org.lightsys.donorapp.data.Gift;
 import org.lightsys.donorapp.data.LocalDBHandler;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +28,7 @@ public class DetailedGift extends Fragment{
 	
 	final static String ARG_GIFT_ID = "gift_id";
 	int gift_id = -1;
+	private Bundle args;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -33,50 +36,52 @@ public class DetailedGift extends Fragment{
 		if(savedInstanceState != null){
 			gift_id = savedInstanceState.getInt(ARG_GIFT_ID);
 		}
-
 		return inflater.inflate(R.layout.gift_detailedview_layout, container, false);
 	}
-	
-	/**
-	 * used to get the argument for the gift id
-	 */
+
 	@Override
-	public void onStart(){
+	public void onStart() {
 		super.onStart();
-		
-		Bundle args = getArguments();
-		
+		args = getArguments();
+
 		if(args != null){
 			updateGiftView(args.getInt(ARG_GIFT_ID));
 		}
-		else if(gift_id != -1){
+		else if(gift_id != -1) {
 			updateGiftView(gift_id);
 		}
 	}
 	
 	/**
-	 * This function sets the text for the gift's information
-	 * 
-	 * @param id, the gift's id.
+	 * Sets each text field with the detailed information about the gift
+	 * @param gift_id, Gift Identification
 	 */
 	public void updateGiftView(int gift_id){
-		TextView title = (TextView)getActivity().findViewById(R.id.title);
+		TextView fundTitle = (TextView)getActivity().findViewById(R.id.fund);
 		TextView date = (TextView)getActivity().findViewById(R.id.date);
 		TextView amount = (TextView)getActivity().findViewById(R.id.giftamount);
-		TextView summary = (TextView)getActivity().findViewById(R.id.summary);
+		TextView checknum = (TextView)getActivity().findViewById(R.id.checknum);
 
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
 		Gift g = db.getGift(gift_id);
+		db.close();
 		
-		title.setText("Gift to " + g.getGift_fund_desc());
-		date.setText("Date: " + g.formatedDate());
+		fundTitle.setText("Gift to " + g.getGift_fund_desc());
+		date.setText("Date: " + g.formattedDate());
 		amount.setText("Amount: " + g.amountToString());
-		summary.setText("Check Number: " + g.getGift_check_num());
-		
-		
+		checknum.setText("Check Number: " + g.getGift_check_num());
+
 		this.gift_id = gift_id;
+
+		// Set up a link bar to donate to the fund with which the gift is associated
+		LinkBar lb = new LinkBar();
+		lb.setArguments(args);
+
+		FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+		fragmentManager.beginTransaction().replace(R.id.bottom_bar, lb).commit();
 	}
-	
+
+
 	/**
 	 * Used to hold onto the id, in case the user comes back to this page
 	 * (like if their phone goes into sleep mode or they temporarily leave the app)
