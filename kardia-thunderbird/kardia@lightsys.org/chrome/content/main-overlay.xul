@@ -66,7 +66,7 @@
 				<vbox id="collapsible-items-box">
 					
                <vbox id="new-data-button">
-                  <button label="Add new info" oncommand="newNote()" tooltiptext="Add new information to this partner's activity timeline"/>
+                  <button label="Add new interaction" oncommand="newNote()" tooltiptext="Add new information to this partner's activity timeline"/>
                   <spacer flex="1"/>
                </vbox>
 					<!-- address, phone, cell, email, fax box -->

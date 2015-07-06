@@ -149,10 +149,6 @@ var kardiaTab;
 var mainWindow = this;
 var dataTab;
 
-// How many processes are currently out to the server
-var processes = 0;
-var output = "";
-
 // is the window being refreshed?
 var refreshing = false;
 
@@ -524,7 +520,7 @@ function reload(isDefault) {
 
       // sets up the Add data button
 		var addData = "";
-		addData += '<button label="Add new info" oncommand="newNote(\'\',\'\')" tooltiptext="Add new information to this partner\'s activity timeline"/><spacer flex="1"/>';	
+		addData += '<button label="Add new interaction" oncommand="newNote(\'\',\'\')" tooltiptext="Add new information to this partner\'s activity timeline"/><spacer flex="1"/>';	
 		mainWindow.document.getElementById("new-data-button").innerHTML = addData;
 
 		
@@ -1553,7 +1549,6 @@ function getOtherInfo(index, isDefault) {
 
 // get info for one person you're collaborating with
 function getCollaborateeInfo(index) {
-   processes++;
    var tabIndex = mainWindow.collaborateeIds.indexOf(mainWindow.collaborateeIds[index]);
 	// get the person's engagement tracks
 	doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(trackResp) {
@@ -1750,7 +1745,6 @@ function getCollaborateeInfo(index) {
                                                 }
                                                 
                                                 // go to the next person (only used in non-parallel mode)
-                                                processes--;
                                                 if (!COLLABORATEES_PARALLEL) {
                                                    getCollaborateeInfo(index+1);
                                                 } else {
@@ -1796,7 +1790,6 @@ function getCollaborateeInfo(index) {
                                     }
                                     
                                     // go to the next person (only used in non-parallel mode)
-                                    processes--;
                                     if (!COLLABORATEES_PARALLEL) {
                                        getCollaborateeInfo(index+1);
                                     } else {
@@ -3713,29 +3706,4 @@ function installButton(toolbarId, id) {
         var palette = toolbox.palette;
         
         toolbar.appendChild(palette.getElementsByClassName("kardia-tab-buttonn").item(0));
-}
-
-function ServerReady() {
-   if (processes < 7) {
-      return true;
-   } else {
-      return false;
-   }
-}
-
-function DoTheThing(index) {
-   if (ServerReady()) {
-      getCollaborateeInfo(index);
-   } else {
-      setTimout(DoTheThing(index), 100);
-   }
-}
-
-function sleep(milliseconds) {
-   var start = new Date().getTime();
-   for (var i = 0; i < 1e7; i++) {
-      if ((new Date().getTime() - start) > milliseconds) {
-         break;
-      }     
-   }
 }
