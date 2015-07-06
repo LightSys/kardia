@@ -131,19 +131,25 @@ function removeFilter(type,what) {
 
 // reload filters
 function reloadFilters(addButtons) {
+   //alert("WoW");
 	sortCollaboratees(addButtons);
 	
 	kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
 
 	// add to my collaborators view
+   //alert("MoM");
+   //alert(mainWindow.collaborateeIds.length);
 	for (var i=0;i<mainWindow.collaborateeIds.length;i++) {					
+   //alert("you");
 		var tracksSelected = false;
 		var tagsSelected = false;
 		for (var j=0;j<mainWindow.filterTracks.length;j++) {
+         //alert("are");
 			if (mainWindow.filterTracks[j]) {
 				tracksSelected = true;
 				break;
 			}
+         //alert("fat");
 		}
 		for (var j=0;j<mainWindow.filterTags.length;j++) {
 			if (mainWindow.filterTags[j]) {
@@ -246,9 +252,12 @@ function reloadFilters(addButtons) {
 		
 		// add partner only if tag, track, data item, and fund filters say we should
 		if (addPerson) {
+         console.log("2");
 			reloadCollaboratee(i);
 		}
+   //alert("1");
 	}
+   //alert("2");
 	
 	// if no collaboratees, display "no results"
 	if (kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML == "") {
@@ -261,6 +270,7 @@ function sortCollaboratees(addButtons) {
 	// sort by the criteria the user has selected
 	var firstIndex;
 	var firstItem;
+   //alert("OH NO!!!");
 	for (var i=0;i<mainWindow.collaborateeNames.length;i++) {
 		firstIndex = i;
 		if (mainWindow.sortCollaborateesBy == "name") {
@@ -306,29 +316,35 @@ function sortCollaboratees(addButtons) {
 	
 	// if no collaboratees, display "no results"
 	if (mainWindow.collaborateeIds.length <= 0) {
+		//alert("++" + mainWindow.collaborateeIds.length + "++");	
 		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '<label class="bold-text" value="No results found."/>';
 	}
 	else {
 		// make list of collaboratees blank
 		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
 		// add collaboratees
+   //alert("2");
+		//alert(">>" + mainWindow.collaborateeIds.length + "<<");	
 		for (var i=0;i<mainWindow.collaborateeIds.length;i++) {	
+         //alert("yo");
+         console.log("3");
 			reloadCollaboratee(i);
 		}
 	}
+   //alert("OH NO!!!.... AGAIN!!!..... AGAINAGAIN!!!");
 	
 	// if filter buttons don't exist...
 	if (kardiaTab.document.getElementById("filter-by-tracks").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Track:"/>' || addButtons) {
 		// add engagement track filter buttons
 		kardiaTab.document.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
 		for (var i=0;i<mainWindow.trackList.length;i++) {
-			kardiaTab.document.getElementById("filter-by-tracks").innerHTML += '<button id="filter-by-e-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this engagement track" type="checkbox" checkState="0" label="' + kardiaTab.htmlEscape(mainWindow.trackList[i]) + '" oncommand="addFilter(\'e\', ' + i + ', false)"/>';
+			kardiaTab.document.getElementById("filter-by-tracks").innerHTML += '<button id="filter-by-e-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this engagement track" type="checkbox" checkState="0" label="' + mainWindow.htmlEscape(mainWindow.trackList[i]) + '" oncommand="addFilter(\'e\', ' + i + ', false)"/>';
 		}
 		
 		// add tag filter buttons
 		kardiaTab.document.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
 		for (var i=0;i<mainWindow.tagList.length;i+=2) {
-			kardiaTab.document.getElementById("filter-by-tags").innerHTML += '<button id="filter-by-t-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this tag" type="checkbox" checkState="0" label="' + kardiaTab.htmlEscape(mainWindow.tagList[i+1]) + '" oncommand="addFilter(\'t\', ' + i + ', false)"/>';
+			kardiaTab.document.getElementById("filter-by-tags").innerHTML += '<button id="filter-by-t-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this tag" type="checkbox" checkState="0" label="' + mainWindow.htmlEscape(mainWindow.tagList[i+1]) + '" oncommand="addFilter(\'t\', ' + i + ', false)"/>';
 		}
 	}
 }
@@ -390,7 +406,9 @@ function sortSomeCollaboratees(maxIndex) {
 		// make list of collaboratees blank
 		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
 		// add collaboratees
+   //alert("3");
 		for (var i=0;i<maxIndex;i++) {	
+         console.log("1");
 			reloadCollaboratee(i);
 		}
 	}
@@ -400,24 +418,29 @@ function sortSomeCollaboratees(maxIndex) {
    var prevString;
 // reload collaboratee at position "index"
 function reloadCollaboratee(index) {
+   //alert("!");
 	// add basic info
-	var addString = '<hbox class="tab-collaborator" tooltiptext="Click to view this partner" onclick="addCollaborator(' + mainWindow.collaborateeIds[index] + ')">\n\t<vbox class="tab-collaborator-name">\n\t\t<label class="bold-text" value="' + htmlEscape(mainWindow.collaborateeNames[index]) + '"/>\n\t\t<label value="ID# ' + htmlEscape(mainWindow.collaborateeIds[index]) + '"/>\n\t</vbox>\n';
+	var addString = '<hbox class="tab-collaborator" tooltiptext="Click to view this partner" onclick="addCollaborator(' + mainWindow.collaborateeIds[index] + ')">\n\t<vbox class="tab-collaborator-name">\n\t\t<label class="bold-text" value="' + mainWindow.htmlEscape(mainWindow.collaborateeNames[index]) + '"/>\n\t\t<label value="ID# ' + mainWindow.htmlEscape(mainWindow.collaborateeIds[index]) + '"/>\n\t</vbox>\n';
 	// add tracks if the partner has them
+   //alert("sudo!");
+   //alert(index);
+   //alert(mainWindow.collaborateeTracks[index].length);
 	if (mainWindow.collaborateeTracks[index].length > 1) {
 		addString += '\t<vbox>\n';
 		for (var j=0;j<mainWindow.collaborateeTracks[index].length;j+=2) {
 			if (mainWindow.collaborateeTracks[index][j] != "" && mainWindow.collaborateeTracks[index][j+1] != "") { 
-				addString += '\t\t<vbox class="tab-engagement-track-color-box" tooltiptext="Click to filter by this engagement track" onclick="addFilter(\'e\', ' + htmlEscape(mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j])) + ', true)" style="background-color:' + htmlEscape(mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j])]) + '">\n\t\t\t<label class="bold-text">\n\t\t\t\t' + htmlEscape(mainWindow.collaborateeTracks[index][j]) + '\n\t\t\t</label>\n\t\t\t<label>\n\t\t\t\tEngagement Step: ' + htmlEscape(mainWindow.collaborateeTracks[index][j+1]) + '\n\t\t\t</label>\n\t\t</vbox>\n';
+				addString += '\t\t<vbox class="tab-engagement-track-color-box" tooltiptext="Click to filter by this engagement track" onclick="addFilter(\'e\', ' + mainWindow.htmlEscape(mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j])) + ', true)" style="background-color:' + mainWindow.htmlEscape(mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j])]) + '">\n\t\t\t<label class="bold-text">\n\t\t\t\t' + mainWindow.htmlEscape(mainWindow.collaborateeTracks[index][j]) + '\n\t\t\t</label>\n\t\t\t<label>\n\t\t\t\tEngagement Step: ' + mainWindow.htmlEscape(mainWindow.collaborateeTracks[index][j+1]) + '\n\t\t\t</label>\n\t\t</vbox>\n';
 			}
 		}
 		addString += '\t</vbox>\n';
 	}
+   //alert("blarg!");
 
 	if (mainWindow.collaborateeActivity[index] != null && mainWindow.collaborateeActivity[index].length > 0) {
-		addString += '\t<vbox id="collaboratee-activity-' + htmlEscape(mainWindow.collaborateeIds[index]) + '" flex="1">\n';
+		addString += '\t<vbox id="collaboratee-activity-' + mainWindow.htmlEscape(mainWindow.collaborateeIds[index]) + '" flex="1">\n';
 		// add recent activity
 		for (var j=1;j<mainWindow.collaborateeActivity[index].length;j+=3) {
-			addString += '\t\t<label flex="1">\n\t\t\t' + htmlEscape(mainWindow.collaborateeActivity[index][j]) + '\n\t\t</label>\n';
+			addString += '\t\t<label flex="1">\n\t\t\t' + mainWindow.htmlEscape(mainWindow.collaborateeActivity[index][j]) + '\n\t\t</label>\n';
 		}
 		addString += '\t</vbox>\n';
 	}
@@ -427,25 +450,17 @@ function reloadCollaboratee(index) {
 		addString += '\t<vbox>\n';
 		for (var j=0;j<mainWindow.collaborateeData[index].length;j+=3) {
 			if (mainWindow.collaborateeData[index][j+1] == "1") { 
-				addString += '\t\t<button tooltiptext="Click to filter by this data item" oncommand="addFilter(\'d\',\'' + htmlEscape(mainWindow.collaborateeData[index][j]) + '\', false);" class="highlighted" label="' + htmlEscape(mainWindow.collaborateeData[index][j]) + '"/>\n';
+				addString += '\t\t<button tooltiptext="Click to filter by this data item" oncommand="addFilter(\'d\',\'' + mainWindow.htmlEscape(mainWindow.collaborateeData[index][j]) + '\', false);" class="highlighted" label="' + mainWindow.htmlEscape(mainWindow.collaborateeData[index][j]) + '"/>\n';
 			}
 		}
 		addString += '\t</vbox>\n';
 	}
+   //alert("hahahaha!");
 	
 	addString += '\t<spacer flex="2"/>\n\t<vbox>\n\t\t<spacer flex="1"/>\n\t\t<image class="tab-select-partner"/>\n\t\t<spacer flex="1"/>\n\t</vbox>\n</hbox>\n';
-	
+	//alert(addString);
 	// display the partner
    kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML += addString;
-}
-
-function htmlEscape(str) {
-      return String(str)
-         .replace(/&/g, '&amp;')
-         .replace(/"/g, '&quot;')
-         .replace(/'/g, '&#39;')
-         .replace(/</g, '&lt;')
-         .replace(/>/g, '&gt;');
 }
 
 // does quick filter from this tab

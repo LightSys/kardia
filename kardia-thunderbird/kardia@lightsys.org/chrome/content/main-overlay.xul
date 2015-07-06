@@ -208,7 +208,10 @@
 						 </vbox> 
 					</hbox>	
 				</vbox>
-			</vbox>		
+			</vbox>
+         <vbox id="open-CRM-button">
+            <button label="Open CRM web interface" oncommand="openUrl()" tooltiptext="Open CRM in default browser."/>
+         </vbox>
 			
 			<!-- FEATURE: When recording emails in Kardia is implemented, uncomment this -->
 			<!--
@@ -295,7 +298,7 @@
 	
 	<!-- toolbarbutton for opening Kardia tab -->
 	<toolbarpalette id="MailToolbarPalette">
-		<toolbarbutton id="kardia-tab-button" label="Kardia" tooltiptext="Switch to the Kardia tab" oncommand="showKardiaTab()">
+		<toolbarbutton id="kardia-tab-button" class="kardia-tab-buttonn" label="Kardia" tooltiptext="Switch to the Kardia tab" oncommand="showKardiaTab()">
 			<vbox>
 				<spacer height="1"/>
 				<image class="kardia-tab"/>

@@ -2,31 +2,31 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/RelativeLayout1"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="wrap_content"
     android:orientation="horizontal" >
 
      Amount
     <TextView
-        android:id="@+id/amount"
+        android:id="@+id/detail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:textColor="#2ACA2D"
-        android:layout_alignLeft="@+id/text"
-        android:layout_marginLeft="70dp"
-        android:textSize="15sp" />
+        android:textColor="#37AD00"
+        android:layout_marginRight="18dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="18dp"
+        android:textSize="22sp" />
 
 
     <!-- The Title -->
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/subject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="18dp"
         android:layout_marginLeft="18dp"
-        android:textSize="22sp" />
+        android:textSize="22sp"
+        android:layout_toLeftOf="@id/detail"/>
 
     <!-- The Date -->
 
@@ -34,22 +34,14 @@
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/title"
-        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@id/detail"
+        android:layout_below="@id/detail"
+        android:layout_marginBottom="6dp"
+        android:layout_marginTop="6dp"
         android:textColor="#303030"
         android:textSize="16sp" />
-    
+
         <!-- Amount Text -->
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="175dp"
-        android:text="@string/amount"
-        android:textSize="15sp" />
-
 </RelativeLayout>
-<!-- From: file:/srv/lightsys/dev/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout/main_listview_item_layout.xml -->
+<!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout/main_listview_item_layout.xml -->

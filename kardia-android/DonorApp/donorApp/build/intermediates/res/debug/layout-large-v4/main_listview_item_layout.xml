@@ -19,7 +19,7 @@
 
     <!-- The Title -->
     <TextView 
-        android:id="@+id/title"
+        android:id="@+id/subject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -34,7 +34,7 @@
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/title"
+        android:layout_alignLeft="@+id/subject"
         android:layout_alignParentBottom="true"
         android:textColor="#303030"
         android:textSize="22sp" />
@@ -52,4 +52,4 @@
         android:textSize="22sp" />
 
 </RelativeLayout>
-<!-- From: file:/srv/lightsys/dev/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout-large/main_listview_item_layout.xml -->
+<!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout-large/main_listview_item_layout.xml -->

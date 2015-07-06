@@ -46,13 +46,30 @@
         android:hint="@+string/donor_id_ex_100001"
         android:inputType="number" />
 
-    <Button
-        android:id="@+id/submit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:text="@string/submit"
-        style="@style/customBottomBar" />
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="18dp">
+
+        <Button
+            android:id="@+id/submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Submit"
+            style="@style/customBottomBar"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="115dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:id="@+id/cancel"
+            style="@style/customBottomBar"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="18dp" />
+    </TableRow>
 
 </LinearLayout>
-<!-- From: file:/srv/lightsys/dev/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout/account_edit_layout.xml -->
+<!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout/account_edit_layout.xml -->

@@ -17,6 +17,8 @@ public class ContactMissionaryActivity extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.missionary_contact_form_layout, container, false);
+        View v = inflater.inflate(R.layout.missionary_contact_form_layout, container, false);
+
+        return v;
     }
 }

@@ -7,11 +7,8 @@ import android.widget.SimpleAdapter;
 
 import com.example.donorapp.R;
 
-import org.lightsys.donorapp.customview.PrayButton;
-import org.lightsys.donorapp.data.Account;
-
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,22 +22,21 @@ import java.util.Map;
 public class PrayerAdapter extends SimpleAdapter {
 
     Context context;
-    final List<? extends Map<String,?>> data;
+    final ArrayList<HashMap<String, String>> data;
+    final ArrayList<Boolean> prayedForData;
     ArrayList<View> views;
-    int resource;
     String[] from;
     int[] to;
-    Account user;
 
-    public PrayerAdapter(Context context, List<? extends Map<String,?>> data, int resource, String[] from, int[] to, Account user) {
+    public PrayerAdapter(Context context, ArrayList<HashMap<String,String>> data,
+            ArrayList<Boolean> prayData, int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
-        this.views = new ArrayList<View>();
         this.context = context;
+        this.views = new ArrayList<View>();
         this.data = data;
-        this.resource = resource;
+        this.prayedForData = prayData;
         this.from = from;
         this.to = to;
-        this.user = user;
     }
 
     /**
@@ -50,48 +46,25 @@ public class PrayerAdapter extends SimpleAdapter {
      * @param parent - Parent of the adapter
      * @return - Formatted, inflated view
      */
-    public View getView(int position, View convertView, ViewGroup parent) {
-//        ArrayList<HashMap<String, String>> info = (ArrayList<HashMap<String, String>>) data;
+    public View getView(final int position, View convertView, ViewGroup parent) {
         PrayerLayout rowView = (PrayerLayout)convertView;
         if(rowView == null) {
             rowView = new PrayerLayout(this.context);
         }
 
-        final Map<String, ?> pieces = data.get(position);
-        rowView.setTitle((String)pieces.get("prayerName"));
-        rowView.setDate((String) pieces.get("prayerDate"));
-        rowView.setPrayerId((Integer) pieces.get("prayerId"));
+        final Map<String, String> pieces = data.get(position);
+        rowView.setTitle(pieces.get("prayerSubject"));
+        rowView.setDate(pieces.get("prayerDate"));
+        rowView.setMissionaryNameView(pieces.get("prayerMissionary"));
 
-        user.addPrayedForRequest("" + ((PrayButton)rowView.findViewById(R.id.prayingButton)).getPrayerId());
-
-        if((Boolean)user.isRequestPrayedFor("" + ((PrayButton)rowView.findViewById(R.id.prayingButton)).getPrayerId())){
-            rowView.setImage(R.drawable.praying_hands);
-            rowView.setPrayers(user.getTimesPrayed("" + ((PrayButton)rowView.findViewById(R.id.prayingButton)).getPrayerId()));
+        if(prayedForData.get(position)){
+            rowView.setImage(R.drawable.new_praying_hands);
         } else {
             rowView.setImage(R.drawable.inactive_praying_hands);
         }
 
         views.add(rowView);
 
-        rowView.findViewById(R.id.prayingButton).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                System.out.println(((PrayButton)v).getPrayerId());
-                if(user.isRequestPrayedFor("" + ((PrayButton)v).getPrayerId())){
-                } else {
-                    user.PrayForRequest("" + ((PrayButton)v).getPrayerId());
-                    ((PrayButton)v).setBackground(v.getResources().getDrawable(R.drawable.praying_hands));
-                }
-                ((PrayButton)v).setText("" + user.getTimesPrayed("" + ((PrayButton) v).getPrayerId()));
-            }
-        });
         return rowView;
     }
-
-    public View getExistingView(int position){
-        return views.get(position);
-    }
-//
-//    private void setPrayerStatus(int position, boolean status){
-//        data.get(position).
-//    }
 }

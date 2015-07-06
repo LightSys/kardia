@@ -1,50 +1,38 @@
 package org.lightsys.donorapp;
 
-import android.app.Activity;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NotificationCompat;
-import android.view.ContextMenu;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.PopupWindow;
-import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.donorapp.R;
 
+import org.lightsys.donorapp.data.LocalDBHandler;
 import org.lightsys.donorapp.data.PrayerRequest;
 
 /**
  * Created by JoshWorkman on 3/10/2015.
- * This activity displays the expanded form of a prayerRequest\
+ * This activity displays the expanded form of a prayerRequest
  * Primarily displays Subject, Date submitted, and request text
- * It also includes a blank button that opens an incomplete menu to set reminders to pray for the request
+ * It also includes a button that opens a menu to set reminders to pray for the request
  */
 public class DetailedPrayerRequest extends Fragment{
 
     final static String ARG_REQUEST_ID = "request_id";
     int request_id = -1;
-    private static boolean popupOpen = false;
-    private PopupWindow popupWindow;
-    private Button popupButton;
+    private Button prayerReminder;
     private PrayerRequest request;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.prayer_request_detailedview, container, false);
-
-        popupButton =(Button) v.findViewById(R.id.scheduleNotification);
-        popupButton.setOnClickListener(new togglePopup());
-
         return v;
     }
 
@@ -62,31 +50,86 @@ public class DetailedPrayerRequest extends Fragment{
      }
 
      /**
-     * This function sets the text for the gift's information
-     *
-     * @param id, the gift's id.
+     * Sets the text fields with the detailed information about the prayer request
+     * @param request_id, Request Identification
      */
 
-    public void updateRequestView(int request_id){
-        TextView title = (TextView)getActivity().findViewById(R.id.title);
-        TextView date = (TextView)getActivity().findViewById(R.id.date);
-        TextView summary = (TextView)getActivity().findViewById(R.id.summary);
+    public void updateRequestView(final int request_id){
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
 
-//        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
-//        Gift g = db.getGift(request_id);
-        request = null;
-        for(PrayerRequest p: PrayerRequestList.getPrayerRequests()) {
-            if (p.getIntId() == request_id) {
-                request = p;
-                break;
-            }
-        }
-        if(request!=null) {
-            title.setText(request.getSubject());
-            date.setText("Date: " + request.getDate());
-            summary.setText("Request: " + request.getText());
-        }
+        TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
+        TextView subject = (TextView)getActivity().findViewById(R.id.subject);
+        TextView date = (TextView)getActivity().findViewById(R.id.date);
+        TextView text = (TextView)getActivity().findViewById(R.id.text);
+        prayerReminder = (Button)getActivity().findViewById(R.id.scheduleNotification);
+
+        request = db.getRequestForID(request_id);
         this.request_id = request_id;
+
+        missionaryName.setText(request.getMissionaryName());
+        subject.setText("Subject: " + request.getSubject());
+        date.setText("Date: " + request.formattedDate());
+        text.setText(request.getText());
+
+        if (request.getIsPrayedFor()) {
+            prayerReminder.setBackground(getResources().getDrawable(R.drawable.new_praying_hands));
+        } else {
+            prayerReminder.setBackground(getResources().getDrawable(R.drawable.inactive_praying_hands));
+        }
+
+
+        prayerReminder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Does not allow user to launch notification activity a second time
+                if (request.getIsPrayedFor()) {
+                    Toast.makeText(getActivity(), "You are already praying for this request!",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    // Ask user if they would like notifications
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle("Set Notifications")
+                            .setMessage("Would you like to set notifications to remind you to pray" +
+                                    " for this request?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Launch notification activity
+                                    Intent notification = new Intent(getActivity(), PrayerNotificationActivity.class);
+                                    notification.putExtra("requestid", request_id);
+                                    startActivityForResult(notification, 0);
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // return, but still set button to prayed for
+                                    updateDbToPrayedFor();
+                                    prayerReminder.setBackground(getResources().getDrawable(R.drawable.new_praying_hands));
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                }
+            }
+        });
+    }
+
+    /**
+     * Updates prayer request to signify it is being prayed for
+     */
+    private void updateDbToPrayedFor() {
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+        db.updatePrayerRequest(request_id, true);
+        request = db.getRequestForID(request_id);
+        db.close();
+    }
+
+    /**
+     * Called when returning from notification activity
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        updateDbToPrayedFor();
     }
 
     /**
@@ -97,49 +140,5 @@ public class DetailedPrayerRequest extends Fragment{
     public void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
         outState.putInt(ARG_REQUEST_ID, request_id);
-    }
-
-    public class togglePopup implements Button.OnClickListener{
-
-        public void onClick(View view)
-        {
-            if(!popupOpen)
-            {
-                LayoutInflater layoutInflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View popupView = layoutInflater.inflate(R.layout.prayer_notification_layout, null);
-                popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                popupWindow.showAsDropDown(popupButton, 0, 0);
-                popupOpen=true;
-            }
-            else
-            {
-                //TODO: get state and number of occurences from spinner
-                String state = "ON";//((Spinner)getActivity().findViewById(R.id.on_off)).getSelectedItem().toString();
-                int occurences =1;// Integer.parseInt(((Spinner)view.findViewById(R.id.times_day)).getSelectedItem().toString());
-                if(state.equals("ON"))
-                {
-                    for(int i=0;i<occurences;i++) {
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(getActivity()).setContentTitle(request.getSubject()).setContentText(request.getText());
-                        Intent intent = new Intent(getActivity(), getActivity().getClass());
-//                    The stack builder object will contain an artificial back stack for the
-//                    started Activity.
-//                    This ensures that navigating backward from the Activity leads out of
-//                    your application to the Home screen.
-                        TaskStackBuilder stackBuilder = TaskStackBuilder.create(getActivity());
-//                    Adds the back stack for the Intent (but not the Intent itself)
-                        stackBuilder.addParentStack(getActivity().getClass());
-//                    Adds the Intent that starts the Activity to the top of the stack
-                        stackBuilder.addNextIntent(intent);
-                        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-                        builder.setContentIntent(resultPendingIntent);
-                        NotificationManager mNotificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
-//                    mId allows you to update the notification later on.
-                        mNotificationManager.notify(0, builder.build());
-                    }
-                }
-                popupWindow.dismiss();
-                popupOpen=false;
-            }
-        }
     }
 }
