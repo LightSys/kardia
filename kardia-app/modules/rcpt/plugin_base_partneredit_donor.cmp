@@ -155,7 +155,7 @@ plugin_base_partneredit_donor "widget/component-decl"
 				:a_amount,
 				-- date = substring(convert(string,:a_effective_date), 1, charindex(' ', convert(string,:a_effective_date))),
 				date = substring(convert(string,isnull(:a_gift_postmark_date, :a_gift_received_date)), 1, 11),
-				stat = condition(:a_amount = $0, 'Voided', condition(:a_receipt_sent_date is null, 'Processing', 'Receipted')),
+				stat = condition(:a_amount = $0, 'Voided', condition(:a_posted == 0, 'Processing', 'Receipted')),
 				:a_period,
 				:a_receipt_number,
 				:a_comment,

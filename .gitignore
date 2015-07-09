@@ -1,4 +1,5 @@
 kardia-app/tpl/*.tpl
+kardia-app/files/*
 kardia-db/*/components
 kardia-db/*/wiki.txt
 kardia-db/*/onetable.sql
@@ -15,6 +16,11 @@ kardia-android/MissionaryAppAndroidStudio/missionaryApp/build/*
 kardia-android/MissionaryAppAndroidStudio/appcompat_v7_7/build/*
 kardia-android/MissionaryAppAndroidStudio/build/*
 kardia-android/MissionaryAppAndroidStudio/missionaryApp/src/main/java/org/lightsys/missionaryapp/.DS_Store
+kardia-android/**/*.iml
+kardia-android/**/local.properties
+kardia-android/**/.gradle
+kardia-android/**/build
+kardia-android/**/.idea
 kardia-android/*/*.iml
 kardia-thunderbird/kardia@lightsys.org/excludelist.txt
 kardia-thunderbird/kardia@lightsys.org/chrome/content/makefile.bat
