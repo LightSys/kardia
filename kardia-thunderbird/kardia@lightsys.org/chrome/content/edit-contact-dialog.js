@@ -5,7 +5,7 @@ function startDialog() {
 
 	// if address, add countries
 	if (window.arguments[0].type == "A") {
-		document.getElementById("inner-country").innerHTML = window.arguments[1];
+		document.getElementById("inner-country").innerHTML = mainWindow.htmlEscape(window.arguments[1]);
 	}
 	
 	// choose correct type

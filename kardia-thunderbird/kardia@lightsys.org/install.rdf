@@ -5,8 +5,9 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>kardia@lightsys.org</em:id>
+    <em:type>2</em:type>
     <em:name>Kardia Extension</em:name>
-    <em:version>0.995</em:version>
+    <em:version>1.0</em:version>
     <em:creator>LightSys</em:creator>
 	<em:iconURL>chrome://kardia/content/images/prefs-image.png</em:iconURL>
    

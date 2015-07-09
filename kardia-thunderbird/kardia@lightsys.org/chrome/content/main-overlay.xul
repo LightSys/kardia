@@ -66,7 +66,7 @@
 				<vbox id="collapsible-items-box">
 					
                <vbox id="new-data-button">
-                  <button label="Add new interaction" oncommand="newNote()" tooltiptext="Add new information to this partner's activity timeline"/>
+                  <button label="Add new interaction" tooltiptext="Add new information to this partner's activity timeline"/>
                   <spacer flex="1"/>
                </vbox>
 					<!-- address, phone, cell, email, fax box -->
@@ -210,7 +210,8 @@
 				</vbox>
 			</vbox>
          <vbox id="open-CRM-button">
-            <button label="Open CRM web interface" oncommand="openUrl()" tooltiptext="Open CRM in default browser."/>
+            <button label="Open CRM web interface" tooltiptext="Open CRM in default browser."/>
+            <spacer flex="1"/>
          </vbox>
 			
 			<!-- FEATURE: When recording emails in Kardia is implemented, uncomment this -->

@@ -1,4 +1,6 @@
 // Places where features can be added are marked with comment //FEATURE
+// Please check here for a list of known bugs. (feel free to add any you find)
+// https://docs.google.com/document/d/1QPitVvT-VSf_bbFGfg_EzJruYXLcjfGdiK_q8DC0lu4/edit
 
 // selected messages and number of emails selected (for comparing to see if we need to find users and reload Kardia pane)
 var numSelected = 0;
@@ -254,10 +256,9 @@ window.addEventListener("load", function() {
 	}
 	todosObserver.register();
 
-   // sets up the open CRM button
-   var openCRM = "";
-   openCRM += '<button label="Open CRM web interface" oncommand="openURL(\'' + mainWindow.server + "/apps/kardia/modules/crm" + '\', false)" tooltiptext="Open CRM in default browser."/><spacer flex="1"/>';	
-   mainWindow.document.getElementById("open-CRM-button").innerHTML = openCRM;
+   // sets up the open CRM and new data button
+   mainWindow.document.getElementById("open-CRM-button").addEventListener("click", function() {openURL(mainWindow.server + "/apps/kardia/modules/crm", false)});
+   mainWindow.document.getElementById("new-data-button").addEventListener("click", function() {newNote("","")});
 
 }, false);
 
@@ -480,7 +481,7 @@ function reload(isDefault) {
 		
 		// if we're loading the pane for the first time, select the first (0th) item
 		if (isDefault) {
-			mainWindow.selected = 0;
+			selected = 0;
 		}
 
 		// show content boxes in case they're hidden
@@ -518,12 +519,6 @@ function reload(isDefault) {
 			mainWindow.document.getElementById("choose-partner-dropdown-menu").innerHTML = partners;
 		}
 
-      // sets up the Add data button
-		var addData = "";
-		addData += '<button label="Add new interaction" oncommand="newNote(\'\',\'\')" tooltiptext="Add new information to this partner\'s activity timeline"/><spacer flex="1"/>';	
-		mainWindow.document.getElementById("new-data-button").innerHTML = addData;
-
-		
 		// display contact info based on selected partner
 		var contactInfoHTML = "";
 		var i;
@@ -746,7 +741,6 @@ function copyDocLinkLocation(idString) {
 
 // open the given URL in default browser
 function openUrl(url, isContact) {
-   console.log(url);
 	// if necessary, delete "W: " or "B: " prefix
 	if (isContact) {
 		url = url.substring(3,url.length);
@@ -1454,8 +1448,8 @@ function getOtherInfo(index, isDefault) {
                                                                                           for(var k in fundResp) keys.push(k);
 
                                                                                           // reset gift filter list
-                                                                                          mainWindow.giftFilterFunds = new Array();
-                                                                                          mainWindow.giftFilterTypes = new Array();
+                                                                                          giftFilterFunds = new Array();
+                                                                                          giftFilterTypes = new Array();
                                                                                           
                                                                                           // save funds
                                                                                           var tempArray = new Array();
@@ -1778,7 +1772,7 @@ function getCollaborateeInfo(index) {
                                        kardiaTab.sortCollaboratees(false);
                                        kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
                                     }
-                                    mainWindow.refreshing = false;
+                                    refreshing = false;
                                     
                                     // reload the Kardia pane so it's blank at first
                                     reload(false);
@@ -3044,7 +3038,7 @@ function getMyInfo(username, password) {
          for(var k in todoResp) keys.push(k);
          
          // clear todos array
-         mainWindow.allTodos = new Array();
+         allTodos = new Array();
          
          // the key "@id" doesn't correspond to a note, so use all other keys to add note info to array
          for (var i=0;i<keys.length;i++) {
@@ -3069,14 +3063,14 @@ function getMyInfo(username, password) {
             if (collabResp != null) {
 
                // refresh collaboratees list
-               mainWindow.collaborateeIds = new Array();
-               mainWindow.collaborateeNames = new Array();
-               mainWindow.collaborateeTracks = new Array();
-               mainWindow.collaborateeTags = new Array();
-               mainWindow.collaborateeActivity = new Array();
-               mainWindow.collaborateeData = new Array();
-               mainWindow.collaborateeGifts = new Array();
-               mainWindow.collaborateeFunds = new Array();
+               collaborateeIds = new Array();
+               collaborateeNames = new Array();
+               collaborateeTracks = new Array();
+               collaborateeTags = new Array();
+               collaborateeActivity = new Array();
+               collaborateeData = new Array();
+               collaborateeGifts = new Array();
+               collaborateeFunds = new Array();
                
                // get all the keys from the JSON file
                var keys = [];
@@ -3115,31 +3109,31 @@ function getMyInfo(username, password) {
 // get e-track list, tag list, me as staff
 function getTrackTagStaff(username, password) {	
 	// set the fact that we are refreshing
-	mainWindow.refreshing = true;
+	refreshing = true;
    if (kardiaTab != null) {
 	   kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.gif";
    }
 										
 	// reset Kardia tab sorting
-	mainWindow.sortCollaborateesBy = "name";
-	mainWindow.sortCollaborateesDescending = true;
-	mainWindow.filterBy = "any";
-	mainWindow.trackList = new Array();
-	mainWindow.trackNumList = new Array();
-	mainWindow.trackColors = new Array();
-	mainWindow.filterTracks = new Array();
-	mainWindow.tagList = new Array();
-	mainWindow.noteTypeList = new Array();
-	mainWindow.countryMenu = "";
-	mainWindow.countryIndex = 0;
-	mainWindow.countries = new Array();
-	mainWindow.partnerList = new Array();
-	mainWindow.collabTypeList = new Array();
-	mainWindow.filterTags = new Array();
-	mainWindow.filterData = new Array();
-	mainWindow.filterFunds = new Array();
-	mainWindow.giftFilterFunds = new Array();
-	mainWindow.giftFilterTypes = new Array();
+	sortCollaborateesBy = "name";
+	sortCollaborateesDescending = true;
+	filterBy = "any";
+	trackList = new Array();
+	trackNumList = new Array();
+	trackColors = new Array();
+	filterTracks = new Array();
+	tagList = new Array();
+	noteTypeList = new Array();
+	countryMenu = "";
+	countryIndex = 0;
+	countries = new Array();
+	partnerList = new Array();
+	collabTypeList = new Array();
+	filterTags = new Array();
+	filterData = new Array();
+	filterFunds = new Array();
+	giftFilterFunds = new Array();
+	giftFilterTypes = new Array();
 	
 	// get list of engagement tracks and their colors
 	doHttpRequest("apps/kardia/api/crm_config/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (trackListResp) {

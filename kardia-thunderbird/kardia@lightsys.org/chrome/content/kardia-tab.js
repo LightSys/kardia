@@ -252,7 +252,6 @@ function reloadFilters(addButtons) {
 		
 		// add partner only if tag, track, data item, and fund filters say we should
 		if (addPerson) {
-         console.log("2");
 			reloadCollaboratee(i);
 		}
    //alert("1");
@@ -327,7 +326,6 @@ function sortCollaboratees(addButtons) {
 		//alert(">>" + mainWindow.collaborateeIds.length + "<<");	
 		for (var i=0;i<mainWindow.collaborateeIds.length;i++) {	
          //alert("yo");
-         console.log("3");
 			reloadCollaboratee(i);
 		}
 	}
@@ -408,7 +406,6 @@ function sortSomeCollaboratees(maxIndex) {
 		// add collaboratees
    //alert("3");
 		for (var i=0;i<maxIndex;i++) {	
-         console.log("1");
 			reloadCollaboratee(i);
 		}
 	}
