@@ -4,7 +4,8 @@ function startDialog() {
 	centerWindowOnScreen();
 
 	// add countries
-		document.getElementById("inner-country").innerHTML = mainWindow.htmlEscape(window.arguments[1]);
+		//document.getElementById("inner-country").innerHTML = mainWindow.htmlEscape(window.arguments[1]);
+		$("#inner-country").text(window.arguments[1]);
 		document.getElementById("country").selectedIndex = mainWindow.htmlEscape(window.arguments[2]);
 }
 

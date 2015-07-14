@@ -13,6 +13,7 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 		
 <!-- script that makes buttons work -->
+<script type="application/javascript" src="chrome://messenger/content/jquery.js"/>
 <script type="application/javascript" src="chrome://kardia/content/add-contact-dialog.js"/>
 
     <!-- vbox holds dropdown menus -->

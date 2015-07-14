@@ -8,6 +8,7 @@
 	<html:link rel="icon" href="chrome://kardia/content/images/kardia-icon-square.png"/>
 
 	<!-- JavaScript file -->
+	<script type="application/javascript" src="chrome://messenger/content/jquery.js"/>
 	<script type="application/javascript" src="chrome://kardia/content/main-overlay.js"/>
 	<script type="application/javascript" src="chrome://kardia/content/kardia-tab.js"/>
 	
