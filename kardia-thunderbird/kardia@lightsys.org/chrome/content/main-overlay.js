@@ -101,7 +101,7 @@ var myCal;*/
 			var dueDateString = '{"year":' + aNewItem.dueDate.getFullYear() + ',"month":' + (aNewItem.dueDate.getMonth()+1) + ',"day":' + aNewItem.dueDate.getDate() + ',"hour":' + aNewItem.dueDate.getHours() + ',"minute":' + aNewItem.dueDate.getMinutes() + ',"second":' + aNewItem.dueDate.getSeconds() + '}';
 		}
 		
-		doPatchHttpRequest('apps/kardia/api/crm/Todos/' + aOldItem.id, '{"desc":"' + aNewItem.title + '"due_date":' + dueDateString + ',"date_modified":"' + dateString + '","modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPatchHttpRequest('apps/kardia/api/crm/Todos/' + aOldItem.id, '{"desc":"' + aNewItem.title + '"due_date":' + dueDateString + ',"date_modified":"' + dateString + '","modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 		// TODO add due date
 		// display item
 			if (mainWindow.document.getElementById("to-do-item-" + aDeletedItem.id) != null) {
@@ -116,7 +116,7 @@ var myCal;*/
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 			
-		doPatchHttpRequest('apps/kardia/api/crm/Todos/' + aDeletedItem.id, '{"status_code":"c","completion_date":' + dateString + ',"req_item_completed_by":"' + prefs.getCharPref("username") + '"}', false, "", "");
+		doPatchHttpRequest('apps/kardia/api/crm/Todos/' + aDeletedItem.id, '{"status_code":"c","completion_date":' + dateString + ',"req_item_completed_by":"' + kardiacrm.username + '"}', false, "", "");
 			if (mainWindow.document.getElementById("to-do-item-" + aDeletedItem.id) != null) {
 				mainWindow.document.getElementById("to-do-item-" + aDeletedItem.id).style.display="none";
 			}
@@ -151,9 +151,24 @@ var kardiaTab;
 var mainWindow = this;
 var dataTab;
 
-// is the window being refreshed?
-var refreshing = false;
+// Various system-wide Kardia CRM data items
+var kardiacrm = 
+    {
+    // is the window being refreshed?
+    refreshing:false,
+    refreshes:0,
 
+    // current server connection data
+    username:"",
+    password:"",
+    server:"",
+    akey:"",
+
+    // Our reference to jQuery
+    jQuery:null,
+    };
+
+// Configuration services
 var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.kardia.");
 
 // Enables parallel loading of Collaboratees in the Kardia tab. (Not fully functional)
@@ -164,12 +179,13 @@ updateKardia();
 //update periodically based on preferences
 function updateKardia() {
 	window.setTimeout(function() {
-		if (loginValid && !refreshing) {
+		if (loginValid && !kardiacrm.refreshing) {
 			// completely refresh/reload
-			getTrackTagStaff(prefs.getCharPref("username"), prefs.getCharPref("password"));
+			kardiacrm.refreshes++;
+			getTrackTagStaff(kardiacrm.username, kardiacrm.password);
 		}
 		updateKardia();
-	}, 60000*prefs.getIntPref("refreshInterval"));
+	}, ((kardiacrm.refreshes > 0)?60000:600)*prefs.getIntPref("refreshInterval"));
 }
 
 // manually update
@@ -177,16 +193,21 @@ function manualUpdate() {
   document.getElementById("manual-refresh").style.backgroundColor = "#cccccc";
   setTimeout(function() {document.getElementById("manual-refresh").style.backgroundColor = "#ffffff";},200);
 
-  if (mainWindow.refreshing) {
+  if (mainWindow.kardiacrm.refreshing) {
   }
-  if (mainWindow.loginValid && !mainWindow.refreshing) {
+  if (mainWindow.loginValid && !mainWindow.kardiacrm.refreshing) {
 	// completely refresh/reload
-	mainWindow.getTrackTagStaff(mainWindow.prefs.getCharPref("username"), mainWindow.prefs.getCharPref("password"));
+	mainWindow.getTrackTagStaff(mainWindow.kardiacrm.username, mainWindow.kardiacrm.password);
   }
 }
 	
 // what to do when Thunderbird starts up
 window.addEventListener("load", function() { 
+
+	// Load jQuery
+	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
+	loader.loadSubScript("chrome://messenger/content/jquery.js", window);
+	kardiacrm.jQuery = window.jQuery.noConflict(true);
 
 	// set "show Kardia pane" arrow to the correct image, based on whether it's collapsed
 	if (document.getElementById("main-box").collapsed == true) {
@@ -202,8 +223,8 @@ window.addEventListener("load", function() {
   	var loginInfo = getLogin(false, false, function(loginInfo2) {
 
 		// store username/password in preferences (this is only important if getLogin() returned something valid)
-		prefs.setCharPref("username",loginInfo2[0]);
-		prefs.setCharPref("password",loginInfo2[1]);
+		kardiacrm.username = loginInfo2[0];
+		kardiacrm.password = loginInfo2[1];
 		
 		//see how many email addresses the person has
 		var prefs2 = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
@@ -265,8 +286,8 @@ window.addEventListener("load", function() {
 // what to do when Thunderbird is closed
 window.addEventListener("close", function() {
 	// set username and password in preferences to blank values
-	prefs.setCharPref("username","");
-	prefs.setCharPref("password","");
+	kardiacrm.username = "";
+	kardiacrm.password = "";
 }, false);
 
 gMessageListeners.push({
@@ -1130,7 +1151,7 @@ function findUser(index) {
          emailRequest.onerror = function() {};
          
          // send the HTTP request
-         emailRequest.open("GET", emailUrl, true, prefs.getCharPref("username"), prefs.getCharPref("password"));
+         emailRequest.open("GET", emailUrl, true, kardiacrm.username, kardiacrm.password);
          emailRequest.send(null);
       }
 }
@@ -1728,7 +1749,7 @@ function getCollaborateeInfo(index) {
                                                    kardiaTab.sortCollaboratees(false);
                                                    kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
                                                 }
-                                                mainWindow.refreshing = false;
+                                                mainWindow.kardiacrm.refreshing = false;
                                                 
                                                 // reload the Kardia pane so it's blank at first
                                                 reload(false);
@@ -1772,7 +1793,7 @@ function getCollaborateeInfo(index) {
                                        kardiaTab.sortCollaboratees(false);
                                        kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
                                     }
-                                    refreshing = false;
+                                    kardiacrm.refreshing = false;
                                     
                                     // reload the Kardia pane so it's blank at first
                                     reload(false);
@@ -1817,7 +1838,7 @@ function deleteTodo(todoId) {
 	var date = new Date();
 	var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}'
 	
-	doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Todos/' + todoId, '{"status_code":"c","completion_date":' + dateString + ',"req_item_completed_by":"' + prefs.getCharPref("username") + '"}', false, "", "");
+	doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Todos/' + todoId, '{"status_code":"c","completion_date":' + dateString + ',"req_item_completed_by":"' + kardiacrm.username + '"}', false, "", "");
 	document.getElementById("to-do-item-" + todoId).style.display="none";
 	
 	var listener = {
@@ -1857,7 +1878,7 @@ function newTodo() {
 
 	// post the new todo
 	// TODO add todo types, collaborator, engagement id
-	doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Todos','{"e_todo_partner":"' + mainWindow.ids[mainWindow.selected] + '","e_todo_desc":"' + text + '","e_todo_collaborator":"' + '100002' + '","e_todo_type_id":0,"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+	doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Todos','{"e_todo_partner":"' + mainWindow.ids[mainWindow.selected] + '","e_todo_desc":"' + text + '","e_todo_collaborator":"' + '100002' + '","e_todo_type_id":0,"s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 
 		doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[mainWindow.selected] + "/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(todoResp) {
 			// get all the keys from the JSON file
@@ -2409,7 +2430,7 @@ function editContactInfo(type, id) {
 	if (returnValues.setInactive) status_code = "O";
 			  
 	if (returnValues.type == "A" && loginValid) {
-		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/Addresses/' + mainWindow.ids[mainWindow.selected] + "|" + id + "|0",'{"location_type_code":"' + returnValues.locationId + '","address_1":"' + returnValues.info.address1 + '","address_2":"' + returnValues.info.address2 + '","address_3":"' + returnValues.info.address3 + '","city":"' + returnValues.info.city + '","state_province":"' + returnValues.info.state + '","country_code":"' + returnValues.info.country + '","postal_code":"' + returnValues.info.zip + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/Addresses/' + mainWindow.ids[mainWindow.selected] + "|" + id + "|0",'{"location_type_code":"' + returnValues.locationId + '","address_1":"' + returnValues.info.address1 + '","address_2":"' + returnValues.info.address2 + '","address_3":"' + returnValues.info.address3 + '","city":"' + returnValues.info.city + '","state_province":"' + returnValues.info.state + '","country_code":"' + returnValues.info.country + '","postal_code":"' + returnValues.info.zip + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 			
 			var addressLocation = mainWindow.addresses[mainWindow.selected].indexOf(parseInt(id));
 			if (returnValues.setInactive) {
@@ -2455,7 +2476,7 @@ function editContactInfo(type, id) {
 		});
 	}	
 	else if (returnValues.type == "P" && loginValid) {
-		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo/' + mainWindow.ids[mainWindow.selected] + "|" + id,'{"phone_area_city":"' + returnValues.info.areaCode + '","contact_data":"' + returnValues.info.number + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo/' + mainWindow.ids[mainWindow.selected] + "|" + id,'{"phone_area_city":"' + returnValues.info.areaCode + '","contact_data":"' + returnValues.info.number + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 			
 			var phoneLocation = mainWindow.phoneNumbers[mainWindow.selected].indexOf(parseInt(id));
 			if (returnValues.setInactive) {
@@ -2478,7 +2499,7 @@ function editContactInfo(type, id) {
 		});
 	}	
 	else if ((returnValues.type == "E" || returnValues.type == "W") && loginValid) {
-		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo/' + mainWindow.ids[mainWindow.selected] + "|" + id,'{"contact_data":"' + returnValues.info + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo/' + mainWindow.ids[mainWindow.selected] + "|" + id,'{"contact_data":"' + returnValues.info + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 			
 			if (type == "E") {
 				var contactLocation = mainWindow.allEmailAddresses[mainWindow.selected].indexOf(parseInt(id));
@@ -2529,7 +2550,7 @@ function newContactInfo() {
 
 	if (returnValues.type == "A" && loginValid) {
 		// post the new address
-		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/Addresses','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","p_location_type":"' + returnValues.locationId + '","p_address_1":"' + returnValues.info.address1 + '","p_address_2":"' + returnValues.info.address2 + '","p_address_3":"' + returnValues.info.address3 + '","p_city":"' + returnValues.info.city + '","p_state_province":"' + returnValues.info.state + '","p_country_code":"' + returnValues.info.country + '","p_postal_code":"' + returnValues.info.zip + '","p_revision_id":0,"p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/Addresses','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","p_location_type":"' + returnValues.locationId + '","p_address_1":"' + returnValues.info.address1 + '","p_address_2":"' + returnValues.info.address2 + '","p_address_3":"' + returnValues.info.address3 + '","p_city":"' + returnValues.info.city + '","p_state_province":"' + returnValues.info.state + '","p_country_code":"' + returnValues.info.country + '","p_postal_code":"' + returnValues.info.zip + '","p_revision_id":0,"p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 
 			doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[mainWindow.selected] + "/Addresses?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(contactResp) {
          // If not 404
@@ -2571,7 +2592,7 @@ function newContactInfo() {
 
 	else if ((returnValues.type == "P" || returnValues.type == "C" || returnValues.type == "F") && loginValid) {
 		// post the new contact info
-		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","p_contact_type":"' + returnValues.type + '","p_phone_area_city":"' + returnValues.info.areaCode + '","p_contact_data":"' + returnValues.info.number + '","p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","p_contact_type":"' + returnValues.type + '","p_phone_area_city":"' + returnValues.info.areaCode + '","p_contact_data":"' + returnValues.info.number + '","p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 
 			doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[mainWindow.selected] + "/ContactInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(contactResp) {
          // If not 404
@@ -2613,7 +2634,7 @@ function newContactInfo() {
 
 	else if ((returnValues.type == "E" || returnValues.type == "W" || returnValues.type == "B") && loginValid) {
 		// post the new contact info
-		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","p_contact_type":"' + returnValues.type + '","p_contact_data":"' + returnValues.info + '","p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactInfo','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","p_contact_type":"' + returnValues.type + '","p_contact_data":"' + returnValues.info + '","p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 	
 			doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[mainWindow.selected] + "/ContactInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(contactResp) {
          // If not 404
@@ -2701,7 +2722,7 @@ function editTrack(name,step) {
 		doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Tracks/' + name, '{"completion_status":"c","simple_completion_date":' + dateString + '}', false, "", "");
 
 		// add new step with the same id
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Tracks','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_engagement_id":' + parseInt(name.substring(name.lastIndexOf('-')+1,name.length)) + ',"e_track_id":' + parseInt(mainWindow.trackNumList[mainWindow.trackList.indexOf(name.substring(0,name.lastIndexOf('-')))]) + ',"e_step_id":' + parseInt(returnValues.stepNum) + ',"e_is_archived":0,"e_completion_status":"i","e_desc":"","e_start_date":' + dateString + ',"e_started_by":"' + prefs.getCharPref("username") + '","s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Tracks','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_engagement_id":' + parseInt(name.substring(name.lastIndexOf('-')+1,name.length)) + ',"e_track_id":' + parseInt(mainWindow.trackNumList[mainWindow.trackList.indexOf(name.substring(0,name.lastIndexOf('-')))]) + ',"e_step_id":' + parseInt(returnValues.stepNum) + ',"e_is_archived":0,"e_completion_status":"i","e_desc":"","e_start_date":' + dateString + ',"e_started_by":"' + kardiacrm.username + '","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 			
 		
 			var trackIndex = mainWindow.engagementTracks[mainWindow.selected].indexOf(name);
@@ -2736,7 +2757,7 @@ function newTrack() {
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 
 		// post the new track
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Tracks','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_track_id":' + parseInt(returnValues.trackNum) + ',"e_step_id":' + parseInt(returnValues.stepNum) + ',"e_is_archived":0,"e_completion_status":"i","e_desc":"","e_start_date":' + dateString + ',"e_started_by":"' + prefs.getCharPref("username") + '","s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Tracks','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_track_id":' + parseInt(returnValues.trackNum) + ',"e_step_id":' + parseInt(returnValues.stepNum) + ',"e_is_archived":0,"e_completion_status":"i","e_desc":"","e_start_date":' + dateString + ',"e_started_by":"' + kardiacrm.username + '","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 
 			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[mainWindow.selected] + "/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(trackResp) {
          // If not 404
@@ -2797,7 +2818,7 @@ function editNote(text, key) {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 		
-		doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactHistory/' + key,'{"subject":"' + returnValues.title + '","notes":"' + returnValues.desc + '","date_modified":' + dateString + ',"modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactHistory/' + key,'{"subject":"' + returnValues.title + '","notes":"' + returnValues.desc + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 			
 			var noteIndex = mainWindow.notes[mainWindow.selected].indexOf(parseInt(key))-2;
 			mainWindow.notes[mainWindow.selected][noteIndex] = returnValues.title + "- " + returnValues.desc;
@@ -2824,7 +2845,7 @@ function newNote(title, desc) {
 	if (returnValues.saveNote && (returnValues.title.trim() != "" || returnValues.desc.trim() != "") && loginValid) {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactHistory','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_contact_history_type":' + returnValues.type + ',"e_subject":"' + returnValues.title + '","e_notes":"' + returnValues.desc + '","e_whom":"' + mainWindow.myId + '","e_contact_date":' + dateString + ',"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/ContactHistory','{"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_contact_history_type":' + returnValues.type + ',"e_subject":"' + returnValues.title + '","e_notes":"' + returnValues.desc + '","e_whom":"' + mainWindow.myId + '","e_contact_date":' + dateString + ',"s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 			
 			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[mainWindow.selected] + "/ContactHistory?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(noteResp) {
          // If not 404
@@ -2861,7 +2882,7 @@ function newNote(title, desc) {
 
 // opens dialog for user to add new collaborator
 function newCollaborator() {
-	if (partnerList.length <= 0) mainWindow.alert("No partners found! refreshing="+refreshing);
+	if (partnerList.length <= 0) mainWindow.alert("No partners found! refreshing="+kardiacrm.refreshing);
 	
 	// variable where we store our return values
 	var returnValues = {id:"", name:"", type:0};
@@ -2873,7 +2894,7 @@ function newCollaborator() {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 		
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Collaborators','{"e_collaborator":"' + returnValues.id + '","p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_collab_type_id":' + returnValues.type + ',"s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Collaborators','{"e_collaborator":"' + returnValues.id + '","p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_collab_type_id":' + returnValues.type + ',"s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 			// get collaborator info
 			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[mainWindow.selected] + "/Collaborators?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(collabResp) {
          // If not 404
@@ -2908,7 +2929,7 @@ function newTag() {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 				
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Tags','{"e_tag_id":' + returnValues.tagId + ',"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_tag_strength":' + returnValues.magnitude.toFixed(2) + ',"e_tag_certainty":' + returnValues.certainty.toFixed(1) + ',"e_tag_volatility":"P","s_date_created":' + dateString + ',"s_created_by":"' + prefs.getCharPref("username") + '","s_date_modified":' + dateString + ',"s_modified_by":"' + prefs.getCharPref("username") + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[mainWindow.selected] + '/Tags','{"e_tag_id":' + returnValues.tagId + ',"p_partner_key":"' + mainWindow.ids[mainWindow.selected] + '","e_tag_strength":' + returnValues.magnitude.toFixed(2) + ',"e_tag_certainty":' + returnValues.certainty.toFixed(1) + ',"e_tag_volatility":"P","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
 			mainWindow.tags[mainWindow.selected].push(returnValues.tag);
 			mainWindow.tags[mainWindow.selected].push(returnValues.magnitude);
 			mainWindow.tags[mainWindow.selected].push(returnValues.certainty);
@@ -3109,7 +3130,7 @@ function getMyInfo(username, password) {
 // get e-track list, tag list, me as staff
 function getTrackTagStaff(username, password) {	
 	// set the fact that we are refreshing
-	refreshing = true;
+	kardiacrm.refreshing = true;
    if (kardiaTab != null) {
 	   kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.gif";
    }

@@ -4,7 +4,6 @@
 
 <overlay id="kardia V.0.91" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<!-- JavaScript file -->
-	<script type="application/javascript" src="chrome://messenger/content/jquery.js"/>
 	<script type="application/javascript" src="chrome://kardia/content/main-overlay.js"/>
 
 	<!-- Thunderbird content area where Kardia pane will be inserted -->

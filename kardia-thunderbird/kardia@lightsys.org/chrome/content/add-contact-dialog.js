@@ -4,9 +4,8 @@ function startDialog() {
 	centerWindowOnScreen();
 
 	// add countries
-		//document.getElementById("inner-country").innerHTML = mainWindow.htmlEscape(window.arguments[1]);
-		$("#inner-country").text(window.arguments[1]);
-		document.getElementById("country").selectedIndex = mainWindow.htmlEscape(window.arguments[2]);
+	$("#inner-country").text(window.arguments[1]);
+	$("#country")[0].selectedIndex = window.arguments[2];
 }
 
 // when you click "OK" on the Add Contact Item dialog, send results to main script
