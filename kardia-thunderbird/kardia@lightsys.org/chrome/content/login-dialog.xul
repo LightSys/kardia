@@ -17,7 +17,8 @@
 <script type="application/javascript" src="chrome://kardia/content/login-dialog.js"/>
 
     <!-- vbox holds content -->
-	<vbox>
+	<vbox id="login-dialog-vbox">
+		<!--<image src="chrome://kardia/content/images/Kardia2011b-horiz-37.png" style="width:182px; height:37px;"/>-->
 		<label id="login-failed-label"></label>
 		<hbox>
 			<label value="Server:"/>

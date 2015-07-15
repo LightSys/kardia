@@ -8,9 +8,11 @@ var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequest
 	   .rootTreeItem
 	   .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
 	   .getInterface(Components.interfaces.nsIDOMWindow);
-	   
+
 mainWindow.kardiaTab = this;
 var kardiaTab = this;
+if (mainWindow.kardiacrm)
+    kardiaTab.kardiacrm = mainWindow.kardiacrm;
 
 window.addEventListener('load', function() {
 	if (mainWindow.loginValid) {
@@ -63,12 +65,11 @@ function addFilter(type, id, fromClick) {
 	}
 	if (type == 'e') {
 		// add to engagement track filters
-		mainWindow.filterTracks[id] = (kardiaTab.document.getElementById("filter-by-e-" + id).checkState==1);
+		find_item(kardiacrm.data.trackList, 'track_id', id).filtered = (kardiaTab.document.getElementById("filter-by-e-" + id).checkState==1);
 	}
 	else if (type == 't') {	
 		// add to tag filters
-		mainWindow.filterTags[id] = (kardiaTab.document.getElementById("filter-by-t-" + id).checkState==1);
-		mainWindow.filterTags[id*1+1] = (kardiaTab.document.getElementById("filter-by-t-" + id).checkState==1);
+		find_item(kardiacrm.data.tagList, 'tag_id', id).filtered = (kardiaTab.document.getElementById("filter-by-t-" + id).checkState==1);
 	}
 	else if (type == 'd') {
 		// add to data filters
@@ -143,19 +144,13 @@ function reloadFilters(addButtons) {
    //alert("you");
 		var tracksSelected = false;
 		var tagsSelected = false;
-		for (var j=0;j<mainWindow.filterTracks.length;j++) {
-         //alert("are");
-			if (mainWindow.filterTracks[j]) {
-				tracksSelected = true;
-				break;
-			}
-         //alert("fat");
+		for(var k in kardiacrm.data.trackList) {
+		    if (kardiacrm.data.trackList[k].filtered)
+			tracksSelected = true;
 		}
-		for (var j=0;j<mainWindow.filterTags.length;j++) {
-			if (mainWindow.filterTags[j]) {
-				tagsSelected = true;
-				break;
-			}
+		for(var k in kardiacrm.data.tagList) {
+		    if (kardiacrm.data.tagList[k].filtered)
+			tagsSelected = true;
 		}
 		
 		var addPerson = true;
@@ -164,16 +159,18 @@ function reloadFilters(addButtons) {
 			if (mainWindow.filterBy == "any") {
 				addPerson = false;
 				for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
-					if (mainWindow.filterTracks[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[i][j])]) {
+					var onetrack = find_item(kardiacrm.data.trackList, "track_name", mainWindow.collaborateeTracks[i][j]);
+					if (onetrack.filtered) {
 						addPerson = true;
 						break;
 					}
 				}
 			}
 			else if (mainWindow.filterBy == "all") {
-				for (var j=0;j<mainWindow.filterTracks.length;j++) {
-					if (mainWindow.filterTracks[j]) {
-						if (mainWindow.collaborateeTracks[i].indexOf(mainWindow.trackList[j]) < 0) {
+				for (var k in kardiacrm.data.trackList) {
+					var onetrack = kardiacrm.data.trackList[k];
+					if (onetrack.filtered) {
+						if (mainWindow.collaborateeTracks[i].indexOf(onetrack.track_name) < 0) {
 							addPerson = false;
 							break;
 						}
@@ -191,16 +188,18 @@ function reloadFilters(addButtons) {
 			if (mainWindow.filterBy == "any" && (!addPerson || !tracksSelected)) {
 				addPerson = false;
 				for (var j=0;j<mainWindow.collaborateeTags[i].length;j+=3) {
-					if (mainWindow.filterTags[mainWindow.tagList.indexOf(mainWindow.collaborateeTags[i][j])] && mainWindow.collaborateeTags[i][j+1]*1 >= tagMagMin && mainWindow.collaborateeTags[i][j+1]*1 <= tagMagMax && mainWindow.collaborateeTags[i][j+2]*1 >= tagCertThreshold) {
+					var onetag = find_item(kardiacrm.data.tagList, "tag_label", mainWindow.collaborateeTags[i][j]);
+					if (onetag.filtered && mainWindow.collaborateeTags[i][j+1]*1 >= tagMagMin && mainWindow.collaborateeTags[i][j+1]*1 <= tagMagMax && mainWindow.collaborateeTags[i][j+2]*1 >= tagCertThreshold) {
 						addPerson = true;
 						break;
 					}
 				}
 			}
 			else if (mainWindow.filterBy == "all" && addPerson) {
-				for (var j=0;j<mainWindow.filterTags.length;j+=2) {
-					if (mainWindow.filterTags[j]) {	
-						if (mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1]) < 0 || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1])+1]*1 < tagMagMin || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1])+1]*1 > tagMagMax || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(mainWindow.tagList[j+1])+1]*1 < tagCertThreshold) {
+				for (var k in kardiacrm.data.tagList) {
+					var onetag = kardiacrm.data.tagList[k];
+					if (onetag.filtered) {	
+						if (mainWindow.collaborateeTags[i].indexOf(onetag.tag_label) < 0 || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(onetag.tag_label)+1]*1 < tagMagMin || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(onetag.tag_label)+1]*1 > tagMagMax || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(onetag.tag_label)+1]*1 < tagCertThreshold) {
 							addPerson = false;
 							break;
 						}
@@ -335,14 +334,16 @@ function sortCollaboratees(addButtons) {
 	if (kardiaTab.document.getElementById("filter-by-tracks").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Track:"/>' || addButtons) {
 		// add engagement track filter buttons
 		kardiaTab.document.getElementById("filter-by-tracks").innerHTML = "<label value='Track:'/>";
-		for (var i=0;i<mainWindow.trackList.length;i++) {
-			kardiaTab.document.getElementById("filter-by-tracks").innerHTML += '<button id="filter-by-e-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this engagement track" type="checkbox" checkState="0" label="' + mainWindow.htmlEscape(mainWindow.trackList[i]) + '" oncommand="addFilter(\'e\', ' + i + ', false)"/>';
+		for (var k in kardiacrm.data.trackList) {
+			var onetrack = kardiacrm.data.trackList[k];
+			kardiaTab.document.getElementById("filter-by-tracks").innerHTML += '<button id="filter-by-e-' + parseInt(onetrack.track_id) + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this engagement track" type="checkbox" checkState="0" label="' + mainWindow.htmlEscape(onetrack.track_name) + '" oncommand="addFilter(\'e\', ' + parseInt(onetrack.track_id) + ', false)"/>';
 		}
 		
 		// add tag filter buttons
 		kardiaTab.document.getElementById("filter-by-tags").innerHTML = "<label value='Tag:'/>";
-		for (var i=0;i<mainWindow.tagList.length;i+=2) {
-			kardiaTab.document.getElementById("filter-by-tags").innerHTML += '<button id="filter-by-t-' + i + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this tag" type="checkbox" checkState="0" label="' + mainWindow.htmlEscape(mainWindow.tagList[i+1]) + '" oncommand="addFilter(\'t\', ' + i + ', false)"/>';
+		for (var k in kardiacrm.data.tagList) {
+			var onetag = kardiacrm.data.tagList[k];
+			kardiaTab.document.getElementById("filter-by-tags").innerHTML += '<button id="filter-by-t-' + parseInt(onetag.tag_id) + '" class="tab-filter-checkbox"  tooltiptext="Click to filter by this tag" type="checkbox" checkState="0" label="' + mainWindow.htmlEscape(onetag.tag_label) + '" oncommand="addFilter(\'t\', ' + parseInt(onetag.tag_id) + ', false)"/>';
 		}
 	}
 }
@@ -426,7 +427,8 @@ function reloadCollaboratee(index) {
 		addString += '\t<vbox>\n';
 		for (var j=0;j<mainWindow.collaborateeTracks[index].length;j+=2) {
 			if (mainWindow.collaborateeTracks[index][j] != "" && mainWindow.collaborateeTracks[index][j+1] != "") { 
-				addString += '\t\t<vbox class="tab-engagement-track-color-box" tooltiptext="Click to filter by this engagement track" onclick="addFilter(\'e\', ' + mainWindow.htmlEscape(mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j])) + ', true)" style="background-color:' + mainWindow.htmlEscape(mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.collaborateeTracks[index][j])]) + '">\n\t\t\t<label class="bold-text">\n\t\t\t\t' + mainWindow.htmlEscape(mainWindow.collaborateeTracks[index][j]) + '\n\t\t\t</label>\n\t\t\t<label>\n\t\t\t\tEngagement Step: ' + mainWindow.htmlEscape(mainWindow.collaborateeTracks[index][j+1]) + '\n\t\t\t</label>\n\t\t</vbox>\n';
+				var onetrack = find_item(kardiacrm.data.trackList, "track_name", mainWindow.collaborateeTracks[index][j]);
+				addString += '\t\t<vbox class="tab-engagement-track-color-box" tooltiptext="Click to filter by this engagement track" onclick="addFilter(\'e\', ' + mainWindow.htmlEscape(onetrack.track_id) + ', true)" style="background-color:' + mainWindow.htmlEscape(onetrack.track_color) + '">\n\t\t\t<label class="bold-text">\n\t\t\t\t' + mainWindow.htmlEscape(mainWindow.collaborateeTracks[index][j]) + '\n\t\t\t</label>\n\t\t\t<label>\n\t\t\t\tEngagement Step: ' + mainWindow.htmlEscape(mainWindow.collaborateeTracks[index][j+1]) + '\n\t\t\t</label>\n\t\t</vbox>\n';
 			}
 		}
 		addString += '\t</vbox>\n';

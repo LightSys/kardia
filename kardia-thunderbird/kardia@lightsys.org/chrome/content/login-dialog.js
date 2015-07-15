@@ -1,3 +1,6 @@
+var kardiacrm = window.opener.kardiacrm;
+var callback = window.arguments[1];
+
 // on opening dialog, if this was result of a failed login, set the "failed login label" visible
 function doOnLoginLoad () { 
 	if (window.arguments[0].prevFail) {
@@ -24,6 +27,7 @@ function login(){
 	window.arguments[0].server = document.getElementById("server-text").value + ":" + document.getElementById("port-text").value + "/";
 	window.arguments[0].cancel = false;
 	window.arguments[0].save = document.getElementById("save-password").checked;
+	callback.call(window.opener, window.arguments[0]);
 	return true;
 }
 
@@ -31,5 +35,6 @@ function login(){
 function cancel(){
   // tell program you cancelled it
   window.arguments[0].cancel = true;
+  callback.call(window.opener, window.arguments[0]);
   return true;
 }

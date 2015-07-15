@@ -58,7 +58,11 @@
          </vbox>
 
 			<!-- label that displays failure message -->
-			<label id="cant-connect" value="Could not connect to Kardia."/>
+			<hbox id="cant-connect" flex="0" align="center">
+			    <label value="Not connected."/>
+			    <spacer width="10px"/>
+			    <button label="Connect" oncommand="doLogin()"/>
+			</hbox>
 			
 			<vbox id="main-content-box" flex="1" context="main-context" style="visibility:hidden">
 				
@@ -299,7 +303,7 @@
 	
 	<!-- toolbarbutton for opening Kardia tab -->
 	<toolbarpalette id="MailToolbarPalette">
-		<toolbarbutton id="kardia-tab-button" class="kardia-tab-buttonn" label="Kardia" tooltiptext="Switch to the Kardia tab" oncommand="showKardiaTab()">
+		<toolbarbutton id="kardia-tab-button" class="kardia-tab-buttonn" label="Kardia" tooltiptext="Switch to the Kardia tab" oncommand="checkShowKardiaTab()">
 			<vbox>
 				<spacer height="1"/>
 				<image class="kardia-tab"/>
