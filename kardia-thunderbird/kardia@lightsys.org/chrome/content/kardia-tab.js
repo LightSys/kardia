@@ -11,8 +11,9 @@ var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequest
 
 mainWindow.kardiaTab = this;
 var kardiaTab = this;
+
 if (mainWindow.kardiacrm)
-    kardiaTab.kardiacrm = mainWindow.kardiacrm;
+    var kardiacrm = mainWindow.kardiacrm;
 
 window.addEventListener('load', function() {
 	if (mainWindow.loginValid) {
@@ -132,16 +133,12 @@ function removeFilter(type,what) {
 
 // reload filters
 function reloadFilters(addButtons) {
-   //alert("WoW");
 	sortCollaboratees(addButtons);
 	
 	kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
 
 	// add to my collaborators view
-   //alert("MoM");
-   //alert(mainWindow.collaborateeIds.length);
 	for (var i=0;i<mainWindow.collaborateeIds.length;i++) {					
-   //alert("you");
 		var tracksSelected = false;
 		var tagsSelected = false;
 		for(var k in kardiacrm.data.trackList) {
@@ -253,9 +250,7 @@ function reloadFilters(addButtons) {
 		if (addPerson) {
 			reloadCollaboratee(i);
 		}
-   //alert("1");
 	}
-   //alert("2");
 	
 	// if no collaboratees, display "no results"
 	if (kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML == "") {
@@ -268,7 +263,6 @@ function sortCollaboratees(addButtons) {
 	// sort by the criteria the user has selected
 	var firstIndex;
 	var firstItem;
-   //alert("OH NO!!!");
 	for (var i=0;i<mainWindow.collaborateeNames.length;i++) {
 		firstIndex = i;
 		if (mainWindow.sortCollaborateesBy == "name") {
@@ -314,21 +308,16 @@ function sortCollaboratees(addButtons) {
 	
 	// if no collaboratees, display "no results"
 	if (mainWindow.collaborateeIds.length <= 0) {
-		//alert("++" + mainWindow.collaborateeIds.length + "++");	
 		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '<label class="bold-text" value="No results found."/>';
 	}
 	else {
 		// make list of collaboratees blank
 		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
 		// add collaboratees
-   //alert("2");
-		//alert(">>" + mainWindow.collaborateeIds.length + "<<");	
 		for (var i=0;i<mainWindow.collaborateeIds.length;i++) {	
-         //alert("yo");
 			reloadCollaboratee(i);
 		}
 	}
-   //alert("OH NO!!!.... AGAIN!!!..... AGAINAGAIN!!!");
 	
 	// if filter buttons don't exist...
 	if (kardiaTab.document.getElementById("filter-by-tracks").innerHTML == '<label xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" value="Track:"/>' || addButtons) {
@@ -405,7 +394,6 @@ function sortSomeCollaboratees(maxIndex) {
 		// make list of collaboratees blank
 		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
 		// add collaboratees
-   //alert("3");
 		for (var i=0;i<maxIndex;i++) {	
 			reloadCollaboratee(i);
 		}
@@ -416,13 +404,9 @@ function sortSomeCollaboratees(maxIndex) {
    var prevString;
 // reload collaboratee at position "index"
 function reloadCollaboratee(index) {
-   //alert("!");
 	// add basic info
 	var addString = '<hbox class="tab-collaborator" tooltiptext="Click to view this partner" onclick="addCollaborator(' + mainWindow.collaborateeIds[index] + ')">\n\t<vbox class="tab-collaborator-name">\n\t\t<label class="bold-text" value="' + mainWindow.htmlEscape(mainWindow.collaborateeNames[index]) + '"/>\n\t\t<label value="ID# ' + mainWindow.htmlEscape(mainWindow.collaborateeIds[index]) + '"/>\n\t</vbox>\n';
 	// add tracks if the partner has them
-   //alert("sudo!");
-   //alert(index);
-   //alert(mainWindow.collaborateeTracks[index].length);
 	if (mainWindow.collaborateeTracks[index].length > 1) {
 		addString += '\t<vbox>\n';
 		for (var j=0;j<mainWindow.collaborateeTracks[index].length;j+=2) {
@@ -433,7 +417,6 @@ function reloadCollaboratee(index) {
 		}
 		addString += '\t</vbox>\n';
 	}
-   //alert("blarg!");
 
 	if (mainWindow.collaborateeActivity[index] != null && mainWindow.collaborateeActivity[index].length > 0) {
 		addString += '\t<vbox id="collaboratee-activity-' + mainWindow.htmlEscape(mainWindow.collaborateeIds[index]) + '" flex="1">\n';
@@ -454,10 +437,8 @@ function reloadCollaboratee(index) {
 		}
 		addString += '\t</vbox>\n';
 	}
-   //alert("hahahaha!");
 	
 	addString += '\t<spacer flex="2"/>\n\t<vbox>\n\t\t<spacer flex="1"/>\n\t\t<image class="tab-select-partner"/>\n\t\t<spacer flex="1"/>\n\t</vbox>\n</hbox>\n';
-	//alert(addString);
 	// display the partner
    kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML += addString;
 }

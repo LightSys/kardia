@@ -17,6 +17,7 @@ var allEmailAddresses = [];
 var websites = [];
 var engagementTracks = [];
 var recentActivity = [];
+var profilePhotos = [];
 var todos = [];
 var allTodos = [];
 var notes = [];
@@ -135,7 +136,7 @@ var dataTab;
 // Various system-wide Kardia CRM data items
 var kardiacrm = 
     {
-    // is the window being refreshed?
+    // is the data being refreshed?
     refresh_timer:null,
     refreshing:false,
     refreshes:0,
@@ -153,7 +154,8 @@ var kardiacrm =
     // Our reference to jQuery
     jQuery:null,
 
-    // Currently open dialog box
+    // Currently open dialog box (this is for debugging due to problems
+    // with the Mozilla javascript debugger and popup dialog boxes)
     dialog:null,
 
     // Data for dropdowns, etc.
@@ -309,7 +311,14 @@ window.addEventListener("load", function() {
 	todosObserver.register();
 
    // sets up the open CRM and new data button
-   mainWindow.document.getElementById("open-CRM-button").addEventListener("click", function() {openURL(mainWindow.server + "/apps/kardia/modules/crm", false)});
+   mainWindow.document.getElementById("open-CRM-button").addEventListener("click", function() {
+	if (mainWindow.ids[kardiacrm.selected_partner]) {
+	    openURL(mainWindow.server + "/apps/kardia/modules/crm/profile.app?partner_key=" + escape(mainWindow.ids[kardiacrm.selected_partner]), false);
+	}
+	else {
+	    openURL(mainWindow.server + "/apps/kardia/modules/crm", false);
+	}
+   });
    mainWindow.document.getElementById("new-data-button").addEventListener("click", function() {newNote("","")});
 
    updateKardia();
@@ -344,6 +353,7 @@ function findEmails() {
 		websites = new Array();
 		engagementTracks = new Array();
 		recentActivity = new Array();
+		profilePhotos = [];
 		todos = new Array();
 		notes = new Array();
 		collaborators = new Array();
@@ -385,7 +395,7 @@ function findEmails() {
 		}
 		
 		// remove duplicates and self
-		allAddresses = parser.removeDuplicateAddresses(allAddresses, selfEmails, true).toLowerCase();
+		allAddresses = parser.removeDuplicateAddresses(allAddresses, selfEmails, {}).toLowerCase();
 
 		// create array of addresses
 		var addressArray = [];
@@ -405,6 +415,7 @@ function findEmails() {
 		websites = new Array(emailAddresses.length);
 		engagementTracks = new Array(emailAddresses.length);
 		recentActivity = new Array(emailAddresses.length);
+		profilePhotos = new Array(emailAddresses.length);
 		todos = new Array(emailAddresses.length);
 		notes = new Array(emailAddresses.length);
 		collaborators = new Array(emailAddresses.length);
@@ -428,6 +439,7 @@ function findEmails() {
 				websites.splice(i,1);
 				engagementTracks.splice(i,1);
 				recentActivity.splice(i,1);
+				profilePhotos.splice(i,1);
 				todos.splice(i,1);
 				notes.splice(i,1);
 				collaborators.splice(i,1);
@@ -523,7 +535,7 @@ function reload(isDefault) {
 			}
 			
 			// move all other items around based on how we sorted names
-			var arraysToMove = [mainWindow.emailAddresses, mainWindow.ids, mainWindow.addresses, mainWindow.phoneNumbers, mainWindow.allEmailAddresses, mainWindow.websites, mainWindow.engagementTracks, mainWindow.recentActivity, mainWindow.todos, mainWindow.notes, mainWindow.collaborators, mainWindow.documents, mainWindow.tags, mainWindow.data, mainWindow.dataGroups, mainWindow.gifts, mainWindow.funds, mainWindow.types];
+			var arraysToMove = [mainWindow.emailAddresses, mainWindow.ids, mainWindow.addresses, mainWindow.phoneNumbers, mainWindow.allEmailAddresses, mainWindow.websites, mainWindow.engagementTracks, mainWindow.recentActivity, mainWindow.profilePhotos, mainWindow.todos, mainWindow.notes, mainWindow.collaborators, mainWindow.documents, mainWindow.tags, mainWindow.data, mainWindow.dataGroups, mainWindow.gifts, mainWindow.funds, mainWindow.types];
 			
 			for (var j=0;j<arraysToMove.length;j++) {
 				firstItem = arraysToMove[j][firstIndex];
@@ -615,6 +627,13 @@ function reload(isDefault) {
 			recent += '<hbox class="hover-box"><label width="100" flex="1">' + htmlEscape(mainWindow.recentActivity[kardiacrm.selected_partner][i+1]) + '</label></hbox>';
 		}
 		mainWindow.document.getElementById("recent-activity-inner-box").innerHTML = recent;	
+
+		// display photo
+		var photo = "";
+		if (profilePhotos[kardiacrm.selected_partner]) {
+			photo += "<hbox pack=\"center\"><image src=\"" + htmlEscape(server + "/apps/kardia/api/crm/Partners/" + mainWindow.ids[kardiacrm.selected_partner] + "/ProfilePicture/" + profilePhotos[kardiacrm.selected_partner].photo_filename) + "\" style=\"max-width:200px; max-height:120px;\"/></hbox>";
+		}
+		mainWindow.document.getElementById("profile-photo-inner-box").innerHTML = photo;
 		
 		// display todos
 		var toDoText = "";
@@ -768,7 +787,6 @@ function reload(isDefault) {
       kardiaTab.processingClick = false;
    }
    if (kardiaTab != null) {
-      //alert("Finishing!!");
       //kardiaTab.filterBy();
    }
 
@@ -909,8 +927,8 @@ function sendEmail(recipient) {
 	recipient = recipient.substring(3,recipient.length);
 	// set email properties
 	var msgComposeType = Components.interfaces.nsIMsgCompType;
-	var msgComposeService = Components.classes['@mozilla.org/messengercompose;1'].getService();
-	msgComposeService = msgComposeService.QueryInterface(Components.interfaces.nsIMsgComposeService);
+	var msgComposeSvc = Components.classes['@mozilla.org/messengercompose;1'].getService();
+	msgComposeSvc = msgComposeSvc.QueryInterface(Components.interfaces.nsIMsgComposeService);
 	var params = Components.classes['@mozilla.org/messengercompose/composeparams;1'].createInstance(Components.interfaces.nsIMsgComposeParams);
 	params.type = msgComposeType.Template;
 	params.format = 0;
@@ -921,7 +939,7 @@ function sendEmail(recipient) {
 	params.composeFields = composeFields;
 
 	// open compose window
-	msgComposeService.OpenComposeWindowWithParams(null, params);
+	msgComposeSvc.OpenComposeWindowWithParams(null, params);
 }
 
 // save email address to contacts
@@ -1088,6 +1106,7 @@ function findUser(index) {
                   websites.splice(index,1);
                   engagementTracks.splice(index,1);
                   recentActivity.splice(index,1);
+		  profilePhotos.splice(index,1);
                   todos.splice(index,1);
                   notes.splice(index,1);
                   collaborators.splice(index,1);
@@ -1114,6 +1133,7 @@ function findUser(index) {
                      websites.splice(index+1,0,[]);
                      engagementTracks.splice(index+1,0,[]);
                      recentActivity.splice(index+1,0,[]);
+		     profilePhotos.splice(index+1,0,[]);
                      todos.splice(index+1,0,[]);
                      notes.splice(index+1,0,[]);
                      collaborators.splice(index+1,0,[]);
@@ -1135,7 +1155,7 @@ function findUser(index) {
                }
                else {
                   // add little Kardia icon in email
-                  addKardiaButton();
+                  addKardiaButton(mainWindow);
                
                   // start getting the other information about all the partners we found
                   getOtherInfo(0, true);
@@ -1152,6 +1172,7 @@ function findUser(index) {
                websites.splice(index,1);
                engagementTracks.splice(index,1);
                recentActivity.splice(index,1);
+	       profilePhotos.splice(index,1);
                todos.splice(index,1);
                notes.splice(index,1);
                collaborators.splice(index,1);
@@ -1171,7 +1192,7 @@ function findUser(index) {
                   // start getting the other information about all the partners we found
                   if (emailAddresses.length > 0) {
                      // add little Kardia icon in email
-                     addKardiaButton();
+                     addKardiaButton(mainWindow);
                      
                      getOtherInfo(0, true);
                   }
@@ -1445,6 +1466,11 @@ function getOtherInfo(index, isDefault) {
                                                                            }
                                                                         }
                                                                         mainWindow.recentActivity[index] = tempArray;
+
+									// check profile photo
+								        doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/ProfilePicture?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic", function(photoResp) {
+									// store our result for later
+									mainWindow.profilePhotos[index] = photoResp;
                                                                   
                                                                         // check donor status
                                                                         doHttpRequest("apps/kardia/api/donor/" + mainWindow.ids[index] + "/?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic", function(donorResp) {
@@ -1549,11 +1575,12 @@ function getOtherInfo(index, isDefault) {
                                                                                  reload(isDefault);
                                                                               }
                                                                            }
-                                                                        }, false, "", "");
+                                                                        }, false, "", ""); // request Donor info
+                                                                       }, false, "", ""); // request profile photo
                                                                      } else {
                                                                         // 404, do nothing
                                                                      }
-                                                                  }, false, "", "");
+                                                                  }, false, "", ""); // request Activity
                                                                } else {
                                                                   // 404, do nothing
                                                                }
@@ -2182,6 +2209,7 @@ function addCollaborator(collaboratorId) {
          mainWindow.websites.push([]);
          mainWindow.engagementTracks.push([]);
          mainWindow.recentActivity.push([]);
+	 mainWindow.profilePhotos.push([]);
          mainWindow.todos.push([]);
          mainWindow.notes.push([]);
          mainWindow.collaborators.push([]);
@@ -2260,8 +2288,8 @@ function getLogin(prevSaved, prevFail, doAfter) {
 						if (kardiaTab != null) {
 							kardiaTab.document.getElementById("tab-main").style.visibility = "visible";
 							kardiaTab.document.getElementById("tab-cant-connect").style.display="none";
-							document.getElementById("cant-connect").style.display="none";
 						}
+						document.getElementById("cant-connect").style.display="none";
 						doAfter([username, password]);
 						return [username, password];
 					}
@@ -2314,8 +2342,8 @@ function getLogin(prevSaved, prevFail, doAfter) {
 							if (kardiaTab != null) {
 								kardiaTab.document.getElementById("tab-main").style.visibility = "visible";
 								kardiaTab.document.getElementById("tab-cant-connect").style.display="none";
-								document.getElementById("cant-connect").style.display="none";
 							}
+							document.getElementById("cant-connect").style.display="none";
 
 							prefs.setCharPref("server",server);
 							
@@ -2355,7 +2383,7 @@ function getLogin(prevSaved, prevFail, doAfter) {
 				loginRequest.onerror = function() {};
 				
 				// send the login HTTP request
-				loginRequest.open("GET", server, false, username, password);
+				loginRequest.open("GET", server, true, username, password);
 				loginRequest.send(null);
 			}
 			else if (!returnValues.cancel && username.trim() == '') {
@@ -2390,31 +2418,31 @@ function toggleKardiaVisibility(fromWhat) {
 		// failure to log in closed it
 		closePane = true;
 		// failure message
-		document.getElementById("cant-connect").style.display="block";
+		mainWindow.document.getElementById("cant-connect").style.display="block";
 	}
 	
 	if (closePane) {
 		//close
-		document.getElementById("main-box").collapsed = true;
-		document.getElementById("show-kardia-pane-button").checked = false;
-		document.getElementById("kardia-splitter").state = "closed";
-		document.getElementById("show-hide-kardia-pane-arrow").innerHTML = "<image class=\"hide-kardia-pane-arrow\"/><spacer flex=\"1\"/>";
-		document.getElementById("show-kardia-pane-button").style.backgroundColor = "rgba(0,0,0,0)";
+		mainWindow.document.getElementById("main-box").collapsed = true;
+		mainWindow.document.getElementById("show-kardia-pane-button").checked = false;
+		mainWindow.document.getElementById("kardia-splitter").state = "closed";
+		mainWindow.document.getElementById("show-hide-kardia-pane-arrow").innerHTML = "<image class=\"hide-kardia-pane-arrow\"/><spacer flex=\"1\"/>";
+		mainWindow.document.getElementById("show-kardia-pane-button").style.backgroundColor = "rgba(0,0,0,0)";
 	}
 	else {
 		// open
-		document.getElementById("main-box").collapsed = false;
-		document.getElementById("show-kardia-pane-button").checked = true;
-		document.getElementById("kardia-splitter").state = "open";
-		document.getElementById("show-hide-kardia-pane-arrow").innerHTML = "<image class=\"show-kardia-pane-arrow\"/><spacer flex=\"1\"/>";
-		document.getElementById("show-kardia-pane-button").style.backgroundColor = "#edf5fc";
+		mainWindow.document.getElementById("main-box").collapsed = false;
+		mainWindow.document.getElementById("show-kardia-pane-button").checked = true;
+		mainWindow.document.getElementById("kardia-splitter").state = "open";
+		mainWindow.document.getElementById("show-hide-kardia-pane-arrow").innerHTML = "<image class=\"show-kardia-pane-arrow\"/><spacer flex=\"1\"/>";
+		mainWindow.document.getElementById("show-kardia-pane-button").style.backgroundColor = "#edf5fc";
 	}
 }
 
 // opens/closes an info display section (like Engagement Tracks)
 function toggleSectionDisplay(boxId) {
 	// find out which section
-	var boxNames = ["contact-info-box", "engagement-tracks-box", "recent-activity-box", "to-dos-box", "notes-prayer-box", "collaborator-box", "document-box",  "contact-info-box", "engagement-tracks-box", "recent-activity-box", "to-dos-box", "notes-prayer-box", "collaborator-box", "document-box"];
+	var boxNames = ["contact-info-box", "engagement-tracks-box", "recent-activity-box", "to-dos-box", "notes-prayer-box", "collaborator-box", "document-box", "profile-photo-box", "contact-info-box", "engagement-tracks-box", "recent-activity-box", "to-dos-box", "notes-prayer-box", "collaborator-box", "document-box", "profile-photo-box"];
 		
 	// open if currently closed, close if open
 	if (document.getElementById(boxNames[boxId]).collapsed == true) {
@@ -3081,13 +3109,13 @@ function doHttpRequest(url, doAfter, authenticate, username, password) {
 	httpRequest.onerror = function(aEvent) {};
 	
 	// send http request; send username and password if our parameter says we should
-	if (authenticate) {
-		httpRequest.open("GET", httpUrl, true, username, password);
-	}
-	else {
+	//if (authenticate) {
+	//	httpRequest.open("GET", httpUrl, true, username, password);
+	//}
+	//else {
 		// don't
 		httpRequest.open("GET", httpUrl, true);
-	}
+	//}
 	httpRequest.send(null);
 }
 
@@ -3583,23 +3611,26 @@ function doPostHttpRequest(url, data, authenticate, username, password, doAfter)
 
 // insert Kardia logo buttons next to each Kardia address in the current email
 // clicking the button takes you to that person in the Kardia pane
-function addKardiaButton(){
+function addKardiaButton(win){
 	// save list of header views we need to check
-	var headersArray = [gExpandedHeaderView.from.textNode.childNodes, gExpandedHeaderView.to.textNode.childNodes, gExpandedHeaderView.cc.textNode.childNodes, gExpandedHeaderView.bcc.textNode.childNodes];
+	var headersArray = [win.gExpandedHeaderView.from.textNode.childNodes, win.gExpandedHeaderView.to.textNode.childNodes, win.gExpandedHeaderView.cc.textNode.childNodes, win.gExpandedHeaderView.bcc.textNode.childNodes];
 	// iterate through header views
 	for (var j=0;j<headersArray.length;j++) {
 		var nodeArray = headersArray[j];
 	
 		// iterate through children in the header view
 		for (var i=0;i<nodeArray.length;i++) {
-			// check if this node's email address is in the list from Kardia
+			// Normalize email
 			var email = nodeArray[i].getAttribute('emailAddress').toLowerCase();
+
+			// check if this node's email address is in the list from Kardia
 			if (email != null && email != "" && mainWindow.emailAddresses !== null && mainWindow.emailAddresses.length > 0 && mainWindow.emailAddresses.indexOf(email) >= 0) {
 				// if so, make the button visible
 				nodeArray[i].setAttribute("kardiaShowing","");
 						  
 				// make button select the right person on click
-				nodeArray[i].setAttribute("kardiaOnclick","kardiacrm.selected_partner = mainWindow.emailAddresses.indexOf('" + email + "'); if (document.getElementById('main-box').collapsed) {toggleKardiaVisibility(3);} reload(false);");
+				var person = mainWindow.emailAddresses.indexOf(email);
+				nodeArray[i].setAttribute("kardiaOnclick","kardiacrm.selected_partner=" + parseInt(person) + "; if (mainWindow.document.getElementById('main-box').collapsed) {mainWindow.toggleKardiaVisibility(3);} mainWindow.reload(false);");
 			}
 			
 			else {

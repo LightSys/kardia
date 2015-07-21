@@ -5,10 +5,10 @@ var callback = window.arguments[1];
 function doOnLoginLoad () { 
 	if (window.arguments[0].prevFail) {
 		if (window.arguments[0].prevSaved) {
-			document.getElementById("login-failed-label").innerHTML = "There was a problem with your saved login information.  Please login now.";		  
+			$("#login-failed-label").text("There was a problem with your saved login information.  Please login now.");
 		}
 		else {
-			document.getElementById("login-failed-label").innerHTML = "Invalid username, password, or server.  Please try again.";
+			$("#login-failed-label").text("Previous login did not succeed.  Please try again.");
 		}
 	}
 

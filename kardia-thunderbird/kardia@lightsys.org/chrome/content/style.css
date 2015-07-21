@@ -176,5 +176,5 @@ mail-emailaddress {-moz-binding:url('chrome://kardia/content/email-binding.xml#k
 /* person's name in data items tab */
 #data-item-name {background-color:#ffffff; padding:10px 10px 0 10px; margin:0px;}
 
-#login-dialog { padding:10px; }
+#login-dialog { padding-left:10px; padding-right:10px; padding-bottom:10px; padding-top:16px; }
 #login-dialog-vbox { }
