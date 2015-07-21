@@ -202,9 +202,8 @@
 					
 					<!-- documents box -->
 					<hbox>
-					    <!--#Muted-->
-					   <!--<button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(6)" label="Documents:"/> -->
-					   <!--<spacer flex="1"/> -->
+					   <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(6)" label="Documents:"/>
+					   <spacer flex="1"/>
 					</hbox>
 					<hbox id="document-box">
 						 <spacer width="10px"/> 

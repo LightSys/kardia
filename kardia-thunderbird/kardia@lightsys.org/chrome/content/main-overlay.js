@@ -483,6 +483,9 @@ function headersMatch(first, second) {
 
 // reloads Kardia pane
 function reload(isDefault) {
+
+	var context = kardiacrm.jQuery(mainWindow.document);
+
 	// if list of email addresses is empty or null, make everything in Kardia pane blank or hidden and hide Print context menu
 	if (mainWindow.emailAddresses.length < 1 || mainWindow.emailAddresses == null) {
 		mainWindow.document.getElementById('main-context').hidden = true;
@@ -678,13 +681,39 @@ function reload(isDefault) {
 		//mainWindow.document.getElementById("collaborator-inner-box").innerHTML = collaboratorText;	
 		
 		// display documents
-		var docs = "";
+		context
+		    .find("#document-inner-box")
+		    .empty();
 		for (var i=0;i<mainWindow.documents[kardiacrm.selected_partner].length;i+=2) {
-			docs += '<hbox><vbox><image class="document-image"/><spacer flex="1"/></vbox><label tooltiptext="Click to open document" id="docLabel' + i + '" width="100" flex="1" class="text-link" context="documentContextMenu" onclick="if (event.button == 0) openDocument(\'' + htmlEscape(mainWindow.documents[kardiacrm.selected_partner][i]) + '\',false);">' + htmlEscape(mainWindow.documents[kardiacrm.selected_partner][i+1]) + '</label></hbox>';
+		    let docid = i;
+		    context
+			.find("#document-inner-box")
+			.append(
+			    kardiacrm.jQuery('<hbox>')
+				.append(
+				    kardiacrm.jQuery('<vbox>')
+					.append(kardiacrm.jQuery('<image>', {class:'document-image'}))
+					.append(kardiacrm.jQuery('<spacer>', {flex:'1'}))
+				)
+				.append(
+				    kardiacrm.jQuery('<label>', {
+					tooltiptext:'Click to open document',
+					id:'docLabel' + parseInt(docid),
+					width:'100',
+					flex:'1',
+					class:'text-link',
+					context:'documentContextMenu',
+				    })
+					.text(mainWindow.documents[kardiacrm.selected_partner][docid+1])
+					.click(
+					    function(event) {
+						if (event.button == 0)
+						    openDocument(kardiacrm.selected_partner, docid, false);
+					    }
+					)
+				)
+			);
 		}
-		mainWindow.document.getElementById("document-inner-box").innerHTML = "";
-      // #Muted
-		//mainWindow.document.getElementById("document-inner-box").innerHTML = docs;
 		
 		// if Kardia tab is open, add person's info to it, too
 		if (kardiaTab != null) {
@@ -830,7 +859,10 @@ function openUrl(url, isContact) {
 }
 
 // open the given document in default program
-function openDocument(url, savePage) {
+function openDocument(index, docid, savePage) {
+	if (!mainWindow.documents[index] || !mainWindow.documents[index][docid])
+	    return;
+	var url = mainWindow.documents[index][docid];
 	// if URL doesn't have "http://", add it
 	if (url.indexOf("http://") < 0) {
 		url = "http://" + url;
@@ -918,7 +950,7 @@ function setSaveable(idString) {
 // find document url based on ID and open it
 function findAndOpenDocument(idString, savePage) {
 	var num = idString.substring(idString.length-1, idString.length);
-	openDocument(documents[kardiacrm.selected_partner][num],savePage);
+	openDocument(kardiacrm.selected_partner, num, savePage);
 }
 
 // create a new email with this address as recipient
