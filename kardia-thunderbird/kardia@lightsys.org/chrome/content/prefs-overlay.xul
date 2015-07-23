@@ -14,10 +14,10 @@
 				<preference id="extensions.kardia.server" name="extensions.kardia.server" type="string"/>
 			</preferences>
 			<vbox>
+				<label value="Kardia Add-on Version: 1.03"/>
 				<hbox>
 					<vbox>
 						<spacer flex="1"/>
-						<label value="Version: 0.995"/>
 						<label value="Import Kardia to-do items as"/>
 						<spacer flex="1"/>
 					</vbox>
