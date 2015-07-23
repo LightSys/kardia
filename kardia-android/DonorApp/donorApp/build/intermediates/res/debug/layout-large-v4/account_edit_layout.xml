@@ -11,8 +11,9 @@
         android:id="@+id/userName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:ems="10"
+        android:layout_marginTop="35dp"
+        android:textSize="22sp"
+        android:ems="12"
         android:hint="@string/username"
         android:singleLine="true">
 
@@ -23,8 +24,9 @@
         android:id="@+id/userPass"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:ems="10"
+        android:layout_marginTop="20dp"
+        android:textSize="22sp"
+        android:ems="12"
         android:hint="@string/password"
         android:inputType="textPassword"
         android:singleLine="true">
@@ -34,8 +36,9 @@
         android:id="@+id/serverName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:ems="10"
+        android:layout_marginTop="20dp"
+        android:textSize="22sp"
+        android:ems="12"
         android:hint="@string/server_name"
         android:singleLine="true"/>
 
@@ -43,15 +46,15 @@
         android:id="@+id/donorId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:layout_marginTop="18dp"
-        android:textSize="18sp"
+        android:ems="12"
+        android:layout_marginTop="20dp"
+        android:textSize="22sp"
         android:paddingLeft="10dp"/>
 
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="30dp"
         android:gravity="center">
 
         <Button
@@ -59,6 +62,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/cancel"
+            android:textSize="22sp"
             android:textStyle="bold"
             style="@style/customBottomBar"
             android:layout_gravity="center_horizontal"
@@ -69,8 +73,8 @@
             android:id="@+id/submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
             android:text="@string/submit"
+            android:textSize="22sp"
             android:textStyle="bold"
             style="@style/customBottomBar"
             android:layout_gravity="center_horizontal" />

@@ -54,7 +54,7 @@ public class DetailedUpdate extends Fragment {
         TextView date = (TextView)getActivity().findViewById(R.id.date);
         TextView text = (TextView)getActivity().findViewById(R.id.text);
 
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         Note update = db.getNoteForID(update_id);
         db.close();
 

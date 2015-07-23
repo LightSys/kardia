@@ -16,6 +16,9 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -87,7 +90,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         // Dismiss spinner to show data retrieval is done
         spinner.dismiss();
 
-        // If valid account was connected, close that activity
+        // If valid account was connected, close the account activity
+        // Otherwise refresh the page the user was on
         if (dataContext.getClass() == MainActivity.class) {
             dataActivity.runOnUiThread(new Runnable() {
                 @Override
@@ -122,7 +126,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             // Unauthorized signals incorrect username or password
             // 404 not found signals invalid ID
             // Empty or null signals an incorrect server name
-            if (test.equals("")) {
+            if (test.equals("") || test.equals("Access Not Permitted")) {
                 dataActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -165,7 +169,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * Pulls all data attached to account
      */
     private void DataPull()  {
-        db = new LocalDBHandler(dataContext, null, null, 9);
+        db = new LocalDBHandler(dataContext, null);
         Host_Name = account.getServerName();
         Password = account.getAccountPassword();
         AccountName = account.getAccountName();
@@ -191,6 +195,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         });
 
         // If it is a new account, validate account
+        // If account not valid, do not attempt data pull
         if (isNewAccount) {
             validAccount = isValidAccount();
             if(!validAccount) {
@@ -210,20 +215,21 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
             loadPartnerName(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/"
                     + Account_ID + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=element&cx__res_attrs=basic"));
-            loadMissionaries(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
+            loadMissionaries(GET("http://" + Host_Name + ":800/apps/kardia/api/supporter/" + Account_ID +
                     "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
+            // Loop through missionaries and pull notes and prayer letters
             for(Missionary m : db.getMissionaries()) {
                 int missionaryID = m.getId();
                 loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + missionaryID +
                         "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
                         missionaryID);
                 loadPrayerLetters(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + missionaryID +
-                        "PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
+                        "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
                         missionaryID);
             }
 
-
+            // Load years so they can be connected to funds
             loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
                     "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
@@ -279,12 +285,17 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         String result;
 
         try {
-
+            // Set the user credentials to allow access to API information
             CredentialsProvider credProvider = new BasicCredentialsProvider();
             credProvider.setCredentials(new AuthScope(Host_Name, 800),
                     new UsernamePasswordCredentials(AccountName, Password));
 
-            DefaultHttpClient client = new DefaultHttpClient();
+            // Set timeout parameters to avoid a long connection attempt to non-valid server
+            HttpParams params = new BasicHttpParams();
+            HttpConnectionParams.setConnectionTimeout(params, 3000);
+            HttpConnectionParams.setSoTimeout(params, 1);
+
+            DefaultHttpClient client = new DefaultHttpClient(params);
 
             client.setCredentialsProvider(credProvider);
 
@@ -365,8 +376,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempMissionaries.getString(i).equals("@id")){
                     JSONObject MissionaryObj = json.getJSONObject(tempMissionaries.getString(i));
 
-                    String missionary_name = MissionaryObj.getString("missionary_name");
-                    String missionary_id = MissionaryObj.getString("missionary_id");
+                    String missionary_name = MissionaryObj.getString("partner_name");
+                    String missionary_id = MissionaryObj.getString("partner_id");
 
                     Missionary temp = new Missionary();
                     temp.setName(missionary_name);
@@ -420,9 +431,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setMissionaryName(db.getMissionaryForID(missionary_id).getName());
                         temp.setType(NoteObj.getString("note_type"));
 
+                        // Dates must be stored as YYYY-MM-DD
                         JSONObject date = new JSONObject(NoteObj.getString("note_date"));
                         String day = date.getString("day");
+                        day = day.length() < 2 ? "0" + day : day;
                         String month = date.getString("month");
+                        month = month.length() < 2 ? "0" + month : month;
                         String year = date.getString("year");
 
                         temp.setDate(year + "-" + month + "-" + day);
@@ -457,8 +471,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             try{
                 //@id signals a new object, but contains no information on that line
                 if(!tempLetters.getString(i).equals("@id")){
-                    JSONObject NoteObj = json.getJSONObject(tempLetters.getString(i));
-                    int letterID = Integer.parseInt(NoteObj.getString("note_id"));
+                    JSONObject LetterObj = json.getJSONObject(tempLetters.getString(i));
+                    int letterID = Integer.parseInt(LetterObj.getString("letter_id"));
 
                     ArrayList<Integer> currentLetterNoteIDList = new ArrayList<Integer>();
                     for (PrayerLetter p : db.getPrayerLetters()) {
@@ -470,12 +484,16 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         PrayerLetter temp = new PrayerLetter();
                         temp.setId(letterID);
                         temp.setMissionaryName(db.getMissionaryForID(missionary_id).getName());
-                        temp.setTitle(NoteObj.getString("letter_title"));
-                        temp.setFilename(NoteObj.getString("letter_filename"));
+                        temp.setTitle(LetterObj.getString("letter_title"));
+                        temp.setFilename(LetterObj.getString("letter_filename"));
+                        temp.setFolder(LetterObj.getString("letter_folder"));
 
-                        JSONObject date = new JSONObject(NoteObj.getString("note_date"));
+                        // Dates must be stored as YYYY-MM-DD
+                        JSONObject date = new JSONObject(LetterObj.getString("letter_date"));
                         String day = date.getString("day");
+                        day = day.length() < 2 ? "0" + day : day;
                         String month = date.getString("month");
+                        month = month.length() < 2 ? "0" + month : month;
                         String year = date.getString("year");
 
                         temp.setDate(year + "-" + month + "-" + day);
@@ -724,6 +742,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         String gift_fund_desc = GiftObj.getString("gift_fund_desc");
                         String gift_year = dateObj.getString("year");
                         String gift_month = dateObj.getString("month");
+
+                        // Convert gift dates to YYYY-MM-DD format
                         gift_month = (gift_month.length() < 2)? "0" + gift_month : gift_month;
                         String gift_day = dateObj.getString("day");
                         gift_day = (gift_day.length() < 2)? "0" + gift_day : gift_day;

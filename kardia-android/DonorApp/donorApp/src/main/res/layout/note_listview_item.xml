@@ -52,9 +52,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="10dp"
-        android:paddingRight="15dp"
-        android:textSize="16sp"/>
+        android:layout_margin="6dp"
+        android:paddingRight="10dp"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/textBelowPrayingButton"
@@ -64,10 +65,11 @@
         android:layout_marginTop="12dp"
         android:layout_alignLeft="@id/prayingButton"
         android:layout_alignStart="@id/prayingButton"
-        android:paddingLeft="5dp"
-        android:textSize="16sp"/>
+        android:paddingLeft="3dp"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
 
-    <org.lightsys.donorapp.customview.PrayButton
+    <Button
         android:id="@+id/prayingButton"
         android:layout_width="wrap_content"
         android:layout_height="68dp"

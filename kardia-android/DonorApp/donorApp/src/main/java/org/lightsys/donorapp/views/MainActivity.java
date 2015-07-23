@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.lightsys.donorapp.data.Account;
-import org.lightsys.donorapp.data.Missionary;
-import org.lightsys.donorapp.data.Note;
-import org.lightsys.donorapp.data.PrayerLetter;
 import org.lightsys.donorapp.tools.DataConnection;
 import org.lightsys.donorapp.tools.LocalDBHandler;
 
@@ -107,84 +104,7 @@ public class MainActivity extends ActionBarActivity {
 
 		/* Check for accounts, updates, and load content */
 		
-		LocalDBHandler dbh = new LocalDBHandler(this, null, null, 9);
-
-//		Note testUpdate = new Note();
-//		testUpdate.setMissionaryName("Tyler Jefferson");
-//		testUpdate.setDate("2014-06-23");
-//		testUpdate.setId(28);
-//		testUpdate.setSubject("Monthly Update");
-//		testUpdate.setType("Update");
-//		testUpdate.setText("This is is a monthly update on how the mission is going");
-//		dbh.addNote(testUpdate);
-//
-//		Note testUpdate2 = new Note();
-//		testUpdate2.setMissionaryName("The Franklin Family");
-//		testUpdate2.setDate("2015-02-08");
-//		testUpdate2.setId(39);
-//		testUpdate2.setSubject("Franklin Family Update");
-//		testUpdate2.setType("Update");
-//		testUpdate2.setText("Here is an update on how our family is doing as we prepare to go");
-//		dbh.addNote(testUpdate2);
-//
-//		Note testRequest = new Note();
-//		testRequest.setMissionaryName("John and Mary Doe");
-//		testRequest.setDate("2014-12-20");
-//		testRequest.setId(14);
-//		testRequest.setSubject("Christmas Program");
-//		testRequest.setType("Pray");
-//		testRequest.setText("We will have a Christmas program at the church and have invited " +
-//				"may visitors to come");
-//		dbh.addNote(testRequest);
-//
-//		Note testRequest2 = new Note();
-//		testRequest2.setMissionaryName("James Smith");
-//		testRequest2.setDate("2015-04-07");
-//		testRequest2.setId(16);
-//		testRequest2.setSubject("Bible Study");
-//		testRequest2.setType("Pray");
-//		testRequest2.setText("I am having a Bible study at my home tonight");
-//		dbh.addNote(testRequest2);
-//
-//		Note testRequest3 = new Note();
-//		testRequest3.setMissionaryName("Harry and Jane Lincoln");
-//		testRequest3.setDate("2015-05-20");
-//		testRequest3.setId(17);
-//		testRequest3.setSubject("Vacation Bible School");
-//		testRequest3.setType("Pray");
-//		testRequest3.setText("Pray for our VBS next week at the church");
-//		dbh.addNote(testRequest3);
-//
-//		Missionary testMissionary = new Missionary();
-//		testMissionary.setId(1);
-//		testMissionary.setName("Tyler Jefferson");
-//		dbh.addMissionary(testMissionary);
-//
-//		Missionary testMissionary2 = new Missionary();
-//		testMissionary2.setId(2);
-//		testMissionary2.setName("The Franklin Family");
-//		dbh.addMissionary(testMissionary2);
-//
-//		Missionary testMissionary3 = new Missionary();
-//		testMissionary3.setId(3);
-//		testMissionary3.setName("John and Mary Doe");
-//		dbh.addMissionary(testMissionary3);
-//
-//		PrayerLetter testLetter = new PrayerLetter();
-//		testLetter.setId(2839);
-//		testLetter.setDate("2015-02-07");
-//		testLetter.setMissionaryName("Bob Brown");
-//		testLetter.setTitle("August Prayer Letter");
-//		testLetter.setFilename("testFilname.pdf");
-//		dbh.addPrayerLetter(testLetter);
-//
-//		PrayerLetter testLetter2 = new PrayerLetter();
-//		testLetter2.setId(2886);
-//		testLetter2.setDate("2014-10-01");
-//		testLetter2.setMissionaryName("Peter and Joan Wellington");
-//		testLetter2.setTitle("October Prayer Letter");
-//		testLetter2.setFilename("testFilname.pdf");
-//		dbh.addPrayerLetter(testLetter2);
+		LocalDBHandler dbh = new LocalDBHandler(this, null);
 
 		accts = dbh.getAccounts();
 		
@@ -300,7 +220,8 @@ public class MainActivity extends ActionBarActivity {
 			break;
 		case 2:
 			Toast.makeText(MainActivity.this, "To Be Implemented: General Donation Link", Toast.LENGTH_SHORT).show();
-			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com")); //TODO: replace url with actually donation site
+			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("INSERT HERE"));
+			//TODO: replace url with actually donation site
 			//startActivity(browserIntent);
 			break;
         case 3:
@@ -316,7 +237,7 @@ public class MainActivity extends ActionBarActivity {
 			startActivity(accounts);
 			break;
 		case 6:
-			LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
+			LocalDBHandler db = new LocalDBHandler(this, null);
 			accts = db.getAccounts();
 			db.close();
 			for (Account a : accts) {
@@ -347,25 +268,6 @@ public class MainActivity extends ActionBarActivity {
 	public void setTitle(CharSequence title) {
 		mTitle = title;
 		getSupportActionBar().setTitle(title);
-	}
-
-	/**
-	 * Takes the user to an application that can open/view a pdf.
-	 */
-	public void sendToPDF(View v) {
-		Toast.makeText(MainActivity.this, "Sorry, not implemented yet.", Toast.LENGTH_SHORT).show();
-	}
-
-	/**
-	 * Takes the user to the 'by year' view. Which shows the years donated
-	 * with the total amount donated per year.
-	 */
-	public void viewByYTDAmounts(View v) {
-		fragment = new YTDList();
-		FragmentTransaction fragmentManager = getSupportFragmentManager().beginTransaction();
-		fragmentManager.replace(R.id.content_frame, fragment);
-		fragmentManager.addToBackStack("ToYearView");
-		fragmentManager.commit();
 	}
 
 	/**

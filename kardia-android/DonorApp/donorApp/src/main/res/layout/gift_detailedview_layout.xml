@@ -6,12 +6,12 @@
     android:background="@drawable/noise_blue_repeat" >
 
     <Button
-        android:id="@+id/connect_button"
+        android:id="@+id/pdfButton"
         android:layout_width="200dp"
         android:layout_height="80dp"
         android:textSize="20sp"
         android:text="@string/view_pdf_receipt"
-        android:onClick="sendToPDF"
+        android:textStyle="bold"
         style="@style/customBottomBar"
         android:layout_below="@+id/checknum"
         android:layout_marginTop="18dp"

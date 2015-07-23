@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.lightsys.donorapp.data.Gift;
+import org.lightsys.donorapp.tools.GenericTextWatcher;
 import org.lightsys.donorapp.tools.LocalDBHandler;
 
 import android.app.DatePickerDialog;
@@ -57,6 +58,8 @@ public class Search extends Fragment{
 		dash2 = (TextView)v.findViewById(R.id.dash2);
 		dollarSign2 = (TextView)v.findViewById(R.id.dollarSign2);
 
+		amount1.addTextChangedListener(new GenericTextWatcher(v));
+
 		search.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -107,6 +110,7 @@ public class Search extends Fragment{
 					dateRange.setChecked(false);
 					dateRange.setVisibility(View.INVISIBLE);
 					date1.setText("Choose Date");
+					date1.setError(null);
 					date2.setText("Choose Date");
 					dash1.setVisibility(View.INVISIBLE);
 					date2.setVisibility(View.INVISIBLE);
@@ -114,11 +118,11 @@ public class Search extends Fragment{
 				}
 			}
 		});
-		
 		toggleAmount.setOnClickListener(new OnClickListener(){
 			
 			@Override
 			public void onClick(View v){
+
 				// If amount search is activated, set respective fields to visible
 				// If amount search is not activated, set fields to invisible and set to default
 				if(toggleAmount.isChecked()){
@@ -128,6 +132,7 @@ public class Search extends Fragment{
 					amountRange.setChecked(false);
 					amountRange.setVisibility(View.INVISIBLE);
 					amount1.setText("");
+					amount1.setError(null);
 					amount2.setText("");
 					dash2.setVisibility(View.INVISIBLE);
 					amount2.setVisibility(View.INVISIBLE);
@@ -188,86 +193,63 @@ public class Search extends Fragment{
 	}
 	
 	public void doSearch(){
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 1);
-		
-		String selectStatement = "SELECT * FROM gifts";
-		String dateSearch = "";
-		String amountSearch = "";
-		String checkSearch = "";
+		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
-		// Construct search by date statement
+		// Construct parameters to set for the database search
+		String startDate = "";
+		String endDate = "";
+		String startAmount = "";
+		String endAmount = "";
+		String checkNumber = "";
 		if(toggleDate.isChecked()){
-			String sDate = (!date1.getText().toString().equals("Choose Date"))? date1.getText().toString() : "";
-			String eDate = (date2.isEnabled() && !date2.getText().toString().equals("Choose Date"))? date2.getText().toString() : "";
-			
-			if(!sDate.equals("") && !eDate.equals("")){
-				dateSearch = " WHERE (gift_date BETWEEN '" + sDate + "' AND '" + eDate + "')";
-			}else if(!sDate.equals("")){
-				dateSearch = " WHERE (gift_date = '" + sDate + "')";
-			}
-			// Concatenate date search statement onto search statement
-			selectStatement += dateSearch;
+			startDate = (!date1.getText().toString().equals("Choose Date"))? date1.getText().toString() : "";
+			endDate = (date2.isEnabled() && !date2.getText().toString().equals("Choose Date"))? date2.getText().toString() : "";
 		}
-
-		// Construct amount search statement
 		if(toggleAmount.isChecked()){
-			String sAmount = (!amount1.getText().toString().equals(""))? amount1.getText().toString() : "";
-			String eAmount = (amount2.isEnabled() && !amount2.getText().toString().equals(""))? amount2.getText().toString() : "";
-			
-			if(!sAmount.equals("") && !eAmount.equals("")){
-				if(dateSearch.equals("")){
-					amountSearch = " WHERE (gift_total_whole BETWEEN " + sAmount + " AND " + eAmount + ")";
-				}else{
-					amountSearch = " AND (gift_total_whole BETWEEN " + sAmount + " AND " + eAmount + ")";
-				}
-			}else if(!sAmount.equals("")){
-				if(dateSearch.equals("")){
-					amountSearch = " WHERE (gift_total_whole = " + sAmount + ")";
-				}else{
-					amountSearch = " AND (gift_total_whole = " + sAmount + ")";
-				}
-			}
-			// Concatenate amount search statement to search statement
-			selectStatement += amountSearch;
+			startAmount = (!amount1.getText().toString().equals(""))? amount1.getText().toString() : "";
+			endAmount = (amount2.isEnabled() && !amount2.getText().toString().equals(""))? amount2.getText().toString() : "";
+		}
+		if(toggleCheck.isChecked()){
+			checkNumber = (!checknum.getText().toString().equals(""))?checknum.getText().toString() : "";
 		}
 
-		// Construct check search statement
-		if(toggleCheck.isChecked()){
-			String checkNum = (!checknum.getText().toString().equals(""))?checknum.getText().toString() : "";
-			
-			if(!checkNum.equals("")){
-				if(dateSearch.equals("") && amountSearch.equals("")){
-					checkSearch = " WHERE gift_check_num = " + checkNum;
-				}else{
-					checkSearch = " AND (gift_check_num = " + checkNum + ")";
-				}
+		if (startDate.equals("") && endDate.equals("") && startAmount.equals("")
+				&& endAmount.equals("") && checkNumber.equals("")) {
+			Toast.makeText(getActivity(), "No values were provided for search", Toast.LENGTH_LONG).show();
+		} else if (startDate.equals("") && !endDate.equals("")) {
+			Toast.makeText(getActivity(), "Please select a start value for the range", Toast.LENGTH_LONG).show();
+			date1.setError("Choose a start date");
+		} else if (startAmount.equals("") && !endAmount.equals("")) {
+			Toast.makeText(getActivity(), "Please select a start value for the range", Toast.LENGTH_LONG).show();
+			amount1.setError("Set an amount value");
+		} else {
+			// Do search for gifts with constructed parameters
+			ArrayList<Gift> results = db.getGiftSearchResults(startDate, endDate, startAmount, endAmount, checkNumber);
+			db.close();
+
+			// Send to corresponding page depending on search results
+			if(results.size() == 0){
+				Toast.makeText(getActivity(), "0 Gifts found.", Toast.LENGTH_SHORT).show();
+			}else if(results.size() == 1){
+				resetAll();
+				Toast.makeText(getActivity(), "1 Gift found.", Toast.LENGTH_SHORT).show();
+				sendToDetailedGift(results.get(0).getId());
+			}else{
+				resetAll();
+				Toast.makeText(getActivity(), results.size() + " Gifts found.", Toast.LENGTH_SHORT).show();
+				sendToGiftList(results);
 			}
-			// Concatenate check search statement onto search statement
-			selectStatement += checkSearch;
-		}
-		// Do search for gifts with constructed search statement
-		ArrayList<Gift> results = db.getSearchResults(selectStatement);
-		db.close();
-		
-		if(results.size() == 0){
-			Toast.makeText(getActivity(), "0 Gifts found.", Toast.LENGTH_SHORT).show();
-		}else if(results.size() == 1){
-			resetAll();
-			Toast.makeText(getActivity(), "1 Gift found.", Toast.LENGTH_SHORT).show();
-			sendToDetailedGift(results.get(0).getId());
-		}else{
-			resetAll();
-			Toast.makeText(getActivity(), results.size() + " Gifts found.", Toast.LENGTH_SHORT).show();
-			sendToGiftList(selectStatement);
 		}
 	}
 	
 	public void resetAll(){
 		date1.setText("Choose Date");
+		date1.setError(null);
 		date2.setText("Choose Date");
 		date2.setVisibility(View.INVISIBLE);
 		dash1.setVisibility(View.INVISIBLE);
 		amount1.setText("");
+		amount1.setError(null);
 		amount2.setText("");
 		amount2.setVisibility(View.INVISIBLE);
 		dash2.setVisibility(View.INVISIBLE);
@@ -296,9 +278,15 @@ public class Search extends Fragment{
 		transaction.commit();
 	}
 	
-	public void sendToGiftList(String query){
+	public void sendToGiftList(ArrayList<Gift> giftList){
+		ArrayList<Integer> giftIDList = new ArrayList<Integer>();
+
+		for (Gift g : giftList) {
+			giftIDList.add(g.getId());
+		}
+
 		Bundle args = new Bundle();
-		args.putString(GiftList.ARG_GIFT_QUERY, query);
+		args.putIntegerArrayList("giftIDs", giftIDList);
 		
 		GiftList gl = new GiftList();
 		gl.setArguments(args);
@@ -359,8 +347,9 @@ public class Search extends Fragment{
 			
 			if(btn_id == 1){
 				date1.setText(year + "-" + month + "-" + day);
+				date1.setError(null);
 			}else{ // btn_id == 2
-				date2.setText(year + "-" + month + "-" + year);
+				date2.setText(year + "-" + month + "-" + day);
 			}
 		}
 	}

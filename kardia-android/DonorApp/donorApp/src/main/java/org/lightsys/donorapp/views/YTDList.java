@@ -3,7 +3,6 @@ package org.lightsys.donorapp.views;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.lightsys.donorapp.bottombar.LinkBar;
 import org.lightsys.donorapp.tools.Formatter;
 import org.lightsys.donorapp.tools.LocalDBHandler;
 import org.lightsys.donorapp.data.Year;
@@ -45,7 +44,7 @@ public class YTDList extends Fragment{
 		
 		Bundle args = getArguments();
 
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
 		if(savedInstanceState != null){ 
 			fund_id = savedInstanceState.getInt(ARG_FUND_ID);
@@ -109,7 +108,7 @@ public class YTDList extends Fragment{
 			hm.put("ytdtitle", y.getName() + " Total");
 			hm.put("ytdamount", Formatter.amountToString(y.getGift_total()));
 			if (fund_id != -1) {
-				LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+				LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 				hm.put("ytdfund", db.getFundById(fund_id).getFund_desc());
 				db.close();
 			}

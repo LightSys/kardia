@@ -22,8 +22,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/scheduleNotification"
-        android:layout_marginLeft="28dp"
-        android:layout_marginStart="28dp"
+        android:layout_marginLeft="14dp"
+        android:layout_marginStart="14dp"
         android:textSize="16sp"/>
 
     <TextView
@@ -39,11 +39,11 @@
 
     <TextView
         android:id="@+id/prayButtonInstr"
-        android:layout_width="wrap_content"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/scheduleNotification"
         android:layout_toEndOf="@id/scheduleNotification"
-        android:layout_alignBaseline="@id/scheduleNotification"
+        android:layout_alignTop="@id/scheduleNotification"
         android:layout_margin="10dp"/>
 
     <TextView

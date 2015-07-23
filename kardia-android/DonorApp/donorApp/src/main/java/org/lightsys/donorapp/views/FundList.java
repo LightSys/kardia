@@ -37,7 +37,7 @@ public class FundList extends Fragment{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 		ArrayList<Account> accounts = db.getAccounts();
 
 		// Loop through all accounts and pull all funds for each account

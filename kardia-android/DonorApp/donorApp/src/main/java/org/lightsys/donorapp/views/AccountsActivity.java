@@ -100,7 +100,7 @@ public class AccountsActivity extends Activity{
 	 * SessionStorage accounts list, then populates a listview with the accounts.
 	 */
 	public void loadAccountList(){
-		LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
+		LocalDBHandler db = new LocalDBHandler(this, null);
 		
 		accounts = db.getAccounts();
 
@@ -166,7 +166,7 @@ public class AccountsActivity extends Activity{
 		int dId = Integer.parseInt(dIdStr);
 
 		// If account already stored, display message and return
-		LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
+		LocalDBHandler db = new LocalDBHandler(this, null);
 		accounts = db.getAccounts();
 		for(Account a : accounts){
 			if(a.getAccountName().equals(aName) && a.getServerName().equals(sName) &&
@@ -224,7 +224,7 @@ public class AccountsActivity extends Activity{
 						public void onClick(DialogInterface dialog, int which) {
 
 
-							LocalDBHandler db = new LocalDBHandler(AccountsActivity.this, null, null, 9);
+							LocalDBHandler db = new LocalDBHandler(AccountsActivity.this, null);
 							db.deleteAccount(temp.getId());
 							db.close();
 

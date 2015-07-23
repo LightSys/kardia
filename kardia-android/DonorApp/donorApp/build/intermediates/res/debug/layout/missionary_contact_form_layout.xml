@@ -62,9 +62,9 @@
     </TableRow>
 
     <TableRow
+        android:id="@+id/contactTypeRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/contactTypeRow"
         android:layout_below="@id/subjectRow"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="20dp"
@@ -103,9 +103,9 @@
     </ScrollView>
 
     <TableRow
+        android:id="@+id/buttonRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/buttonRow"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_marginTop="20dp"

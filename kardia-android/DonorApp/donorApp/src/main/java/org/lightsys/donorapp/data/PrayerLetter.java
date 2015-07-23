@@ -8,15 +8,17 @@ public class PrayerLetter {
     private int id;
     private String missionaryName;
     private String title;
+    private String folder;
     private String filename;
     private String date;
 
     public PrayerLetter() {}
 
-    public PrayerLetter(int id, String missionaryName, String title, String filename, String date) {
+    public PrayerLetter(int id, String missionaryName, String title, String folder, String filename, String date) {
         this.id = id;
         this.missionaryName = missionaryName;
         this.title = title;
+        this.folder = folder;
         this.filename = filename;
         this.date = date;
     }
@@ -44,6 +46,10 @@ public class PrayerLetter {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    public String getFolder() { return folder; }
+
+    public void setFolder(String folder) { this.folder = folder; }
 
     public String getFilename() {
         return filename;

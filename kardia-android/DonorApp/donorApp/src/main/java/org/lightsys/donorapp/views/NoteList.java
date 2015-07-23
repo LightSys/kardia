@@ -1,5 +1,10 @@
 package org.lightsys.donorapp.views;
 
+
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -8,20 +13,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.donorapp.R;
 
+import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.data.PrayerLetter;
+import org.lightsys.donorapp.tools.DownloadPDF;
 import org.lightsys.donorapp.tools.Formatter;
 import org.lightsys.donorapp.tools.LocalDBHandler;
 import org.lightsys.donorapp.tools.NoteListAdapter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Class displays a list of notes (updates and prayer requests) to the user
+ * Class displays a list of notes (updates and prayer requests) and prayer letters to the user
  *
  * Created by Andrew Lockridge on 6/24/2015.
  */
@@ -38,7 +47,7 @@ public class NoteList extends Fragment{
 
         getActivity().setTitle("Prayer Requests/Updates");
 
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         combined.clear();
         ArrayList<Note> notes = db.getNotes();
         ArrayList<PrayerLetter> letters = db.getPrayerLetters();
@@ -110,18 +119,48 @@ public class NoteList extends Fragment{
                     transaction.addToBackStack("ToDetailedUpdateView");
                     transaction.commit();
                 }
-            } else {
-                PrayerLetter p = (PrayerLetter) combined.get(position);
-                args.putInt(DetailedPrayerLetter.ARG_LETTER_ID, p.getId());
-                DetailedPrayerLetter newFrag = new DetailedPrayerLetter();
-                newFrag.setArguments(args);
-                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.content_frame, newFrag);
-                transaction.addToBackStack("ToDetailedLetterView");
-                transaction.commit();
+            } else { // The selected item is a prayer letter
+                PrayerLetter letter = (PrayerLetter) combined.get(position);
+                LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+                Account account = db.getAccounts().get(0);
+                db.close();
 
+                // Look through downloads to see if file has been downloaded
+                File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                boolean fileFoundInDownloads = false;
+                String[] downloads = path.list();
+                if (downloads != null && downloads.length != 0) {
+                    for (String name : downloads) {
+                        if (name.equals(letter.getFilename())) {
+                            fileFoundInDownloads = true;
+                        }
+                    }
+                }
+                if (!fileFoundInDownloads) {
+                    // Download file from API
+                    String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+                    String url = "http://" + account.getServerName() + ":800" + letter.getFolder() + "/" +
+                            letter.getFilename();
+                    DownloadPDF download = new DownloadPDF(url, account.getServerName(), account.getAccountName(),
+                            account.getAccountPassword(), directory, letter.getFilename(), getActivity(),
+                            getActivity());
+                    download.execute("");
+                } else {
+                    // Launch a PDF viewing application
+                    try {
+                        Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                        File file = new File(path, letter.getFilename());
+                        pdfIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
+                        startActivity(pdfIntent);
+                    } catch (ActivityNotFoundException e) {
+                        // If no application is found on device, send a message to the user
+                        Toast.makeText(getActivity(), "To view this document, you first must" +
+                                "install a PDF viewing application", Toast.LENGTH_LONG).show();
+                        e.printStackTrace();
+                    }
+
+                }
             }
-
         }
     }
 
@@ -141,9 +180,11 @@ public class NoteList extends Fragment{
                 if (n.getType().equals("Pray")) {
                     hm.put("textBelow", "Praying");
                     if (!nIsPrayedFor) {
-                        hm.put("textAbove", "Not");
+                        hm.put("textAbove", "Prayer");
+                        hm.put("textBelow", "Request");
                         hm.put("isPrayedFor", "inactive");
                     } else {
+                        hm.put("textBelow", "Praying");
                         hm.put("isPrayedFor", "active");
                     }
                 }

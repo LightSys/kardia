@@ -15,9 +15,7 @@ import java.util.Map;
  * Created by bosonBaas on 3/12/2015.
  *
  * This is an Adapter modeled off of Simple adapter. It's purpose is to enable the interaction
- * of the program with the buttons inside the ListView for Prayer Requests. The PrayButton
- * is not yet implemented in the database, yet the API should simplify that process. It is implemented
- * for UI.
+ * of the program with the buttons inside the ListView for Prayer Requests.
  */
 public class NoteListAdapter extends SimpleAdapter {
 
@@ -62,9 +60,9 @@ public class NoteListAdapter extends SimpleAdapter {
         // Four possibilities are inactive prayer, active prayer, update, or prayer letter
         if (pieces.get("type").equals("Pray")) {
             if(pieces.get("isPrayedFor").equals("inactive")){
-                rowView.setImage(R.drawable.inactive_praying_hands);
+                rowView.setImage(R.drawable.inactive_praying_hands_icon);
             } else {
-                rowView.setImage(R.drawable.new_praying_hands);
+                rowView.setImage(R.drawable.active_praying_hands_icon);
             }
         } else if (pieces.get("type").equals("Update")) {
             rowView.setImage(R.drawable.update_icon);

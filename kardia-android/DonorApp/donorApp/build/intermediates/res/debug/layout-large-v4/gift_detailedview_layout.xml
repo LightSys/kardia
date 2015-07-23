@@ -6,15 +6,15 @@
     android:background="@drawable/noise_blue_repeat" >
 
     <Button
-        android:id="@+id/connect_button"
-        android:layout_width="200dp"
+        android:id="@+id/pdfButton"
+        android:layout_width="wrap_content"
         android:layout_height="80dp"
-        android:textSize="20sp"
+        android:textSize="24sp"
+        android:textStyle="bold"
         android:text="@string/view_pdf_receipt"
-        android:onClick="sendToPDF"
         style="@style/customBottomBar"
         android:layout_below="@+id/checknum"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="50dp"
         android:layout_centerHorizontal="true" />
 
     <TextView
@@ -23,8 +23,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/giftamount"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
-        android:textSize="22sp" />
+        android:layout_marginTop="50dp"
+        android:textSize="26sp" />
 
     <TextView
         android:id="@+id/giftamount"
@@ -32,8 +32,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/fund"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
-        android:textSize="22sp"
+        android:layout_marginTop="50dp"
+        android:textSize="26sp"
         android:textColor="#37AD00" />
 
     <TextView
@@ -42,8 +42,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/date"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
-        android:textSize="20sp" />
+        android:layout_marginTop="50dp"
+        android:textSize="24sp" />
 
     <TextView
         android:id="@+id/fund"
@@ -51,10 +51,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="50dp"
         android:layout_marginRight="18dp"
         android:layout_marginLeft="18dp"
-        android:textSize="26sp"
+        android:textSize="30sp"
         android:gravity="center"/>
 
     <RelativeLayout

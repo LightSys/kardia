@@ -870,8 +870,9 @@
         <item name="android:shadowDy">1</item>
         <item name="android:shadowRadius">0.6</item>
         <item name="android:background">@drawable/custom_total_bar</item>
-        <item name="android:paddingLeft">6dp</item>
-        <item name="android:paddingRight">6dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
     </style>
     <style name="listCustomBlue" parent="@android:style/Widget.ListView">
         <item name="android:divider">#000030</item>

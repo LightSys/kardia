@@ -58,7 +58,7 @@ public class DetailedPrayerRequest extends Fragment{
      */
 
     public void updateRequestView(final int request_id){
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
         TextView subject = (TextView)getActivity().findViewById(R.id.subject);
@@ -77,11 +77,11 @@ public class DetailedPrayerRequest extends Fragment{
         text.setText(request.getText());
 
         if (request.getIsPrayedFor()) {
-            prayerReminder.setBackground(getResources().getDrawable(R.drawable.new_praying_hands));
+            prayerReminder.setBackground(getResources().getDrawable(R.drawable.active_praying_hands_icon));
         } else {
-            textAbove.setText("Not");
-            instr.setText("Press button to signify you will be praying for this request");
-            prayerReminder.setBackground(getResources().getDrawable(R.drawable.inactive_praying_hands));
+            textAbove.setText("Not Yet");
+            instr.setText("Press this button to signify you will be praying/giving thanks for this item");
+            prayerReminder.setBackground(getResources().getDrawable(R.drawable.inactive_praying_hands_icon));
         }
 
 
@@ -90,15 +90,15 @@ public class DetailedPrayerRequest extends Fragment{
             public void onClick(View view) {
                 // Does not allow user to launch notification activity a second time
                 if (request.getIsPrayedFor()) {
-                    Toast.makeText(getActivity(), "You are already praying for this request!",
+                    Toast.makeText(getActivity(), "You are already praying for this item!",
                             Toast.LENGTH_SHORT).show();
                 } else {
                     // Ask user if they would like notifications
                     new AlertDialog.Builder(getActivity())
                             .setCancelable(false)
                             .setTitle("Set Notifications")
-                            .setMessage("Would you like to set notifications to remind you to pray" +
-                                    " for this request?")
+                            .setMessage("Would you like to set notifications to remind you to" +
+                                    " pray/give thanks for this item?")
                             .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     // Launch notification activity
@@ -113,7 +113,7 @@ public class DetailedPrayerRequest extends Fragment{
                                     updateDbToPrayedFor();
                                     textAbove.setText("");
                                     instr.setText("");
-                                    prayerReminder.setBackground(getResources().getDrawable(R.drawable.new_praying_hands));
+                                    prayerReminder.setBackground(getResources().getDrawable(R.drawable.active_praying_hands_icon));
                                 }
                             })
                             .setIcon(android.R.drawable.ic_dialog_alert)
@@ -127,7 +127,7 @@ public class DetailedPrayerRequest extends Fragment{
      * Updates prayer request to signify it is being prayed for
      */
     private void updateDbToPrayedFor() {
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         db.updateNote(request_id, true);
         request = db.getNoteForID(request_id);
         db.close();

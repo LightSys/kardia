@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal"
     android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat" >
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/add_account_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="18dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginBottom="20dp"
+        android:text="@string/add_new_account"
+        android:textSize="22sp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="18dp"
-            android:text="@string/add_new_account"
-            android:textSize="18sp"/>
-
-        <Button
-            android:id="@+id/finish_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
-            android:layout_marginStart="100dp"
-            android:layout_marginTop="20dp"
-            android:textSize="16sp"
-            android:visibility="invisible"
-            android:text="@string/done"
-            android:textStyle="bold"
-            style="@style/customBottomBar" />
-    </TableRow>
+    <Button
+        android:id="@+id/finish_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:textSize="22sp"
+        android:text="@string/done"
+        android:textStyle="bold"
+        style="@style/customBottomBar" />
 
 
     <EditText
         android:id="@+id/username_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
+        android:layout_below="@id/add_account_text"
+        android:layout_centerHorizontal="true"
+        android:ems="12"
+        android:textSize="22sp"
         android:hint="@string/username"
         android:singleLine="true"/>
 
@@ -45,8 +45,11 @@
         android:id="@+id/password_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:ems="10"
+        android:layout_marginTop="8dp"
+        android:layout_below="@id/username_input"
+        android:layout_centerHorizontal="true"
+        android:ems="12"
+        android:textSize="22sp"
         android:hint="@string/password"
         android:inputType="textPassword"
         android:singleLine="true"/>
@@ -55,8 +58,11 @@
         android:id="@+id/servername_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:ems="10"
+        android:layout_marginTop="8dp"
+        android:layout_below="@id/password_input"
+        android:layout_centerHorizontal="true"
+        android:ems="12"
+        android:textSize="22sp"
         android:hint="@string/server_name"
         android:singleLine="true"/>
 
@@ -64,51 +70,48 @@
         android:id="@+id/donor_id_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:ems="10"
+        android:layout_marginTop="8dp"
+        android:layout_below="@id/servername_input"
+        android:layout_centerHorizontal="true"
+        android:ems="12"
+        android:textSize="22sp"
         android:hint="@string/donor_id_ex_100001"
         android:inputType="number"
         android:singleLine="true"/>
 
-    <TableRow
-        android:id="@+id/tableRow1"
-        android:layout_width="match_parent"
+
+    <Button
+        android:id="@+id/connect_button"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:gravity="center">
+        android:layout_below="@id/donor_id_input"
+        android:layout_marginTop="25dp"
+        android:layout_centerHorizontal="true"
+        android:text="@string/connect"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        style="@style/customBottomBar" />
 
-        <Button
-            android:id="@+id/connect_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/connect"
-            android:textStyle="bold"
-            style="@style/customBottomBar" />
 
-    </TableRow>
-
-    <TableRow
-        android:id="@+id/tableRow2"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp">
+        android:layout_below="@id/connect_button"
+        android:layout_marginTop="40dp"
+        android:layout_marginLeft="6dp"
+        android:layout_marginStart="6dp"
+        android:textSize="22sp" />
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="6dp"
-            android:layout_marginStart="6dp"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    </TableRow>
 
     <ListView
         android:id="@+id/connected_list"
         style="@style/listCustomBlue"
+        android:layout_below="@id/textView2"
+        android:layout_marginTop="10dp"
+        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:divider="@android:color/black">
     </ListView>
 
-</LinearLayout><!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout-large/account_page_layout.xml -->
+</RelativeLayout><!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout-large/account_page_layout.xml -->

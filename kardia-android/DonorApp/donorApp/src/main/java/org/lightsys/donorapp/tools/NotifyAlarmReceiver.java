@@ -47,7 +47,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
     private void resetAlarms(Context context) {
         // Setting alarms requires sdk version 19 or newer
         if (Build.VERSION.SDK_INT >= 19) {
-            LocalDBHandler db = new LocalDBHandler(context, null, null, 9);
+            LocalDBHandler db = new LocalDBHandler(context, null);
             ArrayList<PrayerNotification> notifications = db.getNotifications();
             Note request;
             Intent alarmIntent;
@@ -91,17 +91,18 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
         notificationID = intent.getIntExtra("id", 0);
 
         // Build the notification to be sent
+        // BigTextStyle allows notification to be expanded if text is more than one line
         nBuild = new NotificationCompat.Builder(context)
                 .setContentTitle("Prayer Reminder")
-                .setContentText(name)
+                .setContentText(name + ": " + subject)
                 .setSmallIcon(R.drawable.kardiabeat_v2)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(subject));
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(name + ": " + subject));
 
         n = nBuild.build();
         notificationManager.notify(notificationID, n);
 
         // Delete notification from database once sent as it will not be needed again
-        LocalDBHandler db = new LocalDBHandler(context, null, null, 9);
+        LocalDBHandler db = new LocalDBHandler(context, null);
         db.deleteNotification(notificationID);
         db.close();
     }

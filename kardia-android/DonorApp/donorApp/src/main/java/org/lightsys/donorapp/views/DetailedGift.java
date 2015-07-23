@@ -1,6 +1,5 @@
 package org.lightsys.donorapp.views;
 
-import org.lightsys.donorapp.bottombar.LinkBar;
 import org.lightsys.donorapp.data.Gift;
 import org.lightsys.donorapp.tools.Formatter;
 import org.lightsys.donorapp.tools.LocalDBHandler;
@@ -11,7 +10,9 @@ import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.donorapp.R;
 
@@ -39,6 +40,7 @@ public class DetailedGift extends Fragment{
 		if(savedInstanceState != null){
 			gift_id = savedInstanceState.getInt(ARG_GIFT_ID);
 		}
+
 		return inflater.inflate(R.layout.gift_detailedview_layout, container, false);
 	}
 
@@ -65,7 +67,7 @@ public class DetailedGift extends Fragment{
 		TextView amount = (TextView)getActivity().findViewById(R.id.giftamount);
 		TextView checknum = (TextView)getActivity().findViewById(R.id.checknum);
 
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 		Gift g = db.getGift(gift_id);
 		db.close();
 		
@@ -82,6 +84,23 @@ public class DetailedGift extends Fragment{
 
 		FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
 		fragmentManager.beginTransaction().replace(R.id.bottom_bar, lb).commit();
+
+		Button viewPDFButton = (Button)getActivity().findViewById(R.id.pdfButton);
+		viewPDFButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Toast.makeText(getActivity(), "Sorry, not implemented yet.", Toast.LENGTH_SHORT).show();
+				// Gift receipt pdfs not implemented yet
+				// Will need to insert url and filename into DownloadPDF constructor to implement
+				// See NoteList class for example on how to do this
+
+//				Account account = accts.get(0);
+//				String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+//				DownloadPDF download = new DownloadPDF("INSERT URL", account.getServerName(), account.getAccountName(),
+//						account.getAccountPassword(), directory, "INSERT FILENAME", getActivity(), getActivity());
+//				download.execute("");
+			}
+		});
 	}
 
 

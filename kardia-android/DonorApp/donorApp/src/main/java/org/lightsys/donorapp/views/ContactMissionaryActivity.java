@@ -53,13 +53,18 @@ public class ContactMissionaryActivity extends Activity{
         }
 
         // Load list of partner names from accounts for user to choose who message is from
-        LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
+        LocalDBHandler db = new LocalDBHandler(this, null);
         ArrayList<String> partnerNames = new ArrayList<String>();
         for (Account a : db.getAccounts()) {
             String aPartnerName = a.getPartnerName();
             if (aPartnerName != null) {
                 partnerNames.add(aPartnerName);
             }
+        }
+        // If no partner names are found, put "Unknown" as the sender, this should be rare
+        // The sender can then identify themselves in the message
+        if (partnerNames.isEmpty()) {
+            partnerNames.add("Unknown");
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 R.layout.support_simple_spinner_dropdown_item, partnerNames);

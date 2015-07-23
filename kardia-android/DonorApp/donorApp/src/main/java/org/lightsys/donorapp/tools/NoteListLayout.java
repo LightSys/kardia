@@ -2,12 +2,11 @@ package org.lightsys.donorapp.tools;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.donorapp.R;
-
-import org.lightsys.donorapp.customview.PrayButton;
 
 /**
  * Created by bosonBaas on 3/12/2015.
@@ -18,7 +17,7 @@ import org.lightsys.donorapp.customview.PrayButton;
  */
 public class NoteListLayout extends RelativeLayout {
     TextView titleView, dateView, missionaryNameView, aboveTextView, belowTextView;
-    PrayButton prayButton;
+    Button prayButton;
 
     public NoteListLayout(Context context) {
         super(context);
@@ -28,8 +27,7 @@ public class NoteListLayout extends RelativeLayout {
         missionaryNameView = (TextView)findViewById(R.id.missionaryName);
         aboveTextView = (TextView)findViewById(R.id.textAbovePrayingButton);
         belowTextView = (TextView)findViewById(R.id.textBelowPrayingButton);
-
-        prayButton = (PrayButton)findViewById(R.id.prayingButton);
+        prayButton = (Button)findViewById(R.id.prayingButton);
     }
 
     public void setTitle(String title) {

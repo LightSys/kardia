@@ -3,7 +3,6 @@ package org.lightsys.donorapp.views;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.lightsys.donorapp.bottombar.LinkBar;
 import org.lightsys.donorapp.data.Gift;
 import org.lightsys.donorapp.tools.Formatter;
 import org.lightsys.donorapp.tools.LocalDBHandler;
@@ -35,9 +34,8 @@ public class GiftList extends Fragment{
 	int year_id = -1; 
 	public static String ARG_FUND_ID = "fund_id";
 	int fund_id = -1;
-	public static String ARG_GIFT_QUERY = "gift_query";
-	String query = "";
 	private ArrayList<Gift> gifts = new ArrayList<Gift>();
+	private ArrayList<Integer> giftIDs = new ArrayList<Integer>();
 	private boolean isSpecificFund = false;
 	
 	/**
@@ -46,22 +44,23 @@ public class GiftList extends Fragment{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 		Bundle giftArgs = getArguments();
 		
 		if(savedInstanceState != null){
 			this.year_id = savedInstanceState.getInt(ARG_YEAR_ID);
 			this.fund_id = savedInstanceState.getInt(ARG_FUND_ID);
-			this.query = savedInstanceState.getString(ARG_GIFT_QUERY);
 		}
 		//This is used when dealing with specific segments of gifts...
 		else if(giftArgs != null){
 			this.year_id = giftArgs.getInt(ARG_YEAR_ID);
 			this.fund_id = giftArgs.getInt(ARG_FUND_ID);
-			this.query = giftArgs.getString(ARG_GIFT_QUERY);
+			this.giftIDs = giftArgs.getIntegerArrayList("giftIDs");
 
-			if(this.query != null && !this.query.equals("")){
-				gifts = db.getSearchResults(query);
+			if(giftIDs != null && !giftIDs.isEmpty()) {
+				for (Integer id : giftIDs) {
+					gifts.add(db.getGift(id));
+				}
 			}
 			else if(this.fund_id != -1){
 				isSpecificFund = true;
@@ -170,6 +169,6 @@ public class GiftList extends Fragment{
 		super.onSaveInstanceState(outState);
 		outState.putInt(ARG_FUND_ID, fund_id);
 		outState.putInt(ARG_YEAR_ID, year_id);
-		outState.putString(ARG_GIFT_QUERY, query);
+		outState.putIntegerArrayList("giftIDs", giftIDs);
 	}
 }

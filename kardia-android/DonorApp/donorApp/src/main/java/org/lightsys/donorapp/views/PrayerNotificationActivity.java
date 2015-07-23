@@ -72,7 +72,7 @@ public class PrayerNotificationActivity extends Activity {
         alarmTimes.add("19:00");
 
         // For next ID, retrieve last ID from database and add 1
-        LocalDBHandler db = new LocalDBHandler(this, null, null, 9);
+        LocalDBHandler db = new LocalDBHandler(this, null);
         request = db.getNoteForID(requestid);
         notificationID = db.getLastId("notification") + 1;
         db.close();
@@ -98,6 +98,8 @@ public class PrayerNotificationActivity extends Activity {
                 if (frequencySpinner.getVisibility() == View.VISIBLE) {
                     // frequency is based on position (i.e 0 position = 1 time per week)
                     frequency = frequencySpinner.getSelectedItemPosition() + 1;
+
+                    // Show corresponding rows based on how many requests/day the user chooses
                     showRowsForFrequency(frequency);
                 }
             }
@@ -185,7 +187,7 @@ public class PrayerNotificationActivity extends Activity {
                 .setCancelable(false)
                 .setTitle("Cancel")
                 .setMessage("Exit without setting notifications? You will not be able" +
-                        " to set any notifications later for this request.")
+                        " to set any notifications later for this item.")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         finish();
@@ -427,7 +429,7 @@ public class PrayerNotificationActivity extends Activity {
             Intent alarmIntent;
             PendingIntent pendingIntent;
 
-            LocalDBHandler db = new LocalDBHandler(PrayerNotificationActivity.this, null, null, 9);
+            LocalDBHandler db = new LocalDBHandler(PrayerNotificationActivity.this, null);
             AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 
             String[] dateSplitStr = date.split("-");

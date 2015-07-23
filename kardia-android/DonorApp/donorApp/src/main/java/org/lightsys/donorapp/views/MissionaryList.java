@@ -28,7 +28,7 @@ public class MissionaryList extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null, null, 9);
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         missionaries = db.getMissionaries();
         db.close();
 
