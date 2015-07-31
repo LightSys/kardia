@@ -43,9 +43,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
- * This class is used to pull json files (from the API URLs)
+ * This class is used to pull JSON files (from the API URLs)
  * for a specific account and then format and store the data into the
- * local SQLite database
+ * local SQLite database as well as validate a new account
  *
  * @author Andrew Cameron
  *
@@ -291,9 +291,10 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     new UsernamePasswordCredentials(AccountName, Password));
 
             // Set timeout parameters to avoid a long connection attempt to non-valid server
+            // Timeout currently set to 10 seconds
             HttpParams params = new BasicHttpParams();
-            HttpConnectionParams.setConnectionTimeout(params, 3000);
-            HttpConnectionParams.setSoTimeout(params, 1);
+            HttpConnectionParams.setConnectionTimeout(params, 10000);
+            HttpConnectionParams.setSoTimeout(params, 10000);
 
             DefaultHttpClient client = new DefaultHttpClient(params);
 
