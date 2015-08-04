@@ -1,0 +1,191 @@
+Document:   Kardia REST API for Missionary Information
+Author:	    Greg Beeley (GRB)
+Date:	    12-Mar-2015
+-------------------------------------------------------------------------------
+
+OVERVIEW...
+
+    This document describes the simple missionary data API for Kardia.  If you
+    are not already familiar with web services, REST, and the Kardia REST API
+    system, please first read "JSON-REST.txt" in centrallix-sysdoc, and read
+    "API.txt" in this documentation directory.
+
+
+ENDPOINT...
+
+    The endpoint of this API will be:
+
+	/apps/kardia/api/missionary
+
+    Of course, the needed protocol (http or https) and server address (such as
+    server.lightsys.org:843) will need to be added to the URL, to give
+    something like:
+
+	https://server.lightsys.org:843/apps/kardia/api/missionary?cx__mode=rest
+
+
+OBJECT STRUCTURE...
+
+    The following are example paths to various types of collections of objects
+    in the missionary data API:
+
+    /apps/kardia/api/missionary -- list of missionaries in the system
+
+	Please note that you may not have permission to view the entire list of
+	missionaries, or even permission to view a particular missionary or any
+	missionaries at all.  This is determined by the Kardia system itself.
+
+	Example REST queries:
+
+	    http://server/apps/kardia/api/missionary/?cx__mode=rest&cx__res_type=collection
+	    http://server/apps/kardia/api/missionary/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    /apps/kardia/api/missionary/{missionaryid}/Prayers -- Information about the
+    prayers that the missionary has received (when supporters click 'i prayed'
+    in an app, for example).
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    prayedfor_id    - the ID of the "prayed for you" record
+	    prayedfor_comments - any comments left when the supporter prayed
+	    prayedfor_date  - the date/time that the supporter prayed
+	    note_id	    - the id of the missionary's prayer request
+	    note_subject    - the subject of the missionary's prayer request
+	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
+	    note_date	    - the date that the prayer request was posted
+	    supporter_partner_id - the ID of the missionary
+	    supporter_partner_name - the name of the missionary
+
+    /apps/kardia/api/missionary/{missionaryid}/Supporters -- A list of
+    supporters.  The list may only include those supporters who support the
+    missionary, or it may be more exhaustive, or permissions restrictions
+    may apply.
+
+	This URL is a collection.
+
+	    partner_id	    - the ID of the supporter
+	    partner_name    - the name of the supporter
+
+    /apps/kardia/api/missionary/{missionaryid}/Supporters/{suppID}/Prayers --
+    A list of prayers that the missionary has received from the particular
+    suppporter.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    prayedfor_id    - the ID of the "prayed for you" record
+	    prayedfor_comments - any comments left when the supporter prayed
+	    prayedfor_date  - the date/time that the supporter prayed
+	    note_id	    - the id of the missionary's prayer request
+	    note_subject    - the subject of the missionary's prayer request
+	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
+	    note_date	    - the date that the prayer request was posted
+	    supporter_partner_id - the ID of the supporter
+	    supporter_partner_name - the name of the supporter
+
+    /apps/kardia/api/missionary/{missionaryid}/Notes -- A list of prayer
+    requests and updates that the missionary has posted.
+
+	This is a collection URL with the following properties:
+
+	    note_id	    - the id of the missionary's prayer request
+	    note_subject    - the subject of the missionary's prayer request
+	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
+	    note_date	    - the date that the prayer request was posted
+
+    /apps/kardia/api/missionary/{missionaryid}/Notes/{noteID}/Prayers --
+    A list of prayers the missionary has received for the specific prayer request.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    prayedfor_id    - the ID of the "prayed for you" record
+	    prayedfor_comments - any comments left when the supporter prayed
+	    prayedfor_date  - the date/time that the supporter prayed
+	    note_id	    - the id of the missionary's prayer request
+	    note_subject    - the subject of the missionary's prayer request
+	    note_text	    - the content of the prayer request
+	    note_type	    - the type of note (Pray or Update)
+	    note_date	    - the date that the prayer request was posted
+	    supporter_partner_id - the ID of the supporter
+	    supporter_partner_name - the name of the supporter
+
+    /apps/kardia/api/missionary/{missionaryid}/PrayerLetters -- a list of
+    prayer / support letters that the missionary has published.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    letter_id	    - the ID of the letter
+	    letter_title    - the title of the prayer letter
+	    letter_filename - the filename of the prayer letter
+	    letter_folder   - the folder on the server where the letter exists
+	    letter_date	    - the date the letter was created
+	    letter_type	    - a short label for the type of letter
+
+    /apps/kardia/api/missionary/{missionaryid}/PrayerLetters/{letterid}/{filename} --
+    This is an Element URL for the PDF file for the prayer letter.
+
+	This is an Element URL which represents the PDF file.  It will have
+	PDF content and the following attributes:
+
+	    name	    - the file name
+	    last_modification - the last modification date of the file itself
+	    size	    - the size of the file
+
+
+EXAMPLE URL'S...
+
+    The list of missionary ID's in the system:
+
+	http://server/apps/kardia/api/missionary/?cx__mode=rest&cx__res_type=collection
+
+    The list of missionary ID's along with information about each missionary:
+
+	http://server/apps/kardia/api/missionary/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Information about one missionary:
+
+	http://server/apps/kardia/api/missionary/100000?cx__mode=rest&cx__res_format=attrs
+
+    Information about one missionary in 'full' attribute mode:
+
+	http://server/apps/kardia/api/missionary/100000?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=full
+
+    All prayers made for a missionary, with detail about each prayer:
+
+	http://server/apps/kardia/api/missionary/100000/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of supporters:
+
+	http://server/apps/kardia/api/missionary/100000/Supporters/?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic
+
+    All prayers made by a supporter for a missionary, with detail about each
+    prayer:
+
+	http://server/apps/kardia/api/missionary/100000/Supporters/100001/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of prayer requests or updates a missionary has posted:
+
+	http://server/apps/kardia/api/missionary/100000/Notes?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic
+
+    All prayers made for a specific request by a missionary, with detail about
+    each prayer:
+
+	http://server/apps/kardia/api/missionary/100000/Notes/1/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of prayer letters published by a missionary:
+
+	http://server/apps/kardia/api/missionary/100000/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A specific prayer letter's PDF file:
+
+	http://server/apps/kardia/api/missionary/100000/PrayerLetters/2/PrayerLetterDec2014.pdf?cx__mode=rest&cx__res_type=element
+
+    Metadata (size, last modification, etc.) about the prayer letter:
+
+	http://server/apps/kardia/api/missionary/100000/PrayerLetters/2/PrayerLetterDec2014.pdf?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic

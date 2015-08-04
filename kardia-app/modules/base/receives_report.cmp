@@ -3,12 +3,12 @@ receives_report "widget/component-decl"
     {
     // Connect a report with a partner and set a
     // report parameter.
-    ConnectReport "widget/component-decl-action" { }
+    ConnectFundReport "widget/component-decl-action" { }
     Connected "widget/component-decl-event" { }
-    connect_cn "widget/connector"
+    connectfund_cn "widget/connector"
 	{
-	event=ConnectReport;
-	target=connect_osrc;
+	event=ConnectFundReport;
+	target=connectfund_osrc;
 	action=QueryParam;
 	report_group=runclient(:report_group);
 	partner=runclient(:partner);
@@ -17,13 +17,13 @@ receives_report "widget/component-decl"
 	value=runclient(:value);
 	}
 
-    connect_osrc "widget/osrc"
+    connectfund_osrc "widget/osrc"
 	{
 	cr_report_group "widget/parameter"	{ param_name=report_group; type=string; }
 	cr_partner "widget/parameter"		{ param_name=partner; type=string; }
 	cr_method "widget/parameter"		{ param_name=method; type=string; }
-	cr_param "widget/parameter"		{ param_name=param; type=string; }
-	cr_value "widget/parameter"		{ param_name=value; type=string; }
+	cr_param "widget/parameter"		{ param_name=param; type=string; default=null; }
+	cr_value "widget/parameter"		{ param_name=value; type=string; default=null; }
 
 	replicasize=1; readahead=1; autoquery=never;
 	sql = " INSERT
@@ -76,6 +76,58 @@ receives_report "widget/component-decl"
 			:rp:r_report_id = :rpt:r_report_id
 		";
 
+	end_connectfund "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=receives_report;
+	    action=Connected;
+	    }
+	}
+
+    // Connect a report with a partner without setting a param.
+    ConnectReport "widget/component-decl-action" { }
+    connect_cn "widget/connector"
+	{
+	event=ConnectReport;
+	target=connect_osrc;
+	action=QueryParam;
+	report_group=runclient(:report_group);
+	partner=runclient(:partner);
+	method=runclient(:method);
+	}
+
+    connect_osrc "widget/osrc"
+	{
+	cr2_report_group "widget/parameter"	{ param_name=report_group; type=string; }
+	cr2_partner "widget/parameter"		{ param_name=partner; type=string; }
+	cr2_method "widget/parameter"		{ param_name=method; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " INSERT
+			/apps/kardia/data/Kardia_DB/r_group_report/rows
+		SELECT
+			r_group_name = :parameters:report_group,
+			r_delivery_method = :parameters:method,
+			p_recipient_partner_key = :parameters:partner,
+			r_is_active = 0,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		HAVING
+			(select count(1) from /apps/kardia/data/Kardia_DB/r_group_report/rows gr where :gr:r_group_name = :parameters:report_group and :gr:r_delivery_method = :parameters:method and :gr:p_recipient_partner_key = :parameters:partner) = 0
+		;
+
+		UPDATE
+			IDENTITY /apps/kardia/data/Kardia_DB/r_group_report/rows rpt
+		SET
+			:rpt:r_is_active = 1
+		WHERE
+			:rpt:r_group_name = :parameters:report_group and
+			:rpt:r_delivery_method = :parameters:method and
+			:rpt:p_recipient_partner_key = :parameters:partner
+		";
+
 	end_connect "widget/connector"
 	    { 
 	    event=EndQuery;
@@ -85,12 +137,12 @@ receives_report "widget/component-decl"
 	}
 
     // Disconnect a report from a partner.
-    DisconnectReport "widget/component-decl-action" { }
+    DisconnectFundReport "widget/component-decl-action" { }
     Disconnected "widget/component-decl-event" { }
-    disconnect_cn "widget/connector"
+    disconnectfund_cn "widget/connector"
 	{
-	event=DisconnectReport;
-	target=disconnect_osrc;
+	event=DisconnectFundReport;
+	target=disconnectfund_osrc;
 	action=QueryParam;
 	report_group=runclient(:report_group);
 	partner=runclient(:partner);
@@ -99,13 +151,13 @@ receives_report "widget/component-decl"
 	value=runclient(:value);
 	}
 
-    disconnect_osrc "widget/osrc"
+    disconnectfund_osrc "widget/osrc"
 	{
 	dr_report_group "widget/parameter"	{ param_name=report_group; type=string; }
 	dr_partner "widget/parameter"		{ param_name=partner; type=string; }
 	dr_method "widget/parameter"		{ param_name=method; type=string; }
-	dr_param "widget/parameter"		{ param_name=param; type=string; }
-	dr_value "widget/parameter"		{ param_name=value; type=string; }
+	dr_param "widget/parameter"		{ param_name=param; type=string; default=null; }
+	dr_value "widget/parameter"		{ param_name=value; type=string; default=null; }
 
 	replicasize=1; readahead=1; autoquery=never;
 	sql = " UPDATE
@@ -123,6 +175,43 @@ receives_report "widget/component-decl"
 			:rp:r_delivery_method = :rpt:r_delivery_method and
 			:rp:p_recipient_partner_key = :rpt:p_recipient_partner_key and
 			:rp:r_report_id = :rpt:r_report_id
+		";
+
+	end_disconnectfund "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=receives_report;
+	    action=Disconnected;
+	    }
+	}
+
+    // Disconnect a report from a partner without param.
+    DisconnectReport "widget/component-decl-action" { }
+    disconnect_cn "widget/connector"
+	{
+	event=DisconnectReport;
+	target=disconnect_osrc;
+	action=QueryParam;
+	report_group=runclient(:report_group);
+	partner=runclient(:partner);
+	method=runclient(:method);
+	}
+
+    disconnect_osrc "widget/osrc"
+	{
+	dr2_report_group "widget/parameter"	{ param_name=report_group; type=string; }
+	dr2_partner "widget/parameter"		{ param_name=partner; type=string; }
+	dr2_method "widget/parameter"		{ param_name=method; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " UPDATE
+			IDENTITY /apps/kardia/data/Kardia_DB/r_group_report/rows rpt
+		SET
+			:rpt:r_is_active = 0
+		WHERE
+			:rpt:r_group_name = :parameters:report_group and
+			:rpt:r_delivery_method = :parameters:method and
+			:rpt:p_recipient_partner_key = :parameters:partner
 		";
 
 	end_disconnect "widget/connector"

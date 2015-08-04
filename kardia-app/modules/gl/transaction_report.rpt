@@ -18,6 +18,7 @@ transaction_report "system/report"
     costctr "report/parameter" { type=string; default=null; }
     balcostctr "report/parameter" { type=string; default=null; }
     account "report/parameter" { type=string; default=null; }
+    ctlaccount "report/parameter" { type=string; default=null; }
     batch "report/parameter" { type=integer; default=null; }
     year_period "report/parameter" { type=string; default=null; }
     startperiod "report/parameter" { type=string; default=null; }
@@ -68,6 +69,7 @@ transaction_report "system/report"
 			    condition(:this:balcostctr is null, '', ' and :c:a_bal_cost_center = :this:balcostctr') + 
 			    condition(:this:costctr is null, '', ' and :t:a_cost_center = :this:costctr') + 
 			    condition(:this:account is null, '', ' and :t:a_account_code = :this:account') + 
+			    condition(:this:ctlaccount is null, '', ' and :t:a_account_category = :this:ctlaccount') + 
 			    condition(:this:batch is null, '', ' and :t:a_batch_number = :this:batch') + 
 			    condition(:this:startperiod is null, '', ' and :t:a_period < :this:startperiod') + 
 			    condition(:this:endperiod is null, '', ' and :t:a_period <= :this:endperiod') + 
@@ -116,6 +118,7 @@ transaction_report "system/report"
 			    condition(:this:balcostctr is null, '', ' and :c:a_bal_cost_center = :this:balcostctr') + 
 			    condition(:this:costctr is null, '', ' and :t:a_cost_center = :this:costctr') + 
 			    condition(:this:account is null, '', ' and :t:a_account_code = :this:account') + 
+			    condition(:this:ctlaccount is null, '', ' and :t:a_account_category = :this:ctlaccount') + 
 			    condition(:this:batch is null, '', ' and :t:a_batch_number = :this:batch') + 
 			    condition(:this:startperiod is null, '', ' and :t:a_period >= :this:startperiod') + 
 			    condition(:this:endperiod is null, '', ' and :t:a_period <= :this:endperiod') + 
@@ -130,6 +133,7 @@ transaction_report "system/report"
 			    condition(:this:sortby == "cca", ":t:a_cost_center, :t:a_account_code", "") +
 			    condition(:this:sortby == "acc", ":t:a_account_code, :t:a_cost_center", "") +
 			    condition(:this:sortby == "date", ":t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
+			    condition(:this:sortby == "pdate", ":t:a_period, :t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
 		"");
 	plus_sum "report/aggregate" { compute="isnull(sum(:plus_amt),$0)"; reset=0; }
 	minus_sum "report/aggregate" { compute="isnull(sum(:minus_amt),$0)"; reset=0; }
@@ -177,6 +181,11 @@ transaction_report "system/report"
 		{ 
 		condition = runserver(not (:this:account is null));
 		value = runserver("Account: " + :this:account + " - " + :acct_qy:acct_name + "\n"); 
+		}
+	    c_d3b "report/data"
+		{ 
+		condition = runserver(not (:this:ctlaccount is null));
+		value = runserver("Ctl Account: " + :this:ctlaccount + "\n"); 
 		}
 	    c_d4 "report/data"
 		{ 

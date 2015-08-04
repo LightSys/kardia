@@ -1,0 +1,65 @@
+$Version=2$
+profile_collab "widget/component-decl"
+    {
+    width=380;
+    height=18;
+
+    partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    EditCollab "widget/component-decl-event" { }
+
+    Refresh "widget/component-decl-action" { }
+
+    onRefresh "widget/connector" { event=Refresh; target=collab_info_osrc; action=Refresh; }
+
+    collab_info_osrc "widget/osrc"
+	{
+	partner_key "widget/parameter" { type=string; }
+
+	sql = "	select
+		    txt = sum(condition(:s:p_kardia_login == user_name(), 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(isnull(:p:p_preferred_name,'')) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' (' + :ct:e_collab_type_label + '), ') - ', '
+		from
+		    /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
+		    /apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_staff/rows s
+		where
+		    :c:p_partner_key = :parameters:partner_key and
+		    :ct:e_collab_type_id = :c:e_collab_type_id and
+		    :p:p_partner_key = :c:e_collaborator and
+		    :s:p_partner_key =* :p:p_partner_key
+		";
+
+	readahead=16;
+	replicasize=16;
+
+	link "widget/rule"
+	    {
+	    ruletype = osrc_relationship;
+	    target = partner_osrc;
+	    key_1 = partner_key;
+	    target_key_1 = p_partner_key;
+	    }
+
+	collabs_form "widget/form"
+	    {
+	    collabs_label "widget/label"
+		{
+		x=0; y=0;
+		width=380; height=18;
+		widget_class=link;
+		style=italic;
+		fgcolor="#6080c0";
+		value = runclient('Working with: ' + isnull(:collabs_form:txt, 'none assigned'));
+
+		edit_collab_on_click "widget/connector"
+		    {
+		    event=Click;
+		    target=profile_collab;
+		    action=EditCollab;
+		    origin=collabs_label;
+		    }
+		}
+	    }
+	}
+    }

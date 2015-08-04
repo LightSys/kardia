@@ -35,6 +35,10 @@ drop table p_contact_info;
 drop table p_partner_relationship;
 
 
+/* p_partner_relationship_type */
+drop table p_partner_relationship_type;
+
+
 /* p_church */
 drop table p_church;
 
@@ -83,12 +87,168 @@ drop table p_dup_check_tmp;
 drop table p_partner_sort_tmp;
 
 
+/* p_acquisition_code */
+drop table p_acquisition_code;
+
+
+/* p_partner_search */
+drop table p_partner_search;
+
+
+/* p_partner_search_stage */
+drop table p_partner_search_stage;
+
+
+/* p_partner_search_results */
+drop table p_partner_search_results;
+
+
+/* p_search_stage_criteria */
+drop table p_search_stage_criteria;
+
+
 /* m_list */
 drop table m_list;
 
 
 /* m_list_membership */
 drop table m_list_membership;
+
+
+/* e_contact_autorecord */
+drop table e_contact_autorecord;
+
+
+/* e_contact_history_type */
+drop table e_contact_history_type;
+
+
+/* e_contact_history */
+drop table e_contact_history;
+
+
+/* e_activity */
+drop table e_activity;
+
+
+/* e_engagement_track */
+drop table e_engagement_track;
+
+
+/* e_engagement_track_collab */
+drop table e_engagement_track_collab;
+
+
+/* e_engagement_step */
+drop table e_engagement_step;
+
+
+/* e_engagement_step_collab */
+drop table e_engagement_step_collab;
+
+
+/* e_engagement_step_req */
+drop table e_engagement_step_req;
+
+
+/* e_partner_engagement */
+drop table e_partner_engagement;
+
+
+/* e_partner_engagement_req */
+drop table e_partner_engagement_req;
+
+
+/* e_tag_type */
+drop table e_tag_type;
+
+
+/* e_tag_type_relationship */
+drop table e_tag_type_relationship;
+
+
+/* e_tag */
+drop table e_tag;
+
+
+/* e_tag_activity */
+drop table e_tag_activity;
+
+
+/* e_document_type */
+drop table e_document_type;
+
+
+/* e_document */
+drop table e_document;
+
+
+/* e_document_comment */
+drop table e_document_comment;
+
+
+/* e_partner_document */
+drop table e_partner_document;
+
+
+/* e_workflow_type */
+drop table e_workflow_type;
+
+
+/* e_workflow_type_step */
+drop table e_workflow_type_step;
+
+
+/* e_workflow */
+drop table e_workflow;
+
+
+/* e_collaborator_type */
+drop table e_collaborator_type;
+
+
+/* e_collaborator */
+drop table e_collaborator;
+
+
+/* e_todo_type */
+drop table e_todo_type;
+
+
+/* e_todo */
+drop table e_todo;
+
+
+/* e_data_item_type */
+drop table e_data_item_type;
+
+
+/* e_data_item_group */
+drop table e_data_item_group;
+
+
+/* e_data_item */
+drop table e_data_item;
+
+
+/* e_highlights */
+drop table e_highlights;
+
+
+/* e_data_highlight */
+drop table e_data_highlight;
+
+
+/* e_ack */
+drop table e_ack;
+
+
+/* e_ack_type */
+drop table e_ack_type;
+
+
+/* e_trackactivity */
+drop table e_trackactivity;
 
 
 /* r_group */
@@ -315,6 +475,10 @@ drop table a_cc_auto_subscribe;
 drop table a_motivational_code;
 
 
+/* a_giving_pattern */
+drop table a_giving_pattern;
+
+
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb;
 
@@ -331,6 +495,14 @@ drop table a_subtrx_deposit;
 drop table a_subtrx_cashxfer;
 
 
+/* i_eg_gift_import */
+drop table i_eg_gift_import;
+
+
+/* i_eg_giving_url */
+drop table i_eg_giving_url;
+
+
 /* c_message */
 drop table c_message;
 
@@ -341,6 +513,10 @@ drop table c_chat;
 
 /* c_member */
 drop table c_member;
+
+
+/* s_config */
+drop table s_config;
 
 
 /* s_user_data */

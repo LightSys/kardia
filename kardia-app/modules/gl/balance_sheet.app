@@ -7,6 +7,8 @@ balance_sheet "widget/page"
     title = runserver("Balance Sheet Report - " + :this:ledger);
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+    require_one_endorsement="kardia:gl_manage","kardia:gl";
+    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
 

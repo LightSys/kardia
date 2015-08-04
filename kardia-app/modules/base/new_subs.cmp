@@ -64,6 +64,7 @@ new_subs "widget/component-decl"
 	    sql="   SELECT
 			    :m:m_list_description, :m:m_list_type, :m:m_list_status,
 			    :l:p_postal_mode,
+			    :l:m_hist_id,
 			    :l:m_membership_status, :l:m_comments,
 			    :l:p_partner_key, :l:p_contact_id,
 			    :l:m_list_code, :l:m_member_type, :l:m_contact, :l:p_location_id, :l:m_num_copies,
@@ -113,6 +114,8 @@ new_subs "widget/component-decl"
 	    readahead=50;
 	    autoquery=onfirstreveal;
 
+	    refresh_on_modify "widget/connector" { event=Modified; action=Refresh; }
+
 	    new_subs_pane "widget/pane"
 		{
 		height=230;
@@ -141,6 +144,7 @@ new_subs "widget/component-decl"
 			Source="/apps/kardia/modules/base/subscription.app";
 			partner=runclient(:new_subs_osrc:p_partner_key);
 			list=runclient(:new_subs_osrc:m_list_code);
+			hist_id=runclient(:new_subs_osrc:m_hist_id);
 			mlist_parent_osrc = new_subs_osrc;
 			send_update = 1;
 			}
@@ -178,6 +182,7 @@ new_subs "widget/component-decl"
 		    sql="   SELECT
 				    :m:m_list_description, :m:m_list_type, :m:m_list_status,
 				    :l:p_postal_mode,
+				    :l:m_hist_id,
 				    :l:m_membership_status, :l:m_comments,
 				    :l:p_partner_key, :l:p_contact_id,
 				    :l:m_list_code, :l:m_member_type, :l:m_contact, :l:p_location_id, :l:m_num_copies,
@@ -247,6 +252,7 @@ new_subs "widget/component-decl"
 				Source="/apps/kardia/modules/base/subscription.app";
 				partner=runclient(:also_subs_osrc:p_partner_key);
 				list=runclient(:also_subs_osrc:m_list_code);
+				hist_id=runclient(:also_subs_osrc:m_hist_id);
 				mlist_parent_osrc = new_subs_osrc;
 				send_update = 1;
 				}
@@ -393,6 +399,7 @@ new_subs "widget/component-decl"
 			Source="/apps/kardia/modules/base/subscription.app";
 			partner=runclient(:new_subs_osrc:p_partner_key);
 			list=runclient(:new_subs_osrc:m_list_code);
+			hist_id=runclient(:new_subs_osrc:m_hist_id);
 			mlist_parent_osrc = new_subs_osrc;
 			send_update = 1;
 			}
@@ -436,6 +443,7 @@ new_subs "widget/component-decl"
 			}
 		    delete_cn2 "widget/connector"
 			{
+			condition=0;
 			event=Click;
 			target=new_subs_osrc;
 			action=Refresh;
@@ -468,6 +476,7 @@ new_subs "widget/component-decl"
 			}
 		    activate_cn2 "widget/connector"
 			{
+			condition=0;
 			event=Click;
 			target=new_subs_osrc;
 			action=Refresh;

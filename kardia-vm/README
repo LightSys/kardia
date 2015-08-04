@@ -1,6 +1,6 @@
-                     Kardia Virtual Appliance Beta 3 README
-                   (C) 2011 LightSys Technology Services, Inc.
-                                  May 11, 2011
+                        Kardia Virtual Appliance README
+                (C) 2011-2015 LightSys Technology Services, Inc.
+                                  Jul 6, 2015
 -------------------------------------------------------------------------------
 
 Kardia is designed to help meet the software needs of non-profit organizations
@@ -9,8 +9,8 @@ open software.
 
 This is a VM image you can run in VMware/VirtualBox/Xen/HyperV.  Targeted at
 developers and those who want to try Kardia and Centrallix, it makes
-installation & setup simple.  It is based on an up-to-date CentOS 5.6 install
-and features a menu-based interface for setup and use.
+installation & setup simple.  It is based on a CentOS 7 installation and
+features a menu-based interface for setup and use.
 
 The VM uses Git to download the latest Kardia and Centrallix source code, and
 provides multiple workflow and development options.  The Git repositories are
@@ -25,27 +25,31 @@ The VM's default password is in the PDF documentation.
 
 Documentation:
 
-    ApplianceQuickReference_1_0_Beta3.pdf (302 KB)
+    ApplianceQuickReference_1_0.pdf (307 KB)
 
-VM Image (md5 51823a988e79ad44228d55ffb8e4f66f):
+VM Image (md5 59ea039ed7b59dd3c9e0571e954c9ce2):
 
-    KardiaVM_1_0_Beta3.zip (384 MB)
+    KardiaVM_1_0.zip (568 MB)
 
 Requirements:
 
     - x86-based system (Windows, Linux, or Mac)
-    - 2.5 GB free hard disk space (4.5 GB for Hyper-V)
+    - 4.0 GB free hard disk space (7.0 GB for Hyper-V)
     - 2 GB memory in your computer
-    - Virtualization Software (tested: VMware Player, VirtualBox, Xen, Hyper-V)
-    - Firefox 3.x or 4.x
+    - Virtualization Software (tested: KVM, VMware Player, VirtualBox, Xen,
+      and Hyper-V)
+    - Firefox or Chrome Browser
     - Internet connection
 
 License:
 
-    This is free open-source software. :)
+    Kardia and Centrallix are free/open-source software systems. :)
 
-    Kardia is under the GNU GPL v2.
-    Centrallix is under the GNU GPL v2 and LGPL.
-    CentOS 5.6 is under various open source licenses - see individual packages.
-    The VM management tools we've written are under the GPL v2.
+    Kardia is under the GNU GPL v2 (or later).
+    Centrallix is under the GNU GPL v2 (or later) and LGPL v2.1 (or later).
+    CentOS 7 is under various open source licenses - see individual packages.
+    The VM management tools we've written are under the GNU GPL v2 (or later).
 
+    CentOS is a trademark of Red Hat, Inc., and is used here for reference only
+    and does not imply any endorsement of the Kardia Virtual Appliance by The
+    CentOS Project or by Red Hat, Inc.

@@ -1,0 +1,11 @@
+$Version=2$
+plugin_crm_timeline_COMM "widget/component-decl"
+    {
+    width=434;
+    height=0;
+    icon = "/apps/kardia/images/icons/openiconic-envelope-closed.svg";
+    type = "COMM";
+    iconbar_icon = "/apps/kardia/images/icons/openiconic-envelope-closed.svg";
+    iconbar_label = "Mail";
+    iconbar_sequence = 40;
+    }

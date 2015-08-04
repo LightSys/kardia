@@ -1,0 +1,12 @@
+$Version=2$
+plugin_crm_timeline_SOC "widget/component-decl"
+    {
+    width=434;
+    height=0;
+    icon = "/apps/kardia/images/icons/ionicons-social.svg";
+    type = "SOC";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-social.svg";
+    iconbar_label = "Social";
+    iconbar_sequence = 50;
+    iconbar_enabled = no;
+    }

@@ -1,0 +1,139 @@
+$Version=2$
+sidebar "widget/component-decl"
+    {
+    width=258;
+    height=502;
+    
+    // Collaborator osrc provides us information about the logged-in user
+    collaborator_osrc "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    // Events we generate
+    PartnerSelected "widget/component-decl-event" { }
+    AdvancedSearch "widget/component-decl-event" { }
+    AddPerson "widget/component-decl-event" { }
+    EditTask "widget/component-decl-event" { }
+    SetNumber "widget/component-decl-event" { }
+
+    // Refresh partners
+    Refresh "widget/component-decl-action" { }
+    onRefresh "widget/connector"
+	{
+	event=Refresh;
+	target=plugin_cmp;
+	action=Refresh;
+	}
+
+    // Refresh the tasks list
+    RefreshTasks "widget/component-decl-action" { }
+    onRefreshTasks "widget/connector"
+	{
+	event=RefreshTasks;
+	target=plugin_cmp;
+	action=RefreshTasks;
+	}
+
+    // Change tabs
+    SetTab "widget/component-decl-action" { }
+    onSetTab "widget/connector"
+	{
+	event=SetTab;
+	target=list_tab;
+	action=SetTab;
+	TabIndex=runclient(:TabIndex);
+	}
+
+    // Here is a vbox -- similar to hbox but vertical.  This particular
+    // one is used to display the active collaboration list and search
+    // controls.
+    //
+    list_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=258; height=502;
+	spacing=8;
+
+	list_pane "widget/pane"
+	    {
+	    height=502;
+	    style=bordered;
+	    border_color="#6080c0";
+	    border_radius=8;
+	    shadow_color="#6080c0";
+	    shadow_radius=8;
+
+	    list_tab "widget/tab"
+		{
+		x=0; y=0;
+		height=500;
+		width=258;
+		//background="/apps/kardia/images/bg/light_bgnd2.jpg";
+		bgcolor="#f8f8f8";
+		inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+		border_style=none;
+		tab_location=none;
+
+		plugin_tabs "widget/repeat"
+		    {
+		    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_crm_sidebar_*.cmp' order by :sequence";
+
+		    plugin_tab "widget/tabpage"
+			{
+			title = runserver(:plugin_tabs:title);
+
+			plugin_cmp "widget/component"
+			    {
+			    height=492; width=248; x=4; y=4;
+			    path = runserver(:plugin_tabs:path);
+			    collaborator_osrc = collaborator_osrc;
+
+			    on_partner_select "widget/connector"
+				{
+				event=PartnerSelected;
+				target=sidebar;
+				action=PartnerSelected;
+				partner_key=runclient(:partner_key);
+				}
+
+			    on_adv_search "widget/connector"
+				{
+				event=AdvancedSearch;
+				target=sidebar;
+				action=AdvancedSearch;
+				}
+
+			    on_add_person "widget/connector"
+				{
+				event=AddPerson;
+				target=sidebar;
+				action=AddPerson;
+				Origin=runclient(:Origin);
+				partner=runclient(:partner);
+				partnername=runclient(:partnername);
+				}
+
+			    on_reassign "widget/connector"
+				{
+				event=EditTask;
+				target=sidebar;
+				action=EditTask;
+				origin=runclient(:origin);
+				todo_id=runclient(:todo_id);
+				partner=runclient(:partner);
+				}
+
+			    on_setnumber "widget/connector"
+				{
+				event=SetNumber;
+				target=sidebar;
+				action=SetNumber;
+				Number=runclient(:Number);
+				Which=runclient(:Which);
+				Color=runclient(:Color);
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

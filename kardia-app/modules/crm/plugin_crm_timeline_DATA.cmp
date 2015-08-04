@@ -1,0 +1,87 @@
+$Version=2$
+plugin_crm_timeline_DATA "widget/component-decl"
+    {
+    width=434;
+    height=108;
+    icon = "/apps/kardia/images/icons/tumblicons-webform2.svg";
+    type = "DATA";
+    iconbar_icon = "/apps/kardia/images/icons/tumblicons-webform2.svg";
+    iconbar_label = "Data";
+    iconbar_sequence = 90;
+
+    partner_osrc "widget/parameter" { type=object; }
+    timeline_osrc "widget/parameter" { type=object; }
+    collaborator_osrc "widget/parameter" { type=object; }
+
+    data_form_vbox "widget/vbox"
+	{
+	x=38; y=4;
+	width=388;
+	height=100;
+	spacing=5;
+
+	data_form_osrc "widget/osrc"
+	    {
+	    sql = " select
+			:dt:e_data_item_type_label,
+			:di:e_data_item_id,
+			:di:e_data_item_value
+		    from
+			/apps/kardia/data/Kardia_DB/e_data_item_group/rows dg,
+			/apps/kardia/data/Kardia_DB/e_data_item/rows di,
+			/apps/kardia/data/Kardia_DB/e_data_item_type/rows dt
+		    where
+			:di:e_data_item_group_id = :dg:e_data_item_group_id and
+			:dt:e_data_item_type_id = :di:e_data_item_type_id
+		    ";
+	    replicasize=50;
+	    readahead=50;
+	    autoquery=never;
+
+	    link "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = timeline_osrc;
+		key_1 = name;
+		key_objname = 'dg';
+		target_key_1 = e_reference_info;
+		revealed_only = yes;
+		}
+
+	    data_pane "widget/pane"
+		{
+		height=100;
+		style=bordered;
+		border_radius=6;
+		border_color="#9b8707";
+		bgcolor = "#fff7c2";
+
+		data_table "widget/table"
+		    {
+		    x=4; y=4; width=378;
+		    height=90;
+		    min_rowheight=12;
+		    max_rowheight=40;
+		    mode=dynamicrow;
+		    allow_selection = no;
+		    show_selection = no;
+		    initial_selection = no;
+		    demand_scrollbar = yes;
+		    overlap_scrollbar = yes;
+		    colsep = 0;
+		    titlebar = no;
+		    //row_border_radius=4;
+		    inner_padding = 1;
+		    rowhighlight_bgcolor = "#fff090";
+		    textcolorhighlight = "#000000";
+		    cellvspacing = 0;
+		    row1_bgcolor = "transparent";
+		    row2_bgcolor = "transparent";
+
+		    f_label "widget/table-column" { width=100; fieldname=e_data_item_type_label; style=bold; align=right; font_size=11;}
+		    f_value "widget/table-column" { width=292; fieldname=e_data_item_value; style=italic; align=left; wrap=yes; font_size=11;}
+		    }
+		}
+	    }
+	}
+    }

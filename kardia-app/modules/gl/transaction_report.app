@@ -3,9 +3,11 @@ transaction_report "widget/page"
     {
     title = "Transaction Report";
     width=580;
-    height=553;
+    height=581;
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+    require_one_endorsement="kardia:gl_manage","kardia:gl";
+    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
     period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
@@ -22,7 +24,7 @@ transaction_report "widget/page"
 
 	vb2 "widget/vbox"
 	    {
-	    x=32;y=8;width=514;height=496;
+	    x=32;y=8;width=514;height=524;
 	    spacing=4;
 	    lbl_opt "widget/label" { height=30; font_size=16; text="Transaction Report Options:"; align=center; }
 
@@ -63,6 +65,7 @@ transaction_report "widget/page"
 	    f_balcostctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="balcostctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Bal Cost Center:"; attach_point=editbox; empty_desc = "optional"; label_width=120; tooltip="Balancing Cost Center, including subsidiaries"; }
 	    f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Center:"; attach_point=editbox; empty_desc = "optional"; label_width=120; }
 	    f_glacct "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="account"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Choose GL Account:"; text="Account:"; attach_point=editbox; empty_desc = "optional"; label_width=120; }
+	    f_ctlacct "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="ctlaccount"; ctl_type=dropdown; text="Ctl Account:"; form=rpt_form; sql = runserver("select :a_account_category + ' - ' + :a_acct_cat_desc, :a_account_category from /apps/kardia/data/Kardia_DB/a_account_category/rows where :a_ledger_number = " + quote(:this:ledger) + " order by :a_account_category asc"); label_width=120; }
 	    f_batch "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="batch"; popup_source=runserver("/apps/kardia/modules/gl/batches.qyt/" + :this:ledger + "/"); popup_text="Choose Batch:"; text="Batch:"; attach_point=editbox; empty_desc = "optional"; label_width=120; }
 
 	    sep0 "widget/autolayoutspacer" { height=8; }
@@ -105,9 +108,11 @@ transaction_report "widget/page"
 		    bgcolor=white; 
 		    fieldname="sortby";
 		    mode=static;
+		    numdisplay=6;
 		    hilight="#d0d0d0";
 
 		    f_sortby_opt1 "widget/dropdownitem" { label="Period / Batch / Journal / Transaction"; value="pbjt"; }
+		    f_sortby_opt2a "widget/dropdownitem" { label="Period / Date / Batch / Jnl / Trx"; value="pdate"; }
 		    f_sortby_opt2 "widget/dropdownitem" { label="Date / Batch / Journal / Transaction"; value="date"; }
 		    f_sortby_opt3 "widget/dropdownitem" { label="Cost Center / Account"; value="cca"; }
 		    f_sortby_opt4 "widget/dropdownitem" { label="Account / Cost Center"; value="acc"; }
@@ -115,7 +120,7 @@ transaction_report "widget/page"
 		    uncheck_show_per_subttl "widget/connector"
 			{
 			event = DataChange;
-			event_condition = runclient(:Value != 'pbjt');
+			event_condition = runclient(:Value != 'pbjt' and :Value != 'pdate');
 			target = f_persubttl;
 			action = SetValue;
 			Value = runclient(0);
@@ -140,7 +145,7 @@ transaction_report "widget/page"
 
 	vb3 "widget/vbox"
 	    {
-	    x=32;y=512;width=514;height=40;
+	    x=32;y=540;width=514;height=40;
 	    align=bottom;
 
 	    spacing=4;

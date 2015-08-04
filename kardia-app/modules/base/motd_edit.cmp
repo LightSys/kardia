@@ -53,7 +53,7 @@ motd_edit "widget/component-decl"
 		autoquery = onfirstreveal;
 
 		sql = "	select
-				viewcnt = count(:mv:s_motd_id),
+				viewcnt = (select count(:mv:s_motd_id) from /apps/kardia/data/Kardia_DB/s_motd_viewed/rows mv where :m:s_motd_id = :mv:s_motd_id),
 				:m:s_motd_id,
 				:m:s_message_title,
 				:m:s_message_text,
@@ -65,12 +65,7 @@ motd_edit "widget/component-decl"
 				:m:s_modified_by,
 				date_txt = substring(convert(string,:m:s_date_created),1,11)
 			from
-				IDENTITY /apps/kardia/data/Kardia_DB/s_motd/rows m,
-				/apps/kardia/data/Kardia_DB/s_motd_viewed/rows mv
-			where
-				:m:s_motd_id *= :mv:s_motd_id
-			group by
-				:m:s_motd_id
+				IDENTITY /apps/kardia/data/Kardia_DB/s_motd/rows m
 			order by
 				:m:s_motd_id desc
 			";

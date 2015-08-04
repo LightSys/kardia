@@ -1,0 +1,52 @@
+$Version=2$
+plugin_crm_timeline_TAG "widget/component-decl"
+    {
+    width=434;
+    height=24;
+    icon = "/apps/kardia/images/icons/ionicons-pricetags.svg";
+    type = "TAG";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-pricetags.svg";
+    iconbar_label = "Tags";
+    iconbar_sequence = 20;
+
+    partner_osrc "widget/parameter" { type=object; }
+    timeline_osrc "widget/parameter" { type=object; }
+    timeline_data_osrc "widget/parameter" { type=object; }
+    collaborator_osrc "widget/parameter" { type=object; }
+
+    edittag_osrc "widget/osrc"
+	{
+	tag_id "widget/parameter" { type=string; }
+	sql = "select * from /apps/kardia/data/Kardia_DB/e_tag/rows t where :t:e_tag_id = convert(integer,:parameters:tag_id)";
+	baseobj = "/apps/kardia/data/Kardia_DB/e_tag";
+	readahead=2;
+	replicasize=2;
+	autoquery=never;
+
+	edittag_link "widget/rule"
+	    {
+	    ruletype = osrc_relationship;
+	    target = timeline_osrc;
+	    key_1 = tag_id;
+	    target_key_1 = e_reference_info;
+	    revealed_only = yes;
+	    }
+
+	edittag_hbox "widget/hbox"
+	    {
+	    x=38; y=4; height=24; width=396;
+	    spacing=8;
+
+	    edittag_form "widget/form"
+		{
+		on_save "widget/connector" { event=DataSaved; target=timeline_data_osrc; action=Refresh; }
+		on_del "widget/connector" { event=DataDeleted; target=timeline_data_osrc; action=Refresh; }
+
+		comment_box "widget/component" { width=250; path="/sys/cmp/smart_field.cmp"; label_width=70; text="Comment:"; ctl_type=editbox; field=e_tag_comments; }
+		save_tag "widget/component" { width=18; path="/sys/cmp/save_btn.cmp"; object_name="Tag"; }
+		cancel_tag "widget/component" { width=18; path="/sys/cmp/cancel_btn.cmp"; object_name="Tag"; }
+		delete_tag "widget/component" { width=18; path="/sys/cmp/delete_btn.cmp"; object_name="Tag"; }
+		}
+	    }
+	}
+    }

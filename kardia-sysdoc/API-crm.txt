@@ -1,0 +1,620 @@
+Document:   Kardia REST API for CRM Data
+Author:	    Greg Beeley (GRB)
+Date:	    26-Jun-2014
+-------------------------------------------------------------------------------
+
+OVERVIEW...
+
+    This document describes the CRM (engagement) data API for Kardia.  If you
+    are not already familiar with web services, REST, and the Kardia REST API
+    system, please first read "JSON-REST.txt" in centrallix-sysdoc, and read
+    "API.txt" in this documentation directory.
+
+    If you are looking for data used for the CRM system configuration, such as
+    a list of available engagement tracks (as opposed to a list of tracks that
+    one partner has engaged in), see the "API-crm_config.txt" document.
+
+
+ENDPOINT...
+
+    The endpoint of this API will be:
+
+	/apps/kardia/api/crm/
+
+    Of course, the needed protocol (http or https) and server address (such as
+    server.lightsys.org:843) will need to be added to the URL, to give
+    something like:
+
+	https://server.lightsys.org:843/apps/kardia/api/crm?cx__mode=rest
+
+
+OBJECT STRUCTURE...
+
+    The following are example paths to various types of collections of objects
+    in the CRM engagement data API:
+
+    /apps/kardia/api/crm/Partners -- list of partners in the CRM system.
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - the ID of the engaging partner
+	    partner_name    - the org or first/last name of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    class	    - the class of the partner (Individual, Household,
+			      etc.)
+	    is_valid	    - 1 if the partner is valid, 0 if not.
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the partner was created in Kardia
+	    created_by	    - username that created the partner
+	    date_modified   - date the partner was modified in Kardia
+	    modified_by	    - username that modified the partner
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Tags -- List of smart tags
+    associated with a given partner:
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    tag_label	    - the short name or label for the smart tag
+	    tag_type_id	    - the numerical ID of the tag type
+	    tag_strength    - the strength of association of the tag; this
+			      will be a real number between -1.0 and 1.0
+			      (where negative numbers indicate a negative
+			      association between the partner and the tag)
+	    tag_certainty   - the certainty of this tag; this will be a real
+			      number between 0.0 (completely uncertain) and
+			      1.0 (completely certain).
+	    tag_volatility  - how this tag was generated; can be Persistent,
+			      Derived (from other data), or Implied (by other
+			      related tags).
+	    tag_origin	    - for Derived or Implied tags, this is what got
+			      the tag created (currently undefined)
+	    tag_comments    - comments about this tag, as associated with the
+			      engaging partner
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the tag was added to the partner
+	    created_by	    - username that added the tag
+	    date_modified   - date the tag was modified in Kardia
+	    modified_by	    - username that modified the tag
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Documents -- List of documents
+    associated with the partner.
+
+	This is a collection URL.  Each returned element will have the
+	following properties:
+
+	    document_id	    - the numerical ID of the document
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    num_uses	    - the number of times the document has been used
+			      by the partner (such as a signed statement of
+			      faith being used for multiple applications to
+			      multiple types of service with the org)
+	    document_type_id - the numerical ID of the document type
+	    document_type   - the label or short name of the document type
+	    title	    - the title of the document
+	    orig_filename   - the filename of the document before being
+			      uploaded into the Kardia CRM system
+	    location	    - the pathname to the file on the Kardia server
+	    uploading_collaborator_id - the partner ID who uploaded the file
+	    uploading_collaborator - the name of the above partner
+	    generic_workflow_instance_id - the ID of an active workflow that
+			      was started when this document was uploaded
+	    generic_workflow - the name of the workflow and the step within it
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the collaborator was added in Kardia
+	    created_by	    - username that added the collaborator
+	    date_modified   - date the collaborator was modified in Kardia
+	    modified_by	    - username that modified the collaborator
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Documents/{docid}/Engagements --
+    A list of the partner's engagements that this document is relevant for.
+    For instance, a document may be used for both a partner's volunteer work
+    and the partner's application for full-time staff.
+
+	This is a collection URL.  Each returned element will have the
+	following properties:
+
+	    document_id	    - the numerical ID of the document
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    engagement_id   - the numerical id of the specific engagement
+	    engagement_description - the description of the particular
+			      engagement
+	    engagement_track - the name of the track
+	    engagement_step - the name of the step in the above track
+	    workflow_instance_id - the ID of an active workflow that was
+			      triggered by the association of the document
+			      with the partner's specific engagement
+	    workflow	    - the name of the workflow and step within it
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the collaborator was added in Kardia
+	    created_by	    - username that added the collaborator
+	    date_modified   - date the collaborator was modified in Kardia
+	    modified_by	    - username that modified the collaborator
+
+    /apps/kardia/api/crm/Partners/{partnerid}/ContactHistory -- A list
+    of all contact history items for a particular partner.
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    collab_partner_id - the collaborator that contacted the partner
+	    collab_partner_name - the name of the above collaborator
+	    collab_partner_ref - the path to more detail about the
+			      collaborator
+	    contact_history_id - the ID of this contact history item
+	    contact_history_type_id - the numerical ID of the type of this
+			      contact history item
+	    contact_history_type - the short name or label of the type of this
+			      contact history item, such as Phone, Email,
+			      Conversation, etc.
+	    contact_history_type_desc - a longer description of the above type
+	    subject	    - the subject or title of the contact
+	    notes	    - notes about the contact
+	    meeting_place   - the name (org or first/last) of the physical
+			      location where the conversation or meeting
+			      occurred
+	    meeting_place_id - the partner ID of the above
+	    meeting_place_ref - the link to the full data about the above
+	    meeting_address - the address (important if the above org has more
+			      than one address) where the meeting took place
+	    meeting_address_ref - a link to more detailed data about the
+			      address.
+	    contact_via	    - the contact info (phone number, email address,
+			      skype name, etc.) that was used to contact the
+			      person.
+	    contact_via_ref - a link to more detailed info about the above.
+	    contact_via_type - the type of contact info (e.g., Phone, Cell,
+			      Skype, Email, etc.) for the above.
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the history item was created in Kardia
+	    created_by	    - username that created the history item
+	    date_modified   - date the history item was modified in Kardia
+	    modified_by	    - username that modified the history item
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Tracks -- A list of all
+    engagement tracks that the partner has engaged in, whether current or
+    inactive or archived.
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    engagement_id   - the numerical id of the specific engagement
+	    engagement_description - the description of the particular
+			      engagement
+	    engagement_track - the name of the track
+	    engagement_step - the name of the step in the above track
+	    engagement_comments - comments about the engagement
+	    is_archived	    - set to 1 if archived, 0 if current.
+	    start_date	    - the start date of the earliest step in the track
+	    completion_date - the completion date of the latest step
+	    exited_date	    - the exited data of the latest step
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the engagement was added to the partner
+	    created_by	    - username that added the engagement
+	    date_modified   - date the engagement was modified in Kardia
+	    modified_by	    - username that modified the engagement
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Tracks/{track-id}/History --
+    A list of engagement steps that the partner has participated in for the
+    given engagement ID.  Usually these steps are all in one track, but it is
+    possible for a partner to switch from one track to another in the middle
+    of an engagement process.
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    history_id	    - a unique ID for this engagement step item.
+	    engagement_id   - the numerical id of the specific engagement
+	    engagement_description - the description of the particular
+			      engagement
+	    engagement_track - the name of the track
+	    engagement_step - the name of the step in the above track
+	    engagement_comments - comments about the engagement
+	    completion_status - Incomplete, Exited, or Complete
+	    start_date	    - the starting date of this step
+	    started_by_partner - the name of the collaborator who began this
+			      step with the partner
+	    started_by_partner_id - the ID of the above
+	    started_by_partner_ref - a link to more detail about the above
+	    simple_completion_date - the completion date of this step with no condition involved
+	    completion_date - the completion date of this step, if any
+	    completed_by_partner - the name of the collaborator who completed
+			      this step with the partner
+	    completed_by_partner_id - the ID of the above
+	    completed_by_partner_ref - a link to more detail about the above
+	    simple_exited_date - the exit date of this step with no condition involved
+	    exited_date	    - the exit date of this step (if any)
+	    exited_by_partner - the name of the collaborator who exited (i.e.,
+			      canceled out of) this step with the partner
+	    exited_by_partner_id - the ID of the above
+	    exited_by_partner_ref - a link to more detail about the above
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the step was added to the partner
+	    created_by	    - username that added the step
+	    date_modified   - date the step was modified in Kardia
+	    modified_by	    - username that modified the step
+
+		
+    /apps/kardia/api/crm/Partners/{partnerid}/Collaborators -- A list of all
+    collaborators that the partner currently has
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    collaborator_id - the partner id of the collaborator
+	    collaborator_name - the name of the collaborator
+	    collaborator_type_id - the numerical id of the collaborator type
+	    collaborator_type - the name of the collaborator type
+	    collaborator_is_individual	- 1 if the collaborator is an individual or household, 0 otherwise
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the collaborator was added to the partner
+	    created_by	    - username that added the collaborator
+	    date_modified   - date the collaborator was modified in Kardia
+	    modified_by	    - username that modified the collaborator
+
+		
+    /apps/kardia/api/crm/Partners/{partnerid}/Collaboratees -- A list of all
+    people that this partner is acting as collaborator for (aka Collaboratees)
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    collaborator_id - the partner id of the collaborator
+	    collaborator_name - the name of the collaborator
+	    collaborator_type_id - the numerical id of the collaborator type
+	    collaborator_type - the name of the collaborator type
+	    partner_id	    - partner id of the partner being collaborated with
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    
+	The following 'system' properties will be provided:
+
+	    date_created    - date the collaborator was added to the partner
+	    created_by	    - username that added the collaborator
+	    date_modified   - date the collaborator was modified in Kardia
+	    modified_by	    - username that modified the collaborator
+		
+		
+    /apps/kardia/api/crm/Partners/{partnerid}/CollaboratorTodos -- A list
+    of all todo items that are supposed to be done by the collaborator with
+    the given partner id
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner the todo relates to
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    todo_id 	    - the numerical id of the todo item
+	    todo_type_id    - the numerical id of the todo type
+	    todo_type	    - the name of the todo type
+	    desc	    - the description (text) of the todo item
+	    collaborator_id - the partner id of the collaborator that needs to do this
+			      todo item
+	    engagement_id   - the numerical id of the engagement item this todo relates
+			      to
+	    engagement_start_date - the date when the last engagement step was entered
+	    document_id	    - the numerical id of the document this todo relates to
+	    req_item_id	    - the numerical id of the requirement item this todo
+			      relates to
+	    req_item_due_days_from_step - how many days the requirement item
+			      will be due after the engagement step was started
+	    req_item_completion_status - "I" if the item is incomplete, "C" if
+			      complete, "W" if waived
+	    req_item_completion_date - the date the item was completed
+	    req_item_completed_by - username that caused the item to become completed
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the todo was added to the partner
+	    created_by	    - username that added the todo
+	    date_modified   - date the todo was modified in Kardia
+	    modified_by	    - username that modified the todo		
+		
+		
+    /apps/kardia/api/crm/Partners/{partnerid}/Todos -- A list of all
+    todo items that relate to this partner
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    todo_id 	    - the numerical id of the todo item
+	    todo_type_id    - the numerical id of the todo type
+	    todo_type	    - the name of the todo type
+	    desc	    - the description (text) of the todo item
+	    collaborator_id - the partner id of the collaborator that needs to
+			      do this todo item
+	    engagement_id   - the numerical id of the engagement item this todo
+			      relates to
+	    document_id	    - the numerical id of the document this todo relates
+			      to
+	    req_item_id	    - the numerical id of the requirement item this todo
+			      relates to		
+	    req_item_due_days_from_step - how many days the requirement item
+			      will be due after the engagement step was started
+	    req_item_completion_status - "I" if the item is incomplete, "C" if
+			      complete, "W" if waived
+	    req_item_completion_date - the date the item was completed
+	    req_item_completed_by - username that caused the item to become
+			      completed
+		
+	The following 'system' properties will be provided:
+
+	    date_created    - date the todo was added to the partner
+	    created_by	    - username that added the todo
+	    date_modified   - date the todo was modified in Kardia
+	    modified_by	    - username that modified the todo	
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/DataItems -- A list of all
+    todo items that relate to this partner
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    item_id 	    - the numerical id of the data item
+	    item_type_id    - the numerical id of the data item type
+	    item_type_label - the short name or label of the data item type
+	    item_group_id   - the numerical id of the data item group
+	    item_group_name - the name of the data item group
+	    item_value 	    - the value of the data item
+	    item_highlight  - 1 if the data item is highlighted, 0 otherwise
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item was added to the partner
+	    created_by	    - username that added the data item
+	    date_modified   - date the data item was modified in Kardia
+	    modified_by	    - username that modified the data item	
+
+		
+    /apps/kardia/api/crm/Partners/{partnerid}/DataGroups -- A list of all
+    data item groups that relate to this partner
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    group_d 	    - the numerical id of the data item group
+	    group_name	    - the name of the data item group
+	    group_desc	    - the description (text) of the data item group
+	    type_id	    - the numerical id of the data item type associated with the group
+		
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item group was added to the partner
+	    created_by	    - username that added the data item group
+	    date_modified   - date the data item group was modified in Kardia
+	    modified_by	    - username that modified the data item group	
+		
+		
+    /apps/kardia/api/crm/Partners/{partnerid}/DataGroups/{groupid}/DataItems -- A list of all
+    data items that are in this data item group
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the partner
+	    partner_name    - the name (org or first/last) of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    item_id 	    - the numerical id of the data item
+	    item_type_id    - the numerical id of the data item type
+	    item_type_label - the short name or label of the data item type
+	    item_group_id   - the numerical id of the data item group
+	    item_value 	    - the value of the data item
+	    item_highlight  - 1 if the data item is highlighted, 0 otherwise
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item was added to the partner
+	    created_by	    - username that added the data item
+	    date_modified   - date the data item was modified in Kardia
+	    modified_by	    - username that modified the data item	
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Activity -- a list of recent
+    activity associated with the partner.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    name 	    - A unique identifier for the activity item
+	    whom	    - The partner ID
+	    initiated_by    - Whether the activity was initiated by the
+			      Partner or Collaborator
+	    activity_date   - The date/time that the activity took place
+	    activity_type   - The type of activity (a 3- or 4- letter code)
+	    reference_info  - Information that can be used to look up the
+			      activity elsewhere (this is type-dependent)
+	    info	    - A string of text describing the activity item,
+			      possibly with a newline \n separating the
+			      title from the description of the activity.
+
+	The Activity resource should be considered an expensive operation to
+	retrieve, as the server must compile all activities from multiple
+	sources and aggregate them together before returning the data via this
+	API.
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/ProfilePicture -- information
+    about the partner's profile picture.
+
+	This URL is an element, and will be an object with the following
+	properties:
+
+	    photo_id	    - the ID of the photo
+	    photo_title	    - the title of the photo
+	    photo_filename  - the filename of the photo
+	    photo_folder    - the folder on the server where the photo exists
+	    photo_date	    - the date the photo was created
+	    photo_type	    - a short label for the type of photo
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/ProfilePicture/{filename} --
+    This is an Element URL for the image file for the profile picture.
+
+	This is an Element URL which represents the image.  It will have
+	image content and the following attributes:
+
+	    name	    - the file name
+	    last_modification - the last modification date of the file itself
+	    size	    - the size of the file
+
+
+    /apps/kardia/api/crm/Todos -- list of todo items in the CRM system.
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    partner_id	    - the ID of the engaging partner
+	    partner_name    - the org or first/last name of the partner
+	    partner_ref	    - a pathname to the main partner element, in case
+			      more information about the partner is needed.
+	    todo_id	    - the numerical id of the todo item
+	    todo_type_id    - the numerical id of the todo type
+	    todo_type	    - the name of the todo type
+	    desc	    - the description (text) of the todo item
+	    collaborator_id - the partner id of the collaborator that needs to do this todo item
+	    engagement_id   - the numerical id of the engagement item this todo relates to
+	    document_id	    - the numerical id of the document this todo relates to
+	    req_item_id	    - the numerical id of the requirement item this todo
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the todo was created in Kardia
+	    created_by	    - username that created the todo
+	    date_modified   - date the todo was modified in Kardia
+	    modified_by	    - username that modified the todo
+
+	
+EXAMPLE URLS...
+
+    The list of engaging partners in the system:
+
+	http://server/apps/kardia/api/crm/Partners?cx__mode=rest&cx__res_type=collection
+
+    The list of partners along with information about each:
+
+	http://server/apps/kardia/api/crm/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Information about one partner:
+
+	http://server/apps/kardia/api/crm/Partners/100000?cx__mode=rest&cx__res_format=attrs
+
+    Information about one partner in 'full' attribute mode:
+
+	http://server/apps/kardia/api/crm/Partners/100000?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=full
+
+    A list of smart tags for a partner, with information about each one:
+
+	http://server/apps/kardia/api/crm/Partners/100000/Tags?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of documents for a partner, with detail about each:
+
+	http://server/apps/kardia/api/crm/Partners/100000/Documents?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of engagements for a partner for which a document was used:
+
+	http://server/apps/kardia/api/crm/Partners/100000/Documents/50/Engagements?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of the contact history for a partner, with detail about each:
+
+	http://server/apps/kardia/api/crm/Partners/100000/ContactHistory?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of engagements that a partner has participated in, with detail:
+
+	http://server/apps/kardia/api/crm/Partners/100000/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of the history of steps in an engagement that a partner has
+    participated in, with detail:
+
+	http://server/apps/kardia/api/crm/Partners/100000/Tracks/Volunteer-1/History?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of the collaborators related to a partner, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/Collaborators?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+    A list of the people a partner is collaborating with, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/Collaboratees?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+    A list of the todo items that a collaborator is supposed to do, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/CollaboratorTodos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+    A list of the todo items associated with a partner, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+    A list of the data item groups associated with a partner, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/DataGroups?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+    A list of the data items from one data item group, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100000/DataGroups/100001/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+    A list of all todo items in the system:
+	
+	http://server/apps/kardia/api/crm/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+    A list of the data items associated with a partner, with detail about each:
+	
+	http://server/apps/kardia/api/crm/Partners/100003/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+

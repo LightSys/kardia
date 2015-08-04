@@ -1,0 +1,205 @@
+$Version=2$
+plugin_crm_timeline_FILE "widget/component-decl"
+    {
+    width=434;
+    height=162;
+    icon = "/apps/kardia/images/tango/document-new.png";
+    type = "FILE";
+    iconbar_icon = "/apps/kardia/images/icons/tumblicons-file.svg";
+    iconbar_label = "Files";
+    iconbar_sequence = 100;
+
+    partner_osrc "widget/parameter" { type=object; }
+    timeline_osrc "widget/parameter" { type=object; }
+    timeline_data_osrc "widget/parameter" { type=object; }
+    collaborator_osrc "widget/parameter" { type=object; }
+
+    comments_vbox "widget/vbox"
+	{
+	x=38; y=0; width=392; height=162;
+	fl_width=30;
+	spacing=4;
+
+	comments_osrc "widget/osrc"
+	    {
+	    docid "widget/parameter" { type=string; }
+	    sql = " select
+			:dc:e_document_id,
+			:dc:e_doc_comment_id,
+			:dc:e_comments,
+			:dc:e_collaborator,
+			:dc:e_workflow_state_id,
+			:dc:e_target_collaborator,
+			:dc:e_target_review_period,
+			:dc:s_date_created,
+			:dc:s_created_by,
+			:dc:s_date_modified,
+			:dc:s_modified_by,
+			comments = :dc:e_comments + ' - ' + condition(dateadd(day,1,:dc:s_date_created) > getdate(), substring(convert(string,:dc:s_date_created),13,5), substring(convert(string,:dc:s_date_created),1,11)),
+			nametxt = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + ':'
+		    from
+			identity /apps/kardia/data/Kardia_DB/e_document_comment/rows dc,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		    where
+			:p:p_partner_key = :dc:e_collaborator and
+			:dc:e_document_id = convert(integer, :parameters:docid)
+		    order by
+			:dc:e_doc_comment_id asc
+		    ";
+	    readahead=50;
+	    replicasize=50;
+	    baseobj = "/apps/kardia/data/Kardia_DB/e_document_comment/rows";
+
+	    skip_last "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:FinalRecord != :CurrentRecord);
+		action=Last;
+		}
+
+	    comment_sync "widget/rule"
+		{
+		ruletype = osrc_relationship;
+
+		target = timeline_osrc;
+		key_1 = docid;
+		target_key_1 = e_reference_info;
+		revealed_only = yes;
+		}
+
+	    comment_pane "widget/pane"
+		{
+		height=80;
+		style=bordered;
+		border_radius=6;
+		border_color="#9b8707";
+		bgcolor = "#fff7c2";
+
+		comment_table "widget/table"
+		    {
+		    x=4; y=4;
+		    width=382; height=70;
+		    min_rowheight=14;
+		    max_rowheight=40;
+		    mode=dynamicrow;
+		    allow_selection = no;
+		    show_selection = no;
+		    initial_selection = no;
+		    demand_scrollbar = yes;
+		    overlap_scrollbar = yes;
+		    colsep = 0;
+		    titlebar = no;
+		    //row_border_radius=4;
+		    inner_padding = 1;
+		    rowhighlight_bgcolor = "#fff090";
+		    textcolorhighlight = "#000000";
+		    cellvspacing = 0;
+		    row1_bgcolor = "transparent";
+		    row2_bgcolor = "transparent";
+
+		    c_who "widget/table-column" { width=80; fieldname=nametxt; style=bold; align=right; font_size=11;}
+		    c_comm "widget/table-column" { width=312; fieldname=comments; style=italic; align=left; wrap=yes; font_size=11;}
+		    }
+		}
+
+	    comment_form "widget/form"
+		{
+		allow_view=no;
+		allow_search=no;
+		allow_new=yes;
+		allow_modify=no;
+
+		comment_hbox "widget/hbox"
+		    {
+		    height=20; spacing=4;
+
+		    comment_box "widget/editbox"
+			{
+			width=284;
+			empty_description = "type a comment here and press Enter";
+			fieldname = e_comments;
+			}
+
+		    comment_btn "widget/textbutton"
+			{
+			width=100;
+			height=24;
+			text="Comment";
+			enabled=runclient(:comment_form:is_savable);
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			comment_click "widget/connector" { event=Click; target=comment_form; action=Save; }
+			}
+		    }
+
+		doc_id "widget/variable" { fieldname=e_document_id; doc_id_hints "widget/hints" { default=runclient(convert(integer, :timeline_osrc:e_reference_info)); } }
+
+		collab_id "widget/variable" { fieldname=e_collaborator; collab_id_hints "widget/hints" { default=runclient(:collaborator_osrc:p_partner_key); } }
+
+		rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=comment_form; }
+		}
+	    }
+
+	dissoc_btn "widget/textbutton"
+	    {
+	    width=280;
+	    height=24;
+	    text=runclient("Delete File from " + :partner_osrc:partnername);
+	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	    fgcolor1=white;
+	    fgcolor2=black;
+	    disable_color="#334466";
+
+	    on_dissoc "widget/connector" { event=Click; event_confirm="Delete this file from this person?"; target=dissoc_osrc; action=QueryParam; document_id=runclient(convert(integer, :timeline_osrc:e_reference_info)); partner=runclient(:partner_osrc:p_partner_key); }
+	    }
+
+	dissoc_osrc "widget/osrc"
+	    {
+	    document_id "widget/parameter" { type=integer; }
+	    partner "widget/parameter" { type=string; }
+	    sql = " delete
+			/apps/kardia/data/Kardia_DB/e_partner_document/rows
+		    where
+			:e_document_id = :parameters:document_id and
+			:p_partner_key = :parameters:partner
+		    ";
+	    ttttttttt=never;
+	    readahead=2;
+	    replicasize=2;
+
+	    delete_done "widget/connector" { event=EndQuery; target=timeline_data_osrc; action=Refresh; }
+	    }
+
+	fileinfo_osrc "widget/osrc"
+	    {
+	    sql = " select
+			*
+		    from
+			/apps/kardia/data/Kardia_DB/e_document/rows
+		    ";
+	    replicasize=2;
+	    readahead=2;
+	    autoquery=never;
+
+	    filesync "widget/connector" { source=timeline_osrc; event=DataFocusChanged; action=QueryParam; e_document_id=runclient(convert(integer, :timeline_osrc:e_reference_info)); }
+	    }
+
+	download_btn "widget/textbutton"
+	    {
+	    width=150;
+	    height=24;
+	    text="View this file";
+	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	    fgcolor1=white;
+	    fgcolor2=black;
+	    disable_color="#334466";
+	    enabled=runclient(isnull(:fileinfo_osrc:e_document_id, -1) = isnull(convert(integer, :timeline_osrc:e_reference_info), -2));
+
+	    on_dl "widget/connector" { event=Click; target=plugin_crm_timeline_FILE; action=Launch; Source=runclient(condition(substring(:fileinfo_osrc:e_current_folder,1,1) = '/', '', '/') + :fileinfo_osrc:e_current_folder + '/' + :fileinfo_osrc:e_current_filename); }
+	    }
+	}
+    }
+

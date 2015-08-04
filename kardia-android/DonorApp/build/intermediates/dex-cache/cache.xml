@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="C:\Users\Andrew\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-v4\19.1.0\support-v4-19.1.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="85f201b380937e61a9dce6ca90ccf6872abbfb67">
+        <dex dex="C:\kardia-git\kardia-android\DonorApp\donorApp\build\intermediates\pre-dexed\debug\support-v4-19.1.0-b584ee39d3d06258048f095b76074bc101d81898.jar" />
+    </item>
+    <item
+        jar="C:\kardia-git\kardia-android\DonorApp\donorApp\build\intermediates\exploded-aar\com.android.support\appcompat-v7\19.1.0\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="3499ceba05ca1f6037c6a2fad73df8f636224a28">
+        <dex dex="C:\kardia-git\kardia-android\DonorApp\donorApp\build\intermediates\pre-dexed\debug\classes-95b03198f36e7370348a16d37a17675f73f462aa.jar" />
+    </item>
+    <item
+        jar="C:\kardia-git\kardia-android\DonorApp\appcompat_v7_4\build\libs\appcompat_v7_4.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="935ad8e981ebc70f63f7a1ddd3adfaea00ddb2c4">
+        <dex dex="C:\kardia-git\kardia-android\DonorApp\donorApp\build\intermediates\pre-dexed\debug\appcompat_v7_4-4f927e5fca6472498f9d04ace9fbdba6c3d6956d.jar" />
+    </item>
+
+</items>

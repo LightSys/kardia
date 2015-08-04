@@ -1,0 +1,379 @@
+$Version=2$
+popover_track "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+
+    TrackUpdated "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
+    onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen3 "widget/connector" { event=Open; target=partnername_var; action=SetValue; Value=runclient(:partnername); }
+    onOpen4 "widget/connector" { event=Open; target=engagement_var; action=SetValue; Value=runclient(:engagement_id); }
+    onOpen5 "widget/connector" { event=Open; target=track_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); PointOffset=runclient(:PointOffset); Center=runclient(:Center); }
+
+    partner_var "widget/variable" { type=string; }
+    partnername_var "widget/variable" { type=string; }
+    collab_var "widget/variable" { type=string; }
+    engagement_var "widget/variable" { type=integer; }
+
+    track_win "widget/childwindow"
+	{
+	width=600; height=444;
+	x=250; y=89;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	track_vbox "widget/vbox"
+	    {
+	    x=15; y=15;
+	    width=568; height=412;
+	    spacing=10;
+
+	    track_osrc "widget/osrc"
+		{
+		engagement_id "widget/parameter" { type=integer; default=runclient(:engagement_var:value); }
+		partner "widget/parameter" { type=string; default=runclient(:partner_var:value); }
+		sql = "	select
+			    :pe:p_partner_key,
+			    :pe:e_engagement_id,
+			    :pe:e_hist_id,
+			    :pe:e_track_id,
+			    :pe:e_step_id,
+			    :pe:e_is_archived,
+			    :pe:e_completion_status,
+			    :pe:e_desc,
+			    :pe:e_comments,
+			    :pe:e_start_date,
+			    :pe:e_started_by,
+			    :pe:e_completion_date,
+			    :pe:e_completed_by,
+			    :pe:e_exited_date,
+			    :pe:e_exited_by,
+			    :pe:s_date_created,
+			    :pe:s_created_by,
+			    :pe:s_date_modified,
+			    :pe:s_modified_by,
+			    :t:e_track_name
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+			    /apps/kardia/data/Kardia_DB/e_engagement_track/rows t
+			where
+			    :pe:e_engagement_id = :parameters:engagement_id and
+			    :pe:p_partner_key = :parameters:partner and
+			    :pe:e_is_archived = 0 and
+			    :t:e_track_id = :pe:e_track_id
+			order by
+			    charindex(:pe:e_completion_status, 'ICE') asc,
+			    :pe:e_start_date desc
+			limit
+			    1
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/e_partner_engagement/rows";
+		replicasize=2;
+		readahead=2;
+		autoquery=oneachreveal;
+
+		sync_on_endquery "widget/connector" { event=EndQuery; target=steplist_osrc; action=QueryParam; }
+
+		track_form "widget/form"
+		    {
+		    allow_search=no;
+		    allow_view=yes;
+		    allow_modify=yes;
+		    allow_new=yes;
+
+		    close_on_save "widget/connector" { event=DataSaved; target=track_win; action=Close; }
+		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_track; action=TrackUpdated; }
+		    close_on_discard "widget/connector" { event=Discard; target=track_win; action=Close; }
+
+		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient('Track: ' + :track_osrc:e_track_name + ' - ' + :track_osrc:e_desc); align=center; }
+
+		    //steps_label "widget/label" { height=14; style=bold; value=runclient('Engagement Steps:'); }
+
+		    steplist_pane "widget/pane"
+			{
+			style=bordered;
+			border_radius=8;
+			border_color="#6080c0";
+			height=313;
+
+			steplist_osrc "widget/osrc"
+			    {
+			    step_engagement_id "widget/parameter" { type=integer; default=runclient(:engagement_var:value); }
+			    step_partner "widget/parameter" { type=string; default=runclient(:partner_var:value); }
+			    step_track "widget/parameter" { type=integer; default=runclient(:track_osrc:e_track_id); }
+			    sql = " delete
+					/apps/kardia/data/Kardia_DB/e_trackactivity/rows
+				    where
+					:p_partner_key = :parameters:step_partner and
+					:e_username = user_name()
+				    ;
+
+				    insert
+					/apps/kardia/data/Kardia_DB/e_trackactivity/rows
+				    select
+					p_partner_key = :parameters:step_partner,
+					e_username = user_name(),
+					e_sort_key = '' + :s:e_step_sequence,
+					e_track_id = :s:e_track_id,
+					e_step_id = :s:e_step_id,
+					e_object_type = 'S',
+					e_completion_status = isnull(:pe:e_completion_status,'-'),
+					e_object_name = :s:name,
+					e_object_label = :s:e_step_name,
+					e_object_desc = isnull(condition(:pe:e_completion_status = 'C', 'Complete: ', 'Exited: ') + substring(convert(string,:pe:e_start_date),1,11) + ' - ' + substring(convert(string,isnull(:pe:e_completion_date,:pe:e_exited_date)),1,11) + '\n', isnull('Started: ' + substring(convert(string,:pe:e_start_date),1,11) + '\n','')),
+					e_object_comm = :pe:e_comments,
+					s_date_created = isnull(:pe:s_date_created, :s:s_date_created),
+					s_created_by = isnull(:pe:s_created_by, :s:s_created_by),
+					s_date_modified = isnull(:pe:s_date_modified, :s:s_date_modified),
+					s_modified_by = isnull(:pe:s_modified_by, :s:s_modified_by)
+				    from
+					/apps/kardia/data/Kardia_DB/e_engagement_step/rows s,
+					/apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+					/apps/kardia/data/Kardia_DB/p_partner/rows p,
+					/apps/kardia/data/Kardia_DB/p_partner/rows p2
+				    where
+					:s:e_track_id = :parameters:step_track and
+					:pe:e_track_id =* :s:e_track_id and
+					:pe:e_step_id =* :s:e_step_id and
+					:pe:e_engagement_id = :parameters:step_engagement_id and
+					:pe:p_partner_key = :parameters:step_partner and
+					:p:p_partner_key =* :pe:e_started_by and
+					:p2:p_partner_key =* isnull(:pe:e_completed_by, :pe:e_exited_by)
+				    ;
+
+				    insert
+					/apps/kardia/data/Kardia_DB/e_trackactivity/rows
+				    select
+					p_partner_key = :parameters:step_partner,
+					e_username = user_name(),
+					e_sort_key = '' + :s:e_step_sequence + ':' + :er:e_req_item_id,
+					e_track_id = :s:e_track_id,
+					e_step_id = :s:e_step_id,
+					e_object_type = 'R',
+					e_completion_status = :er:e_req_completion_status,
+					e_object_name = :er:name,
+					e_object_label = :er:e_req_name,
+					e_object_desc = condition(:er:e_req_completion_status = 'C', 'Complete: ', condition(:er:e_req_completion_status = 'W', 'Waived: ', 'Incomplete')) + ' (' + condition(:er:e_req_whom == 'P', 'Partner', condition(:er:e_req_whom == 'O', 'Organization', 'Either')) + ')',
+					e_object_comm = null,
+					:er:s_date_created,
+					:er:s_created_by,
+					:er:s_date_modified,
+					:er:s_modified_by
+				    from
+					/apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows er,
+					/apps/kardia/data/Kardia_DB/e_engagement_step/rows s
+				    where
+					:er:e_track_id = :parameters:step_track and
+					:er:e_track_id = :s:e_track_id and
+					:er:e_step_id = :s:e_step_id and
+					:er:p_partner_key = :parameters:step_partner and
+					:er:e_engagement_id = :parameters:step_engagement_id
+				    ;
+
+				    select
+					-- track activity
+					:ta:p_partner_key,
+					:ta:e_username,
+					:ta:e_sort_key,
+					:ta:e_track_id,
+					:ta:e_step_id,
+					:ta:e_object_type,
+					:ta:e_completion_status,
+					:ta:e_object_name,
+					:ta:e_object_label,
+					:ta:e_object_desc,
+					:ta:e_object_comm,
+
+					-- linked in e_partner_engagement_req data
+					:per:e_req_whom,
+					:per:e_req_waivable,
+					:per:e_req_completion_status,
+					:per:e_completion_date,
+					:per:e_waived_date,
+					req_s_date_modified = :per:s_date_modified,
+					req_s_modified_by = :per:s_modified_by,
+					:per:e_completed_by,
+					:per:e_waived_by,
+
+					-- linked in e_todo data
+					:t:e_todo_status,
+					:t:e_todo_completion_date,
+					:t:e_todo_canceled_date,
+					todo_s_date_modified = :t:s_date_modified,
+					todo_s_modified_by = :t:s_modified_by
+				    from
+					/apps/kardia/data/Kardia_DB/e_trackactivity/rows ta,
+					/apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows per,
+					/apps/kardia/data/Kardia_DB/e_todo/rows t
+				    where
+					:ta:p_partner_key = :parameters:step_partner and
+					:ta:e_username = user_name() and
+					:per:name =* :ta:e_object_name and
+					:t:e_todo_partner =* :per:p_partner_key and
+					:t:e_todo_engagement_id =* :per:e_engagement_id and
+					:t:e_todo_req_item_id =* :per:e_req_item_id
+				    order by
+					:ta:e_sort_key asc
+				    ";
+			    replicasize=20;
+			    readahead=20;
+			    autoquery=never;
+
+			    steplist_table "widget/table"
+				{
+				x=8; y=8; width=550; height=295;
+				min_rowheight=21;
+				max_rowheight=64;
+				allow_selection = yes;
+				show_selection = yes;
+				initial_selection = no;
+				demand_scrollbar = yes;
+				overlap_scrollbar = yes;
+				colsep = 0;
+				titlebar = no;
+				row_border_radius=4;
+				inner_padding = 1;
+				cellvspacing = 2;
+				//row1_bgcolor = "#f8f8f8";
+				//row2_bgcolor = "#f8f8f8";
+				row_border_radius=6;
+				rowhighlight_bgcolor = "#fff090";
+				textcolorhighlight = "#000000";
+				row1_bgcolor=runclient(condition(:steplist_osrc:e_object_type == 'S', '#e0e0e0', '#f8f8f8'));
+				row2_bgcolor=runclient(condition(:steplist_osrc:e_object_type == 'S', '#e0e0e0', '#f8f8f8'));
+
+
+				t_stepcheck "widget/table-column" { value=runclient(condition(:steplist_osrc:e_object_type == 'S', condition(:steplist_osrc:e_completion_status = '-', '/sys/images/trans_1.gif', condition(:steplist_osrc:e_completion_status = 'I', '/apps/kardia/images/icons/ionicons-arrow-right-c.svg', condition(:steplist_osrc:e_completion_status == 'C', '/sys/images/green_check.gif', '/sys/images/red_x.gif'))), '/sys/images/trans_1.gif')); width=24; type=image; image_maxwidth=16; image_maxheight=16; align=left; }
+				t_reqcheck "widget/table-column" { value=runclient(condition(:steplist_osrc:e_object_type == 'R', '/sys/images/checkbox_unchecked.png', '/sys/images/trans_1.gif')); width=24; type=image; image_maxwidth=16; image_maxheight=16; align=left; }
+				t_stepname "widget/table-column" { value=runclient(condition(:steplist_osrc:e_object_type == 'S', '', '') + :steplist_osrc:e_object_label); width=150; style=runclient(condition(:steplist_osrc:e_object_type = 'S', 'bold', '')); }
+				t_info "widget/table-column" { value=runclient(:steplist_osrc:e_object_desc); width=348; wrap=yes; caption_style=italic; caption_textcolor="#606060"; caption_value=runclient(:steplist_osrc:e_object_comm); }
+
+				t_detail_req "widget/table-row-detail"
+				    {
+				    display_for=runclient(:steplist_osrc:e_object_type == 'R' and :steplist_osrc:e_completion_status == 'I');
+				    width=550;
+				    height=34;
+
+				    t_detail_req_hbox "widget/hbox"
+					{
+					x=0; y=4; width=550; height=24;
+					spacing=8;
+					align=center;
+
+					complete_btn "widget/textbutton"
+					    {
+					    width=120; height=24;
+					    text="Complete";
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_complete "widget/connector"
+						{
+						event=Click;
+						target=steplist_osrc;
+						action=Modify;
+						e_todo_status=runclient('C');
+						e_todo_completion_date=runclient(getdate());
+						todo_s_date_modified=runclient(getdate());
+						todo_s_modified_by=runclient(user_name());
+						e_req_completion_status=runclient('C');
+						req_s_date_modified=runclient(getdate());
+						req_s_modified_by=runclient(user_name());
+						e_completion_date=runclient(getdate());
+						e_completed_by=runclient(:collab_var:value);
+						}
+					    }
+					waive_btn "widget/textbutton"
+					    {
+					    width=120; height=24;
+					    text="Waive";
+					    enabled=runclient(:steplist_osrc:e_req_waivable);
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_waive "widget/connector"
+						{
+						event=Click;
+						target=steplist_osrc;
+						action=Modify;
+						e_todo_status=runclient('X');
+						e_todo_canceled_date=runclient(getdate());
+						todo_s_date_modified=runclient(getdate());
+						todo_s_modified_by=runclient(user_name());
+						e_req_completion_status=runclient('W');
+						req_s_date_modified=runclient(getdate());
+						req_s_modified_by=runclient(user_name());
+						e_waived_date=runclient(getdate());
+						e_waived_by=runclient(:collab_var:value);
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+
+		    eng_desc "widget/component" { field=e_desc; path="/sys/cmp/smart_field.cmp"; width=300; height=20; text="Note:"; ctl_type=editbox; label_width=70; empty_desc="40 chars max"; }
+		    //eng_comments "widget/component" { field=e_comments; path="/sys/cmp/smart_field.cmp"; height=60; text="Comments:"; ctl_type=textarea; label_width=70; }
+
+		    track_partner "widget/variable" { fieldname=p_partner_key; track_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
+		    track_me "widget/variable" { fieldname=e_started_by; track_me_hints "widget/hints" { default=runclient(:collab_var:value); } }
+		    track_startdate "widget/variable" { fieldname=e_start_date; track_start_hints "widget/hints" { default=runclient(getdate()); } }
+		    track_archived "widget/variable" { fieldname=e_is_archived; track_arc_hints "widget/hints" { default=runclient(0); } }
+		    track_status "widget/variable" { fieldname=e_completion_status; track_comp_hints "widget/hints" { default=runclient('I'); } }
+		    track_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+		    track_btns "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=10;
+
+			add_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Update Track";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    enabled = runclient(:track_form:is_savable and char_length(:eng_desc:content) > 0);
+
+			    on_add "widget/connector" { event=Click; target=track_form; action=Save; }
+			    }
+
+			cancel_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = runclient(condition(:track_form:is_discardable, "Cancel", "Close"));
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    on_cancel1 "widget/connector" { event=Click; target=track_form; action=Discard; }
+			    on_cancel2 "widget/connector" { event=Click; target=track_win; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

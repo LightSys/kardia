@@ -1,0 +1,322 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<overlay id="kardia V.0.91" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<!-- JavaScript file -->
+	<script type="application/javascript" src="chrome://kardia/content/main-overlay.js"/>
+
+	<!-- Thunderbird content area where Kardia pane will be inserted -->
+	<hbox id="tabmail-container">
+		<!-- splitter allows resizing and closing of Kardia pane -->
+		<splitter id="kardia-splitter" collapse="after" resizebefore="closest" state="open" oncommand="toggleKardiaVisibility(0)"/>
+		
+		<!-- vbox that is the Kardia pane -->
+		<vbox id="main-box" flex="0" width="100" persist="collapsed,width">
+			
+			<!-- header that allows you to close Kardia pane -->
+			<sidebarheader id="sidebarheader-allow-close" align="center">
+				<label id="titleLabel" value="Kardia CRM"/>
+				<spacer flex="1"/>
+				<toolbarbutton id="closeSidebar" oncommand="toggleKardiaVisibility(1)" tooltiptext="Close Kardia pane">
+					<vbox>
+						<image class="close-kardia-pane-x"/>
+						<spacer flex="1"/>
+					</vbox>
+				</toolbarbutton>
+			</sidebarheader>
+
+
+			<!-- hbox with partner's name and ID, plus a button that allows you to select a different partner -->
+			<hbox id="choose-partner-box" context="main-context">
+				<vbox id="name-and-id">
+					<label id="name-label" value=""/>
+					<label id="id-label" value=""/> 
+				</vbox>
+				
+				<spacer flex="1"/>
+				
+				<!-- toolbarbutton allows selection of different partners-->
+				<toolbarbutton id="choose-partner-dropdown-button" type="menu" style="display:none;" tooltiptext="Choose partner to view">
+					<panel id="choose-partner-dropdown-menu" class="partner-button">
+					</panel>
+					<vbox>
+						<image class="choose-partner-dropdown-arrow"/>
+						<spacer flex="1"/>
+					</vbox>
+				</toolbarbutton>
+			</hbox>
+		
+         <!--Loading gif-->
+         <vbox id="loading-gif-container" align="center" equalsize="always" style="visibility:collapse">
+            <spacer flex="1"/>
+            <image src='chrome://kardia/content/images/loading.gif' width='64' height='64' flex="1"/>
+            <spacer flex="1"/>
+         </vbox>
+
+			<!-- label that displays failure message -->
+			<hbox id="cant-connect" flex="0" align="center">
+			    <label value="Not connected."/>
+			    <spacer width="10px"/>
+			    <button label="Connect" oncommand="doLogin()"/>
+			</hbox>
+			
+			<vbox id="main-content-box" flex="1" context="main-context" style="visibility:hidden">
+				
+				<!-- vbox with all collapsible items like Engagement Tracks -->
+				<vbox id="collapsible-items-box">
+
+				       <vbox id="new-data-button">
+					  <button label="Add new interaction" tooltiptext="Add new information to this partner's activity timeline"/>
+					  <spacer flex="1"/>
+				       </vbox>
+
+					<!-- Profile photo -->
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(7)" label="Profile Photo:"/>
+					  <spacer flex="1"/>
+					</hbox>
+					<hbox id="profile-photo-box">
+						<spacer width="10px"/>
+						<vbox id="profile-photo-inner-box" width="100" flex="1">
+						</vbox>
+					</hbox>
+					
+					<!-- address, phone, cell, email, fax box -->
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(0)" label="Contact Information:"/>
+					  <spacer flex="1"/>
+					</hbox>
+					<hbox id="contact-info-box">
+						<spacer width="10px"/>
+						<vbox id="contact-info-inner-box" width="100" flex="1">
+							<hbox>
+								<spacer flex="1"/>
+								<button class="new-button" label="New Contact Info..." oncommand="newContactInfo()" tooltiptext="Create new contact information item for this partner"/>
+					 		</hbox>
+						</vbox>
+					</hbox>	
+					
+					<!-- engagement tracks box -->
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(1)" label="Engagement Tracks:"/>
+					  <spacer flex="1"/>
+					</hbox>
+					<hbox id="engagement-tracks-box">
+						<spacer width="10px"/>
+						<vbox id="engagement-tracks-inner-box" width="100" flex="1">
+							<!--<vbox class="engagement-track-color-box">
+								<label class="bold-text">Full-Time Missionary</label>
+								<label>Engagement Step: Support Budgeting</label>
+							</vbox> -->
+							<hbox>
+								<spacer flex="1"/>
+								<button class="new-button" label="New Track..." oncommand="newTrack()" tooltiptext="Add engagement track to this partner"/>
+							</hbox>
+						</vbox>
+					</hbox>
+							
+					<!-- recent activity box -->
+					<hbox>
+					  <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(2)" label="Recent Activity:"/>
+					  <spacer flex="1"/>
+					</hbox>
+					<hbox id="recent-activity-box">
+						<spacer width="10px"/>
+						<vbox id="recent-activity-inner-box" width="100" flex="1">
+							<!-- recent activity item -->
+							<!--<hbox>
+								<vbox>
+									<image class="email-image"/>
+									<spacer flex="1"/>
+								</vbox>
+								<label width="100" flex="1">2:35p: Re: Support and Budgeting</label>
+							</hbox> -->
+						</vbox>
+					</hbox>
+					
+					<!-- to-dos box -->
+					<hbox>
+					    <!--#Muted-->
+					   <!--<button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(3)" label="To-Dos:"/> -->
+					   <!--<spacer flex="1"/> -->
+					</hbox>
+					<hbox id="to-dos-box">
+						 <spacer width="10px"/> 
+						 <vbox id="to-dos-inner-box" width="100" flex="1"> 
+						    <!--#Muted-->
+							<!--<checkbox id="to-do-item-0" label="To-Do Item 0 test test test test test test test"/>
+							<checkbox id="to-do-item-1" label="To-Do Item 1"/>
+							<checkbox id="to-do-item-2" label="To-Do Item 2"/> -->
+							<!--<hbox> -->
+							<!--<spacer flex="1"/> -->
+							<!--<hbox><spacer flex="1"/><button class="new-button" label="New To-Do..." oncommand="newTodo()" tooltiptext="Create new to-do item for this partner"/></hbox> -->
+							<!--</hbox> -->
+						 </vbox> 
+					</hbox>	
+					
+					<!-- notes and prayer box -->
+					<hbox>
+					    <!--#Muted-->
+					   <!--<button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(4)" label="Notes and Prayer:"/> -->
+					   <!--<spacer flex="1"/> -->
+					</hbox>
+					<hbox id="notes-prayer-box">
+						 <spacer width="10px"/> 
+						 <vbox id="notes-prayer-inner-box" width="100" flex="1"> 
+							 <!--notes/prayer item -->
+							<!--<hbox>
+								<vbox>
+									<image class="note-image"/>
+									<spacer flex="1"/>
+								</vbox>
+								<description width="100" flex="1" id="note1">House Sale: Pray for their house sale situation and potential buyer's financing.</description>
+							</hbox> -->
+							<!--#Muted-->
+							 <!--<hbox> -->
+								 <!--<spacer flex="1"/> -->
+								 <!--<button class="new-button" label="New Note/Prayer..." oncommand="newNote()" tooltiptext="Create new note/prayer for this partner"/> -->
+							 <!--</hbox> -->
+						 </vbox> 
+					</hbox>
+					
+					<!-- collaborators box -->
+					<hbox>
+					    <!--#Muted-->
+					   <!--<button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(5)" label="Collaborators:"/> -->
+					   <!--<spacer flex="1"/> -->
+					</hbox>
+					<hbox id="collaborator-box">
+						 <spacer width="10px"/> 
+						 <vbox id="collaborator-inner-box" width="100" flex="1"> 
+							 <!--collaborator -->
+							<!--<hbox>
+								<vbox>
+									<image class="team-image"/>
+									<spacer flex="1"/>
+								</vbox>
+								<label width="100" flex="1" id="collaborator1">Support Budgeting Team</label>
+							</hbox> -->
+						 </vbox> 
+					</hbox>	
+					
+					<!-- documents box -->
+					<hbox>
+					   <button class="twisty-checkbox" type="checkbox" checkState="0" oncommand="toggleSectionDisplay(6)" label="Documents:"/>
+					   <spacer flex="1"/>
+					</hbox>
+					<hbox id="document-box">
+						 <spacer width="10px"/> 
+						 <vbox id="document-inner-box" width="100" flex="1"> 
+							<!--#Muted-->
+							<!-- document -->
+							<!--<hbox>
+								<vbox>
+									<image class="document-image"/>
+									<spacer flex="1"/>
+								</vbox>
+								<label width="100" flex="1" id="document1">Application-SamFroese.pdf</label>
+							</hbox> -->
+						 </vbox> 
+					</hbox>	
+				</vbox>
+			</vbox>
+         <vbox id="open-CRM-button">
+            <button label="Open CRM web interface" tooltiptext="Open CRM in default browser."/>
+            <spacer flex="1"/>
+         </vbox>
+			
+			<!-- FEATURE: When recording emails in Kardia is implemented, uncomment this -->
+			<!--
+			<separator id="bottom-separator" orient="horizontal" class="thin"/>
+			<checkbox id="record-this-email" checked="true" onclick="recordThisEmail()" label="Record this email in Kardia"/>
+			<checkbox id="record-future-emails" checked="true" onclick="recordFutureEmails()" label="Record future emails with this person"/>-->
+		
+		</vbox>
+	</hbox>
+	 
+	<!-- Kardia Pane button in bottom status bar -->
+	<statusbar id="status-bar">
+		<statusbarpanel id="show-kardia-pane">
+			<toolbarbutton id="show-kardia-pane-button" type="checkbox" tooltiptext="Hide Kardia Pane" oncommand="toggleKardiaVisibility(1)" checked="true">
+				<vbox>
+					<image class="kardia-icon"/>
+					<spacer flex="1"/>
+				</vbox>
+				<label value="Kardia Pane"/>
+				<vbox id="show-hide-kardia-pane-arrow">
+					<image class="show-kardia-pane-arrow"/>
+					<spacer flex="1"/>
+				</vbox>
+			</toolbarbutton>
+		</statusbarpanel>
+	</statusbar>
+
+	<!-- right click context menus -->
+	<popupset>
+		<!-- context menu for links to websites/blogs in the contact info section -->
+		<menupopup id="websiteContextMenu">
+			<menuitem label="Open Link In Browser" oncommand="openUrl(document.popupNode.innerHTML,true);" accesskey="O" />
+			<menu label="Convert To" accesskey="n">
+				<menupopup id="convert-to-inner-menu">
+					<menuitem label="Event..." accesskey="E" oncommand="createEventWithDialog(null,null,null,document.popupNode.textContent.substring(3, document.popupNode.textContent.length),null)"/>
+					<menuitem label="Task..." accesskey="T" oncommand="createTodoWithDialog(null,null,document.popupNode.textContent.substring(3, document.popupNode.textContent.length),null)"/>
+				</menupopup>
+			</menu>
+			<menuitem label="Copy Link Location" oncommand="copyLinkLocation()" accesskey="L" />
+		</menupopup>
+		
+		<!-- context menu for email addresses -->
+		<menupopup id="emailContextMenu">
+			<menu label="Convert To" accesskey="n">
+				<menupopup id="convert-to-inner-menu">
+					<menuitem label="Event..." accesskey="E" oncommand="createEventWithDialog(null,null,null,document.popupNode.textContent.substring(3, document.popupNode.textContent.length),null)"/>
+					<menuitem label="Task..." accesskey="T" oncommand="createTodoWithDialog(null,null,document.popupNode.textContent.substring(3, document.popupNode.textContent.length),null)"/>
+				</menupopup>
+			</menu>
+			<menuitem label="Add to Address Book..." oncommand="saveToContacts(document.popupNode.textContent)" accesskey="B" />
+			<menuitem label="Compose Message To..." oncommand="sendEmail(document.popupNode.textContent)" accesskey="s" />
+			<menuitem label="Copy Email Address" oncommand="copyLinkLocation()" accesskey="E" />
+			<menuitem label="Quick Filter..." oncommand="beginQuickFilter(document.popupNode.textContent)" accesskey="E" />
+			<menuitem label="Print..." oncommand="printPartner();" accesskey="P" />
+		</menupopup>
+		
+		<!-- context menu for documents -->
+		<menupopup id="documentContextMenu" onpopupshowing="setSaveable(document.popupNode.id)">
+			<menuitem label="Open Link In Browser" oncommand="findAndOpenDocument(document.popupNode.id, false);" accesskey="O" />
+			<menu label="Convert To" accesskey="n">
+				<menupopup id="convert-to-inner-menu">
+					<menuitem label="Event..." accesskey="E" oncommand="createEventWithDialog(null,null,null,document.popupNode.innerHTML,null)"/>
+					<menuitem label="Task..." accesskey="T" oncommand="createTodoWithDialog(null,null,document.popupNode.innerHTML,null)"/>
+				</menupopup>
+			</menu>
+			<menuitem label="Copy Link Location" oncommand="copyDocLinkLocation(document.popupNode.id)" accesskey="L" />
+			<menuitem id="save-link-as" label="Save Link As..." oncommand="findAndOpenDocument(document.popupNode.id, true)" accesskey="k" />
+		</menupopup>
+		
+		<!-- context menu for everywhere else in the Kardia pane (except header and footer) -->
+		<menupopup id="main-context">
+			<menuitem label="Print..." oncommand="printPartner();" accesskey="P" />
+		</menupopup>
+	</popupset>
+	
+	<!-- overlay for context menu, allows conversion of selected info to note/prayer -->	
+	<menu id="mailContext-calendar-convert-menu">
+		<menupopup id="mailContext-calendar-convert-menupopup">
+			<!-- should allow conversion to Kardia todo, but this isn't practical now -->
+			<!-- <menuitem id="mailContext-kardia-convert-todo" label="Kardia to-do..." oncommand="newTodo(content.getSelection().toString())" accesskey="K" />  -->
+			<menuitem id="mailContext-kardia-convert-note" label="Kardia note..." oncommand="newNote('',content.getSelection().toString())" accesskey="n" />
+		</menupopup>
+	</menu>
+	
+	<!-- toolbarbutton for opening Kardia tab -->
+	<toolbarpalette id="MailToolbarPalette">
+		<toolbarbutton id="kardia-tab-button" class="kardia-tab-buttonn" label="Kardia" tooltiptext="Switch to the Kardia tab" oncommand="checkShowKardiaTab()">
+			<vbox>
+				<spacer height="1"/>
+				<image class="kardia-tab"/>
+			</vbox> 
+ 		</toolbarbutton>	 
+	</toolbarpalette>
+
+</overlay>

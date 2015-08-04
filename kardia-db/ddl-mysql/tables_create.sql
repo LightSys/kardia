@@ -154,6 +154,7 @@ create table p_address_format_set (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into p_address_format_set (p_address_set,p_address_set_desc,p_is_active,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "STANDARD" as p_address_set, "Standard Format Set" as p_address_set_desc, 1 as p_is_active, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* p_contact_info */
@@ -181,9 +182,28 @@ create table p_contact_info (
 
 create table p_partner_relationship (
         p_partner_key                         char(10)  not null,      /* source of relationship --  */
-        p_relation_type                       char(1)  not null,       /* brother, wife, son, etc. --  */
+        p_relation_type                       integer  not null,       /* brother, wife, son, etc. See p_partner_relationship_type. --  */
         p_relation_key                        char(10)  not null,      /* the one the source is related to --  */
-        p_relation_comments                   varchar(1536)  null,     /*  --  */
+        p_relation_comments                   varchar(900)  null,      /*  --  */
+        p_relation_start_date                 datetime  null,          /*  --  */
+        p_relation_end_date                   datetime  null,          /*  --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_partner_relationship_type */
+
+create table p_partner_relationship_type (
+        p_relation_type                       integer  not null,       /* brother, wife, son, etc. See p_partner_relationship_type. --  */
+        p_relation_type_label                 varchar(40)  not null,   /*  --  */
+        p_relation_type_desc                  varchar(900)  null,      /*  --  */
+        p_relation_type_rev_label             varchar(40)  not null,   /* label for relationship applied in reverse --  */
+        p_relation_type_rev_desc              varchar(900)  null,      /* description for relationship applied in reverse --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -419,6 +439,96 @@ create table p_partner_sort_tmp (
 );
 
 
+/* p_acquisition_code */
+
+create table p_acquisition_code (
+        p_acquisition_code                    char(3)  not null,       /* The 3-character acquisition code for how we originally came in contact with the person --  */
+        p_acquisition_name                    varchar(32)  not null,   /* A brief description or label for the acquisition code --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'CNV' as p_acquisition_code, 'Data Conversion' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'OTH' as p_acquisition_code, 'Other Reason' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'DON' as p_acquisition_code, 'New Donor' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'PAR' as p_acquisition_code, 'Missionary Partner' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'PAY' as p_acquisition_code, 'New Payee' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'STA' as p_acquisition_code, 'New Staff Member' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'MIS' as p_acquisition_code, 'New Missionary' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'EVT' as p_acquisition_code, 'Met at an Event' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNI' as p_acquisition_code, 'Met at a College or University' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'RAN' as p_acquisition_code, 'Met at Random / Divine Appointment' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+
+
+/* p_partner_search */
+
+create table p_partner_search (
+        p_search_id                           integer  not null,       /* ID of search, a unique integer. --  */
+        p_search_desc                         varchar(255)  not null,  /* A name/description given to this search --  */
+        p_search_visibility                   char(1)  not null,       /* P = only to me, A = visible to everyone --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_partner_search_stage */
+
+create table p_partner_search_stage (
+        p_search_id                           integer  not null,       /* ID of search, a unique integer. --  */
+        p_search_stage_id                     integer  not null,       /* ID of search stage - an advanced search is composed of one or more stages, each of which can filter, remove from, or add to the results generated by previous stages. --  */
+        p_stage_type                          char(3)  not null,       /* the type of search stage --  */
+        p_result_count                        integer  null,           /* the number of results at the end of this stage the last time results were computed --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_partner_search_results */
+
+create table p_partner_search_results (
+        p_partner_key                         char(10)  not null,      /* partner key --  */
+        s_username                            varchar(20)  not null,   /* name of the user --  */
+        p_search_session_id                   integer  not null,       /* ID of search session, a unique integer. --  */
+        p_search_stage_id                     integer  not null,       /* ID of search stage - see p_partner_search for details. --  */
+        p_sortkey                             varchar(255)  not null,  /* the sorting key, determining the order in which records are returned. --  */
+        p_location_id                         integer  null,           /* the location record to use for this partner --  */
+        p_contact_id                          integer  null,           /* the contact record to use for this partner --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_search_stage_criteria */
+
+create table p_search_stage_criteria (
+        p_search_id                           integer  not null,       /* ID of search, a unique integer. --  */
+        p_search_stage_id                     integer  not null,       /* ID of search stage --  */
+        p_criteria_name                       varchar(32)  not null,   /* the criteria name. --  */
+        p_criteria_value                      varchar(900)  null,      /* the criteria's value. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (
@@ -448,6 +558,7 @@ create table m_list (
 create table m_list_membership (
         m_list_code                           varchar(20)  not null,   /*  --  */
         p_partner_key                         char(10)  not null,      /*  --  */
+        m_hist_id                             int  not null,           /* a history of previous subscriptions and removals --  */
         m_num_copies                          int  not null,           /* usually just 1 copy; possible to be 0 copies --  */
         p_location_id                         tinyint  null,           /* if member specifies a particular Location to use --  */
         p_contact_id                          tinyint  null,           /* if member specifies a particular contact info record to use --  */
@@ -470,6 +581,672 @@ create table m_list_membership (
         m_reason_member                       char(1)  null,           /* why person is on this list --  */
         m_reason_cancel                       char(1)  null,           /* reason given for canceling --  */
         m_sort_order                          integer  null,           /* if a list was imported, and the order it prints in is significant in some way, this field can be used. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_contact_autorecord */
+
+create table e_contact_autorecord (
+        p_partner_key                         char(10)  not null,      /* The partner ID that is doing the engaging --  */
+        e_collaborator_id                     char(10)  not null,      /* The collaborator that the partner communicated with --  */
+        e_contact_history_type                integer  not null,       /* The type of the contact to automatically record (email / phone / etc), or "ALL" to apply to all types --  */
+        e_contact_id                          integer  not null,       /* The contact info id (p_contact_info) to auto record, or (-1) to apply to ALL contact records relevant to the history type above. --  */
+        e_engagement_id                       integer  null,           /* The engagement that this contact is in regard to (null if general or pre-engagement) --  */
+        e_auto_record                         bit  not null,           /* Whether to auto-record: 1=yes, 0=no --  */
+        e_auto_record_apply_all               bit  not null,           /* Whether this auto-record record applies to just this collaborator (0) or to ALL collaborators (1). The auto_record setting for a specific collaborator will override one set for all collaborators. If more than one 'all collaborators' record is present and they conflict, then the default is ON (1), to automatically record the contacts. --  */
+        e_comments                            varchar(255)  null,      /* User-entered comments on this engagement track/step for this partner --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_contact_history_type */
+
+create table e_contact_history_type (
+        e_contact_history_type                integer  not null,       /* The unique ID of this contact history type --  */
+        e_short_name                          varchar(24)  not null,   /* Short name of the history type (such as "Phone" or "Pray" or "Note") --  */
+        e_description                         varchar(80)  not null,   /* The description of this history type --  */
+        e_user_selectable                     bit  not null,           /* Whether this type is selectable by the user when hand-entering a contact history item (otherwise, it is only used for auto-generated records) --  */
+        e_is_notes                            bit  not null,           /* Whether this type reflects simple notes recorded (1) or an actual conversation (0) --  */
+        e_is_inperson                         bit  not null,           /* Whether this type reflects an in-person contact at a place (1) or via a contact method like email/phone/etc (0) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_contact_history_type, 'Phone' as e_short_name, 'Phone Call' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_contact_history_type, 'Email' as e_short_name, 'Email Message' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_contact_history_type, 'Conversation' as e_short_name, 'In-Person Conversation' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_contact_history_type, 'Note' as e_short_name, 'Note' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_contact_history_type, 'Pray' as e_short_name, 'Prayer/Praise Item' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_contact_history_type, 'SignUp' as e_short_name, 'Sign Up List' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 7 as e_contact_history_type, 'Update' as e_short_name, 'Update' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+
+
+/* e_contact_history */
+
+create table e_contact_history (
+        e_contact_history_id                  integer  not null,       /* The unique ID of this contact history item --  */
+        p_partner_key                         char(10)  not null,      /* The partner key of the person that the organization contacted --  */
+        e_contact_history_type                integer  not null,       /* The unique ID of this contact history type --  */
+        p_contact_id                          integer  null,           /* The p_contact_info ID that was used for this contact (such as a phone number, email address, etc.) --  */
+        p_location_partner_key                char(10)  null,          /* The partner key of the location where the contact took place (may be the same as the p_partner_key in some cases) --  */
+        p_location_id                         integer  null,           /* The p_location ID where the contact physically took place (for in-person contacts) --  */
+        p_location_revision_id                integer  null,           /* The p_location revision ID where the contact physically took place (for in-person contacts) --  */
+        e_whom                                char(10)  null,          /* The collaborator/user who made the contact; NULL if no particular user was involved --  */
+        e_initiation                          char(1)  null,           /* Set to 'P' if the engaging partner initiated the contact, or 'C' if the collaborator (organization) initiated the contact --  */
+        e_subject                             varchar(255)  null,      /* A short description of the contact that took place --  */
+        e_contact_date                        datetime  not null,      /* The date and time that the contact took place --  */
+        e_notes                               varchar(900)  null,      /* Notes regarding this contact --  */
+        e_message_id                          varchar(255)  null,      /* Message-ID header field of email message, or similar unique ID for other communications --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_activity */
+
+create table e_activity (
+        e_activity_group_id                   integer  not null,       /* A unique ID identifying the group of contact activity items that are being aggregated. --  */
+        e_activity_id                         integer  not null,       /* A unique ID identifying a single activity item within a group of items. --  */
+        p_partner_key                         char(10)  not null,      /* The partner involved in the activity --  */
+        e_whom                                char(10)  null,          /* The collaborator (with the organization) that was involved in the communication, if any. --  */
+        e_initiation                          char(1)  null,           /* Set to 'P' if the engaging partner initiated the activity, or 'C' if the collaborator (organization) initiated the activity. --  */
+        e_sort_key                            varchar(20)  null,       /* A value we can use to sort this activity data, if needed --  */
+        e_activity_date                       datetime  not null,      /* The date that the activity took place --  */
+        e_activity_type                       char(4)  not null,       /* The type of activity. --  */
+        e_reference_info                      varchar(20)  null,       /* batch|giftid, or such). --  */
+        e_info                                varchar(900)  null,      /* Informational notes regarding this activity --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_track */
+
+create table e_engagement_track (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        e_track_name                          varchar(24)  not null,   /* A short name for the engagement track --  */
+        e_track_description                   varchar(255)  not null,  /* A description for the engagement track --  */
+        e_track_color                         varchar(32)  null,       /* Color to be used in presenting this track visually - RGB (i.e. '#f0f0f0') or named (i.e., 'green') --  */
+        e_track_status                        char(1)  not null,       /* Status of this engagement track: (A)ctive or (O)bsolete --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_track_collab */
+
+create table e_engagement_track_collab (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        p_collab_partner_key                  char(10)  not null,      /* Partner key of the collaborator. If a Kardia user, the username must be tied to the partner key in the p_staff table. --  */
+        e_collab_type_id                      integer  not null,       /* Type of collaborator --  */
+        e_comments                            varchar(255)  null,      /* Comments about this collaborator's involvement in this track. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_step */
+
+create table e_engagement_step (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        e_step_id                             integer  not null,       /* A unique ID identifying the engagement step --  */
+        e_step_name                           varchar(32)  not null,   /* A short name for the engagement step --  */
+        e_step_description                    varchar(255)  not null,  /* A description for the engagement step --  */
+        e_step_sequence                       integer  not null,       /* What order the engagement steps come in. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_step_collab */
+
+create table e_engagement_step_collab (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        e_step_id                             integer  not null,       /* A unique ID identifying the engagement step --  */
+        p_collab_partner_key                  char(10)  not null,      /* Partner key of the collaborator. If a Kardia user, the username must be tied to the partner key in the p_staff table. --  */
+        e_collab_type_id                      integer  not null,       /* Type of collaborator --  */
+        e_comments                            varchar(255)  null,      /* Comments about this collaborator's involvement in this step. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_engagement_step_req */
+
+create table e_engagement_step_req (
+        e_track_id                            integer  not null,       /* A unique ID identifying the engagement track --  */
+        e_step_id                             integer  not null,       /* A unique ID identifying the engagement step --  */
+        e_req_id                              integer  not null,       /* The unique ID identifying the template requirement item. --  */
+        e_req_name                            varchar(255)  not null,  /* A description for the engagement step requirement --  */
+        e_due_days_from_step                  integer  null,           /* If applicable, how many days to set the due date at after the partner starts this step --  */
+        e_due_days_from_req                   integer  null,           /* If applicable, how many days to set the due date at after the partner completes another requirement --  */
+        e_due_days_from_req_id                integer  null,           /* If applicable, the requirement ID whose completion triggers the due date interval for this requirement --  */
+        e_req_whom                            char(1)  not null,       /* Who this requirement is fulfilled by: (P)artner, (O)rganization, or (E)ither. --  */
+        e_req_doc_type_id                     integer  null,           /* Does a document fulfill this step? If so, the corresponding document type ID is stored here. --  */
+        e_req_waivable                        bit  not null,           /* Can this requirement be waived? 0 if not, or 1 if so --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_partner_engagement */
+
+create table e_partner_engagement (
+        p_partner_key                         char(10)  not null,      /* The partner ID that is doing the engaging --  */
+        e_engagement_id                       integer  not null,       /* A unique ID for this partner's current engagement --  */
+        e_hist_id                             integer  not null,       /* An incrementing ID for showing the history of this engagement. --  */
+        e_track_id                            integer  not null,       /* The engagement track --  */
+        e_step_id                             integer  not null,       /* The current engagement step --  */
+        e_is_archived                         bit  not null,           /* Set to 0 if the engagement in this track is currently active, or 1 if it is archived/historical --  */
+        e_completion_status                   char(1)  not null,       /* Status of the step: (I)ncomplete, (C)omplete, (E)xited without completing the step --  */
+        e_desc                                varchar(40)  not null,   /* User-entered short description on this engagement track/step for this partner --  */
+        e_comments                            varchar(255)  null,      /* User-entered comments on this engagement track/step for this partner --  */
+        e_start_date                          datetime  not null,      /* The date the user entered this engagement track and/or step --  */
+        e_started_by                          char(10)  not null,      /* Collaborator partner ID that caused the track/step to begin --  */
+        e_completion_date                     datetime  null,          /* The date the user completed this engagement step --  */
+        e_completed_by                        char(10)  null,          /* Collaborator partner ID that caused the track/step to become complete --  */
+        e_exited_date                         datetime  null,          /* The date the user exited this engagement step (whether completed or not) --  */
+        e_exited_by                           char(10)  null,          /* Collaborator partner ID that caused the track/step to exit --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_partner_engagement_req */
+
+create table e_partner_engagement_req (
+        p_partner_key                         char(10)  not null,      /* The partner ID that is doing the engaging --  */
+        e_engagement_id                       integer  not null,       /* A unique ID for this partner's current engagement --  */
+        e_hist_id                             integer  not null,       /* An incrementing ID for showing the history of this engagement. --  */
+        e_req_item_id                         integer  not null,       /* An incrementing ID for this actual requirement item --  */
+        e_track_id                            integer  not null,       /* The engagement track id -- if copied from template --  */
+        e_step_id                             integer  not null,       /* The engagement track step id -- if copied from template --  */
+        e_req_id                              integer  null,           /* The engagement track requirement id -- if copied from template --  */
+        e_req_completion_status               char(1)  not null,       /* Status of the requirement: (I)ncomplete, (C)omplete, (W)aived --  */
+        e_req_name                            varchar(255)  not null,  /* A description for the engagement step requirement --  */
+        e_due_days_from_step                  integer  null,           /* If applicable, how many days to set the due date at after the partner starts this step --  */
+        e_due_days_from_req                   integer  null,           /* If applicable, how many days to set the due date at after the partner completes another requirement --  */
+        e_due_days_from_req_id                integer  null,           /* If applicable, the requirement ID whose completion triggers the due date interval for this requirement --  */
+        e_req_whom                            char(1)  not null,       /* Who this requirement is fulfilled by: (P)artner, (O)rganization, or (E)ither. --  */
+        e_req_doc_type_id                     integer  null,           /* Does a document fulfill this step? If so, the corresponding document type ID is stored here. --  */
+        e_req_waivable                        bit  not null,           /* Can this requirement be waived? 0 if not, or 1 if so --  */
+        e_req_doc_id                          integer  null,           /* Document ID used to fulfill this requirement --  */
+        e_completion_date                     datetime  null,          /* The date the user completed this engagement step --  */
+        e_completed_by                        char(10)  null,          /* Collaborator partner ID that caused the track/step to become complete --  */
+        e_waived_date                         datetime  null,          /* The date the user exited this engagement step (whether completed or not) --  */
+        e_waived_by                           char(10)  null,          /* Collaborator partner ID that caused the track/step to exit --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_tag_type */
+
+create table e_tag_type (
+        e_tag_id                              integer  not null,       /* ID of the tag --  */
+        e_tag_label                           varchar(40)  not null,   /* Short label for this tag. --  */
+        e_tag_desc                            varchar(255)  not null,  /* A full description of the tag. --  */
+        e_is_active                           bit  not null,           /* 1 if active, or 0 if not active. An inactive tag may still be present in the tag graph, but will not be available to the user to select. --  */
+        e_tag_threshold                       float  not null,         /* A value between 0.0 and 1.0 that indicates how strong a tag must be in order for it to actually be created in the tag graph for a partner. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_tag_type_relationship */
+
+create table e_tag_type_relationship (
+        e_tag_id                              integer  not null,       /* ID of the tag --  */
+        e_rel_tag_id                          integer  not null,       /* ID of the related tag --  */
+        e_rel_strength                        float  not null,         /* The strength of the relationship (0.0 to 1.0) --  */
+        e_rel_certainty                       float  not null,         /* The certainty of the relationship (0.0 to 1.0) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_tag */
+
+create table e_tag (
+        e_tag_id                              integer  not null,       /* ID of the tag --  */
+        p_partner_key                         char(10)  not null,      /* ID of the partner that has been thusly tagged --  */
+        e_tag_strength                        float  not null,         /* The strength of the tag (-1.0 to 1.0) - negative values mean disinterest, etc. --  */
+        e_tag_certainty                       float  not null,         /* The certainty of the tag (0.0 to 1.0) --  */
+        e_tag_volatility                      char(1)  not null,       /* The volatility of the tag: (P)ersistent - created by a user, (D)erived from other data, or merely (I)mplied from other tags. --  */
+        e_tag_origin                          varchar(8)  null,        /* If the tag was derived from other data, this is the type of the source of that data. Values for this are not yet defined. --  */
+        e_tag_comments                        varchar(255)  null,      /* Comments about this tag --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_tag_activity */
+
+create table e_tag_activity (
+        e_tag_activity_group                  integer  not null,       /* The group used for tag activity aggregation. --  */
+        e_tag_activity_id                     integer  not null,       /* ID of the activity item --  */
+        e_tag_id                              integer  not null,       /* ID of the tag --  */
+        p_partner_key                         char(10)  not null,      /* ID of the partner --  */
+        e_tag_strength                        float  not null,         /* The strength of the tag (-1.0 to 1.0) - negative values mean disinterest, etc. --  */
+        e_tag_certainty                       float  not null,         /* The certainty of the tag (0.0 to 1.0) --  */
+        e_tag_volatility                      char(1)  not null,       /* The volatility of the tag: (P)ersistent - created by a user, (D)erived from other data, or merely (I)mplied from other tags. --  */
+        e_tag_origin                          varchar(8)  null,        /* If the tag was derived from other data, this is the type of the source of that data. Values for this are not yet defined. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_document_type */
+
+create table e_document_type (
+        e_doc_type_id                         integer  not null,       /* The ID of the document type --  */
+        e_parent_doc_type_id                  integer  null,           /* The parent (more general) document type, for hierarchical organization of document types --  */
+        e_doc_type_label                      varchar(40)  not null,   /* A short label for the document type --  */
+        e_doc_type_desc                       varchar(255)  null,      /* A long description of the document type --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_document */
+
+create table e_document (
+        e_document_id                         integer  not null,       /* The ID of the document. --  */
+        e_doc_type_id                         integer  not null,       /* The ID of the document type --  */
+        e_title                               varchar(80)  not null,   /* The title of this document. --  */
+        e_orig_filename                       varchar(255)  not null,  /* The original filename of the document when it was uploaded --  */
+        e_current_folder                      varchar(255)  not null,  /* The pathname of the folder the document is currently stored in. --  */
+        e_current_filename                    varchar(255)  not null,  /* The current filename of the document, as stored. --  */
+        e_uploading_collaborator              char(10)  not null,      /* The collaborator or collaborator group that uploaded the document --  */
+        e_workflow_instance_id                integer  null,           /* The workflow instance of this document, if any. This is used for workflow state chains triggered by the document upload itself rather than by the association of the document with a particular partner. --  */
+        e_image_width                         integer  null,           /* The width, in pixels, of the image (if this file is am image) --  */
+        e_image_height                        integer  null,           /* The height, in pixels, of the image (if this file is am image) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_document_comment */
+
+create table e_document_comment (
+        e_document_id                         integer  not null,       /* The ID of the document. --  */
+        e_doc_comment_id                      integer  not null,       /* The ID of the comment --  */
+        e_comments                            varchar(999)  not null,  /* Comments made about the document --  */
+        e_collaborator                        char(10)  not null,      /* The collaborator making the comments --  */
+        e_workflow_state_id                   integer  null,           /* The workflow state, if any, of the document at the time the comments were made. --  */
+        e_target_collaborator                 char(10)  null,          /* A target collaborator (or collaborator group) for the comments. If set, it will create a to-do item for that collaborator. --  */
+        e_target_review_period                integer  null,           /* The number of days the collaborator has to review the comments and acknowledge them (this sets a due date for the to-do item mentioned above). --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_partner_document */
+
+create table e_partner_document (
+        e_document_id                         integer  not null,       /* The ID of the document. --  */
+        p_partner_key                         char(10)  not null,      /* The partner that is associated with the document --  */
+        e_pardoc_assoc_id                     integer  not null,       /* A unique ID identifying the association of a document with a partner --  */
+        e_engagement_id                       integer  null,           /* The current engagement ID (track instance) associated with this document --  */
+        e_workflow_instance_id                integer  null,           /* The current workflow instance associated with this document, if any --  */
+        e_image_offset_x                      integer  null,           /* The offset to the point in the image where we want to display --  */
+        e_image_offset_y                      integer  null,           /* The offset to the point in the image where we want to display --  */
+        e_image_scale_height                  integer  null,           /* The scaling height of the image (scale width is set automatically) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_workflow_type */
+
+create table e_workflow_type (
+        e_workflow_id                         integer  not null,       /* The ID of the workflow --  */
+        e_workflow_label                      varchar(40)  not null,   /* A short label for the workflow --  */
+        e_workflow_desc                       varchar(255)  null,      /* A long description of the workflow --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_workflow_type_step */
+
+create table e_workflow_type_step (
+        e_workflow_step_id                    integer  not null,       /* A particular workflow step --  */
+        e_workflow_id                         integer  not null,       /* A particular workflow --  */
+        e_workflow_step_label                 varchar(40)  not null,   /* A short label for the workflow step --  */
+        e_workflow_step_desc                  varchar(255)  null,      /* A long description of the workflow step --  */
+        e_workflow_step_trigger               integer  null,           /* What triggers this workflow state. See the trigger type, below, for the context for this number (e.g. workflow step id or document id) --  */
+        e_workflow_step_trigger_type          varchar(4)  null,        /* The type of trigger for this workflow state: STEP for being triggered by another step, DOC for being triggered by the upload of a document type, DOCP for triggering when a document is associated with a partner. Other types will be added in the future. --  */
+        e_collaborator                        char(10)  not null,      /* The collaborator or collaborator group that is responsible for handling this workflow step. --  */
+        e_workflow_step_days                  integer  null,           /* The number of days the collaborator or collab group has to handle a document in this workflow step. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_workflow */
+
+create table e_workflow (
+        e_workflow_instance_id                integer  not null,       /* A particular workflow in progress --  */
+        e_workflow_id                         integer  not null,       /* The workflow that is in progress --  */
+        e_workflow_start                      datetime  not null,      /* The starting date of the entire workflow --  */
+        e_workflow_trigger_id                 integer  null,           /* The ID of the object triggering the entire workflow to start --  */
+        e_workflow_trigger_type               varchar(4)  null,        /* The type of the trigger for the workflow, such as DOC or DOCP --  */
+        e_workflow_step_id                    integer  not null,       /* The current step in the workflow that we are at --  */
+        e_workflow_step_start                 datetime  not null,      /* The starting date of the current workflow step --  */
+        e_workflow_step_trigger_id            integer  null,           /* The ID of the workflow step that triggered this step to begin --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_collaborator_type */
+
+create table e_collaborator_type (
+        e_collab_type_id                      integer  not null,       /* The collaboration type ID --  */
+        e_collab_type_label                   varchar(40)  not null,   /* A short collaboration type label --  */
+        e_collab_type_desc                    varchar(255)  null,      /* A description of this collaboration type --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_collaborator */
+
+create table e_collaborator (
+        e_collaborator                        char(10)  not null,      /* The ID (partner key) of the collaborator --  */
+        p_partner_key                         char(10)  not null,      /* The id (partner key) of the partner who is engaging --  */
+        e_collab_type_id                      integer  not null,       /* The collaboration type ID --  */
+        e_silence_interval                    integer  null,           /* The number of days without communication FROM a partner before a task item is generated for re-contacting the partner. Communication here can include all non-note contact history types, as well as financial gifts received. --  */
+        e_recontact_interval                  integer  null,           /* Assuming the e_silence_interval, above, is met, this is the number of days since OUR last communication TO the partner before another task item is generated to re-contact the partner --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_todo_type */
+
+create table e_todo_type (
+        e_todo_type_id                        integer  not null,       /* The todo type ID --  */
+        e_todo_type_label                     varchar(40)  not null,   /* A short todo type label --  */
+        e_todo_type_desc                      varchar(255)  null,      /* A description of this todo type --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_todo */
+
+create table e_todo (
+        e_todo_id                             integer  not null,       /* The todo ID --  */
+        e_todo_type_id                        integer  not null,       /* The todo type ID --  */
+        e_todo_desc                           varchar(255)  not null,  /* The description of this todo --  */
+        e_todo_comments                       varchar(900)  null,      /* Misc comments about this todo item --  */
+        e_todo_status                         char(1)  not null,       /* To-do item status: (I)ncomplete, (C)omplete, or (X) for canceled. --  */
+        e_todo_completion_date                datetime  null,          /* Completion date for a To-do that has been completed. --  */
+        e_todo_canceled_date                  datetime  null,          /* Cancellation date for a To-do that has been canceled. --  */
+        e_todo_due_date                       datetime  null,          /* Due date for this to-do item --  */
+        e_todo_collaborator                   char(10)  not null,      /* The collaborator that needs to do this todo item --  */
+        e_todo_partner                        char(10)  null,          /* The engaging partner that this todo relates to --  */
+        e_todo_engagement_id                  integer  null,           /* The engagement ID, if any, that this todo relates to --  */
+        e_todo_document_id                    integer  null,           /* The document ID, if any, that this todo relates to --  */
+        e_todo_req_item_id                    integer  null,           /* The requirement item ID, if any, that this todo relates to --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_data_item_type */
+
+create table e_data_item_type (
+        e_data_item_type_id                   integer  not null,       /* The data item type ID --  */
+        e_parent_data_item_type_id            integer  null,           /* The parent data item type ID (hierarchy reference) --  */
+        e_data_item_type_label                varchar(40)  not null,   /* A short data item type label --  */
+        e_data_item_type_desc                 varchar(255)  null,      /* A description of this data item type --  */
+        e_data_item_type_highlight            integer  null,           /* Set to 0 or null to not highlight this item, or 1 to highlight it on the profile page --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_data_item_group */
+
+create table e_data_item_group (
+        e_data_item_group_id                  integer  not null,       /* The data item group ID --  */
+        e_data_item_type_id                   integer  null,           /* The data item type hierarchy that this group relates to --  */
+        e_data_item_group_name                varchar(80)  not null,   /* The name of this actual group --  */
+        e_data_item_group_desc                varchar(255)  null,      /* A description of this group --  */
+        p_partner_key                         char(10)  not null,      /* The engaging partner that this data item group is about --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_data_item */
+
+create table e_data_item (
+        e_data_item_id                        integer  not null,       /* The data item ID --  */
+        e_data_item_type_id                   integer  not null,       /* The data item type ID --  */
+        e_data_item_group_id                  integer  not null,       /* The data item group ID --  */
+        e_data_item_value                     varchar(999)  not null,  /* The value of this data item. --  */
+        e_data_item_highlight                 integer  null,           /* Set to 0 or null to not highlight this item, or 1 to highlight it on the profile page. Inherited from the data item type, but changeable for the particular data item. --  */
+        p_partner_key                         char(10)  not null,      /* The engaging partner that this data item is about (denormalized from the data item group table) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_highlights */
+
+create table e_highlights (
+        e_highlight_user                      varchar(20)  not null,   /* The user that is viewing highlights. --  */
+        e_highlight_partner                   char(10)  not null,      /* The partner for whom highlights are being viewed. --  */
+        e_highlight_id                        varchar(64)  not null,   /* A unique name to identify the specific highlight. --  */
+        e_highlight_name                      varchar(64)  not null,   /* The name of the data being displayed --  */
+        e_highlight_type                      varchar(20)  not null,   /* The general type of the data being displayed --  */
+        e_highlight_data                      varchar(900)  not null,  /* The data to be displayed --  */
+        e_highlight_reference_info            varchar(255)  null,      /* Reference info to underlying data (e.g., primary key of underlying record) --  */
+        e_highlight_precedence                float  not null,         /* A value between 0.0 and infinity, providing the precedence level of this information. The results will be sorted by this value descending. --  */
+        e_highlight_strength                  float  not null,         /* The strength/level of this data (mainly used for tags). 0.0 renders with a white background. (x > 0.0) with various shades of green, and (x < 0.0) with various shades of red. --  */
+        e_highlight_certainty                 float  not null,         /* The certainty of this data (mainly used for tags). (0.7 <= x < 1.0) renders normally. (0.3 <= x < 0.7) renders with a question mark. (0.0 <= x < 0.3) renders with two question marks. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_data_highlight */
+
+create table e_data_highlight (
+        e_highlight_subject                   varchar(40)  not null,   /* The user, group, and/or role (u:username, g:groupname, r:rolename, or ur:username:rolename), or * for a system-wide default --  */
+        e_highlight_object_type               varchar(20)  not null,   /* The type of object being highlighted ("Address", "Tag", "Relationship", "Note", "ToDo", or DataItemTypeID) --  */
+        e_highlight_object_id                 varchar(32)  not null,   /* The specific object ID being highlighted, or "*" to apply to all objects of this type --  */
+        e_highlight_precedence                float  not null,         /* An value increasing (x > 1.0) or decreasing (0.0 < x < 1.0) the precedence of this information. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_ack */
+
+create table e_ack (
+        e_ack_id                              integer  not null,       /* The unique ID of this acknowledgement --  */
+        e_object_type                         varchar(32)  not null,   /* The type of object that has been acknowledged --  */
+        e_object_id                           varchar(32)  not null,   /* A unique ID identifying the object acknowledged --  */
+        e_ack_type                            integer  not null,       /* The type of acknowledgement (viewed, prayed, comment, like, etc.) --  */
+        e_ack_comments                        varchar(900)  null,      /* A unique ID identifying the object acknowledged --  */
+        e_whom                                char(10)  not null,      /* The collaborator who acknowledged the object --  */
+        p_dn_partner_key                      char(10)  null,          /* (denormalization) the partner key of the person who created the object being acknowledged. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_ack_type */
+
+create table e_ack_type (
+        e_ack_type                            integer  not null,       /* The unique ID of this ack type --  */
+        e_ack_type_label                      varchar(40)  not null,   /* The short name of the acknowledgement type --  */
+        e_ack_type_desc                       varchar(255)  not null,  /* The description of the acknowledgement type --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_ack_type, 'Prayed' as e_ack_type_label, 'Prayed' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_ack_type, 'Reply' as e_ack_type_label, 'Reply' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_ack_type, 'Comment' as e_ack_type_label, 'Comment' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+
+
+/* e_trackactivity */
+
+create table e_trackactivity (
+        p_partner_key                         char(10)  not null,      /* The partner whose track information we are displaying --  */
+        e_username                            varchar(20)  not null,   /* The username of the user viewing the partner --  */
+        e_sort_key                            varchar(32)  not null,   /* Controls the display order (steps by sequence, requirements by step sequence and req ID) --  */
+        e_track_id                            integer  not null,       /* The ID of the track being displayed --  */
+        e_step_id                             integer  not null,       /* The ID of the step being displayed --  */
+        e_object_type                         char(1)  not null,       /* 'S' for step and 'R' for requirement --  */
+        e_completion_status                   char(1)  not null,       /* I/C/E for steps, I/C/W for requirements --  */
+        e_object_name                         varchar(32)  not null,   /* The "name" of the step or requirement being displayed (for linkage to a data editing form) --  */
+        e_object_label                        varchar(64)  not null,   /* The main visual label for the step or requirement --  */
+        e_object_desc                         varchar(255)  not null,  /* The brief description of the step or requirement --  */
+        e_object_comm                         varchar(900)  null,      /* Any comments associated with the step or requirement --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -542,7 +1319,7 @@ create table r_group_report_param (
         p_recipient_partner_key               char(10)  not null,      /* partner key of report recipient --  */
         r_report_id                           integer  not null,       /* represents a unique report of this type received by this partner (can be many) --  */
         r_param_name                          varchar(64)  not null,   /* name of the parameter --  */
-        r_param_value                         varchar(1024)  null,     /* value for the parameter (in string format). --  */
+        r_param_value                         varchar(900)  null,      /* value for the parameter (in string format). --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -746,12 +1523,12 @@ create table a_account_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "IFTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Fund Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "IFTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Fund Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ICTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-CostCtr Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ICTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-CostCtr Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ILTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Ledger Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ILTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Ledger Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "IFTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Fund Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "IFTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Fund Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ICTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-CostCtr Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ICTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-CostCtr Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ILTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Ledger Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ILTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Ledger Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_account_category */
@@ -846,9 +1623,9 @@ create table a_period_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "GIFT" as a_period_usage_code, "Gift Entry Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "CURR" as a_period_usage_code, "General Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "YEAR" as a_period_usage_code, "General Default Year" as a_period_usage_desc, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "GIFT" as a_period_usage_code, "Gift Entry Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "CURR" as a_period_usage_code, "General Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "YEAR" as a_period_usage_code, "General Default Year" as a_period_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_ledger */
@@ -1502,11 +2279,11 @@ create table a_receipt_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "I" as a_receipt_type, "Immediate" as a_receipt_type_desc, 1 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "N" as a_receipt_type, "None" as a_receipt_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "A" as a_receipt_type, "Annual" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "Q" as a_receipt_type, "Quarterly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "M" as a_receipt_type, "Monthly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'gbeeley' as s_created_by,'3-14-08' as s_date_modified, 'gbeeley' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "I" as a_receipt_type, "Immediate" as a_receipt_type_desc, 1 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "N" as a_receipt_type, "None" as a_receipt_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "A" as a_receipt_type, "Annual" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "Q" as a_receipt_type, "Quarterly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "M" as a_receipt_type, "Monthly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_subtrx_gift */
@@ -1674,6 +2451,30 @@ create table a_motivational_code (
 );
 
 
+/* a_giving_pattern */
+
+create table a_giving_pattern (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
+        p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
+        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of money the donor is giving --  */
+        a_interval                            integer  not null,       /* Month interval at which the donor is giving (1=monthly, 3=quarterly, 12=annually) --  */
+        a_is_active                           bit  default 1,          /* Is this giving pattern an active one? --  */
+        a_start_date                          datetime  not null,      /* Date that this donor began this current giving pattern --  */
+        a_end_date                            datetime  null,          /* Date that we expect the donor to end this giving pattern (NOT A LEGAL OBLIGATION ON THE DONOR'S PART) --  */
+        a_evaluation_date                     datetime  not null,      /* Date that this giving pattern was determined --  */
+        a_comment                             varchar(255)  null,      /* Giving pattern comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* a_subtrx_cashdisb */
 
 create table a_subtrx_cashdisb (
@@ -1775,6 +2576,79 @@ create table a_subtrx_cashxfer (
 );
 
 
+/* i_eg_gift_import */
+
+create table i_eg_gift_import (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
+        i_eg_gift_uuid                        char(36)  not null,      /* eGiving.com UUID for the gift record (xml:gift-id) --  */
+        i_eg_trx_uuid                         char(36)  not null,      /* eGiving.com UUID for the transaction record (xml:txn-id) --  */
+        i_eg_donor_uuid                       char(36)  not null,      /* eGiving.com UUID for the donor (xml:giver-id) --  */
+        i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) (xml:status) --  */
+        i_eg_returned_status                  varchar(16)  null,       /* Reason for a return (xml:returned-status) --  */
+        i_eg_processor                        varchar(80)  not null,   /* Name of payment processor (xml:processor) --  */
+        i_eg_donor_name                       varchar(80)  not null,   /* Name (given name and surname) of the donor (xml:name) --  */
+        i_eg_donor_addr1                      varchar(80)  null,       /* Address line 1 of donor. (xml:address-line-1) --  */
+        i_eg_donor_addr2                      varchar(80)  null,       /* Address line 2 of donor. (xml:address-line-2) --  */
+        i_eg_donor_city                       varchar(80)  null,       /* City of donor. (xml:city) --  */
+        i_eg_donor_state                      varchar(80)  null,       /* State of donor. (xml:state) --  */
+        i_eg_donor_postal                     varchar(80)  null,       /* Postal Code of donor. (xml:postal) --  */
+        i_eg_donor_country                    varchar(80)  null,       /* Country of donor. (xml:country) --  */
+        i_eg_donor_phone                      varchar(80)  null,       /* Phone number of donor. (xml:phone) --  */
+        i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. (xml:email) --  */
+        i_eg_gift_amount                      decimal(14,4)  not null,
+                                                                      /* amount of gift (xml:amount) --  */
+        i_eg_gift_pmt_type                    varchar(16)  not null,   /* Payment type (xml:payment-type) --  */
+        i_eg_gift_lastfour                    char(4)  not null,       /* Last four digits of account number (xml:last-four) --  */
+        i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval (xml:recurring-interval) --  */
+        i_eg_gift_date                        datetime  not null,      /* Date of gift (xml:given-on) --  */
+        i_eg_gift_trx_date                    datetime  null,          /* Date of transaction (xml:txn-date) --  */
+        i_eg_gift_settlement_date             datetime  null,          /* Date of payment settlement (xml:settlement-date) --  */
+        i_eg_receipt_desired                  varchar(255)  null,      /* The "Send My Receipt:" field --  */
+        i_eg_anonymous                        varchar(255)  null,      /* The "Anonymous Gift:" field --  */
+        i_eg_prayforme                        varchar(255)  null,      /* The "May We Pray For You?" field --  */
+        i_eg_desig_name                       varchar(80)  not null,   /* Gift designation/purpose (xml:designation) --  */
+        i_eg_desig_notes                      varchar(255)  null,      /* Notes provided by donor (xml:notes) --  */
+        i_eg_net_amount                       decimal(14,4)  null,     /* Net gift (less fees for this transaction) (xml:net) --  */
+        i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account (xml:deposit-date) --  */
+        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. (xml:deposit-id) --  */
+        i_eg_deposit_gross_amt                decimal(14,4)  null,     /* gross amount of the deposit before fees (xml:deposit-gross) --  */
+        i_eg_deposit_amt                      decimal(14,4)  null,     /* net amount of the deposit (xml:deposit-net) --  */
+        p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
+        i_eg_donormap_confidence              integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
+        i_eg_donormap_future                  integer  null,           /* Future applicability of donor mapping: 0=low, 1=medium, 2=high --  */
+        a_cost_center                         char(20)  null,          /* Kardia fund assigned by import process --  */
+        i_eg_fundmap_confidence               integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
+        i_eg_fundmap_future                   integer  null,           /* Future applicability of the fund mapping: 0=low, 1=medium, 2=high --  */
+        a_account_code                        char(16)  null,          /* Kardia GL account code assigned by import process --  */
+        i_eg_acctmap_confidence               integer  null,           /* Confidence of current mapping: 0=low, 1=medium, 2=high --  */
+        i_eg_acctmap_future                   integer  null,           /* Future usability of the account mapping: 0=low, 1=medium, 2=high --  */
+        a_batch_number                        integer  null,           /* Kardia GL batch used to process this gift record --  */
+        a_batch_number_fees                   integer  null,           /* Kardia GL batch used to process the fees for this gift record --  */
+        a_batch_number_deposit                integer  null,           /* Kardia GL batch used to process the deposit for this gift record --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* i_eg_giving_url */
+
+create table i_eg_giving_url (
+        a_ledger_number                       char(10)  not null,      /* ledger number for the fund --  */
+        a_cost_center                         char(20)  not null,      /* Kardia fund, or * to give a default URL for all funds in the ledger. --  */
+        i_eg_url                              varchar(255)  not null,  /* URL a donor can visit to give an online donation. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* c_message */
 
 create table c_message (
@@ -1817,6 +2691,20 @@ create table c_member (
         c_status                              char(1)  not null,       /* The user's status in the chat. 'I' is unanswered invitation, 'O' is in the chat (open chat), and 'C' is closed chat. This record is deleted if the user declines the invitation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /* Here, this is used for the person that invited them to the chat. --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_config */
+
+create table s_config (
+        s_config_name                         char(16)  not null,      /* configuration parameter name --  */
+        s_config_value                        varchar(900)  null,      /* configuration parameter value --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
         s_modified_by                         varchar(20)  not null,   /*  --  */
         __cx_osml_control                     varchar(255)  null       /*  --  */
@@ -1961,6 +2849,24 @@ create table s_sec_endorsement_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:sys_admin" as s_endorsement, "System Admin" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl_entry" as s_endorsement, "Enter GL Journal Batches" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl_manage" as s_endorsement, "Manage GL" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb" as s_endorsement, "View Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb_entry" as s_endorsement, "Enter Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb_manage" as s_endorsement, "Manage Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift" as s_endorsement, "View Gift Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_amt" as s_endorsement, "View Gift Amounts" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_entry" as s_endorsement, "Enter Gift Batches" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_manage" as s_endorsement, "Manage Gift Receipting" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists" as s_endorsement, "View Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists_manage" as s_endorsement, "Manage Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:ptnr_manage" as s_endorsement, "Manage Partner System" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm" as s_endorsement, "View CRM Data" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm_entry" as s_endorsement, "Update CRM Info" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm_manage" as s_endorsement, "Manage CRM System" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:pay_manage" as s_endorsement, "Manage Payroll" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl" as s_endorsement, "View GL Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* s_sec_endorsement_context */
@@ -1975,6 +2881,7 @@ create table s_sec_endorsement_context (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into s_sec_endorsement_context (s_context,s_context_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia" as s_context, "Kardia" as s_context_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* s_mykardia */

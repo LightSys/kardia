@@ -82,6 +82,10 @@ alter table p_partner_relationship
 	drop primary key;
 
 
+alter table p_partner_relationship_type
+	drop primary key;
+
+
 alter table p_church
 	drop primary key;
 
@@ -150,11 +154,331 @@ alter table p_partner_sort_tmp
 	drop primary key;
 
 
+alter table p_acquisition_code
+	drop primary key;
+
+
+alter table p_partner_search
+	drop primary key;
+
+
+alter table p_partner_search_stage
+	drop primary key;
+
+
+alter table p_partner_search_results
+	drop primary key;
+
+
+alter table p_search_stage_criteria
+	drop primary key;
+
+
 alter table m_list
 	drop primary key;
 
 
 alter table m_list_membership
+	drop primary key;
+
+
+alter table e_contact_autorecord
+	drop primary key;
+
+
+alter table e_contact_history_type
+	drop primary key;
+
+
+alter table e_contact_history
+	drop primary key;
+
+
+alter table e_contact_history
+	drop index e_cnt_hist_type_idx;
+
+
+alter table e_contact_history
+	drop index e_cnt_hist_par_idx;
+
+
+alter table e_contact_history
+	drop index e_cnt_hist_locpar_idx;
+
+
+alter table e_contact_history
+	drop index e_cnt_hist_whom_idx;
+
+
+alter table e_activity
+	drop primary key;
+
+
+alter table e_activity
+	drop index e_act_type_idx;
+
+
+alter table e_activity
+	drop index e_act_par_idx;
+
+
+alter table e_activity
+	drop index e_act_sort_idx;
+
+
+alter table e_engagement_track
+	drop primary key;
+
+
+alter table e_engagement_track
+	drop index e_trk_name_idx;
+
+
+alter table e_engagement_track_collab
+	drop primary key;
+
+
+alter table e_engagement_step
+	drop primary key;
+
+
+alter table e_engagement_step
+	drop index e_step_name_idx;
+
+
+alter table e_engagement_step_collab
+	drop primary key;
+
+
+alter table e_engagement_step_req
+	drop primary key;
+
+
+alter table e_partner_engagement
+	drop primary key;
+
+
+alter table e_partner_engagement
+	drop index e_pareng_trackstep_idx;
+
+
+alter table e_partner_engagement
+	drop index e_pareng_start_idx;
+
+
+alter table e_partner_engagement_req
+	drop primary key;
+
+
+alter table e_tag_type
+	drop primary key;
+
+
+alter table e_tag_type_relationship
+	drop primary key;
+
+
+alter table e_tag
+	drop primary key;
+
+
+alter table e_tag_activity
+	drop primary key;
+
+
+alter table e_tag_activity
+	drop index e_tagact_tagid_idx;
+
+
+alter table e_tag_activity
+	drop index e_tagact_ptnr_idx;
+
+
+alter table e_document_type
+	drop primary key;
+
+
+alter table e_document_type
+	drop index e_doctype_parent_idx;
+
+
+alter table e_document
+	drop primary key;
+
+
+alter table e_document
+	drop index e_doc_work_idx;
+
+
+alter table e_document
+	drop index e_doc_type_idx;
+
+
+alter table e_document
+	drop index e_doc_curpath_idx;
+
+
+alter table e_document_comment
+	drop primary key;
+
+
+alter table e_document_comment
+	drop index e_doccom_collab_idx;
+
+
+alter table e_document_comment
+	drop index e_doccom_tgtcollab_idx;
+
+
+alter table e_document_comment
+	drop index e_doccom_work_idx;
+
+
+alter table e_partner_document
+	drop primary key;
+
+
+alter table e_workflow_type
+	drop primary key;
+
+
+alter table e_workflow_type_step
+	drop primary key;
+
+
+alter table e_workflow_type_step
+	drop index e_workstep_type_idx;
+
+
+alter table e_workflow_type_step
+	drop index e_workstep_trig_idx;
+
+
+alter table e_workflow
+	drop primary key;
+
+
+alter table e_workflow
+	drop index e_workinst_type_idx;
+
+
+alter table e_workflow
+	drop index e_workinst_trig_idx;
+
+
+alter table e_workflow
+	drop index e_workinst_steptrig_idx;
+
+
+alter table e_collaborator_type
+	drop primary key;
+
+
+alter table e_collaborator
+	drop primary key;
+
+
+alter table e_collaborator
+	drop index e_collab_type_idx;
+
+
+alter table e_todo_type
+	drop primary key;
+
+
+alter table e_todo
+	drop primary key;
+
+
+alter table e_todo
+	drop index e_todo_type_idx;
+
+
+alter table e_todo
+	drop index e_todo_collab_idx;
+
+
+alter table e_todo
+	drop index e_todo_par_idx;
+
+
+alter table e_todo
+	drop index e_todo_eng_idx;
+
+
+alter table e_todo
+	drop index e_todo_doc_idx;
+
+
+alter table e_todo
+	drop index e_todo_reqitem_idx;
+
+
+alter table e_data_item_type
+	drop primary key;
+
+
+alter table e_data_item_type
+	drop index e_ditype_parent_idx;
+
+
+alter table e_data_item_group
+	drop primary key;
+
+
+alter table e_data_item_group
+	drop index e_digrp_type_idx;
+
+
+alter table e_data_item
+	drop primary key;
+
+
+alter table e_data_item
+	drop index e_dataitem_type_idx;
+
+
+alter table e_data_item
+	drop index e_dataitem_group_idx;
+
+
+alter table e_highlights
+	drop primary key;
+
+
+alter table e_highlights
+	drop index e_h_nt_idx;
+
+
+alter table e_data_highlight
+	drop primary key;
+
+
+alter table e_ack
+	drop primary key;
+
+
+alter table e_ack
+	drop index e_ack_obj_idx;
+
+
+alter table e_ack
+	drop index e_ack_par_idx;
+
+
+alter table e_ack
+	drop index e_ack_par2_idx;
+
+
+alter table e_ack
+	drop index e_ack_par3_idx;
+
+
+alter table e_ack_type
+	drop primary key;
+
+
+alter table e_trackactivity
 	drop primary key;
 
 
@@ -490,6 +814,10 @@ alter table a_motivational_code
 	drop index a_motiv_code_list;
 
 
+alter table a_giving_pattern
+	drop primary key;
+
+
 alter table a_subtrx_cashdisb
 	drop primary key;
 
@@ -514,6 +842,50 @@ alter table a_subtrx_cashxfer
 	drop primary key;
 
 
+alter table i_eg_gift_import
+	drop primary key;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_kdonor_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_edonor_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_kfund_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_efund_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_egift_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_edeposit_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_kgiftbatch_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_kfeebatch_idx;
+
+
+alter table i_eg_gift_import
+	drop index i_eg_kdepbatch_idx;
+
+
+alter table i_eg_giving_url
+	drop primary key;
+
+
 alter table c_message
 	drop primary key;
 
@@ -527,6 +899,10 @@ alter table c_chat
 
 
 alter table c_member
+	drop primary key;
+
+
+alter table s_config
 	drop primary key;
 
 

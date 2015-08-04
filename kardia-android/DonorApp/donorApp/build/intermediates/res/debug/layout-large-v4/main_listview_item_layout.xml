@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:orientation="horizontal" >
+
+    <!-- Amount -->
+    <TextView 
+        android:id="@+id/amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:textColor="#2ACA2D"
+        android:layout_alignLeft="@+id/text"
+        android:layout_marginLeft="100dp"
+        android:textSize="22sp" />
+     
+
+    <!-- The Title -->
+    <TextView 
+        android:id="@+id/subject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="35dp"
+        android:layout_marginLeft="25dp"
+        android:textSize="30sp" />
+
+    <!-- The Date -->
+
+    <TextView 
+        android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/subject"
+        android:layout_alignParentBottom="true"
+        android:textColor="#303030"
+        android:textSize="22sp" />
+    
+        <!-- Amount Text -->
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="250dp"
+        android:text="@string/amount"
+        android:textSize="22sp" />
+
+</RelativeLayout>
+<!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout-large/main_listview_item_layout.xml -->

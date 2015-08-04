@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<overlay id="kardia" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  
+	<!-- preferences window for Kardia todo import settings -->
+	<prefwindow id="MailPreferences">
+		<prefpane id="paneKardia" label="Kardia" image="chrome://kardia/content/images/prefs-image.png">
+			<preferences>
+				<preference id="extensions.kardia.importTodoAsEvent" name="extensions.kardia.importTodoAsEvent" type="string"/>
+				<preference id="extensions.kardia.showTodosWithNoDate" name="extensions.kardia.showTodosWithNoDate" type="bool"/>
+				<preference id="extensions.kardia.refreshInterval" name="extensions.kardia.refreshInterval" type="int"/>
+				<preference id="extensions.kardia.server" name="extensions.kardia.server" type="string"/>
+			</preferences>
+			<vbox>
+				<label value="Kardia Add-on Version: 1.03"/>
+				<hbox>
+					<vbox>
+						<spacer flex="1"/>
+						<label value="Import Kardia to-do items as"/>
+						<spacer flex="1"/>
+					</vbox>
+					<radiogroup orient="horizontal" preference="extensions.kardia.importTodoAsEvent" >
+						<radio label="events" value="e"/>
+						<radio label="tasks" value="t"/>
+					</radiogroup>
+				</hbox>
+				<checkbox label="Import Kardia to-do items that have no due date" preference="extensions.kardia.showTodosWithNoDate"/>
+				<hbox>
+					<vbox>
+						<spacer flex="1"/>
+						<label value="Refresh Kardia data every"/>
+						<spacer flex="1"/>
+					</vbox>
+					<textbox type="number" min="1" max="1440" increment="1" value="10" width="60px" preference="extensions.kardia.refreshInterval"/>
+					<vbox>
+						<spacer flex="1"/>
+						<label value="minutes"/>
+						<spacer flex="1"/>
+					</vbox>
+		 		</hbox>
+		 		<hbox>
+					<vbox>
+						<spacer flex="1"/>
+						<label value="Kardia server and port:"/>
+						<spacer flex="1"/>
+					</vbox>
+					<textbox preference="extensions.kardia.server" width="200px"/>
+				</hbox>
+			</vbox>
+		</prefpane>
+	</prefwindow>
+	
+</overlay>

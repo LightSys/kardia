@@ -1,0 +1,100 @@
+$Version=2$
+plugin_crm_timeline_NOTE "widget/component-decl"
+    {
+    width=434;
+    height=134;
+    icon = "/apps/kardia/images/tango/format-justify-left.png";
+    type = "NOTE";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-notes.svg";
+    iconbar_label = "Notes";
+    iconbar_sequence = 80;
+
+    partner_osrc "widget/parameter" { type=object; }
+    timeline_osrc "widget/parameter" { type=object; }
+    timeline_data_osrc "widget/parameter" { type=object; }
+    collaborator_osrc "widget/parameter" { type=object; }
+
+    timeline_notes_vbox "widget/vbox"
+	{
+	x=38; y=4;
+	width=388;
+	height=154;
+	spacing=5;
+
+	timeline_notes_osrc "widget/osrc"
+	    {
+	    hist_id "widget/parameter" { type=string; }
+	    sql = " select
+			*
+		    from
+			/apps/kardia/data/Kardia_DB/e_contact_history/rows ch
+		    where
+			:ch:e_contact_history_id = convert(integer,:parameters:hist_id)
+		    ";
+	    replicasize=2;
+	    readahead=2;
+
+	    link "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = timeline_osrc;
+		key_1 = hist_id;
+		target_key_1 = e_reference_info;
+		revealed_only = yes;
+		}
+
+	    timeline_notes_form "widget/form"
+		{
+		after_save "widget/connector" { event=DataSaved; target=timeline_data_osrc; action=Refresh; }
+		after_delete "widget/connector" { event=DataDeleted; target=timeline_data_osrc; action=Refresh; }
+
+		tnote_subj "widget/component" { field=e_subject; path="/sys/cmp/smart_field.cmp"; height=20; text="Subject:"; ctl_type=editbox; label_width=70; }
+		tnote_notes "widget/component" { field=e_notes; path="/sys/cmp/smart_field.cmp"; height=80; text="Notes:"; ctl_type=textarea; label_width=70; }
+		}
+	    }
+
+	btns "widget/hbox"
+	    {
+	    height=24;
+	    x=70;
+	    spacing=8;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=80;
+		text = "Save";
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+		enabled=runclient(:timeline_notes_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=timeline_notes_form; action=Save; }
+		}
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=80;
+		text = "Cancel";
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+		enabled=runclient(:timeline_notes_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=timeline_notes_form; action=Discard; }
+		}
+	    delete_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Delete this Note";
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+		enabled=runclient(:timeline_notes_form:is_editable);
+		
+		on_delete "widget/connector" { event=Click; target=timeline_notes_form; action=Delete; }
+		}
+	    }
+	}
+    }

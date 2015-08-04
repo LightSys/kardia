@@ -1,0 +1,873 @@
+$Version=2$
+config_tracks "widget/component-decl"
+    {
+    width = 1200;
+    height = 700;
+    widget_template="/apps/kardia/modules/crm/crm-dark.tpl";
+
+    Open "widget/component-decl-action" { }
+    onOpen "widget/connector" { event=Open; target=config_tracks_window; action=Open; IsModal=1; }
+
+    config_tracks_window "widget/childwindow"
+	{
+	width=1000; height=500;
+	x=100; y=100;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#101010";
+
+	ct_vbox "widget/vbox"
+	    {
+	    x=16; y=10; width=966; height=478;
+	    spacing=8;
+
+	    ct_title "widget/label" { height=16; text="Manage Tracks, Steps, and Requirements"; align=center; font_size=16; style=bold; }
+	    ct_sep "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+	    ct_sep2 "widget/autolayoutspacer" { height=1; }
+
+	    ct_hbox "widget/hbox"
+		{
+		height=406;
+		spacing=16;
+
+		vbox_left "widget/vbox"
+		    {
+		    width=312;
+		    spacing=8;
+
+		    track_list_label "widget/label" { height=12; text="Engagement Tracks:"; style=bold; align=center; }
+
+		    track_pane "widget/pane"
+			{
+			height=210;
+
+			track_pane_vbox "widget/vbox"
+			    {
+			    x=4; y=4; width=302; height=202;
+			    spacing=8;
+
+			    track_list_osrc "widget/osrc"
+				{
+				sql = "	select
+					    *
+					from
+					    /apps/kardia/data/Kardia_DB/e_engagement_track/rows t
+					order by
+					    :t:e_track_name
+					";
+				baseobj="/apps/kardia/data/Kardia_DB/e_engagement_track/rows";
+				readahead=20;
+				replicasize=20;
+				autoquery=onfirstreveal;
+
+				track_list_table "widget/table"
+				    {
+				    height=170;
+				    min_rowheight=16;
+				    max_rowheight=64;
+				    initial_selection=noexpand;
+				    nodata_message = "no tracks yet - please add one";
+
+				    ct_t_icon "widget/table-column" { value=runclient("/apps/kardia/images/icons/ionicons-track.svg"); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
+				    ct_t_trkname "widget/table-column" { value=runclient(:track_list_osrc:e_track_name); style=bold; width=128; }
+				    ct_t_trkdesc "widget/table-column" { value=runclient(:track_list_osrc:e_track_description); font_size=9; wrap=yes; width=180; }
+
+				    ct_t_detail "widget/table-row-detail"
+					{
+					width=302; height=84;
+
+					ct_edit_form "widget/form"
+					    {
+					    interlock_with=ct_addnew_form,tc_addnew_form,tc_edit_form,cs_addnew_form,cs_edit_form,sc_edit_form,sc_addnew_form,req_edit_form,req_addnew_form;
+
+					    //on_modify_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+					    //on_delete_load_dd "widget/connector" { event=DataDeleted; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+
+					    ct_t_detail_vbox "widget/vbox"
+						{
+						x=24; y=2;
+						width=268; height=74;
+						spacing=4;
+
+						ct_sepbar "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+						ct_spacer "widget/autolayoutspacer" { height=1; }
+
+						ct_label "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_track_name; text="Track Name:"; height=20; label_width=90; }
+						ct_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_track_description; text="Description:"; height=20; label_width=90; }
+						ct_act_color_hbox "widget/hbox"
+						    {
+						    height=20;
+						    spacing=0;
+						    ct_color "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_track_color; text="Color:"; height=20; label_width=90; width=156; }
+						    ct_active "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=e_track_status; text="Active?"; height=20; label_width=60; width=112; sql="select label='Yes', value='A'; select label='No', value='O'"; }
+						    //save_tag "widget/component" { width=18; path="/sys/cmp/save_btn.cmp"; object_name="Track"; }
+						    //cancel_tag "widget/component" { width=18; path="/sys/cmp/cancel_btn.cmp"; object_name="Track"; }
+						    //delete_tag "widget/component" { width=18; path="/sys/cmp/delete_btn.cmp"; object_name="Track"; }
+						    }
+						ct_edit_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+						}
+					    }
+					}
+				    }
+
+				ct_addnew_hbox "widget/hbox"
+				    {
+				    height=24;
+				    spacing=8;
+				    align=center;
+
+				    ct_addnew_form "widget/form"
+					{
+					allow_view = no;
+					allow_query = no;
+					allow_new = yes;
+
+					//on_new_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+
+					ct_addnew_editbox "widget/component"
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    ctl_type=editbox;
+					    field=e_track_name;
+					    empty_desc='track name';
+					    width=220;
+					    text="Add Track:";
+					    label_width=70;
+					    }
+					
+					ct_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					ct_new_trkdesc "widget/variable" { fieldname=e_track_description; tagdesc_hints "widget/hints" { default=runclient(''); } }
+					ct_new_active "widget/variable" { fieldname=e_track_status; active_hints "widget/hints" { default=runclient('A'); } }
+					ct_new_color "widget/variable" { fieldname=e_track_color; color_hints "widget/hints" { default=runclient('gray'); } }
+					}
+				    }
+				}
+			    }
+			}
+
+		    track_sep "widget/autolayoutspacer" { height=2; }
+
+		    track_collab_label "widget/label" { height=12; value=runclient("Collaborators for Track " + :track_list_osrc:e_track_name + ":"); style=bold; fgcolor=white; align=center; }
+
+		    tcoll_list_osrc "widget/osrc"
+			{
+			sql = "	select
+				    partnername = condition(char_length(:p:p_org_name) > 1, :p:p_org_name, isnull(condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ', '') + isnull(:p:p_surname,'')),
+				    :e_track_id,
+				    :p_collab_partner_key,
+				    :e_collab_type_id,
+				    e_collab_type_desc = (select :e_collab_type_desc from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows et where :et:e_collab_type_id = :tc:e_collab_type_id),
+				    :e_comments,
+				    :s_date_created,
+				    :s_created_by,
+				    :s_date_modified,
+				    :s_modified_by,
+				    img = isnull( ( select
+						path = :d:e_current_folder + '/' + :d:e_current_filename
+					    from
+						/apps/kardia/data/Kardia_DB/e_document/rows d,
+						/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+						/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+					    where
+						:dt:e_doc_type_label = 'Profile Photo' and
+						:d:e_doc_type_id = :dt:e_doc_type_id and
+						:pd:e_document_id = :d:e_document_id and
+						:pd:p_partner_key = :p:p_partner_key
+					    order by
+						:pd:s_date_modified desc
+					    limit
+						1
+					    ), '/apps/kardia/images/artwork/persona.png')
+				from
+				    identity /apps/kardia/data/Kardia_DB/e_engagement_track_collab/rows tc,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p
+				where
+				    :p:p_partner_key = :tc:p_collab_partner_key
+				";
+			baseobj="/apps/kardia/data/Kardia_DB/e_engagement_track_collab/rows";
+			readahead=20;
+			replicasize=20;
+			autoquery=never;
+
+			tcoll_trk_link "widget/rule"
+			    {
+			    ruletype=osrc_relationship;
+			    target=track_list_osrc;
+			    key_1=e_track_id;
+			    target_key_1=e_track_id;
+			    master_null_action=norecs;
+			    }
+
+			tc_addnew_pane "widget/pane"
+			    {
+			    height=138;
+
+			    tc_pane_vbox "widget/vbox"
+				{
+				x=4; y=4; width=302; height=128;
+				spacing=8;
+
+				tcoll_list_table "widget/table"
+				    {
+				    height=96;
+				    min_rowheight=16;
+				    max_rowheight=64;
+				    initial_selection=noexpand;
+				    nodata_message = "no collaborators yet";
+
+				    tc_t_icon "widget/table-column" { value=runclient(:tcoll_list_osrc:img); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
+				    tc_t_collabname "widget/table-column" { value=runclient(:tcoll_list_osrc:partnername); style=bold; width=140; }
+				    tc_t_collabdesc "widget/table-column" { value=runclient(:tcoll_list_osrc:e_collab_type_desc); width=168; }
+
+				    tc_t_detail "widget/table-row-detail"
+					{
+					width=302; height=36;
+
+					tc_edit_form "widget/form"
+					    {
+					    tc_edit_vbox "widget/vbox"
+						{
+						x=24; y=4; width=270; height=24;
+						spacing=4;
+
+						tc_remove_btn "widget/textbutton"
+						    {
+						    width=100;
+						    height=24;
+						    text="Remove";
+
+						    on_remove "widget/connector" { event=Click; target=tc_edit_form; action=Delete; }
+						    }
+						}
+					    }
+					}
+				    }
+
+				tc_addnew_hbox "widget/hbox"
+				    {
+				    height=24;
+				    spacing=8;
+				    align=center;
+
+				    tc_addnew_form "widget/form"
+					{
+					allow_view = no;
+					allow_query = no;
+					allow_new = yes;
+
+					//on_new_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+
+					tc_addnew_collabid "widget/component"
+					    {
+					    width=178;
+					    path="/apps/kardia/modules/base/editbox_table.cmp";
+					    field=p_collab_partner_key;
+					    text='Add:';
+					    label_width=40;
+					    popup_width=380;
+					    popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
+					    search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+					    key_name="p_partner_key";
+					    object_name="Partner";
+					    popup_text="Select a Partner:";
+					    empty_desc='search for person';
+
+					    collab_hints "widget/hints" { style=applyonchange; }
+					    }
+
+					tc_addnew_collabtype "widget/dropdown"
+					    {
+					    width=114;
+					    height=24;
+					    fieldname=e_collab_type_id;
+					    numdisplay=10;
+					    mode=dynamic_server;
+					    sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label";
+					    }
+
+					tc_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					tc_new_comm "widget/variable" { fieldname=e_comments; comm_hints "widget/hints" { default=runclient(''); } }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+
+		vbox_middle "widget/vbox"
+		    {
+		    width=310;
+		    spacing=8;
+
+		    step_list_label "widget/label" { height=12; value=runclient("Engagement Steps for " + :track_list_osrc:e_track_name + ":"); style=bold; align=center; }
+
+		    step_pane "widget/pane"
+			{
+			height=210;
+
+			step_pane_vbox "widget/vbox"
+			    {
+			    x=4; y=4; width=300; height=202;
+			    spacing=8;
+
+			    step_list_osrc "widget/osrc"
+				{
+				sql = "	select
+					    :e_track_id,
+					    :e_step_id,
+					    :e_step_name,
+					    :e_step_description,
+					    :e_step_sequence,
+					    :s_date_created,
+					    :s_created_by,
+					    :s_date_modified,
+					    :s_modified_by,
+					    num_before = (select count(1) from /apps/kardia/data/Kardia_DB/e_engagement_step/rows s2 where :s2:e_step_sequence < :s:e_step_sequence),
+					    num_after = (select count(1) from /apps/kardia/data/Kardia_DB/e_engagement_step/rows s2 where :s2:e_step_sequence > :s:e_step_sequence)
+					from
+					    /apps/kardia/data/Kardia_DB/e_engagement_step/rows s
+					order by
+					    :s:e_step_sequence
+					";
+				baseobj="/apps/kardia/data/Kardia_DB/e_engagement_step/rows";
+				readahead=20;
+				replicasize=20;
+				autoquery=never;
+
+				step_trk_link "widget/rule"
+				    {
+				    ruletype=osrc_relationship;
+				    target=track_list_osrc;
+				    key_1=e_track_id;
+				    target_key_1=e_track_id;
+				    master_null_action=norecs;
+				    }
+
+				step_list_table "widget/table"
+				    {
+				    height=170; width=300;
+				    min_rowheight=16;
+				    max_rowheight=64;
+				    initial_selection=noexpand;
+				    nodata_message = "no steps yet for this track";
+
+				    cs_t_icon "widget/table-column" { value=runclient("/apps/kardia/images/icons/ionicons-track.svg"); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
+				    cs_t_stepname "widget/table-column" { value=runclient(:step_list_osrc:e_step_name); style=bold; width=128; }
+				    cs_t_stepdesc "widget/table-column" { value=runclient(:step_list_osrc:e_step_description); font_size=9; wrap=yes; width=156; }
+				    //cs_t_up "widget/table-column" { value=runclient(condition(:step_list_osrc:num_before > 0, '/apps/kardia/images/icons/ionicons-arrow-up-b.svg', '/sys/images/trans_1.gif')); type=image; width=36; image_maxheight=12; }
+				    //cs_t_dn "widget/table-column" { value=runclient(condition(:step_list_osrc:num_after > 0, '/apps/kardia/images/icons/ionicons-arrow-down-b.svg', '/sys/images/trans_1.gif')); type=image; width=36; image_maxheight=12; }
+
+				    cs_t_detail "widget/table-row-detail"
+					{
+					width=300; height=84;
+
+					cs_edit_form "widget/form"
+					    {
+					    //on_modify_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+					    //on_delete_load_dd "widget/connector" { event=DataDeleted; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+
+					    cs_t_detail_vbox "widget/vbox"
+						{
+						x=24; y=2;
+						width=266; height=74;
+						spacing=4;
+
+						cs_sepbar "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+						cs_spacer "widget/autolayoutspacer" { height=1; }
+
+						cs_label "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_step_name; text="Step Name:"; height=20; label_width=90; }
+						cs_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_step_description; text="Description:"; height=20; label_width=90; }
+						cs_updn_hbox "widget/hbox"
+						    {
+						    height=24;
+						    spacing=4;
+
+						    updn_label "widget/label" { text="Order:"; align=right; width=90; }
+						    up_btn "widget/textbutton"
+							{
+							width=80;
+							height=23;
+							image="/sys/images/ico13a.gif";
+							image_position=left;
+							text = " Up";
+
+							go_up "widget/connector" { event=Click; target=cs_reorder_osrc; action=QueryParam; reorder_trackid=runclient(:track_list_osrc:e_track_id); reorder_stepid=runclient(:step_list_osrc:e_step_id); reorder_increment=runclient(-1); }
+							}
+						    dn_btn "widget/textbutton"
+							{
+							width=80;
+							height=23;
+							image="/sys/images/ico12a.gif";
+							image_position=left;
+							text = " Down";
+
+							go_dn "widget/connector" { event=Click; target=cs_reorder_osrc; action=QueryParam; reorder_trackid=runclient(:track_list_osrc:e_track_id); reorder_stepid=runclient(:step_list_osrc:e_step_id); reorder_increment=runclient(1); }
+							}
+						    }
+						cs_edit_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+						cs_reorder_osrc "widget/osrc"
+						    {
+						    reorder_trackid "widget/parameter" { type=integer; }
+						    reorder_stepid "widget/parameter" { type=integer; }
+						    reorder_increment "widget/parameter" { type=integer; }
+						    sql = " declare object tmp;
+
+							    select
+								:tmp:swapstep = (select first(:s2:e_step_id) from /apps/kardia/data/Kardia_DB/e_engagement_step/rows s2 where :s2:e_track_id = :s1:e_track_id and :parameters:reorder_increment * :s2:e_step_sequence > :parameters:reorder_increment * :s1:e_step_sequence order by :parameters:reorder_increment * :s2:e_step_sequence)
+							    from
+								/apps/kardia/data/Kardia_DB/e_engagement_step/rows s1
+							    where
+								:s1:e_track_id = :parameters:reorder_trackid and
+								:s1:e_step_id = :parameters:reorder_stepid
+							    ;
+
+							    select
+								:tmp:stepseq = :e_step_sequence
+							    from
+								/apps/kardia/data/Kardia_DB/e_engagement_step/rows s
+							    where
+								:e_track_id = :parameters:reorder_trackid and
+								:e_step_id = :parameters:reorder_stepid
+							    ;
+
+							    select
+								:tmp:swapstepseq = :e_step_sequence
+							    from
+								/apps/kardia/data/Kardia_DB/e_engagement_step/rows s
+							    where
+								:e_track_id = :parameters:reorder_trackid and
+								:e_step_id = :tmp:swapstep
+							    ;
+
+							    update
+								/apps/kardia/data/Kardia_DB/e_engagement_step/rows s
+							    set
+								:e_step_sequence = :tmp:swapstepseq
+							    where
+								:e_track_id = :parameters:reorder_trackid and
+								:e_step_id = :parameters:reorder_stepid and
+								:tmp:swapstep is not null
+							    ;
+
+							    update
+								/apps/kardia/data/Kardia_DB/e_engagement_step/rows s
+							    set
+								:e_step_sequence = :tmp:stepseq
+							    where
+								:e_track_id = :parameters:reorder_trackid and
+								:e_step_id = :tmp:swapstep
+							    ";
+						    readahead=2;
+						    replicasize=2;
+						    autoquery=never;
+
+						    refresh_on_reorder "widget/connector" { event=EndQuery; target=step_list_osrc; action=Refresh; }
+						    }
+						}
+					    }
+					}
+				    }
+
+				cs_addnew_hbox "widget/hbox"
+				    {
+				    height=24;
+				    spacing=8;
+				    align=center;
+
+				    cs_addnew_form "widget/form"
+					{
+					allow_view = no;
+					allow_query = no;
+					allow_new = yes;
+
+					on_new_set_seq "widget/connector" { event=New; target=cs_getseq_osrc; action=QueryParam; getseq_track=runclient(:track_list_osrc:e_track_id); }
+
+					//on_new_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+
+					cs_addnew_editbox "widget/component"
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    ctl_type=editbox;
+					    field=e_step_name;
+					    width=218;
+					    text="Add Step:";
+					    empty_desc='step name';
+					    label_width=70;
+					    }
+					
+					cs_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					cs_new_stepdesc "widget/variable" { fieldname=e_step_description; stepdesc_hints "widget/hints" { default=runclient(''); } }
+					cs_new_seq "widget/variable" { fieldname=e_step_sequence; seq_hints "widget/hints" { default=runclient(1); } }
+
+					cs_getseq_osrc "widget/osrc"
+					    {
+					    getseq_track "widget/parameter" { type=integer; }
+					    sql = " select
+							nextseq = isnull(max(:e_step_sequence), 0) + 1
+						    from
+							/apps/kardia/data/Kardia_DB/e_engagement_step/rows
+						    where
+							:e_track_id = :parameters:getseq_track
+						    ";
+					    readahead=2;
+					    replicasize=2;
+					    autoquery=never;
+
+					    on_endquery_set_seq "widget/connector" { event=EndQuery; target=cs_new_seq; action=SetValue; Value=runclient(:cs_getseq_osrc:nextseq); }
+					    }
+					}
+				    }
+				}
+			    }
+			}
+
+		    step_sep "widget/autolayoutspacer" { height=2; }
+
+		    step_collab_label "widget/label" { height=12; value=runclient("Collaborators for Step " + :track_list_osrc:e_track_name + ", " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
+
+		    scoll_list_osrc "widget/osrc"
+			{
+			sql = "	select
+				    partnername = condition(char_length(:p:p_org_name) > 1, :p:p_org_name, isnull(condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ', '') + isnull(:p:p_surname,'')),
+				    :e_track_id,
+				    :e_step_id,
+				    :p_collab_partner_key,
+				    :e_collab_type_id,
+				    e_collab_type_desc = (select :e_collab_type_desc from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows et where :et:e_collab_type_id = :sc:e_collab_type_id),
+				    :e_comments,
+				    :s_date_created,
+				    :s_created_by,
+				    :s_date_modified,
+				    :s_modified_by,
+				    img = isnull( ( select
+						path = :d:e_current_folder + '/' + :d:e_current_filename
+					    from
+						/apps/kardia/data/Kardia_DB/e_document/rows d,
+						/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+						/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+					    where
+						:dt:e_doc_type_label = 'Profile Photo' and
+						:d:e_doc_type_id = :dt:e_doc_type_id and
+						:pd:e_document_id = :d:e_document_id and
+						:pd:p_partner_key = :p:p_partner_key
+					    order by
+						:pd:s_date_modified desc
+					    limit
+						1
+					    ), '/apps/kardia/images/artwork/persona.png')
+				from
+				    identity /apps/kardia/data/Kardia_DB/e_engagement_step_collab/rows sc,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p
+				where
+				    :p:p_partner_key = :sc:p_collab_partner_key
+				";
+			baseobj="/apps/kardia/data/Kardia_DB/e_engagement_step_collab/rows";
+			readahead=20;
+			replicasize=20;
+			autoquery=never;
+
+			scoll_trk_link "widget/rule"
+			    {
+			    ruletype=osrc_relationship;
+			    target=step_list_osrc;
+			    key_1=e_track_id;
+			    target_key_1=e_track_id;
+			    key_2=e_step_id;
+			    target_key_2=e_step_id;
+			    master_null_action=norecs;
+			    }
+
+			sc_addnew_pane "widget/pane"
+			    {
+			    height=138;
+
+			    sc_pane_vbox "widget/vbox"
+				{
+				x=4; y=4; width=300; height=128;
+				spacing=8;
+
+				scoll_list_table "widget/table"
+				    {
+				    height=96;
+				    min_rowheight=16;
+				    max_rowheight=64;
+				    initial_selection=noexpand;
+				    nodata_message = "no collaborators yet";
+
+				    sc_t_icon "widget/table-column" { value=runclient(:scoll_list_osrc:img); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
+				    sc_t_collabname "widget/table-column" { value=runclient(:scoll_list_osrc:partnername); style=bold; width=140; }
+				    sc_t_collabdesc "widget/table-column" { value=runclient(:scoll_list_osrc:e_collab_type_desc); width=168; }
+
+				    sc_t_detail "widget/table-row-detail"
+					{
+					width=300; height=36;
+
+					sc_edit_form "widget/form"
+					    {
+					    sc_edit_vbox "widget/vbox"
+						{
+						x=24; y=4; width=268; height=24;
+						spacing=4;
+
+						sc_remove_btn "widget/textbutton"
+						    {
+						    width=100;
+						    height=24;
+						    text="Remove";
+
+						    on_sc_remove "widget/connector" { event=Click; target=sc_edit_form; action=Delete; }
+						    }
+						}
+					    }
+					}
+				    }
+
+				sc_addnew_hbox "widget/hbox"
+				    {
+				    height=24;
+				    spacing=8;
+				    align=center;
+
+				    sc_addnew_form "widget/form"
+					{
+					allow_view = no;
+					allow_query = no;
+					allow_new = yes;
+
+					//on_new_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+
+					sc_addnew_collabid "widget/component"
+					    {
+					    width=176;
+					    path="/apps/kardia/modules/base/editbox_table.cmp";
+					    field=p_collab_partner_key;
+					    text='Add:';
+					    label_width=40;
+					    popup_width=380;
+					    popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
+					    search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+					    key_name="p_partner_key";
+					    object_name="Partner";
+					    popup_text="Select a Partner:";
+					    empty_desc='search for person';
+
+					    sc_collab_hints "widget/hints" { style=applyonchange; }
+					    }
+
+					sc_addnew_collabtype "widget/dropdown"
+					    {
+					    width=114;
+					    height=24;
+					    fieldname=e_collab_type_id;
+					    numdisplay=10;
+					    mode=dynamic_server;
+					    sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label";
+					    }
+
+					sc_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					sc_new_comm "widget/variable" { fieldname=e_comments; sc_comm_hints "widget/hints" { default=runclient(''); } }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+
+		vbox_right "widget/vbox"
+		    {
+		    width=312;
+		    spacing=8;
+
+		    req_list_label "widget/label" { height=12; value=runclient("Requirements for Step " + :track_list_osrc:e_track_name + ", " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
+
+		    req_pane "widget/pane"
+			{
+			height=386;
+
+			req_osrc "widget/osrc"
+			    {
+			    sql = " select
+					:r:e_track_id,
+					:r:e_step_id,
+					:r:e_req_id,
+					:r:e_req_name,
+					:r:e_due_days_from_step,
+					:r:e_due_days_from_req,
+					:r:e_due_days_from_req_id,
+					:r:e_req_whom,
+					whomtxt = condition(:r:e_req_whom == 'E', 'Either', condition(:r:e_req_whom == 'P', 'Partner', 'Organization')),
+					:r:e_req_doc_type_id,
+					:r:e_req_waivable,
+					:r:s_date_created,
+					:r:s_created_by,
+					:r:s_date_modified,
+					:r:s_modified_by
+				    from
+					identity /apps/kardia/data/Kardia_DB/e_engagement_step_req/rows r
+				    ";
+			    baseobj="/apps/kardia/data/Kardia_DB/e_engagement_step_req/rows";
+			    replicasize=20;
+			    readahead=20;
+			    autoquery=never;
+
+			    req_link "widget/rule"
+				{
+				ruletype=osrc_relationship;
+				target=step_list_osrc;
+				key_1=e_track_id;
+				target_key_1=e_track_id;
+				key_2=e_step_id;
+				target_key_2=e_step_id;
+				master_null_action=norecs;
+				}
+
+			    on_endquery_load_reqs "widget/connector"
+				{
+				event=EndQuery;
+				target=req_req;
+				action=SetItems;
+				SQL=runclient("select label=:e_req_name, value=:e_req_id from /apps/kardia/data/Kardia_DB/e_engagement_step_req/rows where :e_track_id = " + :step_list_osrc:e_track_id + " and :e_step_id = " + :step_list_osrc:e_step_id + " order by :e_req_name");
+				}
+
+			    req_vbox "widget/vbox"
+				{
+				x=4; y=4; width=302; height=376;
+				spacing=8;
+
+				req_table "widget/table"
+				    {
+				    height=344;
+				    min_rowheight=16;
+				    max_rowheight=64;
+				    initial_selection=noexpand;
+				    nodata_message = "no requirements yet";
+
+				    req_t_icon "widget/table-column" { value=runclient("/apps/kardia/images/icons/openiconic-task.svg"); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
+				    req_t_name "widget/table-column" { value=runclient(:req_osrc:e_req_name); width=160; style=bold; }
+				    req_t_whom "widget/table-column" { value=runclient(:req_osrc:whomtxt); width=126; }
+
+				    req_t_detail "widget/table-row-detail"
+					{
+					width=302; height=240;
+
+					req_edit_form "widget/form"
+					    {
+					    on_changes_load_reqs "widget/connector"
+						{
+						event=DataSaved;
+						target=req_req;
+						action=SetItems;
+						SQL=runclient("select label=:e_req_name, value=:e_req_id from /apps/kardia/data/Kardia_DB/e_engagement_step_req/rows where :e_track_id = " + :step_list_osrc:e_track_id + " and :e_step_id = " + :step_list_osrc:e_step_id + " order by :e_req_name");
+						}
+
+					    req_detail_vbox "widget/vbox"
+						{
+						x=24; y=4; width=266; height=228;
+						spacing=4;
+
+						req_sepbar "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+						req_spacer "widget/autolayoutspacer" { height=1; }
+
+						req_name "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_req_name; text="Req. Name:"; height=20; label_width=90; }
+						req_fulfill "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=e_req_whom; text="Fulfilled By:"; height=20; label_width=90; width=250; sql="select label='Partner', value='P'; select label='Organization', value='O'; select label='Either', value='E'"; }
+						req_fulfilldoc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=e_req_doc_type_id; text="Fulfilled Doc:"; height=20; label_width=90; width=250; sql="select label=:e_doc_type_label, value=:e_doc_type_id from /apps/kardia/data/Kardia_DB/e_document_type/rows dt order by :e_doc_type_label"; }
+						req_waivable "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=e_req_waivable; text="Waivable?"; height=20; label_width=90; }
+
+						req_sepbar2 "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+						req_spacer2 "widget/autolayoutspacer" { height=1; }
+
+						req_stepdays "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_due_days_from_step; text="Due Days after Step Begin:"; height=20; label_width=200; }
+						req_orlabel "widget/label" { text="-or-"; align=center; font_size=10; height=14; }
+						req_reqdays "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_due_days_from_req; text="Due Days after Req. Finish:"; height=20; label_width=200; }
+						req_req "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=e_due_days_from_req_id; text="After Which Req.:"; height=20; label_width=120; }
+
+						req_edit_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+						req_delete "widget/textbutton"
+						    {
+						    height=24; width=100; x=100;
+						    text="Delete";
+						    enabled=runclient(:req_edit_form:is_editable);
+
+						    on_req_delete "widget/connector" { event=Click; target=req_edit_form; action=Delete; }
+						    }
+						}
+					    }
+					}
+				    }
+
+				req_addnew_hbox "widget/hbox"
+				    {
+				    height=24;
+				    spacing=8;
+				    align=center;
+
+				    req_addnew_form "widget/form"
+					{
+					allow_view = no;
+					allow_query = no;
+					allow_new = yes;
+
+					//on_new_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+
+					req_addnew_editbox "widget/component"
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    ctl_type=editbox;
+					    field=e_req_name;
+					    width=218;
+					    text="Add Req.:";
+					    empty_desc='requirement name';
+					    label_width=70;
+					    }
+
+					req_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					req_new_whom "widget/variable" { fieldname=e_req_whom; req_whom_hints "widget/hints" { default=runclient('E'); } }
+					req_new_waivable "widget/variable" { fieldname=e_req_waivable; req_waivable_hints "widget/hints" { default=runclient(0); } }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+
+	    ct_ctl_hbox "widget/hbox"
+		{
+		height=24;
+		align=center;
+		spacing=10;
+
+		//ct_edit_form,ct_addnew_form,tc_addnew_form,tc_edit_form,cs_addnew_form,cs_edit_form,sc_edit_form,sc_addnew_form,req_edit_form,req_addnew_form;
+		ct_save_all "widget/textbutton"
+		    {
+		    width=100;
+		    height=24;
+		    text=runclient(condition(:ct_addnew_form:is_savable or :tc_addnew_form:is_savable or :cs_addnew_form:is_savable or :sc_addnew_form:is_savable or :req_addnew_form:is_savable, "Save/Add", "Save"));
+		    enabled=runclient(:track_list_osrc:is_client_savable);
+
+		    on_save_2 "widget/connector" { event=Click; target=track_list_osrc; action=SaveClients; }
+		    }
+		ct_discard_all "widget/textbutton"
+		    {
+		    width=100;
+		    height=24;
+		    //text=runclient(condition(:ct_addnew_form:is_discardable or :ct_edit_form:is_discardable or :tc_addnew_form:is_discardable or :tc_edit_form:is_discardable or :cs_addnew_form:is_discardable or :cs_edit_form:is_discardable or :sc_edit_form:is_discardable or :sc_addnew_form:is_discardable or :req_edit_form:is_discardable or :req_addnew_form:is_discardable, 'Cancel', 'Close'));
+		    text=runclient(condition(:track_list_osrc:is_client_discardable, 'Cancel', 'Close'));
+
+		    on_disc_1 "widget/connector" { event=Click; target=track_list_osrc; action=DiscardClients; }
+		    on_disc_2 "widget/connector" { event=Click; target=config_tracks_window; action=Close; }
+		    }
+		}
+	    }
+	}
+    }

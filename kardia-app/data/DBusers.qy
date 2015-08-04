@@ -1,0 +1,5 @@
+$Version=2$
+DBusers "system/query"
+    {
+    sql = "select username=:User from /apps/kardia/data/mysql_DB/user/rows where char_length(:User) > 1 group by :User";
+    }

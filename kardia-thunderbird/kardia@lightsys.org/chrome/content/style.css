@@ -1,0 +1,180 @@
+@import url("chrome://global/skin/");
+
+/* Kardia Relationships header */
+#sidebarheader-allow-close {border-bottom:1px solid rgba(80,80,80,0.5);}
+
+/* splitter */
+#kardia-splitter {-moz-appearance:none; background-image:none; width:1px; min-width:1px; border:0px; background-color:rgba(0,0,0,0.5);}
+
+/* splitter in Kardia tab */
+#tab-kardia-splitter {-moz-appearance:none; background-image:none; width:1px; min-width:1px; border:0px; background-color:rgba(0,0,0,0.5);}
+
+/* splitters in bottom of Kardia tab */
+.tab-splitter {-moz-appearance:none; border:1px solid black; background-image:none; width:3px; min-width:1px; border:0px; background-color:#ffffff;}
+.tab-splitter-vbox {width:0px; border-left:1px solid rgba(80,80,80,0.5); margin-bottom:5px;}
+
+/* main box that contains everything but splitter */
+#main-box {background-color:white; border-right:1px solid rgba(44,70,102,0.5);}
+
+#mailContext-calendar-convert-menupopup {background-color:red;}
+
+/* main content box that contains everything but splitter and 2 headers */
+#main-content-box {min-width:110px; width:200px; overflow-x:hidden; overflow-y:auto; padding-right:0px}
+
+/* box that has partner's name and ID, plus a selector button */
+#choose-partner-box {border-bottom:1px solid rgba(80,80,80,0.5); background-image: linear-gradient(#ffffff, #eeeeee);}
+
+/* label that has partner's name */
+#name-label {font-size:24px; font-weight:bold; font-family:Arial,sans-serif;}
+
+/* button in dropdown menu to select partner */
+.partner-button {-moz-appearance:none; border:0px; background-image: linear-gradient(#ffffff, #eeeeee);}
+
+/* label to say we couldn't connect */
+#cant-connect {display:none; margin:8px; border-radius:6px; background-color:#fff8c0; }
+
+/* box around engagement track */
+.engagement-track-color-box{border-radius:3px; margin-top:2px; margin-right:5px; background-color:#cccccc; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))} /* previous: #afe7a0, #81d969 */
+
+/* checkboxes for collapsible items like Engagement Tracks look like arrows */
+.twisty-checkbox {font-weight:bold; border:0px; -moz-appearance:none; display:block; background-repeat:no-repeat; padding-left:14px; background-position:left center; background-color:rgba(255,255,255,0);}
+.twisty-checkbox[checkState="0"] {background-image:url(chrome://kardia/content/images/twisty-open.png);}
+.twisty-checkbox[checkState="1"] {background-image:url(chrome://kardia/content/images/twisty-clsd.png);}
+
+/* "New Track" and "New Note/Prayer" buttons look like regular text, but bold */
+.new-button {-moz-appearance:none; border:0px; font-weight:bold; background:none;}
+.new-button:hover {cursor:pointer;}
+
+/* Collaborator and document buttons look like regular text */
+/* currently unused */
+.plain-button {-moz-appearance:none; border:0px; background-color:#ffffff;}
+
+/* horizontal line above email recording preferences checkboxes */
+.thin {-moz-appearance:scale-horizontal; margin-top:0px; margin-bottom:-2px;}
+
+/* bottom button that shows or hides Kardia pane */
+#show-kardia-pane-button {-moz-appearance:none; border:none; border-radius:3px; padding-top:0px; padding-bottom:0px; background-color:#edf5fc;}
+
+/* bold text */
+.bold-text {font-weight:bold;}
+
+/* highlighted label/button */
+.highlighted {-moz-appearance:none; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#fff4a3; border:0px; padding:0px; margin:1px 0 1px 0;}
+
+/* images */
+.edit-image {width:12px; list-style-image: url("chrome://kardia/content/images/edit-image.png");}
+.edit-image:hover {width:12px; list-style-image: url("chrome://kardia/content/images/edit-image-hover.png"); cursor:pointer;}
+.note-image {width:15px; list-style-image: url("chrome://kardia/content/images/note-image.png");}
+.email-image {width:15px; list-style-image: url("chrome://kardia/content/images/email-image.png");}
+.team-image {width:15px; list-style-image: url("chrome://kardia/content/images/team-image.png");}
+.individual-image {width:15px; list-style-image: url("chrome://kardia/content/images/individual-image.png");}
+.document-image {width:15px; list-style-image: url("chrome://kardia/content/images/document-image.png");}
+.kardia-icon {width:16px; list-style-image: url("chrome://kardia/content/images/kardia-icon.png");}
+.kardia-email-icon {width:16px; list-style-image: url("chrome://kardia/content/images/kardia-icon.png");}
+.kardia-email-icon:hover {width:16px; list-style-image: url("chrome://kardia/content/images/kardia-icon-hover.png"); cursor:pointer;}
+.show-kardia-pane-arrow {width:10px; height:6px; list-style-image: url("chrome://kardia/content/images/show-kardia-arrow.png");}
+.hide-kardia-pane-arrow {width:10px; height:6px; list-style-image: url("chrome://kardia/content/images/hide-kardia-arrow.png");}
+.close-kardia-pane-x {width:8px; list-style-image: url("chrome://kardia/content/images/close-kardia-x.png");}
+.choose-partner-dropdown-arrow {width:10px; list-style-image: url("chrome://kardia/content/images/choose-partner-arrow.png");}
+.kardia-tab {width:15px; list-style-image: url("chrome://kardia/content/images/prefs-image.png");}
+.tab-select-partner {margin-right:5px; margin-left:5px; height:10px; list-style-image: url("chrome://kardia/content/images/tab-select-partner.png");}
+
+/* Kardia tab */
+/* main */
+#tab-main {overflow-x:auto; overflow-y:hidden; }
+
+/* top and bottom panels */
+#tab-top-panel {background-color:#eeeeee; border-bottom:1px solid rgba(80,80,80,0.5); overflow-y:auto;}
+#tab-bottom-panel {background-color:#ffffff; overflow-y:auto;}
+
+/* Collaborating With panel */
+#tab-collaborators {padding:10px; margin: 0px; background-color: #f5f5f5}
+
+/* manual refresh button */
+#manual-refresh {-moz-appearance:none; min-width:1em; border:0px; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:1px;}
+
+
+/* Filter By panels with top and bottom margin */
+.top-bottom-margin {margin:2px 0 2px 0;  display:block;}
+
+/* number boxes that allow thresholds */
+#filter-by-magnitude {margin:0px}
+#filter-by-certainty {margin:0px}
+
+/* button that allows sorting by name, id, date */
+.tab-sort-button {-moz-appearance:none; border:0px; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0 5px 0 0; margin:0 2px 0 2px;}
+.tab-sort-button[selected="true"]{background-color:#cccccc}
+
+/* button that allows filter by any or all */
+.tab-filter-radio {-moz-appearance:none; border:0px; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0px; margin:0 2px 0 2px;}
+.tab-filter-radio[selected="true"]{background-color:#cccccc}
+
+/* checkbox that allows selection of filters */
+.tab-filter-checkbox {-moz-appearance:none; border:0px; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; padding:0px; margin:0 2px 0 2px;}
+.tab-filter-checkbox[checkState="1"]{background-color:#cccccc}
+/*.tab-filter-checkbox  .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}
+.tab-filter-checkbox[checkState="1"] .checkbox-check {border:0px; -moz-appearance:none; background-image:none; display:none;}*/
+
+/* item with no padding or margin */
+.no-margin-padding { padding:0px; margin:0px;}
+
+/* button that is just an x */
+.tab-data-x-button {-moz-appearance:none; padding:0px; border:0px; background-color:none; width:16px; background-image:none;}
+
+/* box that turns light gray when you hover over it */
+.hover-box {margin-right:5px; border-bottom:1px solid rgba(200,200,200,0.2);}
+.hover-box:hover {background-color:#fafafa}
+
+/* individual person in Collaborating With panel */
+.tab-collaborator {border-radius:3px; background-color:#ffffff; margin-bottom:2px; padding:3px;}
+
+/* box with person's name in Collaborating With */
+.tab-collaborator-name {border-radius:3px; margin-right:3px; background-image: linear-gradient(#fafafa, #dddddd);}
+
+/* engagement tracks in Collaborating With */
+.tab-engagement-track-color-box{border-radius:3px; background-color:#cccccc; margin:1px 5px 1px 0px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))}
+
+/* tags in bottom panel */
+.tab-tag-color-box{border-radius:3px; background-color:#cccccc; margin-bottom:4px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))}
+
+/* button you click to choose the person */
+.tab-choose-person {padding:4px;}
+
+/* person's name in bottom */
+#tab-bottom-name {font-size:24px; font-weight:bold; font-family:Arial,sans-serif;}
+
+/* box that holds person's name in bottom */
+#tab-name-box {padding-left:5px; border-bottom:1px solid rgba(80,80,80,0.5); background-image: linear-gradient(#ffffff, #eeeeee); margin:0px;} 
+
+/* content of bottom panel */
+#tab-bottom-hbox {padding-left:5px; padding-top:5px;}
+
+/* boxes in bottom panel */
+.tab-bottom-box {margin: 0px 5px 5px 0px; padding:5px; background-color:#fafafa; overflow-x:auto;}
+
+/* link you click to go to map */
+#tab-map-link {font-weight:bold;}
+
+/* box for gift filters */
+#tab-funds {margin-top:10px; visibility:hidden;}
+
+/* fund that you can click on */
+.tab-fund {-moz-appearance:none; border-radius:3px; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2)); background-color:#ffffff; border:0px; padding:0px; margin:1px 0 1px 0;}
+
+/* tree of giving results */
+#giving-tree {-moz-appearance:none; border:0px; height:100px;}
+
+/* section titles */
+.tab-title {font-weight: bold; font-size:18px}
+
+/* binding for Kardia buttons */
+mail-emailaddress {-moz-binding:url('chrome://kardia/content/email-binding.xml#kardia-mail-emailaddress')}
+
+/* main area in data items tab */
+#main-data {background-color:#ffffff; padding:10px;}
+
+/* person's name in data items tab */
+#data-item-name {background-color:#ffffff; padding:10px 10px 0 10px; margin:0px;}
+
+#login-dialog { padding-left:10px; padding-right:10px; padding-bottom:10px; padding-top:16px; }
+#login-dialog-vbox { }

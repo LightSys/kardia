@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<!-- dialog to allow users to add new engagement tracks -->
+<dialog id="add-track-dialog"
+        title="Edit Engagement Track"
+        buttons="cancel,accept"
+        ondialogaccept="return saveTrack();"
+        ondialogcancel="return cancelTrack();"
+		onload="startDialog();"
+        persist="screenX screenY width height"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+		
+<!-- script that makes buttons work -->
+<script type="application/javascript" src="chrome://messenger/content/jquery.js"/>
+<script type="application/javascript" src="chrome://kardia/content/edit-track-dialog.js"/>
+
+    <!-- vbox holds dropdown menus -->
+	<vbox>
+		<radiogroup id="edit-track-action">
+			<radio label="Complete track" value="c"/>
+			<radio label="Exit track without completion" value="e"/>
+			<radio label="Move to step:" value="n" selected="true"/>
+		</radiogroup>
+		
+		<hbox>
+			<spacer width="20px"/>
+			<!-- menulist has options of engagement steps to select -->
+			<menulist id="outer-select-step">
+				<menupopup id="select-step-type">
+				</menupopup>
+			</menulist>
+		</hbox>
+	</vbox>
+	
+</dialog>
+

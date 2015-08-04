@@ -1,0 +1,214 @@
+$Version=2$
+menu "widget/component-decl"
+    {
+    width=200;
+    height=800;
+
+    // Triggered when a menu item is selected
+    ItemSelected "widget/component-decl-event" { }
+
+    // Opens / displays the menu
+    Open "widget/component-decl-action" { }
+    onOpen "widget/connector"
+	{
+	event=Open;
+	target=menu_window;
+	action=Popup;
+	X=runclient(:open_x);
+	Y=runclient(:open_y);
+	}
+
+    // Closes / hides the menu
+    Close "widget/component-decl-action" { }
+    onClose "widget/connector"
+	{
+	event=Close;
+	target=menu_window;
+	action=Close;
+	}
+
+    menu_window "widget/childwindow"
+	{
+	x=0; y=0; width=200; height=800;
+	style=dialog;
+	titlebar=no;
+	bgcolor="#181818";
+	visible=no;
+	toplevel=yes;
+	border_style=none;
+	background=null;
+	shadow_radius=12;
+	shadow_color="#496293";
+	shadow_offset=12;
+	shadow_angle=180;
+
+	menu_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=180; height=780;
+	    spacing=8;
+	    
+	    title "widget/label" { height=16; text="CRM Menu:"; style=bold; fgcolor=white; align=center; }
+
+	    sep "widget/image" { height=1; width=180; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+	    my_profile "widget/textbutton"
+		{
+		height=32; width=180;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-people.svg";
+		image_position=left;
+		image_margin=6;
+		text = "My Profile";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_my_profile "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="My Profile"; }
+		}
+	    my_settings "widget/textbutton"
+		{
+		height=32; width=180;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-gear.svg";
+		image_position=left;
+		image_margin=6;
+		text = "My Settings";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_my_settings "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="My Settings"; }
+		}
+
+	    sep2 "widget/image" { height=1; width=180; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	    manage_tags "widget/textbutton"
+		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
+		width=180; height=32;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-pricetags.svg";
+		image_position=left;
+		image_margin=6;
+		text = "Manage Tags";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_manage_tags "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Manage Tags"; }
+		}
+	    manage_tracks "widget/textbutton"
+		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
+		width=180; height=32;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-track.svg";
+		image_position=left;
+		image_margin=6;
+		text = "Manage Tracks";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_manage_tracks "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Manage Tracks"; }
+		}
+	    manage_roles "widget/textbutton"
+		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
+		width=180; height=32;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-people.svg";
+		image_position=left;
+		image_margin=6;
+		text = "Manage Roles";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_manage_roles "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Manage Roles"; }
+		}
+	    manage_high "widget/textbutton"
+		{
+		width=180; height=32;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/openiconic-thumb-up.svg";
+		image_position=left;
+		image_margin=6;
+		text = "Manage Highlights";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_manage_high "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Manage Highlights"; }
+		}
+	    manage_note "widget/textbutton"
+		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
+		width=180; height=32;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-notes.svg";
+		image_position=left;
+		image_margin=6;
+		text = "Manage Note Types";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_manage_note "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Manage Note Types"; }
+		}
+	    manage_cont "widget/textbutton"
+		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
+		width=180; height=32;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-contacts2.svg";
+		image_position=left;
+		image_margin=6;
+		text = "Manage Contact Types";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_manage_cont "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Manage Contact Types"; }
+		}
+	    manage_task "widget/textbutton"
+		{
+		require_endorsements = "kardia:crm_manage";
+		endorsement_context = "kardia";
+		width=180; height=32;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/openiconic-task.svg";
+		image_position=left;
+		image_margin=6;
+		text = "Manage Task Types";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_manage_task "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Manage Task Types"; }
+		}
+	    }
+	}
+    }

@@ -1,0 +1,343 @@
+Document:   Kardia REST API for Partner Data Access
+Author:	    Greg Beeley (GRB)
+Date:	    09-Jun-2014
+-------------------------------------------------------------------------------
+
+OVERVIEW...
+
+    This document describes the partner data API for Kardia.  If you are not
+    already familiar with web services, REST, and the Kardia REST API system,
+    please first read "JSON-REST.txt" in centrallix-sysdoc, and read "API.txt"
+    in this documentation directory.
+
+
+ENDPOINT...
+
+    The endpoint of this API will be:
+
+	/apps/kardia/api/partner
+
+    Of course, the needed protocol (http or https) and server address (such as
+    server.lightsys.org:843) will need to be added to the URL, to give
+    something like:
+
+	https://server.lightsys.org:843/apps/kardia/api/partner?cx__mode=rest
+
+
+OBJECT STRUCTURE...
+
+    The following are example paths to various types of collections of objects
+    in the partner data API:
+
+    /apps/kardia/api/partner/Partners -- list of partners in the system
+
+	Please note that you may not have permission to view the entire list
+	of partners, or even permission to view a particular partner or any
+	partners at all.  This is determined by the Kardia system itself.
+
+	Example REST queries:
+
+	    http://server/apps/kardia/api/partner/Partners?cx__mode=rest&cx__res_type=collection
+	    http://server/apps/kardia/api/partner/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    /apps/kardia/api/partner/Partners/{partnerid} -- Information about one
+    partner:
+
+	This URL would be an element, not a collection.  It will have the
+	following basic properties:
+
+	    partner_id	    - id of the partner
+	    partner_name    - first and last name (or org. name) of the
+			      partner
+	    partner_address - mailing address of the partner
+	    is_valid	    - 1 if the partner is valid, 0 if obsolete
+	    is_staff	    - 1 if the partner is a staff member
+	    is_payee	    - 1 if the partner is a payee
+	    is_donor	    - 1 if the partner is a donor or payer
+
+	The following more detailed properties will also be available.  For
+	address information, please see the Addresses or ContactInfo sub-nodes.
+
+	    surname	    - surname (last name) of the partner
+	    given_names	    - given names (first / middle) of the partner
+	    title	    - title (Mr / Mrs / etc)
+	    preferred_name  - the salutation or nickname
+	    suffix	    - Jr / Sr / etc
+	    org_name	    - name of organization
+	    gender	    - gender (Male / Female / Couple)
+	    comments	    - misc comments about the partner
+	    no_mail	    - set to 1 if the partner is to receive no mail
+	    no_solicitations- set to 1 if to receive no donation requests
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the partner data was created in Kardia
+	    created_by	    - username that created the data
+	    date_modified   - date the partner data was modified in Kardia
+	    modified_by	    - username that modified the data
+
+    /apps/kardia/api/partner/Partners/{partnerid}/Addresses -- List of all
+    addresses in the system for one partner:
+
+	This is a collection URL.  Each Address object returned will have the
+	following basic properties:
+
+	    partner_id	    - id of the partner
+	    location_id	    - id of the location
+	    location_type   - Home/Work/School/Vacation/etc
+	    address	    - the formatted address
+	    is_valid	    - 1 if the address is valid, 0 if not
+		location_status_code - "A" if the address is currently active or "O" if it's obsolete
+
+	And the following more detailed properties:
+
+	    location_type_code - single letter abbrev. of location type
+	    date_effective  - Date this address begins to be valid
+	    date_good_until - Last date this address is valid
+	    in_care_of	    - The In-Care-Of (% or c/o) line
+	    address_1	    - First line of the address
+	    address_2	    - Second line of the address
+	    address_3	    - Third line of the address
+	    city	    - City of the address
+	    state_province  - State or province abbreviation
+	    postal_code	    - Postal (e.g., Zip) code
+	    country_code    - Kardia/ccTLD country code
+	    country_iso2    - ISO3166-1 Alpha-2 country code
+	    country_iso3    - ISO3166-1 Alpha-3 country code
+	    country_fips104 - FIPS 10-4 country code
+	    country_name    - Full country name
+	    comments	    - Comments on this address
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the location data was created in Kardia
+	    created_by	    - username that created the data
+	    date_modified   - date the location data was modified in Kardia
+	    modified_by	    - username that modified the data
+
+    /apps/kardia/api/partner/Partners/{partnerid}/ContactInfo -- List of all
+    contact info records (email address, phone number, etc.) in the system for
+    one partner:
+
+	This is a collection URL.  Each Contact object returned will have the
+	following basic properties:
+
+	    partner_id	    - id of the partner
+	    contact_id	    - id of the contact
+	    contact	    - contact (email address, phone #, etc.)
+	    contact_type    - type of contact (Email, Phone, Cell, Fax, etc.)
+	    is_valid	    - 1 if the contact info is valid, 0 if not
+		record_status_code - "A" if the contact info is active, "O" if obsolete
+
+	The following more detailed properties will be provided:
+
+	    contact_type_code - single letter abbrev of type of contact
+	    address_id	    - the ID of the associated address, if any
+	    phone_country   - country code for phone number
+	    phone_area_city - area/city code for phone number
+	    contact_data    - remained of phone# or email address / etc.
+	    comments	    - comments about this contact info
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the contact data was created in Kardia
+	    created_by	    - username that created the data
+	    date_modified   - date the contact data was modified in Kardia
+	    modified_by	    - username that modified the data
+
+    /apps/kardia/api/partner/Partners/{partnerid}/Addresses/{addressid}/ContactInfo
+    -- List of all contact info records in the system for one partner that are
+    associated with the given address:
+
+	This is a collection URL.  Each Contact object will have the same
+	properties as those returned under the main /ContactInfo collection.
+
+    /apps/kardia/api/partner/Partners/{partnerid}/Subscriptions -- List of all
+    mailing subscriptions this partner has:
+
+	This is a collection URL.  Each Subscription object returned will have
+	the following basic properties:
+	    
+	    partner_id	    - id of the partner
+	    list_code	    - code for mailing list
+	    list_name	    - name of mailing list
+	    list_type	    - type of list (Publication/Issue/Selection)
+	    is_active	    - 1 if both the subscription and list are active
+
+	The following more detailed properties will be provided:
+
+	    location_id	    - location id to send the subscription mailings to
+	    contact_id	    - a particular contact (e.g. email) to use
+	    delivery_method - Email or Postal
+	    member_type	    - Member or Owner
+	    num_issues_sub  - number of issues subscribed to
+	    num_issues_recv - number of issues received so far
+	    start_date	    - date the subscription starts
+	    end_date	    - date the subscription ends
+	    hold_until_date - stop sending until this date
+	    renewal_date    - date to send renewal information
+	    cancel_date	    - date the member canceled
+	    notice_sent_date- when we sent renewal reminder
+	    status	    - status of membership Active/Obsolete
+	    is_complimentary- free membership
+	    comments	    - comments about this subscription
+	    show_contact    - 1 if showing first/last name for an org subscr.
+	    contact	    - alternate addressee text
+	    reason_member   - reason the person is subscribed
+	    reason_cancel   - reason the person canceled
+	    sort_order	    - sorting order of the list
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the subscription was created in Kardia
+	    created_by	    - username that created the data
+	    date_modified   - date the subscription was modified in Kardia
+	    modified_by	    - username that modified the data
+
+    /apps/kardia/api/partner/ContactTypes -- list of types of contact records
+    in the system:
+
+	This is a collection URL.  Each ContactType record will have the
+	following set of properties:
+
+	    contact_type    - type of contact (Email, Phone, Cell, Fax, etc.)
+	    contact_type_code - single letter abbrev of type of contact
+
+    /apps/kardia/api/partner/ContactTypes/{typename} -- list of contact records
+    for a specific contact type:
+
+	This is a collection URL.  Each Contact record will have similar
+	properties to those previously listed for a contact record.  However,
+	in this collection, the names (in the URL) of the contacts will be the
+	actual contact data, and there are a few other differences as well due
+	to a single contact address (phone/email/etc) potentially belonging to
+	more than one partner.
+
+	    contact	    - contact (email address, phone #, etc.)
+	    contact_type    - type of contact (Email, Phone, Cell, Fax, etc.)
+	    contact_type_code - single letter abbrev of type of contact
+	    phone_country   - country code for phone number
+	    phone_area_city - area/city code for phone number
+	    contact_data    - remained of phone# or email address / etc.
+
+	A list of associated partners will be availble as child objects of the
+	contact object (see below).
+
+	In addition to the standard contact types, there will also be an
+	'AllPhone' type which will encompass Fax, Cell, and Phone contact
+	types, and there will be an 'AllURL' type which will encompass the
+	Web, Blog, and other URL-based contact types.
+
+    /apps/kardia/api/partner/ContactTypes/{typename}/{contact}/Partners -- list
+    of partners that have the given contact record.
+
+	This is a collection URL.  Each partner-contact will have these basic
+	properties:
+
+	    partner_id	    - id of the partner
+	    partner_name    - first and last name (or org. name) of the
+			      partner
+	    contact_id	    - id of the contact
+	    contact	    - contact (email address, phone #, etc.)
+	    contact_type    - type of contact (Email, Phone, Cell, Fax, etc.)
+	    is_valid	    - 1 if the contact info is valid, 0 if not
+
+	The following more detailed properties will be provided:
+
+	    contact_type_code - single letter abbrev of type of contact
+	    address_id	    - the ID of the associated address, if any
+	    phone_country   - country code for phone number
+	    phone_area_city - area/city code for phone number
+	    contact_data    - remained of phone# or email address / etc.
+	    comments	    - comments about this contact info
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the contact data was created in Kardia
+	    created_by	    - username that created the data
+	    date_modified   - date the contact data was modified in Kardia
+	    modified_by	    - username that modified the data
+
+	Note that some contact types may contain forward slashes (/) in them,
+	such as URL-based contact types like a web page or blog address.
+	These forward slashes MUST be encoded as %2f instead of as a slash.
+	
+	
+	/apps/kardia/api/partner/Staff -- List of all partners in the system who are staff members
+
+	This is a collection URL.  Each Staff object returned will have the
+	following basic properties:
+
+	    partner_id	    - id of the partner (staff member)
+	    is_staff		- 1 if staff, 0 if not (should never be 0)
+	    kardia_login	- the staff member's Kardia login name
+	    kardiaweb_login	- the staff member's Kardia self-service website login
+	    preferred_email_id - the id of the preferred email for receiving reports etc. from Kardia
+	    preferred_location_id - the id of the preferred location for receiving reports etc. from Kardia
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the location data was created in Kardia
+	    created_by	    - username that created the data
+	    date_modified   - date the location data was modified in Kardia
+	    modified_by	    - username that modified the data
+
+
+EXAMPLE URLS...
+
+    The list of partner ID's in the system:
+
+	http://server/apps/kardia/api/partner/Partners?cx__mode=rest&cx__res_type=collection
+
+    The list of partner ID's along with information about each partner:
+
+	http://server/apps/kardia/api/partner/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Information about one partner:
+
+	http://server/apps/kardia/api/partner/Partners/100000?cx__mode=rest&cx__res_format=attrs
+
+    Information about one donor in 'full' attribute mode:
+
+	http://server/apps/kardia/api/partner/Partners/100000?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=full
+
+    A list of addresses for a given partner, with information about each
+    address:
+
+	http://server/apps/kardia/api/partner/Partners/100000/Addresses?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of contact info records for a given partner, with information about
+    each one:
+
+	http://server/apps/kardia/api/partner/Partners/100000/ContactInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of contact info records associated with a particular address, with
+    information about each contact record:
+
+	http://server/apps/kardia/api/partner/Partners/100000/Addresses/1/ContactInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    The list of contact info types in the system (this will be things like
+    "Email", "Fax", "Cell", "Phone", "Web", "Blog", "Skype", etc.):
+
+	http://server/apps/kardia/api/partner/ContactTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of email addresses in the system, with detail about each one:
+
+	http://server/apps/kardia/api/partner/ContactTypes/Email?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Specific information about one email address:
+
+	http://server/apps/kardia/api/partner/ContactTypes/Email/greg.beeley@lightsys.org?cx__mode=rest
+
+    Specific information about one web site:
+
+	http://server/apps/kardia/api/partner/ContactTypes/AllURL/http:%2f%2fwww.lightsys.org?cx__mode=rest
+
+    A list of partner records that have a given email address, with detail
+    about each one:
+
+	http://server/apps/kardia/api/partner/ContactTypes/Email/greg.beeley@lightsys.org/Partners?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+    The list of staff in the Kardia system:
+	
+	http://server/apps/kardia/api/partner/Staff/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic

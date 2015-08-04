@@ -48,7 +48,7 @@ gift_entry "widget/component-decl"
 	    {
 	    path="/apps/kardia/modules/base/section_label.cmp";
 	    height=22; width=200;
-	    text = runclient("Batch #" + :batch_osrc:a_batch_number + ", " + :batch_osrc:sum);
+	    text = runclient("Batch #" + :batch_osrc:a_batch_number + condition(has_endorsement('kardia:gift_amt','kardia:ledger:' + :gift_entry:ledger), ", " + :batch_osrc:sum, ""));
 	    }
 
 	receipts_osrc "widget/osrc"
@@ -91,6 +91,7 @@ gift_entry "widget/component-decl"
 
 	    rcpt_link_rule "widget/rule"
 		{
+		condition=runserver(:this:by_donor == 0);
 		ruletype = osrc_relationship;
 		target = batch_osrc;
 		key_1 = a_ledger_number;
@@ -158,7 +159,7 @@ gift_entry "widget/component-decl"
 		action=QueryText;
 		cx__case_insensitive = 1;
 		query=runclient(:srchbox:content);
-		field_list = runclient("p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*");
+		field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*");
 		}
 	    }
 
@@ -279,22 +280,94 @@ gift_entry "widget/component-decl"
 
     receipt_reprint "widget/textbutton"
 	{
+	require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+	endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	x=0; y=556; width=200; height=24;
 	enabled=runclient(:receipts_osrc:a_posted);
 	text=runclient(condition(:receipts_osrc:a_posted,condition(:receipts_osrc:a_receipt_sent, "Reprint Receipt", "Print Receipt") + " " + :receipts_osrc:a_receipt_number, "Post Before Printing"));
 	reprint_cn "widget/connector"
 	    {
 	    event=Click;
-	    event_confirm=runclient(condition(:receipts_osrc:a_receipt_sent, "Do you really want to re-print single receipt " + :receipts_osrc:a_receipt_number + "?  Since it was already printed, this will not update its Sent Date.", "Do you really want to print single receipt " + :receipts_osrc:a_receipt_number + "?  This will not set its Sent Date and mark it as having been sent.  To do that, please print the whole batch from the 'Receipts Batches' window."));
-	    target = gift_entry;
-	    action = Launch;
-	    Source=runclient(:receipts_rpt:value);
-	    Name=runclient("OneReceipt");
-	    Width=800;
-	    Height=600;
-	    ledger_number=runclient(:receipts_osrc:a_ledger_number);
-	    batch_number=runclient(:receipts_osrc:a_batch_number);
-	    gift_number=runclient(:receipts_osrc:a_gift_number);
+	    //event_confirm=runclient(condition(:receipts_osrc:a_receipt_sent, "Do you really want to re-print single receipt " + :receipts_osrc:a_receipt_number + "?  Since it was already printed, this will not update its Sent Date.", "Do you really want to print single receipt " + :receipts_osrc:a_receipt_number + "?  This will not set its Sent Date and mark it as having been sent.  To do that, please print the whole batch from the 'Receipts Batches' window."));
+	    target = reprint_receipt_window;
+	    action = Open;
+	    //Source=runclient(:receipts_rpt:value);
+	    //Name=runclient("OneReceipt");
+	    //Width=800;
+	    //Height=600;
+	    //ledger_number=runclient(:receipts_osrc:a_ledger_number);
+	    //batch_number=runclient(:receipts_osrc:a_batch_number);
+	    //gift_number=runclient(:receipts_osrc:a_gift_number);
+	    }
+	}
+
+    reprint_receipt_window "widget/childwindow"
+	{
+	width=400; height=250;
+	x=190; y=165;
+	style=dialog;
+	modal=yes;
+	titlebar=no;
+	toplevel=yes;
+	visible=no;
+
+	reprint_vbox "widget/vbox"
+	    {
+	    x=10; y=10;
+	    width=378; height=228;
+	    spacing=10;
+
+	    reprint_title "widget/label" { height=20; font_size=15; style=bold; align=center; value=runclient("Re-print Receipt #" + :receipts_osrc:a_receipt_number + "?"); }
+
+	    reprint_warning "widget/label" { height=60; style=italic; value=runclient(condition(:receipts_osrc:a_receipt_sent, "Do you really want to re-print single receipt " + :receipts_osrc:a_receipt_number + "?  Since it was already printed, this will not update its Sent Date.", "Do you really want to print single receipt " + :receipts_osrc:a_receipt_number + "?  This will not set its Sent Date and mark it as having been sent.  To do that, please print the whole batch from the 'Receipts Batches' window.")); }
+
+	    show_bg "widget/component"
+		{
+		path="/sys/cmp/smart_field.cmp";
+		ctl_type=checkboxleft;
+		text="Print Receipt Background?"; 
+		label_width=140; 
+		height=20;
+		
+		show_bg_hints "widget/hints" { style=notnull; default=0; } 
+
+		set_zero_on_open "widget/connector" { source=reprint_receipt_window; event=Open; action=SetValue; Value=0; }
+		}
+
+	    reprint_sep "widget/autolayoutspacer" { height=60; }
+
+	    reprint_ctls "widget/hbox"
+		{
+		height=24;
+		align=center;
+		spacing=10;
+
+		reprint_ok "widget/textbutton"
+		    {
+		    text = runclient(condition(:receipts_osrc:a_receipt_sent, "Reprint", "Print"));
+		    reprint_ok_cn "widget/connector" 
+			{
+			event=Click;
+			target = gift_entry;
+			action = Launch;
+			Source=runclient(:receipts_rpt:value);
+			Name=runclient("OneReceipt");
+			Width=800;
+			Height=600;
+			ledger_number=runclient(:receipts_osrc:a_ledger_number);
+			batch_number=runclient(:receipts_osrc:a_batch_number);
+			gift_number=runclient(:receipts_osrc:a_gift_number);
+			show_background=runclient(:show_bg:value);
+			}
+		    reprint_ok_cn2 "widget/connector" { event=Click; target=reprint_receipt_window; action=Close; }
+		    }
+
+		reprint_cancel "widget/textbutton"
+		    {
+		    text = "Cancel";
+		    reprint_cancel_cn "widget/connector" { event=Click; target=reprint_receipt_window; action=Close; }
+		    }
+		}
 	    }
 	}
 
@@ -306,7 +379,7 @@ gift_entry "widget/component-decl"
 	    {
 	    path="/apps/kardia/modules/base/section_header.cmp";
 	    height=22; width=572;
-	    text = runclient(condition(:rcpt_form:form_mode == 'New', "** NEW RECEIPT **", condition(:rcpt_form:form_mode == 'Modify', 'MODIFYING -- ', '') + condition(:gift_entry:by_donor, "Batch #" + :receipts_osrc:a_batch_number + ", ", "") + "Receipt #" + :receipts_osrc:a_receipt_number + ", Total " + :receipts_osrc:a_amount + condition(:receipts_osrc:a_posted, '   ** POSTED **', '')));
+	    text = runclient(condition(:rcpt_form:form_mode == 'New', "** NEW RECEIPT **", condition(:rcpt_form:form_mode == 'Modify', 'MODIFYING -- ', '') + condition(:gift_entry:by_donor, "Batch #" + :receipts_osrc:a_batch_number + ", ", "") + "Receipt #" + :receipts_osrc:a_receipt_number + condition(has_endorsement('kardia:gift_amt','kardia:ledger:' + :gift_entry:ledger) ,', Total ' + :receipts_osrc:a_amount, '') + condition(:receipts_osrc:a_posted, '   ** POSTED **', '')));
 	    form = rcpt_form;
 	    }
 
@@ -421,7 +494,7 @@ gift_entry "widget/component-decl"
 			popup_width=380;
 			popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
 			//search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*,*p_comments";
-			search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+			search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
 			key_name="p_partner_key";
 			object_name="Donor";
 			popup_text="Select a Donor:";
@@ -435,7 +508,7 @@ gift_entry "widget/component-decl"
 			{
 			height=24;
 			x=120;
-			width=130;
+			width=145;
 			text="Add New Donor";
 
 			addnew_cn "widget/connector"
@@ -591,7 +664,29 @@ gift_entry "widget/component-decl"
 			rd_hints2 "widget/hints" { condition=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows cfg where :cfg:a_ledger_number = :this:ledger and :cfg:a_config_name = 'RcptDisabRcvdDt'),0) == 0); default=runclient(getdate()); }
 			}
 		    f_rcpt_rcptno "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Receipt Number:'; field='a_receipt_number'; ctl_type=editbox; rn_hints "widget/hints" { style=readonly; } }
-		    f_rcpt_total "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Total Amount:'; field='a_amount'; ctl_type=editbox; rttl_hints "widget/hints" { style=readonly; default=runclient(0); } }
+		    f_rcpt_total "widget/component"
+			{
+			require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+			endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+			height=20;
+			path="/sys/cmp/smart_field.cmp";
+			label_width=120;
+			text='Total Amount:';
+			field='a_amount';
+			ctl_type=editbox;
+			rttl_hints "widget/hints" { style=readonly; default=runclient(0); }
+			}
+		    f_rcpt_total_nosec "widget/component"
+			{
+			require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+			endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+			invert_security_check=yes;
+			height=20;
+			path="/apps/kardia/modules/base/locked_field.cmp";
+			label_width=120;
+			text='Total Amount:';
+			field='a_amount';
+			}
 		    }
 		}
 	    }
@@ -887,7 +982,30 @@ gift_entry "widget/component-decl"
 				    }
 
 				f_desig_recvdoc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Check No:'; field='a_recv_document_id'; ctl_type=editbox; }
-				f_desig_amount "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Amount:'; field='a_amount'; ctl_type=editbox; amt_hints "widget/hints" { default=runclient(''); } empty_desc="required"; }
+				f_desig_amount "widget/component"
+				    {
+				    require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+				    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+				    height=20;
+				    path="/sys/cmp/smart_field.cmp";
+				    label_width=100;
+				    text='Amount:';
+				    field='a_amount';
+				    ctl_type=editbox;
+				    amt_hints "widget/hints" { default=runclient(''); }
+				    empty_desc="required";
+				    }
+				f_desig_amount_nosec "widget/component"
+				    {
+				    require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+				    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+				    invert_security_check=yes;
+				    height=20;
+				    path="/apps/kardia/modules/base/locked_field.cmp";
+				    label_width=100;
+				    text='Amount:';
+				    field='a_amount';
+				    }
 
 				f_desig_comment "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text='Comments:'; field='a_comment'; ctl_type=editbox; }
 				firsttime_ind "widget/label" { height=16; value=runclient(condition(char_length(:f_desig_cc:content) > 0 and :f_desig_cc:content = :f_desig_cc:value, condition(:f_rcpt_donorid:content == :f_desig_cc:content, "DONOR ID SAME AS DESIGNATION", condition(:ccinfo_osrc:giftcnt == 0, "FIRST TIME DONATION TO THIS FUND", "")),"")); fgcolor=red; align=center; }

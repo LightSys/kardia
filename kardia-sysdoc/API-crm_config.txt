@@ -1,0 +1,293 @@
+Document:   Kardia REST API for CRM Configuration Data
+Author:	    Greg Beeley (GRB)
+Date:	    26-Jun-2014
+-------------------------------------------------------------------------------
+
+OVERVIEW...
+
+    This document describes the CRM configuration data API for Kardia.  If you
+    are not already familiar with web services, REST, and the Kardia REST API
+    system, please first read "JSON-REST.txt" in centrallix-sysdoc, and read
+    "API.txt" in this documentation directory.
+
+    If you are looking for data used for the CRM engagement data itself, such
+    as a list of tracks that one partner has engaged in (as opposed to a list
+    of all available engagement tracks), see the "API-crm.txt" document.
+
+
+ENDPOINT...
+
+    The endpoint of this API will be:
+
+	/apps/kardia/api/crm_config/
+
+    Of course, the needed protocol (http or https) and server address (such as
+    server.lightsys.org:843) will need to be added to the URL, to give
+    something like:
+
+	https://server.lightsys.org:843/apps/kardia/api/crm_config?cx__mode=rest
+
+
+OBJECT STRUCTURE...
+
+    The following are example paths to various types of collections of objects
+    in the CRM configuration data API:
+
+    /apps/kardia/api/crm_config/Tracks -- list of available engagement tracks
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    track_id	    - the numerical ID identifying the track
+	    track_name	    - the short name or label for this track
+	    track_description - the description of the track
+	    track_color	    - a color, in HTML style, for the track
+	    track_status    - either Active or Obsolete
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the track was created in Kardia
+	    created_by	    - username that created the track
+	    date_modified   - date the track was modified in Kardia
+	    modified_by	    - username that modified the track
+
+
+    /apps/kardia/api/crm_config/Tracks/{trackname}/Steps -- List of steps in
+    a given track:
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    track_id	    - the numerical ID identifying the track
+	    track_name	    - the short name or label for this track
+	    step_id	    - the numerical ID for the step in the track
+	    step_name	    - the short name or label for this step
+	    step_description - a description for the step
+	    step_sequence   - the order in which the steps occur
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the step was created in Kardia
+	    created_by	    - username that created the step
+	    date_modified   - date the step was modified in Kardia
+	    modified_by	    - username that modified the step
+
+    /apps/kardia/api/crm_config/Tracks/{trackname}/Collaborators -- List of
+    collaborators who participate by default in a given track.
+
+	This is a collection URL.  Each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the collaborator
+	    partner_name    - the name (org or first/last) of the collaborator
+	    track_name	    - the short name or label for this track
+	    comments	    - comments about this collaborator
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the collaborator was added in Kardia
+	    created_by	    - username that added the collaborator
+	    date_modified   - date the collaborator was modified in Kardia
+	    modified_by	    - username that modified the collaborator
+
+    /apps/kardia/api/crm_config/Tracks/{trackname}/Steps/{stepname}/Collaborators --
+    A list of collaborators that participate by default at a given step.
+
+	This is a collection URL.  Each returned element will have the
+	following properties:
+
+	    partner_id	    - partner id of the collaborator
+	    partner_name    - the name (org or first/last) of the collaborator
+	    track_name	    - the short name or label for this track
+	    step_name	    - the short name or label for this step
+	    comments	    - comments about this collaborator
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the collaborator was added in Kardia
+	    created_by	    - username that added the collaborator
+	    date_modified   - date the collaborator was modified in Kardia
+	    modified_by	    - username that modified the collaborator
+
+    /apps/kardia/api/crm_config/Tracks/{trackname}/Steps/{stepname}/Requirements --
+    A list of all requirements to complete a particular engagement track step.
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    requirement_id  - the numerical ID for the requirement
+	    requirement_name - the short name or label for the requirement
+	    track_id	    - the numerical ID identifying the track
+	    track_name	    - the short name or label for this track
+	    step_id	    - the numerical ID for the step in the track
+	    step_name	    - the short name or label for this step
+	    due_days_from_step - the number of days allowed for the completion
+			      of this requirement from the start of the
+			      current step
+	    due_days_from_requirement - the number of days allowed for the
+			      completion of this requirement from the
+			      completion of a different requirement
+	    due_days_from_requirement_id - the ID of the requirement
+			      triggering the above due date
+	    due_days_from_requirement_name - the short name of the above
+			      requirement
+	    fulfilled_by    - who fulfills this requirement: Partner,
+			      Organization, or Either
+	    fulfilling_document_type_id - if submission of a document
+			      fulfills this requirement, this is the ID of
+			      that document type.
+	    fulfilling_document_type_name - the label or short name of the
+			      above document type.
+	    waivable	    - whether the requirement can be waived (this
+			      will be 0 or 1)
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the requirement was created in Kardia
+	    created_by	    - username that created the requirement
+	    date_modified   - date the requirement was modified in Kardia
+	    modified_by	    - username that modified the requirement
+
+		
+	/apps/kardia/api/crm_config/Tags -- list of available smart tags
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    tag_id	  		- the numerical ID identifying the tag
+	    tag_label	    - the short name or label for this track
+	    tag_desc		- the description of the track
+	    is_active	    - 1 if the tag is active, 0 otherwise
+	    tag_threshold	- value between 0.0 and 1.0;
+						how strong tag must be in order to be created in partner's tag graph
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the tag was created in Kardia
+	    created_by	    - username that created the tag
+	    date_modified   - date the tag was modified in Kardia
+	    modified_by	    - username that modified the tag
+		
+		
+	/apps/kardia/api/crm_config/ContactHistTypes -- list of types of data items
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    id = :e_contact_history_type,
+			label = :e_short_name,
+			desc = :e_description,
+			user_selectable = :e_user_selectable
+			date_created = :s_date_created,
+			created_by = :s_created_by,
+			date_modified = :s_date_modified,
+			modified_by = :s_modified_by
+			from
+			/apps/kardia/data/Kardia_DB/e_contact_history_type/rows
+			
+			
+		id	  		- the numerical ID identifying the contact history item type
+	    label	    - the short name or label for this contact history item type
+	    desc		- the description of the contact history item type
+		user_selectable	- 1 if the type can be selected by a user entering a contact history item,
+						  0 if only used for auto-generated records
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item type was created in Kardia
+	    created_by	    - username that created the data item type
+	    date_modified   - date the date item type was modified in Kardia
+	    modified_by	    - username that modified the data item type
+		
+		
+	/apps/kardia/api/crm_config/DataItemTypes -- list of types of data items
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    type_id	  		- the numerical ID identifying the data item type
+	    type_label	    - the short name or label for this data item type
+		parent_type_id	- the ID of the parent data item type
+		parent_type_label	- the short name or label for the parent data item type
+	    type_desc		- the description of the data item type
+		type_highlight	- 1 if the tag is highlighted, 0 otherwise
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the data item type was created in Kardia
+	    created_by	    - username that created the data item type
+	    date_modified   - date the date item type was modified in Kardia
+	    modified_by	    - username that modified the data item type
+		
+	
+	/apps/kardia/api/crm_config/Countries -- list of countries
+	
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    country_code	- the country code (ISO 3166-1 Alpha-2 With UK exception)
+		iso3166_2_code	- the ISO 3166-1 Alpha-2 country code
+		iso3166_3_code	- the ISO 3166-1 Alpha-3 country code
+		fips_code		- the two-letter country code used by FIPS 10-4 / CIA World Factbook
+						  / Joshua Project / HIS-ROG3
+		name 			- the country name
+		is_valid		- 1 if the country is valid (active), 0 otherwise (obsolete)
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the country was created in Kardia
+	    created_by	    - username that created the country
+	    date_modified   - date the country was modified in Kardia
+	    modified_by	    - username that modified the country
+	
+	
+
+EXAMPLE URLS...
+
+    The list of types of tracks in the system:
+
+	http://server/apps/kardia/api/crm_config/Tracks?cx__mode=rest&cx__res_type=collection
+
+    The list of tracks along with information about each track:
+
+	http://server/apps/kardia/api/crm_config/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Information about one track:
+
+	http://server/apps/kardia/api/crm_config/Tracks/Volunteer?cx__mode=rest&cx__res_format=attrs
+
+    Information about one track in 'full' attribute mode:
+
+	http://server/apps/kardia/api/crm_config/Tracks/Volunteer?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=full
+
+    A list of steps for a given track, with information about each one:
+
+	http://server/apps/kardia/api/crm_config/Tracks/Volunteer/Steps?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of collaborators for a given track, with detail about each:
+
+	http://server/apps/kardia/api/crm_config/Tracks/Volunteer/Collaborators?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of collaborators for a given step, with detail about each:
+
+	http://server/apps/kardia/api/crm_config/Tracks/Volunteer/Steps/Inquiry/Collaborators?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    A list of requirements for a given step, with detail about each:
+
+	http://server/apps/kardia/api/crm_config/Tracks/Volunteer/Steps/Inquiry/Requirements?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+	The list of tags in the system, with information about each:
+	
+	http://server/apps/kardia/api/crm_config/TagTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	The list of contact history types in the system, with information about each:
+	
+	http://server/apps/kardia/api/crm_config/ContactHistTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	The list of data item types in the system, with information about each:
+	
+	http://server/apps/kardia/api/crm_config/DataItemTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+	
+	The list of countries in the system, with information about each:
+	
+	http://server/apps/kardia/api/crm_config/Countries?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic

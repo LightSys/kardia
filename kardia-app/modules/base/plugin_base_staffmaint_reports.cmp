@@ -1,0 +1,138 @@
+$Version=2$
+plugin_base_staffmaint_ccmanage "widget/component-decl"
+    {
+    title = "Reports";
+    height=272;
+    width=758;
+
+    sequence = 10;
+
+    Modified "widget/component-decl-event" { }
+
+    staff_osrc "widget/parameter" { type=object; find_container = "widget/osrc"; }
+    ledger "widget/parameter" { type=string; deploy_to_client = yes; }
+
+    rpt_ctls "widget/component"
+	{
+	path = "/apps/kardia/modules/base/receives_report.cmp";
+
+	on_connect "widget/connector"
+	    {
+	    event=Connected;
+	    target=rpts_osrc;
+	    action=RefreshObject;
+	    }
+	on_disconnect "widget/connector"
+	    {
+	    event=Disconnected;
+	    target=rpts_osrc;
+	    action=RefreshObject;
+	    }
+	}
+
+    vbox "widget/vbox"
+	{
+	x = 0;
+	y = 0;
+	width = 758;
+	height = 272;
+	spacing = 8;
+	cellsize = 20;
+
+	rpts_osrc "widget/osrc"
+	    {
+	    rpts_osrc_partner "widget/parameter" { param_name=p_partner_key; type=string; default=runclient(:staff_osrc:p_partner_key); }
+	    sql = runserver("
+		    SELECT
+			*,
+			report_active = condition( (select count(1) from /apps/kardia/data/Kardia_DB/r_group_report/rows gr where :gr:p_recipient_partner_key = :parameters:p_partner_key and :gr:r_group_name = :r:r_group_name and :gr:r_is_active = 1),'/sys/images/checkbox_checked.png', '/sys/images/checkbox_unchecked.png')
+		    FROM
+			/apps/kardia/data/Kardia_DB/r_group/rows r
+		    WHERE
+			:r:r_is_active = 1
+		    HAVING
+			(select count(1) from /apps/kardia/data/Kardia_DB/r_group_param/rows rgp where :rgp:r_group_name = :this:r_group_name and :rgp:r_param_name = 'costctr' and :rgp:r_is_report_param = 1) = 0
+		    ");
+
+	    baseobj="/apps/kardia/data/Kardia_DB/r_group/rows";
+	    replicasize=25;
+	    readahead=25;
+
+	    refresh_conn "widget/connector"
+		{
+		source = staff_osrc;
+		event = DataFocusChanged;
+		action = Refresh;
+		}
+
+	    rpt_form "widget/form"
+		{
+		form_txt "widget/label" { value=runclient("You can select below what general reports the staff member receives.  For reports associated with one particular fund (cost center), please see the 'Funds Managed' tab."); height=32; }
+
+		rpt_pane "widget/pane"
+		    {
+		    height=256;
+		    style=flat;
+
+		    rpt_vbox "widget/vbox"
+			{
+			x=0; y=0;
+			height=295;
+			width=758;
+			spacing=8;
+			cellsize = 20;
+
+			//form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; height=26; object_name="Report"; deletable=0; }
+
+			rpt_table_pane "widget/pane"
+			    {
+			    height=232;
+			    widget_class=table_bgnd;
+
+			    rpt_table "widget/table"
+				{
+				x=0;y=0;
+				width=756; height=230;
+				mode = dynamicrow;
+
+				//t_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=70; }
+				//t_name "widget/table-column" { title="Name"; fieldname="a_cc_desc"; width=450; }
+				t_disp "widget/table-column" { title="Report Name"; fieldname="r_group_description"; width=450; }
+				t_item "widget/table-column" { title="Enabled"; fieldname="report_active"; width=70; type=image; align=center; }
+
+				enable_on_click_column "widget/connector"
+				    {
+				    event=Click;
+				    event_condition=runclient(:Column = 'report_active' and :ColumnValue == '/sys/images/checkbox_unchecked.png');
+				    target = rpt_ctls;
+				    action=ConnectFundReport;
+
+				    // Parameters to ConnectReport
+				    method=runclient('E');
+				    param=runclient('manager_id');
+				    value=runclient(:staff_osrc:p_partner_key);
+				    report_group=runclient(:rpts_osrc:r_group_name);
+				    partner=runclient(:staff_osrc:p_partner_key);
+				    }
+				disable_on_click_column "widget/connector"
+				    {
+				    event=Click;
+				    event_condition=runclient(:Column = 'report_active' and :ColumnValue == '/sys/images/checkbox_checked.png');
+				    target = rpt_ctls;
+				    action=DisconnectFundReport;
+
+				    // Parameters to ConnectReport
+				    method=runclient('E');
+				    param=runclient('manager_id');
+				    value=runclient(:staff_osrc:p_partner_key);
+				    report_group=runclient(:rpts_osrc:r_group_name);
+				    partner=runclient(:staff_osrc:p_partner_key);
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

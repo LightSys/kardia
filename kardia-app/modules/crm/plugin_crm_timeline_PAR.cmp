@@ -1,0 +1,9 @@
+$Version=2$
+plugin_crm_timeline_PAR "widget/component-decl"
+    {
+    width=434;
+    height=0;
+    icon = "/apps/kardia/images/artwork/persona-25x26.png";
+    type = "PAR";
+    iconbar_enabled = no;
+    }

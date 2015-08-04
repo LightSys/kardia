@@ -103,7 +103,7 @@ post_cr_batch "widget/component-decl"
 			m_complimentary=1,
 			m_show_contact=1,
 			m_reason_member='D',
-			m_comments = 'Donated to ' + :i:a_cost_center,
+			m_comments = 'Donated to ' + sum(:i:a_cost_center + ',') - ',',
 			s_date_created=getdate(),
 			s_created_by=user_name(),
 			s_date_modified=getdate(),
@@ -123,35 +123,55 @@ post_cr_batch "widget/component-decl"
 			:a:a_ledger_number = :i:a_ledger_number
 		GROUP BY
 			:g:p_donor_partner_id,
-			:i:a_cost_center
+			--:i:a_cost_center,
+			:a:m_list_code
 		HAVING
-			(select :m:m_membership_status from /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key) is null
+			(select :m:m_membership_status
+			   from /apps/kardia/data/Kardia_DB/m_list_membership/rows m
+			  where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key and not (:m:m_membership_status = 'D' or (:m:m_membership_status = 'C' and isnull(:m:m_reason_cancel,' ') = 'G'))
+			) is null
 		;
 
+		--UPDATE
+		--	IDENTITY /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+		--	/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+		--	/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		--	/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a
+		--SET
+		--	:m:m_membership_status = 'P',
+		--	:m:m_reason_member = 'D',
+		--	:m:m_comments = 'Re-donated to ' + :i:a_cost_center,
+		--	:m:s_date_modified = getdate(),
+		--	:m:s_modified_by = user_name()
+		--WHERE
+		--	:g:a_period = :parameters:a_period and
+		--	:g:a_ledger_number = :parameters:a_ledger_number and
+		--	:g:a_batch_number = :parameters:a_batch_number and
+		--	:i:a_ledger_number = :g:a_ledger_number and
+		--	:i:a_batch_number = :g:a_batch_number and
+		--	:i:a_gift_number = :g:a_gift_number and
+		--	:a:a_cost_center = :i:a_cost_center and
+		--	:a:a_ledger_number = :i:a_ledger_number and
+		--	:m:m_list_code = :a:m_list_code and
+		--	:m:p_partner_key = :g:p_donor_partner_id and
+		--	(:m:m_membership_status = 'D' or
+		--	    (:m:m_membership_status = 'C' and :m:m_reason_cancel = 'G'))
+		--;
+
 		UPDATE
-			IDENTITY /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-			/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a
+		    identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
 		SET
-			:m:m_membership_status = 'P',
-			:m:m_reason_member = 'D',
-			:m:m_comments = 'Re-donated to ' + :i:a_cost_center,
-			:m:s_date_modified = getdate(),
-			:m:s_modified_by = user_name()
+		    :i:p_dn_donor_partner_id = :g:p_donor_partner_id,
+		    :i:a_dn_gift_received_date = :g:a_gift_received_date,
+		    :i:a_dn_gift_postmark_date = :g:a_gift_postmark_date,
+		    :i:a_dn_receipt_number = :g:a_receipt_number
 		WHERE
-			:g:a_period = :parameters:a_period and
-			:g:a_ledger_number = :parameters:a_ledger_number and
-			:g:a_batch_number = :parameters:a_batch_number and
-			:i:a_ledger_number = :g:a_ledger_number and
-			:i:a_batch_number = :g:a_batch_number and
-			:i:a_gift_number = :g:a_gift_number and
-			:a:a_cost_center = :i:a_cost_center and
-			:a:a_ledger_number = :i:a_ledger_number and
-			:m:m_list_code = :a:m_list_code and
-			:m:p_partner_key = :g:p_donor_partner_id and
-			(:m:m_membership_status = 'D' or
-			    (:m:m_membership_status = 'C' and :m:m_reason_cancel = 'G'))
+		    :g:a_ledger_number = :parameters:a_ledger_number and
+		    :g:a_batch_number = :parameters:a_batch_number and
+		    :i:a_ledger_number = :g:a_ledger_number and
+		    :i:a_batch_number = :g:a_batch_number and
+		    :i:a_gift_number = :g:a_gift_number
 		";
 
 	end_post "widget/connector"
@@ -311,7 +331,8 @@ post_cr_batch "widget/component-decl"
 			a_effective_date = :b:a_default_effective_date,
 			a_transaction_type='T',
 			:gi:a_cost_center,
-			a_account_category=condition(:gi:a_account_code = '4100', '40', condition(:gi:a_account_code <= '1999', '10', '20')),
+			-- a_account_category=condition(:gi:a_account_code = '4100', '40', condition(:gi:a_account_code <= '1999', '10', '20')),
+			a_account_category=isnull( (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :gi:a_ledger_number and :a:a_account_code = :gi:a_account_code), '40'),
 			:gi:a_account_code,
 			a_amount = $0 - sum(:gi:a_amount),
 			a_posted = 0,

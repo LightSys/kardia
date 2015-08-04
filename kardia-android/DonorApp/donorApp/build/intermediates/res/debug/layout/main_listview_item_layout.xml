@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+     Amount
+    <TextView
+        android:id="@+id/detail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#37AD00"
+        android:layout_marginRight="18dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="18dp"
+        android:textSize="22sp" />
+
+
+    <!-- The Title -->
+    <TextView
+        android:id="@+id/subject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="18dp"
+        android:layout_marginLeft="18dp"
+        android:textSize="22sp"
+        android:layout_toLeftOf="@id/detail"/>
+
+    <!-- The Date -->
+
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@id/detail"
+        android:layout_below="@id/detail"
+        android:layout_marginBottom="6dp"
+        android:layout_marginTop="6dp"
+        android:textColor="#303030"
+        android:textSize="16sp" />
+
+        <!-- Amount Text -->
+
+</RelativeLayout>
+<!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout/main_listview_item_layout.xml -->

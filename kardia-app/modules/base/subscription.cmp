@@ -5,6 +5,7 @@ subscription "widget/component-decl"
 
     partner "widget/parameter" { type=string; default=null; }
     list "widget/parameter" { type=string; default=null; }
+    hist_id "widget/parameter" { type=integer; default=null; }
     container "widget/parameter" { type=object; find_container="widget/page"; }
     mlist_parent_osrc "widget/parameter" { type=object; }
     send_update "widget/parameter" { type=integer; default=0; }
@@ -51,6 +52,7 @@ subscription "widget/component-decl"
 			:l:m_reason_member *= :mr:tag and
 			:l:m_list_code = " + quote(:this:list) + " and
 			:l:p_partner_key = " + quote(:this:partner) + " and
+			:l:m_hist_id = " + :this:hist_id + " and
 			:p:p_partner_key = :l:p_partner_key
 		");
 	baseobj="/apps/kardia/data/Kardia_DB/m_list_membership/rows";

@@ -1,0 +1,247 @@
+$Version=2$
+api_fundmanager "system/querytree"
+    {
+    managerlist "system/querytree"
+	{
+	sql = " select
+		    manager_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		    manager_id = :cs:p_staff_partner_key,
+			manager_login = :s:p_kardia_login,
+		    fund_cnt = count(1)
+		from
+		    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+		    identity /apps/kardia/data/Kardia_DB/p_staff/rows s,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :s:p_partner_key = :cs:p_staff_partner_key and
+		    :s:p_is_staff = 1 and
+		    :p:p_partner_key = :s:p_partner_key
+		group by
+		    :cs:p_staff_partner_key
+		";
+
+	funds "system/querytree"
+	    {
+	    text = "Funds";
+	    
+	    fundlist "system/querytree"
+		{
+		sql = "	select
+			    fund = :cs:a_cost_center,
+			    ledger = :cs:a_ledger_number,
+			    fund_desc = :c:a_cc_desc,
+			    ledger_desc = :l:a_ledger_desc,
+			    fund_class = (select :a_acct_class_desc from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows cc where :cc:a_ledger_number = :c:a_ledger_number and :cc:a_cost_center_class = :c:a_cost_center_class),
+			    subfund_list = (select sum(:c2:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cost_center/rows c2 where :c2:a_ledger_number = :c:a_ledger_number and (:c2:a_cost_center = :c:a_cost_center or :c2:a_bal_cost_center = :c:a_cost_center) )
+			from 
+			    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+			    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			    /apps/kardia/data/Kardia_DB/a_ledger/rows l
+			where
+			    :c:a_cost_center = :cs:a_cost_center and
+			    :c:a_ledger_number = :cs:a_ledger_number and
+			    :cs:p_staff_partner_key = :managerlist:manager_id and
+			    :l:a_ledger_number = :cs:a_ledger_number
+			";
+
+		periods "system/querytree"
+		    {
+		    text = "Periods";
+
+		    fundbalperiods "system/querytree"
+			{
+			sql = "	select
+				    period = :p:a_period,
+				    period_desc = :p:a_period_desc,
+				    ref_period = min(:p2:a_period)
+				from
+				    identity /apps/kardia/data/Kardia_DB/a_period/rows p,
+				    /apps/kardia/data/Kardia_DB/a_period/rows p2
+				where
+				    datepart(year, getdate()) - 3 <= datepart(year, :p:a_start_date) and
+				    :p:a_ledger_number = :fundlist:ledger and
+				    :p:a_summary_only = 0 and
+				    :p:a_status != 'N' and
+				    :p2:a_parent_period = :p:a_parent_period and
+				    :p2:a_ledger_number = :p:a_ledger_number
+				group by
+				    :p:a_period
+				";
+
+			trx "system/querytree"
+			    {
+			    text = "Transactions";
+
+			    trxlist "system/querytree"
+				{
+				sql = " SELECT
+						amount = :tt:a_amount,
+						debit = condition(:tt:a_amount > $0, :tt:a_amount, null),
+						credit = condition(:tt:a_amount < $0, $0 - :tt:a_amount, null),
+						fund = :tt:a_cost_center,
+						fund_desc = :c:a_cc_desc,
+						account = :tt:a_account_code,
+						account_desc = :a:a_acct_desc,
+						trx_date = :tt:a_effective_date,
+						comments = :tt:a_comment,
+						to_from_id = :p:p_partner_key,
+						to_from = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+					FROM
+						identity /apps/kardia/data/Kardia_DB/a_transaction/rows tt,
+						/apps/kardia/data/Kardia_DB/a_account/rows a,
+						/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+						/apps/kardia/data/Kardia_DB/p_partner/rows p
+					WHERE
+						:tt:a_ledger_number = :fundlist:ledger and
+						charindex(',' + rtrim(:tt:a_cost_center) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
+						:tt:a_period = :fundbalperiods:period and
+						:tt:a_transaction_type = 'T' and
+						:tt:a_account_code >= '3000' and
+						:a:a_ledger_number = :tt:a_ledger_number and
+						:a:a_account_code = :tt:a_account_code and
+						:c:a_ledger_number = :tt:a_ledger_number and
+						:c:a_cost_center = :tt:a_cost_center and
+						:p:p_partner_key =* :tt:p_ext_partner_id
+					ORDER BY
+						:tt:a_effective_date,
+						:tt:a_batch_number,
+						:tt:a_journal_number,
+						:tt:a_transaction_number
+					";
+				}
+			    }
+
+			balance "system/querytree"
+			    {
+			    sql = " select
+					name = 'Balances',
+					start_balance = isnull(sum(condition(:t:a_transaction_type == 'B' or :t:a_period < :fundbalperiods:period, :t:a_amount, $0)), $0),
+					balance = isnull(sum(:a_amount), $0)
+				    from
+					/apps/kardia/data/Kardia_DB/a_transaction/rows t
+				    where
+					:t:a_ledger_number = :fundlist:ledger and
+					charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
+					:t:a_period >= :fundbalperiods:ref_period and
+					:t:a_period <= :fundbalperiods:period and
+					:t:a_account_code >= '3000' and
+					:t:a_account_code <= '5999'
+				    ";
+			    use_having = yes;
+			    }
+			}
+		    }
+
+		subf "system/querytree"
+		    {
+		    text = "Subfunds";
+
+		    subflist "system/querytree"
+			{
+			sql = "	SELECT
+				    fund = :c:a_cost_center,
+				    ledger = :c:a_ledger_number,
+				    fund_desc = :c:a_cc_desc,
+				    ledger_desc = :l:a_ledger_desc,
+				    fund_class = (select :a_acct_class_desc from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows cc where :cc:a_ledger_number = :c:a_ledger_number and :cc:a_cost_center_class = :c:a_cost_center_class)
+				FROM 
+				    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+				    /apps/kardia/data/Kardia_DB/a_ledger/rows l
+				WHERE
+				    :c:a_bal_cost_center = :fundlist:fund and
+				    :c:a_ledger_number = :fundlist:ledger and
+				    :l:a_ledger_number = :c:a_ledger_number
+				";
+
+			subperiods "system/querytree"
+			    {
+			    text = "Periods";
+
+			    subperiodslist "system/querytree"
+				{
+				sql = "	select
+					    period = :p:a_period,
+					    period_desc = :p:a_period_desc,
+					    ref_period = min(:p2:a_period)
+					from
+					    identity /apps/kardia/data/Kardia_DB/a_period/rows p,
+					    /apps/kardia/data/Kardia_DB/a_period/rows p2
+					where
+					    datepart(year, getdate()) - 3 <= datepart(year, :p:a_start_date) and
+					    :p:a_ledger_number = :subflist:ledger and
+					    :p:a_summary_only = 0 and
+					    :p:a_status != 'N' and
+					    :p2:a_parent_period = :p:a_parent_period and
+					    :p2:a_ledger_number = :p:a_ledger_number
+					group by
+					    :p:a_period
+					";
+
+				subtrx "system/querytree"
+				    {
+				    text = "Transactions";
+
+				    subtrxlist "system/querytree"
+					{
+					sql = " SELECT
+							amount = :tt:a_amount,
+							debit = condition(:tt:a_amount > $0, :tt:a_amount, null),
+							credit = condition(:tt:a_amount < $0, $0 - :tt:a_amount, null),
+							fund = :tt:a_cost_center,
+							fund_desc = :c:a_cc_desc,
+							account = :tt:a_account_code,
+							account_desc = :a:a_acct_desc,
+							trx_date = :tt:a_effective_date,
+							comments = :tt:a_comment,
+							to_from_id = :p:p_partner_key,
+							to_from = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+						FROM
+							identity /apps/kardia/data/Kardia_DB/a_transaction/rows tt,
+							/apps/kardia/data/Kardia_DB/a_account/rows a,
+							/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+							/apps/kardia/data/Kardia_DB/p_partner/rows p
+						WHERE
+							:tt:a_ledger_number = :subflist:ledger and
+							:tt:a_cost_center = :subflist:fund and
+							:tt:a_period = :subperiodslist:period and
+							:tt:a_transaction_type = 'T' and
+							:tt:a_account_code >= '3000' and
+							:a:a_ledger_number = :tt:a_ledger_number and
+							:a:a_account_code = :tt:a_account_code and
+							:c:a_ledger_number = :tt:a_ledger_number and
+							:c:a_cost_center = :tt:a_cost_center and
+							:p:p_partner_key =* :tt:p_ext_partner_id
+						ORDER BY
+							:tt:a_effective_date,
+							:tt:a_batch_number,
+							:tt:a_journal_number,
+							:tt:a_transaction_number
+						";
+					}
+				    }
+
+				subbalance "system/querytree"
+				    {
+				    sql = " select
+						name = 'Balances',
+						start_balance = isnull(sum(condition(:t:a_transaction_type == 'B' or :t:a_period < :subperiodslist:period, :t:a_amount, $0)), $0),
+						balance = isnull(sum(:a_amount), $0)
+					    from
+						/apps/kardia/data/Kardia_DB/a_transaction/rows t
+					    where
+						:t:a_ledger_number = :subflist:ledger and
+						:t:a_cost_center = :subflist:fund and
+						:t:a_period >= :subperiodslist:ref_period and
+						:t:a_period <= :subperiodslist:period and
+						:t:a_account_code >= '3000' and
+						:t:a_account_code <= '5999'
+					    ";
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

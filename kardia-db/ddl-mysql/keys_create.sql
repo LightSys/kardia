@@ -31,6 +31,9 @@ alter table p_contact_info
 alter table p_partner_relationship
 	add constraint p_partner_relationship_pk primary key  (p_partner_key, p_relation_type, p_relation_key);
 
+alter table p_partner_relationship_type
+	add constraint p_relat_type_pk primary key  (p_relation_type);
+
 alter table p_church
 	add constraint p_church_pk primary key  (p_partner_key);
 
@@ -70,11 +73,128 @@ alter table p_dup_check_tmp
 alter table p_partner_sort_tmp
 	add constraint p_sort_pk primary key  (p_partner_key,s_username,p_sort_session_id);
 
+alter table p_acquisition_code
+	add constraint p_acqcode_pk primary key  (p_acquisition_code);
+
+alter table p_partner_search
+	add constraint p_search_pk primary key  (p_search_id);
+
+alter table p_partner_search_stage
+	add constraint p_searchstage_pk primary key  (p_search_id,p_search_stage_id);
+
+alter table p_partner_search_results
+	add constraint p_searchres_pk primary key  (p_partner_key,s_username,p_search_session_id,p_search_stage_id);
+
+alter table p_search_stage_criteria
+	add constraint p_stage_criteria_pk primary key  (p_search_id,p_search_stage_id,p_criteria_name);
+
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
 
 alter table m_list_membership
-	add constraint m_list_membership_clustered_pk primary key  (m_list_code, p_partner_key);
+	add constraint m_list_membership_clustered_pk primary key  (m_list_code, p_partner_key, m_hist_id);
+
+alter table e_contact_autorecord
+	add constraint e_autorec_pk primary key  (p_partner_key, e_collaborator_id, e_contact_history_type, e_contact_id);
+
+alter table e_contact_history_type
+	add constraint e_cnt_hist_type_pk primary key  (e_contact_history_type);
+
+alter table e_contact_history
+	add constraint e_cnt_hist_pk primary key  (e_contact_history_id);
+
+alter table e_activity
+	add constraint e_act_pk primary key  (e_activity_group_id, e_activity_id);
+
+alter table e_engagement_track
+	add constraint e_trk_pk primary key  (e_track_id);
+
+alter table e_engagement_track_collab
+	add constraint e_trkcoll_pk primary key  (e_track_id, p_collab_partner_key);
+
+alter table e_engagement_step
+	add constraint e_step_pk primary key  (e_track_id, e_step_id);
+
+alter table e_engagement_step_collab
+	add constraint e_stepcoll_pk primary key  (e_track_id, e_step_id, p_collab_partner_key);
+
+alter table e_engagement_step_req
+	add constraint e_req_pk primary key  (e_track_id, e_step_id, e_req_id);
+
+alter table e_partner_engagement
+	add constraint e_pareng_pk primary key  (p_partner_key, e_engagement_id, e_hist_id);
+
+alter table e_partner_engagement_req
+	add constraint e_parreq_pk primary key  (p_partner_key, e_engagement_id, e_hist_id, e_req_item_id);
+
+alter table e_tag_type
+	add constraint e_tagtype_pk primary key  (e_tag_id);
+
+alter table e_tag_type_relationship
+	add constraint e_tagtyperel_pk primary key  (e_tag_id, e_rel_tag_id);
+
+alter table e_tag
+	add constraint e_tag_pk primary key  (e_tag_id, p_partner_key);
+
+alter table e_tag_activity
+	add constraint e_tagact_pk primary key  (e_tag_activity_group, e_tag_activity_id);
+
+alter table e_document_type
+	add constraint e_doctype_pk primary key  (e_doc_type_id);
+
+alter table e_document
+	add constraint e_doc_pk primary key  (e_document_id);
+
+alter table e_document_comment
+	add constraint e_doccom_pk primary key  (e_document_id, e_doc_comment_id);
+
+alter table e_partner_document
+	add constraint e_pardoc_pk primary key  (e_document_id, p_partner_key, e_pardoc_assoc_id);
+
+alter table e_workflow_type
+	add constraint e_work_pk primary key  (e_workflow_id);
+
+alter table e_workflow_type_step
+	add constraint e_workstep_pk primary key  (e_workflow_step_id);
+
+alter table e_workflow
+	add constraint e_workinst_pk primary key  (e_workflow_instance_id);
+
+alter table e_collaborator_type
+	add constraint e_collabtype_pk primary key  (e_collab_type_id);
+
+alter table e_collaborator
+	add constraint e_collab_pk primary key  (e_collaborator, p_partner_key);
+
+alter table e_todo_type
+	add constraint e_todotype_pk primary key  (e_todo_type_id);
+
+alter table e_todo
+	add constraint e_todo_pk primary key  (e_todo_id);
+
+alter table e_data_item_type
+	add constraint e_ditype_pk primary key  (e_data_item_type_id);
+
+alter table e_data_item_group
+	add constraint e_digrp_pk primary key  (e_data_item_group_id);
+
+alter table e_data_item
+	add constraint e_dataitem_pk primary key  (e_data_item_id);
+
+alter table e_highlights
+	add constraint e_h_pk primary key  (e_highlight_user, e_highlight_partner, e_highlight_id);
+
+alter table e_data_highlight
+	add constraint e_dh_pk primary key  (e_highlight_subject, e_highlight_object_type, e_highlight_object_id);
+
+alter table e_ack
+	add constraint e_ack_pk primary key  (e_ack_id);
+
+alter table e_ack_type
+	add constraint e_ackt_pk primary key  (e_ack_type);
+
+alter table e_trackactivity
+	add constraint e_trkact_pk primary key  (p_partner_key,e_username,e_sort_key);
 
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);
@@ -256,6 +376,9 @@ alter table a_cc_auto_subscribe
 alter table a_motivational_code
 	add constraint a_motivational_code_pk primary key  (a_ledger_number, a_motivational_code);
 
+alter table a_giving_pattern
+	add constraint a_givingp_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id);
+
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
 
@@ -268,6 +391,12 @@ alter table a_subtrx_deposit
 alter table a_subtrx_cashxfer
 	add constraint a_subtrx_cashxfer_pk primary key  (a_ledger_number, a_batch_number, a_journal_number);
 
+alter table i_eg_gift_import
+	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid);
+
+alter table i_eg_giving_url
+	add constraint i_eg_giving_url_pk primary key  (a_ledger_number, a_cost_center);
+
 alter table c_message
 	add constraint c_message_pk primary key  (c_chat_id, c_message_id);
 
@@ -276,6 +405,9 @@ alter table c_chat
 
 alter table c_member
 	add constraint c_member_pk primary key  (c_chat_id, s_username);
+
+alter table s_config
+	add constraint s_config_pk primary key  (s_config_name);
 
 alter table s_user_data
 	add constraint s_user_data_pk primary key  (s_username);

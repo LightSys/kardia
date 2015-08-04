@@ -1,0 +1,14 @@
+$Version=2$
+mysql_DB "application/mysql"
+    {
+    server = "localhost";
+    database = "mysql";
+    max_connections = 200;
+
+    // Use centrallix login credentials.
+    use_system_auth = "yes";
+
+    // Migrate centrallix password to mysql password.
+    default_password = "newuserpass";
+    set_passwords = "yes";
+    }

@@ -1,0 +1,181 @@
+Document:   Kardia REST API for Simple Donor Data Access
+Author:	    Greg Beeley (GRB)
+Date:	    09-Jun-2014
+-------------------------------------------------------------------------------
+
+OVERVIEW...
+
+    This document describes the simple donor data API for Kardia.  If you are
+    not already familiar with web services, REST, and the Kardia REST API
+    system, please first read "JSON-REST.txt" in centrallix-sysdoc, and read
+    "API.txt" in this documentation directory.
+
+
+ENDPOINT...
+
+    The endpoint of this API will be:
+
+	/apps/kardia/api/donor
+
+    Of course, the needed protocol (http or https) and server address (such as
+    server.lightsys.org:843) will need to be added to the URL, to give
+    something like:
+
+	https://server.lightsys.org:843/apps/kardia/api/donor?cx__mode=rest
+
+
+OBJECT STRUCTURE...
+
+    The following are example paths to various types of collections of objects
+    in the donor data API:
+
+    /apps/kardia/api/donor -- list of donors in the system
+
+	Please note that you may not have permission to view the entire list
+	of donors, or even permission to view a particular donor or any donors
+	at all.  This is determined by the Kardia system itself.
+
+	Example REST queries:
+
+	    http://server/apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection
+	    http://server/apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    /apps/kardia/api/donor/{donorid}/GivingInfo -- Information about places
+    or sub-entities within the organization to give to.  There will in most
+    cases just be one such entity within the organization; this is not a list
+    of available funds.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    giving_url	    - general URL to use to donate online
+	    giving_ledger   - ledger ID of this entity
+	    giving_ledger_desc - description of the entity
+
+    /apps/kardia/api/donor/{donorid}/DonorInfo -- Information about one donor
+
+	This URL would be an element, not a collection.  It will have the
+	following properties:
+
+	    donor_name	    - first and last name (or org. name) of the donor
+	    donor_address   - mailing address of the donor
+
+    /apps/kardia/api/donor/{donorid}/Gifts -- List of all gifts a donor has
+    given
+
+	This is a collection URL.  Each Gift object returned will have the
+	following properties:
+
+	    gift_date	    - date of gift
+	    gift_amount	    - monetary amount of the gift
+	    gift_fund	    - id of fund donated to
+	    gift_ledger	    - ledger id of fund donated to
+	    gift_fund_desc  - description of fund donated to
+	    gift_ledger_desc- description of ledger
+	    gift_check_num  - check number of gift
+	    gift_type	    - type of gift (Check, Credit Card, etc.)
+	    gift_receipt_num- receipt number sent for the gift
+	    gift_non_tax_ded- 0 of tax deductible, 1 if not tax deductible
+
+	Please note that the 'fundid' used in later URL's here includes both
+	the id of the fund and the id of the ledger, separated by a vertical
+	bar '|'.  For example, if the fund is '1000' and the ledger is 'DEMO',
+	the fundid used in URLs later in this document would be '1000|DEMO'.
+
+    /apps/kardia/api/donor/{donorid}/Funds -- List of all funds the donor has
+    given to
+
+	This is a collection URL.  Each Fund object has these properties:
+
+	    fund	    - fund id
+	    ledger	    - ledger id
+	    fund_desc	    - description of fund
+	    ledger_desc	    - description of ledger
+	    gift_count	    - number of gifts given
+	    gift_total	    - total amount given
+	    recent_gift_date- date of most recent gift
+	    giving_url	    - URL to use to donate online to this fund
+
+    /apps/kardia/api/donor/{donorid}/Years -- List of all years in which the
+    donor has given a gift
+
+	This is a collection URL.  Each Year object has these properties:
+
+	    year	    - number of the year, such as 2012.
+	    gift_count	    - number of gifts given
+	    gift_total	    - total amount given
+	    first_gift_date - date of first gift during the year
+	    last_gift_date  - date of most recent gift during the year
+
+    /apps/kardia/api/donor/{donorid}/Funds/{fundid}/Gifts -- List of all gifts
+    given to the particular fund
+
+    /apps/kardia/api/donor/{donorid}/Funds/{fundid}/Years -- List of all years
+    in which the donor gave to a particular fund
+
+    /apps/kardia/api/donor/{donorid}/Funds/{fundid}/Years/{year}/Gifts -- List
+    of all gifts given to a particular fund in a given year
+
+    /apps/kardia/api/donor/{donorid}/Years/{year}/Gifts -- List of all gifts 
+    given during a particular year
+
+    /apps/kardia/api/donor/{donorid}/Years/{year}/Funds -- List of all funds
+    given to in a particular year
+
+    /apps/kardia/api/donor/{donorid}/Years/{year}/Funds/{fundid}/Gifts -- List
+    of all gifts given to a particular fund in a given year
+
+
+EXAMPLE URL'S...
+
+    The list of donor ID's in the system:
+
+	http://server/apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection
+
+    The list of donor ID's along with information about each donor:
+
+	http://server/apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Information about one donor:
+
+	http://server/apps/kardia/api/donor/100000?cx__mode=rest&cx__res_format=attrs
+
+    Information about one donor in 'full' attribute mode:
+
+	http://server/apps/kardia/api/donor/100000?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=full
+
+    All gifts given by a donor, with detail about each gift:
+
+	http://server/apps/kardia/api/donor/100000/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Which funds a donor has given to:
+
+	http://server/apps/kardia/api/donor/100000/Funds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs
+
+    Which funds a donor has given to, with detail about each fund:
+
+	http://server/apps/kardia/api/donor/100000/Funds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    What years in which the donor has given a gift, with detail about each
+    year:
+
+	http://server/apps/kardia/api/donor/100000/Years?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    The list of gifts given by a donor in the year 2012, with detail about
+    each gift:
+
+	http://server/apps/kardia/api/donor/100000/Years/2012/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    The list of gifts given by a donor to the fund 'ABCD' with detail about
+    each gift:
+
+	http://server/apps/kardia/api/donor/100000/Funds/ABCD/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    The list of gifts given by a donor to the fund 'ABCD' in the year 2012
+    with detail about each gift:
+
+	http://server/apps/kardia/api/donor/100000/Funds/ABCD/Years/2012/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic
+
+    Information about gift 'DEMO|1234|1|1' given by donor '100000':
+
+	http://server/apps/kardia/api/donor/100000/Gifts/DEMO|1234|1|1?cx__mode=rest&cx__res_format=attrs

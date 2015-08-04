@@ -45,15 +45,17 @@ plugin_base_mlist_addmembers "widget/component-decl"
 		event_condition=runclient(char_length(:search_eb:content) > 0);
 		target=search_osrc;
 		action=QueryText;
-		field_list="*p_given_name*,p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
+		field_list="*p_given_name*,*p_surname*,*p_org_name*,*p_preferred_name*,p_partner_key,p_legacy_key_1,*p_legacy_key_2*,p_legacy_key_3";
 		objname=runclient("p");
 		query=runclient(:search_eb:content);
 		cx__case_insensitive = 1;
+		list_code = runclient(:mlist_osrc:m_list_code);
 		}
 	    }
 
 	search_osrc "widget/osrc"
 	    {
+	    so_list_code "widget/parameter" { param_name=list_code; type=string; }
 	    // SQL code from partner_search.cmp
 	    sql="	SELECT
 			    :l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_partner_key, :l:p_address_1,
@@ -65,6 +67,7 @@ plugin_base_mlist_addmembers "widget/component-decl"
 			    disp_city = condition(char_length(:l:p_city) > 0, :l:p_city + ', ', '') + condition(char_length(:l:p_state_province) > 0, :l:p_state_province + ' ', ''),
 			    p_country_name = upper(:c:p_country_name),
 			    :af:p_format
+			    -- on_list = isnull( (select 1 from /apps/kardia/data/Kardia_DB/m_list_membership/rows where :m_list_code = :parameters:list_code and :p_partner_key = :p:p_partner_key and :m_membership_status = 'A'), 0)
 		    FROM
 			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
 			    /apps/kardia/data/Kardia_DB/p_location/rows l,
@@ -159,6 +162,7 @@ plugin_base_mlist_addmembers "widget/component-decl"
 	    sql = "SELECT 
 		    :m:m_list_code, 
 		    :m:p_partner_key,
+		    :m:m_hist_id,
 		    :m:m_num_copies,
 		    :m:m_member_type,
 		    :m:m_comments,
@@ -228,6 +232,7 @@ plugin_base_mlist_addmembers "widget/component-decl"
 			Height = 600;
 			partner = runclient(:todays_adds_osrc:p_partner_key);
 			list = runclient(:todays_adds_osrc:m_list_code);
+			hist_id = runclient(:todays_adds_osrc:m_hist_id);
 			send_update = 1;
 			mlist_parent_osrc = todays_adds_osrc;
 			//memb_osrc = memb_osrc;

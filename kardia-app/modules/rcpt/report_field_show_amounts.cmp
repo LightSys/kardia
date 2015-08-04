@@ -8,5 +8,26 @@ report_field_show_amounts "widget/component-decl"
     rpt_form "widget/parameter" { type=object; find_container="report/form"; }
     ledger "widget/parameter" { type=string; default=null; }
 
-    f_showamt "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="show_amounts"; text="Show Amounts:"; ctl_type=checkbox; label_width=120; form=rpt_form; }
+    f_showamt "widget/component"
+	{
+	width=350; height=24;
+	path="/sys/cmp/smart_field.cmp";
+	field="show_amounts";
+	text="Show Amounts:";
+	ctl_type=checkbox;
+	label_width=120;
+	form=rpt_form;
+	require_one_endorsement="kardia:gift_manage","kardia:gift_amt";
+	endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	}
+    f_showamt_nosec "widget/hbox"
+	{
+	width=350; height=24;
+	spacing=4;
+	f_showamt_nosec_label "widget/label" { width=120; text="Show Amounts:"; }
+	f_showamt_nosec_label2 "widget/label" { width=120; text="(no permission)"; style=italic; }
+	require_one_endorsement="kardia:gift_manage","kardia:gift_amt";
+	endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	invert_security_check=yes;
+	}
     }

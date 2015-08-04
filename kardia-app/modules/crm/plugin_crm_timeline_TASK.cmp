@@ -1,0 +1,29 @@
+$Version=2$
+plugin_crm_timeline_TASK "widget/component-decl"
+    {
+    width=434;
+    height=28;
+    icon = "/apps/kardia/images/icons/openiconic-task.svg";
+    type = "TASK";
+    iconbar_icon = "/apps/kardia/images/icons/openiconic-bell.svg";
+    iconbar_label = "Task";
+    iconbar_sequence = 70;
+
+    timeline_osrc "widget/parameter" { type=object; }
+    partner_osrc "widget/parameter" { type=object; }
+
+    EditTask "widget/component-decl-event" { }
+
+    edittask_btn "widget/textbutton"
+	{
+	x=38; y=4;
+	width=138; height=24;
+	fl_width=30;
+	text = "Edit/Reassign";
+	background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	fgcolor1=white;
+	fgcolor2=black;
+
+	on_edittask "widget/connector" { event=Click; target=plugin_crm_timeline_TASK; action=EditTask; todo_id=runclient(:timeline_osrc:e_reference_info); partner=runclient(:partner_osrc:p_partner_key); origin=edittask_btn; }
+	}
+    }

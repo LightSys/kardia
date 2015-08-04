@@ -130,6 +130,9 @@ plugin_base_partneredit_payee "widget/component-decl"
 
 	disbs_vbox "widget/vbox"
 	    {
+	    require_endorsements="kardia:disb";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+
 	    x=416; y=0; width=392; height=338;
 	    spacing=4;
 

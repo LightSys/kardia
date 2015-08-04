@@ -119,4 +119,90 @@ init_payroll "widget/component-decl"
 			:i:a_payroll_item_type_code = 'GFT'
 		";
 	}
+
+    // Update balances
+    UpdatePayroll "widget/component-decl-action" { }
+    Updated "widget/component-decl-event" { }
+    update_cn "widget/connector"
+	{
+	event=UpdatePayroll;
+	target=update_osrc;
+	action=QueryParam;
+	event_all_params = 1;
+	}
+
+    update_osrc "widget/osrc"
+	{
+	u_a_ledger_number "widget/parameter"	{ type=string; param_name=a_ledger_number; }
+	u_a_payroll_group_id "widget/parameter"	{ type=integer; param_name=a_payroll_group_id; }
+	u_paydate "widget/parameter"		{ type=string; param_name=paydate; }
+	u_payperiod "widget/parameter"		{ type=string; param_name=payperiod; }
+	u_payrefperiod "widget/parameter"	{ type=string; param_name=payrefperiod; }
+
+	replicasize=1; readahead=1; autoquery=never;
+
+	upd_done "widget/connector" { event=EndQuery; target=init_payroll; action=Updated; }
+	sql = " UPDATE
+			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
+			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i
+		SET
+			:i:a_actual_amount = (select isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = :y:a_ledger_number and :t:a_period <= :i:a_period and :t:a_period >= :parameters:payrefperiod and :t:a_cost_center = :i:a_ref_cost_center and :t:a_account_code >= '3000' and :t:a_account_code <= '5999')
+		WHERE
+			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_ledger_number = :i:a_ledger_number and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:i:a_is_instance = 1 and
+			:y:a_ledger_number = :parameters:a_ledger_number and
+			:i:a_period = :parameters:payperiod and
+			:i:a_payroll_item_type_code = 'AVL'
+		;
+		UPDATE
+			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
+			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i
+		SET
+			:i:a_actual_amount = (select isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = :y:a_ledger_number and :t:a_period = :i:a_period and :t:a_cost_center = :i:a_ref_cost_center and :t:a_account_code >= '4000' and :t:a_account_code <= '4999')
+		WHERE
+			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_ledger_number = :i:a_ledger_number and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:i:a_is_instance = 1 and
+			:y:a_ledger_number = :parameters:a_ledger_number and
+			:i:a_period = :parameters:payperiod and
+			:i:a_payroll_item_type_code = 'DON'
+		;
+		UPDATE
+			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
+			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i
+		SET
+			:i:a_actual_amount = (select isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = :y:a_ledger_number and :t:a_period = :i:a_period and :t:a_cost_center = :i:a_ref_cost_center and :t:a_account_code >= '5000' and :t:a_account_code <= '5999')
+		WHERE
+			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_ledger_number = :i:a_ledger_number and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:i:a_is_instance = 1 and
+			:y:a_ledger_number = :parameters:a_ledger_number and
+			:i:a_period = :parameters:payperiod and
+			:i:a_payroll_item_type_code = 'WKE'
+		;
+		UPDATE 
+			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i
+		SET
+			:i:a_actual_amount = $0
+		WHERE
+			:i:a_period = :parameters:payperiod and
+			:i:a_payroll_group_id = :parameters:a_payroll_group_id and
+			:i:a_ledger_number = :parameters:a_ledger_number and
+			:i:a_payroll_item_type_code = 'ADV'
+		;
+		UPDATE
+			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i
+		SET
+			:i:a_actual_amount = $0
+		WHERE
+			:i:a_period = :parameters:payperiod and
+			:i:a_payroll_group_id = :parameters:a_payroll_group_id and
+			:i:a_ledger_number = :parameters:a_ledger_number and
+			:i:a_payroll_item_type_code = 'GFT'
+		";
+	}
     }

@@ -1,0 +1,81 @@
+$Version=2$
+plugin_crm_timeline_ADDR "widget/component-decl"
+    {
+    width=434;
+    height=60;
+    icon = "/apps/kardia/images/tango/go-home.png";
+    type = "ADDR";
+    iconbar_enabled = no;
+
+    partner_osrc "widget/parameter" { type=object; }
+    timeline_osrc "widget/parameter" { type=object; }
+
+    addr_label_osrc "widget/osrc"
+	{
+        sql="	SELECT
+		    :l:p_postal_mode,
+		    :l:p_purge_date,
+		    :l:p_postal_code,
+		    :l:p_date_effective,
+		    all=(:l:p_address_1 + condition(char_length(rtrim(:l:p_address_2)) > 1 , ' / ' + :l:p_address_2, '') + condition(char_length(rtrim(:l:p_address_3)) > 1, ' / ' + :l:p_address_3, '')),
+		    :l:p_in_care_of,
+		    :l:p_address_1,
+		    :l:p_address_2,
+		    :l:p_address_3,
+		    :l:p_city,
+		    :l:p_state_province,
+		    :l:p_country_code,
+		    :l:p_location_type,
+		    :l:p_record_status_code,
+		    :l:p_partner_key,
+		    :l:p_date_good_until,
+		    :l:p_certified_date,
+		    :l:p_location_comments,
+		    :l:p_location_id,
+		    :l:p_bulk_postal_code,
+		    :l:p_postal_status,
+		    :l:s_created_by,
+		    :l:s_date_created,
+		    :l:s_modified_by,
+		    :l:s_date_modified,
+		    loc_type_text = isnull(:lt:text, 'INVALID'),
+		    rec_stat_txt = isnull(:rsc:text, 'Unknown'),
+		    sec_level = isnull(:c:p_security_level, 0),
+		    p_country_name = upper(:c:p_country_name),
+		    :af:p_format
+		FROM
+		    identity /apps/kardia/data/Kardia_DB/p_location/rows l,
+		    /apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+		    /apps/kardia/data/Kardia_DB/_p_record_status/rows rsc,
+		    /apps/kardia/data/Kardia_DB/p_country/rows c,
+		    /apps/kardia/data/Kardia_DB/p_address_format/rows af
+		WHERE
+		    :l:p_location_type *= :lt:tag and
+		    :l:p_record_status_code *= :rsc:tag and
+		    :l:p_country_code *= :c:p_country_code and
+		    :af:p_country_code =* :c:p_country_code and
+		    :af:p_address_set = 'STANDARD'
+		";
+
+	loc_sync "widget/rule"
+	    {
+	    ruletype = osrc_relationship;
+
+	    target = timeline_osrc;
+	    key_1 = name;
+	    key_objname = 'l';
+	    target_key_1 = e_reference_info;
+	    revealed_only = yes;
+	    }
+
+	location_addr_label "widget/component"
+	    {
+	    x=40; y=0;
+	    height=60;
+	    width=350;
+	    path = "/apps/kardia/modules/base/address_label_fmt.cmp";
+	    partner = partner_osrc;
+	    location = addr_label_osrc;
+	    }
+	}
+    }

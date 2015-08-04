@@ -7,6 +7,9 @@ fund_gift_list "widget/page"
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
+    require_one_endorsement="kardia:gift_manage","kardia:gift_amt";
+    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
     period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     costctr "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
@@ -29,8 +32,9 @@ fund_gift_list "widget/page"
 
 	    f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Center:"; attach_point=editbox; empty_desc = "required"; label_width=120; }
 
-	    f_period "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="period"; text="Period:"; empty_desc = "required"; ctl_type=dropdown; sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); label_width=120; }
+	    f_period "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="period"; text="Beginning Period:"; empty_desc = "required"; ctl_type=dropdown; sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); label_width=120; }
 	    f_startday "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="startday"; text="Start Day:"; ctl_type=editbox; empty_desc = "optional: 1 - 31"; label_width=120; }
+	    f_endperiod "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="endperiod"; text="Ending Period:"; empty_desc = "required"; ctl_type=dropdown; sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); label_width=120; }
 	    f_endday "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="endday"; text="End Day:"; ctl_type=editbox; empty_desc = "optional: 1 - 31"; label_width=120; }
 
 	    sep1 "widget/autolayoutspacer" { height=4; }
@@ -42,7 +46,7 @@ fund_gift_list "widget/page"
 		field='user_document_format'; 
 		ctl_type=dropdown; 
 		text='Format:'; 
-		sql = runserver("select 'TntMPD Format','tntmpd'; select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
+		sql = runserver("select 'TntMPD Format','tntmpd'; select 'Separate Fields CSV','sep_csv'; select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
 		form=rpt_form;
 		label_width=120;
 		}
@@ -69,7 +73,7 @@ fund_gift_list "widget/page"
 		    rpt_print_cn "widget/connector"
 			{
 			event="Click";
-			event_condition=runclient(not (:f_docfmt:value = 'tntmpd'));
+			event_condition=runclient((not (:f_docfmt:value = 'tntmpd')) and (not (:f_docfmt:value = 'sep_csv')));
 			target="rpt_form";
 			action="Submit";
 			Target=runclient("fund_gift_list");
@@ -89,6 +93,19 @@ fund_gift_list "widget/page"
 			Target=runclient("fund_gift_list");
 			NewPage=1;
 			Source=runclient("/apps/kardia/modules/rcpt/fund_gift_list_tntmpd.rpt");
+			Width=800;
+			Height=600;
+			document_format=runclient('text/csv');
+			}
+		    rpt_print_cn3 "widget/connector"
+			{
+			event="Click";
+			event_condition=runclient(:f_docfmt:value = 'sep_csv');
+			target="rpt_form";
+			action="Submit";
+			Target=runclient("fund_gift_list");
+			NewPage=1;
+			Source=runclient("/apps/kardia/modules/rcpt/fund_gift_list_fields.rpt");
 			Width=800;
 			Height=600;
 			document_format=runclient('text/csv');

@@ -1,0 +1,421 @@
+$Version=2$
+popover_files "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+
+    FileUpdated "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
+    onOpen1b "widget/connector" { event=Open; target=partnername_var; action=SetValue; Value=runclient(:partnername); }
+    onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen5 "widget/connector" { event=Open; target=files_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
+
+    // This is the context data
+    partner_var "widget/variable" { type=string; }
+    partnername_var "widget/variable" { type=string; }
+    collab_var "widget/variable" { type=string; }
+
+    // This controls the logic based on whether the user asked to save or to
+    // both save and assign.
+    op_type "widget/variable" { type=string; value="Save"; }
+
+    // This creates a e_partner_document record
+    create_pardoc_osrc "widget/osrc"
+	{
+	cr_docid "widget/parameter" { type=integer; }
+	cr_partner "widget/parameter" { type=string; }
+	sql = "	insert
+		    /apps/kardia/data/Kardia_DB/e_partner_document/rows
+		select
+		    e_document_id = :parameters:cr_docid,
+		    p_partner_key = :parameters:cr_partner,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		";
+	autoquery=never;
+	replicasize=2;
+	readahead=2;
+
+	on_endquery_reset_optype "widget/connector" { event=EndQuery; target=op_type; action=SetValue; Value=runclient("Save"); }
+	on_endquery_refresh "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=unassigned_files_osrc;
+	    action=Refresh;
+	    }
+
+	on_endquery_refresh_profile "widget/connector" { event=EndQuery; target=popover_files; action=FileUpdated; }
+	}
+
+    files_win "widget/childwindow"
+	{
+	width=600; height=344;
+	x=250; y=89;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	files_icon "widget/image"
+	    {
+	    condition=0;
+	    x=12; y=12;
+	    width=24; height=24;
+	    source="/apps/kardia/images/icons/tumblicons-file.svg";
+	    }
+
+	files_vbox "widget/vbox"
+	    {
+	    x=15; y=15;
+	    width=568; height=312;
+	    spacing=8;
+
+	    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("Manage and Upload Files..."); align=center; }
+
+	    unassigned_label "widget/label"
+		{
+		height=14;
+		text="Recent or not-yet-associated file uploads:";
+		style=bold;
+		}
+
+	    unassigned_files_osrc "widget/osrc"
+		{
+		sql = "	select
+			    :pd:p_partner_key,
+			    :d:e_document_id,
+			    :d:e_doc_type_id,
+			    :d:e_title,
+			    title_txt = '\"' + :d:e_title + '\"',
+			    assign_txt = condition(:pd:p_partner_key is null, 'Unassociated', 'Associated'),
+			    assign_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+			    age_mins = datediff(minute,:pd:s_date_created,getdate()),
+			    :d:e_orig_filename,
+			    :d:e_current_folder,
+			    :d:e_current_filename,
+			    :d:e_uploading_collaborator,
+			    :d:e_workflow_instance_id,
+			    :d:e_image_width,
+			    :d:e_image_height,
+			    :d:s_date_created,
+			    :d:s_created_by,
+			    :d:s_date_modified,
+			    :d:s_modified_by,
+			    :f:size,
+			    filename = :f:name,
+			    size_txt = condition(:f:size < 1024, '' + :f:size + ' bytes', condition(:f:size < (1024 * 1024), '' + (:f:size / 1024) + ' KB', '' + (:f:size / 1024 / 1024) + ' MB'))
+			from
+			    identity /apps/kardia/files f,
+			    /apps/kardia/data/Kardia_DB/e_document/rows d,
+			    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p
+			where
+			    :d:e_current_filename =* :f:name and
+			    :pd:e_document_id =* :d:e_document_id and
+			    :p:p_partner_key = :pd:p_partner_key
+			having
+			    :p_partner_key is null or :age_mins < 60
+			";
+		baseobj = "/apps/kardia/files";
+		replicasize=50;
+		readahead=50;
+		autoquery=oneachreveal;
+
+		unassigned_form "widget/form"
+		    {
+		    confirm_delete=no;
+		    }
+
+		unassigned_table "widget/table"
+		    {
+		    height=170;
+		    min_rowheight=12;
+		    max_rowheight=64;
+		    allow_selection = yes;
+		    show_selection = yes;
+		    initial_selection = no;
+		    demand_scrollbar = yes;
+		    overlap_scrollbar = yes;
+		    colsep = 0;
+		    titlebar = no;
+		    row_border_radius=4;
+		    inner_padding = 2;
+		    cellvspacing = 2;
+		    row1_bgcolor = "#f8f8f8";
+		    row2_bgcolor = "#f8f8f8";
+		    rowhighlight_bgcolor = "#fff090";
+		    textcolorhighlight = "#000000";
+		    nodata_message = "No unassigned files.";
+
+		    // Table columns
+		    t_img "widget/table-column" { value=runclient('/apps/kardia/images/icons/tumblicons-file.svg'); width=16; type=image; image_maxwidth=12; image_maxheight=12; align=center; }
+		    t_filename "widget/table-column" { fieldname=filename; width=240; style=bold; }
+		    //t_title "widget/table-column" { fieldname=title_txt; width=210; }
+		    t_size "widget/table-column" { fieldname=size_txt; width=70; }
+		    t_assign "widget/table-column" { value=runclient(:unassigned_files_osrc:assign_txt + isnull(' w. ' + :unassigned_files_osrc:assign_name, '')); width=240; }
+
+		    // Detail row for managing one particular file
+		    t_detail "widget/table-row-detail"
+			{
+			height=84;
+			width=568;
+
+			t_detail_vbox "widget/vbox"
+			    {
+			    x=8; y=4;
+			    height=72; width=552;
+			    spacing=4;
+
+			    doc_osrc "widget/osrc"
+				{
+				sql = "select * from /apps/kardia/data/Kardia_DB/e_document/rows pd";
+				baseobj = "/apps/kardia/data/Kardia_DB/e_document/rows";
+				readahead=2;
+				replicasize=2;
+				autoquery=never;
+
+				doc_link "widget/rule"
+				    {
+				    ruletype = osrc_relationship;
+				    target=unassigned_files_osrc;
+				    key_1=e_current_filename;
+				    target_key_1=filename;
+				    }
+
+				doc_form "widget/form"
+				    {
+				    confirm_delete=no;
+
+				    on_save_noassign "widget/connector"
+					{
+					event=DataSaved;
+					event_condition=runclient(:op_type:value = 'Save');
+					target=unassigned_files_osrc;
+					action=Refresh;
+					}
+
+				    on_save_assign "widget/connector"
+					{
+					event=DataSaved;
+					event_condition=runclient(:op_type:value = 'Assign');
+					target=create_pardoc_osrc;
+					action=QueryParam;
+					cr_docid=runclient(:doc_osrc:e_document_id);
+					cr_partner=runclient(:partner_var:value);
+					}
+
+				    doc_hbox "widget/hbox"
+					{
+					height=44;
+					spacing=8;
+
+					doc_image "widget/image"
+					    {
+					    width=64;
+					    source=runclient(condition(charindex(',' + lower(right(:unassigned_files_osrc:filename,4)) + ',', ',.jpg,jpeg,.gif,.png,.svg,') > 0, '/apps/kardia/files/' + :unassigned_files_osrc:filename, '/apps/kardia/images/icons/tumblicons-file.svg'));
+					    }
+
+					doc_fields_vbox "widget/vbox"
+					    {
+					    width=480;
+					    spacing=4;
+					    doctype "widget/component" { path="/sys/cmp/smart_field.cmp"; field=e_doc_type_id; ctl_type=dropdown; text="Document Type:"; sql="select :e_doc_type_label, :e_doc_type_id from /apps/kardia/data/Kardia_DB/e_document_type/rows dt order by :e_doc_type_label"; width=300; height=20; label_width=120; }
+					    doctitle "widget/component" { path="/sys/cmp/smart_field.cmp"; field=e_title; ctl_type=editbox; text="Title:"; height=20; label_width=120; }
+					    }
+					}
+
+				    doc_orig_file "widget/variable" { fieldname=e_orig_filename; doc_orig_hints "widget/hints" { default=runclient(:unassigned_files_osrc:filename); } }
+				    doc_cur_fldr "widget/variable" { fieldname=e_current_folder; doc_fldr_hints "widget/hints" { default=runclient("/apps/kardia/files"); } }
+				    doc_collab "widget/variable" { fieldname=e_uploading_collaborator; doc_coll_hints "widget/hints" { default=runclient(:collab_var:value); } }
+				    doc_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				    }
+				}
+
+			    assign_hbox "widget/hbox"
+				{
+				height=24;
+				spacing=8;
+				align=center;
+
+				assign_btn "widget/textbutton"
+				    {
+				    width=330;
+				    text=runclient(condition(:doc_form:is_savable and isnull(:doctype:value,'') and char_length(:doctitle:content) > 1, "Save & ", "") + "Assoc. With " + :partnername_var:value);
+				    enabled=runclient(:unassigned_files_osrc:assign_name is null and ((:doc_form:is_savable and :doctype:value and char_length(:doctitle:content) > 1) or (:unassigned_files_osrc:e_title is not null and :unassigned_files_osrc:e_doc_type_id is not null)));
+				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				    fgcolor1=white;
+				    fgcolor2=black;
+				    disable_color="#334466";
+
+				    on_assign1 "widget/connector" { event=Click; target=op_type; action=SetValue; Value=runclient("Assign"); }
+				    on_assign2 "widget/connector" { event=Click; event_condition=runclient(:doc_form:is_savable and :doctype:value and char_length(:doctitle:content) > 1); target=doc_form; action=Save; }
+				    on_assign3 "widget/connector" { event=Click; event_condition=runclient(not (:doc_form:is_savable and :doctype:value and char_length(:doctitle:content) > 1)); target=create_pardoc_osrc; action=QueryParam; cr_docid=runclient(:doc_osrc:e_document_id); cr_partner=runclient(:partner_var:value); }
+				    }
+
+				save_btn "widget/textbutton"
+				    {
+				    width=100;
+				    text="Save";
+				    enabled=runclient(:doc_form:is_savable and :doctype:value and char_length(:doctitle:content) > 1);
+				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				    fgcolor1=white;
+				    fgcolor2=black;
+				    disable_color="#334466";
+
+				    on_save1 "widget/connector" { event=Click; target=op_type; action=SetValue; Value=runclient("Save"); }
+				    on_save2 "widget/connector" { event=Click; target=doc_form; action=Save; }
+				    }
+
+				delete_btn "widget/textbutton"
+				    {
+				    width=100;
+				    text="Delete";
+				    enabled=runclient(not :doc_form:is_discardable and :unassigned_files_osrc:assign_name is null);
+				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				    fgcolor1=white;
+				    fgcolor2=black;
+				    disable_color="#334466";
+
+				    on_delete1 "widget/connector" { event=Click; event_confirm=runclient("Delete this file?"); target=doc_form; action=Delete; }
+				    on_delete2 "widget/connector" { event=Click; target=unassigned_form; action=Delete; }
+				    }
+				}
+			    }
+			}
+		    }
+		}
+
+	    upload_label "widget/label" { height=14; text="Upload New File(s):"; style=bold; }
+
+	    upload_pane "widget/pane"
+		{
+		height=36;
+		border_radius=10;
+		border_color="#6080c0";
+		style=bordered;
+
+		upload_hbox "widget/hbox"
+		    {
+		    x=6; y=6; height=24; width=556;
+		    spacing=8;
+
+		    upload_selectupload "widget/textbutton"
+			{
+			width=120;
+			//text=runclient(condition(char_length(:upload:value) > 1, 'Upload', 'Select'));
+			text="Select Files";
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_select "widget/connector"
+			    {
+			    event=Click;
+			    //event_condition=runclient(not (char_length(:upload:value) > 1));
+			    target=upload;
+			    action=Prompt;
+			    }
+
+			on_upload "widget/connector"
+			    {
+			    condition=0;
+			    event=Click;
+			    event_condition=runclient(char_length(:upload:value) > 1);
+			    target=upload;
+			    action=Submit;
+			    }
+			}
+
+		    upload_filenames "widget/label"
+			{
+			y=2; height=22;
+			width=428;
+			style=italic;
+			align=center;
+			//value=runclient(condition(char_length(:upload:value) > 1, :upload:value, '(no file selected)'));
+			value=runclient(:upload:status);
+			}
+
+		    upload_cancel "widget/textbutton"
+			{
+			condition=0;
+			width=90;
+			text="Cancel";
+			enabled=runclient(char_length(:upload:value) > 1);
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_cancel "widget/connector"
+			    {
+			    event=Click;
+			    event_condition=runclient(char_length(:upload:value) > 1);
+			    target=upload;
+			    action=Clear;
+			    }
+			}
+
+		    upload "widget/fileupload"
+			{
+			multiselect = yes;
+			fieldname = "file";
+			target = "/apps/kardia/files";
+
+			on_file_selected "widget/connector"
+			    {
+			    event=DataChange;
+			    action=Submit;
+			    }
+
+			on_complete "widget/connector"
+			    {
+			    event=UploadComplete;
+			    target=unassigned_files_osrc;
+			    action=Refresh;
+			    }
+
+			on_error "widget/connector"
+			    {
+			    event=UploadError;
+			    target=popover_files;
+			    action=Alert;
+			    Message=runclient("One or more of your files failed to upload.  See the unassociated files list for any files that did upload successfully.");
+			    }
+			}
+		    }
+		}
+
+	    btns_hbox "widget/hbox"
+		{
+		height=24; spacing=8;
+		align=center;
+
+		close_btn "widget/textbutton"
+		    {
+		    height=24; width=100;
+		    text = runclient(condition(:doc_form:is_savable, "Cancel", "Close"));
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+
+		    on_close1 "widget/connector" { event=Click; target=doc_form; action=Discard; }
+		    on_close2 "widget/connector" { event=Click; target=files_win; action=Close; }
+		    }
+		}
+	    }
+	}
+    }

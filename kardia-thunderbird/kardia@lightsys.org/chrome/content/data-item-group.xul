@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<window onload="loadData()" title="Data Items" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"  xmlns:html="http://www.w3.org/1999/xhtml">
+	<label id="data-item-name" class="tab-title" value=""/>
+
+	<!-- favicon -->
+	<html:link rel="icon" href="chrome://kardia/content/images/kardia-icon-square.png"/>
+
+	<script type="application/javascript" src="chrome://messenger/content/jquery.js"/>
+	<script type="application/javascript" src="chrome://kardia/content/data-item-group.js"/>
+	
+	<hbox style="background-color:#ffffff" flex="1">
+		<vbox id="main-data">
+		</vbox>
+		<spacer flex="1"/>
+	</hbox>
+</window>

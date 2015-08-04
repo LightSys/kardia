@@ -1,0 +1,123 @@
+$Version=2$
+popover_notes "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+
+    NoteAdded "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
+    onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen3 "widget/connector" { event=Open; target=notes_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
+
+    partner_var "widget/variable" { type=string; }
+    collab_var "widget/variable" { type=string; }
+
+    notes_win "widget/childwindow"
+	{
+	width=500; height=300;
+	x=250; y=89;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	on_notes_open "widget/connector" { event=Open; target=notes_form; action=New; }
+
+	notes_icon "widget/image"
+	    {
+	    x=12; y=12;
+	    width=24; height=24;
+	    source="/apps/kardia/images/icons/ionicons-notes.svg";
+	    }
+
+	notes_vbox "widget/vbox"
+	    {
+	    x=15; y=15;
+	    width=468; height=268;
+	    spacing=10;
+
+	    notes_osrc "widget/osrc"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_contact_history/rows e
+			where
+			    :e:e_contact_history_type = 4 or :e:e_contact_history_type = 5
+			order by
+			    isnull(:e:e_contact_date, :e:s_date_created) asc
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/e_contact_history/rows";
+		replicasize=50;
+		readahead=50;
+		autoquery=never;
+
+		notes_form "widget/form"
+		    {
+		    allow_search=no;
+		    allow_view=no;
+		    allow_modify=no;
+		    allow_new=yes;
+
+		    close_on_save "widget/connector" { event=DataSaved; target=notes_win; action=Close; }
+		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_notes; action=NoteAdded; }
+		    close_on_discard "widget/connector" { event=Discard; target=notes_win; action=Close; }
+
+		    hdr_label "widget/label" { height=20; font_size=16; style=bold; text="Add a Note or Prayer Need:"; align=center; }
+
+		    note_type "widget/component" { field=e_contact_history_type; path="/sys/cmp/smart_field.cmp"; height=20; text="Type:"; ctl_type=dropdown; sql="select :e_description, :e_contact_history_type, :e_contact_history_type == 4 from /apps/kardia/data/Kardia_DB/e_contact_history_type/rows where :e_contact_history_type = 4 or :e_contact_history_type = 5"; width=250; label_width=70; note_type_hints "widget/hints" { style=notnull; } }
+
+		    note_partner "widget/variable" { fieldname=p_partner_key; note_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
+		    note_whom "widget/variable" { fieldname=e_whom; note_whom_hints "widget/hints" { default=runclient(:collab_var:value); } }
+		    note_date "widget/component" { field=e_contact_date; path="/sys/cmp/smart_field.cmp"; height=20; text="Date:"; ctl_type=datetime; label_width=70; note_date_hints "widget/hints" { default=runclient(getdate()); } width=250; }
+		    note_subj "widget/component" { field=e_subject; path="/sys/cmp/smart_field.cmp"; height=20; text="Subject:"; ctl_type=editbox; label_width=70; }
+		    note_notes "widget/component" { field=e_notes; path="/sys/cmp/smart_field.cmp"; height=100; text="Notes:"; ctl_type=textarea; label_width=70; }
+		    note_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+		    note_btns "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=10;
+
+			addnote_btn "widget/textbutton"
+			    {
+			    height=24; width=130;
+			    text = "Add Note";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    enabled = runclient(:notes_form:is_savable and :note_type:value is not null and char_length(:note_subj:content) > 0);
+
+			    on_add "widget/connector" { event=Click; target=notes_form; action=Save; }
+			    }
+
+			cancelnote_btn "widget/textbutton"
+			    {
+			    height=24; width=130;
+			    text = "Cancel Note";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    on_cancel1 "widget/connector" { event=Click; target=notes_form; action=Discard; }
+			    on_cancel2 "widget/connector" { event=Click; target=notes_win; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

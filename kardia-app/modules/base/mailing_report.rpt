@@ -40,16 +40,18 @@ mailing_report "system/report"
     exclude_zips "report/parameter" { type=string; }
     mincopies "report/parameter" { type=integer; default=0; }
     maxcopies "report/parameter" { type=integer; default=99999999; }
+    deliverymode "report/parameter" { type=string; default="any"; }
     only_donors "report/parameter" { type=integer; }
     only_payees "report/parameter" { type=integer; }
     only_staff "report/parameter" { type=integer; }
     include_obs "report/parameter" { type=integer; default=0; }
-    only_postal "report/parameter" { type=integer; default=0; }
+    //only_postal "report/parameter" { type=integer; default=0; }
     only_okmail "report/parameter" { type=integer; default=0; }
     only_oksolicit "report/parameter" { type=integer; default=0; }
 
     // Output settings
-    cntry_fmt "report/parameter" { type=string; default='full'; }
+    cntry_fmt "report/parameter" { type=string; default='full'; groupname='Format';}
+    contact_via "report/parameter" { type=string; default='postal'; groupname='Format';}
 
     // Add-to-mailing-list Parameters
     list_code "report/parameter" { type=string; }
@@ -59,7 +61,7 @@ mailing_report "system/report"
     // This report can modify data (the create/add-to mailing list feature).
     // Therefore we can't allow direct access - must be via an app.  This
     // prevents CSRF type attacks.
-    require_endorsements = "system:from_application";
+    require_endorsements = "system:from_appgroup";
 
     // Query to get site information
     site_qy "report/query"
@@ -136,6 +138,11 @@ mailing_report "system/report"
 			s_created_by = user_name(),
 			s_date_modified = getdate(),
 			s_modified_by = user_name()
+		HAVING
+			(select :m:m_membership_status
+			   from /apps/kardia/data/Kardia_DB/m_list_membership/rows m
+			  where :m:m_list_code = :this:m_list_code and :m:p_partner_key = :this:p_partner_key and :m:m_membership_status = 'A'
+			) is null
 		;
 
 		SELECT
@@ -144,7 +151,8 @@ mailing_report "system/report"
 			/apps/kardia/data/Kardia_DB/m_list_membership/rows
 		WHERE
 			:m_list_code = :this:list_code and
-			:p_partner_key = :partners_qy:p_partner_key
+			:p_partner_key = :partners_qy:p_partner_key and
+			:m_membership_status = 'A'
 		"));
 	}
 
@@ -174,7 +182,9 @@ mailing_report "system/report"
 			p_iso3166_2_code = isnull(:c:p_iso3166_2_code,''),
 			p_iso3166_3_code = isnull(:c:p_iso3166_3_code,''),
 			p_fips_code = isnull(:c:p_fips_code,''),
-			p_country_name = isnull(:c:p_country_name,'')
+			p_country_name = isnull(:c:p_country_name,''),
+			oneemail = (select :p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code == 'A' and :ci:p_contact_type == 'E' limit 1),
+			allemail = (select sum(:p_contact_data + ' / ') - ' / ' from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code == 'A' and :ci:p_contact_type == 'E')
 		FROM
 			/apps/kardia/data/Kardia_DB/p_location/rows pl,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
@@ -189,7 +199,10 @@ mailing_report "system/report"
 			:ml:m_num_copies >= :this:mincopies and
 			:ml:m_num_copies <= :this:maxcopies
 			" + condition(:this:include_lists is null, "", " and charindex(',' + :ml:m_list_code + ',', " + quote(',' + :this:include_lists + ',') + ") > 0") + "
-			" + condition(:this:only_postal, " and isnull(:ml:m_delivery_method, 'M') = 'M' ", "") + "
+			" + condition(:this:deliverymode == 'postalorunset', " and isnull(:ml:m_delivery_method, 'M') = 'M' ", "") + "
+			" + condition(:this:deliverymode == 'emailorunset', " and isnull(:ml:m_delivery_method, 'E') = 'E' ", "") + "
+			" + condition(:this:deliverymode == 'postal', " and :ml:m_delivery_method = 'M' ", "") + "
+			" + condition(:this:deliverymode == 'email', " and :ml:m_delivery_method = 'E' ", "") + "
 		GROUP BY
 			:ml:p_partner_key
 		HAVING
@@ -208,8 +221,10 @@ mailing_report "system/report"
 			" + condition(:this:exclude_cntrys is null, "", "charindex(',' + :p_country_code + ',', " + quote(',' + :this:exclude_cntrys + ',') + ") == 0 and") + "
 			" + condition(:this:include_zips is null, "", " (charindex(',' + upper(:p_postal_code) + ',', " + quote(',' + upper(:this:include_zips) + ',') + ") > 0 or (:p_country_code = 'US' and charindex(',' + substring(:p_postal_code,1,5) + ',', " + quote(',' + :this:include_zips + ',') + ") > 0) or (:p_country_code = 'CA' and charindex(',' + substring(upper(:p_postal_code),1,7) + ',', " + quote(',' + upper(:this:include_zips) + ',') + ") > 0)) and ") + "
 			" + condition(:this:exclude_zips is null, "", " not (charindex(',' + upper(:p_postal_code) + ',', " + quote(',' + upper(:this:exclude_zips) + ',') + ") > 0 or (:p_country_code = 'US' and charindex(',' + substring(:p_postal_code,1,5) + ',', " + quote(',' + :this:exclude_zips + ',') + ") > 0) or (:p_country_code = 'CA' and charindex(',' + substring(upper(:p_postal_code),1,7) + ',', " + quote(',' + upper(:this:exclude_zips) + ',') + ") > 0)) and ") + "
+			" + condition(:this:contact_via == 'oneemail' or :this:contact_via == 'allemail', "char_length(:oneemail) > 0 and ", "") + "
 			1 = 1
 		");
+			//" + condition(:this:only_postal, " and isnull(:ml:m_delivery_method, 'M') = 'M' ", "") + "
 	// FIXME - collision between report 'this' and having clause 'this' means
 	// we had to use programmatic sql building above instead of normal params.
 	}
@@ -267,7 +282,9 @@ mailing_report "system/report"
 			fontsize=10; value = runserver("Only Postal Codes: " + :this:include_zips + "\n"); }
 	    t_d13 "report/data" { condition=runserver(not (:this:exclude_zips is null));
 			fontsize=10; value = runserver("Excluding Postal Codes: " + :this:exclude_zips + "\n"); }
-	    t_d14 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+	    t_d14 "report/data" { condition=runserver(isnull(:this:deliverymode,'any') != 'any');
+			fontsize=10; value = runserver("Requested Delivery Method: " + condition(:this:deliverymode == 'email', 'Email', condition(:this:deliverymode == 'postal', 'Postal', condition(:this:deliverymode == 'emailorunset', 'Email or Unset', condition(:this:deliverymode == 'postalorunset', 'Postal or Unset', '')))) + "\n"); }
+	    t_d15 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
 	    }
 
 	partners_table "report/table"
@@ -293,7 +310,7 @@ mailing_report "system/report"
 
 		tg_id "report/table-cell" { value='Partner #'; align=center; }
 		tg_name "report/table-cell" { value='Partner Name'; align=center; }
-		tg_addr "report/table-cell" { value='Partner Address'; align=center; }
+		tg_addr "report/table-cell" { value='Partner Address / Contact'; align=center; }
 		tg_list "report/table-cell" { value='Lists'; align=center; }
 		}
 
@@ -306,7 +323,17 @@ mailing_report "system/report"
 
 		d_id "report/table-cell" { value=runserver(:partners_qy:p_partner_key); }
 		d_name "report/table-cell" { value=runserver(:partners_qy:disp_name); }
-		d_addr "report/table-cell" { value=runserver(isnull(:partners_qy:p_in_care_of + " ","") + isnull(:partners_qy:p_address_1 + " ","") + isnull(:partners_qy:p_address_2 + " ","") + isnull(:partners_qy:p_address_3 + " ","") + isnull(:partners_qy:p_city + ", " + :partners_qy:p_state_province + " ","") + isnull(:partners_qy:p_postal_code + " ","") + isnull(condition(:this:cntry_fmt = 'full', :partners_qy:p_country_name, condition(:this:cntry_fmt = 'kardia', :partners_qy:p_country_code, condition(:this:cntry_fmt = 'fips10', :partners_qy:p_fips_code, condition(:this:cntry_fmt = 'iso_alpha2', :partners_qy:p_iso3166_2_code, condition(:this:cntry_fmt = 'iso_alpha3', :partners_qy:p_iso3166_3_code, ''))))),'')); }
+		d_addr "report/table-cell" { value=runserver(
+							condition(:this:contact_via == 'postal' or :this:contact_via == 'all',
+								isnull(:partners_qy:p_in_care_of + " ","") + isnull(:partners_qy:p_address_1 + " ","") + isnull(:partners_qy:p_address_2 + " ","") + isnull(:partners_qy:p_address_3 + " ","") + isnull(:partners_qy:p_city + ", " + :partners_qy:p_state_province + " ","") + isnull(:partners_qy:p_postal_code + " ","") + isnull(condition(:this:cntry_fmt = 'full', :partners_qy:p_country_name, condition(:this:cntry_fmt = 'kardia', :partners_qy:p_country_code, condition(:this:cntry_fmt = 'fips10', :partners_qy:p_fips_code, condition(:this:cntry_fmt = 'iso_alpha2', :partners_qy:p_iso3166_2_code, condition(:this:cntry_fmt = 'iso_alpha3', :partners_qy:p_iso3166_3_code, ''))))),'') + ' / ',
+								'') +
+							condition(:this:contact_via == 'oneemail',
+								isnull(:partners_qy:oneemail, "") + ' / ',
+								'') +
+							condition(:this:contact_via == 'allemail' or :this:contact_via == 'all',
+								isnull(:partners_qy:allemail, "") + ' / ',
+								'')
+							    - ' / ' - ' / '); }
 		d_last "report/table-cell" { value=runserver(:partners_qy:lists); }
 		}
 

@@ -1,0 +1,5 @@
+$Version=2$
+DBusers "system/query"
+    {
+    sql = "select username=:__cx_literal_name from /apps/kardia/data/Kardia_DB/sysusers/rows";
+    }

@@ -1,0 +1,517 @@
+$Version=2$
+api_designation "system/querytree"
+    {
+    funds "system/querytree"
+	{
+	text = "Funds";
+
+	fundlist "system/querytree"
+	    {
+	    sql = " select
+			fund = :c:a_cost_center,
+			ledger = :c:a_ledger_number,
+			fund_desc = :c:a_cc_desc,
+			ledger_desc = :l:a_ledger_desc,
+			giving_url = isnull((select :i_eg_url from /apps/kardia/data/Kardia_DB/i_eg_giving_url/rows where :a_ledger_number = :c:a_ledger_number and :a_cost_center = :c:a_cost_center), (select :i_eg_url from /apps/kardia/data/Kardia_DB/i_eg_giving_url/rows where :a_ledger_number = :c:a_ledger_number and :a_cost_center = '*')),
+			subfund_list = (select sum(:c2:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cost_center/rows c2 where :c2:a_ledger_number = :c:a_ledger_number and (:c2:a_cost_center = :c:a_cost_center or :c2:a_bal_cost_center = :c:a_cost_center) )
+		    from
+			identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_ledger/rows l
+		    where
+			:l:a_ledger_number = :c:a_ledger_number and
+			:c:a_cost_center = :c:a_bal_cost_center
+		    ";
+
+	    FundGifts "system/querytree"
+		{
+		text = "Gifts";
+
+		fundgifts_list "system/querytree"
+		    {
+		    sql = " select
+				gift_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+				gift_amount = :i:a_amount,
+				gift_fund = :i:a_cost_center,
+				gift_ledger = :cc:a_ledger_number,
+				gift_fund_desc = isnull(:cr:a_receipt_comment, :cc:a_cc_desc),
+				gift_ledger_desc = :led:a_ledger_desc,
+				gift_check_num = :i:a_recv_document_id,
+				gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt where :gt:tag = :g:a_gift_type),
+				gift_receipt_num = :i:a_dn_receipt_number,
+				gift_non_tax_ded = :i:a_non_tax_deductible,
+				donor = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				donor_id = :g:p_donor_partner_id,
+				donor_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=p,c=c')
+			    from
+				identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+				/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+				/apps/kardia/data/Kardia_DB/a_ledger/rows led,
+				/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr,
+				/apps/kardia/data/Kardia_DB/p_partner/rows p,
+				/apps/kardia/data/Kardia_DB/p_location/rows l,
+				/apps/kardia/data/Kardia_DB/p_country/rows c,
+				/apps/kardia/data/Kardia_DB/p_address_format/rows af
+			    where
+				:i:a_posted = 1 and
+				charindex(',' + rtrim(:i:a_cost_center) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
+				:i:a_ledger_number = :fundlist:ledger and
+				:g:a_ledger_number = :i:a_ledger_number and
+				:g:a_batch_number = :i:a_batch_number and
+				:g:a_gift_number = :i:a_gift_number and
+				:cc:a_ledger_number = :i:a_ledger_number and
+				:cc:a_cost_center = :i:a_cost_center and
+				:led:a_ledger_number = :cc:a_ledger_number and
+				:cr:a_ledger_number =* :i:a_ledger_number and
+				:cr:a_cost_center =* :i:a_cost_center and
+				:cr:a_account_code =* :i:a_account_code and
+				:p:p_partner_key = :g:p_donor_partner_id and
+				:l:p_revision_id = 0 and
+				:l:p_partner_key =* :p:p_partner_key and
+				:c:p_country_code =* :l:p_country_code and
+				:af:p_country_code =* :c:p_country_code and
+				:af:p_address_set = 'STANDARD'
+			    group by
+				:i:a_ledger_number,
+				:i:a_batch_number,
+				:i:a_gift_number,
+				:i:a_split_number
+			    ";
+				
+		    }
+		}
+
+	    FundYears "system/querytree"
+		{
+		text = "Years";
+
+		fundyears_list "system/querytree"
+		    {
+		    //
+		    // This query is inefficient at present due to table scan
+		    // of the a_subtrx_gift_item table.
+		    // FIXME
+		    //
+		    sql = " select
+				name = convert(string,datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))),
+				year = datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+				gift_count = count(1),
+				gift_total = sum(:i:a_amount),
+				first_gift_date = min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+				last_gift_date = max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))
+			    from
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+			    where
+				:i:a_posted = 1 and
+				charindex(',' + rtrim(:i:a_cost_center) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
+				:i:a_ledger_number = :fundlist:ledger
+			    group by
+				datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))
+			    ";
+		    use_having = yes;
+
+		    FundYearGifts "system/querytree"
+			{
+			text = "Gifts";
+
+			fundyeargifts_list "system/querytree"
+			    {
+			    sql = " select
+					gift_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+					gift_amount = :i:a_amount,
+					gift_fund = :i:a_cost_center,
+					gift_ledger = :cc:a_ledger_number,
+					gift_fund_desc = isnull(:cr:a_receipt_comment, :cc:a_cc_desc),
+					gift_ledger_desc = :led:a_ledger_desc,
+					gift_check_num = :i:a_recv_document_id,
+					gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt where :gt:tag = :g:a_gift_type),
+					gift_receipt_num = :i:a_dn_receipt_number,
+					gift_non_tax_ded = :i:a_non_tax_deductible,
+					donor = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+					donor_id = :g:p_donor_partner_id,
+					donor_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=p,c=c')
+				    from
+					identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+					/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+					/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+					/apps/kardia/data/Kardia_DB/a_ledger/rows led,
+					/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr,
+					/apps/kardia/data/Kardia_DB/p_partner/rows p,
+					/apps/kardia/data/Kardia_DB/p_location/rows l,
+					/apps/kardia/data/Kardia_DB/p_country/rows c,
+					/apps/kardia/data/Kardia_DB/p_address_format/rows af
+				    where
+					:i:a_posted = 1 and
+					charindex(',' + rtrim(:i:a_cost_center) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
+					:i:a_ledger_number = :fundlist:ledger and
+					:g:a_ledger_number = :i:a_ledger_number and
+					:g:a_batch_number = :i:a_batch_number and
+					:g:a_gift_number = :i:a_gift_number and
+					datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)) = :fundyears_list:year and
+					:cc:a_ledger_number = :i:a_ledger_number and
+					:cc:a_cost_center = :i:a_cost_center and
+					:led:a_ledger_number = :cc:a_ledger_number and
+					:cr:a_ledger_number =* :i:a_ledger_number and
+					:cr:a_cost_center =* :i:a_cost_center and
+					:cr:a_account_code =* :i:a_account_code and
+					:p:p_partner_key = :g:p_donor_partner_id and
+					:l:p_revision_id = 0 and
+					:l:p_partner_key =* :p:p_partner_key and
+					:c:p_country_code =* :l:p_country_code and
+					:af:p_country_code =* :c:p_country_code and
+					:af:p_address_set = 'STANDARD'
+				    group by
+					:i:a_ledger_number,
+					:i:a_batch_number,
+					:i:a_gift_number,
+					:i:a_split_number
+				    ";
+			    }
+			}
+
+		    yearper "system/querytree"
+			{
+			text = "Periods";
+
+			yearperlist "system/querytree"
+			    {
+			    sql = " select
+					period = :p:a_period,
+					period_desc = :p:a_period_desc,
+					ref_period = min(:p2:a_period)
+				    from
+					identity /apps/kardia/data/Kardia_DB/a_period/rows p,
+					/apps/kardia/data/Kardia_DB/a_period/rows p2
+				    where
+					:fundyears_list:year = datepart(year, :p:a_start_date) and
+					:p:a_ledger_number = :fundlist:ledger and
+					:p:a_summary_only = 0 and
+					:p:a_status != 'N' and
+					:p2:a_parent_period = :p:a_parent_period and
+					:p2:a_ledger_number = :p:a_ledger_number
+				    group by
+					:p:a_period
+				    ";
+
+			    fundpergifts "system/querytree"
+				{
+				text = "Gifts";
+
+				fundpergifts_list "system/querytree"
+				    {
+				    sql = " select
+						gift_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+						gift_amount = :i:a_amount,
+						gift_fund = :i:a_cost_center,
+						gift_ledger = :cc:a_ledger_number,
+						gift_fund_desc = isnull(:cr:a_receipt_comment, :cc:a_cc_desc),
+						gift_ledger_desc = :led:a_ledger_desc,
+						gift_check_num = :i:a_recv_document_id,
+						gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt where :gt:tag = :g:a_gift_type),
+						gift_receipt_num = :i:a_dn_receipt_number,
+						gift_non_tax_ded = :i:a_non_tax_deductible,
+						donor = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+						donor_id = :g:p_donor_partner_id,
+						donor_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=p,c=c')
+					    from
+						identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+						/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+						/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+						/apps/kardia/data/Kardia_DB/a_ledger/rows led,
+						/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr,
+						/apps/kardia/data/Kardia_DB/p_partner/rows p,
+						/apps/kardia/data/Kardia_DB/p_location/rows l,
+						/apps/kardia/data/Kardia_DB/p_country/rows c,
+						/apps/kardia/data/Kardia_DB/p_address_format/rows af
+					    where
+						:i:a_posted = 1 and
+						charindex(',' + rtrim(:i:a_cost_center) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
+						:i:a_ledger_number = :fundlist:ledger and
+						:g:a_ledger_number = :i:a_ledger_number and
+						:g:a_batch_number = :i:a_batch_number and
+						:g:a_gift_number = :i:a_gift_number and
+						:i:a_period = :yearperlist:period and
+						:cc:a_ledger_number = :i:a_ledger_number and
+						:cc:a_cost_center = :i:a_cost_center and
+						:led:a_ledger_number = :cc:a_ledger_number and
+						:cr:a_ledger_number =* :i:a_ledger_number and
+						:cr:a_cost_center =* :i:a_cost_center and
+						:cr:a_account_code =* :i:a_account_code and
+						:p:p_partner_key = :g:p_donor_partner_id and
+						:l:p_revision_id = 0 and
+						:l:p_partner_key =* :p:p_partner_key and
+						:c:p_country_code =* :l:p_country_code and
+						:af:p_country_code =* :c:p_country_code and
+						:af:p_address_set = 'STANDARD'
+					    group by
+						:i:a_ledger_number,
+						:i:a_batch_number,
+						:i:a_gift_number,
+						:i:a_split_number
+					    ";
+				    }
+				}
+			    }
+			}
+		    }
+		}
+
+	    subf "system/querytree"
+		{
+		text = "Subfunds";
+
+		subflist "system/querytree"
+		    {
+		    sql = " SELECT
+				fund = :c:a_cost_center,
+				ledger = :c:a_ledger_number,
+				fund_desc = :c:a_cc_desc,
+				ledger_desc = :l:a_ledger_desc,
+				fund_class = (select :a_acct_class_desc from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows cc where :cc:a_ledger_number = :c:a_ledger_number and :cc:a_cost_center_class = :c:a_cost_center_class)
+			    FROM 
+				identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+				/apps/kardia/data/Kardia_DB/a_ledger/rows l
+			    WHERE
+				:c:a_bal_cost_center = :fundlist:fund and
+				:c:a_ledger_number = :fundlist:ledger and
+				:l:a_ledger_number = :c:a_ledger_number
+			    ";
+
+		    SubFundGifts "system/querytree"
+			{
+			text = "Gifts";
+
+			subfundgifts_list "system/querytree"
+			    {
+			    sql = " select
+					gift_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+					gift_amount = :i:a_amount,
+					gift_fund = :i:a_cost_center,
+					gift_ledger = :cc:a_ledger_number,
+					gift_fund_desc = isnull(:cr:a_receipt_comment, :cc:a_cc_desc),
+					gift_ledger_desc = :led:a_ledger_desc,
+					gift_check_num = :i:a_recv_document_id,
+					gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt where :gt:tag = :g:a_gift_type),
+					gift_receipt_num = :i:a_dn_receipt_number,
+					gift_non_tax_ded = :i:a_non_tax_deductible,
+					donor = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+					donor_id = :g:p_donor_partner_id,
+					donor_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=p,c=c')
+				    from
+					identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+					/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+					/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+					/apps/kardia/data/Kardia_DB/a_ledger/rows led,
+					/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr,
+					/apps/kardia/data/Kardia_DB/p_partner/rows p,
+					/apps/kardia/data/Kardia_DB/p_location/rows l,
+					/apps/kardia/data/Kardia_DB/p_country/rows c,
+					/apps/kardia/data/Kardia_DB/p_address_format/rows af
+				    where
+					:i:a_posted = 1 and
+					:i:a_cost_center = :subflist:fund and
+					:i:a_ledger_number = :fundlist:ledger and
+					:g:a_ledger_number = :i:a_ledger_number and
+					:g:a_batch_number = :i:a_batch_number and
+					:g:a_gift_number = :i:a_gift_number and
+					:cc:a_ledger_number = :i:a_ledger_number and
+					:cc:a_cost_center = :i:a_cost_center and
+					:led:a_ledger_number = :cc:a_ledger_number and
+					:cr:a_ledger_number =* :i:a_ledger_number and
+					:cr:a_cost_center =* :i:a_cost_center and
+					:cr:a_account_code =* :i:a_account_code and
+					:p:p_partner_key = :g:p_donor_partner_id and
+					:l:p_revision_id = 0 and
+					:l:p_partner_key =* :p:p_partner_key and
+					:c:p_country_code =* :l:p_country_code and
+					:af:p_country_code =* :c:p_country_code and
+					:af:p_address_set = 'STANDARD'
+				    group by
+					:i:a_ledger_number,
+					:i:a_batch_number,
+					:i:a_gift_number,
+					:i:a_split_number
+				    ";
+					
+			    }
+			}
+
+		    SubFundYears "system/querytree"
+			{
+			text = "Years";
+
+			subfundyears_list "system/querytree"
+			    {
+			    //
+			    // This query is inefficient at present due to table scan
+			    // of the a_subtrx_gift_item table.
+			    // FIXME
+			    //
+			    sql = " select
+					name = convert(string,datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))),
+					year = datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+					gift_count = count(1),
+					gift_total = sum(:i:a_amount),
+					first_gift_date = min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+					last_gift_date = max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))
+				    from
+					/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+				    where
+					:i:a_posted = 1 and
+					:i:a_cost_center = :subflist:fund and
+					:i:a_ledger_number = :fundlist:ledger
+				    group by
+					datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))
+				    ";
+			    use_having = yes;
+
+			    SubFundYearGifts "system/querytree"
+				{
+				text = "Gifts";
+
+				subfundyeargifts_list "system/querytree"
+				    {
+				    sql = " select
+						gift_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+						gift_amount = :i:a_amount,
+						gift_fund = :i:a_cost_center,
+						gift_ledger = :cc:a_ledger_number,
+						gift_fund_desc = isnull(:cr:a_receipt_comment, :cc:a_cc_desc),
+						gift_ledger_desc = :led:a_ledger_desc,
+						gift_check_num = :i:a_recv_document_id,
+						gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt where :gt:tag = :g:a_gift_type),
+						gift_receipt_num = :i:a_dn_receipt_number,
+						gift_non_tax_ded = :i:a_non_tax_deductible,
+						donor = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+						donor_id = :g:p_donor_partner_id,
+						donor_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=p,c=c')
+					    from
+						identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+						/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+						/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+						/apps/kardia/data/Kardia_DB/a_ledger/rows led,
+						/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr,
+						/apps/kardia/data/Kardia_DB/p_partner/rows p,
+						/apps/kardia/data/Kardia_DB/p_location/rows l,
+						/apps/kardia/data/Kardia_DB/p_country/rows c,
+						/apps/kardia/data/Kardia_DB/p_address_format/rows af
+					    where
+						:i:a_posted = 1 and
+						:i:a_cost_center = :subflist:fund and
+						:i:a_ledger_number = :fundlist:ledger and
+						:g:a_ledger_number = :i:a_ledger_number and
+						:g:a_batch_number = :i:a_batch_number and
+						:g:a_gift_number = :i:a_gift_number and
+						datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)) = :subfundyears_list:year and
+						:cc:a_ledger_number = :i:a_ledger_number and
+						:cc:a_cost_center = :i:a_cost_center and
+						:led:a_ledger_number = :cc:a_ledger_number and
+						:cr:a_ledger_number =* :i:a_ledger_number and
+						:cr:a_cost_center =* :i:a_cost_center and
+						:cr:a_account_code =* :i:a_account_code and
+						:p:p_partner_key = :g:p_donor_partner_id and
+						:l:p_revision_id = 0 and
+						:l:p_partner_key =* :p:p_partner_key and
+						:c:p_country_code =* :l:p_country_code and
+						:af:p_country_code =* :c:p_country_code and
+						:af:p_address_set = 'STANDARD'
+					    group by
+						:i:a_ledger_number,
+						:i:a_batch_number,
+						:i:a_gift_number,
+						:i:a_split_number
+					    ";
+				    }
+				}
+
+			    subyearper "system/querytree"
+				{
+				text = "Periods";
+
+				subyearperlist "system/querytree"
+				    {
+				    sql = " select
+						period = :p:a_period,
+						period_desc = :p:a_period_desc,
+						ref_period = min(:p2:a_period)
+					    from
+						identity /apps/kardia/data/Kardia_DB/a_period/rows p,
+						/apps/kardia/data/Kardia_DB/a_period/rows p2
+					    where
+						:subfundyears_list:year = datepart(year, :p:a_start_date) and
+						:p:a_ledger_number = :fundlist:ledger and
+						:p:a_summary_only = 0 and
+						:p:a_status != 'N' and
+						:p2:a_parent_period = :p:a_parent_period and
+						:p2:a_ledger_number = :p:a_ledger_number
+					    group by
+						:p:a_period
+					    ";
+
+				    subfundpergifts "system/querytree"
+					{
+					text = "Gifts";
+
+					fundpergifts_list "system/querytree"
+					    {
+					    sql = " select
+							gift_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+							gift_amount = :i:a_amount,
+							gift_fund = :i:a_cost_center,
+							gift_ledger = :cc:a_ledger_number,
+							gift_fund_desc = isnull(:cr:a_receipt_comment, :cc:a_cc_desc),
+							gift_ledger_desc = :led:a_ledger_desc,
+							gift_check_num = :i:a_recv_document_id,
+							gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt where :gt:tag = :g:a_gift_type),
+							gift_receipt_num = :i:a_dn_receipt_number,
+							gift_non_tax_ded = :i:a_non_tax_deductible,
+							donor = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+							donor_id = :g:p_donor_partner_id,
+							donor_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=p,c=c')
+						    from
+							identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+							/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+							/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+							/apps/kardia/data/Kardia_DB/a_ledger/rows led,
+							/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr,
+							/apps/kardia/data/Kardia_DB/p_partner/rows p,
+							/apps/kardia/data/Kardia_DB/p_location/rows l,
+							/apps/kardia/data/Kardia_DB/p_country/rows c,
+							/apps/kardia/data/Kardia_DB/p_address_format/rows af
+						    where
+							:i:a_posted = 1 and
+							:i:a_cost_center = :subflist:fund and
+							:i:a_ledger_number = :fundlist:ledger and
+							:g:a_ledger_number = :i:a_ledger_number and
+							:g:a_batch_number = :i:a_batch_number and
+							:g:a_gift_number = :i:a_gift_number and
+							:i:a_period = :yearperlist:period and
+							:cc:a_ledger_number = :i:a_ledger_number and
+							:cc:a_cost_center = :i:a_cost_center and
+							:led:a_ledger_number = :cc:a_ledger_number and
+							:cr:a_ledger_number =* :i:a_ledger_number and
+							:cr:a_cost_center =* :i:a_cost_center and
+							:cr:a_account_code =* :i:a_account_code and
+							:p:p_partner_key = :g:p_donor_partner_id and
+							:l:p_revision_id = 0 and
+							:l:p_partner_key =* :p:p_partner_key and
+							:c:p_country_code =* :l:p_country_code and
+							:af:p_country_code =* :c:p_country_code and
+							:af:p_address_set = 'STANDARD'
+						    group by
+							:i:a_ledger_number,
+							:i:a_batch_number,
+							:i:a_gift_number,
+							:i:a_split_number
+						    ";
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
