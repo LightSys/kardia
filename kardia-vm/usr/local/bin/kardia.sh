@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.5
+# version: 1.0.6
 # os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
@@ -2780,11 +2780,38 @@ function doSystemUpdate
 ##################################
 
 #########
+## VAR ##
+function vm_prep_cleanSystemTree
+{
+	echo "Cleaning /var directory, tmp, and /usr/share"
+	echo "  Cleaning mysql/mariadb"
+	systemctl stop mariadb
+	rm -rf /var/lib/mysql/*
+	echo
+	echo "  Cleaning logs"
+	find /var/log -type f -exec rm {} \;
+	echo
+	echo "  Cleaning /tmp"
+	find /tmp -mtime +5 -exec rm -rf {} \;
+	echo
+	echo "  Cleaning /usr/share/doc"
+	rm -rf /usr/share/doc/* 2>/dev/null
+	echo
+	echo "  Cleaning mail"
+	rm /var/spool/mail/* 2>/dev/null
+	echo
+
+}
+
+#########
 ## YUM ##
 function vm_prep_cleanYum
 {
 	echo "Cleaning YUM"
 	yum clean all
+	echo
+	echo "Cleaning RPM"
+	rpm --rebuilddb
 	echo
 }
 
@@ -3017,10 +3044,12 @@ function doCleanup
     if [ $# -eq 0 ]; then
 	#make sure things are copied over from the repo
 	vm_prep_setupEtc
-	#clean out yum cache
+	#clean out yum cache and clean up RPM database
 	vm_prep_cleanYum
 	#clean up network settings
 	vm_prep_cleanNetwork
+	#clean up a number of things on the system
+	vm_prep_cleanSystemTree
 	#make sure selinux is enabled
 	vm_prep_cleanSelinux
 	#wipe ssh keys
