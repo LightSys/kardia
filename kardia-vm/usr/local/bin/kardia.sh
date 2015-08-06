@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.6
+# version: 1.0.7
 # os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
@@ -2613,6 +2613,96 @@ function setGitEmail
     fi
     }
 
+# Change the git branch we are using.
+# We list the main branches from kardia (found in the kardia_vm/kardia_branches file)
+# we also add in any extra 'local' branches they may have set up
+function chooseKardiaGitBranch
+    {
+    while true; do
+	lookupStatus
+	#if we are shared, the files are in $BASEDIR and we must be root to change
+	#otherwise, the files are in /home/user
+	KBRANCH=""
+	export KBRANCH
+	srcdir=""
+	branch_status=""
+	if [ "$WKFMODE" = "shared" ]; then
+	    srcdir="$BASEDIR/src/kardia-git"
+	    if [ "$USER" = root ]; then
+		branch_status="shared-root" 
+		#
+	    else
+		#We have a shared space.  We need root make the change
+		branch_status="shared-user" 
+	    fi
+	fi
+	if [ "$WKFMODE" != "shared" ]; then
+	    #it is individual or team.  The individual can change his own branch
+	    if [ "$USER" = root ]; then
+		#Root should not have their own repo
+		branch_status="nonshared-root" 
+		if [  "$WKFMODE" = "team" ]; then
+		    branch_status="team-root" 
+		    srcdir="$BASEDIR/src/kardia-git"
+		fi
+	    else
+		srcdir="~/kardia-git"
+		branch_status="nonshared-user" 
+		#The user can change his own branch.
+	    fi
+	fi
+	if [ -n "$srcdir" ]; then
+	    #We can do it.  We have a known source dir
+	    KBRANCH=$(cd $srcdir 2>/dev/null; git branch | grep \*| sed 's/.* //')
+	    DSTR="dialog --backtitle '$TITLE' --title 'Change Branch' --menu 'Change Kardia Branch from $KBRANCH:' 15 62 14"
+	else
+	    DSTR="dialog --backtitle '$TITLE' --title 'Change Branch' --menu 'Change Kardia Branch:' 15 62 14"
+	fi
+	case "$branch_status" in
+	    shared-user)
+		DSTR="$DSTR --- 'You must be root to change the shared repo'"
+		;;
+	    shared-root|nonshared-user|team-root)
+		#here we list all the items.
+		filename=/tmp/branches$$
+		( cd $srcdir 2>/dev/null; git branch | sed 's/.* //' > $filename ) # do it in a shell so we do not change current dir
+		kbFile="$srcdir/kardia-vm/kardia_branches"
+		(cat $kbFile >2 /dev/null |sed 's/ .*//'| egrep -v '#|^$' >> $filename)
+		echo master >> $filename #Make sure "master" always shows up, een if kardia_branches is gone
+
+		for line in $(cat $filename | sort -u ); do
+		    rest=$(grep $line $kbFile | sed 's/^[^ ]* //' )
+		    if [ "$line" = "$KBRANCH" ]; then
+			DSTR="$DSTR $line '* $rest'"
+		    else
+			DSTR="$DSTR $line '$rest'"
+		    fi
+		done
+		rm $filename
+		DSTR="$DSTR --- ''"
+		;;
+	esac
+	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
+
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+
+	case "$SEL" in
+	    Quit)
+		exit
+	    ;;
+	    ---)
+	    ;;
+	    '')
+		break
+		;;
+	    *)
+		(cd $srcdir; git checkout $SEL; sleep .3 )
+		#echo change to branch $SEL
+	    ;;
+	esac
+    done
+
+    }
 
 # Configure the VM
 function menuConfigure
@@ -2653,6 +2743,7 @@ function menuConfigure
 	Rootable && DSTR="$DSTR MySQLAccess  'Set MySQL Access   (now: $MYSQLMODE)'"
 	DSTR="$DSTR SUser                 'Shared Repo Pushes (now: $REPSTAT)'"
 	Rootable && DSTR="$DSTR SInit 'Init Shared Repository (destructive)'"
+	DSTR="$DSTR CKardiaBranch 'Change git branch for Kardia'"
 	if [ "$WKFMODE" != "shared" -a "$USER" != root ]; then
 	    DSTR="$DSTR '---'  ''"
 	    if [ "$WKFMODE" = individual ]; then
@@ -2692,6 +2783,9 @@ function menuConfigure
 		;;
 	    SInit)
 		AsRoot repoInitShared
+		;;
+	    CKardiaBranch)
+		chooseKardiaGitBranch
 		;;
 	    Name)
 		setGitName "/home/$USER"
