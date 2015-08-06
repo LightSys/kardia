@@ -2667,7 +2667,7 @@ function chooseKardiaGitBranch
 		filename=/tmp/branches$$
 		( cd $srcdir 2>/dev/null; git branch | sed 's/.* //' > $filename ) # do it in a shell so we do not change current dir
 		kbFile="$srcdir/kardia-vm/kardia_branches"
-		(cat $kbFile >2 /dev/null |sed 's/ .*//'| egrep -v '#|^$' >> $filename)
+		(cat $kbFile 2> /dev/null |sed 's/ .*//'| egrep -v '#|^$' >> $filename)
 		echo master >> $filename #Make sure "master" always shows up, een if kardia_branches is gone
 
 		for line in $(cat $filename | sort -u ); do
@@ -2683,6 +2683,7 @@ function chooseKardiaGitBranch
 		;;
 	esac
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
+    
 
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
 
