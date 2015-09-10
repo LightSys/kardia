@@ -6,52 +6,64 @@
     android:background="@drawable/noise_blue_repeat" >
 
     <Button
-        android:id="@+id/connect_button"
+        android:id="@+id/pdfButton"
         android:layout_width="wrap_content"
-        android:layout_height="140dp"
-        android:textSize="30sp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
+        android:layout_height="80dp"
+        android:textSize="24sp"
+        android:textStyle="bold"
         android:text="@string/view_pdf_receipt"
-        android:onClick="sendToPDF" 
-        style="@style/customBottomBar" />
+        style="@style/customBottomBar"
+        android:layout_below="@+id/checknum"
+        android:layout_marginTop="50dp"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/subject"
+        android:layout_below="@+id/giftamount"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="41dp"
-        android:textSize="30sp"/>
+        android:layout_marginTop="50dp"
+        android:textSize="26sp" />
 
     <TextView
         android:id="@+id/giftamount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/date"
+        android:layout_below="@+id/fund"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="48dp"
-        android:textSize="30sp"
-        android:textColor="#2ACA2D" />
+        android:layout_marginTop="50dp"
+        android:textSize="26sp"
+        android:textColor="#37AD00" />
 
     <TextView
-        android:id="@+id/text"
+        android:id="@+id/checknum"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/giftamount"
+        android:layout_below="@+id/date"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
-        android:textSize="25sp" />
+        android:layout_marginTop="50dp"
+        android:textSize="24sp" />
 
     <TextView
-        android:id="@+id/subject"
+        android:id="@+id/fund"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="78dp"
-        android:textSize="35sp" />
+        android:layout_marginTop="50dp"
+        android:layout_marginRight="18dp"
+        android:layout_marginLeft="18dp"
+        android:textSize="30sp"
+        android:gravity="center"/>
+
+    <RelativeLayout
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+    </RelativeLayout>
 
 </RelativeLayout>

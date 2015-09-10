@@ -1,11 +1,21 @@
+var XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+
 //when the dialog opens, center dialog
 function startDialog() {
 	// move to center of parent window
 	centerWindowOnScreen();
 
 	// if address, add countries
+	$("#inner-country").find("menuitem").remove();
 	if (window.arguments[0].type == "A") {
-		document.getElementById("inner-country").innerHTML = window.arguments[1];
+		for(var k in window.arguments[5]) {
+			var onecountry = window.arguments[5][k];
+			var onemenuitem = document.createElementNS(XUL_NS,"menuitem");
+			$(onemenuitem).attr("value", onecountry.country_code);
+			$(onemenuitem).attr("label", onecountry.name);
+			$("#inner-country").append(onemenuitem);
+		}
+		//$("#inner-country").text(window.arguments[1]);
 	}
 	
 	// choose correct type
@@ -69,10 +79,11 @@ function setFields() {
 						
 						// select country
 						if (contactResp[k]['country_code'] != null) {
-							document.getElementById("country").selectedIndex = window.arguments[5].indexOf(contactResp[k]['country_code']);
-							if (document.getElementById("country").selectedIndex < 0) {
+							$("#country")[0].value = contactResp[k]['country_code'];
+							//document.getElementById("country").selectedIndex = window.arguments[5].indexOf(contactResp[k]['country_code']);
+							//if (document.getElementById("country").selectedIndex < 0) {
 								//document.getElementById("country").selectedIndex = 0;
-							}
+							//}
 						}
 
 						// select location type

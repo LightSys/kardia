@@ -11,20 +11,21 @@ package org.lightsys.donorapp.data;
  *
  */
 public class Account {
-	private int id;
+	private int id; // Stored as the Donor ID provided by user
 	private String AccountName;
 	private String AccountPassword;
 	private String ServerName;
-	private int donor_id;
+	private String PartnerName; //Name used for sending messages, different than AccountName
 
 	public Account(){}
 	
-	public Account(int id, String AccountName, String AccountPassword, String ServerName, int donor_id){
+	public Account(int id, String AccountName, String AccountPassword, String ServerName,
+				    String PartnerName){
 		this.setId(id);
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
 		this.setServerName(ServerName);
-		this.setDonorid(donor_id);
+		this.setPartnerName(PartnerName);
 	}
 
 	public int getId() {
@@ -59,11 +60,7 @@ public class Account {
 		ServerName = serverName;
 	}
 
-	public int getDonorid() {
-		return donor_id;
-	}
+	public String getPartnerName() { return PartnerName; }
 
-	public void setDonorid(int donor_id) {
-		this.donor_id = donor_id;
-	}
+	public void setPartnerName(String name) { PartnerName = name; }
 }

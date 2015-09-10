@@ -5,16 +5,18 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>kardia@lightsys.org</em:id>
+    <em:type>2</em:type>
     <em:name>Kardia Extension</em:name>
-    <em:version>0.995</em:version>
+    <em:version>1.03</em:version>
+    <em:description>The Kardia add-on integrates with the Kardia CRM system, providing information about the people in the Kardia CRM database directly to you via Thunderbird.</em:description>
     <em:creator>LightSys</em:creator>
-	<em:iconURL>chrome://kardia/content/images/prefs-image.png</em:iconURL>
+    <em:iconURL>chrome://kardia/content/images/prefs-image.png</em:iconURL>
    
     <em:targetApplication>
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
-        <em:minVersion>1.5</em:minVersion>
-        <em:maxVersion>5.0.*</em:maxVersion>
+        <em:minVersion>2</em:minVersion>
+        <em:maxVersion>38.*</em:maxVersion>
       </Description>
     </em:targetApplication>
     <em:unpack>true</em:unpack>

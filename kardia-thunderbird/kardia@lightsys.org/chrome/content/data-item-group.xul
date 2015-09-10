@@ -8,6 +8,7 @@
 	<!-- favicon -->
 	<html:link rel="icon" href="chrome://kardia/content/images/kardia-icon-square.png"/>
 
+	<script type="application/javascript" src="chrome://messenger/content/jquery.js"/>
 	<script type="application/javascript" src="chrome://kardia/content/data-item-group.js"/>
 	
 	<hbox style="background-color:#ffffff" flex="1">

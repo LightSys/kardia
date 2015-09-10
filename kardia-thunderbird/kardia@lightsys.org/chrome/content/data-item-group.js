@@ -6,6 +6,7 @@ var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequest
 	   .getInterface(Components.interfaces.nsIDOMWindow);
 mainWindow.dataTab = this;
 var kardiaTab = mainWindow.kardiaTab;
+var kardiacrm = mainWindow.kardiacrm;
 
 function loadData() {
 	// get arguments passed from main page
