@@ -1,11 +1,20 @@
+var XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+
 //when the dialog opens, center dialog
 function startDialog() {
 	// move to center of parent window
 	centerWindowOnScreen();
 
 	// add countries
-		document.getElementById("inner-country").innerHTML = window.arguments[1];
-		document.getElementById("country").selectedIndex = window.arguments[2];
+	$("#inner-country").find("menuitem").remove();
+	for(var k in window.arguments[1]) {
+		var onecountry = window.arguments[1][k];
+		var onemenuitem = document.createElementNS(XUL_NS,"menuitem");
+		$(onemenuitem).attr("value", onecountry.country_code);
+		$(onemenuitem).attr("label", onecountry.name);
+		$("#inner-country").append(onemenuitem);
+	}
+	$("#country")[0].value = window.arguments[2].country_code;
 }
 
 // when you click "OK" on the Add Contact Item dialog, send results to main script

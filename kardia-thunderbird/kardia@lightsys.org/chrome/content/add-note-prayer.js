@@ -1,3 +1,5 @@
+var XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+
 // on load, enter predefined title/description (if necessary), center window on screen
 function onLoad() {
 	centerWindowOnScreen();
@@ -5,11 +7,16 @@ function onLoad() {
 	document.getElementById("note-text").value = window.arguments[0].desc;
 
 	// load note type options
-	document.getElementById("select-note-type").innerHTML = "";
-	for (var i=0;i<window.arguments[1].length;i+=2) {
-		document.getElementById("select-note-type").innerHTML += '<menuitem label="' + window.arguments[1][i+1] + '" value="' + window.arguments[1][i] + '"/>';
+	var notelist = $("#select-note-type");
+	notelist.find("menuitem").remove();
+	for (var k in window.arguments[1]) {
+		var onenotetype = window.arguments[1][k];
+		var onemenuitem = document.createElementNS(XUL_NS,"menuitem");
+		$(onemenuitem).attr("value", onenotetype.id);
+		$(onemenuitem).attr("label", onenotetype.label);
+		notelist.append(onemenuitem);
 	}
-	document.getElementById("outer-select-note-type").selectedIndex = 0;
+	$("#outer-select-note-type")[0].selectedIndex = 0;
 }
 
 //when you click "OK" on the Add Note/Prayer dialog, send textbox values to main script

@@ -11,7 +11,7 @@ function onLoad() {
 	  }
 	  document.getElementById("outer-select-collaborator").selectedIndex = 0;
 
-	  // load collaborator type options
+	  // load collaborator type options FIXME - collab type list (arg 2) has changed format
 	  document.getElementById("select-collab-type").innerHTML = "";
 	  for (var i=0;i<window.arguments[2].length;i+=2) {
 		  document.getElementById("select-collab-type").innerHTML += '<menuitem label="' + window.arguments[2][i] + '" value="' + window.arguments[2][i+1] + '"/>';

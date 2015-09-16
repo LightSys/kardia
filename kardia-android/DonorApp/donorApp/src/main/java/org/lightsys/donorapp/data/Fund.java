@@ -1,7 +1,7 @@
 package org.lightsys.donorapp.data;
 
 /**
- * Basic class used to organize information about funds, that a user has donated to
+ * Basic class used to organize information about funds that a user has donated to
  * 
  * @author Andrew Cameron
  *
@@ -73,14 +73,6 @@ public class Fund {
 
 	public void setGiving_url(String donation_link) {
 		this.giving_url = donation_link;
-	}
-	
-	public String amountToString(){
-		if(gift_total[1] <= 9){
-			return "$" + gift_total[0] + ".0" + gift_total[1];
-		}else{
-			return "$" + gift_total[0] + "." + gift_total[1];
-		}
 	}
 
 	public String getFund_desc() {
