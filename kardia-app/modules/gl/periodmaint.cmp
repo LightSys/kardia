@@ -4,6 +4,28 @@ periodmaint "widget/component-decl"
     width=780; height=580;
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
 
+    opening_bal_cmp "widget/component"
+	{
+	path = "opening_balances.cmp";
+
+	on_new_balances "widget/connector" { event=Generated; target=yeardata_osrc; action=Refresh; }
+	on_new_balances_err "widget/connector"
+	    {
+	    event=Generated;
+	    event_condition=runclient(char_length(:errors) > 1);
+	    target=periodmaint;
+	    action=Alert;
+	    Message=runclient("The opening balances batch could not be correctly created.  Please review the prior year's data, make corrections, and redo the opening balances.  Here are the errors that occurred:\n\n" + :errors);
+	    }
+	}
+
+    opening_bal_req_cmp "widget/component"
+	{
+	path = "opening_balances_req.cmp";
+
+	on_requested "widget/connector" { event=Requested; target=periodmaint; action=Alert; Message="Request placed."; }
+	}
+
     periods_vbox "widget/vbox"
 	{
 	width=780; height=580; x=0; y=0; spacing=8;
@@ -17,13 +39,15 @@ periodmaint "widget/component-decl"
 
 	year_hbox "widget/hbox"
 	    {
-	    height=200;
-	    spacing=16;
+	    x=11; width=760;
+	    height=192;
+	    spacing=30;
 
 	    searchlistpane "widget/pane"
 		{
-		width=200;
-		widget_class=table_bgnd;
+		width=250;
+		//widget_class=table_bgnd;
+		style=flat;
 
 		year_osrc "widget/osrc"
 		    {
@@ -43,7 +67,8 @@ periodmaint "widget/component-decl"
 				:p:s_created_by,
 				:p:s_modified_by,
 				:p:a_summary_only,
-				:ps:text
+				:ps:text,
+				year = datepart(year, :p:a_start_date)
 			from
 				IDENTITY /apps/kardia/data/Kardia_DB/a_period/rows p,
 				/apps/kardia/data/Kardia_DB/_a_period_status/rows ps
@@ -62,10 +87,25 @@ periodmaint "widget/component-decl"
 
 		    searchlisttbl "widget/table"
 			{
-			height=198; width=198; x=0; y=0;
+			height=190; width=248; x=0; y=0;
+			overlap_scrollbar = yes;
+			demand_scrollbar = yes;
+			max_rowheight=36;
+			colsep = 0;
+			cellvspacing=3;
+			inner_padding=2;
+			row_border_radius=4;
+			row_shadow_color="#a0a0a0";
+			row_shadow_radius=2;
+			row_shadow_offset=1;
+			row_shadow_angle=135;
+			rowcache_size=200;
+			titlebar=no;
+			nodata_message = "No years configured yet - click New Year to add one.";
 
-			t_yr "widget/table-column" { title="Year"; fieldname="a_period_desc"; width=125; }
-			t_stat "widget/table-column" { title="Status"; fieldname="text"; width=55; }
+			t_ico "widget/table-column" { title=""; value=runclient("/apps/kardia/images/icons/year.gif"); width=20; type=image; align=center; }
+			t_yr "widget/table-column" { title="Year"; fieldname="a_period_desc"; width=115; style=bold; }
+			t_stat "widget/table-column" { title="Status"; fieldname="text"; width=95; }
 			}
 		    }
 		}
@@ -77,10 +117,10 @@ periodmaint "widget/component-decl"
 		yearedit_vbox "widget/vbox"
 		    {
 		    width=280;
-		    spacing=4;
+		    spacing=7;
 
 		    //yeardisp_lbl "widget/label" { height=24; font_size=16; style=bold; fgcolor="#153f5f"; value=runclient(:year_osrc:a_period + ' - ' + :year_osrc:a_period_desc); }
-		    f_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=100; ledger_hints "widget/hints" { default=runserver(:this:ledger); } }
+		    f_ledger "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=100; ledger_hints "widget/hints" { default=runserver(:this:ledger); } }
 		    f_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period'; ctl_type=editbox; text='Period:'; label_width=100; f_period_hnt "widget/hints" { style=createonly; } }
 		    f_perioddesc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period_desc'; ctl_type=editbox; text='Description:'; label_width=100; }
 		    f_start "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_start_date'; ctl_type=datetime; text='Start Date:'; label_width=100; date_only=1; default_time="00:00:00"; }
@@ -94,7 +134,7 @@ periodmaint "widget/component-decl"
 	    year_ctls "widget/vbox"
 		{
 		width=150;
-		spacing=4;
+		spacing=5;
 
 		y_stat "widget/component" { form=yearedit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='text'; ctl_type=label; text='Status:'; label_width=50; }
 		newyr_btn "widget/textbutton"
@@ -109,15 +149,23 @@ periodmaint "widget/component-decl"
 		    {
 		    height=24; width=150;
 		    text = runclient(condition(:year_osrc:a_status = 'C', "Reopen Year", "Open Year"));
-		    enabled = runclient((:year_osrc:a_status = 'N' or :year_osrc:a_status = 'C') and :yearedit_form:form_mode == 'View');
+		    enabled = runclient((:year_osrc:a_status = 'N' or :year_osrc:a_status = 'C') and :yearedit_form:form_mode == 'View' and :peredit_form:form_mode == 'View');
 
-		    openyr_cn "widget/connector"
+		    openyr_cn_1 "widget/connector"
 			{
 			event=Click;
 			target=year_osrc;
 			action=Modify;
 			a_status=runclient('O');
 			a_first_opened=runclient(condition(char_length(:year_osrc:a_first_opened) > 0, :year_osrc:a_first_opened, getdate()));
+			}
+		    openyr_cn_2 "widget/connector"
+			{
+			event=Click;
+			target=period_osrc;
+			action=Modify;
+			a_status=runclient('O');
+			a_first_opened=runclient(condition(char_length(:period_osrc:a_first_opened) > 0, :period_osrc:a_first_opened, getdate()));
 			}
 		    }
 		closeyr_btn "widget/textbutton"
@@ -154,7 +202,7 @@ periodmaint "widget/component-decl"
 		    }
 		yr_sep "widget/autolayoutspacer"
 		    {
-		    height=4;
+		    height=8;
 		    }
 		yrsave_btn "widget/textbutton"
 		    {
@@ -182,184 +230,327 @@ periodmaint "widget/component-decl"
 
 	sp1 "widget/autolayoutspacer" { height=8; }
 
-	perlbl "widget/component"
+	year_tc "widget/tab"
 	    {
-	    path="/apps/kardia/modules/base/section_label.cmp";
-	    height=20; width=780;
-	    text = runclient("Periods within " + :year_osrc:a_period_desc);
-	    }
+	    height=308;
+	    border_radius=6;
+	    background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	    inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
 
-	period_hbox "widget/hbox"
-	    {
-	    height=300;
-	    spacing=16;
-
-	    periodlistpane "widget/pane"
+	    periodlist_tab "widget/tabpage"
 		{
-		width=200;
-		widget_class=table_bgnd;
+		title = "Periods";
 
-		period_osrc "widget/osrc"
+		period_hbox "widget/hbox"
 		    {
-		    sql = runserver("
-			select
-				:p:a_period,
-				:p:a_period_desc,
-				:p:a_ledger_number,
-				:p:a_status,
-				:p:a_start_date,
-				:p:a_end_date,
-				:p:a_first_opened,
-				:p:a_last_closed,
-				:p:a_archived,
-				:p:s_date_created,
-				:p:s_date_modified,
-				:p:s_created_by,
-				:p:s_modified_by,
-				:p:a_summary_only,
-				:ps:text
-			from
-				IDENTITY /apps/kardia/data/Kardia_DB/a_period/rows p,
-				/apps/kardia/data/Kardia_DB/_a_period_status/rows ps
-			where 
-				:p:a_summary_only = 0 and
-				:ps:tag = :p:a_status
-			order by
-				:p:a_start_date
-			");
+		    x=10; y=10;
+		    height=290;
+		    spacing=30;
 
-		    baseobj = "/apps/kardia/data/Kardia_DB/a_period/rows";
-		    replicasize=300;
-		    readahead=300;
-		    autoquery=never;
-
-		    period_year_sync "widget/rule"
+		    periodlistpane "widget/pane"
 			{
-			ruletype = osrc_relationship;
-			target = year_osrc;
-			key_1 = a_ledger_number;
-			key_2 = a_parent_period;
-			target_key_1 = a_ledger_number;
-			target_key_2 = a_period;
+			width=250;
+			//widget_class=table_bgnd;
+			style=flat;
+
+			period_osrc "widget/osrc"
+			    {
+			    sql = runserver("
+				select
+					:p:a_period,
+					:p:a_period_desc,
+					:p:a_ledger_number,
+					:p:a_status,
+					:p:a_start_date,
+					:p:a_end_date,
+					:p:a_first_opened,
+					:p:a_last_closed,
+					:p:a_archived,
+					:p:s_date_created,
+					:p:s_date_modified,
+					:p:s_created_by,
+					:p:s_modified_by,
+					:p:a_summary_only,
+					:ps:text
+				from
+					IDENTITY /apps/kardia/data/Kardia_DB/a_period/rows p,
+					/apps/kardia/data/Kardia_DB/_a_period_status/rows ps
+				where 
+					:p:a_summary_only = 0 and
+					:ps:tag = :p:a_status
+				order by
+					:p:a_start_date
+				");
+
+			    baseobj = "/apps/kardia/data/Kardia_DB/a_period/rows";
+			    replicasize=300;
+			    readahead=300;
+			    autoquery=never;
+
+			    period_year_sync "widget/rule"
+				{
+				ruletype = osrc_relationship;
+				target = year_osrc;
+				key_1 = a_ledger_number;
+				key_2 = a_parent_period;
+				target_key_1 = a_ledger_number;
+				target_key_2 = a_period;
+				}
+
+			    periodlisttbl "widget/table"
+				{
+				height=289; width=248; x=0; y=0;
+				overlap_scrollbar = yes;
+				demand_scrollbar = yes;
+				max_rowheight=36;
+				colsep = 0;
+				cellvspacing=3;
+				inner_padding=2;
+				row_border_radius=4;
+				row_shadow_color="#a0a0a0";
+				row_shadow_radius=2;
+				row_shadow_offset=1;
+				row_shadow_angle=135;
+				rowcache_size=200;
+				titlebar=no;
+				nodata_message = "No periods in this year yet.";
+
+				t_monthico "widget/table-column" { title=""; value=runclient("/apps/kardia/images/icons/month.gif"); width=20; type=image; align=center; }
+				t_per "widget/table-column" { title="Period"; fieldname="a_period_desc"; width=115; style=bold; }
+				t_perstat "widget/table-column" { title="Status"; fieldname="text"; width=95; }
+				}
+			    }
 			}
 
-		    periodlisttbl "widget/table"
+		    peredit_form "widget/form"
 			{
-			height=298; width=198; x=0; y=0;
+			objectsource = period_osrc;
 
-			t_per "widget/table-column" { title="Year"; fieldname="a_period_desc"; width=125; }
-			t_perstat "widget/table-column" { title="Status"; fieldname="text"; width=55; }
+			peredit_vbox "widget/vbox"
+			    {
+			    width=280;
+			    spacing=8;
+			    y=30;
+
+			    //perdisp_lbl "widget/label" { height=24; font_size=16; style=bold; fgcolor="#153f5f"; value=runclient(:period_osrc:a_period + ' - ' + :period_osrc:a_period_desc); }
+			    p_ledger "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=100; }
+			    p_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period'; ctl_type=editbox; text='Period:'; label_width=100; p_period_hnt "widget/hints" { style=createonly; } }
+			    p_perioddesc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period_desc'; ctl_type=editbox; text='Description:'; label_width=100; }
+			    p_start "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_start_date'; ctl_type=datetime; text='Start Date:'; label_width=100; date_only=1; default_time="00:00:00"; }
+			    p_end "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_end_date'; ctl_type=datetime; text='End Date:'; label_width=100; date_only=1; default_time="23:59:59"; }
+			    p_opened "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_first_opened'; ctl_type=datetime; text='Opened:'; label_width=100; type=readonly; }
+			    p_closed "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_last_closed'; ctl_type=datetime; text='Closed:'; label_width=100; type=readonly; }
+			    p_archived "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_archived'; ctl_type=datetime; text='Archived:'; label_width=100; type=readonly; }
+			    }
+			}
+
+		    period_ctls_vbox "widget/vbox"
+			{
+			width=150; spacing=6; y=30;
+
+			p_stat "widget/component" { form=peredit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='text'; ctl_type=label; text='Status:'; label_width=50; }
+			newper_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "New Period";
+			    enabled = runclient(:peredit_form:is_newable);
+
+			    newper_cn "widget/connector" { event=Click; target=peredit_form; action=New; }
+			    }
+			openper_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = runclient(condition(:period_osrc:a_status = 'C', "Reopen Period", "Open Period"));
+			    enabled = runclient((:period_osrc:a_status = 'N' or :period_osrc:a_status = 'C') and :peredit_form:form_mode == 'View');
+
+			    openper_cn "widget/connector"
+				{
+				event=Click;
+				target=period_osrc;
+				action=Modify;
+				a_status=runclient('O');
+				a_first_opened=runclient(condition(char_length(:period_osrc:a_first_opened) > 0, :period_osrc:a_first_opened, getdate()));
+				}
+			    }
+			closeper_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Close Period";
+			    enabled = runclient(:period_osrc:a_status = 'O' and :peredit_form:form_mode == 'View');
+
+			    closeper_cn "widget/connector"
+				{
+				condition = 0; // disable for now
+				event=Click;
+				target=period_osrc;
+				action=Modify;
+				a_status=runclient('C');
+				a_last_closed=runclient(getdate());
+				}
+			    }
+			archiveper_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Archive Period";
+			    enabled = runclient(:period_osrc:a_status = 'C' and :peredit_form:form_mode == 'View');
+
+			    archiveper_cn "widget/connector"
+				{
+				condition = 0; // disable for now
+				event=Click;
+				target=period_osrc;
+				action=Modify;
+				a_status=runclient('A');
+				a_archived=runclient(getdate());
+				}
+			    }
+			per_sep "widget/autolayoutspacer"
+			    {
+			    height=8;
+			    }
+			persave_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Save";
+			    enabled = runclient(:peredit_form:is_savable);
+			    persave_cn "widget/connector" { event=Click; target=peredit_form; action=Save; }
+			    }
+			percancel_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Cancel";
+			    enabled = runclient(:peredit_form:is_discardable);
+			    percancel_cn "widget/connector" { event=Click; target=peredit_form; action=Discard; }
+			    }
+
+			pdt_c "widget/variable" { form=peredit_form; fieldname="s_date_created"; pdt_c_hints "widget/hints" { default=runclient(getdate()); } }
+			pus_c "widget/variable" { form=peredit_form; fieldname="s_created_by"; pus_c_hints "widget/hints" { default=runclient(user_name()); } }
+			pdt_m "widget/variable" { form=peredit_form; fieldname="s_date_modified"; pdt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
+			pus_m "widget/variable" { form=peredit_form; fieldname="s_modified_by"; pus_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
+			pv_yearstatus "widget/variable" { form=peredit_form; fieldname='a_status'; pyearstat_hints "widget/hints" { default=runclient('N'); } }
+			pv_summonly "widget/variable" { form=peredit_form; fieldname='a_summary_only'; psummonly_hints "widget/hints" { default=runclient(0); } }
 			}
 		    }
 		}
 
-	    peredit_form "widget/form"
+	    yeardata_tab "widget/tabpage"
 		{
-		objectsource = period_osrc;
+		title = "Opening Balances";
 
-		peredit_vbox "widget/vbox"
+		yeardata_vbox "widget/vbox"
 		    {
-		    width=280;
-		    spacing=4;
+		    x=10; y=10;
+		    width=758; height=290;
 
-		    //perdisp_lbl "widget/label" { height=24; font_size=16; style=bold; fgcolor="#153f5f"; value=runclient(:period_osrc:a_period + ' - ' + :period_osrc:a_period_desc); }
-		    p_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=100; }
-		    p_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period'; ctl_type=editbox; text='Period:'; label_width=100; p_period_hnt "widget/hints" { style=createonly; } }
-		    p_perioddesc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period_desc'; ctl_type=editbox; text='Description:'; label_width=100; }
-		    p_start "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_start_date'; ctl_type=datetime; text='Start Date:'; label_width=100; date_only=1; default_time="00:00:00"; }
-		    p_end "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_end_date'; ctl_type=datetime; text='End Date:'; label_width=100; date_only=1; default_time="23:59:59"; }
-		    p_opened "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_first_opened'; ctl_type=datetime; text='Opened:'; label_width=100; type=readonly; }
-		    p_closed "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_last_closed'; ctl_type=datetime; text='Closed:'; label_width=100; type=readonly; }
-		    p_archived "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_archived'; ctl_type=datetime; text='Archived:'; label_width=100; type=readonly; }
-		    }
-		}
-
-	    period_ctls_vbox "widget/vbox"
-		{
-		width=150; spacing=4;
-
-		p_stat "widget/component" { form=peredit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='text'; ctl_type=label; text='Status:'; label_width=50; }
-		newper_btn "widget/textbutton"
-		    {
-		    height=24; width=150;
-		    text = "New Period";
-		    enabled = runclient(:peredit_form:is_newable);
-
-		    newper_cn "widget/connector" { event=Click; target=peredit_form; action=New; }
-		    }
-		openper_btn "widget/textbutton"
-		    {
-		    height=24; width=150;
-		    text = runclient(condition(:period_osrc:a_status = 'C', "Reopen Period", "Open Period"));
-		    enabled = runclient((:period_osrc:a_status = 'N' or :period_osrc:a_status = 'C') and :peredit_form:form_mode == 'View');
-
-		    openper_cn "widget/connector"
+		    yeardata_osrc "widget/osrc"
 			{
-			event=Click;
-			target=period_osrc;
-			action=Modify;
-			a_status=runclient('O');
-			a_first_opened=runclient(condition(char_length(:period_osrc:a_first_opened) > 0, :period_osrc:a_first_opened, getdate()));
+			year "widget/parameter" { type=integer; }
+			ledgernum "widget/parameter" { param_name=ledger; type=string; }
+			sql = " select
+				    bal_exists = (select
+							count(1)
+						    from
+							/apps/kardia/data/Kardia_DB/a_transaction/rows t
+						    where
+							:t:a_ledger_number = :parameters:ledger and
+							datepart(year, :t:a_effective_date) = :parameters:year and
+							:t:a_transaction_type = 'B'
+						    ),
+				    prev_year_exists = isnull((select
+							1
+						    from
+							/apps/kardia/data/Kardia_DB/a_transaction/rows t
+						    where
+							:t:a_ledger_number = :parameters:ledger and
+							datepart(year, :t:a_effective_date) = :parameters:year - 1
+						    limit
+							1
+						    ), 0),
+				    bal_check_al = convert(string,(select
+							sum(abs(sum(condition(datepart(year,:t:a_effective_date) = :parameters:year, :t:a_amount, $0 - :t:a_amount))))
+						    from
+							/apps/kardia/data/Kardia_DB/a_transaction/rows t
+						    where
+							:t:a_ledger_number = :parameters:ledger and
+							datepart(year, :t:a_effective_date) >= :parameters:year - 1 and
+							datepart(year, :t:a_effective_date) <= :parameters:year and
+							(:t:a_transaction_type = 'B' or datepart(year, :t:a_effective_date) = :parameters:year - 1) and
+							:t:a_account_code >= '1000' and
+							:t:a_account_code <= '2999' and
+							:t:a_account_code != '1900'
+						    group by    
+							:t:a_ledger_number,
+							:t:a_cost_center,
+							:t:a_account_code
+						    )),
+				    bal_check_eq = convert(string,(select
+							sum(abs(sum(condition(datepart(year,:t:a_effective_date) = :parameters:year, :t:a_amount, $0 - :t:a_amount))))
+						    from
+							/apps/kardia/data/Kardia_DB/a_transaction/rows t
+						    where
+							:t:a_ledger_number = :parameters:ledger and
+							datepart(year, :t:a_effective_date) >= :parameters:year - 1 and
+							datepart(year, :t:a_effective_date) <= :parameters:year and
+							(:t:a_transaction_type = 'B' or datepart(year, :t:a_effective_date) = :parameters:year - 1) and
+							:t:a_account_code >= '3000' and
+							:t:a_account_code <= '5999'
+						    group by
+							:t:a_ledger_number,
+							:t:a_cost_center
+						    ))
+				";
+			readahead=2;
+			replicasize=2;
+			autoquery=never;
+
+			yeardata_sync "widget/rule"
+			    {
+			    ruletype=osrc_relationship;
+			    revealed_only=yes;
+			    target=year_osrc;
+			    key_1 = ledger;
+			    target_key_1 = a_ledger_number;
+			    key_2 = year;
+			    target_key_2 = year;
+			    }
+
+			yeardata_form "widget/form"
+			    {
+			    bal_chk_hdr "widget/label" { height=20; style=bold; value="Opening Balance Check:"; }
+			    bal_chk_label "widget/label" { height=20; value=runclient(condition(:yeardata_osrc:cx__pending, "", condition(:yeardata_osrc:bal_exists > 0, condition(:yeardata_osrc:bal_check_al is null, '', condition(:yeardata_osrc:bal_check_al != '$0.00' or :yeardata_osrc:bal_check_eq != '$0.00', condition(:yeardata_osrc:prev_year_exists > 0, 'Error: Opening Balances for ' + :year_osrc:year + ' do not match closing balances for ' + (:year_osrc:year - 1) + '.  The opening balances batch needs to be re-generated.', 'Previous year has no data'), 'Opening balances for ' + :year_osrc:year + ' match the previous year\'s closing balances.')), 'Opening Balances for ' + :year_osrc:year + ' have not been created' + condition(:yeardata_osrc:prev_year_exists = 0, ', but prior year has no data.', '.')))); }
+			    rerun_bal_btn "widget/textbutton"
+				{
+				width=280;
+				text = runclient(condition(:yeardata_osrc:bal_exists > 0, "Re-create", "Create") + " opening balances for " + :year_osrc:year);
+				enabled = runclient(has_endorsement("kardia:gl_manage", "kardia:ledger:" + :ledger:value) and (isnull(:yeardata_osrc:bal_check_al, "$0.00") != "$0.00" or isnull(:yeardata_osrc:bal_check_eq, "$0.00") != "$0.00") and not :yeardata_osrc:cx__pending and :yeardata_osrc:prev_year_exists > 0);
+
+				on_openbal "widget/connector"
+				    {
+				    event=Click;
+				    event_condition=runclient(:yeardata_osrc:bal_exists = 0 and not :yeardata_osrc:cx__pending);
+				    event_confirm=runclient("Really create the opening balances batch for " + :year_osrc:year + " based on all transactions for " + (:year_osrc:year - 1) + "?");
+				    target=opening_bal_cmp;
+				    action=Generate;
+				    ledger=runclient(:year_osrc:a_ledger_number);
+				    year=runclient(:year_osrc:year);
+				    }
+
+				on_re_openbal "widget/connector"
+				    {
+				    event=Click;
+				    event_condition=runclient(:yeardata_osrc:bal_exists > 0 and not :yeardata_osrc:cx__pending);
+				    event_confirm=runclient("Request re-creation of the opening balances batch for " + :year_osrc:year + " based on all transactions for " + (:year_osrc:year - 1) + "?");
+				    target=opening_bal_req_cmp;
+				    action=RequestNewBalances;
+				    ledger=runclient(:year_osrc:a_ledger_number);
+				    year=runclient(:year_osrc:year);
+				    }
+				}
+			    }
 			}
 		    }
-		closeper_btn "widget/textbutton"
-		    {
-		    height=24; width=150;
-		    text = "Close Period";
-		    enabled = runclient(:period_osrc:a_status = 'O' and :peredit_form:form_mode == 'View');
-
-		    closeper_cn "widget/connector"
-			{
-			condition = 0; // disable for now
-			event=Click;
-			target=period_osrc;
-			action=Modify;
-			a_status=runclient('C');
-			a_last_closed=runclient(getdate());
-			}
-		    }
-		archiveper_btn "widget/textbutton"
-		    {
-		    height=24; width=150;
-		    text = "Archive Period";
-		    enabled = runclient(:period_osrc:a_status = 'C' and :peredit_form:form_mode == 'View');
-
-		    archiveper_cn "widget/connector"
-			{
-			condition = 0; // disable for now
-			event=Click;
-			target=period_osrc;
-			action=Modify;
-			a_status=runclient('A');
-			a_archived=runclient(getdate());
-			}
-		    }
-		per_sep "widget/autolayoutspacer"
-		    {
-		    height=4;
-		    }
-		persave_btn "widget/textbutton"
-		    {
-		    height=24; width=150;
-		    text = "Save";
-		    enabled = runclient(:peredit_form:is_savable);
-		    persave_cn "widget/connector" { event=Click; target=peredit_form; action=Save; }
-		    }
-		percancel_btn "widget/textbutton"
-		    {
-		    height=24; width=150;
-		    text = "Cancel";
-		    enabled = runclient(:peredit_form:is_discardable);
-		    percancel_cn "widget/connector" { event=Click; target=peredit_form; action=Discard; }
-		    }
-
-		pdt_c "widget/variable" { form=peredit_form; fieldname="s_date_created"; pdt_c_hints "widget/hints" { default=runclient(getdate()); } }
-		pus_c "widget/variable" { form=peredit_form; fieldname="s_created_by"; pus_c_hints "widget/hints" { default=runclient(user_name()); } }
-		pdt_m "widget/variable" { form=peredit_form; fieldname="s_date_modified"; pdt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } }
-		pus_m "widget/variable" { form=peredit_form; fieldname="s_modified_by"; pus_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } }
-		pv_yearstatus "widget/variable" { form=peredit_form; fieldname='a_status'; pyearstat_hints "widget/hints" { default=runclient('N'); } }
-		pv_summonly "widget/variable" { form=peredit_form; fieldname='a_summary_only'; psummonly_hints "widget/hints" { default=runclient(0); } }
 		}
 	    }
 	}
     }
+

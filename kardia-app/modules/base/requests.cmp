@@ -1,0 +1,161 @@
+$Version=2$
+requests "widget/component-decl"
+    {
+    width=828;
+    height=584;
+
+    requests_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=584;
+	spacing=8;
+
+	title_hbox "widget/hbox"
+	    {
+	    height=24;
+	    title_label "widget/label" { width=700; style=bold; font_size=16; text="Manage Administrative Requests"; }
+	    showall_btn "widget/textbutton"
+		{
+		width=128;
+		text="Show All";
+		showall_cn "widget/connector" { event=Click; target=requests_osrc; action=QueryParam; show_all=1; }
+		}
+	    }
+	title_sep "widget/pane" { height=2; style=lowered; }
+
+	requests_osrc "widget/osrc"
+	    {
+	    show_all "widget/parameter" { type=integer; default=0; }
+	    sql = " SELECT
+			:r:s_request_id,
+			:r:s_request_type,
+			:r:s_object_key_1,
+			:r:s_object_key_2,
+			s_object_key_1_int = convert(integer,:r:s_object_key_1),
+			s_object_key_2_int = convert(integer,:r:s_object_key_2),
+			:r:s_date_requested,
+			:r:s_requested_by,
+			:r:s_request_comment,
+			:r:s_request_sec_context,
+			:r:s_date_deleted,
+			:r:s_deleted_by,
+			:r:s_deleted_comment,
+			:r:s_date_approved,
+			:r:s_approved_by,
+			:r:s_approved_comment,
+			:r:s_date_completed,
+			:r:s_completed_by,
+			:r:s_completed_comment,
+			:r:s_date_created,
+			:r:s_created_by,
+			:r:s_date_modified,
+			:r:s_modified_by,
+			:rt:s_request_type_desc,
+			:rt:s_request_sec_endorsement,
+			can_authorize = (has_endorsement(:rt:s_request_sec_endorsement, :r:s_request_sec_context) and (has_endorsement('kardia:sys_admin','kardia') or (user_name() != :r:s_requested_by))),
+			status = condition(:r:s_date_approved is null and :r:s_date_deleted is null, 'Requested', condition(:r:s_date_completed is null, condition(:r:s_date_deleted is null, 'Approved', 'Deleted'), 'Completed')),
+			status_who = condition(:r:s_date_approved is null and :r:s_date_deleted is null, :s_requested_by, condition(:r:s_date_completed is null, condition(:r:s_date_deleted is null, :s_approved_by, :s_deleted_by), :s_completed_by)),
+			status_date = condition(:r:s_date_approved is null and :r:s_date_deleted is null, :s_date_requested, condition(:r:s_date_completed is null, condition(:r:s_date_deleted is null, :s_date_approved, :s_date_deleted), :s_date_completed))
+		    FROM
+			identity /apps/kardia/data/Kardia_DB/s_request/rows r,
+			/apps/kardia/data/Kardia_DB/s_request_type/rows rt
+		    WHERE
+			(:r:s_date_completed is null or dateadd(day,1,:s_date_completed) > getdate() or :parameters:show_all == 1) and
+			(:r:s_date_deleted is null or dateadd(day,1,:s_date_deleted) > getdate() or :parameters:show_all == 1) and
+			:rt:s_request_type = :r:s_request_type
+		    HAVING
+			:can_authorize or :s_requested_by = user_name()
+		    ORDER BY
+			:s_date_requested desc
+		    ";
+	    readahead=30;
+	    replicasize=30;
+	    autoquery=onfirstreveal;
+	    refresh_interval = 120000;
+
+	    requests_table "widget/table"
+		{
+		height=542;
+		overlap_scrollbar = yes;
+		demand_scrollbar = yes;
+		initial_selection = no;
+		max_rowheight=36;
+		colsep = 0;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=4;
+		row_shadow_color="#a0a0a0";
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_angle=135;
+		rowcache_size=200;
+		nodata_message = "No requests at this moment.";
+
+		rt_img "widget/table-column" { title = ""; value=runclient(condition(:requests_osrc:status == 'Requested', '/sys/images/trans_1.gif', condition(:requests_osrc:status == 'Approved', '/sys/images/dotted_check.gif', condition(:requests_osrc:status == 'Deleted', '/sys/images/red_x.gif', '/sys/images/green_check.gif')))); type=image; width=40; align=center; }
+		rt_stat "widget/table-column" { title = "Status"; fieldname=status; width=150; style=bold; caption_value=runclient('by ' + :requests_osrc:status_who + ' on ' + substring(convert(string,:requests_osrc:status_date),1,11)); }
+		rt_type "widget/table-column" { title = "Request Information"; value=runclient(:requests_osrc:s_request_type_desc + ' (' + :requests_osrc:s_object_key_1 + ', ' + :requests_osrc:s_object_key_2 + ')'); width=330; style=bold; caption_fieldname=s_request_comment; }
+		rt_by "widget/table-column" { title = "Requested:"; fieldname=s_requested_by; width=100; style=bold; caption_value=runclient(substring(convert(string,:requests_osrc:s_date_requested),1,11)); }
+		rt_aby "widget/table-column" { title = "Approved:"; fieldname=s_approved_by; width=100; style=bold; caption_value=runclient(substring(convert(string,:requests_osrc:s_date_approved),1,11)); }
+		rt_cby "widget/table-column" { title = "Completed:"; fieldname=s_completed_by; width=100; style=bold; caption_value=runclient(substring(convert(string,:requests_osrc:s_date_completed),1,11)); }
+
+		rt_types "widget/repeat"
+		    {
+		    sql = " select
+				path = :cx__pathname,
+				:type,
+				:height
+			    from
+				object wildcard '/apps/kardia/modules/*/plugin_base_requests_*.cmp'
+			    ";
+
+		    rt_type_item "widget/table-row-detail"
+			{
+			display_for=runclient(:requests_osrc:s_request_type == runserver(:rt_types:type) and :requests_osrc:status == 'Approved');
+			height=runserver(:rt_types:height + 8);
+			width=828;
+
+			rt_type_cmp "widget/component"
+			    {
+			    x=4; y=6;
+			    width=820;
+			    height=runserver(:rt_types:height);
+			    fl_height=0;
+			    path = runserver(:rt_types:path);
+			    requests_osrc = requests_osrc;
+			    }
+			}
+		    }
+
+		rt_approval_detail "widget/table-row-detail"
+		    {
+		    display_for=runclient(:requests_osrc:can_authorize and :requests_osrc:status == 'Requested');
+		    height=32;
+
+		    approval_btns "widget/hbox"
+			{
+			x=4; y=6;
+			height=24; width=820;
+			spacing=8;
+			align=center;
+
+			approve_btn "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text = "Approve";
+			    enabled=runclient(:requests_osrc:can_authorize);
+
+			    on_approve "widget/connector" { event=Click; target=requests_osrc; action=Modify; s_approved_by=runclient(user_name()); s_date_approved=runclient(getdate()); }
+			    }
+			delete_btn "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text = "Delete Request";
+
+			    on_delete "widget/connector" { event=Click; target=requests_osrc; action=Modify; s_deleted_by=runclient(user_name()); s_date_deleted=runclient(getdate()); }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
