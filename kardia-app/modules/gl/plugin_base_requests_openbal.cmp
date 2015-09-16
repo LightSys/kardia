@@ -1,0 +1,61 @@
+$Version=2$
+plugin_base_requests_openbal "widget/component-decl"
+    {
+    height=30;
+    width=820;
+    type='REOPENBAL';
+
+    requests_osrc "widget/parameter" { type=object; }
+
+    opening_bal_cmp "widget/component"
+	{
+	path = "/apps/kardia/modules/gl/opening_balances.cmp";
+
+	on_new_balances "widget/connector" { event=Generated; target=requests_osrc; action=Modify; s_completed_by=runclient(user_name()); s_date_completed=runclient(getdate()); }
+	on_new_balances_err "widget/connector"
+	    {
+	    event=Generated;
+	    event_condition=runclient(char_length(:errors) > 1);
+	    target=plugin_base_requests_openbal;
+	    action=Alert;
+	    Message=runclient("The opening balances batch could not be correctly created.  Please review the prior year's data, make corrections, and redo the opening balances.  Here are the errors that occurred:\n\n" + :errors);
+	    }
+	}
+
+    options_hbox "widget/hbox"
+	{
+	x=0; y=6;
+	width=820; height=24;
+	align=center;
+	spacing=8;
+
+	option_rerun "widget/textbutton"
+	    {
+	    width=280; height=24;
+	    text=runclient("Re-Run Opening Balances for " + :requests_osrc:s_object_key_2);
+	    enabled=runclient(has_endorsement('kardia:gl_manage', 'kardia:ledger:' + :requests_osrc:s_object_key_1));
+	    on_rerun "widget/connector"
+		{
+		event=Click;
+		target=opening_bal_cmp;
+		action=Generate;
+		ledger=runclient(:requests_osrc:s_object_key_1);
+		year=runclient(:requests_osrc:s_object_key_2);
+		}
+	    }
+
+	option_delete "widget/textbutton"
+	    {
+	    width=130; height=24;
+	    text="Delete Request";
+	    on_delete "widget/connector"
+		{
+		event=Click;
+		target=requests_osrc;
+		action=Modify;
+		s_deleted_by=runclient(user_name());
+		s_date_deleted=runclient(getdate());
+		}
+	    }
+	}
+    }

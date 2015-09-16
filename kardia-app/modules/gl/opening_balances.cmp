@@ -1,0 +1,334 @@
+$Version=2$
+opening_balances "widget/component-decl"
+    {
+    // This component generates new opening balances for a given year.
+    Generate "widget/component-decl-action" { }
+    Generated "widget/component-decl-event" { }
+    gen_cn "widget/connector"
+	{
+	event=Generate;
+	target=generate_osrc;
+	action=QueryParam;
+	event_all_params=1;
+	}
+
+    generate_osrc "widget/osrc"
+	{
+	ledger "widget/parameter" { type=string; }
+	year "widget/parameter" { type=integer; }
+	replicasize=2;
+	readahead=2;
+	autoquery=never;
+
+	sql = "	declare object init_info;
+
+		-- determine opening period for prior year
+		select
+		    :init_info:startperiod = first(:a_period)
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_summary_only = 0 and
+		    datepart(year, :p:a_start_date) = :parameters:year - 1
+		order by
+		    :p:a_start_date asc
+		limit
+		    1
+		;
+
+		-- determine ending period for prior year
+		select
+		    :init_info:endperiod = last(:a_period)
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_summary_only = 0 and
+		    datepart(year, :p:a_start_date) = :parameters:year - 1
+		order by
+		    :p:a_start_date asc
+		limit
+		    1
+		;
+
+		-- determine starting period for this year
+		select
+		    :init_info:obperiod = :a_period,
+		    :init_info:obdate = :a_start_date
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_summary_only = 0 and
+		    datepart(year, :p:a_start_date) = :parameters:year
+		order by
+		    :p:a_start_date asc
+		limit
+		    1
+		;
+
+		-- see if batch already exists
+		select
+		    :init_info:oldbatch = :a_batch_number
+		from
+		    /apps/kardia/data/Kardia_DB/a_batch/rows b
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_period = :init_info:obperiod and
+		    :a_origin = 'OB'
+		limit
+		    1
+		;
+
+		-- Get batch if one does not exist yet
+		select
+		    :init_info:newbatch = :a_next_batch_number
+		from
+		    /apps/kardia/data/Kardia_DB/a_ledger/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :init_info:oldbatch is null
+		limit
+		    1
+		;
+
+		-- Increment ledger's batch ID
+		update
+		    /apps/kardia/data/Kardia_DB/a_ledger/rows
+		set
+		    :a_next_batch_number = :a_next_batch_number + 1
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :init_info:oldbatch is null
+		;
+
+		-- Determine our batch
+		select
+		    :init_info:batch = isnull(:init_info:oldbatch, :init_info:newbatch)
+		;
+		    
+		-- Create batch if necessary
+		insert
+		    /apps/kardia/data/Kardia_DB/a_batch/rows
+		select
+		    a_batch_number = :init_info:newbatch,
+		    a_ledger_number = :parameters:ledger,
+		    a_period = :init_info:obperiod,
+		    a_batch_desc = 'Opening Balances ' + :parameters:year,
+		    a_next_journal_number = 1,
+		    a_next_transaction_number = 1,
+		    a_default_effective_date = :init_info:obdate,
+		    a_origin = 'OB',
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		where
+		    :init_info:oldbatch is null
+		;
+
+		-- Clear out old opening balances transaction data 
+		delete
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_batch_number = :init_info:batch and
+		    :a_transaction_type = 'B'
+		;
+		delete
+		    /apps/kardia/data/Kardia_DB/a_transaction_tmp/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_batch_number = :init_info:batch and
+		    :a_transaction_type = 'B'
+		;
+
+		-- Generate the new opening balances
+		insert
+		    /apps/kardia/data/Kardia_DB/a_transaction_tmp/rows
+		select
+		    a_amount = sum(:t:a_amount),
+		    a_comment = 'opening bal (from ' + count(1) + ' transactions)',
+		    a_account_code = :a_account_code,
+		    :t:a_cost_center,
+		    a_journal_number = 1,
+		    a_batch_number = :init_info:batch,
+		    :t:a_ledger_number,
+		    a_period = :init_info:obperiod,
+		    a_effective_date = :init_info:obdate,
+		    a_transaction_type = 'B',
+		    a_account_category = condition(:a_account_category >= '30', '30', :a_account_category),
+		    a_posted = 0,
+		    a_modified = 0,
+		    a_corrected = 0,
+		    a_correcting = 0,
+		    a_corrected_batch = null,
+		    a_corrected_journal = null,
+		    a_corrected_transaction = null,
+		    a_reconciled = 0,
+		    a_postprocessed = 0,
+		    a_postprocess_type = 'XX',
+		    a_origin = 'OB',
+		    a_receipt_sent = 0,
+		    a_receipt_desired = 0,
+		    a_first_gift = 0,
+		    a_goods_provided = $0,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_account_code < '3000' and
+		    :t:a_period >= :init_info:startperiod and
+		    :t:a_period <= :init_info:endperiod
+		group by
+		    :t:a_ledger_number,
+		    :t:a_cost_center,
+		    :a_account_code
+		;
+		insert
+		    /apps/kardia/data/Kardia_DB/a_transaction_tmp/rows
+		select
+		    a_amount = sum(:t:a_amount),
+		    a_comment = 'opening bal (from ' + count(1) + ' transactions)' ,
+		    a_account_code = '3000',
+		    :t:a_cost_center,
+		    a_journal_number = 1,
+		    a_batch_number = :init_info:batch,
+		    :t:a_ledger_number,
+		    a_period = :init_info:obperiod,
+		    a_effective_date = :init_info:obdate,
+		    a_transaction_type = 'B',
+		    a_account_category = condition(:a_account_category >= '30', '30', :a_account_category),
+		    a_posted = 0,
+		    a_modified = 0,
+		    a_corrected = 0,
+		    a_correcting = 0,
+		    a_corrected_batch = null,
+		    a_corrected_journal = null,
+		    a_corrected_transaction = null,
+		    a_reconciled = 0,
+		    a_postprocessed = 0,
+		    a_postprocess_type = 'XX',
+		    a_origin = 'OB',
+		    a_receipt_sent = 0,
+		    a_receipt_desired = 0,
+		    a_first_gift = 0,
+		    a_goods_provided = $0,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_account_code >= '3000' and
+		    :t:a_period >= :init_info:startperiod and
+		    :t:a_period <= :init_info:endperiod
+		group by
+		    :t:a_ledger_number,
+		    :t:a_cost_center
+		;
+
+		-- Transfer to the GL as an unposted batch
+		insert
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows
+		select
+		    *
+		from
+		    /apps/kardia/data/Kardia_DB/a_transaction_tmp/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_batch_number = :init_info:batch and
+		    :a_transaction_type = 'B'
+		;
+
+		-- Start an error message list:
+		select
+		    :init_info:errors = ''
+		;
+
+		-- Look for an imbalanced batch
+		select
+		    :init_info:errors = :init_info:errors + isnull('Batch does not Balance: ' + sum(:a_amount) + '\n', ''),
+		    :init_info:amt = sum(:a_amount)
+		from
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_batch_number = :init_info:batch
+		having
+		    :this:amt != $0
+		;
+
+		-- Look for invalid GL accounts
+		select
+		    :init_info:errors = :init_info:errors + isnull('Invalid GL Account: ' + :t:a_account_code + '\n', ''),
+		    :init_info:acct = :a:a_account_code
+		from
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t,
+		    /apps/kardia/data/Kardia_DB/a_account/rows a
+		where
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_batch_number = :init_info:batch and
+		    :a:a_ledger_number =* :t:a_ledger_number and
+		    :a:a_account_code =* :t:a_account_code
+		group by
+		    :t:a_ledger_number,
+		    :t:a_account_code
+		having
+		    :this:acct is null
+		;
+
+		-- Look for invalid cost centers
+		select
+		    :init_info:errors = :init_info:errors + isnull('Invalid Cost Center: ' + :t:a_cost_center + '\n', ''),
+		    :init_info:cc = :c:a_cost_center
+		from
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t,
+		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		where
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_batch_number = :init_info:batch and
+		    :c:a_ledger_number =* :t:a_ledger_number and
+		    :c:a_cost_center =* :t:a_cost_center
+		group by
+		    :t:a_ledger_number,
+		    :t:a_cost_center
+		having
+		    :this:cc is null
+		;
+
+		-- Post the batch if no errors
+		update
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows
+		set
+		    :a_posted = 1
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_batch_number = :init_info:batch and
+		    :a_transaction_type = 'B' and
+		    :init_info:errors = ''
+		;
+
+		-- Return status back to caller
+		select
+		    :init_info:errors,
+		    :init_info:batch
+		";
+
+	on_end "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=opening_balances;
+	    action=Generated;
+	    batch=runclient(:generate_osrc:batch);
+	    errors=runclient(:generate_osrc:errors);
+	    }
+	}
+    }
