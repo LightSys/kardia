@@ -53,7 +53,7 @@ requests "widget/component-decl"
 			:rt:s_request_type_desc,
 			:rt:s_request_sec_endorsement,
 			can_authorize = (has_endorsement(:rt:s_request_sec_endorsement, :r:s_request_sec_context) and (has_endorsement('kardia:sys_admin','kardia') or (user_name() != :r:s_requested_by))),
-			status = condition(:r:s_date_approved is null and :r:s_date_deleted is null, 'Requested', condition(:r:s_date_completed is null, condition(:r:s_date_deleted is null, 'Approved', 'Deleted'), 'Completed')),
+			status = condition(:r:s_date_approved is null and :r:s_date_deleted is null, 'Requested', condition(:r:s_date_completed is null, condition(:r:s_date_deleted is null, 'Approved', 'Canceled'), 'Completed')),
 			status_who = condition(:r:s_date_approved is null and :r:s_date_deleted is null, :s_requested_by, condition(:r:s_date_completed is null, condition(:r:s_date_deleted is null, :s_approved_by, :s_deleted_by), :s_completed_by)),
 			status_date = condition(:r:s_date_approved is null and :r:s_date_deleted is null, :s_date_requested, condition(:r:s_date_completed is null, condition(:r:s_date_deleted is null, :s_date_approved, :s_date_deleted), :s_date_completed))
 		    FROM
@@ -91,7 +91,7 @@ requests "widget/component-decl"
 		rowcache_size=200;
 		nodata_message = "No requests at this moment.";
 
-		rt_img "widget/table-column" { title = ""; value=runclient(condition(:requests_osrc:status == 'Requested', '/sys/images/trans_1.gif', condition(:requests_osrc:status == 'Approved', '/sys/images/dotted_check.gif', condition(:requests_osrc:status == 'Deleted', '/sys/images/red_x.gif', '/sys/images/green_check.gif')))); type=image; width=40; align=center; }
+		rt_img "widget/table-column" { title = ""; value=runclient(condition(:requests_osrc:status == 'Requested', '/sys/images/trans_1.gif', condition(:requests_osrc:status == 'Approved', '/sys/images/dotted_check.gif', condition(:requests_osrc:status == 'Canceled', '/sys/images/red_x.gif', '/sys/images/green_check.gif')))); type=image; width=40; align=center; }
 		rt_stat "widget/table-column" { title = "Status"; fieldname=status; width=150; style=bold; caption_value=runclient('by ' + :requests_osrc:status_who + ' on ' + substring(convert(string,:requests_osrc:status_date),1,11)); }
 		rt_type "widget/table-column" { title = "Request Information"; value=runclient(:requests_osrc:s_request_type_desc + ' (' + :requests_osrc:s_object_key_1 + ', ' + :requests_osrc:s_object_key_2 + ')'); width=330; style=bold; caption_fieldname=s_request_comment; }
 		rt_by "widget/table-column" { title = "Requested:"; fieldname=s_requested_by; width=100; style=bold; caption_value=runclient(substring(convert(string,:requests_osrc:s_date_requested),1,11)); }
@@ -149,7 +149,7 @@ requests "widget/component-decl"
 			delete_btn "widget/textbutton"
 			    {
 			    width=130; height=24;
-			    text = "Delete Request";
+			    text = "Cancel Request";
 
 			    on_delete "widget/connector" { event=Click; target=requests_osrc; action=Modify; s_deleted_by=runclient(user_name()); s_date_deleted=runclient(getdate()); }
 			    }

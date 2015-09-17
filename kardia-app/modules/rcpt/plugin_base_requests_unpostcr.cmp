@@ -89,7 +89,7 @@ plugin_base_requests_unpostcr "widget/component-decl"
 	    option_delete "widget/textbutton"
 		{
 		width=130; height=24;
-		text="Delete Request";
+		text="Cancel Request";
 		on_delete "widget/connector"
 		    {
 		    event=Click;
