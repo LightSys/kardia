@@ -51,10 +51,10 @@ cr_batches "widget/component-decl"
 			:b:s_date_modified,
 			:b:s_modified_by,
 			:b:a_period,
-			rrec = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number limit 1),
-			rpost = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_posted = 1 limit 1),
-			print = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_receipt_sent = 1 limit 1),
-			glrec = (select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1)
+			rrec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number limit 1),0),
+			rpost = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_posted = 1 limit 1),0),
+			print = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_receipt_sent = 1 limit 1),0),
+			glrec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1),0)
 		FROM 
 			/apps/kardia/data/Kardia_DB/a_batch/rows b
 		WHERE
@@ -551,7 +551,8 @@ cr_batches "widget/component-decl"
 	    win_open_cn "widget/connector"
 		{
 		event=Click;
-		event_condition=runclient(:rcpt_form:is_editable and :rcpt_form:glrec != 1 and :rcpt_form:rpost == 1);
+		event_condition=runclient(:rcpt_form:rrec > 0 and :rcpt_form:is_editable and :rcpt_form:glrec == 0 and :rcpt_form:rpost > 0);
+		//event_condition=runclient(:rcpt_form:is_editable and :rcpt_form:glrec != 1 and :rcpt_form:rpost == 1);
 		target=post_to_gl_window;
 		action=Open;
 		IsModal=1;
@@ -559,7 +560,8 @@ cr_batches "widget/component-decl"
 	    unpostgl_cn "widget/connector"
 		{
 		event=Click;
-		event_condition = runclient(not (:rcpt_form:is_editable and :rcpt_form:rrec == 1 and :rcpt_form:glrec != 1 and :rcpt_form:rpost != 1));
+		event_condition = runclient(:rcpt_form:rrec > 0 and :rcpt_form:is_editable and :rcpt_form:glrec >= 1 and :rcpt_form:rpost > 0);
+		//event_condition = runclient(not (:rcpt_form:is_editable and :rcpt_form:rrec == 1 and :rcpt_form:glrec != 1 and :rcpt_form:rpost != 1));
 		target=unpostcr_win;
 		action=Open;
 		IsModal=1;
