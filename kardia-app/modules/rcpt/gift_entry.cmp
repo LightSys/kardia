@@ -388,6 +388,9 @@ gift_entry "widget/component-decl"
 	    {
 	    //next_form = prevrcpt_form;
 	    objectsource = receipts_osrc;
+	    allow_modify = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
+	    allow_new = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
+	    allow_query = no;
 
 	    refresh_items_on_cancel "widget/connector"
 		{
@@ -813,6 +816,10 @@ gift_entry "widget/component-decl"
 
 			desig_form "widget/form"
 			    {
+			    allow_modify = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
+			    allow_new = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
+			    allow_query = no;
+
 			    recalc_rtotal_on_save "widget/connector"
 				{
 				event=DataSaved;

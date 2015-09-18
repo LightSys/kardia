@@ -6,9 +6,7 @@
         <item>Designations</item>
         <item>Gifts</item>
         <item>Donate</item>
-        <item>Updates</item>
-        <item>Prayer Requests</item>
-        <item>Prayer Letters</item>
+        <item>Prayer Requests/Updates</item>
         <item>Contact Missionary</item>
         <item>Accounts</item>
         <item>Refresh</item>
@@ -102,6 +100,10 @@
     <color name="abc_search_url_text_normal">#7fa87f</color>
     <color name="abc_search_url_text_pressed">@android:color/black</color>
     <color name="abc_search_url_text_selected">@android:color/black</color>
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/colors.xml -->
+    <eat-comment/>
+    <color name="spinner_blue">#4169E1</color>
+    <color name="transparent">#00000000</color>
     <declare-styleable name="ActionBar"><attr name="navigationMode"><enum name="normal" value="0"/><enum name="listMode" value="1"/><enum name="tabMode" value="2"/></attr><attr name="displayOptions"><flag name="useLogo" value="0x1"/><flag name="showHome" value="0x2"/><flag name="homeAsUp" value="0x4"/><flag name="showTitle" value="0x8"/><flag name="showCustom" value="0x10"/><flag name="disableHome" value="0x20"/></attr><attr name="title"/><attr format="string" name="subtitle"/><attr format="reference" name="titleTextStyle"/><attr format="reference" name="subtitleTextStyle"/><attr format="reference" name="icon"/><attr format="reference" name="logo"/><attr format="reference" name="divider"/><attr format="reference" name="background"/><attr format="reference|color" name="backgroundStacked"/><attr format="reference|color" name="backgroundSplit"/><attr format="reference" name="customNavigationLayout"/><attr name="height"/><attr format="reference" name="homeLayout"/><attr format="reference" name="progressBarStyle"/><attr format="reference" name="indeterminateProgressStyle"/><attr format="dimension" name="progressBarPadding"/><attr format="dimension" name="itemPadding"/></declare-styleable>
     <declare-styleable name="ActionBarLayout"><attr name="android:layout_gravity"/></declare-styleable>
     <declare-styleable name="ActionBarWindow"><attr format="boolean" name="windowActionBar"/><attr format="boolean" name="windowActionBarOverlay"/><attr format="boolean" name="windowSplitActionBar"/><attr format="dimension|fraction" name="windowFixedWidthMajor"/><attr format="dimension|fraction" name="windowFixedHeightMinor"/><attr format="dimension|fraction" name="windowFixedWidthMinor"/><attr format="dimension|fraction" name="windowFixedHeightMajor"/></declare-styleable>
@@ -118,6 +120,8 @@
     <declare-styleable name="Spinner"><attr format="reference" name="prompt"/><attr format="enum" name="spinnerMode"><enum name="dialog" value="0"/><enum name="dropdown" value="1"/></attr><attr name="android:dropDownSelector"/><attr name="android:popupBackground"/><attr name="android:dropDownVerticalOffset"/><attr name="android:dropDownHorizontalOffset"/><attr name="android:dropDownWidth"/><attr format="reference" name="popupPromptView"/><attr name="android:gravity"/><attr format="boolean" name="disableChildrenWhenDisabled"/></declare-styleable>
     <declare-styleable name="Theme"><attr format="reference" name="actionDropDownStyle"/><attr format="dimension" name="dropdownListPreferredItemHeight"/><attr format="reference" name="popupMenuStyle"/><attr format="dimension" name="panelMenuListWidth"/><attr format="reference" name="panelMenuListTheme"/><attr format="reference" name="listChoiceBackgroundIndicator"/></declare-styleable>
     <declare-styleable name="View"><attr format="dimension" name="paddingStart"/><attr format="dimension" name="paddingEnd"/><attr name="android:focusable"/></declare-styleable>
+    <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
+    <eat-comment/>
     <dimen name="abc_action_bar_default_height">48dip</dimen>
     <dimen name="abc_action_bar_icon_vertical_padding">8dip</dimen>
     <dimen name="abc_action_bar_progress_bar_size">40dp</dimen>
@@ -172,8 +176,7 @@
     <string name="abc_shareactionprovider_share_with_application">Share with %s</string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
-    <string name="account_page">Accounts Page</string>
-    <string name="accounts_page">Accounts Page</string>
+    <string name="accounts_page">Manage Accounts</string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="action_forgot_password">Recover lost password</string>
@@ -187,19 +190,25 @@
     <string name="action_sign_in_short">Sign in</string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
+    <string name="add_new_account">Add New Account:</string>
     <string name="amount">Amount:</string>
     <string name="amount_range">Amount Range</string>
     <string name="app_name">Kardia Donor</string>
     <string name="by_amount">By Amount</string>
     <string name="by_check_number">By Check Number</string>
+    <string name="cancel">Cancel</string>
     <string name="choose_date">Choose Date</string>
+    <string name="choose_time">Choose Time</string>
     <string name="connect">Connect</string>
     <string name="date_range">Date Range</string>
+    <string name="dollar_sign">$</string>
     <string name="donate_now">Donate</string>
+    <string name="done">Done</string>
     <string name="donor_id_ex_100001">Donor ID (ex. 100001)</string>
     <string name="drawer_closed">Drawer Closed</string>
     <string name="drawer_open">Drawer Open</string>
     <string name="edit_account">Edit Account</string>
+    <string name="end_date">End Date: </string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="error_field_required">This field is required</string>
@@ -208,15 +217,17 @@
     <string name="error_invalid_password">This password is too short</string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
-    <string name="home">Home</string>
+    <string name="from">From:</string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="login_progress_signing_in">Signing in…</string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="message">Message</string>
+    <string name="name">name</string>
     <string name="notification_setting">Prayer Notifications"</string>
     <string name="password">password</string>
+    <string name="praying">Praying</string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
     <string name="prompt_email">Email</string>
@@ -225,9 +236,14 @@
     <eat-comment/>
     <string name="search">Search</string>
     <string name="server_name">server name</string>
+    <string name="set">Set</string>
     <string name="subject">subject</string>
     <string name="subject_title">Subject:</string>
-    <string name="submit">submit</string>
+    <string name="submit">Submit</string>
+    <string name="time1">Time #1: </string>
+    <string name="time2">Time #2: </string>
+    <string name="time3">Time #3: </string>
+    <string name="time4">Time #4: </string>
     <string name="times_per_day">time(s) per day</string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/strings_activity_login.xml -->
     <eat-comment/>
@@ -237,6 +253,7 @@
     <string name="total_2014_ytd_">"Total (2014 YTD): "</string>
     <string name="type_contact">Type Of Contact:</string>
     <string name="username">username</string>
+    <string name="view_pdf">View Letter</string>
     <string name="view_pdf_receipt">View PDF Receipt</string>
     <string name="ytd">YTD: </string>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/values/styles.xml -->
@@ -252,10 +269,21 @@
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
+    <style name="CustomAlertDialogStyle">
+        <item name="android:fullDark">@color/spinner_blue</item>
+    </style>
     <style name="LoginFormContainer">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:padding">16dp</item>
+    </style>
+    <style name="MySpinnerStyle" parent="android:Theme.Holo.Dialog">
+        <item name="android:alertDialogStyle">@style/CustomAlertDialogStyle</item>
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">16sp</item>
     </style>
     <!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/res/values/values.xml -->
     <eat-comment/>
@@ -842,6 +870,9 @@
         <item name="android:shadowDy">1</item>
         <item name="android:shadowRadius">0.6</item>
         <item name="android:background">@drawable/custom_total_bar</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
     </style>
     <style name="listCustomBlue" parent="@android:style/Widget.ListView">
         <item name="android:divider">#000030</item>

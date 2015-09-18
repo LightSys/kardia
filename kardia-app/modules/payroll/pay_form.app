@@ -13,9 +13,11 @@ pay_form_app "widget/page"
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     groupid "widget/parameter" { type=integer; default=null; }
     payrollid "widget/parameter" { type=integer; default=null; }
+    payperiod "widget/parameter" { type=string; default=null; }
     period "widget/parameter" { type=string; default=null; }
     ref_period "widget/parameter" { type=string; default=null; }
     prev_period "widget/parameter" { type=string; default=null; }
+    readonly "widget/parameter" { type=integer; default=0; }
 
     pf_cmp "widget/component"
 	{
@@ -23,6 +25,7 @@ pay_form_app "widget/page"
 	x=10;y=5;width=780;height=620;
 
 	ledger=runserver(:this:ledger);
+	payperiod=runserver(:this:payperiod);
 	period=runserver(:this:period);
 	payroll_id=runserver(:this:payrollid);
 	group_id=runserver(:this:groupid);
@@ -30,5 +33,6 @@ pay_form_app "widget/page"
 	ref_period=runserver(:this:ref_period);
 	prev_period=runserver(:this:prev_period);
 	payee_name=runserver( (select :a_payee_name from /apps/kardia/data/Kardia_DB/a_payroll/rows y where :y:a_ledger_number = :this:ledger and :y:a_payroll_id = :this:payrollid and :y:a_payroll_group_id = :this:groupid) );
+	readonly=runserver(:this:readonly);
 	}
     }

@@ -106,18 +106,18 @@ pay_detail_cmp "widget/component-decl"
 	{
 	periods_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
 	sql = runserver("
-		SELECT	a_period=null, a_period_desc=null, a_ledger_number=" + quote(:this:ledger) + ", txt='Template',
+		SELECT	a_payroll_period=null, a_payroll_period_desc=null, a_ledger_number=" + quote(:this:ledger) + ", txt='Template',
 			pay_date = null;
 
 		SELECT
-			:p:a_period, :p:a_period_desc, :p:a_ledger_number, txt=:p:a_period + ' - ' + :p:a_period_desc,
-			pay_date = :p:a_end_date
+			:p:a_payroll_period, :p:a_payroll_period_desc, :p:a_ledger_number, txt=:p:a_payroll_period + ' - ' + :p:a_payroll_period_desc,
+			pay_date = :p:a_pay_date
 		FROM
-			/apps/kardia/data/Kardia_DB/a_period/rows p
+			/apps/kardia/data/Kardia_DB/a_payroll_period/rows p
 		WHERE
-			:p:a_summary_only = 0 and :p:a_ledger_number = :parameters:ledger
+			:p:a_ledger_number = :parameters:ledger
 		ORDER BY
-			:p:a_period desc");
+			:p:a_payroll_period desc");
 	replicasize=50;
 	readahead=50;
 	autoquery=onload;
@@ -232,7 +232,9 @@ pay_detail_cmp "widget/component-decl"
 	    target = periods_osrc;
 	    is_slave = yes;
 	    key_1 = a_period;
-	    target_key_1 = a_period;
+	    target_key_1 = a_payroll_period;
+	    key_2 = a_ledger_number;
+	    target_key_2 = a_ledger_number;
 	    revealed_only = true;
 	    }
 
@@ -293,7 +295,7 @@ pay_detail_cmp "widget/component-decl"
 		readahead=10;
 		}
 
-	    payitem_is_instance "widget/variable" { fieldname=a_is_instance; payitem_is_instance_hnt "widget/hints" { style=readonly; default=runclient(condition(:periods_osrc:a_period is null, 0, 1)); } }
+	    payitem_is_instance "widget/variable" { fieldname=a_is_instance; payitem_is_instance_hnt "widget/hints" { style=readonly; default=runclient(condition(:periods_osrc:a_payroll_period is null, 0, 1)); } }
 
 	    f_eff_date "widget/variable" { fieldname=a_effective_date; f_eff_date_hints "widget/hints" { style=readonly; default=runclient(:periods_osrc:pay_date); } }
 

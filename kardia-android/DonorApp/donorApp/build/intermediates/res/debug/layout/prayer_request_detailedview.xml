@@ -10,8 +10,41 @@
         android:layout_width="wrap_content"
         android:layout_height="68dp"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="20dp"/>
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="30dp"
+        android:layout_above="@id/textBelowPrayingButton"/>
+
+    <TextView
+        android:id="@+id/textAbovePrayingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/scheduleNotification"
+        android:layout_marginLeft="14dp"
+        android:layout_marginStart="14dp"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:id="@+id/textBelowPrayingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="14dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginBottom="10dp"
+        android:layout_alignParentBottom="true"
+        android:text="@string/praying"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:id="@+id/prayButtonInstr"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/scheduleNotification"
+        android:layout_toEndOf="@id/scheduleNotification"
+        android:layout_alignTop="@id/scheduleNotification"
+        android:layout_margin="10dp"/>
 
     <TextView
         android:id="@+id/missionaryName"
@@ -23,7 +56,7 @@
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
         android:textSize="20sp"
-        android:textAlignment="center" />
+        android:gravity="center" />
 
     <TextView
         android:id="@+id/subject"
@@ -35,7 +68,7 @@
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
         android:textSize="20sp"
-        android:textAlignment="center" />
+        android:gravity="center" />
 
     <TextView
         android:id="@+id/date"
@@ -51,18 +84,19 @@
         android:layout_width="wrap_content"
         android:layout_height="260dp"
         android:layout_below="@+id/date"
-        android:layout_above="@id/scheduleNotification"
+        android:layout_above="@id/textAbovePrayingButton"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_marginTop="30dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
+        android:layout_marginBottom="14dp"
         android:scrollbars="vertical">
 
         <TextView
             android:id="@+id/text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
             android:textSize="18sp"
             android:paddingBottom="30dp" />
     </ScrollView>

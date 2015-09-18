@@ -29,7 +29,7 @@ public class Year {
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -40,14 +40,6 @@ public class Year {
 	
 	public void setGift_total(int[] gift_total) {
 		this.gift_total = gift_total;
-	}
-	
-	public String amountToString(){
-		if(gift_total[1] <= 9){
-			return "$" + gift_total[0] + ".0" + gift_total[1];
-		}else{
-			return "$" + gift_total[0] + "." + gift_total[1];
-		}
 	}
 
 }

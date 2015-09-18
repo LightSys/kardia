@@ -12,6 +12,12 @@ public class PrayerNotification {
 
     public PrayerNotification() {}
 
+    public PrayerNotification(int id, long notificationTime, int request_id) {
+        this.id = id;
+        this.notificationTime = notificationTime;
+        this.request_id = request_id;
+    }
+
     public int getId() {return id;}
 
     public void setId(int id) {this.id = id;}

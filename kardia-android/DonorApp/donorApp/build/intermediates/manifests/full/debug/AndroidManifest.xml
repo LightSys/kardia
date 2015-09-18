@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -18,7 +20,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="org.lightsys.donorapp.MainActivity"
+            android:name="org.lightsys.donorapp.views.MainActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
@@ -29,20 +31,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="org.lightsys.donorapp.AccountsActivity"
-            android:label="@string/account_page"
+            android:name="org.lightsys.donorapp.views.AccountsActivity"
+            android:label="@string/accounts_page"
             android:windowSoftInputMode="adjustResize|stateVisible" >
         </activity>
         <activity
-            android:name="org.lightsys.donorapp.EditAccountActivity"
+            android:name="org.lightsys.donorapp.views.EditAccountActivity"
             android:label="Edit Account" >
         </activity>
         <activity
-            android:name="org.lightsys.donorapp.PrayerNotificationActivity"
+            android:name="org.lightsys.donorapp.views.PrayerNotificationActivity"
             android:label="Prayer Notification" >
         </activity>
+        <activity android:name="org.lightsys.donorapp.views.ContactMissionaryActivity" >
+        </activity>
 
-        <receiver android:name="org.lightsys.donorapp.data.NotifyAlarmReceiver" >
+        <receiver android:name="org.lightsys.donorapp.tools.NotifyAlarmReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

@@ -109,6 +109,9 @@ cd_print_subform "widget/component-decl"
 	// Main Window / Form
 	myform "widget/form"
 	{
+		allow_new = no;
+		allow_modify = no;
+
 		myvbox "widget/vbox"
 		{
 			x=5;y=4;width=290;height=160;spacing=2;cellsize=2;align=middle;

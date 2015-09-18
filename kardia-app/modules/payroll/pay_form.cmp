@@ -5,6 +5,7 @@ pay_form "widget/component-decl"
     height=620;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    payperiod "widget/parameter" { type=string; default=null; }
     period "widget/parameter" { type=string; default=null; }
     ref_period "widget/parameter" { type=string; default=null; }
     prev_period "widget/parameter" { type=string; default=""; }
@@ -13,6 +14,7 @@ pay_form "widget/component-decl"
     payroll_id "widget/parameter" { type=integer; default=null; }
     payee_name "widget/parameter" { type=string; default=null; }
     payee_data_osrc "widget/parameter" { type=object; }
+    readonly "widget/parameter" { type=integer; default=0; }
 
     outer_cmp "widget/parameter" { type=object; find_container="widget/component-decl"; }
 
@@ -50,28 +52,28 @@ pay_form "widget/component-decl"
 
     current_box "widget/pane"
 	{
-	x=163; y=36; width=143; height=570;
+	x=163; y=36; width=163; height=570;
 	style=flat;
 	background="/apps/kardia/images/bg/light_bgnd2.jpg";
 	}
 
     budget_box "widget/pane"
 	{
-	x=314; y=36; width=93; height=570;
+	x=334; y=36; width=93; height=570;
 	style=flat;
 	background="/apps/kardia/images/bg/light_bgnd2.jpg";
 	}
 
     prev_box "widget/pane"
 	{
-	x=415; y=36; width=82; height=570;
+	x=435; y=36; width=82; height=570;
 	style=flat;
 	background="/apps/kardia/images/bg/light_bgnd2.jpg";
 	}
 
     fromgl_box "widget/pane"
 	{
-	x=505; y=36; width=94; height=570;
+	x=525; y=36; width=94; height=570;
 	style=flat;
 	background="/apps/kardia/images/bg/light_bgnd2.jpg";
 	}
@@ -89,7 +91,7 @@ pay_form "widget/component-decl"
 	spacing=2;
 
 	//title_lbl "widget/label" { height=24; font_size=15; style=bold; align=center; value=runclient(:payee_data_osrc:ptxt); }
-	title_lbl "widget/label" { height=20; font_size=15; style=bold; align=center; value=runserver('Payee ' + :this:payee_name + ' - Period ' + :this:period); }
+	title_lbl "widget/label" { height=20; font_size=15; style=bold; align=center; value=runserver('Payee ' + :this:payee_name + ' - Period ' + :this:payperiod); }
 
 	ob_hbox "widget/hbox"
 	    {
@@ -124,7 +126,7 @@ pay_form "widget/component-decl"
 	    ob_expl "widget/label"
 		{
 		width = 480;
-		text = runserver(isnull("Balance is prior to beginning of payroll period " + :this:period, "(working with template/budget; no opening balance)"));
+		text = runserver(isnull("Balance is prior to beginning of payroll period " + :this:payperiod, "(working with template/budget; no opening balance)"));
 		}
 	    }
 
@@ -134,7 +136,7 @@ pay_form "widget/component-decl"
 	    spacing=0;
 
 	    col_sep0 "widget/autolayoutspacer" { width=163; }
-	    cur_hdr "widget/label" { width=143; text=runserver(:this:period); style=bold; align=center; }
+	    cur_hdr "widget/label" { width=163; text=runserver(:this:payperiod); style=bold; align=center; }
 	    col_sep1 "widget/autolayoutspacer" { width=8; }
 	    budget_hdr "widget/label" { width=93; text="Budget"; style=bold; align=center; }
 	    col_sep2 "widget/autolayoutspacer" { width=8; }
@@ -162,7 +164,7 @@ pay_form "widget/component-decl"
 			:pi:a_ledger_number = " + quote(:this:ledger) + " and
 			:pi:a_payroll_item_type_code = :it:a_payroll_item_type_code and
 			:it:a_payroll_item_form_sequence > 0 and
-			" + condition(:this:period is null, ":pi:a_is_instance = 0 and :pi:a_period is null", ":pi:a_is_instance = 1 and :pi:a_period = " + quote(:this:period)) + "
+			" + condition(:this:payperiod is null, ":pi:a_is_instance = 0 and :pi:a_period is null", ":pi:a_is_instance = 1 and :pi:a_period = " + quote(:this:payperiod)) + "
 		ORDER BY
 			:it:a_payroll_item_form_sequence
 		GROUP BY
@@ -175,6 +177,7 @@ pay_form "widget/component-decl"
 		height=20; width=778;
 		widget_class="label";
 		border_color = "#153f5f";
+		border_radius = 6;
 
 		categorylbl_rp "widget/repeat"
 		    {
@@ -207,7 +210,7 @@ pay_form "widget/component-decl"
 				:pi:a_payroll_group_id = " + :this:group_id + " and
 				:pi:a_ledger_number = " + quote(:this:ledger) + " and
 				:pi:a_payroll_item_type_code = :it:a_payroll_item_type_code and
-				" + condition(:this:period is null, ":pi:a_is_instance = 0 and :pi:a_period is null", ":pi:a_is_instance = 1 and :pi:a_period = " + quote(:this:period)) + "
+				" + condition(:this:payperiod is null, ":pi:a_is_instance = 0 and :pi:a_period is null", ":pi:a_is_instance = 1 and :pi:a_period = " + quote(:this:payperiod)) + "
 			ORDER BY
 				:it:a_payroll_item_form_sequence");
 
@@ -216,6 +219,7 @@ pay_form "widget/component-decl"
 		    height = 18;
 		    path = "/apps/kardia/modules/payroll/pay_form_item.cmp";
 		    ledger = runserver(:this:ledger);
+		    payperiod = runserver(:this:payperiod);
 		    period = runserver(:this:period);
 		    ref_period = runserver(:this:ref_period);
 		    prev_period = runserver(:this:prev_period);
@@ -225,6 +229,7 @@ pay_form "widget/component-decl"
 		    class_code = runserver(:form_item_rp:class_code);
 		    item_desc = runserver(:form_item_rp:descrip);
 		    costctr = runserver(:this:costctr);
+		    readonly = runserver(:this:readonly);
 		    }
 		}
 	    cat_sep "widget/autolayoutspacer" { height=2; }
@@ -253,7 +258,7 @@ pay_form "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it
 		WHERE
 			:it:a_ledger_number = " + quote(:this:ledger) + " and
-			" + condition(:this:period is null, ":i:a_is_instance = 0 and :i:a_period is null", ":i:a_is_instance = 1 and :i:a_period = " + quote(:this:period)) + " and
+			" + condition(:this:payperiod is null, ":i:a_is_instance = 0 and :i:a_period is null", ":i:a_is_instance = 1 and :i:a_period = " + quote(:this:payperiod)) + " and
 			:y:a_cost_center = " + quote(:this:costctr) + " and
 			:y:a_payroll_id != " + :this:payroll_id + " and
 			:y:a_payroll_group_id = " + :this:group_id + " and

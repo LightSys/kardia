@@ -3,65 +3,133 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/subjectTitle"
-        android:text = "@string/subject_title"
-        android:textSize="18sp"
-        android:layout_width="wrap_content"
+    <TableRow
+        android:id="@+id/senderRow"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"/>
+        android:layout_alignParentStart="true">
 
-    <EditText
-        android:id="@+id/subjectText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:hint="@string/subject"
-        android:ems="10"
-        android:gravity="center"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="10dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="@string/from"
+            android:id="@+id/senderTitle" />
 
-    <TextView
-        android:text = "@string/type_contact"
-        android:layout_width="wrap_content"
+        <Spinner
+            android:id="@+id/senderName"
+            android:layout_width="235dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:layout_marginLeft="40dp"
+            android:layout_marginStart="40dp" />
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:layout_marginTop="25dp"
+        android:id="@+id/subjectRow"
+        android:layout_below="@id/senderRow"
         android:layout_marginLeft="20dp"
-        android:layout_below="@+id/subjectText"/>
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
-    <Spinner
-        android:id="@+id/spinner"
+        <TextView
+            android:id="@+id/subjectTitle"
+            android:text = "@string/subject_title"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:id="@+id/subjectText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/subject"
+            android:ems="12"
+            android:singleLine="true"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginLeft="13dp"
+            android:layout_marginStart="13dp"/>
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/contactTypeRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/subjectRow"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp">
+
+        <TextView
+            android:text = "@string/type_contact"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp" />
+
+        <Spinner
+            android:id="@+id/typeSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/contactTypes" />
+    </TableRow>
+
+    <ScrollView
+        android:id="@+id/scrollView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/subjectText"
-        android:entries="@array/contactTypes"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"/>
-
-    <EditText
-        android:id="@+id/content"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textMultiLine"
-        android:hint="@string/message"
-        android:layout_below="@+id/spinner"
+        android:layout_below="@id/contactTypeRow"
+        android:layout_above="@+id/buttonRow"
         android:gravity="center"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp"
-        android:ems="15"/>
-    <Button
-        android:layout_width="wrap_content"
+        android:layout_marginTop="20dp"
+        android:ems="15">
+
+        <EditText
+            android:id="@+id/message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:hint="@string/message" />
+    </ScrollView>
+
+    <TableRow
+        android:id="@+id/buttonRow"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_below="@+id/content"
+        android:layout_alignParentBottom="true"
         android:layout_marginTop="20dp"
-        android:text="@string/submit"/>
+        android:layout_marginBottom="20dp"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/cancelButton"
+            style="@style/customBottomBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            android:textStyle="bold"
+            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"/>
+
+        <Button
+            android:id="@+id/submitButton"
+            style="@style/customBottomBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/submit"
+            android:textStyle="bold" />
+
+    </TableRow>
 
 </RelativeLayout><!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout/missionary_contact_form_layout.xml -->

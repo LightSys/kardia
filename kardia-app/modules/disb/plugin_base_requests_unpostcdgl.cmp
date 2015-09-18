@@ -1,0 +1,104 @@
+$Version=2$
+plugin_base_requests_unpostcdgl "widget/component-decl"
+    {
+    height=64;
+    width=820;
+    type='UNPOSTCDGL';
+
+    requests_osrc "widget/parameter" { type=object; }
+
+    post_cd "widget/component"
+	{
+	path = "/apps/kardia/modules/disb/post_cd_batch.cmp";
+
+	unpost_cn "widget/connector" { event=GLUnposted; target=requests_osrc; action=Modify; s_completed_by=runclient(user_name()); s_date_completed=runclient(getdate()); }
+	}
+
+    batch_osrc "widget/osrc"
+	{
+	sql = "	select
+		    *,
+		    glcnt = (select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :b:a_ledger_number and :t:a_batch_number = :b:a_batch_number)
+		from
+		    /apps/kardia/data/Kardia_DB/a_batch/rows b
+		";
+	replicasize=2;
+	readahead=2;
+
+	batch_sync "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=requests_osrc;
+	    key_1 = a_ledger_number;
+	    target_key_1 = s_object_key_1;
+	    key_2 = a_batch_number;
+	    target_key_2 = s_object_key_2_int;
+	    on_each_reveal = yes;
+	    }
+
+	batch_info "widget/label"
+	    {
+	    x=0; y=4;
+	    width=820; height=30;
+	    align=center;
+	    value=runclient(condition(:batch_osrc:glcnt = 0, 'This batch is not posted to the GL.', 'Unpost Cash Disbursements Batch #' + :batch_osrc:a_batch_number + ' (' + :batch_osrc:a_batch_desc + '), in period ' + :batch_osrc:a_period + ', from the General Ledger?'));
+	    style=bold;
+	    fgcolor=white;
+	    }
+
+	options_hbox "widget/hbox"
+	    {
+	    x=0; y=34;
+	    width=820; height=24;
+	    align=center;
+	    spacing=8;
+
+	    option_view "widget/textbutton"
+		{
+		width=130; height=24;
+		text="View Checks";
+		on_view "widget/connector"
+		    {
+		    event=Click;
+		    target=plugin_base_requests_unpostcdgl;
+		    action=Launch;
+		    Source = runclient("/apps/kardia/modules/disb/disbursements.app");
+		    Width=800;
+		    Height=600;
+		    ledger=runclient(:batch_osrc:a_ledger_number);
+		    batch=runclient(:batch_osrc:a_batch_number);
+		    }
+		}
+
+	    option_unpost "widget/textbutton"
+		{
+		width=130; height=24;
+		text="Unpost from GL";
+		enabled=runclient(has_endorsement('kardia:gl_manage', 'kardia:ledger:' + :batch_osrc:a_ledger_number));
+		on_unpost "widget/connector"
+		    {
+		    event=Click;
+		    target=post_cd;
+		    action=GLUnpost;
+		    a_ledger_number=runclient(:batch_osrc:a_ledger_number);
+		    a_batch_number=runclient(:batch_osrc:a_batch_number);
+		    a_period=runclient(:batch_osrc:a_period);
+		    }
+		}
+
+	    option_delete "widget/textbutton"
+		{
+		width=130; height=24;
+		text="Cancel Request";
+		on_delete "widget/connector"
+		    {
+		    event=Click;
+		    target=requests_osrc;
+		    action=Modify;
+		    s_deleted_by=runclient(user_name());
+		    s_date_deleted=runclient(getdate());
+		    }
+		}
+	    }
+	}
+    }
