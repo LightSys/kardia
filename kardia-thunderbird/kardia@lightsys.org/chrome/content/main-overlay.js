@@ -1,7 +1,13 @@
+// vim: set ai shiftwidth=4 cino={1s,\:0,t0,f1s sts=4 ts=4:
+//
+// Copyright (C) 2014-2015 LightSys Technology Services, Inc.
+// This is Free Software; see the LICENSE and COPYING files for details.
+
 // Places where features can be added are marked with comment //FEATURE
 // Please check here for a list of known bugs. (feel free to add any you find)
 // https://docs.google.com/document/d/1QPitVvT-VSf_bbFGfg_EzJruYXLcjfGdiK_q8DC0lu4/edit
-var XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+
+const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
 // selected messages and number of emails selected (for comparing to see if we need to find users and reload Kardia pane)
 var numSelected = 0;
@@ -375,7 +381,7 @@ function findEmails() {
 		kardiacrm.selected_partner = 0;
 			
 		// get email addresses involved in this email message
-		var parser = Components.classes["@mozilla.org/messenger/headerparser;1"].getService(Components.interfaces.nsIMsgHeaderParser);
+		var parser = Components.classes["@mozilla.org/messenger/headerparser;1"].getService(Components.interfaces["nsIMsg" + "HeaderParser"]); // workaround for overzealous regex on AMO.
 		var senderAddress = {};
 		var recipientAddresses = {};
 		var ccAddresses = {};
@@ -493,6 +499,7 @@ function reload(isDefault) {
 		mainWindow.document.getElementById("name-label").value = "";
 		mainWindow.document.getElementById("id-label").value = "";
 		mainWindow.document.getElementById("choose-partner-dropdown-button").style.display = "none";
+		mainWindow.document.getElementById("no-findy").style.display = "block";
 		
 		mainWindow.document.getElementById("main-content-box").style.visibility = "hidden";
 		// FEATURE: Uncomment the following when recording emails in Kardia is implemented
@@ -580,49 +587,185 @@ function reload(isDefault) {
 			mainWindow.document.getElementById("choose-partner-dropdown-button").style.display = "inline";
 			
 			// display choices of partners to view
-			var partners = "";
+			context
+			    .find("#choose-partner-dropdown-menu")
+			    .empty();
 			for (var i=0;i<mainWindow.names.length;i++) {
-					partners += '<button id="partner-button' + i + '" class="partner-button" label="' + htmlEscape(mainWindow.names[i]) + ', ID# ' + htmlEscape(mainWindow.ids[i]) + '" oncommand="choosePartner(\'' + i + '\')"/>';
+				let id = i;
+				context
+					.find("#choose-partner-dropdown-menu")
+					.append(
+						kardiacrm.jQuery("<button>", {
+							id:'partner-button' + parseInt(id),
+							class:'partner-button',
+							label:mainWindow.names[id] + ', ID# ' + mainWindow.ids[id],
+						})
+						.bind('command', function(event) {
+							choosePartner(id);
+						})
+					);
 			}
-			mainWindow.document.getElementById("choose-partner-dropdown-menu").innerHTML = partners;
 		}
 
 		// display contact info based on selected partner
-		var contactInfoHTML = "";
-		var i;
+		// First - mailing addresses
+		var contactbox = context.find("#contact-info-inner-box");
+		contactbox.empty();
 		for (var i=0;i<mainWindow.addresses[kardiacrm.selected_partner].length;i+=2) {
+			let addr_id = i;
+
+			contactbox
+				.append(kardiacrm.jQuery("<hbox>", {class:'hover-box'})
+					.append(kardiacrm.jQuery("<vbox>", {flex:'1', id:'contact-info-addrlist' + addr_id}))
+					.append(kardiacrm.jQuery("<vbox>", {})
+						.append(kardiacrm.jQuery("<spacer>", {height:'3px'}))
+						.append(kardiacrm.jQuery("<image>", {class:'edit-image'})
+							.click(function (event) {
+								editContactInfo('A', mainWindow.addresses[kardiacrm.selected_partner][addr_id+1]);
+							})
+						.append(kardiacrm.jQuery("<spacer>", {flex:'1'}))
+						)
+					.append(kardiacrm.jQuery("<spacer>", {width:'3px'}))
+					)
+				)
+
 			var splitAddress = mainWindow.addresses[kardiacrm.selected_partner][i].split("\n");
-			var addressHTML = "";
 			for (var j=0;j<splitAddress.length;j++) {
-				addressHTML += "<label>" + splitAddress[j] + "</label>";
+				context.find("#contact-info-addrlist" + addr_id).append(kardiacrm.jQuery("<label>", {}).text(splitAddress[j]));
 			}
-			contactInfoHTML += '<hbox class="hover-box"><vbox flex="1">' + addressHTML + '</vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editContactInfo(\'A\',\'' + htmlEscape(mainWindow.addresses[kardiacrm.selected_partner][i+1]) + '\');"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
 		}
+
+		// Next - phone numbers
 		for (var i=0;i<mainWindow.phoneNumbers[kardiacrm.selected_partner].length;i+=2) {
-			contactInfoHTML += '<hbox class="hover-box"><vbox flex="1"><label>' + htmlEscape(mainWindow.phoneNumbers[kardiacrm.selected_partner][i]) + '</label></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editContactInfo(\'P\',\'' + htmlEscape(mainWindow.phoneNumbers[kardiacrm.selected_partner][i+1]) + '\');"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>' 
+			let cont_id = i;
+
+			contactbox
+				.append(kardiacrm.jQuery("<hbox>", {class:'hover-box'})
+					.append(kardiacrm.jQuery("<vbox>", {flex:'1'})
+						.append(kardiacrm.jQuery("<label>", {})
+							.text(mainWindow.phoneNumbers[kardiacrm.selected_partner][i])
+						)
+					)
+					.append(kardiacrm.jQuery("<vbox>", {})
+						.append(kardiacrm.jQuery("<spacer>", {height:'3px'}))
+						.append(kardiacrm.jQuery("<image>", {class:'edit-image'})
+							.click(function(event) {
+								editContactInfo('P', mainWindow.phoneNumbers[kardiacrm.selected_partner][cont_id+1]);
+							})
+						)
+						.append(kardiacrm.jQuery("<spacer>", {flex:'1'}))
+					)
+					.append(kardiacrm.jQuery("<spacer>", {width:'3px'}))
+				);
 		}
+
+		// Then - email addresses
 		for (var i=0;i<mainWindow.allEmailAddresses[kardiacrm.selected_partner].length;i+=2) {
-			contactInfoHTML += "<hbox class='hover-box'><vbox flex='1'><label class='text-link' tooltiptext='Click to compose email' context='emailContextMenu' onclick='if (event.button == 0) sendEmail(\"" + htmlEscape(mainWindow.allEmailAddresses[kardiacrm.selected_partner][i]) + "\")'>" + htmlEscape(mainWindow.allEmailAddresses[kardiacrm.selected_partner][i]) + "</label></vbox><vbox><spacer height='3px'/><image class='edit-image' onclick='editContactInfo(\"E\",\"" + htmlEscape(mainWindow.allEmailAddresses[kardiacrm.selected_partner][i+1]) + "\");'/><spacer flex='1'/></vbox><spacer width='3px'/></hbox>";
+			let cont_id = i;
+
+			contactbox
+				.append(kardiacrm.jQuery("<hbox>", {class:'hover-box'})
+					.append(kardiacrm.jQuery("<vbox>", {flex:'1'})
+						.append(kardiacrm.jQuery("<label>", {class:'text-link', tooltiptext:'Click to compose email', context:'emailContextMenu'})
+							.text(mainWindow.allEmailAddresses[kardiacrm.selected_partner][i])
+							.click(function(event) {
+								if (event.button == 0)
+									sendEmail(mainWindow.allEmailAddresses[kardiacrm.selected_partner][cont_id]);
+							})
+						)
+					)
+					.append(kardiacrm.jQuery("<vbox>", {})
+						.append(kardiacrm.jQuery("<spacer>", {height:'3px'}))
+						.append(kardiacrm.jQuery("<image>", {class:'edit-image'})
+							.click(function(event) {
+								editContactInfo('E', mainWindow.allEmailAddresses[kardiacrm.selected_partner][cont_id+1]);
+							})
+						)
+						.append(kardiacrm.jQuery("<spacer>", {flex:'1'}))
+					)
+					.append(kardiacrm.jQuery("<spacer>", {width:'3px'}))
+				);
 		}
+
+		// Finally - Website URLs
 		for (var i=0;i<mainWindow.websites[kardiacrm.selected_partner].length;i+=2) {
-			contactInfoHTML += "<hbox class='hover-box'><vbox flex='1'><label class='text-link' tooltiptext='Click to open website' context='websiteContextMenu' onclick='if (event.button == 0) openUrl(\"" + htmlEscape(mainWindow.websites[kardiacrm.selected_partner][i]) + "\",true);'>" + htmlEscape(mainWindow.websites[kardiacrm.selected_partner][i]) + "</label></vbox><vbox><spacer height='3px'/><image class='edit-image' onclick='editContactInfo(\"W\",\"" + htmlEscape(mainWindow.websites[kardiacrm.selected_partner][i+1]) + "\");'/><spacer flex='1'/></vbox><spacer width='3px'/></hbox>";
+			let cont_id = i;
+
+			contactbox
+				.append(kardiacrm.jQuery("<hbox>", {class:'hover-box'})
+					.append(kardiacrm.jQuery("<vbox>", {flex:'1'})
+						.append(kardiacrm.jQuery("<label>", {class:'text-link', tooltiptext:'Click to visit website', context:'websiteContextMenu'})
+							.text(mainWindow.websites[kardiacrm.selected_partner][i])
+							.click(function(event) {
+								if (event.button == 0)
+									openUrl(mainWindow.websites[kardiacrm.selected_partner][cont_id], true);
+							})
+						)
+					)
+					.append(kardiacrm.jQuery("<vbox>", {})
+						.append(kardiacrm.jQuery("<spacer>", {height:'3px'}))
+						.append(kardiacrm.jQuery("<image>", {class:'edit-image'})
+							.click(function(event) {
+								editContactInfo('W', mainWindow.websites[kardiacrm.selected_partner][cont_id+1]);
+							})
+						)
+						.append(kardiacrm.jQuery("<spacer>", {flex:'1'}))
+					)
+					.append(kardiacrm.jQuery("<spacer>", {width:'3px'}))
+				);
 		}
-		contactInfoHTML += '<hbox><spacer flex="1"/><button class="new-button" label="New Contact Info..." oncommand="newContactInfo()" tooltiptext="Create new contact information item for this partner"/></hbox>';
-		mainWindow.document.getElementById("contact-info-inner-box").innerHTML = contactInfoHTML;
+
+		// this provides the button to add a new contact info record...
+		contactbox
+			.append(kardiacrm.jQuery('<hbox>', {})
+				.append(kardiacrm.jQuery('<spacer>', {flex:'1'}))
+				.append(kardiacrm.jQuery('<button>', {class:'new-button', label:'New Contact Info...', tooltiptext:'Create new contact information item for this partner'})
+					.bind('command', function(event) {
+						newContactInfo();
+					})
+				)
+			);
 		
 		// display engagement tracks
 		var tracks = "";
+		context.find('#engagement-tracks-inner-box').empty();
 		for (var i=0;i<mainWindow.engagementTracks[kardiacrm.selected_partner].length;i+=3) {
-         // Taking out edit button for now. Uncomment this and delete next line to re-enable. #Muted
+			// Taking out edit button for now. #Muted
 			//tracks += '<hbox class="engagement-track-color-box" style="background-color:' + htmlEscape(mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.engagementTracks[kardiacrm.selected_partner][i])]) + '"><vbox flex="1"><label class="bold-text">' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i]) + '</label><label>Engagement Step: ' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+1]) + '</label></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editTrack(\'' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+2]) + '\',\'' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+1]) + '\')"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
 			var track = find_item(kardiacrm.data.trackList, 'track_name', mainWindow.engagementTracks[kardiacrm.selected_partner][i]);
 			if (track) {
-			    tracks += '<hbox class="engagement-track-color-box" style="background-color:' + htmlEscape(track.track_color) + '"><vbox flex="1"><label class="bold-text">' + htmlEscape(track.track_name) + '</label><label>Engagement Step: ' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+1]) + '</label></vbox><vbox><spacer height="3px"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
+				context
+					.find('#engagement-tracks-inner-box')
+					.append(kardiacrm.jQuery('<hbox>', {class:'engagement-track-color-box', id:'eng-trk-color-box-' + i})
+						.css({
+							'background-color': track.track_color,
+						})
+						.append(kardiacrm.jQuery('<vbox>', {flex:'1'})
+							.append(kardiacrm.jQuery('<label>', {class:'bold-text'})
+								.text(track.track_name)
+							)
+							.append(kardiacrm.jQuery('<label>', {})
+								.text('Engagement Step: ' + mainWindow.engagementTracks[kardiacrm.selected_partner][i+1])
+							)
+						)
+						.append(kardiacrm.jQuery('<vbox>', {})
+							.append(kardiacrm.jQuery('<spacer>', {height:'3px'}))
+							.append(kardiacrm.jQuery('<spacer>', {flex:'1'}))
+						)
+						.append(kardiacrm.jQuery('<spacer>', {width:'3px'}))
+					);
+
+				// Try to intelligently set text (foreground) color
+				var bgcolor = context.find('#eng-trk-color-box-' + i).css('background-color').match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
+				if (bgcolor) {
+					var lum = parseInt(bgcolor[1]) + parseInt(bgcolor[2]) + parseInt(bgcolor[3]);
+					context.find('#eng-trk-color-box-' + i).css({'color': (lum>=384)?'black':'white'});
+				}
 			}
 		}
-      // Muting this button for now #Muted
+
+		// Muting this button for now #Muted
 		//tracks += '<hbox><spacer flex="1"/><button class="new-button" label="New Track..." oncommand="newTrack()" tooltiptext="Add engagement track to this partner"/></hbox>';
-		mainWindow.document.getElementById("engagement-tracks-inner-box").innerHTML = tracks;				
 		
 		// display recent activity
 		var recent = "";
@@ -649,14 +792,14 @@ function reload(isDefault) {
       // Muted for now #Muted
 		mainWindow.document.getElementById("to-dos-inner-box").innerHTML = toDoText;	
 		
+		// Muted for now #Muted (CAUTION: When unmuting this it could reintroduce bug #11)
 		// display notes
-		var noteText = "";
+		/*var noteText = "";
 		for (var i=mainWindow.notes[kardiacrm.selected_partner].length-1;i>=0;i-=3) {
 			noteText += '<hbox class="hover-box"><vbox><spacer height="3"/><image class="note-image"/><spacer flex="1"/></vbox><vbox width="100" flex="1"><description flex="1">' + htmlEscape(mainWindow.notes[kardiacrm.selected_partner][i-2]) + '</description><description flex="1">' + htmlEscape(mainWindow.notes[kardiacrm.selected_partner][i-1]) + '</description></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editNote(\'' + htmlEscape(mainWindow.notes[kardiacrm.selected_partner][i-2]) + '\',' + htmlEscape(mainWindow.notes[kardiacrm.selected_partner][i]) + ');"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
 		}
-		noteText += '<hbox><spacer flex="1"/><button class="new-button" label="New Note/Prayer..." tooltiptext="Create new note/prayer for this partner" oncommand="newNote(\'\',\'\')"/></hbox>';	
+		noteText += '<hbox><spacer flex="1"/><button class="new-button" label="New Note/Prayer..." tooltiptext="Create new note/prayer for this partner" oncommand="newNote(\'\',\'\')"/></hbox>';	*/
 		mainWindow.document.getElementById("notes-prayer-inner-box").innerHTML = "";
-      // Muted for now #Muted (CAUTION: When unmuting this it could reintroduce bug #11)
 		//mainWindow.document.getElementById("notes-prayer-inner-box").innerHTML = noteText;
 		
 		// display collaborators
@@ -673,46 +816,35 @@ function reload(isDefault) {
 			collaboratorText += '<spacer flex="1"/></vbox><label tooltiptext="Click to view collaborator" width="100" flex="1" class="text-link" onclick="addCollaborator(' + mainWindow.collaborators[kardiacrm.selected_partner][i+1] + ')">' + mainWindow.collaborators[kardiacrm.selected_partner][i+2] +'</label></hbox>';
 		}
 		collaboratorText += '<hbox><spacer flex="1"/></hbox>';
-      // Add new collaborator button muted for now untill fixed. Code below Includes it, code above removes it.
+		// Add new collaborator button muted for now untill fixed. Code below Includes it, code above removes it.
 		//collaboratorText += '<hbox><spacer flex="1"/><button class="new-button" label="New Collaborator..." tooltiptext="Create new collaborator for this partner" oncommand="newCollaborator()"/></hbox>';
 		
 		mainWindow.document.getElementById("collaborator-inner-box").innerHTML = "";	
-      // Muted for now #Muted
+		// Muted for now #Muted
 		//mainWindow.document.getElementById("collaborator-inner-box").innerHTML = collaboratorText;	
 		
 		// display documents
-		context
-		    .find("#document-inner-box")
-		    .empty();
+		context.find("#document-inner-box").empty();
 		for (var i=0;i<mainWindow.documents[kardiacrm.selected_partner].length;i+=2) {
 		    let docid = i;
+
 		    context
-			.find("#document-inner-box")
-			.append(
-			    kardiacrm.jQuery('<hbox>')
-				.append(
-				    kardiacrm.jQuery('<vbox>')
-					.append(kardiacrm.jQuery('<image>', {class:'document-image'}))
-					.append(kardiacrm.jQuery('<spacer>', {flex:'1'}))
-				)
-				.append(
-				    kardiacrm.jQuery('<label>', {
-					tooltiptext:'Click to open document',
-					id:'docLabel' + parseInt(docid),
-					width:'100',
-					flex:'1',
-					class:'text-link',
-					context:'documentContextMenu',
-				    })
-					.text(mainWindow.documents[kardiacrm.selected_partner][docid+1])
-					.click(
-					    function(event) {
-						if (event.button == 0)
-						    openDocument(kardiacrm.selected_partner, docid, false);
-					    }
+				.find("#document-inner-box")
+				.append(kardiacrm.jQuery('<hbox>')
+					.append(kardiacrm.jQuery('<vbox>')
+						.append(kardiacrm.jQuery('<image>', {class:'document-image'}))
+						.append(kardiacrm.jQuery('<spacer>', {flex:'1'}))
 					)
-				)
-			);
+					.append(kardiacrm.jQuery('<label>', { tooltiptext:'Click to open document', id:'docLabel' + parseInt(docid), width:'100', flex:'1', class:'text-link', context:'documentContextMenu' })
+						.text(mainWindow.documents[kardiacrm.selected_partner][docid+1])
+						.click(
+							function(event) {
+							if (event.button == 0)
+								openDocument(kardiacrm.selected_partner, docid, false);
+							}
+						)
+					)
+				);
 		}
 		
 		// if Kardia tab is open, add person's info to it, too
@@ -849,7 +981,7 @@ function openUrl(url, isContact) {
 		url = url.substring(3,url.length);
 	}
 	// if URL doesn't have "http://", add it
-	if (url.indexOf("http://") < 0) {
+	if (url.indexOf("http://") != 0 && url.indexOf("https://") != 0) {
 		url = "http://" + url;
 	}
 	// create URI and open
@@ -1099,6 +1231,7 @@ function findUser(index) {
       mainWindow.document.getElementById('main-content-box').style.visibility = "hidden";
       mainWindow.document.getElementById('name-label').value = "Loading...";
       mainWindow.document.getElementById('id-label').value = "";
+	  mainWindow.document.getElementById("no-findy").style.display = "none";
 
       // don't try to access Kardia if the Thunderbird user's Kardia login is invalid
       if (kardiacrm.logged_in) {		
@@ -1644,16 +1777,16 @@ function getOtherInfo(index, isDefault) {
                      } else {
                         // 404, do nothing
                      }
-                  }, false, "", "");
+                  }, false, "", ""); // contact info records
                } else {
                   // 404, do nothing
                }
-            }, false, "", "");
+            }, false, "", ""); // address records
          }
       } else {
          // 404, do nothing
       }
-	}, false, "", "");
+	}, false, "", ""); // partner rec
 }
 
 // get info for one person you're collaborating with

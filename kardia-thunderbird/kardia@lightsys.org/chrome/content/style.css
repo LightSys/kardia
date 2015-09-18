@@ -33,11 +33,14 @@
 /* label to say we couldn't connect */
 #cant-connect {display:none; margin:8px; border-radius:6px; background-color:#fff8c0; }
 
+/* label to say no one was found */
+#no-findy {display:none; margin:8px; border-radius:6px; background-color:#fff8c0; text-align:center; }
+
 /* box around engagement track */
 .engagement-track-color-box{border-radius:3px; margin-top:2px; margin-right:5px; background-color:#cccccc; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))} /* previous: #afe7a0, #81d969 */
 
 /* checkboxes for collapsible items like Engagement Tracks look like arrows */
-.twisty-checkbox {font-weight:bold; border:0px; -moz-appearance:none; display:block; background-repeat:no-repeat; padding-left:14px; background-position:left center; background-color:rgba(255,255,255,0);}
+.twisty-checkbox { margin-top:8px; font-weight:bold; border:0px; -moz-appearance:none; display:block; background-repeat:no-repeat; padding-left:14px; background-position:left center; background-color:rgba(255,255,255,0);}
 .twisty-checkbox[checkState="0"] {background-image:url(chrome://kardia/content/images/twisty-open.png);}
 .twisty-checkbox[checkState="1"] {background-image:url(chrome://kardia/content/images/twisty-clsd.png);}
 
