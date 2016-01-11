@@ -14,7 +14,7 @@
 				<preference id="extensions.kardia.server" name="extensions.kardia.server" type="string"/>
 			</preferences>
 			<vbox>
-				<label value="Kardia Add-on Version: 1.03"/>
+				<label value="Kardia Add-on Version: 1.04"/>
 				<hbox>
 					<vbox>
 						<spacer flex="1"/>
@@ -33,7 +33,7 @@
 						<label value="Refresh Kardia data every"/>
 						<spacer flex="1"/>
 					</vbox>
-					<textbox type="number" min="1" max="1440" increment="1" value="10" width="60px" preference="extensions.kardia.refreshInterval"/>
+					<textbox type="number" min="1" max="1440" increment="1" value="30" width="60px" preference="extensions.kardia.refreshInterval"/>
 					<vbox>
 						<spacer flex="1"/>
 						<label value="minutes"/>

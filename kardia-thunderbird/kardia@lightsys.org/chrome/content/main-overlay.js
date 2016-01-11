@@ -140,45 +140,80 @@ var mainWindow = this;
 var dataTab;
 
 // Various system-wide Kardia CRM data items
-var kardiacrm = 
-    {
-    // is the data being refreshed?
-    refresh_timer:null,
-    refreshing:false,
-    refreshes:0,
+var kardiacrm = {
+	// is the data being refreshed?
+	refresh_timer:null,
+	refreshing:false,
+	refreshes:0,
 
-    // which partner we're viewing
-    selected_partner:null,
+	// which partner we're viewing
+	selected_partner:null,
 
-    // current server connection data
-    logged_in:false,
-    username:"",
-    password:"",
-    server:"",
-    akey:"",
+	// current server connection data
+	logged_in:false,
+	username:"",
+	password:"",
+	server:"",
+	akey:"",
 
-    // Our reference to jQuery
-    jQuery:null,
+	// Our reference to jQuery
+	jQuery:null,
 
-    // Currently open dialog box (this is for debugging due to problems
-    // with the Mozilla javascript debugger and popup dialog boxes)
-    dialog:null,
+	// Currently open dialog box (this is for debugging due to problems
+	// with the Mozilla javascript debugger and popup dialog boxes)
+	dialog:null,
 
-    // Data for dropdowns, etc.
-    data:
-	{
-	defaultCountry: {},
-	countries: {},
-	noteTypeList: {},
-	collabTypeList: {},
-	tagList: {},
-	trackList: {},
+	// Data for dropdowns, etc.
+	data: {
+		defaultCountry: {},
+		countries: {},
+		noteTypeList: {},
+		collabTypeList: {},
+		tagList: {},
+		trackList: {},
 	},
-    };
+
+	// Server API multi-class request dispatcher
+	dispatch_parallel_max: 3,
+	dispatch_queue: {},
+
+	dispatch: function(dclass) {
+		if (kardiacrm.dispatch_queue[dclass] === undefined) {
+			kardiacrm.dispatch_queue[dclass] = [];
+			kardiacrm.dispatch_queue[dclass].active_cnt = 0;
+		}
+		while (kardiacrm.dispatch_queue[dclass].active_cnt < kardiacrm.dispatch_parallel_max && kardiacrm.dispatch_queue[dclass].length > 0) {
+			let item = kardiacrm.dispatch_queue[dclass].shift();
+			kardiacrm.dispatch_queue[dclass].active_cnt++;
+			doHttpRequest('apps/kardia/api/' + item.url, function(Resp) {
+				if (item.callback)
+					item.callback(Resp);
+				kardiacrm.dispatch_queue[dclass].active_cnt--;
+				kardiacrm.dispatch(dclass);
+				if (kardiacrm.dispatch_queue[dclass].length == 0 && kardiacrm.dispatch_queue[dclass].active_cnt == 0 && item.completion) {
+					item.completion();
+				}
+			});
+		}
+	},
+
+	// The completion function is called when no more requests remain in the current
+	// dispatch class (dclass), and the queue is about to go quiescent.  The callback
+	// function is called when the HTTP REST request returns.
+	//
+	request: function(url, dclass, completion, callback) {
+		if (kardiacrm.dispatch_queue[dclass] === undefined) {
+			kardiacrm.dispatch_queue[dclass] = [];
+			kardiacrm.dispatch_queue[dclass].active_cnt = 0;
+		}
+		kardiacrm.dispatch_queue[dclass].push({url:url, callback:callback, completion:completion});
+		kardiacrm.dispatch(dclass);
+	},
+};
 
 if (kardiaTab) {
-    kardiaTab.kardiacrm = kardiacrm;
-    kardiaTab.find_item = find_item;
+	kardiaTab.kardiacrm = kardiacrm;
+	kardiaTab.find_item = find_item;
 }
 
 // Configuration services
@@ -186,6 +221,27 @@ var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(
 
 // Enables parallel loading of Collaboratees in the Kardia tab. (Not fully functional)
 var COLLABORATEES_PARALLEL = false;
+
+function jsondir(json, name) {
+	if (json['cx__collection'] && json['cx__collection'][name])
+		return json['cx__collection'][name];
+	else
+		return null;
+}
+
+function jsoncoll(json) {
+	if (json && json['cx__collection'])
+		return json['cx__collection'];
+	else
+		return null;
+}
+
+function jsonel(json) {
+	if (json && json['cx__element'])
+		return json['cx__element'];
+	else
+		return null;
+}
 
 function find_item(arr, prop, value) {
     for(var k in arr) {
@@ -280,13 +336,17 @@ function doLogin(callback) {
 // what to do when Thunderbird starts up
 window.addEventListener("load", function() { 
 
+	// For whatever reason this listener is getting called twice by TB. :(
+	if (!document.getElementById("main-box"))
+		return;
+
 	// Load jQuery
 	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
 	loader.loadSubScript("chrome://messenger/content/jquery.js", window);
 	kardiacrm.jQuery = window.jQuery.noConflict(true);
 
 	// set "show Kardia pane" arrow to the correct image, based on whether it's collapsed
-	if (document.getElementById("main-box").collapsed == true) {
+	if (document.getElementById("main-box") && document.getElementById("main-box").collapsed == true) {
 		document.getElementById("show-kardia-pane-button").style.backgroundColor = "rgba(0,0,0,0)";
 		document.getElementById("show-hide-kardia-pane-arrow").innerHTML = "<image class=\"hide-kardia-pane-arrow\"/><spacer flex=\"1\"/>";
 	}
@@ -327,6 +387,13 @@ window.addEventListener("load", function() {
    });
    mainWindow.document.getElementById("new-data-button").addEventListener("click", function() {newNote("","")});
 
+    if (window.gMessageListeners) {
+	    gMessageListeners.push({
+		    onEndHeaders: function () {},
+		    onStartHeaders: function() {if (kardiacrm.logged_in) {findEmails();}}
+		    });
+    }
+
    updateKardia();
 
 }, false);
@@ -337,11 +404,6 @@ window.addEventListener("close", function() {
 	kardiacrm.username = "";
 	kardiacrm.password = "";
 }, false);
-
-gMessageListeners.push({
-	onEndHeaders: function () {},
-	onStartHeaders: function() {if (kardiacrm.logged_in) {findEmails();}}
-	});
 
 window.addEventListener("click", function() {if (kardiacrm.logged_in) {findEmails();}}, false);
 
@@ -1378,685 +1440,555 @@ function findUser(index) {
 }
 
 // get all other info about the partner whose information is stored at position index
-function getOtherInfo(index, isDefault) {	
+function getOtherInfo(start, isDefault) {	
 	// variable to store whether user is valid
 	var validUser = true;
-	
-	// get partner name
-	doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[index] + "?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic", function (nameResp) {
-      // If not 404
-      if (nameResp != null) {
-         // if the partner is not valid, make them blank/invalid
-         if (nameResp['is_valid'] == 0 ) {
-            validUser = false;
-            mainWindow.emailAddresses[index] = "";
-            mainWindow.ids[index] = "";
-         }
-         
-         // store partner's name
-         mainWindow.names[index] = nameResp['partner_name'];
-         
-         // get more information only if the partner is valid
-         if (validUser) {
-            // get address information
-            doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[index] + "/Addresses?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (addressResp) {
-            // If not 404
-            if (addressResp != null) {
-                  // get the keys in the JSON file
-                  var keys = [];
-                  for(var k in addressResp) keys.push(k);
-                     
-                  // the key "@id" doesn't correspond to an address, so use all other keys to store address information to temporary array
-                  var addressArray = new Array();
-                  for (var i=0;i<keys.length;i++) {
-                     if (keys[i] != "@id") {
-                        if (addressResp[keys[i]]['is_valid'] != 0) {
-                           if (addressResp[keys[i]]['country_name'] != null) {
-                              addressArray.push(addressResp[keys[i]]['location_type_code'] + ": " + addressResp[keys[i]]['address'] + "\n" + addressResp[keys[i]]['country_name']);
-                           }
-                           else {
-                              addressArray.push(addressResp[keys[i]]['location_type_code'] + ": " + addressResp[keys[i]]['address']);
-                           }
-                           addressArray.push(addressResp[keys[i]]['location_id']);
-                        }
-                     }
-                  }
-                  // store temporary array to permanent array
-                  mainWindow.addresses[index] = addressArray;
-                  
-                  // get other contact information
-                  doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[index] + "/ContactInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (phoneResp) {
-                     // If not 404
-                     if (phoneResp != null) {
-                        // get all the keys from the JSON file
-                        var keys = [];
-                        for(var k in phoneResp) keys.push(k);
-                        
-                        // the key "@id" doesn't correspond to a contact, so use all other keys to add contact info to temporary arrays
-                        var phoneArray = new Array();
-                        var emailArray = new Array();
-                        var websiteArray = new Array();
-                        for (var i=0;i<keys.length;i++) {
-                           if (keys[i] != "@id") {
-                              if (phoneResp[keys[i]]['is_valid'] != 0) {
-                              
-                                 if (phoneResp[keys[i]]['contact_type_code'] == "E") {
-                                    emailArray.push("E: " + phoneResp[keys[i]]['contact']);
-                                    emailArray.push(phoneResp[keys[i]]['contact_id']);
-                                 }
-                                 else if (phoneResp[keys[i]]['contact_type_code'] == "W" || phoneResp[keys[i]]['contact_type_code'] == "B") {
-                                    websiteArray.push(phoneResp[keys[i]]['contact_type_code'] + ": " + phoneResp[keys[i]]['contact']);
-                                    websiteArray.push(phoneResp[keys[i]]['contact_id']);
-                                 }
-                                 else {
-                                    phoneArray.push(phoneResp[keys[i]]['contact_type_code'] + ": " + phoneResp[keys[i]]['contact']);
-                                    phoneArray.push(phoneResp[keys[i]]['contact_id']);
-                                 }
-                              }
-                           }
-                        }
-                        // store temporary arrays to permanent arrays
-                        mainWindow.phoneNumbers[index] = phoneArray;
-                        mainWindow.allEmailAddresses[index] = emailArray;
-                        mainWindow.websites[index] = websiteArray;
-                        
-                        // get engagement tracks information
-                        doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(trackResp) {
-                           // If not 404
-                           if (trackResp != null) {
-                              // get all the keys from the JSON file
-                              var keys = [];
-                              for(var k in trackResp) keys.push(k);
-                              
-                              // the key "@id" doesn't correspond to a document, so use all other keys to add track info to temporary array
-                              var trackArray = new Array();
-                              for (var i=0;i<keys.length;i++) {
-                                 if (keys[i] != "@id") {
-                                    // add only if this track is current (not completed/exited)
-                                    if (trackResp[keys[i]]['completion_status'].toLowerCase() == "i") {
-                                       trackArray.push(trackResp[keys[i]]['engagement_track']);
-                                       trackArray.push(trackResp[keys[i]]['engagement_step']);
-                                       trackArray.push(trackResp[keys[i]]['name']);
-                                    }
-                                 }
-                              }
-                              // store temporary array to permanent array
-                              mainWindow.engagementTracks[index] = trackArray;
-                              
-                              // get documents information
-                              doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/Documents?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (documentResp) {
-                                 // If not 404
-                                 if (documentResp != null) {
-                                    // get all the keys from the JSON file
-                                    var keys = [];
-                                    for(var k in documentResp) keys.push(k);
 
-                                    // the key "@id" doesn't correspond to a document, so use all other keys to add document info to temporary array
-                                    var documentArray = new Array();
-                                    for (var i=0;i<keys.length;i++) {
-                                       if (keys[i] != "@id") {
-                                          // TODO where is "location" -- in apps/kardia, or in the server's home directory?  We leave it as server's home directory for now
-                                          documentArray.push(server + documentResp[keys[i]]['location']);
-                                          documentArray.push(documentResp[keys[i]]['title']);
-                                       }
-                                    }
-                                    // store temporary array to permanent array
-                                    mainWindow.documents[index] = documentArray;
-                                    // get notes/prayer information
-                                    doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/ContactHistory?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (noteResp) {
-                                    // If not 404
-                                    if (noteResp != null) {
-                                          // get all the keys from the JSON file
-                                          var keys = [];
-                                          for(var k in noteResp) keys.push(k);
+	var complete = function() { reload(isDefault); }
 
-                                          // the key "@id" doesn't correspond to a note, so use all other keys to add note info to temporary array
-                                          var noteArray = new Array();
-                                          for (var i=0;i<keys.length;i++) {
-                                             if (keys[i] != "@id") {
-                                                noteArray.push(noteResp[keys[i]]['subject'] + "- " + noteResp[keys[i]]['notes']);
-                                                noteArray.push(datetimeToString(noteResp[keys[i]]['date_modified']));
-                                                noteArray.push(noteResp[keys[i]]['contact_history_id']);
-                                             }
-                                          }
-                                          // store temporary array to permanent array
-                                          mainWindow.notes[index] = noteArray;
-                                          
-                                          // get collaborators information
-                                          doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] +"/Collaborators?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (collaboratorResp) {
-                                          // If not 404
-                                          if (collaboratorResp != null) {
-                                                // get all the keys from the JSON file
-                                                var keys = [];
-                                                for(var k in collaboratorResp) keys.push(k);
+	// Loop through the partners
+	for(var idx=start; idx<mainWindow.emailAddresses.length; idx++) {
+		let index = idx;
+		// get partner name
+		kardiacrm.request("partner/Partners/" + mainWindow.ids[index] + "?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "mlist", complete, function (nameResp) {
+			// If not 404
+			if (nameResp != null && nameResp['cx__element']) {
+				// if the partner is not valid, make them blank/invalid
+				if (nameResp['cx__element']['is_valid'] == 0 ) {
+					validUser = false;
+					mainWindow.emailAddresses[index] = "";
+					mainWindow.ids[index] = "";
+				}
+		 
+				// store partner's name
+				mainWindow.names[index] = nameResp['cx__element']['partner_name'];
+		 
+				// get more information only if the partner is valid
+				if (validUser) {
+					var addressResp = jsoncoll(jsondir(nameResp, 'Addresses'));
+					var phoneResp = jsoncoll(jsondir(nameResp, 'ContactInfo'));
 
-                                                // the key "@id" doesn't correspond to a note, so use all other keys to add note info to temporary array
-                                                var collaboratorArray = new Array();
-                                                for (var i=0;i<keys.length;i++) {
-                                                   if (keys[i] != "@id") {
-                                                      collaboratorArray.push(collaboratorResp[keys[i]]['collaborator_is_individual']);
-                                                      collaboratorArray.push(collaboratorResp[keys[i]]['collaborator_id']);
-                                                      collaboratorArray.push(collaboratorResp[keys[i]]['collaborator_name']);
-                                                   }
-                                                }
-                                                // store temporary array to permanent array
-                                                mainWindow.collaborators[index] = collaboratorArray;
-                                                
-                                                // get todos information
-                                                doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/Todos?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(todosResp) {
-                                                // If not 404
-                                                if (todosResp != null) {
-                                                      // get all the keys from the JSON file
-                                                      var keys = [];
-                                                      for(var k in todosResp) keys.push(k);
+					// If not 404
+					if (addressResp != null) {
+						// get the keys in the JSON file
+						var keys = [];
+						for(var k in addressResp) keys.push(k);
+		     
+						// the key "@id" doesn't correspond to an address, so use all other keys to store address information to temporary array
+						var addressArray = new Array();
+						for (var i=0;i<keys.length;i++) {
+							if (keys[i] != "@id") {
+								var oneaddr = addressResp[keys[i]]['cx__element'];
+								if (oneaddr['is_valid'] != 0) {
+									if (oneaddr['country_name'] != null) {
+										addressArray.push(oneaddr['location_type_code'] + ": " + oneaddr['address'] + "\n" + oneaddr['country_name']);
+									}
+									else {
+										addressArray.push(oneaddr['location_type_code'] + ": " + oneaddr['address']);
+									}
+									addressArray.push(oneaddr['location_id']);
+								}
+							}
+						}
+						// store temporary array to permanent array
+						mainWindow.addresses[index] = addressArray;
+					}
+		  
+					// If not 404
+					if (phoneResp != null) {
+						// get all the keys from the JSON file
+						var keys = [];
+						for(var k in phoneResp) keys.push(k);
+			
+						// the key "@id" doesn't correspond to a contact, so use all other keys to add contact info to temporary arrays
+						var phoneArray = new Array();
+						var emailArray = new Array();
+						var websiteArray = new Array();
+						for (var i=0;i<keys.length;i++) {
+							if (keys[i] != "@id") {
+								var contact = phoneResp[keys[i]]['cx__element'];
+								if (contact['is_valid'] != 0) {
+									if (contact['contact_type_code'] == "E") {
+										emailArray.push("E: " + contact['contact']);
+										emailArray.push(contact['contact_id']);
+									}
+									else if (contact['contact_type_code'] == "W" || contact['contact_type_code'] == "B") {
+										websiteArray.push(contact['contact_type_code'] + ": " + contact['contact']);
+										websiteArray.push(contact['contact_id']);
+									}
+									else {
+										phoneArray.push(contact['contact_type_code'] + ": " + contact['contact']);
+										phoneArray.push(contact['contact_id']);
+									}
+								}
+							}
+						}
+						// store temporary arrays to permanent arrays
+						mainWindow.phoneNumbers[index] = phoneArray;
+						mainWindow.allEmailAddresses[index] = emailArray;
+						mainWindow.websites[index] = websiteArray;
+					}
+				
+					// get engagement tracks information
+					kardiacrm.request("crm/Partners/" + mainWindow.ids[index] + "?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "mlist", complete, function(Resp) {
+						var trackResp = jsoncoll(jsondir(Resp, 'Tracks'));
+						var documentResp = jsoncoll(jsondir(Resp, 'Documents'));
+						var noteResp = jsoncoll(jsondir(Resp, 'ContactHistory'));
+						var collaboratorResp = jsoncoll(jsondir(Resp, 'Collaborators'));
+						var todosResp = jsoncoll(jsondir(Resp, 'Todos'));
+						var tagResp = jsoncoll(jsondir(Resp, 'Tags'));
+						var dataResp = jsoncoll(jsondir(Resp, 'DataItems'));
+						var activityResp = jsoncoll(jsondir(Resp, 'Activity'));
+						var photoResp = jsonel(jsondir(Resp, 'ProfilePicture'))
 
-                                                      // the key "@id" doesn't correspond to a note, so use all other keys to add note info to temporary array
-                                                      var todosArray = new Array();
-                                                      for (var i=0;i<keys.length;i++) {
-                                                         if (keys[i] != "@id" && todosResp[keys[i]]['status_code'].toLowerCase() == 'i') {
-                                                            todosArray.push(todosResp[keys[i]]['todo_id']);
-                                                            todosArray.push(todosResp[keys[i]]['desc']);
-                                                         }
-                                                      }
-                                                      // store temporary array to permanent array
-                                                      mainWindow.todos[index] = todosArray;
-                                                   
-                                                      // get tags information
-                                                      doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/Tags?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(tagResp) {
-                                                      // If not 404
-                                                      if (tagResp != null) {
-                                                            // get all the keys from the JSON file
-                                                            var keys = [];
-                                                            for(var k in tagResp) keys.push(k);
+						// If not 404
+						if (trackResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+							for(var k in trackResp) keys.push(k);
+				      
+							// the key "@id" doesn't correspond to a document, so use all other keys to add track info to temporary array
+							var trackArray = new Array();
+							for (var i=0;i<keys.length;i++) {
+								if (keys[i] != "@id") {
+									// add only if this track is current (not completed/exited)
+									var track = trackResp[keys[i]]['cx__element'];
+									if (track['completion_status'].toLowerCase() == "i") {
+										trackArray.push(track['engagement_track']);
+										trackArray.push(track['engagement_step']);
+										trackArray.push(track['name']);
+									}
+								}
+							}
+							// store temporary array to permanent array
+							mainWindow.engagementTracks[index] = trackArray;
+						}
 
-                                                            // save tag info
-                                                            var tempArray = new Array();
-                                                            for (var i=0; i<keys.length; i++) {
-                                                               if (keys[i] != "@id") {
-                                                                  // see where we should insert it in the list
-                                                                  var insertHere = tempArray.length;
-                                                                  for (var j=0;j<tempArray.length;j+=3) {
-                                                                     if (parseFloat(tagResp[keys[i]]['tag_strength']) >= parseFloat(tempArray[j+1])) {
-                                                                        // insert tag before
-                                                                        insertHere = j;
-                                                                        break;
-                                                                     }
-                                                                  }
-                                                                  tempArray.splice(insertHere,0,tagResp[keys[i]]['tag_label'],tagResp[keys[i]]['tag_strength'],tagResp[keys[i]]['tag_certainty']);
-                                                               }
-                                                            }
-                                                            mainWindow.tags[index] = tempArray;
-                                                            
-                                                            // get data items
-                                                            doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(dataResp) {
-                                                               // If not 404
-                                                               if (dataResp != null) {
-                                                                  // get all the keys from the JSON file
-                                                                  var keys = [];
-                                                                  for(var k in dataResp) keys.push(k);
+						// If not 404
+						if (documentResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+							for(var k in documentResp) keys.push(k);
 
-                                                                  mainWindow.dataGroups[index] = new Array();
-                                                                  // save data items
-                                                                  var tempArray = new Array();
-                                                                  for (var i=0; i<keys.length; i++) {
-                                                                     if (keys[i] != "@id") {
-                                                                        tempArray.push(dataResp[keys[i]]['item_type_label'] + ": " + dataResp[keys[i]]['item_value']);
-                                                                        tempArray.push(dataResp[keys[i]]['item_highlight']);
-                                                                        tempArray.push(dataResp[keys[i]]['item_group_id']);
+							// the key "@id" doesn't correspond to a document, so use all other keys to add document info to temporary array
+							var documentArray = new Array();
+							for (var i=0;i<keys.length;i++) {
+								if (keys[i] != "@id") {
+									// TODO where is "location" -- in apps/kardia, or in the server's home directory?  We leave it as server's home directory for now
+									var doc = documentResp[keys[i]]['cx__element'];
+									documentArray.push(server + doc['location']);
+									documentArray.push(doc['title']);
+								}
+							}
+							// store temporary array to permanent array
+							mainWindow.documents[index] = documentArray;
+						}
 
-                                                                        // store data group if it doesn't already exist
-                                                                        if (mainWindow.dataGroups[index].indexOf(dataResp[keys[i]]['item_group_id']) < 0) {
-                                                                           mainWindow.dataGroups[index].push(dataResp[keys[i]]['item_group_id']);
-                                                                           mainWindow.dataGroups[index].push(dataResp[keys[i]]['item_group_name']);
-                                                                        }
-                                                                     }
-                                                                  }
-                                                                  mainWindow.data[index] = tempArray;
+						// If not 404
+						if (noteResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+							for(var k in noteResp) keys.push(k);
 
-                                                                  doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(activityResp) {
-                                                                     // If not 404
-                                                                     if (activityResp != null) {
-                                                                        // get all the keys from the JSON file
-                                                                        var keys = [];
+							// the key "@id" doesn't correspond to a note, so use all other keys to add note info to temporary array
+							var noteArray = new Array();
+							for (var i=0;i<keys.length;i++) {
+								if (keys[i] != "@id") {
+									var note = noteResp[keys[i]]['cx__element'];
+									noteArray.push(note['subject'] + "- " + note['notes']);
+									noteArray.push(datetimeToString(note['date_modified']));
+									noteArray.push(note['contact_history_id']);
+								}
+							}
+							// store temporary array to permanent array
+							mainWindow.notes[index] = noteArray;
+						}
 
-                                                                        for(var k in activityResp) keys.push(k);
+						// If not 404
+						if (collaboratorResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+							for(var k in collaboratorResp) keys.push(k);
 
-                                                                        // save recent activity
-                                                                        var tempArray = new Array();
+							// the key "@id" doesn't correspond to a note, so use all other keys to add note info to temporary array
+							var collaboratorArray = new Array();
+							for (var i=0;i<keys.length;i++) {
+								if (keys[i] != "@id") {
+									var collab = collaboratorResp[keys[i]]['cx__element'];
+									collaboratorArray.push(collab['collaborator_is_individual']);
+									collaboratorArray.push(collab['collaborator_id']);
+									collaboratorArray.push(collab['collaborator_name']);
+								}
+							}
+							// store temporary array to permanent array
+							mainWindow.collaborators[index] = collaboratorArray;
+						}
 
-                                                                        for (var i=0; (i<keys.length && tempArray.length<6); i++) {
-                                                                           if (keys[i] != "@id") {
-                                                                              tempArray.push(activityResp[keys[i]]['activity_type']);
-                                                                              tempArray.push(datetimeToString(activityResp[keys[i]]['activity_date']) + ": " + activityResp[keys[i]]['info']);
-                                                                           }
-                                                                        }
-                                                                        mainWindow.recentActivity[index] = tempArray;
+						// If not 404
+						if (todosResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+							for(var k in todosResp) keys.push(k);
 
-									// check profile photo
-								        doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[index] + "/ProfilePicture?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic", function(photoResp) {
-									// store our result for later
-									mainWindow.profilePhotos[index] = photoResp;
-                                                                  
-                                                                        // check donor status
-                                                                        doHttpRequest("apps/kardia/api/donor/" + mainWindow.ids[index] + "/?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic", function(donorResp) {
-                                                                           var notFound = 0;
-                                                                           if (donorResp == null) {
-                                                                              // 404, donor not found
-                                                                              notFound = 1;
-                                                                           }
+							// the key "@id" doesn't correspond to a note, so use all other keys to add note info to temporary array
+							var todosArray = new Array();
+							for (var i=0;i<keys.length;i++) {
+								if (keys[i] != "@id") {
+									var todo = todosResp[keys[i]]['cx__element'];
+									if (todo['status_code'].toLowerCase() == 'i') {
+										todosArray.push(todo['todo_id']);
+										todosArray.push(todo['desc']);
+									}
+								}
+							}
+							// store temporary array to permanent array
+							mainWindow.todos[index] = todosArray;
+						}
 
-                                                                           // is the partner a donor?
-                                                                           if (notFound == 0) {
-                                                                              // get gifts
-                                                                              doHttpRequest("apps/kardia/api/donor/" + mainWindow.ids[index] + "/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(giftResp) {
-                                                                              // If not 404
-                                                                              if (giftResp != null) {
-                                                                                    
-                                                                                    // get all the keys from the JSON file
-                                                                                    var keys = [];
-                                                                                    for(var k in giftResp) keys.push(k);
+						// If not 404
+						if (tagResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+							for(var k in tagResp) keys.push(k);
 
-                                                                                    // save gifts
-                                                                                    var tempArray = new Array();
-                                                                                    mainWindow.types[index] = new Array();
-                                                                                    for (var i=0; i<keys.length; i++) {
-                                                                                       if (keys[i] != "@id") {
-                                                                                          if (giftResp[keys[i]]['gift_date'] != null) {
-                                                                                             tempArray.push(giftResp[keys[i]]['gift_date']['month'] + "/" + giftResp[keys[i]]['gift_date']['day'] + "/" + giftResp[keys[i]]['gift_date']['year']);
-                                                                                          }
-                                                                                          else {
-                                                                                             tempArray.push("n/a");
-                                                                                          }
-                                                                                          tempArray.push(formatGift(giftResp[keys[i]]['gift_amount']['wholepart'], giftResp[keys[i]]['gift_amount']['fractionpart']));
-                                                                                          tempArray.push(giftResp[keys[i]]['gift_fund_desc']);
-                                                                                          
-                                                                                          // if check, display check number
-                                                                                          if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'] != null && giftResp[keys[i]]['gift_check_num'].trim() != "") {
-                                                                                             tempArray.push(giftResp[keys[i]]['gift_type'] + " (#" + giftResp[keys[i]]['gift_check_num'] + ")");
-                                                                                          }
-                                                                                          else {
-                                                                                             tempArray.push(giftResp[keys[i]]['gift_type']);
-                                                                                          }
-                                                                                          // save gift type to types array
-                                                                                          if (mainWindow.types[index].indexOf(giftResp[keys[i]]['gift_type']) < 0) {
-                                                                                             mainWindow.types[index].push(giftResp[keys[i]]['gift_type']);
-                                                                                             mainWindow.giftFilterTypes.push(false);
-                                                                                          }
-                                                                                       }
-                                                                                    }
-                                                                                    mainWindow.gifts[index] = tempArray;
+							// save tag info
+							var tempArray = new Array();
+							for (var i=0; i<keys.length; i++) {
+								if (keys[i] != "@id") {
+									var tag = tagResp[keys[i]]['cx__element'];
+									// see where we should insert it in the list
+									var insertHere = tempArray.length;
+									for (var j=0;j<tempArray.length;j+=3) {
+										if (parseFloat(tag['tag_strength']) >= parseFloat(tempArray[j+1])) {
+											// insert tag before
+											insertHere = j;
+											break;
+										}
+									}
+									tempArray.splice(insertHere, 0, tag['tag_label'], tag['tag_strength'], tag['tag_certainty']);
+								}
+							}
+							mainWindow.tags[index] = tempArray;
+						}
 
-                                                                                    // get funds
-                                                                                    doHttpRequest("apps/kardia/api/donor/" + mainWindow.ids[index] + "/Funds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(fundResp) {
-                                                                                       // If not 404
-                                                                                       if (fundResp != null) {
-                                                                                          // get all the keys from the JSON file
-                                                                                          var keys = [];
-                                                                                          for(var k in fundResp) keys.push(k);
+						// If not 404
+						if (dataResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+							for(var k in dataResp) keys.push(k);
 
-                                                                                          // reset gift filter list
-                                                                                          giftFilterFunds = new Array();
-                                                                                          giftFilterTypes = new Array();
-                                                                                          
-                                                                                          // save funds
-                                                                                          var tempArray = new Array();
-                                                                                          for (var i=0; i<keys.length; i++) {
-                                                                                             if (keys[i] != "@id") {
-                                                                                                tempArray.push(fundResp[keys[i]]['fund_desc']);
-                                                                                                mainWindow.giftFilterFunds.push(false);
-                                                                                             }
-                                                                                          }
-                                                                                          mainWindow.funds[index] = tempArray;
-                                                                                          
-                                                                                          // if there are more partners left to get info about, go to the next one
-                                                                                          if (index+1 < mainWindow.emailAddresses.length) {
-                                                                                             getOtherInfo(index+1, true);
-                                                                                          }
-                                                                                          else {
-                                                                                             // done, so reload Kardia pane
-                                                                                             reload(isDefault);
-                                                                                          }
-                                                                                       } else {
-                                                                                          // 404, do nothing
-                                                                                       }
-                                                                                    }, false, "", "");
-                                                                                 } else {
-                                                                                    // 404, do nothing
-                                                                                 }
-                                                                              }, false, "", "");
-                                                                           }
-                                                                           else {
-                                                                              // not a donor, so add blank info
-                                                                              mainWindow.gifts[index] = new Array();
-                                                                              mainWindow.types[index] = new Array();
-                                                                              mainWindow.funds[index] = new Array();
+							mainWindow.dataGroups[index] = new Array();
+							// save data items
+							var tempArray = new Array();
+							for (var i=0; i<keys.length; i++) {
+								if (keys[i] != "@id") {
+									var data = dataResp[keys[i]]['cx__element'];
+									tempArray.push(data['item_type_label'] + ": " + data['item_value']);
+									tempArray.push(data['item_highlight']);
+									tempArray.push(data['item_group_id']);
 
-                                                                              // if there are more partners left to get info about, go to the next one
-                                                                              if (index+1 < mainWindow.emailAddresses.length) {
-                                                                                 getOtherInfo(index+1, true);
-                                                                              }
-                                                                              else {
-                                                                                 // done, so reload Kardia pane
-                                                                                 reload(isDefault);
-                                                                              }
-                                                                           }
-                                                                        }, false, "", ""); // request Donor info
-                                                                       }, false, "", ""); // request profile photo
-                                                                     } else {
-                                                                        // 404, do nothing
-                                                                     }
-                                                                  }, false, "", ""); // request Activity
-                                                               } else {
-                                                                  // 404, do nothing
-                                                               }
-                                                            }, false, "", "");				
-                                                         } else {
-                                                            // 404, do nothing
-                                                         }
-                                                      }, false, "", "");	
-                                                   } else {
-                                                      // 404, do nothing
-                                                   }
-                                                }, false, "", "");	
-                                             } else {
-                                                // 404, do nothing
-                                             }
-                                          }, false, "", "");
-                                       } else {
-                                          // 404, do nothing
-                                       }
-                                    }, false, "", "");
-                                 } else {
-                                    // 404, do nothing
-                                 }
-                              }, false, "", "");
-                           } else {
-                              // 404, do nothing
-                           }
-                        },false, "", "");
-                     } else {
-                        // 404, do nothing
-                     }
-                  }, false, "", ""); // contact info records
-               } else {
-                  // 404, do nothing
-               }
-            }, false, "", ""); // address records
-         }
-      } else {
-         // 404, do nothing
-      }
-	}, false, "", ""); // partner rec
+									// store data group if it doesn't already exist
+									if (mainWindow.dataGroups[index].indexOf(data['item_group_id']) < 0) {
+										mainWindow.dataGroups[index].push(data['item_group_id']);
+										mainWindow.dataGroups[index].push(data['item_group_name']);
+									}
+								}
+							}
+							mainWindow.data[index] = tempArray;
+						}
+
+						// If not 404
+						if (activityResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+
+							for(var k in activityResp) keys.push(k);
+
+							// save recent activity
+							var tempArray = new Array();
+
+							for (var i=0; (i<keys.length && tempArray.length<6); i++) {
+								if (keys[i] != "@id") {
+									var activity = activityResp[keys[i]]['cx__element'];
+									tempArray.push(activity['activity_type']);
+									tempArray.push(datetimeToString(activity['activity_date']) + ": " + activity['info']);
+								}
+							}
+							mainWindow.recentActivity[index] = tempArray;
+						}
+
+						// store profile pic result for later
+						mainWindow.profilePhotos[index] = photoResp;
+					});
+									  
+					// check donor status
+					kardiacrm.request("donor/" + mainWindow.ids[index] + "/?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "mlist", complete, function(Resp) {
+						if (Resp != null) {
+							var giftResp = jsoncoll(jsondir(Resp, 'Gifts'));
+							var fundResp = jsoncoll(jsondir(Resp, 'Funds'));
+
+							// If not 404
+							if (giftResp != null) {
+								// get all the keys from the JSON file
+								var keys = [];
+								for(var k in giftResp) keys.push(k);
+
+								// save gifts
+								var tempArray = new Array();
+								mainWindow.types[index] = new Array();
+								for (var i=0; i<keys.length; i++) {
+									if (keys[i] != "@id") {
+										var gift = giftResp[keys[i]]['cx__element'];
+										if (gift['gift_date'] != null) {
+											tempArray.push(gift['gift_date']['month'] + "/" + gift['gift_date']['day'] + "/" + gift['gift_date']['year']);
+										}
+										else {
+											tempArray.push("n/a");
+										}
+										tempArray.push(formatGift(gift['gift_amount']['wholepart'], gift['gift_amount']['fractionpart']));
+										tempArray.push(gift['gift_fund_desc']);
+											  
+										// if check, display check number
+										if (gift['gift_type'] != null && gift['gift_type'].toLowerCase() == 'check' && gift['gift_check_num'] != null && gift['gift_check_num'].trim() != "") {
+											tempArray.push(gift['gift_type'] + " (#" + gift['gift_check_num'] + ")");
+										}
+										else {
+											tempArray.push(gift['gift_type']);
+										}
+										// save gift type to types array
+										if (mainWindow.types[index].indexOf(gift['gift_type']) < 0) {
+											mainWindow.types[index].push(gift['gift_type']);
+											mainWindow.giftFilterTypes.push(false);
+										}
+									}
+								}
+								mainWindow.gifts[index] = tempArray;
+							}
+
+							// If not 404
+							if (fundResp != null) {
+								// get all the keys from the JSON file
+								var keys = [];
+								for(var k in fundResp) keys.push(k);
+
+								// reset gift filter list
+								giftFilterFunds = new Array();
+								giftFilterTypes = new Array();
+							  
+								// save funds
+								var tempArray = new Array();
+								for (var i=0; i<keys.length; i++) {
+									if (keys[i] != "@id") {
+										var fund = fundResp[keys[i]]['cx__element'];
+										tempArray.push(fund['fund_desc']);
+										mainWindow.giftFilterFunds.push(false);
+									}
+								}
+								mainWindow.funds[index] = tempArray;
+							}
+						}
+						else {
+							// not a donor, so add blank info
+							mainWindow.gifts[index] = new Array();
+							mainWindow.types[index] = new Array();
+							mainWindow.funds[index] = new Array();
+						}
+					});
+				}
+			}
+		});
+	}
 }
 
 // get info for one person you're collaborating with
-function getCollaborateeInfo(index) {
-   var tabIndex = mainWindow.collaborateeIds.indexOf(mainWindow.collaborateeIds[index]);
-	// get the person's engagement tracks
-	doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(trackResp) {
-      // If not 404
-      if (trackResp != null) {
-         
-         // get all the keys from the JSON file
-         var keys = [];
-         for(var k in trackResp) keys.push(k);
+function getCollaborateeInfo() {
 
-         // save track info
-         var tempArray = new Array();
-         for (var i=0;i<keys.length; i++) {
-            if (keys[i] != "@id" && trackResp[keys[i]]['completion_status'].toLowerCase() == "i") {
-               tempArray.push(trackResp[keys[i]]['engagement_track']);
-               tempArray.push(trackResp[keys[i]]['engagement_step']);
-            }
-         }
-         if (COLLABORATEES_PARALLEL) {
-            mainWindow.collaborateeTracks.push(tempArray);
-            //mainWindow.collaborateeTracks.length++;
-            mainWindow.collaborateeTracks[index] = tempArray;
-         } else {
-            mainWindow.collaborateeTracks.push(tempArray);
-         }
-         
-         // get tags
-         doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tags?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(tagResp) {
-         // If not 404
-         if (tagResp != null) {
-               // get all the keys from the JSON file
-               var keys = [];
-               for(var k in tagResp) keys.push(k);
+	// This is called when all "collaboratees" have been loaded.
+	var complete = function() {
+		// sort and reload Collaborating With panel
+		if (kardiaTab != null) {
+			kardiaTab.sortCollaboratees(false);
+			kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
+		}
+		mainWindow.kardiacrm.refreshing = false;
+		
+		// reload the Kardia pane so it's blank at first
+		reload(false);
+	};
 
-               // save tag info
-               var tempArray = new Array();
-               for (var i=0; i<keys.length; i++) {
-                  if (keys[i] != "@id") {
-                     // see where we should insert it in the list
-                     var insertHere = tempArray.length;
-                     for (var j=0;j<tempArray.length;j+=3) {
-                        if (parseFloat(tagResp[keys[i]]['tag_strength']) >= parseFloat(tempArray[j+1])) {
-                           // insert tag before
-                           insertHere = j;
-                           break;
-                        }
-                     }
-                     tempArray.splice(insertHere,0,tagResp[keys[i]]['tag_label'],tagResp[keys[i]]['tag_strength'],tagResp[keys[i]]['tag_certainty']);
-                  }
-               }
-               if (COLLABORATEES_PARALLEL) {
-                  mainWindow.collaborateeTags.length++;
-                  mainWindow.collaborateeTags[index] = tempArray;
-               } else {
-                  mainWindow.collaborateeTags.push(tempArray);
-               }
+	for(idx=0; idx<mainWindow.collaborateeIds.length; idx++) {
+		let index = idx;
+
+		// get the person's engagement tracks and other CRM data
+		kardiacrm.request("crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tracks?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic", "ktab", complete, function(trackResp) {
+			// If not 404
+			if (trackResp != null) {
+				trackResp = trackResp['cx__collection'];
+				/*var trackResp = jsoncoll(jsondir(Resp, 'Tracks'));
+				var documentResp = jsoncoll(jsondir(Resp, 'Documents'));
+				var noteResp = jsoncoll(jsondir(Resp, 'ContactHistory'));
+				var collaboratorResp = jsoncoll(jsondir(Resp, 'Collaborators'));
+				var todosResp = jsoncoll(jsondir(Resp, 'Todos'));
+				var tagResp = jsoncoll(jsondir(Resp, 'Tags'));
+				var dataResp = jsoncoll(jsondir(Resp, 'DataItems'));
+				var activityResp = jsoncoll(jsondir(Resp, 'Activity'));
+				var photoResp = jsonel(jsondir(Resp, 'ProfilePicture'));*/
+		
+				if (trackResp) {
+					// get all the keys from the JSON file
+					var keys = [];
+					for(var k in trackResp) keys.push(k);
+
+					// save track info
+					var tempArray = new Array();
+					for (var i=0;i<keys.length; i++) {
+						if (keys[i] != "@id") {
+							var track = trackResp[keys[i]]; //['cx__element'];
+							if (track['completion_status'].toLowerCase() == "i") {
+								tempArray.push(track['engagement_track']);
+								tempArray.push(track['engagement_step']);
+							}
+						}
+					}
+					mainWindow.collaborateeTracks[index] = tempArray;
+				}
+			}
+		});
+
+		kardiacrm.request("crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tags?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic", "ktab", complete, function(tagResp) {
+			// If not 404
+			if (tagResp != null) {
+				tagResp = tagResp['cx__collection'];
+				if (tagResp != null) {
+					// get all the keys from the JSON file
+					var keys = [];
+					for(var k in tagResp) keys.push(k);
+
+					// save tag info
+					var tempArray = new Array();
+					for (var i=0; i<keys.length; i++) {
+						if (keys[i] != "@id") {
+							// see where we should insert it in the list
+							var insertHere = tempArray.length;
+							var tag = tagResp[keys[i]]; //['cx__element'];
+							for (var j=0;j<tempArray.length;j+=3) {
+								if (parseFloat(tag['tag_strength']) >= parseFloat(tempArray[j+1])) {
+									// insert tag before
+									insertHere = j;
+									break;
+								}
+							}
+							tempArray.splice(insertHere, 0, tag['tag_label'], tag['tag_strength'], tag['tag_certainty']);
+						}
+					}
+					mainWindow.collaborateeTags[index] = tempArray;
+				}
+			}
+		});
+
+		mainWindow.collaborateeActivity[index] = [];
+		mainWindow.collaborateeData[index] = [];
                
-               // get data items
-               doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/DataItems?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(dataResp) {
-                  // If not 404
-                  if (dataResp != null) {
-                     // get all the keys from the JSON file
-                     var keys = [];
-                     for(var k in dataResp) keys.push(k);
+				/*if (dataResp != null) {
+					// get all the keys from the JSON file
+					var keys = [];
+					for(var k in dataResp) keys.push(k);
 
-                     // save data items
-                     var tempArray = new Array();
-                     for (var i=0; i<keys.length; i++) {
-                        if (keys[i] != "@id") {
-                           tempArray.push(dataResp[keys[i]]['item_type_label'] + ": " + dataResp[keys[i]]['item_value']);
-                           tempArray.push(dataResp[keys[i]]['item_highlight']);
-                           tempArray.push(dataResp[keys[i]]['item_group_id']);
-                        }
-                     }
-                     if (COLLABORATEES_PARALLEL) {
-                        mainWindow.collaborateeData.push(tempArray);
-                        //mainWindow.collaborateeData.length++;
-                        mainWindow.collaborateeData[index] = tempArray;
-                     } else {
-                        mainWindow.collaborateeData.push(tempArray);
-                     }
+					// save data items
+					var tempArray = new Array();
+					for (var i=0; i<keys.length; i++) {
+						if (keys[i] != "@id") {
+							var data = dataResp[keys[i]]['cx__element'];
+							tempArray.push(data['item_type_label'] + ": " + data['item_value']);
+							tempArray.push(data['item_highlight']);
+							tempArray.push(data['item_group_id']);
+						}
+					}
+					mainWindow.collaborateeData[index] = tempArray;
+				}
                   
-                     // get recent activity
-                     doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.collaborateeIds[index] + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(activityResp) {
-                     // If not 404
-                     if (activityResp != null) {
-                           var TempResp = activityResp;
-                           // get all the keys from the JSON file
-                           var keys = [];
-                           for(var k in TempResp) {
-                              keys.push(k); 
-                           }
+				if (activityResp != null) {
+					var TempResp = activityResp;
+					// get all the keys from the JSON file
+					var keys = [];
+					for(var k in TempResp) keys.push(k);
 
-                           // save activity
-                           var tempArray = new Array();
-                           for (var i=0; (i<keys.length && tempArray.length<6); i++) {
-                              if (keys[i] != "@id") {
-                                 tempArray.push(TempResp[keys[i]]['activity_type']);
-                                 tempArray.push(datetimeToString(TempResp[keys[i]]['activity_date']) + ": " + TempResp[keys[i]]['info']);
-                                 tempArray.push(TempResp[keys[i]]['activity_date']);
-
-                              }
-                           }
-                           if (COLLABORATEES_PARALLEL) {
-                              mainWindow.collaborateeActivity.length++;
-                              mainWindow.collaborateeActivity[index] = tempArray;
-                           } else {
-                              mainWindow.collaborateeActivity.push(tempArray);
-                           }
+					// save activity
+					var tempArray = new Array();
+					for (var i=0; (i<keys.length && tempArray.length<6); i++) {
+						if (keys[i] != "@id") {
+							var act = TempResp[keys[i]]['cx__element'];
+							tempArray.push(act['activity_type']);
+							tempArray.push(datetimeToString(act['activity_date']) + ": " + act['info']);
+							tempArray.push(act['activity_date']);
+						}
+					}
+					mainWindow.collaborateeActivity[index] = tempArray;
+				}*/
                                        
-                                       
-                           //doHttpRequest("apps/kardia/api/donor/?cx__mode=rest&cx__res_type=collection", function(donorResp) {
-                           doHttpRequest("apps/kardia/api/donor/" + mainWindow.collaborateeIds[index] + "/?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic", function(donorResp) {
-                              var notFound = 0;
-                              if (donorResp == null) {
-                                 // 404, donor not found
-                                 notFound = 1;
-                              }
+				mainWindow.collaborateeGifts[index] = [];
+				mainWindow.collaborateeFunds[index] = [];
+				kardiacrm.request("donor/" + mainWindow.collaborateeIds[index] + "/?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "ktab", complete, function(Resp) {
+					// is the partner a donor?
+					if (Resp) {
+						var giftResp = jsoncoll(jsondir(Resp, 'Gifts'));
+						var fundResp = jsoncoll(jsondir(Resp, 'Funds'));
 
-                              // is the partner a donor?
-                              if (notFound == 0) {
-                                 // get gifts
-                                 doHttpRequest("apps/kardia/api/donor/" + mainWindow.collaborateeIds[index] + "/Gifts?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(giftResp) {
-                                 // If not 404
-                                 if (giftResp != null) {
-                                       // get all the keys from the JSON file
-                                       var keys = [];
-                                       for(var k in giftResp) keys.push(k);
+						if (giftResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+							for(var k in giftResp) keys.push(k);
 
-                                       // save gifts
-                                       var tempArray = new Array();
-                                       for (var i=0; i<keys.length; i++) {
-                                          if (keys[i] != "@id") {
-                                             if (giftResp[keys[i]]['gift_date'] != null) {
-                                                tempArray.push(giftResp[keys[i]]['gift_date']['month'] + "/" + giftResp[keys[i]]['gift_date']['day'] + "/" + giftResp[keys[i]]['gift_date']['year']);
-                                             }
-                                             else {
-                                                tempArray.push("n/a");
-                                             }
-                                             tempArray.push(formatGift(giftResp[keys[i]]['gift_amount']['wholepart'], giftResp[keys[i]]['gift_amount']['fractionpart']));
-                                             tempArray.push(giftResp[keys[i]]['gift_fund_desc']);
+							// save gifts
+							var tempArray = new Array();
+							for (var i=0; i<keys.length; i++) {
+								if (keys[i] != "@id") {
+									var gift = giftResp[keys[i]]['cx__element'];
+									if (gift['gift_date'] != null) {
+										tempArray.push(gift['gift_date']['month'] + "/" + gift['gift_date']['day'] + "/" + gift['gift_date']['year']);
+									}
+									else {
+										tempArray.push("n/a");
+									}
+									tempArray.push(formatGift(gift['gift_amount']['wholepart'], gift['gift_amount']['fractionpart']));
+									tempArray.push(gift['gift_fund_desc']);
                                              
-                                             // if check, display check number
-                                             if (giftResp[keys[i]]['gift_type'] != null && giftResp[keys[i]]['gift_type'].toLowerCase() == 'check' && giftResp[keys[i]]['gift_check_num'] != null && giftResp[keys[i]]['gift_check_num'].trim() != "") {
-                                                tempArray.push(giftResp[keys[i]]['gift_type'] + " (#" + giftResp[keys[i]]['gift_check_num'] + ")");
-                                             }
-                                             else {
-                                                tempArray.push(giftResp[keys[i]]['gift_type']);
-                                             }																	
-                                          }
-                                       }
-                                       if (COLLABORATEES_PARALLEL) {
-                                          mainWindow.collaborateeGifts.length++;
-                                          mainWindow.collaborateeGifts[index] = tempArray;
-                                       } else {
-                                          mainWindow.collaborateeGifts.push(tempArray);
-                                       }
+									// if check, display check number
+									if (gift['gift_type'] != null && gift['gift_type'].toLowerCase() == 'check' && gift['gift_check_num'] != null && gift['gift_check_num'].trim() != "") {
+										tempArray.push(gift['gift_type'] + " (#" + gift['gift_check_num'] + ")");
+									}
+									else {
+										tempArray.push(gift['gift_type']);
+									}
+								}
+							}
+							mainWindow.collaborateeGifts[index] = tempArray;
+						}
                                     
-                                       doHttpRequest("apps/kardia/api/donor/" + mainWindow.collaborateeIds[index] + "/Funds?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(fundResp) {
-                                          // If not 404
-                                          if (fundResp != null) {
-                                             // get all the keys from the JSON file
-                                             var keys = [];
-                                             for(var k in fundResp) keys.push(k);
+						if (fundResp != null) {
+							// get all the keys from the JSON file
+							var keys = [];
+							for(var k in fundResp) keys.push(k);
                                              
-                                             var tempArray = new Array();
-                                             for (var i=0; i<keys.length; i++) {
-                                                if (keys[i] != "@id") {
-                                                   tempArray.push(fundResp[keys[i]]['fund_desc']);
-                                                }
-                                             }
-                                             if (COLLABORATEES_PARALLEL) {
-                                                mainWindow.collaborateeFunds.length++;
-                                                mainWindow.collaborateeFunds[index] = tempArray;
-                                             } else {
-                                                mainWindow.collaborateeFunds.push(tempArray);
-                                             }
-                                                                  
-                                             // if we've done all the collaboratees, start loading the Kardia tab stuff
-                                             if (index+1 >= mainWindow.collaborateeIds.length) {
-                                                // sort and reload Collaborating With panel
-                                                if (kardiaTab != null) {
-                                                   kardiaTab.sortCollaboratees(false);
-                                                   kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
-                                                }
-                                                mainWindow.kardiacrm.refreshing = false;
-                                                
-                                                // reload the Kardia pane so it's blank at first
-                                                reload(false);
-                                             } else {
-                                                // reload
-                                                if (kardiaTab != null) {
-                                                   kardiaTab.sortSomeCollaboratees(index);
-                                                }
-                                                
-                                                // go to the next person (only used in non-parallel mode)
-                                                if (!COLLABORATEES_PARALLEL) {
-                                                   getCollaborateeInfo(index+1);
-                                                } else {
-                                                  //kardiaTab.reloadFilters(false);
-                                                }
+							var tempArray = new Array();
+							for (var i=0; i<keys.length; i++) {
+								if (keys[i] != "@id") {
+									var fund = fundResp[keys[i]]['cx__element'];
+									tempArray.push(fund['fund_desc']);
+								}
+							}
+							mainWindow.collaborateeFunds[index] = tempArray;
+						}
+					}
 
-                                             }
-                                          } else {
-                                             // 404, do nothing
-                                          }
-                                       }, false, "", "");
-                                    } else {
-                                       // 404, do nothing
-                                    }
-                                 }, false, "", "");
-                              } else {
-                                 if (COLLABORATEES_PARALLEL) {
-                                    mainWindow.collaborateeGifts.length++;
-                                    mainWindow.collaborateeGifts[index] = new Array();
-                                    mainWindow.collaborateeFunds.length++;
-                                    mainWindow.collaborateeFunds[index] = new Array();
-                                 } else {
-                                    mainWindow.collaborateeGifts.push(new Array());
-                                    mainWindow.collaborateeFunds.push(new Array());
-                                 }
-                                 // TODO hide gift area
-                                 // if we've done all the collaboratees, start loading the Kardia tab stuff
-                                 if (index+1 >= mainWindow.collaborateeIds.length) {								
-                                    // sort and reload Collaborating With panel
-                                    if (kardiaTab != null) {
-                                       kardiaTab.sortCollaboratees(false);
-                                       kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.png";
-                                    }
-                                    kardiacrm.refreshing = false;
-                                    
-                                    // reload the Kardia pane so it's blank at first
-                                    reload(false);
-                                 }
-                                 else {
-                                    // reload
-                                    if (kardiaTab != null) {
-                                       kardiaTab.sortSomeCollaboratees(index);
-                                    }
-                                    
-                                    // go to the next person (only used in non-parallel mode)
-                                    if (!COLLABORATEES_PARALLEL) {
-                                       getCollaborateeInfo(index+1);
-                                    } else {
-                                       //kardiaTab.reloadFilters(false);
-                                    }
-                                 }
-                              }
-                           }, false, "", "");	
-                        } else {
-                           // 404, do nothing
-                        }
-                     }, false, "", "");			
-                  } else {
-                     // 404, do nothing
-                  }
-               }, false, "", "");	
-            } else {
-               // 404, do nothing
-            }
-         }, false, "", "");
-      } else {
-         // 404, do nothing
-      }
-	}, false, "", "");
+					// Show partial results as the people come in.
+					//kardiaTab.sortSomeCollaboratees(index);
+				});
+			/*}
+		});*/
+	}
 }
+                                                                  
 
 // delete the todo with the given id
 function deleteTodo(todoId) {
@@ -2508,7 +2440,9 @@ function getLogin(prevSaved, prevFail, doAfter) {
 								kardiaTab.document.getElementById("tab-main").style.visibility = "visible";
 								kardiaTab.document.getElementById("tab-cant-connect").style.display="none";
 							}
-							document.getElementById("cant-connect").style.display="none";
+							if (document.getElementById("cant-connect")) {
+								document.getElementById("cant-connect").style.display="none";
+							}
 
 							prefs.setCharPref("server",server);
 							
@@ -3257,21 +3191,27 @@ function doHttpRequest(url, doAfter, authenticate, username, password) {
 	var httpResp;
 	
 	httpRequest.onreadystatechange  = function(aEvent) {
-		// if the request went through and we got success status
-		if(httpRequest.readyState == 4 && httpRequest.status == 200) {
-			// parse the JSON returned from the request
-			doAfter(JSON.parse(httpRequest.responseText));
-		}
-      else if (httpRequest.readyState == 4 && httpRequest.status == 404) {
-         doAfter(null); // not found
-      }
-		else if (httpRequest.readyState == 4 && httpRequest.status != 200) {
-			// failed
-			//window.alert(httpRequest.response + "failed");
+		// if the request went through
+		if (httpRequest.readyState == 4) {
+			if (httpRequest.status == 200) {
+				// parse the JSON returned from the request
+				doAfter(JSON.parse(httpRequest.responseText));
+			}
+			else if (httpRequest.status == 404) {
+				doAfter(null); // resource not found
+			}
+			else {
+				doAfter(null); // bad request or invalid authentication
+				// failed
+				//window.alert(httpRequest.response + "failed");
+			}
 		}
 	};
-	// do nothing if the http request errors
-	httpRequest.onerror = function(aEvent) {};
+
+	// if the http request errors
+	httpRequest.onerror = function(aEvent) {
+		doAfter(null); // failure to connect, etc.
+	};
 	
 	// send http request; send username and password if our parameter says we should
 	//if (authenticate) {
@@ -3341,17 +3281,10 @@ function getMyInfo(username, password) {
                   }
                }
 
-               // get other info
-               if (!COLLABORATEES_PARALLEL) { 
-                  getCollaborateeInfo(0);
-               }
-               // this is doing it in parallel. It seems good but there are problems with it right now.
-               //    (If you renable this make sure to change getCollaborateeInfo appropriatly)
-               for (var i=0; (i<keys.length-1 && COLLABORATEES_PARALLEL); i++) {
-                  getCollaborateeInfo(i);
-                  //sleep(1500);
-                  //DoTheThing(i); // !
-               }
+
+               // get "collaboratee" list
+                getCollaborateeInfo();
+
 
             } else {
                // 404, do nothing
@@ -3853,7 +3786,7 @@ function datetimeToDate(date) {
 
 // reload recent activity
 function reloadActivity(partnerId) {
-	doHttpRequest("apps/kardia/api/crm/Partners/" + partnerId + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(activityResp) {
+	kardiacrm.request("crm/Partners/" + partnerId + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", "act", null, function(activityResp) {
       // If not 404
       if (activityResp != null) {
          // where this partner is located in the main window list
@@ -3919,7 +3852,8 @@ function installButton(toolbarId, id) {
         var toolbar = document.getElementById(toolbarId);
 
         var toolbox = document.getElementById("mail-toolbox");
-        var palette = toolbox.palette;
-        
-        toolbar.appendChild(palette.getElementsByClassName("kardia-tab-buttonn").item(0));
+	if (toolbox) {
+		var palette = toolbox.palette;
+		toolbar.appendChild(palette.getElementsByClassName("kardia-tab-buttonn").item(0));
+	}
 }

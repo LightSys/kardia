@@ -10,19 +10,21 @@ kardiacrm.lastMessageWindow = window;
 
 addEventListener("load", function()
     {
+    // Add the kardia icons/flags when the message is rendered.
+    gMessageListeners.push
+	({
+	onEndHeaders: function ()
+	    {
+	    if (kardiacrm.logged_in)
+		{
+		mainWindow.addKardiaButton(window);
+		}
+	    },
+	onStartHeaders: function() {},
+	onStartAttachments: function () {},
+	onEndAttachments: function () {},
+	onBeforeShowHeaderPane: function () {},
+	});
+
     }, false);
 
-// Add the kardia icons/flags when the message is rendered.
-gMessageListeners.push
-    ({
-    onEndHeaders: function ()
-	{
-	if (kardiacrm.logged_in)
-	    {
-	    mainWindow.addKardiaButton(window);
-	    }
-	},
-    onStartHeaders: function() {},
-    onEndAttachments: function () {},
-    onBeforeShowHeaderPane: function () {},
-    });
