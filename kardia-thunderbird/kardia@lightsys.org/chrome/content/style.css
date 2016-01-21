@@ -128,6 +128,12 @@
 .hover-box {margin-right:5px; border-bottom:1px solid rgba(200,200,200,0.2);}
 .hover-box:hover {background-color:#fafafa}
 
+/* activity */
+.act-date { font-weight:bold; width:220px; }
+.act-info { width:220px; }
+.act-info-2 { width:220px; display:none; }
+/*.hover-box:hover .act-info-2 { display:block; }*/
+
 /* individual person in Collaborating With panel */
 .tab-collaborator {border-radius:3px; background-color:#ffffff; margin-bottom:2px; padding:3px;}
 
@@ -181,3 +187,8 @@ mail-emailaddress {-moz-binding:url('chrome://kardia/content/email-binding.xml#k
 
 #login-dialog { padding-left:10px; padding-right:10px; padding-bottom:10px; padding-top:16px; }
 #login-dialog-vbox { }
+
+/** Message Window **/
+#newperson-box { display:none; }
+#todo-options { display:none; }
+#contact-box { border-top:1px solid #a0a0a0; }

@@ -21,18 +21,18 @@
 		<!--<image src="chrome://kardia/content/images/Kardia2011b-horiz-37.png" style="width:182px; height:37px;"/>-->
 		<label id="login-failed-label"></label>
 		<spacer height="6px"/>
-		<hbox>
+		<hbox align="center">
 			<label value="Server:" width="80px"/>
 			<textbox id="server-text"/>
 			<label value="Port:"/>
 			<textbox id="port-text" value="800" width="80px"/>
 		</hbox>
 		<spacer height="6px"/>
-		<hbox>
+		<hbox align="center">
 			<label value="Username:" width="80px"/>
 			<textbox id="username-text"/>
 		</hbox>
-		<hbox>
+		<hbox align="center">
 			<label value="Password:" width="80px"/>
 			<textbox id="password-text" type="password"/>
 		</hbox>

@@ -17,6 +17,7 @@ var selectedMessages = null;
 var emailAddresses = [];
 var names = [];
 var ids = [];
+var emailIds = [];
 var addresses = [];
 var phoneNumbers = [];
 var allEmailAddresses = [];
@@ -27,6 +28,7 @@ var profilePhotos = [];
 var todos = [];
 var allTodos = [];
 var notes = [];
+var autorecord = [];
 var collaborators = [];
 var documents = [];
 var tags = [];
@@ -53,9 +55,6 @@ var selfEmails;
 var partnerList = new Array();
 
 // list of collaborator types
-
-// authentication key for PATCH requests
-var akey = "";
 
 // server address
 var server = "";
@@ -141,20 +140,34 @@ var dataTab;
 
 // Various system-wide Kardia CRM data items
 var kardiacrm = {
+	// Last opened message window
+	lastMessageWindow:null,
+	last_assignee:null,
+	last_todo_type:null,
+	last_role_type:null,
+	last_due_days:1,
+	
 	// is the data being refreshed?
 	refresh_timer:null,
 	refreshing:false,
 	refreshes:0,
 
+	ping_interval:null,
+
 	// which partner we're viewing
 	selected_partner:null,
+
+	// Is data loaded for the partner list in the current email?
+	partners_loaded:false,
+	partner_data_loaded:false,
+	find_emails_busy:false,
 
 	// current server connection data
 	logged_in:false,
 	username:"",
 	password:"",
 	server:"",
-	akey:"",
+	akey:null,
 
 	// Our reference to jQuery
 	jQuery:null,
@@ -171,6 +184,8 @@ var kardiacrm = {
 		collabTypeList: {},
 		tagList: {},
 		trackList: {},
+		todoTypeList: {},
+		staffList: {},
 	},
 
 	// Server API multi-class request dispatcher
@@ -185,15 +200,54 @@ var kardiacrm = {
 		while (kardiacrm.dispatch_queue[dclass].active_cnt < kardiacrm.dispatch_parallel_max && kardiacrm.dispatch_queue[dclass].length > 0) {
 			let item = kardiacrm.dispatch_queue[dclass].shift();
 			kardiacrm.dispatch_queue[dclass].active_cnt++;
-			doHttpRequest('apps/kardia/api/' + item.url, function(Resp) {
-				if (item.callback)
-					item.callback(Resp);
-				kardiacrm.dispatch_queue[dclass].active_cnt--;
-				kardiacrm.dispatch(dclass);
-				if (kardiacrm.dispatch_queue[dclass].length == 0 && kardiacrm.dispatch_queue[dclass].active_cnt == 0 && item.completion) {
-					item.completion();
-				}
-			});
+			switch(item.req) {
+				case 'GET':
+				doHttpRequest('apps/kardia/api/' + item.url, function(Resp) {
+					if (item.callback)
+						item.callback(Resp);
+					kardiacrm.dispatch_queue[dclass].active_cnt--;
+					kardiacrm.dispatch(dclass);
+					if (kardiacrm.dispatch_queue[dclass].length == 0 && kardiacrm.dispatch_queue[dclass].active_cnt == 0 && item.completion) {
+						item.completion();
+					}
+				});
+				break;
+
+				case 'POST':
+				doPostHttpRequest('apps/kardia/api/' + item.url, item.data, false, kardiacrm.username, kardiacrm.password, function(Resp) {
+					if (item.callback)
+						item.callback(Resp);
+					kardiacrm.dispatch_queue[dclass].active_cnt--;
+					kardiacrm.dispatch(dclass);
+					if (kardiacrm.dispatch_queue[dclass].length == 0 && kardiacrm.dispatch_queue[dclass].active_cnt == 0 && item.completion) {
+						item.completion();
+					}
+				});
+				break;
+
+				case 'PATCH':
+				doPatchHttpRequest('apps/kardia/api/' + item.url, item.data, false, kardiacrm.username, kardiacrm.password, function(Resp) {
+					if (item.callback)
+						item.callback(Resp);
+					kardiacrm.dispatch_queue[dclass].active_cnt--;
+					kardiacrm.dispatch(dclass);
+					if (kardiacrm.dispatch_queue[dclass].length == 0 && kardiacrm.dispatch_queue[dclass].active_cnt == 0 && item.completion) {
+						item.completion();
+					}
+				});
+				break;
+
+				case 'DELETE':
+				doDeleteHttpRequest('apps/kardia/api/' + item.url, false, kardiacrm.username, kardiacrm.password, function(Resp) {
+					if (item.callback)
+						item.callback(Resp);
+					kardiacrm.dispatch_queue[dclass].active_cnt--;
+					kardiacrm.dispatch(dclass);
+					if (kardiacrm.dispatch_queue[dclass].length == 0 && kardiacrm.dispatch_queue[dclass].active_cnt == 0 && item.completion) {
+						item.completion();
+					}
+				});
+			}
 		}
 	},
 
@@ -201,14 +255,47 @@ var kardiacrm = {
 	// dispatch class (dclass), and the queue is about to go quiescent.  The callback
 	// function is called when the HTTP REST request returns.
 	//
-	request: function(url, dclass, completion, callback) {
+	requestGet: function(url, dclass, completion, callback) {
 		if (kardiacrm.dispatch_queue[dclass] === undefined) {
 			kardiacrm.dispatch_queue[dclass] = [];
 			kardiacrm.dispatch_queue[dclass].active_cnt = 0;
 		}
-		kardiacrm.dispatch_queue[dclass].push({url:url, callback:callback, completion:completion});
+		kardiacrm.dispatch_queue[dclass].push({url:url, callback:callback, completion:completion, req:'GET'});
 		kardiacrm.dispatch(dclass);
 	},
+	requestPost: function(url, data, dclass, completion, callback) {
+		if (kardiacrm.dispatch_queue[dclass] === undefined) {
+			kardiacrm.dispatch_queue[dclass] = [];
+			kardiacrm.dispatch_queue[dclass].active_cnt = 0;
+		}
+		kardiacrm.dispatch_queue[dclass].push({url:url, callback:callback, completion:completion, data:data, req:'POST'});
+		kardiacrm.dispatch(dclass);
+	},
+	requestPatch: function(url, data, dclass, completion, callback) {
+		if (kardiacrm.dispatch_queue[dclass] === undefined) {
+			kardiacrm.dispatch_queue[dclass] = [];
+			kardiacrm.dispatch_queue[dclass].active_cnt = 0;
+		}
+		kardiacrm.dispatch_queue[dclass].push({url:url, callback:callback, completion:completion, data:data, req:'PATCH'});
+		kardiacrm.dispatch(dclass);
+	},
+	requestDelete: function(url, dclass, completion, callback) {
+		if (kardiacrm.dispatch_queue[dclass] === undefined) {
+			kardiacrm.dispatch_queue[dclass] = [];
+			kardiacrm.dispatch_queue[dclass].active_cnt = 0;
+		}
+		kardiacrm.dispatch_queue[dclass].push({url:url, callback:callback, completion:completion, req:'DELETE'});
+		kardiacrm.dispatch(dclass);
+	},
+
+	// Determine if request are pending
+	isPending: function(dclass) {
+		if (kardiacrm.dispatch_queue[dclass] === undefined) {
+			kardiacrm.dispatch_queue[dclass] = [];
+			kardiacrm.dispatch_queue[dclass].active_cnt = 0;
+		}
+		return kardiacrm.dispatch_queue[dclass].length > 0 || kardiacrm.dispatch_queue[dclass].active_cnt > 0;
+	}
 };
 
 if (kardiaTab) {
@@ -249,6 +336,10 @@ function find_item(arr, prop, value) {
 	    return arr[k];
 	}
     }
+}
+
+function clone_obj(obj) {
+	return kardiacrm.jQuery.extend(true, {}, obj);
 }
 
 function remove_atid(arr) {
@@ -390,7 +481,7 @@ window.addEventListener("load", function() {
     if (window.gMessageListeners) {
 	    gMessageListeners.push({
 		    onEndHeaders: function () {},
-		    onStartHeaders: function() {if (kardiacrm.logged_in) {findEmails();}}
+		    onStartHeaders: function() {if (kardiacrm.logged_in) {findEmails(gFolderDisplay.selectedMessages, false);}}
 		    });
     }
 
@@ -405,16 +496,28 @@ window.addEventListener("close", function() {
 	kardiacrm.password = "";
 }, false);
 
-window.addEventListener("click", function() {if (kardiacrm.logged_in) {findEmails();}}, false);
+window.addEventListener("click", function() {if (kardiacrm.logged_in) {findEmails(gFolderDisplay.selectedMessages, false);}}, false);
 
-function findEmails() {
+function findEmails(selected, force) {
+
+	// This routine isn't reentrant.
+	if (kardiacrm.find_emails_busy) {
+		return;
+	}
+
+	kardiacrm.find_emails_busy = true;
+	kardiacrm.partners_loaded = false;
+	kardiacrm.partner_data_loaded = false;
+	
 	// if 0 or > 1 email selected, don't search Kardia
-	if (gFolderDisplay.selectedCount < 1 && numSelected >= 1) {   // TumblerQ: Logic doesn't match comment. This intended?
+	//if (gFolderDisplay.selectedCount < 1 && numSelected >= 1) {   // TumblerQ: Logic doesn't match comment. This intended?
+	if (selected.length < 1 && numSelected >= 1) {   // TumblerQ: Logic doesn't match comment. This intended?
 		// clear all partner info
 		kardiacrm.selected_partner = 0;
 		emailAddresses = new Array();
 		names = new Array();
 		ids = new Array();
+		emailIds = [];
 		addresses = new Array();
 		phoneNumbers = new Array();
 		allEmailAddresses = new Array();
@@ -424,6 +527,7 @@ function findEmails() {
 		profilePhotos = [];
 		todos = new Array();
 		notes = new Array();
+		autorecord = new Array();
 		collaborators = new Array();
 		documents = new Array();
 		tags = new Array();
@@ -436,9 +540,10 @@ function findEmails() {
 		// show a blank Kardia pane
 		reload(true);
 	}
-	
+
 	// if one or more emails are selected 
-	if (gFolderDisplay.selectedCount >= 1 && !headersMatch(selectedMessages, gFolderDisplay.selectedMessages)) {
+	//if (gFolderDisplay.selectedCount >= 1 && !headersMatch(selectedMessages, gFolderDisplay.selectedMessages)) {
+	if (selected.length >= 1 && (!headersMatch(selectedMessages, selected) || force)) {
 		// select the 0th partner and generate a new list of partners
 		kardiacrm.selected_partner = 0;
 			
@@ -449,11 +554,11 @@ function findEmails() {
 		var ccAddresses = {};
 		var bccAddresses = {};
 		var allAddresses = new Array();
-		for (var i=0; i<gFolderDisplay.selectedMessages.length; i++) {
-			parser.parseHeadersWithArray(gFolderDisplay.selectedMessages[i].author, senderAddress, {}, {});
-			parser.parseHeadersWithArray(gFolderDisplay.selectedMessages[i].recipients, recipientAddresses, {}, {});
-			parser.parseHeadersWithArray(gFolderDisplay.selectedMessages[i].ccList, ccAddresses, {}, {});
-			parser.parseHeadersWithArray(gFolderDisplay.selectedMessages[i].bccList, bccAddresses, {}, {});
+		for (var i=0; i<selected.length; i++) {
+			parser.parseHeadersWithArray(selected[i].author, senderAddress, {}, {});
+			parser.parseHeadersWithArray(selected[i].recipients, recipientAddresses, {}, {});
+			parser.parseHeadersWithArray(selected[i].ccList, ccAddresses, {}, {});
+			parser.parseHeadersWithArray(selected[i].bccList, bccAddresses, {}, {});
 							
 			// combine list of addresses
 			allAddresses = allAddresses.concat(senderAddress.value);
@@ -477,6 +582,7 @@ function findEmails() {
 		emailAddresses = addressArray;
 		names = new Array(emailAddresses.length);
 		ids = new Array(emailAddresses.length);
+		emailIds = new Array(emailAddresses.length);
 		addresses = new Array(emailAddresses.length);
 		phoneNumbers = new Array(emailAddresses.length);
 		allEmailAddresses = new Array(emailAddresses.length);
@@ -486,6 +592,7 @@ function findEmails() {
 		profilePhotos = new Array(emailAddresses.length);
 		todos = new Array(emailAddresses.length);
 		notes = new Array(emailAddresses.length);
+		autorecord = new Array(emailAddresses.length);
 		collaborators = new Array(emailAddresses.length);
 		documents = new Array(emailAddresses.length);
 		tags = new Array(emailAddresses.length);
@@ -501,6 +608,7 @@ function findEmails() {
 				emailAddresses.splice(i,1);
 				names.splice(i,1);
 				ids.splice(i,1);
+				emailIds.splice(i,1);
 				addresses.splice(i,1);
 				phoneNumbers.splice(i,1);
 				allEmailAddresses.splice(i,1);
@@ -510,6 +618,7 @@ function findEmails() {
 				profilePhotos.splice(i,1);
 				todos.splice(i,1);
 				notes.splice(i,1);
+				autorecord.splice(i,1);
 				collaborators.splice(i,1);
 				documents.splice(i,1);
 				tags.splice(i,1);
@@ -525,13 +634,24 @@ function findEmails() {
 		clearKardiaButton();
 
 		// save headers
-		selectedMessages = gFolderDisplay.selectedMessages;
+		selectedMessages = selected;
 		
 		// get data from Kardia
 		findUser(0);
-	}	
+	}
+	else {
+	      // Update newly opened message window
+	      kardiacrm.partners_loaded = true;
+	      kardiacrm.partner_data_loaded = true;
+	      if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
+		    kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
+	      }
+	      kardiacrm.find_emails_busy = false;
+	}
+               
 	// save number of emails selected so we can see if the number of emails selected has changed later
-	numSelected = gFolderDisplay.selectedCount;	
+	numSelected = selected.length;
+
 }
 
 // do email header lists match?
@@ -547,6 +667,38 @@ function headersMatch(first, second) {
 		}
 	}
 	return true;
+}
+
+// builds recent activity data
+function appendActivity(container, activity_list) {
+	container.empty();
+	for (var i=0;i<activity_list.length && i<3;i++) {
+		var activity = activity_list[i];
+		if (activity) {
+			var info_vbox = 
+				kardiacrm.jQuery('<vbox>', {})
+					.append(kardiacrm.jQuery('<label>', {flex: '1', class:'act-date'})
+						.text(datetimeToString(activity['activity_date']))
+						.click(function(event) {
+							kardiacrm.jQuery(event.target).parent().find('.act-info-2').css({ display:'block' });
+						})
+					)
+				;
+			var para = activity['info'].split('\n');
+			for(var p=0; p<para.length; p++) {
+				info_vbox.append(kardiacrm.jQuery('<label>', {class:(p==0)?'act-info':'act-info-2'})
+					.text(para[p])
+					.click(function(event) {
+						kardiacrm.jQuery(event.target).parent().find('.act-info-2').css({ display:'block' });
+					})
+				)
+			}
+			container
+				.append(kardiacrm.jQuery('<hbox>', {class:'hover-box'})
+					.append(info_vbox)
+				);
+		}
+	}
 }
 
 // reloads Kardia pane
@@ -607,7 +759,7 @@ function reload(isDefault) {
 			}
 			
 			// move all other items around based on how we sorted names
-			var arraysToMove = [mainWindow.emailAddresses, mainWindow.ids, mainWindow.addresses, mainWindow.phoneNumbers, mainWindow.allEmailAddresses, mainWindow.websites, mainWindow.engagementTracks, mainWindow.recentActivity, mainWindow.profilePhotos, mainWindow.todos, mainWindow.notes, mainWindow.collaborators, mainWindow.documents, mainWindow.tags, mainWindow.data, mainWindow.dataGroups, mainWindow.gifts, mainWindow.funds, mainWindow.types];
+			var arraysToMove = [mainWindow.emailAddresses, mainWindow.ids, mainWindow.emailIds, mainWindow.addresses, mainWindow.phoneNumbers, mainWindow.allEmailAddresses, mainWindow.websites, mainWindow.engagementTracks, mainWindow.recentActivity, mainWindow.profilePhotos, mainWindow.todos, mainWindow.notes, mainWindow.autorecord, mainWindow.collaborators, mainWindow.documents, mainWindow.tags, mainWindow.data, mainWindow.dataGroups, mainWindow.gifts, mainWindow.funds, mainWindow.types];
 			
 			for (var j=0;j<arraysToMove.length;j++) {
 				firstItem = arraysToMove[j][firstIndex];
@@ -791,37 +943,39 @@ function reload(isDefault) {
 		// display engagement tracks
 		var tracks = "";
 		context.find('#engagement-tracks-inner-box').empty();
-		for (var i=0;i<mainWindow.engagementTracks[kardiacrm.selected_partner].length;i+=3) {
-			// Taking out edit button for now. #Muted
-			//tracks += '<hbox class="engagement-track-color-box" style="background-color:' + htmlEscape(mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.engagementTracks[kardiacrm.selected_partner][i])]) + '"><vbox flex="1"><label class="bold-text">' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i]) + '</label><label>Engagement Step: ' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+1]) + '</label></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editTrack(\'' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+2]) + '\',\'' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+1]) + '\')"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
-			var track = find_item(kardiacrm.data.trackList, 'track_name', mainWindow.engagementTracks[kardiacrm.selected_partner][i]);
-			if (track) {
-				context
-					.find('#engagement-tracks-inner-box')
-					.append(kardiacrm.jQuery('<hbox>', {class:'engagement-track-color-box', id:'eng-trk-color-box-' + i})
-						.css({
-							'background-color': track.track_color,
-						})
-						.append(kardiacrm.jQuery('<vbox>', {flex:'1'})
-							.append(kardiacrm.jQuery('<label>', {class:'bold-text'})
-								.text(track.track_name)
+		if (mainWindow.engagementTracks[kardiacrm.selected_partner]) {
+			for (var i=0;i<mainWindow.engagementTracks[kardiacrm.selected_partner].length;i+=3) {
+				// Taking out edit button for now. #Muted
+				//tracks += '<hbox class="engagement-track-color-box" style="background-color:' + htmlEscape(mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.engagementTracks[kardiacrm.selected_partner][i])]) + '"><vbox flex="1"><label class="bold-text">' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i]) + '</label><label>Engagement Step: ' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+1]) + '</label></vbox><vbox><spacer height="3px"/><image class="edit-image" onclick="editTrack(\'' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+2]) + '\',\'' + htmlEscape(mainWindow.engagementTracks[kardiacrm.selected_partner][i+1]) + '\')"/><spacer flex="1"/></vbox><spacer width="3px"/></hbox>';
+				var track = find_item(kardiacrm.data.trackList, 'track_name', mainWindow.engagementTracks[kardiacrm.selected_partner][i]);
+				if (track) {
+					context
+						.find('#engagement-tracks-inner-box')
+						.append(kardiacrm.jQuery('<hbox>', {class:'engagement-track-color-box', id:'eng-trk-color-box-' + i})
+							.css({
+								'background-color': track.track_color,
+							})
+							.append(kardiacrm.jQuery('<vbox>', {flex:'1'})
+								.append(kardiacrm.jQuery('<label>', {class:'bold-text'})
+									.text(track.track_name)
+								)
+								.append(kardiacrm.jQuery('<label>', {})
+									.text('Engagement Step: ' + mainWindow.engagementTracks[kardiacrm.selected_partner][i+1])
+								)
 							)
-							.append(kardiacrm.jQuery('<label>', {})
-								.text('Engagement Step: ' + mainWindow.engagementTracks[kardiacrm.selected_partner][i+1])
+							.append(kardiacrm.jQuery('<vbox>', {})
+								.append(kardiacrm.jQuery('<spacer>', {height:'3px'}))
+								.append(kardiacrm.jQuery('<spacer>', {flex:'1'}))
 							)
-						)
-						.append(kardiacrm.jQuery('<vbox>', {})
-							.append(kardiacrm.jQuery('<spacer>', {height:'3px'}))
-							.append(kardiacrm.jQuery('<spacer>', {flex:'1'}))
-						)
-						.append(kardiacrm.jQuery('<spacer>', {width:'3px'}))
-					);
+							.append(kardiacrm.jQuery('<spacer>', {width:'3px'}))
+						);
 
-				// Try to intelligently set text (foreground) color
-				var bgcolor = context.find('#eng-trk-color-box-' + i).css('background-color').match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
-				if (bgcolor) {
-					var lum = parseInt(bgcolor[1]) + parseInt(bgcolor[2]) + parseInt(bgcolor[3]);
-					context.find('#eng-trk-color-box-' + i).css({'color': (lum>=384)?'black':'white'});
+					// Try to intelligently set text (foreground) color
+					var bgcolor = context.find('#eng-trk-color-box-' + i).css('background-color').match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
+					if (bgcolor) {
+						var lum = parseInt(bgcolor[1]) + parseInt(bgcolor[2]) + parseInt(bgcolor[3]);
+						context.find('#eng-trk-color-box-' + i).css({'color': (lum>=384)?'black':'white'});
+					}
 				}
 			}
 		}
@@ -830,11 +984,7 @@ function reload(isDefault) {
 		//tracks += '<hbox><spacer flex="1"/><button class="new-button" label="New Track..." oncommand="newTrack()" tooltiptext="Add engagement track to this partner"/></hbox>';
 		
 		// display recent activity
-		var recent = "";
-		for (var i=0;i<mainWindow.recentActivity[kardiacrm.selected_partner].length;i+=2) {
-			recent += '<hbox class="hover-box"><label width="100" flex="1">' + htmlEscape(mainWindow.recentActivity[kardiacrm.selected_partner][i+1]) + '</label></hbox>';
-		}
-		mainWindow.document.getElementById("recent-activity-inner-box").innerHTML = recent;	
+		appendActivity(context.find('#recent-activity-inner-box'), mainWindow.recentActivity[kardiacrm.selected_partner]);
 
 		// display photo
 		var photo = "";
@@ -1213,16 +1363,16 @@ function printPartner(whichPartner) {
 	for (var i=0;i<mainWindow.engagementTracks[whichPartner].length;i+=3) {
 		trackPrintString += '</br><span style="padding:2px; background-color:' + mainWindow.trackColors[mainWindow.trackList.indexOf(mainWindow.engagementTracks[whichPartner][i])] + '"><b>' + mainWindow.engagementTracks[whichPartner][i] + '</b>&nbsp;&nbsp;Engagement Step: ' + mainWindow.engagementTracks[whichPartner][i+1] + '</span>';
 	}	
-	for (var i=0;i<mainWindow.recentActivity[whichPartner].length;i+=2) {
-		if (mainWindow.recentActivity[whichPartner][i] == "e") {
-			activityPrintString += '</br>&#x2709&nbsp;' + mainWindow.recentActivity[whichPartner][i+1];
+	for (var i=0;i<mainWindow.recentActivity[whichPartner].length;i++) {
+		if (mainWindow.recentActivity[whichPartner][i]['activity_type'] == "e") {
+			activityPrintString += '</br>&#x2709&nbsp;' + mainWindow.recentActivity[whichPartner][i]['activity_date'] + ': ' + mainWindow.recentActivity[whichPartner][i]['info'];
 		}
 	}	
 	for (var i=1;i<mainWindow.todos[whichPartner].length;i+=2) {
 		todosPrintString += "</br>&#x2610  " + mainWindow.todos[whichPartner][i];
 	}
-	for (var i=0;i<mainWindow.notes[whichPartner].length;i+=3) {
-		notesPrintString += '</br>' + mainWindow.notes[whichPartner][i] + '&nbsp;&nbsp;(' + mainWindow.notes[whichPartner][i+1]+ ")";
+	for (var i=0;i<mainWindow.notes[whichPartner].length;i++) {
+		notesPrintString += '</br>' + mainWindow.notes[whichPartner].text + '&nbsp;&nbsp;(' + mainWindow.notes[whichPartner].date + ")";
 	}
 	for (var i=0;i<mainWindow.collaborators[whichPartner].length;i+=3) {
 		collaboratorsPrintString += '</br>' + mainWindow.collaborators[whichPartner][i+2];
@@ -1321,12 +1471,14 @@ function findUser(index) {
                // if the first partner found isn't already in the list, add them to the list
                if (ids.indexOf(emailResp[keys[1]]['partner_id']) < 0) {
                   ids[index] = emailResp[keys[1]]['partner_id'];
+		  emailIds[index] = emailResp[keys[1]]['name'];
                }
                else {
                   // remove this email address because it's a duplicate
                   emailAddresses.splice(index,1);
                   names.splice(index,1);
                   ids.splice(index,1);
+		  emailIds.splice(index,1);
                   addresses.splice(index,1);
                   phoneNumbers.splice(index,1);
                   allEmailAddresses.splice(index,1);
@@ -1336,6 +1488,7 @@ function findUser(index) {
 		  profilePhotos.splice(index,1);
                   todos.splice(index,1);
                   notes.splice(index,1);
+                  autorecord.splice(index,1);
                   collaborators.splice(index,1);
                   documents.splice(index,1);
                   tags.splice(index,1);
@@ -1354,6 +1507,7 @@ function findUser(index) {
                      emailAddresses.splice(index+1,0,emailAddress);
                      names.splice(index+1,0,"");
                      ids.splice(index+1,0,emailResp[keys[i]]['partner_id']);
+		     emailIds.splice(index+1,0,emailResp[keys[i]]['name']);
                      addresses.splice(index+1,0,[]);
                      phoneNumbers.splice(index+1,0,[]);
                      allEmailAddresses.splice(index+1,0,[]);
@@ -1363,6 +1517,7 @@ function findUser(index) {
 		     profilePhotos.splice(index+1,0,[]);
                      todos.splice(index+1,0,[]);
                      notes.splice(index+1,0,[]);
+                     autorecord.splice(index+1,0,[]);
                      collaborators.splice(index+1,0,[]);
                      documents.splice(index+1,0,[]);
                      tags.splice(index+1,0,[]);
@@ -1381,8 +1536,15 @@ function findUser(index) {
                   findUser(index+1+numExtra);
                }
                else {
+		  kardiacrm.partners_loaded = true;
+
                   // add little Kardia icon in email
                   addKardiaButton(mainWindow);
+
+		  // And newly opened message window
+		  if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
+			kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
+		  }
                
                   // start getting the other information about all the partners we found
                   getOtherInfo(0, true);
@@ -1393,6 +1555,7 @@ function findUser(index) {
                emailAddresses.splice(index,1);
                names.splice(index,1);
                ids.splice(index,1);
+	       emailIds.splice(index,1);
                addresses.splice(index,1);
                phoneNumbers.splice(index,1);
                allEmailAddresses.splice(index,1);
@@ -1402,6 +1565,7 @@ function findUser(index) {
 	       profilePhotos.splice(index,1);
                todos.splice(index,1);
                notes.splice(index,1);
+               autorecord.splice(index,1);
                collaborators.splice(index,1);
                documents.splice(index,1);		
                tags.splice(index,1);	
@@ -1416,22 +1580,42 @@ function findUser(index) {
                   findUser(index);
                }
                else {
+		  kardiacrm.partners_loaded = true;
+
                   // start getting the other information about all the partners we found
                   if (emailAddresses.length > 0) {
                      // add little Kardia icon in email
                      addKardiaButton(mainWindow);
                      
+		     // And newly opened message window
+		     if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
+			   kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
+		     }
+               
                      getOtherInfo(0, true);
                   }
                   else {
+		     // No email addresses to look up.
+		     kardiacrm.partner_data_loaded = true;
+		     if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
+			kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
+		     }
+		     kardiacrm.find_emails_busy = false;
                      reload(false);
                   }
                }
             }
          };
          
-         // do nothing on error
-         emailRequest.onerror = function() {};
+         // on error...
+         emailRequest.onerror = function() {
+		kardiacrm.partners_loaded = true;
+		kardiacrm.partner_data_loaded = true;
+		if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
+			kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
+		}
+		kardiacrm.find_emails_busy = false;
+	 };
          
          // send the HTTP request
          emailRequest.open("GET", emailUrl, true, kardiacrm.username, kardiacrm.password);
@@ -1444,13 +1628,24 @@ function getOtherInfo(start, isDefault) {
 	// variable to store whether user is valid
 	var validUser = true;
 
-	var complete = function() { reload(isDefault); }
+	// This completion func is called once all queued and in-progress REST
+	// requests have completed.  It is NOT called for each REST request
+	// completion, just once when the queue is going idle.
+	//
+	var complete = function() {
+		kardiacrm.partner_data_loaded = true;
+		if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
+			kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
+		}
+		kardiacrm.find_emails_busy = false;
+		reload(isDefault);
+	}
 
 	// Loop through the partners
 	for(var idx=start; idx<mainWindow.emailAddresses.length; idx++) {
 		let index = idx;
 		// get partner name
-		kardiacrm.request("partner/Partners/" + mainWindow.ids[index] + "?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "mlist", complete, function (nameResp) {
+		kardiacrm.requestGet("partner/Partners/" + mainWindow.ids[index] + "?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "mlist", complete, function (nameResp) {
 			// If not 404
 			if (nameResp != null && nameResp['cx__element']) {
 				// if the partner is not valid, make them blank/invalid
@@ -1530,10 +1725,11 @@ function getOtherInfo(start, isDefault) {
 					}
 				
 					// get engagement tracks information
-					kardiacrm.request("crm/Partners/" + mainWindow.ids[index] + "?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "mlist", complete, function(Resp) {
+					kardiacrm.requestGet("crm/Partners/" + mainWindow.ids[index] + "?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "mlist", complete, function(Resp) {
 						var trackResp = jsoncoll(jsondir(Resp, 'Tracks'));
 						var documentResp = jsoncoll(jsondir(Resp, 'Documents'));
 						var noteResp = jsoncoll(jsondir(Resp, 'ContactHistory'));
+						var arResp = jsoncoll(jsondir(Resp, 'ContactAutorecord'));
 						var collaboratorResp = jsoncoll(jsondir(Resp, 'Collaborators'));
 						var todosResp = jsoncoll(jsondir(Resp, 'Todos'));
 						var tagResp = jsoncoll(jsondir(Resp, 'Tags'));
@@ -1584,7 +1780,7 @@ function getOtherInfo(start, isDefault) {
 							mainWindow.documents[index] = documentArray;
 						}
 
-						// If not 404
+						// Notes and contact history items for this person
 						if (noteResp != null) {
 							// get all the keys from the JSON file
 							var keys = [];
@@ -1594,17 +1790,30 @@ function getOtherInfo(start, isDefault) {
 							var noteArray = new Array();
 							for (var i=0;i<keys.length;i++) {
 								if (keys[i] != "@id") {
-									var note = noteResp[keys[i]]['cx__element'];
-									noteArray.push(note['subject'] + "- " + note['notes']);
-									noteArray.push(datetimeToString(note['date_modified']));
-									noteArray.push(note['contact_history_id']);
+									var note = clone_obj(noteResp[keys[i]]['cx__element']);
+									note.text = note.subject + " - " + note.notes;
+									note.date = datetimeToString(note.date_modified);
+									noteArray.push(note);
+									/*noteArray.push(note['contact_history_id']);*/
 								}
 							}
 							// store temporary array to permanent array
 							mainWindow.notes[index] = noteArray;
 						}
 
-						// If not 404
+						// Contact Autorecord data
+						if (arResp != null) {
+							var arArray = [];
+							for (var k in arResp) {
+								// the key "@id" is for the URL for the collection, rather than for element data.
+								if (k != "@id") {
+									arArray.push(clone_obj(arResp[k]['cx__element']));
+								}
+							}
+							mainWindow.autorecord[index] = arArray;
+						}
+
+						// Collaborators working with this person
 						if (collaboratorResp != null) {
 							// get all the keys from the JSON file
 							var keys = [];
@@ -1710,8 +1919,7 @@ function getOtherInfo(start, isDefault) {
 							for (var i=0; (i<keys.length && tempArray.length<6); i++) {
 								if (keys[i] != "@id") {
 									var activity = activityResp[keys[i]]['cx__element'];
-									tempArray.push(activity['activity_type']);
-									tempArray.push(datetimeToString(activity['activity_date']) + ": " + activity['info']);
+									tempArray.push(activity);
 								}
 							}
 							mainWindow.recentActivity[index] = tempArray;
@@ -1722,7 +1930,7 @@ function getOtherInfo(start, isDefault) {
 					});
 									  
 					// check donor status
-					kardiacrm.request("donor/" + mainWindow.ids[index] + "/?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "mlist", complete, function(Resp) {
+					kardiacrm.requestGet("donor/" + mainWindow.ids[index] + "/?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "mlist", complete, function(Resp) {
 						if (Resp != null) {
 							var giftResp = jsoncoll(jsondir(Resp, 'Gifts'));
 							var fundResp = jsoncoll(jsondir(Resp, 'Funds'));
@@ -1820,7 +2028,7 @@ function getCollaborateeInfo() {
 		let index = idx;
 
 		// get the person's engagement tracks and other CRM data
-		kardiacrm.request("crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tracks?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic", "ktab", complete, function(trackResp) {
+		kardiacrm.requestGet("crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tracks?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic", "ktab", complete, function(trackResp) {
 			// If not 404
 			if (trackResp != null) {
 				trackResp = trackResp['cx__collection'];
@@ -1855,7 +2063,7 @@ function getCollaborateeInfo() {
 			}
 		});
 
-		kardiacrm.request("crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tags?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic", "ktab", complete, function(tagResp) {
+		kardiacrm.requestGet("crm/Partners/" + mainWindow.collaborateeIds[index] + "/Tags?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic", "ktab", complete, function(tagResp) {
 			// If not 404
 			if (tagResp != null) {
 				tagResp = tagResp['cx__collection'];
@@ -1928,7 +2136,7 @@ function getCollaborateeInfo() {
                                        
 				mainWindow.collaborateeGifts[index] = [];
 				mainWindow.collaborateeFunds[index] = [];
-				kardiacrm.request("donor/" + mainWindow.collaborateeIds[index] + "/?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "ktab", complete, function(Resp) {
+				kardiacrm.requestGet("donor/" + mainWindow.collaborateeIds[index] + "/?cx__mode=rest&cx__res_type=both&cx__res_format=attrs&cx__res_attrs=basic&cx__res_levels=3", "ktab", complete, function(Resp) {
 					// is the partner a donor?
 					if (Resp) {
 						var giftResp = jsoncoll(jsondir(Resp, 'Gifts'));
@@ -2300,6 +2508,7 @@ function addCollaborator(collaboratorId) {
          mainWindow.emailAddresses.push("");
          mainWindow.names.push("");
          mainWindow.ids.push(collaboratorId);
+	 mainWindow.emailIds.push("");
          mainWindow.addresses.push([]);
          mainWindow.phoneNumbers.push([]);
          mainWindow.allEmailAddresses.push([]);
@@ -2309,6 +2518,7 @@ function addCollaborator(collaboratorId) {
 	 mainWindow.profilePhotos.push([]);
          mainWindow.todos.push([]);
          mainWindow.notes.push([]);
+         mainWindow.autorecord.push([]);
          mainWindow.collaborators.push([]);
          mainWindow.documents.push([]);
          mainWindow.tags.push([]);
@@ -2603,7 +2813,7 @@ function editContactInfo(type, id) {
 	if (returnValues.setInactive) status_code = "O";
 			  
 	if (returnValues.type == "A" && kardiacrm.logged_in) {
-		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Addresses/' + mainWindow.ids[kardiacrm.selected_partner] + "|" + id + "|0",'{"location_type_code":"' + returnValues.locationId + '","address_1":"' + returnValues.info.address1 + '","address_2":"' + returnValues.info.address2 + '","address_3":"' + returnValues.info.address3 + '","city":"' + returnValues.info.city + '","state_province":"' + returnValues.info.state + '","country_code":"' + returnValues.info.country + '","postal_code":"' + returnValues.info.zip + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Addresses/' + mainWindow.ids[kardiacrm.selected_partner] + "|" + id + "|0",'{"location_type_code":"' + returnValues.locationId + '","address_1":"' + returnValues.info.address1 + '","address_2":"' + returnValues.info.address2 + '","address_3":"' + returnValues.info.address3 + '","city":"' + returnValues.info.city + '","state_province":"' + returnValues.info.state + '","country_code":"' + returnValues.info.country + '","postal_code":"' + returnValues.info.zip + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function(patchResp) { if (patchResp) {
 			
 			var addressLocation = mainWindow.addresses[kardiacrm.selected_partner].indexOf(parseInt(id));
 			if (returnValues.setInactive) {
@@ -2646,10 +2856,10 @@ function editContactInfo(type, id) {
                   }
 				}, false, "", "");  
 			}
-		});
+		}});
 	}	
 	else if (returnValues.type == "P" && kardiacrm.logged_in) {
-		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactInfo/' + mainWindow.ids[kardiacrm.selected_partner] + "|" + id,'{"phone_area_city":"' + returnValues.info.areaCode + '","contact_data":"' + returnValues.info.number + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactInfo/' + mainWindow.ids[kardiacrm.selected_partner] + "|" + id,'{"phone_area_city":"' + returnValues.info.areaCode + '","contact_data":"' + returnValues.info.number + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function(patchResp) { if (patchResp) {
 			
 			var phoneLocation = mainWindow.phoneNumbers[kardiacrm.selected_partner].indexOf(parseInt(id));
 			if (returnValues.setInactive) {
@@ -2669,10 +2879,10 @@ function editContactInfo(type, id) {
          if (kardiaTab != null) {
             kardiaTab.reloadFilters(false);
          }
-		});
+		}});
 	}	
 	else if ((returnValues.type == "E" || returnValues.type == "W") && kardiacrm.logged_in) {
-		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactInfo/' + mainWindow.ids[kardiacrm.selected_partner] + "|" + id,'{"contact_data":"' + returnValues.info + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPatchHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactInfo/' + mainWindow.ids[kardiacrm.selected_partner] + "|" + id,'{"contact_data":"' + returnValues.info + '","record_status_code":"' + status_code + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function(patchResp) { if (patchResp) {
 			
 			if (type == "E") {
 				var contactLocation = mainWindow.allEmailAddresses[kardiacrm.selected_partner].indexOf(parseInt(id));
@@ -2705,7 +2915,7 @@ function editContactInfo(type, id) {
          if (kardiaTab != null) {
             kardiaTab.reloadFilters(false);
          }
-		});
+		}});
 	}
 }
 
@@ -2723,7 +2933,7 @@ function newContactInfo() {
 
 	if (returnValues.type == "A" && kardiacrm.logged_in) {
 		// post the new address
-		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Addresses','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","p_location_type":"' + returnValues.locationId + '","p_address_1":"' + returnValues.info.address1 + '","p_address_2":"' + returnValues.info.address2 + '","p_address_3":"' + returnValues.info.address3 + '","p_city":"' + returnValues.info.city + '","p_state_province":"' + returnValues.info.state + '","p_country_code":"' + returnValues.info.country + '","p_postal_code":"' + returnValues.info.zip + '","p_revision_id":0,"p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Addresses','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","p_location_type":"' + returnValues.locationId + '","p_address_1":"' + returnValues.info.address1 + '","p_address_2":"' + returnValues.info.address2 + '","p_address_3":"' + returnValues.info.address3 + '","p_city":"' + returnValues.info.city + '","p_state_province":"' + returnValues.info.state + '","p_country_code":"' + returnValues.info.country + '","p_postal_code":"' + returnValues.info.zip + '","p_revision_id":0,"p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function(postResp) { if (postResp) {
 
 			doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[kardiacrm.selected_partner] + "/Addresses?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(contactResp) {
          // If not 404
@@ -2760,12 +2970,12 @@ function newContactInfo() {
                // 404, do nothing
             }
 			}, false, "", "");
-		});
+		}});
 	}
 
 	else if ((returnValues.type == "P" || returnValues.type == "C" || returnValues.type == "F") && kardiacrm.logged_in) {
 		// post the new contact info
-		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactInfo','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","p_contact_type":"' + returnValues.type + '","p_phone_area_city":"' + returnValues.info.areaCode + '","p_contact_data":"' + returnValues.info.number + '","p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactInfo','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","p_contact_type":"' + returnValues.type + '","p_phone_area_city":"' + returnValues.info.areaCode + '","p_contact_data":"' + returnValues.info.number + '","p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function(postResp) { if (postResp) {
 
 			doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[kardiacrm.selected_partner] + "/ContactInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(contactResp) {
          // If not 404
@@ -2802,12 +3012,12 @@ function newContactInfo() {
                // 404, do nothing
             }
 			}, false, "", "");				
-		});
+		}});
 	}
 
 	else if ((returnValues.type == "E" || returnValues.type == "W" || returnValues.type == "B") && kardiacrm.logged_in) {
 		// post the new contact info
-		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactInfo','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","p_contact_type":"' + returnValues.type + '","p_contact_data":"' + returnValues.info + '","p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/partner/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactInfo','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","p_contact_type":"' + returnValues.type + '","p_contact_data":"' + returnValues.info + '","p_record_status_code":"A","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function(postResp) { if (postResp) {
 	
 			doHttpRequest("apps/kardia/api/partner/Partners/" + mainWindow.ids[kardiacrm.selected_partner] + "/ContactInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(contactResp) {
          // If not 404
@@ -2850,7 +3060,7 @@ function newContactInfo() {
                // 404, do nothing
             }
 			}, false, "", "");
-		});
+		}});
 	}
 }
 
@@ -2896,7 +3106,7 @@ function editTrack(name,step) {
 
 		// add new step with the same id
 		var track = find_item(kardiacrm.data.trackList, "track_name", name);
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Tracks','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_engagement_id":' + parseInt(name.substring(name.lastIndexOf('-')+1,name.length)) + ',"e_track_id":' + parseInt(track.track_id) + ',"e_step_id":' + parseInt(returnValues.stepNum) + ',"e_is_archived":0,"e_completion_status":"i","e_desc":"","e_start_date":' + dateString + ',"e_started_by":"' + kardiacrm.username + '","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Tracks','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_engagement_id":' + parseInt(name.substring(name.lastIndexOf('-')+1,name.length)) + ',"e_track_id":' + parseInt(track.track_id) + ',"e_step_id":' + parseInt(returnValues.stepNum) + ',"e_is_archived":0,"e_completion_status":"i","e_desc":"","e_start_date":' + dateString + ',"e_started_by":"' + kardiacrm.username + '","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function(postResp) { if (postResp) {
 			
 		
 			var trackIndex = mainWindow.engagementTracks[kardiacrm.selected_partner].indexOf(name);
@@ -2912,7 +3122,7 @@ function editTrack(name,step) {
          if (kardiaTab != null) {
             kardiaTab.reloadFilters(false);
          }
-		});
+		}});
 	}
 }
 
@@ -2931,7 +3141,7 @@ function newTrack() {
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 
 		// post the new track
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Tracks','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_track_id":' + parseInt(returnValues.trackNum) + ',"e_step_id":' + parseInt(returnValues.stepNum) + ',"e_is_archived":0,"e_completion_status":"i","e_desc":"","e_start_date":' + dateString + ',"e_started_by":"' + kardiacrm.username + '","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Tracks','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_track_id":' + parseInt(returnValues.trackNum) + ',"e_step_id":' + parseInt(returnValues.stepNum) + ',"e_is_archived":0,"e_completion_status":"i","e_desc":"","e_start_date":' + dateString + ',"e_started_by":"' + kardiacrm.username + '","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function(postResp) { if (postResp) {
 
 			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[kardiacrm.selected_partner] + "/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(trackResp) {
          // If not 404
@@ -2976,7 +3186,7 @@ function newTrack() {
                // 404, do nothing
             }
 			}, false, "", "");
-		});
+		}});
 	}
 }
 
@@ -2992,15 +3202,18 @@ function editNote(text, key) {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 		
-		doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactHistory/' + key,'{"subject":"' + returnValues.title + '","notes":"' + returnValues.desc + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPatchHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactHistory/' + key,'{"subject":"' + returnValues.title + '","notes":"' + returnValues.desc + '","date_modified":' + dateString + ',"modified_by":"' + kardiacrm.username + '"}', false, "", "", function(patchResp) { if (patchResp) {
 			
-			var noteIndex = mainWindow.notes[kardiacrm.selected_partner].indexOf(parseInt(key))-2;
-			mainWindow.notes[kardiacrm.selected_partner][noteIndex] = returnValues.title + "- " + returnValues.desc;
+			//var noteIndex = mainWindow.notes[kardiacrm.selected_partner].indexOf(parseInt(key))-2;
+			var noteIndex = find_item(mainWindow.notes[kardiacrm.selected_partner], 'contact_history_id', parseInt(key));
+			mainWindow.notes[kardiacrm.selected_partner][noteIndex].subject = returnValues.title;
+			mainWindow.notes[kardiacrm.selected_partner][noteIndex].notes = returnValues.desc;
+			mainWindow.notes[kardiacrm.selected_partner][noteIndex].text = returnValues.title + ' - ' + returnValues.desc;
 						
 			// add recent activity and reload
 			//reloadActivity(mainWindow.ids[kardiacrm.selected_partner]);
 			reload(false);
-		});
+		}});
 	}
 }
 
@@ -3015,7 +3228,7 @@ function newNote(title, desc) {
 	if (returnValues.saveNote && (returnValues.title.trim() != "" || returnValues.desc.trim() != "") && kardiacrm.logged_in) {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactHistory','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_contact_history_type":' + returnValues.type + ',"e_subject":"' + returnValues.title + '","e_notes":"' + returnValues.desc + '","e_whom":"' + mainWindow.myId + '","e_contact_date":' + dateString + ',"s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/ContactHistory','{"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_contact_history_type":' + returnValues.type + ',"e_subject":"' + returnValues.title + '","e_notes":"' + returnValues.desc + '","e_whom":"' + mainWindow.myId + '","e_contact_date":' + dateString + ',"s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function(postResp) { if (postResp) {
 			
 			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[kardiacrm.selected_partner] + "/ContactHistory?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(noteResp) {
          // If not 404
@@ -3029,9 +3242,10 @@ function newNote(title, desc) {
                      // is this the note we're looking for?
                      if (noteDate.toString() == date.toString()) {
                         // add to notes array
-                        notes[kardiacrm.selected_partner].push(returnValues.title + "- " + returnValues.desc);
-                        notes[kardiacrm.selected_partner].push(date.toLocaleString());
-                        notes[kardiacrm.selected_partner].push(noteResp[k]['contact_history_id']);
+			notes[kardiacrm.selected_partner].push({subject:returnValues.title, notes:returnValues.desc, text:returnValues.title + ' - ' + returnValues.desc, date:date.toLocaleString(), contact_history_id: noteResp[k]['contact_history_id']});
+                        //notes[kardiacrm.selected_partner].push(returnValues.title + "- " + returnValues.desc);
+                        //notes[kardiacrm.selected_partner].push(date.toLocaleString());
+                        //notes[kardiacrm.selected_partner].push(noteResp[k]['contact_history_id']);
 
                         // add recent activity and reload
                         //reloadActivity(mainWindow.ids[kardiacrm.selected_partner])
@@ -3046,7 +3260,7 @@ function newNote(title, desc) {
                // 404, do nothing
             }
 			}, false, "", "");
-		});
+		}});
 	}
 }
 
@@ -3064,7 +3278,7 @@ function newCollaborator() {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 		
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Collaborators','{"e_collaborator":"' + returnValues.id + '","p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_collab_type_id":' + returnValues.type + ',"s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Collaborators','{"e_collaborator":"' + returnValues.id + '","p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_collab_type_id":' + returnValues.type + ',"s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function(postResp) { if (postResp) {
 			// get collaborator info
 			doHttpRequest("apps/kardia/api/crm/Partners/" + mainWindow.ids[kardiacrm.selected_partner] + "/Collaborators?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function(collabResp) {
          // If not 404
@@ -3083,7 +3297,7 @@ function newCollaborator() {
                // 404, do nothing
                }
 			}, false, "", "");
-		});
+		}});
 	}
 }
 
@@ -3099,7 +3313,7 @@ function newTag() {
 		var date = new Date();
 		var dateString = '{"year":' + date.getFullYear() + ',"month":' + (date.getMonth()+1) + ',"day":' + date.getDate() + ',"hour":' + date.getHours() + ',"minute":' + date.getMinutes() + ',"second":' + date.getSeconds() + '}';
 				
-		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Tags','{"e_tag_id":' + returnValues.tagId + ',"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_tag_strength":' + returnValues.magnitude.toFixed(2) + ',"e_tag_certainty":' + returnValues.certainty.toFixed(1) + ',"e_tag_volatility":"P","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function() {
+		doPostHttpRequest('apps/kardia/api/crm/Partners/' + mainWindow.ids[kardiacrm.selected_partner] + '/Tags','{"e_tag_id":' + returnValues.tagId + ',"p_partner_key":"' + mainWindow.ids[kardiacrm.selected_partner] + '","e_tag_strength":' + returnValues.magnitude.toFixed(2) + ',"e_tag_certainty":' + returnValues.certainty.toFixed(1) + ',"e_tag_volatility":"P","s_date_created":' + dateString + ',"s_created_by":"' + kardiacrm.username + '","s_date_modified":' + dateString + ',"s_modified_by":"' + kardiacrm.username + '"}', false, "", "", function(postResp) { if (postResp) {
 			mainWindow.tags[kardiacrm.selected_partner].push(returnValues.tag);
 			mainWindow.tags[kardiacrm.selected_partner].push(returnValues.magnitude);
 			mainWindow.tags[kardiacrm.selected_partner].push(returnValues.certainty);
@@ -3107,7 +3321,7 @@ function newTag() {
 			// add recent activity and reload
 			//reloadActivity(mainWindow.ids[kardiacrm.selected_partner])
 			reload(false);
-		});
+		}});
 	}
 }
 
@@ -3130,26 +3344,28 @@ function beginQuickFilter(email) {
 // find given username/password as staff in Kardia
 function findStaff(username, password, doAfter) {
 	doHttpRequest("apps/kardia/api/partner/Staff?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (staffResp) {
-      // If not 404
-      if (staffResp != null) {
-         // get all the keys from the JSON file
-         var keys = [];
-         for(var k in staffResp) keys.push(k);
+		// If not 404
+		if (staffResp != null) {
+			kardiacrm.data.staffList = staffResp;
+			remove_atid(kardiacrm.data.staffList);
+			// get all the keys from the JSON file
+			var keys = [];
+			for(var k in staffResp) keys.push(k);
          
-         // see if any of these contain our login
-         for (var i=0; i<keys.length; i++) {
-            if (keys[i] != "@id") {
-               // if so, save that id as myId
-               if (staffResp[keys[i]]["kardia_login"] == username) {
-                  myId = staffResp[keys[i]]["partner_id"];
-                  break;
-               }
-            }
-         }
-         doAfter();
-         } else {
-         // 404, do nothing
-         }
+			// see if any of these contain our login
+			for (var i=0; i<keys.length; i++) {
+				if (keys[i] != "@id") {
+					// if so, save that id as myId
+					if (staffResp[keys[i]]["kardia_login"] == username) {
+						myId = staffResp[keys[i]]["partner_id"];
+						break;
+					}
+				}
+			}
+			doAfter();
+		} else {
+			// 404, do nothing
+		}
 	}, true, username, password);
 	
 	reload(true);
@@ -3300,9 +3516,10 @@ function getMyInfo(username, password) {
 function getTrackTagStaff(username, password) {	
 	// set the fact that we are refreshing
 	kardiacrm.refreshing = true;
-   if (kardiaTab != null) {
-	   kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.gif";
-   }
+
+	if (kardiaTab != null) {
+		kardiaTab.document.getElementById("manual-refresh").image = "chrome://kardia/content/images/refresh.gif";
+	}
 										
 	// reset Kardia tab sorting
 	sortCollaborateesBy = "name";
@@ -3313,6 +3530,14 @@ function getTrackTagStaff(username, password) {
 	filterFunds = new Array();
 	giftFilterFunds = new Array();
 	giftFilterTypes = new Array();
+
+	// List of Todo/Task types.
+	kardiacrm.requestGet("crm_config/TodoTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", "meta", null, function (todoTypeResp) {
+		if (todoTypeResp) {
+			kardiacrm.data.todoTypeList = todoTypeResp;
+			remove_atid(kardiacrm.data.todoTypeList);
+		}
+	});
 	
 	// get list of engagement tracks and their colors
 	doHttpRequest("apps/kardia/api/crm_config/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (trackListResp) {
@@ -3357,6 +3582,8 @@ function getTrackTagStaff(username, password) {
 			   remove_atid(countryResp);
 			   kardiacrm.data.countries = countryResp;
 			   for(var k in countryResp) {
+				// FIXME hard-coded default country code here (arrgh).  Make this configurable
+				// or else derive from office address and make the office ID configurable.
 				if (countryResp[k].country_code == 'US') {
 				    kardiacrm.data.defaultCountry = kardiacrm.data.countries[k];
 				}
@@ -3571,9 +3798,9 @@ function reloadGifts() {
 
 // get authentication token for patch and post requests
 function getAuthToken(authenticate, username, password, doAfter) {
-	if (akey !== null && akey != "") {
+	if (kardiacrm.akey !== null && kardiacrm.akey != "") {
 		// already got token, don't get it again
-		doAfter();
+		doAfter(true);
 	}
 	else {
 		// get authentication token
@@ -3586,13 +3813,15 @@ function getAuthToken(authenticate, username, password, doAfter) {
 			if(httpRequest.readyState == 4 && httpRequest.status == 200) {
 				// parse the JSON returned from the request
 				var httpResp = JSON.parse(httpRequest.responseText);
-				akey = httpResp['akey'];
+				kardiacrm.akey = httpResp['akey'];
 				
 				// add keep-alive ping
-				window.setInterval(function() {
+				if (kardiacrm.ping_interval)
+					window.clearInterval(kardiacrm.ping_interval);
+				kardiacrm.ping_interval = window.setInterval(function() {
 					// ping server
 					var pingRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-					var pingUrl = server + "INTERNAL/ping?cx__akey=" + akey;
+					var pingUrl = server + "INTERNAL/ping?cx__akey=" + kardiacrm.akey;
 				
 					pingRequest.onreadystatechange = function(aEvent) {
 						// if the request went through and we got success status
@@ -3602,17 +3831,19 @@ function getAuthToken(authenticate, username, password, doAfter) {
 							if (resp.substring(resp.indexOf("TARGET")+7,resp.length-7) == "ERR") {
 								// key expired, get a new one
 								var newHttpRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-								var newHttpUrl = server + "?cx__mode=appinit&cx__appname=TBext";
-								var newHttpResp;	
+								var newHttpUrl = server + "?cx__mode=appinit&cx__appname=MozillaThunderbird";
+								var newHttpResp;
 								newHttpRequest.onreadystatechange  = function(aEvent) {
 									// if the request went through and we got success status
 									if(newHttpRequest.readyState == 4 && newHttpRequest.status == 200) {
 										// parse the JSON returned from the request
 										var newHttpResp = JSON.parse(newHttpRequest.responseText);
-										akey = newHttpResp['akey'];
+										kardiacrm.akey = newHttpResp['akey'];
 									}
 								}
-								newHttpRequest.onerror = function(aEvent) {};
+								newHttpRequest.onerror = function(aEvent) {
+									kardiacrm.akey = null;
+								};
 								newHttpRequest.open("GET", newHttpUrl, true);
 								newHttpRequest.send();						
 							}
@@ -3631,14 +3862,18 @@ function getAuthToken(authenticate, username, password, doAfter) {
 					
 				},httpResp['watchdogtimer']*500);
 	
-				doAfter();
+				doAfter(true);
 			}
-			else if (httpRequest2.readyState == 4 && httpRequest2.status != 200) {
+			else if (httpRequest.readyState == 4 && httpRequest.status != 200) {
 				// failed
+				doAfter(false);
 			}
 		};
+
 		// do nothing if the http request errors
-		httpRequest.onerror = function(aEvent) {};
+		httpRequest.onerror = function(aEvent) {
+			doAfter(false);
+		};
 		
 		// send http request; send username and password if our parameter says we should
 		if (authenticate) {
@@ -3656,84 +3891,141 @@ function getAuthToken(authenticate, username, password, doAfter) {
 // send the given data to Kardia using patch
 function doPatchHttpRequest(url, data, authenticate, username, password, doAfter) {
 	// get authentication token if we don't have it yet
-	getAuthToken(authenticate, username, password, function() {
-		// actually send info
-		var httpRequest2 = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-		var httpUrl2 = server + url + "?cx__mode=rest&cx__res_format=attrs&cx__akey=" + akey;
+	getAuthToken(authenticate, username, password, function(stat) {
+		if (stat) {
+			// actually send info
+			var httpRequest2 = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+			var httpUrl2 = server + url + "?cx__mode=rest&cx__res_format=attrs&cx__akey=" + kardiacrm.akey;
 
-		httpRequest2.onreadystatechange  = function(aEvent) {
-			// if the request went through and we got success status
-			if(httpRequest2.readyState == 4 && httpRequest2.status == 200) {
-				// done
-				doAfter();
+			httpRequest2.onreadystatechange  = function(aEvent) {
+				// if the request went through and we got success status
+				if(httpRequest2.readyState == 4 && httpRequest2.status == 200) {
+					// done
+					doAfter({StatusCode:200});
+				}
+				else if (httpRequest2.readyState == 4 && httpRequest2.status != 200) {
+					doAfter(null);
+					// failed
+				}
+			};
+			// do nothing if the http request errors
+			httpRequest2.onerror = function(aEvent) {
+				doAfter(null);
+			};
+			
+			// send http request
+			httpRequest2.open("PATCH", httpUrl2, true);
+			httpRequest2.setRequestHeader("Content-type","application/json");
+			if (typeof data !== "string" && !(data instanceof String)) {
+				data = JSON.stringify(data);
 			}
-			else if (httpRequest2.readyState == 4 && httpRequest2.status != 200) {
-				// failed
-			}
-		};
-		// do nothing if the http request errors
-		httpRequest2.onerror = function(aEvent) {};
-		
-		// send http request
-		httpRequest2.open("PATCH", httpUrl2, true);
-		httpRequest2.setRequestHeader("Content-type","application/json");
-		httpRequest2.send(data);
+			httpRequest2.send(data);
+		}
+		else {
+			doAfter(null);
+		}
 	});
 }
 
 // send the given data to Kardia using post
 function doPostHttpRequest(url, data, authenticate, username, password, doAfter) {
 	// get authentication token if we don't have it yet
-	getAuthToken(authenticate, username, password, function() {
-		// actually send info
-		var httpRequest2 = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-		var httpUrl2 = server + url + "?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection&cx__akey=" + akey;
+	getAuthToken(authenticate, username, password, function(stat) {
+		if (stat) {
+			// actually send info
+			var httpRequest2 = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+			var httpUrl2 = server + url + "?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection&cx__akey=" + kardiacrm.akey;
 
-		httpRequest2.onreadystatechange = function(aEvent) {
-			// if the request went through and we got success status
-			if(httpRequest2.readyState == 4) {
-				// done
-				doAfter();
+			httpRequest2.onreadystatechange = function(aEvent) {
+				// if the request went through and we got success status
+				if(httpRequest2.readyState == 4) {
+					// done
+					doAfter({
+						Location: httpRequest2.getResponseHeader("Location"),
+					});
+				}
+			};
+			// do nothing if the http request errors
+			httpRequest2.onerror = function(aEvent) {
+				doAfter(null);
+			};
+			
+			// send http request
+			httpRequest2.open("POST", httpUrl2, true);
+			httpRequest2.setRequestHeader("Content-type","application/json");
+			if (typeof data !== "string" && !(data instanceof String)) {
+				data = JSON.stringify(data);
 			}
-		};
-		// do nothing if the http request errors
-		httpRequest2.onerror = function(aEvent) {};
-		
-		// send http request
-		httpRequest2.open("POST", httpUrl2, true);
-		httpRequest2.setRequestHeader("Content-type","application/json");
-		httpRequest2.send(data);
+			httpRequest2.send(data);
+		}
+		else {
+			doAfter(null);
+		}
 	});
 }
 
+// delete an object using DELETE
+function doDeleteHttpRequest(url, authenticate, username, password, doAfter) {
+	// get authentication token if we don't have it yet
+	getAuthToken(authenticate, username, password, function(stat) {
+		if (stat) {
+			// actually send info
+			var httpRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+			var httpUrl = server + url + "?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=element&cx__akey=" + kardiacrm.akey;
+
+			httpRequest.onreadystatechange = function(aEvent) {
+				// if the request went through and we got success status
+				if(httpRequest.readyState == 4) {
+					// done
+					doAfter({
+						ResponseCode: httpRequest.status,
+					});
+				}
+			};
+
+			// do nothing if the http request errors
+			httpRequest.onerror = function(aEvent) {
+				doAfter(null);
+			};
+			
+			// send http request
+			httpRequest.open("DELETE", httpUrl, true);
+			httpRequest.send(null);
+		}
+		else {
+			doAfter(null);
+		}
+	});
+}
 
 // insert Kardia logo buttons next to each Kardia address in the current email
 // clicking the button takes you to that person in the Kardia pane
 function addKardiaButton(win){
 	// save list of header views we need to check
-	var headersArray = [win.gExpandedHeaderView.from.textNode.childNodes, win.gExpandedHeaderView.to.textNode.childNodes, win.gExpandedHeaderView.cc.textNode.childNodes, win.gExpandedHeaderView.bcc.textNode.childNodes];
-	// iterate through header views
-	for (var j=0;j<headersArray.length;j++) {
-		var nodeArray = headersArray[j];
-	
-		// iterate through children in the header view
-		for (var i=0;i<nodeArray.length;i++) {
-			// Normalize email
-			var email = nodeArray[i].getAttribute('emailAddress').toLowerCase();
+	if (win.gExpandedHeaderView.from) {
+		var headersArray = [win.gExpandedHeaderView.from.textNode.childNodes, win.gExpandedHeaderView.to.textNode.childNodes, win.gExpandedHeaderView.cc.textNode.childNodes, win.gExpandedHeaderView.bcc.textNode.childNodes];
+		// iterate through header views
+		for (var j=0;j<headersArray.length;j++) {
+			var nodeArray = headersArray[j];
+		
+			// iterate through children in the header view
+			for (var i=0;i<nodeArray.length;i++) {
+				// Normalize email
+				var email = nodeArray[i].getAttribute('emailAddress').toLowerCase();
 
-			// check if this node's email address is in the list from Kardia
-			if (email != null && email != "" && mainWindow.emailAddresses !== null && mainWindow.emailAddresses.length > 0 && mainWindow.emailAddresses.indexOf(email) >= 0) {
-				// if so, make the button visible
-				nodeArray[i].setAttribute("kardiaShowing","");
-						  
-				// make button select the right person on click
-				var person = mainWindow.emailAddresses.indexOf(email);
-				nodeArray[i].setAttribute("kardiaOnclick","kardiacrm.selected_partner=" + parseInt(person) + "; if (mainWindow.document.getElementById('main-box').collapsed) {mainWindow.toggleKardiaVisibility(3);} mainWindow.reload(false);");
-			}
-			
-			else {
-				// the person isn't from Kardia, so hide the button
-				nodeArray[i].setAttribute("kardiaShowing","display:none");
+				// check if this node's email address is in the list from Kardia
+				if (email != null && email != "" && mainWindow.emailAddresses !== null && mainWindow.emailAddresses.length > 0 && mainWindow.emailAddresses.indexOf(email) >= 0 && kardiacrm.partners_loaded) {
+					// if so, make the button visible
+					nodeArray[i].setAttribute("kardiaShowing","");
+							  
+					// make button select the right person on click
+					var person = mainWindow.emailAddresses.indexOf(email);
+					nodeArray[i].setAttribute("kardiaOnclick","kardiacrm.selected_partner=" + parseInt(person) + "; if (mainWindow.document.getElementById('main-box').collapsed) {mainWindow.toggleKardiaVisibility(3);} mainWindow.reload(false);");
+				}
+				else {
+					// the person isn't from Kardia, so hide the button
+					nodeArray[i].setAttribute("kardiaShowing","display:none");
+				}
 			}
 		}
 	}
@@ -3786,7 +4078,7 @@ function datetimeToDate(date) {
 
 // reload recent activity
 function reloadActivity(partnerId) {
-	kardiacrm.request("crm/Partners/" + partnerId + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", "act", null, function(activityResp) {
+	kardiacrm.requestGet("crm/Partners/" + partnerId + "/Activity?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", "act", null, function(activityResp) {
       // If not 404
       if (activityResp != null) {
          // where this partner is located in the main window list
@@ -3803,8 +4095,9 @@ function reloadActivity(partnerId) {
 
          for (var i=0; (i<keys.length && tempArray.length<6); i++) {
             if (keys[i] != "@id") {
-               tempArray.push(activityResp[keys[i]]['activity_type']);
-               tempArray.push(datetimeToString(activityResp[keys[i]]['activity_date']) + ": " + activityResp[keys[i]]['info']);
+		tempArray.push(activityResp[keys[i]]);
+               /*tempArray.push(activityResp[keys[i]]['activity_type']);
+               tempArray.push(datetimeToString(activityResp[keys[i]]['activity_date']) + ": " + activityResp[keys[i]]['info']);*/
 
                if (tempCollaborateeArray.length<6) {
                   tempCollaborateeArray.push(activityResp[keys[i]]['activity_type']);
@@ -3817,11 +4110,7 @@ function reloadActivity(partnerId) {
          mainWindow.collaborateeActivity[tabIndex] = tempCollaborateeArray;
          
          // display recent activity in panel
-         var recent = "";
-         for (var i=0;i<mainWindow.recentActivity[mainIndex].length;i+=2) {
-            recent += '<hbox class="hover-box"><label width="100" flex="1">' + mainWindow.recentActivity[mainIndex][i+1] + '</label></hbox>';
-         }
-         mainWindow.document.getElementById("recent-activity-inner-box").innerHTML = recent;	
+	 appendActivity(kardiacrm.jQuery('#recent-activity-inner-box'), mainWindow.recentActivity[mainIndex][i]);
 
          // display recent activity in tab
          if (kardiaTab != null) {
