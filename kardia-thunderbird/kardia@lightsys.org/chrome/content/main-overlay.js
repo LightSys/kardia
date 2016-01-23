@@ -3531,6 +3531,14 @@ function getTrackTagStaff(username, password) {
 	giftFilterFunds = new Array();
 	giftFilterTypes = new Array();
 
+	// List of Text Expansions
+	kardiacrm.requestGet("crm_config/TextExpansions?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", "meta", null, function (Resp) {
+		if (Resp) {
+			kardiacrm.data.textExpList = Resp;
+			remove_atid(kardiacrm.data.textExpList);
+		}
+	});
+	
 	// List of Todo/Task types.
 	kardiacrm.requestGet("crm_config/TodoTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", "meta", null, function (todoTypeResp) {
 		if (todoTypeResp) {
@@ -3901,7 +3909,10 @@ function doPatchHttpRequest(url, data, authenticate, username, password, doAfter
 				// if the request went through and we got success status
 				if(httpRequest2.readyState == 4 && httpRequest2.status == 200) {
 					// done
-					doAfter({StatusCode:200});
+					doAfter({
+						StatusCode:200,
+						Data: httpRequest2.responseText?(JSON.parse(httpRequest2.responseText)):null,
+					});
 				}
 				else if (httpRequest2.readyState == 4 && httpRequest2.status != 200) {
 					doAfter(null);
@@ -3942,6 +3953,7 @@ function doPostHttpRequest(url, data, authenticate, username, password, doAfter)
 					// done
 					doAfter({
 						Location: httpRequest2.getResponseHeader("Location"),
+						Data: httpRequest2.responseText?(JSON.parse(httpRequest2.responseText)):null,
 					});
 				}
 			};

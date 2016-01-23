@@ -12,25 +12,24 @@
 				<preference id="extensions.kardia.showTodosWithNoDate" name="extensions.kardia.showTodosWithNoDate" type="bool"/>
 				<preference id="extensions.kardia.refreshInterval" name="extensions.kardia.refreshInterval" type="int"/>
 				<preference id="extensions.kardia.server" name="extensions.kardia.server" type="string"/>
+				<preference id="extensions.kardia.triggerchar" name="extensions.kardia.triggerchar" type="string"/>
 			</preferences>
 			<vbox>
-				<label value="Kardia Add-on Version: 1.05"/>
-				<hbox>
+				<label class="prefsmainhdr" value="Kardia CRM Add-on for Thunderbird Version: 1.06"/>
+
+				<label class="prefshdr" value="Server Connection:"/>
+		 		<hbox align="center">
 					<vbox>
 						<spacer flex="1"/>
-						<label value="Import Kardia to-do items as"/>
+						<label class="prefslh" value="Kardia server URL:"/>
 						<spacer flex="1"/>
 					</vbox>
-					<radiogroup orient="horizontal" preference="extensions.kardia.importTodoAsEvent" >
-						<radio label="events" value="e"/>
-						<radio label="tasks" value="t"/>
-					</radiogroup>
+					<textbox preference="extensions.kardia.server" width="200px"/>
 				</hbox>
-				<checkbox label="Import Kardia to-do items that have no due date" preference="extensions.kardia.showTodosWithNoDate"/>
-				<hbox>
+				<hbox align="center">
 					<vbox>
 						<spacer flex="1"/>
-						<label value="Refresh Kardia data every"/>
+						<label class="prefslh" value="Refresh Kardia data every:"/>
 						<spacer flex="1"/>
 					</vbox>
 					<textbox type="number" min="1" max="1440" increment="1" value="30" width="60px" preference="extensions.kardia.refreshInterval"/>
@@ -40,13 +39,25 @@
 						<spacer flex="1"/>
 					</vbox>
 		 		</hbox>
-		 		<hbox>
+
+				<label class="prefshdr" value="CRM Tasks:"/>
+				<hbox align="center">
 					<vbox>
 						<spacer flex="1"/>
-						<label value="Kardia server and port:"/>
+						<label class="prefslh" value="Import Kardia to-do items as:"/>
 						<spacer flex="1"/>
 					</vbox>
-					<textbox preference="extensions.kardia.server" width="200px"/>
+					<radiogroup orient="horizontal" preference="extensions.kardia.importTodoAsEvent" >
+						<radio label="events" value="e"/>
+						<radio label="tasks" value="t"/>
+					</radiogroup>
+				</hbox>
+				<checkbox label="Import Kardia to-do items that have no due date" preference="extensions.kardia.showTodosWithNoDate"/>
+
+				<label class="prefshdr" value="Message Display and Composition:"/>
+				<hbox align="center">
+					<label class="prefslh" value="Trigger character for expansions:"/>
+					<textbox preference="extensions.kardia.triggerchar" value="\" width="30px"/>
 				</hbox>
 			</vbox>
 		</prefpane>

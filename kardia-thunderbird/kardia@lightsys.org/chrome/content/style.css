@@ -192,3 +192,12 @@ mail-emailaddress {-moz-binding:url('chrome://kardia/content/email-binding.xml#k
 #newperson-box { display:none; }
 #todo-options { display:none; }
 #contact-box { border-top:1px solid #a0a0a0; }
+
+/** Preferences **/
+.prefshdr { font-weight:bold; margin-top:16px; border-bottom:1px solid #a0a0a0; }
+.prefslh { width:230px; }
+
+/** Compose Window **/
+#kardia-compose-box { border-top:1px solid #a0a0a0; }
+#exp-preview { display:none; max-height:40px; font-size:80%; }
+.exp-label { min-width:100px; text-align:right; }
