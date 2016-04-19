@@ -140,6 +140,9 @@ var dataTab;
 
 // Various system-wide Kardia CRM data items
 var kardiacrm = {
+	version:"1.07",
+	appid:"Thunderbird Extension for Kardia",
+
 	// Last opened message window
 	lastMessageWindow:null,
 	last_assignee:null,
@@ -163,6 +166,7 @@ var kardiacrm = {
 	find_emails_busy:false,
 
 	// current server connection data
+	load_done:false,
 	logged_in:false,
 	username:"",
 	password:"",
@@ -383,17 +387,22 @@ function doLogin(callback) {
 	    kardiacrm.username = loginInfo2[0];
 	    kardiacrm.password = loginInfo2[1];
 	    
-	    //see how many email addresses the person has
+	    // see how many email addresses the person has
+	    selfEmails = [];
 	    var prefs2 = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	    var smtpServers = prefs2.getCharPref("mail.smtpservers");
 	    smtpServers = smtpServers.split(",");
-	    
+		    
 	    // store list of self emails to array so we don't search them in Kardia
-	    selfEmails = new Array();
 	    for (var i=0;i<smtpServers.length;i++) {
-		    selfEmails[i] = prefs2.getCharPref("mail.smtpserver." + smtpServers[i] + ".username");
-		    if (selfEmails[i].indexOf("@") < 0) {
-			    selfEmails[i] += "@" + prefs2.getCharPref("mail.smtpserver." + smtpServers[i] + ".hostname");
+		    // Use try/catch to ignore errors in retrieving pref data
+		    try {
+			    selfEmails[i] = prefs2.getCharPref("mail.smtpserver." + smtpServers[i] + ".username");
+			    if (selfEmails[i].indexOf("@") < 0) {
+				    selfEmails[i] += "@" + prefs2.getCharPref("mail.smtpserver." + smtpServers[i] + ".hostname");
+			    }
+		    }
+		    catch (err) {
 		    }
 	    }
 	    
@@ -425,15 +434,26 @@ function doLogin(callback) {
 }
 	
 // what to do when Thunderbird starts up
-window.addEventListener("load", function() { 
+window.addEventListener("load", function() {
+
+	doOnLoad();
+
+}, false);
+
+function doOnLoad() {
+
+	if (kardiacrm.load_done)
+		return;
 
 	// For whatever reason this listener is getting called twice by TB. :(
-	if (!document.getElementById("main-box"))
-		return;
+	if (!document.getElementById("main-box")) {
+		setTimeout(doOnLoad, 500);
+	}
 
 	// Load jQuery
 	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
-	loader.loadSubScript("chrome://messenger/content/jquery.js", window);
+	//loader.loadSubScript("chrome://messenger/content/jquery.js", window);
+	loader.loadSubScript("chrome://kardia/content/jquery-1.11.1.js", window);
 	kardiacrm.jQuery = window.jQuery.noConflict(true);
 
 	// set "show Kardia pane" arrow to the correct image, based on whether it's collapsed
@@ -487,7 +507,9 @@ window.addEventListener("load", function() {
 
    updateKardia();
 
-}, false);
+   kardiacrm.load_done = true;
+
+}
 
 // what to do when Thunderbird is closed
 window.addEventListener("close", function() {
@@ -3411,7 +3433,13 @@ function doHttpRequest(url, doAfter, authenticate, username, password) {
 		if (httpRequest.readyState == 4) {
 			if (httpRequest.status == 200) {
 				// parse the JSON returned from the request
-				doAfter(JSON.parse(httpRequest.responseText));
+				try {
+					var json = JSON.parse(httpRequest.responseText);
+					doAfter(json);
+				}
+				catch (err) {
+					doAfter(null);
+				}
 			}
 			else if (httpRequest.status == 404) {
 				doAfter(null); // resource not found
@@ -3813,7 +3841,7 @@ function getAuthToken(authenticate, username, password, doAfter) {
 	else {
 		// get authentication token
 		var httpRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-		var httpUrl = server + "?cx__mode=appinit&cx__appname=TBext";
+		var httpUrl = server + "?cx__mode=appinit&cx__appname=" + kardiacrm.appid + "+" + kardiacrm.version;
 		var httpResp;
 		
 		httpRequest.onreadystatechange  = function(aEvent) {
@@ -3839,7 +3867,7 @@ function getAuthToken(authenticate, username, password, doAfter) {
 							if (resp.substring(resp.indexOf("TARGET")+7,resp.length-7) == "ERR") {
 								// key expired, get a new one
 								var newHttpRequest = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-								var newHttpUrl = server + "?cx__mode=appinit&cx__appname=MozillaThunderbird";
+								var newHttpUrl = server + "?cx__mode=appinit&cx__appname=" + kardiacrm.appid + "+" + kardiacrm.version;
 								var newHttpResp;
 								newHttpRequest.onreadystatechange  = function(aEvent) {
 									// if the request went through and we got success status
@@ -4122,7 +4150,7 @@ function reloadActivity(partnerId) {
          mainWindow.collaborateeActivity[tabIndex] = tempCollaborateeArray;
          
          // display recent activity in panel
-	 appendActivity(kardiacrm.jQuery('#recent-activity-inner-box'), mainWindow.recentActivity[mainIndex][i]);
+	 appendActivity(kardiacrm.jQuery('#recent-activity-inner-box'), mainWindow.recentActivity[mainIndex]);
 
          // display recent activity in tab
          if (kardiaTab != null) {

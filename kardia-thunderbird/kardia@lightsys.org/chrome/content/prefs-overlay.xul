@@ -15,7 +15,7 @@
 				<preference id="extensions.kardia.triggerchar" name="extensions.kardia.triggerchar" type="string"/>
 			</preferences>
 			<vbox>
-				<label class="prefsmainhdr" value="Kardia CRM Add-on for Thunderbird Version: 1.06"/>
+				<label class="prefsmainhdr" value="Kardia CRM Add-on for Thunderbird Version: 1.07"/>
 
 				<label class="prefshdr" value="Server Connection:"/>
 		 		<hbox align="center">
@@ -59,6 +59,7 @@
 					<label class="prefslh" value="Trigger character for expansions:"/>
 					<textbox preference="extensions.kardia.triggerchar" value="\" width="30px"/>
 				</hbox>
+				<!--<checkbox label="Scan email content (in addition to headers) for email addresses" preference="extensions.kardia.scanEmailContent"/>-->
 			</vbox>
 		</prefpane>
 	</prefwindow>

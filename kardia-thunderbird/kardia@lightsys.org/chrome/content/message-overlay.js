@@ -319,7 +319,7 @@ var messageWindow = {
 		}
 
 		////
-		////  CREATE PHASE - final creation of contact history and autorecord records,
+		////  CREATE PHASE - third step, final creation of contact history and autorecord records,
 		////		     both of which require that the partner and email records exist.
 		////
 		if (partner && email) {
@@ -910,7 +910,8 @@ addEventListener("unload", function() {
 addEventListener("load", function() {
 	// Load jQuery
 	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
-	loader.loadSubScript("chrome://messenger/content/jquery.js", window);
+	//loader.loadSubScript("chrome://messenger/content/jquery.js", window);
+	loader.loadSubScript("chrome://kardia/content/jquery-1.11.1.js", window);
 	messageWindow.jQuery = window.jQuery.noConflict(true);
 
 	// Gain access to the console for logging
