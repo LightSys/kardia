@@ -268,6 +268,7 @@ create  index e_tagact_tagid_idx on e_tag_activity (e_tag_id, p_partner_key, e_t
 
 
 /* e_document_type */
+create  index e_doctype_label_idx on e_document_type (e_doc_type_label, e_doc_type_id);
 create  index e_doctype_parent_idx on e_document_type (e_parent_doc_type_id, e_doc_type_id);
 /* create  index e_doctype_pk on e_document_type (e_doc_type_id)*/ 
 /* go */
@@ -393,6 +394,11 @@ create  index e_ack_par_idx on e_ack (e_whom,e_ack_type,e_object_type,e_object_i
 
 /* e_trackactivity */
 /* create  index e_trkact_pk on e_trackactivity (p_partner_key,e_username,e_sort_key)*/ 
+/* go */
+
+
+/* e_text_expansion */
+/* create  index e_exp_pk on e_text_expansion (e_exp_tag)*/ 
 /* go */
 
 
@@ -794,6 +800,26 @@ create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_
 /* i_eg_giving_url */
 create  index i_eg_giveurl_revidx on i_eg_giving_url (a_cost_center, a_ledger_number);
 /* create  index i_eg_giving_url_pk on i_eg_giving_url (a_ledger_number, a_cost_center)*/ 
+/* go */
+
+
+/* i_crm_partner_import */
+/* create  index i_crm_partner_import_pk on i_crm_partner_import (i_crm_import_id, i_crm_import_session_id)*/ 
+/* go */
+
+
+/* i_crm_partner_import_option */
+/* create  index i_crm_partner_import_opt_pk on i_crm_partner_import_option (i_crm_import_id, i_crm_import_session_id, i_crm_import_type_option_id)*/ 
+/* go */
+
+
+/* i_crm_import_type */
+/* create  index i_crm_import_type_pk on i_crm_import_type (i_crm_import_type_id)*/ 
+/* go */
+
+
+/* i_crm_import_type_option */
+/* create  index i_crm_import_type_option_pk on i_crm_import_type_option (i_crm_import_type_id,i_crm_import_type_option_id)*/ 
 /* go */
 
 

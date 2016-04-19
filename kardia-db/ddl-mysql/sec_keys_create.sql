@@ -85,6 +85,9 @@ alter table e_tag_activity
 alter table e_document_type
 	add constraint e_doctype_parent_idx unique  (e_parent_doc_type_id, e_doc_type_id);
 
+alter table e_document_type
+	add constraint e_doctype_label_idx unique  (e_doc_type_label, e_doc_type_id);
+
 alter table e_document
 	add constraint e_doc_work_idx unique  (e_workflow_instance_id, e_document_id);
 

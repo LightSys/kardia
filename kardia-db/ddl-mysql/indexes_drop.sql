@@ -268,6 +268,7 @@ alter table e_tag_activity drop index e_tagact_tagid_idx;
 
 
 /* e_document_type */
+alter table e_document_type drop index e_doctype_label_idx;
 alter table e_document_type drop index e_doctype_parent_idx;
 /* drop index e_document_type.e_doctype_pk */ 
 /* go */
@@ -393,6 +394,11 @@ alter table e_ack drop index e_ack_par_idx;
 
 /* e_trackactivity */
 /* drop index e_trackactivity.e_trkact_pk */ 
+/* go */
+
+
+/* e_text_expansion */
+/* drop index e_text_expansion.e_exp_pk */ 
 /* go */
 
 
@@ -794,6 +800,26 @@ alter table i_eg_gift_import drop index i_eg_kgiftbatch_idx;
 /* i_eg_giving_url */
 alter table i_eg_giving_url drop index i_eg_giveurl_revidx;
 /* drop index i_eg_giving_url.i_eg_giving_url_pk */ 
+/* go */
+
+
+/* i_crm_partner_import */
+/* drop index i_crm_partner_import.i_crm_partner_import_pk */ 
+/* go */
+
+
+/* i_crm_partner_import_option */
+/* drop index i_crm_partner_import_option.i_crm_partner_import_opt_pk */ 
+/* go */
+
+
+/* i_crm_import_type */
+/* drop index i_crm_import_type.i_crm_import_type_pk */ 
+/* go */
+
+
+/* i_crm_import_type_option */
+/* drop index i_crm_import_type_option.i_crm_import_type_option_pk */ 
 /* go */
 
 
