@@ -101,8 +101,8 @@ partner_search_component "widget/component-decl"
 			:y:p_partner_key =* :p:p_partner_key
 		";
         baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
-        replicasize=50;
-        readahead=25;
+        replicasize=100;
+        readahead=50;
         autoquery=never;
 
 	sel_partner_if_window_closed "widget/connector"
