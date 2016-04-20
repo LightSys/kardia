@@ -72,7 +72,7 @@ iconbar "widget/component-decl"
 	event_condition=runclient(:processing_toggle_off:value == 1);
 	target=EnabledTypes;
 	action=SetValue;
-	Value=runclient(:except + ',ADDR,PAR');
+	Value=runclient(:except + ',ADDR,PAR,AUTO');
 	}
 
     on_toggle_all "widget/connector" { event=ToggleAll; target=one_type_btn; action=Update; }
@@ -173,7 +173,7 @@ iconbar "widget/component-decl"
 		image="/apps/kardia/images/icons/ionicons-person-edit.svg";
 		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		direction = runserver(condition(:this:show_profile_only, 'horizontal', 'vertical'));
-		do_edit "widget/connector" { event=Click; target=iconbar; action=EditPartner; Origin=contacts_btn; }
+		do_edit "widget/connector" { event=Click; target=iconbar; action=EditPartner; Origin=editperson_btn; }
 		}
 
 	    sep1b "widget/autolayoutspacer"

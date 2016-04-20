@@ -67,7 +67,7 @@ crm "widget/component-decl"
 	    height=runserver(condition(:this:show_profile_only, 600, 76));
 	    fl_height=runserver(condition(:this:show_profile_only, null, 0));
 	    path = "iconbar.cmp";
-	    EnabledTypes="REL,TAG,GIFT,COMM,CONT,TASK,NOTE,DATA,FILE,TRK,PAR,ADDR";
+	    EnabledTypes="REL,TAG,GIFT,COMM,CONT,TASK,NOTE,DATA,FILE,TRK,PAR,ADDR,AUTO";
 	    profile = profile_cmp;
 	    show_profile_only=runserver(:this:show_profile_only);
 
@@ -245,6 +245,13 @@ crm "widget/component-decl"
 		    target=profile_cmp;
 		    action=SelectPartner;
 		    partner_key = runclient(:partner_key);
+		    }
+
+		onAllActivity "widget/connector"
+		    {
+		    event=AllActivity;
+		    target=profile_cmp;
+		    action=AllActivity;
 		    }
 
 		onAdvancedSearch "widget/connector"
