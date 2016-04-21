@@ -104,6 +104,9 @@ alter table p_staff drop index p_staff_weblogin_idx;
 
 
 /* p_banking_details */
+alter table p_banking_details drop index p_bankd_acct_idx;
+alter table p_banking_details drop index p_bankd_bpartner_idx;
+alter table p_banking_details drop index p_bankd_partner_idx;
 /* drop index p_banking_details.p_banking_details_pk */ 
 /* go */
 

@@ -353,10 +353,12 @@ create table p_banking_details (
         p_partner_id                          char(10)  null,          /* partner id of the account owner (if relevant) --  */
         p_bank_partner_id                     char(10)  null,          /* partner id of the financial institution itself (if available) --  */
         p_bank_account_name                   varchar(80)  not null,   /* name on the account (e.g., name on visa card, etc.) --  */
-        p_bank_account_number                 varchar(32)  not null,   /* number of the account --  */
+        p_bank_account_number                 varchar(32)  null,       /* number of the account --  */
         p_bank_routing_number                 varchar(32)  null,       /* routing number, if applicable --  */
         p_next_check_number                   integer  null,           /* next check number to use when writing checks --  */
         p_bank_expiration                     datetime  null,          /* expiration date on account --  */
+        a_ledger_number                       char(10)  null,          /* GL ledger associated with this bank account --  */
+        a_account_code                        char(16)  null,          /* GL account associated with this bank account --  */
         p_comment                             varchar(255)  null,      /* comments / description of bank account --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */

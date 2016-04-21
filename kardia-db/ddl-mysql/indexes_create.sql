@@ -104,6 +104,9 @@ create  index p_staff_weblogin_idx on p_staff (p_kardiaweb_login, p_partner_key)
 
 
 /* p_banking_details */
+create  index p_bankd_acct_idx on p_banking_details (a_ledger_number, a_account_code, p_banking_details_key);
+create  index p_bankd_bpartner_idx on p_banking_details (p_bank_partner_id, p_banking_details_key);
+create  index p_bankd_partner_idx on p_banking_details (p_partner_id, p_banking_details_key);
 /* create  index p_banking_details_pk on p_banking_details (p_banking_details_key)*/ 
 /* go */
 

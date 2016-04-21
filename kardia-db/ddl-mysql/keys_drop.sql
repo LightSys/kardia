@@ -126,6 +126,18 @@ alter table p_banking_details
 	drop primary key;
 
 
+alter table p_banking_details
+	drop index p_bankd_partner_idx;
+
+
+alter table p_banking_details
+	drop index p_bankd_bpartner_idx;
+
+
+alter table p_banking_details
+	drop index p_bankd_acct_idx;
+
+
 alter table p_title
 	drop primary key;
 
