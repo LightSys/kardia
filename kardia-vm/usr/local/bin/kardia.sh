@@ -439,6 +439,12 @@ function manageUser
     local USER="$2"
     local REALNAME=$(sed -n "s/^$USER:[^:]*:[^:]*:[^:]*:\([^:]*\) - Kardia:.*/\1/p" < /etc/passwd)
     if [ "$1" = "existing" ]; then
+        local ALLOW_KARDIA_SYSADM=$(grep "$USER" $BASEDIR/src/.cx_kardia_admins 2>/dev/null)
+	if [ "$ALLOW_KARDIA_SYSADM" = "" ]; then
+	    local ALLOW_KARDIA_SYSADM=no
+	else
+	    local ALLOW_KARDIA_SYSADM=yes
+	fi
 	local ALLOW_SSH=$(groups "$USER" | grep ':.* kardia_ssh')
 	if [ "$ALLOW_SSH" = "" ]; then
 	    ALLOW_SSH=no
@@ -458,6 +464,7 @@ function manageUser
 	    ALLOW_ROOT=yes
 	fi
     else
+        local ALLOW_KARDIA_SYSADM=no
 	local ALLOW_SRC=no
 	local ALLOW_SSH=no
 	local ALLOW_ROOT=no
@@ -475,8 +482,9 @@ function manageUser
     DSTR="$DSTR 'Real Name:' 3 1 '$REALNAME' 3 36 30 0"
     DSTR="$DSTR 'SSH Access (yes/no):' 5 1 '$ALLOW_SSH' 5 36 5 0"
     DSTR="$DSTR 'Repository Access (yes/no):' 7 1 '$ALLOW_SRC' 7 36 5 0"
-    DSTR="$DSTR 'System Admin Privs (yes/no):' 9 1 '$ALLOW_ROOT' 9 36 5 0"
-    DSTR="$DSTR 'Reset Password Now (yes/no):' 11 1 'no' 11 36 5 0"
+    DSTR="$DSTR 'OS System Admin Privs (yes/no):' 9 1 '$ALLOW_ROOT' 9 36 5 0"
+    DSTR="$DSTR 'Kardia System Admin Privs (yes/no):' 11 1 '$ALLOW_KARDIA_SYSADM' 11 36 5 0"
+    DSTR="$DSTR 'Reset Password Now (yes/no):' 13 1 'no' 13 36 5 0"
 
     eval "$DSTR" 2>&1 >/dev/tty |
 	{
@@ -485,7 +493,7 @@ function manageUser
 	else
 	    N_USER="$USER"
 	fi
-	read N_REALNAME; read N_ALLOW_SSH; read N_ALLOW_SRC; read N_ALLOW_ROOT; read N_RESET_PASS;
+	read N_REALNAME; read N_ALLOW_SSH; read N_ALLOW_SRC; read N_ALLOW_ROOT; read N_ALLOW_KARDIA_SYSADM; read N_RESET_PASS;
 	if [ "$N_REALNAME" = "" -a "$N_ALLOW_SSH" = "" -a "$N_ALLOW_SRC" = "" -a "$N_ALLOW_ROOT" = "" ]; then
 	    return 1
 	fi
@@ -570,6 +578,18 @@ function manageUser
 	    GRPS="${GRPS##,}"
 	    /usr/sbin/usermod -G "$GRPS" "$N_USER"
 	fi
+	set -x
+	if [ "$N_ALLOW_KARDIA_SYSADM" != "no" ]; then
+	    #Add this user to the file and then give them the privs
+	    AsRoot echo $N_USER >> $BASEDIR/src/.cx_kardia_admins
+	    doGiveUserKardiaSysadmin $N_USER
+	else
+	    #make sure we do not have this username in the file
+	    if [ -f "$BASEDIR/src/.cx_kardia_admins" ]; then
+		AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins
+	    fi
+	fi
+	set +x
 	if [ "$1" = "existing" -a "$N_RESET_PASS" = yes ]; then
 	    echo ""
 	    echo "Resetting password for $N_USER..."
@@ -585,6 +605,15 @@ function manageUser
 	}
     }
 
+function doGiveUserKardiaSysadmin
+    {
+	local TUSER=$1;
+	if [ -z "$TUSER" ]; then
+	    echo "You must specify a user to give permissions to"
+	    return
+	fi
+	echo "insert into s_sec_endorsement (s_endorsement,s_context, s_subject, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('kardia:sys_admin','kardia','u:THEUSER',curdate(),'THEUSER',curdate(),'THEUSER');" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+    }
 
 # Delete a user
 function deleteUser
