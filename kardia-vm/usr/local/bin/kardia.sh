@@ -3115,7 +3115,8 @@ function vm_prep_cleanFiles
 	    fi
 	done
 	echo "Uninstalling old kernel versions"
-	rpm -qa kernel* | grep -v `uname -r` | while read line; do 
+	local RESCUE="kernel-3.10.0-123"
+	rpm -qa kernel* | grep -v `uname -r` | grep -v $RESCUE | while read line; do 
 	    echo "Removing package: $line"
 	    rpm -e $line; 
 	done
