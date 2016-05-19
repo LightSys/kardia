@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.7
+# version: 1.0.8
 # os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
@@ -514,6 +514,11 @@ function manageUser
 		/bin/chown "$N_USER". "/home/$N_USER/.ssh/known_hosts"
 		/bin/chmod 600 "/home/$N_USER/.ssh/known_hosts"
 	    fi
+	    #Create a .tpl file for the user
+	    if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
+		cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/ tpl/$USER.tpl"
+	    fi 
+
 	    insertLine "/home/$N_USER/.ssh/known_hosts" "$CX_KEY"
 	    insertLine "/home/$N_USER/.ssh/known_hosts" "$K_KEY"
 	    echo ""
@@ -657,7 +662,7 @@ function doUpdates
     echo ""
     echo "Running 'yum update'... this may take a while..."
     echo ""
-    yum update
+    yum update --skip-broken
     }
 
 
@@ -3176,6 +3181,16 @@ function doCleanup
 	    fi
 	fi
     fi
+    }
+
+function doGiveUserKardiaSysadmin
+    {
+	TUSER=$1;
+	if [ -z "$TUSER" ]; then
+	    echo "You must specify a user to give permissions to"
+	    return
+	fi
+	echo "insert into s_sec_endorsement (s_endorsement,s_context, s_subject, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('kardia:sys_admin','kardia','u:THEUSER',curdate(),'THEUSER',curdate(),'THEUSER');" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
     }
 
 function displyCentrallixConnectInfo
