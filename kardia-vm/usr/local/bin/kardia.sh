@@ -3142,6 +3142,8 @@ function vm_prep_cleanEmptySpace
 function doCleanup
     {
     if [ $# -eq 0 ]; then
+	#stop Centrallix
+        cxStop
 	#make sure things are copied over from the repo
 	vm_prep_setupEtc
 	#clean out yum cache and clean up RPM database
