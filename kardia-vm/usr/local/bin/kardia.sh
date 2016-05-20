@@ -587,6 +587,7 @@ function manageUser
 	    #make sure we do not have this username in the file
 	    if [ -f "$BASEDIR/src/.cx_kardia_admins" ]; then
 		AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins
+		doRemoveUserKardiaSysadmin $N_USER
 	    fi
 	fi
 	set +x
@@ -3222,7 +3223,16 @@ function doGiveUserKardiaSysadmin
 	    echo "You must specify a user to give permissions to"
 	    return
 	fi
-	echo "insert into s_sec_endorsement (s_endorsement,s_context, s_subject, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('kardia:sys_admin','kardia','u:THEUSER',curdate(),'THEUSER',curdate(),'THEUSER');" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+	echo "INSERT INTO s_sec_endorsement (s_endorsement,s_context, s_subject, s_date_created, s_created_by, s_date_modified, s_modified_by) VALUES ('kardia:sys_admin','kardia','u:THEUSER',curdate(),'THEUSER',curdate(),'THEUSER');" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+    }
+function doRemoveUserKardiaSysadmin
+    {
+	TUSER=$1;
+	if [ -z "$TUSER" ]; then
+	    echo "You must specify a user to take permissions from"
+	    return
+	fi
+	echo "DELETE FROM s_sec_endorsement WHERE s_subject='u:THEUSER';" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
     }
 
 function displyCentrallixConnectInfo
