@@ -522,10 +522,6 @@ function manageUser
 		/bin/chown "$N_USER". "/home/$N_USER/.ssh/known_hosts"
 		/bin/chmod 600 "/home/$N_USER/.ssh/known_hosts"
 	    fi
-	    #Create a .tpl file for the user
-	    if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
-		cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/ tpl/$USER.tpl"
-	    fi 
 
 	    insertLine "/home/$N_USER/.ssh/known_hosts" "$CX_KEY"
 	    insertLine "/home/$N_USER/.ssh/known_hosts" "$K_KEY"
@@ -564,6 +560,10 @@ function manageUser
 	elif [ "$REALNAME" != "$N_REALNAME" ]; then
 	    /usr/sbin/usermod -c "$N_REALNAME - Kardia" "$N_USER"
 	fi
+	#Create a .tpl file for the user
+	if [ ! -f "$KSRC/kardia-app/tpl/$N_USER.tpl" ]; then
+	    cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/ tpl/$USER.tpl"
+	fi 
 	if [ "$N_ALLOW_SSH" != "$ALLOW_SSH" -o "$N_ALLOW_SRC" != "$ALLOW_SRC" -o "$N_ALLOW_ROOT" != "$ALLOW_ROOT" ]; then
 	    GRPS=""
 	    if [ "$N_ALLOW_SSH" = yes ]; then
@@ -578,9 +578,9 @@ function manageUser
 	    GRPS="${GRPS##,}"
 	    /usr/sbin/usermod -G "$GRPS" "$N_USER"
 	fi
-	set -x
 	if [ "$N_ALLOW_KARDIA_SYSADM" != "no" ]; then
 	    #Add this user to the file and then give them the privs
+	    AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins 2> /dev/null
 	    AsRoot echo $N_USER >> $BASEDIR/src/.cx_kardia_admins
 	    doGiveUserKardiaSysadmin $N_USER
 	else
@@ -590,7 +590,6 @@ function manageUser
 		doRemoveUserKardiaSysadmin $N_USER
 	    fi
 	fi
-	set +x
 	if [ "$1" = "existing" -a "$N_RESET_PASS" = yes ]; then
 	    echo ""
 	    echo "Resetting password for $N_USER..."
@@ -614,6 +613,17 @@ function doGiveUserKardiaSysadmin
 	    return
 	fi
 	echo "insert into s_sec_endorsement (s_endorsement,s_context, s_subject, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('kardia:sys_admin','kardia','u:THEUSER',curdate(),'THEUSER',curdate(),'THEUSER');" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+    }
+
+function doGiveAllSysadmsSysadmin
+    {
+	if [ -e "$BASEDIR/src/.cx_kardia_admins" ]; then
+	    local nUSER=""
+	    cat $BASEDIR/src/.cx_kardia_admins | while read nUSER; do
+		echo "  Adding permissions for $nUSER"
+		doGiveUserKardiaSysadmin $nUSER
+	    done
+	fi
     }
 
 # Delete a user
@@ -2506,6 +2516,9 @@ function doDataBuild
     echo "generate some errors due to the data already existing in the DB."
     echo ""
     mysql -u root -f -h localhost Kardia_DB < "$KSRC/kardia-db/testdata/demo_mysql.sql"
+    echo ""
+    echo "Adding any system_admin permissions we need to add"
+    doGiveAllSysadmsSysadmin
     echo "Press ENTER to continue..."
     read ANS
     }
@@ -3138,7 +3151,7 @@ function vm_prep_cleanUsers
 		echo "  removing Kardia user $USERNAME from linux"
 		userdel -r $USERNAME
 		echo "  removing Kardia user $USERNAME from samba"
-		pdbedit -u $USERNAME -x
+		pdbedit -u $USERNAMR -x
 		echo "  removing mysql user $USERNAME"
 		mysql -e "DROP USER $USERNAME@'localhost';" 2> /dev/null
 		mysql -e "DROP USER $USERNAME@'%';" 2> /dev/null
