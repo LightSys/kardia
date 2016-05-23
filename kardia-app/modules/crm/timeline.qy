@@ -179,7 +179,7 @@ timeline "system/query"
 		e_activity_date = :t:s_date_created,
 		e_activity_type = 'TAG',
 		e_reference_info = '' + :t:e_tag_id,
-		e_info = :tt:e_tag_desc + condition(:t:e_tag_strength != 1.0 or :t:e_tag_certainty != 1.0, ' (' + condition(:t:e_tag_strength != 1.0, 'strength ' + convert(integer,round(:t:e_tag_strength * 100,0)) + '%', '') + condition(:t:e_tag_certainty != 1.0 and :t:e_tag_strength != 1.0, ', ', '') + condition(:t:e_tag_certainty != 1.0, 'certainty ' + convert(integer,round(:t:e_tag_certainty * 100,0)) + '%', '') + ')', '') + condition(char_length(:t:e_tag_comments) > 1, ' - ' + :t:e_tag_comments, ''),
+		e_info = condition(char_length(:tt:e_tag_desc) <= 1, :tt:e_tag_label, :tt:e_tag_desc) + condition(:t:e_tag_strength != 1.0 or :t:e_tag_certainty != 1.0, ' (' + condition(:t:e_tag_strength != 1.0, 'strength ' + convert(integer,round(:t:e_tag_strength * 100,0)) + '%', '') + condition(:t:e_tag_certainty != 1.0 and :t:e_tag_strength != 1.0, ', ', '') + condition(:t:e_tag_certainty != 1.0, 'certainty ' + convert(integer,round(:t:e_tag_certainty * 100,0)) + '%', '') + ')', '') + condition(char_length(:t:e_tag_comments) > 1, ' - ' + :t:e_tag_comments, ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :t:s_created_by),
 		e_initiation = 'C',
 		s_date_created = getdate(),

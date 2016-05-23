@@ -11,6 +11,7 @@ activity_list "widget/component-decl"
     RefreshTasks "widget/component-decl-action" { }
     PartnerSelected "widget/component-decl-event" { }
     SetNumber "widget/component-decl-event" { }
+    AllActivity "widget/component-decl-event" { }
 
     prev_lastrecord "widget/variable" { type=integer; }
 
@@ -91,14 +92,14 @@ activity_list "widget/component-decl"
 			img = isnull( ( select
 				    path = :d:e_current_folder + '/' + :d:e_current_filename
 				from
-				    /apps/kardia/data/Kardia_DB/e_document/rows d,
 				    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+				    /apps/kardia/data/Kardia_DB/e_document/rows d,
 				    /apps/kardia/data/Kardia_DB/e_document_type/rows dt
 				where
-				    :dt:e_doc_type_label = 'Profile Photo' and
-				    :d:e_doc_type_id = :dt:e_doc_type_id and
+				    :pd:p_partner_key = :e:p_partner_key and
 				    :pd:e_document_id = :d:e_document_id and
-				    :pd:p_partner_key = :e:p_partner_key
+				    :d:e_doc_type_id = :dt:e_doc_type_id and
+				    :dt:e_doc_type_label = 'Profile Photo'
 				order by
 				    :pd:s_date_modified desc
 				limit
@@ -120,7 +121,7 @@ activity_list "widget/component-decl"
 
 	    activity_table "widget/table"
 		{
-		height=413;
+		height=381;
 		min_rowheight=16;
 		max_rowheight=72;
 		allow_selection = yes;
@@ -160,6 +161,83 @@ activity_list "widget/component-decl"
 		    style=bold;
 		    font_size=15;
 		    wrap=yes;
+		    }
+
+		t_rowdetail_multiple "widget/table-row-detail"
+		    {
+		    display_for=runclient(:activity_data_osrc:e_activity_type = 'COLL' and charindex(',', :activity_data_osrc:e_reference_info) > 0);
+		    height=120;
+		    width=244;
+
+		    t_multiple_osrc "widget/osrc"
+			{
+			personlist "widget/parameter" { type=string; }
+			sql = "	select
+				    :p:p_partner_key,
+				    who = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+				    img = isnull( ( select
+						path = :d:e_current_folder + '/' + :d:e_current_filename
+					    from
+						/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+						/apps/kardia/data/Kardia_DB/e_document/rows d,
+						/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+					    where
+						:pd:p_partner_key = :c:p_partner_key and
+						:pd:e_document_id = :d:e_document_id and
+						:d:e_doc_type_id = :dt:e_doc_type_id and
+						:dt:e_doc_type_label = 'Profile Photo'
+					    order by
+						:pd:s_date_modified desc
+					    limit
+						1
+					    ), '/apps/kardia/images/artwork/persona.png')
+				from
+				    /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p
+				where
+				    charindex(',' + :c:name + ',', ',' + :parameters:personlist + ',') > 0 and
+				    :p:p_partner_key = :c:p_partner_key
+				";
+			replicasize=50;
+			readahead=50;
+
+			personlist_link "widget/rule"
+			    {
+			    ruletype=osrc_relationship;
+			    target=activity_data_osrc;
+			    key_1=personlist;
+			    target_key_1=e_reference_info;
+			    revealed_only=yes;
+			    }
+
+			t_multiple_table "widget/table"
+			    {
+			    x=32; y=4; width=192; height=110;
+			    fl_x=0;
+			    min_rowheight=16;
+			    max_rowheight=72;
+			    allow_selection = yes;
+			    show_selection = yes;
+			    initial_selection = no;
+			    demand_scrollbar = yes;
+			    overlap_scrollbar = yes;
+			    titlebar = no;
+			    colsep = 0;
+			    row_border_radius=4;
+			    inner_padding = 1;
+			    cellvspacing = 0;
+			    row1_bgcolor='#fff090';
+			    row2_bgcolor='#fff090';
+			    rowhighlight_bgcolor="#fff8c8";
+			    textcolorhighlight = "black";
+			    rowcache_size=40;
+
+			    multiple_onclick "widget/connector" { event=Click; target=activity_list; action=PartnerSelected; partner_key=runclient(:p_partner_key); }
+
+			    t_m_img "widget/table-column" { fieldname="img"; width=24; type=image; image_maxwidth=16; image_maxheight=16; align=center; }
+			    t_m_name "widget/table-column" { fieldname="who"; width=168; style=bold; font_size=12; }
+			    }
+			}
 		    }
 
 		t_rowdetail_chat "widget/table-row-detail"
@@ -315,6 +393,20 @@ activity_list "widget/component-decl"
 			}
 		    }
 		}
+	    }
+
+	all_activity_btn "widget/textbutton"
+	    {
+	    x=45;
+	    height=24;
+	    width=150;
+	    text="Detailed Activity...";
+	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	    fgcolor1=white;
+	    fgcolor2=black;
+	    disable_color="#334466";
+
+	    on_act "widget/connector" { event=Click; target=activity_list; action=AllActivity; }
 	    }
 	}
     }

@@ -126,6 +126,22 @@ alter table p_banking_details
 	drop primary key;
 
 
+alter table p_banking_details
+	drop index p_bankd_partner_idx;
+
+
+alter table p_banking_details
+	drop index p_bankd_bpartner_idx;
+
+
+alter table p_banking_details
+	drop index p_bankd_acct_idx;
+
+
+alter table p_banking_type
+	drop primary key;
+
+
 alter table p_title
 	drop primary key;
 
@@ -300,6 +316,10 @@ alter table e_document_type
 
 alter table e_document_type
 	drop index e_doctype_parent_idx;
+
+
+alter table e_document_type
+	drop index e_doctype_label_idx;
 
 
 alter table e_document
@@ -479,6 +499,10 @@ alter table e_ack_type
 
 
 alter table e_trackactivity
+	drop primary key;
+
+
+alter table e_text_expansion
 	drop primary key;
 
 
@@ -883,6 +907,22 @@ alter table i_eg_gift_import
 
 
 alter table i_eg_giving_url
+	drop primary key;
+
+
+alter table i_crm_partner_import
+	drop primary key;
+
+
+alter table i_crm_partner_import_option
+	drop primary key;
+
+
+alter table i_crm_import_type
+	drop primary key;
+
+
+alter table i_crm_import_type_option
 	drop primary key;
 
 

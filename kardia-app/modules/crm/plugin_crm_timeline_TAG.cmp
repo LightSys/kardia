@@ -29,6 +29,8 @@ plugin_crm_timeline_TAG "widget/component-decl"
 	    target = timeline_osrc;
 	    key_1 = tag_id;
 	    target_key_1 = e_reference_info;
+	    key_2 = p_partner_key;
+	    target_key_2 = p_partner_key;
 	    revealed_only = yes;
 	    }
 

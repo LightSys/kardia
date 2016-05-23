@@ -58,6 +58,9 @@ grant select on ra to public;
 /* p_banking_details */
 
 
+/* p_banking_type */
+
+
 /* p_title */
 
 
@@ -191,6 +194,9 @@ grant select on ra to public;
 
 
 /* e_trackactivity */
+
+
+/* e_text_expansion */
 
 
 /* r_group */
@@ -380,6 +386,18 @@ grant select on ra to public;
 
 
 /* i_eg_giving_url */
+
+
+/* i_crm_partner_import */
+
+
+/* i_crm_partner_import_option */
+
+
+/* i_crm_import_type */
+
+
+/* i_crm_import_type_option */
 
 
 /* c_message */

@@ -37,6 +37,15 @@ alter table p_staff
 alter table p_staff
 	add constraint p_staff_weblogin_idx unique  (p_kardiaweb_login, p_partner_key);
 
+alter table p_banking_details
+	add constraint p_bankd_partner_idx unique  (p_partner_id, p_banking_details_key);
+
+alter table p_banking_details
+	add constraint p_bankd_bpartner_idx unique  (p_bank_partner_id, p_banking_details_key);
+
+alter table p_banking_details
+	add constraint p_bankd_acct_idx unique  (a_ledger_number, a_account_code, p_banking_details_key);
+
 alter table p_gazetteer
 	add constraint p_gaz_altid_idx unique  (p_alt_feature_id, p_country_code, p_feature_type, p_feature_id);
 
@@ -84,6 +93,9 @@ alter table e_tag_activity
 
 alter table e_document_type
 	add constraint e_doctype_parent_idx unique  (e_parent_doc_type_id, e_doc_type_id);
+
+alter table e_document_type
+	add constraint e_doctype_label_idx unique  (e_doc_type_label, e_doc_type_id);
 
 alter table e_document
 	add constraint e_doc_work_idx unique  (e_workflow_instance_id, e_document_id);

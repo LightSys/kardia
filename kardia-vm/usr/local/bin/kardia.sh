@@ -3138,7 +3138,7 @@ function vm_prep_cleanUsers
 		echo "  removing Kardia user $USERNAME from linux"
 		userdel -r $USERNAME
 		echo "  removing Kardia user $USERNAME from samba"
-		pdbedit -u $USERNAMR -x
+		pdbedit -u $USERNAME -x
 		echo "  removing mysql user $USERNAME"
 		mysql -e "DROP USER $USERNAME@'localhost';" 2> /dev/null
 		mysql -e "DROP USER $USERNAME@'%';" 2> /dev/null

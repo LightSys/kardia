@@ -193,8 +193,8 @@ api_crm_config "system/querytree"
 	{
 	text = "CollaboratorTypes";
 	collabtypelist "system/querytree"
-		{
-		sql = " select
+	    {
+	    sql = " select
 			id = :e_collab_type_id,
 			label = :e_collab_type_label,
 			desc = :e_collab_type_desc,
@@ -202,15 +202,29 @@ api_crm_config "system/querytree"
 			created_by = :s_created_by,
 			date_modified = :s_date_modified,
 			modified_by = :s_modified_by
-			from
+		    from
 			/apps/kardia/data/Kardia_DB/e_collaborator_type/rows
-			";
-		}
+		    ";
+	    }
 	}
 
     TodoTypes "system/querytree"
 	{
 	text = "TodoTypes";
+	todotype_list "system/querytree"
+	    {
+	    sql = " select
+			type_id = :tt:e_todo_type_id,
+			type_label = :tt:e_todo_type_label,
+			type_desc = :tt:e_todo_type_desc,
+			date_created = :tt:s_date_created,
+			created_by = :tt:s_created_by,
+			date_modified = :tt:s_date_modified,
+			modified_by = :tt:s_modified_by
+		    from
+			/apps/kardia/data/Kardia_DB/e_todo_type/rows tt
+		    ";
+	    }
 	}
 
     WorkflowTypes "system/querytree"
@@ -218,7 +232,7 @@ api_crm_config "system/querytree"
 	text = "WorkflowTypes";
 	}
     	
-	DataItemTypes "system/querytree"
+    DataItemTypes "system/querytree"
 	{
 	text = "DataItemTypes";
 	dataitemtypelist "system/querytree"
@@ -234,12 +248,10 @@ api_crm_config "system/querytree"
 			created_by = :d:s_created_by,
 			date_modified = :d:s_date_modified,
 			modified_by = :d:s_modified_by
-
 		    from
-			identity
-			/apps/kardia/data/Kardia_DB/e_data_item_type/rows d
-			";
-		}
+			identity /apps/kardia/data/Kardia_DB/e_data_item_type/rows d
+		    ";
+	    }
 	}
 
     DocumentTypes "system/querytree"
@@ -247,12 +259,12 @@ api_crm_config "system/querytree"
 	text = "DocumentTypes";
 	}
 	
-	Countries "system/querytree"
+    Countries "system/querytree"
 	{
 	text = "Countries";
 	countrylist "system/querytree"
-		{
-		sql = " select
+	    {
+	    sql = " select
 			country_code = :c:p_country_code,
 			iso3166_2_code = :c:p_iso3166_2_code,
 			iso3166_3_code = :c:p_iso3166_3_code,
@@ -263,14 +275,32 @@ api_crm_config "system/querytree"
 			created_by = :c:s_created_by,
 			date_modified = :c:s_date_modified,
 			modified_by = :c:s_modified_by
-
-			from
-			identity
-			/apps/kardia/data/Kardia_DB/p_country/rows c
-			group by
+		    from
+			identity /apps/kardia/data/Kardia_DB/p_country/rows c
+		    group by
 			:c:p_country_name
-			";
-		}
+		    ";
+	    }
 	}
+
+    TextExpansions "system/querytree"
+	{
+	text = "TextExpansions";
+
+	explist "system/querytree"
+	    {
+	    sql = " select
+			tag = :e_exp_tag,
+			description = :e_exp_desc,
+			expansion = :e_exp_expansion,
+			date_created = :s_date_created,
+			created_by = :s_created_by,
+			date_modified = :s_date_modified,
+			modified_by = :s_modified_by
+		    from
+			/apps/kardia/data/Kardia_DB/e_text_expansion/rows
+		    ";
+	    }
 	}
+    }
 		
