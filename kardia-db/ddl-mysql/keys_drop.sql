@@ -138,6 +138,10 @@ alter table p_banking_details
 	drop index p_bankd_acct_idx;
 
 
+alter table p_banking_type
+	drop primary key;
+
+
 alter table p_title
 	drop primary key;
 

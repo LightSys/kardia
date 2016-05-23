@@ -369,6 +369,26 @@ create table p_banking_details (
 );
 
 
+/* p_banking_type */
+
+create table p_banking_type (
+        p_banking_type                        char(1)  not null,       /* type of account (C=checking, S=savings, R=revolving credit account such as VISA/MC, D=certificate of deposit, M=merchant, I=investment) --  */
+        p_banking_desc                        varchar(64)  null,       /* comments / description of bank account --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'C' as p_banking_type, 'Checking' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'S' as p_banking_type, 'Savings' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'R' as p_banking_type, 'Revolving Credit' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'D' as p_banking_type, 'Certificate of Deposit' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'M' as p_banking_type, 'Merchant' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'I' as p_banking_type, 'Investment' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+
+
 /* p_title */
 
 create table p_title (

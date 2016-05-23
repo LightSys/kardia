@@ -58,6 +58,9 @@ grant select on ra to public;
 /* p_banking_details */
 
 
+/* p_banking_type */
+
+
 /* p_title */
 
 

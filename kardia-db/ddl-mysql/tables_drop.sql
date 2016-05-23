@@ -71,6 +71,10 @@ drop table p_country;
 drop table p_banking_details;
 
 
+/* p_banking_type */
+drop table p_banking_type;
+
+
 /* p_title */
 drop table p_title;
 

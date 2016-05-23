@@ -111,6 +111,11 @@ alter table p_banking_details drop index p_bankd_partner_idx;
 /* go */
 
 
+/* p_banking_type */
+/* drop index p_banking_type.p_banking_type_pk */ 
+/* go */
+
+
 /* p_title */
 /* drop index p_title.p_title_pk */ 
 /* go */

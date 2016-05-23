@@ -58,6 +58,9 @@ alter table p_country
 alter table p_banking_details
 	add constraint p_banking_details_pk primary key  (p_banking_details_key);
 
+alter table p_banking_type
+	add constraint p_banking_type_pk primary key  (p_banking_type);
+
 alter table p_title
 	add constraint p_title_pk primary key  (p_title);
 

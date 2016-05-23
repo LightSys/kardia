@@ -111,6 +111,11 @@ create  index p_bankd_partner_idx on p_banking_details (p_partner_id, p_banking_
 /* go */
 
 
+/* p_banking_type */
+/* create  index p_banking_type_pk on p_banking_type (p_banking_type)*/ 
+/* go */
+
+
 /* p_title */
 /* create  index p_title_pk on p_title (p_title)*/ 
 /* go */
