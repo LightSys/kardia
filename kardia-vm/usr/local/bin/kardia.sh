@@ -1139,6 +1139,10 @@ function repoInitUser
     cd cx-git/centrallix-os/apps
     ln -s ../../../kardia-git/kardia-app kardia
 
+    if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
+	cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$USER.tpl"
+    fi
+
     setGitEmail "/home/$RUSER"
     }
 
