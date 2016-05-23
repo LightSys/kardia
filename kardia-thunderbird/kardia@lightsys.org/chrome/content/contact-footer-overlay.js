@@ -31,7 +31,7 @@ var kardiacrm = mainWindow.kardiacrm;
 // functions implement the Model, reEvaluate implements the Controllers, and the
 // corresponding .xul file is the View.
 //
-var messageWindow = {
+var contactFooter = {
 	jQuery:null,
 	console:null,
 	logging:false,
@@ -119,18 +119,18 @@ var messageWindow = {
 			if (cb) {
 				cb();
 			}
-			if (messageWindow.do_reset) {
-				messageWindow.reset_bh();
+			if (contactFooter.do_reset) {
+				contactFooter.reset_bh();
 			}
 			if (!no_changes) {
-				messageWindow.reloadMainSidebar(true);
+				contactFooter.reloadMainSidebar(true);
 			}
 		}
 
 		////
 		////  CREATE PHASE - first step, creation of the partner record, if needed.
 		////
-		if (messageWindow.creatingPartner && messageWindow.newPartnerKey === null) {
+		if (contactFooter.creatingPartner && contactFooter.newPartnerKey === null) {
 			kardiacrm.requestGet('partner/NextPartnerKey?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic', 'resync', completion, function(resp) {
 				if (resp) {
 					kardiacrm.requestPost('partner/Partners', 
@@ -139,8 +139,8 @@ var messageWindow = {
 							p_creating_office: ' ',
 							p_partner_class: 'IND',
 							p_status_code: 'A',
-							p_given_name: messageWindow.curData.first,
-							p_surname: messageWindow.curData.last,
+							p_given_name: contactFooter.curData.first,
+							p_surname: contactFooter.curData.last,
 							p_record_status_code: 'A',
 							p_surname_first: 0,
 							p_no_solicitations: 0,
@@ -153,18 +153,18 @@ var messageWindow = {
 						'resync', completion, function(resp) {
 							if (resp) {
 								if (resp.Location) {
-									messageWindow.newPartnerKey = messageWindow.getKeyFromLocation(resp.Location, '/Partners/');
-									messageWindow.prevData.first = messageWindow.curData.first;
-									messageWindow.prevData.last = messageWindow.curData.last;
+									contactFooter.newPartnerKey = contactFooter.getKeyFromLocation(resp.Location, '/Partners/');
+									contactFooter.prevData.first = contactFooter.curData.first;
+									contactFooter.prevData.last = contactFooter.curData.last;
 								}
-								messageWindow.reSyncPostPartner(completion, false);
+								contactFooter.reSyncPostPartner(completion, false);
 							}
 					});
 				}
 			});
 		}
 		else {
-			messageWindow.reSyncPostPartner(completion, true);
+			contactFooter.reSyncPostPartner(completion, true);
 		}
 	},
 
@@ -173,9 +173,9 @@ var messageWindow = {
 	reSyncPostPartner: function(completion, no_changes) {
 		var date = new Date();
 		// Make sure we have a partner key.
-		var partner = messageWindow.newPartnerKey;
+		var partner = contactFooter.newPartnerKey;
 		if (!partner) {
-			var idx = messageWindow.getEmailIndex(messageWindow.authorAddress);
+			var idx = contactFooter.getEmailIndex(contactFooter.authorAddress);
 			if (idx >= 0) {
 				partner = mainWindow.ids[idx];
 			}
@@ -187,7 +187,7 @@ var messageWindow = {
 		////
 		if (partner) {
 			// Create partner location record?
-			if (messageWindow.creatingLocation && messageWindow.newLocationKey === null) {
+			if (contactFooter.creatingLocation && contactFooter.newLocationKey === null) {
 				no_changes = false;
 				kardiacrm.requestPost('partner/Partners/' + partner + '/Addresses', 
 						{
@@ -202,19 +202,19 @@ var messageWindow = {
 						},
 					'resync', completion, function(resp) {
 						if (resp) {
-							messageWindow.newLocationKey = messageWindow.getKeyFromLocation(resp.Location, '/Addresses/');
+							contactFooter.newLocationKey = contactFooter.getKeyFromLocation(resp.Location, '/Addresses/');
 						}
 				});
 			}
 
 			// Create collab record?
-			if (messageWindow.creatingCollab && messageWindow.newCollabKey === null && messageWindow.curData.roletype) {
+			if (contactFooter.creatingCollab && contactFooter.newCollabKey === null && contactFooter.curData.roletype) {
 				no_changes = false;
 				kardiacrm.requestPost('crm/Partners/' + partner + '/Collaborators', 
 						{
 						p_partner_key: partner,
 						e_collaborator: mainWindow.myId,
-						e_collab_type_id: parseInt(messageWindow.curData.roletype),
+						e_collab_type_id: parseInt(contactFooter.curData.roletype),
 						s_date_created: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
 						s_created_by: kardiacrm.username,
 						s_date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
@@ -223,24 +223,24 @@ var messageWindow = {
 					'resync', completion, function(resp) {
 						if (resp) {
 							if (resp.Location) {
-								messageWindow.newCollabKey = messageWindow.getKeyFromLocation(resp.Location, '/Collaborators/');
-								messageWindow.prevData.roletype = messageWindow.curData.roletype;
+								contactFooter.newCollabKey = contactFooter.getKeyFromLocation(resp.Location, '/Collaborators/');
+								contactFooter.prevData.roletype = contactFooter.curData.roletype;
 							}
 						}
 				});
 			}
 
 			// Create todo record?
-			if (messageWindow.creatingTodo && messageWindow.newTodoKey === null && messageWindow.curData.todotype && messageWindow.curData.assignee && messageWindow.curData.days) {
+			if (contactFooter.creatingTodo && contactFooter.newTodoKey === null && contactFooter.curData.todotype && contactFooter.curData.assignee && contactFooter.curData.days) {
 				no_changes = false;
 				var duedate = new Date(date);
-				duedate.setDate(duedate.getDate() + parseInt(messageWindow.curData.days));
+				duedate.setDate(duedate.getDate() + parseInt(contactFooter.curData.days));
 				kardiacrm.requestPost('crm/Partners/' + partner + '/Todos', 
 						{
-						e_todo_type_id: parseInt(messageWindow.curData.todotype),
-						e_todo_desc: messageWindow.curData.todo_comment,
+						e_todo_type_id: parseInt(contactFooter.curData.todotype),
+						e_todo_desc: contactFooter.curData.todo_comment,
 						e_todo_status: 'I',
-						e_todo_collaborator: messageWindow.curData.assignee,
+						e_todo_collaborator: contactFooter.curData.assignee,
 						e_todo_partner: partner,
 						e_todo_due_date: {year: duedate.getFullYear(), month: duedate.getMonth()+1, day:duedate.getDate(), hour:duedate.getHours(), minute:duedate.getMinutes(), second:duedate.getSeconds() },
 						s_date_created: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
@@ -251,23 +251,23 @@ var messageWindow = {
 					'resync', completion, function(resp) {
 						if (resp) {
 							if (resp.Location) {
-								messageWindow.newTodoKey = messageWindow.getKeyFromLocation(resp.Location, '/Todos/');
-								messageWindow.prevData.todotype = messageWindow.curData.todotype;
-								messageWindow.prevData.assignee = messageWindow.curData.assignee;
-								messageWindow.prevData.days = messageWindow.curData.days;
-								messageWindow.prevData.todo_comment = messageWindow.curData.todo_comment;
+								contactFooter.newTodoKey = contactFooter.getKeyFromLocation(resp.Location, '/Todos/');
+								contactFooter.prevData.todotype = contactFooter.curData.todotype;
+								contactFooter.prevData.assignee = contactFooter.curData.assignee;
+								contactFooter.prevData.days = contactFooter.curData.days;
+								contactFooter.prevData.todo_comment = contactFooter.curData.todo_comment;
 							}
 						}
 				});
 			}
 
 			// Create email record?
-			if (messageWindow.creatingEmail && messageWindow.newEmailKey === null && messageWindow.curData.email) {
+			if (contactFooter.creatingEmail && contactFooter.newEmailKey === null && contactFooter.curData.email) {
 				kardiacrm.requestPost('partner/Partners/' + partner + '/ContactInfo', 
 						{
 						p_partner_key: partner,
 						p_contact_type: 'E',
-						p_contact_data: messageWindow.curData.email,
+						p_contact_data: contactFooter.curData.email,
 						p_record_status_code: 'A',
 						s_date_created: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
 						s_created_by: kardiacrm.username,
@@ -277,18 +277,18 @@ var messageWindow = {
 					'resync', completion, function(resp) {
 						if (resp) {
 							if (resp.Location) {
-								messageWindow.newEmailKey = messageWindow.getKeyFromLocation(resp.Location, '/ContactInfo/');
-								messageWindow.prevData.email = messageWindow.curData.email;
+								contactFooter.newEmailKey = contactFooter.getKeyFromLocation(resp.Location, '/ContactInfo/');
+								contactFooter.prevData.email = contactFooter.curData.email;
 							}
-							messageWindow.reSyncPostEmail(completion, false);
+							contactFooter.reSyncPostEmail(completion, false);
 						}
 				});
 			}
 			else {
-				messageWindow.reSyncPostEmail(completion, no_changes);
+				contactFooter.reSyncPostEmail(completion, no_changes);
 			}
 		} else {
-			messageWindow.reSyncPostEmail(completion, no_changes);
+			contactFooter.reSyncPostEmail(completion, no_changes);
 		}
 	},
 
@@ -297,18 +297,18 @@ var messageWindow = {
 	reSyncPostEmail: function(completion, no_changes) {
 		var date = new Date();
 		// Make sure we have a partner key.
-		var partner = messageWindow.newPartnerKey;
+		var partner = contactFooter.newPartnerKey;
 		if (!partner) {
-			var idx = messageWindow.getEmailIndex(messageWindow.authorAddress);
+			var idx = contactFooter.getEmailIndex(contactFooter.authorAddress);
 			if (idx >= 0) {
 				partner = mainWindow.ids[idx];
 			}
 		}
 
 		// Make sure we have an email key.
-		var email = messageWindow.newEmailKey;
+		var email = contactFooter.newEmailKey;
 		if (!email) {
-			var idx = messageWindow.getEmailIndex(messageWindow.authorAddress);
+			var idx = contactFooter.getEmailIndex(contactFooter.authorAddress);
 			if (idx >= 0) {
 				email = mainWindow.emailIds[idx];
 			}
@@ -333,7 +333,7 @@ var messageWindow = {
 			}
 
 			// Create contact history record?
-			if (messageWindow.creatingContactHistory && messageWindow.newContactHistoryKey === null) {
+			if (contactFooter.creatingContactHistory && contactFooter.newContactHistoryKey === null) {
 				// Date of email
 				var email_date = new Date(gMessageDisplay.displayedMessage.dateInSeconds * 1000);
 
@@ -348,7 +348,7 @@ var messageWindow = {
 				// that, but we're again dealing with some restrictions there that have to be
 				// worked around somehow.
 				//
-				var email_text = messageWindow.jQuery(messageWindow.jQuery("#messagepane")[0].contentWindow.document.children[0].children[1]).text();
+				var email_text = contactFooter.jQuery(contactFooter.jQuery("#messagepane")[0].contentWindow.document.children[0].children[1]).text();
 				if (email_text) {
 					email_text = email_text.substr(0,900);
 				}
@@ -377,14 +377,14 @@ var messageWindow = {
 							},
 						'resync', completion, function(resp) {
 							if (resp) {
-								messageWindow.newContactHistoryKey = messageWindow.getKeyFromLocation(resp.Location, '/ContactHistory/');
+								contactFooter.newContactHistoryKey = contactFooter.getKeyFromLocation(resp.Location, '/ContactHistory/');
 							}
 					});
 				}
 			}
 
 			// Create autorecord record?  (and... when a fox is in the bottle where the tweetle beetles battle...)
-			if (messageWindow.creatingAutorecord && messageWindow.newAutorecordKey === null) {
+			if (contactFooter.creatingAutorecord && contactFooter.newAutorecordKey === null) {
 				// Do the create for the e_contact_autorecord data
 				if (contact_type) {
 					no_changes = false;
@@ -403,7 +403,7 @@ var messageWindow = {
 							},
 						'resync', completion, function(resp) {
 							if (resp) {
-								messageWindow.newAutorecordKey = messageWindow.getKeyFromLocation(resp.Location, '/ContactAutorecord/');
+								contactFooter.newAutorecordKey = contactFooter.getKeyFromLocation(resp.Location, '/ContactAutorecord/');
 							}
 					});
 				}
@@ -413,50 +413,50 @@ var messageWindow = {
 		////
 		////  MODIFY PHASE - update data if user has modified it, via PATCH REST requests.
 		////
-		if (messageWindow.creatingPartner && partner && (messageWindow.curData.first != messageWindow.prevData.first || messageWindow.curData.last != messageWindow.prevData.last)) {
+		if (contactFooter.creatingPartner && partner && (contactFooter.curData.first != contactFooter.prevData.first || contactFooter.curData.last != contactFooter.prevData.last)) {
 			no_changes = false;
 			kardiacrm.requestPatch('partner/Partners/' + partner, 
 					{
-					surname: messageWindow.curData.last,
-					given_names: messageWindow.curData.first,
+					surname: contactFooter.curData.last,
+					given_names: contactFooter.curData.first,
 					date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
 					modified_by: kardiacrm.username,
 					},
 				'resync', completion, function(resp) {
 			});
 		}
-		if (messageWindow.creatingEmail && email && messageWindow.curData.email != messageWindow.prevData.email) {
+		if (contactFooter.creatingEmail && email && contactFooter.curData.email != contactFooter.prevData.email) {
 			no_changes = false;
 			kardiacrm.requestPatch('partner/Partners/' + partner + '/ContactInfo/' + email, 
 					{
-					contact_data: messageWindow.curData.email,
+					contact_data: contactFooter.curData.email,
 					date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
 					modified_by: kardiacrm.username,
 					},
 				'resync', completion, function(resp) {
 			});
 		}
-		if (messageWindow.creatingCollab && messageWindow.newCollabKey && messageWindow.curData.roletype != messageWindow.prevData.roletype) {
+		if (contactFooter.creatingCollab && contactFooter.newCollabKey && contactFooter.curData.roletype != contactFooter.prevData.roletype) {
 			no_changes = false;
-			kardiacrm.requestPatch('crm/Partners/' + partner + '/Collaborators/' + messageWindow.newCollabKey, 
+			kardiacrm.requestPatch('crm/Partners/' + partner + '/Collaborators/' + contactFooter.newCollabKey, 
 					{
-					collaborator_type_id: parseInt(messageWindow.curData.roletype),
+					collaborator_type_id: parseInt(contactFooter.curData.roletype),
 					date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
 					modified_by: kardiacrm.username,
 					},
 				'resync', completion, function(resp) {
 			});
 		}
-		if (messageWindow.creatingTodo && messageWindow.newTodoKey && (messageWindow.curData.todotype != messageWindow.prevData.todotype || messageWindow.curData.assignee != messageWindow.prevData.assignee || messageWindow.curData.todo_comment !=messageWindow.prevData.todo_comment || messageWindow.curData.days != messageWindow.prevData.days)) {
+		if (contactFooter.creatingTodo && contactFooter.newTodoKey && (contactFooter.curData.todotype != contactFooter.prevData.todotype || contactFooter.curData.assignee != contactFooter.prevData.assignee || contactFooter.curData.todo_comment !=contactFooter.prevData.todo_comment || contactFooter.curData.days != contactFooter.prevData.days)) {
 			no_changes = false;
 			var duedate = new Date(date);
-			duedate.setDate(duedate.getDate() + parseInt(messageWindow.curData.days));
-			kardiacrm.requestPatch('crm/Partners/' + partner + '/Todos/' + messageWindow.newTodoKey, 
+			duedate.setDate(duedate.getDate() + parseInt(contactFooter.curData.days));
+			kardiacrm.requestPatch('crm/Partners/' + partner + '/Todos/' + contactFooter.newTodoKey, 
 					{
-					todo_type_id: parseInt(messageWindow.curData.todotype),
-					desc: messageWindow.curData.todo_comment,
+					todo_type_id: parseInt(contactFooter.curData.todotype),
+					desc: contactFooter.curData.todo_comment,
 					due_date: {year: duedate.getFullYear(), month: duedate.getMonth()+1, day:duedate.getDate(), hour:duedate.getHours(), minute:duedate.getMinutes(), second:duedate.getSeconds() },
-					collaborator_id: messageWindow.curData.assignee,
+					collaborator_id: contactFooter.curData.assignee,
 					date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
 					modified_by: kardiacrm.username,
 					},
@@ -467,46 +467,46 @@ var messageWindow = {
 		////
 		////  DELETE PHASE - remove data if user changed mind about creating it.
 		////
-		if (messageWindow.newEmailKey && !messageWindow.creatingEmail && partner) {
+		if (contactFooter.newEmailKey && !contactFooter.creatingEmail && partner) {
 			no_changes = false;
-			kardiacrm.requestDelete('partner/Partners/' + partner + '/ContactInfo/' + messageWindow.newEmailKey, 'resync', completion, function(resp) {
-				messageWindow.newEmailKey = null;
+			kardiacrm.requestDelete('partner/Partners/' + partner + '/ContactInfo/' + contactFooter.newEmailKey, 'resync', completion, function(resp) {
+				contactFooter.newEmailKey = null;
 			});
 		}
-		if (messageWindow.newLocationKey && !messageWindow.creatingLocation && partner) {
+		if (contactFooter.newLocationKey && !contactFooter.creatingLocation && partner) {
 			no_changes = false;
-			kardiacrm.requestDelete('partner/Partners/' + partner + '/Addresses/' + messageWindow.newLocationKey, 'resync', completion, function(resp) {
-				messageWindow.newLocationKey = null;
+			kardiacrm.requestDelete('partner/Partners/' + partner + '/Addresses/' + contactFooter.newLocationKey, 'resync', completion, function(resp) {
+				contactFooter.newLocationKey = null;
 			});
 		}
-		if (messageWindow.newCollabKey && !messageWindow.creatingCollab && partner) {
+		if (contactFooter.newCollabKey && !contactFooter.creatingCollab && partner) {
 			no_changes = false;
-			kardiacrm.requestDelete('crm/Partners/' + partner + '/Collaborators/' + messageWindow.newCollabKey, 'resync', completion, function(resp) {
-				messageWindow.newCollabKey = null;
+			kardiacrm.requestDelete('crm/Partners/' + partner + '/Collaborators/' + contactFooter.newCollabKey, 'resync', completion, function(resp) {
+				contactFooter.newCollabKey = null;
 			});
 		}
-		if (messageWindow.newTodoKey && !messageWindow.creatingTodo && partner) {
+		if (contactFooter.newTodoKey && !contactFooter.creatingTodo && partner) {
 			no_changes = false;
-			kardiacrm.requestDelete('crm/Partners/' + partner + '/Todos/' + messageWindow.newTodoKey, 'resync', completion, function(resp) {
-				messageWindow.newTodoKey = null;
+			kardiacrm.requestDelete('crm/Partners/' + partner + '/Todos/' + contactFooter.newTodoKey, 'resync', completion, function(resp) {
+				contactFooter.newTodoKey = null;
 			});
 		}
-		if (messageWindow.newContactHistoryKey && !messageWindow.creatingContactHistory && partner) {
+		if (contactFooter.newContactHistoryKey && !contactFooter.creatingContactHistory && partner) {
 			no_changes = false;
-			kardiacrm.requestDelete('crm/Partners/' + partner + '/ContactHistory/' + messageWindow.newContactHistoryKey, 'resync', completion, function(resp) {
-				messageWindow.newContactHistoryKey = null;
+			kardiacrm.requestDelete('crm/Partners/' + partner + '/ContactHistory/' + contactFooter.newContactHistoryKey, 'resync', completion, function(resp) {
+				contactFooter.newContactHistoryKey = null;
 			});
 		}
-		if (messageWindow.newAutorecordKey && !messageWindow.creatingAutorecord && partner) {
+		if (contactFooter.newAutorecordKey && !contactFooter.creatingAutorecord && partner) {
 			no_changes = false;
-			kardiacrm.requestDelete('crm/Partners/' + partner + '/ContactAutorecord/' + messageWindow.newAutorecordKey, 'resync', completion, function(resp) {
-				messageWindow.newAutorecordKey = null;
+			kardiacrm.requestDelete('crm/Partners/' + partner + '/ContactAutorecord/' + contactFooter.newAutorecordKey, 'resync', completion, function(resp) {
+				contactFooter.newAutorecordKey = null;
 			});
 		}
-		if (messageWindow.newPartnerKey && !messageWindow.creatingPartner) {
+		if (contactFooter.newPartnerKey && !contactFooter.creatingPartner) {
 			no_changes = false;
-			kardiacrm.requestDelete('partner/Partners/' + messageWindow.newPartnerKey, 'resync', completion, function(resp) {
-				messageWindow.newPartnerKey = null;
+			kardiacrm.requestDelete('partner/Partners/' + contactFooter.newPartnerKey, 'resync', completion, function(resp) {
+				contactFooter.newPartnerKey = null;
 			});
 		}
 		
@@ -523,41 +523,41 @@ var messageWindow = {
 	//
 	reEvaluate: function(event) {
 		// If reset pending, don't do this, instead defer until later.
-		if (messageWindow.do_reset) {
-			messageWindow.do_reeval = true;
+		if (contactFooter.do_reset) {
+			contactFooter.do_reeval = true;
 			return;
 		}
-		messageWindow.log("reEvaluate()");
+		contactFooter.log("reEvaluate()");
 
-		messageWindow.do_reeval = false;
+		contactFooter.do_reeval = false;
 
 		// Make a note of current field values, and save previous ones.
-		messageWindow.prevData = {};
-		for(var k in messageWindow.curData)
-			messageWindow.prevData[k] = messageWindow.curData[k];
-		messageWindow.curData.assignee = messageWindow.jQuery("#todo-assignee")[0].value;
-		messageWindow.curData.todotype = messageWindow.jQuery("#todo-type")[0].value;
-		messageWindow.curData.roletype = messageWindow.jQuery("#newperson-role")[0].value;
-		messageWindow.curData.days = messageWindow.jQuery("#todo-days")[0].value;
-		messageWindow.curData.first = messageWindow.jQuery("#newperson-first")[0].value;
-		messageWindow.curData.last = messageWindow.jQuery("#newperson-last")[0].value;
-		messageWindow.curData.email = messageWindow.jQuery("#newperson-email")[0].value;
-		messageWindow.curData.todo_comment = messageWindow.jQuery("#todo-comment")[0].value;
+		contactFooter.prevData = {};
+		for(var k in contactFooter.curData)
+			contactFooter.prevData[k] = contactFooter.curData[k];
+		contactFooter.curData.assignee = contactFooter.jQuery("#todo-assignee")[0].value;
+		contactFooter.curData.todotype = contactFooter.jQuery("#todo-type")[0].value;
+		contactFooter.curData.roletype = contactFooter.jQuery("#newperson-role")[0].value;
+		contactFooter.curData.days = contactFooter.jQuery("#todo-days")[0].value;
+		contactFooter.curData.first = contactFooter.jQuery("#newperson-first")[0].value;
+		contactFooter.curData.last = contactFooter.jQuery("#newperson-last")[0].value;
+		contactFooter.curData.email = contactFooter.jQuery("#newperson-email")[0].value;
+		contactFooter.curData.todo_comment = contactFooter.jQuery("#todo-comment")[0].value;
 
 		// Save current values of fields that may be re-used when the user re-opens
 		// this screen later on.
-		if (messageWindow.curData.assignee)
-			kardiacrm.last_assignee = messageWindow.curData.assignee;
-		if (messageWindow.curData.todotype)
-			kardiacrm.last_todo_type = messageWindow.curData.todotype;
-		if (messageWindow.curData.roletype !== null)
-			kardiacrm.last_role_type = messageWindow.curData.roletype;
-		if (messageWindow.curData.days)
-			kardiacrm.last_due_days = messageWindow.curData.days;
+		if (contactFooter.curData.assignee)
+			kardiacrm.last_assignee = contactFooter.curData.assignee;
+		if (contactFooter.curData.todotype)
+			kardiacrm.last_todo_type = contactFooter.curData.todotype;
+		if (contactFooter.curData.roletype !== null)
+			kardiacrm.last_role_type = contactFooter.curData.roletype;
+		if (contactFooter.curData.days)
+			kardiacrm.last_due_days = contactFooter.curData.days;
 
 		// Reset the kardia "flags" next to email names in the header
 		if (kardiacrm.logged_in) {
-			messageWindow.log("addKardiaButton()");
+			contactFooter.log("addKardiaButton()");
 			mainWindow.addKardiaButton(window);
 		}
 
@@ -568,46 +568,46 @@ var messageWindow = {
 			var authorAddressArray = {};
 			var authorNameArray = {};
 			parser.parseHeadersWithArray(author, authorAddressArray, authorNameArray, {});
-			messageWindow.authorAddress = authorAddressArray.value[0];
+			contactFooter.authorAddress = authorAddressArray.value[0];
 
 			// Try to find first and last name if possible
-			messageWindow.authorFullName = authorNameArray.value[0];
-			messageWindow.authorFirstName = null;
-			messageWindow.authorLastName = null;
-			if (messageWindow.authorFullName && messageWindow.authorAddress && messageWindow.authorFullName.toLowerCase() != messageWindow.authorAddress.toLowerCase()) {
-				var comma_idx = messageWindow.authorFullName.indexOf(',');
-				var space_idx = messageWindow.authorFullName.indexOf(' ');
-				var space_last_idx = messageWindow.authorFullName.lastIndexOf(' ');
+			contactFooter.authorFullName = authorNameArray.value[0];
+			contactFooter.authorFirstName = null;
+			contactFooter.authorLastName = null;
+			if (contactFooter.authorFullName && contactFooter.authorAddress && contactFooter.authorFullName.toLowerCase() != contactFooter.authorAddress.toLowerCase()) {
+				var comma_idx = contactFooter.authorFullName.indexOf(',');
+				var space_idx = contactFooter.authorFullName.indexOf(' ');
+				var space_last_idx = contactFooter.authorFullName.lastIndexOf(' ');
 				if (comma_idx >= 0 && (space_idx > comma_idx || space_idx < 0)) {
-					messageWindow.authorFirstName = messageWindow.authorFullName.substr(((space_idx == comma_idx+1)?space_idx:comma_idx) + 1);
-					messageWindow.authorLastName = messageWindow.authorFullName.substr(0, comma_idx);
+					contactFooter.authorFirstName = contactFooter.authorFullName.substr(((space_idx == comma_idx+1)?space_idx:comma_idx) + 1);
+					contactFooter.authorLastName = contactFooter.authorFullName.substr(0, comma_idx);
 				}
 				else if (space_last_idx >= 0) {
-					messageWindow.authorFirstName = messageWindow.authorFullName.substr(0, space_last_idx);
-					messageWindow.authorLastName = messageWindow.authorFullName.substr(space_last_idx + 1);
+					contactFooter.authorFirstName = contactFooter.authorFullName.substr(0, space_last_idx);
+					contactFooter.authorLastName = contactFooter.authorFullName.substr(space_last_idx + 1);
 				}
 				else {
-					messageWindow.authorFirstName = messageWindow.authorFullName;
-					messageWindow.authorLastName = "";
+					contactFooter.authorFirstName = contactFooter.authorFullName;
+					contactFooter.authorLastName = "";
 				}
 			}
 		}
 
 		// Things we do only if we've just switched to this particular email message
-		if (!messageWindow.initialized) {
+		if (!contactFooter.initialized) {
 			// Is author in Kardia?  If not, note that this is a new sender so that we
 			// auto-create a record in Kardia for them when the user wants to record the
 			// email or whatnot.
 			//
-			messageWindow.isNewSender = false;
-			if (kardiacrm.partners_loaded && messageWindow.authorAddress && messageWindow.getEmailIndex(messageWindow.authorAddress) < 0)
-				messageWindow.isNewSender = true;
+			contactFooter.isNewSender = false;
+			if (kardiacrm.partners_loaded && contactFooter.authorAddress && contactFooter.getEmailIndex(contactFooter.authorAddress) < 0)
+				contactFooter.isNewSender = true;
 
 			// Automatically check the Record Contact checkbox if this email's Message ID
 			// is already in the database.  Also set the newContactHistoryKey value so that
 			// the user can "undo" the recording of the email in Kardia by unchecking the box.
 			//
-			var idx = messageWindow.getEmailIndex(messageWindow.authorAddress);
+			var idx = contactFooter.getEmailIndex(contactFooter.authorAddress);
 			if (kardiacrm.partner_data_loaded && idx >= 0 && mainWindow.notes[idx] && gMessageDisplay.displayedMessage) {
 				var msgid_exists = false;
 				for(var k=0;k<mainWindow.notes[idx].length;k++) {
@@ -618,8 +618,8 @@ var messageWindow = {
 					}
 				}
 				if (msgid_exists) {
-					messageWindow.jQuery("#record-contact").prop("checked", true);
-					messageWindow.newContactHistoryKey = msgid_exists;
+					contactFooter.jQuery("#record-contact").prop("checked", true);
+					contactFooter.newContactHistoryKey = msgid_exists;
 				}
 			}
 
@@ -644,8 +644,8 @@ var messageWindow = {
 					}
 				}
 				if (has_autorecord) {
-					messageWindow.jQuery("#record-future").prop("checked", true);
-					messageWindow.newAutorecordKey = has_autorecord;
+					contactFooter.jQuery("#record-future").prop("checked", true);
+					contactFooter.newAutorecordKey = has_autorecord;
 				}
 			}
 
@@ -655,124 +655,124 @@ var messageWindow = {
 			// away, or if they open this window on any future or past email from the same
 			// email address, this here gets triggered.
 			//
-			if (kardiacrm.partners_loaded && messageWindow.jQuery("#record-future").prop("checked") && !messageWindow.jQuery("#record-contact").prop("checked")) {
-				messageWindow.jQuery("#record-contact").prop("checked", true);
+			if (kardiacrm.partners_loaded && contactFooter.jQuery("#record-future").prop("checked") && !contactFooter.jQuery("#record-contact").prop("checked")) {
+				contactFooter.jQuery("#record-contact").prop("checked", true);
 			}
 		}
 
 		// Whether to show the new person info box at bottom
-		if ((messageWindow.jQuery("#record-contact").prop("checked") || messageWindow.jQuery("#record-todo").prop("checked") || messageWindow.jQuery("#record-future").prop("checked")) && messageWindow.isNewSender) {
-			messageWindow.jQuery("#newperson-box").css({display: "block"});
-			messageWindow.creatingPartner = true;
-			messageWindow.creatingLocation = true;
-			messageWindow.creatingEmail = true;
+		if ((contactFooter.jQuery("#record-contact").prop("checked") || contactFooter.jQuery("#record-todo").prop("checked") || contactFooter.jQuery("#record-future").prop("checked")) && contactFooter.isNewSender) {
+			contactFooter.jQuery("#newperson-box").css({display: "block"});
+			contactFooter.creatingPartner = true;
+			contactFooter.creatingLocation = true;
+			contactFooter.creatingEmail = true;
 
 			// Fill the editboxes for email, first name, and last name.
-			if (!messageWindow.jQuery("#newperson-email")[0].value) {
-				messageWindow.jQuery("#newperson-email").prop("value", messageWindow.authorAddress);
-				messageWindow.curData.email = messageWindow.jQuery("#newperson-email")[0].value;
+			if (!contactFooter.jQuery("#newperson-email")[0].value) {
+				contactFooter.jQuery("#newperson-email").prop("value", contactFooter.authorAddress);
+				contactFooter.curData.email = contactFooter.jQuery("#newperson-email")[0].value;
 			}
-			if (!messageWindow.jQuery("#newperson-first")[0].value) {
-				messageWindow.jQuery("#newperson-first").prop("value", messageWindow.authorFirstName);
-				messageWindow.curData.first = messageWindow.jQuery("#newperson-first")[0].value;
+			if (!contactFooter.jQuery("#newperson-first")[0].value) {
+				contactFooter.jQuery("#newperson-first").prop("value", contactFooter.authorFirstName);
+				contactFooter.curData.first = contactFooter.jQuery("#newperson-first")[0].value;
 			}
-			if (!messageWindow.jQuery("#newperson-last")[0].value) {
-				messageWindow.jQuery("#newperson-last").prop("value", messageWindow.authorLastName);
-				messageWindow.curData.last = messageWindow.jQuery("#newperson-last")[0].value;
+			if (!contactFooter.jQuery("#newperson-last")[0].value) {
+				contactFooter.jQuery("#newperson-last").prop("value", contactFooter.authorLastName);
+				contactFooter.curData.last = contactFooter.jQuery("#newperson-last")[0].value;
 			}
 
 			// Fill in the role options
-			messageWindow.jQuery("#newperson-role menupopup")
+			contactFooter.jQuery("#newperson-role menupopup")
 				.empty()
 				.append(
-					messageWindow.jQuery("<menuitem>", {
+					contactFooter.jQuery("<menuitem>", {
 						value: '',
 						label: '(none)',
 					})
 				);
 			for (var i in kardiacrm.data.collabTypeList) {
-				messageWindow.jQuery("#newperson-role menupopup")
+				contactFooter.jQuery("#newperson-role menupopup")
 					.append(
-						messageWindow.jQuery("<menuitem>", {
+						contactFooter.jQuery("<menuitem>", {
 							value: '' + i,
 							label: kardiacrm.data.collabTypeList[i].label,
 						})
 					);
 				if (kardiacrm.last_role_type !== null)
-					messageWindow.jQuery("#newperson-role")[0].value = kardiacrm.last_role_type;
+					contactFooter.jQuery("#newperson-role")[0].value = kardiacrm.last_role_type;
 			}
 		}
 		else {
-			messageWindow.jQuery("#newperson-box").css({display: "none"});
-			messageWindow.creatingPartner = false; 
-			messageWindow.creatingLocation = false; 
-			messageWindow.creatingEmail = false;
+			contactFooter.jQuery("#newperson-box").css({display: "none"});
+			contactFooter.creatingPartner = false; 
+			contactFooter.creatingLocation = false; 
+			contactFooter.creatingEmail = false;
 		}
 
 		// Whether to create a contact history record for this email
-		if (messageWindow.jQuery("#record-contact").prop("checked")) {
-			messageWindow.creatingContactHistory = true;
+		if (contactFooter.jQuery("#record-contact").prop("checked")) {
+			contactFooter.creatingContactHistory = true;
 		}
 		else {
-			messageWindow.creatingContactHistory = false;
+			contactFooter.creatingContactHistory = false;
 		}
 
 		// Whether to create the collaborator record (role not '(none)')
-		if (messageWindow.creatingPartner && messageWindow.jQuery("#newperson-role")[0].value) {
-			messageWindow.creatingCollab = true;
+		if (contactFooter.creatingPartner && contactFooter.jQuery("#newperson-role")[0].value) {
+			contactFooter.creatingCollab = true;
 		}
 		else {
-			messageWindow.creatingCollab = false;
+			contactFooter.creatingCollab = false;
 		}
 
 		// Whether to create an autorecord entry for this person
-		if (messageWindow.jQuery("#record-future").prop("checked")) {
-			messageWindow.creatingAutorecord = true;
+		if (contactFooter.jQuery("#record-future").prop("checked")) {
+			contactFooter.creatingAutorecord = true;
 		}
 		else {
-			messageWindow.creatingAutorecord = false;
+			contactFooter.creatingAutorecord = false;
 		}
 
 		// Whether to show the new task info
-		if (messageWindow.jQuery("#record-todo").prop("checked")) {
-			messageWindow.jQuery("#todo-options").css({display: "block"});
-			messageWindow.creatingTodo = true;
+		if (contactFooter.jQuery("#record-todo").prop("checked")) {
+			contactFooter.jQuery("#todo-options").css({display: "block"});
+			contactFooter.creatingTodo = true;
 
 			// Fill in the task type options and assignee options
-			messageWindow.jQuery("#todo-type menupopup").empty();
+			contactFooter.jQuery("#todo-type menupopup").empty();
 			for (var i in kardiacrm.data.todoTypeList) {
-				messageWindow.jQuery("#todo-type menupopup")
+				contactFooter.jQuery("#todo-type menupopup")
 					.append(
-						messageWindow.jQuery("<menuitem>", {
+						contactFooter.jQuery("<menuitem>", {
 							value: '' + i,
 							label: kardiacrm.data.todoTypeList[i].type_label,
 						})
 					);
 				if (kardiacrm.last_todo_type)
-					messageWindow.jQuery("#todo-type")[0].value = kardiacrm.last_todo_type;
+					contactFooter.jQuery("#todo-type")[0].value = kardiacrm.last_todo_type;
 			}
-			messageWindow.jQuery("#todo-assignee menupopup").empty();
+			contactFooter.jQuery("#todo-assignee menupopup").empty();
 			for (var i in kardiacrm.data.staffList) {
 				if (kardiacrm.data.staffList[i].is_staff && kardiacrm.data.staffList[i].kardia_login) {
-					messageWindow.jQuery("#todo-assignee menupopup")
+					contactFooter.jQuery("#todo-assignee menupopup")
 						.append(
-							messageWindow.jQuery("<menuitem>", {
+							contactFooter.jQuery("<menuitem>", {
 								value: kardiacrm.data.staffList[i].partner_id,
 								label: kardiacrm.data.staffList[i].partner_name,
 							})
 						);
 					if (kardiacrm.last_assignee)
-						messageWindow.jQuery("#todo-assignee")[0].value = kardiacrm.last_assignee;
+						contactFooter.jQuery("#todo-assignee")[0].value = kardiacrm.last_assignee;
 					else
-						messageWindow.jQuery("#todo-assignee")[0].value = mainWindow.myId;
+						contactFooter.jQuery("#todo-assignee")[0].value = mainWindow.myId;
 				}
 			}
 			if (kardiacrm.last_due_days)
-				messageWindow.jQuery("#todo-days")[0].value = '' + kardiacrm.last_due_days;
+				contactFooter.jQuery("#todo-days")[0].value = '' + kardiacrm.last_due_days;
 		}
 		else {
-			messageWindow.jQuery("#todo-options").css({display: "none"});
-			messageWindow.creatingTodo = false;
+			contactFooter.jQuery("#todo-options").css({display: "none"});
+			contactFooter.creatingTodo = false;
 		}
 
 		// Mark initialization complete if we operated with full data awareness
@@ -781,18 +781,18 @@ var messageWindow = {
 		// The check for !do_sidebar here prevents us from calling things initialized
 		// if we're about to reload the sidebar from a message context change.
 		//
-		if (!messageWindow.initialized && kardiacrm.partner_data_loaded && !messageWindow.do_sidebar && gMessageDisplay.displayedMessage) {
-			messageWindow.log("initialized");
-			messageWindow.enableControls();
-			messageWindow.initialized = true;
+		if (!contactFooter.initialized && kardiacrm.partner_data_loaded && !contactFooter.do_sidebar && gMessageDisplay.displayedMessage) {
+			contactFooter.log("initialized");
+			contactFooter.enableControls();
+			contactFooter.initialized = true;
 		}
 
 		// Save changes, if needed.
-		messageWindow.reSync();
+		contactFooter.reSync();
 
 		// Lookup emails, if needed.
-		if (messageWindow.do_sidebar) {
-			messageWindow.reloadMainSidebar(false);
+		if (contactFooter.do_sidebar) {
+			contactFooter.reloadMainSidebar(false);
 		}
 	},
 
@@ -808,13 +808,13 @@ var messageWindow = {
 
 	// Disable all controls
 	disableControls: function() {
-		messageWindow.jQuery("#contact-box").find("textbox,menulist,checkbox").prop("disabled", true);
+		contactFooter.jQuery("#contact-box").find("textbox,menulist,checkbox").prop("disabled", true);
 	},
 
 
 	// Enable all controls
 	enableControls: function() {
-		messageWindow.jQuery("#contact-box").find("textbox,menulist,checkbox").removeProp("disabled");
+		contactFooter.jQuery("#contact-box").find("textbox,menulist,checkbox").removeProp("disabled");
 	},
 
 
@@ -822,8 +822,8 @@ var messageWindow = {
 	// reload even if the email message context has not changed.
 	//
 	reloadMainSidebar: function(force) {
-		messageWindow.log("reloadMainSidebar()");
-		messageWindow.do_sidebar = false;
+		contactFooter.log("reloadMainSidebar()");
+		contactFooter.do_sidebar = false;
 		mainWindow.findEmails([gMessageDisplay.displayedMessage], force);
 	},
 
@@ -834,98 +834,142 @@ var messageWindow = {
 	// only in the main 3-pane window.
 	//
 	log: function(msg) {
-		if (messageWindow.logging) {
+		if (contactFooter.logging) {
 			var date = new Date();
 			var ms = '' + date.getMilliseconds();
 			if (date.getMilliseconds() < 100) ms = '0' + ms;
 			if (date.getMilliseconds() < 10) ms = '0' + ms;
-			messageWindow.console.logStringMessage(date.toTimeString() + "." + ms + " messageWindow " + msg + " do_reset:" + (messageWindow.do_reset?'true':'false') + " do_reeval:" + (messageWindow.do_reeval?'true':'false') + " do_sidebar:" + (messageWindow.do_sidebar?'true':'false') + " partnerlist:" + (kardiacrm.partners_loaded?'true':'false') + " partnerdata:" + (kardiacrm.partner_data_loaded?'true':'false'));
+			contactFooter.console.logStringMessage(date.toTimeString() + "." + ms + " contactFooter " + msg + " do_reset:" + (contactFooter.do_reset?'true':'false') + " do_reeval:" + (contactFooter.do_reeval?'true':'false') + " do_sidebar:" + (contactFooter.do_sidebar?'true':'false') + " partnerlist:" + (kardiacrm.partners_loaded?'true':'false') + " partnerdata:" + (kardiacrm.partner_data_loaded?'true':'false'));
 		}
 	},
 
 
 	// Reset the window and checkboxes as if it had just been opened.
 	reset: function() {
-		messageWindow.log("reset()");
+		contactFooter.log("reset()");
 		if (!kardiacrm.isPending('resync')) {
-			messageWindow.reSync(messageWindow.reset_bh);
+			contactFooter.reSync(contactFooter.reset_bh);
 		}
 		else {
-			messageWindow.do_reset = true;
+			contactFooter.do_reset = true;
 		}
 	},
 
 	// Bottom half of the reset logic; this is where the work is done.
 	reset_bh: function () {
-		messageWindow.log("reset_bh()");
-		messageWindow.disableControls();
+		contactFooter.log("reset_bh()");
+		contactFooter.disableControls();
 
-		messageWindow.initialized = false;
-		messageWindow.do_reset=false;
-		messageWindow.isNewSender=false;
-		messageWindow.authorAddress=null;
-		messageWindow.authorFullName=null;
-		messageWindow.authorFirstName=null;
-		messageWindow.authorLastName=null;
+		contactFooter.initialized = false;
+		contactFooter.do_reset=false;
+		contactFooter.isNewSender=false;
+		contactFooter.authorAddress=null;
+		contactFooter.authorFullName=null;
+		contactFooter.authorFirstName=null;
+		contactFooter.authorLastName=null;
 
-		messageWindow.curData = { assignee:null, todotype:null, roletype:null, days:null, first:null, last:null, email:null, todo_comment:null };
-		messageWindow.prevData = { };
+		contactFooter.curData = { assignee:null, todotype:null, roletype:null, days:null, first:null, last:null, email:null, todo_comment:null };
+		contactFooter.prevData = { };
 
-		messageWindow.creatingPartner=false;
-		messageWindow.creatingLocation=false;
-		messageWindow.creatingEmail=false;
-		messageWindow.creatingCollab=false;
-		messageWindow.creatingContactHistory=false;
-		messageWindow.creatingAutorecord=false;
-		messageWindow.creatingTodo=false;
+		contactFooter.creatingPartner=false;
+		contactFooter.creatingLocation=false;
+		contactFooter.creatingEmail=false;
+		contactFooter.creatingCollab=false;
+		contactFooter.creatingContactHistory=false;
+		contactFooter.creatingAutorecord=false;
+		contactFooter.creatingTodo=false;
 
-		messageWindow.newPartnerKey=null;
-		messageWindow.newLocationKey=null;
-		messageWindow.newEmailKey=null;
-		messageWindow.newCollabKey=null;
-		messageWindow.newContactHistoryKey=null;
-		messageWindow.newAutorecordKey=null;
-		messageWindow.newTodoKey=null;
+		contactFooter.newPartnerKey=null;
+		contactFooter.newLocationKey=null;
+		contactFooter.newEmailKey=null;
+		contactFooter.newCollabKey=null;
+		contactFooter.newContactHistoryKey=null;
+		contactFooter.newAutorecordKey=null;
+		contactFooter.newTodoKey=null;
 
-		messageWindow.jQuery("#record-contact").removeProp("checked");
-		messageWindow.jQuery("#record-todo").removeProp("checked");
-		messageWindow.jQuery("#record-future").removeProp("checked");
+		contactFooter.jQuery("#record-contact").removeProp("checked");
+		contactFooter.jQuery("#record-todo").removeProp("checked");
+		contactFooter.jQuery("#record-future").removeProp("checked");
 
 		// Chain to other queued operations that could not be done until
 		// after the reset finished.
 		//
-		if (messageWindow.do_reeval) {
-			messageWindow.reEvaluate(null);
-		} else if (messageWindow.do_sidebar) {
-			messageWindow.reloadMainSidebar(false);
+		if (contactFooter.do_reeval) {
+			contactFooter.reEvaluate(null);
+		} else if (contactFooter.do_sidebar) {
+			contactFooter.reloadMainSidebar(false);
 		}
+	},
+
+	// Initialize() is called by the embedder, providing our linkages to the
+	// outside world, so to speak.
+	//
+	// 'param' is an object with the following properties:
+	//    getText() - returns a string containing the text of the email message
+	//    getAddress() - returns a string containing the name and email address of the
+	//        person we are corresponding with, i.e., "Joe Smith <joe@example.com>".
+	//        If we are composing, this may be the To:.  If we are reading, this may
+	//        be the From:.
+	//    profileNotify() - called when the footer has caused server data to change
+	//        related to a partner profile.  ID of the partner is passed as the first
+	//        parameter to this callback.
+	//    getHeaders() - returns an object containing the headers of the current
+	//        message, in the properties 'to', 'cc', 'bcc', 'from', 'subject',
+	//        and 'date' (a Date object).
+	//    evalPoint - a string representing at what point we're supposed to actually
+	//	  save data to the server.  Can be 'change', meaning to save automatically
+	//	  whenever a change happens to the controls, or 'complete', meaning to only
+	//	  save data when the Complete() function is called.
+	//
+	// Expected global variables include:
+	//    mainWindow - a reference to the main 3pane mail window
+	//    kardiacrm - the application-wide Kardia CRM namespace/object
+	//
+	Initialize: function(param) {
+		contactFooter.config = param;
+	},
+
+	// ChangeNotify() is called by the embedder when external data, such as the address
+	// of the person we're interacting with (getAddress), has changed and we need to
+	// re-evaluate these things.  'kind' can be 'text', 'address', or 'headers'.  The
+	// changed data can be retrieved by the callbacks passed to Initialize().
+	//
+	ChangeNotify: function(kind) {
+	},
+
+	// Complete() is called by the embedder when the user is finished, for example
+	// on window close or message send.
+	//
+	Complete: function() {
 	}
 };
 
 addEventListener("unload", function() {
-	messageWindow.log("unload");
-	messageWindow.reset();
+	contactFooter.log("unload");
+	contactFooter.reset();
 }, false);
 
 addEventListener("load", function() {
+	return; // disable this for now, need quick release of TB 45.0 update
+
 	// Load jQuery
 	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
 	//loader.loadSubScript("chrome://messenger/content/jquery.js", window);
 	loader.loadSubScript("chrome://kardia/content/jquery-1.11.1.js", window);
-	messageWindow.jQuery = window.jQuery.noConflict(true);
+	contactFooter.jQuery = window.jQuery.noConflict(true);
 
 	// Gain access to the console for logging
-	messageWindow.console = Components.classes["@mozilla.org/consoleservice;1"]
+	contactFooter.console = Components.classes["@mozilla.org/consoleservice;1"]
 	        .getService(Components.interfaces.nsIConsoleService);
-	messageWindow.log("load");
+	contactFooter.log("load");
 
 	// Add the kardia icons/flags when the message is rendered.
 	gMessageListeners.push ({
 		onEndHeaders: function () {
 			kardiacrm.lastMessageWindow = window;
-			messageWindow.do_reeval = true;
-			messageWindow.do_sidebar = true;
-			messageWindow.reset();
+			contactFooter.do_reeval = true;
+			contactFooter.do_sidebar = true;
+			contactFooter.reset();
 		},
 		onStartHeaders: function() {},
 		onStartAttachments: function () {},
@@ -934,38 +978,38 @@ addEventListener("load", function() {
 	});
 
 	// Trap interactions with the checkboxes
-	messageWindow.jQuery("#record-contact").click(function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#record-contact").click(function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#record-todo").click(function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#record-todo").click(function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#record-future").click(function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#record-future").click(function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#todo-assignee").bind("command", function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#todo-assignee").bind("command", function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#todo-type").bind("command", function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#todo-type").bind("command", function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#newperson-role").bind("command", function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#newperson-role").bind("command", function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#todo-days").bind("change", function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#todo-days").bind("change", function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#todo-comment").bind("change", function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#todo-comment").bind("change", function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#newperson-email").bind("change", function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#newperson-email").bind("change", function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#newperson-first").bind("change", function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#newperson-first").bind("change", function(event) {
+		contactFooter.reEvaluate(event);
 	});
-	messageWindow.jQuery("#newperson-last").bind("change", function(event) {
-		messageWindow.reEvaluate(event);
+	contactFooter.jQuery("#newperson-last").bind("change", function(event) {
+		contactFooter.reEvaluate(event);
 	});
 
 }, false);
