@@ -358,14 +358,14 @@ popover_newperson_simple "widget/component-decl"
 					    img = isnull( ( select
 							path = :doc:e_current_folder + '/' + :doc:e_current_filename
 						    from
-							/apps/kardia/data/Kardia_DB/e_document/rows doc,
 							/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+							/apps/kardia/data/Kardia_DB/e_document/rows doc,
 							/apps/kardia/data/Kardia_DB/e_document_type/rows dt
 						    where
-							:dt:e_doc_type_label = 'Profile Photo' and
-							:doc:e_doc_type_id = :dt:e_doc_type_id and
+							:pd:p_partner_key = :p:p_partner_key and
 							:pd:e_document_id = :doc:e_document_id and
-							:pd:p_partner_key = :p:p_partner_key
+							:doc:e_doc_type_id = :dt:e_doc_type_id and
+							:dt:e_doc_type_label = 'Profile Photo'
 						    order by
 							:pd:s_date_modified desc
 						    limit
@@ -475,7 +475,7 @@ popover_newperson_simple "widget/component-decl"
 
 			on_advadd1 "widget/connector" { event=Click; target=newp_form; action=Discard; }
 			on_advadd2 "widget/connector" { event=Click; target=newp_win; action=Close; }
-			on_advadd3 "widget/connector" { event=Click; target=popover_newperson_simple; action=AdvancedAddPerson; Origin=runclient(:point_var:value); event_delay=0.25; }
+			on_advadd3 "widget/connector" { event=Click; target=popover_newperson_simple; action=AdvancedAddPerson; Origin=runclient(:point_var:value); event_delay=0.5; }
 			}
 		    }
 		}

@@ -1,0 +1,47 @@
+$Version=2$
+opening_balances_req "widget/component-decl"
+    {
+    // Request re-doing opening balances batches - process
+    RequestNewBalances "widget/component-decl-action" { }
+    Requested "widget/component-decl-event" { }
+    opening_balances_cn "widget/connector"
+	{
+	event=RequestNewBalances;
+	target=req_osrc;
+	action=QueryParam;
+	event_all_params=1;
+	}
+
+    req_osrc "widget/osrc"
+	{
+	req_a_year "widget/parameter"		{ param_name=year; type=integer; }
+	req_a_ledger_number "widget/parameter"	{ param_name=ledger; type=string; }
+	req_comm "widget/parameter"		{ param_name=comment; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " INSERT
+			/apps/kardia/data/Kardia_DB/s_request/rows r
+		SELECT
+			s_request_type = 'REOPENBAL',
+			s_object_key_1 = :parameters:ledger,
+			s_object_key_2 = convert(string,:parameters:year),
+			s_date_requested = getdate(),
+			s_request_comment = :parameters:comment,
+			s_requested_by = user_name(),
+			s_request_sec_context = 'kardia:ledger:' + :parameters:ledger,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		";
+
+	end_req "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=opening_balances_req;
+	    action=Requested;
+	    batch = runclient(:req_osrc:batch);
+	    ledger = runclient(:req_osrc:ledger);
+	    }
+	}
+    }

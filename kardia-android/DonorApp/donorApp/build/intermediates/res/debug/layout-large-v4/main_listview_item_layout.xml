@@ -2,54 +2,60 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/RelativeLayout1"
     android:layout_width="match_parent"
-    android:layout_height="120dp"
-    android:orientation="horizontal" >
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
 
-    <!-- Amount -->
-    <TextView 
-        android:id="@+id/amount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:textColor="#2ACA2D"
-        android:layout_alignLeft="@+id/text"
-        android:layout_marginLeft="100dp"
-        android:textSize="22sp" />
-     
 
     <!-- The Title -->
-    <TextView 
+    <TextView
         android:id="@+id/subject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="35dp"
-        android:layout_marginLeft="25dp"
-        android:textSize="30sp" />
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="18dp"
+        android:layout_marginLeft="18dp"
+        android:layout_marginStart="18dp"
+        android:textSize="24sp"
+        android:layout_toLeftOf="@+id/detail"
+        android:layout_toStartOf="@+id/detail"/>
+
+    <TextView
+        android:id="@+id/detail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#37AD00"
+        android:layout_marginRight="18dp"
+        android:layout_marginEnd="18dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="18dp"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/fundName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="18dp"
+        android:layout_marginStart="18dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="6dp"
+        android:layout_below="@id/subject"
+        android:textSize="18sp" />
 
     <!-- The Date -->
 
-    <TextView 
+    <TextView
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/subject"
-        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/detail"
+        android:layout_alignEnd="@+id/detail"
+        android:layout_below="@+id/detail"
+        android:layout_marginBottom="6dp"
+        android:layout_marginTop="6dp"
         android:textColor="#303030"
-        android:textSize="22sp" />
-    
-        <!-- Amount Text -->
+        android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="250dp"
-        android:text="@string/amount"
-        android:textSize="22sp" />
-
-</RelativeLayout>
-<!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout-large/main_listview_item_layout.xml -->
+</RelativeLayout><!-- From: file:/C:/kardia-git/kardia-android/DonorApp/donorApp/src/main/res/layout-large/main_listview_item_layout.xml -->

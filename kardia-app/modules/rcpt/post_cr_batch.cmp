@@ -313,7 +313,24 @@ post_cr_batch "widget/component-decl"
 	replicasize=1; readahead=1; autoquery=never;
 
 
-	sql = "	DELETE
+	sql = "	DECLARE OBJECT config;
+
+		-- Get configuration data on account codes we're going to use.
+		SELECT
+			:config:admin_exp = isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows ac where :ac:a_ledger_number = :parameters:a_ledger_number and :ac:a_config_name = 'RcptAdminExp'), '5900'),
+			:config:admin_rev = isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows ac where :ac:a_ledger_number = :parameters:a_ledger_number and :ac:a_config_name = 'RcptAdminRev'), '4900'),
+			:config:ifa_acct = isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows ac where :ac:a_ledger_number = :parameters:a_ledger_number and :ac:a_config_name = 'GLIfaAcct'), '1900')
+		;
+
+		-- Get configuration data on account classes.
+		SELECT
+			:config:admin_exp_class = isnull( (select :a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:a_ledger_number and :a:a_account_code = :config:admin_exp), '52'),
+			:config:admin_rev_class = isnull( (select :a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:a_ledger_number and :a:a_account_code = :config:admin_rev), '42'),
+			:config:cash_class = isnull( (select :a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:a_ledger_number and :a:a_account_code = :parameters:a_cash_account), '10'),
+			:config:ifa_class = isnull( (select :a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:a_ledger_number and :a:a_account_code = :config:ifa_acct), '19')
+		;
+	
+		DELETE
 			/apps/kardia/data/Kardia_DB/a_transaction_tmp/rows t
 		WHERE
 			:t:a_ledger_number = :parameters:a_ledger_number and
@@ -335,7 +352,7 @@ post_cr_batch "widget/component-decl"
 			a_account_category=isnull( (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :gi:a_ledger_number and :a:a_account_code = :gi:a_account_code), '40'),
 			:gi:a_account_code,
 			a_amount = $0 - sum(:gi:a_amount),
-			a_posted = 0,
+			a_posted = 1,
 			a_modified = 0,
 			a_corrected = 0,
 			a_correcting = 0,
@@ -379,10 +396,10 @@ post_cr_batch "widget/component-decl"
 			a_effective_date = :b:a_default_effective_date,
 			a_transaction_type='T',
 			a_cost_center = :parameters:a_cash_costctr,
-			a_account_category='10',
+			a_account_category=:config:cash_class,
 			a_account_code = :parameters:a_cash_account,
 			a_amount = sum(:gi:a_amount),
-			a_posted = 0,
+			a_posted = 1,
 			a_modified = 0,
 			a_corrected = 0,
 			a_correcting = 0,
@@ -464,10 +481,10 @@ post_cr_batch "widget/component-decl"
 			a_transaction_type='T',
 			a_cost_center=:g:a_cost_center,
 			a_sent_document_id=:ai:a_dest_cost_center,
-			a_account_category='52',
-			a_account_code='5700',
+			a_account_category=:config:admin_exp_class,
+			a_account_code=:config:admin_exp,
 			a_amount=round(convert(money, condition(:ai:a_is_fixed == 1, condition(:g:a_calc_admin_fee >= :at:a_tmp_fixed_percentage, 1.0, condition(:g:a_calc_admin_fee == 0.0, 0.0, :g:a_calc_admin_fee / :at:a_tmp_fixed_percentage)), condition(:g:a_calc_admin_fee >= :at:a_tmp_fixed_percentage and (:at:a_tmp_total_percentage - :at:a_tmp_fixed_percentage) > 0.0, (:g:a_calc_admin_fee - :at:a_tmp_fixed_percentage) / (:at:a_tmp_total_percentage - :at:a_tmp_fixed_percentage), 0.0)) * :ai:a_percentage * sum(:g:a_amount)), 2),
-			a_posted = 0,
+			a_posted = 1,
 			a_modified = 0,
 			a_corrected = 0,
 			a_correcting = 0,
@@ -522,7 +539,7 @@ post_cr_batch "widget/component-decl"
 			:a_period,
 			:a_effective_date,
 			:a_transaction_type,
-			a_posted=0,
+			a_posted=1,
 			a_modified=0,
 			a_corrected=0,
 			a_correcting=0,
@@ -564,7 +581,7 @@ post_cr_batch "widget/component-decl"
 			:a_period,
 			:a_effective_date,
 			:a_transaction_type,
-			a_posted=0,
+			a_posted=1,
 			a_modified=0,
 			a_corrected=0,
 			a_correcting=0,
@@ -581,8 +598,8 @@ post_cr_batch "widget/component-decl"
 			s_created_by = user_name(),
 			s_modified_by = user_name(),
 			a_comment = 'Admin fee revenue',
-			a_account_code = '4700',
-			a_account_category='42',
+			a_account_code = :config:admin_rev,
+			a_account_category = :config:admin_rev_class,
 			a_amount = $0 - sum(:a_amount),
 			a_cost_center = :a_sent_document_id
 		FROM
@@ -602,7 +619,7 @@ post_cr_batch "widget/component-decl"
 		SELECT
 			a_amount = $0 - sum(:t:a_amount),
 			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_cost_center,
-			a_account_code = '1900',
+			a_account_code = :config:ifa_acct,
 			a_cost_center=:c:a_bal_cost_center,
 			:t:a_journal_number,
 			:t:a_batch_number,
@@ -610,8 +627,8 @@ post_cr_batch "widget/component-decl"
 			:t:a_period,
 			:t:a_effective_date,
 			:t:a_transaction_type,
-			a_account_category = '19',
-			a_posted = 0,
+			a_account_category = :config:ifa_class,
+			a_posted = 1,
 			a_modified = 0,
 			a_corrected = 0,
 			:t:a_correcting,

@@ -58,6 +58,9 @@ alter table p_country
 alter table p_banking_details
 	add constraint p_banking_details_pk primary key  (p_banking_details_key);
 
+alter table p_banking_type
+	add constraint p_banking_type_pk primary key  (p_banking_type);
+
 alter table p_title
 	add constraint p_title_pk primary key  (p_title);
 
@@ -195,6 +198,9 @@ alter table e_ack_type
 
 alter table e_trackactivity
 	add constraint e_trkact_pk primary key  (p_partner_key,e_username,e_sort_key);
+
+alter table e_text_expansion
+	add constraint e_exp_pk primary key  (e_exp_tag);
 
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);
@@ -396,6 +402,18 @@ alter table i_eg_gift_import
 
 alter table i_eg_giving_url
 	add constraint i_eg_giving_url_pk primary key  (a_ledger_number, a_cost_center);
+
+alter table i_crm_partner_import
+	add constraint i_crm_partner_import_pk primary key  (i_crm_import_id, i_crm_import_session_id);
+
+alter table i_crm_partner_import_option
+	add constraint i_crm_partner_import_opt_pk primary key  (i_crm_import_id, i_crm_import_session_id, i_crm_import_type_option_id);
+
+alter table i_crm_import_type
+	add constraint i_crm_import_type_pk primary key  (i_crm_import_type_id);
+
+alter table i_crm_import_type_option
+	add constraint i_crm_import_type_option_pk primary key  (i_crm_import_type_id,i_crm_import_type_option_id);
 
 alter table c_message
 	add constraint c_message_pk primary key  (c_chat_id, c_message_id);

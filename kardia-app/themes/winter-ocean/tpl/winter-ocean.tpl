@@ -150,6 +150,7 @@ kardia "widget/template"
 	//background="/apps/kardia/images/bg/blue_gradient.png";
 	background="/apps/kardia/images/bg/blue_gradient2.png";
 	//bgcolor="#ececec";
+	border_radius=6;
 	}
     tplGroupPane "widget/pane"
 	{

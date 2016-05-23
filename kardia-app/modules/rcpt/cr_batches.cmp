@@ -51,10 +51,10 @@ cr_batches "widget/component-decl"
 			:b:s_date_modified,
 			:b:s_modified_by,
 			:b:a_period,
-			rrec = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number limit 1),
-			rpost = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_posted = 1 limit 1),
-			print = (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_receipt_sent = 1 limit 1),
-			glrec = (select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1)
+			rrec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number limit 1),0),
+			rpost = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_posted = 1 limit 1),0),
+			print = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_receipt_sent = 1 limit 1),0),
+			glrec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1),0)
 		FROM 
 			/apps/kardia/data/Kardia_DB/a_batch/rows b
 		WHERE
@@ -240,6 +240,69 @@ cr_batches "widget/component-decl"
 		}
 	    }
 
+	unpost_req_cmp "widget/component"
+	    {
+	    path = "unpost_req.cmp";
+	    }
+
+	unpostcr_win "widget/childwindow"
+	    {
+	    style=dialog;
+	    titlebar=no;
+	    toplevel=yes;
+	    width=480; height=300;
+	    x=150; y=140;
+	    visible=no;
+
+	    on_req_unpost_1 "widget/connector" { event=Open; target=gl_only_var; action=SetValue; Value=:gl_only; }
+	    on_req_unpost_2 "widget/connector" { event=Open; target=unpost_from_gl; action=SetValue; Value=runclient(condition(:rcpt_form:glrec > 0, 1, 0)); }
+	    on_req_unpost_3 "widget/connector" { event=Open; target=unpost_from_cr; action=SetValue; Value=runclient(condition(:gl_only, 0, 1)); }
+
+	    gl_only_var "widget/variable" { type=integer; }
+
+	    unpost_vbox "widget/vbox"
+		{
+		width=458; height=220; x=10; y=10;
+		spacing=10;
+
+		unpost_lbl "widget/label" { height=24; font_size=16; value=runclient("Request Unposting of Batch " + :rcpt_osrc:a_batch_number + ":"); align=center; style=bold; }
+		unpost_sep "widget/pane" { height=2; style=lowered; }
+		//sp4 "widget/autolayoutspacer" { height=8; }
+
+		unpost_desc "widget/label" { height=50; style=italic; text="Unposting a batch is a privileged operation; you can request here that this batch be unposted, but another user who also has receipting and/or GL management privileges will need to approve the request"; }
+
+		unpost_from_gl "widget/component" { x=10; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=checkboxleft; text="Unpost and Remove Batch from General Ledger"; unpost_gl_hints "widget/hints" { default=runclient(condition(:rcpt_form:glrec > 0, 1, 0)); style=notnull,readonly; } }
+		unpost_from_cr "widget/component" { x=10; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=checkboxleft; text="Unpost Batch from Receipting Journal"; unpost_cr_hints "widget/hints" { default=runclient(condition(:gl_only_var:value, 0, 1)); style=notnull,readonly; } }
+		unpost_comment "widget/component" { height=50; path="/sys/cmp/smart_field.cmp"; ctl_type=textarea; text="Comments:"; }
+
+		sp4 "widget/autolayoutspacer" { height=2; }
+
+		unpost_btns "widget/hbox"
+		    {
+		    height=24;
+		    spacing=8;
+		    align=center;
+
+		    unpost_req "widget/textbutton"
+			{
+			height=24; width=150;
+			text="Request Unposting";
+
+			on_unpost_request_1 "widget/connector" { event=Click; target=unpost_req_cmp; action=RequestUnposting; ledger=runclient(:ledger:value); batch=runclient(:rcpt_osrc:a_batch_number); gl=runclient(:unpost_from_gl:value); cr=runclient(:unpost_from_cr:value); comment=runclient(:unpost_comment:value); }
+			on_unpost_request_2 "widget/connector" { event=Click; target=unpostcr_win; action=Close; }
+			}
+
+		    unpost_cancel "widget/textbutton"
+			{
+			height=24; width=150;
+			text="Cancel";
+
+			on_unpost_cancel "widget/connector" { event=Click; target=unpostcr_win; action=Close; }
+			}
+		    }
+		}
+	    }
+
 	post_to_gl_window "widget/childwindow"
 	    {
 	    style=dialog;
@@ -381,7 +444,7 @@ cr_batches "widget/component-decl"
 	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    width = 172;
 	    height = 40;
-	    text = runclient("View Receipts for #" + :rcpt_form:a_batch_number);
+	    text = runclient(isnull("View Receipts for #" + :rcpt_form:a_batch_number, ""));
 	    enabled = runclient(:rcpt_form:rpost == 1);
 
 	    edit2_cn "widget/connector"
@@ -402,7 +465,8 @@ cr_batches "widget/component-decl"
 	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    width = 172;
 	    height = 40;
-	    text = runclient(condition(:rcpt_form:rpost == 1, "View", "Enter") + " Receipts for #" + :rcpt_form:a_batch_number);
+	    text = runclient(isnull(condition(:rcpt_form:rpost == 1, "View", "Enter") + " Receipts for #" + :rcpt_form:a_batch_number, ""));
+	    enabled = runclient(:rcpt_form:a_batch_number is not null);
 	    //enabled = runclient(:rcpt_form:is_editable and :rcpt_form:rpost != 1 and :rcpt_form:glrec != 1);
 
 	    edit_cn "widget/connector"
@@ -449,18 +513,29 @@ cr_batches "widget/component-decl"
 	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    width = 172;
 	    height = 40;
-	    text = "Post Batch To CR Journal";
-	    enabled = runclient(:rcpt_form:is_editable and :rcpt_form:rrec == 1 and :rcpt_form:glrec != 1 and :rcpt_form:rpost != 1);
+	    text = runclient(condition(:rcpt_form:rpost > 0 and has_endorsement('kardia:gift_manage','kardia:ledger:' + :ledger:value), condition(:rcpt_form:glrec > 0, "Request Unpost from CR and GL", "Request Unpost from CR"), "Post Batch To CR Journal"));
+	    enabled = runclient(:rcpt_form:rrec > 0 and :rcpt_form:is_editable and ((:rcpt_form:glrec != 1 and :rcpt_form:rpost != 1) or has_endorsement('kardia:gift_manage','kardia:ledger:' + :ledger:value)));
 
 	    dopost_cn "widget/connector"
 		{
 		event=Click;
+		event_condition = runclient(:rcpt_form:is_editable and :rcpt_form:rrec == 1 and :rcpt_form:glrec != 1 and :rcpt_form:rpost != 1);
 		event_confirm = runclient("Really post batch #" + :rcpt_form:a_batch_number + " to the Cash Receipts journal?");
 		target=post_cr;
 		action=Post;
 		a_ledger_number=runclient(:cr_batches:ledger);
 		a_period=runclient(:periods_osrc:a_period);
 		a_batch_number=runclient(:rcpt_osrc:a_batch_number);
+		}
+
+	    unpostcr_cn "widget/connector"
+		{
+		event=Click;
+		event_condition = runclient(not (:rcpt_form:is_editable and :rcpt_form:rrec == 1 and :rcpt_form:glrec != 1 and :rcpt_form:rpost != 1));
+		target=unpostcr_win;
+		action=Open;
+		IsModal=1;
+		gl_only=0;
 		}
 	    }
 	post_to_gl "widget/textbutton"
@@ -470,10 +545,28 @@ cr_batches "widget/component-decl"
 	    //condition = runserver((select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows where :s_endorsement = 'gift_manage' and :s_context = 'ledger=' + :this:ledger and :s_subject = 'u:' + user_name()) > 0 or (select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows where :s_endorsement = 'gift_manage' and :s_context = 'ledger=' + :this:ledger) == 0);
 	    width = 172;
 	    height = 40;
-	    text = "Post Batch To GL";
-	    enabled = runclient(:rcpt_form:is_editable and :rcpt_form:glrec != 1 and :rcpt_form:rpost == 1);
+	    text = runclient(condition(:rcpt_form:glrec > 0 and has_endorsement('kardia:gift_manage','kardia:ledger:' + :ledger:value), "Request Unpost from GL", "Post Batch To GL"));
+	    enabled = runclient(:rcpt_form:rrec > 0 and :rcpt_form:is_editable and ((:rcpt_form:glrec != 1 and :rcpt_form:rpost == 1) or has_endorsement('kardia:gift_manage','kardia:ledger:' + :ledger:value)));
 
-	    win_open_cn "widget/connector" { event=Click; target=post_to_gl_window; action=Open; IsModal=1; }
+	    win_open_cn "widget/connector"
+		{
+		event=Click;
+		event_condition=runclient(:rcpt_form:rrec > 0 and :rcpt_form:is_editable and :rcpt_form:glrec == 0 and :rcpt_form:rpost > 0);
+		//event_condition=runclient(:rcpt_form:is_editable and :rcpt_form:glrec != 1 and :rcpt_form:rpost == 1);
+		target=post_to_gl_window;
+		action=Open;
+		IsModal=1;
+		}
+	    unpostgl_cn "widget/connector"
+		{
+		event=Click;
+		event_condition = runclient(:rcpt_form:rrec > 0 and :rcpt_form:is_editable and :rcpt_form:glrec >= 1 and :rcpt_form:rpost > 0);
+		//event_condition = runclient(not (:rcpt_form:is_editable and :rcpt_form:rrec == 1 and :rcpt_form:glrec != 1 and :rcpt_form:rpost != 1));
+		target=unpostcr_win;
+		action=Open;
+		IsModal=1;
+		gl_only=1;
+		}
 	    }
 	sep_line3 "widget/pane" 
 	    {

@@ -29,6 +29,7 @@ transaction_report "system/report"
     hide1900 "report/parameter" { type=integer; default=0; }
     onlyequity "report/parameter" { type=integer; default=0; }
     persubttl "report/parameter" { type=integer; default=0; }
+    origin "report/parameter" { type=string; default=null; }
 
     ledger_qy "report/query"
 	{
@@ -77,6 +78,7 @@ transaction_report "system/report"
 			    condition(:this:enddate is null, '', ' and :t:a_effective_date <= :this:enddate') + 
 			    condition(:this:hide1900, ' and :t:a_account_code != "1900"', '') + 
 			    condition(:this:onlyequity, ' and :t:a_account_code >= "3000" and :t:a_account_code <= "5999"', '') + 
+			    condition(:this:origin is null, '', ' and :t:a_origin = :this:origin') + 
 		"");
 	}
 
@@ -126,6 +128,7 @@ transaction_report "system/report"
 			    condition(:this:enddate is null, '', ' and :t:a_effective_date <= :this:enddate') + 
 			    condition(:this:hide1900, ' and :t:a_account_code != "1900"', '') + 
 			    condition(:this:onlyequity, ' and :t:a_account_code >= "3000" and :t:a_account_code <= "5999"', '') + 
+			    condition(:this:origin is null, '', ' and :t:a_origin = :this:origin') + 
 
 		" order by " +
 
@@ -214,15 +217,20 @@ transaction_report "system/report"
 		}
 	    c_d9 "report/data"
 		{ 
+		condition = runserver(not (:this:origin is null));
+		value = runserver("Transaction Type: " + :this:origin + "\n"); 
+		}
+	    c_d10 "report/data"
+		{ 
 		condition = runserver(:this:hide1900);
 		value = runserver("NOT showing acct '1900' entries\n"); 
 		}
-	    c_d10 "report/data"
+	    c_d11 "report/data"
 		{ 
 		condition = runserver(:this:onlyequity);
 		value = runserver("Showing ONLY Equity/Revenue/Expense\n"); 
 		}
-	    c_d11 "report/data" { value = runserver("\n"); }
+	    c_d12 "report/data" { value = runserver("\n"); }
 	    }
 
 	form "report/form"

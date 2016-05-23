@@ -33,11 +33,14 @@
 /* label to say we couldn't connect */
 #cant-connect {display:none; margin:8px; border-radius:6px; background-color:#fff8c0; }
 
+/* label to say no one was found */
+#no-findy {display:none; margin:8px; border-radius:6px; background-color:#fff8c0; text-align:center; }
+
 /* box around engagement track */
 .engagement-track-color-box{border-radius:3px; margin-top:2px; margin-right:5px; background-color:#cccccc; background-image:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.2))} /* previous: #afe7a0, #81d969 */
 
 /* checkboxes for collapsible items like Engagement Tracks look like arrows */
-.twisty-checkbox {font-weight:bold; border:0px; -moz-appearance:none; display:block; background-repeat:no-repeat; padding-left:14px; background-position:left center; background-color:rgba(255,255,255,0);}
+.twisty-checkbox { margin-top:8px; font-weight:bold; border:0px; -moz-appearance:none; display:block; background-repeat:no-repeat; padding-left:14px; background-position:left center; background-color:rgba(255,255,255,0);}
 .twisty-checkbox[checkState="0"] {background-image:url(chrome://kardia/content/images/twisty-open.png);}
 .twisty-checkbox[checkState="1"] {background-image:url(chrome://kardia/content/images/twisty-clsd.png);}
 
@@ -119,11 +122,17 @@
 .no-margin-padding { padding:0px; margin:0px;}
 
 /* button that is just an x */
-.tab-data-x-button {-moz-appearance:none; padding:0px; border:0px; background-color:none; width:16px; background-image:none;}
+.tab-data-x-button {-moz-appearance:none; padding:0px; border:0px; background-color:transparent; width:16px; background-image:none;}
 
 /* box that turns light gray when you hover over it */
 .hover-box {margin-right:5px; border-bottom:1px solid rgba(200,200,200,0.2);}
 .hover-box:hover {background-color:#fafafa}
+
+/* activity */
+.act-date { font-weight:bold; width:220px; }
+.act-info { width:220px; }
+.act-info-2 { width:220px; display:none; }
+/*.hover-box:hover .act-info-2 { display:block; }*/
 
 /* individual person in Collaborating With panel */
 .tab-collaborator {border-radius:3px; background-color:#ffffff; margin-bottom:2px; padding:3px;}
@@ -178,3 +187,17 @@ mail-emailaddress {-moz-binding:url('chrome://kardia/content/email-binding.xml#k
 
 #login-dialog { padding-left:10px; padding-right:10px; padding-bottom:10px; padding-top:16px; }
 #login-dialog-vbox { }
+
+/** Message Window **/
+#newperson-box { display:none; }
+#todo-options { display:none; }
+#contact-box { border-top:1px solid #a0a0a0; }
+
+/** Preferences **/
+.prefshdr { font-weight:bold; margin-top:16px; border-bottom:1px solid #a0a0a0; }
+.prefslh { width:230px; }
+
+/** Compose Window **/
+#kardia-compose-box { border-top:1px solid #a0a0a0; }
+#exp-preview { display:none; max-height:40px; font-size:80%; }
+.exp-label { min-width:100px; text-align:right; }

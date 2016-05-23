@@ -1,158 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:background="@android:color/darker_gray">
-    <RelativeLayout
+
+    <Spinner
+        android:id="@+id/times_day"
+        android:spinnerMode="dialog"
+        android:entries="@array/notification_options"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_margin="20dp">
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"/>
 
-        <Spinner
-            android:id="@+id/times_day"
-            android:spinnerMode="dialog"
-            android:entries="@array/notification_options"
+    <TableRow
+        android:id="@+id/tableRow1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/times_day"
+        android:layout_margin="10dp"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_marginTop="20dp" />
+            android:text="@string/cancel"
+            android:textStyle="bold"
+            style="@style/customBottomBar"
+            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"/>
 
-        <TableRow
-            android:id="@+id/tableRow1"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/setNotification"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/times_day"
-            android:layout_margin="10dp"
-            android:layout_centerHorizontal="true">
+            android:text="@string/set"
+            android:textStyle="bold"
+            style="@style/customBottomBar" />
 
-            <Button
-                android:id="@+id/setNotification"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Set"
-                android:textStyle="bold"
-                style="@style/customBottomBar"
-                android:layout_centerInParent="true"
-                android:layout_marginLeft="70dp"/>
+    </TableRow>
 
-            <Button
-                android:id="@+id/cancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cancel"
-                android:textStyle="bold"
-                style="@style/customBottomBar"
-                android:layout_centerInParent="true"
-                android:layout_marginLeft="30dp"/>
-        </TableRow>
+    <TableRow
+        android:id="@+id/endDateRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tableRow1"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp">
 
-        <TableRow
-            android:id="@+id/endDateRow"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/endDateText"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tableRow1"
-            android:layout_marginTop="16dp">
+            android:text="@string/end_date"
+            android:textSize="20sp"/>
 
-            <TextView
-                android:id="@+id/endDateText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="End Date: "
-                android:textSize="20sp"/>
-
-            <Button
-                android:id="@+id/datePicker"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Choose Date" />
-        </TableRow>
-
-        <TableRow
-            android:id="@+id/timeRow1"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/datePicker"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/endDateRow"
-            android:layout_marginTop="16dp">
+            android:text="@string/choose_date" />
+    </TableRow>
 
-            <TextView
-                android:id="@+id/timeText1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Time #1: "
-                android:textSize="20sp"/>
+    <TableRow
+        android:id="@+id/timeRow1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/endDateRow"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp">
 
-            <Button
-                android:id="@+id/timePicker1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Choose Time" />
-        </TableRow>
-
-        <TableRow
-            android:id="@+id/timeRow2"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/timeText1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/timeRow1"
-            android:visibility="invisible">
+            android:text="@string/time1"
+            android:textSize="20sp"/>
 
-            <TextView
-                android:id="@+id/timeText2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Time #2: "
-                android:textSize="20sp"/>
-
-            <Button
-                android:id="@+id/timePicker2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Choose Time" />
-        </TableRow>
-
-        <TableRow
-            android:id="@+id/timeRow3"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/timePicker1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/timeRow2"
-            android:visibility="invisible">
+            android:text="@string/choose_time" />
+    </TableRow>
 
-            <TextView
-                android:id="@+id/timeText3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Time #3: "
-                android:textSize="20sp"/>
+    <TableRow
+        android:id="@+id/timeRow2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/timeRow1"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:visibility="invisible">
 
-            <Button
-                android:id="@+id/timePicker3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Choose Time" />
-        </TableRow>
-
-        <TableRow
-            android:id="@+id/timeRow4"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/timeText2"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/timeRow3"
-            android:visibility="invisible">
+            android:text="@string/time2"
+            android:textSize="20sp"/>
 
-            <TextView
-                android:id="@+id/timeText4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Time #4: "
-                android:textSize="20sp" />
+        <Button
+            android:id="@+id/timePicker2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_time" />
+    </TableRow>
 
-            <Button
-                android:id="@+id/timePicker4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Choose Time" />
-        </TableRow>
+    <TableRow
+        android:id="@+id/timeRow3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/timeRow2"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:visibility="invisible">
 
-    </RelativeLayout>
+        <TextView
+            android:id="@+id/timeText3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/time3"
+            android:textSize="20sp"/>
 
-</LinearLayout>
+        <Button
+            android:id="@+id/timePicker3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_time" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/timeRow4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/timeRow3"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:visibility="invisible">
+
+        <TextView
+            android:id="@+id/timeText4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/time4"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/timePicker4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_time" />
+    </TableRow>
+
+</RelativeLayout>

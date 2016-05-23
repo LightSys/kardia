@@ -284,7 +284,7 @@ gift_entry "widget/component-decl"
 	endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	x=0; y=556; width=200; height=24;
 	enabled=runclient(:receipts_osrc:a_posted);
-	text=runclient(condition(:receipts_osrc:a_posted,condition(:receipts_osrc:a_receipt_sent, "Reprint Receipt", "Print Receipt") + " " + :receipts_osrc:a_receipt_number, "Post Before Printing"));
+	text=runclient(isnull(condition(:receipts_osrc:a_posted,condition(:receipts_osrc:a_receipt_sent, "Reprint Receipt", "Print Receipt") + " " + :receipts_osrc:a_receipt_number, "Post Before Printing"), '-'));
 	reprint_cn "widget/connector"
 	    {
 	    event=Click;
@@ -388,9 +388,13 @@ gift_entry "widget/component-decl"
 	    {
 	    //next_form = prevrcpt_form;
 	    objectsource = receipts_osrc;
+	    allow_modify = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
+	    allow_new = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
+	    allow_query = no;
 
 	    refresh_items_on_cancel "widget/connector"
 		{
+		condition=0;
 		event=Discard;
 		event_condition = runclient(:PrevStatus == 'New');
 		target = line_items_osrc;
@@ -399,6 +403,7 @@ gift_entry "widget/component-decl"
 
 	    clear_desig_on_new "widget/connector"
 		{
+		condition=0;
 		event=New; 
 		target=line_items_osrc;
 		action=Clear;
@@ -774,7 +779,7 @@ gift_entry "widget/component-decl"
 		    auto_new_on_view_after_new_rcpt "widget/connector"
 			{
 			event=EndQuery;
-			event_condition=runclient(not (char_length(:line_items_osrc:a_ledger_number) > 0) and :rcpt_form:form_mode == 'View' and :rcpt_form:form_prev_mode == 'New');
+			event_condition=runclient(:Reason != 'Discard' and not (char_length(:line_items_osrc:a_ledger_number) > 0) and :rcpt_form:form_mode == 'View' and :rcpt_form:form_prev_mode == 'New');
 			event_delay = 0.25;
 			target = desig_form;
 			action = New;
@@ -813,6 +818,10 @@ gift_entry "widget/component-decl"
 
 			desig_form "widget/form"
 			    {
+			    allow_modify = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
+			    allow_new = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
+			    allow_query = no;
+
 			    recalc_rtotal_on_save "widget/connector"
 				{
 				event=DataSaved;

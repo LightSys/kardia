@@ -11,53 +11,74 @@
         android:id="@+id/userName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:ems="10"
+        android:layout_marginTop="35dp"
         android:textSize="22sp"
-        android:hint="@string/username" >
+        android:ems="12"
+        android:hint="@string/username"
+        android:singleLine="true">
 
         <requestFocus />
-
     </EditText>
 
     <EditText
         android:id="@+id/userPass"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:ems="10"
-        android:hint="@string/password"
+        android:layout_marginTop="20dp"
         android:textSize="22sp"
-        android:inputType="textPassword" />
+        android:ems="12"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:singleLine="true">
+    </EditText>
 
     <EditText
         android:id="@+id/serverName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:ems="10"
+        android:layout_marginTop="20dp"
         android:textSize="22sp"
-        android:hint="@string/server_name" />
+        android:ems="12"
+        android:hint="@string/server_name"
+        android:singleLine="true"/>
 
-    <EditText
+    <TextView
         android:id="@+id/donorId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:ems="10"        
+        android:ems="12"
+        android:layout_marginTop="20dp"
         android:textSize="22sp"
-        android:hint="@+string/donor_id_ex_100001"
-        android:inputType="number" >
+        android:paddingLeft="10dp"/>
 
-    </EditText>
-
-    <Button
-        android:id="@+id/submit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_marginTop="30dp"
-        android:textSize="22sp"
-        android:text="@string/submit"
-        style="@style/customBottomBar" />
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            style="@style/customBottomBar"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp" />
+
+        <Button
+            android:id="@+id/submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/submit"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            style="@style/customBottomBar"
+            android:layout_gravity="center_horizontal" />
+
+    </TableRow>
 
 </LinearLayout>

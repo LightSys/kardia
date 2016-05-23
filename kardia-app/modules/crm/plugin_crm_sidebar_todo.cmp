@@ -56,8 +56,8 @@ todo_list "widget/component-decl"
 	    target=todo_list;
 	    action=SetNumber;
 	    Which=runclient("Tasks");
-	    Number=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0 or :task_stats_osrc:incomplete_today_cnt > 0 or :task_stats_osrc:complete_today_cnt = 0, :task_stats_osrc:incomplete_cnt, '+' + :task_stats_osrc:complete_today_cnt));
-	    Color=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0, 'red', condition(:task_stats_osrc:incomplete_today_cnt > 0, 'red',condition(:task_stats_osrc:complete_today_cnt > 0, '#00c000', 'black'))));
+	    Number=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0 or :task_stats_osrc:incomplete_today_cnt > 0 or :task_stats_osrc:complete_today_cnt = 0, condition(:task_stats_osrc:incomplete_overdue_cnt > 0 or :task_stats_osrc:incomplete_today_cnt > 0, '! ' + (:task_stats_osrc:incomplete_overdue_cnt + :task_stats_osrc:incomplete_today_cnt), :task_stats_osrc:incomplete_cnt), '+' + :task_stats_osrc:complete_today_cnt));
+	    Color=runclient(condition(:task_stats_osrc:incomplete_overdue_cnt > 0, 'red', condition(:task_stats_osrc:incomplete_today_cnt > 0, '#c00000',condition(:task_stats_osrc:complete_today_cnt > 0, '#00c000', 'black'))));
 	    }
 
 	//on_endquery_start_timer "widget/connector" { event=EndQuery; target=task_refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
