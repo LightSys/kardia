@@ -562,7 +562,7 @@ function manageUser
 	fi
 	#Create a .tpl file for the user
 	if [ ! -f "$KSRC/kardia-app/tpl/$N_USER.tpl" ]; then
-	    cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/ tpl/$USER.tpl"
+	    cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$USER.tpl"
 	fi 
 	if [ "$N_ALLOW_SSH" != "$ALLOW_SSH" -o "$N_ALLOW_SRC" != "$ALLOW_SRC" -o "$N_ALLOW_ROOT" != "$ALLOW_ROOT" ]; then
 	    GRPS=""
