@@ -562,7 +562,7 @@ function manageUser
 	fi
 	#Create a .tpl file for the user
 	if [ ! -f "$KSRC/kardia-app/tpl/$N_USER.tpl" ]; then
-	    cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$N_USER.tpl" 2>> /tmp/kardiaout
+	    cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$USER.tpl"
 	fi 
 	if [ "$N_ALLOW_SSH" != "$ALLOW_SSH" -o "$N_ALLOW_SRC" != "$ALLOW_SRC" -o "$N_ALLOW_ROOT" != "$ALLOW_ROOT" ]; then
 	    GRPS=""
@@ -1138,10 +1138,6 @@ function repoInitUser
     chown -R "$RUSER". cx-git kardia-git 2>/dev/null
     cd cx-git/centrallix-os/apps
     ln -s ../../../kardia-git/kardia-app kardia
-
-    if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
-	cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$USER.tpl"
-    fi
 
     setGitEmail "/home/$RUSER"
     }
@@ -3132,16 +3128,20 @@ function vm_prep_cleanFiles
 		rm -rf "$file"
 	    fi
 	done
-	echo "Uninstalling old kernel versions"
-	local RESCUE="kernel-3.10.0-123"
-	rpm -qa kernel* | grep -v `uname -r` | grep -v $RESCUE | while read line; do 
-	    echo "Removing package: $line"
-	    rpm -e $line; 
-	done
 	echo "Removing old log files"
 	find /var/log -name *-$(date +%Y)* -type f -print0 | xargs -0 rm -f --
 
 	echo 
+}
+
+function vm_prep_cleanKernel
+{
+    echo "Uninstalling old kernel versions"
+    local RESCUE="kernel-3.10.0-123"
+    rpm -q kernel | grep -v `uname -r` | grep -v $RESCUE | while read line; do 
+	echo "Removing package: $line"
+	rpm -e $line; 
+    done
 }
 
 ######################
@@ -3206,10 +3206,15 @@ function doCleanup
 	vm_prep_cleanSSH
 	#clean up .history files and any extra users
 	vm_prep_cleanFiles
+	#clean up kernel
+	vm_prep_cleanKernel
 	#remove Kardia users
 	vm_prep_cleanUsers
 	#zero out empty space so it compresses nicely
 	vm_prep_cleanEmptySpace
+	#
+	echo "Reindexing the server: updatedb"
+	updatedb
 	#
 	echo "This VM is prepped to be rolled out"
 	echo "Ensure the root password is set to what the PDF says it will be"
