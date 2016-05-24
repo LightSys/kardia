@@ -13,6 +13,31 @@ highlights "system/query"
 		:e_highlight_partner = :parameters:partner_key
 	    ;
 
+	    -- AUTO - auto-record information
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'AUTO-' + :ar:e_contact_history_type,
+		e_highlight_name = 'Auto Record ' + :ct:e_short_name,
+		e_highlight_type = 'AUTO',
+		e_highlight_data = condition(:ar:e_auto_record == 1, 'Yes', 'No') + condition(:ar:e_auto_record_apply_all == 1, ' - ALL', ''),
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_contact_autorecord/rows ar,
+		/apps/kardia/data/Kardia_DB/e_contact_history_type/rows ct
+	    where
+		:ar:p_partner_key = :parameters:partner_key and
+		:ar:e_contact_history_type = :ct:e_contact_history_type
+	    ;
+
 	    -- REL - relationships
 	    insert
 		/apps/kardia/data/Kardia_DB/e_highlights/rows h

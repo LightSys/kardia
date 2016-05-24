@@ -71,6 +71,10 @@ drop table p_country;
 drop table p_banking_details;
 
 
+/* p_banking_type */
+drop table p_banking_type;
+
+
 /* p_title */
 drop table p_title;
 
@@ -249,6 +253,10 @@ drop table e_ack_type;
 
 /* e_trackactivity */
 drop table e_trackactivity;
+
+
+/* e_text_expansion */
+drop table e_text_expansion;
 
 
 /* r_group */
@@ -501,6 +509,22 @@ drop table i_eg_gift_import;
 
 /* i_eg_giving_url */
 drop table i_eg_giving_url;
+
+
+/* i_crm_partner_import */
+drop table i_crm_partner_import;
+
+
+/* i_crm_partner_import_option */
+drop table i_crm_partner_import_option;
+
+
+/* i_crm_import_type */
+drop table i_crm_import_type;
+
+
+/* i_crm_import_type_option */
+drop table i_crm_import_type_option;
 
 
 /* c_message */

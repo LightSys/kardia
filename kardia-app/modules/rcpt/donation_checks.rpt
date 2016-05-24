@@ -62,7 +62,7 @@ donation_checks "system/report"
 			period = :i:a_period,
 			date = isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
 			check = :i:a_recv_document_id,
-			extname = rtrim(:g:p_donor_partner_id + isnull(' ' + rtrim(:p:p_given_name) + ' ' + :p:p_surname, '**INVALID**')),
+			extname = rtrim(:g:p_donor_partner_id + ' ' + condition(:p:p_partner_key is null, '**INVALID**', condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, rtrim(:p:p_given_name) + ' ' + :p:p_surname))),
 			:g:a_gift_number,
 			dcnt = count(:i:a_split_number)
 		from
@@ -133,6 +133,7 @@ donation_checks "system/report"
 		//margintop=0.8;
 		//topborder=0.05;
 		dateformat = "dd-MMM-yyyy";
+		allowbreak=no;
 
 		d_ckno "report/table-cell" { value=runserver(:ck_qy:check); align=left; }
 		d_donor "report/table-cell" { value=runserver(:ck_qy:extname); align=left; font=helvetica; }

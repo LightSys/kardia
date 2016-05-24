@@ -140,7 +140,7 @@ var dataTab;
 
 // Various system-wide Kardia CRM data items
 var kardiacrm = {
-	version:"1.07",
+	version:"1.08",
 	appid:"Thunderbird Extension for Kardia",
 
 	// Last opened message window

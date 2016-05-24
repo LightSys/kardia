@@ -1,0 +1,14 @@
+$Version=2$
+advanced_search "widget/component-decl"
+    {
+    width=700;
+    height=580;
+
+    coming_soon "widget/label"
+	{
+	x=0; y=280; width=700; height=20;
+	align=center;
+	style=italic;
+	text="Coming soon...";
+	}
+    }

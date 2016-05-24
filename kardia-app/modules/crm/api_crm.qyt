@@ -155,6 +155,7 @@ api_crm "system/querytree"
 		contlist "system/querytree"
 		    {
 		    sql = " select
+				name = :h:name,
 				partner_id = :h:p_partner_key,
 				partner_name = :eng_list:partner_name,
 				partner_ref = :eng_list:partner_ref,
@@ -167,6 +168,7 @@ api_crm "system/querytree"
 				contact_history_type_desc = :ht:e_description,
 				subject = :h:e_subject,
 				notes = :h:e_notes,
+				message_id = :h:e_message_id,
 				contact_date = :h:e_contact_date,
 				meeting_place_ref = '/apps/kardia/api/partner/Partners/' + :h:p_location_partner_key,
 				meeting_place_id = :h:p_location_partner_key,
@@ -202,6 +204,39 @@ api_crm "system/querytree"
 				:c:p_country_code =* :l:p_country_code and
 				:af:p_country_code =* :c:p_country_code and
 				:af:p_address_set = 'STANDARD'
+			    ";
+		    }
+		}
+
+	    ContactAutorecord "system/querytree"
+		{
+		text = "ContactAutorecord";
+
+		ContactAutorecord_list "system/querytree"
+		    {
+		    sql = " select
+				name = :ar:name,
+				partner_id = :ar:p_partner_key,
+				collab_partner_id = :ar:e_collaborator_id,
+				contact_history_type_id = :ar:e_contact_history_type,
+				contact_id = :ar:e_contact_id,
+				engagement_id = :ar:e_engagement_id,
+				auto_record = :ar:e_auto_record,
+				apply_all = :ar:e_auto_record_apply_all,
+				comments = :ar:e_comments,
+				date_created = :ar:s_date_created,
+				created_by = :ar:s_created_by,
+				date_modified = :ar:s_date_modified,
+				modified_by = :ar:s_modified_by
+			    from
+				identity /apps/kardia/data/Kardia_DB/e_contact_autorecord/rows ar,
+				/apps/kardia/data/Kardia_DB/p_staff/rows s
+			    where
+				:ar:p_partner_key = :eng_list:partner_id and
+				:s:p_partner_key =* :ar:e_collaborator_id and
+				:s:p_kardia_login = user_name()
+			    order by
+				:ar:e_auto_record_apply_all asc
 			    ";
 		    }
 		}

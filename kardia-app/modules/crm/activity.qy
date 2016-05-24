@@ -83,7 +83,7 @@ activity "system/query"
 		/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
 		e_activity_group_id = :activitygroup:id,
-		p_partner_key = '00ACTIVITY',
+		p_partner_key = :c:p_partner_key,
 		e_activity_date = :c:s_date_modified,
 		e_activity_type = 'COLL',
 		e_sort_key = 'ACTIVITY',
@@ -139,6 +139,8 @@ activity "system/query"
 		datediff(minute, :c:s_date_modified, getdate()) >= 720
 	    group by
 		datepart(day, :c:s_date_modified),
+		datepart(month, :c:s_date_modified),
+		datepart(year, :c:s_date_modified),
 		:c:e_collab_type_id,
 		:c:e_collaborator
 	    limit

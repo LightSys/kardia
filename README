@@ -1,0 +1,33 @@
+Kardia Source Distribution README
+=================================
+
+This is the README file for the Kardia source distribution, and will give you
+an overview of the locations of various files and directories in the source
+tree.
+
+
+Top Level Directories:
+=================================
+
+kardia-2002-demo	Kardia files for the 2002 demo / test of technology
+			Kardia system that was presented at ICCM 2002 by Luke
+			Ehresman and Jon Rupp.
+
+kardia-android		Sources for official Kardia apps for Android devices
+
+kardia-app		The main Kardia application files
+
+kardia-db		Kardia data model
+
+kardia-dev-tools	Various tools used in the development of Kardia
+
+kardia-doc		End-user documentation for Kardia
+
+kardia-sysdoc		Programmer's documentation for Kardia, including API
+			documentation
+
+kardia-thunderbird	Source for official Kardia add-on for the Thunderbird
+			desktop email client
+
+kardia-vm		Files used for the construction of the Kardia virtual
+			appliance (CentOS 7 based, currently)
