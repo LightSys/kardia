@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.7
+# version: 1.0.8
 # os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
@@ -439,6 +439,12 @@ function manageUser
     local USER="$2"
     local REALNAME=$(sed -n "s/^$USER:[^:]*:[^:]*:[^:]*:\([^:]*\) - Kardia:.*/\1/p" < /etc/passwd)
     if [ "$1" = "existing" ]; then
+        local ALLOW_KARDIA_SYSADM=$(grep "$USER" $BASEDIR/src/.cx_kardia_admins 2>/dev/null)
+	if [ "$ALLOW_KARDIA_SYSADM" = "" ]; then
+	    local ALLOW_KARDIA_SYSADM=no
+	else
+	    local ALLOW_KARDIA_SYSADM=yes
+	fi
 	local ALLOW_SSH=$(groups "$USER" | grep ':.* kardia_ssh')
 	if [ "$ALLOW_SSH" = "" ]; then
 	    ALLOW_SSH=no
@@ -458,6 +464,7 @@ function manageUser
 	    ALLOW_ROOT=yes
 	fi
     else
+        local ALLOW_KARDIA_SYSADM=no
 	local ALLOW_SRC=no
 	local ALLOW_SSH=no
 	local ALLOW_ROOT=no
@@ -475,8 +482,9 @@ function manageUser
     DSTR="$DSTR 'Real Name:' 3 1 '$REALNAME' 3 36 30 0"
     DSTR="$DSTR 'SSH Access (yes/no):' 5 1 '$ALLOW_SSH' 5 36 5 0"
     DSTR="$DSTR 'Repository Access (yes/no):' 7 1 '$ALLOW_SRC' 7 36 5 0"
-    DSTR="$DSTR 'System Admin Privs (yes/no):' 9 1 '$ALLOW_ROOT' 9 36 5 0"
-    DSTR="$DSTR 'Reset Password Now (yes/no):' 11 1 'no' 11 36 5 0"
+    DSTR="$DSTR 'OS System Admin Privs (yes/no):' 9 1 '$ALLOW_ROOT' 9 36 5 0"
+    DSTR="$DSTR 'Kardia System Admin Privs (yes/no):' 11 1 '$ALLOW_KARDIA_SYSADM' 11 36 5 0"
+    DSTR="$DSTR 'Reset Password Now (yes/no):' 13 1 'no' 13 36 5 0"
 
     eval "$DSTR" 2>&1 >/dev/tty |
 	{
@@ -485,7 +493,7 @@ function manageUser
 	else
 	    N_USER="$USER"
 	fi
-	read N_REALNAME; read N_ALLOW_SSH; read N_ALLOW_SRC; read N_ALLOW_ROOT; read N_RESET_PASS;
+	read N_REALNAME; read N_ALLOW_SSH; read N_ALLOW_SRC; read N_ALLOW_ROOT; read N_ALLOW_KARDIA_SYSADM; read N_RESET_PASS;
 	if [ "$N_REALNAME" = "" -a "$N_ALLOW_SSH" = "" -a "$N_ALLOW_SRC" = "" -a "$N_ALLOW_ROOT" = "" ]; then
 	    return 1
 	fi
@@ -514,6 +522,7 @@ function manageUser
 		/bin/chown "$N_USER". "/home/$N_USER/.ssh/known_hosts"
 		/bin/chmod 600 "/home/$N_USER/.ssh/known_hosts"
 	    fi
+
 	    insertLine "/home/$N_USER/.ssh/known_hosts" "$CX_KEY"
 	    insertLine "/home/$N_USER/.ssh/known_hosts" "$K_KEY"
 	    echo ""
@@ -551,6 +560,10 @@ function manageUser
 	elif [ "$REALNAME" != "$N_REALNAME" ]; then
 	    /usr/sbin/usermod -c "$N_REALNAME - Kardia" "$N_USER"
 	fi
+	#Create a .tpl file for the user
+	if [ ! -f "$KSRC/kardia-app/tpl/$N_USER.tpl" ]; then
+	    cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$N_USER.tpl" 2>> /tmp/kardiaout
+	fi 
 	if [ "$N_ALLOW_SSH" != "$ALLOW_SSH" -o "$N_ALLOW_SRC" != "$ALLOW_SRC" -o "$N_ALLOW_ROOT" != "$ALLOW_ROOT" ]; then
 	    GRPS=""
 	    if [ "$N_ALLOW_SSH" = yes ]; then
@@ -564,6 +577,18 @@ function manageUser
 	    fi
 	    GRPS="${GRPS##,}"
 	    /usr/sbin/usermod -G "$GRPS" "$N_USER"
+	fi
+	if [ "$N_ALLOW_KARDIA_SYSADM" != "no" ]; then
+	    #Add this user to the file and then give them the privs
+	    AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins 2> /dev/null
+	    AsRoot echo $N_USER >> $BASEDIR/src/.cx_kardia_admins
+	    doGiveUserKardiaSysadmin $N_USER
+	else
+	    #make sure we do not have this username in the file
+	    if [ -f "$BASEDIR/src/.cx_kardia_admins" ]; then
+		AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins
+		doRemoveUserKardiaSysadmin $N_USER
+	    fi
 	fi
 	if [ "$1" = "existing" -a "$N_RESET_PASS" = yes ]; then
 	    echo ""
@@ -580,6 +605,26 @@ function manageUser
 	}
     }
 
+function doGiveUserKardiaSysadmin
+    {
+	local TUSER=$1;
+	if [ -z "$TUSER" ]; then
+	    echo "You must specify a user to give permissions to"
+	    return
+	fi
+	echo "insert into s_sec_endorsement (s_endorsement,s_context, s_subject, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('kardia:sys_admin','kardia','u:THEUSER',curdate(),'THEUSER',curdate(),'THEUSER');" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+    }
+
+function doGiveAllSysadmsSysadmin
+    {
+	if [ -e "$BASEDIR/src/.cx_kardia_admins" ]; then
+	    local nUSER=""
+	    cat $BASEDIR/src/.cx_kardia_admins | while read nUSER; do
+		echo "  Adding permissions for $nUSER"
+		doGiveUserKardiaSysadmin $nUSER
+	    done
+	fi
+    }
 
 # Delete a user
 function deleteUser
@@ -657,7 +702,7 @@ function doUpdates
     echo ""
     echo "Running 'yum update'... this may take a while..."
     echo ""
-    yum update
+    yum update --skip-broken
     }
 
 
@@ -1093,6 +1138,10 @@ function repoInitUser
     chown -R "$RUSER". cx-git kardia-git 2>/dev/null
     cd cx-git/centrallix-os/apps
     ln -s ../../../kardia-git/kardia-app kardia
+
+    if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
+	cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$USER.tpl"
+    fi
 
     setGitEmail "/home/$RUSER"
     }
@@ -2471,6 +2520,9 @@ function doDataBuild
     echo "generate some errors due to the data already existing in the DB."
     echo ""
     mysql -u root -f -h localhost Kardia_DB < "$KSRC/kardia-db/testdata/demo_mysql.sql"
+    echo ""
+    echo "Adding any system_admin permissions we need to add"
+    doGiveAllSysadmsSysadmin
     echo "Press ENTER to continue..."
     read ANS
     }
@@ -3081,7 +3133,8 @@ function vm_prep_cleanFiles
 	    fi
 	done
 	echo "Uninstalling old kernel versions"
-	rpm -qa kernel* | grep -v `uname -r` | while read line; do 
+	local RESCUE="kernel-3.10.0-123"
+	rpm -qa kernel* | grep -v `uname -r` | grep -v $RESCUE | while read line; do 
 	    echo "Removing package: $line"
 	    rpm -e $line; 
 	done
@@ -3102,7 +3155,7 @@ function vm_prep_cleanUsers
 		echo "  removing Kardia user $USERNAME from linux"
 		userdel -r $USERNAME
 		echo "  removing Kardia user $USERNAME from samba"
-		pdbedit -u $USERNAME -x
+		pdbedit -u $USERNAMR -x
 		echo "  removing mysql user $USERNAME"
 		mysql -e "DROP USER $USERNAME@'localhost';" 2> /dev/null
 		mysql -e "DROP USER $USERNAME@'%';" 2> /dev/null
@@ -3137,6 +3190,8 @@ function vm_prep_cleanEmptySpace
 function doCleanup
     {
     if [ $# -eq 0 ]; then
+	#stop Centrallix
+        cxStop
 	#make sure things are copied over from the repo
 	vm_prep_setupEtc
 	#clean out yum cache and clean up RPM database
@@ -3176,6 +3231,25 @@ function doCleanup
 	    fi
 	fi
     fi
+    }
+
+function doGiveUserKardiaSysadmin
+    {
+	TUSER=$1;
+	if [ -z "$TUSER" ]; then
+	    echo "You must specify a user to give permissions to"
+	    return
+	fi
+	echo "INSERT INTO s_sec_endorsement (s_endorsement,s_context, s_subject, s_date_created, s_created_by, s_date_modified, s_modified_by) VALUES ('kardia:sys_admin','kardia','u:THEUSER',curdate(),'THEUSER',curdate(),'THEUSER');" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+    }
+function doRemoveUserKardiaSysadmin
+    {
+	TUSER=$1;
+	if [ -z "$TUSER" ]; then
+	    echo "You must specify a user to take permissions from"
+	    return
+	fi
+	echo "DELETE FROM s_sec_endorsement WHERE s_subject='u:THEUSER';" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
     }
 
 function displyCentrallixConnectInfo

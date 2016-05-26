@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<bindings xmlns="http://www.mozilla.org/xbl"
+            xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+            xmlns:nc="http://home.netscape.com/NC-rdf#"
+            xmlns:xbl="http://www.mozilla.org/xbl">
+	<binding id="kardia-mail-emailaddress" extends="chrome://messenger/content/mailWidgets.xml#mail-emailaddress">
+		<content>
+      	<xul:description anonid="emailValue" class="emailDisplayButton"
+                       xbl:inherits="hascard,aria-label"
+                       context="emailAddressPopup" popup="emailAddressPopup"
+                       flex="1" role="textbox" aria-readonly="true">
+        		<xul:label class="emaillabel" anonid="emaillabel"
+                   xbl:inherits="value=label,crop"/>
+        		<xul:image class="emailStar" anonid="emailStar"
+                   context="emailAddressPopup"
+                   onmousedown="event.preventDefault();"
+                   onclick="onClickEmailStar(event, this.parentNode.parentNode);"
+                   xbl:inherits="hascard,tooltiptext=tooltipstar,chatStatus"/>
+        		<xul:image class="emailPresence" anonid="emailPresence"
+                   onmousedown="event.preventDefault();"
+                   onclick="onClickEmailPresence(event, this.parentNode.parentNode);"
+                   xbl:inherits="chatStatus,tooltiptext=presenceTooltip"/>
+     		</xul:description>
+		
+			<xul:vbox anonid="emailKardiaButton" xbl:inherits="style=kardiaShowing" kardiaShowing="display:none" style="display:none">
+				<xul:spacer flex="1"/>
+				<xul:image style="margin-left:1px; margin-right:4px;" anonid="emailKardiaImage" class="kardia-email-icon" xbl:inherits="onclick=kardiaOnclick" kardiaOnclick=""/>
+				<xul:spacer flex="1"/>
+			</xul:vbox>
+ 		</content>
+		<implementation>			 
+			 <property name="kardiaShowing"	onset="this.getPart('emailKardiaButton').setAttribute('kardiaShowing', 'val');"
+					 									onget="return this.getPart('emailKardiaButton').getAttribute('kardiaShowing');"/>
+			<property name="kardiaOnclick"	onset="this.getPart('emailKardiaImage').setAttribute('kardiaOnclick',val); return val;"
+					  									onget="return this.getPart('emailKardiaImage').getAttribute('kardiaOnclick');"/>
+		</implementation>
+	</binding>
+</bindings>
