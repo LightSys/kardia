@@ -1,3 +1,8 @@
+*.swp
+.*.swp
+*.bak
+.*.bak
+old
 kardia-app/tpl/*.tpl
 kardia-app/files/*
 kardia-db/*/components

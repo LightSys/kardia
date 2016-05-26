@@ -46,7 +46,7 @@ people_list "widget/component-decl"
 					/apps/kardia/data/Kardia_DB/e_collaborator/rows c
 				    where
 					:c:e_collaborator = :parameters:collaborator and
-					isnull((select 1 from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :parameters:collaborator and :a:e_ack_type = 3 limit 1),0) = 0
+					isnull((select 1 from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :parameters:collaborator and :a:e_ack_type = 4 limit 1),0) = 0
 				    )
 		";
 	replicasize=2;
@@ -111,7 +111,7 @@ people_list "widget/component-decl"
 				    1
 				), '/apps/kardia/images/artwork/persona.png'),
 			last_date = substring(convert(string, (select max(:e_contact_date) from /apps/kardia/data/Kardia_DB/e_contact_history/rows ch where :ch:p_partner_key = :c:p_partner_key) ),1,11),
-			is_new = condition(datediff(hour,isnull((select :a:s_date_created from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :c:e_collaborator and :a:e_ack_type = 3), getdate()),getdate()) <= 24, 1, 0)
+			is_new = condition(datediff(hour,isnull((select :a:s_date_created from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :c:e_collaborator and :a:e_ack_type = 4), getdate()),getdate()) <= 24, 1, 0)
 		    from
 			identity /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
 			/apps/kardia/data/Kardia_DB/p_staff/rows s,
