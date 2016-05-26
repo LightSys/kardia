@@ -47,6 +47,39 @@ api_missionary "system/querytree"
 			";
 		}
 	    }
+	
+	comm_label "system/querytree"
+	    {
+	    text = "Comments";
+
+	    comm_list "system/querytree"
+		{
+		sql = " select
+			    comment_id = :a:e_ack_id,
+			    comment = :a:e_ack_comments,
+			    comment_date = :a:s_date_created,
+			    note_id = :ch:e_contact_history_id,
+			    note_subject = :ch:e_subject,
+			    note_text = :ch:e_notes,
+			    note_type = :ct:e_short_name,
+			    note_date = :ch:e_contact_date,
+			    supporter_partner_id = :p:p_partner_key,
+			    supporter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
+			    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+			    /apps/kardia/data/Kardia_DB/e_contact_history_type/rows ct,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p
+			where
+			    :a:p_dn_partner_key = :missionaries:partner_id and
+			    :a:e_ack_type = 3 and   -- type 3 is 'comment'
+			    :a:e_object_type = 'e_contact_history' and
+			    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
+			    :p:p_partner_key = :a:e_whom and
+			    :ct:e_contact_history_type = :ch:e_contact_history_type
+			";
+		}
+	    }
 
 	bysup_label "system/querytree"
 	    {
@@ -86,6 +119,38 @@ api_missionary "system/querytree"
 				    :a:e_whom = :bysup_list:partner_id and
 				    :a:p_dn_partner_key = :missionaries:partner_id and
 				    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
+				    :a:e_object_type = 'e_contact_history' and
+				    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
+				    :ct:e_contact_history_type = :ch:e_contact_history_type
+				";
+			}
+		    }
+
+		comm_bysup_label "system/querytree"
+		    {
+		    text = "Comments";
+
+		    comm_bysup_list "system/querytree"
+			{
+			sql = " select
+				    comment_id = :a:e_ack_id,
+				    comment = :a:e_ack_comments,
+				    comment_date = :a:s_date_created,
+				    note_id = :ch:e_contact_history_id,
+				    note_subject = :ch:e_subject,
+				    note_text = :ch:e_notes,
+				    note_type = :ct:e_short_name,
+				    note_date = :ch:e_contact_date,
+				    supporter_partner_id = :bysup_list:partner_id,
+				    supporter_partner_name = :bysup_list:partner_name
+				from
+				    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
+				    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+				    /apps/kardia/data/Kardia_DB/e_contact_history_type/rows ct
+				where
+				    :a:e_whom = :bysup_list:partner_id and
+				    :a:p_dn_partner_key = :missionaries:partner_id and
+				    :a:e_ack_type = 3 and   -- type 3 is 'comment'
 				    :a:e_object_type = 'e_contact_history' and
 				    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
 				    :ct:e_contact_history_type = :ch:e_contact_history_type
@@ -139,6 +204,36 @@ api_missionary "system/querytree"
 				where
 				    :a:p_dn_partner_key = :missionaries:partner_id and
 				    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
+				    :a:e_object_type = 'e_contact_history' and
+				    :a:e_object_id = convert(string, :needs_list:note_id) and
+				    :p:p_partner_key = :a:e_whom
+				";
+			}
+		    }
+
+		needs_comments "system/querytree"
+		    {
+		    text = "Prayers";
+
+		    needs_comments_list "system/querytree"
+			{
+			sql = " select
+				    comment_id = :a:e_ack_id,
+				    comment = :a:e_ack_comments,
+				    comment_date = :a:s_date_created,
+				    note_id = :needs_list:note_id,
+				    note_subject = :needs_list:note_subject,
+				    note_text = :needs_list:note_text,
+				    note_type = :needs_list:note_type,
+				    note_date = :needs_list:note_date,
+				    supporter_partner_id = :p:p_partner_key,
+				    supporter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+				from
+				    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p
+				where
+				    :a:p_dn_partner_key = :missionaries:partner_id and
+				    :a:e_ack_type = 3 and   -- type 3 is 'comment'
 				    :a:e_object_type = 'e_contact_history' and
 				    :a:e_object_id = convert(string, :needs_list:note_id) and
 				    :p:p_partner_key = :a:e_whom

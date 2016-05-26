@@ -178,6 +178,7 @@ api_crm "system/querytree"
 				contact_via_ref = '/apps/kardia/api/partner/Partners/' + :h:p_partner_key + '/ContactInfo/' + :h:p_partner_key + '|' + :h:p_contact_id,
 				contact_via = isnull('+' + :ci:p_phone_country + ' ', '') + isnull('(' + :ci:p_phone_area_city + ') ', '') + :ci:p_contact_data,
 				contact_via_type = (select :text from /apps/kardia/data/Kardia_DB/_p_contact_type/rows pl where :pl:tag = :ci:p_contact_type),
+				num_comments = (select count(1) from /apps/kardia/data/Kardia_DB/e_ack/rows ack where :ack:e_object_type = 'e_contact_history' and :ack:e_ack_type = 3 and :ack:e_object_id = convert(string, :h:e_contact_history_id)),
 				date_created = :h:s_date_created,
 				created_by = :h:s_created_by,
 				date_modified = :h:s_date_modified,
@@ -205,6 +206,42 @@ api_crm "system/querytree"
 				:af:p_country_code =* :c:p_country_code and
 				:af:p_address_set = 'STANDARD'
 			    ";
+
+		    cont_comm "system/querytree"
+			{
+			text = "Comments";
+
+			cont_comm_list "system/querytree"
+			    {
+			    sql = " select
+					contact_history_id = :contlist:contact_history_id,
+					comment_id = :ack:e_ack_id,
+					comment_date = :ack:s_date_created,
+					comment = :ack:e_ack_comments,
+					profile_partner_id = :contlist:partner_id,
+					profile_partner_name = :contlist:partner_name,
+					profile_partner_ref = :contlist:partner_ref,
+					replyto_partner_id = :contlist:collab_partner_id,
+					replyto_partner_name = :contlist:collab_partner_name,
+					replyto_partner_ref = :contlist:collab_partner_ref,
+					commenter_partner_id = :ack:e_whom,
+					commenter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+					commenter_partner_ref = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key,
+					date_created = :ack:s_date_created,
+					created_by = :ack:s_created_by,
+					date_modified = :ack:s_date_modified,
+					modified_by = :ack:s_modified_by
+				    from
+					identity /apps/kardia/data/Kardia_DB/e_ack/rows ack,
+					/apps/kardia/data/Kardia_DB/p_partner/rows p
+				    where
+					:ack:e_object_type = 'e_contact_history' and
+					:ack:e_ack_type = 3 and
+					:ack:e_object_id = convert(string, :contlist:contact_history_id) and
+					:p:p_partner_key = :ack:e_whom
+				    ";
+			    }
+			}
 		    }
 		}
 
@@ -619,6 +656,184 @@ api_crm "system/querytree"
 				:a:e_activity_date desc
 			    ");
 		    use_having = yes;
+		    }
+		}
+
+	    allcomm "system/querytree"
+		{
+		text = "Comments";
+
+		comm_left "system/querytree"
+		    {
+		    text = "Own";
+
+		    comm_left_list "system/querytree"
+			{
+			sql = " select
+				    on_what = condition(:ack:e_object_type = 'e_contact_history', 'ContactHistory', null),
+				    on_what_id = :ack:e_object_id,
+				    comment_id = :ack:e_ack_id,
+				    comment_date = :ack:s_date_created,
+				    comment = :ack:e_ack_comments,
+				    profile_partner_id = :p2:p_partner_key,
+				    profile_partner_name = condition(char_length(isnull(:p2:p_org_name,'')) > 1, :p2:p_org_name, :p2:p_given_name + ' ' + :p2:p_surname),
+				    profile_partner_ref = '/apps/kardia/api/partner/Partners/' + :p2:p_partner_key,
+				    replyto_partner_id = :ack:p_dn_partner_key,
+				    replyto_partner_name = condition(char_length(isnull(:p3:p_org_name,'')) > 1, :p3:p_org_name, :p3:p_given_name + ' ' + :p3:p_surname),
+				    replyto_partner_ref = '/apps/kardia/api/partner/Partners/' + :p3:p_partner_key,
+				    commenter_partner_id = :ack:e_whom,
+				    commenter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				    commenter_partner_ref = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key,
+				    date_created = :ack:s_date_created,
+				    created_by = :ack:s_created_by,
+				    date_modified = :ack:s_date_modified,
+				    modified_by = :ack:s_modified_by
+				from
+				    identity /apps/kardia/data/Kardia_DB/e_ack/rows ack,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p2,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p3
+				where
+				    :ack:e_whom = :eng_list:partner_id and
+				    :ack:e_ack_type = 3 and
+				    :p:p_partner_key = :ack:e_whom and
+				    (:ch:e_contact_history_id =* condition(:ack:e_object_type = 'e_contact_history', convert(integer,:ack:e_object_id), null)) and
+				    :p2:p_partner_key = :ch:p_partner_key and
+				    :p3:p_partner_key =* :ack:p_dn_partner_key
+				";
+			}
+		    }
+
+		comm_recd "system/querytree"
+		    {
+		    text = "Received";
+
+		    comm_recd_list "system/querytree"
+			{
+			sql = " select
+				    on_what = condition(:ack:e_object_type = 'e_contact_history', 'ContactHistory', null),
+				    on_what_id = :ack:e_object_id,
+				    comment_id = :ack:e_ack_id,
+				    comment_date = :ack:s_date_created,
+				    comment = :ack:e_ack_comments,
+				    profile_partner_id = :p2:p_partner_key,
+				    profile_partner_name = condition(char_length(isnull(:p2:p_org_name,'')) > 1, :p2:p_org_name, :p2:p_given_name + ' ' + :p2:p_surname),
+				    profile_partner_ref = '/apps/kardia/api/partner/Partners/' + :p2:p_partner_key,
+				    replyto_partner_id = :ack:p_dn_partner_key,
+				    replyto_partner_name = condition(char_length(isnull(:p3:p_org_name,'')) > 1, :p3:p_org_name, :p3:p_given_name + ' ' + :p3:p_surname),
+				    replyto_partner_ref = '/apps/kardia/api/partner/Partners/' + :p3:p_partner_key,
+				    commenter_partner_id = :ack:e_whom,
+				    commenter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				    commenter_partner_ref = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key,
+				    date_created = :ack:s_date_created,
+				    created_by = :ack:s_created_by,
+				    date_modified = :ack:s_date_modified,
+				    modified_by = :ack:s_modified_by
+				from
+				    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+				    identity /apps/kardia/data/Kardia_DB/e_ack/rows ack,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p2,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p3
+				where
+				    :ch:e_whom = :eng_list:partner_id and
+				    :ack:e_object_id = convert(string,:ch:e_contact_history_id) and
+				    :ack:e_object_type = 'e_contact_history' and
+				    :ack:e_ack_type = 3 and
+				    :p:p_partner_key = :ack:e_whom and
+				    :p2:p_partner_key = :ch:p_partner_key and
+				    :p3:p_partner_key =* :ack:p_dn_partner_key
+				";
+			}
+		    }
+
+		comm_prof "system/querytree"
+		    {
+		    text = "OwnProfile";
+
+		    comm_prof_list "system/querytree"
+			{
+			sql = " select
+				    on_what = condition(:ack:e_object_type = 'e_contact_history', 'ContactHistory', null),
+				    on_what_id = :ack:e_object_id,
+				    comment_id = :ack:e_ack_id,
+				    comment_date = :ack:s_date_created,
+				    comment = :ack:e_ack_comments,
+				    profile_partner_id = :p2:p_partner_key,
+				    profile_partner_name = condition(char_length(isnull(:p2:p_org_name,'')) > 1, :p2:p_org_name, :p2:p_given_name + ' ' + :p2:p_surname),
+				    profile_partner_ref = '/apps/kardia/api/partner/Partners/' + :p2:p_partner_key,
+				    replyto_partner_id = :ack:p_dn_partner_key,
+				    replyto_partner_name = condition(char_length(isnull(:p3:p_org_name,'')) > 1, :p3:p_org_name, :p3:p_given_name + ' ' + :p3:p_surname),
+				    replyto_partner_ref = '/apps/kardia/api/partner/Partners/' + :p3:p_partner_key,
+				    commenter_partner_id = :ack:e_whom,
+				    commenter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				    commenter_partner_ref = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key,
+				    date_created = :ack:s_date_created,
+				    created_by = :ack:s_created_by,
+				    date_modified = :ack:s_date_modified,
+				    modified_by = :ack:s_modified_by
+				from
+				    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+				    identity /apps/kardia/data/Kardia_DB/e_ack/rows ack,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p2,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p3
+				where
+				    :ch:p_partner_key = :eng_list:partner_id and
+				    :ack:e_object_id = convert(string,:ch:e_contact_history_id) and
+				    :ack:e_object_type = 'e_contact_history' and
+				    :ack:e_ack_type = 3 and
+				    :p:p_partner_key = :ack:e_whom and
+				    :p2:p_partner_key = :ch:p_partner_key and
+				    :p3:p_partner_key =* :ack:p_dn_partner_key
+				";
+			}
+		    }
+
+		comm_ppl "system/querytree"
+		    {
+		    text = "OwnPeople";
+
+		    comm_ppl_list "system/querytree"
+			{
+			sql = " select
+				    on_what = condition(:ack:e_object_type = 'e_contact_history', 'ContactHistory', null),
+				    on_what_id = :ack:e_object_id,
+				    comment_id = :ack:e_ack_id,
+				    comment_date = :ack:s_date_created,
+				    comment = :ack:e_ack_comments,
+				    profile_partner_id = :p2:p_partner_key,
+				    profile_partner_name = condition(char_length(isnull(:p2:p_org_name,'')) > 1, :p2:p_org_name, :p2:p_given_name + ' ' + :p2:p_surname),
+				    profile_partner_ref = '/apps/kardia/api/partner/Partners/' + :p2:p_partner_key,
+				    replyto_partner_id = :ack:p_dn_partner_key,
+				    replyto_partner_name = condition(char_length(isnull(:p3:p_org_name,'')) > 1, :p3:p_org_name, :p3:p_given_name + ' ' + :p3:p_surname),
+				    replyto_partner_ref = '/apps/kardia/api/partner/Partners/' + :p3:p_partner_key,
+				    commenter_partner_id = :ack:e_whom,
+				    commenter_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				    commenter_partner_ref = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key,
+				    date_created = :ack:s_date_created,
+				    created_by = :ack:s_created_by,
+				    date_modified = :ack:s_date_modified,
+				    modified_by = :ack:s_modified_by
+				from
+				    /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
+				    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+				    identity /apps/kardia/data/Kardia_DB/e_ack/rows ack,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p2,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p3
+				where
+				    :c:e_collaborator = :eng_list:partner_id and
+				    :ch:p_partner_key = :c:p_partner_key and
+				    :ack:e_object_id = convert(string,:ch:e_contact_history_id) and
+				    :ack:e_object_type = 'e_contact_history' and
+				    :ack:e_ack_type = 3 and
+				    :p:p_partner_key = :ack:e_whom and
+				    :p2:p_partner_key = :ch:p_partner_key and
+				    :p3:p_partner_key =* :ack:p_dn_partner_key
+				";
+			}
 		    }
 		}
 
