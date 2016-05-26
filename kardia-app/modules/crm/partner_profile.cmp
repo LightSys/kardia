@@ -95,7 +95,7 @@ partner_profile "widget/component-decl"
 			select
 			    e_object_type = 'e_collaborator',
 			    e_object_id = :parameters:collab_key + '|' + :parameters:partner_key,
-			    e_ack_type = 3, -- type 3 is 'Viewed'
+			    e_ack_type = 4, -- type 4 is 'Viewed'
 			    e_whom = :parameters:collab_key,
 			    p_dn_partner_key = :parameters:partner_key,
 			    s_date_created = getdate(),

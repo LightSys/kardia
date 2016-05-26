@@ -939,6 +939,12 @@ create table e_document_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_doc_type_id, 'Profile Photo' as e_doc_type_label, 'Profile Photograph' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_doc_type_id, 'Prayer Letter' as e_doc_type_label, 'Prayer Letter' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_doc_type_id, 'Application' as e_doc_type_label, 'Application' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_doc_type_id, 'Resume' as e_doc_type_label, 'Resume' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_doc_type_id, 'Document' as e_doc_type_label, 'Document' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_doc_type_id, 'Image' as e_doc_type_label, 'Image' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_document */
@@ -1070,6 +1076,7 @@ create table e_collaborator_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into e_collaborator_type (e_collab_type_id,e_collab_type_label,e_collab_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_collab_type_id, 'Mobilizer' as e_collab_type_label, 'Mobilizer' as e_collab_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_collaborator */
@@ -1102,6 +1109,7 @@ create table e_todo_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into e_todo_type (e_todo_type_id,e_todo_type_label,e_todo_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_todo_type_id, 'Follow-up' as e_todo_type_label, 'Follow-up' as e_todo_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_todo */
@@ -1226,7 +1234,7 @@ create table e_ack (
         e_object_type                         varchar(32)  not null,   /* The type of object that has been acknowledged --  */
         e_object_id                           varchar(32)  not null,   /* A unique ID identifying the object acknowledged --  */
         e_ack_type                            integer  not null,       /* The type of acknowledgement (viewed, prayed, comment, like, etc.) --  */
-        e_ack_comments                        varchar(900)  null,      /* A unique ID identifying the object acknowledged --  */
+        e_ack_comments                        varchar(900)  null,      /* Comments related to this ACK (for example, if the ack is a comment on a post) --  */
         e_whom                                char(10)  not null,      /* The collaborator who acknowledged the object --  */
         p_dn_partner_key                      char(10)  null,          /* (denormalization) the partner key of the person who created the object being acknowledged. --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -1254,6 +1262,7 @@ create table e_ack_type (
 insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_ack_type, 'Prayed' as e_ack_type_label, 'Prayed' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_ack_type, 'Reply' as e_ack_type_label, 'Reply' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_ack_type, 'Comment' as e_ack_type_label, 'Comment' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_ack_type, 'Viewed' as e_ack_type_label, 'Viewed' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_trackactivity */
