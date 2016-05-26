@@ -184,6 +184,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             spinner.setMessage("Connecting Account...");
         } else {
             spinner.setMessage("Updating...");
+            //clears gift table to fix a bug with updating from the server
+            db.deleteGifts(Account_ID);
         }
         dataActivity.runOnUiThread(new Runnable() {
             @Override
@@ -722,6 +724,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             return;
         }
         JSONArray tempGifts = json.names();
+
 
         for(int i = 0; i < tempGifts.length(); i++){
             try{

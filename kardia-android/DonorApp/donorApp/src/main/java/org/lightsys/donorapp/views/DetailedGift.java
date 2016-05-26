@@ -1,10 +1,13 @@
 package org.lightsys.donorapp.views;
 
+import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Gift;
+import org.lightsys.donorapp.tools.DownloadPDF;
 import org.lightsys.donorapp.tools.Formatter;
 import org.lightsys.donorapp.tools.LocalDBHandler;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
@@ -93,11 +96,10 @@ public class DetailedGift extends Fragment{
 				// Gift receipt pdfs not implemented yet
 				// Will need to insert url and filename into DownloadPDF constructor to implement
 				// See NoteList class for example on how to do this
-
 //				Account account = accts.get(0);
 //				String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
 //				DownloadPDF download = new DownloadPDF("INSERT URL", account.getServerName(), account.getAccountName(),
-//						account.getAccountPassword(), directory, "INSERT FILENAME", getActivity(), getActivity());
+//						account.getAccountPassword(), directory, "INSERT FILE NAME", getActivity(), getActivity());
 //				download.execute("");
 			}
 		});
