@@ -187,6 +187,9 @@ OBJECT STRUCTURE...
 	    contact_via_ref - a link to more detailed info about the above.
 	    contact_via_type - the type of contact info (e.g., Phone, Cell,
 			      Skype, Email, etc.) for the above.
+	    num_comments    - the number of comments that have been left on
+			      a given contact history item (note, prayer
+			      need, update, etc.)
 
 	The following 'system' properties will be provided:
 
@@ -194,6 +197,37 @@ OBJECT STRUCTURE...
 	    created_by	    - username that created the history item
 	    date_modified   - date the history item was modified in Kardia
 	    modified_by	    - username that modified the history item
+
+    /apps/kardia/api/crm/Partners/{partnerid}/ContactHistory/{historyid}/Comments
+	-- A list of all the comments left on a comment history item.
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    contact_history_id - the ID of the contact history that this comment
+			      is left on
+	    comment_id	    - the unique ID of the comment
+	    comment_date    - the date the comment was left
+	    comment	    - the text of the comment itself
+	    profile_partner_id - the ID of the partner whose profile the comment
+			      was left on
+	    profile_partner_name - the name of the above partner
+	    profile_partner_ref - the URL for more information about the above
+	    replyto_partner_id - the ID of the partner who added the contact
+			      history item being commented on, i.e., the author
+			      of the contact history record.
+	    replyto_partner_name - the name of the above partner
+	    replyto_partner_ref - the URL for more information about the above
+	    commenter_partner_id - the ID of the partner who wrote the comment
+	    commenter_partner_name - the name of the above partner
+	    commenter_partner_ref - the URL for more information about the above
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the comment was created in Kardia
+	    created_by	    - username that created the comment
+	    date_modified   - date the comment was modified in Kardia
+	    modified_by	    - username that modified the comment
 
     /apps/kardia/api/crm/Partners/{partnerid}/Tracks -- A list of all
     engagement tracks that the partner has engaged in, whether current or
@@ -490,6 +524,71 @@ OBJECT STRUCTURE...
 	retrieve, as the server must compile all activities from multiple
 	sources and aggregate them together before returning the data via this
 	API.
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Comments -- A list of all the
+    comments of relevance to the particular partner
+
+	This is a collection URL and doesn't contain any data itself, but
+	only contains additional URL's with comments, see below.
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Comments/Own -- A list of all the
+    comments created by the particular partner.
+
+	This is a collection URL; each returned element will have the
+	following properties:
+
+	    on_what	    - the type of thing that was commented on, for
+			      example, "ContactHistory" for a history record
+			      like a note or prayer need
+	    on_what_id	    - the ID of the record commented on
+	    comment_id	    - the unique ID of the comment
+	    comment_date    - the date the comment was left
+	    comment	    - the text of the comment itself
+	    profile_partner_id - the ID of the partner whose profile the comment
+			      was left on
+	    profile_partner_name - the name of the above partner
+	    profile_partner_ref - the URL for more information about the above
+	    replyto_partner_id - the ID of the partner who added the contact
+			      history item being commented on, i.e., the author
+			      of the contact history record.
+	    replyto_partner_name - the name of the above partner
+	    replyto_partner_ref - the URL for more information about the above
+	    commenter_partner_id - the ID of the partner who wrote the comment
+	    commenter_partner_name - the name of the above partner
+	    commenter_partner_ref - the URL for more information about the above
+
+	The following 'system' properties will be provided:
+
+	    date_created    - date the comment was created in Kardia
+	    created_by	    - username that created the comment
+	    date_modified   - date the comment was modified in Kardia
+	    modified_by	    - username that modified the comment
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Comments/Received -- A list of all
+    the comments received by the particular partner (in other words, comments
+    on things that this partner authored).
+
+	This is a collection URL; each returned element will have the same
+	properties as the Comments/Own URL above.
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Comments/OwnProfile -- A list of
+    all the comments on this partner's profile, regardless of who authored
+    them.
+
+	This is a collection URL; each returned element will have the same
+	properties as the Comments/Own URL above.
+
+
+    /apps/kardia/api/crm/Partners/{partnerid}/Comments/OwnPeople -- A list of
+    all the comments on the profiles of partners that this partner is
+    collaborating with.
+
+	This is a collection URL; each returned element will have the same
+	properties as the Comments/Own URL above.
 
 
     /apps/kardia/api/crm/Partners/{partnerid}/ProfilePicture -- information

@@ -23,6 +23,10 @@ ENDPOINT...
 
 	https://server.lightsys.org:843/apps/kardia/api/donor?cx__mode=rest
 
+    Where the API requires an "id" in the URL / pathname of a request, such
+    as a fund or gift ID, that ID will be the same as the "name" attribute for
+    that particular object (see below for details).
+
 
 OBJECT STRUCTURE...
 
@@ -82,6 +86,11 @@ OBJECT STRUCTURE...
 	bar '|'.  For example, if the fund is '1000' and the ledger is 'DEMO',
 	the fundid used in URLs later in this document would be '1000|DEMO'.
 
+    /apps/kardia/api/donor/{donorid}/Gifts/{giftid}/Receipt
+
+	This element URL allows for the retrieval of the PDF gift receipt
+	issued for this particular gift.
+
     /apps/kardia/api/donor/{donorid}/Funds -- List of all funds the donor has
     given to
 
@@ -110,20 +119,40 @@ OBJECT STRUCTURE...
     /apps/kardia/api/donor/{donorid}/Funds/{fundid}/Gifts -- List of all gifts
     given to the particular fund
 
+    /apps/kardia/api/donor/{donorid}/Funds/{fundid}/Gifts/{giftid}/Receipt
+
+	This element URL allows for the retrieval of the PDF gift receipt
+	issued for this particular gift.
+
     /apps/kardia/api/donor/{donorid}/Funds/{fundid}/Years -- List of all years
     in which the donor gave to a particular fund
 
     /apps/kardia/api/donor/{donorid}/Funds/{fundid}/Years/{year}/Gifts -- List
     of all gifts given to a particular fund in a given year
 
+    /apps/kardia/api/donor/{donorid}/Funds/{fundid}/Years/{year}/Gifts/{giftid}/Receipt
+
+	This element URL allows for the retrieval of the PDF gift receipt
+	issued for this particular gift.
+
     /apps/kardia/api/donor/{donorid}/Years/{year}/Gifts -- List of all gifts 
     given during a particular year
+
+    /apps/kardia/api/donor/{donorid}/Years/{year}/Gifts/{giftid}/Receipt
+
+	This element URL allows for the retrieval of the PDF gift receipt
+	issued for this particular gift.
 
     /apps/kardia/api/donor/{donorid}/Years/{year}/Funds -- List of all funds
     given to in a particular year
 
     /apps/kardia/api/donor/{donorid}/Years/{year}/Funds/{fundid}/Gifts -- List
     of all gifts given to a particular fund in a given year
+
+    /apps/kardia/api/donor/{donorid}/Years/{year}/Funds/{fundid}/Gifts/{giftid}/Receipt
+
+	This element URL allows for the retrieval of the PDF gift receipt
+	issued for this particular gift.
 
 
 EXAMPLE URL'S...
