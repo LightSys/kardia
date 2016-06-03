@@ -14,6 +14,7 @@ import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Fund;
 import org.lightsys.donorapp.data.Gift;
 import org.lightsys.donorapp.data.Missionary;
+import org.lightsys.donorapp.data.NewItem;
 import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.data.PrayerLetter;
 import org.lightsys.donorapp.data.PrayerNotification;
@@ -32,6 +33,9 @@ import org.lightsys.donorapp.data.Year;
  *   Table columns and names are all defined as constants at begining of file
  *   Items are added to tables by passing values in ContentValue objects
  *   Each table typically has at least a getObjects() which returns an array of all known elements, and an addObject(Object o) which adds the element(try to keep each element unique)
+ *
+ * Edited by Judah Sistrunk on 6/2/2016
+ * 	added information relevent to the auto-updater
  *
  */
 public class LocalDBHandler extends SQLiteOpenHelper{
@@ -99,6 +103,15 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//Time_Stamp
 	private static final String TABLE_TIMESTAMP = "timestamp";
 	private static final String COLUMN_DATE  = "date";
+	//new item table
+	private static final String TABLE_NEW_ITEM = "new_item";
+	private static final String COLUMN_NEW_ITEM_DATE = "new_item_date";
+	private static final String COLUMN_MESSAGE = "message";
+	//REFRESH_PERIOD
+	//not really a table, but a variable that needs to be accessed from multiple locations
+	private static final String TABLE_REFRESH_PERIOD = "refresh_period";
+	private static final String COLUMN_REFRESH = "refresh";
+
 	
 	/* ************************* Creation of Database and Tables ************************* */
 	/**
@@ -199,6 +212,15 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 				+ "(" + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_GIFT_ID
 				+ " INTEGER," + COLUMN_ACCOUNT_ID + " INTEGER)";
 		db.execSQL(CREATE_GIFTACCOUNT_MAP_TABLE);
+
+		String CREATE_NEW_ITEM_TABLE = "CREATE TABLE " + TABLE_NEW_ITEM
+				+ "(" + COLUMN_NEW_ITEM_DATE + " TEXT," + COLUMN_TYPE
+				+ " TEXT," + COLUMN_MESSAGE + " TEXT)";
+		db.execSQL(CREATE_NEW_ITEM_TABLE);
+
+		String CREATE_REFRESH_PERIOD_TABLE = "CREATE TABLE " + TABLE_REFRESH_PERIOD
+				+ "(" + COLUMN_REFRESH + " TEXT PRIMARY KEY)";
+		db.execSQL(CREATE_REFRESH_PERIOD_TABLE);
 	}
 	
 	/**
@@ -456,6 +478,30 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		db.close();
 	}
 
+	//adds new notification item
+	public void addNew_Item (String date, String type, String message) {
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_NEW_ITEM_DATE, date);
+		values.put(COLUMN_TYPE, type);
+		values.put(COLUMN_MESSAGE, message);
+
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.insert(TABLE_NEW_ITEM, null, values);
+		db.close();
+	}
+
+	//sets the current refresh period
+	public void addRefresh_Period (String period){
+		deleteRefreshPeriod();
+
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_REFRESH, period);
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.insert(TABLE_REFRESH_PERIOD, null, values);
+		db.close();
+	}
+
 	/* ************************* Deletion Queries ************************* */
 	
 	/**
@@ -579,6 +625,28 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		//delete yearaccount connections
 		db.delete(TABLE_YEARACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
 
+		db.close();
+	}
+
+	//delete note
+	public void deleteNote(Note note){
+		String[] acct = {String.valueOf(note.getId())};
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.delete(TABLE_NOTES, COLUMN_ID + " = ?", acct);
+		db.close();
+	}
+
+	//deletes new items table
+	public void deleteNewItems() {
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.delete(TABLE_NEW_ITEM, null, null);
+		db.close();
+	}
+
+	//deletes the period of refresh for the auto-updater
+	public void deleteRefreshPeriod(){
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.delete(TABLE_REFRESH_PERIOD, null, null);
 		db.close();
 	}
 
@@ -1341,7 +1409,45 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		db.close();
 		return years;
 	}
-	
+
+	//gets list of new prayer requests and updates
+	public ArrayList<NewItem> getNewItems() {
+		ArrayList<NewItem> newItems = new ArrayList<NewItem>();
+		String queryString = "SELECT *" + " FROM " + TABLE_NEW_ITEM;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()){
+			newItems.add(new NewItem(c.getString(1), c.getString(2)));
+		}
+		c.close();
+		db.close();
+		return newItems;
+	}
+
+	//gets the refresh period for the auto-updater
+	public String getRefreshPeriod(){
+		ArrayList<String> refreshPeriods = new ArrayList<String>();
+		String queryString = "SELECT *" + " FROM " + TABLE_REFRESH_PERIOD;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while (c.moveToNext()){
+			refreshPeriods.add(c.getString(0));
+		}
+
+		c.close();
+		db.close();
+		if (refreshPeriods.size() > 0){
+			return refreshPeriods.get(0);
+		}
+		else {
+			return "Day";
+		}
+	}
+
 	/* ************************* Update Queries ************************* */
 	
 	/**

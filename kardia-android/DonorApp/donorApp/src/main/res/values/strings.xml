@@ -8,6 +8,7 @@
         <item>Prayer Requests/Updates</item>
         <item>Contact Missionary</item>
         <item>Accounts</item>
+        <item>Refresh Options</item>
         <item>Refresh</item>
     </string-array>
     <string-array name="contactTypes">
@@ -24,6 +25,15 @@
         <item>Twice per day</item>
         <item>3 times per day</item>
         <item>4 times per day</item>
+    </string-array>
+    <string-array name="refresh_times">
+        <item>Never</item>
+        <item>Minute</item>
+        <item>Thirty Minutes</item>
+        <item>Hour</item>
+        <item>Twelve Hours</item>
+        <item>Day</item>
+        <item>Week</item>
     </string-array>
     <string name="app_name">Kardia Donor</string>
     <string name="action_settings">Settings</string>

@@ -111,6 +111,8 @@ public class ContactMissionaryActivity extends Activity{
                         default:
                             message.setType(Message.MessageType.Other);
                     }
+                    Toast.makeText(ContactMissionaryActivity.this,
+                            "Message not sent; function not implemented.", Toast.LENGTH_SHORT).show();
                     // Send message object to API connection to insert into Kardia
                     // Will need AsyncTask to connect to API
                     finish();

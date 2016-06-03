@@ -23,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.lightsys.donorapp.data.Missionary;
+import org.lightsys.donorapp.data.NewItem;
 import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.data.PrayerLetter;
 import org.lightsys.donorapp.views.AccountsActivity;
@@ -69,7 +70,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         super();
         dataContext = context;
         dataActivity = activity;
-        spinner = new ProgressDialog(dataContext, R.style.MySpinnerStyle);
+        if (activity != null) {
+            spinner = new ProgressDialog(dataContext, R.style.MySpinnerStyle);
+        }
         account = a;
     }
 
@@ -88,7 +91,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String params) {
         // Dismiss spinner to show data retrieval is done
-        spinner.dismiss();
+        if (dataActivity != null) {
+            spinner.dismiss();
+        }
 
         // If valid account was connected, close the account activity
         // Otherwise refresh the page the user was on
@@ -175,6 +180,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         AccountName = account.getAccountName();
         Account_ID = account.getId();
 
+        Log.i(Tag, "pulling data");
+
         // If call was from AccountsActivity or EditAccountActivity, it is an account being connected
         // If it was from MainActivity, it is a database update from an existing account
         boolean isNewAccount = false;
@@ -182,19 +189,27 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         if (c == AccountsActivity.class || c == EditAccountActivity.class) {
             isNewAccount = true;
             spinner.setMessage("Connecting Account...");
-        } else {
-            spinner.setMessage("Updating...");
+        }  else
+        {
+            //the autoupdater doesn't run from an activity
+            //the spinnger messes up the autoupdater
+            if (dataActivity != null) {
+                spinner.setMessage("Updating...");
+            }
             //clears gift table to fix a bug with updating from the server
             db.deleteGifts(Account_ID);
         }
-        dataActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                spinner.setIndeterminate(true);
-                spinner.setCancelable(false);
-                spinner.show();
-            }
-        });
+
+        if (dataActivity != null) {
+            dataActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    spinner.setIndeterminate(true);
+                    spinner.setCancelable(false);
+                    spinner.show();
+                }
+            });
+        }
 
         // If it is a new account, validate account
         // If account not valid, do not attempt data pull
@@ -221,6 +236,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
             // Loop through missionaries and pull notes and prayer letters
+            db.deleteNewItems();
             for(Missionary m : db.getMissionaries()) {
                 int missionaryID = m.getId();
                 loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + missionaryID +
@@ -230,7 +246,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
                         missionaryID);
             }
-
             // Load years so they can be connected to funds
             loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
                     "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
@@ -412,6 +427,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         if (json == null) {
             return;
         }
+
+        ArrayList<String> noteIDsFromServer = new ArrayList<String>(); //used to get rid of stale notes
+
         JSONArray tempNotes = json.names();
         for (int i = 0; i < tempNotes.length(); i++) {
             try{
@@ -419,6 +437,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempNotes.getString(i).equals("@id")){
                     JSONObject NoteObj = json.getJSONObject(tempNotes.getString(i));
                     int noteID = Integer.parseInt(NoteObj.getString("note_id"));
+                    noteIDsFromServer.add(noteID + "");
 
                     ArrayList<Integer> currentNoteIDList = new ArrayList<Integer>();
                     for (Note n : db.getNotes()) {
@@ -433,6 +452,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setSubject(NoteObj.getString("note_subject"));
                         temp.setMissionaryName(db.getMissionaryForID(missionary_id).getName());
                         temp.setType(NoteObj.getString("note_type"));
+
+                        //add new item
+                        //this lets the autoUpdater know there is something new
+                        db.addNew_Item(Calendar.getInstance().getTimeInMillis() + ""
+                                , temp.getType()
+                                , "New " + temp.getType() + " from " + temp.getMissionaryName());
 
                         // Dates must be stored as YYYY-MM-DD
                         JSONObject date = new JSONObject(NoteObj.getString("note_date"));
@@ -452,6 +477,20 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 e.printStackTrace();
             }
         }
+
+        //remove old notes
+        /*ArrayList<Note> oldNotes = db.getNotes();
+        for (Note note : oldNotes){
+            boolean contains = false;
+            for (String ID : noteIDsFromServer){
+                if ((note.getId() + "").equals(ID)){
+                    contains = true;
+                }
+            }
+            if (contains = false){
+                db.deleteNote(note);
+            }
+        }*/
     }
 
     /**

@@ -2,16 +2,23 @@ package org.lightsys.donorapp.views;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.lightsys.donorapp.data.Account;
+import org.lightsys.donorapp.tools.AutoUpdater;
 import org.lightsys.donorapp.tools.DataConnection;
 import org.lightsys.donorapp.tools.LocalDBHandler;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -21,6 +28,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -46,7 +54,7 @@ public class MainActivity extends ActionBarActivity {
 	private Fragment fragment;
 	private ArrayList<Account> accts = new ArrayList<Account>();
 	private static final long DAY_MILLI = 86400000;
-	
+
 	/**
 	 * On first open it will open the account page. If not, starts the fund
 	 * list view. Also Creates the drawer menu
@@ -64,8 +72,11 @@ public class MainActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.drawer_layout);
 
-		/* Setting up the Drawer Navigation */
+		//set up auto updater
+		Intent updateIntent = new Intent(getBaseContext(), AutoUpdater.class);
+		startService(updateIntent);
 
+		/* Setting up the Drawer Navigation */
 		String [] mCategories = getResources().getStringArray(R.array.categories);
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow_v1, GravityCompat.START);
@@ -136,7 +147,13 @@ public class MainActivity extends ActionBarActivity {
 			selectItem(0);
 		}
 	}// END OF onCreate
-	
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+	}
+
 	/**
 	 * Used to create the options menu
 	 */
@@ -208,6 +225,7 @@ public class MainActivity extends ActionBarActivity {
 	 * @param position, position of the drawer that has been selected
 	 */
 	private void selectItem(int position) {
+		LocalDBHandler db = new LocalDBHandler(this, null);
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		switch(position){
 		case 0:
@@ -237,12 +255,20 @@ public class MainActivity extends ActionBarActivity {
 			startActivity(accounts);
 			break;
 		case 6:
-			LocalDBHandler db = new LocalDBHandler(this, null);
+			RefreshOptions refresh = new RefreshOptions();
+			fragment = refresh;
+			accts = db.getAccounts();
+			refresh.setDb(db);
+			db.close();
+			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+			break;
+		case 7:
+			//refresh
 			accts = db.getAccounts();
 			db.close();
 			for (Account a : accts) {
 				new DataConnection(this, this, a).execute("");
-			}
+				}
 			break;
 		}
 		mDrawerList.setItemChecked(position, true);

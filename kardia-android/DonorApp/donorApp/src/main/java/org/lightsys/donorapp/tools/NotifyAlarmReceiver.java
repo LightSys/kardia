@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.donorapp.R;
 
@@ -49,6 +50,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT >= 19) {
             LocalDBHandler db = new LocalDBHandler(context, null);
             ArrayList<PrayerNotification> notifications = db.getNotifications();
+
             Note request;
             Intent alarmIntent;
             PendingIntent pendingIntent;
