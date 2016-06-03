@@ -53,27 +53,26 @@ public class RefreshOptions extends Fragment {
             public void onClick(View v) {
                 LocalDBHandler db = new LocalDBHandler(v.getContext(), null);
                 db.addRefresh_Period(refreshPeriods.getSelectedItem().toString());
+                Toast.makeText(v.getContext(), "Changes Applied", Toast.LENGTH_SHORT).show();
             }
         });
 
         LocalDBHandler db = new LocalDBHandler(v.getContext(), null);
         String refresh = db.getRefreshPeriod();
+        db.close();
+        String[] updatePeriods = getResources().getStringArray(R.array.refresh_times);
         int index = 0;
-        if (refresh.equals("Never")){
-            index = 0;
+
+        for (int i = 0; i < updatePeriods.length; i++){
+            if (updatePeriods[i].equals(refresh)){
+                index = i;
+                i = updatePeriods.length + 1;
+            }
+            else {
+                index = 0;
+            }
         }
-        else if (refresh.equals("Minute")){
-            index = 1;
-        }
-        else if (refresh.equals("Hour")){
-            index = 2;
-        }
-        else if (refresh.equals("Day")){
-            index = 3;
-        }
-        else if (refresh.equals("Week")){
-            index = 4;
-        }
+
         refreshPeriods.setSelection(index);
 
         return v;

@@ -43,7 +43,7 @@ public class AutoUpdater extends Service {
     Calendar prevDate = Calendar.getInstance();
 
 
-    //custom timer like thing that ticks every second
+    //custom timer like thing that ticks every minute
     //used to constantly check to see if it's time to check for updates
     private Handler timerHandler = new Handler();
     private Runnable timerRunnable = new Runnable() {
@@ -61,36 +61,36 @@ public class AutoUpdater extends Service {
             if (updatePeriod.equals(updatePeriods[0])){
                 updateMillis = NEVER;
             }
-            else if (updatePeriod.equals("Minute")) {
+            else if (updatePeriod.equals(updatePeriods[1])) {
                 updateMillis = ONE_MINUTE;
             }
-            else if (updatePeriod.equals("Thirty Minutes")){
+            else if (updatePeriod.equals(updatePeriods[2])){
                 updateMillis = THIRTY_MINUTES;
             }
-            else if (updatePeriod.equals("Hour")){
+            else if (updatePeriod.equals(updatePeriods[3])){
                 updateMillis = ONE_HOUR;
             }
-            else if (updatePeriod.equals("Twelve Hours")){
+            else if (updatePeriod.equals(updatePeriods[4])){
                 updateMillis = TWELVE_HOURS;
             }
-            else if (updatePeriod.equals("Day")){
+            else if (updatePeriod.equals(updatePeriods[5])){
                 updateMillis = ONE_DAY;
             }
-            else if (updatePeriod.equals("Week")){
+            else if (updatePeriod.equals(updatePeriods[6])){
                 updateMillis = ONE_WEEK;
             }
 
-
-            long ellapsedTime = currentDate.getTimeInMillis() - prevDate.getTimeInMillis();
+            //difference between the previous time and the current time
+            long elapsedTime = currentDate.getTimeInMillis() - prevDate.getTimeInMillis();
 
             //check to see if the time elapsed is greater than the update period
-            if (ellapsedTime > updateMillis && updateMillis > 0){
+            if (elapsedTime > updateMillis && updateMillis > 0){
                 getUpdates();
                 updateCounter = 0;
                 prevDate = Calendar.getInstance();
             }
             updateCounter++;
-            timerHandler.postDelayed(this, ONE_SECOND);//resets timer to continuously
+            timerHandler.postDelayed(this, ONE_MINUTE);//resets timer continuously
         }
     };
 
@@ -157,4 +157,5 @@ public class AutoUpdater extends Service {
         n = nBuild.build();
         notificationManager.notify(ID, n);
     }
+
 }

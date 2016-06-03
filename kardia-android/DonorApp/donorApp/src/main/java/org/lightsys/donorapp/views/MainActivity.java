@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.tools.AutoUpdater;
@@ -55,6 +57,21 @@ public class MainActivity extends ActionBarActivity {
 	private ArrayList<Account> accts = new ArrayList<Account>();
 	private static final long DAY_MILLI = 86400000;
 
+	//stuff to automatically refresh the current fragment
+	private android.os.Handler refreshHandler = new android.os.Handler();
+	private Runnable refreshRunnable = new Runnable() {
+		@Override
+		public void run() {
+			refreshCurrentFragment();
+			//refreshes the current fragment every second
+			//this is not very efficient
+			//it should be altered eventually
+			//ideally it should refresh whenever the auto-updater updates
+			refreshHandler.postDelayed(refreshRunnable, 1000);
+
+		}
+	};
+
 	/**
 	 * On first open it will open the account page. If not, starts the fund
 	 * list view. Also Creates the drawer menu
@@ -72,9 +89,10 @@ public class MainActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.drawer_layout);
 
-		//set up auto updater
+		/*set up auto updater*/
 		Intent updateIntent = new Intent(getBaseContext(), AutoUpdater.class);
 		startService(updateIntent);
+		refreshHandler.postDelayed(refreshRunnable, 1000);
 
 		/* Setting up the Drawer Navigation */
 		String [] mCategories = getResources().getStringArray(R.array.categories);
