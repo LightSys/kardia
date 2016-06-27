@@ -8,6 +8,7 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 import org.lightsys.donorapp.data.Account;
+import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.tools.AutoUpdater;
 import org.lightsys.donorapp.tools.DataConnection;
 import org.lightsys.donorapp.tools.LocalDBHandler;
@@ -62,13 +63,13 @@ public class MainActivity extends ActionBarActivity {
 	private Runnable refreshRunnable = new Runnable() {
 		@Override
 		public void run() {
-			refreshCurrentFragment();
+		//	refreshCurrentFragment();
 			//refreshes the current fragment every second
 			//this is not very efficient
 			//it should be altered eventually
 			//ideally it should refresh whenever the auto-updater updates
-			refreshHandler.postDelayed(refreshRunnable, 1000);
-
+			//refreshHandler.postDelayed(refreshRunnable, 1000);
+			//it was having issues, so it is now gone
 		}
 	};
 
@@ -136,7 +137,16 @@ public class MainActivity extends ActionBarActivity {
 		LocalDBHandler dbh = new LocalDBHandler(this, null);
 
 		accts = dbh.getAccounts();
-		
+
+		//dbh.addNote(new Note(2, "test prayer", "this is a test prayer", "2016-27-6", "that awesome person", "Pray", false));
+		dbh.addComment(18, 100040, 20, "Judah", "Pray", "2016-6-27", "this prayer is awesome");
+		dbh.addComment(19, 100040, 20, "Judah", "Pray", "2016-6-27", "this prayer is awesome");
+		dbh.addComment(20, 100040, 20, "Judah", "Pray", "2016-6-27", "this prayer is awesome");
+		dbh.addNote(new Note(20, "test note", "this is a test . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .", "2016-6-22", "awesome sauce", "Pray", false));
+		//dbh.addComment(10, 100040, 4, "Judah", "Update", "2016-6-22", "this update is awesome!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		//dbh.addComment(11, 100040, 4, "Judah", "Update", "2016-6-22", "this update is awesome");
+		//dbh.addComment(12, 100040, 4, "Judah", "Update", "2016-6-22", "this update is awesome!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
 		//Delete timestamp if no accounts exist
 		//Launch login page to add account
 		if (savedInstanceState == null && accts.size() == 0) {
@@ -146,7 +156,15 @@ public class MainActivity extends ActionBarActivity {
 			dbh.close();
 			Intent login = new Intent(MainActivity.this, AccountsActivity.class);
 			startActivityForResult(login, 0);
+			//dbh.addAccount(new Account(100040, "Judah", "letmein", "10.5.10.67", "Judah Sistrunk"));
+			//dbh.addNote(new Note(1, "test note", "this is a test", "2016-6-22", "awesome sauce", "Update", false));
+			//dbh.addComment(1, 100040, 1, "Update", "2016-6-22", "this update is awesome");
+			//dbh.addComment(2, 100040, 1, "Update", "2016-6-22", "this update is awesome");
+			//dbh.addComment(1, 100040, 7, "Update", "2016-6-22", "this update is awesome");
+
 		}
+
+
 		/*
 		 * if account(s) do exist check the time stamp, for whether or not to update data
 		 * send to fund list to begin

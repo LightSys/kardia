@@ -22,6 +22,7 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.lightsys.donorapp.data.Comment;
 import org.lightsys.donorapp.data.Missionary;
 import org.lightsys.donorapp.data.NewItem;
 import org.lightsys.donorapp.data.Note;
@@ -275,6 +276,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                             yearid, fundid);
                 }
             }
+
+            //load comments
+            loadComments(GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/"
+                    + Account_ID + "Comments/Own"));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -821,4 +827,68 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
         }
     }
+
+    /*
+    loads comments on posts
+     */
+    private void loadComments(String result){
+
+        //check to see what the database already has
+        ArrayList<Comment> currentComments = db.getComments();
+        JSONObject json = null;
+        try {
+            json = new JSONObject(result);
+        } catch (JSONException e1) {
+            e1.printStackTrace();
+        }
+        if (json == null) {
+            return;
+        }
+        JSONArray tempComments = json.names();
+
+
+        for (int i = 0; i < tempComments.length(); i++){
+            try{
+                //@id signals a new object, but contains no information on that line
+                if(!tempComments.getString(i).equals("@id")){
+                    JSONObject CommentObj = json.getJSONObject(tempComments.getString(i));
+
+                    if(!currentComments.contains(CommentObj.getString("name"))) {
+                        JSONObject dateObj = CommentObj.getJSONObject("comment_date");
+
+                        int ID = Integer.parseInt(CommentObj.getString("comment_id"));
+                        String noteType = CommentObj.getString("on_what");
+                        int noteID = Integer.parseInt(CommentObj.getString("on_what_id"));
+                        String comment = CommentObj.getString("comment");
+
+                        String userName = CommentObj.getString("profile_partner_name");
+
+                        String comment_year = dateObj.getString("year");
+                        String comment_month = dateObj.getString("month");
+
+                        // Convert gift dates to YYYY-MM-DD format
+                        comment_month = (comment_month.length() < 2)? "0" + comment_month : comment_month;
+                        String comment_day = dateObj.getString("day");
+                        comment_day = (comment_day.length() < 2)? "0" + comment_day : comment_day;
+                        String comment_date = comment_year + "-"
+                                + comment_month + "-" + comment_day;
+
+                        Comment temp = new Comment();
+                        temp.setCommentID(ID);
+                        temp.setNoteID(noteID);
+                        temp.setNoteType(noteType);
+                        temp.setDate(comment_date);
+                        temp.setSenderID(Account_ID);
+                        temp.setComment(comment);
+
+                        db.addComment(temp.getCommentID(), temp.getSenderID(), temp.getNoteID(), temp.getUserName(), temp.getNoteType(), temp.getDate(), temp.getComment());
+                    }
+                }
+            }
+            catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

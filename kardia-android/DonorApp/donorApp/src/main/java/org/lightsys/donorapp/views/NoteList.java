@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -102,6 +103,7 @@ public class NoteList extends Fragment{
             Bundle args = new Bundle();
             if (combined.get(position).getClass() == Note.class) {
                 Note n = (Note) combined.get(position);
+                Log.i("NoteList", n.getId() + "");
                 if (n.getType().equals("Pray")) {
                     args.putInt(DetailedPrayerRequest.ARG_REQUEST_ID, n.getId());
                     DetailedPrayerRequest newFrag = new DetailedPrayerRequest();

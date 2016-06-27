@@ -131,11 +131,6 @@ public class AutoUpdater extends Service {
             sendNotification("New " + item.getItemType(), item.getItemMessage(), notificationID);
         }
 
-        //send notification that this works
-        //this can be removed eventually
-        //it is just for debugging purposes
-        sendNotification("Auto-Updater", "Does this work?", 0);
-
         Log.i(TAG, "updated: " + Calendar.getInstance().getTime().getHours() + ":" + Calendar.getInstance().getTime().getMinutes() + ":" + Calendar.getInstance().getTime().getSeconds());//debug stuffs
     }
 

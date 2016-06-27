@@ -5,18 +5,25 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.donorapp.R;
 
+import org.lightsys.donorapp.data.Comment;
 import org.lightsys.donorapp.data.Note;
+import org.lightsys.donorapp.tools.CommentListAdapter;
 import org.lightsys.donorapp.tools.Formatter;
 import org.lightsys.donorapp.tools.LocalDBHandler;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by JoshWorkman on 3/10/2015.
@@ -31,6 +38,8 @@ public class DetailedPrayerRequest extends Fragment{
     private Button prayerReminder;
     private TextView instr, textAbove;
     private Note request;
+
+    ArrayList<HashMap<String, String>> commentList = new ArrayList<HashMap<String, String>>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -121,6 +130,38 @@ public class DetailedPrayerRequest extends Fragment{
                 }
             }
         });
+
+        loadComments();
+
+        String[] from = {"userName", "date", "text"};
+        int[] to = {R.id.userName,  R.id.date, R.id.text};
+        if (commentList != null){
+            CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, R.layout.comment_layout, from, to);
+
+            ListView listview = (ListView)getActivity().findViewById(R.id.commentsList);
+            listview.setAdapter(adapter);
+
+        }
+
+    }
+
+    private void loadComments() {
+        commentList.clear();
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        ArrayList<Comment> comments = db.getComments();
+
+        for (Comment comment : comments){
+            HashMap<String, String> hm = new HashMap<String, String>();
+            Log.i("DetailedUpdate", comment.getNoteID() + " : " + request_id + " : " + comment.getNoteType());
+            if (comment.getNoteID() == request_id && comment.getNoteType().equals("Pray")){
+                Log.i("DetailedUpdate", comment.getCommentID() + " : " + comment.getNoteID());
+                hm.put("UserName", comment.getUserName());
+                hm.put("Date", comment.getDate());
+                hm.put("Text", comment.getComment());
+                commentList.add(hm);
+            }
+
+        }
     }
 
     /**

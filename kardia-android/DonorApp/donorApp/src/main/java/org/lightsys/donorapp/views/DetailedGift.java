@@ -35,8 +35,9 @@ public class DetailedGift extends Fragment{
 	final static String ARG_GIFT_ID = "gift_id";
 	int gift_id = -1;
 	private Bundle args;
-	
-	@Override
+	private Gift gift;
+	private Context context;
+
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
 		getActivity().setTitle("Gift");
@@ -44,6 +45,8 @@ public class DetailedGift extends Fragment{
 		if(savedInstanceState != null){
 			gift_id = savedInstanceState.getInt(ARG_GIFT_ID);
 		}
+
+		context = inflater.getContext();
 
 		return inflater.inflate(R.layout.gift_detailedview_layout, container, false);
 	}
@@ -65,7 +68,7 @@ public class DetailedGift extends Fragment{
 	 * Sets each text field with the detailed information about the gift
 	 * @param gift_id, Gift Identification
 	 */
-	public void updateGiftView(int gift_id){
+	public void updateGiftView(final int gift_id){
 		TextView fundTitle = (TextView)getActivity().findViewById(R.id.fund);
 		TextView date = (TextView)getActivity().findViewById(R.id.date);
 		TextView amount = (TextView)getActivity().findViewById(R.id.giftamount);
@@ -73,6 +76,7 @@ public class DetailedGift extends Fragment{
 
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 		Gift g = db.getGift(gift_id);
+		gift = g;
 		db.close();
 		
 		fundTitle.setText("Gift to " + g.getGift_fund_desc());
@@ -93,16 +97,16 @@ public class DetailedGift extends Fragment{
 		viewPDFButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Toast.makeText(getActivity(), "Sorry, not implemented yet.", Toast.LENGTH_SHORT).show();
-				// Gift receipt pdfs not implemented yet
-				// Will need to insert url and filename into DownloadPDF constructor to implement
-				// See NoteList class for example on how to do this
 
-//				Account account = accts.get(0);
-//				String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-//				DownloadPDF download = new DownloadPDF("INSERT URL", account.getServerName(), account.getAccountName(),
-//						account.getAccountPassword(), directory, "INSERT FILE NAME", getActivity(), getActivity());
-//				download.execute("");
+				LocalDBHandler db = new LocalDBHandler(context, null);
+				Account account = db.getAccounts().get(0);
+				String giftID = gift.getName().replace("|", "%7C");
+				String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+				String url = "http://" + account.getServerName() + ":800/apps/kardia/api/donor/" + account.getId() + "/Gifts/" + giftID + "/Receipt";
+				DownloadPDF download = new DownloadPDF(url, account.getServerName(), account.getAccountName(),
+						account.getAccountPassword(), directory, "Receipt for " + gift.getName() + ".pdf", getActivity(), getActivity());
+				download.execute("");
+
 			}
 		});
 	}

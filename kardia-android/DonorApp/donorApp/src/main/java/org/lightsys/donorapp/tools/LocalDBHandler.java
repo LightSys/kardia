@@ -11,6 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import org.lightsys.donorapp.data.Account;
+import org.lightsys.donorapp.data.Comment;
 import org.lightsys.donorapp.data.Fund;
 import org.lightsys.donorapp.data.Gift;
 import org.lightsys.donorapp.data.Missionary;
@@ -103,6 +104,14 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//Time_Stamp
 	private static final String TABLE_TIMESTAMP = "timestamp";
 	private static final String COLUMN_DATE  = "date";
+	//comment table
+	private static final String TABLE_COMMENT = "comment";
+	private static final String COLUMN_COMMENT_ID = "comment_id";
+	private static final String COLUMN_SENDER_ID = "sender_id";
+	private static final String COLUMN_USER_NAME = "userName";
+	private static final String COLUMN_NOTE_ID = "note_id";
+	private static final String COLUMN_NOTE_TYPE = "note_type";
+	private static final String COLUMN_COMMENT_TEXT = "comment_text";
 	//new item table
 	private static final String TABLE_NEW_ITEM = "new_item";
 	private static final String COLUMN_NEW_ITEM_DATE = "new_item_date";
@@ -212,6 +221,16 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 				+ "(" + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_GIFT_ID
 				+ " INTEGER," + COLUMN_ACCOUNT_ID + " INTEGER)";
 		db.execSQL(CREATE_GIFTACCOUNT_MAP_TABLE);
+
+		String CREATE_COMMENT_TABLE = "CREATE TABLE " + TABLE_COMMENT
+				+ "(" + COLUMN_COMMENT_ID + " INTEGER PRIMARY KEY,"
+				+ COLUMN_SENDER_ID + " INTEGER,"
+				+ COLUMN_NOTE_ID + " INTEGER,"
+				+ COLUMN_USER_NAME + " TEXT,"
+				+ COLUMN_NOTE_TYPE + " TEXT,"
+				+ COLUMN_DATE + " TEXT,"
+				+ COLUMN_COMMENT_TEXT + " TEXT)";
+		db.execSQL(CREATE_COMMENT_TABLE);
 
 		String CREATE_NEW_ITEM_TABLE = "CREATE TABLE " + TABLE_NEW_ITEM
 				+ "(" + COLUMN_NEW_ITEM_DATE + " TEXT," + COLUMN_TYPE
@@ -478,6 +497,22 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		db.close();
 	}
 
+	//ads comment
+	public void addComment (int commentID, int senderID, int notedID, String userName, String noteType, String date, String comment){
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_COMMENT_ID, commentID);
+		values.put(COLUMN_SENDER_ID, senderID);
+		values.put(COLUMN_NOTE_ID, notedID);
+		values.put(COLUMN_USER_NAME, userName);
+		values.put(COLUMN_NOTE_TYPE, noteType);
+		values.put(COLUMN_DATE, date);
+		values.put(COLUMN_COMMENT_TEXT, comment);
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.insert(TABLE_COMMENT, null, values);
+		db.close();
+	}
+
 	//adds new notification item
 	public void addNew_Item (String date, String type, String message) {
 		ContentValues values = new ContentValues();
@@ -633,6 +668,14 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		String[] acct = {String.valueOf(note.getId())};
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.delete(TABLE_NOTES, COLUMN_ID + " = ?", acct);
+		db.close();
+	}
+
+	//delete comment
+	public void deleteComment(Comment comment){
+		String[] acct = {String.valueOf(comment.getCommentID())};
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.delete(TABLE_COMMENT, COLUMN_COMMENT_ID + " = ?", acct);
 		db.close();
 	}
 
@@ -1408,6 +1451,22 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		c.close();
 		db.close();
 		return years;
+	}
+
+	//gets list of comments
+	public ArrayList<Comment> getComments(){
+		ArrayList<Comment> comments = new ArrayList<Comment>();
+		String queryString = "SELECT *" + " FROM " + TABLE_COMMENT;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()){
+			comments.add(new Comment(c.getInt(0), c.getInt(1), c.getInt(2), c.getString(3), c.getString(4), c.getString(5), c.getString(6)));
+		}
+		c.close();
+		db.close();
+		return comments;
 	}
 
 	//gets list of new prayer requests and updates
