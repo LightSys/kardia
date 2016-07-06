@@ -13,7 +13,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Judah on 6/20/2016.
+ * Created by Judah Sistrunk on 6/20/2016.
+ *
+ * this class sets a list of comments to a custom listview
  */
 public class CommentListAdapter extends SimpleAdapter {
 
@@ -41,23 +43,20 @@ public class CommentListAdapter extends SimpleAdapter {
      * @return - Formatted, inflated view
      */
     public View getView(final int position, View convertView, ViewGroup parent) {
+
         CommentListLayout rowView = (CommentListLayout)convertView;
         if(rowView == null) {
             rowView = new CommentListLayout(this.context);
         }
 
         final Map<String, String> pieces = data.get(position);
-        Log.i("commentListAdapter", pieces.get("UserName") + " : " + position);
-        if (pieces.get("UserName") != null) {
-            Formatter formatter = new Formatter();
-            rowView.setUserName(pieces.get("UserName"));
-            rowView.setDateText(formatter.getFormattedDate(pieces.get("Date")));
-            rowView.setCommentText(pieces.get("Text"));
 
-            Log.i("commentListAdapter", "this thing might be working");
+        Formatter formatter = new Formatter();
+        rowView.setUserName(pieces.get("UserName"));
+        rowView.setDateText(formatter.getFormattedDate(pieces.get("Date")));
+        rowView.setCommentText(pieces.get("Text"));
 
-            views.add(rowView);
-        }
+        views.add(rowView);
 
         return rowView;
     }

@@ -1,8 +1,9 @@
 package org.lightsys.donorapp.data;
 
 /**
- * class that stores all the things about comments
  * Created by Judah on 6/7/2016.
+ *
+ * class that stores all the things about comments
  */
 public class Comment {
 

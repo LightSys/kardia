@@ -35,6 +35,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
+        android:layout_marginBottom="18dp"
         android:text="text"
         android:id="@+id/text"
         android:textSize="20dp" />

@@ -279,7 +279,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
             //load comments
             loadComments(GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/"
-                    + Account_ID + "Comments/Own"));
+                    + Account_ID + "/Comments/Own?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -296,6 +296,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         db.close();
     }
 
+
     /**
      * Attempts to do basic Http Authentication, and send a get request from the url
      *
@@ -306,7 +307,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     public String GET(String url) throws Exception {
         InputStream inputStream;
         String result;
-
         try {
             // Set the user credentials to allow access to API information
             CredentialsProvider credProvider = new BasicCredentialsProvider();
@@ -458,6 +458,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setSubject(NoteObj.getString("note_subject"));
                         temp.setMissionaryName(db.getMissionaryForID(missionary_id).getName());
                         temp.setType(NoteObj.getString("note_type"));
+                        temp.setMissionaryID(missionary_id);
 
                         //add new item
                         //this lets the autoUpdater know there is something new
@@ -836,6 +837,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         //check to see what the database already has
         ArrayList<Comment> currentComments = db.getComments();
         JSONObject json = null;
+
         try {
             json = new JSONObject(result);
         } catch (JSONException e1) {
@@ -853,7 +855,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempComments.getString(i).equals("@id")){
                     JSONObject CommentObj = json.getJSONObject(tempComments.getString(i));
 
-                    if(!currentComments.contains(CommentObj.getString("name"))) {
+                    if(!currentComments.contains(CommentObj.getString("name")) && CommentObj.getString("on_what").equals("ContactHistory")) {
                         JSONObject dateObj = CommentObj.getJSONObject("comment_date");
 
                         int ID = Integer.parseInt(CommentObj.getString("comment_id"));
@@ -861,7 +863,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         int noteID = Integer.parseInt(CommentObj.getString("on_what_id"));
                         String comment = CommentObj.getString("comment");
 
-                        String userName = CommentObj.getString("profile_partner_name");
+                        String userName = CommentObj.getString("commenter_partner_name");
 
                         String comment_year = dateObj.getString("year");
                         String comment_month = dateObj.getString("month");
@@ -880,8 +882,21 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setDate(comment_date);
                         temp.setSenderID(Account_ID);
                         temp.setComment(comment);
+                        temp.setUserName(userName);
 
-                        db.addComment(temp.getCommentID(), temp.getSenderID(), temp.getNoteID(), temp.getUserName(), temp.getNoteType(), temp.getDate(), temp.getComment());
+                        //check to see if this is new
+                        Boolean newComment = true;
+                        for (Comment c : currentComments){
+                            if (c.getCommentID() == temp.getCommentID()){
+                                newComment = false;
+                            }
+                        }
+
+                        //if it's new, add it to database
+                        if (newComment) {
+                            db.addComment(temp.getCommentID(), temp.getSenderID(), temp.getNoteID(), temp.getUserName(), temp.getNoteType(), temp.getDate(), temp.getComment());
+                            db.addNew_Item(Calendar.getInstance().getTimeInMillis() + "", "Comment", "New Comment on a post from " + db.getNoteForID(temp.getNoteID()).getMissionaryName());
+                        }
                     }
                 }
             }

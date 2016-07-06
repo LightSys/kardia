@@ -7,6 +7,7 @@ package org.lightsys.donorapp.data;
 public class Note {
 
     private int id;
+    private int missionaryID;
     private String subject;
     private String text;
     private String date;
@@ -16,12 +17,13 @@ public class Note {
 
     public Note() {}
 
-    public Note(int id, String subject, String text, String date, String missionaryName, String noteType, boolean isPrayedFor) {
+    public Note(int id, String subject, String text, String date, String missionaryName, int missionaryID, String noteType, boolean isPrayedFor) {
         this.id = id;
         this.subject = subject;
         this.text = text;
         this.date = date;
         this.missionaryName = missionaryName;
+        this.missionaryID = missionaryID;
         this.noteType = noteType;
         this.isPrayedFor = isPrayedFor;
     }
@@ -32,9 +34,11 @@ public class Note {
         this.missionaryName = name;
     }
 
-    public String getSubject() {
-        return subject;
-    }
+    public void setMissionaryID(int missionaryID) {this.missionaryID = missionaryID;}
+
+    public int getMissionaryID() {return missionaryID;}
+
+    public String getSubject() {return subject;}
 
     public void setSubject(String title) {
         this.subject = title;

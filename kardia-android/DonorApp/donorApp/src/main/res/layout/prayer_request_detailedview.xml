@@ -15,15 +15,6 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/prayButtonInstr"
-                android:layout_width="220dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:textSize="16sp"
-                android:layout_below="@+id/textAbovePrayingButton"
-                android:layout_toRightOf="@+id/scheduleNotification"/>
-
-            <TextView
                 android:id="@+id/missionaryName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -85,13 +76,21 @@
                 android:textSize="16sp"
                 android:layout_below="@+id/scrollView" />
 
+            <TextView
+                android:id="@+id/prayButtonInstr"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:textSize="16sp"
+                android:layout_below="@+id/textAbovePrayingButton"
+                android:layout_toRightOf="@+id/scheduleNotification"/>
+
             <Button
                 android:id="@+id/scheduleNotification"
                 android:layout_width="wrap_content"
                 android:layout_height="68dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginStart="10dp"
-                android:layout_marginBottom="30dp"
                 android:layout_below="@+id/textAbovePrayingButton" />
 
             <TextView
@@ -100,10 +99,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="14dp"
                 android:layout_marginStart="14dp"
-                android:layout_marginTop="10dp"
                 android:text="@string/praying"
                 android:textSize="16sp"
-                android:layout_below="@+id/prayButtonInstr" />
+                android:layout_below="@+id/scheduleNotification" />
 
             <Button
                 android:id="@+id/commentButton"
@@ -117,12 +115,12 @@
                 style="@style/customBottomBar" />
 
             <org.lightsys.donorapp.tools.NonScrollListView
+                android:id="@+id/commentsList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/commentsList"
                 android:paddingBottom="30dp"
                 android:paddingTop="10dp"
-                android:layout_below="@id/commentButton"/>
+                android:layout_below="@id/commentButton" />
         </RelativeLayout>
     </ScrollView>
 

@@ -70,6 +70,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
     private static final String COLUMN_TEXT = "text";
     private static final String COLUMN_SUBJECT = "subject";
     private static final String COLUMN_MISSIONARY_NAME = "missionary_name";
+	private static final String COLUMN_MISSIONARY_ID = "missionary_id";
 	private static final String COLUMN_TYPE = "type";
 	private static final String COLUMN_PRAYED_FOR = "prayed_for";
 	//LETTERS TABLE
@@ -154,8 +155,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		String CREATE_NOTES_TABLE = "CREATE TABLE " + TABLE_NOTES + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_DATE + " TEXT,"
 				+ COLUMN_TEXT + " TEXT," + COLUMN_SUBJECT + " TEXT,"
-				+ COLUMN_MISSIONARY_NAME + " TEXT," + COLUMN_TYPE + " TEXT,"
-				+ COLUMN_PRAYED_FOR + " TEXT)";
+				+ COLUMN_MISSIONARY_NAME + " TEXT," + COLUMN_MISSIONARY_ID + " INTEGER,"
+				+ COLUMN_TYPE + " TEXT," + COLUMN_PRAYED_FOR + " TEXT)";
 		db.execSQL(CREATE_NOTES_TABLE);
 
 		String CREATE_LETTERS_TABLE = "CREATE TABLE " + TABLE_LETTERS + "("
@@ -307,6 +308,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
         values.put(COLUMN_DATE, note.getDate());
         values.put(COLUMN_SUBJECT,note.getSubject());
         values.put(COLUMN_MISSIONARY_NAME,note.getMissionaryName());
+		values.put(COLUMN_MISSIONARY_ID, note.getMissionaryID());
         values.put(COLUMN_ID, note.getId());
 		values.put(COLUMN_TYPE, note.getType());
 		values.put(COLUMN_PRAYED_FOR, note.getIsPrayedFor());
@@ -931,8 +933,9 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             temp.setText(c.getString(2));
             temp.setSubject(c.getString(3));
 			temp.setMissionaryName(c.getString(4));
-			temp.setType(c.getString(5));
-			String booleanStr = c.getString(6);
+			temp.setMissionaryID(c.getInt(5));
+			temp.setType(c.getString(6));
+			String booleanStr = c.getString(7);
 			// Database stores boolean values as "0" and "1"
 			if (booleanStr.equals("1")) {
 				temp.setIsPrayedFor(true);
@@ -967,8 +970,9 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			note.setText(c.getString(2));
 			note.setSubject(c.getString(3));
 			note.setMissionaryName(c.getString(4));
-			note.setType(c.getString(5));
-			String booleanStr = c.getString(6);
+			note.setMissionaryID(c.getInt(5));
+			note.setType(c.getString(6));
+			String booleanStr = c.getString(7);
 			// Database stores boolean string values as "0" and "1"
 			if (booleanStr.equals("1")) {
 				note.setIsPrayedFor(true);

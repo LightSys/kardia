@@ -59,7 +59,7 @@
                     android:id="@+id/text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:paddingBottom="30dp"/>
             </ScrollView>
 
@@ -71,6 +71,7 @@
                 android:layout_marginLeft="18dp"
                 android:layout_marginTop="20dp"
                 android:text="@string/comment"
+                android:layout_centerHorizontal="true"
                 android:layout_below="@id/scrollView"
                 style="@style/customBottomBar" />
 

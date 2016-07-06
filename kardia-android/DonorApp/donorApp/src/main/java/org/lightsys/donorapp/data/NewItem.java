@@ -1,8 +1,9 @@
 package org.lightsys.donorapp.data;
 
 /**
+ * Created by Judah Sistrunk on 5/31/2016.
+ *
  * Holds information about a new update/prayer request/whatever else the user needs to know about
- * Created by Judah on 5/31/2016.
  */
 public class NewItem {
 

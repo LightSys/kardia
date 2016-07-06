@@ -47,6 +47,10 @@
         </activity>
         <activity android:name="org.lightsys.donorapp.views.ContactMissionaryActivity" >
         </activity>
+        <activity
+            android:name="org.lightsys.donorapp.views.CommentActivity"
+            android:label="Post Comment" >
+        </activity>
 
         <receiver android:name="org.lightsys.donorapp.tools.NotifyAlarmReceiver" >
             <intent-filter>
