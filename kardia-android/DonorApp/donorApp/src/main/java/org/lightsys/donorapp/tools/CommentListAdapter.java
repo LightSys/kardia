@@ -1,12 +1,9 @@
 package org.lightsys.donorapp.tools;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleAdapter;
-
-import com.example.donorapp.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,9 +48,8 @@ public class CommentListAdapter extends SimpleAdapter {
 
         final Map<String, String> pieces = data.get(position);
 
-        Formatter formatter = new Formatter();
         rowView.setUserName(pieces.get("UserName"));
-        rowView.setDateText(formatter.getFormattedDate(pieces.get("Date")));
+        rowView.setDateText(Formatter.getFormattedDate(pieces.get("Date")));
         rowView.setCommentText(pieces.get("Text"));
 
         views.add(rowView);

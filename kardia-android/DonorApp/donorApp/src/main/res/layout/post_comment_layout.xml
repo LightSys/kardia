@@ -45,7 +45,7 @@
             <TableRow
                 android:id="@+id/buttonRow"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="100dp"
                 android:gravity="center"
                 android:layout_below="@+id/commentText"
                 android:layout_margin="18dp"

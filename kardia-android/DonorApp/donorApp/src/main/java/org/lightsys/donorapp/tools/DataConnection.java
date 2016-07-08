@@ -24,7 +24,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.lightsys.donorapp.data.Comment;
 import org.lightsys.donorapp.data.Missionary;
-import org.lightsys.donorapp.data.NewItem;
 import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.data.PrayerLetter;
 import org.lightsys.donorapp.views.AccountsActivity;
@@ -281,6 +280,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             loadComments(GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/"
                     + Account_ID + "/Comments/Own?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection"));
 
+            loadGivingUrl(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/"+ Account_ID + "/" +
+                    "GivingInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -434,7 +436,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             return;
         }
 
-        ArrayList<String> noteIDsFromServer = new ArrayList<String>(); //used to get rid of stale notes
+        ArrayList<Integer> serverNoteIds = new ArrayList<Integer>();
+        ArrayList<Integer> currentNoteIDList = new ArrayList<Integer>();
 
         JSONArray tempNotes = json.names();
         for (int i = 0; i < tempNotes.length(); i++) {
@@ -443,12 +446,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempNotes.getString(i).equals("@id")){
                     JSONObject NoteObj = json.getJSONObject(tempNotes.getString(i));
                     int noteID = Integer.parseInt(NoteObj.getString("note_id"));
-                    noteIDsFromServer.add(noteID + "");
 
-                    ArrayList<Integer> currentNoteIDList = new ArrayList<Integer>();
                     for (Note n : db.getNotes()) {
                         currentNoteIDList.add(n.getId());
                     }
+
+                    serverNoteIds.add(noteID);
 
                     // Check to see if prayer request is already in the database
                     if (!currentNoteIDList.contains(noteID)) {
@@ -485,19 +488,19 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
         }
 
-        //remove old notes
-        /*ArrayList<Note> oldNotes = db.getNotes();
-        for (Note note : oldNotes){
-            boolean contains = false;
-            for (String ID : noteIDsFromServer){
-                if ((note.getId() + "").equals(ID)){
-                    contains = true;
+        //get rid of stale notes
+        //it's broken of course
+        for (Integer lNote : currentNoteIDList){
+            boolean onServer = false;
+            for (Integer sNote : serverNoteIds){
+                if (lNote.equals(sNote)){
+                    onServer = true;
                 }
             }
-            if (contains = false){
-                db.deleteNote(note);
+            if (!onServer){
+               //db.deleteNote(db.getNoteForID(lNote));
             }
-        }*/
+        }
     }
 
     /**
@@ -836,6 +839,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         //check to see what the database already has
         ArrayList<Comment> currentComments = db.getComments();
+        ArrayList<Comment> serverComments = new ArrayList<Comment>();
         JSONObject json = null;
 
         try {
@@ -855,7 +859,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempComments.getString(i).equals("@id")){
                     JSONObject CommentObj = json.getJSONObject(tempComments.getString(i));
 
-                    if(!currentComments.contains(CommentObj.getString("name")) && CommentObj.getString("on_what").equals("ContactHistory")) {
+                    if(CommentObj.getString("on_what").equals("ContactHistory")) {
                         JSONObject dateObj = CommentObj.getJSONObject("comment_date");
 
                         int ID = Integer.parseInt(CommentObj.getString("comment_id"));
@@ -884,6 +888,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setComment(comment);
                         temp.setUserName(userName);
 
+                        serverComments.add(temp);
+
                         //check to see if this is new
                         Boolean newComment = true;
                         for (Comment c : currentComments){
@@ -904,6 +910,35 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 e.printStackTrace();
             }
         }
+
+        //get rid of stale comments
+        for (Comment lComment : currentComments){
+            boolean onServer = false;
+            for (Comment sComment : serverComments){
+                if (lComment.getCommentID() == sComment.getCommentID()){
+                    onServer = true;
+                }
+            }
+            if (!onServer){
+                db.deleteComment(lComment);
+            }
+        }
+    }
+
+    private void loadGivingUrl(String result){
+
+        JSONObject json;
+
+        try {
+            json = new JSONObject(result);
+                db.addGiving_url(json.getString("giving_url"));
+        } catch (JSONException e1) {
+            e1.printStackTrace();
+            db.addGiving_url("");
+        }
+
+
+
     }
 
 }

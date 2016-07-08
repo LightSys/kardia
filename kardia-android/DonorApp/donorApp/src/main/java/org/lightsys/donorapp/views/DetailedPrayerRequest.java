@@ -16,13 +16,17 @@ import android.widget.Toast;
 
 import com.example.donorapp.R;
 
+import org.json.JSONObject;
+import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Comment;
 import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.tools.CommentListAdapter;
 import org.lightsys.donorapp.tools.Formatter;
 import org.lightsys.donorapp.tools.LocalDBHandler;
+import org.lightsys.donorapp.tools.PostJson;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 
 /**
@@ -90,7 +94,7 @@ public class DetailedPrayerRequest extends Fragment{
      */
 
     public void updateRequestView(final int request_id){
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        final LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
         TextView subject = (TextView)getActivity().findViewById(R.id.subject);
@@ -140,18 +144,61 @@ public class DetailedPrayerRequest extends Fragment{
                                 }
                             })
                             .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // return, but still set button to prayed for
-                                    updateDbToPrayedFor();
-                                    textAbove.setText("");
-                                    instr.setText("");
-                                    prayerReminder.setBackground(getResources().getDrawable(R.drawable.active_praying_hands_icon));
-                                }
-                            })
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            // return, but still set button to prayed for
+                                            updateDbToPrayedFor();
+                                            textAbove.setText("");
+                                            instr.setText("");
+                                            prayerReminder.setBackground(getResources().getDrawable(R.drawable.active_praying_hands_icon));
+                                        }
+                                    }
+                            )
+                                        .
+
+                                setIcon(android.R.drawable.ic_dialog_alert)
+
+                                .
+
+                                show();
+
+                    //send information to server
+                    try {
+
+                        JSONObject jsonObject = new JSONObject();
+                        JSONObject dateCreated = new JSONObject();
+
+                        Account account = db.getAccounts().get(0);
+
+                        //set date info
+                        Calendar calendar = Calendar.getInstance();
+                        dateCreated.put("year", calendar.get(Calendar.YEAR));
+                        dateCreated.put("month", calendar.get(Calendar.MONTH) + 1);
+                        dateCreated.put("day", calendar.get(Calendar.DAY_OF_MONTH));
+                        dateCreated.put("hour", calendar.get(Calendar.HOUR_OF_DAY));
+                        dateCreated.put("minute", calendar.get(Calendar.MINUTE));
+                        dateCreated.put("second", calendar.get(Calendar.SECOND));
+
+                        jsonObject.put("e_object_type", "e_contact_history");
+                        jsonObject.put("e_object_id", request.getId() + "");
+                        jsonObject.put("e_ack_type", 1);
+                        jsonObject.put("e_whom", account.getId() + "");
+                        jsonObject.put("p_dn_partner_key",request.getMissionaryID() + "");
+                        jsonObject.put("s_created_by", account.getAccountName());
+                        jsonObject.put("s_modified_by", account.getAccountName());
+                        jsonObject.put("s_date_created", dateCreated);
+                        jsonObject.put("s_date_modified", dateCreated);
+
+                        String url = "http://" + account.getServerName() + ":800/apps/kardia/api/supporter/" + account.getId() + "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic";
+
+                        PostJson postJson = new PostJson(getActivity().getBaseContext(), url, jsonObject, account);
+                        postJson.execute();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
                 }
-            }
+                }
         });
 
         //gets list of comments
@@ -179,9 +226,7 @@ public class DetailedPrayerRequest extends Fragment{
 
         for (Comment comment : comments){
             HashMap<String, String> hm = new HashMap<String, String>();
-            Log.i("DetailedUpdate", comment.getNoteID() + " : " + request_id + " : " + comment.getNoteType());
             if (comment.getNoteID() == request_id){
-                Log.i("DetailedUpdate", comment.getCommentID() + " : " + comment.getNoteID());
                 hm.put("UserName", comment.getUserName());
                 hm.put("Date", comment.getDate());
                 hm.put("Text", comment.getComment());

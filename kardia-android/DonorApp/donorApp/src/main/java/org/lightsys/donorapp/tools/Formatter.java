@@ -1,8 +1,5 @@
 package org.lightsys.donorapp.tools;
 
-import android.nfc.Tag;
-import android.util.Log;
-
 /**
  * Class created to provide date formatting functionality for dates and amounts
  * Created by Andrew on 6/30/2015.

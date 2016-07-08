@@ -2,26 +2,16 @@ package org.lightsys.donorapp.views;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 import org.lightsys.donorapp.data.Account;
-import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.tools.AutoUpdater;
 import org.lightsys.donorapp.tools.DataConnection;
 import org.lightsys.donorapp.tools.LocalDBHandler;
 
-
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -31,7 +21,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -138,15 +127,6 @@ public class MainActivity extends ActionBarActivity {
 
 		accts = dbh.getAccounts();
 
-		//dbh.addNote(new Note(2, "test prayer", "this is a test prayer", "2016-27-6", "that awesome person", "Pray", false));
-		//dbh.addComment(18, 100040, 20, "Judah", "Pray", "2016-6-27", "this prayer is awesome");
-		//dbh.addComment(19, 100040, 20, "Judah", "Pray", "2016-6-27", "this prayer is awesome");
-		//dbh.addComment(20, 100040, 20, "Judah", "Pray", "2016-6-27", "this prayer is awesome");
-		//dbh.addNote(new Note(20, "test note", "this is a test . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .", "2016-6-22", "awesome sauce", "Pray", false));
-		//dbh.addComment(10, 100040, 4, "Judah", "Update", "2016-6-22", "this update is awesome!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		//dbh.addComment(11, 100040, 4, "Judah", "Update", "2016-6-22", "this update is awesome");
-		//dbh.addComment(12, 100040, 4, "Judah", "Update", "2016-6-22", "this update is awesome!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
 		//Delete timestamp if no accounts exist
 		//Launch login page to add account
 		if (savedInstanceState == null && accts.size() == 0) {
@@ -156,12 +136,6 @@ public class MainActivity extends ActionBarActivity {
 			dbh.close();
 			Intent login = new Intent(MainActivity.this, AccountsActivity.class);
 			startActivityForResult(login, 0);
-			//dbh.addAccount(new Account(100040, "Judah", "letmein", "10.5.10.67", "Judah Sistrunk"));
-			//dbh.addNote(new Note(1, "test note", "this is a test", "2016-6-22", "awesome sauce", "Update", false));
-			//dbh.addComment(1, 100040, 1, "Update", "2016-6-22", "this update is awesome");
-			//dbh.addComment(2, 100040, 1, "Update", "2016-6-22", "this update is awesome");
-			//dbh.addComment(1, 100040, 7, "Update", "2016-6-22", "this update is awesome");
-
 		}
 
 
@@ -187,7 +161,6 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-
 	}
 
 	/**
@@ -273,10 +246,13 @@ public class MainActivity extends ActionBarActivity {
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 2:
-			Toast.makeText(MainActivity.this, "To Be Implemented: General Donation Link", Toast.LENGTH_SHORT).show();
-			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("INSERT HERE"));
-			//TODO: replace url with actually donation site
-			//startActivity(browserIntent);
+			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(db.getGivingUrl()));
+			if (db.getGivingUrl().equals("")){
+				Toast.makeText(MainActivity.this, "Your organization has not supplied a donation link", Toast.LENGTH_SHORT).show();
+			}
+			else {
+				startActivity(browserIntent);
+			}
 			break;
         case 3:
             fragment = new NoteList();

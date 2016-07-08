@@ -14,7 +14,6 @@ import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.NewItem;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.SimpleTimeZone;
 
 /**
  * service class that automatically updates local database with server database
@@ -46,55 +45,58 @@ public class AutoUpdater extends Service {
     //custom timer like thing that ticks every minute
     //used to constantly check to see if it's time to check for updates
     private Handler timerHandler = new Handler();
-    private Runnable timerRunnable = new Runnable() {
-        @Override
-        public void run() {
 
-            String[] updatePeriods = getResources().getStringArray(R.array.refresh_times);
-            //get update period
-            updatePeriod = db.getRefreshPeriod();
-            db.close();
-
-            currentDate = Calendar.getInstance();
-
-            //figure out how many milliseconds the update period is
-            if (updatePeriod.equals(updatePeriods[0])){
-                updateMillis = NEVER;
-            }
-            else if (updatePeriod.equals(updatePeriods[1])) {
-                updateMillis = ONE_MINUTE;
-            }
-            else if (updatePeriod.equals(updatePeriods[2])){
-                updateMillis = THIRTY_MINUTES;
-            }
-            else if (updatePeriod.equals(updatePeriods[3])){
-                updateMillis = ONE_HOUR;
-            }
-            else if (updatePeriod.equals(updatePeriods[4])){
-                updateMillis = TWELVE_HOURS;
-            }
-            else if (updatePeriod.equals(updatePeriods[5])){
-                updateMillis = ONE_DAY;
-            }
-            else if (updatePeriod.equals(updatePeriods[6])){
-                updateMillis = ONE_WEEK;
-            }
-
-            //difference between the previous time and the current time
-            long elapsedTime = currentDate.getTimeInMillis() - prevDate.getTimeInMillis();
-
-            //check to see if the time elapsed is greater than the update period
-            if (elapsedTime > updateMillis && updateMillis > 0){
-                getUpdates();
-                updateCounter = 0;
-                prevDate = Calendar.getInstance();
-            }
-            updateCounter++;
-            timerHandler.postDelayed(this, ONE_MINUTE);//resets timer continuously
-        }
-    };
 
     public AutoUpdater() {
+
+        Runnable timerRunnable = new Runnable() {
+            @Override
+            public void run() {
+
+                String[] updatePeriods = getResources().getStringArray(R.array.refresh_times);
+                //get update period
+                updatePeriod = db.getRefreshPeriod();
+                db.close();
+
+                currentDate = Calendar.getInstance();
+
+                //figure out how many milliseconds the update period is
+                if (updatePeriod.equals(updatePeriods[0])){
+                    updateMillis = NEVER;
+                }
+                else if (updatePeriod.equals(updatePeriods[1])) {
+                    updateMillis = ONE_MINUTE;
+                }
+                else if (updatePeriod.equals(updatePeriods[2])){
+                    updateMillis = THIRTY_MINUTES;
+                }
+                else if (updatePeriod.equals(updatePeriods[3])){
+                    updateMillis = ONE_HOUR;
+                }
+                else if (updatePeriod.equals(updatePeriods[4])){
+                    updateMillis = TWELVE_HOURS;
+                }
+                else if (updatePeriod.equals(updatePeriods[5])){
+                    updateMillis = ONE_DAY;
+                }
+                else if (updatePeriod.equals(updatePeriods[6])){
+                    updateMillis = ONE_WEEK;
+                }
+
+                //difference between the previous time and the current time
+                long elapsedTime = currentDate.getTimeInMillis() - prevDate.getTimeInMillis();
+
+                //check to see if the time elapsed is greater than the update period
+                if (elapsedTime > updateMillis && updateMillis > 0){
+                    getUpdates();
+                    updateCounter = 0;
+                    prevDate = Calendar.getInstance();
+                }
+                updateCounter++;
+                timerHandler.postDelayed(this, ONE_MINUTE);//resets timer continuously
+            }
+        };
+
         db = new LocalDBHandler(this, null);
         timerHandler.postDelayed(timerRunnable, ONE_SECOND);
     }
@@ -106,7 +108,6 @@ public class AutoUpdater extends Service {
 
     @Override
     public IBinder onBind(Intent arg0) {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -117,7 +118,6 @@ public class AutoUpdater extends Service {
 
     private  void getUpdates()
     {
-        Context context = this;
         ArrayList<Account> accts = db.getAccounts();
         db.close();
 
@@ -132,14 +132,13 @@ public class AutoUpdater extends Service {
         }
 
         db.deleteNewItems();
-
-        Log.i(TAG, "updated: " + Calendar.getInstance().getTime().getHours() + ":" + Calendar.getInstance().getTime().getMinutes() + ":" + Calendar.getInstance().getTime().getSeconds());//debug stuffs
+        Log.d(TAG, "Updated");
     }
 
     public void sendNotification(String title, String subject, int ID){
         Context context = this;
         NotificationManager notificationManager = (NotificationManager)
-                context.getSystemService(context.NOTIFICATION_SERVICE);
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder nBuild;
         Notification n;
 

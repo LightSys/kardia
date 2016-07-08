@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.donorapp.R;
 
@@ -54,7 +53,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
             Note request;
             Intent alarmIntent;
             PendingIntent pendingIntent;
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
             // Loop through all notifications
             for (PrayerNotification notification : notifications) {
@@ -82,7 +81,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
 
     private void sendNotification(Context context, Intent intent) {
         NotificationManager notificationManager = (NotificationManager)
-                context.getSystemService(context.NOTIFICATION_SERVICE);
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder nBuild;
         Notification n;
         String name, subject;

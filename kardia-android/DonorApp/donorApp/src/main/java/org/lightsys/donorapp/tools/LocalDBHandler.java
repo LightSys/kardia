@@ -121,6 +121,9 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//not really a table, but a variable that needs to be accessed from multiple locations
 	private static final String TABLE_REFRESH_PERIOD = "refresh_period";
 	private static final String COLUMN_REFRESH = "refresh";
+	//giving url
+	private static final String TABLE_GIVING_URL = "giving_url";
+	private static final String COLUMN_URL = "url";
 
 	
 	/* ************************* Creation of Database and Tables ************************* */
@@ -241,6 +244,10 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		String CREATE_REFRESH_PERIOD_TABLE = "CREATE TABLE " + TABLE_REFRESH_PERIOD
 				+ "(" + COLUMN_REFRESH + " TEXT PRIMARY KEY)";
 		db.execSQL(CREATE_REFRESH_PERIOD_TABLE);
+
+		String CREATE_GIVING_URL_TABLE = "CREATE TABLE " + TABLE_GIVING_URL
+				+ "(" + COLUMN_URL + " TEXT PRIMARY KEY)";
+		db.execSQL(CREATE_GIVING_URL_TABLE);
 	}
 	
 	/**
@@ -539,6 +546,17 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		db.close();
 	}
 
+	public void addGiving_url(String url){
+		deleteGivingUrl();
+
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_URL, url);
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.insert(TABLE_GIVING_URL, null, values);
+		db.close();
+	}
+
 	/* ************************* Deletion Queries ************************* */
 	
 	/**
@@ -667,17 +685,17 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 
 	//delete note
 	public void deleteNote(Note note){
-		String[] acct = {String.valueOf(note.getId())};
+		String[] dNote = {String.valueOf(note.getId())};
 		SQLiteDatabase db = this.getWritableDatabase();
-		db.delete(TABLE_NOTES, COLUMN_ID + " = ?", acct);
+		db.delete(TABLE_NOTES, COLUMN_ID + " = ?", dNote);
 		db.close();
 	}
 
 	//delete comment
 	public void deleteComment(Comment comment){
-		String[] acct = {String.valueOf(comment.getCommentID())};
+		String[] comm = {String.valueOf(comment.getCommentID())};
 		SQLiteDatabase db = this.getReadableDatabase();
-		db.delete(TABLE_COMMENT, COLUMN_COMMENT_ID + " = ?", acct);
+		db.delete(TABLE_COMMENT, COLUMN_COMMENT_ID + " = ?", comm);
 		db.close();
 	}
 
@@ -692,6 +710,12 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	public void deleteRefreshPeriod(){
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_REFRESH_PERIOD, null, null);
+		db.close();
+	}
+
+	public void deleteGivingUrl(){
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.delete(TABLE_GIVING_URL, null, null);
 		db.close();
 	}
 
@@ -1509,6 +1533,25 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		else {
 			return "Day";
 		}
+	}
+
+	public String getGivingUrl(){
+		String queryString = "SELECT * FROM " + TABLE_GIVING_URL;
+
+		ArrayList<String> url = new ArrayList<String>();
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while (c.moveToNext()){
+			url.add(c.getString(0));
+		}
+
+		c.close();
+		db.close();
+
+		return url.get(0);
+
 	}
 
 	/* ************************* Update Queries ************************* */
