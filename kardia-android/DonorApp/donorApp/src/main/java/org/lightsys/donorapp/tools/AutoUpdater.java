@@ -10,7 +10,10 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import com.example.donorapp.R;
+
+import org.json.JSONObject;
 import org.lightsys.donorapp.data.Account;
+import org.lightsys.donorapp.data.JsonPost;
 import org.lightsys.donorapp.data.NewItem;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -89,6 +92,7 @@ public class AutoUpdater extends Service {
                 //check to see if the time elapsed is greater than the update period
                 if (elapsedTime > updateMillis && updateMillis > 0){
                     getUpdates();
+                    postJsonStuffs();
                     updateCounter = 0;
                     prevDate = Calendar.getInstance();
                 }
@@ -152,6 +156,32 @@ public class AutoUpdater extends Service {
 
         n = nBuild.build();
         notificationManager.notify(ID, n);
+    }
+
+    //sometimes the network breaks and things don't get posted
+    //this fixes that problem
+    private void postJsonStuffs(){
+        ArrayList<JsonPost> posts = db.getJsonPosts();
+
+        for (JsonPost post : posts){
+            try {
+                JSONObject json = new JSONObject(post.getJsonString());
+                ArrayList<Account> accounts = db.getAccounts();
+                Account account = null;
+                for (Account a : accounts){
+                    if (a.getId() == post.getAccountID()){
+                        account = a;
+                    }
+                }
+                PostJson postJson = new PostJson(getBaseContext(), post.getUrl(), json, account);
+                postJson.execute();
+                db.deleteJsonPost(post.getId());
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
     }
 
 }

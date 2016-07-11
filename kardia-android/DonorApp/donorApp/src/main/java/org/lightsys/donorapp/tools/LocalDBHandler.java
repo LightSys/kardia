@@ -14,6 +14,7 @@ import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Comment;
 import org.lightsys.donorapp.data.Fund;
 import org.lightsys.donorapp.data.Gift;
+import org.lightsys.donorapp.data.JsonPost;
 import org.lightsys.donorapp.data.Missionary;
 import org.lightsys.donorapp.data.NewItem;
 import org.lightsys.donorapp.data.Note;
@@ -37,6 +38,8 @@ import org.lightsys.donorapp.data.Year;
  *
  * Edited by Judah Sistrunk on 6/2/2016
  * 	added information relevent to the auto-updater
+ *	added information related to comments
+ *	also added information related to posting stuff to server
  *
  */
 public class LocalDBHandler extends SQLiteOpenHelper{
@@ -124,6 +127,11 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//giving url
 	private static final String TABLE_GIVING_URL = "giving_url";
 	private static final String COLUMN_URL = "url";
+	//json Posts
+	private static final String TABLE_JSON_POST = "json_post";
+	private static final String COLUMN_JSON_ID = "id";
+	private static final String COLUMN_JSON_STRING = "json_string";
+	private static final String COLUMN_JSON_URL = "json_url";
 
 	
 	/* ************************* Creation of Database and Tables ************************* */
@@ -248,6 +256,13 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		String CREATE_GIVING_URL_TABLE = "CREATE TABLE " + TABLE_GIVING_URL
 				+ "(" + COLUMN_URL + " TEXT PRIMARY KEY)";
 		db.execSQL(CREATE_GIVING_URL_TABLE);
+
+		String CREATE_JSON_POST_TABLE = "CREATE TABLE " + TABLE_JSON_POST
+				+ "(" + COLUMN_JSON_ID + " INTEGER PRIMARY KEY, "
+				+ COLUMN_JSON_URL + " TEXT, "
+				+ COLUMN_JSON_STRING + " TEXT, "
+				+ COLUMN_ACCOUNT_ID + " INTEGER)";
+		db.execSQL(CREATE_JSON_POST_TABLE);
 	}
 	
 	/**
@@ -557,6 +572,22 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		db.close();
 	}
 
+	public void addJson_post(long jsonTableId, String url, String jsonString, int accountID){
+		ContentValues values = new ContentValues();
+		Log.e("dbh", "pre stuff");
+		values.put(COLUMN_JSON_ID, jsonTableId);
+		values.put(COLUMN_JSON_URL, url);
+		values.put(COLUMN_JSON_STRING, jsonString);
+		values.put(COLUMN_ACCOUNT_ID, accountID);
+		Log.e("dbh", "post stuff");
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.insert(TABLE_JSON_POST, null, values);
+		db.close();
+		Log.e("dbh", "all the things done");
+
+	}
+
 	/* ************************* Deletion Queries ************************* */
 	
 	/**
@@ -697,6 +728,12 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_COMMENT, COLUMN_COMMENT_ID + " = ?", comm);
 		db.close();
+	}
+
+	public void deleteJsonPost(long jsonId){
+		String[] json = {String.valueOf(jsonId)};
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.delete(TABLE_JSON_POST, COLUMN_JSON_ID + " = ?", json);
 	}
 
 	//deletes new items table
@@ -1533,6 +1570,24 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		else {
 			return "Day";
 		}
+	}
+
+	public ArrayList<JsonPost> getJsonPosts(){
+		String queryString = "SELECT * FROM " + TABLE_JSON_POST;
+		ArrayList<JsonPost> posts = new ArrayList<JsonPost>();
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while (c.moveToNext()){
+			JsonPost jsonPost = new JsonPost(Long.parseLong(c.getString(0)), c.getString(1), c.getString(2), Integer.parseInt(c.getString(3)));
+			posts.add(jsonPost);
+		}
+
+		c.close();
+		db.close();
+
+		return posts;
 	}
 
 	public String getGivingUrl(){

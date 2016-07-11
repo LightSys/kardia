@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Calendar;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -39,12 +40,14 @@ public class PostJson extends AsyncTask<String, Void, String> {
     private static final String TAG = "post JSon";
     private Account account;
     private String url = "";
+    private String backupUrl = "";
     private JSONObject jsonObject;
     private Context context;
     private boolean success = false;
 
     public PostJson(Context context, String Url, JSONObject jsonPost, Account userAccount){
         url = Url;
+        backupUrl = Url;
         jsonObject = jsonPost;
         account = userAccount;
         this.context = context;
@@ -240,7 +243,11 @@ public class PostJson extends AsyncTask<String, Void, String> {
             connection.execute();
         }
         else {
-            Toast.makeText(context, "Something went wrong while sending information :(", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Network Issues: Your data is waiting to be sent", Toast.LENGTH_SHORT).show();
+            String jsonString = jsonObject.toString();
+            LocalDBHandler db = new LocalDBHandler(context, null);
+            db.addJson_post(Calendar.getInstance().getTimeInMillis(), backupUrl, jsonString, account.getId());
+
         }
     }
 
