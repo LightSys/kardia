@@ -1,65 +1,34 @@
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.lightsys.missionaryapp.MainActivity"
-    tools:ignore="MergeRootFrame" >
+    tools:context=".MainActivity" >
 
-    <TableRow
-        android:id="@+id/tableRow1"
-        android:layout_width="fill_parent"
+    <!-- List of funds -->
+    
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.33" >
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/bottom_bar"
+        android:background="@drawable/noise_blue_repeat" >
 
-        <Button
-            android:id="@+id/gifts"
+        <ListView
+            android:id="@+id/info_list"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.5"
-            android:text="Gifts"
-            android:onClick="goToListPage" />
+            android:layout_height="match_parent"
+            style="@style/listCustomBlue" />
+        
+    </RelativeLayout>
 
-        <Button
-            android:id="@+id/payroll"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.5"
-            android:text="Payroll"
-            android:onClick="goToListPage" />
-
-    </TableRow>
-
-    <TableRow
-        android:id="@+id/tableRow2"
-        android:layout_width="fill_parent"
+    
+    <!-- Total bar programmatically added here -->
+    
+    <RelativeLayout android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.33" >
+        android:layout_alignParentBottom="true"
+    	android:layout_alignParentLeft="true" />
 
-        <Button
-            android:id="@+id/donors"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.5"
-            android:text="Donors"
-            android:onClick="goToListPage" />
-
-        <Button
-            android:id="@+id/reports"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.5"
-            android:text="Reports"
-            android:onClick="goToListPage" />
-
-    </TableRow>
-
-    <Button
-        android:id="@+id/accounts"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.34"
-        android:text="Accounts"
-        android:onClick="goToListPage" />
-
-</TableLayout>
+</RelativeLayout>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/LinearLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/noise_blue_repeat" xmlns:tools="http://schemas.android.com/tools">
+
+    <TableRow
+        android:id="@+id/tableRow3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp">
+
+        <ToggleButton
+            android:id="@+id/toggleDate"
+            android:layout_width="60dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center_vertical" />
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="By Date"
+            android:textSize="22sp"
+            tools:ignore="HardcodedText" />
+
+    </TableRow>
+
+    <CheckBox
+        android:id="@+id/dateRange"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:enabled="true"
+        android:text="@string/date_range"
+        android:visibility="invisible" />
+
+    <TableRow
+        android:id="@+id/dateRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:visibility="invisible">
+
+        <Button
+            android:id="@+id/datepick1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="true"
+            android:text="@string/choose_date" />
+
+        <TextView
+            android:id="@+id/dash1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/_"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/datepick2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="true"
+            android:text="@string/choose_date"
+            android:visibility="invisible" />
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp">
+
+        <ToggleButton
+            android:id="@+id/toggleAmount"
+            android:layout_width="60dp"
+            android:layout_height="45dp"
+            android:text="ToggleButton"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="@string/by_amount"
+            android:textSize="22sp" />
+
+    </TableRow>
+
+    <CheckBox
+        android:id="@+id/amountRange"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:text="@string/amount_range"
+        android:visibility="invisible" />
+
+    <TableRow
+        android:id="@+id/amountRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:visibility="invisible">
+
+        <TextView
+            android:id="@+id/dollarSign1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dollar_sign" />
+
+        <EditText
+            android:id="@+id/amount1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="5"
+            android:enabled="true"
+            android:hint="00"
+            android:inputType="number|numberDecimal"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/dash2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/_"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/dollarSign2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dollar_sign"
+            android:visibility="invisible" />
+
+        <EditText
+            android:id="@+id/amount2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="5"
+            android:enabled="true"
+            android:hint="00"
+            android:inputType="numberDecimal"
+            tools:ignore="HardcodedText"
+            android:visibility="invisible" />
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp">
+
+        <ToggleButton
+            android:id="@+id/toggleCheck"
+            android:layout_width="60dp"
+            android:layout_height="45dp" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="@string/by_check_number"
+            android:textSize="22sp" />
+
+    </TableRow>
+
+    <EditText
+        android:id="@+id/checknum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="5"
+        android:enabled="true"
+        android:hint="123456"
+        android:inputType="number"
+        tools:ignore="HardcodedText"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:visibility="invisible" />
+
+    <TableRow
+        android:id="@+id/tableRow4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:gravity="center" >
+
+        <Button
+            android:id="@+id/searchbtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/search"
+            android:textStyle="bold"
+            style="@style/customBottomBar" />
+
+    </TableRow>
+
+</LinearLayout>
