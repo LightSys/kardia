@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/noise_blue_repeat">
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/scroll"
+        android:fillViewport="false"
+        android:background="@drawable/noise_blue_repeat">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/accountID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginLeft="18dp"
+                android:maxLength="14"
+                android:inputType="number"
+                android:hint="@string/userID_Prompt" />
+
+            <EditText
+                android:id="@+id/commentText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/comment_prompt"
+                android:layout_marginTop="18dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginLeft="18dp"
+                android:layout_below="@id/accountID"
+                android:minHeight="200dp"
+                android:maxLength="1000000000"
+                android:background="#ffffff"
+                android:gravity="top"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"/>
+
+            <TableRow
+                android:id="@+id/buttonRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_below="@+id/commentText"
+                android:layout_margin="18dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true">
+
+                <Button
+                    android:id="@+id/cancelButton"
+                    style="@style/customBottomBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cancel"
+                    android:textStyle="bold"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginEnd="20dp" />
+
+                <Button
+                    android:id="@+id/submitButton"
+                    style="@style/customBottomBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/submit"
+                    android:layout_marginTop="18dp"
+                    android:textStyle="bold" />
+
+            </TableRow>
+
+            <TextView
+                android:id="@+id/originalPostLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/buttonRow"
+                android:layout_marginLeft="18dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginTop="18dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/original_message_label"/>
+
+            <TextView
+                android:id="@+id/originalPostText"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/originalPostLabel"
+                android:layout_marginLeft="18dp"
+                android:layout_marginRight="18dp"
+                android:layout_marginTop="18dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+
+        </RelativeLayout>
+    </ScrollView>
+
+
+</LinearLayout>

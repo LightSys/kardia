@@ -1,13 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Missionary App</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Logout</string>
-    <string name="login">Login</string>
-    <string name="username">Username</string>
-    <string name="password">Password</string>
-    <string name="search">Search</string>
-    <string name="logout">Logout</string>
+    <string name="app_name">Kardia Donor</string>
+    <string name="action_settings">Settings</string>
+    <string name="ytd">YTD: </string>
+    <string name="total_2014_ytd_">"Total (2014 YTD): "</string>
+    <string-array name="categories">
+        <item>Designations</item>
+        <item>Gifts</item>
+        <item>Donate</item>
+        <item>@string/accounts_page</item>
+        <item>Refresh</item>
+    </string-array>
+        <string name="amount">Amount:</string>
+        <string name="view_pdf_receipt">View PDF Receipt</string>
+        <string name="donate_now">Donate</string>
+        <string name="accounts_page">Accounts Page</string>
+        <string name="password">password</string>
+        <string name="username">username</string>
+        <string name="server_name">server name</string>
+        <string name="home">Home</string>
+        <string name="connect">Connect</string>
+        <string name="edit_account">Edit Account</string>
+        <string name="donor_id_ex_100001">Donor ID (ex. 100001)</string>
+        <string name="drawer_open">Drawer Open</string>
+        <string name="drawer_closed">Drawer Closed</string>
+        <string name="action_search">Search</string>
+        <string name="submit">submit</string>
+        <string name="account_page">Accounts Page</string>
+        <string name="search">Search</string>
+        <string name="date_range">Date Range</string>
+        <string name="choose_date">Choose Date</string>
+        <string name="_">" - "</string>
+        <string name="by_amount">By Amount</string>
+        <string name="amount_range">Amount Range</string>
+        <string name="by_check_number">By Check Number</string>
 
 </resources>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/LinearLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/noise_blue_repeat" >
+
+    <TextView
+        android:id="@+id/add_account_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="18dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginBottom="20dp"
+        android:text="@string/add_new_account"
+        android:textSize="22sp"/>
+
+    <Button
+        android:id="@+id/finish_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:textSize="22sp"
+        android:text="@string/done"
+        android:textStyle="bold"
+        style="@style/customBottomBar" />
+
+
+    <EditText
+        android:id="@+id/username_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/add_account_text"
+        android:layout_centerHorizontal="true"
+        android:ems="12"
+        android:textSize="22sp"
+        android:hint="@string/username"
+        android:singleLine="true"/>
+
+    <EditText
+        android:id="@+id/password_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_below="@id/username_input"
+        android:layout_centerHorizontal="true"
+        android:ems="12"
+        android:textSize="22sp"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:singleLine="true"/>
+
+    <EditText
+        android:id="@+id/servername_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_below="@id/password_input"
+        android:layout_centerHorizontal="true"
+        android:ems="12"
+        android:textSize="22sp"
+        android:hint="@string/server_name"
+        android:singleLine="true"/>
+
+    <EditText
+        android:id="@+id/donor_id_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_below="@id/servername_input"
+        android:layout_centerHorizontal="true"
+        android:ems="12"
+        android:textSize="22sp"
+        android:hint="@string/user_id_ex_100001"
+        android:inputType="number"
+        android:singleLine="true"/>
+
+
+    <Button
+        android:id="@+id/connect_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/donor_id_input"
+        android:layout_marginTop="25dp"
+        android:layout_centerHorizontal="true"
+        android:text="@string/connect"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        style="@style/customBottomBar" />
+
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/connect_button"
+        android:layout_marginTop="40dp"
+        android:layout_marginLeft="6dp"
+        android:layout_marginStart="6dp"
+        android:textSize="22sp" />
+
+
+    <ListView
+        android:id="@+id/connected_list"
+        style="@style/listCustomBlue"
+        android:layout_below="@id/textView2"
+        android:layout_marginTop="10dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:divider="@android:color/black">
+    </ListView>
+
+</RelativeLayout>
