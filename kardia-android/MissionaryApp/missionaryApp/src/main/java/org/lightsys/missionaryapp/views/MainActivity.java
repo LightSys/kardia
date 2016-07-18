@@ -12,7 +12,6 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -29,7 +28,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
 
@@ -265,10 +263,8 @@ public class MainActivity extends ActionBarActivity {
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 2:
-			//ToDo post Prayer requests and updates
-			//fragment = new NoteList();
-			//fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
-			Toast.makeText(MainActivity.this, "To Be Implemented: General Donation Link", Toast.LENGTH_SHORT).show();
+			fragment = new NoteList();
+			fragmentManager.beginTransaction().replace(R.id.content_frame,fragment).commit();
 			break;
         case 3:
             fragment = new FundList();
@@ -329,4 +325,5 @@ public class MainActivity extends ActionBarActivity {
 		super.onActivityResult(requestCode, resultCode, data);
 		selectItem(0);
 	}
+
 }

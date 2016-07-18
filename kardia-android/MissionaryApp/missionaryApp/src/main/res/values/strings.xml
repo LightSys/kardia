@@ -12,9 +12,9 @@
     </string-array>
     <string-array name="contactTypes">
         <item>Update</item>
-        <item>Prayer Request</item>
-        <item>Praise</item>
-        <item>Other</item>
+        <item>Pray</item>
+        <!--<item>Praise</item>
+        <item>Other</item>-->
     </string-array>
     <string-array name="notification_on_off">
         <item>ON</item>
@@ -82,6 +82,7 @@
     <string name="praying">Praying</string>
     <string name="comment">Comment</string>
     <string name="comment_prompt">Enter your comment</string>
+    <string name="note_prompt">Enter your update/prayer request</string>
     <string name="userID_Prompt">Enter Donor ID</string>
     <string name="original_message_label">Original Post</string>
     <string name="view_pdf">View Letter</string>

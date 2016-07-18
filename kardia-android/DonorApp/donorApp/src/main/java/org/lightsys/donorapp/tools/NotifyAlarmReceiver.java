@@ -49,10 +49,11 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT >= 19) {
             LocalDBHandler db = new LocalDBHandler(context, null);
             ArrayList<PrayerNotification> notifications = db.getNotifications();
+
             Note request;
             Intent alarmIntent;
             PendingIntent pendingIntent;
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
             // Loop through all notifications
             for (PrayerNotification notification : notifications) {
@@ -80,7 +81,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
 
     private void sendNotification(Context context, Intent intent) {
         NotificationManager notificationManager = (NotificationManager)
-                context.getSystemService(context.NOTIFICATION_SERVICE);
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder nBuild;
         Notification n;
         String name, subject;

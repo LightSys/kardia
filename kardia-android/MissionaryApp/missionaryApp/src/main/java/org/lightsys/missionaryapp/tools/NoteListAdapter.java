@@ -3,6 +3,7 @@ package org.lightsys.missionaryapp.tools;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.SimpleAdapter;
 
 import org.lightsys.missionaryapp.R;
@@ -49,28 +50,26 @@ public class NoteListAdapter extends SimpleAdapter {
         }
 
         final Map<String, String> pieces = data.get(position);
-        rowView.setTitle(pieces.get("subject"));
-        rowView.setDate(pieces.get("date"));
-        rowView.setMissionaryNameView(pieces.get("missionary"));
-        rowView.setTextAboveButton(pieces.get("textAbove"));
-        rowView.setTextBelowButton(pieces.get("textBelow"));
+            rowView.setTitle(pieces.get("subject"));
+            rowView.setDate(pieces.get("date"));
+            rowView.setMissionaryNameView(pieces.get("missionary"));
+            rowView.setTextAboveButton(pieces.get("textAbove"));
+            rowView.setTextBelowButton(pieces.get("textBelow"));
 
 
-        // Set the icon to the right depending on what type the row is
-        // Four possibilities are inactive prayer, active prayer, update, or prayer letter
-        if (pieces.get("type").equals("Pray")) {
-            if(pieces.get("isPrayedFor").equals("inactive")){
-                rowView.setImage(R.drawable.inactive_praying_hands_icon);
-            } else {
-                rowView.setImage(R.drawable.active_praying_hands_icon);
+            // Set the icon to the right depending on what type the row is
+            // Four possibilities are inactive prayer, active prayer, update, or prayer letter
+            if (pieces.get("type").equals("Pray")) {
+                if (pieces.get("isPrayedFor").equals("inactive")) {
+                    rowView.setImage(R.drawable.inactive_praying_hands_icon);
+                } else {
+                    rowView.setImage(R.drawable.active_praying_hands_icon);
+                }
+            } else if (pieces.get("type").equals("Update")) {
+                rowView.setImage(R.drawable.update_icon);
+            } else if (pieces.get("type").equals("Letter")) {
+                rowView.setImage(R.drawable.prayer_letter_icon);
             }
-        } else if (pieces.get("type").equals("Update")) {
-            rowView.setImage(R.drawable.update_icon);
-        } else if (pieces.get("type").equals("Letter")) {
-            rowView.setImage(R.drawable.prayer_letter_icon);
-        }
-
-
         views.add(rowView);
 
         return rowView;

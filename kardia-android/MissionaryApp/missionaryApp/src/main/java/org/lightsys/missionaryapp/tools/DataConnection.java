@@ -26,6 +26,7 @@ import org.lightsys.missionaryapp.data.Comment;
 import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Note;
+import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.views.AccountsActivity;
 import org.lightsys.missionaryapp.views.EditAccountActivity;
@@ -252,6 +253,10 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
 
             }
+            for(Note n : db.getNotes()){
+                loadPrayedFor(GET("http://" + Host_Name +":800/apps/kardia/api/missionary/" + Account_ID + "/Notes/" + n.getNoteId() +"/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),n.getNoteId());
+            }
+
             // Load years so they can be connected to funds
             loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
                     "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
@@ -283,8 +288,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
 
             //load comments
-            loadComments(GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/"
-                    + Account_ID + "/Comments/Own?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection"));
+            loadComments(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/"
+                    + Account_ID + "/Comments?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -557,18 +562,19 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                     ArrayList<Integer> currentNoteIDList = new ArrayList<Integer>();
                     for (Note n : db.getNotes()) {
-                        currentNoteIDList.add(n.getId());
+                        currentNoteIDList.add(n.getNoteId());
                     }
 
                     // Check to see if prayer request is already in the database
                     if (!currentNoteIDList.contains(noteID)) {
                         Note temp = new Note();
-                        temp.setId(noteID);
-                        temp.setText(NoteObj.getString("note_text"));
+                        temp.setNoteId(noteID);
+                        temp.setNoteText(NoteObj.getString("note_text"));
                         temp.setSubject(NoteObj.getString("note_subject"));
                         temp.setMissionaryName(db.getMissionaryForID(missionary_id).getName());
                         temp.setType(NoteObj.getString("note_type"));
                         temp.setMissionaryID(missionary_id);
+                        temp.setNumberPrayed(0);
 
                         //add new item
                         //this lets the autoUpdater know there is something new
@@ -587,6 +593,77 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setDate(year + "-" + month + "-" + day);
 
                         db.addNote(temp);
+                    }
+                }
+            }
+            catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Loads prayed for information for all notes (prayer requests, updates) into database if they are not present
+     * @param result, result from API query for a specific missionary
+     */
+    private void loadPrayedFor(String result, int noteid) {
+        JSONObject json = null;
+        try {
+            json = new JSONObject(result);
+        } catch (JSONException e1) {
+            e1.printStackTrace();
+        }
+        if (json == null) {
+            return;
+        }
+
+        ArrayList<String> prayedForIDsFromServer = new ArrayList<String>(); //used to get rid of stale prayed for
+
+        JSONArray tempPrayedFor = json.names();
+
+        int numPrayedFor= tempPrayedFor.length();
+
+        db.updateNote(noteid, numPrayedFor-1);
+
+        for (int i = 0; i < numPrayedFor; i++) {
+            Log.d("UPDATENOTE", "loadPrayedFor: " + numPrayedFor);
+            try{
+                //@id signals a new object, but contains no information on that line
+                if(!tempPrayedFor.getString(i).equals("@id")){
+                    JSONObject PrayedForObj = json.getJSONObject(tempPrayedFor.getString(i));
+                    int prayedForID = Integer.parseInt(PrayedForObj.getString("prayedfor_id"));
+                    prayedForIDsFromServer.add(prayedForID + "");
+
+                    ArrayList<Integer> currentNoteIDList = new ArrayList<Integer>();
+                    for (PrayedFor n : db.getPrayedFor()) {
+                        currentNoteIDList.add(n.getPrayedForId());
+                    }
+
+                    // Check to see if prayer request is already in the database
+                    if (!currentNoteIDList.contains(prayedForID)) {
+                        PrayedFor temp = new PrayedFor();
+                        temp.setPrayedForId(prayedForID);
+                        temp.setPrayedForComments(PrayedForObj.getString("prayedfor_comments"));
+                        temp.setNoteId(Integer.parseInt(PrayedForObj.getString("note_id")));
+                        temp.setSupporterId(Integer.parseInt(PrayedForObj.getString("supporter_partner_id")));
+                        temp.setSupporterName(PrayedForObj.getString("supporter_partner_name"));
+
+                        //add new item
+                        //this lets the autoUpdater know there is something new
+                        db.addNew_Item(Calendar.getInstance().getTimeInMillis() + "",
+                                "New Prayer from ", temp.getSupporterName());
+
+                        // Dates must be stored as YYYY-MM-DD
+                        JSONObject date = new JSONObject(PrayedForObj.getString("prayedfor_date"));
+                        String day = date.getString("day");
+                        day = day.length() < 2 ? "0" + day : day;
+                        String month = date.getString("month");
+                        month = month.length() < 2 ? "0" + month : month;
+                        String year = date.getString("year");
+
+                        temp.setPrayedForDate(year + "-" + month + "-" + day);
+
+                        db.addPrayedFor(temp);
                     }
                 }
             }
@@ -945,20 +1022,21 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
 
         for (int i = 0; i < tempComments.length(); i++){
+            Log.d("DataConnection", "loadComments: " + i);
             try{
                 //@id signals a new object, but contains no information on that line
                 if(!tempComments.getString(i).equals("@id")){
                     JSONObject CommentObj = json.getJSONObject(tempComments.getString(i));
 
-                    if(!currentComments.contains(CommentObj.getString("name")) && CommentObj.getString("on_what").equals("ContactHistory")) {
+                    if(!currentComments.contains(CommentObj.getString("comment_id"))){
                         JSONObject dateObj = CommentObj.getJSONObject("comment_date");
 
                         int ID = Integer.parseInt(CommentObj.getString("comment_id"));
-                        String noteType = CommentObj.getString("on_what");
-                        int noteID = Integer.parseInt(CommentObj.getString("on_what_id"));
+                        String noteType = CommentObj.getString("note_type");
+                        int noteID = Integer.parseInt(CommentObj.getString("note_id"));
                         String comment = CommentObj.getString("comment");
 
-                        String userName = CommentObj.getString("commenter_partner_name");
+                        String userName = CommentObj.getString("supporter_partner_name");
 
                         String comment_year = dateObj.getString("year");
                         String comment_month = dateObj.getString("month");

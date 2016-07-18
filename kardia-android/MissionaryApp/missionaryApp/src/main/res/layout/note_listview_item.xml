@@ -15,10 +15,10 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
-        android:layout_toLeftOf="@+id/prayingButton"
-        android:layout_toStartOf="@+id/prayingButton"
-        android:textSize="20sp"
-        android:text="donor name" />
+        android:layout_toLeftOf="@+id/prayingButtonlayout"
+        android:layout_toStartOf="@+id/prayingButtonlayout"
+        android:textSize="20sp"/>
+        <!--android:text="donor name" -->
 
     <TextView
         android:id="@+id/subject"
@@ -27,8 +27,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/missionaryName"
-        android:layout_toLeftOf="@+id/prayingButton"
-        android:layout_toStartOf="@id/prayingButton"
+        android:layout_toLeftOf="@+id/prayingButtonlayout"
+        android:layout_toStartOf="@id/prayingButtonlayout"
         android:layout_marginTop="12dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
@@ -47,38 +47,39 @@
         android:layout_marginBottom="12dp"
         android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/textAbovePrayingButton"
+    <LinearLayout
+        android:id="@+id/prayingButtonlayout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="6dp"
-        android:paddingRight="10dp"
-        android:textSize="16sp"
-        android:textStyle="bold"/>
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_margin="6dp">
 
-    <TextView
-        android:id="@+id/textBelowPrayingButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/prayingButton"
-        android:layout_marginTop="12dp"
-        android:layout_alignLeft="@id/prayingButton"
-        android:layout_alignStart="@id/prayingButton"
-        android:paddingLeft="3dp"
-        android:textSize="16sp"
-        android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/textAbovePrayingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/prayingButton"
-        android:layout_width="wrap_content"
-        android:layout_height="68dp"
-        android:layout_margin = "6dp"
-        android:clickable="false"
-        android:focusable = "false"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"/>
+        <Button
+            android:id="@+id/prayingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="68dp"
+            android:clickable="false"
+            android:focusable = "false"
+            android:layout_marginBottom="1dp"
+            android:layout_marginTop="1dp"/>
+
+        <TextView
+            android:id="@+id/textBelowPrayingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
 
 </RelativeLayout>
