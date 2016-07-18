@@ -61,7 +61,7 @@ public class DetailedUpdate extends Fragment {
                     Intent startCommentActivity = new Intent(getActivity(), CommentActivity.class);
                     Note note = new LocalDBHandler(getActivity().getBaseContext(), null).getNoteForID(update_id);
                     //stuff that the comment page needs to know
-                    startCommentActivity.putExtra("text", note.getText());
+                    startCommentActivity.putExtra("text", note.getNoteText());
                     startCommentActivity.putExtra("noteId", update_id);
                     startCommentActivity.putExtra("noteType", "Update");
                     startCommentActivity.putExtra("missionaryId", note.getMissionaryID());
@@ -95,7 +95,7 @@ public class DetailedUpdate extends Fragment {
         missionaryName.setText(update.getMissionaryName());
         subject.setText("Subject: " + update.getSubject());
         date.setText("Date Posted: " + Formatter.getFormattedDate(update.getDate()));
-        text.setText(update.getText());
+        text.setText(update.getNoteText());
 
         this.update_id = update_id;
 

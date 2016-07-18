@@ -13,11 +13,14 @@ import android.widget.Toast;
 
 import com.example.donorapp.R;
 
+import org.json.JSONObject;
 import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Message;
 import org.lightsys.donorapp.tools.LocalDBHandler;
+import org.lightsys.donorapp.tools.PostJson;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  * Created by JoshWorkman on 3/12/2015.
@@ -29,8 +32,10 @@ public class ContactMissionaryActivity extends Activity{
 
     private String missionaryName;
     private int missionaryId;
+    private int accountIndex;
     private Spinner sender, contactType;
     private EditText messageText, subject;
+    LocalDBHandler db = new LocalDBHandler(this, null);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,7 +58,6 @@ public class ContactMissionaryActivity extends Activity{
         }
 
         // Load list of partner names from accounts for user to choose who message is from
-        LocalDBHandler db = new LocalDBHandler(this, null);
         ArrayList<String> partnerNames = new ArrayList<String>();
         for (Account a : db.getAccounts()) {
             String aPartnerName = a.getPartnerName();
@@ -77,6 +81,7 @@ public class ContactMissionaryActivity extends Activity{
             public void onClick(View view) {
 
                 String senderStr = sender.getSelectedItem().toString();
+                accountIndex = sender.getSelectedItemPosition();
                 String messageStr = messageText.getText().toString();
                 String subjectStr = subject.getText().toString();
 
@@ -111,8 +116,42 @@ public class ContactMissionaryActivity extends Activity{
                         default:
                             message.setType(Message.MessageType.Other);
                     }
+                    Toast.makeText(ContactMissionaryActivity.this,
+                            "Message not sent; function not implemented.", Toast.LENGTH_SHORT).show();
                     // Send message object to API connection to insert into Kardia
                     // Will need AsyncTask to connect to API
+
+                    try{//send message to api
+                        Account account = db.getAccounts().get(accountIndex);
+                        String url = "INSERT URL";
+
+                        JSONObject jsonMessage = new JSONObject();
+                        JSONObject dateCreated = new JSONObject();
+
+                        //set date info
+                        Calendar calendar = Calendar.getInstance();
+                        dateCreated.put("year", calendar.get(Calendar.YEAR));
+                        dateCreated.put("month", calendar.get(Calendar.MONTH) + 1);
+                        dateCreated.put("day", calendar.get(Calendar.DAY_OF_MONTH));
+                        dateCreated.put("hour", calendar.get(Calendar.HOUR_OF_DAY));
+                        dateCreated.put("minute", calendar.get(Calendar.MINUTE));
+                        dateCreated.put("second", calendar.get(Calendar.SECOND));
+
+                        jsonMessage.put("s_created_by", account.getAccountName());
+                        jsonMessage.put("s_edited_by", account.getAccountName());
+                        jsonMessage.put("s_date_created", dateCreated);
+                        jsonMessage.put("s_date_modified", dateCreated);
+                        //insert other stuff into json message
+
+                        PostJson postJson = new PostJson(getBaseContext(), url, jsonMessage, account);
+                        //postJson.execute();
+
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        Toast.makeText(getBaseContext(), "Something went wrong. Message not sent", Toast.LENGTH_SHORT).show();
+                    }
+
                     finish();
                 }
             }

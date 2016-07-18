@@ -5,27 +5,34 @@ package org.lightsys.missionaryapp.data;
  * Created by Andrew Lockridge on 6/24/2015.
  */
 public class Note {
+    //public enum NoteType {Update, Pray, Praise, Other}
 
-    private int id;
+    private int note_id;
     private int missionaryID;
     private String subject;
-    private String text;
+    private String notetext;
     private String date;
     private String missionaryName;
     private String noteType;
-    private boolean isPrayedFor;
+    private int numberPrayed;
 
     public Note() {}
 
-    public Note(int id, String subject, String text, String date, String missionaryName, int missionaryID, String noteType, boolean isPrayedFor) {
-        this.id = id;
+    public Note(int note_id, int missionaryID, String missionaryName, String noteType, String subject, String date, String notetext, int numberPrayed) {
+        this.note_id = note_id;
         this.subject = subject;
-        this.text = text;
+        this.notetext = notetext;
         this.date = date;
         this.missionaryName = missionaryName;
         this.missionaryID = missionaryID;
         this.noteType = noteType;
-        this.isPrayedFor = isPrayedFor;
+        this.numberPrayed = numberPrayed;
+    }
+
+    public int getNoteId() { return note_id; }
+
+    public void setNoteId(int note_id) {
+        this.note_id = note_id;
     }
 
     public String getMissionaryName() {return missionaryName;}
@@ -44,12 +51,12 @@ public class Note {
         this.subject = title;
     }
 
-    public String getText() {
-        return text;
+    public String getNoteText() {
+        return notetext;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setNoteText(String notetext) {
+        this.notetext = notetext;
     }
 
     public String getDate() {
@@ -60,21 +67,12 @@ public class Note {
         this.date = date;
     }
 
-    public int getId() { return id; }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getType() { return noteType; }
 
     public void setType(String noteType) { this.noteType = noteType; }
 
-    public boolean getIsPrayedFor() {
-        return isPrayedFor;
-    }
+    public void setNumberPrayed(int numberPrayed){ this.numberPrayed = numberPrayed;}
 
-    public void setIsPrayedFor(boolean isPrayedFor) {
-        this.isPrayedFor = isPrayedFor;
-    }
+    public int getNumberPrayed(){return numberPrayed;}
+
 }

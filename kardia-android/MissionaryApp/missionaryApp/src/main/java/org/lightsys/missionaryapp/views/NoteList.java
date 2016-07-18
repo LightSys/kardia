@@ -13,7 +13,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
@@ -35,7 +37,7 @@ import java.util.HashMap;
  *
  * Created by Andrew Lockridge on 6/24/2015.
  */
-public class NoteList extends Fragment{
+public class NoteList extends Fragment {
 
     private ArrayList<Object> combined = new ArrayList<Object>();
     private ArrayList<HashMap<String,String>> itemList = new ArrayList<HashMap<String, String>>();
@@ -92,6 +94,16 @@ public class NoteList extends Fragment{
         listview.setAdapter(adapter);
         listview.setOnItemClickListener(new onNoteClicked());
 
+        Button button = (Button)v.findViewById(R.id.button);
+        button.setText("Add Update/Prayer Request");
+        button.setVisibility(View.VISIBLE);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent gotopostnote = new Intent(getActivity(), PostNoteActivity.class);
+                startActivity(gotopostnote);
+            }
+        });
         return v;
     }
 
@@ -100,80 +112,80 @@ public class NoteList extends Fragment{
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             // Send to detailed view depending on what type the list object was
-            Bundle args = new Bundle();
-            if (combined.get(position).getClass() == Note.class) {
-                Note n = (Note) combined.get(position);
-                Log.i("NoteList", n.getId() + "");
-                if (n.getType().equals("Pray")) {
-                    args.putInt(DetailedPrayerRequest.ARG_REQUEST_ID, n.getId());
-                    DetailedPrayerRequest newFrag = new DetailedPrayerRequest();
-                    newFrag.setArguments(args);
-                    FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.content_frame, newFrag);
-                    transaction.addToBackStack("ToDetailedRequestView");
-                    transaction.commit();
-                } else if (n.getType().equals("Update")) {
-                    args.putInt(DetailedUpdate.ARG_UPDATE_ID, n.getId());
-                    DetailedUpdate newFrag = new DetailedUpdate();
-                    newFrag.setArguments(args);
-                    FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.content_frame, newFrag);
-                    transaction.addToBackStack("ToDetailedUpdateView");
-                    transaction.commit();
-                }
-            } else { // The selected item is a prayer letter
-                PrayerLetter letter = (PrayerLetter) combined.get(position);
-                LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-                Account account = db.getAccounts().get(0);
-                db.close();
+                Bundle args = new Bundle();
+                if (combined.get(position).getClass() == Note.class) {
+                    Note n = (Note) combined.get(position);
+                    Log.i("NoteList", n.getNoteId() + "");
+                    if (n.getType().equals("Pray")) {
+                        args.putInt(DetailedPrayerRequest.ARG_REQUEST_ID, n.getNoteId());
+                        DetailedPrayerRequest newFrag = new DetailedPrayerRequest();
+                        newFrag.setArguments(args);
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.content_frame, newFrag);
+                        transaction.addToBackStack("ToDetailedRequestView");
+                        transaction.commit();
+                    } else if (n.getType().equals("Update")) {
+                        args.putInt(DetailedUpdate.ARG_UPDATE_ID, n.getNoteId());
+                        DetailedUpdate newFrag = new DetailedUpdate();
+                        newFrag.setArguments(args);
+                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.content_frame, newFrag);
+                        transaction.addToBackStack("ToDetailedUpdateView");
+                        transaction.commit();
+                    }
+                } else { // The selected item is a prayer letter
+                    PrayerLetter letter = (PrayerLetter) combined.get(position);
+                    LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+                    Account account = db.getAccounts().get(0);
+                    db.close();
 
-                // Look through downloads to see if file has been downloaded
-                File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                boolean fileFoundInDownloads = false;
-                String[] downloads = path.list();
-                if (downloads != null && downloads.length != 0) {
-                    for (String name : downloads) {
-                        if (name.equals(letter.getFilename())) {
-                            fileFoundInDownloads = true;
+                    // Look through downloads to see if file has been downloaded
+                    File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    boolean fileFoundInDownloads = false;
+                    String[] downloads = path.list();
+                    if (downloads != null && downloads.length != 0) {
+                        for (String name : downloads) {
+                            if (name.equals(letter.getFilename())) {
+                                fileFoundInDownloads = true;
+                            }
                         }
                     }
-                }
-                if (!fileFoundInDownloads) {
-                    // Download file from API
-                    String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-                    String url = "http://" + account.getServerName() + ":800" + letter.getFolder() + "/" +
-                            letter.getFilename();
-                    DownloadPDF download = new DownloadPDF(url, account.getServerName(), account.getAccountName(),
-                            account.getAccountPassword(), directory, letter.getFilename(), getActivity(),
-                            getActivity());
-                    download.execute("");
-                } else {
-                    // Launch a PDF viewing application
-                    try {
-                        Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-                        File file = new File(path, letter.getFilename());
-                        pdfIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
-                        startActivity(pdfIntent);
-                    } catch (ActivityNotFoundException e) {
-                        // If no application is found on device, send a message to the user
-                        Toast.makeText(getActivity(), "To view this document, you first must" +
-                                "install a PDF viewing application", Toast.LENGTH_LONG).show();
-                        e.printStackTrace();
-                    }
+                    if (!fileFoundInDownloads) {
+                        // Download file from API
+                        String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+                        String url = "http://" + account.getServerName() + ":800" + letter.getFolder() + "/" +
+                                letter.getFilename();
+                        DownloadPDF download = new DownloadPDF(url, account.getServerName(), account.getAccountName(),
+                                account.getAccountPassword(), directory, letter.getFilename(), getActivity(),
+                                getActivity());
+                        download.execute("");
+                    } else {
+                        // Launch a PDF viewing application
+                        try {
+                            Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                            File file = new File(path, letter.getFilename());
+                            pdfIntent.setDataAndType(Uri.fromFile(file), "application/pdf");
+                            startActivity(pdfIntent);
+                        } catch (ActivityNotFoundException e) {
+                            // If no application is found on device, send a message to the user
+                            Toast.makeText(getActivity(), "To view this document, you first must" +
+                                    "install a PDF viewing application", Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
+                        }
 
+                    }
                 }
-            }
         }
     }
 
     private void generateListItems(){
 
-        boolean nIsPrayedFor;
+        int numPrayed;
         for(Object obj : combined){
             HashMap<String,String> hm = new HashMap<String,String>();
             if (obj.getClass() == Note.class) {
                 Note n = (Note) obj;
-                nIsPrayedFor = n.getIsPrayedFor();
+                numPrayed = n.getNumberPrayed();
 
                 hm.put("date", Formatter.getFormattedDate(n.getDate()));
                 hm.put("subject", n.getSubject());
@@ -181,12 +193,12 @@ public class NoteList extends Fragment{
                 hm.put("type", n.getType());
                 if (n.getType().equals("Pray")) {
                     hm.put("textBelow", "Praying");
-                    if (!nIsPrayedFor) {
+                    if (numPrayed==0) {
                         hm.put("textAbove", "Prayer");
                         hm.put("textBelow", "Request");
                         hm.put("isPrayedFor", "inactive");
                     } else {
-                        hm.put("textBelow", "Praying");
+                        hm.put("textBelow", numPrayed + " Praying");
                         hm.put("isPrayedFor", "active");
                     }
                 }

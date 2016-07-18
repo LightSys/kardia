@@ -2,6 +2,7 @@ package org.lightsys.missionaryapp.tools;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -16,18 +17,18 @@ import org.lightsys.missionaryapp.R;
  * and a button for Prayer Response
  */
 public class NoteListLayout extends RelativeLayout {
-    TextView titleView, dateView, missionaryNameView, aboveTextView, belowTextView;
+    TextView titleView, dateView, missionaryNameView, aboveTextView, belowTextView, updateButton;
     Button prayButton;
 
     public NoteListLayout(Context context) {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.note_listview_item, this, true);
-        titleView = (TextView)findViewById(R.id.subject);
-        dateView = (TextView)findViewById(R.id.date);
-        missionaryNameView = (TextView)findViewById(R.id.missionaryName);
-        aboveTextView = (TextView)findViewById(R.id.textAbovePrayingButton);
-        belowTextView = (TextView)findViewById(R.id.textBelowPrayingButton);
-        prayButton = (Button)findViewById(R.id.prayingButton);
+        titleView = (TextView) findViewById(R.id.subject);
+        dateView = (TextView) findViewById(R.id.date);
+        missionaryNameView = (TextView) findViewById(R.id.missionaryName);
+        aboveTextView = (TextView) findViewById(R.id.textAbovePrayingButton);
+        belowTextView = (TextView) findViewById(R.id.textBelowPrayingButton);
+        prayButton = (Button) findViewById(R.id.prayingButton);
     }
 
     public void setTitle(String title) {
@@ -46,9 +47,12 @@ public class NoteListLayout extends RelativeLayout {
         aboveTextView.setText(aboveText);
     }
 
-    public void setTextBelowButton(String belowText) { belowTextView.setText(belowText);}
+    public void setTextBelowButton(String belowText) {
+        belowTextView.setText(belowText);
+    }
 
     public void setImage(int id) {
         prayButton.setBackground(getResources().getDrawable(id));
     }
+
 }

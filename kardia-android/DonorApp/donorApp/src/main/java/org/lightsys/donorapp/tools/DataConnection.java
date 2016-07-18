@@ -22,6 +22,7 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.lightsys.donorapp.data.Comment;
 import org.lightsys.donorapp.data.Missionary;
 import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.data.PrayerLetter;
@@ -69,7 +70,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         super();
         dataContext = context;
         dataActivity = activity;
-        spinner = new ProgressDialog(dataContext, R.style.MySpinnerStyle);
+        if (activity != null) {
+            spinner = new ProgressDialog(dataContext, R.style.MySpinnerStyle);
+        }
         account = a;
     }
 
@@ -88,7 +91,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String params) {
         // Dismiss spinner to show data retrieval is done
-        spinner.dismiss();
+        if (dataActivity != null) {
+            spinner.dismiss();
+        }
 
         // If valid account was connected, close the account activity
         // Otherwise refresh the page the user was on
@@ -175,6 +180,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         AccountName = account.getAccountName();
         Account_ID = account.getId();
 
+        Log.i(Tag, "pulling data");
+
         // If call was from AccountsActivity or EditAccountActivity, it is an account being connected
         // If it was from MainActivity, it is a database update from an existing account
         boolean isNewAccount = false;
@@ -182,19 +189,27 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         if (c == AccountsActivity.class || c == EditAccountActivity.class) {
             isNewAccount = true;
             spinner.setMessage("Connecting Account...");
-        } else {
-            spinner.setMessage("Updating...");
+        }  else
+        {
+            //the autoupdater doesn't run from an activity
+            //the spinnger messes up the autoupdater
+            if (dataActivity != null) {
+                spinner.setMessage("Updating...");
+            }
             //clears gift table to fix a bug with updating from the server
             db.deleteGifts(Account_ID);
         }
-        dataActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                spinner.setIndeterminate(true);
-                spinner.setCancelable(false);
-                spinner.show();
-            }
-        });
+
+        if (dataActivity != null) {
+            dataActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    spinner.setIndeterminate(true);
+                    spinner.setCancelable(false);
+                    spinner.show();
+                }
+            });
+        }
 
         // If it is a new account, validate account
         // If account not valid, do not attempt data pull
@@ -221,6 +236,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
             // Loop through missionaries and pull notes and prayer letters
+            db.deleteNewItems();
             for(Missionary m : db.getMissionaries()) {
                 int missionaryID = m.getId();
                 loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + missionaryID +
@@ -230,7 +246,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
                         missionaryID);
             }
-
             // Load years so they can be connected to funds
             loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
                     "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
@@ -260,6 +275,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                             yearid, fundid);
                 }
             }
+
+            //load comments
+            loadComments(GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/"
+                    + Account_ID + "/Comments/Own?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection"));
+
+            loadGivingUrl(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/"+ Account_ID + "/" +
+                    "GivingInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -275,6 +298,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         db.close();
     }
 
+
     /**
      * Attempts to do basic Http Authentication, and send a get request from the url
      *
@@ -285,7 +309,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     public String GET(String url) throws Exception {
         InputStream inputStream;
         String result;
-
         try {
             // Set the user credentials to allow access to API information
             CredentialsProvider credProvider = new BasicCredentialsProvider();
@@ -412,6 +435,10 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         if (json == null) {
             return;
         }
+
+        ArrayList<Integer> serverNoteIds = new ArrayList<Integer>();
+        ArrayList<Integer> currentNoteIDList = new ArrayList<Integer>();
+
         JSONArray tempNotes = json.names();
         for (int i = 0; i < tempNotes.length(); i++) {
             try{
@@ -420,10 +447,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     JSONObject NoteObj = json.getJSONObject(tempNotes.getString(i));
                     int noteID = Integer.parseInt(NoteObj.getString("note_id"));
 
-                    ArrayList<Integer> currentNoteIDList = new ArrayList<Integer>();
                     for (Note n : db.getNotes()) {
                         currentNoteIDList.add(n.getId());
                     }
+
+                    serverNoteIds.add(noteID);
 
                     // Check to see if prayer request is already in the database
                     if (!currentNoteIDList.contains(noteID)) {
@@ -433,6 +461,13 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setSubject(NoteObj.getString("note_subject"));
                         temp.setMissionaryName(db.getMissionaryForID(missionary_id).getName());
                         temp.setType(NoteObj.getString("note_type"));
+                        temp.setMissionaryID(missionary_id);
+
+                        //add new item
+                        //this lets the autoUpdater know there is something new
+                        db.addNew_Item(Calendar.getInstance().getTimeInMillis() + ""
+                                , temp.getType()
+                                , "New " + temp.getType() + " from " + temp.getMissionaryName());
 
                         // Dates must be stored as YYYY-MM-DD
                         JSONObject date = new JSONObject(NoteObj.getString("note_date"));
@@ -450,6 +485,20 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
             catch(JSONException e){
                 e.printStackTrace();
+            }
+        }
+
+        //get rid of stale notes
+        //it's broken of course
+        for (Integer lNote : currentNoteIDList){
+            boolean onServer = false;
+            for (Integer sNote : serverNoteIds){
+                if (lNote.equals(sNote)){
+                    onServer = true;
+                }
+            }
+            if (!onServer){
+               //db.deleteNote(db.getNoteForID(lNote));
             }
         }
     }
@@ -782,4 +831,114 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
         }
     }
+
+    /*
+    loads comments on posts
+     */
+    private void loadComments(String result){
+
+        //check to see what the database already has
+        ArrayList<Comment> currentComments = db.getComments();
+        ArrayList<Comment> serverComments = new ArrayList<Comment>();
+        JSONObject json = null;
+
+        try {
+            json = new JSONObject(result);
+        } catch (JSONException e1) {
+            e1.printStackTrace();
+        }
+        if (json == null) {
+            return;
+        }
+        JSONArray tempComments = json.names();
+
+
+        for (int i = 0; i < tempComments.length(); i++){
+            try{
+                //@id signals a new object, but contains no information on that line
+                if(!tempComments.getString(i).equals("@id")){
+                    JSONObject CommentObj = json.getJSONObject(tempComments.getString(i));
+
+                    if(CommentObj.getString("on_what").equals("ContactHistory")) {
+                        JSONObject dateObj = CommentObj.getJSONObject("comment_date");
+
+                        int ID = Integer.parseInt(CommentObj.getString("comment_id"));
+                        String noteType = CommentObj.getString("on_what");
+                        int noteID = Integer.parseInt(CommentObj.getString("on_what_id"));
+                        String comment = CommentObj.getString("comment");
+
+                        String userName = CommentObj.getString("commenter_partner_name");
+
+                        String comment_year = dateObj.getString("year");
+                        String comment_month = dateObj.getString("month");
+
+                        // Convert gift dates to YYYY-MM-DD format
+                        comment_month = (comment_month.length() < 2)? "0" + comment_month : comment_month;
+                        String comment_day = dateObj.getString("day");
+                        comment_day = (comment_day.length() < 2)? "0" + comment_day : comment_day;
+                        String comment_date = comment_year + "-"
+                                + comment_month + "-" + comment_day;
+
+                        Comment temp = new Comment();
+                        temp.setCommentID(ID);
+                        temp.setNoteID(noteID);
+                        temp.setNoteType(noteType);
+                        temp.setDate(comment_date);
+                        temp.setSenderID(Account_ID);
+                        temp.setComment(comment);
+                        temp.setUserName(userName);
+
+                        serverComments.add(temp);
+
+                        //check to see if this is new
+                        Boolean newComment = true;
+                        for (Comment c : currentComments){
+                            if (c.getCommentID() == temp.getCommentID()){
+                                newComment = false;
+                            }
+                        }
+
+                        //if it's new, add it to database
+                        if (newComment) {
+                            db.addComment(temp.getCommentID(), temp.getSenderID(), temp.getNoteID(), temp.getUserName(), temp.getNoteType(), temp.getDate(), temp.getComment());
+                            db.addNew_Item(Calendar.getInstance().getTimeInMillis() + "", "Comment", "New Comment on a post from " + db.getNoteForID(temp.getNoteID()).getMissionaryName());
+                        }
+                    }
+                }
+            }
+            catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+
+        //get rid of stale comments
+        for (Comment lComment : currentComments){
+            boolean onServer = false;
+            for (Comment sComment : serverComments){
+                if (lComment.getCommentID() == sComment.getCommentID()){
+                    onServer = true;
+                }
+            }
+            if (!onServer){
+                db.deleteComment(lComment);
+            }
+        }
+    }
+
+    private void loadGivingUrl(String result){
+
+        JSONObject json;
+
+        try {
+            json = new JSONObject(result);
+                db.addGiving_url(json.getString("giving_url"));
+        } catch (JSONException e1) {
+            e1.printStackTrace();
+            db.addGiving_url("");
+        }
+
+
+
+    }
+
 }

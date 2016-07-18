@@ -2,18 +2,32 @@
 <items version="2" >
 
     <item
-        jar="C:\Users\Judah\OneDrive\LightSys\Kardia\kardia\kardia-android\DonorApp\donorApp\build\intermediates\exploded-aar\com.android.support\appcompat-v7\19.1.0\jars\classes.jar"
-        jumboMode="false"
+        jar="/Users/otter57/Desktop/kardia/kardia-android/DonorApp/donorApp/build/intermediates/incremental-runtime-classes/debug/instant-run.jar"
+        jumboMode="true"
         revision="21.1.2"
-        sha1="3499ceba05ca1f6037c6a2fad73df8f636224a28">
-        <dex dex="C:\Users\Judah\OneDrive\LightSys\Kardia\kardia\kardia-android\DonorApp\donorApp\build\intermediates\pre-dexed\debug\classes-46fbdc1aac9e5cb28f12879a188dcf2f684a13e7.jar" />
+        sha1="bdefc31ff2ebe4962046d9fa1be222c15c6d3bd7">
+        <dex dex="/Users/otter57/Desktop/kardia/kardia-android/DonorApp/donorApp/build/intermediates/transforms/dex/debug/folders/1000/10/instant-run_b6ec4feff7d8c2a92d0189943aaaa2349ca918f7/classes.dex" />
     </item>
     <item
-        jar="C:\Users\Judah\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-v4\19.1.0\support-v4-19.1.0.jar"
-        jumboMode="false"
+        jar="/Users/otter57/Desktop/kardia/kardia-android/DonorApp/donorApp/build/intermediates/incremental-classes/debug/instant-run-bootstrap.jar"
+        jumboMode="true"
+        revision="21.1.2"
+        sha1="d6c24cca5a78ffee7f25f8707b5aeff1ddf0ec5b">
+        <dex dex="/Users/otter57/Desktop/kardia/kardia-android/DonorApp/donorApp/build/intermediates/transforms/dex/debug/folders/1000/10/instant-run-bootstrap_3aa02e20ecb5a75e6fe52fd892f4596441d2facd/classes.dex" />
+    </item>
+    <item
+        jar="/Users/otter57/Desktop/kardia/kardia-android/DonorApp/donorApp/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/jars/classes.jar"
+        jumboMode="true"
+        revision="21.1.2"
+        sha1="3499ceba05ca1f6037c6a2fad73df8f636224a28">
+        <dex dex="/Users/otter57/Desktop/kardia/kardia-android/DonorApp/donorApp/build/intermediates/transforms/dex/debug/folders/1000/10/com.android.support-appcompat-v7-19.1.0_e636d3c1a1a726ac680c49d98f4e54d75ad8dd8e/classes.dex" />
+    </item>
+    <item
+        jar="/Users/otter57/Library/Android/sdk/extras/android/m2repository/com/android/support/support-v4/19.1.0/support-v4-19.1.0.jar"
+        jumboMode="true"
         revision="21.1.2"
         sha1="85f201b380937e61a9dce6ca90ccf6872abbfb67">
-        <dex dex="C:\Users\Judah\OneDrive\LightSys\Kardia\kardia\kardia-android\DonorApp\donorApp\build\intermediates\pre-dexed\debug\support-v4-19.1.0-661b29cb2d36e5a5c9303a1b52edfcea2dab45d1.jar" />
+        <dex dex="/Users/otter57/Desktop/kardia/kardia-android/DonorApp/donorApp/build/intermediates/transforms/dex/debug/folders/1000/10/support-v4-19.1.0_17e51c923db84e75304abf8ab7b885178141abea/classes.dex" />
     </item>
 
 </items>

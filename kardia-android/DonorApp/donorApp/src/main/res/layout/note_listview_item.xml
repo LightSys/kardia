@@ -17,7 +17,8 @@
         android:layout_marginRight="18dp"
         android:layout_toLeftOf="@+id/prayingButton"
         android:layout_toStartOf="@+id/prayingButton"
-        android:textSize="20sp"/>
+        android:textSize="20sp"
+        android:text="missionary name" />
 
     <TextView
         android:id="@+id/subject"

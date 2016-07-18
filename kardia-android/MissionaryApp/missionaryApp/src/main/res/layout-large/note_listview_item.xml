@@ -46,37 +46,37 @@
         android:layout_marginBottom="12dp"
         android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/textAbovePrayingButton"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="6dp"
-        android:paddingRight="10dp"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_margin="10dp">
 
-    <TextView
-        android:id="@+id/textBelowPrayingButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/prayingButton"
-        android:layout_marginTop="14dp"
-        android:layout_alignLeft="@id/prayingButton"
-        android:layout_alignStart="@id/prayingButton"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/textAbovePrayingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/prayingButton"
-        android:layout_width="wrap_content"
-        android:layout_height="68dp"
-        android:layout_margin = "10dp"
-        android:clickable="false"
-        android:focusable = "false"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"/>
+        <Button
+            android:id="@+id/prayingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="68dp"
+            android:clickable="false"
+            android:focusable = "false"
+            android:layout_marginBottom="1.5dp"
+            android:layout_marginTop="1.5dp"/>
+
+        <TextView
+            android:id="@+id/textBelowPrayingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
 </RelativeLayout>

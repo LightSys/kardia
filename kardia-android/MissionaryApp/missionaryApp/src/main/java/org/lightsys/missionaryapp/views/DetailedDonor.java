@@ -91,7 +91,7 @@ public class DetailedDonor extends Activity{
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Intent contact = new Intent(getActivity(), ContactDonorActivity.class);
             contact.putExtra("donorname", donors.get(position).getName());
-            contact.putExtra("donorid", donors.get(position).getId());
+            contact.putExtra("donorid", donors.get(position).getNoteId());
             startActivity(contact);
         }*/
     }
