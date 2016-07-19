@@ -70,9 +70,9 @@ public class PostJson extends AsyncTask<String, Void, String> {
 
             credProvider.setCredentials(new AuthScope(account.getServerName(), 800),
                     new UsernamePasswordCredentials(account.getAccountName(), account.getAccountPassword()));
-
+            //todo changed from app=Donor to app=Missionary
             //url used to retrieve the access token
-            String getUrl = "http://" + account.getServerName() + ":800/?cx__mode=appinit&cx__groupname=Kardia&cx__appname=Donor";
+            String getUrl = "http://" + account.getServerName() + ":800/?cx__mode=appinit&cx__groupname=Kardia&cx__appname=Missionary";
 
             //set up http connection
             HttpParams HttpParams = new BasicHttpParams();
@@ -152,7 +152,6 @@ public class PostJson extends AsyncTask<String, Void, String> {
             os.write(outputBytes);//send json object
 
             int responseCode = conn.getResponseCode();
-
             Log.e(TAG, "responseCode : " + responseCode);
 
             //if the things were sent properly, get the response code

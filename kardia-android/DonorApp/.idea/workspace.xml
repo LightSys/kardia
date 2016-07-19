@@ -10,653 +10,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dca88b97-5f95-404b-ae70-7894c54711c8" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/JsonPost.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/PrayedFor.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/PostJson.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/PostNoteActivity.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/post_note_layout.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/post_note_layout.xml" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/generated/source/buildConfig/test/debug/com/example/donorapp/test/BuildConfig.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/dex/debug/classes.dex" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/incremental/aidl/debug/dependency.store" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/incremental/aidl/test/debug/dependency.store" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/incremental/mergeAssets/debug/merger.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/incremental/mergeAssets/test/debug/merger.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/incremental/mergeResources/debug/merger.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/incremental/mergeResources/test/debug/merger.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/manifests/test/debug/AndroidManifest.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/anim/abc_fade_in.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/anim/abc_fade_out.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/anim/abc_slide_in_bottom.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/anim/abc_slide_in_top.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/anim/abc_slide_out_bottom.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/anim/abc_slide_out_top.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/color/abc_search_url_text_holo.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_bottom_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_bottom_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_bottom_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_bottom_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_share_pack_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_share_pack_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_stacked_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_stacked_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_stacked_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_stacked_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ab_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_cab_background_bottom_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_cab_background_bottom_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_cab_background_top_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_cab_background_top_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_ab_back_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_ab_back_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_cab_done_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_cab_done_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_clear_disabled.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_clear_normal.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_clear_search_api_disabled_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_clear_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_commit_search_api_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_commit_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_go.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_go_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_menu_moreoverflow_normal_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_menu_moreoverflow_normal_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_menu_share_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_menu_share_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_voice_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_ic_voice_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_list_divider_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_list_divider_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_list_focused_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_list_longpressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_list_pressed_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_list_pressed_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_list_selector_disabled_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_list_selector_disabled_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_menu_dropdown_panel_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_menu_dropdown_panel_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_menu_hardkey_panel_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_menu_hardkey_panel_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_spinner_ab_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_spinner_ab_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_spinner_ab_disabled_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_spinner_ab_disabled_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_spinner_ab_focused_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_spinner_ab_focused_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_spinner_ab_pressed_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_spinner_ab_pressed_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_tab_selected_focused_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_tab_selected_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_tab_selected_pressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_tab_unselected_pressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_textfield_search_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_textfield_search_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_textfield_search_right_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_textfield_search_right_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_textfield_search_right_selected_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_textfield_search_right_selected_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_textfield_search_selected_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/abc_textfield_search_selected_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/custom_list_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/custom_total_bar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/drawer_shadow_v1.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/ic_action_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/ic_drawer.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/kardiabeat_v2.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/noise_blue.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/noise_blue_repeat.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/noise_light_blue.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-hdpi-v4/noise_light_blue_repeat.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_bottom_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_bottom_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_bottom_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_bottom_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_share_pack_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_share_pack_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_stacked_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_stacked_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_stacked_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_stacked_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ab_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_cab_background_bottom_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_cab_background_bottom_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_cab_background_top_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_cab_background_top_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_ab_back_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_ab_back_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_cab_done_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_cab_done_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_clear_disabled.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_clear_normal.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_clear_search_api_disabled_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_clear_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_commit_search_api_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_commit_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_go.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_go_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_menu_moreoverflow_normal_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_menu_moreoverflow_normal_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_menu_share_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_menu_share_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_voice_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_ic_voice_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_list_divider_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_list_divider_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_list_focused_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_list_longpressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_list_pressed_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_list_pressed_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_list_selector_disabled_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_list_selector_disabled_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_menu_dropdown_panel_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_menu_dropdown_panel_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_menu_hardkey_panel_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_menu_hardkey_panel_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_spinner_ab_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_spinner_ab_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_spinner_ab_disabled_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_spinner_ab_disabled_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_spinner_ab_focused_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_spinner_ab_focused_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_spinner_ab_pressed_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_spinner_ab_pressed_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_tab_selected_focused_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_tab_selected_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_tab_selected_pressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_tab_unselected_pressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_textfield_search_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_textfield_search_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_textfield_search_right_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_textfield_search_right_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_textfield_search_right_selected_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_textfield_search_right_selected_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_textfield_search_selected_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/abc_textfield_search_selected_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/ic_action_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/ic_drawer.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-mdpi-v4/kardiabeat_v2.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_bottom_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_bottom_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_bottom_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_bottom_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_share_pack_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_share_pack_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_stacked_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_stacked_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_stacked_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_stacked_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ab_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_cab_background_bottom_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_cab_background_bottom_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_cab_background_top_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_cab_background_top_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_ab_back_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_ab_back_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_cab_done_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_cab_done_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_clear_disabled.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_clear_normal.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_clear_search_api_disabled_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_clear_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_commit_search_api_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_commit_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_go.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_go_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_menu_moreoverflow_normal_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_menu_moreoverflow_normal_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_menu_share_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_menu_share_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_voice_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_ic_voice_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_list_divider_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_list_divider_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_list_focused_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_list_longpressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_list_pressed_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_list_pressed_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_list_selector_disabled_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_list_selector_disabled_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_menu_dropdown_panel_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_menu_dropdown_panel_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_menu_hardkey_panel_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_menu_hardkey_panel_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_spinner_ab_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_spinner_ab_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_spinner_ab_disabled_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_spinner_ab_disabled_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_spinner_ab_focused_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_spinner_ab_focused_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_spinner_ab_pressed_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_spinner_ab_pressed_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_tab_selected_focused_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_tab_selected_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_tab_selected_pressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_tab_unselected_pressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_textfield_search_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_textfield_search_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_textfield_search_right_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_textfield_search_right_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_textfield_search_right_selected_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_textfield_search_right_selected_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_textfield_search_selected_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/abc_textfield_search_selected_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/ic_action_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/ic_drawer.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xhdpi-v4/kardiabeat_v2.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_bottom_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_bottom_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_bottom_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_bottom_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_share_pack_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_share_pack_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_stacked_solid_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_stacked_solid_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_stacked_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_stacked_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_transparent_dark_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ab_transparent_light_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_cab_background_bottom_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_cab_background_bottom_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_cab_background_top_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_cab_background_top_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_ab_back_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_ab_back_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_cab_done_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_cab_done_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_clear_disabled.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_clear_normal.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_clear_search_api_disabled_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_clear_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_commit_search_api_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_commit_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_go.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_go_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_menu_moreoverflow_normal_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_menu_moreoverflow_normal_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_menu_share_holo_dark.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_menu_share_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_voice_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_ic_voice_search_api_holo_light.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_list_divider_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_list_divider_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_list_focused_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_list_longpressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_list_pressed_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_list_pressed_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_list_selector_disabled_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_list_selector_disabled_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_menu_dropdown_panel_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_menu_dropdown_panel_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_menu_hardkey_panel_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_menu_hardkey_panel_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_spinner_ab_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_spinner_ab_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_spinner_ab_disabled_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_spinner_ab_disabled_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_spinner_ab_focused_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_spinner_ab_focused_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_spinner_ab_pressed_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_spinner_ab_pressed_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_tab_selected_focused_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_tab_selected_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_tab_selected_pressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_tab_unselected_pressed_holo.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_textfield_search_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_textfield_search_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_textfield_search_right_default_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_textfield_search_right_default_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_textfield_search_right_selected_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_textfield_search_right_selected_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_textfield_search_selected_holo_dark.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/abc_textfield_search_selected_holo_light.9.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/ic_action_search.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/ic_drawer.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable-xxhdpi-v4/kardiabeat_v2.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_ic_clear.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_ic_clear_holo_light.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_item_background_holo_dark.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_item_background_holo_light.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_list_selector_background_transition_holo_dark.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_list_selector_background_transition_holo_light.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_list_selector_holo_dark.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_list_selector_holo_light.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_search_dropdown_dark.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_search_dropdown_light.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_spinner_ab_holo_dark.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_spinner_ab_holo_light.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_tab_indicator_ab_holo.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_textfield_searchview_holo_dark.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_textfield_searchview_holo_light.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_textfield_searchview_right_holo_dark.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/drawable/abc_textfield_searchview_right_holo_light.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-large-v4/account_edit_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-large-v4/account_listview_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-large-v4/account_page_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-large-v4/activity_main.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-large-v4/drawer_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-large-v4/drawer_list_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-large-v4/gift_detailedview_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-large-v4/linkbar_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-large-v4/main_listview_item_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-v11/abc_action_bar_decor.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-v11/abc_simple_decor.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout-v14/abc_activity_chooser_view.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_bar_decor.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_bar_decor_include.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_bar_decor_overlay.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_bar_home.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_bar_tab.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_bar_tabbar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_bar_title_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_bar_view_list_nav_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_menu_item_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_menu_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_mode_bar.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_action_mode_close_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_activity_chooser_view.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_activity_chooser_view_include.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_activity_chooser_view_list_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_expanded_menu_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_list_menu_item_checkbox.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_list_menu_item_icon.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_list_menu_item_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_list_menu_item_radio.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_popup_menu_item_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_search_dropdown_item_icons_2line.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_search_view.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/abc_simple_decor.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/account_edit_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/account_listview_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/account_page_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/activity_main.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/drawer_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/drawer_list_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/gift_detailedview_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/linkbar_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/main_listview_item_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/missionary_contact_form_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/prayer_notification_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/prayer_request_detailedview.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/search_activity_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/support_simple_spinner_dropdown_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/layout/update_detailedview_layout.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/menu/login.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/menu/main.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-af/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-am/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-ar/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-bg/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-ca/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-cs/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-da/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-de/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-el/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-en-rGB/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-en-rIN/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-es-rUS/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-es/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-et-rEE/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-fa/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-fi/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-fr-rCA/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-fr/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-hi/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-hr/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-hu/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-hy-rAM/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-in/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-it/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-iw/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-ja/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-ka-rGE/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-km-rKH/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-ko/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-land/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-large-v14/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-large-v4/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-lo-rLA/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-lt/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-lv/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-mn-rMN/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-ms-rMY/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-nb/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-nl/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-pl/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-pt-rPT/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-pt/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-ro/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-ru/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-sk/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-sl/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-sr/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-sv/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-sw/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-sw600dp-v13/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-th/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-tl/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-tr/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-uk/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-v11/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-v14/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-vi/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-w360dp-v13/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-w480dp-v13/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-w500dp-v13/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-w600dp-v13/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-w720dp-v13/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-w820dp-v13/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-xlarge-v4/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-zh-rCN/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-zh-rHK/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-zh-rTW/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values-zu/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/debug/values/values.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/resources-debug-test.ap_" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/tmp/dex/debug/inputList.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/donorApp/build/outputs/apk/manifest-merger-debug-report.txt" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/cache.properties.lock" afterPath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/cache.properties.lock" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/fileHashes.bin" afterPath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/fileHashes.bin" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/fileSnapshots.bin" afterPath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/fileSnapshots.bin" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/outputFileStates.bin" afterPath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/outputFileStates.bin" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/taskArtifacts.bin" afterPath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/taskArtifacts.bin" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/appcompat_v7_4/build/libs/appcompat_v7_4.jar" afterPath="$PROJECT_DIR$/appcompat_v7_4/build/libs/appcompat_v7_4.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/intermediates/model_data.bin" afterPath="$PROJECT_DIR$/build/intermediates/model_data.bin" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/res/resources-debug.ap_" afterPath="$PROJECT_DIR$/donorApp/build/intermediates/res/resources-debug.ap_" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/build/outputs/apk/donorApp-debug-unaligned.apk" afterPath="$PROJECT_DIR$/donorApp/build/outputs/apk/donorApp-debug-unaligned.apk" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/build/outputs/apk/donorApp-debug.apk" afterPath="$PROJECT_DIR$/donorApp/build/outputs/apk/donorApp-debug.apk" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/active_praying_hands_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/active_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/drawer_shadow_v1.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/drawer_shadow_v1.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/ic_action_search.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/ic_action_search.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/ic_drawer.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/ic_drawer.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/inactive_praying_hands_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/inactive_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/kardiabeat_v2.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/kardiabeat_v2.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/noise_blue.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/noise_blue.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/noise_light_blue.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/noise_light_blue.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/prayer_letter_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/prayer_letter_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/update_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/update_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/active_praying_hands_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/active_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/ic_action_search.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/ic_action_search.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/ic_drawer.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/ic_drawer.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/inactive_praying_hands_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/inactive_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/kardiabeat_v2.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/kardiabeat_v2.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/prayer_letter_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/prayer_letter_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/update_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-mdpi/update_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/active_praying_hands_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/active_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/ic_action_search.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/ic_action_search.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/ic_drawer.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/ic_drawer.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/inactive_praying_hands_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/inactive_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/kardiabeat_v2.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/kardiabeat_v2.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/prayer_letter_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/prayer_letter_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/update_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xhdpi/update_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/active_praying_hands_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/active_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/ic_action_search.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/ic_action_search.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/ic_drawer.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/ic_drawer.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/inactive_praying_hands_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/inactive_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/kardiabeat_v2.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/kardiabeat_v2.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/prayer_letter_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/prayer_letter_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/update_icon.png" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-xxhdpi/update_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-hdpi/active_praying_hands_icon.png" afterPath="$PROJECT_DIR$/res/drawable-hdpi/active_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-hdpi/ic_action_search.png" afterPath="$PROJECT_DIR$/res/drawable-hdpi/ic_action_search.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-hdpi/inactive_praying_hands_icon.png" afterPath="$PROJECT_DIR$/res/drawable-hdpi/inactive_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-hdpi/prayer_letter_icon.png" afterPath="$PROJECT_DIR$/res/drawable-hdpi/prayer_letter_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-hdpi/update_icon.png" afterPath="$PROJECT_DIR$/res/drawable-hdpi/update_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-mdpi/active_praying_hands_icon.png" afterPath="$PROJECT_DIR$/res/drawable-mdpi/active_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-mdpi/ic_action_search.png" afterPath="$PROJECT_DIR$/res/drawable-mdpi/ic_action_search.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-mdpi/inactive_praying_hands_icon.png" afterPath="$PROJECT_DIR$/res/drawable-mdpi/inactive_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-mdpi/prayer_letter_icon.png" afterPath="$PROJECT_DIR$/res/drawable-mdpi/prayer_letter_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-mdpi/update_icon.png" afterPath="$PROJECT_DIR$/res/drawable-mdpi/update_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/active_praying_hands_icon.png" afterPath="$PROJECT_DIR$/res/drawable-xhdpi/active_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/ic_action_search.png" afterPath="$PROJECT_DIR$/res/drawable-xhdpi/ic_action_search.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/inactive_praying_hands_icon.png" afterPath="$PROJECT_DIR$/res/drawable-xhdpi/inactive_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/prayer_letter_icon.png" afterPath="$PROJECT_DIR$/res/drawable-xhdpi/prayer_letter_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/update_icon.png" afterPath="$PROJECT_DIR$/res/drawable-xhdpi/update_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xxhdpi/active_praying_hands_icon.png" afterPath="$PROJECT_DIR$/res/drawable-xxhdpi/active_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xxhdpi/ic_action_search.png" afterPath="$PROJECT_DIR$/res/drawable-xxhdpi/ic_action_search.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xxhdpi/inactive_praying_hands_icon.png" afterPath="$PROJECT_DIR$/res/drawable-xxhdpi/inactive_praying_hands_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xxhdpi/prayer_letter_icon.png" afterPath="$PROJECT_DIR$/res/drawable-xxhdpi/prayer_letter_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/drawable-xxhdpi/update_icon.png" afterPath="$PROJECT_DIR$/res/drawable-xxhdpi/update_icon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/cache.properties" afterPath="$PROJECT_DIR$/.gradle/2.2.1/taskArtifacts/cache.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/copyright/profiles_settings.xml" afterPath="$PROJECT_DIR$/.idea/copyright/profiles_settings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/gradle.xml" afterPath="$PROJECT_DIR$/.idea/gradle.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/appcompat_v7_19_1_0.xml" afterPath="$PROJECT_DIR$/.idea/libraries/appcompat_v7_19_1_0.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/support_v4_19_1_0.xml" afterPath="$PROJECT_DIR$/.idea/libraries/support_v4_19_1_0.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DonorApp.iml" afterPath="$PROJECT_DIR$/DonorApp.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/appcompat_v7_4/appcompat_v7_4.iml" afterPath="$PROJECT_DIR$/appcompat_v7_4/appcompat_v7_4.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/appcompat_v7_4/build.gradle" afterPath="$PROJECT_DIR$/appcompat_v7_4/build.gradle" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.gradle" afterPath="$PROJECT_DIR$/build.gradle" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/intermediates/dex-cache/cache.xml" afterPath="$PROJECT_DIR$/build/intermediates/dex-cache/cache.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/build.gradle" afterPath="$PROJECT_DIR$/donorApp/build.gradle" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/build/generated/source/buildConfig/debug/com/example/donorapp/BuildConfig.java" afterPath="$PROJECT_DIR$/donorApp/build/generated/source/buildConfig/debug/com/example/donorapp/BuildConfig.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/build/generated/source/r/debug/android/support/v7/appcompat/R.java" afterPath="$PROJECT_DIR$/donorApp/build/generated/source/r/debug/android/support/v7/appcompat/R.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/build/generated/source/r/debug/com/example/donorapp/R.java" afterPath="$PROJECT_DIR$/donorApp/build/generated/source/r/debug/com/example/donorapp/R.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/manifests/full/debug/AndroidManifest.xml" afterPath="$PROJECT_DIR$/donorApp/build/intermediates/manifests/full/debug/AndroidManifest.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/build/intermediates/symbols/debug/R.txt" afterPath="$PROJECT_DIR$/donorApp/build/intermediates/symbols/debug/R.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/donorApp.iml" afterPath="$PROJECT_DIR$/donorApp/donorApp.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/AndroidManifest.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Account.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Account.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Fund.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Fund.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Gift.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Gift.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Message.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Message.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Missionary.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Missionary.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Note.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Note.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/PrayerLetter.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/PrayerLetter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/PrayerNotification.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/PrayerNotification.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Year.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/data/Year.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DownloadPDF.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DownloadPDF.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/Formatter.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/Formatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/GenericTextWatcher.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/GenericTextWatcher.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/LocalDBHandler.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/LocalDBHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/NoteListAdapter.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/NoteListAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/NoteListLayout.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/NoteListLayout.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/NotifyAlarmReceiver.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/NotifyAlarmReceiver.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/AccountsActivity.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/AccountsActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/ContactMissionaryActivity.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/ContactMissionaryActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/DetailedGift.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/DetailedGift.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/DetailedPrayerRequest.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/DetailedPrayerRequest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/DetailedUpdate.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/DetailedUpdate.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/EditAccountActivity.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/EditAccountActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/FundList.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/FundList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/GiftList.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/GiftList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/LinkBar.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/LinkBar.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/MainActivity.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/MainActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/MissionaryList.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/MissionaryList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/NoteList.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/NoteList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/PrayerNotificationActivity.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/PrayerNotificationActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/Search.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/Search.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/YTDList.java" afterPath="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/YTDList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/custom_list_item.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/custom_list_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/custom_total_bar.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/custom_total_bar.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/noise_blue_repeat.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/noise_blue_repeat.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/noise_light_blue_repeat.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/drawable-hdpi/noise_light_blue_repeat.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/account_edit_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/account_edit_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/account_listview_item.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/account_listview_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/account_page_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/account_page_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/activity_main.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/activity_main.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/drawer_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/drawer_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/drawer_list_item.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/drawer_list_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/gift_detailedview_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/gift_detailedview_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/linkbar_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/linkbar_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/main_listview_item_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/main_listview_item_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/missionary_contact_form_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/missionary_contact_form_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/note_listview_item.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/note_listview_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/prayer_notification_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/prayer_notification_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/prayer_request_detailedview.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/prayer_request_detailedview.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/search_activity_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/search_activity_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/update_detailedview_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout-large/update_detailedview_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/account_edit_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/account_edit_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/account_listview_item.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/account_listview_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/account_page_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/account_page_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/activity_main.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/drawer_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/drawer_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/drawer_list_item.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/drawer_list_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/gift_detailedview_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/gift_detailedview_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/linkbar_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/linkbar_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/main_listview_item_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/main_listview_item_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/missionary_contact_form_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/missionary_contact_form_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/prayer_notification_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/prayer_notification_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/prayer_request_detailedview.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/prayer_request_detailedview.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/search_activity_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/search_activity_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/layout/update_detailedview_layout.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/layout/update_detailedview_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/menu/login.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/menu/login.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/menu/main.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/menu/main.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/values-large/styles.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/values-large/styles.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/values-v11/styles.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/values-v11/styles.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/values-v14/styles.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/values-v14/styles.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/values-w820dp/dimens.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/values-w820dp/dimens.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/values/colors.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/values/colors.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/values/dimens.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/values/dimens.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/values/strings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/values/strings_activity_login.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/values/strings_activity_login.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/src/main/res/values/styles.xml" afterPath="$PROJECT_DIR$/donorApp/src/main/res/values/styles.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gradlew" afterPath="$PROJECT_DIR$/gradlew" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gradlew.bat" afterPath="$PROJECT_DIR$/gradlew.bat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/import-summary.txt" afterPath="$PROJECT_DIR$/import-summary.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/local.properties" afterPath="$PROJECT_DIR$/local.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/settings.gradle" afterPath="$PROJECT_DIR$/settings.gradle" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp Reference/gradle/wrapper/gradle-wrapper.properties" afterPath="$PROJECT_DIR$/../MissionaryApp Reference/gradle/wrapper/gradle-wrapper.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/AndroidManifest.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Note.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Note.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/DataConnection.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/DataConnection.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/LocalDBHandler.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/LocalDBHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/NoteListAdapter.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/NoteListAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/NoteListLayout.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/NoteListLayout.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/CommentActivity.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/CommentActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedDonor.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedDonor.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedPrayerRequest.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedPrayerRequest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedUpdate.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedUpdate.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/MainActivity.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/MainActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/NoteList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/NoteList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/note_listview_item.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/note_listview_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/activity_main.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/note_listview_item.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/note_listview_item.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/PostNoteActivity.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/PostNoteActivity.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_page_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_page_layout.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/prayer_request_detailedview.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/prayer_request_detailedview.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/strings.xml" />
     </list>
     <ignored path="DonorApp.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -686,50 +46,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="CommentActivity.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="CommentActivity.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/CommentActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="57" column="8" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="8" />
+            <state vertical-scroll-proportion="0.6053963">
+              <caret line="124" column="40" selection-start-line="124" selection-start-column="40" selection-end-line="124" selection-end-column="40" />
               <folding>
                 <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DataConnection.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.61333334">
-              <caret line="285" column="31" selection-start-line="285" selection-start-column="31" selection-end-line="285" selection-end-column="31" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="note_listview_item.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
-          <provider editor-type-id="android-designer">
-            <state />
-          </provider>
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-5.4905663">
-              <caret line="71" column="0" selection-start-line="71" selection-start-column="0" selection-end-line="71" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ContactMissionaryActivity.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/ContactMissionaryActivity.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="121" column="39" selection-start-line="121" selection-start-column="39" selection-end-line="121" selection-end-column="39" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#7923#7924#0" expanded="false" />
-                <element signature="e#7979#7980#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -739,22 +62,8 @@
         <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/PostJson.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
+              <caret line="233" column="0" selection-start-line="233" selection-start-column="0" selection-end-line="233" selection-end-column="0" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="LocalDBHandler.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/LocalDBHandler.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="1592" column="0" selection-start-line="1592" selection-start-column="0" selection-end-line="1609" selection-end-column="5" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#47726#47727#0" expanded="false" />
-                <element signature="e#47771#47772#0" expanded="false" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -2577,9 +1886,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
+    <option name="x" value="523" />
     <option name="y" value="23" />
-    <option name="width" value="1280" />
-    <option name="height" value="773" />
+    <option name="width" value="757" />
+    <option name="height" value="762" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -2606,9 +1916,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
-      <pane id="Scope" />
-      <pane id="ProjectPane" />
       <pane id="AndroidView">
         <subPane>
           <PATH>
@@ -2617,59 +1924,12 @@
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DonorApp" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="donorApp" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DonorApp" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="donorApp" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="donorapp" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="DonorApp" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="donorApp" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="donorapp" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tools" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
+      <pane id="ProjectPane" />
       <pane id="PackagesPane" />
+      <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -2956,8 +2216,8 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1280" height="773" extended-state="1" />
-    <editor active="false" />
+    <frame x="523" y="23" width="757" height="762" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3286119" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -2965,8 +2225,7 @@
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3455099" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3455099" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32876712" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -2974,7 +2233,7 @@
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24959612" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24959612" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
@@ -2986,8 +2245,39 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32903227" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
+    <layout-to-restore>
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3455099" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3286119" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32876712" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="12" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24959612" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32903227" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="true" content_ui="tabs" />
+    </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
@@ -3008,6 +2298,112 @@
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/CommentActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
+          <caret line="57" column="8" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="8" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="71" column="0" selection-start-line="71" selection-start-column="0" selection-end-line="71" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/ContactMissionaryActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="121" column="39" selection-start-line="121" selection-start-column="39" selection-end-line="121" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/PostJson.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/LocalDBHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1592" column="0" selection-start-line="1592" selection-start-column="0" selection-end-line="1609" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/CommentActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="57" column="8" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="8" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="285" column="31" selection-start-line="285" selection-start-column="31" selection-end-line="285" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="71" column="0" selection-start-line="71" selection-start-column="0" selection-end-line="71" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/ContactMissionaryActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="121" column="39" selection-start-line="121" selection-start-column="39" selection-end-line="121" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/PostJson.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/LocalDBHandler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="1592" column="0" selection-start-line="1592" selection-start-column="0" selection-end-line="1609" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/CommentActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
           <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="30" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -3016,25 +2412,21 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="60" column="0" selection-start-line="60" selection-start-column="0" selection-end-line="70" selection-end-column="34" />
           <folding />
         </state>
       </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/ContactMissionaryActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="121" column="39" selection-start-line="121" selection-start-column="39" selection-end-line="121" selection-end-column="39" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#7923#7924#0" expanded="false" />
-            <element signature="e#7979#7980#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -3050,11 +2442,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="1592" column="0" selection-start-line="1592" selection-start-column="0" selection-end-line="1609" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#47726#47727#0" expanded="false" />
-            <element signature="e#47771#47772#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -3072,11 +2460,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="121" column="39" selection-start-line="121" selection-start-column="39" selection-end-line="121" selection-end-column="39" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#7923#7924#0" expanded="false" />
-            <element signature="e#7979#7980#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -3092,11 +2476,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="1592" column="0" selection-start-line="1592" selection-start-column="0" selection-end-line="1609" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#47726#47727#0" expanded="false" />
-            <element signature="e#47771#47772#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -3111,33 +2491,33 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="121" column="39" selection-start-line="121" selection-start-column="39" selection-end-line="121" selection-end-column="39" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#7923#7924#0" expanded="false" />
-            <element signature="e#7979#7980#0" expanded="false" />
-          </folding>
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="71" column="0" selection-start-line="71" selection-start-column="0" selection-end-line="71" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.1542288">
+          <caret line="279" column="48" selection-start-line="279" selection-start-column="48" selection-end-line="279" selection-end-column="48" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/LocalDBHandler.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
+        <state vertical-scroll-proportion="0.02529511">
           <caret line="1592" column="0" selection-start-line="1592" selection-start-column="0" selection-end-line="1609" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#47726#47727#0" expanded="false" />
-            <element signature="e#47771#47772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.4905663">
-          <caret line="71" column="0" selection-start-line="71" selection-start-column="0" selection-end-line="71" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -3145,26 +2525,18 @@
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/PostJson.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
+          <caret line="233" column="0" selection-start-line="233" selection-start-column="0" selection-end-line="233" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/CommentActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="57" column="8" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="8" />
+        <state vertical-scroll-proportion="0.6053963">
+          <caret line="124" column="40" selection-start-line="124" selection-start-column="40" selection-end-line="124" selection-end-column="40" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.61333334">
-          <caret line="285" column="31" selection-start-line="285" selection-start-column="31" selection-end-line="285" selection-end-column="31" />
-          <folding />
         </state>
       </provider>
     </entry>

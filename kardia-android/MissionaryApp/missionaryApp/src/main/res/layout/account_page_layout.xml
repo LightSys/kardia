@@ -38,7 +38,8 @@
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/username"
-        android:singleLine="true"/>
+        android:singleLine="true"
+        android:text = "Laura"/>
 
     <EditText
         android:id="@+id/password_input"
@@ -50,7 +51,8 @@
         android:ems="10"
         android:hint="@string/password"
         android:inputType="textPassword"
-        android:singleLine="true"/>
+        android:singleLine="true"
+        android:text = "E2Ra!car0line"/>
 
     <EditText
         android:id="@+id/servername_input"
@@ -61,7 +63,8 @@
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/server_name"
-        android:singleLine="true"/>
+        android:singleLine="true"
+        android:text = "10.5.10.67"/>
 
     <EditText
         android:id="@+id/donor_id_input"

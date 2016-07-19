@@ -67,6 +67,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     private boolean validAccount;
 
     private static final String Tag = "DPS";
+    private static final String TAG = "DATACONNECTION";
 
     public DataConnection(Context context, Activity activity, Account a) {
         super();
@@ -253,10 +254,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
 
             }
+            int i = 0;
             for(Note n : db.getNotes()){
-                loadPrayedFor(GET("http://" + Host_Name +":800/apps/kardia/api/missionary/" + Account_ID + "/Notes/" + n.getNoteId() +"/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),n.getNoteId());
+                loadPrayedFor(GET("http://" + Host_Name +":800/apps/kardia/api/missionary/" + Account_ID + "/Notes/" + n.getNoteId() +
+                        "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), n.getNoteId());
             }
-
             // Load years so they can be connected to funds
             loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
                     "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
@@ -625,8 +627,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         db.updateNote(noteid, numPrayedFor-1);
 
+        String TAG = "DATA CONNECTION";
         for (int i = 0; i < numPrayedFor; i++) {
-            Log.d("UPDATENOTE", "loadPrayedFor: " + numPrayedFor);
             try{
                 //@id signals a new object, but contains no information on that line
                 if(!tempPrayedFor.getString(i).equals("@id")){
@@ -634,13 +636,15 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     int prayedForID = Integer.parseInt(PrayedForObj.getString("prayedfor_id"));
                     prayedForIDsFromServer.add(prayedForID + "");
 
-                    ArrayList<Integer> currentNoteIDList = new ArrayList<Integer>();
+                    ArrayList<Integer> currentPrayedForIDList = new ArrayList<Integer>();
+
                     for (PrayedFor n : db.getPrayedFor()) {
-                        currentNoteIDList.add(n.getPrayedForId());
+                        currentPrayedForIDList.add(n.getPrayedForId());
                     }
 
                     // Check to see if prayer request is already in the database
-                    if (!currentNoteIDList.contains(prayedForID)) {
+                    if (!currentPrayedForIDList.contains(prayedForID)) {
+                        currentPrayedForIDList.add(prayedForID);
                         PrayedFor temp = new PrayedFor();
                         temp.setPrayedForId(prayedForID);
                         temp.setPrayedForComments(PrayedForObj.getString("prayedfor_comments"));
@@ -929,7 +933,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * @param Fund_ID, fund related to gift
      */
     private void loadGifts(String result, int Year_ID, int Fund_ID){
-        Log.w(Tag, "Loading Gifts For Fund " + Fund_ID);
 
         // Test to see what gifts the database already has to avoid duplicates
         ArrayList<String> currentGiftNameList = db.getGiftNames(Fund_ID, Year_ID);
@@ -984,7 +987,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setId(giftid);
                         temp.setGift_fund(gift_fund);
                         temp.setGift_fund_desc(gift_fund_desc);
-                        Log.w(Tag, "Gift Date: " + gift_date);
                         temp.setGift_date(gift_date);
                         temp.setGift_check_num(gift_check_num);
                         temp.setGift_amount(gifttotal);
@@ -1022,7 +1024,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
 
         for (int i = 0; i < tempComments.length(); i++){
-            Log.d("DataConnection", "loadComments: " + i);
             try{
                 //@id signals a new object, but contains no information on that line
                 if(!tempComments.getString(i).equals("@id")){

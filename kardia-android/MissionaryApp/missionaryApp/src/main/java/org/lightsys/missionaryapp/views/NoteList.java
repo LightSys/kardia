@@ -8,14 +8,12 @@ import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
@@ -97,6 +95,7 @@ public class NoteList extends Fragment {
         Button button = (Button)v.findViewById(R.id.button);
         button.setText("Add Update/Prayer Request");
         button.setVisibility(View.VISIBLE);
+        button.setBackgroundResource(R.color.dark_gray);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -115,7 +114,6 @@ public class NoteList extends Fragment {
                 Bundle args = new Bundle();
                 if (combined.get(position).getClass() == Note.class) {
                     Note n = (Note) combined.get(position);
-                    Log.i("NoteList", n.getNoteId() + "");
                     if (n.getType().equals("Pray")) {
                         args.putInt(DetailedPrayerRequest.ARG_REQUEST_ID, n.getNoteId());
                         DetailedPrayerRequest newFrag = new DetailedPrayerRequest();

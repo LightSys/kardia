@@ -406,7 +406,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	public void addPrayedFor(PrayedFor prayedfor) {
 		ContentValues values = new ContentValues();
 
-		values.put(COLUMN_ID, prayedfor.getPrayedForId());
+		values.put(COLUMN_PRAYED_FOR_ID, prayedfor.getPrayedForId());
 		values.put(COLUMN_PRAYED_FOR_COMMENTS, prayedfor.getPrayedForComments());
 		values.put(COLUMN_PRAYED_FOR_DATE, prayedfor.getPrayedForDate());
 		values.put(COLUMN_NOTE_ID, prayedfor.getNoteId());
@@ -1145,6 +1145,67 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		return note;
 	}
+
+	/**
+	 * Pulls prayedfor info for a specific note
+	 * @param note_id, Note Identification
+	 * @return all the PrayedFor Objects associated with the note.
+	 */
+
+	public ArrayList<PrayedFor> getPrayedForForNote(int note_id) {
+		ArrayList<PrayedFor> prayedfor = new ArrayList<PrayedFor>();
+		String queryString = "SELECT * FROM " + TABLE_PRAYED_FOR + /*" WHERE " +
+				COLUMN_NOTE_ID + " = " + note_id + */" ORDER BY " + COLUMN_SUPPORTER_PARTNER_NAME;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()){
+			PrayedFor temp = new PrayedFor();
+			temp.setPrayedForId(Integer.parseInt(c.getString(0)));
+			temp.setPrayedForComments(c.getString(1));
+			temp.setPrayedForDate(c.getString(2));
+			temp.setNoteId(Integer.parseInt(c.getString(3)));
+			temp.setSupporterId(Integer.parseInt(c.getString(4)));
+			temp.setSupporterName(c.getString(5));
+
+			prayedfor.add(temp);
+		}
+		c.close();
+		db.close();
+		return prayedfor;
+
+	}
+
+    /**
+     * Pulls comments for a specific note
+     * @param note_id, Note Identification
+     * @return all the Comment Objects associated with the note.
+     */
+    public ArrayList<Comment> getCommentsForNote(int note_id) {
+        Comment comment = new Comment();
+        ArrayList<Comment> commentlist = new ArrayList<Comment>();
+        String queryString = "SELECT * FROM " + TABLE_COMMENT + " WHERE " + COLUMN_NOTE_ID + " = " + note_id
+		 + " ORDER BY " + COLUMN_USER_NAME;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        while(c.moveToNext()){
+            comment.setCommentID(c.getInt(0));
+            comment.setSenderID(c.getInt(1));
+            comment.setNoteID(c.getInt(2));
+            comment.setUserName(c.getString(3));
+            comment.setNoteType(c.getString(4));
+            comment.setDate(c.getString(5));
+            comment.setComment(c.getString(6));
+
+            commentlist.add(comment);
+        }
+        c.close();
+        db.close();
+        return commentlist;
+    }
     /**
      * Pulls contact info for all donors from the database
      *
