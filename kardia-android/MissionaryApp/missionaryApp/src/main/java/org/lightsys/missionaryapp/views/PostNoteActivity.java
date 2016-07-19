@@ -3,10 +3,7 @@ package org.lightsys.missionaryapp.views;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -14,36 +11,15 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.json.JSONObject;
 import org.lightsys.missionaryapp.R;
 import org.lightsys.missionaryapp.data.Account;
-import org.lightsys.missionaryapp.data.Comment;
-import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.tools.DataConnection;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import org.lightsys.missionaryapp.tools.PostJson;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by otter57 on 7/12/16.
@@ -51,7 +27,6 @@ import javax.net.ssl.HttpsURLConnection;
  * allows user to post updates or prayer requests
  */
 public class PostNoteActivity extends Activity {
-//todo ASK JUDAH TO HELP POST TO API
     private Spinner sender, contactType;
     private EditText noteText, subject;
     int noteId = -1;
@@ -103,7 +78,9 @@ public class PostNoteActivity extends Activity {
                 String senderStr = sender.getSelectedItem().toString();
                 String messageStr = noteText.getText().toString();
                 String subjectStr = subject.getText().toString();
+                String noteType = contactType.getSelectedItem().toString();
                 Account account = null;
+                String TAG = "POST NOTE ACTIVITY";
 
                 //find account
                 ArrayList<Account> accts = db.getAccounts();
@@ -128,7 +105,6 @@ public class PostNoteActivity extends Activity {
                     try {
                         //post update
                         String postURL = "http://" + account.getServerName() + ":800/apps/kardia/api/missionary/" + account.getId() + "/Notes?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection";
-
                         JSONObject newNote = new JSONObject();
                         JSONObject dateCreated = new JSONObject();
 
@@ -140,41 +116,32 @@ public class PostNoteActivity extends Activity {
                         dateCreated.put("hour", calendar.get(Calendar.HOUR_OF_DAY));
                         dateCreated.put("minute", calendar.get(Calendar.MINUTE));
                         dateCreated.put("second", calendar.get(Calendar.SECOND));
-                        Log.d("POSTNOTEACTIVITY: ", dateCreated.toString());
-
-                        // Create PrayerRequest
-                        Note note = new Note();
-                        note.setSubject(subjectStr);
-                        note.setNoteText(messageStr);
-                        note.setNumberPrayed(0);
-                        switch (contactType.getSelectedItemPosition()) {
-                            case 0:
-                                note.setType("Update");
-                                break;
-                            case 1:
-                                note.setType("Pray");
-                                break;
-                        /*case 2:
-                            note.setType((Note.MessageType.Praise);
-                            break;*/
-                            default:
-                                note.setType("Update");
-                        }
 
                         //set newNote
-                        newNote.put("e_object_type", "e_contact_history");
-                        newNote.put("e_object_id", noteId + "");
-                        newNote.put("e_ack_type", 3);
-                        newNote.put("e_ack_comments", note);
-                        newNote.put("e_whom", account.getId() + "");
-                        newNote.put("p_dn_partner_key", getIntent().getIntExtra("missionaryId", -1) + "");
-                        newNote.put("s_date_created", dateCreated);
-                        newNote.put("s_date_modified", dateCreated);
-                        newNote.put("s_created_by", account.getAccountName() + "");
-                        newNote.put("s_modified_by", account.getAccountName() + "");
+                        if (noteType.equals("Update")) {
+                            newNote.put("e_contact_history_type", 7);
+                            //newNote.put("e_short_name", "Update");
+                            //newNote.put("e_description", "Update");
+
+                        }else if (noteType.equals("Pray")){
+                            newNote.put("e_contact_history_type",5);
+                            //newNote.put("e_short_name", "Pray");
+                            //newNote.put("e_description", "Prayer/Praise Item");
+                        }
+                        newNote.put("p_partner_key",account.getId()+"");
+                        newNote.put("e_whom",account.getId()+"");
+                        newNote.put("e_subject",subjectStr);
+                        //todo add feature to modify
+                        newNote.put("e_contact_date",dateCreated);
+                        newNote.put("e_notes",messageStr);
+                        newNote.put("s_date_created",dateCreated);
+                        newNote.put("s_created_by",account.getAccountName() + "");
+                        newNote.put("s_date_modified",dateCreated);
+                        newNote.put("s_modified_by",account.getAccountName() + "");
 
                         PostJson postJson = new PostJson(getBaseContext(), postURL, newNote, account);
                         postJson.execute();
+
                     } catch(Exception e){e.printStackTrace();}
 
                     //refresh the screen after post
