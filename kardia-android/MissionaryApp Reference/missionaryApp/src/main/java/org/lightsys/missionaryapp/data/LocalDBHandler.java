@@ -16,7 +16,7 @@ import org.json.JSONObject;
 
 public class LocalDBHandler extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 11;
 
     //tables
     private static final String TABLE_ACCOUNT = "accounts",
@@ -59,7 +59,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             COLUMN_REPLY_ID = "reply_id";
 
     public LocalDBHandler(Context context, String name, CursorFactory factory, int version) {
-        super(context, "missionary.db", factory, DATABASE_VERSION);
+        super(context, "missionaryref.db", factory, DATABASE_VERSION);
     }
 
     /**

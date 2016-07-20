@@ -91,7 +91,7 @@ public class GiftList extends Fragment{
 			giftListTitle += " - " + yearStr;
 		}
 		if (fund_id != -1) {
-			String fundStr = db.getFundById(fund_id).getFund_desc();
+			String fundStr = db.getFundByFundId(fund_id).getFundDesc();
 			giftListTitle += " - " + fundStr;
 		}
 		getActivity().setTitle(giftListTitle);

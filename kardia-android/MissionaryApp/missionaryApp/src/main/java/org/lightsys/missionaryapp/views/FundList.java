@@ -10,6 +10,7 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ import org.lightsys.missionaryapp.R;
 public class FundList extends Fragment{
 	
 	private ArrayList<Fund> funds;
+	String TAG="FundList";
 	
 	/**
 	 * Pulls all relevant funds, and creates the view (including the bottom total bar)
@@ -43,14 +45,18 @@ public class FundList extends Fragment{
 		// Loop through all accounts and pull all funds for each account
 		for (Account a : accounts) {
 			int accountID = a.getId();
-			funds = db.getFundsForAccount(accountID);
+			funds = db.getFundsForMissionary(accountID);
+            Log.d(TAG, "onCreateView: " + accountID);
+            if (funds.size()>0) {
+                Log.d(TAG, "onCreateView: " + funds.get(0).getFundName());
+            }
 		}
 
 		db.close();
 
 		View v = inflater.inflate(R.layout.activity_main, container, false);
 
-		getActivity().setTitle("Designations");
+		getActivity().setTitle("Funds");
 
 		if (funds == null) {
 			return v;
@@ -82,7 +88,7 @@ public class FundList extends Fragment{
 		for(Fund f : funds){
 			HashMap<String,String> hm = new HashMap<String,String>();
 			
-			hm.put("fundtitle", f.getFund_desc());
+			hm.put("fundtitle", f.getFundDesc());
 			
 			aList.add(hm);
 		}
@@ -100,7 +106,7 @@ public class FundList extends Fragment{
 			YTDList newFrag = new YTDList();
 
 			Bundle args = new Bundle();
-			args.putInt(newFrag.ARG_FUND_ID, funds.get(position).getID());
+			args.putInt(newFrag.ARG_FUND_ID, funds.get(position).getFundId());
 			newFrag.setArguments(args);
 
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();

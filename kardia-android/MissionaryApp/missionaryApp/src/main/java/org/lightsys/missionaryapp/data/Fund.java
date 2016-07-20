@@ -1,85 +1,63 @@
 package org.lightsys.missionaryapp.data;
 
-/**
- * Basic class used to organize information about funds that a user has donated to
- * 
- * @author Andrew Cameron
- *
- */
 public class Fund {
-	private int Id; //identifier in database
-	private String fullName; // (found as "name") an example looks like:  PRJ000|DEMO
-	private String fund_desc;
-	private String fund; // (found as "fund")
-	private int gift_count; // (found as "gift_count")
-	private int[] gift_total; // (found as "gift_total")
-	private String giving_url; // (found as "giving_url")
+	private int FundId;
+	private int missionaryId;
+	private String fundName;
+	private String fundDesc;
+	private String fundClass;
+	private String annotation;
 
 	public Fund(){}
-	
-	public Fund(int ID, String fullName, String fundName, String fund_desc, int gift_count, int[] gift_total, String giving_url){
-		this.setID(ID);
-		this.setFullName(fullName);
-		this.setFund_desc(fund_desc);
-		this.setName(fundName);
-		this.setGift_count(gift_count);
-		this.setGift_total(gift_total);
-		this.setGiving_url(giving_url);
+
+	public Fund(int FundId, int missionaryId, String fundName, String fundDesc, String fundClass, String annotation){
+		this.setFundId(FundId);
+		this.setMissionaryId(missionaryId);
+		this.setFundName(fundName);
+		this.setFundDesc(fundDesc);
+		this.setFundClass(fundClass);
+		this.setFundAnnotation(annotation);
 	}
 
-	public int getID() {
-		return Id;
+	public int getFundId() {return FundId;}
+
+	public void setFundId(int fundid) {FundId = fundid;}
+
+	public int getMissionaryId() {return missionaryId;}
+
+	public void setMissionaryId(int missionaryId) {this. missionaryId = missionaryId;}
+
+	public String getFundName() {
+		return fundName;
 	}
 
-	public void setID(int fundID) {
-		this.Id = fundID;
-	}
-	
-	public String getFullName() {
-		return fullName;
+	public void setFundName(String fundName) {
+		this.fundName = fundName;
 	}
 
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
+	public String getFundDesc() {
+		return fundDesc;
 	}
 
-	public String getName() {
-		return fund;
+	public void setFundDesc(String fundDesc) {
+		this.fundDesc = fundDesc;
 	}
 
-	public void setName(String fundName) {
-		this.fund = fundName;
+	public String getFundClass() {
+		return fundClass;
 	}
 
-	public int getGift_count() {
-		return gift_count;
+	public void setFundClass(String fundClass) {
+		this.fundClass = fundClass;
 	}
 
-	public void setGift_count(int gift_count) {
-		this.gift_count = gift_count;
+	public String getFundAnnotation() {
+		return annotation;
 	}
 
-	public int[] getGift_total() {
-		return gift_total;
+	public void setFundAnnotation(String annotation) {
+		this.annotation = annotation;
 	}
 
-	public void setGift_total(int[] gift_total) {
-		this.gift_total = gift_total;
-	}
-	
-	public String getGiving_url() {
-		return giving_url;
-	}
 
-	public void setGiving_url(String donation_link) {
-		this.giving_url = donation_link;
-	}
-
-	public String getFund_desc() {
-		return fund_desc;
-	}
-
-	public void setFund_desc(String fund_desc) {
-		this.fund_desc = fund_desc;
-	}
 }
