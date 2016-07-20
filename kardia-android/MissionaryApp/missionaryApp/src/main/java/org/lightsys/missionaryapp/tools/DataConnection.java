@@ -282,9 +282,13 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     int yearid = y.getId();
                     String Year = y.getName();
 
-                    loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID + "/Funds/"
-                                    + Fund_Name + "/Years/" + Year + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),
-                            yearid, fundid);
+                    for(Donor m : db.getDonors()) {
+                        int donorID = m.getId();
+                        String donorname = m.getName();
+                        loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + donorID + "/Funds/"
+                                        + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),
+                                yearid, fundid,donorname,donorID);
+                    }
                 }
             }
 
@@ -926,7 +930,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * @param Year_ID, year related to gift
      * @param Fund_ID, fund related to gift
      */
-    private void loadGifts(String result, int Year_ID, int Fund_ID){
+    private void loadGifts(String result, int Year_ID, int Fund_ID, String donorName, int donorID){
 
         // Test to see what gifts the database already has to avoid duplicates
         ArrayList<String> currentGiftNameList = db.getGiftNames(Fund_ID, Year_ID);
@@ -979,11 +983,13 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         Gift temp = new Gift();
                         temp.setName(name);
                         temp.setId(giftid);
-                        temp.setGift_fund(gift_fund);
+                        temp.setGiftFund(gift_fund);
                         temp.setGift_fund_desc(gift_fund_desc);
                         temp.setGift_date(gift_date);
                         temp.setGift_check_num(gift_check_num);
                         temp.setGift_amount(gifttotal);
+                        temp.setGiftDonor(donorName);
+                        temp.setGiftDonorId(donorID);
 
                         db.addGift(temp);
                         db.addGift_Year(giftid, Year_ID);

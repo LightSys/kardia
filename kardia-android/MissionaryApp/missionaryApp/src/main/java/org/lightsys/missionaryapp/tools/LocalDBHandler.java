@@ -67,7 +67,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_GIFTFUNDDESC = "gift_fund_desc";
 	private static final String COLUMN_GIFTDATE = "gift_date";
 	private static final String COLUMN_CHECKNUM = "gift_check_num";
-	//NOTES TABLE
+    private static final String COLUMN_DONOR_NAME = "donor_name";
+    private static final String COLUMN_DONOR_ID = "donor_id";
+
+    //NOTES TABLE
 	private static final String TABLE_NOTES = "notes";
 	private static final String COLUMN_TEXT = "text";
 	private static final String COLUMN_SUBJECT = "subject";
@@ -214,7 +217,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				+ " TEXT," + COLUMN_GIFTFUND + " TEXT,"
 				+ COLUMN_GIFTFUNDDESC + " TEXT," + COLUMN_GIFTTOTALWHOLE
 				+ " INTEGER," + COLUMN_GIFTTOTALPART + " INTEGER,"
-				+ COLUMN_GIFTDATE + " TEXT," + COLUMN_CHECKNUM + " TEXT)";
+				+ COLUMN_GIFTDATE + " TEXT," + COLUMN_CHECKNUM + " TEXT,"
+                + COLUMN_DONOR_NAME + " TEXT," + COLUMN_DONOR_ID + " INTEGER)";
 		db.execSQL(CREATE_GIFT_TABLE);
 
 		String CREATE_YEAR_TABLE = "CREATE TABLE " + TABLE_YEAR + "("
@@ -473,12 +477,14 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	public void addGift(Gift gift){
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_NAME, gift.getName());
-		values.put(COLUMN_GIFTFUND, gift.getGift_fund());
+		values.put(COLUMN_GIFTFUND, gift.getGiftFund());
 		values.put(COLUMN_GIFTFUNDDESC, gift.getGift_fund_desc());
 		values.put(COLUMN_GIFTTOTALWHOLE, gift.getGift_amount()[0]);
 		values.put(COLUMN_GIFTTOTALPART, gift.getGift_amount()[1]);
 		values.put(COLUMN_GIFTDATE, gift.getGift_date());
 		values.put(COLUMN_CHECKNUM, gift.getGift_check_num());
+        values.put(COLUMN_DONOR_NAME, gift.getGiftDonor());
+        values.put(COLUMN_DONOR_ID, gift.getGiftDonorId());
 		
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_GIFT, null, values);
@@ -1022,7 +1028,33 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return missionaries;
 	}
 
-	/**
+    /**
+     * Pulls contact info for a donor from the database
+     * @param donor_id
+     * @return contact info for donor id
+     */
+
+    public ContactInfo getContactInfoById(int donor_id) {
+        String queryString = "SELECT * FROM " + TABLE_CONTACT_INFO
+                + " WHERE " + COLUMN_ID + " = " + donor_id;
+
+        ContactInfo contact = new ContactInfo();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        if (c.moveToFirst()) {
+            contact.setPartnerId(Integer.parseInt(c.getString(0)));
+            contact.setEmail(c.getString(1));
+            contact.setPhone(c.getString(2));
+            contact.setCell(c.getString(3));
+
+        }
+        c.close();
+        db.close();
+        return contact;
+    }
+
+    /**
 	 * Pulls a specific missionary from the database
 	 * @param missionaryID, the ID for the missionary to be pulled
 	 * @return the specified missionary as a Donor Object
@@ -1043,6 +1075,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		return donor;
 	}
+
 	/**
 	 * Pulls all notes (updates and prayer requests) from the Notes table
 	 * @return All notes in the Notes table as an ArrayList of Notes Objects ordered from most recent to least recent
@@ -1193,7 +1226,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     }
     /**
      * Pulls contact info for all donors from the database
-     *
      * @return contact info as an ArrayList of ContactInfo Objects ordered by donor id
      */
 
@@ -1311,7 +1343,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			Gift temp = new Gift();
 			temp.setId(Integer.parseInt(c.getString(0)));
 			temp.setName(c.getString(1));
-			temp.setGift_fund(c.getString(2));
+			temp.setGiftFund(c.getString(2));
 			temp.setGift_fund_desc(c.getString(3));
 			temp.setGift_amount(new int[]{
 					Integer.parseInt(c.getString(4)),
@@ -1319,8 +1351,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			});
 			temp.setGift_date(c.getString(6));
 			temp.setGift_check_num(c.getString(7));
-			
-			gifts.add(temp);
+            temp.setGiftDonor(c.getString(8));
+            temp.setGiftDonorId(c.getInt(9));
+
+            gifts.add(temp);
 		}
 		c.close();
 		db.close();
@@ -1343,7 +1377,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		if(c.moveToFirst()){
 			gift.setId(Integer.parseInt(c.getString(0)));
 			gift.setName(c.getString(1));
-			gift.setGift_fund(c.getString(2));
+			gift.setGiftFund(c.getString(2));
 			gift.setGift_fund_desc(c.getString(3));
 			gift.setGift_amount(new int []{
 				Integer.parseInt(c.getString(4)),
@@ -1351,6 +1385,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			});
 			gift.setGift_date(c.getString(6));
 			gift.setGift_check_num(c.getString(7));
+            gift.setGiftDonor(c.getString(8));
+            gift.setGiftDonorId(c.getInt(9));
 		}
 		c.close();
 		db.close();
@@ -1407,7 +1443,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			Gift temp = new Gift();
 			temp.setId(Integer.parseInt(c.getString(0)));
 			temp.setName(c.getString(1));
-			temp.setGift_fund(c.getString(2));
+			temp.setGiftFund(c.getString(2));
 			temp.setGift_fund_desc(c.getString(3));
 			temp.setGift_amount(new int[]{
 					Integer.parseInt(c.getString(4)),
@@ -1415,6 +1451,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			});
 			temp.setGift_date(c.getString(6));
 			temp.setGift_check_num(c.getString(7));
+            temp.setGiftDonor(c.getString(8));
+            temp.setGiftDonorId(c.getInt(9));
 			
 			gifts.add(temp);
 		}
@@ -1443,7 +1481,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			Gift temp = new Gift();
 			temp.setId(Integer.parseInt(c.getString(0)));
 			temp.setName(c.getString(1));
-			temp.setGift_fund(c.getString(2));
+			temp.setGiftFund(c.getString(2));
 			temp.setGift_fund_desc(c.getString(3));
 			temp.setGift_amount(new int[]{
 					Integer.parseInt(c.getString(4)),
@@ -1452,6 +1490,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			temp.setGift_date(c.getString(6));
 			Log.w("BasicAuth", "The date is:" + c.getString(6));
 			temp.setGift_check_num(c.getString(7));
+            temp.setGiftDonor(c.getString(8));
+            temp.setGiftDonorId(c.getInt(9));
 			
 			gifts.add(temp);
 		}
@@ -1516,7 +1556,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			Gift temp = new Gift();
 			temp.setId(Integer.parseInt(c.getString(0)));
 			temp.setName(c.getString(1));
-			temp.setGift_fund(c.getString(2));
+			temp.setGiftFund(c.getString(2));
 			temp.setGift_fund_desc(c.getString(3));
 			temp.setGift_amount(new int []{
 				Integer.parseInt(c.getString(4)),
@@ -1525,6 +1565,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			temp.setGift_date(c.getString(6));
 			Log.w("BasicAuth", "The date is:" + c.getString(6));
 			temp.setGift_check_num(c.getString(7));
+            temp.setGiftDonor(c.getString(8));
+            temp.setGiftDonorId(c.getInt(9));
 			
 			gifts.add(temp);
 		}

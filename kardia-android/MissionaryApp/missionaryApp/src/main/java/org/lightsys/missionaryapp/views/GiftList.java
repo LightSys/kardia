@@ -103,16 +103,10 @@ public class GiftList extends Fragment{
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
 
 		// If list is for specific fund, display fund as smaller (not as subject)
-		String[] from = {"giftname", "giftdate", "giftamount"};
-		if (isSpecificFund) {
-			int[] to = {R.id.fundName, R.id.subject, R.id.detail};
-			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
-			listview.setAdapter(adapter);
-		} else {
-			int[] to = {R.id.subject, R.id.date, R.id.detail};
-			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
-			listview.setAdapter(adapter);
-		}
+		String[] from = {"donorname", "giftname", "giftdate", "giftamount"};
+        int[] to = {R.id.subject, R.id.fundName, R.id.date, R.id.detail};
+        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
+        listview.setAdapter(adapter);
 
 		listview.setOnItemClickListener(new onGiftClicked());
 		
@@ -129,7 +123,8 @@ public class GiftList extends Fragment{
 		
 		for(Gift g : gifts){
 			HashMap<String,String> hm = new HashMap<String,String>();
-			
+
+			hm.put("donorname", g.getGiftDonor());
 			hm.put("giftname", g.getGift_fund_desc());
 			hm.put("giftamount", Formatter.amountToString(g.getGift_amount()));
 			hm.put("giftdate", Formatter.getFormattedDate(g.getGift_date()));
@@ -149,8 +144,10 @@ public class GiftList extends Fragment{
 			
 			Bundle args = new Bundle();
 			args.putInt(DetailedGift.ARG_GIFT_ID, gifts.get(position).getId());
-			
-			DetailedGift newfrag = new DetailedGift();
+            args.putInt(DetailedGift.ARG_DONOR_ID, gifts.get(position).getGiftDonorId());
+            args.putString(DetailedGift.ARG_DONOR_NAME, gifts.get(position).getGiftDonor());
+
+            DetailedGift newfrag = new DetailedGift();
 			newfrag.setArguments(args);
 					
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();

@@ -9,22 +9,26 @@ package org.lightsys.missionaryapp.data;
 public class Gift {
 	private int Id;
 	private String name; // (found as "name") example:  DEMO|100006|1|1
-	private String gift_fund; // (found as "gift_fund")
+	private String giftFund; // (found as "giftFund")
 	private String gift_fund_desc; // (found as "gift_fund_desc")
 	private int[] gift_amount; // (found as "gift_amount")
 	private String gift_date; // (found as "gift_date")
 	private String gift_check_num; // (found as "gift_check_num")
-	
+	private String giftDonor;
+	private int giftDonorId;
+
 	public Gift() {}
 	
-	public Gift(int Id, String name, String gift_fund, String gift_fund_desc, int[] gift_amount, String gift_date, String gift_check_num){
+	public Gift(int Id, String name, String giftFund, String gift_fund_desc, int[] gift_amount, String gift_date, String gift_check_num, String giftDonor, int giftDonorId){
 		this.setId(Id);
 		this.setName(name);
-		this.setGift_fund(gift_fund);
+		this.setGiftFund(giftFund);
 		this.setGift_amount(gift_amount);
 		this.setGift_fund_desc(gift_fund_desc);
 		this.setGift_date(gift_date);
 		this.setGift_check_num(gift_check_num);
+		this.setGiftDonor(giftDonor);
+        this.setGiftDonorId(giftDonorId);
 	}
 	
 	public int getId() {
@@ -43,12 +47,12 @@ public class Gift {
 		this.name = name;
 	}
 
-	public String getGift_fund() {
-		return gift_fund;
+	public String getGiftFund() {
+		return giftFund;
 	}
 
-	public void setGift_fund(String gift_fund) {
-		this.gift_fund = gift_fund;
+	public void setGiftFund(String giftFund) {
+		this.giftFund = giftFund;
 	}
 
 	public int[] getGift_amount() {
@@ -82,4 +86,13 @@ public class Gift {
 	public void setGift_check_num(String gift_check_num) {
 		this.gift_check_num = gift_check_num;
 	}
+
+	public String getGiftDonor() {return giftDonor;}
+
+	public void setGiftDonor(String giftDonor) {this.giftDonor = giftDonor; }
+
+    public int getGiftDonorId() {return giftDonorId;}
+
+    public void setGiftDonorId(int giftDonorId) {this.giftDonorId = giftDonorId; }
+
 }
