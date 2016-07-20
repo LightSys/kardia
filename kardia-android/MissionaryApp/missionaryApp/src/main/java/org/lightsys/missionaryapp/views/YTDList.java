@@ -68,7 +68,7 @@ public class YTDList extends Fragment{
 		View v = inflater.inflate(R.layout.activity_main, container, false);
 		String ytdListTitle = "Gifts By Year";
 		if (fund_id != -1) {
-			ytdListTitle += " - " + db.getFundById(fund_id).getFund_desc();
+			ytdListTitle += " - " + db.getFundByFundId(fund_id).getFundDesc();
 		}
 		getActivity().setTitle(ytdListTitle);
 
@@ -109,7 +109,7 @@ public class YTDList extends Fragment{
 			hm.put("ytdamount", Formatter.amountToString(y.getGift_total()));
 			if (fund_id != -1) {
 				LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-				hm.put("ytdfund", db.getFundById(fund_id).getFund_desc());
+				hm.put("ytdfund", db.getFundByFundId(fund_id).getFundDesc());
 				db.close();
 			}
 

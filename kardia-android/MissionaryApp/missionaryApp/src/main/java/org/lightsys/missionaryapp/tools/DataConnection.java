@@ -239,17 +239,16 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
             loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
                     "/Supporters?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
-
+            loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
+                            "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
+                    Account_ID);
+            loadPrayerLetters(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
+                            "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
+                    Account_ID);
             // Loop through donors and pull notes and prayer letters
             db.deleteNewItems();
             for(Donor m : db.getDonors()) {
                 int donorID = m.getId();
-                loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
-                        "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
-                        Account_ID);
-                loadPrayerLetters(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
-                        "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
-                        Account_ID);
                 loadContact(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/" + donorID +
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
 
@@ -262,19 +261,19 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             // Load years so they can be connected to funds
             loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
                     "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
+            loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/"
+                    + Account_ID + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), Account_ID);
 
-            loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
-                    "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
-
-            for(Fund f : db.getFundsForAccount(Account_ID)){
+            for(Fund f : db.getFundsForMissionary(Account_ID)){
 
                 String Fund_Name = "";
                 try {
-                    Fund_Name = URLEncoder.encode(f.getFullName(), "UTF-8");
+                    Fund_Name = URLEncoder.encode(f.getFundName(), "UTF-8");
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                int fundid = f.getID();
+                int fundid = f.getFundId();
+                Log.d(TAG, "DataPull: " + fundid);
 
                 loadFundYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID + "/Funds/"
                         + Fund_Name + "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), fundid);
@@ -741,10 +740,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      *
      * @param result, the result of the Funds API GET request
      */
-    private void loadFunds(String result) {
-
+    private void loadFunds(String result, int accountId) {
+        Log.d(TAG, "loadFunds: makes it to loadFunds");
         // List of funds already in database for account
-        ArrayList<String> currentFundNames = db.getFundNames(Account_ID);
         JSONObject json = null;
         try{
             json = new JSONObject(result);
@@ -762,27 +760,23 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempFunds.getString(x).equals("@id")){
                     JSONObject fundObj = json.getJSONObject(tempFunds.getString(x));
                     // If fund already in database, skip that fund
-                    if (!currentFundNames.contains(fundObj.getString("name"))) {
-                        JSONObject giftObj = fundObj.getJSONObject("gift_total");
-                        int fundId = db.getLastId("fund") + 1;
-                        int[] gifttotal = {
-                                Integer.parseInt(giftObj.getString("wholepart")),
-                                Integer.parseInt(giftObj.getString("fractionpart"))
-                        };
-                        int giftcount = Integer.parseInt(fundObj.getString("gift_count"));
+                    ArrayList<String> currentFundNames = db.getFundNames(Account_ID);
 
+
+                    if (!currentFundNames.contains(fundObj.getString("name"))) {
                         Fund temp = new Fund();
-                        temp.setName(fundObj.getString("fund"));
-                        temp.setID(fundId);
-                        temp.setFullName(fundObj.getString("name"));
-                        temp.setFund_desc(fundObj.getString("fund_desc"));
-                        temp.setGift_count(giftcount);
-                        temp.setGift_total(gifttotal);
-                        temp.setGiving_url(fundObj.getString("giving_url"));
+
+                        temp.setFundName(fundObj.getString("name"));
+                        temp.setFundDesc(fundObj.getString("fund_desc"));
+                        temp.setFundClass(fundObj.getString("fund_class"));
+                        temp.setFundAnnotation(fundObj.getString("annotation"));
+                        temp.setMissionaryId(accountId);
+                        Log.d(TAG, "loadFunds: " + temp.getFundName());
+                        Log.d(TAG, "loadFunds: " + accountId);
+                        Log.d(TAG, "loadFunds: " + temp.getMissionaryId());
 
                         // Add fund and Account-Fund relationship to database
                         db.addFund(temp);
-                        db.addFund_Account(fundId, Account_ID);
                     }
                 }
             } catch (Exception e) {

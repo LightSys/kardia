@@ -56,12 +56,11 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	//FUND TABLE
 	private static final String TABLE_FUND = "funds";
 	private static final String COLUMN_NAME = "name";
-	private static final String COLUMN_FUND = "fund";
-	private static final String COLUMN_FUNDDESC = "fund_desc";
-	private static final String COLUMN_GIFTCOUNT = "gift_count";
-	private static final String COLUMN_GIFTTOTALWHOLE = "gift_total_whole";
+	private static final String COLUMN_FUND_DESC = "fund_desc";
+	private static final String COLUMN_FUND_CLASS = "fund_class";
+	private static final String COLUMN_ANNOTATION = "annotation";
 	private static final String COLUMN_GIFTTOTALPART = "gift_total_part";
-	private static final String COLUMN_GIVINGURL = "giving_url";
+	private static final String COLUMN_GIFTTOTALWHOLE = "gift_total_whole";
 	//GIFT TABLE
 	private static final String TABLE_GIFT = "gifts";
 	private static final String COLUMN_GIFTFUND = "gift_fund";
@@ -203,12 +202,11 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				+ COLUMN_REQUEST_ID + " TEXT)";
 		db.execSQL(CREATE_NOTIFICATIONS_TABLE);
 
-		String CREATE_FUND_TABLE = "CREATE TABLE " + TABLE_FUND + "("
-				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME
-				+ " TEXT," + COLUMN_FUND + " TEXT,"
-				+ COLUMN_GIFTCOUNT + " INTEGER," + COLUMN_GIFTTOTALWHOLE
-				+ " INTEGER," + COLUMN_GIFTTOTALPART + " INTEGER,"
-				+ COLUMN_GIVINGURL + " TEXT, " + COLUMN_FUNDDESC + " TEXT)";
+		String CREATE_FUND_TABLE = "CREATE TABLE " + TABLE_FUND + "(" +
+				COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_MISSIONARY_ID + " INTEGER, " +
+                COLUMN_NAME + " TEXT," +
+				COLUMN_FUND_DESC + " TEXT," +
+				COLUMN_FUND_CLASS + " TEXT," + COLUMN_ANNOTATION + " TEXT)";
 		db.execSQL(CREATE_FUND_TABLE);
 
 		String CREATE_GIFT_TABLE = "CREATE TABLE " + TABLE_GIFT + "("
@@ -454,17 +452,16 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * Adds a fund to the Fund table in the database
 	 * @param fund, fund to be stored
 	 */
-	public void addFund(Fund fund){
+	public void addFund(Fund fund) {
 		ContentValues values = new ContentValues();
-		values.put(COLUMN_NAME, fund.getFullName());
-		values.put(COLUMN_FUND, fund.getName());
-		values.put(COLUMN_FUNDDESC, fund.getFund_desc());
-		values.put(COLUMN_GIFTCOUNT, fund.getGift_count());
-		values.put(COLUMN_GIFTTOTALWHOLE, fund.getGift_total()[0]);
-		values.put(COLUMN_GIFTTOTALPART, fund.getGift_total()[1]);
-		values.put(COLUMN_GIVINGURL, fund.getGiving_url());
-		
+		values.put(COLUMN_NAME, fund.getFundName());
+        values.put(COLUMN_MISSIONARY_ID, fund.getMissionaryId());
+		values.put(COLUMN_FUND_DESC, fund.getFundDesc());
+		values.put(COLUMN_FUND_CLASS, fund.getFundClass());
+		values.put(COLUMN_ANNOTATION, fund.getFundAnnotation());
+
 		SQLiteDatabase db = this.getWritableDatabase();
+
 		db.insert(TABLE_FUND, null, values);
 		db.close();
 	}
@@ -866,34 +863,31 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	
 	/**
 	 * Pulls a specific fund from an ID
-	 * @param fund_id, Fund ID to retrieve
-	 * @return The fund with the id of fund_id
+	 * @param fund_id, id of fund to retrieve
+	 * @return fund with the id of fund_id
 	 */
-	public Fund getFundById(int fund_id){
-		Fund temp = new Fund();
-		String queryString = "SELECT * FROM " + TABLE_FUND 
-				+ " WHERE " + COLUMN_ID + " = " + fund_id;
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		if(c.moveToFirst()){
-			temp.setID(Integer.parseInt(c.getString(0)));
-			temp.setFullName(c.getString(1));
-			temp.setName(c.getString(2));
-			temp.setGift_count(Integer.parseInt(c.getString(3)));
-			temp.setGift_total(
-					new int [] {
-							Integer.parseInt(c.getString(4)),
-							Integer.parseInt(c.getString(5))
-							});
-			temp.setGiving_url(c.getString(6));
-			temp.setFund_desc(c.getString(7));
-		}
-		c.close();
-		db.close();
-		return temp;
-	}
+    public Fund getFundByFundId(int fund_id) {
+        Fund fund = new Fund();
+
+        String qString = "SELECT * FROM " + TABLE_FUND + " WHERE "
+                + COLUMN_ID + " = " + fund_id;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor c = db.rawQuery(qString, null);
+
+        if (c.moveToFirst()) {
+            fund.setFundId(Integer.parseInt(c.getString(0)));
+            fund.setMissionaryId(c.getInt(1));
+            fund.setFundName(c.getString(2));
+            fund.setFundDesc(c.getString(3));
+            fund.setFundClass(c.getString(4));
+            fund.setFundAnnotation(c.getString(5));
+        }
+        db.close();
+        c.close();
+        return fund;
+    }
 	
 	/**
 	 * Pulls the last ID used in the table specified
@@ -937,10 +931,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 */
 	public ArrayList<String> getFundNames(int Account_ID){
 		ArrayList<String> fundNames = new ArrayList<String>();
-		String queryString = "SELECT F." + COLUMN_NAME + " FROM " + TABLE_FUND
-				+ " AS F INNER JOIN " + TABLE_FUNDACCOUNT_MAP + " AS FA ON F." 
-				+ COLUMN_ID + " = FA." + COLUMN_FUND_ID + " WHERE FA."
-				+ COLUMN_ACCOUNT_ID + " = " + Account_ID;
+		String queryString = "SELECT " + COLUMN_NAME + " FROM " + TABLE_FUND
+				+ " WHERE " + COLUMN_MISSIONARY_ID + " = " + Account_ID;
 		
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
@@ -958,30 +950,23 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * @param Account_ID, Account ID to pull funds from
 	 * @return All funds for an account as an ArrayList of Fund Objects ordered alphabetically
 	 */
-	public ArrayList<Fund> getFundsForAccount(int Account_ID){
+	public ArrayList<Fund> getFundsForMissionary(int Account_ID){
 		ArrayList<Fund> funds = new ArrayList<Fund>();
-		String queryString = "SELECT F.* FROM " + TABLE_FUND
-				+ " AS F INNER JOIN " + TABLE_FUNDACCOUNT_MAP + " AS FA ON F." 
-				+ COLUMN_ID + " = FA." + COLUMN_FUND_ID + " WHERE FA."
-				+ COLUMN_ACCOUNT_ID + " = " + Account_ID
-				+ " ORDER BY F." + COLUMN_FUNDDESC;
+		String queryString = "SELECT * FROM " + TABLE_FUND +
+                " WHERE " + COLUMN_MISSIONARY_ID + " = " + Account_ID;
+
 		
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
 
 		while(c.moveToNext()){
 			Fund temp = new Fund();
-			temp.setID(Integer.parseInt(c.getString(0)));
-			temp.setFullName(c.getString(1));
-			temp.setName(c.getString(2));
-			temp.setGift_count(Integer.parseInt(c.getString(3)));
-			temp.setGift_total(
-					new int[]{
-							Integer.parseInt(c.getString(4)),
-							Integer.parseInt(c.getString(5))
-					});
-			temp.setGiving_url(c.getString(6));
-			temp.setFund_desc(c.getString(7));
+			temp.setFundId(Integer.parseInt(c.getString(0)));
+			temp.setMissionaryId(c.getInt(1));
+			temp.setFundName(c.getString(2));
+			temp.setFundDesc(c.getString(3));
+            temp.setFundClass(c.getString(4));
+            temp.setFundAnnotation(c.getString(5));
 
 			funds.add(temp);
 		}
@@ -1260,6 +1245,32 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return letterList;
 	}
 
+	/**
+	 * Pulls all Funds from the database
+	 * @return All Funds as an ArrayList of Fund Objects ordered by Missionar Id
+	 */
+	public ArrayList<Fund> getFunds() {
+		ArrayList<Fund> fundList = new ArrayList<Fund>();
+		String queryString = "SELECT * FROM " + TABLE_FUND +" ORDER BY " + COLUMN_MISSIONARY_ID;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()) {
+			Fund fund = new Fund();
+			fund.setFundId(Integer.parseInt(c.getString(0)));
+			fund.setMissionaryId(c.getInt(1));
+			fund.setFundName(c.getString(2));
+			fund.setFundDesc(c.getString(3));
+			fund.setFundClass(c.getString(4));
+			fund.setFundAnnotation(c.getString(5));
+
+			fundList.add(fund);
+		}
+		c.close();
+		db.close();
+		return fundList;
+	}
 	/**
 	 * pulls all notifications from the notifications table
 	 * @return notifications as an ArrayList of PrayerNotification Objects

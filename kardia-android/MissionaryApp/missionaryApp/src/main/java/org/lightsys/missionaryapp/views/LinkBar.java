@@ -35,20 +35,7 @@ public class LinkBar extends Fragment {
 		else if(args != null){
 			fund_id = args.getInt(ARG_FUND_ID);
 		}
-		
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
-		// Retrieve giving URL from database for specific fund
-		String temp_url = db.getFundById(fund_id).getGiving_url();
-		db.close();
-
-		// If URL not found, set to unavailable status
-		// If URL does not contain Web protocol, add it to the URL
-		if (temp_url == null || temp_url.equals("")) {
-			giving_url = "Unavailable";
-		} else if (!temp_url.contains("http://") && !temp_url.contains("https://")) {
-			giving_url = "http://" + giving_url;
-		}
 
 		b = (Button)v.findViewById(R.id.sendButton);
 

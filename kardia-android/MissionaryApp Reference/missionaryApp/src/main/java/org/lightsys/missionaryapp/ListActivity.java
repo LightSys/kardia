@@ -129,7 +129,7 @@ public class ListActivity extends Fragment {
                 from = new String[]{"account_id", "account_balance"};
                 to = new int[]{R.id.account_id, R.id.account_balance};
                 layout = R.layout.funds_listview_item;
-                listitems = db.getDisplayAccounts();
+                listitems = db.getDisplayFunds();
                 break;
 
             //Loads the accounts related to the Missionary's fund
