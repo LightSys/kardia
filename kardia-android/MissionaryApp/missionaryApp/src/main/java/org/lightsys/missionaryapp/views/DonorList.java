@@ -41,7 +41,7 @@ public class DonorList extends Fragment {
         // Map data fields to layout fields
         ArrayList<HashMap<String,String>>itemList = generateListItems();
         String[] from = {"donorname", "email","phone"};
-        int[] to = {R.id.subject, R.id.email,R.id.phone};
+        int[] to = {R.id.subject, R.id.subject1,R.id.subsubject2};
 
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 
@@ -59,31 +59,31 @@ public class DonorList extends Fragment {
          */
 
         private ArrayList<HashMap<String,String>> generateListItems(){
-        ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
-        for(Donor m : donors){
-            HashMap<String,String> hm = new HashMap<String,String>();
-            int ID = m.getId();
-            String email = "";
-            String phone = "";
-            for (ContactInfo n : contact){
-                if (n.getPartnerId() == ID){
-                    email = n.getEmail();
-                    phone = n.getPhone();
-                    if (!n.getCell().equals("null")) {
-                        phone = n.getCell();
+            ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
+            for(Donor m : donors){
+                HashMap<String,String> hm = new HashMap<String,String>();
+                int ID = m.getId();
+                String email = "";
+                String phone = "";
+                for (ContactInfo n : contact){
+                    if (n.getPartnerId() == ID){
+                        email = n.getEmail();
+                        phone = n.getPhone();
+                        if (!n.getCell().isEmpty()) {
+                            phone = n.getCell();
+                        }
                     }
                 }
+
+                hm.put("donorname", m.getName());
+                hm.put("email", "Email: " + email);
+                hm.put("phone", "Phone: " + phone);
+
+
+                aList.add(hm);
             }
-
-            hm.put("donorname", m.getName());
-            hm.put("email", "Email: " + email);
-            hm.put("phone", "Phone: " + phone);
-
-
-            aList.add(hm);
+            return aList;
         }
-        return aList;
-    }
     private ArrayList<HashMap<String,String>> generateContactItems() {
         ArrayList<HashMap<String, String>> aList = new ArrayList<HashMap<String, String>>();
         for (Donor m : donors) {
