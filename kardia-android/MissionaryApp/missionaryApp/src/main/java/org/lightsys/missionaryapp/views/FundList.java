@@ -49,7 +49,9 @@ public class FundList extends Fragment{
             Log.d(TAG, "onCreateView: " + accountID);
             if (funds.size()>0) {
                 Log.d(TAG, "onCreateView: " + funds.get(0).getFundName());
-            }
+				Log.d(TAG, "onCreateView: " + funds.get(0).getFundDesc());
+
+			}
 		}
 
 		db.close();
@@ -103,7 +105,7 @@ public class FundList extends Fragment{
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			YTDList newFrag = new YTDList();
+			GiftTimePeriodList newFrag = new GiftTimePeriodList();
 
 			Bundle args = new Bundle();
 			args.putInt(newFrag.ARG_FUND_ID, funds.get(position).getFundId());
@@ -111,7 +113,7 @@ public class FundList extends Fragment{
 
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 			transaction.replace(R.id.content_frame, newFrag);
-			transaction.addToBackStack("ToYTDList");
+			transaction.addToBackStack("ToGiftTimePeriodList");
 			transaction.commit();
 		}
 	}

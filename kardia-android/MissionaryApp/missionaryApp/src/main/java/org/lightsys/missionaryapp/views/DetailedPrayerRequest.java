@@ -91,7 +91,7 @@ public class DetailedPrayerRequest extends Fragment{
         final LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject = (TextView)getActivity().findViewById(R.id.subject);
+        TextView subject = (TextView)getActivity().findViewById(R.id.name);
         TextView date = (TextView)getActivity().findViewById(R.id.date);
         TextView text = (TextView)getActivity().findViewById(R.id.text);
         supporterlist = (TextView)getActivity().findViewById(R.id.supporterlist);

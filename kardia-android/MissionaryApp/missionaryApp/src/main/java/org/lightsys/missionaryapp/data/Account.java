@@ -63,4 +63,5 @@ public class Account {
 	public String getPartnerName() { return PartnerName; }
 
 	public void setPartnerName(String name) { PartnerName = name; }
+
 }

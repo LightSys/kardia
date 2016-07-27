@@ -3,6 +3,7 @@ package org.lightsys.missionaryapp.views;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import org.lightsys.missionaryapp.data.Year;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,11 +31,12 @@ import org.lightsys.missionaryapp.R;
  * 
  * @author Andrew Cameron
  */
-public class YTDList extends Fragment{
+public class GiftTimePeriodList extends Fragment{
 
 	public final String ARG_FUND_ID = "fund_id"; //The position of the fund that was clicked
 	int fund_id = -1;
-	private ArrayList<Year> years = new ArrayList<Year>();
+	private ArrayList<Period> periods = new ArrayList<Period>();
+    String periodtype;
 	
 	/**
 	 * Based on what fund the user clicked on (or visited last) it will generate a list of 
@@ -45,32 +48,34 @@ public class YTDList extends Fragment{
 		Bundle args = getArguments();
 
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+		periodtype = "gift_year";
+        //todo: make this an option for user
+		//periodtype = "gift_month"
 
 		if(savedInstanceState != null){ 
 			fund_id = savedInstanceState.getInt(ARG_FUND_ID);
-			years = db.getYearsForFund(fund_id);
+			periods = db.getFundPeriods(fund_id, periodtype);
 		} 
 		else if(args != null){
 			this.fund_id = args.getInt(ARG_FUND_ID);
-			years = db.getYearsForFund(fund_id);
-
-			//Only sets link bar if list is for specific fund, not for all years
-			LinkBar lb = new LinkBar();
-			lb.setArguments(args);
-
-			FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-			fragmentManager.beginTransaction().add(R.id.bottom_bar, lb).commit();
+			periods = db.getFundPeriods(fund_id, periodtype);
 		}
 		else{
-			years = db.getYears();
+			periods = db.getFundPeriods(periodtype);
 		}
+        if (periods.size()==1){
+            loadRelatedGifts(0);
+        }
+
+
 
 		View v = inflater.inflate(R.layout.activity_main, container, false);
-		String ytdListTitle = "Gifts By Year";
+        String gtpListTitle = "Gifts By " + periodtype.replace("gift_m","M").replace("gift_y","Y") + ":";
+
 		if (fund_id != -1) {
-			ytdListTitle += " - " + db.getFundByFundId(fund_id).getFundDesc();
+			gtpListTitle += " - " + db.getFundByFundId(fund_id).getFundDesc();
 		}
-		getActivity().setTitle(ytdListTitle);
+		getActivity().setTitle(gtpListTitle);
 
 		db.close();
 
@@ -79,18 +84,18 @@ public class YTDList extends Fragment{
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
 		if (fund_id == -1) {
-			String[] from = {"ytdtitle", "ytdamount"};
-			int[] to = {R.id.subject, R.id.detail};
+			String[] from = {"gtptitle", "gtpamount","year"};
+			int[] to = {R.id.name, R.id.detail, R.id.subject};
 			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 			listview.setAdapter(adapter);
 		} else {
-			String[] from = {"ytdtitle", "ytdamount", "ytdfund"};
-			int[] to = {R.id.subject, R.id.detail, R.id.fundName};
+			String[] from = {"gtptitle", "gtpamount", "gtpfund","year"};
+			int[] to = {R.id.name, R.id.detail, R.id.fundName, R.id.subject};
 			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 			listview.setAdapter(adapter);
 		}
 
-		listview.setOnItemClickListener(new onFundClicked());
+		listview.setOnItemClickListener(new onPeriodClicked());
 		
 		return v;
 	}
@@ -102,16 +107,17 @@ public class YTDList extends Fragment{
 	private ArrayList<HashMap<String,String>> generateListItems(){
 		ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
 		
-		for(Year y : years){
+		for(Period p : periods){
 			HashMap<String,String> hm = new HashMap<String,String>();
 			
-			hm.put("ytdtitle", y.getName() + " Total");
-			hm.put("ytdamount", Formatter.amountToString(y.getGift_total()));
+			hm.put("gtptitle", p.getPeriodName() + " Total");
+			hm.put("gtpamount", Formatter.amountToString(p.getGiftTotal()));
 			if (fund_id != -1) {
 				LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-				hm.put("ytdfund", db.getFundByFundId(fund_id).getFundDesc());
+				hm.put("gtpfund", db.getFundByFundId(fund_id).getFundDesc());
 				db.close();
 			}
+			hm.put("year", p.getPeriodName());
 
 			aList.add(hm);
 		}
@@ -122,7 +128,7 @@ public class YTDList extends Fragment{
 	/**
 	 * click listener used to take the user to the list of gifts donated during that year.
 	 */
-	private class onFundClicked implements OnItemClickListener{
+	private class onPeriodClicked implements OnItemClickListener{
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -140,7 +146,8 @@ public class YTDList extends Fragment{
 	public void loadRelatedGifts(int position){
 		Bundle GiftArgs = new Bundle();
 		
-		GiftArgs.putInt(GiftList.ARG_YEAR_ID, years.get(position).getId()); //Used to find what year to pull gifts for
+		GiftArgs.putString(GiftList.ARG_PERIOD_ID, periods.get(position).getPeriodName()); //Used to find what period to pull gifts for
+        GiftArgs.putString(GiftList.ARG_PERIOD_TYPE, this.periodtype);
 		GiftArgs.putInt(GiftList.ARG_FUND_ID, this.fund_id); //send the fund id
 		
 		GiftList gList = new GiftList();

@@ -182,9 +182,8 @@ public class AccountsActivity extends Activity{
 				return;
 			}
 		}
-
-
 		Account account = new Account(dId, aName, aPass, sName, null);
+        db.updateActiveAccount(account);
 		// Execute data connection to validate account and pull data if valid
 		// DataConnection will close activity once complete if successful
 		new DataConnection(this, this, account).execute("");
@@ -200,6 +199,7 @@ public class AccountsActivity extends Activity{
 		menu.add(0, v.getId(), 0, "Edit");
 		menu.add(0, v.getId(), 0, "Delete");
 		menu.add(0, v.getId(), 0, "Cancel");
+		menu.add(0,v.getId(),0, "Set Active");
 	}
 	
 	/**
@@ -244,8 +244,13 @@ public class AccountsActivity extends Activity{
 					.setIcon(android.R.drawable.ic_dialog_alert)
 					.show();
 
-			
-		} else if (item.getTitle().equals("Edit")) {
+
+		}else if (item.getTitle().equals("Set Active")){
+			LocalDBHandler db = new LocalDBHandler(AccountsActivity.this,null);
+            db.updateActiveAccount(accounts.get(info.position));
+
+
+		}else if (item.getTitle().equals("Edit")) {
 
 			Account temp = accounts.get(info.position);
 

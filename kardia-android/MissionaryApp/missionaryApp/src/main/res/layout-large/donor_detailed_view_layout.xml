@@ -7,58 +7,61 @@
 
 
 
-    <!-- The Title -->
-    <TextView
-        android:id="@+id/subject"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/donor_info_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="18dp"
-        android:layout_marginLeft="18dp"
-        android:layout_marginStart="18dp"
-        android:textSize="24sp"
-        android:layout_toLeftOf="@+id/detail"
-        android:layout_toStartOf="@+id/detail"
-        android:background="@color/spinner_blue"/>
-    <!--color for testing-->
+        android:orientation="horizontal"
+        android:layout_margin="5dp"
+        >
+        <ImageView
+            android:id="@+id/profile_pic"
+            android:layout_width="68dp"
+            android:layout_height="68dp"
+            android:src="@drawable/prayer_letter_icon"
+            android:layout_centerVertical="true"
+            />
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="18dp"
+            android:layout_marginStart="18dp"
+            android:textSize="24sp"
+            android:layout_toRightOf="@id/profile_pic"
+            android:layout_toEndOf="@id/profile_pic"
+            android:layout_alignTop="@id/profile_pic"/>
 
-    <TextView
-        android:id="@+id/detail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#37AD00"
-        android:layout_marginRight="18dp"
-        android:layout_marginEnd="18dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="18dp"
-        android:textSize="24sp" />
+        <TextView
+            android:id="@+id/email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:layout_marginLeft="17dp"
+            android:layout_marginStart="17dp"
+            android:layout_below="@+id/name"
+            android:textSize="16sp"
+            android:layout_alignLeft="@id/name"
+            android:layout_alignStart="@id/name"/>
 
-    <TextView
-        android:id="@+id/fundName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="18dp"
-        android:layout_marginStart="18dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="6dp"
-        android:layout_below="@id/subject"
-        android:textSize="18sp" />
+        <TextView
+            android:id="@+id/phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:layout_marginLeft="17dp"
+            android:layout_marginStart="17dp"
+            android:layout_below="@+id/email"
+            android:textSize="16sp"
+            android:layout_alignLeft="@id/name"
+            android:layout_alignStart="@id/name" />
 
-    <!-- The Date -->
+    </RelativeLayout>
 
-    <TextView
-        android:id="@+id/date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/detail"
-        android:layout_alignEnd="@+id/detail"
-        android:layout_below="@+id/detail"
-        android:layout_marginBottom="6dp"
-        android:layout_marginTop="6dp"
-        android:textColor="#303030"
-        android:textSize="18sp" />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#000030"
+        android:layout_below="@id/donor_info_layout" />
 
 </RelativeLayout>

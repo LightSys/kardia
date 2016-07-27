@@ -41,7 +41,7 @@ public class DonorList extends Fragment {
         // Map data fields to layout fields
         ArrayList<HashMap<String,String>>itemList = generateListItems();
         String[] from = {"donorname", "email","phone"};
-        int[] to = {R.id.subject, R.id.subject1,R.id.subsubject2};
+        int[] to = {R.id.name, R.id.subject1,R.id.phone};
 
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 
