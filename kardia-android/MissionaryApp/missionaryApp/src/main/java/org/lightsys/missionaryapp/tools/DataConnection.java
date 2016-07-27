@@ -34,7 +34,6 @@ import org.lightsys.missionaryapp.views.EditAccountActivity;
 import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.Gift;
-import org.lightsys.missionaryapp.data.Year;
 import org.lightsys.missionaryapp.views.MainActivity;
 
 import java.io.BufferedReader;
@@ -236,10 +235,10 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
             loadPartnerName(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/"
                     + Account_ID + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=element&cx__res_attrs=basic"));
-            loadMissionaries(GET("http://" + Host_Name + ":800/apps/kardia/api/supporter/" + Account_ID +
-                    "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
+            //loadMissionaries(GET("http://" + Host_Name + ":800/apps/kardia/api/supporter/" + Account_ID +
+             //       "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
             loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
-                    "/Supporters?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
+                    "/Supporters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
             loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
                             "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
                     Account_ID);
@@ -259,9 +258,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 loadPrayedFor(GET("http://" + Host_Name +":800/apps/kardia/api/missionary/" + Account_ID + "/Notes/" + n.getNoteId() +
                         "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), n.getNoteId());
             }
-            // Load years so they can be connected to funds
-            loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
-                    "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
+
             loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/"
                     + Account_ID + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), Account_ID);
 
@@ -276,30 +273,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 int fundid = f.getFundId();
                 Log.d(TAG, "DataPull: " + fundid);
 
-                /*loadPeriods(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + Account_ID + "/Funds/"
-                        + Fund_Name + "/Periods?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getFundId());
-
-                for (Period p : db.getPeriods(f.getFundId())) {
-                    System.out.println("Looking at new Period");
-                    String periodname = p.getName();
-                    periodname = periodname.replace("|", "%7C");
-                    loadTransactions(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + Account_ID + "/Funds/" +
-                            Fund_Name + "/Periods/" + periodname + "/Transactions?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getFundId());
-                }*/
                 for(Donor m : db.getDonors()) {
                     int donorID = m.getId();
                     String donorname = m.getName();
 
-                    loadFundYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + donorID + "/Funds/"
-                            + Fund_Name + "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), fundid, donorID);
-
-                    for(Year y : db.getYearsForFund(fundid)){
-                        int yearid = y.getId();
                         loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + donorID + "/Funds/"
-                                        + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),
-                                yearid, fundid,donorname,donorID);
-                        Log.d(TAG, "DataPull: " + yearid);
-                    }
+                                        + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),fundid,donorname,donorID);
                 }
             }
 
@@ -502,51 +481,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             temp.setCell(cell);
             db.updateContactInfo(temp);
 
-        }
-    }
-
-    /**
-     * Loads all missionaries connected to account into database if they are not present
-     * @param result, result of API query for missionaries
-     */
-    private void loadMissionaries(String result) {
-        ArrayList<Integer> currentMissionaryIDList = new ArrayList<Integer>();
-        for (Donor m : db.getMissionaries()) {
-            currentMissionaryIDList.add(m.getId());
-        }
-        JSONObject json = null;
-        try {
-            json = new JSONObject(result);
-        } catch (JSONException e1) {
-            e1.printStackTrace();
-        }
-        if (json == null) {
-            return;
-        }
-        JSONArray tempMissionaries = json.names();
-
-        for(int i = 0; i < tempMissionaries.length(); i++){
-            try{
-                //@id signals a new object, but contains no information on that line
-                if(!tempMissionaries.getString(i).equals("@id")){
-                    JSONObject MissionaryObj = json.getJSONObject(tempMissionaries.getString(i));
-
-                    String missionary_name = MissionaryObj.getString("partner_name");
-                    String missionary_id = MissionaryObj.getString("partner_id");
-
-                    Donor temp = new Donor();
-                    temp.setName(missionary_name);
-                    temp.setId(Integer.parseInt(missionary_id));
-
-                    // If the missionary id is not in the database, add the Donor Object to db
-                    if(!currentMissionaryIDList.contains(temp.getId())){
-                        db.addMissionary(temp);
-                    }
-                }
-            }
-            catch(JSONException e){
-                e.printStackTrace();
-            }
         }
     }
 
@@ -801,231 +735,18 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     }
 
     /**
-     * Formats all prayer requests and updates from the Missionaries connected to account
-     *   and loads these into the local database
-     *
-     */
-
-    /**
-     * This pulls the years related to a specific fund.
-     * If they are not yet stored adds relationships between the fund and year
-     * (Notice only adds the relationship if one does not already exist)
-     *
-     * @param result, the JSON information returned from the back-end
-     * @param fundId, id for fund that years should be pulled from
-     */
-    private void loadFundYears(String result, int fundId, int donorid){
-
-        // Retrieve years for testing what is in the database
-        ArrayList<String> currentYearNamesList = db.getYearNames();
-        ArrayList<String> currentYearConnectionList = db.getYearNamesFund(fundId);
-        JSONObject json = null;
-        try {
-            json = new JSONObject(result);
-        } catch (JSONException e1) {
-            e1.printStackTrace();
-        }
-        if (json == null) {
-            return;
-        }
-        JSONArray tempYears = json.names();
-
-        for(int x = 0; x < tempYears.length(); x++){
-
-            try{
-                //@id signals a new object, but contains no information on that line
-                if(!tempYears.getString(x).equals("@id")){
-                    JSONObject YearObj = json.getJSONObject(tempYears.getString(x));
-                    JSONObject giftObj = YearObj.getJSONObject("gift_total");
-                    int[] gifttotal = {
-                            Integer.parseInt(giftObj.getString("wholepart")),
-                            Integer.parseInt(giftObj.getString("fractionpart"))
-                    };
-                    String name = YearObj.getString("name");
-                    if(gifttotal[1] >= 100){
-                        gifttotal[1] /= 100;
-                    }
-
-                    // If connection between fund and year doesn't exist... add new connection
-                    if(currentYearNamesList.contains(name) && !currentYearConnectionList.contains(name)){
-                        int yearid = db.getYear(name).getId();
-                        db.addYear_Fund(yearid, fundId, gifttotal[0], gifttotal[1]);
-                        Log.d(TAG, "loadFundYearsA: " + yearid);
-                    }
-                    // If the connection does exist, update the values
-                    else if(currentYearNamesList.contains(name) && currentYearConnectionList.contains(name)){
-                        int yearid = db.getYear(name).getId();
-                        db.updateYear_Fund(yearid, fundId, gifttotal[0], gifttotal[1]);
-                        Log.d(TAG, "loadFundYearsB: " + yearid);
-                    }
-
-                }
-            }
-            catch(JSONException e){
-                e.printStackTrace();
-            }
-        }
-    }
-
-   /* //loads all of the giving periods associated with the fund.
-
-    private void loadPeriods(String value, int fund_id) {
-        ArrayList<Period> existingPeriods = db.getPeriods(fund_id);
-
-        JSONObject json = null;
-        try {
-            json = new JSONObject(value);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        JSONArray tempPeriods = json.names();
-
-        for (int x = 0; x < tempPeriods.length(); x++) {
-            try {
-                if (!tempPeriods.getString(x).equals("@id")) {
-                    JSONObject periodObj = json.getJSONObject(tempPeriods.getString(x));
-
-                    Period period = new Period();
-                    period.setName(periodObj.getString("name"));
-                    period.setDate(periodObj.getString("period_desc"));
-
-                    if (!existingPeriods.contains(period.getName())) {
-                        db.addPeriod(period);
-                        int temp_id = db.getLastId("period");
-                        db.addFundPeriod(fund_id, temp_id);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        db.close();
-    }*/
-    /*//load all transaction for a fund
-    private void loadTransactions(String value, int fund_id) {
-       // ArrayList<String> existingTransactions = db.getTransactions();
-        ArrayList<String> existingConnections = new ArrayList<String>();
-
-        JSONObject json = null;
-        try {
-            json = new JSONObject(value);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        JSONArray tempTransactions = json.names();
-
-        for (int x = 0; x < tempTransactions.length(); x++) {
-            try {
-                if (!tempTransactions.getString(x).equals("@id")) {
-                    JSONObject transactionObj = json.getJSONObject(tempTransactions.getString(x));
-                    System.out.println("There is a transaction here!");
-                    JSONObject date = transactionObj.getJSONObject("trx_date");
-                    JSONObject amount = transactionObj.getJSONObject("amount");
-
-                    Gift gift = new Gift();
-                    //gift.setGift_fund(transactionObj.getString("fund"));
-                    gift.setName(transactionObj.getString("name"));
-                    gift.setGift_amount(new int[]{
-                            Integer.parseInt(amount.getString("wholepart")),
-                            Integer.parseInt(amount.getString("fractionpart"))
-                    });
-                    gift.setGift_date(date.getString("year") + "-" + date.getString("month") + "-" + date.getString("day"));
-                    gift.setGift_fund_desc(transactionObj.getString("fund_desc"));
-
-                    if (!existingTransactions.contains(gift.getName())) {
-                        db.addGift(gift);
-                        int temp_id = db.getLastId("gift");
-                        //db.addFundGift(fund_id, temp_id);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        db.close();
-    }*/
-
-    /**
-     * This formats the return json for every year related to an account
-     * if the year and/or relationship do not exist they will be added.
-     *
-     * @param result, result from API GET for years
-     */
-    private void loadYears(String result){
-
-        // Gather data from database to see what it already has
-        ArrayList<String> currentYearNamesList = db.getYearNames();
-        ArrayList<String> currentYearsForAccount = db.getYearNamesAccount(Account_ID);
-        JSONObject json = null;
-        try {
-            json = new JSONObject(result);
-        } catch (JSONException e1) {
-            e1.printStackTrace();
-        }
-        if (json == null) {
-            return;
-        }
-        JSONArray tempYears = json.names();
-
-        for(int x = 0; x < tempYears.length(); x++){
-
-            try{
-                //@id signals a new object, but contains no information on that line
-                if(!tempYears.getString(x).equals("@id")){
-                    JSONObject YearObj = json.getJSONObject(tempYears.getString(x));
-                    JSONObject giftObj = YearObj.getJSONObject("gift_total");
-                    int[] gifttotal = {
-                            Integer.parseInt(giftObj.getString("wholepart")),
-                            Integer.parseInt(giftObj.getString("fractionpart"))
-                    };
-                    String name = YearObj.getString("name");
-                    int yearid = db.getLastId("year") + 1;
-
-                    if(gifttotal[1] >= 100){
-                        gifttotal[1] /= 100;
-                    }
-
-                    Year temp = new Year();
-                    temp.setName(name);
-                    temp.setId(yearid);
-                    temp.setGift_total(gifttotal);
-
-                    // If the year doesn't exist yet.. add it and add the relationship
-                    if(!currentYearNamesList.contains(name)){
-                        db.addYear(temp);
-                        db.addYear_Account(yearid, Account_ID, gifttotal[0], gifttotal[1]);
-                    }
-                    // If the year exists but isn't related yet.. add the relationship
-                    else if(!currentYearsForAccount.contains(name)){
-                        yearid = db.getYear(name).getId();
-                        db.addYear_Account(yearid, Account_ID, gifttotal[0], gifttotal[1]);
-                    }
-                    // If the year and the relationship exist, update the values
-                    else {
-                        yearid = db.getYear(name).getId();
-                        db.updateYear_Account(yearid, Account_ID, gifttotal[0], gifttotal[1]);
-                    }
-                }
-            }
-            catch(JSONException e){
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
      * This formats the return json into gifts and if the gift
      * was not already stored add it and a relationship to the related fund through the Fund_ID
      * and a relationship to the related year through the Year_ID
      *
      * @param result, result from API GET() for gifts
-     * @param Year_ID, year related to gift
+
      * @param Fund_ID, fund related to gift
      */
-    private void loadGifts(String result, int Year_ID, int Fund_ID, String donorName, int donorID){
+    private void loadGifts(String result, int Fund_ID, String donorName, int donorID){
 
         // Test to see what gifts the database already has to avoid duplicates
-        ArrayList<String> currentGiftNameList = db.getGiftNames(Fund_ID, Year_ID);
+        ArrayList<String> currentGiftNameList = db.getGiftNames(Fund_ID);
         JSONObject json = null;
         try {
             json = new JSONObject(result);
@@ -1086,7 +807,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setGiftMonth(gift_month);
 
                         db.addGift(temp);
-                        db.addGift_Year(giftid, Year_ID);
+                        //db.addGift_Year(giftid, Year_ID);
                         db.addGift_Fund(giftid, Fund_ID);
                         db.addGift_Account(giftid, Account_ID);
                     }

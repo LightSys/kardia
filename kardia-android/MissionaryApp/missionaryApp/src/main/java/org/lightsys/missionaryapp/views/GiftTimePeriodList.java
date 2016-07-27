@@ -6,7 +6,6 @@ import java.util.HashMap;
 import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
-import org.lightsys.missionaryapp.data.Year;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

@@ -3,6 +3,8 @@ package org.lightsys.missionaryapp.views;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +43,7 @@ public class DonorList extends Fragment {
         // Map data fields to layout fields
         ArrayList<HashMap<String,String>>itemList = generateListItems();
         String[] from = {"donorname", "email","phone"};
-        int[] to = {R.id.name, R.id.subject1,R.id.phone};
+        int[] to = {R.id.subject, R.id.subject1,R.id.phone};
 
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 
@@ -76,41 +78,42 @@ public class DonorList extends Fragment {
                 }
 
                 hm.put("donorname", m.getName());
-                hm.put("email", "Email: " + email);
-                hm.put("phone", "Phone: " + phone);
+                hm.put("email", email);
+                hm.put("phone", phone);
 
 
                 aList.add(hm);
             }
             return aList;
         }
-    private ArrayList<HashMap<String,String>> generateContactItems() {
-        ArrayList<HashMap<String, String>> aList = new ArrayList<HashMap<String, String>>();
-        for (Donor m : donors) {
-            HashMap<String, String> hm = new HashMap<String, String>();
-
-            hm.put("donorid", Integer.toString(m.getId()));
-
-            aList.add(hm);
-        }
-        return aList;
-    }
-
     /**
      * Sends the User to a contact form for the donor they click on
      */
     private class onDonorClicked implements AdapterView.OnItemClickListener {
-        //todo change Intent to DetailedDonor.class
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Intent contact = new Intent(getActivity(), ContactDonorActivity.class);
-            contact.putExtra("donorname", donors.get(position).getName());
-            contact.putExtra("donorid", donors.get(position).getId());
-            //contact.putExtra("donorEmail",donors.get(position).getEmail());
-            //contact.putExtra("donorPhone",donors.get(position).getPhone());
-           // contact.putExtra("donorCell",donors.get(position).getCell());
+            int ID = donors.get(position).getId();
 
-            startActivity(contact);
+            Bundle args = new Bundle();
+            args.putString("donor_name", donors.get(position).getName());
+            args.putInt("donor_id", ID);
+
+            LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+            ContactInfo contactinfo = db.getContactInfoById(ID);
+            if (!contactinfo.getCell().isEmpty()) {
+                args.putString("donor_phone", contactinfo.getCell());
+            } else {
+                args.putString("donor_phone", contactinfo.getPhone());
+            }
+            args.putString("donor_email", contactinfo.getEmail());
+
+            DetailedDonor newfrag = new DetailedDonor();
+            newfrag.setArguments(args);
+
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.content_frame, newfrag);
+            transaction.addToBackStack("ToDetailedDonorView");
+            transaction.commit();
         }
     }
 }
