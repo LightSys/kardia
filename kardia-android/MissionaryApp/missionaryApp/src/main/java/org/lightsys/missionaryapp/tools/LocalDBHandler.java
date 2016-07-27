@@ -23,7 +23,6 @@ import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.data.PrayerNotification;
-import org.lightsys.missionaryapp.data.Year;
 
 /**
  * Sets up a SQLite database for the application, which is used to
@@ -99,6 +98,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_REQUEST_ID = "request_id";
 	//DONOR TABLE
 	private static final String TABLE_DONORS = "donors";
+    private static final String COLUMN_LASTNAME = "lastname";
 	//MISSIONARY TABLE
 	private static final String TABLE_MISSIONARIES = "missionaries";
 	//YEAR TABLE
@@ -187,7 +187,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.execSQL(CREATE_MISSIONARY_TABLE);
 
 		String CREATE_DONOR_TABLE = "CREATE TABLE " + TABLE_DONORS + "("
-				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT)";
+				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," + COLUMN_LASTNAME + " TEXT)";
 		db.execSQL(CREATE_DONOR_TABLE);
 
 		String CREATE_NOTES_TABLE = "CREATE TABLE " + TABLE_NOTES + "("
@@ -360,29 +360,15 @@ public class LocalDBHandler extends SQLiteOpenHelper {
      */
     public void addDonor(Donor donor) {
         ContentValues values = new ContentValues();
+        String name=donor.getName();
         values.put(COLUMN_ID, donor.getId());
-        values.put(COLUMN_NAME, donor.getName());
-        //values.put(COLUMN_EMAIL,donor.getEmail());
-        //values.put(COLUMN_PHONE,donor.getPhone());
+        values.put(COLUMN_NAME, name);
+        values.put(COLUMN_LASTNAME, name.substring(name.indexOf(" ")+1));
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(TABLE_DONORS, null, values);
         db.close();
     }
-
-	/**
-	 * Adds a donor to the database
-	 * @param donor, the Donor Object to be added
-	 */
-	public void addMissionary(Donor donor) {
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_ID, donor.getId());
-		values.put(COLUMN_NAME, donor.getName());
-
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_MISSIONARIES, null, values);
-		db.close();
-	}
 
     /**
      * Adds a note (prayer request or update) to the Notes table in the database
@@ -536,19 +522,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * Adds a year to the Year table in the database
-	 * @param year, year to be stored
-	 */
-	public void addYear(Year year){
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_NAME , year.getName());
-		
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_YEAR, null, values);
-		db.close();
-	}
-	
-	/**
 	 * Adds a connection between a Gift and a Fund through their IDs
 	 * @param Gift_ID, Gift Identifier
 	 * @param Fund_ID, Fund Identifier
@@ -562,39 +535,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.insert(TABLE_GIFTFUND_MAP, null, values);
 		db.close();
 	}
-	
-	/**
-	 * Adds a connection between a Gift and a Year through their IDs
-	 * @param Gift_ID, Gift Identifier
-	 * @param Year_ID, Year Identifier
-	 */
-	public void addGift_Year(int Gift_ID, int Year_ID){
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_GIFT_ID, Gift_ID);
-		values.put(COLUMN_YEAR_ID, Year_ID);
-		
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_GIFTYEAR_MAP, null, values);
-		db.close();
-	}
-	
-	/**
-	 * Adds a connection between a Year and a Fund through their IDs
-	 * @param Year_ID, Year Identifier
-	 * @param Fund_ID, Fund Identifier
-	 */
-	public void addYear_Fund(int Year_ID, int Fund_ID, int Amount_whole, int Amount_part){
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_YEAR_ID, Year_ID);
-		values.put(COLUMN_FUND_ID, Fund_ID);
-		values.put(COLUMN_GIFTTOTALWHOLE, Amount_whole);
-		values.put(COLUMN_GIFTTOTALPART, Amount_part);
 
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_YEARFUND_MAP, null, values);
-		db.close();
-	}
-	
 	/**
 	 * Adds a connection between a fund and a account through their IDs
 	 * @param Fund_ID, Fund Identifier
@@ -622,26 +563,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_GIFTACCOUNT_MAP, null, values);
-		db.close();
-	}
-	
-	/**
-	 * Adds a connection between a year and a account with 
-	 * a total amount (amount_whole and amount_part)
-	 * @param year_ID, Year Identifier
-	 * @param Account_ID, Account Identifier
-	 * @param amount_whole, Whole value for gifts of the account in the year
-	 * @param amount_part, Fractional value of the gifts of the account in the year
-	 */
-	public void addYear_Account(int year_ID, int Account_ID, int amount_whole, int amount_part){
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_YEAR_ID, year_ID);
-		values.put(COLUMN_ACCOUNT_ID, Account_ID);
-		values.put(COLUMN_GIFTTOTALWHOLE, amount_whole);
-		values.put(COLUMN_GIFTTOTALPART, amount_part);
-		
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_YEARACCOUNT_MAP, null, values);
 		db.close();
 	}
 
@@ -1113,7 +1034,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     public ArrayList<Donor> getDonors() {
         ArrayList<Donor> donors = new ArrayList<Donor>();
         String queryString = "SELECT * FROM " + TABLE_DONORS + " ORDER BY " +
-                COLUMN_NAME;
+                COLUMN_LASTNAME;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(queryString, null);
@@ -1595,17 +1516,16 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	/**
 	 * Pulls a list of gift names for a specific fund in a specific year
 	 * @param Fund_ID, Fund Identification
-	 * @param Year_ID, Year Identification
+
 	 * @return Names of gifts for a fund in a year in an ArrayList of Strings
 	 */
-	public ArrayList<String> getGiftNames(int Fund_ID, int Year_ID){
+	public ArrayList<String> getGiftNames(int Fund_ID){
 		ArrayList<String> giftNames = new ArrayList<String>();
 		String queryString = "SELECT Gift." + COLUMN_NAME + " FROM " + TABLE_GIFT + " AS Gift "
 				+ " INNER JOIN " + TABLE_GIFTFUND_MAP + " AS FundMap ON Gift." + COLUMN_ID + " = "
 				+ " FundMap." + COLUMN_GIFT_ID + " INNER JOIN " + TABLE_GIFTYEAR_MAP
 				+ " AS YearMap ON Gift." + COLUMN_ID + " = Yearmap." + COLUMN_GIFT_ID
-				+ " WHERE (FundMap." + COLUMN_FUND_ID + " = " + Fund_ID + ") AND (YearMap."
-				+ COLUMN_YEAR_ID + " = " + Year_ID + ")";
+				+ " WHERE FundMap." + COLUMN_FUND_ID + " = " + Fund_ID;
 		
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
@@ -1616,48 +1536,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		c.close();
 		db.close();
 		return giftNames;
-	}
-
-	/**
-	 * Pulls all gifts for a specific fund for a specific year
-	 * @param Fund_ID, Fund Identification
-	 * @param Year_ID, Year Identification
-	 * @return All gifts given to a fund in a year as an ArrayList of Gift Objects ordered from most recent to least recent
-	 */
-	public ArrayList<Gift> getGiftsForFund(int Fund_ID, int Year_ID){
-		ArrayList<Gift> gifts = new ArrayList<Gift>();
-		String queryString = "SELECT G.* FROM " + TABLE_GIFT + " AS G "
-				+ "INNER JOIN " + TABLE_GIFTYEAR_MAP + " AS GYM ON G."
-				+ COLUMN_ID + " = GYM." + COLUMN_GIFT_ID + " INNER JOIN "
-				+ TABLE_GIFTFUND_MAP + " AS GFM ON G." + COLUMN_ID
-				+ " = GFM." + COLUMN_GIFT_ID + " WHERE (GYM." + COLUMN_YEAR_ID
-				+ " = " + Year_ID + ") AND (GFM." + COLUMN_FUND_ID + " = "
-				+ Fund_ID + ")"
-				+ " ORDER BY DATE(" + COLUMN_GIFTDATE + ") DESC";
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		while(c.moveToNext()){
-			Gift temp = new Gift();
-			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setName(c.getString(1));
-			temp.setGiftFund(c.getString(2));
-			temp.setGift_fund_desc(c.getString(3));
-			temp.setGift_amount(new int[]{
-					Integer.parseInt(c.getString(4)),
-					Integer.parseInt(c.getString(5))
-			});
-			temp.setGift_date(c.getString(6));
-			temp.setGift_check_num(c.getString(7));
-            temp.setGiftDonor(c.getString(8));
-            temp.setGiftDonorId(c.getInt(9));
-			
-			gifts.add(temp);
-		}
-		c.close();
-		db.close();
-		return gifts;
 	}
 
 	/**
@@ -1693,45 +1571,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			temp.setGiftDonor(c.getString(8));
 			temp.setGiftDonorId(c.getInt(9));
 
-			gifts.add(temp);
-		}
-		c.close();
-		db.close();
-		return gifts;
-	}
-	
-	/**
-	 * Pulls all gifts for a specific year
-	 * @param Year_ID, Year Identification
-	 * @return All gifts in a year as an ArrayList of Gift Objects ordered from most recent to least recent
-	 */
-	public ArrayList<Gift> getGiftsForYear(int Year_ID){
-		ArrayList<Gift> gifts = new ArrayList<Gift>();
-		String queryString = "SELECT * FROM " + TABLE_GIFT + " AS G "
-				+ "INNER JOIN " + TABLE_GIFTYEAR_MAP + " AS GYM ON G."
-				+ COLUMN_ID + " = GYM." + COLUMN_GIFT_ID
-				+ " WHERE GYM." + COLUMN_YEAR_ID + " = " + Year_ID
-				+ " ORDER BY DATE(" + COLUMN_GIFTDATE + ") DESC";
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		while(c.moveToNext()){
-			Gift temp = new Gift();
-			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setName(c.getString(1));
-			temp.setGiftFund(c.getString(2));
-			temp.setGift_fund_desc(c.getString(3));
-			temp.setGift_amount(new int[]{
-					Integer.parseInt(c.getString(4)),
-					Integer.parseInt(c.getString(5))
-			});
-			temp.setGift_date(c.getString(6));
-			Log.w("BasicAuth", "The date is:" + c.getString(6));
-			temp.setGift_check_num(c.getString(7));
-            temp.setGiftDonor(c.getString(8));
-            temp.setGiftDonorId(c.getInt(9));
-			
 			gifts.add(temp);
 		}
 		c.close();
@@ -1824,81 +1663,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * Pulls all years
-	 * @return All years in the Year Table as an ArrayList of Year Objects
-	 */
-	public ArrayList<Year> getYears(){
-		ArrayList<Year> years = new ArrayList<Year>();
-		String queryString = "SELECT Y." + COLUMN_ID + ", Y." + COLUMN_NAME
-				+ ", SUM(YF." + COLUMN_GIFTTOTALWHOLE + "), SUM(YF." + COLUMN_GIFTTOTALPART
-				+ ") FROM " + TABLE_YEAR + " AS Y INNER JOIN " + TABLE_YEARACCOUNT_MAP
-				+ " AS YF ON Y." + COLUMN_ID  + " = YF." + COLUMN_YEAR_ID + " GROUP BY Y." + COLUMN_NAME
-				+ " ORDER BY Y." + COLUMN_NAME + " DESC";
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		while(c.moveToNext()){
-			Year temp = new Year();
-			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setName(c.getString(1));
-			temp.setGift_total(new int[]{
-					Integer.parseInt(c.getString(2)),
-					Integer.parseInt(c.getString(3))
-			});
-			
-			years.add(temp);
-		}
-		c.close();
-		db.close();
-		return years;
-	}
-	
-	/**
-	 * Pulls a specific year from the year's name
-	 * @param name, name of the year (e.g. "2015")
-	 * @return The year with the given name as a Year Object
-	 */
-	public Year getYear(String name){
-		Year year = new Year();
-		String queryString = "SELECT * FROM " + TABLE_YEAR
-				+ " WHERE " + COLUMN_NAME + " = \"" + name + "\"";
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		if(c.moveToFirst()){
-			year.setId(Integer.parseInt(c.getString(0)));
-			year.setName(c.getString(1));
-		}
-		c.close();
-		db.close();
-		return year;
-	}
-
-	/**
-	 * Pulls a specific year from the year's ID
-	 * @param yearID, ID of year to be pulled from database
-	 * @return the specific year as a Year Object
-	 */
-	public Year getYearForID(int yearID) {
-		Year year = new Year();
-		String queryString = "SELECT * FROM " + TABLE_YEAR +
-				" WHERE " + COLUMN_ID + " = " + yearID;
-
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-
-		if(c.moveToFirst()){
-			year.setId(Integer.parseInt(c.getString(0)));
-			year.setName(c.getString(1));
-		}
-		c.close();
-		db.close();
-		return year;
-	}
-	
-	/**
 	 * Pulls all year names
 	 * @return a list of names of years (e.g. "2015") in an ArrayList of Strings
 	 */
@@ -1961,40 +1725,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		c.close();
 		db.close();
 		return yearNames;
-	}
-	
-	/**
-	 * Pulls all years for a specific fund
-	 * @param Fund_ID, Fund Identification
-	 * @return all years for a specific fund as an ArrayList of Year Objects
-	 */
-	public ArrayList<Year> getYearsForFund(int Fund_ID){
-		ArrayList<Year> years = new ArrayList<Year>();
-		String queryString = "SELECT Y." + COLUMN_ID + ", Y." + COLUMN_NAME
-				+ ", YFM." + COLUMN_GIFTTOTALWHOLE + ", YFM." + COLUMN_GIFTTOTALPART
-				+ " FROM " + TABLE_YEAR + " AS Y "
-				+ "INNER JOIN " + TABLE_YEARFUND_MAP + " AS YFM ON "
-				+ "Y." + COLUMN_ID + " = YFM." + COLUMN_YEAR_ID
-				+ " WHERE YFM." + COLUMN_FUND_ID + " = " + Fund_ID
-				+ " ORDER BY Y." + COLUMN_NAME + " DESC";
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		while(c.moveToNext()){
-			Year temp = new Year();
-			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setName(c.getString(1));
-			temp.setGift_total(new int[] {
-					Integer.parseInt(c.getString(2)),
-					Integer.parseInt(c.getString(3))
-			});
-			
-			years.add(temp);
-		}
-		c.close();
-		db.close();
-		return years;
 	}
 
 	//gets list of comments
@@ -2175,42 +1905,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.update(TABLE_NOTES, values, COLUMN_ID + " = " + id, null);
-		db.close();
-	}
-	
-	/**
-	 * Updates the relationship between a specific year and a specific fund with a new gift total
-	 * @param year_id, Year Identification
-	 * @param fund_id, Fund Identification
-	 * @param gift_total_whole, Updated whole part of gift total
-	 * @param gift_total_part, Updated fractional part of gift total
-	 */
-	public void updateYear_Fund(int year_id, int fund_id, int gift_total_whole, int gift_total_part){
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_GIFTTOTALWHOLE, gift_total_whole);
-		values.put(COLUMN_GIFTTOTALPART, gift_total_part);
-		
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.update(TABLE_YEARFUND_MAP, values, COLUMN_YEAR_ID + " = " + year_id 
-				+ " AND " + COLUMN_FUND_ID + " = " + fund_id, null);
-		db.close();
-	}
-	
-	/**
-	 * Updates the relationship between a specific year and a specific fund with a new gift total
-	 * @param year_id, Year Identification
-	 * @param account_id, Account Identification
-	 * @param gift_total_whole, Updated whole part of gift total
-	 * @param gift_total_part, Updated fractional part of gift total
-	 */
-	public void updateYear_Account(int year_id, int account_id, int gift_total_whole, int gift_total_part){
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_GIFTTOTALWHOLE, gift_total_whole);
-		values.put(COLUMN_GIFTTOTALPART, gift_total_part);
-		
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.update(TABLE_YEARACCOUNT_MAP, values, COLUMN_YEAR_ID + " = " + year_id 
-				+ " AND " + COLUMN_ACCOUNT_ID + " = " + account_id, null);
 		db.close();
 	}
 }
