@@ -19,6 +19,7 @@ import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.data.JsonPost;
 import org.lightsys.missionaryapp.data.NewItem;
 import org.lightsys.missionaryapp.data.Note;
+import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.data.PrayerNotification;
@@ -43,6 +44,8 @@ import org.lightsys.missionaryapp.data.Year;
  *
  */
 public class LocalDBHandler extends SQLiteOpenHelper {
+
+	private Account activeaccount;
 
 	private static final int DATABASE_VERSION = 11;
 	private static final String DATABASE_NAME = "missionary.db";
@@ -69,6 +72,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_CHECKNUM = "gift_check_num";
     private static final String COLUMN_DONOR_NAME = "donor_name";
     private static final String COLUMN_DONOR_ID = "donor_id";
+	private static final String COLUMN_GIFTYEAR = "gift_year";
+	private static final String COLUMN_GIFTMONTH = "gift_month";
 
     //NOTES TABLE
 	private static final String TABLE_NOTES = "notes";
@@ -145,8 +150,11 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_PRAYED_FOR_DATE = "prayedfor_date";
 	private static final String COLUMN_SUPPORTER_PARTNER_ID = "supporter_partner_id";
 	private static final String COLUMN_SUPPORTER_PARTNER_NAME = "supporter_partner_name";
-
-
+	//Table for Time Periods
+	private static final String TABLE_PERIOD = "period";
+	//Table for Period gift map
+	private static final String TABLE_FP_MAP = "fp_map";
+	private static final String COLUMN_PERIOD_ID = "period_id";
 	
 	/* ************************* Creation of Database and Tables ************************* */
 
@@ -218,8 +226,19 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				+ COLUMN_GIFTFUNDDESC + " TEXT," + COLUMN_GIFTTOTALWHOLE
 				+ " INTEGER," + COLUMN_GIFTTOTALPART + " INTEGER,"
 				+ COLUMN_GIFTDATE + " TEXT," + COLUMN_CHECKNUM + " TEXT,"
-                + COLUMN_DONOR_NAME + " TEXT," + COLUMN_DONOR_ID + " INTEGER)";
+                + COLUMN_DONOR_NAME + " TEXT," + COLUMN_DONOR_ID + " INTEGER," + COLUMN_GIFTYEAR + " TEXT,"
+				+ COLUMN_GIFTMONTH + " TEXT)";
 		db.execSQL(CREATE_GIFT_TABLE);
+
+		String CREATE_PERIOD_TABLE = "CREATE TABLE " + TABLE_PERIOD + "(" +
+				COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," +
+				COLUMN_DATE + " TEXT)";
+		db.execSQL(CREATE_PERIOD_TABLE);
+
+		String CREATE_FP_TABLE = "CREATE TABLE " + TABLE_FP_MAP + "(" +
+				COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_FUND_ID + " INTEGER," +
+				COLUMN_PERIOD_ID + " INTEGER)";
+		db.execSQL(CREATE_FP_TABLE);
 
 		String CREATE_YEAR_TABLE = "CREATE TABLE " + TABLE_YEAR + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT)";
@@ -328,7 +347,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		values.put(COLUMN_ACCOUNTPASSWORD, account.getAccountPassword());
 		values.put(COLUMN_SERVERNAME, account.getServerName());
 		values.put(COLUMN_PARTNER_NAME, account.getPartnerName());
-		
+
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_ACCOUNTS, null, values);
 		db.close();
@@ -419,6 +438,28 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.insert(TABLE_PRAYED_FOR, null, values);
 		db.close();
 	}
+	//add gift Period
+	public void addPeriod(Period period) {
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_NAME, period.getPeriodName());
+		values.put(COLUMN_DATE, period.getDate());
+
+		SQLiteDatabase db = this.getWritableDatabase();
+
+		db.insert(TABLE_PERIOD, null, values);
+		db.close();
+	}
+	//addFundPeriod
+	public void addFundPeriod(int fund_id, int period_id) {
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_FUND_ID, fund_id);
+		values.put(COLUMN_PERIOD_ID, period_id);
+
+		SQLiteDatabase db = this.getWritableDatabase();
+
+		db.insert(TABLE_FP_MAP, null, values);
+		db.close();
+	}
 	/**
 	 * Adds a prayer letter to the database in the Letter Table
 	 * @param letter, the letter to be added
@@ -485,7 +526,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		values.put(COLUMN_CHECKNUM, gift.getGift_check_num());
         values.put(COLUMN_DONOR_NAME, gift.getGiftDonor());
         values.put(COLUMN_DONOR_ID, gift.getGiftDonorId());
-		
+		values.put(COLUMN_GIFTYEAR, gift.getGiftYear());
+		values.put(COLUMN_GIFTMONTH, gift.getGiftMonth());
+
+
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_GIFT, null, values);
 		db.close();
@@ -820,7 +864,13 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 
 	/* ************************* Get Queries ************************* */
-	
+
+
+	/**
+	 * Pulls active account
+	 */
+	public Account getActiveAccount(){ return activeaccount; }
+
 	/**
 	 * Pulls the timestamp from the database
 	 * @return A timestamp of the last update in millisecond form
@@ -840,7 +890,82 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		return date;
 	}
-	
+	//return all periods for all gifts
+	public ArrayList<Period> getFundPeriods(String periodtype) {
+		ArrayList<Period> periods = new ArrayList<Period>();
+
+
+		String qString = "SELECT DISTINCT " + periodtype + " FROM " + TABLE_GIFT;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+
+		Cursor c = db.rawQuery(qString, null);
+
+		while (c.moveToNext()) {
+            Period temp = new Period();
+			temp.setPeriodName(c.getString(0));
+
+            periods.add(temp);
+		}
+		db.close();
+		c.close();
+		return periods;
+	}
+
+	//return all periods for the gifts in a fund
+	public ArrayList<Period> getFundPeriods(int fund_id, String periodtype) {
+		ArrayList<Period> periods = new ArrayList<Period>();
+
+
+		String qString = "SELECT DISTINCT " + periodtype + " FROM " + TABLE_GIFT + " INNER JOIN " + TABLE_FUND
+				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFTFUNDDESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+				+ " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+
+		Cursor c = db.rawQuery(qString, null);
+
+		while (c.moveToNext()) {
+            Period temp = new Period();
+            temp.setPeriodName(c.getString(0));
+            ArrayList<Gift> gifts = getGiftsForPeriod(fund_id, periodtype, c.getString(0));
+            int Total[]= new int[2];
+            for(Gift g:gifts){
+                Total[0] += g.getGift_amount()[0];
+                Total[1] += g.getGift_amount()[1];
+            }
+            if (Total[1]>=100){
+               Total[0]+=Math.floor(Total[1]/100);
+                Total[1]-=Math.floor(Total[1]/100)*100;
+            }
+            temp.setGiftTotal(Total);
+
+			periods.add(temp);
+		}
+		db.close();
+		c.close();
+		return periods;
+	}
+
+	//gets the period id for a period name
+	public int getPeriodId(String name) {
+		int id = -1;
+
+		String qString = "SELECT " + COLUMN_ID + " FROM " + TABLE_PERIOD
+				+ " WHERE " + COLUMN_NAME + " = " + name;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+
+		Cursor c = db.rawQuery(qString, null);
+
+		if (c.moveToFirst()) {
+			id = Integer.parseInt(c.getString(0));
+		}
+		db.close();
+		c.close();
+		return id;
+	}
+
 	/**
 	 * Pulls all accounts
 	 * @return All accounts in the Account table as an ArrayList of Account Objects
@@ -859,7 +984,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			temp.setAccountPassword(c.getString(2));
 			temp.setServerName(c.getString(3));
 			temp.setPartnerName(c.getString(4));
-			
+
 			accounts.add(temp);
 		}
 		c.close();
@@ -1360,7 +1485,81 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		return gifts;
 	}
-	
+
+	/**
+	 * Pulls all gifts from the gift table that match the given donor id
+	 * @param donor_id
+	 * @return All gifts in the Gift table as an ArrayList of Gift Objects ordered from most recent to least recent
+	 */
+	public ArrayList<Gift> getGiftsByDonor(int donor_id){
+		ArrayList<Gift> gifts = new ArrayList<Gift>();
+		String queryString = "SELECT * FROM " + TABLE_GIFT +
+				" WHERE " + COLUMN_DONOR_ID + " = " + donor_id +
+				" ORDER BY DATE(" + COLUMN_GIFTDATE + ") DESC";
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()){
+			Gift temp = new Gift();
+			temp.setId(Integer.parseInt(c.getString(0)));
+			temp.setName(c.getString(1));
+			temp.setGiftFund(c.getString(2));
+			temp.setGift_fund_desc(c.getString(3));
+			temp.setGift_amount(new int[]{
+					Integer.parseInt(c.getString(4)),
+					Integer.parseInt(c.getString(5))
+			});
+			temp.setGift_date(c.getString(6));
+			temp.setGift_check_num(c.getString(7));
+			temp.setGiftDonor(c.getString(8));
+			temp.setGiftDonorId(c.getInt(9));
+
+			gifts.add(temp);
+		}
+		c.close();
+		db.close();
+		return gifts;
+	}
+
+	/**
+	 * Pulls a single gift with a specific ID
+	 * @param fund_id, Fund Identification
+	 * @param period, period identification
+	 * @param periodtype, select which column to match period with
+	 * @return an arraylist of Gift Objects
+	 */
+	public ArrayList<Gift> getGiftsForPeriod(int fund_id, String periodtype, String period){
+		ArrayList<Gift> gifts = new ArrayList<Gift>();
+		String queryString = "SELECT * FROM "+ TABLE_GIFT + " INNER JOIN " + TABLE_FUND
+				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFTFUNDDESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+				+ " WHERE (" + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id + " AND " + periodtype + " = " + period + ")";
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()){
+			Gift gift = new Gift();
+			gift.setId(Integer.parseInt(c.getString(0)));
+			gift.setName(c.getString(1));
+			gift.setGiftFund(c.getString(2));
+			gift.setGift_fund_desc(c.getString(3));
+			gift.setGift_amount(new int []{
+					Integer.parseInt(c.getString(4)),
+					Integer.parseInt(c.getString(5))
+			});
+			gift.setGift_date(c.getString(6));
+			gift.setGift_check_num(c.getString(7));
+			gift.setGiftDonor(c.getString(8));
+			gift.setGiftDonorId(c.getInt(9));
+
+			gifts.add(gift);
+		}
+		c.close();
+		db.close();
+		return gifts;
+	}
+
 	/**
 	 * Pulls a single gift with a specific ID
 	 * @param id, Gift Identification
@@ -1454,6 +1653,46 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             temp.setGiftDonor(c.getString(8));
             temp.setGiftDonorId(c.getInt(9));
 			
+			gifts.add(temp);
+		}
+		c.close();
+		db.close();
+		return gifts;
+	}
+
+	/**
+	 * Pulls all gifts for a specific fund for a specific year
+	 * @param Fund_ID, Fund Identification
+	 * @return All gifts given to a fund in a year as an ArrayList of Gift Objects ordered from most recent to least recent
+	 */
+	public ArrayList<Gift> getGiftsForFund(int Fund_ID){
+		ArrayList<Gift> gifts = new ArrayList<Gift>();
+		String queryString = "SELECT G.* FROM " + TABLE_GIFT + " AS G "
+				+ "INNER JOIN " + TABLE_GIFTYEAR_MAP + " AS GYM ON G."
+				+ COLUMN_ID + " = GYM." + COLUMN_GIFT_ID + " INNER JOIN "
+				+ TABLE_GIFTFUND_MAP + " AS GFM ON G." + COLUMN_ID
+				+ " = GFM." + COLUMN_GIFT_ID + " WHERE (GFM." + COLUMN_FUND_ID + " = "
+				+ Fund_ID + ")"
+				+ " ORDER BY DATE(" + COLUMN_GIFTDATE + ") DESC";
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()){
+			Gift temp = new Gift();
+			temp.setId(Integer.parseInt(c.getString(0)));
+			temp.setName(c.getString(1));
+			temp.setGiftFund(c.getString(2));
+			temp.setGift_fund_desc(c.getString(3));
+			temp.setGift_amount(new int[]{
+					Integer.parseInt(c.getString(4)),
+					Integer.parseInt(c.getString(5))
+			});
+			temp.setGift_date(c.getString(6));
+			temp.setGift_check_num(c.getString(7));
+			temp.setGiftDonor(c.getString(8));
+			temp.setGiftDonorId(c.getInt(9));
+
 			gifts.add(temp);
 		}
 		c.close();
@@ -1859,7 +2098,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}*/
 
 	/* ************************* Update Queries ************************* */
-	
+
+
+	public void updateActiveAccount(Account active){this.activeaccount=active;}
 	/**
 	 * Updates the timestamp from the originalDate (in milli) to currentDate (in milli)
 	 * @param originalDate, date (in milliseconds) of database timestamp before update

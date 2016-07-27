@@ -26,6 +26,7 @@ import org.lightsys.missionaryapp.data.Comment;
 import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Note;
+import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.views.AccountsActivity;
@@ -275,19 +276,29 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 int fundid = f.getFundId();
                 Log.d(TAG, "DataPull: " + fundid);
 
-                loadFundYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID + "/Funds/"
-                        + Fund_Name + "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), fundid);
+                /*loadPeriods(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + Account_ID + "/Funds/"
+                        + Fund_Name + "/Periods?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getFundId());
 
-                for(Year y : db.getYearsForFund(fundid)){
-                    int yearid = y.getId();
-                    String Year = y.getName();
+                for (Period p : db.getPeriods(f.getFundId())) {
+                    System.out.println("Looking at new Period");
+                    String periodname = p.getName();
+                    periodname = periodname.replace("|", "%7C");
+                    loadTransactions(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/" + Account_ID + "/Funds/" +
+                            Fund_Name + "/Periods/" + periodname + "/Transactions?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), f.getFundId());
+                }*/
+                for(Donor m : db.getDonors()) {
+                    int donorID = m.getId();
+                    String donorname = m.getName();
 
-                    for(Donor m : db.getDonors()) {
-                        int donorID = m.getId();
-                        String donorname = m.getName();
+                    loadFundYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + donorID + "/Funds/"
+                            + Fund_Name + "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), fundid, donorID);
+
+                    for(Year y : db.getYearsForFund(fundid)){
+                        int yearid = y.getId();
                         loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + donorID + "/Funds/"
                                         + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),
                                 yearid, fundid,donorname,donorID);
+                        Log.d(TAG, "DataPull: " + yearid);
                     }
                 }
             }
@@ -803,7 +814,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * @param result, the JSON information returned from the back-end
      * @param fundId, id for fund that years should be pulled from
      */
-    private void loadFundYears(String result, int fundId){
+    private void loadFundYears(String result, int fundId, int donorid){
 
         // Retrieve years for testing what is in the database
         ArrayList<String> currentYearNamesList = db.getYearNames();
@@ -839,12 +850,15 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     if(currentYearNamesList.contains(name) && !currentYearConnectionList.contains(name)){
                         int yearid = db.getYear(name).getId();
                         db.addYear_Fund(yearid, fundId, gifttotal[0], gifttotal[1]);
+                        Log.d(TAG, "loadFundYearsA: " + yearid);
                     }
                     // If the connection does exist, update the values
                     else if(currentYearNamesList.contains(name) && currentYearConnectionList.contains(name)){
                         int yearid = db.getYear(name).getId();
                         db.updateYear_Fund(yearid, fundId, gifttotal[0], gifttotal[1]);
+                        Log.d(TAG, "loadFundYearsB: " + yearid);
                     }
+
                 }
             }
             catch(JSONException e){
@@ -852,6 +866,84 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
         }
     }
+
+   /* //loads all of the giving periods associated with the fund.
+
+    private void loadPeriods(String value, int fund_id) {
+        ArrayList<Period> existingPeriods = db.getPeriods(fund_id);
+
+        JSONObject json = null;
+        try {
+            json = new JSONObject(value);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONArray tempPeriods = json.names();
+
+        for (int x = 0; x < tempPeriods.length(); x++) {
+            try {
+                if (!tempPeriods.getString(x).equals("@id")) {
+                    JSONObject periodObj = json.getJSONObject(tempPeriods.getString(x));
+
+                    Period period = new Period();
+                    period.setName(periodObj.getString("name"));
+                    period.setDate(periodObj.getString("period_desc"));
+
+                    if (!existingPeriods.contains(period.getName())) {
+                        db.addPeriod(period);
+                        int temp_id = db.getLastId("period");
+                        db.addFundPeriod(fund_id, temp_id);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        db.close();
+    }*/
+    /*//load all transaction for a fund
+    private void loadTransactions(String value, int fund_id) {
+       // ArrayList<String> existingTransactions = db.getTransactions();
+        ArrayList<String> existingConnections = new ArrayList<String>();
+
+        JSONObject json = null;
+        try {
+            json = new JSONObject(value);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONArray tempTransactions = json.names();
+
+        for (int x = 0; x < tempTransactions.length(); x++) {
+            try {
+                if (!tempTransactions.getString(x).equals("@id")) {
+                    JSONObject transactionObj = json.getJSONObject(tempTransactions.getString(x));
+                    System.out.println("There is a transaction here!");
+                    JSONObject date = transactionObj.getJSONObject("trx_date");
+                    JSONObject amount = transactionObj.getJSONObject("amount");
+
+                    Gift gift = new Gift();
+                    //gift.setGift_fund(transactionObj.getString("fund"));
+                    gift.setName(transactionObj.getString("name"));
+                    gift.setGift_amount(new int[]{
+                            Integer.parseInt(amount.getString("wholepart")),
+                            Integer.parseInt(amount.getString("fractionpart"))
+                    });
+                    gift.setGift_date(date.getString("year") + "-" + date.getString("month") + "-" + date.getString("day"));
+                    gift.setGift_fund_desc(transactionObj.getString("fund_desc"));
+
+                    if (!existingTransactions.contains(gift.getName())) {
+                        db.addGift(gift);
+                        int temp_id = db.getLastId("gift");
+                        //db.addFundGift(fund_id, temp_id);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        db.close();
+    }*/
 
     /**
      * This formats the return json for every year related to an account
@@ -990,6 +1082,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setGift_amount(gifttotal);
                         temp.setGiftDonor(donorName);
                         temp.setGiftDonorId(donorID);
+                        temp.setGiftYear(gift_year);
+                        temp.setGiftMonth(gift_month);
 
                         db.addGift(temp);
                         db.addGift_Year(giftid, Year_ID);

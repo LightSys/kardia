@@ -2,7 +2,6 @@ package org.lightsys.missionaryapp.tools;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -23,7 +22,7 @@ public class NoteListLayout extends RelativeLayout {
     public NoteListLayout(Context context) {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.note_listview_item, this, true);
-        titleView = (TextView) findViewById(R.id.subject);
+        titleView = (TextView) findViewById(R.id.name);
         dateView = (TextView) findViewById(R.id.date);
         missionaryNameView = (TextView) findViewById(R.id.missionaryName);
         aboveTextView = (TextView) findViewById(R.id.textAbovePrayingButton);

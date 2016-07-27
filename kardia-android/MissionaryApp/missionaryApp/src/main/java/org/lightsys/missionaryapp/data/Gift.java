@@ -1,5 +1,7 @@
 package org.lightsys.missionaryapp.data;
 
+import java.text.DateFormatSymbols;
+
 /**
  * Basic Class used to organize information about Gifts given by the user
  * 
@@ -16,10 +18,12 @@ public class Gift {
 	private String gift_check_num; // (found as "gift_check_num")
 	private String giftDonor;
 	private int giftDonorId;
+	private String giftYear;
+	private String giftMonth;
 
 	public Gift() {}
 	
-	public Gift(int Id, String name, String giftFund, String gift_fund_desc, int[] gift_amount, String gift_date, String gift_check_num, String giftDonor, int giftDonorId){
+	public Gift(int Id, String name, String giftFund, String gift_fund_desc, int[] gift_amount, String gift_date, String gift_check_num, String giftDonor, int giftDonorId, String giftYear, String giftMonth){
 		this.setId(Id);
 		this.setName(name);
 		this.setGiftFund(giftFund);
@@ -29,6 +33,8 @@ public class Gift {
 		this.setGift_check_num(gift_check_num);
 		this.setGiftDonor(giftDonor);
         this.setGiftDonorId(giftDonorId);
+		this.setGiftMonth(giftMonth);
+		this.setGiftYear(giftYear);
 	}
 	
 	public int getId() {
@@ -55,9 +61,7 @@ public class Gift {
 		this.giftFund = giftFund;
 	}
 
-	public int[] getGift_amount() {
-		return gift_amount;
-	}
+	public int[] getGift_amount() {return gift_amount;}
 
 	public void setGift_amount(int[] gift_amount) {
 		this.gift_amount = gift_amount;
@@ -94,5 +98,13 @@ public class Gift {
     public int getGiftDonorId() {return giftDonorId;}
 
     public void setGiftDonorId(int giftDonorId) {this.giftDonorId = giftDonorId; }
+
+	public String getGiftYear() {return giftYear;}
+
+	public void setGiftYear(String giftYear) {this.giftYear = giftYear; }
+
+	public String getGiftMonth() {return giftMonth;}
+
+	public void setGiftMonth(String giftMonth) {this.giftMonth = giftMonth; }
 
 }

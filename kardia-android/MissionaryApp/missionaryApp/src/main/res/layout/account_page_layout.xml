@@ -64,7 +64,7 @@
         android:ems="10"
         android:hint="@string/server_name"
         android:singleLine="true"
-        android:text = "10.5.10.67"/>
+        android:text = "10.5.10.176"/>
 
     <EditText
         android:id="@+id/donor_id_input"

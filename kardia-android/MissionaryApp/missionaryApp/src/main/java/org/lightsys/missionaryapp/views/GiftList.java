@@ -29,9 +29,11 @@ import org.lightsys.missionaryapp.R;
  * @author Andrew Cameron
  */
 public class GiftList extends Fragment{
-	
-	public static String ARG_YEAR_ID = "year_id";
-	int year_id = -1; 
+
+	public static String ARG_PERIOD_TYPE = "period_type";
+	String period_type;
+	public static String ARG_PERIOD_ID = "period_id";
+	String period_id;
 	public static String ARG_FUND_ID = "fund_id";
 	int fund_id = -1;
 	private ArrayList<Gift> gifts = new ArrayList<Gift>();
@@ -48,34 +50,19 @@ public class GiftList extends Fragment{
 		Bundle giftArgs = getArguments();
 		
 		if(savedInstanceState != null){
-			this.year_id = savedInstanceState.getInt(ARG_YEAR_ID);
+			this.period_type = giftArgs.getString(ARG_PERIOD_TYPE);
+			this.period_id = savedInstanceState.getString(ARG_PERIOD_ID);
 			this.fund_id = savedInstanceState.getInt(ARG_FUND_ID);
+
+			gifts = db.getGiftsForPeriod(fund_id, period_type, period_id);
 		}
 		//This is used when dealing with specific segments of gifts...
 		else if(giftArgs != null){
-			this.year_id = giftArgs.getInt(ARG_YEAR_ID);
+			this.period_type = giftArgs.getString(ARG_PERIOD_TYPE);
+			this.period_id = giftArgs.getString(ARG_PERIOD_ID);
 			this.fund_id = giftArgs.getInt(ARG_FUND_ID);
-			this.giftIDs = giftArgs.getIntegerArrayList("giftIDs");
 
-			if(giftIDs != null && !giftIDs.isEmpty()) {
-				for (Integer id : giftIDs) {
-					gifts.add(db.getGift(id));
-				}
-			}
-			else if(this.fund_id != -1){
-				isSpecificFund = true;
-				gifts = db.getGiftsForFund(fund_id, year_id); // pull all the gifts for a certain fund during a certain year
-
-				//Sets donation link bar only if for a specific fund
-				LinkBar lb = new LinkBar();
-				lb.setArguments(giftArgs);
-
-				FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-				fragmentManager.beginTransaction().replace(R.id.bottom_bar, lb).commit();
-			}
-			else{
-				gifts = db.getGiftsForYear(year_id);//pulls all the gifts for a certain year
-			}
+			gifts=db.getGiftsForPeriod(fund_id, period_type, period_id);
 		}
 		//This is used when dealing with the entire list of gifts...
 		else{
@@ -86,10 +73,7 @@ public class GiftList extends Fragment{
 
 		// Set title appropriately to what data is shown
 		String giftListTitle = "Gifts";
-		if (year_id != -1) {
-			String yearStr = db.getYearForID(year_id).getName();
-			giftListTitle += " - " + yearStr;
-		}
+
 		if (fund_id != -1) {
 			String fundStr = db.getFundByFundId(fund_id).getFundDesc();
 			giftListTitle += " - " + fundStr;
@@ -165,7 +149,6 @@ public class GiftList extends Fragment{
 	public void onSaveInstanceState(Bundle outState){
 		super.onSaveInstanceState(outState);
 		outState.putInt(ARG_FUND_ID, fund_id);
-		outState.putInt(ARG_YEAR_ID, year_id);
 		outState.putIntegerArrayList("giftIDs", giftIDs);
 	}
 }

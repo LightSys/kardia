@@ -20,7 +20,7 @@
             android:layout_centerVertical="true"
             />
         <TextView
-            android:id="@+id/subject"
+            android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="18dp"
@@ -31,28 +31,28 @@
             android:layout_alignTop="@id/profile_pic"/>
 
         <TextView
-            android:id="@+id/subsubject1"
+            android:id="@+id/email"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
             android:layout_marginLeft="17dp"
             android:layout_marginStart="17dp"
-            android:layout_below="@+id/subject"
+            android:layout_below="@+id/name"
             android:textSize="14sp"
-            android:layout_alignLeft="@id/subject"
-            android:layout_alignStart="@id/subject"/>
+            android:layout_alignLeft="@id/name"
+            android:layout_alignStart="@id/name"/>
 
         <TextView
-            android:id="@+id/subsubject2"
+            android:id="@+id/phone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
             android:layout_marginLeft="17dp"
             android:layout_marginStart="17dp"
-            android:layout_below="@+id/subsubject1"
+            android:layout_below="@+id/email"
             android:textSize="14sp"
-            android:layout_alignLeft="@id/subject"
-            android:layout_alignStart="@id/subject" />
+            android:layout_alignLeft="@id/name"
+            android:layout_alignStart="@id/name" />
 
     </RelativeLayout>
 
