@@ -23,6 +23,7 @@ import java.util.HashMap;
 /**
  * Class formats a listview of all donors in database
  * Created by Andrew Lockridge on 6/11/2015.
+ * edited from DonorApp to MissionaryApp by Laura DeOtte
  */
 public class DonorList extends Fragment {
 

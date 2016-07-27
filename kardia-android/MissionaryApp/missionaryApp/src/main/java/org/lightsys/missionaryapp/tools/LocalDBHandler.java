@@ -73,7 +73,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     private static final String COLUMN_DONOR_ID = "donor_id";
 	private static final String COLUMN_GIFTYEAR = "gift_year";
 	private static final String COLUMN_GIFTMONTH = "gift_month";
-
     //NOTES TABLE
 	private static final String TABLE_NOTES = "notes";
 	private static final String COLUMN_TEXT = "text";
@@ -101,16 +100,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     private static final String COLUMN_LASTNAME = "lastname";
 	//MISSIONARY TABLE
 	private static final String TABLE_MISSIONARIES = "missionaries";
-	//YEAR TABLE
-	private static final String TABLE_YEAR = "years";
-	//YEAR_FUND_MAP
-	private static final String TABLE_YEARFUND_MAP = "year_fund_map";
+
 	private static final String COLUMN_FUND_ID = "fund_id";
 	private static final String COLUMN_YEAR_ID = "year_id";
-	//YEAR_ACCOUNT_MAP
-	private static final String TABLE_YEARACCOUNT_MAP = "year_account_map";
-	//GIFT_FUND_MAP
-	private static final String TABLE_GIFTFUND_MAP = "gift_fund_map";
+
 	private static final String COLUMN_GIFT_ID = "gift_id";
 	//GIFT_YEAR_MAP
 	private static final String TABLE_GIFTYEAR_MAP = "gift_year_map";
@@ -234,38 +227,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," +
 				COLUMN_DATE + " TEXT)";
 		db.execSQL(CREATE_PERIOD_TABLE);
-
-		String CREATE_FP_TABLE = "CREATE TABLE " + TABLE_FP_MAP + "(" +
-				COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_FUND_ID + " INTEGER," +
-				COLUMN_PERIOD_ID + " INTEGER)";
-		db.execSQL(CREATE_FP_TABLE);
-
-		String CREATE_YEAR_TABLE = "CREATE TABLE " + TABLE_YEAR + "("
-				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT)";
-		db.execSQL(CREATE_YEAR_TABLE);
-
-		String CREATE_YEARFUND_MAP_TABLE = "CREATE TABLE " + TABLE_YEARFUND_MAP + "("
-				+ COLUMN_ID + "INTEGER PRIMARY KEY," + COLUMN_FUND_ID
-				+ " INTEGER," + COLUMN_YEAR_ID + " INTEGER,"
-				+ COLUMN_GIFTTOTALWHOLE + " INTEGER,"
-				+ COLUMN_GIFTTOTALPART + " INTEGER)";
-		db.execSQL(CREATE_YEARFUND_MAP_TABLE);
-
-		String CREATE_GIFTFUND_MAP_TABLE = "CREATE TABLE " + TABLE_GIFTFUND_MAP + "("
-				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_FUND_ID
-				+ " INTEGER," + COLUMN_GIFT_ID + " INTEGER)";
-		db.execSQL(CREATE_GIFTFUND_MAP_TABLE);
-
-		String CREATE_YEARACCOUNT_MAP_TABLE = "CREATE TABLE " + TABLE_YEARACCOUNT_MAP + "("
-				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_YEAR_ID + " INTEGER,"
-				+ COLUMN_ACCOUNT_ID + " INTEGER," + COLUMN_GIFTTOTALWHOLE
-				+ " INTEGER," + COLUMN_GIFTTOTALPART + " INTEGER)";
-		db.execSQL(CREATE_YEARACCOUNT_MAP_TABLE);
-
-		String CREATE_GIFTYEAR_MAP_TABLE = "CREATE TABLE " + TABLE_GIFTYEAR_MAP + "("
-				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_YEAR_ID
-				+ " INTEGER," + COLUMN_GIFT_ID + " INTEGER)";
-		db.execSQL(CREATE_GIFTYEAR_MAP_TABLE);
 
 		String CREATE_FUNDACCOUNT_MAP_TABLE = "CREATE TABLE " + TABLE_FUNDACCOUNT_MAP
 				+ "(" + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_FUND_ID
@@ -411,41 +372,20 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * @param prayedfor, the item to be added
 	 */
 	public void addPrayedFor(PrayedFor prayedfor) {
-		ContentValues values = new ContentValues();
+        ContentValues values = new ContentValues();
 
-		values.put(COLUMN_PRAYED_FOR_ID, prayedfor.getPrayedForId());
-		values.put(COLUMN_PRAYED_FOR_COMMENTS, prayedfor.getPrayedForComments());
-		values.put(COLUMN_PRAYED_FOR_DATE, prayedfor.getPrayedForDate());
-		values.put(COLUMN_NOTE_ID, prayedfor.getNoteId());
-		values.put(COLUMN_SUPPORTER_PARTNER_ID, prayedfor.getSupporterId());
-		values.put(COLUMN_SUPPORTER_PARTNER_NAME, prayedfor.getSupporterName());
+        values.put(COLUMN_PRAYED_FOR_ID, prayedfor.getPrayedForId());
+        values.put(COLUMN_PRAYED_FOR_COMMENTS, prayedfor.getPrayedForComments());
+        values.put(COLUMN_PRAYED_FOR_DATE, prayedfor.getPrayedForDate());
+        values.put(COLUMN_NOTE_ID, prayedfor.getNoteId());
+        values.put(COLUMN_SUPPORTER_PARTNER_ID, prayedfor.getSupporterId());
+        values.put(COLUMN_SUPPORTER_PARTNER_NAME, prayedfor.getSupporterName());
 
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_PRAYED_FOR, null, values);
-		db.close();
-	}
-	//add gift Period
-	public void addPeriod(Period period) {
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_NAME, period.getPeriodName());
-		values.put(COLUMN_DATE, period.getDate());
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(TABLE_PRAYED_FOR, null, values);
+        db.close();
+    }
 
-		SQLiteDatabase db = this.getWritableDatabase();
-
-		db.insert(TABLE_PERIOD, null, values);
-		db.close();
-	}
-	//addFundPeriod
-	public void addFundPeriod(int fund_id, int period_id) {
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_FUND_ID, fund_id);
-		values.put(COLUMN_PERIOD_ID, period_id);
-
-		SQLiteDatabase db = this.getWritableDatabase();
-
-		db.insert(TABLE_FP_MAP, null, values);
-		db.close();
-	}
 	/**
 	 * Adds a prayer letter to the database in the Letter Table
 	 * @param letter, the letter to be added
@@ -520,37 +460,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.insert(TABLE_GIFT, null, values);
 		db.close();
 	}
-	
-	/**
-	 * Adds a connection between a Gift and a Fund through their IDs
-	 * @param Gift_ID, Gift Identifier
-	 * @param Fund_ID, Fund Identifier
-	 */
-	public void addGift_Fund(int Gift_ID, int Fund_ID){
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_GIFT_ID, Gift_ID);
-		values.put(COLUMN_FUND_ID, Fund_ID);
-		
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_GIFTFUND_MAP, null, values);
-		db.close();
-	}
 
-	/**
-	 * Adds a connection between a fund and a account through their IDs
-	 * @param Fund_ID, Fund Identifier
-	 * @param Account_ID, Account Identifier
-	 */
-	public void addFund_Account(int Fund_ID, int Account_ID){
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_FUND_ID, Fund_ID);
-		values.put(COLUMN_ACCOUNT_ID, Account_ID);
-		
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_FUNDACCOUNT_MAP, null, values);
-		db.close();
-	}
-	
 	/**
 	 * Adds a connection between a fund and a account through their IDs
 	 * @param Gift_ID, Gift Identifier
@@ -641,17 +551,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		
 		String[] acct = {String.valueOf(Account_ID)};
 		SQLiteDatabase db = this.getWritableDatabase();
-		
-		//delete giftyear connections
-		db.delete(TABLE_GIFTYEAR_MAP, TABLE_GIFTYEAR_MAP + "." + COLUMN_GIFT_ID
-				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
-				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-		
-		//delete giftfund connections
-		db.delete(TABLE_GIFTFUND_MAP, TABLE_GIFTFUND_MAP + "." + COLUMN_GIFT_ID
-				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
-				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-		
+
 		//delete gifts
 		db.delete(TABLE_GIFT, TABLE_GIFT + "." + COLUMN_ID 
 				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
@@ -659,12 +559,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		
 		//delete giftaccount connections
 		db.delete(TABLE_GIFTACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
-		
-		//delete yearfund connections
-		db.delete(TABLE_YEARFUND_MAP, TABLE_YEARFUND_MAP + "." + COLUMN_FUND_ID 
-				+ " IN (SELECT " + TABLE_FUNDACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
-				+ TABLE_FUNDACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-		
+
 		//delete funds
 		db.delete(TABLE_FUND, TABLE_FUND + "." + COLUMN_ID
 				+ " IN (SELECT " + TABLE_FUNDACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
@@ -672,9 +567,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		
 		//delete fundaccount connections
 		db.delete(TABLE_FUNDACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
-		
-		//delete yearaccount connections
-		db.delete(TABLE_YEARACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
 
 		//delete missionaries and all notes, prayer letters, and prayer notifications
 		db.delete(TABLE_MISSIONARIES, null, null);
@@ -711,16 +603,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		String[] acct = {String.valueOf(Account_ID)};
 		SQLiteDatabase db = this.getWritableDatabase();
 
-		//delete giftyear connections
-		db.delete(TABLE_GIFTYEAR_MAP, TABLE_GIFTYEAR_MAP + "." + COLUMN_GIFT_ID
-				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
-				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-
-		//delete giftfund connections
-		db.delete(TABLE_GIFTFUND_MAP, TABLE_GIFTFUND_MAP + "." + COLUMN_GIFT_ID
-				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
-				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-
 		//delete gifts
 		db.delete(TABLE_GIFT, TABLE_GIFT + "." + COLUMN_ID
 				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
@@ -729,11 +611,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		//delete giftaccount connections
 		db.delete(TABLE_GIFTACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
 
-		//delete yearfund connections
-		db.delete(TABLE_YEARFUND_MAP, TABLE_YEARFUND_MAP + "." + COLUMN_FUND_ID
-				+ " IN (SELECT " + TABLE_FUNDACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
-				+ TABLE_FUNDACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-
 		//delete funds
 		db.delete(TABLE_FUND, TABLE_FUND + "." + COLUMN_ID
 				+ " IN (SELECT " + TABLE_FUNDACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
@@ -741,9 +618,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		//delete fundaccount connections
 		db.delete(TABLE_FUNDACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
-
-		//delete yearaccount connections
-		db.delete(TABLE_YEARACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
 
 		db.close();
 	}
@@ -868,25 +742,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return periods;
 	}
 
-	//gets the period id for a period name
-	public int getPeriodId(String name) {
-		int id = -1;
-
-		String qString = "SELECT " + COLUMN_ID + " FROM " + TABLE_PERIOD
-				+ " WHERE " + COLUMN_NAME + " = " + name;
-
-		SQLiteDatabase db = this.getReadableDatabase();
-
-		Cursor c = db.rawQuery(qString, null);
-
-		if (c.moveToFirst()) {
-			id = Integer.parseInt(c.getString(0));
-		}
-		db.close();
-		c.close();
-		return id;
-	}
-
 	/**
 	 * Pulls all accounts
 	 * @return All accounts in the Account table as an ArrayList of Account Objects
@@ -953,8 +808,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			queryString += TABLE_FUND;
 		} else if(type.equals("gift")){
 			queryString += TABLE_GIFT;
-		} else if(type.equals("year")){
-			queryString += TABLE_YEAR;
 		} else if (type.equals("notification")) {
 			queryString += TABLE_NOTIFICATIONS;
 		} else if (type.equals("account")) {
@@ -1050,29 +903,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.close();
         return donors;
     }
-	/**
-	 * Pulls all missionaries from the database
-	 * @return a list of all missionaries as an ArrayList of Donor Objects ordered alphabetically
-	 */
-	public ArrayList<Donor> getMissionaries() {
-		ArrayList<Donor> missionaries = new ArrayList<Donor>();
-		String queryString = "SELECT * FROM " + TABLE_MISSIONARIES + " ORDER BY " +
-				COLUMN_NAME;
-
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-
-		while (c.moveToNext()) {
-			Donor temp = new Donor();
-			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setName(c.getString(1));
-
-			missionaries.add(temp);
-		}
-		c.close();
-		db.close();
-		return missionaries;
-	}
 
     /**
      * Pulls contact info for a donor from the database
@@ -1210,66 +1040,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return note;
 	}
 
-	/**
-	 * Pulls prayedfor info for a specific note
-	 * @param note_id, Note Identification
-	 * @return all the PrayedFor Objects associated with the note.
-	 */
-
-	public ArrayList<PrayedFor> getPrayedForForNote(int note_id) {
-		ArrayList<PrayedFor> prayedfor = new ArrayList<PrayedFor>();
-		String queryString = "SELECT * FROM " + TABLE_PRAYED_FOR + /*" WHERE " +
-				COLUMN_NOTE_ID + " = " + note_id + */" ORDER BY " + COLUMN_SUPPORTER_PARTNER_NAME;
-
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-
-		while(c.moveToNext()){
-			PrayedFor temp = new PrayedFor();
-			temp.setPrayedForId(Integer.parseInt(c.getString(0)));
-			temp.setPrayedForComments(c.getString(1));
-			temp.setPrayedForDate(c.getString(2));
-			temp.setNoteId(Integer.parseInt(c.getString(3)));
-			temp.setSupporterId(Integer.parseInt(c.getString(4)));
-			temp.setSupporterName(c.getString(5));
-
-			prayedfor.add(temp);
-		}
-		c.close();
-		db.close();
-		return prayedfor;
-
-	}
-
-    /**
-     * Pulls comments for a specific note
-     * @param note_id, Note Identification
-     * @return all the Comment Objects associated with the note.
-     */
-    public ArrayList<Comment> getCommentsForNote(int note_id) {
-        Comment comment = new Comment();
-        ArrayList<Comment> commentlist = new ArrayList<Comment>();
-        String queryString = "SELECT * FROM " + TABLE_COMMENT + " WHERE " + COLUMN_NOTE_ID + " = " + note_id
-		 + " ORDER BY " + COLUMN_USER_NAME;
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor c = db.rawQuery(queryString, null);
-
-        while(c.moveToNext()){
-            comment.setCommentID(c.getInt(0));
-            comment.setSenderID(c.getInt(1));
-            comment.setNoteID(c.getInt(2));
-            comment.setUserName(c.getString(3));
-            comment.setNoteType(c.getString(4));
-            comment.setDate(c.getString(5));
-            comment.setComment(c.getString(6));
-
-            commentlist.add(comment);
-        }
-        c.close();
-        db.close();
-        return commentlist;
-    }
     /**
      * Pulls contact info for all donors from the database
      * @return contact info as an ArrayList of ContactInfo Objects ordered by donor id
@@ -1323,32 +1093,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return letterList;
 	}
 
-	/**
-	 * Pulls all Funds from the database
-	 * @return All Funds as an ArrayList of Fund Objects ordered by Missionar Id
-	 */
-	public ArrayList<Fund> getFunds() {
-		ArrayList<Fund> fundList = new ArrayList<Fund>();
-		String queryString = "SELECT * FROM " + TABLE_FUND +" ORDER BY " + COLUMN_MISSIONARY_ID;
-
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-
-		while(c.moveToNext()) {
-			Fund fund = new Fund();
-			fund.setFundId(Integer.parseInt(c.getString(0)));
-			fund.setMissionaryId(c.getInt(1));
-			fund.setFundName(c.getString(2));
-			fund.setFundDesc(c.getString(3));
-			fund.setFundClass(c.getString(4));
-			fund.setFundAnnotation(c.getString(5));
-
-			fundList.add(fund);
-		}
-		c.close();
-		db.close();
-		return fundList;
-	}
 	/**
 	 * pulls all notifications from the notifications table
 	 * @return notifications as an ArrayList of PrayerNotification Objects
@@ -1521,11 +1265,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 */
 	public ArrayList<String> getGiftNames(int Fund_ID){
 		ArrayList<String> giftNames = new ArrayList<String>();
-		String queryString = "SELECT Gift." + COLUMN_NAME + " FROM " + TABLE_GIFT + " AS Gift "
-				+ " INNER JOIN " + TABLE_GIFTFUND_MAP + " AS FundMap ON Gift." + COLUMN_ID + " = "
-				+ " FundMap." + COLUMN_GIFT_ID + " INNER JOIN " + TABLE_GIFTYEAR_MAP
-				+ " AS YearMap ON Gift." + COLUMN_ID + " = Yearmap." + COLUMN_GIFT_ID
-				+ " WHERE FundMap." + COLUMN_FUND_ID + " = " + Fund_ID;
+		String queryString = "SELECT " + TABLE_GIFT + "." + COLUMN_NAME + " FROM " + TABLE_GIFT + " INNER JOIN " + TABLE_FUND
+                + " ON " + TABLE_GIFT + "." + COLUMN_GIFTFUNDDESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+                + " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + Fund_ID;
 		
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
@@ -1536,46 +1278,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		c.close();
 		db.close();
 		return giftNames;
-	}
-
-	/**
-	 * Pulls all gifts for a specific fund for a specific year
-	 * @param Fund_ID, Fund Identification
-	 * @return All gifts given to a fund in a year as an ArrayList of Gift Objects ordered from most recent to least recent
-	 */
-	public ArrayList<Gift> getGiftsForFund(int Fund_ID){
-		ArrayList<Gift> gifts = new ArrayList<Gift>();
-		String queryString = "SELECT G.* FROM " + TABLE_GIFT + " AS G "
-				+ "INNER JOIN " + TABLE_GIFTYEAR_MAP + " AS GYM ON G."
-				+ COLUMN_ID + " = GYM." + COLUMN_GIFT_ID + " INNER JOIN "
-				+ TABLE_GIFTFUND_MAP + " AS GFM ON G." + COLUMN_ID
-				+ " = GFM." + COLUMN_GIFT_ID + " WHERE (GFM." + COLUMN_FUND_ID + " = "
-				+ Fund_ID + ")"
-				+ " ORDER BY DATE(" + COLUMN_GIFTDATE + ") DESC";
-
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-
-		while(c.moveToNext()){
-			Gift temp = new Gift();
-			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setName(c.getString(1));
-			temp.setGiftFund(c.getString(2));
-			temp.setGift_fund_desc(c.getString(3));
-			temp.setGift_amount(new int[]{
-					Integer.parseInt(c.getString(4)),
-					Integer.parseInt(c.getString(5))
-			});
-			temp.setGift_date(c.getString(6));
-			temp.setGift_check_num(c.getString(7));
-			temp.setGiftDonor(c.getString(8));
-			temp.setGiftDonorId(c.getInt(9));
-
-			gifts.add(temp);
-		}
-		c.close();
-		db.close();
-		return gifts;
 	}
 
 	/**
@@ -1661,71 +1363,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private boolean NullOrEmpty(String str) {
 		return (str == null || str.equals(""));
 	}
-	
-	/**
-	 * Pulls all year names
-	 * @return a list of names of years (e.g. "2015") in an ArrayList of Strings
-	 */
-	public ArrayList<String> getYearNames(){
-		ArrayList<String> yearNames = new ArrayList<String>();
-		String queryString = "SELECT " + COLUMN_NAME + " FROM " + TABLE_YEAR;
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		while(c.moveToNext()){
-			yearNames.add(c.getString(0));
-		}
-		c.close();
-		db.close();
-		return yearNames;
-	}
-	
-	/**
-	 * Pulls all year names for a specific fund
-	 * @param Fund_ID, Fund Identification
-	 * @return All year names (e.g. "2015") for a specific fund as an ArrayList of Strings
-	 */
-	public ArrayList<String> getYearNamesFund(int Fund_ID){
-		ArrayList<String> yearNames = new ArrayList<String>();
-		String queryString = "SELECT Y." + COLUMN_NAME + " FROM " + TABLE_YEAR + " AS Y "
-				+ "INNER JOIN " + TABLE_YEARFUND_MAP + " AS YFM ON Y."
-				+ COLUMN_ID + " = YFM." + COLUMN_YEAR_ID
-				+ " WHERE YFM." + COLUMN_FUND_ID + " = " + Fund_ID;
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		while(c.moveToNext()){
-			yearNames.add(c.getString(0));
-		}
-		c.close();
-		db.close();
-		return yearNames;
-	}
-	
-	/**
-	 * Pulls all year names for a specific account
-	 * @param Account_ID, Account Identification
-	 * @return all year names (e.g. "2015") for a specific account in an ArrayList of Strings
-	 */
-	public ArrayList<String> getYearNamesAccount(int Account_ID){
-		ArrayList<String> yearNames = new ArrayList<String>();
-		String queryString = "SELECT Y." + COLUMN_NAME + " FROM " + TABLE_YEAR + " AS Y "
-				+ "INNER JOIN " + TABLE_YEARACCOUNT_MAP + " AS YFM ON Y."
-				+ COLUMN_ID + " = YFM." + COLUMN_YEAR_ID
-				+ " WHERE YFM." + COLUMN_ACCOUNT_ID + " = " + Account_ID;
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		while(c.moveToNext()){
-			yearNames.add(c.getString(0));
-		}
-		c.close();
-		db.close();
-		return yearNames;
-	}
 
 	//gets list of comments
 	public ArrayList<Comment> getComments(){
@@ -1807,25 +1444,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		return posts;
 	}
-
-	/*public String getGivingUrl(){
-		String queryString = "SELECT * FROM " + TABLE_GIVING_URL;
-
-		ArrayList<String> url = new ArrayList<String>();
-
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-
-		while (c.moveToNext()){
-			url.add(c.getString(0));
-		}
-
-		c.close();
-		db.close();
-
-		return url.get(0);
-
-	}*/
 
 	/* ************************* Update Queries ************************* */
 

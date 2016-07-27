@@ -1,5 +1,12 @@
 package org.lightsys.missionaryapp.data;
 
+/**
+ * Class used to organize gifts given to the user into time periods
+ *
+ * @author Laura DeOtte
+ *
+ */
+
 public class Period {
 	private int Id;
 	private String periodname; // example: 2014.06|DEMO

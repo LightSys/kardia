@@ -10,11 +10,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dca88b97-5f95-404b-ae70-7894c54711c8" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Year.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/LinkBar.java" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/ContactInfo.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/ContactInfo.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Donor.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Donor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Period.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Period.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/PrayedFor.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/PrayedFor.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/DataConnection.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/DataConnection.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/LocalDBHandler.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/LocalDBHandler.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedGift.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedGift.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedPrayerRequest.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedPrayerRequest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DonorList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DonorList.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/FundList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/FundList.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftList.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftTimePeriodList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftTimePeriodList.java" />
     </list>
     <ignored path="DonorApp.iws" />
@@ -72,7 +80,11 @@
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
               <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="false" />
+                <element signature="e#5056#5057#0" expanded="false" />
+                <element signature="e#5080#5081#0" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -2225,7 +2237,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3286119" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -2325,7 +2337,11 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#5056#5057#0" expanded="false" />
+            <element signature="e#5080#5081#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2351,7 +2367,11 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#5056#5057#0" expanded="false" />
+            <element signature="e#5080#5081#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2377,7 +2397,11 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#5056#5057#0" expanded="false" />
+            <element signature="e#5080#5081#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2641,7 +2665,11 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#5056#5057#0" expanded="false" />
+            <element signature="e#5080#5081#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>

@@ -1,7 +1,8 @@
 package org.lightsys.missionaryapp.data;
 
 /**
- * Created by lauradeotte on 7/6/16.
+ * @author Laura DeOtte
+ * created on 7/6/16.
  * Stores Contact Info (Email, Phone, Cell) for contacting donors
  */
 public class ContactInfo {

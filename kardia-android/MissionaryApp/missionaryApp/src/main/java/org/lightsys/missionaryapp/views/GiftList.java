@@ -23,8 +23,7 @@ import org.lightsys.missionaryapp.R;
 
 /**
  * This page displays a list of gifts. It either shows all gifts, gifts for a 
- * specific year or for a specific fund and year. It also loads a bar at the bottom
- * which can be clicked to go to a donation website.
+ * specific year or for a specific fund and year.
  * 
  * @author Andrew Cameron
  */

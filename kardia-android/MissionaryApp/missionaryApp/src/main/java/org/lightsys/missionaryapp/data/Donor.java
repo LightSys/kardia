@@ -1,7 +1,7 @@
 package org.lightsys.missionaryapp.data;
 
 /**
- * Class represents a missionary that the user is connected with
+ * Class represents a donor that the user is connected with
  *
  * Created by Andrew Lockridge on 6/10/2015.
  */

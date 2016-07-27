@@ -26,7 +26,6 @@ import org.lightsys.missionaryapp.data.Comment;
 import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Note;
-import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.views.AccountsActivity;
@@ -236,7 +235,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             loadPartnerName(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/"
                     + Account_ID + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=element&cx__res_attrs=basic"));
             //loadMissionaries(GET("http://" + Host_Name + ":800/apps/kardia/api/supporter/" + Account_ID +
-             //       "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
+            //       "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
             loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
                     "/Supporters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
             loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
@@ -271,14 +270,13 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     e.printStackTrace();
                 }
                 int fundid = f.getFundId();
-                Log.d(TAG, "DataPull: " + fundid);
 
                 for(Donor m : db.getDonors()) {
                     int donorID = m.getId();
                     String donorname = m.getName();
 
-                        loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + donorID + "/Funds/"
-                                        + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),fundid,donorname,donorID);
+                    loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + donorID + "/Funds/"
+                            + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),fundid,donorname,donorID);
                 }
             }
 
@@ -690,7 +688,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * @param result, the result of the Funds API GET request
      */
     private void loadFunds(String result, int accountId) {
-        Log.d(TAG, "loadFunds: makes it to loadFunds");
         // List of funds already in database for account
         JSONObject json = null;
         try{
@@ -720,9 +717,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setFundClass(fundObj.getString("fund_class"));
                         temp.setFundAnnotation(fundObj.getString("annotation"));
                         temp.setMissionaryId(accountId);
-                        Log.d(TAG, "loadFunds: " + temp.getFundName());
-                        Log.d(TAG, "loadFunds: " + accountId);
-                        Log.d(TAG, "loadFunds: " + temp.getMissionaryId());
 
                         // Add fund and Account-Fund relationship to database
                         db.addFund(temp);
@@ -808,7 +802,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                         db.addGift(temp);
                         //db.addGift_Year(giftid, Year_ID);
-                        db.addGift_Fund(giftid, Fund_ID);
+                        //db.addGift_Fund(giftid, Fund_ID);
                         db.addGift_Account(giftid, Account_ID);
                     }
                 }
