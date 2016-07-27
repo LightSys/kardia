@@ -132,10 +132,6 @@ public class DetailedGift extends Fragment {
 
         this.gift_id = gift_id;
 
-        // Set up a link bar to donate to the fund with which the gift is associated
-        LinkBar lb = new LinkBar();
-        lb.setArguments(args);
-
         Button viewPDFButton = (Button) getActivity().findViewById(R.id.pdfButton);
         viewPDFButton.setOnClickListener(new View.OnClickListener() {
             @Override

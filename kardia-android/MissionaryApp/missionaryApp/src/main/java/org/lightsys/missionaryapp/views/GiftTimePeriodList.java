@@ -9,9 +9,7 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,12 +21,11 @@ import android.widget.SimpleAdapter;
 import org.lightsys.missionaryapp.R;
 
 /**
- * This class shows the year-to-date list for a certain fund, with the amount
- * that has been given towards that specific fund.
- * There is also a donation button at the bottom of the page, which when clicked
- * takes the user to a donation page (outside of the app) for that specific fund.
+ * This class shows the year-to-date or month to date list for a certain fund
+ * and shows amount given towards that fund.
  * 
- * @author Andrew Cameron
+ * @author otter57
+ * created 7-27-16
  */
 public class GiftTimePeriodList extends Fragment{
 

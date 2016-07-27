@@ -22,11 +22,11 @@ import android.widget.SimpleAdapter;
 import org.lightsys.missionaryapp.R;
 
 /**
- * This page displays a list of all funds that the user has donated to
- * with some info. It also loads a bar at the bottom which has the total 
- * amount that the user has donated over all (for the current year)
+ * This page displays a list of all funds that the user manages
+ * with some info.
  * 
  * @author Andrew Cameron
+ * edited from DonorApp to MissionaryApp by otter57
  */
 public class FundList extends Fragment{
 	

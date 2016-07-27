@@ -1,8 +1,9 @@
 package org.lightsys.missionaryapp.data;
 
 /**
- * Class represents an update or prayer request from a missionary
+ * Class represents a Prayer for a prayer request or update
  * Created by Andrew Lockridge on 6/24/2015.
+ * Edited from DonorApp to MissionaryApp by otter57
  */
 public class PrayedFor {
 
@@ -15,7 +16,7 @@ public class PrayedFor {
 
     public PrayedFor() {}
 
-    public PrayedFor(int prayedForId, String prayedForComments, String date, int noteId, int missionaryId, int supporterId, String supporterName) {
+    public PrayedFor(int prayedForId, String prayedForComments, String date, int noteId, int supporterId, String supporterName) {
         this.prayedForId = prayedForId;
         this.prayedForComments = prayedForComments;
         this.date = date;

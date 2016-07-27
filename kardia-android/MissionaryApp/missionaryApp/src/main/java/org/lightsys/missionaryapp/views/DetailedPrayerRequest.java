@@ -26,7 +26,6 @@ import java.util.HashMap;
  * Created by JoshWorkman on 3/10/2015.
  * This activity displays the expanded form of a prayerRequest
  * Primarily displays Subject, Date submitted, and request text
- * It also includes a button that opens a menu to set reminders to pray for the request
  *
  * edited by Judah Sistrunk summer 2016
  * added functionality to view and post comments on an item
