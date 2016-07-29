@@ -126,7 +126,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         try {
             // Attempt to pull information about the donor from the API
-            test = GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
+            test = GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/donor/" + Account_ID +
                     "/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic");
             // Unauthorized signals incorrect username or password
             // 404 not found signals invalid ID
@@ -225,32 +225,33 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 // If account is new and valid, update if from edit or add if from accounts
                 if (dataContext.getClass() == EditAccountActivity.class) {
                     db.updateAccount(account.getId(), account.getAccountName(),
-                            account.getAccountPassword(), account.getServerName());
+                            account.getAccountPassword(), account.getServerName(),
+                            account.getPortNumber(), account.getProtocol());
                 } else {
                     db.addAccount(account);
                 }
             }
-            loadPartnerName(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/"
+            loadPartnerName(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/partner/Partners/"
                     + Account_ID + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=element&cx__res_attrs=basic"));
-            loadMissionaries(GET("http://" + Host_Name + ":800/apps/kardia/api/supporter/" + Account_ID +
+            loadMissionaries(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/supporter/" + Account_ID +
                     "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
             // Loop through missionaries and pull notes and prayer letters
             db.deleteNewItems();
             for(Missionary m : db.getMissionaries()) {
                 int missionaryID = m.getId();
-                loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + missionaryID +
+                loadNotes(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/missionary/" + missionaryID +
                         "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
                         missionaryID);
-                loadPrayerLetters(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + missionaryID +
+                loadPrayerLetters(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/missionary/" + missionaryID +
                         "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
                         missionaryID);
             }
             // Load years so they can be connected to funds
-            loadYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
+            loadYears(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/donor/" + Account_ID +
                     "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
-            loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID +
+            loadFunds(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/donor/" + Account_ID +
                     "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
             for(Fund f : db.getFundsForAccount(Account_ID)){
@@ -263,24 +264,24 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 }
                 int fundid = f.getID();
 
-                loadFundYears(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID + "/Funds/"
+                loadFundYears(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/donor/" + Account_ID + "/Funds/"
                         + Fund_Name + "/Years?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), fundid);
 
                 for(Year y : db.getYearsForFund(fundid)){
                     int yearid = y.getId();
                     String Year = y.getName();
 
-                    loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + Account_ID + "/Funds/"
+                    loadGifts(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/donor/" + Account_ID + "/Funds/"
                                     + Fund_Name + "/Years/" + Year + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),
                             yearid, fundid);
                 }
             }
 
             //load comments
-            loadComments(GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/"
+            loadComments(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/crm/Partners/"
                     + Account_ID + "/Comments/Own?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection"));
 
-            loadGivingUrl(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/"+ Account_ID + "/" +
+            loadGivingUrl(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/donor/"+ Account_ID + "/" +
                     "GivingInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
 
         } catch (Exception e) {
