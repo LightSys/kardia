@@ -14,6 +14,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -41,6 +43,7 @@ public class AccountsActivity extends Activity{
 	ListView accountsList;
 	EditText accountName, accountPass, serverName, donorID;
 	TextView connectedAccounts;
+	Account account = new Account();
 	ArrayList<Account> accounts = new ArrayList<Account>();
 	Button connectButton, finishButton;
 
@@ -102,28 +105,25 @@ public class AccountsActivity extends Activity{
 	public void loadAccountList(){
 		LocalDBHandler db = new LocalDBHandler(this, null);
 		
-		accounts = db.getAccounts();
+		account = db.getAccount();
 
 		db.close();
 		
-		if(accounts.size() > 0){
+		if(account!=null){
 			finishButton.setVisibility(View.VISIBLE);
-			connectedAccounts.setText("Connected Accounts:");
+			connectedAccounts.setText("Connected Account:");
 		}else{
 			finishButton.setVisibility(View.INVISIBLE);
 			connectedAccounts.setText("No Accounts Connected.");
 		}
 		
 		List<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
-		
-		for(Account a : accounts){
-			
+
 			HashMap<String,String> tempMap = new HashMap<String,String>();
-			tempMap.put("aName", a.getAccountName());
-			tempMap.put("aServer", a.getServerName());
-			
+			tempMap.put("aName", account.getAccountName());
+			tempMap.put("aServer", account.getServerName());
 			aList.add(tempMap);
-		}
+
 		String[] from = {"aName", "aServer"};
 		int[] to = {R.id.title, R.id.server};
 		SimpleAdapter adapter = new SimpleAdapter(this, aList, R.layout.account_listview_item, from, to);
@@ -182,8 +182,7 @@ public class AccountsActivity extends Activity{
 				return;
 			}
 		}
-		Account account = new Account(dId, aName, aPass, sName, null);
-        db.updateActiveAccount(account);
+		Account account = new Account(dId, aName, aPass, sName, null,false);
 		// Execute data connection to validate account and pull data if valid
 		// DataConnection will close activity once complete if successful
 		new DataConnection(this, this, account).execute("");
@@ -199,7 +198,6 @@ public class AccountsActivity extends Activity{
 		menu.add(0, v.getId(), 0, "Edit");
 		menu.add(0, v.getId(), 0, "Delete");
 		menu.add(0, v.getId(), 0, "Cancel");
-		menu.add(0,v.getId(),0, "Set Active");
 	}
 	
 	/**
@@ -214,7 +212,7 @@ public class AccountsActivity extends Activity{
 
 		if (item.getTitle().equals("Delete")) {
 
-			final Account temp = accounts.get(info.position);
+			final Account temp = account;
 			new AlertDialog.Builder(AccountsActivity.this)
 					.setCancelable(false)
 					.setTitle("Delete Account?")
@@ -244,15 +242,9 @@ public class AccountsActivity extends Activity{
 					.setIcon(android.R.drawable.ic_dialog_alert)
 					.show();
 
-
-		}else if (item.getTitle().equals("Set Active")){
-			LocalDBHandler db = new LocalDBHandler(AccountsActivity.this,null);
-            db.updateActiveAccount(accounts.get(info.position));
-
-
 		}else if (item.getTitle().equals("Edit")) {
 
-			Account temp = accounts.get(info.position);
+			Account temp = account;
 
 			// Launch EditAccountActivity and pass account details for activity set-up
 			Intent intent = new Intent(this, EditAccountActivity.class);

@@ -16,16 +16,18 @@ public class Account {
 	private String AccountPassword;
 	private String ServerName;
 	private String PartnerName; //Name used for sending messages, different than AccountName
+	private Boolean active;
 
 	public Account(){}
 	
 	public Account(int id, String AccountName, String AccountPassword, String ServerName,
-				    String PartnerName){
+				    String PartnerName, boolean active){
 		this.setId(id);
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
 		this.setServerName(ServerName);
 		this.setPartnerName(PartnerName);
+		this.setActive(active);
 	}
 
 	public int getId() {
@@ -63,5 +65,9 @@ public class Account {
 	public String getPartnerName() { return PartnerName; }
 
 	public void setPartnerName(String name) { PartnerName = name; }
+
+	public void setActive(boolean active){ this.active = active; }
+
+	public boolean getActive (){ return active; }
 
 }

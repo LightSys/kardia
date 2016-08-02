@@ -36,9 +36,7 @@ public class GiftList extends Fragment{
 	public static String ARG_FUND_ID = "fund_id";
 	int fund_id = -1;
 	private ArrayList<Gift> gifts = new ArrayList<Gift>();
-	private ArrayList<Integer> giftIDs = new ArrayList<Integer>();
-	private boolean isSpecificFund = false;
-	
+
 	/**
 	 * Grab the needed Ids, load data and view.
 	 */
@@ -85,7 +83,7 @@ public class GiftList extends Fragment{
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
 
-		// If list is for specific fund, display fund as smaller (not as subject)
+		// display donor name, fund name, date, and amount for all gifts
 		String[] from = {"donorname", "giftname", "giftdate", "giftamount"};
         int[] to = {R.id.subject, R.id.fundName, R.id.date, R.id.detail};
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
@@ -148,6 +146,7 @@ public class GiftList extends Fragment{
 	public void onSaveInstanceState(Bundle outState){
 		super.onSaveInstanceState(outState);
 		outState.putInt(ARG_FUND_ID, fund_id);
-		outState.putIntegerArrayList("giftIDs", giftIDs);
+        outState.putString(ARG_PERIOD_TYPE, period_type);
+        outState.putString(ARG_PERIOD_ID, period_id);
 	}
 }

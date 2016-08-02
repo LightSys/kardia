@@ -3,6 +3,7 @@ package org.lightsys.missionaryapp.views;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
@@ -10,6 +11,7 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
 
@@ -27,27 +30,28 @@ import org.lightsys.missionaryapp.R;
  * @author otter57
  * created 7-27-16
  */
-public class GiftTimePeriodList extends Fragment{
+public class GiftTimePeriodList extends Fragment {
 
 	public final String ARG_FUND_ID = "fund_id"; //The position of the fund that was clicked
 	int fund_id = -1;
+	private ArrayList<Fund> funds;
 	private ArrayList<Period> periods = new ArrayList<Period>();
     String periodtype;
-	
+
 	/**
 	 * Based on what fund the user clicked on (or visited last) it will generate a list of 
 	 * years during which they donated to the fund, with the amount of money they donated that year.
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		
+		Log.d("GIFTTIMEPERIOD", "onCreateView: got to gift page");
+
 		Bundle args = getArguments();
 
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-		periodtype = "gift_year";
-        //todo: make this an option for user
-		//periodtype = "gift_month"
-
+		periodtype = "Year";
+		int Account_Id = db.getAccount().getId();
+        periods.clear();
 		if(savedInstanceState != null){ 
 			fund_id = savedInstanceState.getInt(ARG_FUND_ID);
 			periods = db.getFundPeriods(fund_id, periodtype);
@@ -57,7 +61,11 @@ public class GiftTimePeriodList extends Fragment{
 			periods = db.getFundPeriods(fund_id, periodtype);
 		}
 		else{
-			periods = db.getFundPeriods(periodtype);
+			funds=db.getFundsForMissionary(Account_Id);
+			for(Fund f : funds) {
+				fund_id = f.getFundId();
+				periods.addAll(db.getFundPeriods(fund_id, periodtype));
+			}
 		}
         if (periods.size()==1){
             loadRelatedGifts(0);
@@ -66,10 +74,10 @@ public class GiftTimePeriodList extends Fragment{
 
 
 		View v = inflater.inflate(R.layout.activity_main, container, false);
-        String gtpListTitle = "Gifts By " + periodtype.replace("gift_m","M").replace("gift_y","Y") + ":";
+        String gtpListTitle = "Gifts By " + periodtype;
 
 		if (fund_id != -1) {
-			gtpListTitle += " - " + db.getFundByFundId(fund_id).getFundDesc();
+			gtpListTitle += ": " + db.getFundByFundId(fund_id).getFundDesc();
 		}
 		getActivity().setTitle(gtpListTitle);
 
@@ -154,7 +162,7 @@ public class GiftTimePeriodList extends Fragment{
 		transaction.addToBackStack("ToGiftList");
 		transaction.commit();
 	}
-	
+
 	/**
 	 * used to hold the reference id in case the user navigates away from the app.
 	 */

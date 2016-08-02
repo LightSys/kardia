@@ -21,7 +21,7 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 public class RefreshOptions extends Fragment {
 
     Button applyButton;
-    Spinner refreshPeriods;
+    Spinner refreshPeriods, giftPeriods;
 
     LocalDBHandler db;
 
@@ -33,34 +33,36 @@ public class RefreshOptions extends Fragment {
 
         applyButton = (Button)v.findViewById(R.id.applyButton);
         refreshPeriods = (Spinner)v.findViewById(R.id.refreshPeriods);
+        giftPeriods = (Spinner)v.findViewById(R.id.giftPeriods);
 
         applyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 LocalDBHandler db = new LocalDBHandler(v.getContext(), null);
                 db.addRefresh_Period(refreshPeriods.getSelectedItem().toString());
+                db.addGiftPeriod(giftPeriods.getSelectedItem().toString());
+
                 Toast.makeText(v.getContext(), "Changes Applied", Toast.LENGTH_SHORT).show();
             }
         });
 
         LocalDBHandler db = new LocalDBHandler(v.getContext(), null);
         String refresh = db.getRefreshPeriod();
+        String period = db.getGiftPeriod();
         db.close();
         String[] updatePeriods = getResources().getStringArray(R.array.refresh_times);
-        int index = 0;
+        String[] allgiftPeriods = getResources().getStringArray(R.array.gift_periods);
 
         for (int i = 0; i < updatePeriods.length; i++){
             if (updatePeriods[i].equals(refresh)){
-                index = i;
-                i = updatePeriods.length + 1;
-            }
-            else {
-                index = 0;
+                refreshPeriods.setSelection(i);
             }
         }
-
-        refreshPeriods.setSelection(index);
-
+        for (int i = 0; i < allgiftPeriods.length; i++){
+            if (allgiftPeriods[i].equals(period)){
+                giftPeriods.setSelection(i);
+            }
+        }
         return v;
     }
 

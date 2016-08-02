@@ -1,10 +1,14 @@
 package org.lightsys.missionaryapp.views;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.data.Fund;
+import org.lightsys.missionaryapp.data.Period;
+import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import android.os.Bundle;
@@ -27,12 +31,16 @@ import org.lightsys.missionaryapp.R;
  * 
  * @author Andrew Cameron
  * edited from DonorApp to MissionaryApp by otter57
+ * //todo
+ * shows each fund with the total donated to date for the specific period
+ * clicking fund goes to a list of all donations to fund during time period
  */
 public class FundList extends Fragment{
 	
 	private ArrayList<Fund> funds;
-	String TAG="FundList";
-	
+	private static String periodtype="Year";
+	private static String periodid = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+
 	/**
 	 * Pulls all relevant funds, and creates the view (including the bottom total bar)
 	 */
@@ -40,19 +48,11 @@ public class FundList extends Fragment{
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-		ArrayList<Account> accounts = db.getAccounts();
+		//ArrayList<Account> accounts = db.getAccounts();
 
-		// Loop through all accounts and pull all funds for each account
-		for (Account a : accounts) {
-			int accountID = a.getId();
-			funds = db.getFundsForMissionary(accountID);
-            Log.d(TAG, "onCreateView: " + accountID);
-            if (funds.size()>0) {
-                Log.d(TAG, "onCreateView: " + funds.get(0).getFundName());
-				Log.d(TAG, "onCreateView: " + funds.get(0).getFundDesc());
-
-			}
-		}
+		// Select Active account
+        int accountID = db.getAccount().getId();
+        funds = db.getFundsForMissionary(accountID);
 
 		db.close();
 
@@ -66,8 +66,8 @@ public class FundList extends Fragment{
 
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>>itemList = generateListItems();
-		String[] from = {"fundtitle"};
-		int[] to = {R.id.subject};
+		String[] from = {"fundtitle","todateamount","date"};
+		int[] to = {R.id.subject, R.id.detail, R.id.date};
 		
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 		
@@ -86,11 +86,13 @@ public class FundList extends Fragment{
 	private ArrayList<HashMap<String,String>> generateListItems(){
 
 		ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
-
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 		for(Fund f : funds){
 			HashMap<String,String> hm = new HashMap<String,String>();
-			
+            Period p = db.getFundPeriodToDate(f.getFundId(), periodtype, periodid);
 			hm.put("fundtitle", f.getFundDesc());
+            hm.put("todateamount", Formatter.amountToString(p.getGiftTotal()));
+            hm.put("date", p.getPeriodName());
 			
 			aList.add(hm);
 		}
@@ -105,10 +107,12 @@ public class FundList extends Fragment{
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			GiftTimePeriodList newFrag = new GiftTimePeriodList();
+			GiftList newFrag = new GiftList();
 
 			Bundle args = new Bundle();
 			args.putInt(newFrag.ARG_FUND_ID, funds.get(position).getFundId());
+			args.putString(newFrag.ARG_PERIOD_TYPE, periodtype);
+			args.putString(newFrag.ARG_PERIOD_ID, periodid);
 			newFrag.setArguments(args);
 
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
@@ -117,4 +121,5 @@ public class FundList extends Fragment{
 			transaction.commit();
 		}
 	}
+
 }

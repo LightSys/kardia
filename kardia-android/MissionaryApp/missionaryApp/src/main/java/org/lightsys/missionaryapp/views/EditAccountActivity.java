@@ -117,7 +117,7 @@ public class EditAccountActivity extends Activity {
 				}
 
 				db.close();
-				Account a = new Account(account_id, name, pass, server, null);
+				Account a = new Account(account_id, name, pass, server, null,false);
 
 				// Execute data connection to validate account and pull data if valid
 				// DataConnection will close activity once complete if successful

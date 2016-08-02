@@ -7,14 +7,14 @@
     android:background="@drawable/noise_blue_repeat" >
 
     <TextView
-        android:id="@+id/add_account_text"
+        android:id="@+id/change_account_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
         android:layout_marginLeft="18dp"
         android:layout_marginStart="18dp"
         android:layout_marginBottom="20dp"
-        android:text="@string/add_new_account"
+        android:text="@string/change_account"
         android:textSize="22sp"/>
 
     <Button
@@ -34,7 +34,7 @@
         android:id="@+id/username_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/add_account_text"
+        android:layout_below="@id/change_account_text"
         android:layout_centerHorizontal="true"
         android:ems="12"
         android:textSize="22sp"

@@ -6,48 +6,77 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat" >
-    <TableRow
+    <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="200dp"
-        android:gravity="center">
-
-        <TextView
-            android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+        <TableRow
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Refresh Every"
-            android:id="@+id/textView"
-            android:layout_marginTop="85dp"
-            android:layout_gravity="center_horizontal" />
+            android:layout_marginTop="100dp"
+            android:id="@+id/tableRow1"
+            android:layout_gravity="center_horizontal">
 
-        <Spinner
-            android:layout_width="wrap_content"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Refresh Every"
+                android:id="@+id/textView"
+                android:layout_column="1" />
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/refreshPeriods"
+                android:entries="@array/refresh_times"
+                android:focusableInTouchMode="false"
+                android:layout_column="2"/>
+
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/refreshPeriods"
-            android:entries="@array/refresh_times"
-            android:focusableInTouchMode="false"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_marginTop="50dp"
+            android:layout_gravity="center_horizontal"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Gift Period"
+                android:id="@+id/gifttextView"
+                android:layout_column="1"
+                android:layout_gravity="right"/>
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/giftPeriods"
+                android:entries="@array/gift_periods"
+                android:focusableInTouchMode="false"
+                android:layout_column="2"/>
+        </TableRow>
 
 
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="200dp"
-        android:gravity="center">
-
-        <Button
-            android:layout_width="wrap_content"
+        <TableRow
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Apply"
-            android:id="@+id/applyButton"
-            style="@style/customBottomBar"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_marginTop="200dp"
+            android:gravity="center">
 
-    </TableRow>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Apply"
+                android:id="@+id/applyButton"
+                style="@style/customBottomBar"
+                android:layout_gravity="center_horizontal"/>
 
+        </TableRow>
 
+    </TableLayout>
 
 </LinearLayout>
