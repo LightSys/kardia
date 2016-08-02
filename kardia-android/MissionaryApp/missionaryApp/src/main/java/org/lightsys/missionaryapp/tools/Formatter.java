@@ -21,6 +21,12 @@ public class Formatter {
         return formattedDate[1] + " " + formattedDate[2] + ",  " + formattedDate[0];
     }
 
+    public static String getMonthYearDate (String month, String year){
+        month = getMonth(Integer.parseInt(month));
+
+        return month + ", " + year;
+    }
+
     private static String getMonth(int num){
         switch(num){
             case 1: return "January";
@@ -46,10 +52,14 @@ public class Formatter {
      * @return the amount as a standard monetary string as $Dollars.Cents (e.g. "$24.05")
      */
     public static String amountToString(int[] gift_total){
-        if(gift_total[1] <= 9){
-            return "$" + gift_total[0] + ".0" + gift_total[1];
+        if(gift_total!=null) {
+            if (gift_total[1] <= 9) {
+                return "$" + gift_total[0] + ".0" + gift_total[1];
+            } else {
+                return "$" + gift_total[0] + "." + gift_total[1];
+            }
         }else{
-            return "$" + gift_total[0] + "." + gift_total[1];
+            return "$0.00";
         }
     }
 }

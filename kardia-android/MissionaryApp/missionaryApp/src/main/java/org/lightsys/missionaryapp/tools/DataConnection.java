@@ -234,8 +234,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
             loadPartnerName(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/"
                     + Account_ID + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=element&cx__res_attrs=basic"));
-            //loadMissionaries(GET("http://" + Host_Name + ":800/apps/kardia/api/supporter/" + Account_ID +
-            //       "/Missionaries?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
             loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
                     "/Supporters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
             loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
@@ -252,7 +250,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
 
             }
-            int i = 0;
             for(Note n : db.getNotes()){
                 loadPrayedFor(GET("http://" + Host_Name +":800/apps/kardia/api/missionary/" + Account_ID + "/Notes/" + n.getNoteId() +
                         "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), n.getNoteId());
@@ -773,8 +770,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         String gift_fund_desc = GiftObj.getString("gift_fund_desc");
                         String gift_year = dateObj.getString("year");
                         String gift_month = dateObj.getString("month");
-
+                        String month_year;
                         // Convert gift dates to YYYY-MM-DD format
+                        month_year=Formatter.getMonthYearDate(gift_month, gift_year);
                         gift_month = (gift_month.length() < 2)? "0" + gift_month : gift_month;
                         String gift_day = dateObj.getString("day");
                         gift_day = (gift_day.length() < 2)? "0" + gift_day : gift_day;
@@ -798,11 +796,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setGiftDonor(donorName);
                         temp.setGiftDonorId(donorID);
                         temp.setGiftYear(gift_year);
-                        temp.setGiftMonth(gift_month);
+                        temp.setGiftMonth(month_year);
 
                         db.addGift(temp);
-                        //db.addGift_Year(giftid, Year_ID);
-                        //db.addGift_Fund(giftid, Fund_ID);
                         db.addGift_Account(giftid, Account_ID);
                     }
                 }

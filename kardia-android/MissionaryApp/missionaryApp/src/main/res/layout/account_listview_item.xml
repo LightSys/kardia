@@ -18,7 +18,7 @@
         android:layout_marginStart="18dp"
         android:layout_toLeftOf="@+id/server"
         android:layout_toStartOf="@+id/server"
-        android:textSize="22sp" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <!-- The Server Address -->
 

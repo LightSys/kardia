@@ -10,20 +10,34 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dca88b97-5f95-404b-ae70-7894c54711c8" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/LinkBar.java" afterPath="" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/HomePage.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/drawable/custom_home_list.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/home_button_items.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/home_page_layout.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/ContactInfo.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/ContactInfo.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Donor.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Donor.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Period.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Period.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/PrayedFor.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/PrayedFor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/donorApp.iml" afterPath="$PROJECT_DIR$/donorApp/donorApp.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Account.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Account.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/DataConnection.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/DataConnection.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/Formatter.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/Formatter.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/LocalDBHandler.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/LocalDBHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedGift.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedGift.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedPrayerRequest.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DetailedPrayerRequest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/AccountsActivity.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/AccountsActivity.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DonorList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DonorList.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/EditAccountActivity.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/EditAccountActivity.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/FundList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/FundList.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftList.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftTimePeriodList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftTimePeriodList.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/MainActivity.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/MainActivity.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/RefreshOptions.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/RefreshOptions.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/account_listview_item.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/account_listview_item.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/account_page_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/account_page_layout.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/refresh_options_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/refresh_options_layout.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_listview_item.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_listview_item.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_page_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_page_layout.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/activity_main.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/main_listview_item_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/main_listview_item_layout.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/refresh_options_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/refresh_options_layout.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/strings.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/styles.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/styles.xml" />
     </list>
     <ignored path="DonorApp.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -53,39 +67,46 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="GiftList.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/GiftList.java">
+      <file leaf-file-name="MainActivity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/MainActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.31976745">
-              <caret line="104" column="0" selection-start-line="104" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="307" column="46" selection-start-line="307" selection-start-column="46" selection-end-line="307" selection-end-column="46" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="YTDList.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/YTDList.java">
+      <file leaf-file-name="AccountsActivity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/AccountsActivity.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="33" column="51" selection-start-line="33" selection-start-column="51" selection-end-line="33" selection-end-column="51" />
-              <folding>
-                <element signature="imports" expanded="false" />
-              </folding>
+              <caret line="53" column="51" selection-start-line="53" selection-start-column="32" selection-end-line="53" selection-end-column="51" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MainActivity.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/MainActivity.java">
+      <file leaf-file-name="DataConnection.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#5056#5057#0" expanded="false" />
-                <element signature="e#5080#5081#0" expanded="false" />
-              </folding>
+              <caret line="189" column="12" selection-start-line="189" selection-start-column="12" selection-end-line="189" selection-end-column="12" />
+              <folding />
             </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="account_page_layout.xml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/account_page_layout.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-0.96113074">
+              <caret line="6" column="52" selection-start-line="6" selection-start-column="52" selection-end-line="6" selection-end-column="52" />
+              <folding />
+            </state>
+          </provider>
+          <provider editor-type-id="android-designer">
+            <state />
           </provider>
         </entry>
       </file>
@@ -1906,9 +1927,18 @@
       <projects_view />
     </option>
   </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/GiftList.java" />
+      </list>
+    </option>
+  </component>
   <component name="ProjectFrameBounds">
+    <option name="x" value="-1280" />
+    <option name="y" value="-77" />
     <option name="width" value="1280" />
-    <option name="height" value="800" />
+    <option name="height" value="1024" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -1935,8 +1965,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
-      <pane id="Scratches" />
       <pane id="AndroidView">
         <subPane>
           <PATH>
@@ -1945,10 +1973,152 @@
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DonorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="res" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="values" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderTypeNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="styles.xml" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResGroupNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DonorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="res" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="values" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderTypeNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DonorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="res" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="menu" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderTypeNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DonorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="res" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="layout" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderTypeNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DonorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="res" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DonorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorapp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="views" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DonorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorapp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DonorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="donorApp" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane" />
+      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -2236,7 +2406,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1280" height="800" extended-state="0" />
+    <frame x="-1280" y="-77" width="1280" height="1024" extended-state="0" />
     <editor active="false" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -2245,7 +2415,8 @@
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22946176" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22946176" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3286119" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -2265,8 +2436,7 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32903227" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3286119" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -2315,21 +2485,11 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/GiftList.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/YTDList.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="33" column="51" selection-start-line="33" selection-start-column="51" selection-end-line="33" selection-end-column="51" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2337,11 +2497,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#5056#5057#0" expanded="false" />
-            <element signature="e#5080#5081#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2357,9 +2513,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="33" column="51" selection-start-line="33" selection-start-column="51" selection-end-line="33" selection-end-column="51" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2367,11 +2521,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#5056#5057#0" expanded="false" />
-            <element signature="e#5080#5081#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2387,9 +2537,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="33" column="51" selection-start-line="33" selection-start-column="51" selection-end-line="33" selection-end-column="51" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2397,11 +2545,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#5056#5057#0" expanded="false" />
-            <element signature="e#5080#5081#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2413,13 +2557,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/gift_detailedview_layout.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="39" column="33" selection-start-line="39" selection-start-column="25" selection-end-line="39" selection-end-column="33" />
         </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/CommentActivity.java">
@@ -2451,13 +2595,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="71" column="0" selection-start-line="71" selection-start-column="0" selection-end-line="71" selection-end-column="0" />
         </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/ContactMissionaryActivity.java">
@@ -2496,13 +2640,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="71" column="0" selection-start-line="71" selection-start-column="0" selection-end-line="71" selection-end-column="0" />
         </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/ContactMissionaryActivity.java">
@@ -2534,13 +2678,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="60" column="0" selection-start-line="60" selection-start-column="0" selection-end-line="70" selection-end-column="34" />
         </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/ContactMissionaryActivity.java">
@@ -2607,20 +2751,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/note_listview_item.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="71" column="0" selection-start-line="71" selection-start-column="0" selection-end-line="71" selection-end-column="0" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.1542288">
-          <caret line="279" column="48" selection-start-line="279" selection-start-column="48" selection-end-line="279" selection-end-column="48" />
-        </state>
+      <provider editor-type-id="android-designer">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/CommentActivity.java">
@@ -2645,41 +2782,19 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/gift_detailedview_layout.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5521472">
           <caret line="39" column="33" selection-start-line="39" selection-start-column="25" selection-end-line="39" selection-end-column="33" />
         </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/DetailedGift.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.039577838">
           <caret line="49" column="65" selection-start-line="49" selection-start-column="41" selection-end-line="49" selection-end-column="65" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/MainActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="244" column="34" selection-start-line="244" selection-start-column="27" selection-end-line="244" selection-end-column="34" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#5056#5057#0" expanded="false" />
-            <element signature="e#5080#5081#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/YTDList.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="33" column="51" selection-start-line="33" selection-start-column="51" selection-end-line="33" selection-end-column="51" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -2692,10 +2807,80 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/GiftList.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.31976745">
-          <caret line="104" column="0" selection-start-line="104" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.4379845">
+          <caret line="57" column="24" selection-start-line="57" selection-start-column="17" selection-end-line="57" selection-end-column="24" />
           <folding />
         </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/YTDList.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="57" column="36" selection-start-line="57" selection-start-column="29" selection-end-line="57" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/LinkBar.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="28" column="57" selection-start-line="28" selection-start-column="43" selection-end-line="28" selection-end-column="57" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/values/styles.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="34" column="17" selection-start-line="34" selection-start-column="17" selection-end-line="34" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/linkbar_layout.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.144">
+          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="11" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/MainActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="307" column="46" selection-start-line="307" selection-start-column="46" selection-end-line="307" selection-end-column="46" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/tools/DataConnection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="189" column="12" selection-start-line="189" selection-start-column="12" selection-end-line="189" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/java/org/lightsys/donorapp/views/AccountsActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="53" column="51" selection-start-line="53" selection-start-column="32" selection-end-line="53" selection-end-column="51" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/donorApp/src/main/res/layout/account_page_layout.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.96113074">
+          <caret line="6" column="52" selection-start-line="6" selection-start-column="52" selection-end-line="6" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
       </provider>
     </entry>
   </component>

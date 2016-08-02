@@ -5,36 +5,66 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat" >
-
-    <TextView
-        android:id="@+id/add_account_text"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:layout_marginLeft="18dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginBottom="20dp"
-        android:text="@string/add_new_account"
-        android:textSize="18sp"/>
+        android:id="@+id/RLayout"
+        android:background="@android:color/darker_gray"
+        android:layout_marginBottom="10dp">
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="5dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
 
+        <ListView
+            android:id="@+id/connected_list"
+            style="@style/listCustomBlue"
+            android:layout_toRightOf="@id/textView2"
+            android:layout_toEndOf="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginEnd="20dp">
+        </ListView>
+
+    </RelativeLayout>
     <Button
         android:id="@+id/finish_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_marginRight="20dp"
+        android:layout_below="@id/RLayout"
         android:textSize="16sp"
         android:text="@string/done"
         android:textStyle="bold"
         style="@style/customBottomBar" />
-
+    <TextView
+        android:id="@+id/change_account_text"
+        android:layout_below="@id/finish_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/change_account"
+        android:textSize="18sp"/>
 
     <EditText
         android:id="@+id/username_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/add_account_text"
+        android:layout_below="@id/change_account_text"
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/username"
@@ -89,27 +119,5 @@
         android:text="@string/connect"
         android:textStyle="bold"
         style="@style/customBottomBar" />
-
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/connect_button"
-        android:layout_marginTop="40dp"
-        android:layout_marginLeft="6dp"
-        android:layout_marginStart="6dp"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-
-    <ListView
-        android:id="@+id/connected_list"
-        style="@style/listCustomBlue"
-        android:layout_below="@id/textView2"
-        android:layout_marginTop="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:divider="@android:color/black">
-    </ListView>
 
 </RelativeLayout>

@@ -10,6 +10,7 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -45,19 +46,14 @@ public class MainActivity extends ActionBarActivity {
 	private Fragment fragment;
 	private ArrayList<Account> accts = new ArrayList<Account>();
 	private static final long DAY_MILLI = 86400000;
+	private String tag;
+	private int drawerpos=0;
 
 	//stuff to automatically refresh the current fragment
 	private android.os.Handler refreshHandler = new android.os.Handler();
 	private Runnable refreshRunnable = new Runnable() {
 		@Override
 		public void run() {
-		//	refreshCurrentFragment();
-			//refreshes the current fragment every second
-			//this is not very efficient
-			//it should be altered eventually
-			//ideally it should refresh whenever the auto-updater updates
-			//refreshHandler.postDelayed(refreshRunnable, 1000);
-			//it was having issues, so it is now gone
 		}
 	};
 
@@ -190,8 +186,7 @@ public class MainActivity extends ActionBarActivity {
 		super.onPostCreate(savedInstanceState);
 		mDrawerToggle.syncState();
 	}
-	
-	
+
 	@Override
 	public void onConfigurationChanged(Configuration newConfig){
 		super.onConfigurationChanged(newConfig);
@@ -222,7 +217,6 @@ public class MainActivity extends ActionBarActivity {
 	 * The listener for the drawer menu. waits for a drawer item to be clicked.
 	 */
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
-
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			selectItem(position);
@@ -233,13 +227,13 @@ public class MainActivity extends ActionBarActivity {
 	 * Drawer click responses.
 	 * @param position, position of the drawer that has been selected
 	 */
-	private void selectItem(int position) {
+	public void selectItem(int position) {
 		LocalDBHandler db = new LocalDBHandler(this, null);
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		switch(position){
 			//Gifts, Donor, Prayer requests/updates, Funds, Accounts, Options, Refresh
 		case 0:
-			fragment = new GiftList();
+			fragment = new GiftTimePeriodList();
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 1:
@@ -268,17 +262,16 @@ public class MainActivity extends ActionBarActivity {
 			break;
 		case 6:
 			//refresh
-			accts = db.getAccounts();
+			Account a = db.getAccount();
 			db.close();
-			for (Account a : accts) {
-				new DataConnection(this, this, a).execute("");
-				}
+
+			new DataConnection(this, this, a).execute("");
+
 			break;
 		}
 		mDrawerList.setItemChecked(position, true);
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
-
 	/**
 	 * Reloads the current fragment to update view if content has changed
 	 */
@@ -288,6 +281,10 @@ public class MainActivity extends ActionBarActivity {
 		fragTransaction.detach(currentFragment);
 		fragTransaction.attach(currentFragment);
 		fragTransaction.commit();
+	}
+
+	public void returnFromHome(int position){
+		selectItem(position);
 	}
 
 	/**
@@ -302,11 +299,16 @@ public class MainActivity extends ActionBarActivity {
 
 	/**
 	 * Called after return from accounts activity if user just added first account
-	 * Sends the user to the designations page to begin
+	 * Sends the user to the home page to begin
 	 */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data){
 		super.onActivityResult(requestCode, resultCode, data);
+		selectItem(0);
+	}
+	@Override
+	public void onResume(){
+		super.onResume();
 		selectItem(0);
 	}
 

@@ -71,8 +71,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_CHECKNUM = "gift_check_num";
     private static final String COLUMN_DONOR_NAME = "donor_name";
     private static final String COLUMN_DONOR_ID = "donor_id";
-	private static final String COLUMN_GIFTYEAR = "gift_year";
-	private static final String COLUMN_GIFTMONTH = "gift_month";
+	private static final String COLUMN_GIFTYEAR = "Year";
+	private static final String COLUMN_GIFTMONTH = "Month";
     //NOTES TABLE
 	private static final String TABLE_NOTES = "notes";
 	private static final String COLUMN_TEXT = "text";
@@ -102,11 +102,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String TABLE_MISSIONARIES = "missionaries";
 
 	private static final String COLUMN_FUND_ID = "fund_id";
-	private static final String COLUMN_YEAR_ID = "year_id";
 
 	private static final String COLUMN_GIFT_ID = "gift_id";
-	//GIFT_YEAR_MAP
-	private static final String TABLE_GIFTYEAR_MAP = "gift_year_map";
 	//FUND_ACCOUNT_MAP
 	private static final String TABLE_FUNDACCOUNT_MAP = "fund_account_map";
 	private static final String COLUMN_ACCOUNT_ID = "account_id";
@@ -131,6 +128,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	//not really a table, but a variable that needs to be accessed from multiple locations
 	private static final String TABLE_REFRESH_PERIOD = "refresh_period";
 	private static final String COLUMN_REFRESH = "refresh";
+	//GIFT_PERIOD
+	private static final String TABLE_GIFT_PERIOD = "gift_period";
+	private static final String COLUMN_PERIOD = "period";
 	//json Posts
 	private static final String TABLE_JSON_POST = "json_post";
 	private static final String COLUMN_JSON_ID = "id";
@@ -145,9 +145,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_SUPPORTER_PARTNER_NAME = "supporter_partner_name";
 	//Table for Time Periods
 	private static final String TABLE_PERIOD = "period";
-	//Table for Period gift map
-	private static final String TABLE_FP_MAP = "fp_map";
-	private static final String COLUMN_PERIOD_ID = "period_id";
 	
 	/* ************************* Creation of Database and Tables ************************* */
 
@@ -257,6 +254,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				+ "(" + COLUMN_REFRESH + " TEXT PRIMARY KEY)";
 		db.execSQL(CREATE_REFRESH_PERIOD_TABLE);
 
+		String CREATE_GIFT_PERIOD_TABLE = "CREATE TABLE " + TABLE_GIFT_PERIOD
+				+ "(" + COLUMN_PERIOD + " TEXT PRIMARY KEY)";
+		db.execSQL(CREATE_GIFT_PERIOD_TABLE);
+
 		String CREATE_JSON_POST_TABLE = "CREATE TABLE " + TABLE_JSON_POST
 				+ "(" + COLUMN_JSON_ID + " INTEGER PRIMARY KEY, "
 				+ COLUMN_JSON_URL + " TEXT, "
@@ -302,12 +303,14 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * @param account, uses an Account object to retrieve needed data
 	 */
 	public void addAccount(Account account){
+		deleteAccountTable();
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_ID, account.getId());
 		values.put(COLUMN_ACCOUNTNAME, account.getAccountName());
 		values.put(COLUMN_ACCOUNTPASSWORD, account.getAccountPassword());
 		values.put(COLUMN_SERVERNAME, account.getServerName());
 		values.put(COLUMN_PARTNER_NAME, account.getPartnerName());
+		values.put(COLUMN_PARTNER_NAME, account.getActive());
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_ACCOUNTS, null, values);
@@ -515,6 +518,17 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.insert(TABLE_REFRESH_PERIOD, null, values);
 		db.close();
 	}
+	//sets the current gift period
+	public void addGiftPeriod (String period){
+		deleteGiftPeriod();
+
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_PERIOD, period);
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.insert(TABLE_GIFT_PERIOD, null, values);
+		db.close();
+	}
 
 	public void addJson_post(long jsonTableId, String url, String jsonString, int accountID){
 		ContentValues values = new ContentValues();
@@ -577,6 +591,12 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		//delete account
 		db.delete(TABLE_ACCOUNTS, COLUMN_ID + " = ?", acct);
 		
+		db.close();
+	}
+
+	public void deleteAccountTable(){
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.delete(TABLE_ACCOUNTS,null,null);
 		db.close();
 	}
 
@@ -658,13 +678,14 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
+	//deletes the period of refresh for the auto-updater
+	public void deleteGiftPeriod(){
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.delete(TABLE_GIFT_PERIOD, null, null);
+		db.close();
+	}
+
 	/* ************************* Get Queries ************************* */
-
-
-	/**
-	 * Pulls active account
-	 */
-	public Account getActiveAccount(){ return activeaccount; }
 
 	/**
 	 * Pulls the timestamp from the database
@@ -740,6 +761,61 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		c.close();
 		return periods;
+	}
+	//return current period for the fund
+	public Period getFundPeriodToDate(int fund_id, String periodtype, String period) {
+		Period currentperiod = new Period();
+
+
+		String qString = "SELECT DISTINCT " + periodtype + " FROM " + TABLE_GIFT + " INNER JOIN " + TABLE_FUND
+				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFTFUNDDESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+				+ " WHERE (" + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id + " AND " + TABLE_GIFT + "." + periodtype + " = " + period + ")";
+
+		SQLiteDatabase db = this.getReadableDatabase();
+
+		Cursor c = db.rawQuery(qString, null);
+
+		if (c.moveToFirst()) {
+			currentperiod.setPeriodName(c.getString(0));
+			ArrayList<Gift> gifts = getGiftsForPeriod(fund_id, periodtype, c.getString(0));
+			int Total[]= new int[2];
+			for(Gift g:gifts){
+				Total[0] += g.getGift_amount()[0];
+				Total[1] += g.getGift_amount()[1];
+			}
+			if (Total[1]>=100){
+				Total[0]+=Math.floor(Total[1]/100);
+				Total[1]-=Math.floor(Total[1]/100)*100;
+			}
+			currentperiod.setGiftTotal(Total);
+		}
+		db.close();
+		c.close();
+		return currentperiod;
+	}
+	/**
+	 * Pulls all accounts
+	 * @return All accounts in the Account table as an ArrayList of Account Objects
+	 */
+	public Account getAccount(){
+		Account temp = new Account();
+		String queryString = "SELECT * FROM " + TABLE_ACCOUNTS;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		if(c.moveToFirst()){
+			temp.setId(Integer.parseInt(c.getString(0)));
+			temp.setAccountName(c.getString(1));
+			temp.setAccountPassword(c.getString(2));
+			temp.setServerName(c.getString(3));
+			temp.setPartnerName(c.getString(4));
+		}else {
+			temp=null;
+		}
+		c.close();
+		db.close();
+		return temp;
 	}
 
 	/**
@@ -1427,6 +1503,28 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		}
 	}
 
+	//gets the gift period for fund and gift displays
+	public String getGiftPeriod(){
+		ArrayList<String> giftPeriods = new ArrayList<String>();
+		String queryString = "SELECT *" + " FROM " + TABLE_GIFT_PERIOD;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while (c.moveToNext()){
+			giftPeriods.add(c.getString(0));
+		}
+
+		c.close();
+		db.close();
+		if (giftPeriods.size() > 0){
+			return giftPeriods.get(0);
+		}
+		else {
+			return "Year";
+		}
+	}
+
 	public ArrayList<JsonPost> getJsonPosts(){
 		String queryString = "SELECT * FROM " + TABLE_JSON_POST;
 		ArrayList<JsonPost> posts = new ArrayList<JsonPost>();
@@ -1447,8 +1545,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 	/* ************************* Update Queries ************************* */
 
-
-	public void updateActiveAccount(Account active){this.activeaccount=active;}
 	/**
 	 * Updates the timestamp from the originalDate (in milli) to currentDate (in milli)
 	 * @param originalDate, date (in milliseconds) of database timestamp before update
