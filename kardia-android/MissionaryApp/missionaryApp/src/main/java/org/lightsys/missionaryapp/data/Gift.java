@@ -27,9 +27,9 @@ public class Gift {
 		this.setId(Id);
 		this.setName(name);
 		this.setGiftFund(giftFund);
-		this.setGift_amount(gift_amount);
-		this.setGift_fund_desc(gift_fund_desc);
-		this.setGift_date(gift_date);
+		this.setGiftAmount(gift_amount);
+		this.setGiftFundDesc(gift_fund_desc);
+		this.setGiftDate(gift_date);
 		this.setGift_check_num(gift_check_num);
 		this.setGiftDonor(giftDonor);
         this.setGiftDonorId(giftDonorId);
@@ -61,25 +61,25 @@ public class Gift {
 		this.giftFund = giftFund;
 	}
 
-	public int[] getGift_amount() {return gift_amount;}
+	public int[] getGiftAmount() {return gift_amount;}
 
-	public void setGift_amount(int[] gift_amount) {
+	public void setGiftAmount(int[] gift_amount) {
 		this.gift_amount = gift_amount;
 	}
 
-	public String getGift_fund_desc() {
+	public String getGiftFundDesc() {
 		return gift_fund_desc;
 	}
 
-	public void setGift_fund_desc(String gift_fund_desc) {
+	public void setGiftFundDesc(String gift_fund_desc) {
 		this.gift_fund_desc = gift_fund_desc;
 	}
 
-	public String getGift_date() {
+	public String getGiftDate() {
 		return gift_date;
 	}
 
-	public void setGift_date(String gift_date) {
+	public void setGiftDate(String gift_date) {
 		this.gift_date = gift_date;
 	}
 

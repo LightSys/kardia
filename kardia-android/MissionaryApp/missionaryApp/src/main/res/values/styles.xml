@@ -43,12 +43,14 @@
         <item name="android:paddingRight">10dp</item>
     </style>
     <style name="homeNavigationItems" parent="@android:style/Widget.TextView">
-        <!--<item name="android:shadowColor">#FFFFFF</item>
+        <item name="android:shadowColor">#FFFFFF</item>
         <item name="android:shadowDx">1</item>
         <item name="android:shadowDy">1</item>
-        <item name="android:shadowRadius">0.6</item>-->
-        <item name="android:listSelector">@drawable/custom_list_item</item>
-        <item name="android:textColor">#FFF</item>
+        <item name="android:shadowRadius">0.6</item>
+        <item name="android:background">@drawable/custom_total_bar</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:divider">#000030</item>
+        <item name="android:dividerHeight">1dip</item>
     </style>
 
     <style name="MySpinnerStyle" parent="android:Theme.Holo.Dialog">

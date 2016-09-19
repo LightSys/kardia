@@ -5,30 +5,62 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat" >
-
-    <TextView
-        android:id="@+id/change_account_text"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:layout_marginLeft="18dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginBottom="20dp"
-        android:text="@string/change_account"
-        android:textSize="22sp"/>
+        android:id="@+id/RLayout"
+        android:background="@android:color/darker_gray"
+        android:layout_marginBottom="10dp">
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="5dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="22sp"/>
 
+        <ListView
+            android:id="@+id/connected_list"
+            style="@style/listCustomBlue"
+            android:layout_toRightOf="@id/textView2"
+            android:layout_toEndOf="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginEnd="20dp"
+            android:textSize="22sp">
+        </ListView>
+
+    </RelativeLayout>
     <Button
         android:id="@+id/finish_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_marginRight="20dp"
+        android:layout_below="@id/RLayout"
         android:textSize="22sp"
         android:text="@string/done"
         android:textStyle="bold"
         style="@style/customBottomBar" />
-
+    <TextView
+        android:id="@+id/change_account_text"
+        android:layout_below="@id/finish_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/change_account"
+        android:textSize="22sp"/>
 
     <EditText
         android:id="@+id/username_input"
@@ -36,48 +68,51 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/change_account_text"
         android:layout_centerHorizontal="true"
-        android:ems="12"
-        android:textSize="22sp"
+        android:ems="10"
         android:hint="@string/username"
-        android:singleLine="true"/>
+        android:singleLine="true"
+        android:text = "Laura"
+        android:textSize="22sp"/>
 
     <EditText
         android:id="@+id/password_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="2dp"
         android:layout_below="@id/username_input"
         android:layout_centerHorizontal="true"
-        android:ems="12"
-        android:textSize="22sp"
+        android:ems="10"
         android:hint="@string/password"
         android:inputType="textPassword"
-        android:singleLine="true"/>
+        android:singleLine="true"
+        android:text = "E2Ra!car0line"
+        android:textSize="22sp"/>
 
     <EditText
         android:id="@+id/servername_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="2dp"
         android:layout_below="@id/password_input"
         android:layout_centerHorizontal="true"
-        android:ems="12"
-        android:textSize="22sp"
+        android:ems="10"
         android:hint="@string/server_name"
-        android:singleLine="true"/>
+        android:singleLine="true"
+        android:text = "10.5.10.176"
+        android:textSize="22sp"/>
 
     <EditText
         android:id="@+id/donor_id_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="2dp"
         android:layout_below="@id/servername_input"
         android:layout_centerHorizontal="true"
-        android:ems="12"
-        android:textSize="22sp"
+        android:ems="10"
         android:hint="@string/user_id_ex_100001"
         android:inputType="number"
-        android:singleLine="true"/>
+        android:singleLine="true"
+        android:textSize="22sp"/>
 
 
     <Button
@@ -85,33 +120,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/donor_id_input"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"
         android:text="@string/connect"
-        android:textSize="22sp"
         android:textStyle="bold"
-        style="@style/customBottomBar" />
-
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/connect_button"
-        android:layout_marginTop="40dp"
-        android:layout_marginLeft="6dp"
-        android:layout_marginStart="6dp"
-        android:textSize="22sp" />
-
-
-    <ListView
-        android:id="@+id/connected_list"
-        style="@style/listCustomBlue"
-        android:layout_below="@id/textView2"
-        android:layout_marginTop="10dp"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:divider="@android:color/black">
-    </ListView>
+        style="@style/customBottomBar"
+        android:textSize="22sp"/>
 
 </RelativeLayout>

@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:gravity="center_horizontal"
-            android:textSize="32sp"
+            android:textSize="36sp"
             android:textStyle="bold"
             android:textColor="#000"
             android:visibility="gone"/>
@@ -28,7 +28,7 @@
         <View
             android:id="@+id/info_divider"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
+            android:layout_height="2dp"
             android:background="#000030"
             android:layout_above="@+id/welcome_list" />
 

@@ -11,16 +11,18 @@ public class PrayerLetter {
     private String folder;
     private String filename;
     private String date;
+    private int missionaryId;
 
     public PrayerLetter() {}
 
-    public PrayerLetter(int id, String missionaryName, String title, String folder, String filename, String date) {
+    public PrayerLetter(int id, String missionaryName, String title, String folder, String filename, String date, int missionaryId) {
         this.id = id;
         this.missionaryName = missionaryName;
         this.title = title;
         this.folder = folder;
         this.filename = filename;
         this.date = date;
+        this.missionaryId = missionaryId;
     }
 
     public int getId() {
@@ -66,4 +68,8 @@ public class PrayerLetter {
     public void setDate(String date) {
         this.date = date;
     }
+
+    public int getMissionaryId() { return missionaryId; }
+
+    public void setMissionaryId(int missionaryId) {this.missionaryId = missionaryId; }
 }

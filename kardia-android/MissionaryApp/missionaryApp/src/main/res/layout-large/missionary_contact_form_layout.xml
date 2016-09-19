@@ -80,7 +80,8 @@
             android:id="@+id/typeSpinner"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:entries="@array/contactTypes" />
+            android:entries="@array/contactTypes"
+            android:focusable="false"/>
     </TableRow>
 
     <ScrollView

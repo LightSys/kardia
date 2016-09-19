@@ -15,8 +15,8 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
-        android:layout_toLeftOf="@+id/prayingButton"
-        android:layout_toStartOf="@+id/prayingButton"
+        android:layout_toLeftOf="@+id/prayingButtonLayout"
+        android:layout_toStartOf="@+id/prayingButtonLayout"
         android:textSize="22sp"/>
 
     <TextView
@@ -26,8 +26,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/missionaryName"
-        android:layout_toLeftOf="@+id/prayingButton"
-        android:layout_toStartOf="@id/prayingButton"
+        android:layout_toLeftOf="@+id/prayingButtonLayout"
+        android:layout_toStartOf="@id/prayingButtonLayout"
         android:layout_marginTop="12dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
@@ -47,6 +47,7 @@
         android:textSize="18sp" />
 
     <LinearLayout
+        android:id="@+id/prayingButtonLayout"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_alignParentRight="true"

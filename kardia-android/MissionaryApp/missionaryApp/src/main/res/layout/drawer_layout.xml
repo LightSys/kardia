@@ -4,16 +4,16 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    
+
     <!-- Main Content View -->
-    <FrameLayout 
+    <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-    
+
     <!-- The Navigation Drawer -->
-    
-    <ListView 
+
+    <ListView
         android:id="@+id/drawer"
         android:layout_width="240dp"
         android:layout_height="match_parent"
@@ -22,5 +22,5 @@
         android:divider="@android:color/transparent"
         android:dividerHeight="2dp"
         android:background="#111" />
-       
+
 </android.support.v4.widget.DrawerLayout>

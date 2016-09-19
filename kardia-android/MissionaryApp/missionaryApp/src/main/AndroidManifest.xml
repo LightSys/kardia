@@ -13,7 +13,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.ACTION_SENDTO"/>
+    <uses-permission android:name="android.permission.ACTION_DIAL"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application

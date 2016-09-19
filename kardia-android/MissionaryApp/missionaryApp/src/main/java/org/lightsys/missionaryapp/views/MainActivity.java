@@ -22,6 +22,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -46,8 +47,7 @@ public class MainActivity extends ActionBarActivity {
 	private Fragment fragment;
 	private ArrayList<Account> accts = new ArrayList<Account>();
 	private static final long DAY_MILLI = 86400000;
-	private String tag;
-	private int drawerpos=0;
+    private int accountid=0;
 
 	//stuff to automatically refresh the current fragment
 	private android.os.Handler refreshHandler = new android.os.Handler();
@@ -230,29 +230,37 @@ public class MainActivity extends ActionBarActivity {
 	public void selectItem(int position) {
 		LocalDBHandler db = new LocalDBHandler(this, null);
 		FragmentManager fragmentManager = getSupportFragmentManager();
+		Account account = db.getAccount();
+		accountid = account.getId();
+
+		db.close();
 		switch(position){
 			//Gifts, Donor, Prayer requests/updates, Funds, Accounts, Options, Refresh
 		case 0:
-			fragment = new GiftTimePeriodList();
+			fragment = new HomePage();
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 1:
-			fragment = new DonorList();
+			fragment = new GiftTimePeriodList();
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 2:
+			fragment = new DonorList();
+			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+			break;
+		case 3:
 			fragment = new NoteList();
 			fragmentManager.beginTransaction().replace(R.id.content_frame,fragment).commit();
 			break;
-        case 3:
+        case 4:
             fragment = new FundList();
             fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
             break;
-		case 4:
+		case 5:
 			Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
 			startActivity(accounts);
 			break;
-		case 5:
+		case 6:
 			RefreshOptions refresh = new RefreshOptions();
 			fragment = refresh;
 			accts = db.getAccounts();
@@ -260,13 +268,11 @@ public class MainActivity extends ActionBarActivity {
 			db.close();
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
-		case 6:
+		case 7:
 			//refresh
-			Account a = db.getAccount();
-			db.close();
-
-			new DataConnection(this, this, a).execute("");
-
+			//Account a = db.getAccount();
+			//db.close();
+			new DataConnection(this, this, account).execute("");
 			break;
 		}
 		mDrawerList.setItemChecked(position, true);
@@ -307,9 +313,15 @@ public class MainActivity extends ActionBarActivity {
 		selectItem(0);
 	}
 	@Override
-	public void onResume(){
+	public void onResume() {
 		super.onResume();
-		selectItem(0);
+		LocalDBHandler db = new LocalDBHandler(this, null);
+		if(accountid != 0) {
+			if (accountid != db.getAccount().getId()) {
+				FragmentManager fragmentManager = getSupportFragmentManager();
+				fragment = new HomePage();
+				fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+			}
+		}
 	}
-
 }

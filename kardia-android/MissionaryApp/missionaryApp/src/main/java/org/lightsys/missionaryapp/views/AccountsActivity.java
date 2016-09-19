@@ -112,23 +112,22 @@ public class AccountsActivity extends Activity{
 		if(account!=null){
 			finishButton.setVisibility(View.VISIBLE);
 			connectedAccounts.setText("Connected Account:");
-		}else{
-			finishButton.setVisibility(View.INVISIBLE);
-			connectedAccounts.setText("No Accounts Connected.");
-		}
-		
-		List<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
+			List<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
 
 			HashMap<String,String> tempMap = new HashMap<String,String>();
 			tempMap.put("aName", account.getAccountName());
 			tempMap.put("aServer", account.getServerName());
 			aList.add(tempMap);
 
-		String[] from = {"aName", "aServer"};
-		int[] to = {R.id.title, R.id.server};
-		SimpleAdapter adapter = new SimpleAdapter(this, aList, R.layout.account_listview_item, from, to);
-		
-		accountsList.setAdapter(adapter);
+			String[] from = {"aName", "aServer"};
+			int[] to = {R.id.title, R.id.server};
+			SimpleAdapter adapter = new SimpleAdapter(this, aList, R.layout.account_listview_item, from, to);
+
+			accountsList.setAdapter(adapter);
+		}else{
+			finishButton.setVisibility(View.INVISIBLE);
+			connectedAccounts.setText("No Accounts Connected.");
+		}
 	}
 	
 	/**
@@ -171,13 +170,13 @@ public class AccountsActivity extends Activity{
 		for(Account a : accounts){
 			if(a.getAccountName().equals(aName) && a.getServerName().equals(sName) &&
 					a.getAccountPassword().equals(aPass) && a.getId() == dId){
-				Toast.makeText(this, "Account already stored", Toast.LENGTH_LONG).show();
+				Toast.makeText(this, "Account already connected", Toast.LENGTH_LONG).show();
 				db.close();
 				return;
 			}
 			// Two accounts with the same ID should never be stored
 			if(a.getId() == dId) {
-				Toast.makeText(this, "Account with this ID already stored", Toast.LENGTH_LONG).show();
+				Toast.makeText(this, "Account with this ID already connected", Toast.LENGTH_LONG).show();
 				db.close();
 				return;
 			}

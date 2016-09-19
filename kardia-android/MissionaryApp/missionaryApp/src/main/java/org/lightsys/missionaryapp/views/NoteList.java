@@ -50,8 +50,9 @@ public class NoteList extends Fragment {
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         combined.clear();
-        ArrayList<Note> notes = db.getNotes();
-        ArrayList<PrayerLetter> letters = db.getPrayerLetters();
+        int account_id = db.getAccount().getId();
+        ArrayList<Note> notes = db.getNotesForMissionary(account_id);
+        ArrayList<PrayerLetter> letters = db.getPrayerLettersForMissionary(account_id);
         db.close();
 
         // Combine sorted arrays of notes and letters into one array of sorted by date items
