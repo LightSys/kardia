@@ -250,7 +250,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
 
             }
-            for(Note n : db.getNotes()){
+            for(Note n : db.getNotesForMissionary(Account_ID)){
                 loadPrayedFor(GET("http://" + Host_Name +":800/apps/kardia/api/missionary/" + Account_ID + "/Notes/" + n.getNoteId() +
                         "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), n.getNoteId());
             }
@@ -789,10 +789,10 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setName(name);
                         temp.setId(giftid);
                         temp.setGiftFund(gift_fund);
-                        temp.setGift_fund_desc(gift_fund_desc);
-                        temp.setGift_date(gift_date);
+                        temp.setGiftFundDesc(gift_fund_desc);
+                        temp.setGiftDate(gift_date);
                         temp.setGift_check_num(gift_check_num);
-                        temp.setGift_amount(gifttotal);
+                        temp.setGiftAmount(gifttotal);
                         temp.setGiftDonor(donorName);
                         temp.setGiftDonorId(donorID);
                         temp.setGiftYear(gift_year);

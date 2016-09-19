@@ -1,5 +1,7 @@
 package org.lightsys.missionaryapp.views;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -9,8 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
 import org.lightsys.missionaryapp.data.Gift;
@@ -19,6 +23,7 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by laura deotte on 3/12/2015.
@@ -41,29 +46,70 @@ public class DetailedDonor extends Fragment{
     private ArrayList<Gift> gifts = new ArrayList<Gift>();
     final static String TAG = "DETAILED DONOR";
     private boolean isSpecificFund = false;
+    ListView listview;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.donor_detailed_view_layout, container, false);
+
         getActivity().setTitle("Donor");
-        args=this.getArguments();
+        args=getArguments();
+
         if(savedInstanceState != null){
             donor_id = savedInstanceState.getInt(ARG_DONOR_ID);
             donor_name = savedInstanceState.getString(ARG_DONOR_NAME);
             donor_email = savedInstanceState.getString(ARG_DONOR_EMAIL);
             donor_phone = savedInstanceState.getString(ARG_DONOR_PHONE);
-        }else if (args!= null) {
+        }else if (args != null) {
             donor_id = args.getInt(ARG_DONOR_ID);
             donor_name = args.getString(ARG_DONOR_NAME);
             donor_email = args.getString(ARG_DONOR_EMAIL);
             donor_phone = args.getString(ARG_DONOR_PHONE);
+
+        } else{
+            donor_name="no name";
+            donor_email="no email";
+            donor_phone = "no phone";
         }
+        TextView name = (TextView)v.findViewById(R.id.name);
+        TextView email = (TextView)v.findViewById(R.id.email);
+        TextView phone = (TextView)v.findViewById(R.id.phone);
+        RelativeLayout donorinfo = (RelativeLayout)v.findViewById(R.id.donor_info_layout);
+        name.setText(donor_name);
+        email.setText(donor_email);
+        phone.setText(donor_phone);
+
+        //send email to donor
+        email.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent email_send = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", donor_email, null));
+                try {
+                    startActivity(Intent.createChooser(email_send, "Send email..."));
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Toast.makeText(getActivity(),"No Email app Found", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        //call/text donor
+        phone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String tele_call = "+" + donor_phone.replaceAll("[^0-9.]", "");
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", tele_call, null));
+                try {
+                    startActivity(intent);
+                } catch(android.content.ActivityNotFoundException ex) {
+                    Toast.makeText(getActivity(),"no Phone app found", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
 
         //put giftlist for donor
-
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         gifts = db.getGiftsByDonor(donor_id);
 
-        ListView listview = (ListView)v.findViewById(R.id.info_list);
+        listview = (ListView)v.findViewById(R.id.info_list);
 
         // Map data fields to layout fields
         ArrayList<HashMap<String,String>> itemList = generateListItems();
@@ -83,71 +129,6 @@ public class DetailedDonor extends Fragment{
         listview.setOnItemClickListener(new onGiftClicked());
 
         return v;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        args = this.getArguments();
-        if (args != null) {
-            updateDonorView(args.getInt(ARG_DONOR_ID), args.getString(ARG_DONOR_NAME), args.getString(ARG_DONOR_EMAIL), args.getString(ARG_DONOR_PHONE));
-        } else if (!donor_name.equals(" ")) {
-            updateDonorView(donor_id, donor_name, donor_email, donor_phone);
-        }
-    }
-
-    /**
-     * Sets each text field with the detailed information about the donor
-     *
-     * @param donor_id
-     * @param donor_name
-     * @param donor_email
-     * @param donor_phone
-     */
-    public void updateDonorView(final int donor_id , final String donor_name, final String donor_email, final String donor_phone) {
-        //set Donor information header
-        TextView name = (TextView)getActivity().findViewById(R.id.name);
-        TextView email = (TextView)getActivity().findViewById(R.id.email);
-        TextView phone = (TextView)getActivity().findViewById(R.id.phone);
-
-        name.setText(donor_name);
-        email.setText(donor_email);
-        phone.setText(donor_phone);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*DonorInfo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Bundle args = new Bundle();
-                args.putString("donorname", donor_name);
-                args.putInt("donorid", donor_id);
-                args.putString("donor_email", email_info);
-                args.putString("donorPhone", phone_cell);
-
-                DetailedDonor newfrag = new DetailedDonor();
-                newfrag.setArguments(args);
-
-                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.content_frame, newfrag);
-                transaction.addToBackStack("ToDetailedDonorView");
-                transaction.commit();
-            }
-        });*/
     }
 
     /**
@@ -175,9 +156,9 @@ public class DetailedDonor extends Fragment{
         for(Gift g : gifts){
             HashMap<String,String> hm = new HashMap<String,String>();
 
-            hm.put("fundname", "Gift to: " + g.getGift_fund_desc());
-            hm.put("giftamount", Formatter.amountToString(g.getGift_amount()));
-            hm.put("giftdate", Formatter.getFormattedDate(g.getGift_date()));
+            hm.put("fundname", "Gift to: " + g.getGiftFundDesc());
+            hm.put("giftamount", Formatter.amountToString(g.getGiftAmount()));
+            hm.put("giftdate", Formatter.getFormattedDate(g.getGiftDate()));
 
             aList.add(hm);
         }

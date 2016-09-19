@@ -15,8 +15,8 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
-        android:layout_toLeftOf="@+id/prayingButtonlayout"
-        android:layout_toStartOf="@+id/prayingButtonlayout"
+        android:layout_toLeftOf="@+id/prayingButtonLayout"
+        android:layout_toStartOf="@+id/prayingButtonLayout"
         android:textSize="20sp"/>
         <!--android:text="donor name" -->
 
@@ -27,8 +27,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/missionaryName"
-        android:layout_toLeftOf="@+id/prayingButtonlayout"
-        android:layout_toStartOf="@id/prayingButtonlayout"
+        android:layout_toLeftOf="@+id/prayingButtonLayout"
+        android:layout_toStartOf="@id/prayingButtonLayout"
         android:layout_marginTop="12dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
@@ -48,7 +48,7 @@
         android:textSize="16sp" />
 
     <LinearLayout
-        android:id="@+id/prayingButtonlayout"
+        android:id="@+id/prayingButtonLayout"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_alignParentRight="true"

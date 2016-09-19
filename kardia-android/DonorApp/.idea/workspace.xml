@@ -9,36 +9,7 @@
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dca88b97-5f95-404b-ae70-7894c54711c8" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/HomePage.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/drawable/custom_home_list.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/home_button_items.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/home_page_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/donorApp/donorApp.iml" afterPath="$PROJECT_DIR$/donorApp/donorApp.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Account.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/data/Account.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/DataConnection.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/DataConnection.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/Formatter.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/Formatter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/LocalDBHandler.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/tools/LocalDBHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/AccountsActivity.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/AccountsActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DonorList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/DonorList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/EditAccountActivity.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/EditAccountActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/FundList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/FundList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftTimePeriodList.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/GiftTimePeriodList.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/MainActivity.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/MainActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/RefreshOptions.java" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/java/org/lightsys/missionaryapp/views/RefreshOptions.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/account_listview_item.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/account_listview_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/account_page_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/account_page_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/refresh_options_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout-large/refresh_options_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_listview_item.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_listview_item.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_page_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/account_page_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/activity_main.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/main_listview_item_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/main_listview_item_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/refresh_options_layout.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/layout/refresh_options_layout.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/strings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/styles.xml" afterPath="$PROJECT_DIR$/../MissionaryApp/missionaryApp/src/main/res/values/styles.xml" />
-    </list>
+    <list default="true" id="dca88b97-5f95-404b-ae70-7894c54711c8" name="Default" comment="" />
     <ignored path="DonorApp.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path="$PROJECT_DIR$/.gradle/" />

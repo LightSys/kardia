@@ -4,11 +4,12 @@
 
 <Button
     android:id="@+id/sendButton"
+    android:textSize="36sp"
+    android:textStyle="bold"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_centerVertical="true"
-    android:textSize="36sp"
-    android:textStyle="bold"
+    android:layout_centerHorizontal="true"
     android:text="@string/donate_now" 
     style="@style/customBottomBar"/>
 

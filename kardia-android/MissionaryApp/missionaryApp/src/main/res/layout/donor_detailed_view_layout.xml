@@ -5,70 +5,69 @@
     android:layout_height="match_parent"
     android:background="@drawable/noise_blue_repeat" >
 
-        <RelativeLayout
-            android:id="@+id/donor_info_layout"
-            android:layout_width="match_parent"
+    <RelativeLayout
+        android:id="@+id/donor_info_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="5dp"
+        >
+        <ImageView
+            android:id="@+id/profile_pic"
+            android:layout_width="68dp"
+            android:layout_height="68dp"
+            android:src="@drawable/prayer_letter_icon"
+            android:layout_centerVertical="true"
+            />
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_margin="5dp"
-            >
-                <ImageView
-                    android:id="@+id/profile_pic"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:src="@drawable/prayer_letter_icon"
-                    android:layout_centerVertical="true"
-                    />
-                <TextView
-                    android:id="@+id/name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="18dp"
-                    android:layout_marginStart="18dp"
-                    android:textSize="22sp"
-                    android:layout_toRightOf="@id/profile_pic"
-                    android:layout_toEndOf="@id/profile_pic"
-                    android:layout_alignTop="@id/profile_pic"/>
+            android:layout_marginLeft="18dp"
+            android:layout_marginStart="18dp"
+            android:textSize="22sp"
+            android:layout_toRightOf="@id/profile_pic"
+            android:layout_toEndOf="@id/profile_pic"
+            android:layout_alignTop="@id/profile_pic"/>
 
-                <TextView
-                    android:id="@+id/email"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginLeft="17dp"
-                    android:layout_marginStart="17dp"
-                    android:layout_below="@+id/name"
-                    android:textSize="14sp"
-                    android:layout_alignLeft="@id/name"
-                    android:layout_alignStart="@id/name"/>
+        <TextView
+            android:id="@+id/email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:layout_marginLeft="17dp"
+            android:layout_marginStart="17dp"
+            android:layout_below="@+id/name"
+            android:textSize="14sp"
+            android:layout_alignLeft="@id/name"
+            android:layout_alignStart="@id/name"/>
 
-                <TextView
-                    android:id="@+id/phone"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginLeft="17dp"
-                    android:layout_marginStart="17dp"
-                    android:layout_below="@+id/email"
-                    android:textSize="14sp"
-                    android:layout_alignLeft="@id/name"
-                    android:layout_alignStart="@id/name" />
+        <TextView
+            android:id="@+id/phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:layout_marginLeft="17dp"
+            android:layout_marginStart="17dp"
+            android:layout_below="@+id/email"
+            android:textSize="14sp"
+            android:layout_alignLeft="@id/name"
+            android:layout_alignStart="@id/name" />
+    </RelativeLayout>
 
-        </RelativeLayout>
+    <View
+        android:id="@+id/donor_info_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#000030"
+        android:layout_below="@id/donor_info_layout" />
 
-        <View
-            android:id="@+id/donor_info_divider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#000030"
-            android:layout_below="@id/donor_info_layout" />
-
-        <ListView
-            android:id="@+id/info_list"
-            android:layout_width="fill_parent"
-            android:layout_height="match_parent"
-            style="@style/listCustomBlue"
-            android:layout_below="@id/donor_info_divider"/>
+    <ListView
+        android:id="@+id/info_list"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        style="@style/listCustomBlue"
+        android:layout_below="@id/donor_info_divider"/>
 
 
 </RelativeLayout>

@@ -2,6 +2,7 @@
 <resources>
 
     <string-array name="categories">
+        <item>Home</item>
         <item>Gifts</item>
         <item>Donors</item>
         <item>Prayer Requests/Updates</item>
@@ -40,7 +41,7 @@
         <item>Year</item>
         <item>All</item>
     </string-array>
-    <string name="app_name">Kardia Missionary2</string>
+    <string name="app_name">Kardia Missionary</string>
     <string name="action_settings">Settings</string>
     <string name="ytd">YTD: </string>
     <string name="total_2014_ytd_">"Total (2014 YTD): "</string>

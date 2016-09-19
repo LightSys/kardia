@@ -13,16 +13,18 @@ public class PrayedFor {
     private int noteId;
     private int supporterId;
     private String supporterName;
+    private int missionaryId;
 
     public PrayedFor() {}
 
-    public PrayedFor(int prayedForId, String prayedForComments, String date, int noteId, int supporterId, String supporterName) {
+    public PrayedFor(int prayedForId, String prayedForComments, String date, int noteId, int supporterId, String supporterName, int missionaryId) {
         this.prayedForId = prayedForId;
         this.prayedForComments = prayedForComments;
         this.date = date;
         this.noteId = noteId;
         this.supporterId = supporterId;
         this.supporterName = supporterName;
+        this.missionaryId = missionaryId;
 
     }
 
@@ -59,6 +61,9 @@ public class PrayedFor {
     public void setSupporterName(String supporterName) {
         this.supporterName = supporterName;
     }
+    public int getMissionaryId() { return missionaryId; }
 
-
+    public void setMissionaryId(int missionaryId) {
+        this.missionaryId = missionaryId;
+    }
 }

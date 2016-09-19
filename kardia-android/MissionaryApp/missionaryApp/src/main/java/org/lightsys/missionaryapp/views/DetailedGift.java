@@ -106,9 +106,9 @@ public class DetailedGift extends Fragment {
             phone_cell = contactinfo.getPhone();
         }
         phone.setText(phone_cell);
-        fundTitle.setText("Gift to: " + g.getGift_fund_desc());
-        date.setText("Date: " + Formatter.getFormattedDate(g.getGift_date()));
-        amount.setText("Amount: " + Formatter.amountToString(g.getGift_amount()));
+        fundTitle.setText("Gift to: " + g.getGiftFundDesc());
+        date.setText("Date: " + Formatter.getFormattedDate(g.getGiftDate()));
+        amount.setText("Amount: " + Formatter.amountToString(g.getGiftAmount()));
 
 
         DonorInfo.setOnClickListener(new View.OnClickListener() {

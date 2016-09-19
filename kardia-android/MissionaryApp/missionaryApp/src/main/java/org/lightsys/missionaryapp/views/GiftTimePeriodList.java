@@ -44,7 +44,6 @@ public class GiftTimePeriodList extends Fragment {
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		Log.d("GIFTTIMEPERIOD", "onCreateView: got to gift page");
 
 		Bundle args = getArguments();
 
