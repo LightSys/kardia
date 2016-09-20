@@ -13,6 +13,7 @@
         android:layout_margin="5dp"
         >
         <ImageView
+            android:contentDescription="@string/profile_pic_description"
             android:id="@+id/profile_pic"
             android:layout_width="68dp"
             android:layout_height="68dp"

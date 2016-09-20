@@ -10,7 +10,6 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -22,7 +21,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -261,7 +259,7 @@ public class MainActivity extends ActionBarActivity {
 			startActivity(accounts);
 			break;
 		case 6:
-			RefreshOptions refresh = new RefreshOptions();
+			Options refresh = new Options();
 			fragment = refresh;
 			accts = db.getAccounts();
 			refresh.setDb(db);

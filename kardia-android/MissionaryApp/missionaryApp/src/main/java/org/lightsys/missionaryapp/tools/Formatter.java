@@ -24,7 +24,7 @@ public class Formatter {
     public static String getMonthYearDate (String month, String year){
         month = getMonth(Integer.parseInt(month));
 
-        return month + ", " + year;
+        return month+ " (" + year + ")";
     }
 
     private static String getMonth(int num){

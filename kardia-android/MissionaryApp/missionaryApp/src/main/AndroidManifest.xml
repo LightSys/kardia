@@ -50,8 +50,6 @@
 
         <activity android:name=".views.PostNoteActivity" ></activity>
 
-        <activity android:name=".views.DetailedDonor" ></activity>
-
         <activity android:name="org.lightsys.missionaryapp.views.CommentActivity"
             android:label="Post Comment">
         </activity>
@@ -67,8 +65,6 @@
             android:name="org.lightsys.missionaryapp.tools.AutoUpdater"
             android:exported="false" />
 
-        <activity android:name="org.lightsys.missionaryapp.views.RefreshOptions" >
-        </activity>
     </application>
 
 </manifest>

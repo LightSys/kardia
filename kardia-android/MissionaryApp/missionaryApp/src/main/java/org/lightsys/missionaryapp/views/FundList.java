@@ -31,7 +31,6 @@ import org.lightsys.missionaryapp.R;
  * 
  * @author Andrew Cameron
  * edited from DonorApp to MissionaryApp by otter57
- * //todo
  * shows each fund with the total donated to date for the specific period
  * clicking fund goes to a list of all donations to fund during time period
  */

@@ -10,10 +10,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
-        android:text="user name"
         android:id="@+id/userName"
-        android:password="false"
-        android:phoneNumber="false"
         android:textStyle="bold"
         android:textSize="24sp" />
 
@@ -24,7 +21,6 @@
         android:layout_marginTop="2dp"
         android:layout_marginLeft="25dp"
         android:layout_marginRight="18dp"
-        android:text="date"
         android:id="@+id/date"
         android:textSize="18dp" />
 
@@ -36,7 +32,6 @@
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
         android:layout_marginBottom="18dp"
-        android:text="text"
         android:id="@+id/text"
         android:textSize="24dp" />
 </LinearLayout>

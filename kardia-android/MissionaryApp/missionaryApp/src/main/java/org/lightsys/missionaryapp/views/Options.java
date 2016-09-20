@@ -18,7 +18,7 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
  * Created by Judah Sistrunk on 5/25/2016
  */
 
-public class RefreshOptions extends Fragment {
+public class Options extends Fragment {
 
     Button applyButton;
     Spinner refreshPeriods, giftPeriods;

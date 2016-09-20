@@ -772,7 +772,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         String gift_month = dateObj.getString("month");
                         String month_year;
                         // Convert gift dates to YYYY-MM-DD format
-                        month_year=Formatter.getMonthYearDate(gift_month, gift_year);
+                        month_year=gift_year + "." + gift_month;
                         gift_month = (gift_month.length() < 2)? "0" + gift_month : gift_month;
                         String gift_day = dateObj.getString("day");
                         gift_day = (gift_day.length() < 2)? "0" + gift_day : gift_day;
