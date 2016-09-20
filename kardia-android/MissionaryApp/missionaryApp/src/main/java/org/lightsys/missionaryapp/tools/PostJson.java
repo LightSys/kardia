@@ -70,7 +70,6 @@ public class PostJson extends AsyncTask<String, Void, String> {
 
             credProvider.setCredentials(new AuthScope(account.getServerName(), 800),
                     new UsernamePasswordCredentials(account.getAccountName(), account.getAccountPassword()));
-            //todo changed from app=Donor to app=Missionary
             //url used to retrieve the access token
             String getUrl = "http://" + account.getServerName() + ":800/?cx__mode=appinit&cx__groupname=Kardia&cx__appname=Missionary";
 

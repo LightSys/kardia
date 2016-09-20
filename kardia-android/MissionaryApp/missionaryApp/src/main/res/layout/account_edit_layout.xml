@@ -27,7 +27,7 @@
         android:ems="10"
         android:hint="@string/password"
         android:inputType="textPassword"
-        android:singleLine="true">
+        android:maxLine="1">
     </EditText>
 
     <EditText
@@ -37,7 +37,7 @@
         android:layout_marginTop="18dp"
         android:ems="10"
         android:hint="@string/server_name"
-        android:singleLine="true"/>
+        android:maxLine="1"/>
 
     <TextView
         android:id="@+id/donorId"

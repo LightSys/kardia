@@ -734,10 +734,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	public ArrayList<Period> getFundPeriods(int fund_id, String periodtype) {
 		ArrayList<Period> periods = new ArrayList<Period>();
 
-
 		String qString = "SELECT DISTINCT " + periodtype + " FROM " + TABLE_GIFT + " INNER JOIN " + TABLE_FUND
 				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFTFUNDDESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
-				+ " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id;
+				+ " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id + " ORDER BY " + COLUMN_GIFTYEAR + " DESC, "
+				+ COLUMN_GIFTMONTH + " DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
 
@@ -746,7 +746,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		while (c.moveToNext()) {
             Period temp = new Period();
             temp.setPeriodName(c.getString(0));
-            ArrayList<Gift> gifts = getGiftsForPeriod(fund_id, periodtype, c.getString(0));
+			ArrayList<Gift> gifts = getGiftsForPeriod(fund_id, periodtype, c.getString(0));
             int Total[]= new int[2];
             for(Gift g:gifts){
                 Total[0] += g.getGiftAmount()[0];
@@ -1338,7 +1338,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		ArrayList<Gift> gifts = new ArrayList<Gift>();
 		String queryString = "SELECT * FROM "+ TABLE_GIFT + " INNER JOIN " + TABLE_FUND
 				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFTFUNDDESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
-				+ " WHERE (" + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id + " AND " + periodtype + " = " + period + ")";
+				+ " WHERE (" + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id + " AND " + TABLE_GIFT + "." + periodtype + " = '" + period + "') ORDER BY "
+				+ COLUMN_GIFTYEAR + ", " + COLUMN_GIFTMONTH + " DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);

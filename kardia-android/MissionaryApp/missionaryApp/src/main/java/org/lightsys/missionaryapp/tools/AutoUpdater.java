@@ -131,8 +131,6 @@ public class AutoUpdater extends Service {
         }
 
         db.deleteNewItems();
-
-        Log.i(TAG, "updated: " + Calendar.getInstance().getTime().getHours() + ":" + Calendar.getInstance().getTime().getMinutes() + ":" + Calendar.getInstance().getTime().getSeconds());//debug stuffs
     }
 
     public void sendNotification(String title, String subject, int ID){

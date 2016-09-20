@@ -90,7 +90,6 @@ public class DetailedGift extends Fragment {
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         Gift g = db.getGift(gift_id);
         ContactInfo contactinfo = db.getContactInfoById(donor_id);
-        //todo remove? unnecessary?
         gift = g;
         db.close();
 

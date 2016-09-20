@@ -11,7 +11,6 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
 
@@ -39,8 +37,8 @@ public class GiftTimePeriodList extends Fragment {
     String periodtype;
 
 	/**
-	 * Based on what fund the user clicked on (or visited last) it will generate a list of 
-	 * years during which they donated to the fund, with the amount of money they donated that year.
+	 * Creates a list of all gifts donated to either the fund clicked
+	 * or all funds managed by the missionary
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -48,7 +46,7 @@ public class GiftTimePeriodList extends Fragment {
 		Bundle args = getArguments();
 
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-		periodtype = "Year";
+		periodtype = db.getGiftPeriod();
 		int Account_Id = db.getAccount().getId();
         periods.clear();
 		if(savedInstanceState != null){ 
@@ -87,12 +85,12 @@ public class GiftTimePeriodList extends Fragment {
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
 		if (fund_id == -1) {
-			String[] from = {"gtptitle", "gtpamount","year"};
+			String[] from = {"gtptitle", "gtpamount","period"};
 			int[] to = {R.id.name, R.id.detail, R.id.subject};
 			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 			listview.setAdapter(adapter);
 		} else {
-			String[] from = {"gtptitle", "gtpamount", "gtpfund","year"};
+			String[] from = {"gtptitle", "gtpamount", "gtpfund","period"};
 			int[] to = {R.id.name, R.id.detail, R.id.fundName, R.id.subject};
 			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 			listview.setAdapter(adapter);
@@ -112,15 +110,22 @@ public class GiftTimePeriodList extends Fragment {
 		
 		for(Period p : periods){
 			HashMap<String,String> hm = new HashMap<String,String>();
+			String Date;
+			if (periodtype.equals("Month")){
+				String[] parts = p.getPeriodName().split("\\.");
+				Date = Formatter.getMonthYearDate(parts[1], parts[0]);
+			}else{
+				Date = p.getPeriodName();
+			}
 			
-			hm.put("gtptitle", p.getPeriodName() + " Total");
+			hm.put("gtptitle", Date + " Total");
 			hm.put("gtpamount", Formatter.amountToString(p.getGiftTotal()));
 			if (fund_id != -1) {
 				LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 				hm.put("gtpfund", db.getFundByFundId(fund_id).getFundDesc());
 				db.close();
 			}
-			hm.put("year", p.getPeriodName());
+			hm.put("period", Date);
 
 			aList.add(hm);
 		}
