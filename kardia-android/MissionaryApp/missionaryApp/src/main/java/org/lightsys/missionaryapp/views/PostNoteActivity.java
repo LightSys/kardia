@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
- * Created by lauradeotte on 7/12/16.
+ * Created by Laura DeOtte on 7/12/16.
  *
  * allows user to post updates or prayer requests
  */

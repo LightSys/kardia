@@ -90,8 +90,8 @@ public class DetailedPrayerRequest extends Fragment{
         final LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject = (TextView)getActivity().findViewById(R.id.name);
-        TextView date = (TextView)getActivity().findViewById(R.id.date);
+        TextView subject = (TextView)getActivity().findViewById(R.id.name_text);
+        TextView date = (TextView)getActivity().findViewById(R.id.date_text);
         TextView text = (TextView)getActivity().findViewById(R.id.text);
         supporterlist = (TextView)getActivity().findViewById(R.id.supporterlist);
         textBelow = (TextView)getActivity().findViewById(R.id.textBelowPrayingButton);
@@ -131,7 +131,7 @@ public class DetailedPrayerRequest extends Fragment{
 
 
 
-        //displays the usernames of supporters who are praying for request
+        //displays the username of each supporter who is praying for the request
         //allows user to turn list of supporters on or off
         prayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -155,7 +155,7 @@ public class DetailedPrayerRequest extends Fragment{
         loadComments();
 
         String[] from = {"userName", "date", "text"};//stuff for the adapter
-        int[] to = {R.id.userName,  R.id.date, R.id.text};//more stuffs for the adapter
+        int[] to = {R.id.userName,  R.id.date_text, R.id.text};//more stuffs for the adapter
         if (commentList != null){
             //if haz comments, set comments to adapter
             CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, R.layout.comment_item, from, to);

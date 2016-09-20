@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/LinearLayout1"
+    android:id="@+id/relative_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
@@ -20,7 +20,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Refresh Every"
+                android:text="@string/options_text_refresh"
                 android:id="@+id/textView"
                 android:layout_column="1" />
 
@@ -46,10 +46,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Gift Period"
-                android:id="@+id/gifttextView"
+                android:text="@string/options_text_gift"
+                android:id="@+id/giftTextView"
                 android:layout_column="1"
-                android:layout_gravity="right"/>
+                android:layout_gravity="end"/>
 
             <Spinner
                 android:layout_width="wrap_content"
@@ -70,7 +70,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Apply"
+                android:text="@string/apply_button"
                 android:id="@+id/applyButton"
                 style="@style/customBottomBar"
                 android:layout_gravity="center_horizontal"/>

@@ -79,12 +79,12 @@ public class DetailedGift extends Fragment {
      * @param gift_id, Gift Identification
      */
     public void updateGiftView(final int gift_id, final int donor_id, final String donor_name) {
-        TextView fundTitle = (TextView) getActivity().findViewById(R.id.fund);
-        TextView date = (TextView) getActivity().findViewById(R.id.date);
-        TextView amount = (TextView) getActivity().findViewById(R.id.giftamount);
-        TextView donorName = (TextView) getActivity().findViewById(R.id.name);
-        TextView email = (TextView) getActivity().findViewById(R.id.email);
-        TextView phone = (TextView) getActivity().findViewById(R.id.phone);
+        TextView fundTitle = (TextView) getActivity().findViewById(R.id.fund_text);
+        TextView date = (TextView) getActivity().findViewById(R.id.date_text);
+        TextView amount = (TextView) getActivity().findViewById(R.id.gift_amount_text);
+        TextView donorName = (TextView) getActivity().findViewById(R.id.name_text);
+        TextView email = (TextView) getActivity().findViewById(R.id.email_text);
+        TextView phone = (TextView) getActivity().findViewById(R.id.phone_text);
 
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
@@ -99,9 +99,8 @@ public class DetailedGift extends Fragment {
         donorName.setText(donor_name);
         email_info = contactinfo.getEmail();
         email.setText(email_info);
-        if (!contactinfo.getCell().isEmpty()) {
-            phone_cell = contactinfo.getCell();
-        } else {
+        phone_cell = contactinfo.getCell();
+        if(phone_cell==null){
             phone_cell = contactinfo.getPhone();
         }
         phone.setText(phone_cell);
@@ -131,7 +130,7 @@ public class DetailedGift extends Fragment {
 
         this.gift_id = gift_id;
 
-        Button viewPDFButton = (Button) getActivity().findViewById(R.id.pdfButton);
+        Button viewPDFButton = (Button) getActivity().findViewById(R.id.pdf_button);
         viewPDFButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

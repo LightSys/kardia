@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/LinearLayout1"
+    android:id="@+id/relative_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -12,7 +12,7 @@
         android:background="@android:color/darker_gray"
         android:layout_marginBottom="10dp">
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -26,8 +26,8 @@
         <ListView
             android:id="@+id/connected_list"
             style="@style/listCustomBlue"
-            android:layout_toRightOf="@id/textView2"
-            android:layout_toEndOf="@+id/textView2"
+            android:layout_toRightOf="@id/text_view"
+            android:layout_toEndOf="@+id/text_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginRight="20dp"
@@ -44,6 +44,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginRight="20dp"
+        android:layout_marginEnd="20dp"
         android:layout_below="@id/RLayout"
         android:textSize="16sp"
         android:text="@string/done"
@@ -68,7 +69,7 @@
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/username"
-        android:maxLine="1"
+        android:maxLines="1"
         android:text = "Laura"/>
 
     <EditText
@@ -81,11 +82,11 @@
         android:ems="10"
         android:hint="@string/password"
         android:inputType="textPassword"
-        android:maxLine="1"
+        android:maxLines="1"
         android:text = "E2Ra!car0line"/>
 
     <EditText
-        android:id="@+id/servername_input"
+        android:id="@+id/server_name_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
@@ -93,7 +94,7 @@
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/server_name"
-        android:maxLine="1"
+        android:maxLines="1"
         android:text = "10.5.10.176"/>
 
     <EditText
@@ -101,12 +102,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:layout_below="@id/servername_input"
+        android:layout_below="@id/server_name_input"
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/user_id_ex_100001"
         android:inputType="number"
-        android:maxLine="1"/>
+        android:maxLines="1"/>
 
 
     <Button

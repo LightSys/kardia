@@ -2,10 +2,8 @@ package org.lightsys.missionaryapp.views;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 
-import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.tools.Formatter;
@@ -14,7 +12,6 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +34,7 @@ import org.lightsys.missionaryapp.R;
 public class FundList extends Fragment{
 	
 	private ArrayList<Fund> funds;
+	private ArrayList<Integer> fundIds = new ArrayList<Integer>();
 	private static String periodtype="Year";
 	private static String periodid = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
 
@@ -47,7 +45,6 @@ public class FundList extends Fragment{
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-		//ArrayList<Account> accounts = db.getAccounts();
 
 		// Select Active account
         int accountID = db.getAccount().getId();
@@ -66,7 +63,7 @@ public class FundList extends Fragment{
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>>itemList = generateListItems();
 		String[] from = {"fundtitle","todateamount","date"};
-		int[] to = {R.id.subject, R.id.detail, R.id.date};
+		int[] to = {R.id.subject, R.id.detail, R.id.date_text};
 		
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
 		
@@ -107,9 +104,9 @@ public class FundList extends Fragment{
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			GiftList newFrag = new GiftList();
-
+			fundIds.add(funds.get(position).getFundId());
 			Bundle args = new Bundle();
-			args.putInt(newFrag.ARG_FUND_ID, funds.get(position).getFundId());
+			args.putIntegerArrayList(newFrag.ARG_FUND_IDS, fundIds);
 			args.putString(newFrag.ARG_PERIOD_TYPE, periodtype);
 			args.putString(newFrag.ARG_PERIOD_ID, periodid);
 			newFrag.setArguments(args);

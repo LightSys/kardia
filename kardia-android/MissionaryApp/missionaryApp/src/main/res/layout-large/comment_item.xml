@@ -21,8 +21,10 @@
         android:layout_marginTop="2dp"
         android:layout_marginLeft="25dp"
         android:layout_marginRight="18dp"
-        android:id="@+id/date"
-        android:textSize="18dp" />
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="18dp"
+        android:id="@+id/date_text"
+        android:textSize="18sp" />
 
     <TextView
         android:layout_width="match_parent"
@@ -33,5 +35,5 @@
         android:layout_marginRight="18dp"
         android:layout_marginBottom="18dp"
         android:id="@+id/text"
-        android:textSize="24dp" />
+        android:textSize="24sp" />
 </LinearLayout>

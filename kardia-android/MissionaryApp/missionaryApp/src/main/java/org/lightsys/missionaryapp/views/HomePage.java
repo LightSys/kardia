@@ -59,9 +59,9 @@ public class HomePage extends Fragment {
     }
 
     /**
-     * Formats the donor information into a hashmap arraylist.
+     * Formats the donor information into a HashMap arraylist.
      *
-     * @return a hashmap array with donor information, to be shown in a listview
+     * @return a HashMap array with donor information, to be shown in a ListView
      */
 
     private ArrayList<HashMap<String,String>> generateListItems(){

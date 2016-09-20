@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/LinearLayout1"
+    android:id="@+id/relative_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -51,7 +51,7 @@
         android:visibility="invisible">
 
         <Button
-            android:id="@+id/datepick1"
+            android:id="@+id/datePickBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:enabled="true"
@@ -59,7 +59,7 @@
             android:textSize="20sp"/>
 
         <TextView
-            android:id="@+id/dash1"
+            android:id="@+id/dashTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/_"
@@ -67,7 +67,7 @@
             android:visibility="invisible" />
 
         <Button
-            android:id="@+id/datepick2"
+            android:id="@+id/datePickBtn2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:enabled="true"
@@ -194,7 +194,7 @@
     </TableRow>
 
     <EditText
-        android:id="@+id/checknum"
+        android:id="@+id/check_num_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="5"

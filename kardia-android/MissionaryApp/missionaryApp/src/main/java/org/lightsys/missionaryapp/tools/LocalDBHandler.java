@@ -693,43 +693,21 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * Pulls the timestamp from the database
 	 * @return A timestamp of the last update in millisecond form
 	 */
-	public long getTimeStamp(){
+	public long getTimeStamp() {
 		String queryString = "SELECT " + COLUMN_DATE + " FROM " + TABLE_TIMESTAMP;
-		
+
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
 
 		long date = -1;
-		
-		if(c.moveToFirst()){
+
+		if (c.moveToFirst()) {
 			date = Long.parseLong(c.getString(0));
 		}
 		c.close();
 		db.close();
 		return date;
 	}
-	//return all periods for all gifts
-	public ArrayList<Period> getFundPeriods(String periodtype) {
-		ArrayList<Period> periods = new ArrayList<Period>();
-
-
-		String qString = "SELECT DISTINCT " + periodtype + " FROM " + TABLE_GIFT;
-
-		SQLiteDatabase db = this.getReadableDatabase();
-
-		Cursor c = db.rawQuery(qString, null);
-
-		while (c.moveToNext()) {
-            Period temp = new Period();
-			temp.setPeriodName(c.getString(0));
-
-            periods.add(temp);
-		}
-		db.close();
-		c.close();
-		return periods;
-	}
-
 	//return all periods for the gifts in a fund
 	public ArrayList<Period> getFundPeriods(int fund_id, String periodtype) {
 		ArrayList<Period> periods = new ArrayList<Period>();
@@ -757,6 +735,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
                 Total[1]-=Math.floor(Total[1]/100)*100;
             }
             temp.setGiftTotal(Total);
+			temp.setFundId(fund_id);
 
 			periods.add(temp);
 		}
@@ -1328,7 +1307,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 
 	/**
-	 * Pulls a single gift with a specific ID
+	 * Pulls all gifts with correct fund id, and period
 	 * @param fund_id, Fund Identification
 	 * @param period, period identification
 	 * @param periodtype, select which column to match period with
@@ -1339,6 +1318,40 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		String queryString = "SELECT * FROM "+ TABLE_GIFT + " INNER JOIN " + TABLE_FUND
 				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFTFUNDDESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
 				+ " WHERE (" + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id + " AND " + TABLE_GIFT + "." + periodtype + " = '" + period + "') ORDER BY "
+				+ COLUMN_GIFTYEAR + ", " + COLUMN_GIFTMONTH + " DESC";
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()){
+			Gift gift = new Gift();
+			gift.setId(Integer.parseInt(c.getString(0)));
+			gift.setName(c.getString(1));
+			gift.setGiftFund(c.getString(2));
+			gift.setGiftFundDesc(c.getString(3));
+			gift.setGiftAmount(new int []{
+					Integer.parseInt(c.getString(4)),
+					Integer.parseInt(c.getString(5))
+			});
+			gift.setGiftDate(c.getString(6));
+			gift.setGift_check_num(c.getString(7));
+			gift.setGiftDonor(c.getString(8));
+			gift.setGiftDonorId(c.getInt(9));
+
+			gifts.add(gift);
+		}
+		c.close();
+		db.close();
+		return gifts;
+	}
+	/**
+	 * Pulls all gifts with specific ID
+	 * @param gift_ids, Gift Identification
+	 * @return an arraylist of Gift Objects
+	 */
+	public ArrayList<Gift> getGiftsByIds(ArrayList<Integer> gift_ids){
+		ArrayList<Gift> gifts = new ArrayList<Gift>();
+		String queryString = "SELECT * FROM "+ TABLE_GIFT + " WHERE " + COLUMN_ID + " = " + gift_ids + " ORDER BY "
 				+ COLUMN_GIFTYEAR + ", " + COLUMN_GIFTMONTH + " DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
@@ -1432,27 +1445,27 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * @return all gifts that match the search parameters as an ArrayList of Gift Objects ordered from most recent to least recent
 	 */
 	public ArrayList<Gift> getGiftSearchResults(String startDate, String endDate, String startAmount,
-											String endAmount, String checkNumber){
+											String endAmount, String checkNumber, String giftFund){
 		ArrayList<Gift> gifts = new ArrayList<Gift>();
-		String searchStatement = "SELECT * FROM " + TABLE_GIFT;
+		String searchStatement = "SELECT * FROM " + TABLE_GIFT + " WHERE " + COLUMN_GIFTFUND + " = '" + giftFund + "'";
 
 		// Build date portion of search statement
 		if(!NullOrEmpty(startDate) && !NullOrEmpty(endDate)){
-			searchStatement += " WHERE (" + COLUMN_GIFTDATE + " BETWEEN '" + startDate + "' AND '" + endDate + "')";
+			searchStatement += " AND (" + COLUMN_GIFTDATE + " BETWEEN '" + startDate + "' AND '" + endDate + "')";
 		}else if(!NullOrEmpty(startDate)){
-			searchStatement += " WHERE (" + COLUMN_GIFTDATE + " = '" + startDate + "')";
+			searchStatement += " AND (" + COLUMN_GIFTDATE + " = '" + startDate + "')";
 		}
 
 		// Build amount portion of search statement
 		if(!NullOrEmpty(startAmount) && !NullOrEmpty(endAmount)){
 			if(NullOrEmpty(startDate) && NullOrEmpty(endDate)){
-				searchStatement += " WHERE (" + COLUMN_GIFTTOTALWHOLE + " BETWEEN " + startAmount + " AND " + endAmount + ")";
+				searchStatement += " AND (" + COLUMN_GIFTTOTALWHOLE + " BETWEEN " + startAmount + " AND " + endAmount + ")";
 			}else{
 				searchStatement += " AND (" + COLUMN_GIFTTOTALWHOLE + " BETWEEN " + startAmount + " AND " + endAmount + ")";
 			}
 		}else if(!NullOrEmpty(startAmount)){
 			if(NullOrEmpty(startDate) && NullOrEmpty(endDate)){
-				searchStatement += " WHERE (" + COLUMN_GIFTTOTALWHOLE + " = " + startAmount + ")";
+				searchStatement += " AND (" + COLUMN_GIFTTOTALWHOLE + " = " + startAmount + ")";
 			}else{
 				searchStatement += " AND (" + COLUMN_GIFTTOTALWHOLE + " = " + startAmount + ")";
 			}
@@ -1461,7 +1474,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		// Build check number portion of search statement
 		if(!NullOrEmpty(checkNumber)){
 			if(NullOrEmpty(startDate) && NullOrEmpty(endDate) && NullOrEmpty(startAmount) && NullOrEmpty(endAmount)){
-				searchStatement += " WHERE " + COLUMN_CHECKNUM + " = " + checkNumber;
+				searchStatement += " AND " + COLUMN_CHECKNUM + " = " + checkNumber;
 			}else{
 				searchStatement += " AND (" + COLUMN_CHECKNUM + " = " + checkNumber + ")";
 			}

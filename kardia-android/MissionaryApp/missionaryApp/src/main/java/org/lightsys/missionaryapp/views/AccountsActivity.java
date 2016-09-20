@@ -14,8 +14,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -48,7 +46,7 @@ public class AccountsActivity extends Activity{
 	Button connectButton, finishButton;
 
 	/**
-	 * Creates the view, and loads any pre-existing accounts into the listview
+	 * Creates the view, and loads any pre-existing accounts into the ListView
 	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
@@ -59,9 +57,9 @@ public class AccountsActivity extends Activity{
 		accountsList = (ListView)findViewById(R.id.connected_list);
 		accountName = (EditText)findViewById(R.id.username_input);
 		accountPass = (EditText)findViewById(R.id.password_input);
-		serverName = (EditText)findViewById(R.id.servername_input);
+		serverName = (EditText)findViewById(R.id.server_name_input);
 		donorID = (EditText)findViewById(R.id.donor_id_input);
-		connectedAccounts = (TextView)findViewById(R.id.textView2);
+		connectedAccounts = (TextView)findViewById(R.id.text_view);
 		connectButton = (Button)findViewById(R.id.connect_button);
 		finishButton = (Button)findViewById(R.id.finish_button);
 
@@ -100,7 +98,7 @@ public class AccountsActivity extends Activity{
 	
 	/**
 	 * Pulls all accounts (if any) out of the local SQLite Database and puts them into the
-	 * SessionStorage accounts list, then populates a listview with the accounts.
+	 * SessionStorage accounts list, then populates a ListView with the accounts.
 	 */
 	public void loadAccountList(){
 		LocalDBHandler db = new LocalDBHandler(this, null);

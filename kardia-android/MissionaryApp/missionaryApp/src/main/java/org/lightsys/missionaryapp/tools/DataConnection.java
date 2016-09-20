@@ -766,7 +766,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         int giftid = db.getLastId("gift") + 1;
                         String name = GiftObj.getString("name");
 
-                        String gift_fund = GiftObj.getString("gift_fund");
+                        String gift_fund = GiftObj.getString("gift_fund")+"|"+GiftObj.getString("gift_ledger");
                         String gift_fund_desc = GiftObj.getString("gift_fund_desc");
                         String gift_year = dateObj.getString("year");
                         String gift_month = dateObj.getString("month");

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/RelativeLayout1"
+    android:id="@+id/relative_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/noise_blue_repeat" >
@@ -14,46 +14,46 @@
         >
         <ImageView
             android:contentDescription="@string/profile_pic_description"
-            android:id="@+id/profile_pic"
+            android:id="@+id/profile_pic_image"
             android:layout_width="68dp"
             android:layout_height="68dp"
             android:src="@drawable/prayer_letter_icon"
             android:layout_centerVertical="true"
             />
         <TextView
-            android:id="@+id/name"
+            android:id="@+id/name_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="18dp"
             android:layout_marginStart="18dp"
             android:textSize="24sp"
-            android:layout_toRightOf="@id/profile_pic"
-            android:layout_toEndOf="@id/profile_pic"
-            android:layout_alignTop="@id/profile_pic"/>
+            android:layout_toRightOf="@id/profile_pic_image"
+            android:layout_toEndOf="@id/profile_pic_image"
+            android:layout_alignTop="@id/profile_pic_image"/>
 
         <TextView
-            android:id="@+id/email"
+            android:id="@+id/email_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
             android:layout_marginLeft="17dp"
             android:layout_marginStart="17dp"
-            android:layout_below="@+id/name"
+            android:layout_below="@+id/name_text"
             android:textSize="16sp"
-            android:layout_alignLeft="@id/name"
-            android:layout_alignStart="@id/name"/>
+            android:layout_alignLeft="@id/name_text"
+            android:layout_alignStart="@id/name_text"/>
 
         <TextView
-            android:id="@+id/phone"
+            android:id="@+id/phone_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
             android:layout_marginLeft="17dp"
             android:layout_marginStart="17dp"
-            android:layout_below="@+id/email"
+            android:layout_below="@+id/email_text"
             android:textSize="16sp"
-            android:layout_alignLeft="@id/name"
-            android:layout_alignStart="@id/name"/>
+            android:layout_alignLeft="@id/name_text"
+            android:layout_alignStart="@id/name_text"/>
 
     </RelativeLayout>
 
@@ -64,35 +64,35 @@
         android:layout_below="@id/donor_info_layout" />
 
     <TextView
-        android:id="@+id/date"
+        android:id="@+id/date_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/fund"
+        android:layout_below="@+id/fund_text"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="13dp"
         android:textSize="26sp" />
 
     <TextView
-        android:id="@+id/giftamount"
+        android:id="@+id/gift_amount_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/date"
+        android:layout_below="@+id/date_text"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="13dp"
         android:textSize="26sp"
         android:textColor="#37AD00" />
 
     <TextView
-        android:id="@+id/checknum"
+        android:id="@+id/check_num_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/giftamount"
+        android:layout_below="@+id/gift_amount_text"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="13dp"
         android:textSize="24sp" />
 
     <TextView
-        android:id="@+id/fund"
+        android:id="@+id/fund_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/donor_info_layout"
@@ -104,7 +104,7 @@
         android:gravity="center"/>
 
     <Button
-        android:id="@+id/pdfButton"
+        android:id="@+id/pdf_button"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:textSize="24sp"

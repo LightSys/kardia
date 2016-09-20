@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.support.v4.app.Fragment;
 import android.view.View;
@@ -23,7 +22,6 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by laura deotte on 3/12/2015.
@@ -70,9 +68,9 @@ public class DetailedDonor extends Fragment{
             donor_email="no email";
             donor_phone = "no phone";
         }
-        TextView name = (TextView)v.findViewById(R.id.name);
-        TextView email = (TextView)v.findViewById(R.id.email);
-        TextView phone = (TextView)v.findViewById(R.id.phone);
+        TextView name = (TextView)v.findViewById(R.id.name_text);
+        TextView email = (TextView)v.findViewById(R.id.email_text);
+        TextView phone = (TextView)v.findViewById(R.id.phone_text);
         RelativeLayout donorinfo = (RelativeLayout)v.findViewById(R.id.donor_info_layout);
         name.setText(donor_name);
         email.setText(donor_email);
@@ -121,7 +119,7 @@ public class DetailedDonor extends Fragment{
             SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
             listview.setAdapter(adapter);
         } else {
-            int[] to = {R.id.subject, R.id.date, R.id.detail};
+            int[] to = {R.id.subject, R.id.date_text, R.id.detail};
             SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
             listview.setAdapter(adapter);
         }
