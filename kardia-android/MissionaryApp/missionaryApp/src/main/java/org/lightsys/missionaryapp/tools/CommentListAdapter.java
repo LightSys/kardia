@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Created by Judah Sistrunk on 6/20/2016.
  *
- * this class sets a list of comments to a custom listview
+ * this class sets a list of comments to a custom ListView
  */
 public class CommentListAdapter extends SimpleAdapter {
 

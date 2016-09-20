@@ -21,7 +21,7 @@ public class CommentListLayout extends RelativeLayout {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.comment_item, this, true);
         userNameView = (TextView)findViewById(R.id.userName);
-        dateView = (TextView)findViewById(R.id.date);
+        dateView = (TextView)findViewById(R.id.date_text);
         textView = (TextView)findViewById(R.id.text);
 
     }

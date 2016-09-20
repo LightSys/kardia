@@ -9,17 +9,19 @@ package org.lightsys.missionaryapp.data;
 
 public class Period {
 	private int Id;
+	private int fundId;
 	private String periodname; // example: 2014.06|DEMO
 	private String date; // month and year example: June 2014
 	private int[] giftTotal;
 	
 	public Period(){}
 	
-	public Period(int Id, String periodname, String date, int[] giftTotal){
+	public Period(int Id, String periodname, String date, int[] giftTotal, int fundId){
 		this.setId(Id);
 		this.setPeriodName(periodname);
 		this.setDate(date);
 		this.setGiftTotal(giftTotal);
+		this.setFundId(fundId);
 	}
 
 	public int getId() {
@@ -49,6 +51,10 @@ public class Period {
 	public int[] getGiftTotal() {return giftTotal; }
 
 	public void setGiftTotal(int[] giftTotal){this.giftTotal = giftTotal; }
+
+	public int getFundId(){ return fundId;}
+
+	public void setFundId(int fundId){ this.fundId = fundId;}
 
     @Override
     public String toString() {

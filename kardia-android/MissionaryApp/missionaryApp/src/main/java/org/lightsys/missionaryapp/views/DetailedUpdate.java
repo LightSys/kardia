@@ -84,8 +84,8 @@ public class DetailedUpdate extends Fragment {
     public void updateUpdateView(int update_id){
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject = (TextView)getActivity().findViewById(R.id.name);
-        TextView date = (TextView)getActivity().findViewById(R.id.date);
+        TextView subject = (TextView)getActivity().findViewById(R.id.name_text);
+        TextView date = (TextView)getActivity().findViewById(R.id.date_text);
         TextView text = (TextView)getActivity().findViewById(R.id.text);
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
@@ -102,7 +102,7 @@ public class DetailedUpdate extends Fragment {
         loadComments();//gets list of comments
 
         String[] from = {"userName", "date", "text"};//stuff for the adapter
-        int[] to = {R.id.userName,  R.id.date, R.id.text};//more stuff for the adapter
+        int[] to = {R.id.userName,  R.id.date_text, R.id.text};//more stuff for the adapter
         if (commentList != null){
             //if we have comments, set them to the adapter
             CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, R.layout.comment_item, from, to);

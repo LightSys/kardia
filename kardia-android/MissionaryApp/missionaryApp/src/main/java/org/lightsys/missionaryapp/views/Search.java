@@ -1,8 +1,10 @@
 package org.lightsys.missionaryapp.views;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.tools.GenericTextWatcher;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
@@ -11,6 +13,7 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,12 +44,12 @@ public class Search extends Fragment{
 
 		getActivity().setTitle("Gift Search");
 		
-		date1 = (Button)v.findViewById(R.id.datepick1);
-		date2 = (Button)v.findViewById(R.id.datepick2);
+		date1 = (Button)v.findViewById(R.id.datePickBtn);
+		date2 = (Button)v.findViewById(R.id.datePickBtn2);
 		Button search = (Button)v.findViewById(R.id.searchbtn);
 		amount1 = (EditText)v.findViewById(R.id.amount1);
 		amount2 = (EditText)v.findViewById(R.id.amount2);
-		checknum = (EditText)v.findViewById(R.id.checknum);
+		checknum = (EditText)v.findViewById(R.id.check_num_text);
 		dateRange = (CheckBox)v.findViewById(R.id.dateRange);
 		amountRange = (CheckBox)v.findViewById(R.id.amountRange);
 		toggleDate = (ToggleButton)v.findViewById(R.id.toggleDate);
@@ -54,7 +57,7 @@ public class Search extends Fragment{
 		toggleCheck = (ToggleButton)v.findViewById(R.id.toggleCheck);
 		dateRow = (TableRow)v.findViewById(R.id.dateRow);
 		amountRow = (TableRow)v.findViewById(R.id.amountRow);
-		dash1 = (TextView)v.findViewById(R.id.dash1);
+		dash1 = (TextView)v.findViewById(R.id.dashTextView);
 		dash2 = (TextView)v.findViewById(R.id.dash2);
 		dollarSign2 = (TextView)v.findViewById(R.id.dollarSign2);
 
@@ -201,6 +204,7 @@ public class Search extends Fragment{
 		String startAmount = "";
 		String endAmount = "";
 		String checkNumber = "";
+		ArrayList<Fund> giftFund = db.getFundsForMissionary(db.getAccount().getId());
 		if(toggleDate.isChecked()){
 			startDate = (!date1.getText().toString().equals("Choose Date"))? date1.getText().toString() : "";
 			endDate = (date2.isEnabled() && !date2.getText().toString().equals("Choose Date"))? date2.getText().toString() : "";
@@ -224,8 +228,11 @@ public class Search extends Fragment{
 			amount1.setError("Set an amount value");
 		} else {
 			// Do search for gifts with constructed parameters
-			ArrayList<Gift> results = db.getGiftSearchResults(startDate, endDate, startAmount, endAmount, checkNumber);
-			db.close();
+			ArrayList<Gift> results = null;
+			for(Fund f:giftFund) {
+				results = db.getGiftSearchResults(startDate, endDate, startAmount, endAmount, checkNumber, f.getFundName());
+				db.close();
+			}
 
 			// Send to corresponding page depending on search results
 			if(results.size() == 0){
@@ -233,11 +240,11 @@ public class Search extends Fragment{
 			}else if(results.size() == 1){
 				resetAll();
 				Toast.makeText(getActivity(), "1 Gift found.", Toast.LENGTH_SHORT).show();
-				sendToDetailedGift(results.get(0).getId());
+				sendToDetailedGift(results.get(0).getId(), results.get(0).getGiftDonorId(), results.get(0).getGiftDonor());
 			}else{
 				resetAll();
 				Toast.makeText(getActivity(), results.size() + " Gifts found.", Toast.LENGTH_SHORT).show();
-				sendToGiftList(results);
+				sendToGiftList(results,giftFund);
 			}
 		}
 	}
@@ -265,9 +272,11 @@ public class Search extends Fragment{
 		checknum.setVisibility(View.INVISIBLE);
 	}
 	
-	public void sendToDetailedGift(int gift_id){
+	public void sendToDetailedGift(int gift_id, int donor_id, String donor_name){
 		Bundle args = new Bundle();
 		args.putInt(DetailedGift.ARG_GIFT_ID, gift_id);
+		args.putInt(DetailedGift.ARG_DONOR_ID, donor_id);
+		args.putString(DetailedGift.ARG_DONOR_NAME, donor_name);
 		
 		DetailedGift detailedgift = new DetailedGift();
 		detailedgift.setArguments(args);
@@ -278,19 +287,24 @@ public class Search extends Fragment{
 		transaction.commit();
 	}
 	
-	public void sendToGiftList(ArrayList<Gift> giftList){
+	public void sendToGiftList(ArrayList<Gift> giftList, ArrayList<Fund> fundList){
 		ArrayList<Integer> giftIDList = new ArrayList<Integer>();
+		ArrayList<Integer> fundIDList = new ArrayList<Integer>();
 
 		for (Gift g : giftList) {
 			giftIDList.add(g.getId());
 		}
+		for (Fund f : fundList) {
+			fundIDList.add(f.getFundId());
+		}
 
 		Bundle args = new Bundle();
-		args.putIntegerArrayList("giftIDs", giftIDList);
+		args.putIntegerArrayList("gift_ids", giftIDList);
+		args.putIntegerArrayList("fund_ids", fundIDList);
 		
 		GiftList gl = new GiftList();
 		gl.setArguments(args);
-		
+
 		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 		transaction.replace(R.id.content_frame, gl);
 		transaction.addToBackStack("ToGiftList");

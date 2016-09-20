@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,8 +54,8 @@ public class CommentActivity extends Activity {
 
 
         originalPostText = (TextView)findViewById(R.id.originalPostText);
-        commentText = (TextView)findViewById(R.id.commentText);
-        userIDText = (TextView)findViewById(R.id.accountID);
+        commentText = (EditText)findViewById(R.id.commentText);
+        userIDText = (EditText)findViewById(R.id.accountID);
         submit = (Button)findViewById(R.id.submitButton);
         cancel = (Button)findViewById(R.id.cancelButton);
 
@@ -64,6 +65,11 @@ public class CommentActivity extends Activity {
         else {
             originalPostText.setText(MISSING_POST);
         }
+
+        LocalDBHandler db = new LocalDBHandler(getBaseContext(), null);
+        userIDText.setText("" + db.getAccount().getId());
+        db.close();
+
         missionaryId = getIntent().getIntExtra("missionaryId", -1);
 
         cancel.setOnClickListener(new View.OnClickListener() {
