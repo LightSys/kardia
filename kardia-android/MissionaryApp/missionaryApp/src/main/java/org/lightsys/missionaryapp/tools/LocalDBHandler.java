@@ -1237,14 +1237,15 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 
 	/**
-	 * Pulls all gifts from the gift table
+	 * Pulls all gifts from the gift table for a missionary's funds
 	 * @return All gifts in the Gift table as an ArrayList of Gift Objects ordered from most recent to least recent
 	 */
-	public ArrayList<Gift> getGifts(){
+	public ArrayList<Gift> getGifts(String fund_ids){
 		ArrayList<Gift> gifts = new ArrayList<Gift>();
-		String queryString = "SELECT * FROM " + TABLE_GIFT
-				+ " ORDER BY DATE(" + COLUMN_GIFTDATE + ") DESC";
-		
+		String queryString = "SELECT * FROM "+ TABLE_GIFT + " INNER JOIN " + TABLE_FUND
+				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFTFUNDDESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+				+ " WHERE " + TABLE_FUND + "." + COLUMN_ID + " IN (" + fund_ids + ") ORDER BY DATE("
+				+COLUMN_GIFTDATE + ") DESC";
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
 		

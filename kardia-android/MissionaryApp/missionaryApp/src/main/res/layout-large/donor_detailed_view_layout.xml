@@ -19,41 +19,40 @@
             android:layout_height="68dp"
             android:src="@drawable/prayer_letter_icon"
             android:layout_centerVertical="true"
+            android:layout_margin="10dp"
             />
         <TextView
             android:id="@+id/name_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="18dp"
-            android:layout_marginStart="18dp"
             android:textSize="26sp"
             android:layout_toRightOf="@id/profile_pic_image"
             android:layout_toEndOf="@id/profile_pic_image"
-            android:layout_alignTop="@id/profile_pic_image"/>
-
-        <TextView
-            android:id="@+id/email_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:layout_marginLeft="17dp"
-            android:layout_marginStart="17dp"
-            android:layout_below="@+id/name_text"
-            android:textSize="18sp"
-            android:layout_alignLeft="@id/name_text"
-            android:layout_alignStart="@id/name_text"/>
+            android:layout_centerVertical="true"/>
 
         <TextView
             android:id="@+id/phone_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:layout_marginLeft="17dp"
-            android:layout_marginStart="17dp"
-            android:layout_below="@+id/email_text"
+            android:layout_marginRight="17dp"
+            android:layout_marginEnd="17dp"
             android:textSize="18sp"
-            android:layout_alignLeft="@id/name_text"
-            android:layout_alignStart="@id/name_text" />
+            android:layout_alignTop="@id/profile_pic_image"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            />
+
+        <TextView
+            android:id="@+id/email_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="17dp"
+            android:layout_marginEnd="17dp"
+            android:layout_below="@+id/phone_text"
+            android:textSize="18sp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
     </RelativeLayout>
 
     <View

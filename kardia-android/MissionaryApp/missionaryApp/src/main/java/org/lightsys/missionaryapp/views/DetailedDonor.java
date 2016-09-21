@@ -114,15 +114,9 @@ public class DetailedDonor extends Fragment{
 
         // If list is for specific fund, display fund as smaller (not as subject)
         String[] from = {"fundname", "giftdate", "giftamount"};
-        if (isSpecificFund) {
-            int[] to = {R.id.fundName, R.id.subject, R.id.detail};
-            SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
-            listview.setAdapter(adapter);
-        } else {
-            int[] to = {R.id.subject, R.id.date_text, R.id.detail};
-            SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
-            listview.setAdapter(adapter);
-        }
+        int[] to = {R.id.fund_name_text, R.id.date_text, R.id.amount_text};
+        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.fund_layout, from, to );
+        listview.setAdapter(adapter);
 
         listview.setOnItemClickListener(new onGiftClicked());
 

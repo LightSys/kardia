@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relative_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+
+    <!-- The Title -->
+    <TextView
+        android:id="@+id/amount_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#37AD00"
+        android:layout_marginRight="18dp"
+        android:layout_marginEnd="18dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="18dp"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/fund_name_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="18dp"
+        android:layout_marginStart="18dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="6dp"
+        android:layout_centerVertical="true"
+        android:textSize="24sp" />
+
+    <!-- The Date -->
+
+    <TextView
+        android:id="@+id/date_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/amount_text"
+        android:layout_alignEnd="@+id/amount_text"
+        android:layout_below="@+id/amount_text"
+        android:layout_marginBottom="6dp"
+        android:layout_marginTop="6dp"
+        android:textColor="#303030"
+        android:textSize="18sp" />
+
+</RelativeLayout>

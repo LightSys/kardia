@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relative_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+    <ImageView
+        android:contentDescription="@string/profile_pic_description"
+        android:id="@+id/profile_pic_image"
+        android:layout_width="68dp"
+        android:layout_height="68dp"
+        android:src="@drawable/prayer_letter_icon"
+        android:layout_centerVertical="true"
+        android:layout_margin="10dp"
+        />
+    <TextView
+        android:id="@+id/name_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="22sp"
+        android:layout_toRightOf="@id/profile_pic_image"
+        android:layout_toEndOf="@id/profile_pic_image"
+        android:layout_centerVertical="true"/>
+
+    <TextView
+        android:id="@+id/phone_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="17dp"
+        android:layout_marginEnd="17dp"
+        android:textSize="14sp"
+        android:layout_alignTop="@id/profile_pic_image"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        />
+
+    <TextView
+        android:id="@+id/email_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="17dp"
+        android:layout_marginEnd="17dp"
+        android:layout_below="@+id/phone_text"
+        android:textSize="14sp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+</RelativeLayout>
