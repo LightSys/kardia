@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.text.TextUtils;
 
 import org.lightsys.missionaryapp.R;
 
@@ -52,8 +53,9 @@ public class GiftList extends Fragment{
 			this.period_type = savedInstanceState.getString(ARG_PERIOD_TYPE);
 			this.period_id = savedInstanceState.getString(ARG_PERIOD_ID);
 			this.fundIds = savedInstanceState.getIntegerArrayList(ARG_FUND_IDS);
+			this.giftIds = savedInstanceState.getIntegerArrayList(ARG_GIFT_IDS);
 			if(period_id==null || period_type==null){
-				for (Integer gift_id:savedInstanceState.getIntegerArrayList(ARG_GIFT_IDS)){
+				for (Integer gift_id : giftIds) {
 					gifts.add(db.getGift(gift_id));
 				}
 			}else {
@@ -80,27 +82,32 @@ public class GiftList extends Fragment{
 		}
 		//This is used when dealing with the entire list of gifts...
 		else{
-			gifts = db.getGifts(); // pull ALL gifts
+			for(Fund f: db.getFundsForMissionary(db.getAccount().getId())){
+				fundIds.add(f.getFundId());
+			}
+			gifts = db.getGifts(TextUtils.join(",",fundIds)); // pull ALL gifts
 		}
 		
 		View v = inflater.inflate(R.layout.activity_main, container, false);
 
 		// Set title appropriately to what data is shown
 		String giftListTitle = "Gifts";
-		if(period_id==null || period_type==null){
-			giftListTitle += " - search results";
+		if(period_id==null && giftIds.size()>0){
+			giftListTitle += ": search results";
 		}
-		else if (period_id != null){
-			if (period_type.equals("Month")){
-				String[] parts = period_id.split("\\.");
-				giftListTitle += " - " + Formatter.getMonthYearDate(parts[1], parts[0]);
-			}else{
-				giftListTitle += " - " + period_id;
+		else{
+			if (fundIds.size() == 1) {
+				String fundStr = db.getFundByFundId(fundIds.get(0)).getFundName();
+				giftListTitle += ": " + fundStr;
 			}
-		}
-		else if (fundIds.size() == 1) {
-			String fundStr = db.getFundByFundId(fundIds.get(0)).getFundDesc();
-			giftListTitle += " - " + fundStr;
+			if (period_id != null) {
+				if (period_type.equals("Month")) {
+					String[] parts = period_id.split("\\.");
+					giftListTitle += " - " + Formatter.getMonthYearDate(parts[1], parts[0]);
+				} else {
+					giftListTitle += " - " + period_id;
+				}
+			}
 		}
 		getActivity().setTitle(giftListTitle);
 		db.close();
@@ -112,8 +119,8 @@ public class GiftList extends Fragment{
 
 		// display donor name, fund name, date, and amount for all gifts
 		String[] from = {"donorname", "giftname", "giftdate", "giftamount"};
-        int[] to = {R.id.subject, R.id.fundName, R.id.date_text, R.id.detail};
-        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to );
+        int[] to = {R.id.donor_text, R.id.fund_name_text, R.id.date_text, R.id.amount_text};
+        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item_layout, from, to );
         listview.setAdapter(adapter);
 
 		listview.setOnItemClickListener(new onGiftClicked());

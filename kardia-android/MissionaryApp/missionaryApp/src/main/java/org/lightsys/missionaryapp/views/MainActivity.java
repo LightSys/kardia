@@ -239,7 +239,7 @@ public class MainActivity extends ActionBarActivity {
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 1:
-			fragment = new GiftTimePeriodList();
+			fragment = new GiftList();
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 2:
@@ -267,9 +267,6 @@ public class MainActivity extends ActionBarActivity {
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 7:
-			//refresh
-			//Account a = db.getAccount();
-			//db.close();
 			new DataConnection(this, this, account).execute("");
 			break;
 		}

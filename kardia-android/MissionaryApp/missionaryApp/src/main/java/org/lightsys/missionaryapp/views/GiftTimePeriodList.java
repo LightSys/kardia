@@ -3,7 +3,6 @@ package org.lightsys.missionaryapp.views;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
@@ -11,7 +10,6 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,9 +29,8 @@ import org.lightsys.missionaryapp.R;
  */
 public class GiftTimePeriodList extends Fragment {
 
-	public final String ARG_FUND_IDS = "fund_ids"; //The funds managed by the missionary
-	private ArrayList<Integer> fundIds = new ArrayList<Integer>();
-	private ArrayList<Fund> funds = new ArrayList<Fund>();
+	public final String ARG_FUND_ID = "fund_id"; //The funds managed by the missionary
+	private int fundId=-1;
 	private ArrayList<Period> periods = new ArrayList<Period>();
     String periodtype;
 
@@ -51,23 +48,12 @@ public class GiftTimePeriodList extends Fragment {
 		int Account_Id = db.getAccount().getId();
         periods.clear();
 		if(savedInstanceState != null){ 
-			this.fundIds = savedInstanceState.getIntegerArrayList(ARG_FUND_IDS);
-			for (Integer fund_id: fundIds) {
-				periods.addAll(db.getFundPeriods(fund_id, periodtype));
-			}
+			this.fundId = savedInstanceState.getInt(ARG_FUND_ID);
+			periods.addAll(db.getFundPeriods(fundId, periodtype));
 		} 
 		else if(args != null){
-			this.fundIds = args.getIntegerArrayList(ARG_FUND_IDS);
-			for (Integer fund_id: fundIds) {
-				periods = db.getFundPeriods(fund_id, periodtype);
-			}
-		}
-		else{
-			funds=db.getFundsForMissionary(Account_Id);
-			for(Fund f : funds) {
-				periods.addAll(db.getFundPeriods(f.getFundId(), periodtype));
-				fundIds.add(f.getFundId());
-			}
+			this.fundId = args.getInt(ARG_FUND_ID);
+			periods = db.getFundPeriods(fundId, periodtype);
 		}
         if (periods.size()==1){
             loadRelatedGifts(0);
@@ -78,8 +64,8 @@ public class GiftTimePeriodList extends Fragment {
 		View v = inflater.inflate(R.layout.activity_main, container, false);
         String gtpListTitle = "Gifts By " + periodtype;
 
-		if (fundIds.size() > 0) {
-			gtpListTitle += ": " + db.getFundByFundId(fundIds.get(0)).getFundDesc();
+		if (fundId!=-1) {
+			gtpListTitle += ": " + db.getFundByFundId(fundId).getFundName();
 		}
 		getActivity().setTitle(gtpListTitle);
 
@@ -89,17 +75,10 @@ public class GiftTimePeriodList extends Fragment {
 
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
-		if (fundIds.size() == 0) {
-			String[] from = {"gtptitle", "gtpamount","period"};
-			int[] to = {R.id.name_text, R.id.detail, R.id.subject};
-			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
-			listview.setAdapter(adapter);
-		} else {
-			String[] from = {"gtptitle", "gtpamount", "gtpfund","period"};
-			int[] to = {R.id.name_text, R.id.detail, R.id.fundName, R.id.subject};
-			SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
-			listview.setAdapter(adapter);
-		}
+		String[] from = {"gtpamount", "gtpfund","period"};
+		int[] to = {R.id.amount_text, R.id.fund_name_text, R.id.donor_text};
+		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item_layout, from, to);
+		listview.setAdapter(adapter);
 
 		listview.setOnItemClickListener(new onPeriodClicked());
 		
@@ -123,11 +102,9 @@ public class GiftTimePeriodList extends Fragment {
 				Date = p.getPeriodName();
 			}
 
-			hm.put("gtptitle", Date + " Total");
-
 			hm.put("gtpamount", Formatter.amountToString(p.getGiftTotal()));
 			LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-			hm.put("gtpfund", db.getFundByFundId(p.getFundId()).getFundDesc());
+			hm.put("gtpfund", db.getFundByFundId(p.getFundId()).getFundName());
 			db.close();
 
 			hm.put("period", Date);
@@ -158,10 +135,11 @@ public class GiftTimePeriodList extends Fragment {
 	 */
 	public void loadRelatedGifts(int position){
 		Bundle GiftArgs = new Bundle();
-		
+		ArrayList<Integer> fund = new ArrayList<Integer>();
+		fund.add(fundId);
 		GiftArgs.putString(GiftList.ARG_PERIOD_ID, periods.get(position).getPeriodName()); //Used to find what period to pull gifts for
         GiftArgs.putString(GiftList.ARG_PERIOD_TYPE, this.periodtype);
-		GiftArgs.putIntegerArrayList(GiftList.ARG_FUND_IDS, this.fundIds); //send the fund id
+		GiftArgs.putIntegerArrayList(GiftList.ARG_FUND_IDS, fund); //send the fund id
 		
 		GiftList gList = new GiftList();
 		gList.setArguments(GiftArgs);
@@ -178,6 +156,6 @@ public class GiftTimePeriodList extends Fragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState){
 		super.onSaveInstanceState(outState);
-		outState.putIntegerArrayList(ARG_FUND_IDS, fundIds);
+		outState.putInt(ARG_FUND_ID, fundId);
 	}
 }

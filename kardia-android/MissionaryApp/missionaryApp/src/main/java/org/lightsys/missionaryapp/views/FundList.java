@@ -1,11 +1,10 @@
 package org.lightsys.missionaryapp.views;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 
 import org.lightsys.missionaryapp.data.Fund;
-import org.lightsys.missionaryapp.data.Period;
+import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
@@ -35,8 +34,6 @@ public class FundList extends Fragment{
 	
 	private ArrayList<Fund> funds;
 	private ArrayList<Integer> fundIds = new ArrayList<Integer>();
-	private static String periodtype="Year";
-	private static String periodid = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
 
 	/**
 	 * Pulls all relevant funds, and creates the view (including the bottom total bar)
@@ -63,9 +60,9 @@ public class FundList extends Fragment{
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>>itemList = generateListItems();
 		String[] from = {"fundtitle","todateamount","date"};
-		int[] to = {R.id.subject, R.id.detail, R.id.date_text};
+		int[] to = {R.id.fund_name_text, R.id.amount_text, R.id.date_text};
 		
-		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.main_listview_item_layout, from, to);
+		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.fund_layout, from, to);
 		
 		ListView listview = (ListView)v.findViewById(R.id.info_list);
 		listview.setAdapter(adapter);
@@ -85,10 +82,21 @@ public class FundList extends Fragment{
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 		for(Fund f : funds){
 			HashMap<String,String> hm = new HashMap<String,String>();
-            Period p = db.getFundPeriodToDate(f.getFundId(), periodtype, periodid);
-			hm.put("fundtitle", f.getFundDesc());
-            hm.put("todateamount", Formatter.amountToString(p.getGiftTotal()));
-            hm.put("date", p.getPeriodName());
+			int Total[]= new int[2];
+			ArrayList<Gift> gifts = db.getGifts(Integer.toString(f.getFundId()));
+			for(Gift g:gifts){
+				Total[0] += g.getGiftAmount()[0];
+				Total[1] += g.getGiftAmount()[1];
+			}
+			if (Total[1]>=100){
+				Total[0]+=Math.floor(Total[1]/100);
+				Total[1]-=Math.floor(Total[1]/100)*100;
+			}
+			hm.put("fundtitle", f.getFundName());
+            hm.put("todateamount", Formatter.amountToString(Total));
+			String startDate = gifts.get(gifts.size()-1).getGiftDate().substring(0,4);
+			String endDate = gifts.get(0).getGiftDate().substring(0,4);
+			hm.put("date", startDate + " - " + endDate);
 			
 			aList.add(hm);
 		}
@@ -103,12 +111,9 @@ public class FundList extends Fragment{
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			GiftList newFrag = new GiftList();
-			fundIds.add(funds.get(position).getFundId());
+			GiftTimePeriodList newFrag = new GiftTimePeriodList();
 			Bundle args = new Bundle();
-			args.putIntegerArrayList(newFrag.ARG_FUND_IDS, fundIds);
-			args.putString(newFrag.ARG_PERIOD_TYPE, periodtype);
-			args.putString(newFrag.ARG_PERIOD_ID, periodid);
+			args.putInt(newFrag.ARG_FUND_ID, funds.get(position).getFundId());
 			newFrag.setArguments(args);
 
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
