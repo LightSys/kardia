@@ -22,7 +22,7 @@ import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
-import org.lightsys.missionaryapp.data.PrayerNotification;
+import org.lightsys.missionaryapp.data.UpdateNotification;
 
 /**
  * Sets up a SQLite database for the application, which is used to
@@ -413,11 +413,11 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * Adds a prayer notification to the database
 	 * @param notification, notification to be stored
 	 */
-	public void addNotification(PrayerNotification notification) {
+	public void addNotification(UpdateNotification notification) {
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_ID, notification.getId());
 		values.put(COLUMN_NOTIFY_TIME, Long.toString(notification.getNotificationTime()));
-		values.put(COLUMN_REQUEST_ID, Integer.toString(notification.getRequestID()));
+		//todo values.put(COLUMN_REQUEST_ID, Integer.toString(notification.getRequestID()));
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_NOTIFICATIONS, null, values);
@@ -1214,20 +1214,20 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 	/**
 	 * pulls all notifications from the notifications table
-	 * @return notifications as an ArrayList of PrayerNotification Objects
+	 * @return notifications as an ArrayList of UpdateNotification Objects
 	 */
-	public ArrayList<PrayerNotification> getNotifications() {
-		ArrayList<PrayerNotification> notificationList = new ArrayList<PrayerNotification>();
+	public ArrayList<UpdateNotification> getNotifications() {
+		ArrayList<UpdateNotification> notificationList = new ArrayList<UpdateNotification>();
 		String queryString = "SELECT * FROM " + TABLE_NOTIFICATIONS;
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
 
 		while(c.moveToNext()){
-			PrayerNotification temp = new PrayerNotification();
+			UpdateNotification temp = new UpdateNotification();
 			temp.setId(Integer.parseInt(c.getString(0)));
 			temp.setNotificationTime(Long.parseLong(c.getString(1)));
-			temp.setRequest_id(Integer.parseInt(c.getString(2)));
+			//todo: temp.setRequest_id(Integer.parseInt(c.getString(2)));
 
 			notificationList.add(temp);
 		}

@@ -4,18 +4,18 @@ package org.lightsys.missionaryapp.data;
  * Class represents a prayer notification to be sent to user at a specific time
  * Created by Andrew Lockridge on 6/8/2015.
  */
-public class PrayerNotification {
+public class UpdateNotification {
 
     private int id; // used for database storage
     private long notificationTime; // time to be sent in milliseconds
-    private int request_id; // id of prayer request to be reminded of
+    private String notificationMessage; // id of prayer request to be reminded of
 
-    public PrayerNotification() {}
+    public UpdateNotification() {}
 
-    public PrayerNotification(int id, long notificationTime, int request_id) {
+    public UpdateNotification(int id, long notificationTime, String notificationMessage) {
         this.id = id;
         this.notificationTime = notificationTime;
-        this.request_id = request_id;
+        this.notificationMessage = notificationMessage;
     }
 
     public int getId() {return id;}
@@ -26,7 +26,7 @@ public class PrayerNotification {
 
     public void setNotificationTime(long time) {notificationTime = time;}
 
-    public int getRequestID() {return request_id;}
+    public String getNotificationMessage() {return notificationMessage;}
 
-    public void setRequest_id(int id) {request_id = id;}
+    public void setNotificationMessage(int notificationMessage) {notificationMessage = notificationMessage;}
 }

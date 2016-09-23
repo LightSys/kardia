@@ -9,17 +9,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import org.lightsys.missionaryapp.R;
 
 import org.lightsys.missionaryapp.data.Note;
-import org.lightsys.missionaryapp.data.PrayerNotification;
+import org.lightsys.missionaryapp.data.UpdateNotification;
+import org.lightsys.missionaryapp.views.PostNoteActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
+
+import static android.content.Context.NOTIFICATION_SERVICE;
 
 /**
  * Created by Andrew Lockridge on 6/2/2015.
@@ -48,27 +52,24 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
         // Setting alarms requires sdk version 19 or newer
         if (Build.VERSION.SDK_INT >= 19) {
             LocalDBHandler db = new LocalDBHandler(context, null);
-            ArrayList<PrayerNotification> notifications = db.getNotifications();
+            ArrayList<UpdateNotification> notifications = db.getNotifications();
 
-            Note request;
             Intent alarmIntent;
             PendingIntent pendingIntent;
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
 
             // Loop through all notifications
-            for (PrayerNotification notification : notifications) {
+            for (UpdateNotification notification : notifications) {
                 // If notification time has not passed, set alarm
                 if (notification.getNotificationTime() > Calendar.getInstance().getTimeInMillis()) {
-                    request = db.getNoteForID(notification.getRequestID());
                     alarmIntent = new Intent(context, NotifyAlarmReceiver.class);
-                    alarmIntent.putExtra("title", request.getMissionaryName());
-                    alarmIntent.putExtra("message", request.getSubject());
+                    alarmIntent.putExtra("message", notification.getNotificationMessage());
                     alarmIntent.putExtra("id", notification.getId());
                     pendingIntent = PendingIntent.getBroadcast(context, notification.getId(), alarmIntent, 0);
 
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
                     Log.w("tag", "Alarm set for: " + format.format(notification.getNotificationTime())
-                            + ", ID:" + Integer.toString(notification.getId()) + ", Name:" + request.getMissionaryName());
+                            + ", ID:" + Integer.toString(notification.getId()));
 
                     alarmManager.setExact(AlarmManager.RTC_WAKEUP, notification.getNotificationTime(), pendingIntent);
                 } else { // Time has passed and notification can be deleted from database
@@ -80,28 +81,33 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
     }
 
     private void sendNotification(Context context, Intent intent) {
-        NotificationManager notificationManager = (NotificationManager)
-                context.getSystemService(context.NOTIFICATION_SERVICE);
+        NotificationManager notificationMgr = (NotificationManager)
+                context.getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder nBuild;
-        Notification n;
-        String name, subject;
+        String name, message;
         int notificationID;
 
         name = intent.getStringExtra("title");
-        subject = intent.getStringExtra("message");
+        message = intent.getStringExtra("message");
         notificationID = intent.getIntExtra("id", 0);
 
         // Build the notification to be sent
         // BigTextStyle allows notification to be expanded if text is more than one line
         nBuild = new NotificationCompat.Builder(context)
-                .setContentTitle("Prayer Reminder")
-                .setContentText(name + ": " + subject)
+                .setContentTitle("Update Reminder")
+                .setContentText(message)
                 .setSmallIcon(R.drawable.kardiabeat_v2)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(name + ": " + subject));
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message));
 
-        n = nBuild.build();
-        notificationManager.notify(notificationID, n);
+        Intent resultIntent = new Intent(context, PostNoteActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addParentStack(PostNoteActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
+                0, PendingIntent.FLAG_UPDATE_CURRENT);
+        nBuild.setContentIntent(resultPendingIntent);
 
+        notificationMgr.notify(notificationID, nBuild.build());
         // Delete notification from database once sent as it will not be needed again
         LocalDBHandler db = new LocalDBHandler(context, null);
         db.deleteNotification(notificationID);
