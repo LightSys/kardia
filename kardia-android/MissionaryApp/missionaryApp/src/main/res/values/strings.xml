@@ -22,10 +22,11 @@
         <item>OFF</item>
     </string-array>
     <string-array name="notification_options">
-        <item>Once per day</item>
-        <item>Twice per day</item>
-        <item>3 times per day</item>
-        <item>4 times per day</item>
+        <item>No Repeat</item>
+        <item>Week</item>
+        <item>Two Weeks</item>
+        <item>Month</item>
+        <item>Year</item>
     </string-array>
     <string-array name="refresh_times">
         <item>Never</item>
@@ -78,11 +79,9 @@
     <string name="name">name</string>
     <string name="set">Set</string>
     <string name="end_date">End Date: </string>
+    <string name="start_date">Start Date: </string>
     <string name="choose_time">Choose Time</string>
-    <string name="time1">Time #1: </string>
-    <string name="time2">Time #2: </string>
-    <string name="time3">Time #3: </string>
-    <string name="time4">Time #4: </string>
+    <string name="time">Time: </string>
     <string name="dollar_sign">$</string>
     <string name="praying">Praying</string>
     <string name="comment">Comment</string>
@@ -92,7 +91,12 @@
     <string name="original_message_label">Original Post</string>
     <string name="view_pdf">View Letter</string>
     <string name="profile_pic_description">Profile Picture</string>
-    <string name="options_text_refresh">Refresh Every</string>
-    <string name="options_text_gift">Gift Period</string>
+    <string name="options_refresh_text">Refresh Every</string>
+    <string name="options_gift_text">Gift Period</string>
+    <string name="options_reminder_text">Update Reminder</string>
+    <string name="frequency_text">Repeat Every: </string>
+    <string name="options_reminder_date_text">Send Reminder On</string>
     <string name="apply_button">Apply</string>
+    <string name="connection_error">Connection Error</string>
+    <string name="options_reminder_title_text">Reminder Title</string>
 </resources>

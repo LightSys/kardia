@@ -24,9 +24,9 @@ import android.widget.Toast;
 import org.lightsys.missionaryapp.R;
 
 import org.lightsys.missionaryapp.data.Note;
+import org.lightsys.missionaryapp.data.UpdateNotification;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import org.lightsys.missionaryapp.tools.NotifyAlarmReceiver;
-import org.lightsys.missionaryapp.data.PrayerNotification;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,26 +37,27 @@ import java.util.Locale;
  * Created by Andrew Lockridge on 6/1/2015.
  *
  * This activity allows the user to set up a notification system to remind them to pray
+ *
+ * edited for missionaryapp from donorapp by Laura DeOtte on 9/22/2016
  */
-public class PrayerNotificationActivity extends Activity {
+public class UpdateNotificationActivity extends Activity {
 
     private Note request;
     private ArrayList<String> alarmTimes = new ArrayList<String>();
-    private String endDate;
+    private String endDate, Date, startDate;
     private final long DAY_IN_MILLIS = 86400000;
     private int requestid, notificationID, frequency;
 
     private Spinner frequencySpinner;
-    private TableRow dateRow, timeRow1, timeRow2, timeRow3, timeRow4;
-    private Button datePicker, timePicker1, timePicker2,
-            timePicker3, timePicker4;
+    private TableRow startDateRow, endDateRow, timeRow, frequencyRow;
+    private Button startDateButton, endDateButton, timeButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.prayer_notification_layout);
+        setContentView(R.layout.update_notification_layout);
         if (getActionBar() != null) {
-            getActionBar().setTitle("Prayer Notification Setup");
+            getActionBar().setTitle("Update Notification Setup");
         }
 
         Bundle args = getIntent().getExtras();
@@ -77,17 +78,15 @@ public class PrayerNotificationActivity extends Activity {
         notificationID = db.getLastId("notification") + 1;
         db.close();
 
-        frequencySpinner = (Spinner) this.findViewById(R.id.times_day);
-        dateRow = (TableRow) this.findViewById(R.id.endDateRow);
-        timeRow1 = (TableRow) this.findViewById(R.id.timeRow1);
-        timeRow2 = (TableRow) this.findViewById(R.id.timeRow2);
-        timeRow3 = (TableRow) this.findViewById(R.id.timeRow3);
-        timeRow4 = (TableRow) this.findViewById(R.id.timeRow4);
-        datePicker = (Button) this.findViewById(R.id.datePicker);
-        timePicker1 = (Button) this.findViewById(R.id.timePicker1);
-        timePicker2 = (Button) this.findViewById(R.id.timePicker2);
-        timePicker3 = (Button) this.findViewById(R.id.timePicker3);
-        timePicker4 = (Button) this.findViewById(R.id.timePicker4);
+        startDateRow = (TableRow) this.findViewById(R.id.start_date_row);
+        endDateRow = (TableRow) this.findViewById(R.id.end_date_row);
+        timeRow = (TableRow) this.findViewById(R.id.time_row);
+        frequencyRow = (TableRow) this.findViewById(R.id.frequency_row);
+        frequencySpinner = (Spinner) this.findViewById(R.id.frequency_spinner);
+        startDateButton = (Button) this.findViewById(R.id.start_date_button);
+        endDateButton = (Button) this.findViewById(R.id.end_date_button);
+        timeButton = (Button) this.findViewById(R.id.time_button);
+
         Button setNotificationButton = (Button) this.findViewById(R.id.setNotification);
         Button cancelButton = (Button) this.findViewById(R.id.cancel);
 
@@ -96,11 +95,7 @@ public class PrayerNotificationActivity extends Activity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 if (frequencySpinner.getVisibility() == View.VISIBLE) {
-                    // frequency is based on position (i.e 0 position = 1 time per week)
-                    frequency = frequencySpinner.getSelectedItemPosition() + 1;
-
-                    // Show corresponding rows based on how many requests/day the user chooses
-                    showRowsForFrequency(frequency);
+                    //todo functionalize frequency
                 }
             }
             @Override
@@ -113,7 +108,7 @@ public class PrayerNotificationActivity extends Activity {
                 boolean inputIsValid = checkValidity();
                 if (inputIsValid) {
                     // Ask user if notifications should be set as they can not be edited later
-                    new AlertDialog.Builder(PrayerNotificationActivity.this)
+                    new AlertDialog.Builder(UpdateNotificationActivity.this)
                             .setCancelable(false)
                             .setTitle("Set Notifications")
                             .setMessage("Should we set these notifications? You will not be able to edit this later.")
@@ -129,7 +124,7 @@ public class PrayerNotificationActivity extends Activity {
                             .setIcon(android.R.drawable.ic_dialog_alert)
                             .show();
                 } else {
-                    Toast.makeText(PrayerNotificationActivity.this, "There are unselected fields. " +
+                    Toast.makeText(UpdateNotificationActivity.this, "There are unselected fields. " +
                             "Select date and times before continuing", Toast.LENGTH_LONG).show();
                 }
             }
@@ -142,35 +137,23 @@ public class PrayerNotificationActivity extends Activity {
                 showCancelConfirmation();
             }
         });
-
-        datePicker.setOnClickListener(new View.OnClickListener() {
+        startDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openDatePicker();
+                openDatePicker(startDateButton);
             }
         });
-        timePicker1.setOnClickListener(new View.OnClickListener() {
+
+        endDateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openDatePicker(endDateButton);
+            }
+        });
+        timeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 openTimePicker(1);
-            }
-        });
-        timePicker2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openTimePicker(2);
-            }
-        });
-        timePicker3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openTimePicker(3);
-            }
-        });
-        timePicker4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openTimePicker(4);
             }
         });
     }
@@ -183,7 +166,7 @@ public class PrayerNotificationActivity extends Activity {
 
     // Displays a confirmation dialog asking whether they would like to leave the page
     private void showCancelConfirmation() {
-        new AlertDialog.Builder(PrayerNotificationActivity.this)
+        new AlertDialog.Builder(UpdateNotificationActivity.this)
                 .setCancelable(false)
                 .setTitle("Cancel")
                 .setMessage("Exit without setting notifications? You will not be able" +
@@ -207,36 +190,12 @@ public class PrayerNotificationActivity extends Activity {
      */
     private boolean checkValidity()  {
         // If any visible field has not been selected, set to false, otherwise true
-        if(dateRow.getVisibility() == View.VISIBLE && datePicker.getText().equals("Choose Date")   ||
-           timeRow1.getVisibility() == View.VISIBLE && timePicker1.getText().equals("Choose Time") ||
-           timeRow2.getVisibility() == View.VISIBLE && timePicker2.getText().equals("Choose Time") ||
-           timeRow3.getVisibility() == View.VISIBLE && timePicker3.getText().equals("Choose Time") ||
-           timeRow4.getVisibility() == View.VISIBLE && timePicker4.getText().equals("Choose Time")) {
+        if(endDateRow.getVisibility() == View.VISIBLE && endDateButton.getText().equals("Choose Date")   ||
+           startDateRow.getVisibility() == View.VISIBLE && startDateButton.getText().equals("Choose Date") ||
+           timeRow.getVisibility() == View.VISIBLE && timeButton.getText().equals("Choose Time")) {
             return false;
         } else {
             return true;
-        }
-    }
-
-    /**
-     * Display rows that pertain to the user's frequency of notifications
-     * @param frequency, amount of times per day notifications should be sent
-     */
-    public void showRowsForFrequency(int frequency) {
-        timeRow2.setVisibility(View.INVISIBLE);
-        timeRow3.setVisibility(View.INVISIBLE);
-        timeRow4.setVisibility(View.INVISIBLE);
-        // switch falls through and makes each row visible that needs to be displayed
-        switch (frequency) {
-            case 4:
-                timeRow4.setVisibility(View.VISIBLE);
-            case 3:
-                timeRow3.setVisibility(View.VISIBLE);
-            case 2:
-                timeRow2.setVisibility(View.VISIBLE);
-            case 1:
-                timeRow1.setVisibility(View.VISIBLE);
-
         }
     }
 
@@ -251,16 +210,16 @@ public class PrayerNotificationActivity extends Activity {
     /**
      * Open the dialog enabling the user to set a date
      */
-    private void openDatePicker() {
+    private void openDatePicker(Button dateButton) {
         int mYear;
         int mMonth;
         int mDay;
 
         // If calendar already has date, pull up that date
         // Otherwise pull up today's date
-        String text1 = datePicker.getText().toString();
-        if (!text1.equals("Choose Date")) {
-            String[] splitDateStr1 = text1.split("-");
+        String date = dateButton.getText().toString();
+        if (!date.equals("Choose Date")) {
+            String[] splitDateStr1 = date.split("-");
             mYear = Integer.parseInt(splitDateStr1[0]);
             //Subtract one to agree with DatePicker month standards, Jan = 0, Feb = 1, etc.
             mMonth = Integer.parseInt(splitDateStr1[1]) - 1;
@@ -273,26 +232,28 @@ public class PrayerNotificationActivity extends Activity {
         }
 
         DatePickerDialog dialog = new DatePickerDialog(this,
-                new DateSetListener(), mYear, mMonth, mDay);
+                new DateSetListener(dateButton), mYear, mMonth, mDay);
+        //todo enddate/startDate
         dialog.show();
     }
 
     private class DateSetListener implements DatePickerDialog.OnDateSetListener{
-
+        Button dateButton;
+        public DateSetListener(Button dateButton){this.dateButton = dateButton;}
         @Override
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
 
             // DatePicker starts months at 0, January = 0, February = 1, etc
-            // Add one to make it standard with donorApp month counting
+            // Add one to make it standard with missionaryApp month counting
             monthOfYear++;
 
             String month = (monthOfYear < 10)? "0" + monthOfYear : "" + monthOfYear;
             String day = (dayOfMonth < 10)? "0" + dayOfMonth : "" + dayOfMonth;
 
             String dateStr = year + "-" + month + "-" + day;
-            datePicker.setText(dateStr);
-            endDate = dateStr;
+            dateButton.setText(dateStr);
+            Date = dateStr;
         }
     }
 
@@ -304,22 +265,8 @@ public class PrayerNotificationActivity extends Activity {
         int hour;
         int minute;
         String text;
-        switch (btn_id) {
-            case 1:
-                text = timePicker1.getText().toString();
-                break;
-            case 2:
-                text = timePicker2.getText().toString();
-                break;
-            case 3:
-                text = timePicker3.getText().toString();
-                break;
-            case 4:
-                text = timePicker4.getText().toString();
-                break;
-            default:
-                text = "???";
-        }
+
+        text = timeButton.getText().toString();
 
         if (!text.equals("Choose Time")) {
 
@@ -348,18 +295,13 @@ public class PrayerNotificationActivity extends Activity {
         }
 
 
-        TimePickerDialog tPicker = new TimePickerDialog(this, new TimeSetListener(btn_id),
+        TimePickerDialog tPicker = new TimePickerDialog(this, new TimeSetListener(),
                 hour, minute, false);
         tPicker.show();
     }
 
     private class TimeSetListener implements TimePickerDialog.OnTimeSetListener{
 
-        private int btn_id;
-
-        public TimeSetListener(int btn_id){
-            this.btn_id = btn_id;
-        }
         @Override
         public void onTimeSet(TimePicker view, int hour, int minute) {
             String hourStr = "" + hour;
@@ -384,24 +326,9 @@ public class PrayerNotificationActivity extends Activity {
             // Switch to determine which time to set
             // Set visual timePicker with 12 hour clock format
             // Set alarmTimes field with 24 hour clock format
-            switch (btn_id) {
-                case 1:
-                    timePicker1.setText(timeStr);
+
+                    timeButton.setText(timeStr);
                     alarmTimes.set(0, timeStr24Hr);
-                    break;
-                case 2:
-                    timePicker2.setText(timeStr);
-                    alarmTimes.set(1, timeStr24Hr);
-                    break;
-                case 3:
-                    timePicker3.setText(timeStr);
-                    alarmTimes.set(2, timeStr24Hr);
-                    break;
-                case 4:
-                    timePicker4.setText(timeStr);
-                    alarmTimes.set(3, timeStr24Hr);
-                    break;
-            }
         }
     }
 
@@ -425,11 +352,11 @@ public class PrayerNotificationActivity extends Activity {
          */
         private void remind (ArrayList<String> times, String date, String title, String message)
         {
-            PrayerNotification notification;
+            UpdateNotification notification;
             Intent alarmIntent;
             PendingIntent pendingIntent;
 
-            LocalDBHandler db = new LocalDBHandler(PrayerNotificationActivity.this, null);
+            LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this, null);
             AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 
             String[] dateSplitStr = date.split("-");
@@ -460,18 +387,17 @@ public class PrayerNotificationActivity extends Activity {
                         // If alarm time is not in the past, set alarm for notification
                         if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
 
-                            alarmIntent = new Intent(PrayerNotificationActivity.this, NotifyAlarmReceiver.class);
+                            alarmIntent = new Intent(UpdateNotificationActivity.this, NotifyAlarmReceiver.class);
                             alarmIntent.putExtra("title", title);
                             alarmIntent.putExtra("message", message);
                             alarmIntent.putExtra("id", notificationID);
 
-                            pendingIntent = PendingIntent.getBroadcast(PrayerNotificationActivity.this,
+                            pendingIntent = PendingIntent.getBroadcast(UpdateNotificationActivity.this,
                                     notificationID, alarmIntent, 0);
 
-                            notification = new PrayerNotification();
+                            notification = new UpdateNotification();
                             notification.setId(notificationID);
                             notification.setNotificationTime(alarmTime);
-                            notification.setRequest_id(requestid);
 
                             db.addNotification(notification);
 
@@ -480,7 +406,7 @@ public class PrayerNotificationActivity extends Activity {
 
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
                             Log.w("tag", "Alarm set for: " + format.format(alarmTime) + ", ID:" +
-                                    Integer.toString(notificationID) + ", Name:" + title);
+                                    Integer.toString(notificationID));
 
                             notificationID++;
                         }
@@ -489,7 +415,7 @@ public class PrayerNotificationActivity extends Activity {
                     }
                 }
             } else {
-                Toast.makeText(PrayerNotificationActivity.this, "Sorry, but your device " +
+                Toast.makeText(UpdateNotificationActivity.this, "Sorry, but your device " +
                                 "does not have the proper update to support this feature",
                         Toast.LENGTH_LONG).show();
             }

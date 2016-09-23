@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relative_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:background="@drawable/noise_blue_repeat"
+    >
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="100dp"
+        android:layout_marginRight="100dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginLeft="100dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/refresh_row"
+            android:layout_marginTop="50dp">
+
+            <TextView
+                android:id="@+id/refresh_text"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/options_refresh_text"
+                android:layout_weight="1"/>
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/refresh_periods_spinner"
+                android:entries="@array/refresh_times"
+                android:focusableInTouchMode="false"
+                android:layout_weight="1"/>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/options_gift_text"
+                android:id="@+id/gift_text"
+                android:layout_weight="1"/>
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/gift_periods_spinner"
+                android:entries="@array/gift_periods"
+                android:focusableInTouchMode="false"
+                android:layout_weight="1"/>
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/reminder_on_off_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/options_reminder_text"
+                android:id="@+id/reminder_text"
+                android:layout_weight="1"/>
+
+            <ToggleButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/reminder_on_off_switch"
+                android:enabled="true"
+                android:layout_weight="1"/>
+
+        </TableRow>
+        <TableRow
+            android:id="@+id/reminder_details_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="end"
+
+            >
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:id="@+id/reminder_details_text"
+                android:gravity="center_horizontal"
+                />
+
+        </TableRow>
+
+    </TableLayout>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="60dp"
+        android:gravity="center"
+        android:layout_alignParentBottom="true"
+        android:weightSum="3">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/apply_button"
+            android:id="@+id/apply_button"
+            style="@style/customBottomBar"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"/>
+
+    </TableRow>
+
+</RelativeLayout>
