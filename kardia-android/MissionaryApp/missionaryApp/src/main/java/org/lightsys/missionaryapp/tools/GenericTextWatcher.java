@@ -15,7 +15,7 @@ import android.widget.EditText;
  */
 public class GenericTextWatcher implements TextWatcher {
 
-    private View view;
+    private final View view;
     public GenericTextWatcher(View view) {
         this.view = view;
     }

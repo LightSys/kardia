@@ -16,11 +16,11 @@ import java.util.Map;
  */
 public class CommentListAdapter extends SimpleAdapter {
 
-    Context context;
-    final ArrayList<HashMap<String, String>> data;
-    ArrayList<View> views;
-    String[] from;
-    int[] to;
+    private final Context context;
+    private final ArrayList<HashMap<String, String>> data;
+    private final ArrayList<View> views;
+    private final String[] from;
+    private final int[] to;
 
     public CommentListAdapter(Context context, ArrayList<HashMap<String, String>> data,
                            int resource, String[] from, int[] to) {

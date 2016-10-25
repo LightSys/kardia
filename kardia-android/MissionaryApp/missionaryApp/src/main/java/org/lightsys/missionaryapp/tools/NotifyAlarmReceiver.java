@@ -1,7 +1,6 @@
 package org.lightsys.missionaryapp.tools;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -14,7 +13,6 @@ import android.util.Log;
 
 import org.lightsys.missionaryapp.R;
 
-import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.data.UpdateNotification;
 import org.lightsys.missionaryapp.views.PostNoteActivity;
 

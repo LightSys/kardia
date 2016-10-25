@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +38,8 @@ import java.util.HashMap;
  */
 public class NoteList extends Fragment {
 
-    private ArrayList<Object> combined = new ArrayList<Object>();
-    private ArrayList<HashMap<String,String>> itemList = new ArrayList<HashMap<String, String>>();
+    private final ArrayList<Object> combined = new ArrayList<Object>();
+    private final ArrayList<HashMap<String,String>> itemList = new ArrayList<HashMap<String, String>>();
 
 
     @Override
@@ -53,6 +54,8 @@ public class NoteList extends Fragment {
         int account_id = db.getAccount().getId();
         ArrayList<Note> notes = db.getNotesForMissionary(account_id);
         ArrayList<PrayerLetter> letters = db.getPrayerLettersForMissionary(account_id);
+        Log.d("NoteList", "onCreateView: "+ db.getPrayerLettersForMissionary(account_id).size());
+
         db.close();
 
         // Combine sorted arrays of notes and letters into one array of sorted by date items
@@ -84,16 +87,16 @@ public class NoteList extends Fragment {
         itemList.clear();
         generateListItems();
         String[] from = {"subject", "date", "missionary", "textAbove", "textBelow"};
-        int[] to = {R.id.name_text,  R.id.date_text, R.id.missionaryName, R.id.textAbovePrayingButton, R.id.textBelowPrayingButton};
+        int[] to = {R.id.nameText,  R.id.dateText, R.id.missionaryName, R.id.textAbovePrayingButton, R.id.textBelowPrayingButton};
 
         NoteListAdapter adapter = new NoteListAdapter(getActivity(), itemList,
                 R.layout.note_listview_item, from, to);
 
-        ListView listview = (ListView)v.findViewById(R.id.info_list);
+        ListView listview = (ListView)v.findViewById(R.id.infoList);
         listview.setAdapter(adapter);
         listview.setOnItemClickListener(new onNoteClicked());
 
-        Button button = (Button)v.findViewById(R.id.button);
+        Button button = (Button)v.findViewById(R.id.addUpdateButton);
         button.setText("Add Update/Prayer Request");
         button.setVisibility(View.VISIBLE);
         button.setBackgroundResource(R.color.dark_gray);
@@ -120,7 +123,7 @@ public class NoteList extends Fragment {
                         DetailedPrayerRequest newFrag = new DetailedPrayerRequest();
                         newFrag.setArguments(args);
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.content_frame, newFrag);
+                        transaction.replace(R.id.contentFrame, newFrag);
                         transaction.addToBackStack("ToDetailedRequestView");
                         transaction.commit();
                     } else if (n.getType().equals("Update")) {
@@ -128,7 +131,7 @@ public class NoteList extends Fragment {
                         DetailedUpdate newFrag = new DetailedUpdate();
                         newFrag.setArguments(args);
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.content_frame, newFrag);
+                        transaction.replace(R.id.contentFrame, newFrag);
                         transaction.addToBackStack("ToDetailedUpdateView");
                         transaction.commit();
                     }
@@ -180,7 +183,10 @@ public class NoteList extends Fragment {
     private void generateListItems(){
 
         int numPrayed;
+        int a=0;
         for(Object obj : combined){
+            Log.d("NoteList", "generateListItems: " + a);
+            a+=1;
             HashMap<String,String> hm = new HashMap<String,String>();
             if (obj.getClass() == Note.class) {
                 Note n = (Note) obj;

@@ -23,13 +23,11 @@ import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
 
-import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.data.UpdateNotification;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import org.lightsys.missionaryapp.tools.NotifyAlarmReceiver;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -42,120 +40,126 @@ import java.util.Locale;
  */
 public class UpdateNotificationActivity extends Activity {
 
-    private Note request;
-    private ArrayList<String> alarmTimes = new ArrayList<String>();
-    private String endDate, Date, startDate;
+    private final String EXTRA_DELETE = "delete"; //tells activity whether it should create alarms or delete them
+    private boolean delete=false;
+    private String alarmTime, endDate, startDate;
     private final long DAY_IN_MILLIS = 86400000;
     private int requestid, notificationID, frequency;
 
     private Spinner frequencySpinner;
-    private TableRow startDateRow, endDateRow, timeRow, frequencyRow;
+    private TableRow startDateRow, endDateRow, timeRow;
     private Button startDateButton, endDateButton, timeButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.update_notification_layout);
-        if (getActionBar() != null) {
-            getActionBar().setTitle("Update Notification Setup");
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            delete = extras.getBoolean(EXTRA_DELETE);
         }
-
-        Bundle args = getIntent().getExtras();
-
-        if (args != null) {
-            requestid = args.getInt("requestid");
+        if (delete == true){
+            deleteNotifications();
         }
+        else {
+            setContentView(R.layout.update_notification_layout);
+            if (getActionBar() != null) {
+                getActionBar().setTitle("Update Notification Setup");
+            }
 
-        // default alarm times
-        alarmTimes.add("7:00");
-        alarmTimes.add("12:00");
-        alarmTimes.add("17:00");
-        alarmTimes.add("19:00");
+            Bundle args = getIntent().getExtras();
 
-        // For next ID, retrieve last ID from database and add 1
-        LocalDBHandler db = new LocalDBHandler(this, null);
-        request = db.getNoteForID(requestid);
-        notificationID = db.getLastId("notification") + 1;
-        db.close();
+            if (args != null) {
+                requestid = args.getInt("requestid");
+            }
 
-        startDateRow = (TableRow) this.findViewById(R.id.start_date_row);
-        endDateRow = (TableRow) this.findViewById(R.id.end_date_row);
-        timeRow = (TableRow) this.findViewById(R.id.time_row);
-        frequencyRow = (TableRow) this.findViewById(R.id.frequency_row);
-        frequencySpinner = (Spinner) this.findViewById(R.id.frequency_spinner);
-        startDateButton = (Button) this.findViewById(R.id.start_date_button);
-        endDateButton = (Button) this.findViewById(R.id.end_date_button);
-        timeButton = (Button) this.findViewById(R.id.time_button);
+            // For next ID, retrieve last ID from database and add 1
+            LocalDBHandler db = new LocalDBHandler(this, null);
+            notificationID = db.getLastId("notification") + 1;
+            db.close();
 
-        Button setNotificationButton = (Button) this.findViewById(R.id.setNotification);
-        Button cancelButton = (Button) this.findViewById(R.id.cancel);
+            startDateRow = (TableRow) this.findViewById(R.id.startDateRow);
+            endDateRow = (TableRow) this.findViewById(R.id.endDateRow);
+            timeRow = (TableRow) this.findViewById(R.id.timeRow);
+            frequencySpinner = (Spinner) this.findViewById(R.id.frequencySpinner);
+            startDateButton = (Button) this.findViewById(R.id.startDateButton);
+            endDateButton = (Button) this.findViewById(R.id.endDateButton);
+            timeButton = (Button) this.findViewById(R.id.timeButton);
+
+            Button setNotificationButton = (Button) this.findViewById(R.id.setNotification);
+            Button cancelButton = (Button) this.findViewById(R.id.cancel);
 
 
-        frequencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (frequencySpinner.getVisibility() == View.VISIBLE) {
-                    //todo functionalize frequency
+            frequencySpinner.setSelection(2);
+
+
+            frequencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    if (frequencySpinner.getVisibility() == View.VISIBLE) {
+                        frequency = frequencySpinner.getSelectedItemPosition();
+                    }
                 }
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {}
-        });
 
-        setNotificationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean inputIsValid = checkValidity();
-                if (inputIsValid) {
-                    // Ask user if notifications should be set as they can not be edited later
-                    new AlertDialog.Builder(UpdateNotificationActivity.this)
-                            .setCancelable(false)
-                            .setTitle("Set Notifications")
-                            .setMessage("Should we set these notifications? You will not be able to edit this later.")
-                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    setNotification();
-                                }
-                            })
-                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                }
-                            })
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
-                } else {
-                    Toast.makeText(UpdateNotificationActivity.this, "There are unselected fields. " +
-                            "Select date and times before continuing", Toast.LENGTH_LONG).show();
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
                 }
-            }
-        });
+            });
 
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Ask user to confirm leaving activity without setting notifications
-                showCancelConfirmation();
-            }
-        });
-        startDateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openDatePicker(startDateButton);
-            }
-        });
+            setNotificationButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    boolean inputIsValid = checkValidity();
+                    if (inputIsValid) {
+                        // Ask user if notifications should be set as they can not be edited later
+                        new AlertDialog.Builder(UpdateNotificationActivity.this)
+                                .setCancelable(false)
+                                .setTitle("Set Notifications")
+                                .setMessage("Set notifications?")
+                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        setNotification();
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                    }
+                                })
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .show();
+                    } else {
+                        Toast.makeText(UpdateNotificationActivity.this, "There are unselected fields. " +
+                                "Select date and times before continuing", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
 
-        endDateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openDatePicker(endDateButton);
-            }
-        });
-        timeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openTimePicker(1);
-            }
-        });
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Ask user to confirm leaving activity without setting notifications
+                    showCancelConfirmation();
+                }
+            });
+            startDateButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openDatePicker(startDateButton);
+                }
+            });
+
+            endDateButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openDatePicker(endDateButton);
+                }
+            });
+            timeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openTimePicker();
+                }
+            });
+        }
     }
 
     // Called when the user presses the back button on the bottom of the screen
@@ -169,8 +173,7 @@ public class UpdateNotificationActivity extends Activity {
         new AlertDialog.Builder(UpdateNotificationActivity.this)
                 .setCancelable(false)
                 .setTitle("Cancel")
-                .setMessage("Exit without setting notifications? You will not be able" +
-                        " to set any notifications later for this item.")
+                .setMessage("Exit without setting notifications?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         finish();
@@ -233,12 +236,11 @@ public class UpdateNotificationActivity extends Activity {
 
         DatePickerDialog dialog = new DatePickerDialog(this,
                 new DateSetListener(dateButton), mYear, mMonth, mDay);
-        //todo enddate/startDate
         dialog.show();
     }
 
     private class DateSetListener implements DatePickerDialog.OnDateSetListener{
-        Button dateButton;
+        final Button dateButton;
         public DateSetListener(Button dateButton){this.dateButton = dateButton;}
         @Override
         public void onDateSet(DatePicker view, int year, int monthOfYear,
@@ -253,15 +255,18 @@ public class UpdateNotificationActivity extends Activity {
 
             String dateStr = year + "-" + month + "-" + day;
             dateButton.setText(dateStr);
-            Date = dateStr;
+            if(dateButton.equals(endDateButton)){
+                endDate=dateStr;
+            }else{
+                startDate=dateStr;
+            }
         }
     }
 
     /**
      * open dialog allowing user to choose a time
-     * @param btn_id, which time button is being selected
      */
-    private void openTimePicker(int btn_id) {
+    private void openTimePicker() {
         int hour;
         int minute;
         String text;
@@ -328,7 +333,7 @@ public class UpdateNotificationActivity extends Activity {
             // Set alarmTimes field with 24 hour clock format
 
                     timeButton.setText(timeStr);
-                    alarmTimes.set(0, timeStr24Hr);
+                    alarmTime = timeStr24Hr;
         }
     }
 
@@ -339,18 +344,17 @@ public class UpdateNotificationActivity extends Activity {
 
         @Override
         protected String doInBackground(String... params) {
-            remind(alarmTimes, endDate, request.getMissionaryName(), request.getSubject());
+            remind(alarmTime, startDate, endDate, frequency);
             return null;
         }
 
         /**
          * Sets alarms at specified times until the endDate for a specific request
-         * @param times, times in the day to set notifications (e.g. "7:00" = 7 a.m., "15:00" = 3 p.m.)
-         * @param date, last day to give notifications (given as "YYYY-MM-DD")
-         * @param title, title for notification to display
-         * @param message, message for notification to display
+         * @param time, times in the day to set notifications (e.g. "7:00" = 7 a.m., "15:00" = 3 p.m.)
+         * @param endDate, last day to give notifications (given as "YYYY-MM-DD")
+         * @param startDate, first day to give notifications (given as "YYYY-MM-DD")
          */
-        private void remind (ArrayList<String> times, String date, String title, String message)
+        private void remind (String time, String startDate, String endDate, int frequency)
         {
             UpdateNotification notification;
             Intent alarmIntent;
@@ -358,15 +362,10 @@ public class UpdateNotificationActivity extends Activity {
 
             LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this, null);
             AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-
-            String[] dateSplitStr = date.split("-");
-            Calendar c = Calendar.getInstance();
-            // Set year, month, and day of calendar for end date
-            c.set(Integer.parseInt(dateSplitStr[0]), Integer.parseInt(dateSplitStr[1])-1,
-                    Integer.parseInt(dateSplitStr[2]));
-            long endDateinMillis = c.getTimeInMillis();
-            // Add 1 to ensure alarms set for current day get set
-            int numberOfDays = daysUntilFutureDate(endDateinMillis) + 1;
+            //sets end date in milliseconds as the end of that date
+            long endDateinMillis = getDateInMillis(endDate)+DAY_IN_MILLIS-1;
+            //sets start date in milliseconds as beginning of date
+            long startDateinMillis = getDateInMillis(startDate);
 
             // alarm times will be set and stored in millisecond form
             long alarmTime;
@@ -375,44 +374,80 @@ public class UpdateNotificationActivity extends Activity {
             if (Build.VERSION.SDK_INT >= 19) {
 
                 // Loop through all times until the end date, setting a notification at each one
-                for (int i = 0; i < frequency; i++) {
-                    String[] timeSplit = times.get(i).split(":");
-                    c = Calendar.getInstance();
-                    c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeSplit[0]));
-                    c.set(Calendar.MINUTE, Integer.parseInt(timeSplit[1]));
-                    c.set(Calendar.SECOND, 0);
-                    alarmTime = c.getTimeInMillis();
-                    for (int j = 0; j < numberOfDays; j++) {
+                String[] timeSplit = time.split(":");
+                Calendar c = Calendar.getInstance();
+                String[] startDateSplit = startDate.split("-");
+                c.set(Calendar.YEAR, Integer.parseInt(startDateSplit[0]));
+                c.set(Calendar.MONTH, Integer.parseInt(startDateSplit[1])-1);
+                c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(startDateSplit[2]));
+                c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeSplit[0]));
+                c.set(Calendar.MINUTE, Integer.parseInt(timeSplit[1]));
+                c.set(Calendar.SECOND, 0);
+                alarmTime = c.getTimeInMillis();
 
-                        // If alarm time is not in the past, set alarm for notification
-                        if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
+                int loops=0;
+                while (endDateinMillis>=alarmTime && loops<200) {
 
-                            alarmIntent = new Intent(UpdateNotificationActivity.this, NotifyAlarmReceiver.class);
-                            alarmIntent.putExtra("title", title);
-                            alarmIntent.putExtra("message", message);
-                            alarmIntent.putExtra("id", notificationID);
+                    // If alarm time is not in the past, set alarm for notification
+                    if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
 
-                            pendingIntent = PendingIntent.getBroadcast(UpdateNotificationActivity.this,
-                                    notificationID, alarmIntent, 0);
+                        alarmIntent = new Intent(UpdateNotificationActivity.this, NotifyAlarmReceiver.class);
+                        alarmIntent.putExtra("title", "Update Reminder: ");
+                        alarmIntent.putExtra("message", "Send Ministry Update");
+                        alarmIntent.putExtra("id", notificationID);
 
-                            notification = new UpdateNotification();
-                            notification.setId(notificationID);
-                            notification.setNotificationTime(alarmTime);
+                        pendingIntent = PendingIntent.getBroadcast(UpdateNotificationActivity.this,
+                                notificationID, alarmIntent, 0);
 
-                            db.addNotification(notification);
+                        // Set alarm and increment notification ID
+                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
 
-                            // Set alarm and increment notification ID
-                            alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
+                        Log.w("tag", "Alarm set for: " + format.format(alarmTime) + ", ID:" +
+                                Integer.toString(notificationID));
 
-                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
-                            Log.w("tag", "Alarm set for: " + format.format(alarmTime) + ", ID:" +
-                                    Integer.toString(notificationID));
-
-                            notificationID++;
+                        notificationID++;
+                        // Add selected time period for next iteration(0=week, 1=2 weeks, 2=month, 3=year)
+                        String period="";
+                        switch(frequency) {
+                            case 0:
+                                alarmTime+=604800000;
+                                c.setTimeInMillis(alarmTime);
+                                period = "Every Week";
+                                break;
+                            case 1:
+                                alarmTime+=1210000000;
+                                c.setTimeInMillis(alarmTime);
+                                period = "Every Two Weeks";
+                                break;
+                            case 2:
+                                int month = c.get(Calendar.MONTH);
+                                if (month==11) {
+                                    c.set(Calendar.MONTH, 0);
+                                    c.set(Calendar.YEAR, c.get(Calendar.YEAR)+1);
+                                }else{
+                                    c.set(Calendar.MONTH, c.get(Calendar.MONTH)+1);
+                                }
+                                period = "Every Month";
+                                break;
+                            case 3:
+                                c.set(Calendar.YEAR, c.get(Calendar.YEAR)+1);
+                                period = "Every Year";
+                                break;
                         }
-                        // Add one day for next notification
-                        alarmTime += DAY_IN_MILLIS;
+                        notification = new UpdateNotification();
+                        notification.setId(notificationID);
+                        notification.setNotificationTime(alarmTime);
+                        notification.setNotificationFrequency(period);
+
+                        db.addNotification(notification);
                     }
+                    //set new alarmtime for next iteration
+                    alarmTime = c.getTimeInMillis();
+                    loops+=1;
+                }
+                if (loops==199){
+                    Toast.makeText(UpdateNotificationActivity.this, "Notification Limit Reached: first 200 notifications set", Toast.LENGTH_LONG).show();
                 }
             } else {
                 Toast.makeText(UpdateNotificationActivity.this, "Sorry, but your device " +
@@ -422,19 +457,26 @@ public class UpdateNotificationActivity extends Activity {
             db.close();
         }
 
-        /**
-         * return the number of days between today and a future date
-         * @param futureDate, future date in milliseconds
-         * @return number of days between today and future date
-         */
-        private int daysUntilFutureDate(long futureDate) {
-            long presentDate = Calendar.getInstance().getTimeInMillis();
-            // Add 100000 to ensure time delay does not throw off results
-            if (futureDate + 100000 > presentDate) {
-                return (int)((futureDate - presentDate) / DAY_IN_MILLIS);
-            } else {
-                return -1;
-            }
+        private long getDateInMillis(String date){
+            String[] dateSplitStr = date.split("-");
+            Calendar c = Calendar.getInstance();
+            // Set year, month, and day of calendar for end date
+            c.set(Integer.parseInt(dateSplitStr[0]), Integer.parseInt(dateSplitStr[1])-1,
+                    Integer.parseInt(dateSplitStr[2]));
+            return c.getTimeInMillis();
         }
+    }
+    //when user turns alarm off delete notifications and remove from db
+    private void deleteNotifications(){
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this, null);
+        Intent alarmIntent = new Intent(UpdateNotificationActivity.this, NotifyAlarmReceiver.class);
+        for(UpdateNotification n: db.getNotifications()) {
+            PendingIntent reminder = PendingIntent.getBroadcast(UpdateNotificationActivity.this,
+                    n.getId(), alarmIntent, 0);
+            alarmManager.cancel(reminder);
+            db.deleteNotification(n.getId());
+        }
+        finish();
     }
 }

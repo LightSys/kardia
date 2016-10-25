@@ -2,7 +2,6 @@ package org.lightsys.missionaryapp.views;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,7 +38,7 @@ public class HomePage extends Fragment {
         getActivity().setTitle("Home");
 
         //layout welcome header
-        welcome = (TextView)v.findViewById(R.id.welcome_header);
+        welcome = (TextView)v.findViewById(R.id.welcomeHeader);
         welcome.setVisibility(View.VISIBLE);
         welcome.setText("Welcome\n" + account.getPartnerName());
 
@@ -50,7 +49,7 @@ public class HomePage extends Fragment {
         String[] from = {"listitem"};
         int[] to = {R.id.navigateButton};
 
-        ListView listview = (ListView)v.findViewById(R.id.welcome_list);
+        ListView listview = (ListView)v.findViewById(R.id.welcomeList);
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.home_button_items, from, to);
         listview.setAdapter(adapter);
         listview.setOnItemClickListener(new onPageClicked());

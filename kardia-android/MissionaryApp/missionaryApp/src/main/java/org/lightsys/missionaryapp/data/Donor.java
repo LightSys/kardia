@@ -9,18 +9,12 @@ public class Donor {
 
     private int id;
     private String name;
-    private String email;
-    private String phone;
-    private String cell;
 
     public Donor() {}
 
-    public Donor(int id, String name, String email, String phone, String cell) {
+    public Donor(int id, String name) {
         this.id = id;
         this.name = name;
-        this.email = email;
-        this.phone = phone;
-        this.cell = cell;
     }
 
     public void setId(int id) {this.id = id;}
@@ -30,17 +24,4 @@ public class Donor {
     public void setName(String name) {this.name = name;}
 
     public String getName() {return name;}
-
-    public void setEmail(String email) {this.email = email;}
-
-    public String getEmail() {return email;}
-
-    public void setPhone(String phone) {this.phone = phone;}
-
-    public String getPhone() {return phone;}
-
-    public void setCell(String cell) {this.cell = cell;}
-
-    public String getCell() {return cell;}
-
 }

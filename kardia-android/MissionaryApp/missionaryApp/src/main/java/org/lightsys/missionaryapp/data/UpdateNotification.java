@@ -8,14 +8,17 @@ public class UpdateNotification {
 
     private int id; // used for database storage
     private long notificationTime; // time to be sent in milliseconds
-    private String notificationMessage; // id of prayer request to be reminded of
+    private String notificationMessage; // message to be displayed in reminder
+    private String notificationFrequency; // reminder frequency
+
 
     public UpdateNotification() {}
 
-    public UpdateNotification(int id, long notificationTime, String notificationMessage) {
+    public UpdateNotification(int id, long notificationTime, String notificationMessage, String notificationFrequency) {
         this.id = id;
         this.notificationTime = notificationTime;
         this.notificationMessage = notificationMessage;
+        this.notificationFrequency = notificationFrequency;
     }
 
     public int getId() {return id;}
@@ -28,5 +31,10 @@ public class UpdateNotification {
 
     public String getNotificationMessage() {return notificationMessage;}
 
-    public void setNotificationMessage(int notificationMessage) {notificationMessage = notificationMessage;}
+    public void setNotificationMessage(String notificationMessage) {this.notificationMessage = notificationMessage;}
+
+    public String getNotificationFrequency() {return notificationFrequency;}
+
+    public void setNotificationFrequency(String notificationFrequency) {this.notificationFrequency = notificationFrequency;}
+
 }

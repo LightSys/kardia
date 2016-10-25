@@ -60,11 +60,11 @@ public class FundList extends Fragment{
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>>itemList = generateListItems();
 		String[] from = {"fundtitle","todateamount","date"};
-		int[] to = {R.id.fund_name_text, R.id.amount_text, R.id.date_text};
+		int[] to = {R.id.fundNameText, R.id.amountText, R.id.dateText};
 		
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.fund_layout, from, to);
 		
-		ListView listview = (ListView)v.findViewById(R.id.info_list);
+		ListView listview = (ListView)v.findViewById(R.id.infoList);
 		listview.setAdapter(adapter);
 		listview.setOnItemClickListener(new onFundClicked());
 		
@@ -94,9 +94,11 @@ public class FundList extends Fragment{
 			}
 			hm.put("fundtitle", f.getFundName());
             hm.put("todateamount", Formatter.amountToString(Total));
-			String startDate = gifts.get(gifts.size()-1).getGiftDate().substring(0,4);
-			String endDate = gifts.get(0).getGiftDate().substring(0,4);
-			hm.put("date", startDate + " - " + endDate);
+			if(gifts.size()>0) {
+				String startDate = gifts.get(gifts.size() - 1).getGiftDate().substring(0, 4);
+				String endDate = gifts.get(0).getGiftDate().substring(0, 4);
+				hm.put("date", startDate + " - " + endDate);
+			}
 			
 			aList.add(hm);
 		}
@@ -117,7 +119,7 @@ public class FundList extends Fragment{
 			newFrag.setArguments(args);
 
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-			transaction.replace(R.id.content_frame, newFrag);
+			transaction.replace(R.id.contentFrame, newFrag);
 			transaction.addToBackStack("ToGiftTimePeriodList");
 			transaction.commit();
 		}

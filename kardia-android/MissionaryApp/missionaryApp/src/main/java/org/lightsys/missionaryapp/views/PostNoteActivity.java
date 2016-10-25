@@ -80,7 +80,6 @@ public class PostNoteActivity extends Activity {
                 String subjectStr = subject.getText().toString();
                 String noteType = contactType.getSelectedItem().toString();
                 Account account = null;
-                String TAG = "POST NOTE ACTIVITY";
 
                 //find account
                 ArrayList<Account> accts = db.getAccounts();

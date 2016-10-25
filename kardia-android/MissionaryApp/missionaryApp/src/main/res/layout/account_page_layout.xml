@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/relative_layout"
+    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -12,7 +12,7 @@
         android:background="@android:color/darker_gray"
         android:layout_marginBottom="10dp">
         <TextView
-            android:id="@+id/text_view"
+            android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -24,10 +24,10 @@
             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
         <ListView
-            android:id="@+id/connected_list"
+            android:id="@+id/connectedList"
             style="@style/listCustomBlue"
-            android:layout_toRightOf="@id/text_view"
-            android:layout_toEndOf="@+id/text_view"
+            android:layout_toRightOf="@id/textView"
+            android:layout_toEndOf="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginRight="20dp"
@@ -38,7 +38,7 @@
 
     </RelativeLayout>
     <Button
-        android:id="@+id/finish_button"
+        android:id="@+id/finishButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -51,8 +51,8 @@
         android:textStyle="bold"
         style="@style/customBottomBar" />
     <TextView
-        android:id="@+id/change_account_text"
-        android:layout_below="@id/finish_button"
+        android:id="@+id/changeAccountText"
+        android:layout_below="@id/finishButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
@@ -62,10 +62,10 @@
         android:textSize="18sp"/>
 
     <EditText
-        android:id="@+id/username_input"
+        android:id="@+id/usernameInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/change_account_text"
+        android:layout_below="@id/changeAccountText"
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/username"
@@ -73,11 +73,11 @@
         android:text = "Laura"/>
 
     <EditText
-        android:id="@+id/password_input"
+        android:id="@+id/passwordInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:layout_below="@id/username_input"
+        android:layout_below="@id/usernameInput"
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/password"
@@ -86,11 +86,11 @@
         android:text = "E2Ra!car0line"/>
 
     <EditText
-        android:id="@+id/server_name_input"
+        android:id="@+id/serverNameInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:layout_below="@id/password_input"
+        android:layout_below="@id/passwordInput"
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/server_name"
@@ -98,11 +98,11 @@
         android:text = "10.5.10.176"/>
 
     <EditText
-        android:id="@+id/donor_id_input"
+        android:id="@+id/donorIdInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:layout_below="@id/server_name_input"
+        android:layout_below="@id/serverNameInput"
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/user_id_ex_100001"
@@ -111,10 +111,10 @@
 
 
     <Button
-        android:id="@+id/connect_button"
+        android:id="@+id/connectButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/donor_id_input"
+        android:layout_below="@id/donorIdInput"
         android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"
         android:text="@string/connect"

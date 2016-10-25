@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import org.lightsys.missionaryapp.R;
 import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.data.NewItem;
@@ -31,21 +30,20 @@ public class AutoUpdater extends Service {
     private static final int ONE_WEEK = ONE_DAY * 7;
     private static final int NEVER = -1;
 
-    private static final String TAG = "missionaryapp.autoupdater"; //tag used for log notes
-    LocalDBHandler db; //local database
-    int notificationID = 0; //ID of an update notification
+    private final LocalDBHandler db; //local database
+    private int notificationID = 0; //ID of an update notification
 
-    String updatePeriod = "Minute"; //period between updates
-    int updateMillis = NEVER; //number of milliseconds between updates
-    int updateCounter = 0; //seconds between updates
-    Calendar currentDate = Calendar.getInstance();
-    Calendar prevDate = Calendar.getInstance();
+    private String updatePeriod = "Minute"; //period between updates
+    private int updateMillis = NEVER; //number of milliseconds between updates
+    private int updateCounter = 0; //seconds between updates
+    private Calendar currentDate = Calendar.getInstance();
+    private Calendar prevDate = Calendar.getInstance();
 
 
     //custom timer like thing that ticks every minute
     //used to constantly check to see if it's time to check for updates
-    private Handler timerHandler = new Handler();
-    private Runnable timerRunnable = new Runnable() {
+    private final Handler timerHandler = new Handler();
+    private final Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
 
@@ -116,7 +114,6 @@ public class AutoUpdater extends Service {
 
     private  void getUpdates()
     {
-        Context context = this;
         ArrayList<Account> accts = db.getAccounts();
         db.close();
 
@@ -133,7 +130,7 @@ public class AutoUpdater extends Service {
         db.deleteNewItems();
     }
 
-    public void sendNotification(String title, String subject, int ID){
+    private void sendNotification(String title, String subject, int ID){
         Context context = this;
         NotificationManager notificationManager = (NotificationManager)
                 context.getSystemService(context.NOTIFICATION_SERVICE);

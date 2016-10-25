@@ -3,7 +3,6 @@ package org.lightsys.missionaryapp.tools;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.SimpleAdapter;
 
 import org.lightsys.missionaryapp.R;
@@ -20,11 +19,11 @@ import java.util.Map;
  */
 public class NoteListAdapter extends SimpleAdapter {
 
-    Context context;
-    final ArrayList<HashMap<String, String>> data;
-    ArrayList<View> views;
-    String[] from;
-    int[] to;
+    private final Context context;
+    private final ArrayList<HashMap<String, String>> data;
+    private final ArrayList<View> views;
+    private final String[] from;
+    private final int[] to;
 
     public NoteListAdapter(Context context, ArrayList<HashMap<String, String>> data,
                             int resource, String[] from, int[] to) {

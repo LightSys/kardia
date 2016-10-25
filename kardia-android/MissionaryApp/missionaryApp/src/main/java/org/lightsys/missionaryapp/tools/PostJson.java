@@ -38,11 +38,11 @@ import javax.net.ssl.HttpsURLConnection;
 public class PostJson extends AsyncTask<String, Void, String> {
 
     private static final String TAG = "post JSon";
-    private Account account;
+    private final Account account;
     private String url = "";
     private String backupUrl = "";
-    private JSONObject jsonObject;
-    private Context context;
+    private final JSONObject jsonObject;
+    private final Context context;
     private boolean success = false;
 
     public PostJson(Context context, String Url, JSONObject jsonPost, Account userAccount){

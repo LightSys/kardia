@@ -42,11 +42,11 @@ public class DonorList extends Fragment {
         // Map data fields to layout fields
         ArrayList<HashMap<String,String>>itemList = generateListItems();
         String[] from = {"donorname", "email","phone"};
-        int[] to = {R.id.name_text, R.id.email_text,R.id.phone_text};
+        int[] to = {R.id.nameText, R.id.emailText,R.id.phoneText};
 
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.donor_listview_layout, from, to);
 
-        ListView listview = (ListView)v.findViewById(R.id.info_list);
+        ListView listview = (ListView)v.findViewById(R.id.infoList);
         listview.setAdapter(adapter);
         listview.setOnItemClickListener(new onDonorClicked());
 
@@ -110,7 +110,7 @@ public class DonorList extends Fragment {
             newfrag.setArguments(args);
 
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.content_frame, newfrag);
+            transaction.replace(R.id.contentFrame, newfrag);
             transaction.addToBackStack("ToDetailedDonorView");
             transaction.commit();
         }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/relative_layout"
+    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
@@ -19,11 +19,11 @@
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/refresh_row"
+            android:id="@+id/refreshRow"
             android:layout_marginTop="50dp">
 
             <TextView
-                android:id="@+id/refresh_text"
+                android:id="@+id/refreshText"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
@@ -33,7 +33,7 @@
             <Spinner
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/refresh_periods_spinner"
+                android:id="@+id/refreshPeriodsSpinner"
                 android:entries="@array/refresh_times"
                 android:focusableInTouchMode="false"
                 android:layout_weight="1"/>
@@ -50,20 +50,20 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/options_gift_text"
-                android:id="@+id/gift_text"
+                android:id="@+id/giftText"
                 android:layout_weight="1"/>
 
             <Spinner
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/gift_periods_spinner"
+                android:id="@+id/giftPeriodsSpinner"
                 android:entries="@array/gift_periods"
                 android:focusableInTouchMode="false"
                 android:layout_weight="1"/>
         </TableRow>
 
         <TableRow
-            android:id="@+id/reminder_on_off_row"
+            android:id="@+id/reminderOnOffRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp"
@@ -74,19 +74,19 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/options_reminder_text"
-                android:id="@+id/reminder_text"
+                android:id="@+id/reminderText"
                 android:layout_weight="1"/>
 
             <ToggleButton
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/reminder_on_off_switch"
+                android:id="@+id/reminderOnOffSwitch"
                 android:enabled="true"
                 android:layout_weight="1"/>
 
         </TableRow>
         <TableRow
-            android:id="@+id/reminder_details_row"
+            android:id="@+id/reminderDetailsRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -97,7 +97,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/reminder_details_text"
+                android:id="@+id/reminderDetailsText"
                 android:gravity="center_horizontal"
                 />
 
@@ -117,7 +117,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/apply_button"
-            android:id="@+id/apply_button"
+            android:id="@+id/applyButton"
             style="@style/customBottomBar"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"/>

@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,10 +30,10 @@ import java.util.HashMap;
  */
 public class DetailedDonor extends Fragment{
 
-    final static String ARG_DONOR_ID = "donor_id";
-    final static String ARG_DONOR_NAME = "donor_name";
-    final static String ARG_DONOR_EMAIL = "donor_email";
-    final static String ARG_DONOR_PHONE = "donor_phone";
+    private final static String ARG_DONOR_ID = "donor_id";
+    private final static String ARG_DONOR_NAME = "donor_name";
+    private final static String ARG_DONOR_EMAIL = "donor_email";
+    private final static String ARG_DONOR_PHONE = "donor_phone";
 
     private String donor_name = " ";
     private int donor_id;
@@ -42,9 +41,7 @@ public class DetailedDonor extends Fragment{
     private String donor_phone;
     private Bundle args;
     private ArrayList<Gift> gifts = new ArrayList<Gift>();
-    final static String TAG = "DETAILED DONOR";
-    private boolean isSpecificFund = false;
-    ListView listview;
+    private ListView listview;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.donor_detailed_view_layout, container, false);
@@ -68,10 +65,9 @@ public class DetailedDonor extends Fragment{
             donor_email="no email";
             donor_phone = "no phone";
         }
-        TextView name = (TextView)v.findViewById(R.id.name_text);
-        TextView email = (TextView)v.findViewById(R.id.email_text);
-        TextView phone = (TextView)v.findViewById(R.id.phone_text);
-        RelativeLayout donorinfo = (RelativeLayout)v.findViewById(R.id.donor_info_layout);
+        TextView name = (TextView)v.findViewById(R.id.nameText);
+        TextView email = (TextView)v.findViewById(R.id.emailText);
+        TextView phone = (TextView)v.findViewById(R.id.phoneText);
         name.setText(donor_name);
         email.setText(donor_email);
         phone.setText(donor_phone);
@@ -107,14 +103,14 @@ public class DetailedDonor extends Fragment{
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         gifts = db.getGiftsByDonor(donor_id);
 
-        listview = (ListView)v.findViewById(R.id.info_list);
+        listview = (ListView)v.findViewById(R.id.infoList);
 
         // Map data fields to layout fields
         ArrayList<HashMap<String,String>> itemList = generateListItems();
 
         // If list is for specific fund, display fund as smaller (not as subject)
         String[] from = {"fundname", "giftdate", "giftamount"};
-        int[] to = {R.id.fund_name_text, R.id.date_text, R.id.amount_text};
+        int[] to = {R.id.fundNameText, R.id.dateText, R.id.amountText};
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.fund_layout, from, to );
         listview.setAdapter(adapter);
 
@@ -174,7 +170,7 @@ public class DetailedDonor extends Fragment{
             newfrag.setArguments(args);
 
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.content_frame, newfrag);
+            transaction.replace(R.id.contentFrame, newfrag);
             transaction.addToBackStack("ToDetailedGiftView");
             transaction.commit();
         }
