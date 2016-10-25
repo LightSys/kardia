@@ -24,27 +24,29 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 /**
- * This class attempts to download a PDF from the Kardia API and display it
+ * @author Andrew Lockridge
+ * created on 7/22/2015.
+ *
+ * Attempts to download a PDF from the Kardia API and display it
  * Once the pdf is downloaded, it will remain locally on the device for quick retrieval
- * Created by Andrew Lockridge on 7/22/2015.
  */
 public class DownloadPDF extends AsyncTask<String, Void, String> {
-    private final String url, server, username, password, outputDir, outputFile;
-    private final Activity dataActivity;
-    private final Context dataContext;
+    private final String         url, server, username, password, outputDir, outputFile;
+    private final Activity       dataActivity;
+    private final Context        dataContext;
     private final ProgressDialog spinner;
 
     public DownloadPDF(String url, String server, String username, String password,
                        String outputDir, String outputFile, Activity activity, Context context) {
-        this.url = url;
-        this.server = server;
-        this.username = username;
-        this.password = password;
-        this.outputDir = outputDir;
-        this.outputFile = outputFile;
+        this.url          = url;
+        this.server       = server;
+        this.username     = username;
+        this.password     = password;
+        this.outputDir    = outputDir;
+        this.outputFile   = outputFile;
         this.dataActivity = activity;
-        this.dataContext = context;
-        spinner = new ProgressDialog(dataContext, R.style.MySpinnerStyle);
+        this.dataContext  = context;
+        spinner           = new ProgressDialog(dataContext, R.style.MySpinnerStyle);
         spinner.setMessage("Downloading...");
         spinner.setIndeterminate(true);
         spinner.setCancelable(false);
@@ -70,9 +72,7 @@ public class DownloadPDF extends AsyncTask<String, Void, String> {
                     new UsernamePasswordCredentials(username, password));
 
             DefaultHttpClient client = new DefaultHttpClient();
-
             client.setCredentialsProvider(credProvider);
-
             HttpResponse response = client.execute(new HttpGet(url));
 
             // Create a new file and connect the outputstream to this new file

@@ -20,15 +20,15 @@ import org.lightsys.missionaryapp.R;
 import java.util.ArrayList;
 
 /**
+ * @author Andrew Cameron
+ *
  * This activity receives the selected account's user name, user password,
  * and server name (address) and the id for that account from the SQLiteDatabase.
  * Populating editTexts with those things (except for the id), allowing the user
  * to change any of them and click the update button to save the changes to the
  * database.
  * 
- * After clicking update or the back button takes them back to account page.  
- * 
- * @author Andrew Cameron
+ * After clicking update or the back button takes them back to account page.
  *
  */
 public class EditAccountActivity extends Activity {
@@ -117,7 +117,7 @@ public class EditAccountActivity extends Activity {
 				}
 
 				db.close();
-				Account a = new Account(account_id, name, pass, server, null,false);
+				Account a = new Account(account_id, name, pass, server, null);
 
 				// Execute data connection to validate account and pull data if valid
 				// DataConnection will close activity once complete if successful

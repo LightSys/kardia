@@ -10,26 +10,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Judah Sistrunk on 6/20/2016.
+ * @author Judah Sistrunk
+ * created on 6/20/2016.
  *
  * this class sets a list of comments to a custom ListView
  */
 public class CommentListAdapter extends SimpleAdapter {
 
-    private final Context context;
-    private final ArrayList<HashMap<String, String>> data;
+    private final Context         context;
     private final ArrayList<View> views;
-    private final String[] from;
-    private final int[] to;
+
+    private final ArrayList<HashMap<String, String>> data;
 
     public CommentListAdapter(Context context, ArrayList<HashMap<String, String>> data,
                            int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
         this.context = context;
-        this.views = new ArrayList<View>();
-        this.data = data;
-        this.from = from;
-        this.to = to;
+        this.views   = new ArrayList<View>();
+        this.data    = data;
     }
 
     /**

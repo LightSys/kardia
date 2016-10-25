@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
+ * @author Andrew Lockridge
+ * created on 6/11/2015.
+ * edited by otter57 from DonorApp to MissionaryApp
+ *
  * Class formats a listview of all donors in database
- * Created by Andrew Lockridge on 6/11/2015.
- * edited from DonorApp to MissionaryApp by otter57
  */
 public class DonorList extends Fragment {
 
@@ -32,7 +34,8 @@ public class DonorList extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-        donors = db.getDonors();
+
+        donors  = db.getDonors();
         contact = db.getContactInfo();
         db.close();
 

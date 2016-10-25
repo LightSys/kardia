@@ -23,22 +23,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by JoshWorkman on 3/10/2015.
+ * @author JoshWorkman
+ * created on 3/10/2015.
+ *
+ *  * edited by Judah Sistrunk summer 2016
+ * added functionality to view and post comments on an item
+ *
  * This activity displays the expanded form of a prayerRequest
  * Primarily displays Subject, Date submitted, and request text
  *
- * edited by Judah Sistrunk summer 2016
- * added functionality to view and post comments on an item
  */
 public class DetailedPrayerRequest extends Fragment{
 
     final static String ARG_REQUEST_ID = "request_id";
-    private int request_id = -1, isswitched=0;
-    private Button prayerButton;
-    private TextView supporterlist, textBelow;
-    private Note request;
-    private Button commentButton;
-    private String nameslist="no one is currently praying for this request";
+    private int         request_id = -1, isswitched = 0;
+    private Button      prayerButton;
+    private TextView    supporterlist, textBelow;
+    private Note        request;
+    private Button      commentButton;
+    private String      nameslist = "no one is currently praying for this request";
 
     private final ArrayList<HashMap<String, String>> commentList = new ArrayList<HashMap<String, String>>();//list of comments for this item
 
@@ -89,12 +92,12 @@ public class DetailedPrayerRequest extends Fragment{
         final LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject = (TextView)getActivity().findViewById(R.id.nameText);
-        TextView date = (TextView)getActivity().findViewById(R.id.dateText);
-        TextView text = (TextView)getActivity().findViewById(R.id.commentText);
-        supporterlist = (TextView)getActivity().findViewById(R.id.supporterList);
-        textBelow = (TextView)getActivity().findViewById(R.id.textBelowPrayingButton);
-        prayerButton = (Button)getActivity().findViewById(R.id.scheduleNotification);
+        TextView subject        = (TextView)getActivity().findViewById(R.id.nameText);
+        TextView date           = (TextView)getActivity().findViewById(R.id.dateText);
+        TextView text           = (TextView)getActivity().findViewById(R.id.commentText);
+        supporterlist           = (TextView)getActivity().findViewById(R.id.supporterList);
+        textBelow               = (TextView)getActivity().findViewById(R.id.textBelowPrayingButton);
+        prayerButton            = (Button)  getActivity().findViewById(R.id.scheduleNotification);
 
         request = db.getNoteForID(request_id);
         this.request_id = request_id;

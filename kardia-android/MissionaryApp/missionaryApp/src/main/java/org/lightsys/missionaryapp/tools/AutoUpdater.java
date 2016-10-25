@@ -15,34 +15,35 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
+ * @author Judah Sistrunk
+ * created on 5/25/2016.
+
  * service class that automatically updates local database with server database
- * Created by Judah Sistrunk on 5/25/2016.
  */
 public class AutoUpdater extends Service {
 
     //time constants in milliseconds
-    private static final int ONE_SECOND = 1000;
-    private static final int ONE_MINUTE = ONE_SECOND * 60;
+    private static final int ONE_SECOND     = 1000;
+    private static final int ONE_MINUTE     = ONE_SECOND * 60;
     private static final int THIRTY_MINUTES = ONE_MINUTE * 30;
-    private static final int ONE_HOUR = ONE_MINUTE * 60;
-    private static final int TWELVE_HOURS = ONE_HOUR * 12;
-    private static final int ONE_DAY = ONE_HOUR * 60;
-    private static final int ONE_WEEK = ONE_DAY * 7;
-    private static final int NEVER = -1;
+    private static final int ONE_HOUR       = ONE_MINUTE * 60;
+    private static final int TWELVE_HOURS   = ONE_HOUR * 12;
+    private static final int ONE_DAY        = ONE_HOUR * 60;
+    private static final int ONE_WEEK       = ONE_DAY * 7;
+    private static final int NEVER          = -1;
 
     private final LocalDBHandler db; //local database
-    private int notificationID = 0; //ID of an update notification
+    private int   notificationID = 0; //ID of an update notification
 
-    private String updatePeriod = "Minute"; //period between updates
-    private int updateMillis = NEVER; //number of milliseconds between updates
-    private int updateCounter = 0; //seconds between updates
-    private Calendar currentDate = Calendar.getInstance();
-    private Calendar prevDate = Calendar.getInstance();
+    private String   updatePeriod = "Minute"; //period between updates
+    private int      updateMillis = NEVER; //number of milliseconds between updates
+    private Calendar currentDate  = Calendar.getInstance();
+    private Calendar prevDate     = Calendar.getInstance();
 
 
     //custom timer like thing that ticks every minute
     //used to constantly check to see if it's time to check for updates
-    private final Handler timerHandler = new Handler();
+    private final Handler  timerHandler  = new Handler();
     private final Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
@@ -83,11 +84,11 @@ public class AutoUpdater extends Service {
             //check to see if the time elapsed is greater than the update period
             if (elapsedTime > updateMillis && updateMillis > 0){
                 getUpdates();
-                updateCounter = 0;
                 prevDate = Calendar.getInstance();
             }
-            updateCounter++;
-            timerHandler.postDelayed(this, ONE_MINUTE);//resets timer continuously
+
+            //resets timer continuously
+            timerHandler.postDelayed(this, ONE_MINUTE);
         }
     };
 
@@ -98,7 +99,8 @@ public class AutoUpdater extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return START_STICKY; //keeps service running after app is shut down
+        //keeps service running after app is shut down
+        return START_STICKY;
     }
 
     @Override
@@ -117,12 +119,16 @@ public class AutoUpdater extends Service {
         ArrayList<Account> accts = db.getAccounts();
         db.close();
 
-        for (Account a : accts) {//updates each account
+        //updates each account
+        for (Account a : accts) {
            new DataConnection(this, null, a).execute("");
         }
 
-        ArrayList<NewItem> newItems = db.getNewItems(); //list of new notifications
-        for (NewItem item : newItems) {//send notifications
+        //list of new notifications
+        ArrayList<NewItem> newItems = db.getNewItems();
+
+        //send notifications
+        for (NewItem item : newItems) {
             notificationID++;
             sendNotification("New " + item.getItemType(), item.getItemMessage(), notificationID);
         }

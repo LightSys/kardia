@@ -7,7 +7,8 @@ import android.widget.EditText;
 
 
 /**
- * Created by Andrew Lockridge on 5/27/2015.
+ * @author Andrew Lockridge
+ * created on 5/27/2015.
  *
  * This class enables multiple EditText fields to be added to a TextWatcher
  * When the text fields are changed, the errors will be cleared

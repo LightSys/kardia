@@ -22,18 +22,20 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 /**
+ * @author Judah Sistrunk
+ * created on 5/25/2016
+
  * Class that governs the options menu for how often the app auto-refreshes
- * Created by Judah Sistrunk on 5/25/2016
- */
+ * */
 
 public class Options extends Fragment {
 
     private final String EXTRA_DELETE = "delete";
 
-    private Button applyButton, reminderDate;
-    private Spinner refreshPeriods, giftPeriods, reminderFrequency;
-    ToggleButton reminderOnOff;
-    TextView reminderDetails;
+    private Button  applyButton;
+    private Spinner refreshPeriods, giftPeriods;
+    ToggleButton    reminderOnOff;
+    TextView        reminderDetails;
 
     private LocalDBHandler db;
 

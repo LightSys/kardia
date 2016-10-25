@@ -32,20 +32,22 @@ import android.widget.ListView;
 import org.lightsys.missionaryapp.R;
 
 /**
+ * @author Andrew Cameron
+ *
  * The main activity for the app. Creates the side-menu drawer used throughout the
  * app. This is used for switching between fragment activities.
- * @author Andrew Cameron
  * 
  */
 public class MainActivity extends ActionBarActivity {
-	private DrawerLayout mDrawerLayout;
+    private static final long     DAY_MILLI = 86400000;
+
+    private DrawerLayout          mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
-	private ListView mDrawerList;
-	private CharSequence mTitle;
-	private Fragment fragment;
-	private ArrayList<Account> accts = new ArrayList<Account>();
-	private static final long DAY_MILLI = 86400000;
-    private int accountid=0;
+	private ListView              mDrawerList;
+	private CharSequence          mTitle;
+	private Fragment              fragment;
+	private ArrayList<Account>    accts     = new ArrayList<Account>();
+    private int                   accountid = 0;
 
 	//stuff to automatically refresh the current fragment
 	private final android.os.Handler refreshHandler = new android.os.Handler();

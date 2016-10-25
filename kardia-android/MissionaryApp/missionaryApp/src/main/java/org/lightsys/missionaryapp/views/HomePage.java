@@ -18,20 +18,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Home Page for Missionary app
  * @author otter57 on 6/11/2015.
+ *
+ * Home Page for Missionary app
  * welcomes user and displays page buttons
  */
 public class HomePage extends Fragment {
 
-    private Account account;
+    private Account  account;
     private String[] mCategories;
     private TextView welcome;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-        account = db.getAccount();
+        account           = db.getAccount();
         db.close();
 
         View v = inflater.inflate(R.layout.home_page_layout, container, false);

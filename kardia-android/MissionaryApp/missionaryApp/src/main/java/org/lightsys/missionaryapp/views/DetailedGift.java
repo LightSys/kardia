@@ -17,17 +17,15 @@ import android.widget.TextView;
 import org.lightsys.missionaryapp.R;
 
 /**
+ *  * @author Andrew Cameron
+ *
+ * edited by otter57 from donorapp setup to missionaryapp setup
+ *
  * This is used to display detailed information about a specific gift.
  * The gift is determined by the "position" int passed into the fragment
  * which then uses that to check the list of gifts and choose the one at
  * that spot. At which point it grabs all the needed information and displays
  * it in the gift_detailedview_layout.
- * 
- * @author Andrew Cameron
- *
- * edited by otter57
- * from donorapp setup to missionaryapp setup
- *
  */
 public class DetailedGift extends Fragment {
 
@@ -71,11 +69,11 @@ public class DetailedGift extends Fragment {
      */
     private void updateGiftView(final int gift_id, final int donor_id, final String donor_name) {
         TextView fundTitle = (TextView) getActivity().findViewById(R.id.fundText);
-        TextView date = (TextView) getActivity().findViewById(R.id.dateText);
-        TextView amount = (TextView) getActivity().findViewById(R.id.giftAmountText);
+        TextView date      = (TextView) getActivity().findViewById(R.id.dateText);
+        TextView amount    = (TextView) getActivity().findViewById(R.id.giftAmountText);
         TextView donorName = (TextView) getActivity().findViewById(R.id.nameText);
-        TextView email = (TextView) getActivity().findViewById(R.id.emailText);
-        TextView phone = (TextView) getActivity().findViewById(R.id.phoneText);
+        TextView email     = (TextView) getActivity().findViewById(R.id.emailText);
+        TextView phone     = (TextView) getActivity().findViewById(R.id.phoneText);
 
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);

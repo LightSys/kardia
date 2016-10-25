@@ -1,8 +1,10 @@
 package org.lightsys.missionaryapp.tools;
 
 /**
- * Class created to provide date formatting functionality for dates and amounts
- * Created by Andrew on 6/30/2015.
+ *  @author Andrew
+ *  created on 6/30/2015.
+ *
+ * Formats dates and amounts
  */
 public class Formatter {
 
@@ -13,8 +15,9 @@ public class Formatter {
      */
     public static String getFormattedDate(String date){
         String[] formattedDate = date.split("-");
-        int month = Integer.parseInt(formattedDate[1]);
-        formattedDate[1] = getMonth(month);
+        int month              = Integer.parseInt(formattedDate[1]);
+        formattedDate[1]       = getMonth(month);
+
         if (formattedDate[2].substring(0,1).equals("0")) {
             formattedDate[2] = formattedDate[2].substring(1);
         }
@@ -29,15 +32,15 @@ public class Formatter {
 
     private static String getMonth(int num){
         switch(num){
-            case 1: return "January";
-            case 2: return "February";
-            case 3: return "March";
-            case 4: return "April";
-            case 5: return "May";
-            case 6: return "June";
-            case 7: return "July";
-            case 8: return "August";
-            case 9: return "September";
+            case 1:  return "January";
+            case 2:  return "February";
+            case 3:  return "March";
+            case 4:  return "April";
+            case 5:  return "May";
+            case 6:  return "June";
+            case 7:  return "July";
+            case 8:  return "August";
+            case 9:  return "September";
             case 10: return "October";
             case 11: return "November";
             case 12: return "December";

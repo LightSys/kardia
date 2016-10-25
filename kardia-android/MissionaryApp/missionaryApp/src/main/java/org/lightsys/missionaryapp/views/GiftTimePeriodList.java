@@ -35,6 +35,7 @@ public class GiftTimePeriodList extends Fragment {
 	private String periodtype;
 
 	/**
+     * @author otter57
 	 * Creates a list of all gifts donated to either the fund clicked
 	 * or all funds managed by the missionary
 	 */

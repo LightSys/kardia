@@ -30,20 +30,19 @@ import android.widget.Toast;
 import org.lightsys.missionaryapp.R;
 
 /**
- * This class is used to manage (add/delete) accounts to the app.
- * 
  * @author Andrew Cameron
  *
+ * This class is used to manage (add/delete) accounts to the app.
  */
 public class AccountsActivity extends Activity{
 
 
-	private ListView accountsList;
-	private EditText accountName, accountPass, serverName, donorID;
-	private TextView connectedAccounts;
-	private Account account = new Account();
+	private ListView           accountsList;
+	private EditText           accountName, accountPass, serverName, donorID;
+	private TextView           connectedAccounts;
+	private Account            account = new Account();
 	private ArrayList<Account> accounts = new ArrayList<Account>();
-	private Button connectButton, finishButton;
+	private Button             connectButton, finishButton;
 
 	/**
 	 * Creates the view, and loads any pre-existing accounts into the ListView
@@ -54,14 +53,14 @@ public class AccountsActivity extends Activity{
 		
 		setContentView(R.layout.account_page_layout);
 		
-		accountsList = (ListView)findViewById(R.id.connectedList);
-		accountName = (EditText)findViewById(R.id.usernameInput);
-		accountPass = (EditText)findViewById(R.id.passwordInput);
-		serverName = (EditText)findViewById(R.id.serverNameInput);
-		donorID = (EditText)findViewById(R.id.donorIdInput);
+		accountsList      = (ListView)findViewById(R.id.connectedList);
+		accountName       = (EditText)findViewById(R.id.usernameInput);
+		accountPass       = (EditText)findViewById(R.id.passwordInput);
+		serverName        = (EditText)findViewById(R.id.serverNameInput);
+		donorID           = (EditText)findViewById(R.id.donorIdInput);
 		connectedAccounts = (TextView)findViewById(R.id.textView);
-		connectButton = (Button)findViewById(R.id.connectButton);
-		finishButton = (Button)findViewById(R.id.finishButton);
+		connectButton     = (Button)  findViewById(R.id.connectButton);
+		finishButton      = (Button)  findViewById(R.id.finishButton);
 
 		// Adds EditTexts to text listener for resetting errors
 		accountName.addTextChangedListener(new GenericTextWatcher(accountName));
@@ -76,7 +75,6 @@ public class AccountsActivity extends Activity{
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				//todo check this once I have a data connection
 				new AlertDialog.Builder(AccountsActivity.this)
 						.setCancelable(false)
 						.setTitle("Connect Account")
@@ -147,9 +145,9 @@ public class AccountsActivity extends Activity{
 	 * Adds the account to the local database from the text field on page.
 	 */
 	private void connectAccount(){
-		String aName = accountName.getText().toString();
-		String aPass = accountPass.getText().toString();
-		String sName = serverName.getText().toString();
+		String aName  = accountName.getText().toString();
+		String aPass  = accountPass.getText().toString();
+		String sName  = serverName.getText().toString();
         String dIdStr = donorID.getText().toString();
 
 		// If any field does not have information provided, set an error in that field
@@ -194,7 +192,7 @@ public class AccountsActivity extends Activity{
 				return;
 			}
 		}
-		Account account = new Account(dId, aName, aPass, sName, null,false);
+		Account account = new Account(dId, aName, aPass, sName, null);
 		// Execute data connection to validate account and pull data if valid
 		// DataConnection will close activity once complete if successful
 		new DataConnection(this, this, account).execute("");

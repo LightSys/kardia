@@ -7,13 +7,14 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 /**
- * Created by Judah on 6/24/2016.
+ * @author Judah
+ * created on 6/24/2016.
  *
  * a ListView that doesn't scroll!
  * this is so that you can scroll the whole page of the detailed note views
  * rather than scrolling the tiny list view
  * it makes the whole thing more readable
- * it kind of sacrifices efficiency though as the ListView now has to load all comments at once
+ * sacrifices efficiency as the ListView now has to load all comments at once
  */
 
 //I don't really know what is happening here

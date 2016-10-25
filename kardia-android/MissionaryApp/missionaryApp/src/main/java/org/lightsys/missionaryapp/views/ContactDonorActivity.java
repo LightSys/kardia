@@ -20,16 +20,17 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import java.util.ArrayList;
 
 /**
- * Created by JoshWorkman on 3/12/2015.
+ * @author JoshWorkman
+ * created on 3/12/2015.
  *
  * Allows the user to send a message to a donor
  * TODO: the message needs sent to the API to be put into Kardia
  */
 public class ContactDonorActivity extends Activity{
 
-    private String donorName;
-    private int donorId;
-    private Spinner sender, contactType;
+    private String   donorName;
+    private int      donorId;
+    private Spinner  sender, contactType;
     private EditText messageText, subject;
 
     @Override
@@ -38,15 +39,15 @@ public class ContactDonorActivity extends Activity{
         setContentView(R.layout.missionary_contact_form_layout);
 
         Bundle args = getIntent().getExtras();
-        donorName = args.getString("donorname");
-        donorId = args.getInt("donorid");
+        donorName   = args.getString("donorname");
+        donorId     = args.getInt("donorid");
 
-        sender = (Spinner)findViewById(R.id.senderName);
-        subject = (EditText)findViewById(R.id.subjectText);
-        contactType = (Spinner)findViewById(R.id.typeSpinner);
-        messageText = (EditText)findViewById(R.id.message);
-        Button submit = (Button)findViewById(R.id.submitButton);
-        Button cancel = (Button)findViewById(R.id.cancelButton);
+        sender        = (Spinner) findViewById(R.id.senderName);
+        subject       = (EditText)findViewById(R.id.subjectText);
+        contactType   = (Spinner) findViewById(R.id.typeSpinner);
+        messageText   = (EditText)findViewById(R.id.message);
+        Button submit = (Button)  findViewById(R.id.submitButton);
+        Button cancel = (Button)  findViewById(R.id.cancelButton);
 
         if (getActionBar() != null) {
             getActionBar().setTitle("Contact " + donorName);
@@ -76,7 +77,7 @@ public class ContactDonorActivity extends Activity{
             @Override
             public void onClick(View view) {
 
-                String senderStr = sender.getSelectedItem().toString();
+                String senderStr  = sender.getSelectedItem().toString();
                 String messageStr = messageText.getText().toString();
                 String subjectStr = subject.getText().toString();
 
