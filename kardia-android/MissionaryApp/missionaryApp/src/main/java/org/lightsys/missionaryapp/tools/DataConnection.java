@@ -265,14 +265,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                int fundid = f.getFundId();
+                int fundId = f.getFundId();
 
                 for(Donor m : db.getDonors()) {
                     int donorID = m.getId();
-                    String donorname = m.getName();
+                    String donorName = m.getName();
 
                     loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + donorID + "/Funds/"
-                            + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),fundid,donorname,donorID);
+                            + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),fundId,donorName,donorID);
                 }
             }
 
@@ -541,7 +541,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * Loads prayed for information for all notes (prayer requests, updates) into database if they are not present
      * @param result, result from API query for a specific missionary
      */
-    private void loadPrayedFor(String result, int noteid) {
+    private void loadPrayedFor(String result, int noteId) {
         JSONObject json = null;
         try {
             json = new JSONObject(result);
@@ -558,7 +558,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         int numPrayedFor= tempPrayedFor.length();
 
-        db.updateNote(noteid, numPrayedFor-1);
+        db.updateNote(noteId, numPrayedFor-1);
 
         for (int i = 0; i < numPrayedFor; i++) {
             try{
@@ -749,11 +749,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     if(!currentGiftNameList.contains(GiftObj.getString("name"))) {
                         JSONObject dateObj = GiftObj.getJSONObject("gift_date");
                         JSONObject amountObj = GiftObj.getJSONObject("gift_amount");
-                        int[] gifttotal = {
+                        int[] giftTotal = {
                                 Integer.parseInt(amountObj.getString("wholepart")),
                                 Integer.parseInt(amountObj.getString("fractionpart"))
                         };
-                        int giftid = db.getLastId("gift") + 1;
+                        int giftId = db.getLastId("gift") + 1;
                         String name = GiftObj.getString("name");
 
                         String gift_fund = GiftObj.getString("gift_fund")+"|"+GiftObj.getString("gift_ledger");
@@ -771,25 +771,25 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                         String gift_check_num = GiftObj.getString("gift_check_num");
 
-                        if(gifttotal[1] >= 100){
-                            gifttotal[1] /= 100;
+                        if(giftTotal[1] >= 100){
+                            giftTotal[1] /= 100;
                         }
 
                         Gift temp = new Gift();
                         temp.setName(name);
-                        temp.setId(giftid);
+                        temp.setId(giftId);
                         temp.setGiftFund(gift_fund);
                         temp.setGiftFundDesc(gift_fund_desc);
                         temp.setGiftDate(gift_date);
                         temp.setGiftCheckNum(gift_check_num);
-                        temp.setGiftAmount(gifttotal);
+                        temp.setGiftAmount(giftTotal);
                         temp.setGiftDonor(donorName);
                         temp.setGiftDonorId(donorID);
                         temp.setGiftYear(gift_year);
                         temp.setGiftMonth(month_year);
 
                         db.addGift(temp);
-                        db.addGift_Account(giftid, Account_ID);
+                        db.addGift_Account(giftId, Account_ID);
                     }
                 }
             }

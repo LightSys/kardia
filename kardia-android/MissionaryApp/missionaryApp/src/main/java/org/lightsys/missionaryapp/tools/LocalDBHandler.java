@@ -796,32 +796,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		return temp;
 	}
-
-	/**
-	 * Pulls all accounts
-	 * @return All accounts in the Account table as an ArrayList of Account Objects
-	 */
-	public ArrayList<Account> getAccounts(){
-		ArrayList<Account> accounts = new ArrayList<Account>();
-		String queryString = "SELECT * FROM " + TABLE_ACCOUNTS;
-		
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-		
-		while(c.moveToNext()){
-			Account temp = new Account();
-			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setAccountName(c.getString(1));
-			temp.setAccountPassword(c.getString(2));
-			temp.setServerName(c.getString(3));
-			temp.setPartnerName(c.getString(4));
-
-			accounts.add(temp);
-		}
-		c.close();
-		db.close();
-		return accounts;
-	}
 	
 	/**
 	 * Pulls a specific fund from an ID

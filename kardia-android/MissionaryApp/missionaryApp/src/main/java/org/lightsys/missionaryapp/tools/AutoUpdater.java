@@ -116,13 +116,11 @@ public class AutoUpdater extends Service {
 
     private  void getUpdates()
     {
-        ArrayList<Account> accts = db.getAccounts();
+        Account account = db.getAccount();
         db.close();
 
         //updates each account
-        for (Account a : accts) {
-           new DataConnection(this, null, a).execute("");
-        }
+           new DataConnection(this, null, account).execute("");
 
         //list of new notifications
         ArrayList<NewItem> newItems = db.getNewItems();
