@@ -51,12 +51,11 @@ public class PostNoteActivity extends Activity {
         // Load list of user names from accounts for user to choose who message is from
         final LocalDBHandler db = new LocalDBHandler(this, null);
         ArrayList<String> partnerNames = new ArrayList<String>();
-        ArrayList<Account> accts = db.getAccounts();
-        for (Account a : accts) {
-            String aPartnerName = a.getPartnerName();
-            if (aPartnerName != null) {
-                partnerNames.add(aPartnerName);
-            }
+        Account account = db.getAccount();
+
+        String aPartnerName = account.getPartnerName();
+        if (aPartnerName != null) {
+            partnerNames.add(aPartnerName);
         }
         // If no partner names are found, put "Unknown" as the sender, this should be rare
         // The sender can then identify themselves in the message
@@ -81,12 +80,7 @@ public class PostNoteActivity extends Activity {
                 Account account   = null;
 
                 //find account
-                ArrayList<Account> accts = db.getAccounts();
-                for (Account a : accts) {
-                    if (a.getPartnerName().equals(senderStr)){
-                        account = a;
-                    }
-                }
+                account = db.getAccount();
 
                 // If any field is blank, prompt user to fill the field
                 if (messageStr.equals("")) {
@@ -138,9 +132,7 @@ public class PostNoteActivity extends Activity {
 
                     //refresh the screen after post
                     //this probably won't work because separate threads and what not
-                    for (Account a : accts){
-                        new DataConnection(getBaseContext(), null, a);
-                    }
+                    new DataConnection(getBaseContext(), null, account);
 
                     finish();
                 }

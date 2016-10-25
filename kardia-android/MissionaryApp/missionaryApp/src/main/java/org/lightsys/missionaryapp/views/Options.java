@@ -34,8 +34,8 @@ public class Options extends Fragment {
 
     private Button  applyButton;
     private Spinner refreshPeriods, giftPeriods;
-    ToggleButton    reminderOnOff;
-    TextView        reminderDetails;
+    private ToggleButton    reminderOnOff;
+    private TextView        reminderDetails;
 
     private LocalDBHandler db;
 

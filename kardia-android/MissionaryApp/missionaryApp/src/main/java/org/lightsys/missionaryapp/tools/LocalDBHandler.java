@@ -741,37 +741,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		c.close();
 		return periods;
 	}
-	//return current period for the fund
-	public Period getFundPeriodToDate(int fund_id, String periodtype, String period) {
-		Period currentperiod = new Period();
 
-
-		String qString = "SELECT DISTINCT " + periodtype + " FROM " + TABLE_GIFT + " INNER JOIN " + TABLE_FUND
-				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFTFUNDDESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
-				+ " WHERE (" + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id + " AND " + TABLE_GIFT + "." + periodtype + " = " + period + ")";
-
-		SQLiteDatabase db = this.getReadableDatabase();
-
-		Cursor c = db.rawQuery(qString, null);
-
-		if (c.moveToFirst()) {
-			currentperiod.setPeriodName(c.getString(0));
-			ArrayList<Gift> gifts = getGiftsForPeriod(fund_id, periodtype, c.getString(0));
-			int Total[]= new int[2];
-			for(Gift g:gifts){
-				Total[0] += g.getGiftAmount()[0];
-				Total[1] += g.getGiftAmount()[1];
-			}
-			if (Total[1]>=100){
-				Total[0]+=Math.floor(Total[1]/100);
-				Total[1]-=Math.floor(Total[1]/100)*100;
-			}
-			currentperiod.setGiftTotal(Total);
-		}
-		db.close();
-		c.close();
-		return currentperiod;
-	}
 	/**
 	 * Pulls all accounts
 	 * @return All accounts in the Account table as an ArrayList of Account Objects
@@ -1301,40 +1271,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		return gifts;
 	}
-	/**
-	 * Pulls all gifts with specific ID
-	 * @param gift_ids, Gift Identification
-	 * @return an arraylist of Gift Objects
-	 */
-	public ArrayList<Gift> getGiftsByIds(ArrayList<Integer> gift_ids){
-		ArrayList<Gift> gifts = new ArrayList<Gift>();
-		String queryString = "SELECT * FROM "+ TABLE_GIFT + " WHERE " + COLUMN_ID + " = " + gift_ids + " ORDER BY "
-				+ COLUMN_GIFTYEAR + ", " + COLUMN_GIFTMONTH + " DESC";
 
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-
-		while(c.moveToNext()){
-			Gift gift = new Gift();
-			gift.setId(Integer.parseInt(c.getString(0)));
-			gift.setName(c.getString(1));
-			gift.setGiftFund(c.getString(2));
-			gift.setGiftFundDesc(c.getString(3));
-			gift.setGiftAmount(new int []{
-					Integer.parseInt(c.getString(4)),
-					Integer.parseInt(c.getString(5))
-			});
-			gift.setGiftDate(c.getString(6));
-			gift.setGiftCheckNum(c.getString(7));
-			gift.setGiftDonor(c.getString(8));
-			gift.setGiftDonorId(c.getInt(9));
-
-			gifts.add(gift);
-		}
-		c.close();
-		db.close();
-		return gifts;
-	}
 
 	/**
 	 * Pulls a single gift with a specific ID

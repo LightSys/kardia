@@ -137,7 +137,7 @@ public class AutoUpdater extends Service {
     private void sendNotification(String title, String subject, int ID){
         Context context = this;
         NotificationManager notificationManager = (NotificationManager)
-                context.getSystemService(context.NOTIFICATION_SERVICE);
+                context.getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder nBuild;
         Notification n;
 
