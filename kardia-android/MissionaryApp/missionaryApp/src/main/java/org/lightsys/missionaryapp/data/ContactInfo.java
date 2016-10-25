@@ -3,50 +3,41 @@ package org.lightsys.missionaryapp.data;
 /**
  * @author Laura DeOtte
  * created on 7/6/16.
+ *
  * Stores Contact Info (Email, Phone, Cell) for contacting donors
  */
 public class ContactInfo {
-    private int partnerid;
+    private int    partnerId;
     private String email;
     private String phone;
     private String cell;
 
-    public ContactInfo() {
+    public ContactInfo() {}
+
+    public ContactInfo(int partnerId, String email, String phone, String cell) {
+        this.partnerId = partnerId;
+        this.email     = email;
+        this.phone     = phone;
+        this.cell      = cell;
     }
 
-    public ContactInfo(int partnerid, String email, String phone, String cell) {
-        this.partnerid = partnerid;
-        this.email = email;
-        this.phone = phone;
-        this.cell = cell;
-    }
+    /* ************************* Set ************************* */
 
-    public int getPartnerId() {
-        return partnerid;
-    }
+    public void setPartnerId(int id)   { this.partnerId = id; }
 
-    public void setPartnerId(int partnerid) {
-        this.partnerid = partnerid;
-    }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getEmail() {
-        return email;
-    }
+    public void setPhone(String phone) { this.phone = phone; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public void setCell(String cell)   { this.cell = cell;}
 
-    public String getPhone() {
-        return phone;
-    }
+    /* ************************* Get ************************* */
+    public int getPartnerId()    { return partnerId; }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+    public     String getEmail() { return email; }
 
-    public String getCell() {return cell;}
+    public     String getPhone() { return phone; }
 
-    public void setCell(String cell) {this.cell = cell;}
+    public     String getCell()  { return cell;}
 
 }

@@ -1,53 +1,59 @@
 package org.lightsys.missionaryapp.data;
 
 /**
+ * @author Andrew Lockridge
+ * created on 6/11/2015
+ *
  * Class representing a message sent from the user to a missionary
- * Created by Andrew Lockridge on 6/11/2015.
  */
 public class Message {
 
-    public enum MessageType {Update, Prayer, Praise, Other}
+    public enum MessageType { Update, Prayer, Praise, Other }
 
-    private String subject;
-    private String text;
-    private String sender;
+    private String      subject;
+    private String      text;
+    private String      sender;
     private MessageType type;
-    private String missionaryName;
-    private int missionaryId;
+    private String      missionaryName;
+    private int         missionaryId;
 
     public Message() {}
 
-    public Message(String subject, String text, String sender, MessageType type, String missionaryName, int missionaryId) {
-        this.subject = subject;
-        this.text = text;
-        this.sender = sender;
-        this.type = type;
+    public Message(String subject, String text, String sender, MessageType type,
+                   String missionaryName, int missionaryId) {
+        this.subject        = subject;
+        this.text           = text;
+        this.sender         = sender;
+        this.type           = type;
         this.missionaryName = missionaryName;
-        this.missionaryId = missionaryId;
+        this.missionaryId   = missionaryId;
     }
 
-    public void setSubject(String subject) {this.subject = subject;}
+    /* ************************* Set ************************* */
 
-    public String getSubject() {return subject;}
+    public void setSubject(String subject)     { this.subject = subject; }
 
-    public void setText(String message) {this.text = message;}
+    public void setText(String message)        { this.text = message; }
 
-    public String getText() {return text;}
+    public void setSender(String sender)       { this.sender = sender; }
 
-    public void setSender(String sender) {this.sender = sender;}
+    public void setType(MessageType type)      { this.type = type; }
 
-    public String getSender() {return sender;}
+    public void setMissionaryName(String name) { this.missionaryName = name; }
 
-    public void setType(MessageType type) {this.type = type;}
+    public void setMissionaryId(int id)        { this.missionaryId = id; }
 
-    public MessageType getType() {return type;}
+	/* ************************* Get ************************* */
+    public String      getSubject()        { return subject; }
 
-    public void setMissionaryName(String name) {this.missionaryName = name;}
+    public String      getText()           { return text; }
 
-    public String getMissionaryName() {return missionaryName;}
+    public String      getSender()         { return sender; }
 
-    public void setMissionaryId(int id) {this.missionaryId = id;}
+    public MessageType getType()           { return type; }
 
-    public int getMissionaryId() {return missionaryId;}
+    public String      getMissionaryName() { return missionaryName; }
+
+    public int         getMissionaryId()   { return missionaryId; }
 
 }

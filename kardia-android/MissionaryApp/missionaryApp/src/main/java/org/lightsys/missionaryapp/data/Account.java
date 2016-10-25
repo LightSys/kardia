@@ -1,9 +1,9 @@
 package org.lightsys.missionaryapp.data;
 
 /**
- * basic class used to organize user account data.
- * 
  * @author Andrew Cameron
+ *
+ * basic class used to organize user account data
  *
  *  Each user is represented by an Account object which stores all of their information as different properties
  *      id: unique to account, used as key to access other data from tables
@@ -11,63 +11,43 @@ package org.lightsys.missionaryapp.data;
  *
  */
 public class Account {
-	private int id; // Stored as the Donor ID provided by user
-	private String AccountName;
-	private String AccountPassword;
-	private String ServerName;
-	private String PartnerName; //Name used for sending messages, different than AccountName
-	private Boolean active;
+	private int    id; // Stored as the Missionary Id provided by user
+	private String accountName;
+	private String accountPassword;
+	private String serverName;
+	private String partnerName; //Name used for sending messages, different than accountName
 
-	public Account(){}
+	public Account() {}
 	
 	public Account(int id, String AccountName, String AccountPassword, String ServerName,
-				    String PartnerName, boolean active){
+				    String PartnerName) {
 		this.setId(id);
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
 		this.setServerName(ServerName);
 		this.setPartnerName(PartnerName);
-		this.setActive(active);
 	}
 
-	public int getId() {
-		return id;
-	}
+	/* ************************* Set ************************* */
+	public void setId(int id)                       { this.id = id; }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+	public void setAccountName(String accountName)  { this.accountName = accountName; }
 
-	public String getAccountName() {
-		return AccountName;
-	}
+	public void setAccountPassword(String password) { this.accountPassword = password; }
 
-	public void setAccountName(String accountName) {
-		AccountName = accountName;
-	}
+	public void setServerName(String serverName)    { this.serverName = serverName; }
 
-	public String getAccountPassword() {
-		return AccountPassword;
-	}
+	public void setPartnerName(String name)         { partnerName = name; }
 
-	public void setAccountPassword(String accountPassword) {
-		AccountPassword = accountPassword;
-	}
+	/* ************************* Get ************************* */
+	public int    getId()              { return id; }
 
-	public String getServerName() {
-		return ServerName;
-	}
+	public String getAccountName()     { return accountName; }
 
-	public void setServerName(String serverName) {
-		ServerName = serverName;
-	}
+	public String getAccountPassword() { return accountPassword; }
 
-	public String getPartnerName() { return PartnerName; }
+	public String getServerName()      { return serverName; }
 
-	public void setPartnerName(String name) { PartnerName = name; }
-
-	private void setActive(boolean active){ this.active = active; }
-
-	public boolean getActive (){ return active; }
+	public String getPartnerName()     { return partnerName; }
 
 }

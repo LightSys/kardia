@@ -437,8 +437,8 @@ public class UpdateNotificationActivity extends Activity {
                         }
                         notification = new UpdateNotification();
                         notification.setId(notificationID);
-                        notification.setNotificationTime(alarmTime);
-                        notification.setNotificationFrequency(period);
+                        notification.setTime(alarmTime);
+                        notification.setFrequency(period);
 
                         db.addNotification(notification);
                     }

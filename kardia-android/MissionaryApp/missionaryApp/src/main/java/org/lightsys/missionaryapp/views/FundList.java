@@ -11,6 +11,7 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,8 +107,8 @@ public class FundList extends Fragment{
 	}
 	
 	/**
-	 * Sends the User to a list of years that they 
-	 * have donated to that particular fund.
+	 * Sends the User to a list of years or months that their
+	 * fund has received donations.
 	 */
 	private class onFundClicked implements OnItemClickListener{
 
@@ -117,6 +118,7 @@ public class FundList extends Fragment{
 			Bundle args = new Bundle();
 			args.putInt(newFrag.ARG_FUND_ID, funds.get(position).getFundId());
 			newFrag.setArguments(args);
+			Log.d("fundlist", "onItemClick: "+ funds.get(position).getFundId());
 
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 			transaction.replace(R.id.contentFrame, newFrag);

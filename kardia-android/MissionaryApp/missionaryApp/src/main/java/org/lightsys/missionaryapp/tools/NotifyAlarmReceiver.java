@@ -59,17 +59,17 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
             // Loop through all notifications
             for (UpdateNotification notification : notifications) {
                 // If notification time has not passed, set alarm
-                if (notification.getNotificationTime() > Calendar.getInstance().getTimeInMillis()) {
+                if (notification.getTime() > Calendar.getInstance().getTimeInMillis()) {
                     alarmIntent = new Intent(context, NotifyAlarmReceiver.class);
-                    alarmIntent.putExtra("message", notification.getNotificationMessage());
+                    alarmIntent.putExtra("message", notification.getMessage());
                     alarmIntent.putExtra("id", notification.getId());
                     pendingIntent = PendingIntent.getBroadcast(context, notification.getId(), alarmIntent, 0);
 
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-                    Log.w("tag", "Alarm set for: " + format.format(notification.getNotificationTime())
+                    Log.w("tag", "Alarm set for: " + format.format(notification.getTime())
                             + ", ID:" + Integer.toString(notification.getId()));
 
-                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, notification.getNotificationTime(), pendingIntent);
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, notification.getTime(), pendingIntent);
                 } else { // Time has passed and notification can be deleted from database
                     db.deleteNotification(notification.getId());
                 }

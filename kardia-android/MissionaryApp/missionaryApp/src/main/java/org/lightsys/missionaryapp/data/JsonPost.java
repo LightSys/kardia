@@ -1,7 +1,8 @@
 package org.lightsys.missionaryapp.data;
 
 /**
- * Created by Judah on 7/11/2016.
+ * @author Judah
+ * created on 7/11/2016.
  * stores stuff so that a failed json post can be reposted later
  */
 public class JsonPost {
@@ -11,44 +12,30 @@ public class JsonPost {
     private String jsonString;
     private int accountID;
 
-    public JsonPost(long ID, String postUrl, String jSonString, int accountId)
-    {
+    public JsonPost(long ID, String postUrl, String jSonString, int accountId) {
         id = ID;
         url = postUrl;
         jsonString = jSonString;
         accountID = accountId;
     }
 
-    public  void setId(long id){
-        this.id = id;
-    }
+	/* ************************* Set ************************* */
 
-    public void setUrl(String url){
-        this.url = url;
-    }
+    public void setId(long id)                   { this.id = id; }
 
-    public void setJsonString(String jsonString){
-        this.jsonString = jsonString;
-    }
+    public void setUrl(String url)               { this.url = url; }
 
-    public void setAccountID(int accountID){
-        this.accountID = accountID;
-    }
+    public void setJsonString(String jsonString) { this.jsonString = jsonString; }
 
-    public long getId(){
-        return id;
-    }
+    public void setAccountID(int accountID)      { this.accountID = accountID; }
 
-    public String getUrl(){
-        return url;
-    }
+	/* ************************* Get ************************* */
 
-    public String getJsonString(){
-        return jsonString;
-    }
+    public long   getId()          { return id; }
 
-    public int getAccountID(){
-        return accountID;
-    }
+    public String getUrl()         { return url; }
 
+    public String getJsonString()  { return jsonString; }
+
+    public int    getAccountID()   { return accountID; }
 }

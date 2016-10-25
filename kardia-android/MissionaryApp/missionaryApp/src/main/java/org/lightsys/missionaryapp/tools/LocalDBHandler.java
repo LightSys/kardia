@@ -309,7 +309,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		values.put(COLUMN_ACCOUNTPASSWORD, account.getAccountPassword());
 		values.put(COLUMN_SERVERNAME, account.getServerName());
 		values.put(COLUMN_PARTNER_NAME, account.getPartnerName());
-		values.put(COLUMN_PARTNER_NAME, account.getActive());
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_ACCOUNTS, null, values);
@@ -414,8 +413,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	public void addNotification(UpdateNotification notification) {
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_ID, notification.getId());
-		values.put(COLUMN_NOTIFY_TIME, Long.toString(notification.getNotificationTime()));
-		values.put(COLUMN_FREQUENCY, notification.getNotificationFrequency());
+		values.put(COLUMN_NOTIFY_TIME, Long.toString(notification.getTime()));
+		values.put(COLUMN_FREQUENCY, notification.getFrequency());
 		//todo values.put(COLUMN_REQUEST_ID, Integer.toString(notification.getRequestID()));
 
 		SQLiteDatabase db = this.getWritableDatabase();
@@ -453,7 +452,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		values.put(COLUMN_GIFTTOTALWHOLE, gift.getGiftAmount()[0]);
 		values.put(COLUMN_GIFTTOTALPART, gift.getGiftAmount()[1]);
 		values.put(COLUMN_GIFTDATE, gift.getGiftDate());
-		values.put(COLUMN_CHECKNUM, gift.getGift_check_num());
+		values.put(COLUMN_CHECKNUM, gift.getGiftCheckNum());
         values.put(COLUMN_DONOR_NAME, gift.getGiftDonor());
         values.put(COLUMN_DONOR_ID, gift.getGiftDonorId());
 		values.put(COLUMN_GIFTYEAR, gift.getGiftYear());
@@ -1208,8 +1207,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		while(c.moveToNext()){
 			UpdateNotification temp = new UpdateNotification();
 			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setNotificationTime(Long.parseLong(c.getString(1)));
-			temp.setNotificationFrequency(c.getString(2));
+			temp.setTime(Long.parseLong(c.getString(1)));
+			temp.setFrequency(c.getString(2));
 			//todo: temp.setRequest_id(Integer.parseInt(c.getString(2)));
 
 			notificationList.add(temp);
@@ -1243,7 +1242,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 					Integer.parseInt(c.getString(5))
 			});
 			temp.setGiftDate(c.getString(6));
-			temp.setGift_check_num(c.getString(7));
+			temp.setGiftCheckNum(c.getString(7));
             temp.setGiftDonor(c.getString(8));
             temp.setGiftDonorId(c.getInt(9));
 
@@ -1279,7 +1278,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 					Integer.parseInt(c.getString(5))
 			});
 			temp.setGiftDate(c.getString(6));
-			temp.setGift_check_num(c.getString(7));
+			temp.setGiftCheckNum(c.getString(7));
 			temp.setGiftDonor(c.getString(8));
 			temp.setGiftDonorId(c.getInt(9));
 
@@ -1318,7 +1317,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 					Integer.parseInt(c.getString(5))
 			});
 			gift.setGiftDate(c.getString(6));
-			gift.setGift_check_num(c.getString(7));
+			gift.setGiftCheckNum(c.getString(7));
 			gift.setGiftDonor(c.getString(8));
 			gift.setGiftDonorId(c.getInt(9));
 
@@ -1352,7 +1351,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 					Integer.parseInt(c.getString(5))
 			});
 			gift.setGiftDate(c.getString(6));
-			gift.setGift_check_num(c.getString(7));
+			gift.setGiftCheckNum(c.getString(7));
 			gift.setGiftDonor(c.getString(8));
 			gift.setGiftDonorId(c.getInt(9));
 
@@ -1386,7 +1385,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				Integer.parseInt(c.getString(5))
 			});
 			gift.setGiftDate(c.getString(6));
-			gift.setGift_check_num(c.getString(7));
+			gift.setGiftCheckNum(c.getString(7));
             gift.setGiftDonor(c.getString(8));
             gift.setGiftDonorId(c.getInt(9));
 		}
@@ -1482,7 +1481,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			});
 			temp.setGiftDate(c.getString(6));
 			Log.w("BasicAuth", "The date is:" + c.getString(6));
-			temp.setGift_check_num(c.getString(7));
+			temp.setGiftCheckNum(c.getString(7));
             temp.setGiftDonor(c.getString(8));
             temp.setGiftDonorId(c.getInt(9));
 			
