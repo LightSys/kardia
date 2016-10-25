@@ -43,9 +43,6 @@ import org.lightsys.missionaryapp.data.UpdateNotification;
  *
  */
 public class LocalDBHandler extends SQLiteOpenHelper {
-
-	private Account activeaccount;
-
 	private static final int DATABASE_VERSION = 11;
 	private static final String DATABASE_NAME = "missionary.db";
 	//ACCOUNT TABLE
@@ -95,6 +92,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String TABLE_NOTIFICATIONS = "notifications";
 	private static final String COLUMN_NOTIFY_TIME = "notification_time";
 	private static final String COLUMN_REQUEST_ID = "request_id";
+	private static final String COLUMN_FREQUENCY = "notification_frequency";
 	//DONOR TABLE
 	private static final String TABLE_DONORS = "donors";
     private static final String COLUMN_LASTNAME = "lastname";
@@ -201,7 +199,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		String CREATE_NOTIFICATIONS_TABLE = "CREATE TABLE " + TABLE_NOTIFICATIONS + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NOTIFY_TIME + " TEXT,"
-				+ COLUMN_REQUEST_ID + " TEXT)";
+				+ COLUMN_FREQUENCY + " TEXT," + COLUMN_REQUEST_ID + " TEXT)";
 		db.execSQL(CREATE_NOTIFICATIONS_TABLE);
 
 		String CREATE_FUND_TABLE = "CREATE TABLE " + TABLE_FUND + "(" +
@@ -417,6 +415,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_ID, notification.getId());
 		values.put(COLUMN_NOTIFY_TIME, Long.toString(notification.getNotificationTime()));
+		values.put(COLUMN_FREQUENCY, notification.getNotificationFrequency());
 		//todo values.put(COLUMN_REQUEST_ID, Integer.toString(notification.getRequestID()));
 
 		SQLiteDatabase db = this.getWritableDatabase();
@@ -596,7 +595,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
-	public void deleteAccountTable(){
+	private void deleteAccountTable(){
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.delete(TABLE_ACCOUNTS,null,null);
 		db.close();
@@ -674,14 +673,14 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 
 	//deletes the period of refresh for the auto-updater
-	public void deleteRefreshPeriod(){
+	private void deleteRefreshPeriod(){
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_REFRESH_PERIOD, null, null);
 		db.close();
 	}
 
 	//deletes the period of refresh for the auto-updater
-	public void deleteGiftPeriod(){
+	private void deleteGiftPeriod(){
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_GIFT_PERIOD, null, null);
 		db.close();
@@ -950,10 +949,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         Cursor c = db.rawQuery(queryString, null);
 
         while (c.moveToNext()) {
-            Donor temp = new Donor();
-            temp.setId(Integer.parseInt(c.getString(0)));
-            temp.setName(c.getString(1));
-
+			//set Donor(id, name)
+            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1));
             donors.add(temp);
         }
         c.close();
@@ -963,7 +960,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     /**
      * Pulls contact info for a donor from the database
-     * @param donor_id
+     * @param donor_id id for donor
      * @return contact info for donor id
      */
 
@@ -1037,8 +1034,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 	}
 	/**
-	 * Pulls all notes (updates and prayer requests) from the Notes table by Id
-	 * @param missionary_id
+	 * Pulls all notes (updates and prayer requests) from the Notes table for a missionary
+	 * @param missionary_id id for the missionary
 	 * @return All notes in the Notes table as an ArrayList of Notes Objects ordered from most recent to least recent
 	 */
 	public ArrayList<Note> getNotesForMissionary(int missionary_id) {
@@ -1141,12 +1138,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         Cursor c = db.rawQuery(queryString, null);
 
         while (c.moveToNext()) {
-            ContactInfo temp = new ContactInfo();
-            temp.setPartnerId(Integer.parseInt(c.getString(0)));
-            temp.setEmail(c.getString(1));
-            temp.setPhone(c.getString(2));
-			temp.setCell(c.getString(3));
-
+			//set ContactInfo(partner id, email, phone, cell)
+            ContactInfo temp = new ContactInfo(Integer.parseInt(c.getString(0)), c.getString(1), c.getString(2), c.getString(3));
             contactInfoList.add(temp);
         }
         c.close();
@@ -1156,7 +1149,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 	/**
 	 * Pulls all prayer letters from the database for missionary
-	 * @param missionary_id
+	 * @param missionary_id id for missionary
 	 * @return All prayer letters as an ArrayList of PrayerLetter Objects ordered from most recent to least recent
 	 */
 	public ArrayList<PrayerLetter> getPrayerLettersForMissionary(int missionary_id) {
@@ -1168,15 +1161,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		Cursor c = db.rawQuery(queryString, null);
 
 		while(c.moveToNext()) {
-			PrayerLetter temp = new PrayerLetter();
-			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setDate(c.getString(1));
-			temp.setTitle(c.getString(2));
-			temp.setMissionaryName(c.getString(3));
-			temp.setFolder(c.getString(4));
-			temp.setFilename(c.getString(5));
-			temp.setMissionaryId(c.getInt(6));
-
+			//set PrayerLetter(id, Date, title, MissionaryName, folder, filename, missionaryId) {
+			PrayerLetter temp = new PrayerLetter(Integer.parseInt(c.getString(0)), c.getString(1), c.getString(2),
+					c.getString(3), c.getString(4), c.getString(5), c.getInt(6));
 			letterList.add(temp);
 		}
 		c.close();
@@ -1196,14 +1183,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		Cursor c = db.rawQuery(queryString, null);
 
 		while(c.moveToNext()) {
-			PrayerLetter temp = new PrayerLetter();
-			temp.setId(Integer.parseInt(c.getString(0)));
-			temp.setDate(c.getString(1));
-			temp.setTitle(c.getString(2));
-			temp.setMissionaryName(c.getString(3));
-			temp.setFolder(c.getString(4));
-			temp.setFilename(c.getString(5));
-			temp.setMissionaryId(c.getInt(6));
+			//set PrayerLetter(id, Date, title, MissionaryName, folder, filename, missionaryId) {
+			PrayerLetter temp = new PrayerLetter(Integer.parseInt(c.getString(0)), c.getString(1), c.getString(2),
+					c.getString(3), c.getString(4), c.getString(5), c.getInt(6));
 
 			letterList.add(temp);
 		}
@@ -1227,6 +1209,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			UpdateNotification temp = new UpdateNotification();
 			temp.setId(Integer.parseInt(c.getString(0)));
 			temp.setNotificationTime(Long.parseLong(c.getString(1)));
+			temp.setNotificationFrequency(c.getString(2));
 			//todo: temp.setRequest_id(Integer.parseInt(c.getString(2)));
 
 			notificationList.add(temp);
@@ -1273,7 +1256,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 	/**
 	 * Pulls all gifts from the gift table that match the given donor id
-	 * @param donor_id
+	 * @param donor_id id for donor
 	 * @return All gifts in the Gift table as an ArrayList of Gift Objects ordered from most recent to least recent
 	 */
 	public ArrayList<Gift> getGiftsByDonor(int donor_id){

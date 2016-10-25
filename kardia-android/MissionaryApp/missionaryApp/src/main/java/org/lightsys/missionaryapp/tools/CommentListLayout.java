@@ -15,14 +15,14 @@ import org.lightsys.missionaryapp.R;
  */
 public class CommentListLayout extends RelativeLayout {
 
-    TextView userNameView, dateView, textView;
+    private final TextView userNameView, dateView, textView;
 
     public CommentListLayout(Context context) {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.comment_item, this, true);
         userNameView = (TextView)findViewById(R.id.userName);
-        dateView = (TextView)findViewById(R.id.date_text);
-        textView = (TextView)findViewById(R.id.text);
+        dateView = (TextView)findViewById(R.id.dateText);
+        textView = (TextView)findViewById(R.id.commentText);
 
     }
 

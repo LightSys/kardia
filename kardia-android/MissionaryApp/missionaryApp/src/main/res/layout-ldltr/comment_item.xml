@@ -23,7 +23,7 @@
         android:layout_marginRight="18dp"
         android:layout_marginStart="25dp"
         android:layout_marginEnd="18dp"
-        android:id="@+id/date_text"
+        android:id="@+id/dateText"
         android:textSize="15sp" />
 
     <TextView
@@ -34,6 +34,6 @@
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
         android:layout_marginBottom="18dp"
-        android:id="@+id/text"
+        android:id="@+id/commentText"
         android:textSize="20sp" />
 </LinearLayout>

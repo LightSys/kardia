@@ -54,19 +54,18 @@ import java.util.Calendar;
  */
 public class DataConnection extends AsyncTask<String, Void, String> {
 
-    private Account account;
+    private final Account account;
     private String Host_Name; // Server name of account
     private String Password;
     private String AccountName; // Username of account
     private int Account_ID;
-    private Context dataContext; // Context that the DataConnection was executed in
-    private Activity dataActivity;
+    private final Context dataContext; // Context that the DataConnection was executed in
+    private final Activity dataActivity;
     private ProgressDialog spinner;
     private LocalDBHandler db;
     private boolean validAccount;
 
     private static final String Tag = "DPS";
-    private static final String TAG = "DATACONNECTION";
 
     public DataConnection(Context context, Activity activity, Account a) {
         super();
@@ -303,7 +302,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * @return string results of the query.
      * @throws Exception when could not connect to request
      */
-    public String GET(String url) throws Exception {
+    private String GET(String url) throws Exception {
         InputStream inputStream;
         String result;
 
@@ -461,21 +460,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
         // Check to see if contact info is already in the database
         if (!currentContactInfoList.contains(partner_id)) {
-            ContactInfo temp = new ContactInfo();
-            temp.setPartnerId(partner_id);
-            temp.setEmail(email);
-            temp.setPhone(phone);
-            temp.setCell(cell);
+            ContactInfo temp = new ContactInfo(partner_id, email, phone, cell);
             db.addContactInfo(temp);
         }
         else{
-            ContactInfo temp = new ContactInfo();
-            temp.setPartnerId(partner_id);
-            temp.setEmail(email);
-            temp.setPhone(phone);
-            temp.setCell(cell);
+            ContactInfo temp = new ContactInfo(partner_id, email, phone, cell);
             db.updateContactInfo(temp);
-
         }
     }
 
@@ -570,7 +560,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         db.updateNote(noteid, numPrayedFor-1);
 
-        String TAG = "DATA CONNECTION";
         for (int i = 0; i < numPrayedFor; i++) {
             try{
                 //@id signals a new object, but contains no information on that line
@@ -707,6 +696,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
 
                     if (!currentFundNames.contains(fundObj.getString("name"))) {
+
+                        //todo fundid??? set Fund(FundId, missionaryId, fundName, fundDesc, fundClass, annotation)
                         Fund temp = new Fund();
 
                         temp.setFundName(fundObj.getString("name"));
@@ -816,6 +807,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         //check to see what the database already has
         ArrayList<Comment> currentComments = db.getComments();
+        ArrayList<Integer> currentCommentIds = new ArrayList<Integer>();
+        for(Comment c: currentComments){
+            currentCommentIds.add(c.getCommentID());
+        }
+
         JSONObject json = null;
         try {
             json = new JSONObject(result);
@@ -834,7 +830,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempComments.getString(i).equals("@id")){
                     JSONObject CommentObj = json.getJSONObject(tempComments.getString(i));
 
-                    if(!currentComments.contains(CommentObj.getString("comment_id"))){
+                    if(!currentCommentIds.contains(Integer.parseInt(CommentObj.getString("comment_id")))){
                         JSONObject dateObj = CommentObj.getJSONObject("comment_date");
 
                         int ID = Integer.parseInt(CommentObj.getString("comment_id"));

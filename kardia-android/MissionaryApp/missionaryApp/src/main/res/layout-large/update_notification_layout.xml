@@ -16,13 +16,13 @@
         android:layout_marginLeft="100dp">
 
         <TableRow
-            android:id="@+id/start_date_row"
+            android:id="@+id/startDateRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp"
             >
             <TextView
-                android:id="@+id/start_date_text"
+                android:id="@+id/startDateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
@@ -31,7 +31,7 @@
                 android:layout_weight="1"/>
 
             <Button
-                android:id="@+id/start_date_button"
+                android:id="@+id/startDateButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/choose_date"
@@ -41,13 +41,13 @@
         </TableRow>
 
         <TableRow
-            android:id="@+id/end_date_row"
+            android:id="@+id/endDateRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp">
 
             <TextView
-                android:id="@+id/end_date_text"
+                android:id="@+id/endDateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/end_date"
@@ -55,7 +55,7 @@
                 android:layout_weight="1"/>
 
             <Button
-                android:id="@+id/end_date_button"
+                android:id="@+id/endDateButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/choose_date"
@@ -64,13 +64,13 @@
         </TableRow>
 
         <TableRow
-            android:id="@+id/time_row"
+            android:id="@+id/timeRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp">
 
             <TextView
-                android:id="@+id/time_text"
+                android:id="@+id/timeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/time"
@@ -78,7 +78,7 @@
                 android:layout_weight="1"/>
 
             <Button
-                android:id="@+id/time_button"
+                android:id="@+id/timeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/choose_time"
@@ -87,13 +87,13 @@
         </TableRow>
 
         <TableRow
-            android:id="@+id/frequency_row"
+            android:id="@+id/frequencyRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp">
 
             <TextView
-                android:id="@+id/frequency_text"
+                android:id="@+id/frequencyText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/frequency_text"
@@ -101,7 +101,7 @@
                 android:layout_weight="1"/>
 
             <Spinner
-                android:id="@+id/frequency_spinner"
+                android:id="@+id/frequencySpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/choose_time"
@@ -113,7 +113,7 @@
     </TableLayout>
 
     <TableRow
-        android:id="@+id/cancel_set_row"
+        android:id="@+id/cancelSetRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

@@ -33,15 +33,14 @@ import java.util.HashMap;
 public class DetailedPrayerRequest extends Fragment{
 
     final static String ARG_REQUEST_ID = "request_id";
-    int request_id = -1, isswitched=0;
+    private int request_id = -1, isswitched=0;
     private Button prayerButton;
     private TextView supporterlist, textBelow;
     private Note request;
-    Button commentButton;
-    String nameslist="no one is currently praying for this request";
-    final String TAG = "DETAILED PRAYER REQUEST";
+    private Button commentButton;
+    private String nameslist="no one is currently praying for this request";
 
-    ArrayList<HashMap<String, String>> commentList = new ArrayList<HashMap<String, String>>();//list of comments for this item
+    private final ArrayList<HashMap<String, String>> commentList = new ArrayList<HashMap<String, String>>();//list of comments for this item
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -86,14 +85,14 @@ public class DetailedPrayerRequest extends Fragment{
      * @param request_id, Request Identification
      */
 
-    public void updateRequestView(final int request_id){
+    private void updateRequestView(final int request_id){
         final LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject = (TextView)getActivity().findViewById(R.id.name_text);
-        TextView date = (TextView)getActivity().findViewById(R.id.date_text);
-        TextView text = (TextView)getActivity().findViewById(R.id.text);
-        supporterlist = (TextView)getActivity().findViewById(R.id.supporterlist);
+        TextView subject = (TextView)getActivity().findViewById(R.id.nameText);
+        TextView date = (TextView)getActivity().findViewById(R.id.dateText);
+        TextView text = (TextView)getActivity().findViewById(R.id.commentText);
+        supporterlist = (TextView)getActivity().findViewById(R.id.supporterList);
         textBelow = (TextView)getActivity().findViewById(R.id.textBelowPrayingButton);
         prayerButton = (Button)getActivity().findViewById(R.id.scheduleNotification);
 
@@ -155,7 +154,7 @@ public class DetailedPrayerRequest extends Fragment{
         loadComments();
 
         String[] from = {"userName", "date", "text"};//stuff for the adapter
-        int[] to = {R.id.userName,  R.id.date_text, R.id.text};//more stuffs for the adapter
+        int[] to = {R.id.userName,  R.id.dateText, R.id.commentText};//more stuffs for the adapter
         if (commentList != null){
             //if haz comments, set comments to adapter
             CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, R.layout.comment_item, from, to);

@@ -8,21 +8,21 @@
     <!-- Display List -->
     
     <RelativeLayout
-        android:id="@+id/main_layout"
+        android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_above="@+id/bottom_bar"
+        android:layout_above="@+id/bottomBar"
         android:background="@drawable/noise_blue_repeat" >
 
         <ListView
-            android:id="@+id/info_list"
+            android:id="@+id/infoList"
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
             style="@style/listCustomBlue"/>
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/addUpdateButton"
             android:layout_width="wrap_content"
             android:layout_height="68dp"
             android:layout_margin="6dp"
@@ -36,7 +36,7 @@
     
     <!-- Total bar programmatically added here -->
     
-    <RelativeLayout android:id="@+id/bottom_bar"
+    <RelativeLayout android:id="@+id/bottomBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

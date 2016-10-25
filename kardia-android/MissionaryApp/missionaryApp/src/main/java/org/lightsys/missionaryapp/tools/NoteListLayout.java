@@ -16,14 +16,14 @@ import org.lightsys.missionaryapp.R;
  * and a button for Prayer Response
  */
 public class NoteListLayout extends RelativeLayout {
-    TextView titleView, dateView, missionaryNameView, aboveTextView, belowTextView, updateButton;
-    Button prayButton;
+    private final TextView titleView, dateView, missionaryNameView, aboveTextView, belowTextView;
+    private final Button prayButton;
 
     public NoteListLayout(Context context) {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.note_listview_item, this, true);
-        titleView = (TextView) findViewById(R.id.name_text);
-        dateView = (TextView) findViewById(R.id.date_text);
+        titleView = (TextView) findViewById(R.id.nameText);
+        dateView = (TextView) findViewById(R.id.dateText);
         missionaryNameView = (TextView) findViewById(R.id.missionaryName);
         aboveTextView = (TextView) findViewById(R.id.textAbovePrayingButton);
         belowTextView = (TextView) findViewById(R.id.textBelowPrayingButton);

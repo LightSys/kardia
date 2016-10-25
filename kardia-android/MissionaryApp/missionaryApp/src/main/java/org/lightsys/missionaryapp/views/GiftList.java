@@ -30,15 +30,15 @@ import org.lightsys.missionaryapp.R;
  */
 public class GiftList extends Fragment{
 
-	public static String ARG_PERIOD_TYPE = "period_type";
-	String period_type;
-	public static String ARG_PERIOD_ID = "period_id";
-	String period_id;
+	public static final String ARG_PERIOD_TYPE = "period_type";
+	private String period_type;
+	public static final String ARG_PERIOD_ID = "period_id";
+	private String period_id;
 	private ArrayList<Gift> gifts = new ArrayList<Gift>();
 	private ArrayList<Integer> fundIds = new ArrayList<Integer>();
 	private ArrayList<Integer> giftIds = new ArrayList<Integer>();
-	public static String ARG_GIFT_IDS = "gift_ids";
-	public static String ARG_FUND_IDS = "fund_ids";
+	private static final String ARG_GIFT_IDS = "gift_ids";
+	public static final String ARG_FUND_IDS = "fund_ids";
 
 	/**
 	 * Grab the needed Ids, load data and view.
@@ -54,7 +54,7 @@ public class GiftList extends Fragment{
 			this.period_id = savedInstanceState.getString(ARG_PERIOD_ID);
 			this.fundIds = savedInstanceState.getIntegerArrayList(ARG_FUND_IDS);
 			this.giftIds = savedInstanceState.getIntegerArrayList(ARG_GIFT_IDS);
-			if(period_id==null || period_type==null){
+			if((period_id==null || period_type==null)&&giftIds !=null){
 				for (Integer gift_id : giftIds) {
 					gifts.add(db.getGift(gift_id));
 				}
@@ -70,7 +70,7 @@ public class GiftList extends Fragment{
 			this.period_id = giftArgs.getString(ARG_PERIOD_ID);
 			this.fundIds = giftArgs.getIntegerArrayList(ARG_FUND_IDS);
 			this.giftIds = giftArgs.getIntegerArrayList(ARG_GIFT_IDS);
-			if(period_id==null || period_type==null){
+			if((period_id==null || period_type==null)&&giftIds!=null){
 				for (Integer gift_id:giftIds){
 					gifts.add(db.getGift(gift_id));
 				}
@@ -87,7 +87,7 @@ public class GiftList extends Fragment{
 			}
 			gifts = db.getGifts(TextUtils.join(",",fundIds)); // pull ALL gifts
 		}
-		
+
 		View v = inflater.inflate(R.layout.activity_main, container, false);
 
 		// Set title appropriately to what data is shown
@@ -112,14 +112,14 @@ public class GiftList extends Fragment{
 		getActivity().setTitle(giftListTitle);
 		db.close();
 
-		ListView listview = (ListView)v.findViewById(R.id.info_list);
+		ListView listview = (ListView)v.findViewById(R.id.infoList);
 
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
 
 		// display donor name, fund name, date, and amount for all gifts
 		String[] from = {"donorname", "giftname", "giftdate", "giftamount"};
-        int[] to = {R.id.donor_text, R.id.fund_name_text, R.id.date_text, R.id.amount_text};
+        int[] to = {R.id.donorText, R.id.fundNameText, R.id.dateText, R.id.amountText};
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item_layout, from, to );
         listview.setAdapter(adapter);
 
@@ -166,7 +166,7 @@ public class GiftList extends Fragment{
 			newfrag.setArguments(args);
 					
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-			transaction.replace(R.id.content_frame, newfrag);
+			transaction.replace(R.id.contentFrame, newfrag);
 			transaction.addToBackStack("ToDetailedGiftView");
 			transaction.commit();
 		}

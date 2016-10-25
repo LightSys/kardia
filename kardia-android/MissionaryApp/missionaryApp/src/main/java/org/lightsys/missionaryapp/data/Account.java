@@ -66,7 +66,7 @@ public class Account {
 
 	public void setPartnerName(String name) { PartnerName = name; }
 
-	public void setActive(boolean active){ this.active = active; }
+	private void setActive(boolean active){ this.active = active; }
 
 	public boolean getActive (){ return active; }
 

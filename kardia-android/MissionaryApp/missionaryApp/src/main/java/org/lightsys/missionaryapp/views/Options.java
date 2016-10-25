@@ -1,6 +1,5 @@
 package org.lightsys.missionaryapp.views;
 
-import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -9,9 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -23,7 +20,6 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Locale;
 
 /**
@@ -33,23 +29,25 @@ import java.util.Locale;
 
 public class Options extends Fragment {
 
-    Button applyButton, reminderDate;
-    Spinner refreshPeriods, giftPeriods, reminderFrequency;
+    private final String EXTRA_DELETE = "delete";
+
+    private Button applyButton, reminderDate;
+    private Spinner refreshPeriods, giftPeriods, reminderFrequency;
     ToggleButton reminderOnOff;
     TextView reminderDetails;
 
-    LocalDBHandler db;
+    private LocalDBHandler db;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View v = inflater.inflate(R.layout.options_layout, container, false);
         getActivity().setTitle("Options");
 
-        applyButton = (Button) v.findViewById(R.id.apply_button);
-        refreshPeriods = (Spinner) v.findViewById(R.id.refresh_periods_spinner);
-        giftPeriods = (Spinner) v.findViewById(R.id.gift_periods_spinner);
-        reminderOnOff = (ToggleButton) v.findViewById(R.id.reminder_on_off_switch);
-        reminderDetails = (TextView) v.findViewById(R.id.reminder_details_text);
+        applyButton = (Button) v.findViewById(R.id.applyButton);
+        refreshPeriods = (Spinner) v.findViewById(R.id.refreshPeriodsSpinner);
+        giftPeriods = (Spinner) v.findViewById(R.id.giftPeriodsSpinner);
+        reminderOnOff = (ToggleButton) v.findViewById(R.id.reminderOnOffSwitch);
+        reminderDetails = (TextView) v.findViewById(R.id.reminderDetailsText);
 
 
         reminderOnOff.setOnClickListener(new View.OnClickListener() {
@@ -60,8 +58,10 @@ public class Options extends Fragment {
                     startActivity(reminder);
 
                 }else{
-                    //todo cancelreminder
                     reminderDetails.setText("");
+                    Intent reminder = new Intent(getActivity(), UpdateNotificationActivity.class);
+                    reminder.putExtra(EXTRA_DELETE, true);
+                    startActivity(reminder);
                 }
             }
         });
@@ -94,15 +94,8 @@ public class Options extends Fragment {
                 giftPeriods.setSelection(i);
             }
         }
-        ArrayList<UpdateNotification> notifications = db.getNotifications();
-        if(notifications.size()>0){
-            reminderOnOff.setChecked(true);
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
-            reminderDetails.setText("Next Reminder \n" + format.format(notifications.get(0).getNotificationTime()));
-        }else{
-            reminderOnOff.setChecked(false);
-            reminderDetails.setText("");
-        }
+
+        setAlarmInfo(db);
 
         return v;
     }
@@ -111,6 +104,23 @@ public class Options extends Fragment {
     //for the purpose of refreshing the app
     public  LocalDBHandler setDb(LocalDBHandler db) {
         return  db;
+    }
+
+    private void setAlarmInfo(LocalDBHandler db){
+        ArrayList<UpdateNotification> notifications = db.getNotifications();
+        if(notifications.size()>0){
+            reminderOnOff.setChecked(true);
+            SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm", Locale.US);
+            reminderDetails.setText(notifications.get(0).getNotificationFrequency() + "\nNext: " + format.format(notifications.get(0).getNotificationTime()));
+        }else{
+            reminderOnOff.setChecked(false);
+            reminderDetails.setText("");
+        }
+    }
+    public void onResume(){
+        super.onResume();
+        db = new LocalDBHandler(getActivity(), null);
+        setAlarmInfo(db);
     }
 
 }

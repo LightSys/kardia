@@ -1,6 +1,5 @@
 package org.lightsys.missionaryapp.views;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -13,7 +12,6 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -46,10 +44,10 @@ public class Search extends Fragment{
 		
 		date1 = (Button)v.findViewById(R.id.datePickBtn);
 		date2 = (Button)v.findViewById(R.id.datePickBtn2);
-		Button search = (Button)v.findViewById(R.id.searchbtn);
+		Button search = (Button)v.findViewById(R.id.searchBtn);
 		amount1 = (EditText)v.findViewById(R.id.amount1);
 		amount2 = (EditText)v.findViewById(R.id.amount2);
-		checknum = (EditText)v.findViewById(R.id.check_num_text);
+		checknum = (EditText)v.findViewById(R.id.checkNumText);
 		dateRange = (CheckBox)v.findViewById(R.id.dateRange);
 		amountRange = (CheckBox)v.findViewById(R.id.amountRange);
 		toggleDate = (ToggleButton)v.findViewById(R.id.toggleDate);
@@ -161,8 +159,8 @@ public class Search extends Fragment{
 		});
 		return v;
 	}
-	
-	public void openDatePicker(int btn_id) {
+
+	private void openDatePicker(int btn_id) {
 		int mYear;
 		int mMonth;
 		int mDay;
@@ -194,8 +192,8 @@ public class Search extends Fragment{
 	            new mDateSetListener(btn_id), mYear, mMonth, mDay);
 	    dialog.show();
 	}
-	
-	public void doSearch(){
+
+	private void doSearch(){
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
 		// Construct parameters to set for the database search
@@ -235,21 +233,25 @@ public class Search extends Fragment{
 			}
 
 			// Send to corresponding page depending on search results
-			if(results.size() == 0){
+			if(results == null) {
 				Toast.makeText(getActivity(), "0 Gifts found.", Toast.LENGTH_SHORT).show();
-			}else if(results.size() == 1){
-				resetAll();
-				Toast.makeText(getActivity(), "1 Gift found.", Toast.LENGTH_SHORT).show();
-				sendToDetailedGift(results.get(0).getId(), results.get(0).getGiftDonorId(), results.get(0).getGiftDonor());
 			}else{
-				resetAll();
-				Toast.makeText(getActivity(), results.size() + " Gifts found.", Toast.LENGTH_SHORT).show();
-				sendToGiftList(results,giftFund);
+				if (results.size() == 0) {
+					Toast.makeText(getActivity(), "0 Gifts found.", Toast.LENGTH_SHORT).show();
+				} else if (results.size() == 1) {
+					resetAll();
+					Toast.makeText(getActivity(), "1 Gift found.", Toast.LENGTH_SHORT).show();
+					sendToDetailedGift(results.get(0).getId(), results.get(0).getGiftDonorId(), results.get(0).getGiftDonor());
+				} else {
+					resetAll();
+					Toast.makeText(getActivity(), results.size() + " Gifts found.", Toast.LENGTH_SHORT).show();
+					sendToGiftList(results, giftFund);
+				}
 			}
 		}
 	}
-	
-	public void resetAll(){
+
+	private void resetAll(){
 		date1.setText("Choose Date");
 		date1.setError(null);
 		date2.setText("Choose Date");
@@ -271,8 +273,8 @@ public class Search extends Fragment{
 		amountRow.setVisibility(View.INVISIBLE);
 		checknum.setVisibility(View.INVISIBLE);
 	}
-	
-	public void sendToDetailedGift(int gift_id, int donor_id, String donor_name){
+
+	private void sendToDetailedGift(int gift_id, int donor_id, String donor_name){
 		Bundle args = new Bundle();
 		args.putInt(DetailedGift.ARG_GIFT_ID, gift_id);
 		args.putInt(DetailedGift.ARG_DONOR_ID, donor_id);
@@ -282,12 +284,12 @@ public class Search extends Fragment{
 		detailedgift.setArguments(args);
 		
 		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.replace(R.id.content_frame, detailedgift);
+		transaction.replace(R.id.contentFrame, detailedgift);
 		transaction.addToBackStack("ToDetailedGiftView");
 		transaction.commit();
 	}
-	
-	public void sendToGiftList(ArrayList<Gift> giftList, ArrayList<Fund> fundList){
+
+	private void sendToGiftList(ArrayList<Gift> giftList, ArrayList<Fund> fundList){
 		ArrayList<Integer> giftIDList = new ArrayList<Integer>();
 		ArrayList<Integer> fundIDList = new ArrayList<Integer>();
 
@@ -306,12 +308,12 @@ public class Search extends Fragment{
 		gl.setArguments(args);
 
 		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.replace(R.id.content_frame, gl);
+		transaction.replace(R.id.contentFrame, gl);
 		transaction.addToBackStack("ToGiftList");
 		transaction.commit();
 	}
-	
-	public void changeDateRange(){
+
+	private void changeDateRange(){
 		// If date range is activated, set respective fields as visible
 		// If date range is not activated, set fields to invisible and set to default
 		if(dateRange.isChecked()){
@@ -323,9 +325,9 @@ public class Search extends Fragment{
 			date2.setText("Choose Date");
 		}
 	}
-	
-	
-	public void changeAmountRange(){
+
+
+	private void changeAmountRange(){
 		// If amount range is activated, set respective fields as visible
 		// If amount range is not activated, set fields to invisible and set to default
 		if(amountRange.isChecked()){
@@ -342,7 +344,7 @@ public class Search extends Fragment{
 	
 	private class mDateSetListener implements DatePickerDialog.OnDateSetListener{
 		
-		private int btn_id;
+		private final int btn_id;
 		
 		public mDateSetListener(int btn_id){
 			this.btn_id = btn_id;

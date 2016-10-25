@@ -8,14 +8,14 @@
     <!-- Display List -->
 
     <RelativeLayout
-        android:id="@+id/main_layout"
+        android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:background="@drawable/noise_blue_repeat">
 
         <TextView
-            android:id="@+id/welcome_header"
+            android:id="@+id/welcomeHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
@@ -26,15 +26,15 @@
             android:visibility="gone"/>
 
         <View
-            android:id="@+id/info_divider"
+            android:id="@+id/infoDivider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#000030"
-            android:layout_above="@+id/welcome_list" />
+            android:layout_above="@+id/welcomeList" />
 
 
         <ListView
-            android:id="@+id/welcome_list"
+            android:id="@+id/welcomeList"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"

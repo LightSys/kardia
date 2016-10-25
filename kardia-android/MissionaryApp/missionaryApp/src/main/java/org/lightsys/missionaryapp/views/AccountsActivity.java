@@ -38,12 +38,12 @@ import org.lightsys.missionaryapp.R;
 public class AccountsActivity extends Activity{
 
 
-	ListView accountsList;
-	EditText accountName, accountPass, serverName, donorID;
-	TextView connectedAccounts;
-	Account account = new Account();
-	ArrayList<Account> accounts = new ArrayList<Account>();
-	Button connectButton, finishButton;
+	private ListView accountsList;
+	private EditText accountName, accountPass, serverName, donorID;
+	private TextView connectedAccounts;
+	private Account account = new Account();
+	private ArrayList<Account> accounts = new ArrayList<Account>();
+	private Button connectButton, finishButton;
 
 	/**
 	 * Creates the view, and loads any pre-existing accounts into the ListView
@@ -54,14 +54,14 @@ public class AccountsActivity extends Activity{
 		
 		setContentView(R.layout.account_page_layout);
 		
-		accountsList = (ListView)findViewById(R.id.connected_list);
-		accountName = (EditText)findViewById(R.id.username_input);
-		accountPass = (EditText)findViewById(R.id.password_input);
-		serverName = (EditText)findViewById(R.id.server_name_input);
-		donorID = (EditText)findViewById(R.id.donor_id_input);
-		connectedAccounts = (TextView)findViewById(R.id.text_view);
-		connectButton = (Button)findViewById(R.id.connect_button);
-		finishButton = (Button)findViewById(R.id.finish_button);
+		accountsList = (ListView)findViewById(R.id.connectedList);
+		accountName = (EditText)findViewById(R.id.usernameInput);
+		accountPass = (EditText)findViewById(R.id.passwordInput);
+		serverName = (EditText)findViewById(R.id.serverNameInput);
+		donorID = (EditText)findViewById(R.id.donorIdInput);
+		connectedAccounts = (TextView)findViewById(R.id.textView);
+		connectButton = (Button)findViewById(R.id.connectButton);
+		finishButton = (Button)findViewById(R.id.finishButton);
 
 		// Adds EditTexts to text listener for resetting errors
 		accountName.addTextChangedListener(new GenericTextWatcher(accountName));
@@ -76,7 +76,22 @@ public class AccountsActivity extends Activity{
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				addAccount();
+				//todo check this once I have a data connection
+				new AlertDialog.Builder(AccountsActivity.this)
+						.setCancelable(false)
+						.setTitle("Connect Account")
+						.setMessage("This action will remove current account data and requires an internet connection to get new account data. Continue?")
+						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								connectAccount();
+							}
+						})
+						.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+							}
+						})
+						.setIcon(android.R.drawable.ic_dialog_alert)
+						.show();
 			}
 		});
 
@@ -100,7 +115,7 @@ public class AccountsActivity extends Activity{
 	 * Pulls all accounts (if any) out of the local SQLite Database and puts them into the
 	 * SessionStorage accounts list, then populates a ListView with the accounts.
 	 */
-	public void loadAccountList(){
+	private void loadAccountList(){
 		LocalDBHandler db = new LocalDBHandler(this, null);
 		
 		account = db.getAccount();
@@ -131,7 +146,7 @@ public class AccountsActivity extends Activity{
 	/**
 	 * Adds the account to the local database from the text field on page.
 	 */
-	public void addAccount(){
+	private void connectAccount(){
 		String aName = accountName.getText().toString();
 		String aPass = accountPass.getText().toString();
 		String sName = serverName.getText().toString();
@@ -204,8 +219,6 @@ public class AccountsActivity extends Activity{
 	 * @param item, item that was selected from menu (i.e. Delete, Edit, or Cancel)
 	 */
 	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo info =
-				(AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
 
 		if (item.getTitle().equals("Delete")) {
 

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/relative_layout"
+    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
     <ImageView
         android:contentDescription="@string/profile_pic_description"
-        android:id="@+id/profile_pic_image"
+        android:id="@+id/profilePicImage"
         android:layout_width="68dp"
         android:layout_height="68dp"
         android:src="@drawable/prayer_letter_icon"
@@ -14,34 +14,34 @@
         android:layout_margin="10dp"
         />
     <TextView
-        android:id="@+id/name_text"
+        android:id="@+id/nameText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="26sp"
-        android:layout_toRightOf="@id/profile_pic_image"
-        android:layout_toEndOf="@id/profile_pic_image"
+        android:layout_toRightOf="@id/profilePicImage"
+        android:layout_toEndOf="@id/profilePicImage"
         android:layout_centerVertical="true"/>
 
     <TextView
-        android:id="@+id/phone_text"
+        android:id="@+id/phoneText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="17dp"
         android:layout_marginEnd="17dp"
         android:textSize="18sp"
-        android:layout_alignTop="@id/profile_pic_image"
+        android:layout_alignTop="@id/profilePicImage"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         />
 
     <TextView
-        android:id="@+id/email_text"
+        android:id="@+id/emailText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginRight="17dp"
         android:layout_marginEnd="17dp"
-        android:layout_below="@+id/phone_text"
+        android:layout_below="@+id/phoneText"
         android:textSize="18sp"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />

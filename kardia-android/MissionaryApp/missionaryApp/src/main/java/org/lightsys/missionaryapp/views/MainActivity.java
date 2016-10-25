@@ -48,8 +48,8 @@ public class MainActivity extends ActionBarActivity {
     private int accountid=0;
 
 	//stuff to automatically refresh the current fragment
-	private android.os.Handler refreshHandler = new android.os.Handler();
-	private Runnable refreshRunnable = new Runnable() {
+	private final android.os.Handler refreshHandler = new android.os.Handler();
+	private final Runnable refreshRunnable = new Runnable() {
 		@Override
 		public void run() {
 		}
@@ -204,7 +204,7 @@ public class MainActivity extends ActionBarActivity {
 			case R.id.action_search:
 				setTitle("Gift Search");
 				fragment = new Search();
-				getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
+				getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment).commit();
 				break;
 		}
 		
@@ -236,23 +236,23 @@ public class MainActivity extends ActionBarActivity {
 			//Gifts, Donor, Prayer requests/updates, Funds, Accounts, Options, Refresh
 		case 0:
 			fragment = new HomePage();
-			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
 			break;
 		case 1:
 			fragment = new GiftList();
-			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
 			break;
 		case 2:
 			fragment = new DonorList();
-			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
 			break;
 		case 3:
 			fragment = new NoteList();
-			fragmentManager.beginTransaction().replace(R.id.content_frame,fragment).commit();
+			fragmentManager.beginTransaction().replace(R.id.contentFrame,fragment).commit();
 			break;
         case 4:
             fragment = new FundList();
-            fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+            fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
             break;
 		case 5:
 			Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
@@ -264,7 +264,7 @@ public class MainActivity extends ActionBarActivity {
 			accts = db.getAccounts();
 			refresh.setDb(db);
 			db.close();
-			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
 			break;
 		case 7:
 			new DataConnection(this, this, account).execute("");
@@ -277,15 +277,11 @@ public class MainActivity extends ActionBarActivity {
 	 * Reloads the current fragment to update view if content has changed
 	 */
 	public void refreshCurrentFragment() {
-		Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+		Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
 		FragmentTransaction fragTransaction = getSupportFragmentManager().beginTransaction();
 		fragTransaction.detach(currentFragment);
 		fragTransaction.attach(currentFragment);
 		fragTransaction.commit();
-	}
-
-	public void returnFromHome(int position){
-		selectItem(position);
 	}
 
 	/**
@@ -315,7 +311,7 @@ public class MainActivity extends ActionBarActivity {
 			if (accountid != db.getAccount().getId()) {
 				FragmentManager fragmentManager = getSupportFragmentManager();
 				fragment = new HomePage();
-				fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+				fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
 			}
 		}
 	}

@@ -32,7 +32,7 @@ public class GiftTimePeriodList extends Fragment {
 	public final String ARG_FUND_ID = "fund_id"; //The funds managed by the missionary
 	private int fundId=-1;
 	private ArrayList<Period> periods = new ArrayList<Period>();
-    String periodtype;
+	private String periodtype;
 
 	/**
 	 * Creates a list of all gifts donated to either the fund clicked
@@ -45,7 +45,6 @@ public class GiftTimePeriodList extends Fragment {
 
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 		periodtype = db.getGiftPeriod();
-		int Account_Id = db.getAccount().getId();
         periods.clear();
 		if(savedInstanceState != null){ 
 			this.fundId = savedInstanceState.getInt(ARG_FUND_ID);
@@ -71,12 +70,12 @@ public class GiftTimePeriodList extends Fragment {
 
 		db.close();
 
-		ListView listview = (ListView)v.findViewById(R.id.info_list);
+		ListView listview = (ListView)v.findViewById(R.id.infoList);
 
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
 		String[] from = {"gtpamount", "gtpfund","period"};
-		int[] to = {R.id.amount_text, R.id.fund_name_text, R.id.donor_text};
+		int[] to = {R.id.amountText, R.id.fundNameText, R.id.donorText};
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item_layout, from, to);
 		listview.setAdapter(adapter);
 
@@ -133,7 +132,7 @@ public class GiftTimePeriodList extends Fragment {
 	 * So all it does is change what is displayed in the list.
 	 * @param position, position of list that was selected
 	 */
-	public void loadRelatedGifts(int position){
+	private void loadRelatedGifts(int position){
 		Bundle GiftArgs = new Bundle();
 		ArrayList<Integer> fund = new ArrayList<Integer>();
 		fund.add(fundId);
@@ -145,7 +144,7 @@ public class GiftTimePeriodList extends Fragment {
 		gList.setArguments(GiftArgs);
 		
 		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.replace(R.id.content_frame, gList);
+		transaction.replace(R.id.contentFrame, gList);
 		transaction.addToBackStack("ToGiftList");
 		transaction.commit();
 	}

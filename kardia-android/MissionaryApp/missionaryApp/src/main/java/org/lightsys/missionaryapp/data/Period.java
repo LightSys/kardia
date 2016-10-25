@@ -28,7 +28,7 @@ public class Period {
 		return Id;
 	}
 
-	public void setId(int id) {
+	private void setId(int id) {
 		Id = id;
 	}
 
@@ -43,8 +43,8 @@ public class Period {
 	public String getDate(){
 		return date;
 	}
-	
-	public void setDate(String date){
+
+	private void setDate(String date){
 		this.date = date;
 	}
 

@@ -6,7 +6,7 @@ package org.lightsys.missionaryapp.data;
  */
 public class JsonPost {
 
-    long id;
+    private long id;
     private String url;
     private String jsonString;
     private int accountID;

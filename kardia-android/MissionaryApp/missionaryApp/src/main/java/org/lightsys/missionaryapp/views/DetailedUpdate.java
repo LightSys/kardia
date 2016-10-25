@@ -31,11 +31,11 @@ import java.util.HashMap;
 public class DetailedUpdate extends Fragment {
 
     final static String ARG_UPDATE_ID = "update_id";
-    int update_id = -1;
-    Button commentButton;
+    private int update_id = -1;
+    private Button commentButton;
 
     //keeps a list of all comments on this post
-    ArrayList<HashMap<String, String>> commentList = new ArrayList<HashMap<String, String>>();
+    private final ArrayList<HashMap<String, String>> commentList = new ArrayList<HashMap<String, String>>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -81,12 +81,12 @@ public class DetailedUpdate extends Fragment {
      *
      * @param update_id, the update's id.
      */
-    public void updateUpdateView(int update_id){
+    private void updateUpdateView(int update_id){
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject = (TextView)getActivity().findViewById(R.id.name_text);
-        TextView date = (TextView)getActivity().findViewById(R.id.date_text);
-        TextView text = (TextView)getActivity().findViewById(R.id.text);
+        TextView subject = (TextView)getActivity().findViewById(R.id.nameText);
+        TextView date = (TextView)getActivity().findViewById(R.id.dateText);
+        TextView text = (TextView)getActivity().findViewById(R.id.commentText);
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         Note update = db.getNoteForID(update_id);
@@ -102,7 +102,7 @@ public class DetailedUpdate extends Fragment {
         loadComments();//gets list of comments
 
         String[] from = {"userName", "date", "text"};//stuff for the adapter
-        int[] to = {R.id.userName,  R.id.date_text, R.id.text};//more stuff for the adapter
+        int[] to = {R.id.userName,  R.id.dateText, R.id.commentText};//more stuff for the adapter
         if (commentList != null){
             //if we have comments, set them to the adapter
             CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, R.layout.comment_item, from, to);

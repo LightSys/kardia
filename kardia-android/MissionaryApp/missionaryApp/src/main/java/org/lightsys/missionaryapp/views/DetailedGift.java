@@ -30,7 +30,7 @@ import org.lightsys.missionaryapp.R;
  * 
  * @author Andrew Cameron
  *
- * @edited Laura DeOtte
+ * edited by Laura DeOtte
  * from donorapp setup to missionaryapp setup
  *
  */
@@ -40,8 +40,8 @@ public class DetailedGift extends Fragment {
     final static String ARG_DONOR_ID = "donor_id";
     final static String ARG_DONOR_NAME = "donor_name";
 
-    int gift_id = -1, donor_id = -1;
-    String donor_name = "", phone_cell = "", email_info = "";
+    private int gift_id = -1, donor_id = -1;
+    private String donor_name = "", phone_cell = "", email_info = "";
     private Bundle args;
     private Gift gift;
     private Context context;
@@ -78,13 +78,13 @@ public class DetailedGift extends Fragment {
      *
      * @param gift_id, Gift Identification
      */
-    public void updateGiftView(final int gift_id, final int donor_id, final String donor_name) {
-        TextView fundTitle = (TextView) getActivity().findViewById(R.id.fund_text);
-        TextView date = (TextView) getActivity().findViewById(R.id.date_text);
-        TextView amount = (TextView) getActivity().findViewById(R.id.gift_amount_text);
-        TextView donorName = (TextView) getActivity().findViewById(R.id.name_text);
-        TextView email = (TextView) getActivity().findViewById(R.id.email_text);
-        TextView phone = (TextView) getActivity().findViewById(R.id.phone_text);
+    private void updateGiftView(final int gift_id, final int donor_id, final String donor_name) {
+        TextView fundTitle = (TextView) getActivity().findViewById(R.id.fundText);
+        TextView date = (TextView) getActivity().findViewById(R.id.dateText);
+        TextView amount = (TextView) getActivity().findViewById(R.id.giftAmountText);
+        TextView donorName = (TextView) getActivity().findViewById(R.id.nameText);
+        TextView email = (TextView) getActivity().findViewById(R.id.emailText);
+        TextView phone = (TextView) getActivity().findViewById(R.id.phoneText);
 
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
@@ -94,7 +94,7 @@ public class DetailedGift extends Fragment {
         db.close();
 
         // Map data fields to layout fields
-        RelativeLayout DonorInfo = (RelativeLayout) getActivity().findViewById(R.id.donor_info_layout);
+        RelativeLayout DonorInfo = (RelativeLayout) getActivity().findViewById(R.id.donorInfoLayout);
         //DonorInfo.setOnItemClickListener(new onDonorClicked());
         donorName.setText(donor_name);
         email_info = contactinfo.getEmail();
@@ -122,7 +122,7 @@ public class DetailedGift extends Fragment {
                 newfrag.setArguments(args);
 
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.content_frame, newfrag);
+                transaction.replace(R.id.contentFrame, newfrag);
                 transaction.addToBackStack("ToDetailedDonorView");
                 transaction.commit();
             }
@@ -130,7 +130,7 @@ public class DetailedGift extends Fragment {
 
         this.gift_id = gift_id;
 
-        Button viewPDFButton = (Button) getActivity().findViewById(R.id.pdf_button);
+        Button viewPDFButton = (Button) getActivity().findViewById(R.id.pdfButton);
         viewPDFButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

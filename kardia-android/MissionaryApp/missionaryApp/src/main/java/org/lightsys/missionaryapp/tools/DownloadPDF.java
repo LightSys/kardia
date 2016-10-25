@@ -29,10 +29,10 @@ import java.io.InputStream;
  * Created by Andrew Lockridge on 7/22/2015.
  */
 public class DownloadPDF extends AsyncTask<String, Void, String> {
-    private String url, server, username, password, outputDir, outputFile;
-    private Activity dataActivity;
-    private Context dataContext;
-    private ProgressDialog spinner;
+    private final String url, server, username, password, outputDir, outputFile;
+    private final Activity dataActivity;
+    private final Context dataContext;
+    private final ProgressDialog spinner;
 
     public DownloadPDF(String url, String server, String username, String password,
                        String outputDir, String outputFile, Activity activity, Context context) {

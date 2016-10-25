@@ -1,6 +1,5 @@
 package org.lightsys.missionaryapp.data;
 
-import java.text.DateFormatSymbols;
 
 /**
  * Basic Class used to organize information about Gifts given by the user

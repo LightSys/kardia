@@ -15,7 +15,7 @@ public class PrayerLetter {
 
     public PrayerLetter() {}
 
-    public PrayerLetter(int id, String missionaryName, String title, String folder, String filename, String date, int missionaryId) {
+    public PrayerLetter(int id, String date, String title, String missionaryName, String folder, String filename, int missionaryId) {
         this.id = id;
         this.missionaryName = missionaryName;
         this.title = title;

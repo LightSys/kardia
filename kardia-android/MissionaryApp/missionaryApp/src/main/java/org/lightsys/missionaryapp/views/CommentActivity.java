@@ -32,19 +32,19 @@ import java.util.Calendar;
 public class CommentActivity extends Activity {
 
 
-    TextView originalPostText;
-    TextView commentText;
-    TextView userIDText;
-    Button submit;
-    Button cancel;
+    private TextView originalPostText;
+    private TextView commentText;
+    private TextView userIDText;
+    private Button submit;
+    private Button cancel;
 
-    int userID = -1;
-    int noteId = -1;
-    int missionaryId = -1;
-    String comment = "";
+    private int userID = -1;
+    private int noteId = -1;
+    private int missionaryId = -1;
+    private String comment = "";
 
     //error message
-    String MISSING_POST = "Original post missing!";
+    final String MISSING_POST = "Original post missing!";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

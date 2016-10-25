@@ -61,9 +61,5 @@ public class PrayedFor {
     public void setSupporterName(String supporterName) {
         this.supporterName = supporterName;
     }
-    public int getMissionaryId() { return missionaryId; }
 
-    public void setMissionaryId(int missionaryId) {
-        this.missionaryId = missionaryId;
-    }
 }
