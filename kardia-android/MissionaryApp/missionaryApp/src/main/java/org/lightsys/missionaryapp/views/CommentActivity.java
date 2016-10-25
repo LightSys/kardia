@@ -94,13 +94,8 @@ public class CommentActivity extends Activity {
 
                 //find account
                 LocalDBHandler db = new LocalDBHandler(getBaseContext(), null);
-                ArrayList<Account> accts = db.getAccounts();
-                Account account = null;
-                for (Account acct : accts) {
-                    if (acct.getId() == userID) {
-                        account = acct;
-                    }
-                }
+                Account account = db.getAccount();
+
 
                 //check to make sure proper information was given
                 if (account == null) {
@@ -146,9 +141,7 @@ public class CommentActivity extends Activity {
 
                     //refresh the screen after post
                     //this probably won't work because separate threads and what not
-                    for (Account a : accts){
-                        new DataConnection(getBaseContext(), null, a);
-                    }
+                    new DataConnection(getBaseContext(), null, account);
 
                     finish();
                 }

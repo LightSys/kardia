@@ -37,12 +37,11 @@ import org.lightsys.missionaryapp.R;
 public class AccountsActivity extends Activity{
 
 
-	private ListView           accountsList;
-	private EditText           accountName, accountPass, serverName, donorID;
-	private TextView           connectedAccounts;
-	private Account            account = new Account();
-	private ArrayList<Account> accounts = new ArrayList<Account>();
-	private Button             connectButton, finishButton;
+	private ListView accountsList;
+	private EditText accountName, accountPass, serverName, donorID;
+	private TextView connectedAccounts;
+	private Account  account = new Account();
+	private Button   connectButton, finishButton;
 
 	/**
 	 * Creates the view, and loads any pre-existing accounts into the ListView
@@ -176,22 +175,19 @@ public class AccountsActivity extends Activity{
 		int dId = Integer.parseInt(dIdStr);
 
 		// If account already stored, display message and return
-		LocalDBHandler db = new LocalDBHandler(this, null);
-		accounts = db.getAccounts();
-		for(Account a : accounts){
-			if(a.getAccountName().equals(aName) && a.getServerName().equals(sName) &&
-					a.getAccountPassword().equals(aPass) && a.getId() == dId){
-				Toast.makeText(this, "Account already connected", Toast.LENGTH_LONG).show();
-				db.close();
-				return;
-			}
-			// Two accounts with the same ID should never be stored
-			if(a.getId() == dId) {
-				Toast.makeText(this, "Account with this ID already connected", Toast.LENGTH_LONG).show();
-				db.close();
-				return;
-			}
-		}
+        LocalDBHandler db = new LocalDBHandler(this, null);
+        if(account.getAccountName().equals(aName) && account.getServerName().equals(sName) &&
+                account.getAccountPassword().equals(aPass) && account.getId() == dId){
+            Toast.makeText(this, "Account already connected", Toast.LENGTH_LONG).show();
+            db.close();
+            return;
+        }
+        // Two accounts with the same ID should never be stored
+        if(account.getId() == dId) {
+            Toast.makeText(this, "Account with this ID already connected", Toast.LENGTH_LONG).show();
+            db.close();
+            return;
+        }
 		Account account = new Account(dId, aName, aPass, sName, null);
 		// Execute data connection to validate account and pull data if valid
 		// DataConnection will close activity once complete if successful
@@ -236,9 +232,8 @@ public class AccountsActivity extends Activity{
 
 							// deleteAccount deletes all missionaries and notes
 							// check for missionaries and notes for any remaining accounts
-							for (Account a : db.getAccounts()) {
-								new DataConnection(AccountsActivity.this, AccountsActivity.this, a).execute();
-							}
+							Account a =  db.getAccount();
+                            new DataConnection(AccountsActivity.this, AccountsActivity.this, a).execute();
 
 							loadAccountList();
 						}

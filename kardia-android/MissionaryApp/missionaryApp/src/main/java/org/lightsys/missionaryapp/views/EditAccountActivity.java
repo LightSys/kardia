@@ -106,17 +106,13 @@ public class EditAccountActivity extends Activity {
 
 				// If account already stored, display message and return
 				LocalDBHandler db = new LocalDBHandler(EditAccountActivity.this, null);
-				ArrayList<Account> accounts = db.getAccounts();
-				for (Account a : accounts) {
-					if (a.getAccountName().equals(name) && a.getServerName().equals(server) &&
-							a.getAccountPassword().equals(pass)) {
-						Toast.makeText(EditAccountActivity.this, "Account already stored", Toast.LENGTH_LONG).show();
-						db.close();
-						return;
-					}
-				}
-
-				db.close();
+				Account account = db.getAccount();
+                db.close();
+                if (account.getAccountName().equals(name) && account.getServerName().equals(server) &&
+                        account.getAccountPassword().equals(pass)) {
+                    Toast.makeText(EditAccountActivity.this, "Account already stored", Toast.LENGTH_LONG).show();
+                    return;
+                }
 				Account a = new Account(account_id, name, pass, server, null);
 
 				// Execute data connection to validate account and pull data if valid
