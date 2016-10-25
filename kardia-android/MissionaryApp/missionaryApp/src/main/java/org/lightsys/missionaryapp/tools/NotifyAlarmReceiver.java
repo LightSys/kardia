@@ -24,7 +24,8 @@ import java.util.Locale;
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 /**
- * Created by Andrew Lockridge on 6/2/2015.
+ * @author Andrew Lockridge
+ * created on 6/2/2015.
  *
  * This class receives a signal when the alarm goes off and sends a notification
  * This class also takes care of receiving the signal of a boot up completed
@@ -82,10 +83,9 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
         NotificationManager notificationMgr = (NotificationManager)
                 context.getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder nBuild;
-        String name, message;
+        String message;
         int notificationID;
 
-        name = intent.getStringExtra("title");
         message = intent.getStringExtra("message");
         notificationID = intent.getIntExtra("id", 0);
 

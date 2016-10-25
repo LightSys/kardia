@@ -22,17 +22,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by bosonBaas on 3/10/2015.
- * Displays detailed view of update object, opened from updateList
+ * @author bosonBaas
+ * created on 3/10/2015.
  *
  * edited by Judah Sistrunk summer 2016
  * added functionality to view and post comments on an item
+ *
+ * Displays detailed view of update object, opened from updateList
+ *
  */
 public class DetailedUpdate extends Fragment {
 
     final static String ARG_UPDATE_ID = "update_id";
-    private int update_id = -1;
-    private Button commentButton;
+    private int         update_id     = -1;
+    private Button      commentButton;
 
     //keeps a list of all comments on this post
     private final ArrayList<HashMap<String, String>> commentList = new ArrayList<HashMap<String, String>>();
@@ -84,9 +87,9 @@ public class DetailedUpdate extends Fragment {
     private void updateUpdateView(int update_id){
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject = (TextView)getActivity().findViewById(R.id.nameText);
-        TextView date = (TextView)getActivity().findViewById(R.id.dateText);
-        TextView text = (TextView)getActivity().findViewById(R.id.commentText);
+        TextView subject        = (TextView)getActivity().findViewById(R.id.nameText);
+        TextView date           = (TextView)getActivity().findViewById(R.id.dateText);
+        TextView text           = (TextView)getActivity().findViewById(R.id.commentText);
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         Note update = db.getNoteForID(update_id);

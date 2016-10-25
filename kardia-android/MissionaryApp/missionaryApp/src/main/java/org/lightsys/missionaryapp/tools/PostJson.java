@@ -31,26 +31,27 @@ import java.util.Calendar;
 import javax.net.ssl.HttpsURLConnection;
 
 /**
- * Created by Judah Sistrunk on 7/7/2016.
+ * @author Judah Sistrunk
+ * created on 7/7/2016.
  *
  * This class takes a json object a url and an account and posts the json object to the server
  */
 public class PostJson extends AsyncTask<String, Void, String> {
 
     private static final String TAG = "post JSon";
-    private final Account account;
-    private String url = "";
-    private String backupUrl = "";
+    private final Account    account;
+    private String           url       = "";
+    private String           backupUrl = "";
     private final JSONObject jsonObject;
-    private final Context context;
-    private boolean success = false;
+    private final Context    context;
+    private boolean          success   = false;
 
     public PostJson(Context context, String Url, JSONObject jsonPost, Account userAccount){
-        url = Url;
-        backupUrl = Url;
-        jsonObject = jsonPost;
-        account = userAccount;
-        this.context = context;
+        this.url        = Url;
+        this.backupUrl  = Url;
+        this.jsonObject = jsonPost;
+        this.account    = userAccount;
+        this.context    = context;
     }
 
 

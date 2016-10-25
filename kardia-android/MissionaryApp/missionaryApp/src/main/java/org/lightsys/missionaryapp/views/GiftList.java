@@ -23,22 +23,22 @@ import android.text.TextUtils;
 import org.lightsys.missionaryapp.R;
 
 /**
- * This page displays a list of gifts. It either shows all gifts, gifts for a 
- * specific year or for a specific fund and year.
- * 
  * @author Andrew Cameron
+ *
+ * This page displays a list of gifts. It either shows all gifts, gifts for a
+ * specific year or for a specific fund and year.
  */
 public class GiftList extends Fragment{
 
-	public static final String ARG_PERIOD_TYPE = "period_type";
-	private String period_type;
-	public static final String ARG_PERIOD_ID = "period_id";
-	private String period_id;
-	private ArrayList<Gift> gifts = new ArrayList<Gift>();
-	private ArrayList<Integer> fundIds = new ArrayList<Integer>();
-	private ArrayList<Integer> giftIds = new ArrayList<Integer>();
-	private static final String ARG_GIFT_IDS = "gift_ids";
-	public static final String ARG_FUND_IDS = "fund_ids";
+	public static final String  ARG_PERIOD_TYPE = "period_type";
+	private String              period_type;
+	public static final String  ARG_PERIOD_ID   = "period_id";
+	private String              period_id;
+	private ArrayList<Gift>     gifts           = new ArrayList<Gift>();
+	private ArrayList<Integer>  fundIds         = new ArrayList<Integer>();
+	private ArrayList<Integer>  giftIds         = new ArrayList<Integer>();
+	private static final String ARG_GIFT_IDS    = "gift_ids";
+	public static final String  ARG_FUND_IDS    = "fund_ids";
 
 	/**
 	 * Grab the needed Ids, load data and view.
@@ -51,9 +51,10 @@ public class GiftList extends Fragment{
 
 		if(savedInstanceState != null){
 			this.period_type = savedInstanceState.getString(ARG_PERIOD_TYPE);
-			this.period_id = savedInstanceState.getString(ARG_PERIOD_ID);
-			this.fundIds = savedInstanceState.getIntegerArrayList(ARG_FUND_IDS);
-			this.giftIds = savedInstanceState.getIntegerArrayList(ARG_GIFT_IDS);
+			this.period_id   = savedInstanceState.getString(ARG_PERIOD_ID);
+			this.fundIds     = savedInstanceState.getIntegerArrayList(ARG_FUND_IDS);
+			this.giftIds     = savedInstanceState.getIntegerArrayList(ARG_GIFT_IDS);
+
 			if((period_id==null || period_type==null)&&giftIds !=null){
 				for (Integer gift_id : giftIds) {
 					gifts.add(db.getGift(gift_id));
@@ -67,9 +68,9 @@ public class GiftList extends Fragment{
 		//This is used when dealing with specific segments of gifts...
 		else if(giftArgs != null){
 			this.period_type = giftArgs.getString(ARG_PERIOD_TYPE);
-			this.period_id = giftArgs.getString(ARG_PERIOD_ID);
-			this.fundIds = giftArgs.getIntegerArrayList(ARG_FUND_IDS);
-			this.giftIds = giftArgs.getIntegerArrayList(ARG_GIFT_IDS);
+			this.period_id   = giftArgs.getString(ARG_PERIOD_ID);
+			this.fundIds     = giftArgs.getIntegerArrayList(ARG_FUND_IDS);
+			this.giftIds     = giftArgs.getIntegerArrayList(ARG_GIFT_IDS);
 			if((period_id==null || period_type==null)&&giftIds!=null){
 				for (Integer gift_id:giftIds){
 					gifts.add(db.getGift(gift_id));

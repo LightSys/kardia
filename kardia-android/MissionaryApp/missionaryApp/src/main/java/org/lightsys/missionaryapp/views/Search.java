@@ -29,12 +29,12 @@ import org.lightsys.missionaryapp.R;
 
 public class Search extends Fragment{
 	
-	private Button date1, date2;
-	private EditText amount1, amount2, checknum;
-	private TextView dash1, dash2, dollarSign2;
-	private CheckBox dateRange, amountRange;
+	private Button       date1, date2, search;
+	private EditText     amount1, amount2, checknum;
+	private TextView     dash1, dash2, dollarSign2;
+	private CheckBox     dateRange, amountRange;
 	private ToggleButton toggleDate, toggleAmount, toggleCheck;
-	private TableRow dateRow, amountRow;
+	private TableRow     dateRow, amountRow;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -42,22 +42,22 @@ public class Search extends Fragment{
 
 		getActivity().setTitle("Gift Search");
 		
-		date1 = (Button)v.findViewById(R.id.datePickBtn);
-		date2 = (Button)v.findViewById(R.id.datePickBtn2);
-		Button search = (Button)v.findViewById(R.id.searchBtn);
-		amount1 = (EditText)v.findViewById(R.id.amount1);
-		amount2 = (EditText)v.findViewById(R.id.amount2);
-		checknum = (EditText)v.findViewById(R.id.checkNumText);
-		dateRange = (CheckBox)v.findViewById(R.id.dateRange);
-		amountRange = (CheckBox)v.findViewById(R.id.amountRange);
-		toggleDate = (ToggleButton)v.findViewById(R.id.toggleDate);
+		date1        = (Button)v.findViewById(R.id.datePickBtn);
+		date2        = (Button)v.findViewById(R.id.datePickBtn2);
+		search       = (Button)v.findViewById(R.id.searchBtn);
+		amount1      = (EditText)v.findViewById(R.id.amount1);
+		amount2      = (EditText)v.findViewById(R.id.amount2);
+		checknum     = (EditText)v.findViewById(R.id.checkNumText);
+		dateRange    = (CheckBox)v.findViewById(R.id.dateRange);
+		amountRange  = (CheckBox)v.findViewById(R.id.amountRange);
+		toggleDate   = (ToggleButton)v.findViewById(R.id.toggleDate);
 		toggleAmount = (ToggleButton)v.findViewById(R.id.toggleAmount);
-		toggleCheck = (ToggleButton)v.findViewById(R.id.toggleCheck);
-		dateRow = (TableRow)v.findViewById(R.id.dateRow);
-		amountRow = (TableRow)v.findViewById(R.id.amountRow);
-		dash1 = (TextView)v.findViewById(R.id.dashTextView);
-		dash2 = (TextView)v.findViewById(R.id.dash2);
-		dollarSign2 = (TextView)v.findViewById(R.id.dollarSign2);
+		toggleCheck  = (ToggleButton)v.findViewById(R.id.toggleCheck);
+		dateRow      = (TableRow)v.findViewById(R.id.dateRow);
+		amountRow    = (TableRow)v.findViewById(R.id.amountRow);
+		dash1        = (TextView)v.findViewById(R.id.dashTextView);
+		dash2        = (TextView)v.findViewById(R.id.dash2);
+		dollarSign2  = (TextView)v.findViewById(R.id.dollarSign2);
 
 		amount1.addTextChangedListener(new GenericTextWatcher(v));
 
@@ -197,11 +197,12 @@ public class Search extends Fragment{
 		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
 
 		// Construct parameters to set for the database search
-		String startDate = "";
-		String endDate = "";
+		String startDate   = "";
+		String endDate     = "";
 		String startAmount = "";
-		String endAmount = "";
+		String endAmount   = "";
 		String checkNumber = "";
+
 		ArrayList<Fund> giftFund = db.getFundsForMissionary(db.getAccount().getId());
 		if(toggleDate.isChecked()){
 			startDate = (!date1.getText().toString().equals("Choose Date"))? date1.getText().toString() : "";

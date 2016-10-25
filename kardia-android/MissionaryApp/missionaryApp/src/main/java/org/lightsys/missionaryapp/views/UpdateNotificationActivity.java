@@ -32,23 +32,25 @@ import java.util.Calendar;
 import java.util.Locale;
 
 /**
- * Created by Andrew Lockridge on 6/1/2015.
+ * @author Andrew Lockridge
+ * created on 6/1/2015.
+ *
+ * edited by Laura DeOtte for missionaryapp from donorapp
+ * on 9/22/2016
  *
  * This activity allows the user to set up a notification system to remind them to pray
- *
- * edited for missionaryapp from donorapp by Laura DeOtte on 9/22/2016
  */
 public class UpdateNotificationActivity extends Activity {
 
     private final String EXTRA_DELETE = "delete"; //tells activity whether it should create alarms or delete them
-    private boolean delete=false;
-    private String alarmTime, endDate, startDate;
-    private final long DAY_IN_MILLIS = 86400000;
-    private int requestid, notificationID, frequency;
+    private boolean      delete=false;
+    private String       alarmTime, endDate, startDate;
+    private final long   DAY_IN_MILLIS = 86400000;
+    private int          notificationID, frequency;
 
-    private Spinner frequencySpinner;
+    private Spinner  frequencySpinner;
     private TableRow startDateRow, endDateRow, timeRow;
-    private Button startDateButton, endDateButton, timeButton;
+    private Button   startDateButton, endDateButton, timeButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,25 +70,21 @@ public class UpdateNotificationActivity extends Activity {
 
             Bundle args = getIntent().getExtras();
 
-            if (args != null) {
-                requestid = args.getInt("requestid");
-            }
-
             // For next ID, retrieve last ID from database and add 1
             LocalDBHandler db = new LocalDBHandler(this, null);
             notificationID = db.getLastId("notification") + 1;
             db.close();
 
-            startDateRow = (TableRow) this.findViewById(R.id.startDateRow);
-            endDateRow = (TableRow) this.findViewById(R.id.endDateRow);
-            timeRow = (TableRow) this.findViewById(R.id.timeRow);
-            frequencySpinner = (Spinner) this.findViewById(R.id.frequencySpinner);
-            startDateButton = (Button) this.findViewById(R.id.startDateButton);
-            endDateButton = (Button) this.findViewById(R.id.endDateButton);
-            timeButton = (Button) this.findViewById(R.id.timeButton);
+            startDateRow     = (TableRow) this.findViewById(R.id.startDateRow);
+            endDateRow       = (TableRow) this.findViewById(R.id.endDateRow);
+            timeRow          = (TableRow) this.findViewById(R.id.timeRow);
+            frequencySpinner = (Spinner)  this.findViewById(R.id.frequencySpinner);
+            startDateButton  = (Button)   this.findViewById(R.id.startDateButton);
+            endDateButton    = (Button)   this.findViewById(R.id.endDateButton);
+            timeButton       = (Button)   this.findViewById(R.id.timeButton);
 
             Button setNotificationButton = (Button) this.findViewById(R.id.setNotification);
-            Button cancelButton = (Button) this.findViewById(R.id.cancel);
+            Button cancelButton          = (Button) this.findViewById(R.id.cancel);
 
 
             frequencySpinner.setSelection(2);
@@ -193,9 +191,9 @@ public class UpdateNotificationActivity extends Activity {
      */
     private boolean checkValidity()  {
         // If any visible field has not been selected, set to false, otherwise true
-        if(endDateRow.getVisibility() == View.VISIBLE && endDateButton.getText().equals("Choose Date")   ||
+        if(endDateRow.getVisibility()   == View.VISIBLE && endDateButton.getText().equals("Choose Date")   ||
            startDateRow.getVisibility() == View.VISIBLE && startDateButton.getText().equals("Choose Date") ||
-           timeRow.getVisibility() == View.VISIBLE && timeButton.getText().equals("Choose Time")) {
+           timeRow.getVisibility()      == View.VISIBLE && timeButton.getText().equals("Choose Time")) {
             return false;
         } else {
             return true;
@@ -229,9 +227,9 @@ public class UpdateNotificationActivity extends Activity {
             mDay = Integer.parseInt(splitDateStr1[2]);
         } else {
             Calendar c = Calendar.getInstance();
-            mYear = c.get(Calendar.YEAR);
-            mMonth = c.get(Calendar.MONTH);
-            mDay = c.get(Calendar.DAY_OF_MONTH);
+            mYear      = c.get(Calendar.YEAR);
+            mMonth     = c.get(Calendar.MONTH);
+            mDay       = c.get(Calendar.DAY_OF_MONTH);
         }
 
         DatePickerDialog dialog = new DatePickerDialog(this,
@@ -267,8 +265,8 @@ public class UpdateNotificationActivity extends Activity {
      * open dialog allowing user to choose a time
      */
     private void openTimePicker() {
-        int hour;
-        int minute;
+        int    hour;
+        int    minute;
         String text;
 
         text = timeButton.getText().toString();
@@ -309,8 +307,8 @@ public class UpdateNotificationActivity extends Activity {
 
         @Override
         public void onTimeSet(TimePicker view, int hour, int minute) {
-            String hourStr = "" + hour;
-            String minStr = "" + minute;
+            String hourStr     = "" + hour;
+            String minStr      = "" + minute;
             String timeStr24Hr = hourStr + ":" + minStr;
 
             // convert 24 hour clock to 12 hour clock

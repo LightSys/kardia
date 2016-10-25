@@ -12,27 +12,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by bosonBaas on 3/12/2015.
+ * @author bosonBaas
+ * created on 3/12/2015.
  *
  * This is an Adapter modeled off of Simple adapter. It's purpose is to enable the interaction
  * of the program with the buttons inside the ListView for Prayer Requests.
  */
 public class NoteListAdapter extends SimpleAdapter {
 
-    private final Context context;
-    private final ArrayList<HashMap<String, String>> data;
+    private final Context         context;
     private final ArrayList<View> views;
-    private final String[] from;
-    private final int[] to;
+
+    private final ArrayList<HashMap<String, String>> data;
 
     public NoteListAdapter(Context context, ArrayList<HashMap<String, String>> data,
                             int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
         this.context = context;
-        this.views = new ArrayList<View>();
-        this.data = data;
-        this.from = from;
-        this.to = to;
+        this.views   = new ArrayList<View>();
+        this.data    = data;
     }
 
     /**

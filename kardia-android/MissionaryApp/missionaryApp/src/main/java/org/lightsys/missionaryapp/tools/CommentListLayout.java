@@ -8,10 +8,10 @@ import android.widget.TextView;
 import org.lightsys.missionaryapp.R;
 
 /**
- * Created by Judah Sistrunk on 6/20/2016.
+ * @author Judah Sistrunk
+ * created on 6/20/2016.
  *
- * this is just so that we can set values to the comment layout
- * it's pretty straight forward
+ * sets values to the comment layout
  */
 public class CommentListLayout extends RelativeLayout {
 
@@ -21,14 +21,16 @@ public class CommentListLayout extends RelativeLayout {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.comment_item, this, true);
         userNameView = (TextView)findViewById(R.id.userName);
-        dateView = (TextView)findViewById(R.id.dateText);
-        textView = (TextView)findViewById(R.id.commentText);
+        dateView     = (TextView)findViewById(R.id.dateText);
+        textView     = (TextView)findViewById(R.id.commentText);
 
     }
 
+    /* ************************* Set ************************* */
+
     public void setUserName(String userName){userNameView.setText(userName);}
 
-    public void setDateText(String date) {dateView.setText(date);}
+    public void setDateText(String date)    {dateView.setText(date);}
 
     public void setCommentText(String text) {textView.setText(text);}
 

@@ -22,15 +22,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
- * Created by Laura DeOtte on 7/12/16.
+ * @author Laura DeOtte
+ * created on 7/12/16.
  *
  * allows user to post updates or prayer requests
  */
 public class PostNoteActivity extends Activity {
-    private Spinner sender, contactType;
+    private Spinner  sender, contactType;
     private EditText noteText, subject;
-    int noteId = -1;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,12 +37,12 @@ public class PostNoteActivity extends Activity {
 
         setContentView(R.layout.post_note_layout);
 
-        sender = (Spinner)findViewById(R.id.senderName);
-        subject = (EditText)findViewById(R.id.subjectText);
-        contactType = (Spinner)findViewById(R.id.typeSpinner);
-        noteText = (EditText)findViewById(R.id.noteText);
-        Button submit = (Button)findViewById(R.id.submitButton);
-        Button cancel = (Button)findViewById(R.id.cancelButton);
+        sender        = (Spinner) findViewById(R.id.senderName);
+        subject       = (EditText)findViewById(R.id.subjectText);
+        contactType   = (Spinner) findViewById(R.id.typeSpinner);
+        noteText      = (EditText)findViewById(R.id.noteText);
+        Button submit = (Button)  findViewById(R.id.submitButton);
+        Button cancel = (Button)  findViewById(R.id.cancelButton);
 
         if (getActionBar() != null) {
             getActionBar().setTitle("Send Update/Prayer Request");
@@ -75,11 +74,11 @@ public class PostNoteActivity extends Activity {
             public void onClick(View view) {
 
 
-                String senderStr = sender.getSelectedItem().toString();
+                String senderStr  = sender.getSelectedItem().toString();
                 String messageStr = noteText.getText().toString();
                 String subjectStr = subject.getText().toString();
-                String noteType = contactType.getSelectedItem().toString();
-                Account account = null;
+                String noteType   = contactType.getSelectedItem().toString();
+                Account account   = null;
 
                 //find account
                 ArrayList<Account> accts = db.getAccounts();

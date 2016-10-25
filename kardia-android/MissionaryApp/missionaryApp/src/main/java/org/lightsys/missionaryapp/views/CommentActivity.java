@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
- * Created by Judah on 6/27/2016.
+ * @author Judah
+ * created on 6/27/2016.
  *
  * An activity that lets a user enter a comment to a post
  * The user must provide a comment and a user ID
@@ -35,13 +36,13 @@ public class CommentActivity extends Activity {
     private TextView originalPostText;
     private TextView commentText;
     private TextView userIDText;
-    private Button submit;
-    private Button cancel;
+    private Button   submit;
+    private Button   cancel;
 
-    private int userID = -1;
-    private int noteId = -1;
-    private int missionaryId = -1;
-    private String comment = "";
+    private int    userID       = -1;
+    private int    noteId       = -1;
+    private int    missionaryId = -1;
+    private String comment      = "";
 
     //error message
     final String MISSING_POST = "Original post missing!";
@@ -54,10 +55,10 @@ public class CommentActivity extends Activity {
 
 
         originalPostText = (TextView)findViewById(R.id.originalPostText);
-        commentText = (EditText)findViewById(R.id.commentText);
-        userIDText = (EditText)findViewById(R.id.accountID);
-        submit = (Button)findViewById(R.id.submitButton);
-        cancel = (Button)findViewById(R.id.cancelButton);
+        commentText      = (EditText)findViewById(R.id.commentText);
+        userIDText       = (EditText)findViewById(R.id.accountID);
+        submit           = (Button)  findViewById(R.id.submitButton);
+        cancel           = (Button)  findViewById(R.id.cancelButton);
 
         if (getIntent().getStringExtra("text") != null) {
             originalPostText.setText(getIntent().getStringExtra("text"));

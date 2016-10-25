@@ -23,18 +23,18 @@ import android.widget.SimpleAdapter;
 import org.lightsys.missionaryapp.R;
 
 /**
+ *  * @author Andrew Cameron
+ * edited from DonorApp to MissionaryApp by Laura DeOtte
+
  * This page displays a list of all funds that the user manages
  * with some info.
  * 
- * @author Andrew Cameron
- * edited from DonorApp to MissionaryApp by Laura DeOtte
  * shows each fund with the total donated to date for the specific period
  * clicking fund goes to a list of all donations to fund during time period
  */
 public class FundList extends Fragment{
 	
 	private ArrayList<Fund> funds;
-	private ArrayList<Integer> fundIds = new ArrayList<Integer>();
 
 	/**
 	 * Pulls all relevant funds, and creates the view (including the bottom total bar)

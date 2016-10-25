@@ -32,13 +32,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Class displays a list of notes (updates and prayer requests) and prayer letters to the user
+ * @author Andrew Lockridge
+ * created on 6/24/2015.
  *
- * Created by Andrew Lockridge on 6/24/2015.
+ * Class displays a list of notes (updates and prayer requests) and prayer letters to the user
  */
 public class NoteList extends Fragment {
 
-    private final ArrayList<Object> combined = new ArrayList<Object>();
+    private final ArrayList<Object>                 combined = new ArrayList<Object>();
     private final ArrayList<HashMap<String,String>> itemList = new ArrayList<HashMap<String, String>>();
 
 

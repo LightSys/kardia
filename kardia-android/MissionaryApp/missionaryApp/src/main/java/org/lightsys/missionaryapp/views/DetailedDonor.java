@@ -23,25 +23,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by laura deotte on 3/12/2015.
+ * @author Laura DeOtte
  *
  * Shows Donor name, contact info, and donations
  * allows user to email, call, or text donor
  */
 public class DetailedDonor extends Fragment{
 
-    private final static String ARG_DONOR_ID = "donor_id";
-    private final static String ARG_DONOR_NAME = "donor_name";
+    private final static String ARG_DONOR_ID    = "donor_id";
+    private final static String ARG_DONOR_NAME  = "donor_name";
     private final static String ARG_DONOR_EMAIL = "donor_email";
     private final static String ARG_DONOR_PHONE = "donor_phone";
 
-    private String donor_name = " ";
-    private int donor_id;
-    private String donor_email;
-    private String donor_phone;
-    private Bundle args;
-    private ArrayList<Gift> gifts = new ArrayList<Gift>();
-    private ListView listview;
+    private int             donor_id;
+    private String          donor_email;
+    private String          donor_phone;
+    private Bundle          args;
+    private String          donor_name = " ";
+    private ArrayList<Gift> gifts      = new ArrayList<Gift>();
+    private ListView        listview;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.donor_detailed_view_layout, container, false);
@@ -50,22 +50,22 @@ public class DetailedDonor extends Fragment{
         args=getArguments();
 
         if(savedInstanceState != null){
-            donor_id = savedInstanceState.getInt(ARG_DONOR_ID);
-            donor_name = savedInstanceState.getString(ARG_DONOR_NAME);
+            donor_id    = savedInstanceState.getInt(ARG_DONOR_ID);
+            donor_name  = savedInstanceState.getString(ARG_DONOR_NAME);
             donor_email = savedInstanceState.getString(ARG_DONOR_EMAIL);
             donor_phone = savedInstanceState.getString(ARG_DONOR_PHONE);
         }else if (args != null) {
-            donor_id = args.getInt(ARG_DONOR_ID);
-            donor_name = args.getString(ARG_DONOR_NAME);
+            donor_id    = args.getInt(ARG_DONOR_ID);
+            donor_name  = args.getString(ARG_DONOR_NAME);
             donor_email = args.getString(ARG_DONOR_EMAIL);
             donor_phone = args.getString(ARG_DONOR_PHONE);
 
         } else{
-            donor_name="no name";
-            donor_email="no email";
+            donor_name  = "no name";
+            donor_email = "no email";
             donor_phone = "no phone";
         }
-        TextView name = (TextView)v.findViewById(R.id.nameText);
+        TextView name  = (TextView)v.findViewById(R.id.nameText);
         TextView email = (TextView)v.findViewById(R.id.emailText);
         TextView phone = (TextView)v.findViewById(R.id.phoneText);
         name.setText(donor_name);
