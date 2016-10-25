@@ -98,7 +98,6 @@ public class DetailedDonor extends Fragment{
             }
         });
 
-
         //put giftlist for donor
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         gifts = db.getGiftsByDonor(donor_id);

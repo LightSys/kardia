@@ -116,26 +116,20 @@ public class PostNoteActivity extends Activity {
                         dateCreated.put("second", calendar.get(Calendar.SECOND));
 
                         //set newNote
-                        if (noteType.equals("Update")) {
-                            newNote.put("e_contact_history_type", 7);
-                            //newNote.put("e_short_name", "Update");
-                            //newNote.put("e_description", "Update");
-
-                        }else if (noteType.equals("Pray")){
-                            newNote.put("e_contact_history_type",5);
-                            //newNote.put("e_short_name", "Pray");
-                            //newNote.put("e_description", "Prayer/Praise Item");
-                        }
                         newNote.put("p_partner_key",account.getId()+"");
                         newNote.put("e_whom",account.getId()+"");
                         newNote.put("e_subject",subjectStr);
-                        //todo add feature to modify
                         newNote.put("e_contact_date",dateCreated);
                         newNote.put("e_notes",messageStr);
                         newNote.put("s_date_created",dateCreated);
                         newNote.put("s_created_by",account.getAccountName() + "");
                         newNote.put("s_date_modified",dateCreated);
                         newNote.put("s_modified_by",account.getAccountName() + "");
+                        if (noteType.equals("Update")) {
+                            newNote.put("e_contact_history_type", 7);
+                        }else if (noteType.equals("Pray")){
+                            newNote.put("e_contact_history_type",5);
+                        }
 
                         PostJson postJson = new PostJson(getBaseContext(), postURL, newNote, account);
                         postJson.execute();
