@@ -21,15 +21,21 @@
             android:layout_height="match_parent"
             style="@style/listCustomBlue"/>
 
+
+
         <Button
             android:id="@+id/addUpdateButton"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="68dp"
-            android:layout_margin="6dp"
-            android:layout_centerHorizontal="true"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:text="@string/add_note_button"
+            style="@style/customBottomBar"
             android:layout_alignParentBottom="true"
-            android:visibility="gone"
-            />
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone"/>
         
     </RelativeLayout>
 

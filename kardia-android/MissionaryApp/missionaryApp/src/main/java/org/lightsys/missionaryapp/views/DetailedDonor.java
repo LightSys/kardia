@@ -144,7 +144,7 @@ public class DetailedDonor extends Fragment{
         for(Gift g : gifts){
             HashMap<String,String> hm = new HashMap<String,String>();
 
-            hm.put("fundname", "Gift to: " + g.getGiftFundDesc());
+            hm.put("fundname", "Gift to: " + g.getGiftFund());
             hm.put("giftamount", Formatter.amountToString(g.getGiftAmount()));
             hm.put("giftdate", Formatter.getFormattedDate(g.getGiftDate()));
 

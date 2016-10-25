@@ -1,7 +1,8 @@
 package org.lightsys.missionaryapp.data;
 
 /**
- * Created by Judah Sistrunk on 5/31/2016.
+ * @author Judah Sistrunk
+ * created on 5/31/2016.
  *
  * Holds information about a new update/prayer request/whatever else the user needs to know about
  */
@@ -11,23 +12,19 @@ public class NewItem {
     private String itemMessage;
 
     public NewItem(String ItemType, String ItemMessage) {
-        itemType = ItemType;
+        itemType    = ItemType;
         itemMessage = ItemMessage;
     }
 
-    public  String getItemType(){
-        return  itemType;
-    }
+    /* ************************* Set ************************* */
 
-    public String getItemMessage() {
-        return  itemMessage;
-    }
+    public void setItemType(String ItemType)       { itemType = ItemType; }
 
-    public void setItemType(String ItemType){
-        itemType = ItemType;
-    }
+    public void setItemMessage(String ItemMessage) { itemMessage = ItemMessage; }
 
-    public  void setItemMessage(String ItemMessage) {
-        itemMessage = ItemMessage;
-    }
+    /* ************************* Get ************************* */
+
+    public String getItemType()    { return itemType; }
+
+    public String getItemMessage() { return itemMessage; }
 }

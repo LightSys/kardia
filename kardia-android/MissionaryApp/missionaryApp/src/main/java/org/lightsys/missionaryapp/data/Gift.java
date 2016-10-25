@@ -8,102 +8,80 @@ package org.lightsys.missionaryapp.data;
  *
  */
 public class Gift {
-	private int Id;
-	private String name; // (found as "name") example:  DEMO|100006|1|1
-	private String giftFund; // (found as "giftFund")
-	private String gift_fund_desc; // (found as "gift_fund_desc")
-	private int[] gift_amount; // (found as "gift_amount")
-	private String gift_date; // (found as "gift_date")
-	private String gift_check_num; // (found as "gift_check_num")
+	private int    Id;
+	private String name;
+	private String giftFund;
+	private String giftFundDesc;
+	private int[]  giftAmount;
+	private String giftDate;
+	private String giftCheckNum;
 	private String giftDonor;
-	private int giftDonorId;
+	private int    giftDonorId;
 	private String giftYear;
 	private String giftMonth;
 
 	public Gift() {}
 	
-	public Gift(int Id, String name, String giftFund, String gift_fund_desc, int[] gift_amount, String gift_date, String gift_check_num, String giftDonor, int giftDonorId, String giftYear, String giftMonth){
+	public Gift(int Id, String name, String giftFund, String gift_fund_desc, int[] gift_amount,
+				String gift_date, String gift_check_num, String giftDonor, int giftDonorId,
+				String giftYear, String giftMonth) {
 		this.setId(Id);
 		this.setName(name);
 		this.setGiftFund(giftFund);
 		this.setGiftAmount(gift_amount);
 		this.setGiftFundDesc(gift_fund_desc);
 		this.setGiftDate(gift_date);
-		this.setGift_check_num(gift_check_num);
+		this.setGiftCheckNum(gift_check_num);
 		this.setGiftDonor(giftDonor);
         this.setGiftDonorId(giftDonorId);
 		this.setGiftMonth(giftMonth);
 		this.setGiftYear(giftYear);
 	}
-	
-	public int getId() {
-		return Id;
-	}
 
-	public void setId(int Id) {
-		this.Id = Id;
-	}
+	/* ************************* Set ************************* */
 
-	public String getName() {
-		return name;
-	}
+	public void setId(int Id)					 { this.Id = Id; }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+	public void setName(String name)             { this.name = name; }
 
-	public String getGiftFund() {
-		return giftFund;
-	}
+	public void setGiftFund(String giftFund)     { this.giftFund = giftFund; }
 
-	public void setGiftFund(String giftFund) {
-		this.giftFund = giftFund;
-	}
+	public void setGiftAmount(int[] gift_amount) { this.giftAmount = gift_amount; }
 
-	public int[] getGiftAmount() {return gift_amount;}
+	public void setGiftFundDesc(String desc)     { this.giftFundDesc = desc; }
 
-	public void setGiftAmount(int[] gift_amount) {
-		this.gift_amount = gift_amount;
-	}
+	public void setGiftDate(String gift_date)	 { this.giftDate = gift_date; }
 
-	public String getGiftFundDesc() {
-		return gift_fund_desc;
-	}
+	public void setGiftCheckNum(String CheckNum) { this.giftCheckNum = CheckNum; }
 
-	public void setGiftFundDesc(String gift_fund_desc) {
-		this.gift_fund_desc = gift_fund_desc;
-	}
+	public void setGiftDonor(String giftDonor)   {this.giftDonor = giftDonor; }
 
-	public String getGiftDate() {
-		return gift_date;
-	}
+    public void setGiftDonorId(int giftDonorId)  {this.giftDonorId = giftDonorId; }
 
-	public void setGiftDate(String gift_date) {
-		this.gift_date = gift_date;
-	}
+	public void setGiftYear(String giftYear)     {this.giftYear = giftYear; }
 
-	public String getGift_check_num() {
-		return gift_check_num;
-	}
+	public void setGiftMonth(String giftMonth)   {this.giftMonth = giftMonth; }
 
-	public void setGift_check_num(String gift_check_num) {
-		this.gift_check_num = gift_check_num;
-	}
+	/* ************************* Get ************************* */
+	public int    getId()			  { return Id; }
 
-	public String getGiftDonor() {return giftDonor;}
+	public String getName() 		  { return name; }
 
-	public void setGiftDonor(String giftDonor) {this.giftDonor = giftDonor; }
+	public String getGiftFund()       { return giftFund; }
 
-    public int getGiftDonorId() {return giftDonorId;}
+	public int[]  getGiftAmount()     { return giftAmount; }
 
-    public void setGiftDonorId(int giftDonorId) {this.giftDonorId = giftDonorId; }
+	public String getGiftFundDesc()   { return giftFundDesc; }
 
-	public String getGiftYear() {return giftYear;}
+	public String getGiftDate()       { return giftDate; }
 
-	public void setGiftYear(String giftYear) {this.giftYear = giftYear; }
+	public String getGiftCheckNum()   { return giftCheckNum; }
 
-	public String getGiftMonth() {return giftMonth;}
+	public String getGiftDonor()      { return giftDonor;}
 
-	public void setGiftMonth(String giftMonth) {this.giftMonth = giftMonth; }
+	public int 	  getGiftDonorId()    { return giftDonorId;}
 
+	public String getGiftYear()       { return giftYear;}
+
+	public String getGiftMonth()      { return giftMonth;}
 }

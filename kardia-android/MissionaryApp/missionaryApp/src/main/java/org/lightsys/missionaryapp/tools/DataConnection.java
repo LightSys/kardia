@@ -697,7 +697,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                     if (!currentFundNames.contains(fundObj.getString("name"))) {
 
-                        //todo fundid??? set Fund(FundId, missionaryId, fundName, fundDesc, fundClass, annotation)
                         Fund temp = new Fund();
 
                         temp.setFundName(fundObj.getString("name"));
@@ -782,7 +781,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setGiftFund(gift_fund);
                         temp.setGiftFundDesc(gift_fund_desc);
                         temp.setGiftDate(gift_date);
-                        temp.setGift_check_num(gift_check_num);
+                        temp.setGiftCheckNum(gift_check_num);
                         temp.setGiftAmount(gifttotal);
                         temp.setGiftDonor(donorName);
                         temp.setGiftDonorId(donorID);

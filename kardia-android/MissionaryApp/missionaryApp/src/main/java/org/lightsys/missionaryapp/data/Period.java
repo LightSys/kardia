@@ -1,20 +1,19 @@
 package org.lightsys.missionaryapp.data;
 
 /**
- * Class used to organize gifts given to the user into time periods
- *
  * @author otter57
  *
+ * Class used to organize gifts given to the user into time periods
  */
 
 public class Period {
-	private int Id;
-	private int fundId;
-	private String periodname; // example: 2014.06|DEMO
+	private int    Id;
+	private int    fundId;
+	private String periodName; // example: 2014.06|DEMO
 	private String date; // month and year example: June 2014
-	private int[] giftTotal;
+	private int[]  giftTotal;
 	
-	public Period(){}
+	public Period() {}
 	
 	public Period(int Id, String periodname, String date, int[] giftTotal, int fundId){
 		this.setId(Id);
@@ -24,37 +23,29 @@ public class Period {
 		this.setFundId(fundId);
 	}
 
-	public int getId() {
-		return Id;
-	}
+    /* ************************* Set ************************* */
 
-	private void setId(int id) {
-		Id = id;
-	}
+	private void setId(int id)                 { Id = id; }
 
-	public String getPeriodName() {
-		return periodname;
-	}
+	public void  setPeriodName(String name)    { this.periodName = name; }
 
-	public void setPeriodName(String periodname) {
-		this.periodname = periodname;
-	}
-	
-	public String getDate(){
-		return date;
-	}
+	private void setDate(String date)          { this.date = date; }
 
-	private void setDate(String date){
-		this.date = date;
-	}
+	public void  setGiftTotal(int[] giftTotal) {this.giftTotal = giftTotal; }
 
-	public int[] getGiftTotal() {return giftTotal; }
+	public void  setFundId(int fundId)         { this.fundId = fundId;}
 
-	public void setGiftTotal(int[] giftTotal){this.giftTotal = giftTotal; }
+    /* ************************* Get ************************* */
 
-	public int getFundId(){ return fundId;}
+    public int    getId()         { return Id; }
 
-	public void setFundId(int fundId){ this.fundId = fundId;}
+    public String getPeriodName() { return periodName; }
+
+    public String getDate()       { return date; }
+
+    public int[]  getGiftTotal()  {return giftTotal; }
+
+    public int    getFundId()     { return fundId;}
 
     @Override
     public String toString() {

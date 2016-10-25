@@ -97,9 +97,7 @@ public class NoteList extends Fragment {
         listview.setOnItemClickListener(new onNoteClicked());
 
         Button button = (Button)v.findViewById(R.id.addUpdateButton);
-        button.setText("Add Update/Prayer Request");
         button.setVisibility(View.VISIBLE);
-        button.setBackgroundResource(R.color.dark_gray);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

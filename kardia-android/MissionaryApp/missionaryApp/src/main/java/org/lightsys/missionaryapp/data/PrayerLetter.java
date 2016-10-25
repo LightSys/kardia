@@ -1,75 +1,63 @@
 package org.lightsys.missionaryapp.data;
 
 /**
+ * @author Andrew Lockridge
+ * created on 6/26/2015.
+ *
  * Class represents a prayer letter published by a missionary which is displayed as a pdf
- * Created by Andrew Lockridge on 6/26/2015.
  */
 public class PrayerLetter {
-    private int id;
+    private int    id;
     private String missionaryName;
     private String title;
     private String folder;
     private String filename;
     private String date;
-    private int missionaryId;
+    private int    missionaryId;
 
     public PrayerLetter() {}
 
-    public PrayerLetter(int id, String date, String title, String missionaryName, String folder, String filename, int missionaryId) {
-        this.id = id;
+    public PrayerLetter(int id, String date, String title, String missionaryName,
+                        String folder, String filename, int missionaryId) {
+        this.id             = id;
         this.missionaryName = missionaryName;
-        this.title = title;
-        this.folder = folder;
-        this.filename = filename;
-        this.date = date;
-        this.missionaryId = missionaryId;
+        this.title          = title;
+        this.folder         = folder;
+        this.filename       = filename;
+        this.date           = date;
+        this.missionaryId   = missionaryId;
     }
 
-    public int getId() {
-        return id;
-    }
+    /* ************************* Set ************************* */
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public void setId(int id)                        { this.id = id; }
 
-    public String getMissionaryName() {
-        return missionaryName;
-    }
+    public void setMissionaryName(String missionary) { this.missionaryName = missionary; }
 
-    public void setMissionaryName(String missionaryName) {
-        this.missionaryName = missionaryName;
-    }
+    public void setTitle(String title)               { this.title = title; }
 
-    public String getTitle() {
-        return title;
-    }
+    public void setFolder(String folder)             { this.folder = folder; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public void setFilename(String filename)         { this.filename = filename; }
 
-    public String getFolder() { return folder; }
+    public void setDate(String date)                 { this.date = date; }
 
-    public void setFolder(String folder) { this.folder = folder; }
+    public void setMissionaryId(int missionaryId)    {this.missionaryId = missionaryId; }
 
-    public String getFilename() {
-        return filename;
-    }
+    /* ************************* Get ************************* */
 
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
+    public int    getId()             { return id; }
 
-    public String getDate() {
-        return date;
-    }
+    public String getMissionaryName() { return missionaryName; }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
+    public String getTitle()          { return title; }
 
-    public int getMissionaryId() { return missionaryId; }
+    public String getFolder()         { return folder; }
 
-    public void setMissionaryId(int missionaryId) {this.missionaryId = missionaryId; }
+    public String getFilename()       { return filename; }
+
+    public String getDate()           { return date; }
+
+    public int    getMissionaryId()   { return missionaryId; }
+
 }

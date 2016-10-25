@@ -3,7 +3,6 @@ package org.lightsys.missionaryapp.views;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -111,7 +110,7 @@ public class Options extends Fragment {
         if(notifications.size()>0){
             reminderOnOff.setChecked(true);
             SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm", Locale.US);
-            reminderDetails.setText(notifications.get(0).getNotificationFrequency() + "\nNext: " + format.format(notifications.get(0).getNotificationTime()));
+            reminderDetails.setText(notifications.get(0).getFrequency() + "\nNext: " + format.format(notifications.get(0).getTime()));
         }else{
             reminderOnOff.setChecked(false);
             reminderDetails.setText("");

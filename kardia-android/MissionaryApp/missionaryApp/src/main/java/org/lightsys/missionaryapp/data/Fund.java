@@ -1,16 +1,20 @@
 package org.lightsys.missionaryapp.data;
 
+/**
+ * Class represents a Fund connected with the user
+ */
 public class Fund {
-	private int FundId;
-	private int missionaryId;
+	private int    FundId;
+	private int    missionaryId;
 	private String fundName;
 	private String fundDesc;
 	private String fundClass;
 	private String annotation;
 
-	public Fund(){}
+	public Fund() {}
 
-	public Fund(int FundId, int missionaryId, String fundName, String fundDesc, String fundClass, String annotation){
+	public Fund(int FundId, int missionaryId, String fundName, String fundDesc,
+				String fundClass, String annotation) {
 		this.setFundId(FundId);
 		this.setMissionaryId(missionaryId);
 		this.setFundName(fundName);
@@ -19,45 +23,30 @@ public class Fund {
 		this.setFundAnnotation(annotation);
 	}
 
-	public int getFundId() {return FundId;}
+	/* ************************* Set ************************* */
+	public void setFundId(int fundid)                { FundId = fundid;}
 
-	public void setFundId(int fundid) {FundId = fundid;}
+	public void setMissionaryId(int missionaryId)    { this. missionaryId = missionaryId;}
 
-	public int getMissionaryId() {return missionaryId;}
+	public void setFundName(String fundName) 		 { this.fundName = fundName; }
 
-	public void setMissionaryId(int missionaryId) {this. missionaryId = missionaryId;}
+	public void setFundDesc(String fundDesc) 		 { this.fundDesc = fundDesc; }
 
-	public String getFundName() {
-		return fundName;
-	}
+	public void setFundClass(String fundClass) 		 { this.fundClass = fundClass; }
 
-	public void setFundName(String fundName) {
-		this.fundName = fundName;
-	}
+	public void setFundAnnotation(String annotation) { this.annotation = annotation; }
 
-	public String getFundDesc() {
-		return fundDesc;
-	}
+	/* ************************* Get ************************* */
+	public int    getFundId()         {return FundId;}
 
-	public void setFundDesc(String fundDesc) {
-		this.fundDesc = fundDesc;
-	}
+	public int    getMissionaryId()   { return missionaryId;}
 
-	public String getFundClass() {
-		return fundClass;
-	}
+	public String getFundName()       { return fundName; }
 
-	public void setFundClass(String fundClass) {
-		this.fundClass = fundClass;
-	}
+	public String getFundDesc()       { return fundDesc; }
 
-	public String getFundAnnotation() {
-		return annotation;
-	}
+	public String getFundClass()      { return fundClass; }
 
-	public void setFundAnnotation(String annotation) {
-		this.annotation = annotation;
-	}
-
+	public String getFundAnnotation() { return annotation; }
 
 }

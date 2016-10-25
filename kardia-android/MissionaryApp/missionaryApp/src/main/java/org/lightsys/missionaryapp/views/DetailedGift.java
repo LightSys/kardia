@@ -1,21 +1,16 @@
 package org.lightsys.missionaryapp.views;
 
-import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Gift;
-import org.lightsys.missionaryapp.tools.DownloadPDF;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -43,8 +38,6 @@ public class DetailedGift extends Fragment {
     private int gift_id = -1, donor_id = -1;
     private String donor_name = "", phone_cell = "", email_info = "";
     private Bundle args;
-    private Gift gift;
-    private Context context;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.gift_detailedview_layout, container, false);
@@ -55,8 +48,6 @@ public class DetailedGift extends Fragment {
             donor_id = savedInstanceState.getInt(ARG_DONOR_ID);
             donor_name = savedInstanceState.getString(ARG_DONOR_NAME);
         }
-
-        context = inflater.getContext();
 
         return v;
     }
@@ -90,7 +81,6 @@ public class DetailedGift extends Fragment {
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         Gift g = db.getGift(gift_id);
         ContactInfo contactinfo = db.getContactInfoById(donor_id);
-        gift = g;
         db.close();
 
         // Map data fields to layout fields
@@ -104,7 +94,7 @@ public class DetailedGift extends Fragment {
             phone_cell = contactinfo.getPhone();
         }
         phone.setText(phone_cell);
-        fundTitle.setText("Gift to: " + g.getGiftFundDesc());
+        fundTitle.setText("Gift to: " + g.getGiftFund());
         date.setText("Date: " + Formatter.getFormattedDate(g.getGiftDate()));
         amount.setText("Amount: " + Formatter.amountToString(g.getGiftAmount()));
 
@@ -129,23 +119,6 @@ public class DetailedGift extends Fragment {
         });
 
         this.gift_id = gift_id;
-
-        Button viewPDFButton = (Button) getActivity().findViewById(R.id.pdfButton);
-        viewPDFButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                LocalDBHandler db = new LocalDBHandler(context, null);
-                Account account = db.getAccounts().get(0);
-                String giftID = gift.getName().replace("|", "%7C");
-                String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-                String url = "http://" + account.getServerName() + ":800/apps/kardia/api/donor/" + account.getId() + "/Gifts/" + giftID + "/Receipt";
-                DownloadPDF download = new DownloadPDF(url, account.getServerName(), account.getAccountName(),
-                        account.getAccountPassword(), directory, "Receipt for " + gift.getName() + ".pdf", getActivity(), getActivity());
-                download.execute("");
-
-            }
-        });
     }
 
 

@@ -54,11 +54,6 @@ public class GiftTimePeriodList extends Fragment {
 			this.fundId = args.getInt(ARG_FUND_ID);
 			periods = db.getFundPeriods(fundId, periodtype);
 		}
-        if (periods.size()==1){
-            loadRelatedGifts(0);
-        }
-
-
 
 		View v = inflater.inflate(R.layout.activity_main, container, false);
         String gtpListTitle = "Gifts By " + periodtype;
