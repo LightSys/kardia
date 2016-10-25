@@ -19,13 +19,11 @@ public class Account {
 
 	public Account() {}
 	
-	public Account(int id, String AccountName, String AccountPassword, String ServerName,
-				    String PartnerName) {
+	public Account(int id, String AccountName, String AccountPassword, String ServerName) {
 		this.setId(id);
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
 		this.setServerName(ServerName);
-		this.setPartnerName(PartnerName);
 	}
 
 	/* ************************* Set ************************* */

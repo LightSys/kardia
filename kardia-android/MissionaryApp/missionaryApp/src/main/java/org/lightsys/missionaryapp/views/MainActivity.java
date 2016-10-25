@@ -1,6 +1,5 @@
 package org.lightsys.missionaryapp.views;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.lightsys.missionaryapp.data.Account;
@@ -46,7 +45,7 @@ public class MainActivity extends ActionBarActivity {
 	private ListView              mDrawerList;
 	private CharSequence          mTitle;
 	private Fragment              fragment;
-	private ArrayList<Account>    accts     = new ArrayList<Account>();
+	private Account               account;
     private int                   accountid = 0;
 
 	//stuff to automatically refresh the current fragment
@@ -118,17 +117,17 @@ public class MainActivity extends ActionBarActivity {
 
 
 		/* Check for accounts, updates, and load content */
-		LocalDBHandler dbh = new LocalDBHandler(this, null);
+		LocalDBHandler db = new LocalDBHandler(this, null);
 
-		accts = dbh.getAccounts();
+		account = db.getAccount();
 
 		//Delete timestamp if no accounts exist
 		//Launch login page to add account
-		if (savedInstanceState == null && accts.size() == 0) {
-			if(dbh.getTimeStamp() != -1){
-				dbh.deleteTimeStamp();
+		if (savedInstanceState == null && account == null) {
+			if(db.getTimeStamp() != -1){
+				db.deleteTimeStamp();
 			}
-			dbh.close();
+			db.close();
 			Intent login = new Intent(MainActivity.this, AccountsActivity.class);
 			startActivityForResult(login, 0);
 		}
@@ -140,14 +139,12 @@ public class MainActivity extends ActionBarActivity {
 		 */
 		else if(savedInstanceState == null){
 
-			long originalStamp = dbh.getTimeStamp();
+			long originalStamp = db.getTimeStamp();
 			long currentTime = Calendar.getInstance().getTimeInMillis();
-			dbh.close();
+			db.close();
 			
 			if(currentTime > originalStamp + DAY_MILLI && originalStamp != -1){
-				for (Account a : accts) {
-					new DataConnection(this, this, a).execute("");
-				}
+                new DataConnection(this, this, account).execute("");
 			}
 			selectItem(0);
 		}
@@ -263,7 +260,6 @@ public class MainActivity extends ActionBarActivity {
 		case 6:
 			Options refresh = new Options();
 			fragment = refresh;
-			accts = db.getAccounts();
 			refresh.setDb(db);
 			db.close();
 			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();

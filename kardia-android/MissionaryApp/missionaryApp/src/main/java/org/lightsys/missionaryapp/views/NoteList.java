@@ -8,7 +8,6 @@ import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,7 +54,6 @@ public class NoteList extends Fragment {
         int account_id = db.getAccount().getId();
         ArrayList<Note> notes = db.getNotesForMissionary(account_id);
         ArrayList<PrayerLetter> letters = db.getPrayerLettersForMissionary(account_id);
-        Log.d("NoteList", "onCreateView: "+ db.getPrayerLettersForMissionary(account_id).size());
 
         db.close();
 
@@ -137,7 +135,7 @@ public class NoteList extends Fragment {
                 } else { // The selected item is a prayer letter
                     PrayerLetter letter = (PrayerLetter) combined.get(position);
                     LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-                    Account account = db.getAccounts().get(0);
+                    Account account = db.getAccount();
                     db.close();
 
                     // Look through downloads to see if file has been downloaded
@@ -184,7 +182,6 @@ public class NoteList extends Fragment {
         int numPrayed;
         int a=0;
         for(Object obj : combined){
-            Log.d("NoteList", "generateListItems: " + a);
             a+=1;
             HashMap<String,String> hm = new HashMap<String,String>();
             if (obj.getClass() == Note.class) {

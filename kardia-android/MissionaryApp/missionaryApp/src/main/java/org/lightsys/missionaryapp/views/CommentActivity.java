@@ -18,7 +18,6 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import org.lightsys.missionaryapp.tools.PostJson;
 import org.lightsys.missionaryapp.tools.DataConnection;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
@@ -39,13 +38,12 @@ public class CommentActivity extends Activity {
     private Button   submit;
     private Button   cancel;
 
-    private int    userID       = -1;
     private int    noteId       = -1;
     private int    missionaryId = -1;
     private String comment      = "";
 
     //error message
-    final String MISSING_POST = "Original post missing!";
+    final private String MISSING_POST = "Original post missing!";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,9 +86,6 @@ public class CommentActivity extends Activity {
                 //get stuff from edit texts
                 noteId = getIntent().getIntExtra("noteId", -1);
                 comment = commentText.getText().toString();
-                if (!userIDText.getText().toString().equals("")) {
-                    userID = Integer.parseInt(userIDText.getText().toString());
-                }
 
                 //find account
                 LocalDBHandler db = new LocalDBHandler(getBaseContext(), null);

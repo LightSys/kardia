@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
 
-import java.util.ArrayList;
 
 /**
  * @author Andrew Cameron

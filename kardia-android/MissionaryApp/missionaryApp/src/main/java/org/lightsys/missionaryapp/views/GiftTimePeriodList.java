@@ -34,11 +34,6 @@ public class GiftTimePeriodList extends Fragment {
 	private ArrayList<Period> periods = new ArrayList<Period>();
 	private String periodtype;
 
-	/**
-     * @author Laura DeOtte
-	 * Creates a list of all gifts donated to either the fund clicked
-	 * or all funds managed by the missionary
-	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
