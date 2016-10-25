@@ -20,13 +20,14 @@
             android:text="@string/from"
             android:id="@+id/senderTitle" />
 
-        <Spinner
+        <TextView
             android:id="@+id/senderName"
             android:layout_width="260dp"
             android:layout_height="40dp"
             android:gravity="center"
             android:layout_marginLeft="40dp"
-            android:layout_marginStart="40dp" />
+            android:layout_marginStart="40dp"
+            android:hint="Name"/>
 
     </TableRow>
 

@@ -42,10 +42,6 @@
             android:name="org.lightsys.missionaryapp.views.UpdateNotificationActivity"
             android:label="Prayer Notification" >
         </activity>
-        <activity
-            android:name=".views.ContactDonorActivity"
-            android:label="Contact Donor">
-        </activity>
 
         <activity
             android:name=".views.PostNoteActivity"
