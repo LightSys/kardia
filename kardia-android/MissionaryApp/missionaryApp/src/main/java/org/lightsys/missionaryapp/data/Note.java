@@ -17,6 +17,7 @@ public class Note {
     private String noteType;
     private int    numberPrayed;
 
+    /* ************************* Construct ************************* */
     public Note() {}
 
     public Note(int note_id, int missionaryID, String missionaryName, String noteType,

@@ -11,6 +11,7 @@ public class Fund {
 	private String fundClass;
 	private String annotation;
 
+    /* ************************* Construct ************************* */
 	public Fund() {}
 
 	public Fund(int FundId, int missionaryId, String fundName, String fundDesc,

@@ -8,9 +8,10 @@ package org.lightsys.missionaryapp.data;
  */
 public class NewItem {
 
-    private String itemType; //holds item type (prayer request, update, etc.)
+    private String itemType;    //holds item type (prayer request, update, etc.)
     private String itemMessage;
 
+    /* ************************* Construct ************************* */
     public NewItem(String ItemType, String ItemMessage) {
         itemType    = ItemType;
         itemMessage = ItemMessage;

@@ -11,6 +11,7 @@ public class Donor {
     private int    id;
     private String name;
 
+    /* ************************* Construct ************************* */
     public Donor() {}
 
     public Donor(int id, String name) {

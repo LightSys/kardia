@@ -4,6 +4,7 @@ package org.lightsys.missionaryapp.data;
  * @author Andrew Lockridge
  * created on 6/26/2015.
  *
+ * todo modify to allow user to publish a letter?
  * Class represents a prayer letter published by a missionary which is displayed as a pdf
  */
 public class PrayerLetter {
@@ -15,6 +16,7 @@ public class PrayerLetter {
     private String date;
     private int    missionaryId;
 
+    /* ************************* Construct ************************* */
     public PrayerLetter() {}
 
     public PrayerLetter(int id, String date, String title, String missionaryName,

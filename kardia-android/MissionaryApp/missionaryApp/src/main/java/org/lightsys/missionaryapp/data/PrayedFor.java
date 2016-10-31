@@ -16,6 +16,7 @@ public class PrayedFor {
     private int    supporterId;
     private String supporterName;
 
+    /* ************************* Construct ************************* */
     public PrayedFor() {}
 
     public PrayedFor(int prayedForId, String prayedForComments, String date, int noteId,

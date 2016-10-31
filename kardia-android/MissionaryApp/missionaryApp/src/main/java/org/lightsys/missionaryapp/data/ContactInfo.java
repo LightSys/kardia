@@ -4,7 +4,7 @@ package org.lightsys.missionaryapp.data;
  * @author otter57
  * created on 7/6/16.
  *
- * Stores Contact Info (Email, Phone, Cell) for contacting donors
+ * Class that stores Contact Info (Email, Phone, Cell) for contacting donors
  */
 public class ContactInfo {
     private int    partnerId;
@@ -12,6 +12,7 @@ public class ContactInfo {
     private String phone;
     private String cell;
 
+    /* ************************* Construct ************************* */
     public ContactInfo() {}
 
     public ContactInfo(int partnerId, String email, String phone, String cell) {

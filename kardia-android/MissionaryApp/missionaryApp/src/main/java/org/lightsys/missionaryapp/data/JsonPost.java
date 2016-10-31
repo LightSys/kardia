@@ -3,7 +3,8 @@ package org.lightsys.missionaryapp.data;
 /**
  * @author Judah
  * created on 7/11/2016.
- * stores stuff so that a failed json post can be reposted later
+ *
+ * class that stores stuff so that a failed json post can be reposted later
  */
 public class JsonPost {
 
@@ -12,6 +13,7 @@ public class JsonPost {
     private String jsonString;
     private int accountID;
 
+    /* ************************* Construct ************************* */
     public JsonPost(long ID, String postUrl, String jSonString, int accountId) {
         id = ID;
         url = postUrl;
