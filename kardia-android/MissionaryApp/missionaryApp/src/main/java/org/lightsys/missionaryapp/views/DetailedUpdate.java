@@ -106,7 +106,7 @@ public class DetailedUpdate extends Fragment {
 
         String[] from = {"userName", "date", "text"};//stuff for the adapter
         int[] to = {R.id.userName,  R.id.dateText, R.id.commentText};//more stuff for the adapter
-        if (commentList != null){
+        if (!commentList.isEmpty()){
             //if we have comments, set them to the adapter
             CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, R.layout.comment_item, from, to);
 

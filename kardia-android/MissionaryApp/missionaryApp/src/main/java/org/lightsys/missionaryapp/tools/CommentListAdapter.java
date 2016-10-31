@@ -18,15 +18,12 @@ import java.util.Map;
 public class CommentListAdapter extends SimpleAdapter {
 
     private final Context         context;
-    private final ArrayList<View> views;
-
     private final ArrayList<HashMap<String, String>> data;
 
     public CommentListAdapter(Context context, ArrayList<HashMap<String, String>> data,
                            int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
         this.context = context;
-        this.views   = new ArrayList<View>();
         this.data    = data;
     }
 
@@ -50,8 +47,6 @@ public class CommentListAdapter extends SimpleAdapter {
         rowView.setUserName(pieces.get("UserName"));
         rowView.setDateText(formatter.getFormattedDate(pieces.get("Date")));
         rowView.setCommentText(pieces.get("Text"));
-
-        views.add(rowView);
 
         return rowView;
     }

@@ -21,7 +21,6 @@ import java.util.Map;
 public class NoteListAdapter extends SimpleAdapter {
 
     private final Context         context;
-    private final ArrayList<View> views;
 
     private final ArrayList<HashMap<String, String>> data;
 
@@ -29,7 +28,6 @@ public class NoteListAdapter extends SimpleAdapter {
                             int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
         this.context = context;
-        this.views   = new ArrayList<View>();
         this.data    = data;
     }
 
@@ -67,7 +65,6 @@ public class NoteListAdapter extends SimpleAdapter {
             } else if (pieces.get("type").equals("Letter")) {
                 rowView.setImage(R.drawable.prayer_letter_icon);
             }
-        views.add(rowView);
 
         return rowView;
     }

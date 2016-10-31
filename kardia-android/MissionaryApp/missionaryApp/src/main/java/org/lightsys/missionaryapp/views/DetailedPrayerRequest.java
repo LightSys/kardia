@@ -158,7 +158,7 @@ public class DetailedPrayerRequest extends Fragment{
 
         String[] from = {"userName", "date", "text"};//stuff for the adapter
         int[] to = {R.id.userName,  R.id.dateText, R.id.commentText};//more stuffs for the adapter
-        if (commentList != null){
+        if (!commentList.isEmpty()){
             //if haz comments, set comments to adapter
             CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, R.layout.comment_item, from, to);
 
