@@ -32,18 +32,11 @@ import java.util.Calendar;
 public class CommentActivity extends Activity {
 
 
-    private TextView originalPostText;
     private TextView commentText;
-    private TextView userIDText;
-    private Button   submit;
-    private Button   cancel;
 
     private int    noteId       = -1;
     private int    missionaryId = -1;
     private String comment      = "";
-
-    //error message
-    final private String MISSING_POST = "Original post missing!";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,16 +45,17 @@ public class CommentActivity extends Activity {
         setContentView(R.layout.post_comment_layout);
 
 
-        originalPostText = (TextView)findViewById(R.id.originalPostText);
+        TextView originalPostText = (TextView) findViewById(R.id.originalPostText);
         commentText      = (EditText)findViewById(R.id.commentText);
-        userIDText       = (EditText)findViewById(R.id.accountID);
-        submit           = (Button)  findViewById(R.id.submitButton);
-        cancel           = (Button)  findViewById(R.id.cancelButton);
+        TextView userIDText = (EditText) findViewById(R.id.accountID);
+        Button submit = (Button) findViewById(R.id.submitButton);
+        Button cancel = (Button) findViewById(R.id.cancelButton);
 
         if (getIntent().getStringExtra("text") != null) {
             originalPostText.setText(getIntent().getStringExtra("text"));
         }
         else {
+            String MISSING_POST = "Original post missing!";
             originalPostText.setText(MISSING_POST);
         }
 

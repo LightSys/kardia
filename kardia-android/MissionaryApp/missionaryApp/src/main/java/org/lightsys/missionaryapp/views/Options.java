@@ -32,19 +32,16 @@ public class Options extends Fragment {
 
     private final String EXTRA_DELETE = "delete";
 
-    private Button  applyButton;
     private Spinner refreshPeriods, giftPeriods;
     private ToggleButton    reminderOnOff;
     private TextView        reminderDetails;
-
-    private LocalDBHandler db;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View v = inflater.inflate(R.layout.options_layout, container, false);
         getActivity().setTitle("Options");
 
-        applyButton = (Button) v.findViewById(R.id.applyButton);
+        Button applyButton = (Button) v.findViewById(R.id.applyButton);
         refreshPeriods = (Spinner) v.findViewById(R.id.refreshPeriodsSpinner);
         giftPeriods = (Spinner) v.findViewById(R.id.giftPeriodsSpinner);
         reminderOnOff = (ToggleButton) v.findViewById(R.id.reminderOnOffSwitch);
@@ -83,15 +80,15 @@ public class Options extends Fragment {
         String period = db.getGiftPeriod();
         db.close();
         String[] updatePeriods = getResources().getStringArray(R.array.refresh_times);
-        String[] allgiftPeriods = getResources().getStringArray(R.array.gift_periods);
+        String[] allGiftPeriods = getResources().getStringArray(R.array.gift_periods);
 
         for (int i = 0; i < updatePeriods.length; i++) {
             if (updatePeriods[i].equals(refresh)) {
                 refreshPeriods.setSelection(i);
             }
         }
-        for (int i = 0; i < allgiftPeriods.length; i++) {
-            if (allgiftPeriods[i].equals(period)) {
+        for (int i = 0; i < allGiftPeriods.length; i++) {
+            if (allGiftPeriods[i].equals(period)) {
                 giftPeriods.setSelection(i);
             }
         }
@@ -120,7 +117,7 @@ public class Options extends Fragment {
     }
     public void onResume(){
         super.onResume();
-        db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         setAlarmInfo(db);
     }
 

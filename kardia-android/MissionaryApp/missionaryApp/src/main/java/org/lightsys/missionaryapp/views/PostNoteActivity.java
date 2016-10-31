@@ -77,7 +77,7 @@ public class PostNoteActivity extends Activity {
                 String messageStr = noteText.getText().toString();
                 String subjectStr = subject.getText().toString();
                 String noteType   = contactType.getSelectedItem().toString();
-                Account account   = null;
+                Account account;
 
                 //find account
                 account = db.getAccount();

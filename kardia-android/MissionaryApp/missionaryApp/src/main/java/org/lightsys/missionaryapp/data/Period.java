@@ -15,9 +15,9 @@ public class Period {
 	
 	public Period() {}
 	
-	public Period(int Id, String periodname, String date, int[] giftTotal, int fundId){
+	public Period(int Id, String periodName, String date, int[] giftTotal, int fundId){
 		this.setId(Id);
-		this.setPeriodName(periodname);
+		this.setPeriodName(periodName);
 		this.setDate(date);
 		this.setGiftTotal(giftTotal);
 		this.setFundId(fundId);

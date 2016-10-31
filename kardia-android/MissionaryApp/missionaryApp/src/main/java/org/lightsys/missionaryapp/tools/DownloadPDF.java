@@ -75,7 +75,7 @@ public class DownloadPDF extends AsyncTask<String, Void, String> {
             client.setCredentialsProvider(credProvider);
             HttpResponse response = client.execute(new HttpGet(url));
 
-            // Create a new file and connect the outputstream to this new file
+            // Create a new file and connect the outputStream to this new file
             File output = new File(outputDir, outputFile);
             FileOutputStream fStream = new FileOutputStream(output);
             inputStream = response.getEntity().getContent();

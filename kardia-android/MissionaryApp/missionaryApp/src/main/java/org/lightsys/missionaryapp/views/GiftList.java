@@ -119,7 +119,7 @@ public class GiftList extends Fragment{
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
 
 		// display donor name, fund name, date, and amount for all gifts
-		String[] from = {"donorname", "giftname", "giftdate", "giftamount"};
+		String[] from = {"donor_name", "gift_name", "gift_date", "gift_amount"};
         int[] to = {R.id.donorText, R.id.fundNameText, R.id.dateText, R.id.amountText};
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item_layout, from, to );
         listview.setAdapter(adapter);
@@ -130,9 +130,9 @@ public class GiftList extends Fragment{
 	}
 	
 	/**
-	 * Formats the gift information into a hashmap arraylist.
+	 * Formats the gift information into a HashMap ArrayList.
 	 * 
-	 * @return a hashmap array with gift information, to be used in a SimpleAdapter
+	 * @return a HashMap array with gift information, to be used in a SimpleAdapter
 	 */
 	private ArrayList<HashMap<String,String>> generateListItems(){
 		ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
@@ -140,10 +140,10 @@ public class GiftList extends Fragment{
 		for(Gift g : gifts){
 			HashMap<String,String> hm = new HashMap<String,String>();
 
-			hm.put("donorname", g.getGiftDonor());
-			hm.put("giftname", g.getGiftFundDesc());
-			hm.put("giftamount", Formatter.amountToString(g.getGiftAmount()));
-			hm.put("giftdate", Formatter.getFormattedDate(g.getGiftDate()));
+			hm.put("donor_name", g.getGiftDonor());
+			hm.put("gift_name", g.getGiftFundDesc());
+			hm.put("gift_amount", Formatter.amountToString(g.getGiftAmount()));
+			hm.put("gift_date", Formatter.getFormattedDate(g.getGiftDate()));
 			
 			aList.add(hm);
 		}
@@ -163,11 +163,11 @@ public class GiftList extends Fragment{
             args.putInt(DetailedGift.ARG_DONOR_ID, gifts.get(position).getGiftDonorId());
             args.putString(DetailedGift.ARG_DONOR_NAME, gifts.get(position).getGiftDonor());
 
-            DetailedGift newfrag = new DetailedGift();
-			newfrag.setArguments(args);
+            DetailedGift newFrag = new DetailedGift();
+			newFrag.setArguments(args);
 					
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-			transaction.replace(R.id.contentFrame, newfrag);
+			transaction.replace(R.id.contentFrame, newFrag);
 			transaction.addToBackStack("ToDetailedGiftView");
 			transaction.commit();
 		}

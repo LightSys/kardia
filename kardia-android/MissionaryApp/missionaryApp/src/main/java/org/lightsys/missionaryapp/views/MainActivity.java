@@ -45,8 +45,7 @@ public class MainActivity extends ActionBarActivity {
 	private ListView              mDrawerList;
 	private CharSequence          mTitle;
 	private Fragment              fragment;
-	private Account               account;
-    private int                   accountid = 0;
+    private int                   accountId = 0;
 
 	//stuff to automatically refresh the current fragment
 	private final android.os.Handler refreshHandler = new android.os.Handler();
@@ -119,7 +118,7 @@ public class MainActivity extends ActionBarActivity {
 		/* Check for accounts, updates, and load content */
 		LocalDBHandler db = new LocalDBHandler(this, null);
 
-		account = db.getAccount();
+        Account account = db.getAccount();
 
 		//Delete timestamp if no accounts exist
 		//Launch login page to add account
@@ -228,7 +227,7 @@ public class MainActivity extends ActionBarActivity {
 		LocalDBHandler db = new LocalDBHandler(this, null);
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		Account account = db.getAccount();
-		accountid = account.getId();
+		accountId = account.getId();
 
 		db.close();
 		switch(position){
@@ -305,8 +304,8 @@ public class MainActivity extends ActionBarActivity {
 	public void onResume() {
 		super.onResume();
 		LocalDBHandler db = new LocalDBHandler(this, null);
-		if(accountid != 0) {
-			if (accountid != db.getAccount().getId()) {
+		if(accountId != 0) {
+			if (accountId != db.getAccount().getId()) {
 				FragmentManager fragmentManager = getSupportFragmentManager();
 				fragment = new HomePage();
 				fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();

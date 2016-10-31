@@ -4,7 +4,7 @@ package org.lightsys.missionaryapp.data;
  * Class represents a Fund connected with the user
  */
 public class Fund {
-	private int    FundId;
+	private int    fundId;
 	private int    missionaryId;
 	private String fundName;
 	private String fundDesc;
@@ -24,7 +24,7 @@ public class Fund {
 	}
 
 	/* ************************* Set ************************* */
-	public void setFundId(int fundid)                { FundId = fundid;}
+	public void setFundId(int fundId)                { this.fundId = fundId;}
 
 	public void setMissionaryId(int missionaryId)    { this. missionaryId = missionaryId;}
 
@@ -37,7 +37,7 @@ public class Fund {
 	public void setFundAnnotation(String annotation) { this.annotation = annotation; }
 
 	/* ************************* Get ************************* */
-	public int    getFundId()         {return FundId;}
+	public int    getFundId()         {return fundId;}
 
 	public int    getMissionaryId()   { return missionaryId;}
 

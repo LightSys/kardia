@@ -36,12 +36,10 @@ import java.util.HashMap;
 public class DetailedPrayerRequest extends Fragment{
 
     final static String ARG_REQUEST_ID = "request_id";
-    private int         request_id = -1, isswitched = 0;
-    private Button      prayerButton;
-    private TextView    supporterlist, textBelow;
+    private int         requestId = -1, isSwitched = 0;
+    private TextView    supporterList;
     private Note        request;
-    private Button      commentButton;
-    private String      nameslist = "no one is currently praying for this request";
+    private String      namesList = "no one is currently praying for this request";
 
     private final ArrayList<HashMap<String, String>> commentList = new ArrayList<HashMap<String, String>>();//list of comments for this item
 
@@ -50,16 +48,16 @@ public class DetailedPrayerRequest extends Fragment{
         View v = inflater.inflate(R.layout.prayer_request_detailedview, container, false);
         getActivity().setTitle("Prayer Request");
 
-        commentButton = (Button)v.findViewById(R.id.commentButton);
+        Button commentButton = (Button) v.findViewById(R.id.commentButton);
 
         commentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent startCommentActivity = new Intent(getActivity(), CommentActivity.class);
-                Note note = new LocalDBHandler(getActivity().getBaseContext(), null).getNoteForID(request_id);
+                Note note = new LocalDBHandler(getActivity().getBaseContext(), null).getNoteForID(requestId);
                 //stuff that the comment page needs to know
                 startCommentActivity.putExtra("text", note.getNoteText());
-                startCommentActivity.putExtra("noteId", request_id);
+                startCommentActivity.putExtra("noteId", requestId);
                 startCommentActivity.putExtra("noteType", "Update");
                 startCommentActivity.putExtra("missionaryId", note.getMissionaryID());
 
@@ -78,8 +76,8 @@ public class DetailedPrayerRequest extends Fragment{
         if(args != null){
             updateRequestView(args.getInt(ARG_REQUEST_ID));
         }
-        else if(request_id != -1){
-            updateRequestView(request_id);
+        else if(requestId != -1){
+            updateRequestView(requestId);
         }
     }
 
@@ -95,27 +93,27 @@ public class DetailedPrayerRequest extends Fragment{
         TextView subject        = (TextView)getActivity().findViewById(R.id.nameText);
         TextView date           = (TextView)getActivity().findViewById(R.id.dateText);
         TextView text           = (TextView)getActivity().findViewById(R.id.commentText);
-        supporterlist           = (TextView)getActivity().findViewById(R.id.supporterList);
-        textBelow               = (TextView)getActivity().findViewById(R.id.textBelowPrayingButton);
-        prayerButton            = (Button)  getActivity().findViewById(R.id.scheduleNotification);
+        supporterList = (TextView)getActivity().findViewById(R.id.supporterList);
+        TextView textBelow = (TextView) getActivity().findViewById(R.id.textBelowPrayingButton);
+        Button prayerButton = (Button) getActivity().findViewById(R.id.scheduleNotification);
 
         request = db.getNoteForID(request_id);
-        this.request_id = request_id;
+        this.requestId = request_id;
 
         if (request.getNumberPrayed() > 0) {
-            nameslist = "";
-            ArrayList<PrayedFor> prayedforlist = db.getPrayedFor();
-            for (int i = 0; i < prayedforlist.size();i++) {
-                PrayedFor p = prayedforlist.get(i);
-                if (!nameslist.contains(p.getSupporterName())) {
+            namesList = "";
+            ArrayList<PrayedFor> prayedForList = db.getPrayedFor();
+            for (int i = 0; i < prayedForList.size();i++) {
+                PrayedFor p = prayedForList.get(i);
+                if (!namesList.contains(p.getSupporterName())) {
                     if (i != 0) {
-                        nameslist = nameslist + ", ";
+                        namesList = namesList + ", ";
                     }
-                    nameslist = nameslist + p.getSupporterName();
+                    namesList = namesList + p.getSupporterName();
                 }
             }
         }
-        supporterlist.setText(nameslist);
+        supporterList.setText(namesList);
 
         missionaryName.setText(request.getMissionaryName());
         subject.setText("Subject: " + request.getSubject());
@@ -138,17 +136,17 @@ public class DetailedPrayerRequest extends Fragment{
         prayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isswitched == 0) {
-                    isswitched = 1;
+                if (isSwitched == 0) {
+                    isSwitched = 1;
                     if (numPrayed>0){
-                        supporterlist.setVisibility(View.VISIBLE);
+                        supporterList.setVisibility(View.VISIBLE);
                     } else {
-                        supporterlist.setVisibility(View.VISIBLE);
+                        supporterList.setVisibility(View.VISIBLE);
                     }
 
                 } else{
-                    isswitched=0;
-                    supporterlist.setVisibility(View.INVISIBLE);
+                    isSwitched =0;
+                    supporterList.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -178,7 +176,7 @@ public class DetailedPrayerRequest extends Fragment{
 
         for (Comment comment : comments){
             HashMap<String, String> hm = new HashMap<String, String>();
-            if (comment.getNoteID() == request_id){
+            if (comment.getNoteID() == requestId){
                 hm.put("UserName", comment.getUserName());
                 hm.put("Date", comment.getDate());
                 hm.put("Text", comment.getComment());
@@ -237,8 +235,8 @@ public class DetailedPrayerRequest extends Fragment{
      */
     private void updateDbToPrayedFor() {
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-        request = db.getNoteForID(request_id);
-        db.updateNote(request_id, request.getNumberPrayed());
+        request = db.getNoteForID(requestId);
+        db.updateNote(requestId, request.getNumberPrayed());
         db.close();
     }
 
@@ -258,6 +256,6 @@ public class DetailedPrayerRequest extends Fragment{
     @Override
     public void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
-        outState.putInt(ARG_REQUEST_ID, request_id);
+        outState.putInt(ARG_REQUEST_ID, requestId);
     }
 }

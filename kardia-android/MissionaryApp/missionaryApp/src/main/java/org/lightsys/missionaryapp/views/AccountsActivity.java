@@ -36,12 +36,11 @@ import org.lightsys.missionaryapp.R;
  */
 public class AccountsActivity extends Activity{
 
-
-	private ListView accountsList;
+    private ListView accountsList;
 	private EditText accountName, accountPass, serverName, donorID;
 	private TextView connectedAccounts;
 	private Account  account = new Account();
-	private Button   connectButton, finishButton;
+	private Button   finishButton;
 
 	/**
 	 * Creates the view, and loads any pre-existing accounts into the ListView
@@ -52,14 +51,14 @@ public class AccountsActivity extends Activity{
 		
 		setContentView(R.layout.account_page_layout);
 		
-		accountsList      = (ListView)findViewById(R.id.connectedList);
-		accountName       = (EditText)findViewById(R.id.usernameInput);
-		accountPass       = (EditText)findViewById(R.id.passwordInput);
-		serverName        = (EditText)findViewById(R.id.serverNameInput);
-		donorID           = (EditText)findViewById(R.id.donorIdInput);
-		connectedAccounts = (TextView)findViewById(R.id.textView);
-		connectButton     = (Button)  findViewById(R.id.connectButton);
-		finishButton      = (Button)  findViewById(R.id.finishButton);
+		accountsList         = (ListView)findViewById(R.id.connectedList);
+		accountName          = (EditText)findViewById(R.id.usernameInput);
+		accountPass          = (EditText)findViewById(R.id.passwordInput);
+		serverName           = (EditText)findViewById(R.id.serverNameInput);
+		donorID              = (EditText)findViewById(R.id.donorIdInput);
+		connectedAccounts    = (TextView)findViewById(R.id.textView);
+		Button connectButton = (Button)  findViewById(R.id.connectButton);
+		finishButton         = (Button)  findViewById(R.id.finishButton);
 
 		// Adds EditTexts to text listener for resetting errors
 		accountName.addTextChangedListener(new GenericTextWatcher(accountName));
@@ -252,10 +251,10 @@ public class AccountsActivity extends Activity{
 			// Launch EditAccountActivity and pass account details for activity set-up
 			Intent intent = new Intent(this, EditAccountActivity.class);
 			Log.w("BasicAuth", "The donor id being put into the intent: " + temp.getId());
-			intent.putExtra("oldname", temp.getAccountName());
-			intent.putExtra("oldpass", temp.getAccountPassword());
-			intent.putExtra("oldserver", temp.getServerName());
-			intent.putExtra("olddonorid", temp.getId());
+			intent.putExtra("old_name", temp.getAccountName());
+			intent.putExtra("old_pass", temp.getAccountPassword());
+			intent.putExtra("old_server", temp.getServerName());
+			intent.putExtra("old_donor_id", temp.getId());
 
 			startActivityForResult(intent, 0);
 
