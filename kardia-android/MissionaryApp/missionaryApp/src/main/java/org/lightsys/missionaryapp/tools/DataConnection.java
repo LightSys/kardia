@@ -99,6 +99,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         // If valid account was connected, close the account activity
         // Otherwise refresh the page the user was on
         if (dataContext.getClass() == MainActivity.class) {
+            assert dataActivity != null;
             dataActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -107,6 +108,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             });
         } else {
             if (validAccount) {
+                assert dataActivity != null;
                 dataActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -175,7 +177,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * Pulls all data attached to account
      */
     private void DataPull()  {
-        db = new LocalDBHandler(dataContext, null);
+        db = new LocalDBHandler(dataContext);
         Host_Name = account.getServerName();
         Password = account.getAccountPassword();
         AccountName = account.getAccountName();

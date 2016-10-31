@@ -9,6 +9,7 @@ import android.widget.Toast;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -121,7 +122,7 @@ public class PostJson extends AsyncTask<String, Void, String> {
     /*
         function that posts a json object to the server
     */
-    private String performPostCall(org.apache.http.client.CookieStore cookies, String requestURL, JSONObject jsonObject) {
+    private void performPostCall(CookieStore cookies, String requestURL, JSONObject jsonObject) {
 
         URL url;
         String response = "";
@@ -174,8 +175,6 @@ public class PostJson extends AsyncTask<String, Void, String> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return response;
     }
 
     //unfinished attempt to switch usage of http client to url connection
@@ -244,7 +243,7 @@ public class PostJson extends AsyncTask<String, Void, String> {
         else {
             Toast.makeText(context, "Network Issues: Your data is waiting to be sent", Toast.LENGTH_SHORT).show();
             String jsonString = jsonObject.toString();
-            LocalDBHandler db = new LocalDBHandler(context, null);
+            LocalDBHandler db = new LocalDBHandler(context);
             db.addJson_post(Calendar.getInstance().getTimeInMillis(), backupUrl, jsonString, account.getId());
 
         }

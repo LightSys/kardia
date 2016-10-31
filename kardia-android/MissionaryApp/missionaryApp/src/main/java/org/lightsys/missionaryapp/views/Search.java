@@ -195,7 +195,7 @@ public class Search extends Fragment{
 	}
 
 	private void doSearch(){
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+		LocalDBHandler db = new LocalDBHandler(getActivity());
 
 		// Construct parameters to set for the database search
 		String startDate   = "";

@@ -45,11 +45,11 @@ public class NoteList extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.activity_main, container, false);
+        View v = inflater.inflate(R.layout.activity_main_layout, container, false);
 
         getActivity().setTitle("Prayer Requests/Updates");
 
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
         combined.clear();
         int account_id = db.getAccount().getId();
         ArrayList<Note> notes = db.getNotesForMissionary(account_id);
@@ -89,7 +89,7 @@ public class NoteList extends Fragment {
         int[] to = {R.id.nameText,  R.id.dateText, R.id.missionaryName, R.id.textAbovePrayingButton, R.id.textBelowPrayingButton};
 
         NoteListAdapter adapter = new NoteListAdapter(getActivity(), itemList,
-                R.layout.note_listview_item, from, to);
+                from, to);
 
         ListView listview = (ListView)v.findViewById(R.id.infoList);
         listview.setAdapter(adapter);
@@ -134,7 +134,7 @@ public class NoteList extends Fragment {
                     }
                 } else { // The selected item is a prayer letter
                     PrayerLetter letter = (PrayerLetter) combined.get(position);
-                    LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+                    LocalDBHandler db = new LocalDBHandler(getActivity());
                     Account account = db.getAccount();
                     db.close();
 

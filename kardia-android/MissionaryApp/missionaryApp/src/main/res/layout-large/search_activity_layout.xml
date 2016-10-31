@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/linearLayout"
-    android:layout_width="match_parent"
+              android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat" xmlns:tools="http://schemas.android.com/tools">
 
     <TableRow
-        android:id="@+id/tableRow3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -22,7 +20,6 @@
             android:layout_gravity="center_vertical" />
 
         <TextView
-            android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -78,7 +75,6 @@
     </TableRow>
 
     <TableRow
-        android:id="@+id/tableRow5"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
@@ -94,7 +90,6 @@
             tools:ignore="HardcodedText" />
 
         <TextView
-            android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -122,7 +117,6 @@
         android:visibility="invisible">
 
         <TextView
-            android:id="@+id/dollarSign1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/dollar_sign"
@@ -170,7 +164,6 @@
     </TableRow>
 
     <TableRow
-        android:id="@+id/tableRow6"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
@@ -184,7 +177,6 @@
             android:textSize="22sp"/>
 
         <TextView
-            android:id="@+id/textView4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -208,7 +200,6 @@
         android:visibility="invisible" />
 
     <TableRow
-        android:id="@+id/tableRow4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="80dp"

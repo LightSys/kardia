@@ -149,8 +149,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	/**
 	 * Creates an instance of the database
 	 */
-	public LocalDBHandler(Context context, CursorFactory factory) {
-		super(context, DATABASE_NAME, factory, DATABASE_VERSION);
+	public LocalDBHandler(Context context) {
+		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
 	/**

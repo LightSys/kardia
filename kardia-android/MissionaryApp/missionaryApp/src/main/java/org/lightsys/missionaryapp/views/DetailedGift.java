@@ -25,7 +25,7 @@ import org.lightsys.missionaryapp.R;
  * The gift is determined by the "position" int passed into the fragment
  * which then uses that to check the list of gifts and choose the one at
  * that spot. At which point it grabs all the needed information and displays
- * it in the gift_detailed_view_layout.
+ * it in the gift_detailed_layout.
  */
 public class DetailedGift extends Fragment {
 
@@ -37,7 +37,7 @@ public class DetailedGift extends Fragment {
     private String donor_name = "", phone_cell = "", email_info = "";
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.gift_detailed_view_layout, container, false);
+        View v = inflater.inflate(R.layout.gift_detailed_layout, container, false);
         getActivity().setTitle("Gift");
 
         if (savedInstanceState != null) {
@@ -75,7 +75,7 @@ public class DetailedGift extends Fragment {
         TextView phone     = (TextView) getActivity().findViewById(R.id.phoneText);
 
 
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
         Gift g = db.getGift(gift_id);
         ContactInfo contactinfo = db.getContactInfoById(donor_id);
         db.close();

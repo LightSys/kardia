@@ -42,7 +42,7 @@ public class DetailedUpdate extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.update_detailedview_layout, container, false);
+        View v = inflater.inflate(R.layout.update_detailed_layout, container, false);
         getActivity().setTitle("Update");
 
         commentButton = (Button)v.findViewById(R.id.commentButton);
@@ -62,7 +62,7 @@ public class DetailedUpdate extends Fragment {
                 @Override
                 public void onClick(View view) {
                     Intent startCommentActivity = new Intent(getActivity(), CommentActivity.class);
-                    Note note = new LocalDBHandler(getActivity().getBaseContext(), null).getNoteForID(update_id);
+                    Note note = new LocalDBHandler(getActivity().getBaseContext()).getNoteForID(update_id);
                     //stuff that the comment page needs to know
                     startCommentActivity.putExtra("text", note.getNoteText());
                     startCommentActivity.putExtra("noteId", update_id);
@@ -91,7 +91,7 @@ public class DetailedUpdate extends Fragment {
         TextView date           = (TextView)getActivity().findViewById(R.id.dateText);
         TextView text           = (TextView)getActivity().findViewById(R.id.commentText);
 
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
         Note update = db.getNoteForID(update_id);
         db.close();
 
@@ -108,7 +108,7 @@ public class DetailedUpdate extends Fragment {
         int[] to = {R.id.userName,  R.id.dateText, R.id.commentText};//more stuff for the adapter
         if (!commentList.isEmpty()){
             //if we have comments, set them to the adapter
-            CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, R.layout.comment_item, from, to);
+            CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, from, to);
 
             ListView listview = (ListView)getActivity().findViewById(R.id.commentsList);
             listview.setAdapter(adapter);
@@ -120,7 +120,7 @@ public class DetailedUpdate extends Fragment {
     //loads a list of comments on the post
     private void loadComments() {
         commentList.clear();
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
         ArrayList<Comment> comments = db.getComments();
         comments = sortByDate(comments);//sort comments so that newest ones are first
 

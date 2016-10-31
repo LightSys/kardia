@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/linearLayout"
-    android:layout_width="match_parent"
+                android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/noise_blue_repeat" >
 
@@ -26,7 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="18dp"
             android:layout_marginStart="18dp"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:layout_toRightOf="@id/profilePicImage"
             android:layout_toEndOf="@id/profilePicImage"
             android:layout_alignTop="@id/profilePicImage"/>
@@ -39,7 +38,7 @@
             android:layout_marginLeft="17dp"
             android:layout_marginStart="17dp"
             android:layout_below="@+id/nameText"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:layout_alignLeft="@id/nameText"
             android:layout_alignStart="@id/nameText"/>
 
@@ -51,9 +50,9 @@
             android:layout_marginLeft="17dp"
             android:layout_marginStart="17dp"
             android:layout_below="@+id/emailText"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:layout_alignLeft="@id/nameText"
-            android:layout_alignStart="@id/nameText" />
+            android:layout_alignStart="@id/nameText"/>
 
     </RelativeLayout>
 
@@ -69,8 +68,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/fundText"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:textSize="22sp" />
+        android:layout_marginTop="13dp"
+        android:textSize="26sp" />
 
     <TextView
         android:id="@+id/giftAmountText"
@@ -78,8 +77,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/dateText"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:textSize="22sp"
+        android:layout_marginTop="13dp"
+        android:textSize="26sp"
         android:textColor="#37AD00" />
 
     <TextView
@@ -88,8 +87,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/giftAmountText"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:textSize="20sp" />
+        android:layout_marginTop="13dp"
+        android:textSize="24sp" />
 
     <TextView
         android:id="@+id/fundText"
@@ -97,10 +96,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/donorInfoLayout"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="13dp"
         android:layout_marginRight="18dp"
         android:layout_marginLeft="18dp"
-        android:textSize="26sp"
+        android:textSize="30sp"
         android:gravity="center"/>
 
 </RelativeLayout>

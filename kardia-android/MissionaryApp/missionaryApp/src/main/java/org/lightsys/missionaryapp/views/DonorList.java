@@ -33,13 +33,13 @@ public class DonorList extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
 
         donors  = db.getDonors();
         contact = db.getContactInfo();
         db.close();
 
-        View v = inflater.inflate(R.layout.activity_main, container, false);
+        View v = inflater.inflate(R.layout.activity_main_layout, container, false);
         getActivity().setTitle("Donors");
 
         // Map data fields to layout fields
@@ -100,7 +100,7 @@ public class DonorList extends Fragment {
             args.putString("donor_name", donors.get(position).getName());
             args.putInt("donor_id", ID);
 
-            LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+            LocalDBHandler db = new LocalDBHandler(getActivity());
             ContactInfo contactinfo = db.getContactInfoById(ID);
             if (!contactinfo.getCell().isEmpty()) {
                 args.putString("donor_phone", contactinfo.getCell());

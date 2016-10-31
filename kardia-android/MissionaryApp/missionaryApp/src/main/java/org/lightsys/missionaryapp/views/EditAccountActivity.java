@@ -108,7 +108,7 @@ public class EditAccountActivity extends Activity {
 				}
 
 				// If account already stored, display message and return
-				LocalDBHandler db = new LocalDBHandler(EditAccountActivity.this, null);
+				LocalDBHandler db = new LocalDBHandler(EditAccountActivity.this);
 				Account account = db.getAccount();
                 db.close();
                 if (account.getAccountName().equals(name) && account.getServerName().equals(server) &&

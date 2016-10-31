@@ -45,7 +45,7 @@ public class DetailedPrayerRequest extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.prayer_request_detailedview, container, false);
+        View v = inflater.inflate(R.layout.prayer_request_detailed_layout, container, false);
         getActivity().setTitle("Prayer Request");
 
         Button commentButton = (Button) v.findViewById(R.id.commentButton);
@@ -54,7 +54,7 @@ public class DetailedPrayerRequest extends Fragment{
             @Override
             public void onClick(View view) {
                 Intent startCommentActivity = new Intent(getActivity(), CommentActivity.class);
-                Note note = new LocalDBHandler(getActivity().getBaseContext(), null).getNoteForID(requestId);
+                Note note = new LocalDBHandler(getActivity().getBaseContext()).getNoteForID(requestId);
                 //stuff that the comment page needs to know
                 startCommentActivity.putExtra("text", note.getNoteText());
                 startCommentActivity.putExtra("noteId", requestId);
@@ -87,7 +87,7 @@ public class DetailedPrayerRequest extends Fragment{
      */
 
     private void updateRequestView(final int request_id){
-        final LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        final LocalDBHandler db = new LocalDBHandler(getActivity());
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
         TextView subject        = (TextView)getActivity().findViewById(R.id.nameText);
@@ -158,7 +158,7 @@ public class DetailedPrayerRequest extends Fragment{
         int[] to = {R.id.userName,  R.id.dateText, R.id.commentText};//more stuffs for the adapter
         if (!commentList.isEmpty()){
             //if haz comments, set comments to adapter
-            CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, R.layout.comment_item, from, to);
+            CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, from, to);
 
             ListView listview = (ListView)getActivity().findViewById(R.id.commentsList);
             listview.setAdapter(adapter);
@@ -170,7 +170,7 @@ public class DetailedPrayerRequest extends Fragment{
     //loads a list of comments on the item
     private void loadComments() {
         commentList.clear();
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
         ArrayList<Comment> comments = db.getComments();
         comments = sortByDate(comments);
 
@@ -234,7 +234,7 @@ public class DetailedPrayerRequest extends Fragment{
      * Updates prayer request to signify it is being prayed for
      */
     private void updateDbToPrayedFor() {
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
         request = db.getNoteForID(requestId);
         db.updateNote(requestId, request.getNumberPrayed());
         db.close();

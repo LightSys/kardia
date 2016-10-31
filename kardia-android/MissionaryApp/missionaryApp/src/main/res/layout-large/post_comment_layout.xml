@@ -7,7 +7,6 @@
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/scroll"
         android:fillViewport="false"
         android:background="@drawable/noise_blue_repeat">
 

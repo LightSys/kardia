@@ -22,7 +22,6 @@
             android:layout_marginTop="50dp"
             >
             <TextView
-                android:id="@+id/startDateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
@@ -47,7 +46,6 @@
             android:layout_marginTop="50dp">
 
             <TextView
-                android:id="@+id/endDateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/end_date"
@@ -70,7 +68,6 @@
             android:layout_marginTop="50dp">
 
             <TextView
-                android:id="@+id/timeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/time"
@@ -87,13 +84,11 @@
         </TableRow>
 
         <TableRow
-            android:id="@+id/frequencyRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp">
 
             <TextView
-                android:id="@+id/frequencyText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/frequency_text"
@@ -113,7 +108,6 @@
     </TableLayout>
 
     <TableRow
-        android:id="@+id/cancelSetRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

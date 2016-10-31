@@ -42,7 +42,7 @@ public class DetailedDonor extends Fragment{
     private ArrayList<Gift> gifts      = new ArrayList<Gift>();
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        View v = inflater.inflate(R.layout.donor_detailed_view_layout, container, false);
+        View v = inflater.inflate(R.layout.donor_detailed_layout, container, false);
 
         getActivity().setTitle("Donor");
         Bundle args = getArguments();
@@ -97,7 +97,7 @@ public class DetailedDonor extends Fragment{
         });
 
         //put gift list for donor
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
         gifts = db.getGiftsByDonor(donor_id);
 
         ListView listview = (ListView) v.findViewById(R.id.infoList);

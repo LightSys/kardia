@@ -29,7 +29,7 @@ public class HomePage extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
         Account account = db.getAccount();
         db.close();
 
@@ -49,7 +49,7 @@ public class HomePage extends Fragment {
         int[] to = {R.id.navigateButton};
 
         ListView listview = (ListView)v.findViewById(R.id.welcomeList);
-        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.home_button_items, from, to);
+        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.home_button_listview_item, from, to);
         listview.setAdapter(adapter);
         listview.setOnItemClickListener(new onPageClicked());
 

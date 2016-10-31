@@ -17,15 +17,12 @@
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <!--<item name="android:src">@drawable/noise_blue</item>
+        <item name="android:tileMode">repeat</item>
+        <item name="android:dither">true</item>
+        <!- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
-    <style name="LoginFormContainer">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:padding">16dp</item>
-    </style>
-    
     <style name="listCustomBlue" parent="@android:style/Widget.ListView">
         <item name="android:divider">#000030</item>
         <item name="android:dividerHeight">1dip</item>

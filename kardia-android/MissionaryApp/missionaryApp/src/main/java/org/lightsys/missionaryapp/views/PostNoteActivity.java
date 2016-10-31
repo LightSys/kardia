@@ -49,7 +49,7 @@ public class PostNoteActivity extends Activity {
         }
 
         // Load list of user names from accounts for user to choose who message is from
-        final LocalDBHandler db = new LocalDBHandler(this, null);
+        final LocalDBHandler db = new LocalDBHandler(this);
         ArrayList<String> partnerNames = new ArrayList<String>();
         Account account = db.getAccount();
 
