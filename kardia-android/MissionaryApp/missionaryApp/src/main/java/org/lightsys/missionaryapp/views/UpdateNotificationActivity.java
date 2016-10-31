@@ -68,7 +68,7 @@ public class UpdateNotificationActivity extends Activity {
             }
 
             // For next ID, retrieve last ID from database and add 1
-            LocalDBHandler db = new LocalDBHandler(this, null);
+            LocalDBHandler db = new LocalDBHandler(this);
             notificationID = db.getLastId("notification") + 1;
             db.close();
 
@@ -355,7 +355,7 @@ public class UpdateNotificationActivity extends Activity {
             Intent alarmIntent;
             PendingIntent pendingIntent;
 
-            LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this, null);
+            LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this);
             AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
             //sets end date in milliseconds as the end of that date
             long DAY_IN_MILLIS = 86400000;
@@ -463,7 +463,7 @@ public class UpdateNotificationActivity extends Activity {
     //when user turns alarm off delete notifications and remove from db
     private void deleteNotifications(){
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this, null);
+        LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this);
         Intent alarmIntent = new Intent(UpdateNotificationActivity.this, NotifyAlarmReceiver.class);
         for(UpdateNotification n: db.getNotifications()) {
             PendingIntent reminder = PendingIntent.getBroadcast(UpdateNotificationActivity.this,

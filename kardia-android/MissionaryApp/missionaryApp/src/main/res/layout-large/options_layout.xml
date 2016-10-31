@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/linearLayout"
-    android:layout_width="match_parent"
+                android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
@@ -19,11 +18,9 @@
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/refreshRow"
             android:layout_marginTop="50dp">
 
             <TextView
-                android:id="@+id/refreshText"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
@@ -50,7 +47,6 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/options_gift_text"
-                android:id="@+id/giftText"
                 android:layout_weight="1"/>
 
             <Spinner
@@ -64,7 +60,6 @@
         </TableRow>
 
         <TableRow
-            android:id="@+id/reminderOnOffRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="50dp"
@@ -75,7 +70,6 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/options_reminder_text"
-                android:id="@+id/reminderText"
                 android:layout_weight="1"/>
 
             <ToggleButton
@@ -87,7 +81,6 @@
         </TableRow>
 
         <TableRow
-            android:id="@+id/reminderDetailsRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"

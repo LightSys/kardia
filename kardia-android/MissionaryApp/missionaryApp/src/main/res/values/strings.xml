@@ -17,10 +17,6 @@
         <!--<item>Praise</item>
         <item>Other</item>-->
     </string-array>
-    <string-array name="notification_on_off">
-        <item>ON</item>
-        <item>OFF</item>
-    </string-array>
     <string-array name="notification_options">
         <item>Week</item>
         <item>Two Weeks</item>
@@ -41,12 +37,7 @@
         <item>Year</item>
     </string-array>
     <string name="app_name">Kardia Missionary</string>
-    <string name="action_settings">Settings</string>
-    <string name="ytd">YTD: </string>
-    <string name="total_2014_ytd_">"Total (2014 YTD): "</string>
-    <string name="amount">Amount:</string>
     <string name="add_note_button">Add Update/Prayer Request</string>
-    <string name="donate_now">Donate</string>
     <string name="accounts_page">Manage Accounts</string>
     <string name="change_account">Change Account:</string>
     <string name="password">password</string>
@@ -54,7 +45,6 @@
     <string name="server_name">server name</string>
     <string name="done">Done</string>
     <string name="connect">Connect</string>
-    <string name="edit_account">Edit Account</string>
     <string name="user_id_ex_100001">User ID (ex. 100001)</string>
     <string name="drawer_open">Drawer Open</string>
     <string name="drawer_closed">Drawer Closed</string>
@@ -70,12 +60,8 @@
     <string name="subject_title">Subject:</string>
     <string name="subject">subject</string>
     <string name="type_contact">Type Of Contact:</string>
-    <string name="message">Message</string>
-    <string name="notification_setting">Prayer Notifications"</string>
-    <string name="times_per_day">time(s) per day</string>
     <string name="cancel">Cancel</string>
     <string name="from">From:</string>
-    <string name="name">name</string>
     <string name="set">Set</string>
     <string name="end_date">End Date: </string>
     <string name="start_date">Start Date: </string>
@@ -88,14 +74,10 @@
     <string name="note_prompt">Enter your update/prayer request</string>
     <string name="userID_Prompt">Enter Donor ID</string>
     <string name="original_message_label">Original Post</string>
-    <string name="view_pdf">View Letter</string>
     <string name="profile_pic_description">Profile Picture</string>
     <string name="options_refresh_text">Refresh Every</string>
     <string name="options_gift_text">Gift Period</string>
     <string name="options_reminder_text">Update Reminder</string>
     <string name="frequency_text">Repeat Every: </string>
-    <string name="options_reminder_date_text">Send Reminder On</string>
     <string name="apply_button">Apply</string>
-    <string name="connection_error">Connection Error</string>
-    <string name="options_reminder_title_text">Reminder Title</string>
 </resources>

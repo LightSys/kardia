@@ -67,7 +67,7 @@ public class Options extends Fragment {
         applyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LocalDBHandler db = new LocalDBHandler(v.getContext(), null);
+                LocalDBHandler db = new LocalDBHandler(v.getContext());
                 db.addRefresh_Period(refreshPeriods.getSelectedItem().toString());
                 db.addGiftPeriod(giftPeriods.getSelectedItem().toString());
                 Toast.makeText(v.getContext(), "Changes Applied", Toast.LENGTH_SHORT).show();
@@ -75,7 +75,7 @@ public class Options extends Fragment {
         });
 
 
-        LocalDBHandler db = new LocalDBHandler(v.getContext(), null);
+        LocalDBHandler db = new LocalDBHandler(v.getContext());
         String refresh = db.getRefreshPeriod();
         String period = db.getGiftPeriod();
         db.close();
@@ -98,11 +98,6 @@ public class Options extends Fragment {
         return v;
     }
 
-    //functions to get a database and accounts
-    //for the purpose of refreshing the app
-    public  LocalDBHandler setDb(LocalDBHandler db) {
-        return  db;
-    }
 
     private void setAlarmInfo(LocalDBHandler db){
         ArrayList<UpdateNotification> notifications = db.getNotifications();
@@ -117,7 +112,7 @@ public class Options extends Fragment {
     }
     public void onResume(){
         super.onResume();
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
         setAlarmInfo(db);
     }
 

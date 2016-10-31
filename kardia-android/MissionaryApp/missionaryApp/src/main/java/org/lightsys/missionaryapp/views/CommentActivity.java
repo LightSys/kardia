@@ -59,7 +59,7 @@ public class CommentActivity extends Activity {
             originalPostText.setText(MISSING_POST);
         }
 
-        LocalDBHandler db = new LocalDBHandler(getBaseContext(), null);
+        LocalDBHandler db = new LocalDBHandler(getBaseContext());
         userIDText.setText("" + db.getAccount().getId());
         db.close();
 
@@ -82,7 +82,7 @@ public class CommentActivity extends Activity {
                 comment = commentText.getText().toString();
 
                 //find account
-                LocalDBHandler db = new LocalDBHandler(getBaseContext(), null);
+                LocalDBHandler db = new LocalDBHandler(getBaseContext());
                 Account account = db.getAccount();
 
 

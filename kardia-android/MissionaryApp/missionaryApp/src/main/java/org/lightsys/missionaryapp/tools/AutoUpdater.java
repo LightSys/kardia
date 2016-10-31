@@ -44,7 +44,7 @@ public class AutoUpdater extends Service {
     private final Handler  timerHandler  = new Handler();
 
     public AutoUpdater() {
-        db = new LocalDBHandler(this, null);
+        db = new LocalDBHandler(this);
         Runnable timerRunnable = new Runnable() {
             @Override
             public void run() {
@@ -100,11 +100,6 @@ public class AutoUpdater extends Service {
     public IBinder onBind(Intent arg0) {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
     }
 
     private  void getUpdates()

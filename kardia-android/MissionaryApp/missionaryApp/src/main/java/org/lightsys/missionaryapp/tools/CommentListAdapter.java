@@ -21,8 +21,8 @@ public class CommentListAdapter extends SimpleAdapter {
     private final ArrayList<HashMap<String, String>> data;
 
     public CommentListAdapter(Context context, ArrayList<HashMap<String, String>> data,
-                           int resource, String[] from, int[] to) {
-        super(context, data, resource, from, to);
+                              String[] from, int[] to) {
+        super(context, data, org.lightsys.missionaryapp.R.layout.comment_item, from, to);
         this.context = context;
         this.data    = data;
     }
@@ -45,7 +45,7 @@ public class CommentListAdapter extends SimpleAdapter {
 
         Formatter formatter = new Formatter();
         rowView.setUserName(pieces.get("UserName"));
-        rowView.setDateText(formatter.getFormattedDate(pieces.get("Date")));
+        rowView.setDateText(Formatter.getFormattedDate(pieces.get("Date")));
         rowView.setCommentText(pieces.get("Text"));
 
         return rowView;

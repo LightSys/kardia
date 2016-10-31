@@ -116,7 +116,7 @@ public class MainActivity extends ActionBarActivity {
 
 
 		/* Check for accounts, updates, and load content */
-		LocalDBHandler db = new LocalDBHandler(this, null);
+		LocalDBHandler db = new LocalDBHandler(this);
 
         Account account = db.getAccount();
 
@@ -224,7 +224,7 @@ public class MainActivity extends ActionBarActivity {
 	 * @param position, position of the drawer that has been selected
 	 */
 	public void selectItem(int position) {
-		LocalDBHandler db = new LocalDBHandler(this, null);
+		LocalDBHandler db = new LocalDBHandler(this);
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		Account account = db.getAccount();
 		accountId = account.getId();
@@ -259,7 +259,6 @@ public class MainActivity extends ActionBarActivity {
 		case 6:
 			Options refresh = new Options();
 			fragment = refresh;
-			refresh.setDb(db);
 			db.close();
 			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
 			break;
@@ -303,7 +302,7 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		LocalDBHandler db = new LocalDBHandler(this, null);
+		LocalDBHandler db = new LocalDBHandler(this);
 		if(accountId != 0) {
 			if (accountId != db.getAccount().getId()) {
 				FragmentManager fragmentManager = getSupportFragmentManager();

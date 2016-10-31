@@ -25,8 +25,8 @@ public class NoteListAdapter extends SimpleAdapter {
     private final ArrayList<HashMap<String, String>> data;
 
     public NoteListAdapter(Context context, ArrayList<HashMap<String, String>> data,
-                            int resource, String[] from, int[] to) {
-        super(context, data, resource, from, to);
+                           String[] from, int[] to) {
+        super(context, data, R.layout.note_listview_item, from, to);
         this.context = context;
         this.data    = data;
     }

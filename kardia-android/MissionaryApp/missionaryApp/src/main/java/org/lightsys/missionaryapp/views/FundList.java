@@ -41,7 +41,7 @@ public class FundList extends Fragment{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+		LocalDBHandler db = new LocalDBHandler(getActivity());
 
 		// Select Active account
         int accountID = db.getAccount().getId();
@@ -49,7 +49,7 @@ public class FundList extends Fragment{
 
 		db.close();
 
-		View v = inflater.inflate(R.layout.activity_main, container, false);
+		View v = inflater.inflate(R.layout.activity_main_layout, container, false);
 
 		getActivity().setTitle("Funds");
 
@@ -79,7 +79,7 @@ public class FundList extends Fragment{
 	private ArrayList<HashMap<String,String>> generateListItems(){
 
 		ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
-        LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+        LocalDBHandler db = new LocalDBHandler(getActivity());
 		for(Fund f : funds){
 			HashMap<String,String> hm = new HashMap<String,String>();
 			int Total[]= new int[2];

@@ -39,7 +39,7 @@ public class GiftTimePeriodList extends Fragment {
 
 		Bundle args = getArguments();
 
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+		LocalDBHandler db = new LocalDBHandler(getActivity());
 		periodType = db.getGiftPeriod();
         periods.clear();
 		if(savedInstanceState != null){ 
@@ -51,7 +51,7 @@ public class GiftTimePeriodList extends Fragment {
 			periods = db.getFundPeriods(fundId, periodType);
 		}
 
-		View v = inflater.inflate(R.layout.activity_main, container, false);
+		View v = inflater.inflate(R.layout.activity_main_layout, container, false);
         String gtpListTitle = "Gifts By " + periodType;
 
 		if (fundId!=-1) {
@@ -67,7 +67,7 @@ public class GiftTimePeriodList extends Fragment {
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
 		String[] from = {"amount", "fund","period"};
 		int[] to = {R.id.amountText, R.id.fundNameText, R.id.donorText};
-		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item_layout, from, to);
+		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item, from, to);
 		listview.setAdapter(adapter);
 
 		listview.setOnItemClickListener(new onPeriodClicked());
@@ -93,7 +93,7 @@ public class GiftTimePeriodList extends Fragment {
 			}
 
 			hm.put("amount", Formatter.amountToString(p.getGiftTotal()));
-			LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+			LocalDBHandler db = new LocalDBHandler(getActivity());
 			hm.put("fund", db.getFundByFundId(p.getFundId()).getFundName());
 			db.close();
 

@@ -7,7 +7,6 @@
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/scroll"
         android:fillViewport="false"
         android:background="@drawable/noise_blue_repeat">
 
@@ -30,7 +29,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
                     android:text="@string/from"
-                    android:id="@+id/senderTitle" />
+                    />
 
                 <Spinner
                     android:id="@+id/senderName"
@@ -54,7 +53,6 @@
                 android:layout_alignParentStart="true">
 
                 <TextView
-                    android:id="@+id/subjectTitle"
                     android:text = "@string/subject_title"
                     android:textSize="18sp"
                     android:layout_width="wrap_content"

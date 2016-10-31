@@ -46,7 +46,7 @@ public class GiftList extends Fragment{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+		LocalDBHandler db = new LocalDBHandler(getActivity());
 		Bundle giftArgs = getArguments();
 
 		if(savedInstanceState != null){
@@ -89,7 +89,7 @@ public class GiftList extends Fragment{
 			gifts = db.getGifts(TextUtils.join(",",fundIds)); // pull ALL gifts
 		}
 
-		View v = inflater.inflate(R.layout.activity_main, container, false);
+		View v = inflater.inflate(R.layout.activity_main_layout, container, false);
 
 		// Set title appropriately to what data is shown
 		String giftListTitle = "Gifts";
@@ -121,7 +121,7 @@ public class GiftList extends Fragment{
 		// display donor name, fund name, date, and amount for all gifts
 		String[] from = {"donor_name", "gift_name", "gift_date", "gift_amount"};
         int[] to = {R.id.donorText, R.id.fundNameText, R.id.dateText, R.id.amountText};
-        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item_layout, from, to );
+        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item, from, to );
         listview.setAdapter(adapter);
 
 		listview.setOnItemClickListener(new onGiftClicked());

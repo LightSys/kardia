@@ -50,12 +50,12 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
     private void resetAlarms(Context context) {
         // Setting alarms requires sdk version 19 or newer
         if (Build.VERSION.SDK_INT >= 19) {
-            LocalDBHandler db = new LocalDBHandler(context, null);
+            LocalDBHandler db = new LocalDBHandler(context);
             ArrayList<UpdateNotification> notifications = db.getNotifications();
 
             Intent alarmIntent;
             PendingIntent pendingIntent;
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
             // Loop through all notifications
             for (UpdateNotification notification : notifications) {
@@ -107,7 +107,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
 
         notificationMgr.notify(notificationID, nBuild.build());
         // Delete notification from database once sent as it will not be needed again
-        LocalDBHandler db = new LocalDBHandler(context, null);
+        LocalDBHandler db = new LocalDBHandler(context);
         db.deleteNotification(notificationID);
         db.close();
     }
