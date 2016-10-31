@@ -39,7 +39,7 @@ public class AutoUpdater extends Service {
     private Calendar prevDate     = Calendar.getInstance();
 
 
-    //custom timer like thing that ticks every minute
+    //custom timer that ticks every minute
     //used to constantly check to see if it's time to check for updates
     private final Handler  timerHandler  = new Handler();
 

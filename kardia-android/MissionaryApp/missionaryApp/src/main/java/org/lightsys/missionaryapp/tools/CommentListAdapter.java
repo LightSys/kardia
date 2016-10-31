@@ -43,7 +43,6 @@ public class CommentListAdapter extends SimpleAdapter {
 
         final Map<String, String> pieces = data.get(position);
 
-        Formatter formatter = new Formatter();
         rowView.setUserName(pieces.get("UserName"));
         rowView.setDateText(Formatter.getFormattedDate(pieces.get("Date")));
         rowView.setCommentText(pieces.get("Text"));

@@ -55,9 +55,9 @@ import java.util.Calendar;
 public class DataConnection extends AsyncTask<String, Void, String> {
 
     private final Account account;
-    private String Host_Name; // Server name of account
+    private String Host_Name;          // Server name of account
     private String Password;
-    private String AccountName; // Username of account
+    private String AccountName;        // Username of account
     private int Account_ID;
     private final Context dataContext; // Context that the DataConnection was executed in
     private final Activity dataActivity;
@@ -125,8 +125,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      */
     private boolean isValidAccount()  {
         String test;
-        // Account details already set in DataPull()
-
         try {
             // Attempt to pull information about the missionary from the API
             test = GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
@@ -243,7 +241,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             loadPrayerLetters(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
                             "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
                     Account_ID);
-            // Loop through donors and pull notes and prayer letters
+
+            // Loop through donors and pull contact info
             db.deleteNewItems();
             for(Donor m : db.getDonors()) {
                 int donorID = m.getId();
@@ -251,6 +250,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
 
             }
+            // Loop through notes and pull prayer for info
             for(Note n : db.getNotesForMissionary(Account_ID)){
                 loadPrayedFor(GET("http://" + Host_Name +":800/apps/kardia/api/missionary/" + Account_ID + "/Notes/" + n.getNoteId() +
                         "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), n.getNoteId());
@@ -259,6 +259,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/"
                     + Account_ID + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), Account_ID);
 
+            // Loop through funds and pull all gifts
             for(Fund f : db.getFundsForMissionary(Account_ID)){
 
                 String Fund_Name = "";
@@ -419,6 +420,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
         }
     }
+
+    /**
+     * Loads all contact info for specific donor
+     * @param result, result of API query for missionaries
+     * @param partner_id, id of the donor
+     */
     private void loadContact(String result, int partner_id) {
         JSONObject json = null;
         String email = " ";
@@ -474,6 +481,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     /**
      * Loads all notes (prayer requests, updates) into database if they are not present
      * @param result, result from API query for a specific missionary
+     * @param missionary_id, id of the missionary notes are from
      */
     private void loadNotes(String result, int missionary_id) {
         JSONObject json = null;
@@ -505,14 +513,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setNoteId(noteID);
                         temp.setNoteText(NoteObj.getString("note_text"));
                         temp.setSubject(NoteObj.getString("note_subject"));
-                        temp.setMissionaryName(db.getMissionaryForID(missionary_id).getName());
+                        temp.setMissionaryName(db.getAccount().getAccountName());
                         temp.setType(NoteObj.getString("note_type"));
                         temp.setMissionaryID(missionary_id);
                         temp.setNumberPrayed(0);
 
                         //add new item
                         //this lets the autoUpdater know there is something new
-                        db.addNew_Item(Calendar.getInstance().getTimeInMillis() + ""
+                        db.addNewItem(Calendar.getInstance().getTimeInMillis() + ""
                                 , temp.getType()
                                 , "New " + temp.getType() + " from " + temp.getMissionaryName());
 
@@ -539,6 +547,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     /**
      * Loads prayed for information for all notes (prayer requests, updates) into database if they are not present
      * @param result, result from API query for a specific missionary
+     * @param noteId, id of note 'prayer for' is associated with
      */
     private void loadPrayedFor(String result, int noteId) {
         JSONObject json = null;
@@ -582,7 +591,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                         //add new item
                         //this lets the autoUpdater know there is something new
-                        db.addNew_Item(Calendar.getInstance().getTimeInMillis() + "",
+                        db.addNewItem(Calendar.getInstance().getTimeInMillis() + "",
                                 "New Prayer from ", temp.getSupporterName());
 
                         // Dates must be stored as YYYY-MM-DD
@@ -637,7 +646,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     if (!currentLetterNoteIDList.contains(letterID)) {
                         PrayerLetter temp = new PrayerLetter();
                         temp.setId(letterID);
-                        temp.setMissionaryName(db.getMissionaryForID(missionary_id).getName());
+                        temp.setMissionaryName(db.getAccount().getAccountName());
                         temp.setTitle(LetterObj.getString("letter_title"));
                         temp.setFilename(LetterObj.getString("letter_filename"));
                         temp.setFolder(LetterObj.getString("letter_folder"));
@@ -668,6 +677,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * Adds a relation between the fund and the specific account
      *
      * @param result, the result of the Funds API GET request
+     * @param accountId, id of the account tied to fund query
      */
     private void loadFunds(String result, int accountId) {
         // List of funds already in database for account
@@ -713,12 +723,13 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
     /**
      * This formats the return json into gifts and if the gift
-     * was not already stored add it and a relationship to the related fund through the Fund_ID
+     * was not already stored adds it and a relationship to the related fund through the Fund_ID
      * and a relationship to the related year through the Year_ID
      *
      * @param result, result from API GET() for gifts
-
      * @param Fund_ID, fund related to gift
+     * @param donorName, name of donor who gave gift
+     * @param donorID, id of donor who gave gift
      */
     private void loadGifts(String result, int Fund_ID, String donorName, int donorID){
 
@@ -785,7 +796,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setGiftMonth(month_year);
 
                         db.addGift(temp);
-                        db.addGift_Account(giftId, Account_ID);
+                        db.addGiftAccount(giftId, Account_ID);
                     }
                 }
             }
@@ -795,9 +806,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
     }
 
-    /*
-    loads comments on posts
-     */
+    /**
+     * loads comments on posts
+     *
+     * @param result, result from API GET() for comments
+     **/
     private void loadComments(String result){
 
         //check to see what the database already has
@@ -865,7 +878,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         //if it's new, add it to database
                         if (newComment) {
                             db.addComment(temp.getCommentID(), temp.getSenderID(), temp.getNoteID(), temp.getUserName(), temp.getNoteType(), temp.getDate(), temp.getComment());
-                            db.addNew_Item(Calendar.getInstance().getTimeInMillis() + "", "Comment", "New Comment on a post from " + db.getNoteForID(temp.getNoteID()).getMissionaryName());
+                            db.addNewItem(Calendar.getInstance().getTimeInMillis() + "", "Comment", "New Comment on a post from " + db.getNoteForID(temp.getNoteID()).getMissionaryName());
                         }
                     }
                 }

@@ -16,6 +16,7 @@ public class Comment {
     private String date;
     private String comment;
 
+    /* ************************* Construct ************************* */
     public Comment() {}
 
     public Comment (int CommentID, int SenderID, int NoteID, String UserName,

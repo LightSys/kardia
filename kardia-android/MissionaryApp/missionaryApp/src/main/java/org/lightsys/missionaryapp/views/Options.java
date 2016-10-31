@@ -68,7 +68,7 @@ public class Options extends Fragment {
             @Override
             public void onClick(View v) {
                 LocalDBHandler db = new LocalDBHandler(v.getContext());
-                db.addRefresh_Period(refreshPeriods.getSelectedItem().toString());
+                db.addRefreshPeriod(refreshPeriods.getSelectedItem().toString());
                 db.addGiftPeriod(giftPeriods.getSelectedItem().toString());
                 Toast.makeText(v.getContext(), "Changes Applied", Toast.LENGTH_SHORT).show();
             }

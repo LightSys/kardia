@@ -36,10 +36,15 @@ import org.lightsys.missionaryapp.data.UpdateNotification;
  *      -Tables creation all handled in OnCreate()
  *   Table columns and names are all defined as constants at begining of file
  *   Items are added to tables by passing values in ContentValue objects
- *   Each table typically has at least a getObjects() which returns an array of all known elements, and an addObject(Object o) which adds the element(try to keep each element unique)
+ *   Each table typically has at least a getObjects() which returns an array of all known elements,
+ *      and an addObject(Object o) which adds the element(try to keep each element unique)
  *
  * Edited by Judah Sistrunk on 6/2/2016
  * 	added information relevent to the auto-updater
+ *
+ * 	Edited by Laura DeOtte for missionaryapp
+ * 	 added information for prayer for
+ * 	 removed Missionary Table
  *
  */
 public class LocalDBHandler extends SQLiteOpenHelper {
@@ -96,21 +101,17 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	//DONOR TABLE
 	private static final String TABLE_DONORS = "donors";
     private static final String COLUMN_LAST_NAME = "last_name";
-	//MISSIONARY TABLE
-	private static final String TABLE_MISSIONARIES = "missionaries";
-
-	private static final String COLUMN_FUND_ID = "fund_id";
-
-	private static final String COLUMN_GIFT_ID = "gift_id";
 	//FUND_ACCOUNT_MAP
 	private static final String TABLE_FUND_ACCOUNT_MAP = "fund_account_map";
 	private static final String COLUMN_ACCOUNT_ID = "account_id";
+    private static final String COLUMN_FUND_ID = "fund_id";
 	//GIFT_ACCOUNT_MAP
 	private static final String TABLE_GIFT_ACCOUNT_MAP = "gift_account_map";
-	//Time_Stamp
+    private static final String COLUMN_GIFT_ID = "gift_id";
+	//TIME_STAMP
 	private static final String TABLE_TIMESTAMP = "timestamp";
 	private static final String COLUMN_DATE = "date";
-	//comment table
+	//COMMENT
 	private static final String TABLE_COMMENT = "comment";
 	private static final String COLUMN_COMMENT_ID = "comment_id";
 	private static final String COLUMN_SENDER_ID = "sender_id";
@@ -118,7 +119,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_NOTE_ID = "note_id";
 	private static final String COLUMN_NOTE_TYPE = "note_type";
 	private static final String COLUMN_COMMENT_TEXT = "comment_text";
-	//new item table
+	//NEW_ITEM
 	private static final String TABLE_NEW_ITEM = "new_item";
 	private static final String COLUMN_NEW_ITEM_DATE = "new_item_date";
 	private static final String COLUMN_MESSAGE = "message";
@@ -129,19 +130,19 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	//GIFT_PERIOD
 	private static final String TABLE_GIFT_PERIOD = "gift_period";
 	private static final String COLUMN_PERIOD = "period";
-	//json Posts
+	//JSON_POST
 	private static final String TABLE_JSON_POST = "json_post";
 	private static final String COLUMN_JSON_ID = "id";
 	private static final String COLUMN_JSON_STRING = "json_string";
 	private static final String COLUMN_JSON_URL = "json_url";
-	//Table for Prayed for Posts
+	//PRAYER_FOR
 	private static final String TABLE_PRAYED_FOR = "prayed_for";
 	private static final String COLUMN_PRAYED_FOR_COMMENTS = "prayed_for_comments";
 	private static final String COLUMN_PRAYED_FOR_ID = "prayed_for_id";
 	private static final String COLUMN_PRAYED_FOR_DATE = "prayed_for_date";
 	private static final String COLUMN_SUPPORTER_PARTNER_ID = "supporter_partner_id";
 	private static final String COLUMN_SUPPORTER_PARTNER_NAME = "supporter_partner_name";
-	//Table for Time Periods
+	//TIME_PERIOD
 	private static final String TABLE_PERIOD = "period";
 	
 	/* ************************* Creation of Database and Tables ************************* */
@@ -169,10 +170,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				+ " TEXT," + COLUMN_ACCOUNT_PASSWORD + " TEXT,"
 				+ COLUMN_SERVER_NAME + " TEXT," + COLUMN_PARTNER_NAME + " TEXT)";
 		db.execSQL(CREATE_ACCOUNTS_TABLE);
-
-		String CREATE_MISSIONARY_TABLE = "CREATE TABLE " + TABLE_MISSIONARIES + "("
-				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT)";
-		db.execSQL(CREATE_MISSIONARY_TABLE);
 
 		String CREATE_DONOR_TABLE = "CREATE TABLE " + TABLE_DONORS + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," + COLUMN_LAST_NAME + " TEXT)";
@@ -298,7 +295,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * Adds an account to the row of the database.
+	 * Replaces old account with current connected Account
 	 * @param account, uses an Account object to retrieve needed data
 	 */
 	public void addAccount(Account account){
@@ -317,7 +314,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     /**
      * Adds a donor to the database
-     *
      * @param donor, the Donor Object to be added
      */
     public void addDonor(Donor donor) {
@@ -352,8 +348,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.close();
     }
     /**
-     * Adds contact info to the database in the Contact Info Table
-     *
+     * Adds contact info for a donor to the database
      * @param contactInfo, the contact info to be added
      */
     public void addContactInfo(ContactInfo contactInfo) {
@@ -369,7 +364,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     }
 
 	/**
-	 * Adds a prayer for item to the database in the PRAYED FOR TABLE
+	 * Adds a prayed for item for a prayer request to the database
 	 * @param prayed_for, the item to be added
 	 */
 	public void addPrayedFor(PrayedFor prayed_for) {
@@ -388,7 +383,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     }
 
 	/**
-	 * Adds a prayer letter to the database in the Letter Table
+	 * Adds a prayer letter to the database
 	 * @param letter, the letter to be added
 	 */
 	public void addPrayerLetter(PrayerLetter letter) {
@@ -423,7 +418,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 
 	/**
-	 * Adds a fund to the Fund table in the database
+	 * Adds a fund to the database
 	 * @param fund, fund to be stored
 	 */
 	public void addFund(Fund fund) {
@@ -441,7 +436,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * Adds a gift to the Gift table in the database
+	 * Adds a gift to the database
 	 * @param gift, gift to be stored
 	 */
 	public void addGift(Gift gift){
@@ -469,7 +464,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * @param Gift_ID, Gift Identifier
 	 * @param Account_ID, Account Identifier
 	 */
-	public void addGift_Account(int Gift_ID, int Account_ID){
+	public void addGiftAccount(int Gift_ID, int Account_ID){
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_GIFT_ID, Gift_ID);
 		values.put(COLUMN_ACCOUNT_ID, Account_ID);
@@ -478,7 +473,11 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.insert(TABLE_GIFT_ACCOUNT_MAP, null, values);
 		db.close();
 	}
-
+    /**
+     * Adds a comment on a note to the database
+     * @param commentID, comment Identifier
+     *
+     */
 	//ads comment
 	public void addComment (int commentID, int senderID, int notedID, String userName, String noteType, String date, String comment){
 		ContentValues values = new ContentValues();
@@ -495,8 +494,13 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
-	//adds new notification item
-	public void addNew_Item (String date, String type, String message) {
+    /**
+     * Adds a new notification item to the database
+     * @param date
+     * @param type
+     * @param message
+     */
+	public void addNewItem(String date, String type, String message) {
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_NEW_ITEM_DATE, date);
 		values.put(COLUMN_TYPE, type);
@@ -507,8 +511,12 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
-	//sets the current refresh period
-	public void addRefresh_Period (String period){
+    /**
+     * sets the current refresh period
+     * @param period, refresh period
+     *
+     */
+	public void addRefreshPeriod(String period){
 		deleteRefreshPeriod();
 
 		ContentValues values = new ContentValues();
@@ -518,7 +526,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.insert(TABLE_REFRESH_PERIOD, null, values);
 		db.close();
 	}
-	//sets the current gift period
+    /**
+     * sets the current gift period
+     * @param period, Gift period
+     **/
 	public void addGiftPeriod (String period){
 		deleteGiftPeriod();
 
@@ -529,7 +540,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.insert(TABLE_GIFT_PERIOD, null, values);
 		db.close();
 	}
-
+    /**
+     * add JSON post
+     *
+     **/
 	public void addJson_post(long jsonTableId, String url, String jsonString, int accountID){
 		ContentValues values = new ContentValues();
 		Log.e("dbh", "pre stuff");
@@ -582,8 +596,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		//delete fund account connections
 		db.delete(TABLE_FUND_ACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
 
-		//delete missionaries and all notes, prayer letters, and prayer notifications
-		db.delete(TABLE_MISSIONARIES, null, null);
+		//delete all notes, prayer letters, and prayer notifications
 		db.delete(TABLE_NOTES, null, null);
 		db.delete(TABLE_LETTERS, null, null);
 		db.delete(TABLE_NOTIFICATIONS, null, null);
@@ -593,7 +606,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		
 		db.close();
 	}
-
+    /**todo check if previous should be used instead when changing accounts
+     * Deletes the Account Table from the database
+     */
 	private void deleteAccountTable(){
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.delete(TABLE_ACCOUNTS,null,null);
@@ -642,7 +657,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
-	//delete note
+    /**
+     * delete Note from database
+     * @param note, note to be deleted
+     */
 	public void deleteNote(Note note){
 		String[] acct = {String.valueOf(note.getNoteId())};
 		SQLiteDatabase db = this.getWritableDatabase();
@@ -650,7 +668,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
-	//delete comment
+    /**
+     * delete comment from database
+     * @param comment, comment to be deleted
+     */
 	public void deleteComment(Comment comment){
 		String[] acct = {String.valueOf(comment.getCommentID())};
 		SQLiteDatabase db = this.getReadableDatabase();
@@ -658,27 +679,37 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
+    /**
+     * delete Json Post
+     * @param jsonId, Id of item to be deleted
+     */
 	public void deleteJsonPost(long jsonId){
 		String[] json = {String.valueOf(jsonId)};
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_JSON_POST, COLUMN_JSON_ID + " = ?", json);
 	}
 
-	//deletes new items table
+    /**
+     * deletes new items table
+     */
 	public void deleteNewItems() {
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.delete(TABLE_NEW_ITEM, null, null);
 		db.close();
 	}
 
-	//deletes the period of refresh for the auto-updater
+    /**
+     * deletes the period of refresh for the auto-updater
+     */
 	private void deleteRefreshPeriod(){
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_REFRESH_PERIOD, null, null);
 		db.close();
 	}
 
-	//deletes the period of refresh for the auto-updater
+    /**
+     * deletes the period to display on gift page
+     */
 	private void deleteGiftPeriod(){
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_GIFT_PERIOD, null, null);
@@ -706,13 +737,18 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		return date;
 	}
-	//return all periods for the gifts in a fund
-	public ArrayList<Period> getFundPeriods(int fund_id, String periodType) {
+    /**
+     * Pulls periods for the gifts in a fund
+     * @param fundId
+     * @param periodType
+     * @return An ArrayList of all gift periods related to a fund
+     */
+	public ArrayList<Period> getFundPeriods(int fundId, String periodType) {
 		ArrayList<Period> periods = new ArrayList<Period>();
 
 		String qString = "SELECT DISTINCT " + periodType + " FROM " + TABLE_GIFT + " INNER JOIN " + TABLE_FUND
 				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFT_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
-				+ " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + fund_id + " ORDER BY " + COLUMN_GIFT_YEAR + " DESC, "
+				+ " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + fundId + " ORDER BY " + COLUMN_GIFT_YEAR + " DESC, "
 				+ COLUMN_GIFT_MONTH + " DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
@@ -722,7 +758,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		while (c.moveToNext()) {
             Period temp = new Period();
             temp.setPeriodName(c.getString(0));
-			ArrayList<Gift> gifts = getGiftsForPeriod(fund_id, periodType, c.getString(0));
+			ArrayList<Gift> gifts = getGiftsForPeriod(fundId, periodType, c.getString(0));
             int Total[]= new int[2];
             for(Gift g:gifts){
                 Total[0] += g.getGiftAmount()[0];
@@ -733,7 +769,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
                 Total[1]-=Math.floor(Total[1]/100)*100;
             }
             temp.setGiftTotal(Total);
-			temp.setFundId(fund_id);
+			temp.setFundId(fundId);
 
 			periods.add(temp);
 		}
@@ -743,8 +779,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 
 	/**
-	 * Pulls all accounts
-	 * @return All accounts in the Account table as an ArrayList of Account Objects
+	 * Pulls user account
+	 * @return user accounts
 	 */
 	public Account getAccount(){
 		Account temp = new Account();
@@ -769,14 +805,14 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	
 	/**
 	 * Pulls a specific fund from an ID
-	 * @param fund_id, id of fund to retrieve
-	 * @return fund with the id of fund_id
+	 * @param fundId, id of fund to retrieve
+	 * @return fund with the id of fundId
 	 */
-    public Fund getFundByFundId(int fund_id) {
+    public Fund getFundByFundId(int fundId) {
         Fund fund = new Fund();
 
         String qString = "SELECT * FROM " + TABLE_FUND + " WHERE "
-                + COLUMN_ID + " = " + fund_id;
+                + COLUMN_ID + " = " + fundId;
 
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -927,31 +963,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return contact;
     }
 
-    /**
-	 * Pulls a specific missionary from the database
-	 * @param missionaryID, the ID for the missionary to be pulled
-	 * @return the specified missionary as a Donor Object
-	 */
-	public Donor getMissionaryForID(int missionaryID) {
-		Donor donor = new Donor();
-		String queryString = "SELECT * FROM " + TABLE_MISSIONARIES +
-				" WHERE " + COLUMN_ID + " = " + missionaryID;
-
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
-
-		if(c.moveToFirst()){
-			donor.setId(Integer.parseInt(c.getString(0)));
-			donor.setName(c.getString(1));
-		}
-		c.close();
-		db.close();
-		return donor;
-	}
-
 	/**
-	 * Pulls all notes (updates and prayer requests) from the Notes table
-	 * @return All notes in the Notes table as an ArrayList of Notes Objects ordered from most recent to least recent
+	 * Pulls all PrayedFor objects (updates and prayer requests) from the Prayed For table
+	 * @return All Prayed for objects as an arraylist
 	 */
 	public ArrayList<PrayedFor> getPrayedFor() {
 		ArrayList<PrayedFor> prayedFor = new ArrayList<PrayedFor>();
@@ -1082,7 +1096,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         while (c.moveToNext()) {
 			//set ContactInfo(partner id, email, phone, cell)
-            ContactInfo temp = new ContactInfo(Integer.parseInt(c.getString(0)), c.getString(1), c.getString(2), c.getString(3));
+            ContactInfo temp = new ContactInfo(Integer.parseInt(c.getString(0)), c.getString(1),
+                    c.getString(2), c.getString(3));
             contactInfoList.add(temp);
         }
         c.close();
@@ -1306,10 +1321,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * Pulls a list of gift names for a specific fund in a specific year
+	 * Pulls a list of gift names for a specific fund
 	 * @param Fund_ID, Fund Identification
-
-	 * @return Names of gifts for a fund in a year in an ArrayList of Strings
+	 * @return Names of gifts for a fund in an ArrayList of Strings
 	 */
 	public ArrayList<String> getGiftNames(int Fund_ID){
 		ArrayList<String> giftNames = new ArrayList<String>();
@@ -1437,7 +1451,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return comments;
 	}
 
-	//gets list of new prayer requests and updates
+    /**
+     * gets list of new prayer requests and updates
+     * @return Arraylist of NewItem objects
+     */
 	public ArrayList<NewItem> getNewItems() {
 		ArrayList<NewItem> newItems = new ArrayList<NewItem>();
 		String queryString = "SELECT * FROM " + TABLE_NEW_ITEM;
@@ -1453,7 +1470,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return newItems;
 	}
 
-	//gets the refresh period for the auto-updater
+    /**
+     * 	gets the refresh period for the auto-updater
+     * @return refresh period as a String
+     */
 	public String getRefreshPeriod(){
 		ArrayList<String> refreshPeriods = new ArrayList<String>();
 		String queryString = "SELECT *" + " FROM " + TABLE_REFRESH_PERIOD;
@@ -1475,7 +1495,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		}
 	}
 
-	//gets the gift period for fund and gift displays
+    /**
+     * gets the gift period for fund and gift displays
+     * @return gift period as a string
+     */
 	public String getGiftPeriod(){
 		ArrayList<String> giftPeriods = new ArrayList<String>();
 		String queryString = "SELECT *" + " FROM " + TABLE_GIFT_PERIOD;
@@ -1497,6 +1520,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		}
 	}
 
+    /**
+     * gets the JSON posts
+     * @return Arraylist of Json posts
+     */
 	public ArrayList<JsonPost> getJsonPosts(){
 		String queryString = "SELECT * FROM " + TABLE_JSON_POST;
 		ArrayList<JsonPost> posts = new ArrayList<JsonPost>();
@@ -1552,7 +1579,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * Updates the contact info for the given id
 	 * @param contactInfo, the contact info to be updated
 	 */
-
 	public void updateContactInfo(ContactInfo contactInfo) {
 		ContentValues values = new ContentValues();
 		int id = contactInfo.getPartnerId();

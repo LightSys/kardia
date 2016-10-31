@@ -2,10 +2,9 @@ package org.lightsys.missionaryapp.data;
 
 
 /**
- * Basic Class used to organize information about Gifts given by the user
- * 
  * @author Andrew Cameron
  *
+ *Basic Class used to organize information about Gifts given by the user
  */
 public class Gift {
 	private int    Id;
@@ -20,7 +19,8 @@ public class Gift {
 	private String giftYear;
 	private String giftMonth;
 
-	public Gift() {}
+    /* ************************* Construct ************************* */
+    public Gift() {}
 	
 	public Gift(int Id, String name, String giftFund, String gift_fund_desc, int[] gift_amount,
 				String gift_date, String gift_check_num, String giftDonor, int giftDonorId,

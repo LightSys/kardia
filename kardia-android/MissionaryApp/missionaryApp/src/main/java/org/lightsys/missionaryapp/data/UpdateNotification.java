@@ -8,12 +8,13 @@ package org.lightsys.missionaryapp.data;
  */
 public class UpdateNotification {
 
-    private int    id; // used for database storage
-    private long   time; // time to be sent in milliseconds
-    private String message; // message to be displayed in reminder
+    private int    id;        // used for database storage
+    private long   time;      // time to be sent in milliseconds
+    private String message;   // message to be displayed in reminder
     private String frequency; // reminder frequency
 
 
+    /* ************************* Construct ************************* */
     public UpdateNotification() {}
 
     public UpdateNotification(int id, long notificationTime, String notificationMessage,
