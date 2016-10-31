@@ -112,7 +112,7 @@ public class EditAccountActivity extends Activity {
                     Toast.makeText(EditAccountActivity.this, "Account already stored", Toast.LENGTH_LONG).show();
                     return;
                 }
-				Account a = new Account(account_id, name, pass, server, null);
+				Account a = new Account(account_id, name, pass, server);
 
 				// Execute data connection to validate account and pull data if valid
 				// DataConnection will close activity once complete if successful

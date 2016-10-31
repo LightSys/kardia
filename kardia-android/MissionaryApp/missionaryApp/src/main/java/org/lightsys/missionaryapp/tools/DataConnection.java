@@ -484,8 +484,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             return;
         }
 
-        ArrayList<String> noteIDsFromServer = new ArrayList<String>(); //used to get rid of stale notes
-
         JSONArray tempNotes = json.names();
         for (int i = 0; i < tempNotes.length(); i++) {
             try{
@@ -493,7 +491,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempNotes.getString(i).equals("@id")){
                     JSONObject NoteObj = json.getJSONObject(tempNotes.getString(i));
                     int noteID = Integer.parseInt(NoteObj.getString("note_id"));
-                    noteIDsFromServer.add(noteID + "");
 
                     ArrayList<Integer> currentNoteIDList = new ArrayList<Integer>();
                     for (Note n : db.getNotes()) {
