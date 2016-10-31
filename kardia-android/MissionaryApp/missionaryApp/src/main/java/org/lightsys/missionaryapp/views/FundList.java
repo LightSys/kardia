@@ -59,7 +59,7 @@ public class FundList extends Fragment{
 
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>>itemList = generateListItems();
-		String[] from = {"fundtitle","todateamount","date"};
+		String[] from = {"fund_title","to_date_amount","date"};
 		int[] to = {R.id.fundNameText, R.id.amountText, R.id.dateText};
 		
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.fund_layout, from, to);
@@ -72,9 +72,9 @@ public class FundList extends Fragment{
 	}
 	
 	/**
-	 * Formats the fund information into a hashmap arraylist.
+	 * Formats the fund information into a HashMap ArrayList.
 	 * 
-	 * @return a hashmap array with fund information, to be shown in a listview 
+	 * @return a HashMap array with fund information, to be shown in a ListView
 	 */
 	private ArrayList<HashMap<String,String>> generateListItems(){
 
@@ -92,8 +92,8 @@ public class FundList extends Fragment{
 				Total[0]+=Math.floor(Total[1]/100);
 				Total[1]-=Math.floor(Total[1]/100)*100;
 			}
-			hm.put("fundtitle", f.getFundName());
-            hm.put("todateamount", Formatter.amountToString(Total));
+			hm.put("fund_title", f.getFundName());
+            hm.put("to_date_amount", Formatter.amountToString(Total));
 			if(gifts.size()>0) {
 				String startDate = gifts.get(gifts.size() - 1).getGiftDate().substring(0, 4);
 				String endDate = gifts.get(0).getGiftDate().substring(0, 4);

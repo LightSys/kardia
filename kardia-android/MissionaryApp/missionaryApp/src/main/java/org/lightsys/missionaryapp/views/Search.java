@@ -29,8 +29,9 @@ import org.lightsys.missionaryapp.R;
 
 public class Search extends Fragment{
 	
-	private Button       date1, date2, search;
-	private EditText     amount1, amount2, checknum;
+	private Button       date1;
+    private Button date2;
+    private EditText     amount1, amount2, checkNum;
 	private TextView     dash1, dash2, dollarSign2;
 	private CheckBox     dateRange, amountRange;
 	private ToggleButton toggleDate, toggleAmount, toggleCheck;
@@ -44,10 +45,10 @@ public class Search extends Fragment{
 		
 		date1        = (Button)v.findViewById(R.id.datePickBtn);
 		date2        = (Button)v.findViewById(R.id.datePickBtn2);
-		search       = (Button)v.findViewById(R.id.searchBtn);
+        Button search = (Button) v.findViewById(R.id.searchBtn);
 		amount1      = (EditText)v.findViewById(R.id.amount1);
 		amount2      = (EditText)v.findViewById(R.id.amount2);
-		checknum     = (EditText)v.findViewById(R.id.checkNumText);
+		checkNum     = (EditText)v.findViewById(R.id.checkNumText);
 		dateRange    = (CheckBox)v.findViewById(R.id.dateRange);
 		amountRange  = (CheckBox)v.findViewById(R.id.amountRange);
 		toggleDate   = (ToggleButton)v.findViewById(R.id.toggleDate);
@@ -150,10 +151,10 @@ public class Search extends Fragment{
 				// If check search is activated, set respective fields to visible
 				// If check search is not activated, set fields to invisible and set to default
 				if(toggleCheck.isChecked()){
-					checknum.setVisibility(View.VISIBLE);
+					checkNum.setVisibility(View.VISIBLE);
 				}else{
-					checknum.setText("");
-					checknum.setVisibility(View.INVISIBLE);
+					checkNum.setText("");
+					checkNum.setVisibility(View.INVISIBLE);
 				}
 			}
 		});
@@ -213,7 +214,7 @@ public class Search extends Fragment{
 			endAmount = (amount2.isEnabled() && !amount2.getText().toString().equals(""))? amount2.getText().toString() : "";
 		}
 		if(toggleCheck.isChecked()){
-			checkNumber = (!checknum.getText().toString().equals(""))?checknum.getText().toString() : "";
+			checkNumber = (!checkNum.getText().toString().equals(""))? checkNum.getText().toString() : "";
 		}
 
 		if (startDate.equals("") && endDate.equals("") && startAmount.equals("")
@@ -264,7 +265,7 @@ public class Search extends Fragment{
 		amount2.setVisibility(View.INVISIBLE);
 		dash2.setVisibility(View.INVISIBLE);
 		dollarSign2.setVisibility(View.INVISIBLE);
-		checknum.setText("");
+		checkNum.setText("");
 		dateRange.setChecked(false);
 		amountRange.setChecked(false);
 		toggleDate.setChecked(false);
@@ -272,7 +273,7 @@ public class Search extends Fragment{
 		toggleCheck.setChecked(false);
 		dateRow.setVisibility(View.INVISIBLE);
 		amountRow.setVisibility(View.INVISIBLE);
-		checknum.setVisibility(View.INVISIBLE);
+		checkNum.setVisibility(View.INVISIBLE);
 	}
 
 	private void sendToDetailedGift(int gift_id, int donor_id, String donor_name){

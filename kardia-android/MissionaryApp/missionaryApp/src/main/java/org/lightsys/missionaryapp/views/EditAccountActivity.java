@@ -32,7 +32,7 @@ import org.lightsys.missionaryapp.R;
  */
 public class EditAccountActivity extends Activity {
 
-	private int account_id;
+    private int account_id;
 	private String name, pass, server;
 	private EditText editName, editPass, editServer;
 
@@ -59,10 +59,14 @@ public class EditAccountActivity extends Activity {
 		// Retrieve data from previous activity and set edit text fields to account data
 		Intent intent = getIntent();
 
-		String oldName = intent.getStringExtra("oldname");
-		String oldPass = intent.getStringExtra("oldpass");
-		String oldServer = intent.getStringExtra("oldserver");
-		account_id = intent.getIntExtra("olddonorid", -1);
+        String EXTRA_OLD_NAME = "old_name";
+        String oldName = intent.getStringExtra(EXTRA_OLD_NAME);
+        String EXTRA_OLD_PASS = "old_pass";
+        String oldPass = intent.getStringExtra(EXTRA_OLD_PASS);
+        String EXTRA_OLD_SERVER = "old_server";
+        String oldServer = intent.getStringExtra(EXTRA_OLD_SERVER);
+        String EXTRA_OLD_DONOR_ID = "old_donor_id";
+        account_id = intent.getIntExtra(EXTRA_OLD_DONOR_ID, -1);
 
 		editName.setText(oldName);
 		editPass.setText(oldPass);

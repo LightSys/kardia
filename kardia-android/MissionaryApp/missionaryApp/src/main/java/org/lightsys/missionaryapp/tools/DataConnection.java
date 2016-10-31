@@ -549,8 +549,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             return;
         }
 
-        ArrayList<String> prayedForIDsFromServer = new ArrayList<String>(); //used to get rid of stale prayed for
-
         JSONArray tempPrayedFor = json.names();
 
         int numPrayedFor= tempPrayedFor.length();
@@ -563,7 +561,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempPrayedFor.getString(i).equals("@id")){
                     JSONObject PrayedForObj = json.getJSONObject(tempPrayedFor.getString(i));
                     int prayedForID = Integer.parseInt(PrayedForObj.getString("prayedfor_id"));
-                    prayedForIDsFromServer.add(prayedForID + "");
 
                     ArrayList<Integer> currentPrayedForIDList = new ArrayList<Integer>();
 

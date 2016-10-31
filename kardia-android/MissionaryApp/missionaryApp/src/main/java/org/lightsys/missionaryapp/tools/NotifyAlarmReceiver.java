@@ -35,7 +35,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // If signal received was from bootup, go through process to reset notification alarms
+        // If signal received was from boot up, go through process to reset notification alarms
         if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
             resetAlarms(context);
         } else { // Signal came from alarm going off and notification should be sent to user

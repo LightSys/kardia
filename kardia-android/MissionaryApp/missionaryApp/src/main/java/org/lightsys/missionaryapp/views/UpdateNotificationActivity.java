@@ -42,10 +42,8 @@ import java.util.Locale;
  */
 public class UpdateNotificationActivity extends Activity {
 
-    private final String EXTRA_DELETE = "delete"; //tells activity whether it should create alarms or delete them
     private boolean      delete=false;
     private String       alarmTime, endDate, startDate;
-    private final long   DAY_IN_MILLIS = 86400000;
     private int          notificationID, frequency;
 
     private Spinner  frequencySpinner;
@@ -57,6 +55,7 @@ public class UpdateNotificationActivity extends Activity {
         super.onCreate(savedInstanceState);
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
+            String EXTRA_DELETE = "delete";
             delete = extras.getBoolean(EXTRA_DELETE);
         }
         if (delete == true){
@@ -67,8 +66,6 @@ public class UpdateNotificationActivity extends Activity {
             if (getActionBar() != null) {
                 getActionBar().setTitle("Update Notification Setup");
             }
-
-            Bundle args = getIntent().getExtras();
 
             // For next ID, retrieve last ID from database and add 1
             LocalDBHandler db = new LocalDBHandler(this, null);
@@ -361,9 +358,8 @@ public class UpdateNotificationActivity extends Activity {
             LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this, null);
             AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
             //sets end date in milliseconds as the end of that date
-            long endDateinMillis = getDateInMillis(endDate)+DAY_IN_MILLIS-1;
-            //sets start date in milliseconds as beginning of date
-            long startDateinMillis = getDateInMillis(startDate);
+            long DAY_IN_MILLIS = 86400000;
+            long endDateInMillis = getDateInMillis(endDate)+ DAY_IN_MILLIS -1;
 
             // alarm times will be set and stored in millisecond form
             long alarmTime;
@@ -384,7 +380,7 @@ public class UpdateNotificationActivity extends Activity {
                 alarmTime = c.getTimeInMillis();
 
                 int loops=0;
-                while (endDateinMillis>=alarmTime && loops<200) {
+                while (endDateInMillis>=alarmTime && loops<200) {
 
                     // If alarm time is not in the past, set alarm for notification
                     if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
@@ -440,7 +436,7 @@ public class UpdateNotificationActivity extends Activity {
 
                         db.addNotification(notification);
                     }
-                    //set new alarmtime for next iteration
+                    //set new alarmTime for next iteration
                     alarmTime = c.getTimeInMillis();
                     loops+=1;
                 }

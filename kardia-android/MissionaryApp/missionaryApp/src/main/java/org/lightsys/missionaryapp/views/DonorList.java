@@ -44,7 +44,7 @@ public class DonorList extends Fragment {
 
         // Map data fields to layout fields
         ArrayList<HashMap<String,String>>itemList = generateListItems();
-        String[] from = {"donorname", "email","phone"};
+        String[] from = {"donor_name", "email","phone"};
         int[] to = {R.id.nameText, R.id.emailText,R.id.phoneText};
 
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.donor_listview_layout, from, to);
@@ -57,9 +57,9 @@ public class DonorList extends Fragment {
     }
 
         /**
-         * Formats the donor information into a hashmap arraylist.
+         * Formats the donor information into a HashMap ArrayList.
          *
-         * @return a hashmap array with donor information, to be shown in a listview
+         * @return a HashMap array with donor information, to be shown in a ListView
          */
 
         private ArrayList<HashMap<String,String>> generateListItems(){
@@ -79,7 +79,7 @@ public class DonorList extends Fragment {
                     }
                 }
 
-                hm.put("donorname", m.getName());
+                hm.put("donor_name", m.getName());
                 hm.put("email", email);
                 hm.put("phone", phone);
 
@@ -109,11 +109,11 @@ public class DonorList extends Fragment {
             }
             args.putString("donor_email", contactinfo.getEmail());
 
-            DetailedDonor newfrag = new DetailedDonor();
-            newfrag.setArguments(args);
+            DetailedDonor newFrag = new DetailedDonor();
+            newFrag.setArguments(args);
 
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.contentFrame, newfrag);
+            transaction.replace(R.id.contentFrame, newFrag);
             transaction.addToBackStack("ToDetailedDonorView");
             transaction.commit();
         }

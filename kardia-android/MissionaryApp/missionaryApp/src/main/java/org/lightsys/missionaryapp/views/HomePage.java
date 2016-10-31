@@ -25,21 +25,19 @@ import java.util.HashMap;
  */
 public class HomePage extends Fragment {
 
-    private Account  account;
     private String[] mCategories;
-    private TextView welcome;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
-        account           = db.getAccount();
+        Account account = db.getAccount();
         db.close();
 
         View v = inflater.inflate(R.layout.home_page_layout, container, false);
         getActivity().setTitle("Home");
 
         //layout welcome header
-        welcome = (TextView)v.findViewById(R.id.welcomeHeader);
+        TextView welcome = (TextView) v.findViewById(R.id.welcomeHeader);
         welcome.setVisibility(View.VISIBLE);
         welcome.setText("Welcome\n" + account.getPartnerName());
 
@@ -47,7 +45,7 @@ public class HomePage extends Fragment {
         mCategories = getResources().getStringArray(R.array.categories);
 
         ArrayList<HashMap<String,String>>itemList = generateListItems();
-        String[] from = {"listitem"};
+        String[] from = {"list_item"};
         int[] to = {R.id.navigateButton};
 
         ListView listview = (ListView)v.findViewById(R.id.welcomeList);
@@ -59,7 +57,7 @@ public class HomePage extends Fragment {
     }
 
     /**
-     * Formats the donor information into a HashMap arraylist.
+     * Formats the donor information into a HashMap ArrayList.
      *
      * @return a HashMap array with donor information, to be shown in a ListView
      */
@@ -68,7 +66,7 @@ public class HomePage extends Fragment {
         ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
         for (int m=1; m < mCategories.length ;m++){
             HashMap<String,String> hm = new HashMap<String,String>();
-            hm.put("listitem", mCategories[m]);
+            hm.put("list_item", mCategories[m]);
 
             aList.add(hm);
         }

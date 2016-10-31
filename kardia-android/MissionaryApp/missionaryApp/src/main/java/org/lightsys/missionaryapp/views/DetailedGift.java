@@ -25,7 +25,7 @@ import org.lightsys.missionaryapp.R;
  * The gift is determined by the "position" int passed into the fragment
  * which then uses that to check the list of gifts and choose the one at
  * that spot. At which point it grabs all the needed information and displays
- * it in the gift_detailedview_layout.
+ * it in the gift_detailed_view_layout.
  */
 public class DetailedGift extends Fragment {
 
@@ -35,10 +35,9 @@ public class DetailedGift extends Fragment {
 
     private int gift_id = -1, donor_id = -1;
     private String donor_name = "", phone_cell = "", email_info = "";
-    private Bundle args;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.gift_detailedview_layout, container, false);
+        View v = inflater.inflate(R.layout.gift_detailed_view_layout, container, false);
         getActivity().setTitle("Gift");
 
         if (savedInstanceState != null) {
@@ -53,7 +52,7 @@ public class DetailedGift extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        args = getArguments();
+        Bundle args = getArguments();
 
         if (args != null) {
             updateGiftView(args.getInt(ARG_GIFT_ID), args.getInt(ARG_DONOR_ID), args.getString(ARG_DONOR_NAME));
@@ -106,11 +105,11 @@ public class DetailedGift extends Fragment {
                 args.putString("donor_email", email_info);
                 args.putString("donor_phone", phone_cell);
 
-                DetailedDonor newfrag = new DetailedDonor();
-                newfrag.setArguments(args);
+                DetailedDonor newFrag = new DetailedDonor();
+                newFrag.setArguments(args);
 
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.contentFrame, newfrag);
+                transaction.replace(R.id.contentFrame, newFrag);
                 transaction.addToBackStack("ToDetailedDonorView");
                 transaction.commit();
             }

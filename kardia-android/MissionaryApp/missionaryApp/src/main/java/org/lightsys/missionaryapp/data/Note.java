@@ -11,7 +11,7 @@ public class Note {
     private int    note_id;
     private int    missionaryID;
     private String subject;
-    private String notetext;
+    private String noteText;
     private String date;
     private String missionaryName;
     private String noteType;
@@ -19,10 +19,11 @@ public class Note {
 
     public Note() {}
 
-    public Note(int note_id, int missionaryID, String missionaryName, String noteType, String subject, String date, String notetext, int numberPrayed) {
+    public Note(int note_id, int missionaryID, String missionaryName, String noteType,
+                String subject, String date, String noteText, int numberPrayed) {
         this.note_id        = note_id;
         this.subject        = subject;
-        this.notetext       = notetext;
+        this.noteText       = noteText;
         this.date           = date;
         this.missionaryName = missionaryName;
         this.missionaryID   = missionaryID;
@@ -40,7 +41,7 @@ public class Note {
 
     public void setSubject(String title)          { this.subject = title; }
 
-    public void setNoteText(String notetext)      { this.notetext = notetext; }
+    public void setNoteText(String noteText)      { this.noteText = noteText; }
 
     public void setDate(String date)              { this.date = date; }
 
@@ -58,7 +59,7 @@ public class Note {
 
     public String getSubject()        { return subject; }
 
-    public String getNoteText()       { return notetext; }
+    public String getNoteText()       { return noteText; }
 
     public String getDate()           { return date; }
 
