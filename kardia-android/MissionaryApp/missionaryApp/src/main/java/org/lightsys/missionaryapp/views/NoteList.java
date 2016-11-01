@@ -100,8 +100,8 @@ public class NoteList extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent go_to_post_note = new Intent(getActivity(), PostNoteActivity.class);
-                startActivity(go_to_post_note);
+                Intent goToPostNote = new Intent(getActivity(), PostNoteActivity.class);
+                startActivity(goToPostNote);
             }
         });
         return v;

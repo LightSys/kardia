@@ -197,8 +197,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             if (dataActivity != null) {
                 spinner.setMessage("Updating...");
             }
-            //clears gift table to fix a bug with updating from the server
-            db.deleteGifts(Account_ID);
         }
 
         if (dataActivity != null) {
