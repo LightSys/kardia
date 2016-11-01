@@ -175,17 +175,19 @@ public class AccountsActivity extends Activity{
 
 		// If account already stored, display message and return
         LocalDBHandler db = new LocalDBHandler(this);
-        if(account.getAccountName().equals(aName) && account.getServerName().equals(sName) &&
-                account.getAccountPassword().equals(aPass) && account.getId() == dId){
-            Toast.makeText(this, "Account already connected", Toast.LENGTH_LONG).show();
-            db.close();
-            return;
-        }
-        // Two accounts with the same ID should never be stored
-        if(account.getId() == dId) {
-            Toast.makeText(this, "Account with this ID already connected", Toast.LENGTH_LONG).show();
-            db.close();
-            return;
+        if(account!=null) {
+            if (account.getAccountName().equals(aName) && account.getServerName().equals(sName) &&
+                    account.getAccountPassword().equals(aPass) && account.getId() == dId) {
+                Toast.makeText(this, "Account already connected", Toast.LENGTH_LONG).show();
+                db.close();
+                return;
+            }
+            // Two accounts with the same ID should never be stored
+            if (account.getId() == dId) {
+                Toast.makeText(this, "Account with this ID already connected", Toast.LENGTH_LONG).show();
+                db.close();
+                return;
+            }
         }
 		Account account = new Account(dId, aName, aPass, sName);
 		// Execute data connection to validate account and pull data if valid

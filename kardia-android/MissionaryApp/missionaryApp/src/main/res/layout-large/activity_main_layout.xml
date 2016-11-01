@@ -11,39 +11,31 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_above="@+id/bottomBar"
+        android:layout_above="@+id/addUpdateButton"
         android:background="@drawable/noise_blue_repeat" >
 
         <ListView
             android:id="@+id/infoList"
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            style="@style/listCustomBlue"/>
+            style="@style/listCustomBlue"
+            />
 
-
-        <Button
-            android:id="@+id/addUpdateButton"
-            android:layout_width="match_parent"
-            android:layout_height="68dp"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:text="@string/add_note_button"
-            style="@style/customBottomBar"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_centerHorizontal="true"
-            android:visibility="gone"/>
     </RelativeLayout>
 
-    
-    <!-- Total bar programmatically added here -->
-    
-    <RelativeLayout android:id="@+id/bottomBar"
+    <!-- add Update Button -->
+    <Button
+        android:id="@+id/addUpdateButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="68dp"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:text="@string/add_note_button"
+        style="@style/customBottomBar"
         android:layout_alignParentBottom="true"
-    	android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
 
 </RelativeLayout>
