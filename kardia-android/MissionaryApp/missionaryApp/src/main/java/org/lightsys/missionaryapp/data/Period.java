@@ -9,7 +9,6 @@ package org.lightsys.missionaryapp.data;
 public class Period {
 	private int    Id;
 	private int    fundId;
-    //todo check format
 	private String periodName; // example: 2014.06|DEMO
 	private String date;       // month and year example: June 2014
 	private int[]  giftTotal;

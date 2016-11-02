@@ -29,7 +29,6 @@ import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.views.AccountsActivity;
-import org.lightsys.missionaryapp.views.EditAccountActivity;
 import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.Gift;
@@ -123,7 +122,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * Checks to see if account attempting to be connected from is a valid Kardia account
      * Displays proper error as Toast if account invalid
      */
-    private boolean isValidAccount()  {
+    private boolean isValidAccount(boolean isNewAccount)  {
         String test;
         try {
             // Attempt to pull information about the missionary from the API
@@ -132,30 +131,41 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             // Unauthorized signals incorrect username or password
             // 404 not found signals invalid ID
             // Empty or null signals an incorrect server name
-            if (test.equals("") || test.equals("Access Not Permitted")) {
-                dataActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(dataContext, "Server connection failed", Toast.LENGTH_LONG).show();
-                    }
-                });
-                return false;
-            } else if (test.contains("<H1>Unauthorized</H1>")) {
-                dataActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(dataContext, "Username/Password invalid", Toast.LENGTH_LONG).show();
-                    }
-                });
-                return false;
-            } else if (test.contains("404 Not Found")) {
-                dataActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(dataContext, "Invalid User ID", Toast.LENGTH_LONG).show();
-                    }
-                });
-                return false;
+            if (isNewAccount) {
+                if (test.equals("") || test.equals("Access Not Permitted")) {
+                    dataActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(dataContext, "Server connection failed", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    return false;
+                } else if (test.contains("<H1>Unauthorized</H1>")) {
+                    dataActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(dataContext, "Username/Password invalid", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    return false;
+                } else if (test.contains("404 Not Found")) {
+                    dataActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(dataContext, "Invalid User ID", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    return false;
+                }
+            }else { //if run from app refresh test server connection only
+                if (test.equals("") || test.equals("Access Not Permitted")) {
+                    dataActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(dataContext, "Server connection failed", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
             }
         }
         catch (Exception e) {
@@ -187,7 +197,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         // If it was from MainActivity, it is a database update from an existing account
         boolean isNewAccount = false;
         Class c = dataContext.getClass();
-        if (c == AccountsActivity.class || c == EditAccountActivity.class) {
+        if (c == AccountsActivity.class) {
             isNewAccount = true;
             spinner.setMessage("Connecting Account...");
         }  else
@@ -210,24 +220,18 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             });
         }
 
-        // If it is a new account, validate account
+        // validate account
         // If account not valid, do not attempt data pull
-        if (isNewAccount) {
-            validAccount = isValidAccount();
-            if(!validAccount) {
-                return;
-            }
+        validAccount = isValidAccount(isNewAccount);
+        if(!validAccount) {
+            return;
         }
+
 
         try {
             if (isNewAccount) {
-                // If account is new and valid, update if from edit or add if from accounts
-                if (dataContext.getClass() == EditAccountActivity.class) {
-                    db.updateAccount(account.getId(), account.getAccountName(),
-                            account.getAccountPassword(), account.getServerName());
-                } else {
-                    db.addAccount(account);
-                }
+                // If account is new and valid, add
+                db.addAccount(account);
             }
             loadPartnerName(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/"
                     + Account_ID + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=element&cx__res_attrs=basic"));

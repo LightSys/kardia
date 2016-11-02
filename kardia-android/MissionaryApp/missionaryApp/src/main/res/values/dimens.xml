@@ -1,4 +1,12 @@
 <resources>
+    <!-- Default text dimensions -->
+    <dimen name="body_dimen">20sp</dimen>
+    <dimen name="date_dimen">18sp</dimen>
+
+    <!-- Large text dimensions -->
+    <dimen name="body_dimen_lg">22sp</dimen>
+    <dimen name="date_dimen_lg">18sp</dimen>
+
 
     <!-- Default screen margins, per the Android Design guidelines. -->
 

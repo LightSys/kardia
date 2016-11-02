@@ -11,6 +11,7 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,7 +50,10 @@ public class GiftList extends Fragment{
 		LocalDBHandler db = new LocalDBHandler(getActivity());
 		Bundle giftArgs = getArguments();
 
-		if(savedInstanceState != null){
+        Log.d("GiftList", "onCreateView: " + db.getFundsForMissionary(100040));
+        Log.d("GiftList", "onCreateView: " + db.getFundsForMissionary(100048));
+
+        if(savedInstanceState != null){
 			this.period_type = savedInstanceState.getString(ARG_PERIOD_TYPE);
 			this.period_id   = savedInstanceState.getString(ARG_PERIOD_ID);
 			this.fundIds     = savedInstanceState.getIntegerArrayList(ARG_FUND_IDS);
