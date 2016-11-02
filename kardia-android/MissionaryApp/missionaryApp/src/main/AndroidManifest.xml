@@ -35,10 +35,6 @@
             android:windowSoftInputMode="adjustResize|stateVisible" >
         </activity>
         <activity
-            android:name="org.lightsys.missionaryapp.views.EditAccountActivity"
-            android:label="Edit Account" >
-        </activity>
-        <activity
             android:name="org.lightsys.missionaryapp.views.UpdateNotificationActivity"
             android:label="Prayer Notification" >
         </activity>

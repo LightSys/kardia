@@ -66,9 +66,9 @@ public class AccountsActivity extends Activity{
 		serverName.addTextChangedListener(new GenericTextWatcher(serverName));
 		donorID.addTextChangedListener(new GenericTextWatcher(donorID));
 
-		loadAccountList();
+		loadAccount();
 
-		registerForContextMenu(accountsList);
+        registerForContextMenu(accountsList);
 
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -76,7 +76,7 @@ public class AccountsActivity extends Activity{
 				new AlertDialog.Builder(AccountsActivity.this)
 						.setCancelable(false)
 						.setTitle("Connect Account")
-						.setMessage("This action will remove current account data and requires an internet connection to get new account data. Continue?")
+						.setMessage("This action will remove current account data. Continue?")
 						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
 								connectAccount();
@@ -108,10 +108,10 @@ public class AccountsActivity extends Activity{
 
 	
 	/**
-	 * Pulls all accounts (if any) out of the local SQLite Database and puts them into the
-	 * SessionStorage accounts list, then populates a ListView with the accounts.
+	 * Pulls account (if connected) out of the local SQLite Database
+     * and sets header with connected account.
 	 */
-	private void loadAccountList(){
+	private void loadAccount(){
 		LocalDBHandler db = new LocalDBHandler(this);
 		
 		account = db.getAccount();
@@ -196,84 +196,13 @@ public class AccountsActivity extends Activity{
 	}
 	
 	/**
-	 * This option menu is used to manage existing accounts
-	 * allowing the user to edit, delete or do nothing to the selected account.
-	 */
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo){
-		super.onCreateContextMenu(menu, v, menuInfo);
-		menu.add(0, v.getId(), 0, "Edit");
-		menu.add(0, v.getId(), 0, "Delete");
-		menu.add(0, v.getId(), 0, "Cancel");
-	}
-	
-	/**
-	 * This carries out the request made by the ContextMenu (above)...
-	 * If delete was selected, it will delete the account from the DB
-	 * If edit was selected, it will open the edit activity
-	 * @param item, item that was selected from menu (i.e. Delete, Edit, or Cancel)
-	 */
-	public boolean onContextItemSelected(MenuItem item) {
-
-		if (item.getTitle().equals("Delete")) {
-
-			final Account temp = account;
-			new AlertDialog.Builder(AccountsActivity.this)
-					.setCancelable(false)
-					.setTitle("Delete Account?")
-					.setMessage("Delete this account? All data connected with this account" +
-							"will also be deleted.")
-					.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-
-
-							LocalDBHandler db = new LocalDBHandler(AccountsActivity.this);
-							db.deleteAccount(temp.getId());
-							db.close();
-
-							// deleteAccount deletes all missionaries and notes
-							// check for missionaries and notes for any remaining accounts
-							Account a =  db.getAccount();
-                            new DataConnection(AccountsActivity.this, AccountsActivity.this, a).execute();
-
-							loadAccountList();
-						}
-					})
-					.setNegativeButton("No", new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-						}
-					})
-					.setIcon(android.R.drawable.ic_dialog_alert)
-					.show();
-
-		}else if (item.getTitle().equals("Edit")) {
-
-			Account temp = account;
-
-			// Launch EditAccountActivity and pass account details for activity set-up
-			Intent intent = new Intent(this, EditAccountActivity.class);
-			Log.w("BasicAuth", "The donor id being put into the intent: " + temp.getId());
-			intent.putExtra("old_name", temp.getAccountName());
-			intent.putExtra("old_pass", temp.getAccountPassword());
-			intent.putExtra("old_server", temp.getServerName());
-			intent.putExtra("old_donor_id", temp.getId());
-
-			startActivityForResult(intent, 0);
-
-		} else {
-			return false;
-		}
-		return true;
-	}
-	
-	/**
 	 * Called after returning from the Edit Accounts page
 	 * This refreshes the list of accounts. (in case a creation, edit or delete was made)
 	 */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data){
 		super.onActivityResult(requestCode, resultCode, data);
-		loadAccountList();
+		loadAccount();
 	}
 }
 

@@ -142,8 +142,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_PRAYED_FOR_DATE = "prayed_for_date";
 	private static final String COLUMN_SUPPORTER_PARTNER_ID = "supporter_partner_id";
 	private static final String COLUMN_SUPPORTER_PARTNER_NAME = "supporter_partner_name";
-	//TIME_PERIOD
-	private static final String TABLE_PERIOD = "period";
 	
 	/* ************************* Creation of Database and Tables ************************* */
 
@@ -215,11 +213,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
                 + COLUMN_DONOR_NAME + " TEXT," + COLUMN_DONOR_ID + " INTEGER," + COLUMN_GIFT_YEAR + " TEXT,"
 				+ COLUMN_GIFT_MONTH + " TEXT)";
 		db.execSQL(CREATE_GIFT_TABLE);
-
-		String CREATE_PERIOD_TABLE = "CREATE TABLE " + TABLE_PERIOD + "(" +
-				COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," +
-				COLUMN_DATE + " TEXT)";
-		db.execSQL(CREATE_PERIOD_TABLE);
 
 		String CREATE_FUND_ACCOUNT_MAP_TABLE = "CREATE TABLE " + TABLE_FUND_ACCOUNT_MAP
 				+ "(" + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_FUND_ID
@@ -299,7 +292,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * @param account, uses an Account object to retrieve needed data
 	 */
 	public void addAccount(Account account){
-		deleteAccountTable();
+		deleteAccount();
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_ID, account.getId());
 		values.put(COLUMN_ACCOUNT_NAME, account.getAccountName());
@@ -573,45 +566,28 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	
 	/**
 	 * Deletes the Account from the database (also any information linked with it)
-	 * @param Account_ID, Account to be deleted
 	 */
-	public void deleteAccount(int Account_ID){
-		
-		String[] acct = {String.valueOf(Account_ID)};
+	public void deleteAccount(){
+
 		SQLiteDatabase db = this.getWritableDatabase();
 
-		//delete gifts
-		db.delete(TABLE_GIFT, TABLE_GIFT + "." + COLUMN_ID 
-				+ " IN (SELECT " + TABLE_GIFT_ACCOUNT_MAP + "." + COLUMN_GIFT_ID
-				+ " FROM " + TABLE_GIFT_ACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-		
-		//delete gift account connections
-		db.delete(TABLE_GIFT_ACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
+		db.delete(TABLE_GIFT, null, null);
+        db.delete(TABLE_GIFT_ACCOUNT_MAP, null, null);
+        db.delete(TABLE_FUND, null, null);
+		db.delete(TABLE_FUND_ACCOUNT_MAP, null, null);
 
-		//delete funds
-		db.delete(TABLE_FUND, TABLE_FUND + "." + COLUMN_ID
-				+ " IN (SELECT " + TABLE_FUND_ACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
-				+ TABLE_FUND_ACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-		
-		//delete fund account connections
-		db.delete(TABLE_FUND_ACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
-
-		//delete all notes, prayer letters, and prayer notifications
 		db.delete(TABLE_NOTES, null, null);
 		db.delete(TABLE_LETTERS, null, null);
 		db.delete(TABLE_NOTIFICATIONS, null, null);
-		
-		//delete account
-		db.delete(TABLE_ACCOUNTS, COLUMN_ID + " = ?", acct);
-		
-		db.close();
-	}
-    /**todo check if previous should be used instead when changing accounts
-     * Deletes the Account Table from the database
-     */
-	private void deleteAccountTable(){
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.delete(TABLE_ACCOUNTS,null,null);
+        db.delete(TABLE_COMMENT, null, null);
+        db.delete(TABLE_PRAYED_FOR, null, null);
+        db.delete(TABLE_NEW_ITEM, null, null);
+
+        db.delete(TABLE_DONORS, null, null);
+        db.delete(TABLE_CONTACT_INFO, null, null);
+
+		db.delete(TABLE_ACCOUNTS, null,null);
+
 		db.close();
 	}
 
@@ -624,37 +600,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		String[] notification = {String.valueOf(notification_id)};
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_NOTIFICATIONS, COLUMN_ID + " = ?", notification);
-	}
-
-	/**
-	 * deletes the gifts from the database
-	 * this is to solve a bug with the database not updating properly
-	 * when data was removed from the server, the local DB wouldn't remove that data
-	 * this clears the gifts before pulling from the server
-	 * this should be used before pulling data from the server
-	 * created by Judah Sistrunk on May 5, 2016
-	 */
-	public void deleteGifts(int Account_ID) {
-		String[] acct = {String.valueOf(Account_ID)};
-		SQLiteDatabase db = this.getWritableDatabase();
-
-		//delete gifts
-		db.delete(TABLE_GIFT, TABLE_GIFT + "." + COLUMN_ID
-				+ " IN (SELECT " + TABLE_GIFT_ACCOUNT_MAP + "." + COLUMN_GIFT_ID
-				+ " FROM " + TABLE_GIFT_ACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-
-		//delete gift account connections
-		db.delete(TABLE_GIFT_ACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
-
-		//delete funds
-		db.delete(TABLE_FUND, TABLE_FUND + "." + COLUMN_ID
-				+ " IN (SELECT " + TABLE_FUND_ACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
-				+ TABLE_FUND_ACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
-
-		//delete fund account connections
-		db.delete(TABLE_FUND_ACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
-
-		db.close();
 	}
 
     /**
