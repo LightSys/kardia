@@ -137,9 +137,20 @@ public class DetailedDonor extends Fragment{
      */
     private ArrayList<HashMap<String,String>> generateListItems(){
         ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
+        int [] total = {0,0};
+        for (Gift g : gifts){
+            total[0]+=g.getGiftAmount()[0];
+            total[1]+=g.getGiftAmount()[1];
+        }
+        HashMap<String,String> hm = new HashMap<String,String>();
+        hm.put("fund_name", "Gift Total");
+        hm.put("gift_amount", Formatter.amountToString(total));
+        hm.put("gift_date", null);
+
+        aList.add(hm);
 
         for(Gift g : gifts){
-            HashMap<String,String> hm = new HashMap<String,String>();
+            hm = new HashMap<String,String>();
 
             hm.put("fund_name", "Gift to: " + g.getGiftFund());
             hm.put("gift_amount", Formatter.amountToString(g.getGiftAmount()));
@@ -147,6 +158,7 @@ public class DetailedDonor extends Fragment{
 
             aList.add(hm);
         }
+
         return aList;
     }
 
