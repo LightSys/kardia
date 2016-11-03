@@ -12,18 +12,18 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.TableRow;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -33,12 +33,13 @@ import org.lightsys.missionaryapp.R;
 public class Search extends Fragment{
 	
 	private Button       date1, date2;
-    private EditText     amount1, amount2, checkNum;
-	private TextView     dash1, dash2, dollarSign2;
+    private EditText     amount1, amount2;
+	private TextView     dash1, dash2, dollarSign2, donorText, fundText;
 	private CheckBox     dateRange, amountRange;
-	private ToggleButton toggleDate, toggleAmount, toggleDonor;
-    private Spinner      donorList;
-	private TableRow     dateRow, amountRow, donorRow;
+    private ListView     donorList, fundList;
+	private ToggleButton toggleDate, toggleAmount, toggleDonor, toggleFund;
+	private LinearLayout dateLayout, amountLayout, donorLayout, fundLayout;
+    private ArrayList<String> donorArray, fundArray;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -56,21 +57,18 @@ public class Search extends Fragment{
 		toggleDate    = (ToggleButton)v.findViewById(R.id.toggleDate);
 		toggleAmount  = (ToggleButton)v.findViewById(R.id.toggleAmount);
         toggleDonor   = (ToggleButton)v.findViewById(R.id.toggleDonor);
-        donorList     = (Spinner)v.findViewById(R.id.donorSpinner);
-		dateRow       = (TableRow)v.findViewById(R.id.dateRow);
-		amountRow     = (TableRow)v.findViewById(R.id.amountRow);
-        donorRow      = (TableRow)v.findViewById(R.id.donorRow);
+        toggleFund    = (ToggleButton)v.findViewById(R.id.toggleFund);
+        donorList     = (ListView) v.findViewById(R.id.donorList);
+        fundList      = (ListView) v.findViewById(R.id.fundList);
+        dateLayout    = (LinearLayout)v.findViewById(R.id.dateLayout);
+		amountLayout  = (LinearLayout)v.findViewById(R.id.amountLayout);
+        donorLayout   = (LinearLayout)v.findViewById(R.id.donorLayout);
+        fundLayout    = (LinearLayout)v.findViewById(R.id.fundLayout);
 		dash1         = (TextView)v.findViewById(R.id.dashTextView);
 		dash2         = (TextView)v.findViewById(R.id.dash2);
 		dollarSign2   = (TextView)v.findViewById(R.id.dollarSign2);
-
-        LocalDBHandler db = new LocalDBHandler(getActivity());
-        ArrayList<String> donorArray = new ArrayList<String>();
-        donorArray.add("Choose Donor");
-        donorArray.addAll(db.getDonorsOfGifts());
-
-        ArrayAdapter adapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_dropdown_item, donorArray);
-        donorList.setAdapter(adapter);
+        donorText     = (TextView)v.findViewById(R.id.donorText);
+        fundText      = (TextView)v.findViewById(R.id.fundText);
 
 		amount1.addTextChangedListener(new GenericTextWatcher(v));
 
@@ -80,7 +78,18 @@ public class Search extends Fragment{
 				doSearch();
 			}
 		});
-		
+
+        LocalDBHandler db = new LocalDBHandler(getActivity());
+
+        donorArray = db.getDonorsOfGifts();
+        fundArray  = db.getFundNames(db.getAccount().getId());
+        db.close();
+
+        ArrayAdapter donorAdapter = new ArrayAdapter(getActivity(), R.layout.search_listview_item, donorArray);
+        donorList.setAdapter(donorAdapter);
+        ArrayAdapter fundAdapter = new ArrayAdapter(getActivity(), R.layout.search_listview_item, fundArray);
+        fundList.setAdapter(fundAdapter);
+
 		dateRange.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v){
@@ -119,7 +128,7 @@ public class Search extends Fragment{
 				// If date search is not activated, set fields to invisible and set to default
 				if(toggleDate.isChecked()){
 					dateRange.setVisibility(View.VISIBLE);
-					dateRow.setVisibility(View.VISIBLE);
+					dateLayout.setVisibility(View.VISIBLE);
 				}else{
 					dateRange.setChecked(false);
 					dateRange.setVisibility(View.INVISIBLE);
@@ -128,7 +137,7 @@ public class Search extends Fragment{
 					date2.setText("Choose Date");
 					dash1.setVisibility(View.INVISIBLE);
 					date2.setVisibility(View.INVISIBLE);
-					dateRow.setVisibility(View.INVISIBLE);
+					dateLayout.setVisibility(View.INVISIBLE);
 				}
 			}
 		});
@@ -141,7 +150,7 @@ public class Search extends Fragment{
 				// If amount search is not activated, set fields to invisible and set to default
 				if(toggleAmount.isChecked()){
 					amountRange.setVisibility(View.VISIBLE);
-					amountRow.setVisibility(View.VISIBLE);
+					amountLayout.setVisibility(View.VISIBLE);
 				}else{
 					amountRange.setChecked(false);
 					amountRange.setVisibility(View.INVISIBLE);
@@ -151,7 +160,7 @@ public class Search extends Fragment{
 					dash2.setVisibility(View.INVISIBLE);
 					amount2.setVisibility(View.INVISIBLE);
 					dollarSign2.setVisibility(View.INVISIBLE);
-					amountRow.setVisibility(View.INVISIBLE);
+					amountLayout.setVisibility(View.INVISIBLE);
 				}
 			}
 		});
@@ -161,15 +170,73 @@ public class Search extends Fragment{
             @Override
             public void onClick(View v){
 
-                // If amount search is activated, set respective fields to visible
-                // If amount search is not activated, set fields to invisible and set to default
+                // change visibility of donor search
                 if(toggleDonor.isChecked()){
-                    donorRow.setVisibility(View.VISIBLE);
+                    donorLayout.setVisibility(View.VISIBLE);
                 }else{
-                    donorRow.setVisibility(View.INVISIBLE);
+                    donorText.setText("");
+                    donorLayout.setVisibility(View.INVISIBLE);
                 }
             }
         });
+
+        toggleFund.setOnClickListener(new OnClickListener(){
+
+            @Override
+            public void onClick(View v){
+
+                // change visibility of fund search
+                if(toggleFund.isChecked()){
+                    fundLayout.setVisibility(View.VISIBLE);
+                }else{
+                    fundText.setText("");
+                    fundLayout.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+
+        donorText.setOnClickListener(new OnClickListener(){
+            @Override
+            public void onClick(View v){
+
+                // change visibility of donorList
+                if(donorList.getVisibility() == View.VISIBLE){
+                    donorList.setVisibility(View.INVISIBLE);
+                }else{
+                    donorList.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+        fundText.setOnClickListener(new OnClickListener(){
+            @Override
+            public void onClick(View v){
+
+                // change visibility of fundList
+                if(fundList.getVisibility() == View.VISIBLE){
+                    fundList.setVisibility(View.INVISIBLE);
+                }else{
+                    fundList.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        donorList.setOnItemClickListener(new onDonorClicked());
+        fundList.setOnItemClickListener(new onFundClicked());
+
+        /*toggleFund.setOnClickListener(new OnClickListener(){
+
+            @Override
+            public void onClick(View v){
+
+                // If amount search is activated, set respective fields to visible
+                // If amount search is not activated, set fields to invisible and set to default
+                if(toggleFund.isChecked()){
+                    fundLayout.setVisibility(View.VISIBLE);
+                }else{
+                    fundLayout.setVisibility(View.INVISIBLE);
+                }
+            }
+        });*/
 
 
 		return v;
@@ -216,10 +283,10 @@ public class Search extends Fragment{
 		String endDate     = "";
 		String startAmount = "";
 		String endAmount   = "";
-		String checkNumber = "";
+		String donorName   = "";
+        String fundName    = "";
 
 		ArrayList<Fund> giftFund = db.getFundsForMissionary(db.getAccount().getId());
-        Log.d("Search", "doSearch: "+ giftFund.size());
         if(toggleDate.isChecked()){
 			startDate = (!date1.getText().toString().equals("Choose Date"))? date1.getText().toString() : "";
 			endDate = (date2.isEnabled() && !date2.getText().toString().equals("Choose Date"))? date2.getText().toString() : "";
@@ -228,9 +295,14 @@ public class Search extends Fragment{
 			startAmount = (!amount1.getText().toString().equals(""))? amount1.getText().toString() : "";
 			endAmount = (amount2.isEnabled() && !amount2.getText().toString().equals(""))? amount2.getText().toString() : "";
 		}
-
+        if(toggleDonor.isChecked()){
+            donorName = (!donorText.getText().toString().equals(""))? donorText.getText().toString():"";
+        }
+        if(toggleFund.isChecked()){
+            fundName = (!fundText.getText().toString().equals(""))? fundText.getText().toString():"";
+        }
 		if (startDate.equals("") && endDate.equals("") && startAmount.equals("")
-				&& endAmount.equals("") && checkNumber.equals("")) {
+				&& endAmount.equals("") && donorName.equals("") && fundName.equals("")) {
 			Toast.makeText(getActivity(), "No values were provided for search", Toast.LENGTH_LONG).show();
 		} else if (startDate.equals("") && !endDate.equals("")) {
 			Toast.makeText(getActivity(), "Please select a start value for the range", Toast.LENGTH_LONG).show();
@@ -241,10 +313,8 @@ public class Search extends Fragment{
 		} else {
 			// Do search for gifts with constructed parameters
 			ArrayList<Gift> results = new ArrayList<Gift>();
-			for(Fund f:giftFund) {
-				results.addAll(db.getGiftSearchResults(startDate, endDate, startAmount, endAmount, checkNumber, f.getFundName()));
-				db.close();
-			}
+            results.addAll(db.getGiftSearchResults(startDate, endDate, startAmount, endAmount, fundName, donorName));
+            db.close();
 
 			// Send to corresponding page depending on search results
 			if(results == null) {
@@ -281,8 +351,8 @@ public class Search extends Fragment{
 		amountRange.setChecked(false);
 		toggleDate.setChecked(false);
 		toggleAmount.setChecked(false);
-		dateRow.setVisibility(View.INVISIBLE);
-		amountRow.setVisibility(View.INVISIBLE);
+		dateLayout.setVisibility(View.INVISIBLE);
+		amountLayout.setVisibility(View.INVISIBLE);
 	}
 
 	private void sendToDetailedGift(int gift_id, int donor_id, String donor_name){
@@ -352,6 +422,27 @@ public class Search extends Fragment{
 			amount2.setText("");
 		}
 	}
+    /**
+     * set text if donor clicked
+     */
+    private class onDonorClicked implements AdapterView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            donorText.setText(donorArray.get(position).toString());
+            donorList.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    /**
+     *set text if fund clicked
+     **/
+    private class onFundClicked implements AdapterView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            fundText.setText(fundArray.get(position).toString());
+            fundList.setVisibility(View.INVISIBLE);
+        }
+    }
 	
 	private class mDateSetListener implements DatePickerDialog.OnDateSetListener{
 		

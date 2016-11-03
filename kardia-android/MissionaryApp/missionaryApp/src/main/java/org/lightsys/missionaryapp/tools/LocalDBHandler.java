@@ -1315,44 +1315,55 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * @param endDate, the end of the date range in "YYYY-MM-DD" format
 	 * @param startAmount, the specific amount or beginning of amount range
 	 * @param endAmount, the end of the amount range
-	 * @param checkNumber, the check number
+	 * @param donorName, the name of the donor
+     * @param giftFund, the name of the fund
 	 * @return all gifts that match the search parameters as an ArrayList of Gift Objects ordered from most recent to least recent
 	 */
 	public ArrayList<Gift> getGiftSearchResults(String startDate, String endDate, String startAmount,
-											String endAmount, String checkNumber, String giftFund){
+											String endAmount, String giftFund, String donorName){
 		ArrayList<Gift> gifts = new ArrayList<Gift>();
-		String searchStatement = "SELECT * FROM " + TABLE_GIFT + " WHERE " + COLUMN_GIFT_FUND + " = '" + giftFund + "'";
+		String searchStatement = "SELECT * FROM " + TABLE_GIFT;
 
 		// Build date portion of search statement
 		if(!NullOrEmpty(startDate) && !NullOrEmpty(endDate)){
-			searchStatement += " AND (" + COLUMN_GIFT_DATE + " BETWEEN '" + startDate + "' AND '" + endDate + "')";
+			searchStatement += " WHERE (" + COLUMN_GIFT_DATE + " BETWEEN '" + startDate + "' AND '" + endDate + "')";
 		}else if(!NullOrEmpty(startDate)){
-			searchStatement += " AND (" + COLUMN_GIFT_DATE + " = '" + startDate + "')";
+			searchStatement += " WHERE (" + COLUMN_GIFT_DATE + " = '" + startDate + "')";
 		}
 
 		// Build amount portion of search statement
 		if(!NullOrEmpty(startAmount) && !NullOrEmpty(endAmount)){
 			if(NullOrEmpty(startDate) && NullOrEmpty(endDate)){
-				searchStatement += " AND (" + COLUMN_GIFT_TOTAL_WHOLE + " BETWEEN " + startAmount + " AND " + endAmount + ")";
+				searchStatement += " WHERE (" + COLUMN_GIFT_TOTAL_WHOLE + " BETWEEN " + startAmount + " AND " + endAmount + ")";
 			}else{
 				searchStatement += " AND (" + COLUMN_GIFT_TOTAL_WHOLE + " BETWEEN " + startAmount + " AND " + endAmount + ")";
 			}
 		}else if(!NullOrEmpty(startAmount)){
 			if(NullOrEmpty(startDate) && NullOrEmpty(endDate)){
-				searchStatement += " AND (" + COLUMN_GIFT_TOTAL_WHOLE + " = " + startAmount + ")";
+				searchStatement += " WHERE (" + COLUMN_GIFT_TOTAL_WHOLE + " = " + startAmount + ")";
 			}else{
 				searchStatement += " AND (" + COLUMN_GIFT_TOTAL_WHOLE + " = " + startAmount + ")";
 			}
 		}
 
-		// Build check number portion of search statement
-		if(!NullOrEmpty(checkNumber)){
+		// Build fund portion of search statement
+		if(!NullOrEmpty(giftFund)){
 			if(NullOrEmpty(startDate) && NullOrEmpty(endDate) && NullOrEmpty(startAmount) && NullOrEmpty(endAmount)){
-				searchStatement += " AND " + COLUMN_CHECK_NUM + " = " + checkNumber;
+				searchStatement += " WHERE (" + COLUMN_GIFT_FUND + " = '" + giftFund + "')";
 			}else{
-				searchStatement += " AND (" + COLUMN_CHECK_NUM + " = " + checkNumber + ")";
+				searchStatement += " AND (" + COLUMN_GIFT_FUND + " = '" + giftFund + "')";
 			}
 		}
+
+        // Build fund portion of search statement
+        if(!NullOrEmpty(donorName)){
+            if(NullOrEmpty(startDate) && NullOrEmpty(endDate) && NullOrEmpty(startAmount) && NullOrEmpty(endAmount)
+                    && NullOrEmpty(giftFund)){
+                searchStatement += " WHERE (" + COLUMN_DONOR_NAME + " = '" + donorName + "')";
+            }else{
+                searchStatement += " AND (" + COLUMN_DONOR_NAME + " = '" + donorName + "')";
+            }
+        }
 
 		// Order the resulting gifts by most recent to least recent
 		searchStatement += " ORDER BY DATE(" + COLUMN_GIFT_DATE + ") DESC";
