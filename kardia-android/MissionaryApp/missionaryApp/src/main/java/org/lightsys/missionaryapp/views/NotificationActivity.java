@@ -40,7 +40,7 @@ import java.util.Locale;
  *
  * This activity allows the user to set up a notification system to remind them to pray
  */
-public class UpdateNotificationActivity extends Activity {
+public class NotificationActivity extends Activity {
 
     private boolean      delete=false;
     private String       alarmTime, endDate, startDate;
@@ -62,7 +62,7 @@ public class UpdateNotificationActivity extends Activity {
             deleteNotifications();
         }
         else {
-            setContentView(R.layout.update_notification_layout);
+            setContentView(R.layout.notification_layout);
             if (getActionBar() != null) {
                 getActionBar().setTitle("Update Notification Setup");
             }
@@ -106,7 +106,7 @@ public class UpdateNotificationActivity extends Activity {
                     boolean inputIsValid = checkValidity();
                     if (inputIsValid) {
                         // Ask user if notifications should be set as they can not be edited later
-                        new AlertDialog.Builder(UpdateNotificationActivity.this)
+                        new AlertDialog.Builder(NotificationActivity.this)
                                 .setCancelable(false)
                                 .setTitle("Set Notifications")
                                 .setMessage("Set notifications?")
@@ -122,7 +122,7 @@ public class UpdateNotificationActivity extends Activity {
                                 .setIcon(android.R.drawable.ic_dialog_alert)
                                 .show();
                     } else {
-                        Toast.makeText(UpdateNotificationActivity.this, "There are unselected fields. " +
+                        Toast.makeText(NotificationActivity.this, "There are unselected fields. " +
                                 "Select date and times before continuing", Toast.LENGTH_LONG).show();
                     }
                 }
@@ -165,7 +165,7 @@ public class UpdateNotificationActivity extends Activity {
 
     // Displays a confirmation dialog asking whether they would like to leave the page
     private void showCancelConfirmation() {
-        new AlertDialog.Builder(UpdateNotificationActivity.this)
+        new AlertDialog.Builder(NotificationActivity.this)
                 .setCancelable(false)
                 .setTitle("Cancel")
                 .setMessage("Exit without setting notifications?")
@@ -355,7 +355,7 @@ public class UpdateNotificationActivity extends Activity {
             Intent alarmIntent;
             PendingIntent pendingIntent;
 
-            LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this);
+            LocalDBHandler db = new LocalDBHandler(NotificationActivity.this);
             AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
             //sets end date in milliseconds as the end of that date
             long DAY_IN_MILLIS = 86400000;
@@ -385,12 +385,12 @@ public class UpdateNotificationActivity extends Activity {
                     // If alarm time is not in the past, set alarm for notification
                     if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
 
-                        alarmIntent = new Intent(UpdateNotificationActivity.this, NotifyAlarmReceiver.class);
+                        alarmIntent = new Intent(NotificationActivity.this, NotifyAlarmReceiver.class);
                         alarmIntent.putExtra("title", "Update Reminder: ");
                         alarmIntent.putExtra("message", "Send Ministry Update");
                         alarmIntent.putExtra("id", notificationID);
 
-                        pendingIntent = PendingIntent.getBroadcast(UpdateNotificationActivity.this,
+                        pendingIntent = PendingIntent.getBroadcast(NotificationActivity.this,
                                 notificationID, alarmIntent, 0);
 
                         // Set alarm and increment notification ID
@@ -441,10 +441,10 @@ public class UpdateNotificationActivity extends Activity {
                     loops+=1;
                 }
                 if (loops==199){
-                    Toast.makeText(UpdateNotificationActivity.this, "Notification Limit Reached: first 200 notifications set", Toast.LENGTH_LONG).show();
+                    Toast.makeText(NotificationActivity.this, "Notification Limit Reached: first 200 notifications set", Toast.LENGTH_LONG).show();
                 }
             } else {
-                Toast.makeText(UpdateNotificationActivity.this, "Sorry, but your device " +
+                Toast.makeText(NotificationActivity.this, "Sorry, but your device " +
                                 "does not have the proper update to support this feature",
                         Toast.LENGTH_LONG).show();
             }
@@ -463,10 +463,10 @@ public class UpdateNotificationActivity extends Activity {
     //when user turns alarm off delete notifications and remove from db
     private void deleteNotifications(){
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        LocalDBHandler db = new LocalDBHandler(UpdateNotificationActivity.this);
-        Intent alarmIntent = new Intent(UpdateNotificationActivity.this, NotifyAlarmReceiver.class);
+        LocalDBHandler db = new LocalDBHandler(NotificationActivity.this);
+        Intent alarmIntent = new Intent(NotificationActivity.this, NotifyAlarmReceiver.class);
         for(UpdateNotification n: db.getNotifications()) {
-            PendingIntent reminder = PendingIntent.getBroadcast(UpdateNotificationActivity.this,
+            PendingIntent reminder = PendingIntent.getBroadcast(NotificationActivity.this,
                     n.getId(), alarmIntent, 0);
             alarmManager.cancel(reminder);
             db.deleteNotification(n.getId());

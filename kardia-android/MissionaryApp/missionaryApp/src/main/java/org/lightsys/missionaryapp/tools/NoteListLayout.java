@@ -23,7 +23,7 @@ public class NoteListLayout extends RelativeLayout {
     public NoteListLayout(Context context) {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.note_listview_item, this, true);
-        titleView           = (TextView) findViewById(R.id.nameText);
+        titleView           = (TextView) findViewById(R.id.subjectText);
         dateView            = (TextView) findViewById(R.id.dateText);
         missionaryNameView  = (TextView) findViewById(R.id.missionaryName);
         aboveTextView       = (TextView) findViewById(R.id.textAbovePrayingButton);

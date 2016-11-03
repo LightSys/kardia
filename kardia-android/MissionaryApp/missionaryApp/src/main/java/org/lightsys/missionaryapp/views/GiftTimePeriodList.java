@@ -66,8 +66,8 @@ public class GiftTimePeriodList extends Fragment {
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>> itemList = generateListItems();
 		String[] from = {"amount", "fund","period"};
-		int[] to = {R.id.amountText, R.id.fundNameText, R.id.donorText};
-		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item, from, to);
+		int[] to = {R.id.amountText, R.id.nameText, R.id.nameText};
+		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.funds_listview_item, from, to);
 		listview.setAdapter(adapter);
 
 		listview.setOnItemClickListener(new onPeriodClicked());

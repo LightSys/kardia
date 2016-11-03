@@ -18,16 +18,16 @@
                 android:id="@+id/senderRow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginLeft="@dimen/border_dimen_lg"
+                android:layout_marginStart="@dimen/border_dimen_lg"
+                android:layout_marginTop="@dimen/border_dimen_lg"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="22sp"
+                    android:textSize="@dimen/body_dimen_lg"
                     android:text="@string/from"
                     />
 
@@ -46,29 +46,29 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/subjectRow"
                 android:layout_below="@id/senderRow"
-                android:layout_marginLeft="20dp"
-                android:layout_marginStart="20dp"
+                android:layout_marginLeft="@dimen/border_dimen_lg"
+                android:layout_marginStart="@dimen/border_dimen_lg"
                 android:layout_marginTop="10dp"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true">
 
                 <TextView
-                    android:text = "@string/subject_title"
-                    android:textSize="22sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <EditText
-                    android:id="@+id/subjectText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text = "@string/subject_title"
+                    android:textSize="@dimen/body_dimen_lg"/>
+
+                <EditText
+                    android:id="@+id/userNameText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginLeft="13dp"
+                    android:layout_marginStart="13dp"
                     android:hint="@string/subject"
                     android:ems="12"
                     android:maxLines="1"
-                    android:textSize="22sp"
-                    android:gravity="center"
-                    android:layout_marginLeft="13dp"
-                    android:layout_marginStart="13dp"/>
+                    android:textSize="@dimen/body_dimen_lg"/>
             </TableRow>
 
             <TableRow
@@ -76,15 +76,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/subjectRow"
-                android:layout_marginTop="20dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginStart="20dp">
+                android:layout_marginTop="@dimen/border_dimen_lg"
+                android:layout_marginLeft="@dimen/border_dimen_lg"
+                android:layout_marginStart="@dimen/border_dimen_lg">
 
                 <TextView
                     android:text = "@string/type_contact"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/body_dimen_lg" />
 
                 <Spinner
                     android:id="@+id/typeSpinner"
@@ -98,17 +98,17 @@
                 android:id="@+id/noteText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/note_prompt"
-                android:layout_marginTop="18dp"
-                android:layout_marginRight="18dp"
-                android:layout_marginLeft="18dp"
                 android:layout_below="@id/contactTypeRow"
+                android:gravity="top"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="@dimen/border_dimen_lg"
+                android:layout_marginRight="@dimen/border_dimen_lg"
+                android:layout_marginLeft="@dimen/border_dimen_lg"
                 android:minHeight="200dp"
                 android:maxLength="1000000000"
                 android:background="#ffffff"
-                android:gravity="top"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"/>
+                android:hint="@string/note_prompt"/>
 
             <TableRow
                 android:id="@+id/buttonRow"
@@ -116,32 +116,30 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:layout_below="@+id/noteText"
-                android:layout_margin="18dp"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true">
+                android:layout_alignParentStart="true"
+                android:layout_margin="@dimen/border_dimen_lg">
 
                 <Button
                     android:id="@+id/cancelButton"
                     style="@style/customBottomBar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/border_dimen_lg"
+                    android:layout_marginRight="@dimen/border_dimen_lg"
+                    android:layout_marginEnd="@dimen/border_dimen_lg"
                     android:text="@string/cancel"
-                    android:textStyle="bold"
-                    android:layout_marginTop="18dp"
-                    android:layout_marginRight="20dp"
-                    android:layout_marginEnd="20dp" />
+                    android:textStyle="bold"/>
 
                 <Button
                     android:id="@+id/submitButton"
                     style="@style/customBottomBar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/submit"
-                    android:layout_marginTop="18dp"
-                    android:textStyle="bold" />
-
+                    android:layout_marginTop="@dimen/border_dimen_lg"
+                    android:textStyle="bold"
+                    android:text="@string/submit"/>
             </TableRow>
-
         </RelativeLayout>
     </ScrollView>
 </LinearLayout>

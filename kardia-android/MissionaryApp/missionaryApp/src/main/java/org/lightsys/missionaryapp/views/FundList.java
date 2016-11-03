@@ -60,9 +60,9 @@ public class FundList extends Fragment{
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>>itemList = generateListItems();
 		String[] from = {"fund_title","to_date_amount","date"};
-		int[] to = {R.id.fundNameText, R.id.amountText, R.id.dateText};
+		int[] to = {R.id.nameText, R.id.amountText, R.id.dateText};
 		
-		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.fund_layout, from, to);
+		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.funds_listview_item, from, to);
 		
 		ListView listview = (ListView)v.findViewById(R.id.infoList);
 		listview.setAdapter(adapter);

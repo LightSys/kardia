@@ -7,7 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.lightsys.missionaryapp.R;
@@ -45,7 +47,7 @@ public class DetailedPrayerRequest extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.prayer_request_detailed_layout, container, false);
+        View v = inflater.inflate(R.layout.note_detailed_layout, container, false);
         getActivity().setTitle("Prayer Request");
 
         Button commentButton = (Button) v.findViewById(R.id.commentButton);
@@ -89,13 +91,14 @@ public class DetailedPrayerRequest extends Fragment{
     private void updateRequestView(final int request_id){
         final LocalDBHandler db = new LocalDBHandler(getActivity());
 
-        TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject        = (TextView)getActivity().findViewById(R.id.nameText);
-        TextView date           = (TextView)getActivity().findViewById(R.id.dateText);
-        TextView text           = (TextView)getActivity().findViewById(R.id.commentText);
-        supporterList = (TextView)getActivity().findViewById(R.id.supporterList);
-        TextView textBelow = (TextView) getActivity().findViewById(R.id.textBelowPrayingButton);
-        Button prayerButton = (Button) getActivity().findViewById(R.id.scheduleNotification);
+        TextView missionaryName   = (TextView)getActivity().findViewById(R.id.missionaryName);
+        TextView subject          = (TextView)getActivity().findViewById(R.id.subjectText);
+        TextView date             = (TextView)getActivity().findViewById(R.id.dateText);
+        TextView text             = (TextView)getActivity().findViewById(R.id.noteText);
+        supporterList             = (TextView)getActivity().findViewById(R.id.supporterList);
+        TextView textBelow        = (TextView)getActivity().findViewById(R.id.textBelowPrayingButton);
+        Button prayerButton       = (Button)getActivity().findViewById(R.id.prayerButton);
+        RelativeLayout prayLayout = (RelativeLayout) getActivity().findViewById(R.id.prayingButtonLayout);
 
         request = db.getNoteForID(request_id);
         this.requestId = request_id;
@@ -116,9 +119,10 @@ public class DetailedPrayerRequest extends Fragment{
         supporterList.setText(namesList);
 
         missionaryName.setText(request.getMissionaryName());
-        subject.setText("Subject: " + request.getSubject());
-        date.setText("Date Posted: " + Formatter.getFormattedDate(request.getDate()));
+        subject.setText(request.getSubject());
+        date.setText(Formatter.getFormattedDate(request.getDate()));
         text.setText(request.getNoteText());
+        prayLayout.setVisibility(View.VISIBLE);
 
         final int numPrayed = request.getNumberPrayed();
         if (numPrayed>0) {
@@ -155,7 +159,7 @@ public class DetailedPrayerRequest extends Fragment{
         loadComments();
 
         String[] from = {"userName", "date", "text"};//stuff for the adapter
-        int[] to = {R.id.userName,  R.id.dateText, R.id.commentText};//more stuffs for the adapter
+        int[] to = {R.id.userName,  R.id.dateText, R.id.noteText};//more stuffs for the adapter
         if (!commentList.isEmpty()){
             //if haz comments, set comments to adapter
             CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, from, to);

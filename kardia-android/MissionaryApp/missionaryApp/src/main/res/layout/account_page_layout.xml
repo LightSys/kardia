@@ -10,32 +10,40 @@
         android:id="@+id/RLayout"
         android:background="@android:color/darker_gray"
         android:layout_marginBottom="10dp">
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_marginTop="5dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginBottom="5dp"
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-        <ListView
+        <LinearLayout
             android:id="@+id/connectedList"
-            style="@style/listCustomBlue"
-            android:layout_toRightOf="@id/textView"
-            android:layout_toEndOf="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:layout_marginEnd="20dp">
-        </ListView>
+            android:orientation="horizontal"
+            style="@style/listCustomBlue"
+            android:layout_margin="20dp">
 
+            <TextView
+                android:id="@+id/connectedHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/body_dimen"/>
+
+            <!-- The User Name -->
+            <TextView
+                android:id="@+id/userName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
+                android:textSize="@dimen/body_dimen"/>
+
+            <!-- The Server Address -->
+            <TextView
+                android:id="@+id/server"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textSize="@dimen/small_subtitle_dimen" />
+        </LinearLayout>
     </RelativeLayout>
+
     <Button
         android:id="@+id/finishButton"
         android:layout_width="wrap_content"
@@ -45,10 +53,11 @@
         android:layout_marginRight="20dp"
         android:layout_marginEnd="20dp"
         android:layout_below="@id/RLayout"
-        android:textSize="16sp"
+        android:textSize="@dimen/body_dimen"
         android:text="@string/done"
         android:textStyle="bold"
         style="@style/customBottomBar" />
+
     <TextView
         android:id="@+id/changeAccountText"
         android:layout_below="@id/finishButton"
@@ -58,7 +67,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginBottom="10dp"
         android:text="@string/change_account"
-        android:textSize="18sp"/>
+        android:textSize="@dimen/body_dimen"/>
 
     <EditText
         android:id="@+id/usernameInput"
@@ -69,7 +78,8 @@
         android:ems="10"
         android:hint="@string/username"
         android:maxLines="1"
-        android:text = "Laura"/>
+        android:text = "Laura"
+        android:textSize="@dimen/body_dimen"/>
 
     <EditText
         android:id="@+id/passwordInput"
@@ -82,7 +92,8 @@
         android:hint="@string/password"
         android:inputType="textPassword"
         android:maxLines="1"
-        android:text = "E2Ra!car0line"/>
+        android:text = "E2Ra!car0line"
+        android:textSize="@dimen/body_dimen"/>
 
     <EditText
         android:id="@+id/serverNameInput"
@@ -94,7 +105,8 @@
         android:ems="10"
         android:hint="@string/server_name"
         android:maxLines="1"
-        android:text = "10.5.10.176"/>
+        android:text = "10.5.10.176"
+        android:textSize="@dimen/body_dimen"/>
 
     <EditText
         android:id="@+id/donorIdInput"
@@ -106,7 +118,8 @@
         android:ems="10"
         android:hint="@string/user_id_ex_100001"
         android:inputType="number"
-        android:maxLines="1"/>
+        android:maxLines="1"
+        android:textSize="@dimen/body_dimen"/>
 
 
     <Button
@@ -118,6 +131,7 @@
         android:layout_centerHorizontal="true"
         android:text="@string/connect"
         android:textStyle="bold"
-        style="@style/customBottomBar" />
+        style="@style/customBottomBar"
+        android:textSize="@dimen/body_dimen"/>
 
 </RelativeLayout>

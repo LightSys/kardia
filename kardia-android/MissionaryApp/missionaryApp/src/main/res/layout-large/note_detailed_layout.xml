@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/noise_blue_repeat">
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/subjectText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/border_dimen_lg"
+                android:textSize="@dimen/header_dimen_lg"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/missionaryName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/subjectText"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:layout_marginTop="2dp"
+                android:textSize="@dimen/subtitle_dimen_lg"/>
+
+            <TextView
+                android:id="@+id/dateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/missionaryName"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="1dp"
+                android:textSize="@dimen/small_subtitle_dimen_lg" />
+
+            <ScrollView
+                android:id="@+id/scrollView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/dateText"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="18dp"
+                android:layout_marginRight="18dp"
+                android:scrollbars="vertical">
+
+                <TextView
+                    android:id="@+id/noteText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="30dp"
+                    android:textSize="@dimen/body_dimen_lg"/>
+            </ScrollView>
+
+            <RelativeLayout
+                android:id="@+id/prayingButtonLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/scrollView"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:orientation= "vertical"
+                android:layout_marginLeft ="@dimen/border_dimen_lg"
+                android:layout_marginStart ="@dimen/border_dimen_lg"
+                android:layout_marginTop ="@dimen/border_dimen_lg"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/supporterList"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize = "@dimen/contact_dimen_lg"
+                    android:visibility="invisible"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@+id/prayerButton"
+                    android:layout_toRightOf="@id/prayerButton"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginStart="6dp"/>
+
+                <Button
+                    android:id="@+id/prayerButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="68dp"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginTop="2dp"
+                    android:focusable="false"/>
+
+                <TextView
+                    android:id="@+id/textBelowPrayingButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/prayerButton"
+                    android:text="@string/praying"
+                    android:textSize="@dimen/contact_dimen_lg"/>
+            </RelativeLayout>
+
+            <Button
+                android:id="@+id/commentButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/prayingButtonLayout"
+                android:layout_marginStart="@dimen/border_dimen_lg"
+                android:layout_marginLeft="@dimen/border_dimen_lg"
+                android:layout_marginTop="@dimen/border_dimen_lg"
+                style="@style/customBottomBar"
+                android:text="@string/comment"/>
+
+            <org.lightsys.missionaryapp.tools.NonScrollListView
+                android:id="@+id/commentsList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/commentButton"
+                android:layout_marginTop="10dp"
+                android:smoothScrollbar="false" />
+        </RelativeLayout>
+    </ScrollView>
+</RelativeLayout>

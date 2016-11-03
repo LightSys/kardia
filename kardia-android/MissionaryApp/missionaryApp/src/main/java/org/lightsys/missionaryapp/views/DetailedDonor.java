@@ -63,7 +63,7 @@ public class DetailedDonor extends Fragment{
             donor_email = "no email";
             donor_phone = "no phone";
         }
-        TextView name  = (TextView)v.findViewById(R.id.nameText);
+        TextView name  = (TextView)v.findViewById(R.id.userNameText);
         TextView email = (TextView)v.findViewById(R.id.emailText);
         TextView phone = (TextView)v.findViewById(R.id.phoneText);
         name.setText(donor_name);
@@ -107,8 +107,8 @@ public class DetailedDonor extends Fragment{
 
         // If list is for specific fund, display fund as smaller (not as subject)
         String[] from = {"fund_name", "gift_date", "gift_amount"};
-        int[] to = {R.id.fundNameText, R.id.dateText, R.id.amountText};
-        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.fund_layout, from, to );
+        int[] to = {R.id.nameText, R.id.dateText, R.id.amountText};
+        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.funds_listview_item, from, to );
         listview.setAdapter(adapter);
 
         listview.setOnItemClickListener(new onGiftClicked());

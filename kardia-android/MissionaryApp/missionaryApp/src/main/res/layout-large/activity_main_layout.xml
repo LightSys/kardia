@@ -28,14 +28,14 @@
         android:id="@+id/addUpdateButton"
         android:layout_width="match_parent"
         android:layout_height="68dp"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:text="@string/add_note_button"
-        style="@style/customBottomBar"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_centerHorizontal="true"
+        style="@style/customBottomBar"
+        android:textSize="@dimen/large_header_dimen_lg"
+        android:textStyle="bold"
+        android:text="@string/add_note_button"
         android:visibility="gone"/>
 
 </RelativeLayout>
