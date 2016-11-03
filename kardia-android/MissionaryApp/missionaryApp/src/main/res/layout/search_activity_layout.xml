@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat" xmlns:tools="http://schemas.android.com/tools">
 
-    <TableRow
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/toggleDateLayout"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/border_dimen"
+        android:layout_marginTop="40dp"
         android:layout_marginLeft="@dimen/border_dimen"
         android:layout_marginStart="@dimen/border_dimen">
 
@@ -24,25 +25,30 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_marginLeft="6dp"
+            android:layout_marginStart="6dp"
             android:text="By Date"
             android:textSize="@dimen/body_dimen"
             tools:ignore="HardcodedText"/>
-    </TableRow>
+
+    </LinearLayout>
 
     <CheckBox
         android:id="@+id/dateRange"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/toggleDateLayout"
         android:layout_marginLeft="@dimen/border_dimen"
         android:layout_marginStart="@dimen/border_dimen"
         android:enabled="true"
         android:text="@string/date_range"
-        android:visibility="invisible" />
+        android:visibility="invisible"/>
 
-    <TableRow
-        android:id="@+id/dateRow"
+    <LinearLayout
+        android:id="@+id/dateLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/dateRange"
         android:layout_marginLeft="@dimen/border_dimen"
         android:layout_marginStart="@dimen/border_dimen"
         android:visibility="invisible">
@@ -71,10 +77,10 @@
             android:text="@string/choose_date"
             android:textSize="@dimen/body_dimen"
             android:visibility="invisible" />
+    </LinearLayout>
 
-    </TableRow>
-
-    <TableRow
+    <LinearLayout
+        android:id="@+id/toggleAmountLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -93,25 +99,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_marginLeft="6dp"
+            android:layout_marginStart="6dp"
             android:text="@string/by_amount"
-            android:textSize="@dimen/border_dimen" />
-
-    </TableRow>
+            android:textSize="@dimen/header_dimen" />
+    </LinearLayout>
 
     <CheckBox
         android:id="@+id/amountRange"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/toggleAmountLayout"
         android:enabled="true"
         android:layout_marginLeft="@dimen/border_dimen"
         android:layout_marginStart="@dimen/border_dimen"
         android:text="@string/amount_range"
         android:visibility="invisible" />
 
-    <TableRow
-        android:id="@+id/amountRow"
+    <LinearLayout
+        android:id="@+id/amountLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/amountRange"
         android:layout_marginLeft="@dimen/border_dimen"
         android:layout_marginStart="@dimen/border_dimen"
         android:visibility="invisible">
@@ -160,12 +169,136 @@
             tools:ignore="HardcodedText"
             android:visibility="invisible"
             android:textSize="@dimen/body_dimen"/>
+    </LinearLayout>
 
-    </TableRow>
+    <LinearLayout
+        android:id="@+id/toggleDonorLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true">
 
-    <TableRow
+        <ToggleButton
+            android:id="@+id/toggleDonor"
+            android:layout_width="60dp"
+            android:layout_height="45dp"
+            android:text="ToggleButton"
+            android:textSize="@dimen/body_dimen"
+            tools:ignore="HardcodedText"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
+            android:text="@string/by_donor"
+            android:textSize="@dimen/header_dimen"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/donorLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/toggleDonorLayout"
+        android:layout_alignLeft="@id/toggleDonorLayout"
+        android:layout_alignStart="@id/toggleDonorLayout"
+        android:layout_marginLeft="2dp"
+        android:layout_marginStart="2dp"
+        android:visibility="invisible">
+
+        <TextView
+            android:id="@+id/donorText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/choose_donor"
+            android:textSize="@dimen/header_dimen"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/toggleFundLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/toggleAmountLayout"
+        android:layout_marginTop="40dp"
+        android:layout_alignLeft="@id/toggleDonorLayout"
+        android:layout_alignStart="@id/toggleDonorLayout">
+
+        <ToggleButton
+            android:id="@+id/toggleFund"
+            android:layout_width="60dp"
+            android:layout_height="45dp"
+            android:text="ToggleButton"
+            android:textSize="@dimen/body_dimen"
+            tools:ignore="HardcodedText"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
+            android:text="@string/by_fund"
+            android:textSize="@dimen/header_dimen"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/fundLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/toggleFundLayout"
+        android:layout_alignLeft="@id/toggleFundLayout"
+        android:layout_alignStart="@id/toggleFundLayout"
+        android:layout_marginLeft="2dp"
+        android:layout_marginStart="2dp"
+        android:visibility="invisible">
+
+        <TextView
+            android:id="@+id/fundText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/choose_fund"
+            android:textSize="@dimen/header_dimen"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="350dp"
+        android:layout_below="@id/fundLayout"
+        android:layout_alignLeft="@id/fundLayout"
+        android:layout_alignStart="@id/fundLayout">
+        <ListView
+            android:id="@+id/fundList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scrollbars="vertical"
+            android:visibility="invisible">
+        </ListView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="350dp"
+        android:layout_below="@id/donorLayout"
+        android:layout_alignLeft="@id/donorLayout"
+        android:layout_alignStart="@id/donorLayout">
+        <ListView
+            android:id="@+id/donorList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scrollbars="vertical"
+            android:visibility="invisible"
+            android:background="@drawable/noise_blue_repeat">
+        </ListView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/fundLayout"
         android:layout_marginTop="30dp"
         android:gravity="center" >
 
@@ -177,5 +310,5 @@
             android:textSize="@dimen/large_header_dimen"
             android:textStyle="bold"
             style="@style/customBottomBar" />
-    </TableRow>
-</LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
