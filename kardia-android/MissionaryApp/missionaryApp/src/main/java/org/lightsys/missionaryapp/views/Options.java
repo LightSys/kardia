@@ -52,12 +52,12 @@ public class Options extends Fragment {
             @Override
             public void onClick(View v){
                 if(reminderOnOff.isChecked()) {
-                    Intent reminder = new Intent(getActivity(), UpdateNotificationActivity.class);
+                    Intent reminder = new Intent(getActivity(), NotificationActivity.class);
                     startActivity(reminder);
 
                 }else{
                     reminderDetails.setText("");
-                    Intent reminder = new Intent(getActivity(), UpdateNotificationActivity.class);
+                    Intent reminder = new Intent(getActivity(), NotificationActivity.class);
                     reminder.putExtra(EXTRA_DELETE, true);
                     startActivity(reminder);
                 }

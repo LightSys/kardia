@@ -70,7 +70,7 @@ public class DetailedGift extends Fragment {
         TextView fundTitle = (TextView) getActivity().findViewById(R.id.fundText);
         TextView date      = (TextView) getActivity().findViewById(R.id.dateText);
         TextView amount    = (TextView) getActivity().findViewById(R.id.giftAmountText);
-        TextView donorName = (TextView) getActivity().findViewById(R.id.nameText);
+        TextView donorName = (TextView) getActivity().findViewById(R.id.userNameText);
         TextView email     = (TextView) getActivity().findViewById(R.id.emailText);
         TextView phone     = (TextView) getActivity().findViewById(R.id.phoneText);
 
@@ -91,9 +91,10 @@ public class DetailedGift extends Fragment {
             phone_cell = contactinfo.getPhone();
         }
         phone.setText(phone_cell);
-        fundTitle.setText("Gift to: " + g.getGiftFund());
-        date.setText("Date: " + Formatter.getFormattedDate(g.getGiftDate()));
-        amount.setText("Amount: " + Formatter.amountToString(g.getGiftAmount()));
+        fundTitle.setText("Fund: " + g.getGiftFund());
+        fundTitle.setText("Fund: " + g.getGiftFund());
+        date.setText(Formatter.getFormattedDate(g.getGiftDate()));
+        amount.setText(Formatter.amountToString(g.getGiftAmount()));
 
 
         DonorInfo.setOnClickListener(new View.OnClickListener() {

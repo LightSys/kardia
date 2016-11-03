@@ -86,7 +86,7 @@ public class NoteList extends Fragment {
         itemList.clear();
         generateListItems();
         String[] from = {"subject", "date", "missionary", "textAbove", "textBelow"};
-        int[] to = {R.id.nameText,  R.id.dateText, R.id.missionaryName, R.id.textAbovePrayingButton, R.id.textBelowPrayingButton};
+        int[] to = {R.id.userNameText,  R.id.dateText, R.id.missionaryName, R.id.textAbovePrayingButton, R.id.textBelowPrayingButton};
 
         NoteListAdapter adapter = new NoteListAdapter(getActivity(), itemList,
                 from, to);

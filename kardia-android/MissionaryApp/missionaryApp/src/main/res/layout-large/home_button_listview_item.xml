@@ -3,11 +3,10 @@
     android:id="@+id/navigateButton"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textStyle="bold"
     android:layout_centerVertical="true"
     android:layout_centerHorizontal="true"
     android:gravity="center"
-    style="@style/homeNavigationItems"
-    android:textSize="26sp"
     android:padding="12dp"
-    />
+    style="@style/homeNavigationItems"
+    android:textStyle="bold"
+    android:textSize="@dimen/large_header_dimen_lg"/>

@@ -12,7 +12,7 @@
         android:layout_marginRight="18dp"
         android:id="@+id/userName"
         android:textStyle="bold"
-        android:textSize="24sp" />
+        android:textSize="@dimen/body_dimen_lg" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -24,7 +24,7 @@
         android:layout_marginStart="25dp"
         android:layout_marginEnd="18dp"
         android:id="@+id/dateText"
-        android:textSize="18sp" />
+        android:textSize="@dimen/small_subtitle_dimen_lg" />
 
     <TextView
         android:layout_width="match_parent"
@@ -34,6 +34,6 @@
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
         android:layout_marginBottom="18dp"
-        android:id="@+id/commentText"
-        android:textSize="24sp" />
+        android:id="@+id/noteText"
+        android:textSize="@dimen/body_dimen_lg" />
 </LinearLayout>

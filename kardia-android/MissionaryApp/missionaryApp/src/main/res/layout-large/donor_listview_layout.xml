@@ -1,47 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
+
     <ImageView
-        android:contentDescription="@string/profile_pic_description"
         android:id="@+id/profilePicImage"
+        android:contentDescription="@string/profile_pic_description"
         android:layout_width="68dp"
         android:layout_height="68dp"
-        android:src="@drawable/prayer_letter_icon"
         android:layout_centerVertical="true"
         android:layout_margin="10dp"
-        />
+        android:src="@drawable/prayer_letter_icon"/>
+
     <TextView
-        android:id="@+id/nameText"
+        android:id="@+id/userNameText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="26sp"
         android:layout_toRightOf="@id/profilePicImage"
         android:layout_toEndOf="@id/profilePicImage"
-        android:layout_centerVertical="true"/>
+        android:layout_centerVertical="true"
+        android:textSize="@dimen/user_name_header_dimen_lg"/>
 
     <TextView
         android:id="@+id/phoneText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="17dp"
-        android:layout_marginEnd="17dp"
-        android:textSize="18sp"
         android:layout_alignTop="@id/profilePicImage"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        />
+        android:layout_marginRight="17dp"
+        android:layout_marginEnd="17dp"
+        android:textSize="@dimen/contact_dimen_lg"/>
 
     <TextView
         android:id="@+id/emailText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/phoneText"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginTop="10dp"
         android:layout_marginRight="17dp"
         android:layout_marginEnd="17dp"
-        android:layout_below="@+id/phoneText"
-        android:textSize="18sp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:textSize="@dimen/contact_dimen_lg" />
 </RelativeLayout>

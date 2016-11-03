@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/noise_blue_repeat" >
 
@@ -8,98 +9,83 @@
         android:id="@+id/donorInfoLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_margin="5dp"
-        >
+        android:orientation="horizontal">
+
         <ImageView
-            android:contentDescription="@string/profile_pic_description"
             android:id="@+id/profilePicImage"
+            android:contentDescription="@string/profile_pic_description"
             android:layout_width="68dp"
             android:layout_height="68dp"
-            android:src="@drawable/prayer_letter_icon"
+            android:layout_margin="10dp"
             android:layout_centerVertical="true"
-            />
-        <TextView
-            android:id="@+id/nameText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="18dp"
-            android:layout_marginStart="18dp"
-            android:textSize="24sp"
-            android:layout_toRightOf="@id/profilePicImage"
-            android:layout_toEndOf="@id/profilePicImage"
-            android:layout_alignTop="@id/profilePicImage"/>
+            android:src="@drawable/prayer_letter_icon"/>
 
         <TextView
-            android:id="@+id/emailText"
+            android:id="@+id/userNameText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:layout_marginLeft="17dp"
-            android:layout_marginStart="17dp"
-            android:layout_below="@+id/nameText"
-            android:textSize="16sp"
-            android:layout_alignLeft="@id/nameText"
-            android:layout_alignStart="@id/nameText"/>
+            android:layout_toRightOf="@id/profilePicImage"
+            android:layout_toEndOf="@id/profilePicImage"
+            android:layout_centerVertical="true"
+            android:textSize="@dimen/user_name_header_dimen_lg"/>
 
         <TextView
             android:id="@+id/phoneText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:layout_marginLeft="17dp"
-            android:layout_marginStart="17dp"
-            android:layout_below="@+id/emailText"
-            android:textSize="16sp"
-            android:layout_alignLeft="@id/nameText"
-            android:layout_alignStart="@id/nameText"/>
+            android:layout_marginRight="17dp"
+            android:layout_marginEnd="17dp"
+            android:layout_alignTop="@id/profilePicImage"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="@dimen/contact_dimen_lg"/>
 
+        <TextView
+            android:id="@+id/emailText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="17dp"
+            android:layout_marginEnd="17dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/phoneText"
+            android:textSize="@dimen/contact_dimen_lg"/>
     </RelativeLayout>
 
     <View
+        android:id="@+id/donorInfoDivider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#000030"
-        android:layout_below="@id/donorInfoLayout" />
-
-    <TextView
-        android:id="@+id/dateText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/fundText"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="13dp"
-        android:textSize="26sp" />
-
-    <TextView
-        android:id="@+id/giftAmountText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/dateText"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="13dp"
-        android:textSize="26sp"
-        android:textColor="#37AD00" />
-
-    <TextView
-        android:id="@+id/checkNumText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/giftAmountText"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="13dp"
-        android:textSize="24sp" />
+        android:layout_below="@id/donorInfoLayout"
+        android:background="#000030" />
 
     <TextView
         android:id="@+id/fundText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/donorInfoLayout"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="13dp"
-        android:layout_marginRight="18dp"
-        android:layout_marginLeft="18dp"
-        android:textSize="30sp"
-        android:gravity="center"/>
+        android:layout_above="@id/dateText"
+        android:gravity="center"
+        android:textSize="@dimen/large_header_dimen_lg"/>
 
+    <TextView
+        android:id="@+id/dateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/giftAmountText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:textSize="@dimen/user_name_header_dimen_lg" />
+
+    <TextView
+        android:id="@+id/giftAmountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="20dp"
+        android:textSize="@dimen/user_name_header_dimen_lg"
+        android:textColor="#37AD00" />
 </RelativeLayout>

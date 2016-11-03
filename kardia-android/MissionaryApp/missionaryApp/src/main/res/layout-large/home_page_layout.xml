@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:gravity="center_horizontal"
-            android:textSize="36sp"
+            android:textSize="@dimen/large_header_dimen_lg"
             android:textStyle="bold"
             android:textColor="#000"
             android:visibility="gone"/>
@@ -27,9 +27,8 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:background="#000030"
-            android:layout_above="@+id/welcomeList" />
-
+            android:layout_above="@+id/welcomeList"
+            android:background="#000030"/>
 
         <ListView
             android:id="@+id/welcomeList"
@@ -37,10 +36,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             style="@style/homeNavigationItems"/>
-            <!--style="@style/listCustomBlue"-->
-
-
     </RelativeLayout>
-
 </RelativeLayout>
 

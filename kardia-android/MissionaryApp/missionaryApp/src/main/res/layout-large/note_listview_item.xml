@@ -11,26 +11,22 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="18dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
-        android:layout_toLeftOf="@+id/prayingButtonLayout"
-        android:layout_toStartOf="@+id/prayingButtonLayout"
-        android:textSize="22sp"/>
+        android:textSize="@dimen/header_dimen_lg"/>
 
     <TextView
-        android:id="@+id/nameText"
+        android:id="@+id/subjectText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/missionaryName"
-        android:layout_toLeftOf="@+id/prayingButtonLayout"
-        android:layout_toStartOf="@id/prayingButtonLayout"
-        android:layout_marginTop="12dp"
-        android:layout_marginLeft="18dp"
-        android:layout_marginRight="18dp"
-        android:textSize="22sp" />
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="38dp"
+        android:layout_marginRight="38dp"
+        android:textSize="@dimen/body_dimen_lg" />
 
     <TextView
         android:id="@+id/dateText"
@@ -38,12 +34,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@id/nameText"
-        android:layout_marginTop="12dp"
-        android:layout_marginLeft="18dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginBottom="12dp"
-        android:textSize="18sp" />
+        android:layout_alignBottom="@id/prayingButtonLayout"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="38dp"
+        android:layout_marginStart="38dp"
+        android:textSize="@dimen/contact_dimen_lg" />
 
     <LinearLayout
         android:id="@+id/prayingButtonLayout"
@@ -59,24 +54,23 @@
             android:id="@+id/textAbovePrayingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="@dimen/contact_dimen_lg"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/prayingButton"
             android:layout_width="wrap_content"
             android:layout_height="68dp"
-            android:clickable="false"
-            android:focusable = "false"
             android:layout_marginBottom="1.5dp"
-            android:layout_marginTop="1.5dp"/>
+            android:layout_marginTop="1.5dp"
+            android:clickable="false"
+            android:focusable = "false"/>
 
         <TextView
             android:id="@+id/textBelowPrayingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="@dimen/contact_dimen_lg"
             android:textStyle="bold" />
     </LinearLayout>
-
 </RelativeLayout>

@@ -35,7 +35,7 @@
             android:windowSoftInputMode="adjustResize|stateVisible" >
         </activity>
         <activity
-            android:name="org.lightsys.missionaryapp.views.UpdateNotificationActivity"
+            android:name="org.lightsys.missionaryapp.views.NotificationActivity"
             android:label="Prayer Notification" >
         </activity>
 

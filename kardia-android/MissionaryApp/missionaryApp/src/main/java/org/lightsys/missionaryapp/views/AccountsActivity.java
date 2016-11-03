@@ -1,9 +1,5 @@
 package org.lightsys.missionaryapp.views;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.tools.DataConnection;
 import org.lightsys.missionaryapp.tools.GenericTextWatcher;
@@ -14,16 +10,9 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,9 +25,8 @@ import org.lightsys.missionaryapp.R;
  */
 public class AccountsActivity extends Activity{
 
-    private ListView accountsList;
 	private EditText accountName, accountPass, serverName, donorID;
-	private TextView connectedAccounts;
+	private TextView connectedAccounts, server, userName;
 	private Account  account = new Account();
 	private Button   finishButton;
 
@@ -50,13 +38,14 @@ public class AccountsActivity extends Activity{
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.account_page_layout);
-		
-		accountsList         = (ListView)findViewById(R.id.connectedList);
+
 		accountName          = (EditText)findViewById(R.id.usernameInput);
 		accountPass          = (EditText)findViewById(R.id.passwordInput);
 		serverName           = (EditText)findViewById(R.id.serverNameInput);
 		donorID              = (EditText)findViewById(R.id.donorIdInput);
-		connectedAccounts    = (TextView)findViewById(R.id.textView);
+		connectedAccounts    = (TextView)findViewById(R.id.connectedHeader);
+        server               = (TextView)findViewById(R.id.server);
+        userName             = (TextView)findViewById(R.id.userName);
 		Button connectButton = (Button)  findViewById(R.id.connectButton);
 		finishButton         = (Button)  findViewById(R.id.finishButton);
 
@@ -67,8 +56,6 @@ public class AccountsActivity extends Activity{
 		donorID.addTextChangedListener(new GenericTextWatcher(donorID));
 
 		loadAccount();
-
-        registerForContextMenu(accountsList);
 
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -98,12 +85,6 @@ public class AccountsActivity extends Activity{
 			}
 		});
 
-		accountsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-				openContextMenu(view);
-			}
-		});
 	}
 
 	
@@ -121,18 +102,9 @@ public class AccountsActivity extends Activity{
 		if(account!=null){
 			finishButton.setVisibility(View.VISIBLE);
 			connectedAccounts.setText("Connected Account:");
-			List<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
+            userName.setText(account.getAccountName());
+            server.setText(account.getServerName());
 
-			HashMap<String,String> tempMap = new HashMap<String,String>();
-			tempMap.put("aName", account.getAccountName());
-			tempMap.put("aServer", account.getServerName());
-			aList.add(tempMap);
-
-			String[] from = {"aName", "aServer"};
-			int[] to = {R.id.title, R.id.server};
-			SimpleAdapter adapter = new SimpleAdapter(this, aList, R.layout.account_listview_item, from, to);
-
-			accountsList.setAdapter(adapter);
 		}else{
 			finishButton.setVisibility(View.INVISIBLE);
 			connectedAccounts.setText("No Accounts Connected.");

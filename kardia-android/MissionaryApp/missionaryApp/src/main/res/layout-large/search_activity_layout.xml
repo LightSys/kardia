@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat" xmlns:tools="http://schemas.android.com/tools">
@@ -8,33 +9,32 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp">
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="@dimen/border_dimen_lg"
+        android:layout_marginStart="@dimen/border_dimen_lg">
 
         <ToggleButton
             android:id="@+id/toggleDate"
             android:layout_width="80dp"
             android:layout_height="55dp"
-            android:textSize="22sp"
-            android:layout_gravity="center_vertical" />
+            android:textSize="@dimen/body_dimen_lg"
+            android:layout_gravity="center_vertical"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:text="By Date"
-            android:textSize="26sp"
-            tools:ignore="HardcodedText" />
-
+            android:textSize="@dimen/body_dimen_lg"
+            tools:ignore="HardcodedText"/>
     </TableRow>
 
     <CheckBox
         android:id="@+id/dateRange"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
+        android:layout_marginLeft="@dimen/border_dimen_lg"
+        android:layout_marginStart="@dimen/border_dimen_lg"
         android:enabled="true"
         android:text="@string/date_range"
         android:visibility="invisible" />
@@ -43,8 +43,8 @@
         android:id="@+id/dateRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
+        android:layout_marginLeft="@dimen/border_dimen_lg"
+        android:layout_marginStart="@dimen/border_dimen_lg"
         android:visibility="invisible">
 
         <Button
@@ -53,14 +53,14 @@
             android:layout_height="wrap_content"
             android:enabled="true"
             android:text="@string/choose_date"
-            android:textSize="20sp"/>
+            android:textSize="@dimen/header_dimen_lg"/>
 
         <TextView
             android:id="@+id/dashTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/_"
-            android:textSize="20sp"
+            android:textSize="@dimen/body_dimen_lg"
             android:visibility="invisible" />
 
         <Button
@@ -69,7 +69,7 @@
             android:layout_height="wrap_content"
             android:enabled="true"
             android:text="@string/choose_date"
-            android:textSize="20sp"
+            android:textSize="@dimen/body_dimen_lg"
             android:visibility="invisible" />
 
     </TableRow>
@@ -78,15 +78,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp">
+        android:layout_marginLeft="@dimen/border_dimen_lg"
+        android:layout_marginStart="@dimen/border_dimen_lg">
 
         <ToggleButton
             android:id="@+id/toggleAmount"
             android:layout_width="80dp"
             android:layout_height="55dp"
             android:text="ToggleButton"
-            android:textSize="22sp"
+            android:textSize="@dimen/body_dimen_lg"
             tools:ignore="HardcodedText" />
 
         <TextView
@@ -94,7 +94,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:text="@string/by_amount"
-            android:textSize="26sp" />
+            android:textSize="@dimen/header_dimen_lg" />
 
     </TableRow>
 
@@ -103,8 +103,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:enabled="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
+        android:layout_marginLeft="@dimen/border_dimen_lg"
+        android:layout_marginStart="@dimen/border_dimen_lg"
         android:text="@string/amount_range"
         android:visibility="invisible" />
 
@@ -112,15 +112,15 @@
         android:id="@+id/amountRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginStart="20dp"
+        android:layout_marginLeft="@dimen/border_dimen_lg"
+        android:layout_marginStart="@dimen/border_dimen_lg"
         android:visibility="invisible">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/dollar_sign"
-            android:textSize="20sp"/>
+            android:textSize="@dimen/body_dimen_lg"/>
 
         <EditText
             android:id="@+id/amount1"
@@ -131,7 +131,7 @@
             android:hint="00"
             android:inputType="number|numberDecimal"
             tools:ignore="HardcodedText"
-            android:textSize="20sp"/>
+            android:textSize="@dimen/body_dimen_lg"/>
 
         <TextView
             android:id="@+id/dash2"
@@ -139,7 +139,7 @@
             android:layout_height="wrap_content"
             android:text="@string/_"
             android:visibility="invisible"
-            android:textSize="20sp"/>
+            android:textSize="@dimen/body_dimen_lg"/>
 
         <TextView
             android:id="@+id/dollarSign2"
@@ -147,7 +147,7 @@
             android:layout_height="wrap_content"
             android:text="@string/dollar_sign"
             android:visibility="invisible"
-            android:textSize="20sp"/>
+            android:textSize="@dimen/body_dimen_lg"/>
 
         <EditText
             android:id="@+id/amount2"
@@ -159,50 +159,52 @@
             android:inputType="numberDecimal"
             tools:ignore="HardcodedText"
             android:visibility="invisible"
-            android:textSize="20sp"/>
+            android:textSize="@dimen/body_dimen_lg"/>
 
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="@dimen/border_dimen_lg"
+        android:layout_marginStart="@dimen/border_dimen_lg">
+
+        <ToggleButton
+            android:id="@+id/toggleDonor"
+            android:layout_width="80dp"
+            android:layout_height="55dp"
+            android:text="ToggleButton"
+            android:textSize="@dimen/body_dimen_lg"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="@string/by_donor"
+            android:textSize="@dimen/header_dimen_lg" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/donorRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/border_dimen_lg"
+        android:layout_marginStart="@dimen/border_dimen_lg"
+        android:visibility="invisible">
+
+        <Spinner
+            android:id="@+id/donorSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/large_header_dimen_lg"/>
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp">
-
-        <ToggleButton
-            android:id="@+id/toggleCheck"
-            android:layout_width="80dp"
-            android:layout_height="55dp"
-            android:textSize="22sp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/by_check_number"
-            android:textSize="26sp" />
-
-    </TableRow>
-
-    <EditText
-        android:id="@+id/checkNumText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="5"
-        android:enabled="true"
-        android:hint="123456"
-        android:inputType="number"
-        android:textSize="22sp"
-        tools:ignore="HardcodedText"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
-        android:visibility="invisible" />
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
         android:gravity="center" >
 
         <Button
@@ -210,10 +212,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/search"
-            android:textSize="24sp"
+            android:textSize="@dimen/large_header_dimen_lg"
             android:textStyle="bold"
             style="@style/customBottomBar" />
-
     </TableRow>
-
 </LinearLayout>

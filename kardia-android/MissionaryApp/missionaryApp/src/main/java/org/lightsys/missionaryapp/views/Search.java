@@ -12,14 +12,17 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,13 +32,13 @@ import org.lightsys.missionaryapp.R;
 
 public class Search extends Fragment{
 	
-	private Button       date1;
-    private Button date2;
+	private Button       date1, date2;
     private EditText     amount1, amount2, checkNum;
 	private TextView     dash1, dash2, dollarSign2;
 	private CheckBox     dateRange, amountRange;
-	private ToggleButton toggleDate, toggleAmount, toggleCheck;
-	private TableRow     dateRow, amountRow;
+	private ToggleButton toggleDate, toggleAmount, toggleDonor;
+    private Spinner      donorList;
+	private TableRow     dateRow, amountRow, donorRow;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -43,22 +46,31 @@ public class Search extends Fragment{
 
 		getActivity().setTitle("Gift Search");
 		
-		date1        = (Button)v.findViewById(R.id.datePickBtn);
-		date2        = (Button)v.findViewById(R.id.datePickBtn2);
+		date1         = (Button)v.findViewById(R.id.datePickBtn);
+		date2         = (Button)v.findViewById(R.id.datePickBtn2);
         Button search = (Button) v.findViewById(R.id.searchBtn);
-		amount1      = (EditText)v.findViewById(R.id.amount1);
-		amount2      = (EditText)v.findViewById(R.id.amount2);
-		checkNum     = (EditText)v.findViewById(R.id.checkNumText);
-		dateRange    = (CheckBox)v.findViewById(R.id.dateRange);
-		amountRange  = (CheckBox)v.findViewById(R.id.amountRange);
-		toggleDate   = (ToggleButton)v.findViewById(R.id.toggleDate);
-		toggleAmount = (ToggleButton)v.findViewById(R.id.toggleAmount);
-		toggleCheck  = (ToggleButton)v.findViewById(R.id.toggleCheck);
-		dateRow      = (TableRow)v.findViewById(R.id.dateRow);
-		amountRow    = (TableRow)v.findViewById(R.id.amountRow);
-		dash1        = (TextView)v.findViewById(R.id.dashTextView);
-		dash2        = (TextView)v.findViewById(R.id.dash2);
-		dollarSign2  = (TextView)v.findViewById(R.id.dollarSign2);
+		amount1       = (EditText)v.findViewById(R.id.amount1);
+		amount2       = (EditText)v.findViewById(R.id.amount2);
+		dateRange     = (CheckBox)v.findViewById(R.id.dateRange);
+		amountRange   = (CheckBox)v.findViewById(R.id.amountRange);
+		toggleDate    = (ToggleButton)v.findViewById(R.id.toggleDate);
+		toggleAmount  = (ToggleButton)v.findViewById(R.id.toggleAmount);
+        toggleDonor   = (ToggleButton)v.findViewById(R.id.toggleDonor);
+        donorList     = (Spinner)v.findViewById(R.id.donorSpinner);
+		dateRow       = (TableRow)v.findViewById(R.id.dateRow);
+		amountRow     = (TableRow)v.findViewById(R.id.amountRow);
+        donorRow      = (TableRow)v.findViewById(R.id.donorRow);
+		dash1         = (TextView)v.findViewById(R.id.dashTextView);
+		dash2         = (TextView)v.findViewById(R.id.dash2);
+		dollarSign2   = (TextView)v.findViewById(R.id.dollarSign2);
+
+        LocalDBHandler db = new LocalDBHandler(getActivity());
+        ArrayList<String> donorArray = new ArrayList<String>();
+        donorArray.add("Choose Donor");
+        donorArray.addAll(db.getDonorsOfGifts());
+
+        ArrayAdapter adapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_dropdown_item, donorArray);
+        donorList.setAdapter(adapter);
 
 		amount1.addTextChangedListener(new GenericTextWatcher(v));
 
@@ -143,21 +155,23 @@ public class Search extends Fragment{
 				}
 			}
 		});
-		
-		toggleCheck.setOnClickListener(new OnClickListener(){
-			
-			@Override
-			public void onClick(View v){
-				// If check search is activated, set respective fields to visible
-				// If check search is not activated, set fields to invisible and set to default
-				if(toggleCheck.isChecked()){
-					checkNum.setVisibility(View.VISIBLE);
-				}else{
-					checkNum.setText("");
-					checkNum.setVisibility(View.INVISIBLE);
-				}
-			}
-		});
+
+        toggleDonor.setOnClickListener(new OnClickListener(){
+
+            @Override
+            public void onClick(View v){
+
+                // If amount search is activated, set respective fields to visible
+                // If amount search is not activated, set fields to invisible and set to default
+                if(toggleDonor.isChecked()){
+                    donorRow.setVisibility(View.VISIBLE);
+                }else{
+                    donorRow.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+
+
 		return v;
 	}
 
@@ -205,16 +219,14 @@ public class Search extends Fragment{
 		String checkNumber = "";
 
 		ArrayList<Fund> giftFund = db.getFundsForMissionary(db.getAccount().getId());
-		if(toggleDate.isChecked()){
+        Log.d("Search", "doSearch: "+ giftFund.size());
+        if(toggleDate.isChecked()){
 			startDate = (!date1.getText().toString().equals("Choose Date"))? date1.getText().toString() : "";
 			endDate = (date2.isEnabled() && !date2.getText().toString().equals("Choose Date"))? date2.getText().toString() : "";
 		}
 		if(toggleAmount.isChecked()){
 			startAmount = (!amount1.getText().toString().equals(""))? amount1.getText().toString() : "";
 			endAmount = (amount2.isEnabled() && !amount2.getText().toString().equals(""))? amount2.getText().toString() : "";
-		}
-		if(toggleCheck.isChecked()){
-			checkNumber = (!checkNum.getText().toString().equals(""))? checkNum.getText().toString() : "";
 		}
 
 		if (startDate.equals("") && endDate.equals("") && startAmount.equals("")
@@ -228,9 +240,9 @@ public class Search extends Fragment{
 			amount1.setError("Set an amount value");
 		} else {
 			// Do search for gifts with constructed parameters
-			ArrayList<Gift> results = null;
+			ArrayList<Gift> results = new ArrayList<Gift>();
 			for(Fund f:giftFund) {
-				results = db.getGiftSearchResults(startDate, endDate, startAmount, endAmount, checkNumber, f.getFundName());
+				results.addAll(db.getGiftSearchResults(startDate, endDate, startAmount, endAmount, checkNumber, f.getFundName()));
 				db.close();
 			}
 
@@ -265,15 +277,12 @@ public class Search extends Fragment{
 		amount2.setVisibility(View.INVISIBLE);
 		dash2.setVisibility(View.INVISIBLE);
 		dollarSign2.setVisibility(View.INVISIBLE);
-		checkNum.setText("");
 		dateRange.setChecked(false);
 		amountRange.setChecked(false);
 		toggleDate.setChecked(false);
 		toggleAmount.setChecked(false);
-		toggleCheck.setChecked(false);
 		dateRow.setVisibility(View.INVISIBLE);
 		amountRow.setVisibility(View.INVISIBLE);
-		checkNum.setVisibility(View.INVISIBLE);
 	}
 
 	private void sendToDetailedGift(int gift_id, int donor_id, String donor_name){

@@ -883,6 +883,27 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     }
 
     /**
+     * Pulls all donors from the database associated with a gift
+     * @return a list of donors who have donated as an ArrayList of Donor Objects ordered alphabetically
+     */
+    public ArrayList<String> getDonorsOfGifts() {
+        ArrayList<String> donors = new ArrayList<String>();
+        String queryString = "SELECT DISTINCT " + COLUMN_DONOR_NAME + " FROM " + TABLE_GIFT + " ORDER BY " +
+                COLUMN_DONOR_NAME;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        while (c.moveToNext()) {
+            String temp = c.getString(0);
+            donors.add(temp);
+        }
+        c.close();
+        db.close();
+        return donors;
+    }
+
+    /**
      * Pulls contact info for a donor from the database
      * @param donor_id id for donor
      * @return contact info for donor id

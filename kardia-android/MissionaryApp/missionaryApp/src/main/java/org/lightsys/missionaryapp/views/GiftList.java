@@ -20,6 +20,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.text.TextUtils;
+import android.widget.TextView;
 
 import org.lightsys.missionaryapp.R;
 
@@ -124,12 +125,12 @@ public class GiftList extends Fragment{
 
 		// display donor name, fund name, date, and amount for all gifts
 		String[] from = {"donor_name", "gift_name", "gift_date", "gift_amount"};
-        int[] to = {R.id.donorText, R.id.fundNameText, R.id.dateText, R.id.amountText};
-        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.gift_listview_item, from, to );
-        listview.setAdapter(adapter);
+        int[] to = {R.id.nameText, R.id.giftText, R.id.dateText, R.id.amountText};
+        final SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.funds_listview_item, from, to );
 
-		listview.setOnItemClickListener(new onGiftClicked());
-		
+        listview.setAdapter(adapter);
+        listview.setOnItemClickListener(new onGiftClicked());
+
 		return v;
 	}
 	

@@ -25,18 +25,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_weight="1"
                 android:text="@string/start_date"
-                android:textSize="20sp"
-                android:layout_weight="1"/>
+                android:textSize="@dimen/header_dimen"/>
 
             <Button
                 android:id="@+id/startDateButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="@string/choose_date"
-                android:textSize="20sp"
-                android:layout_weight="1"/>
-
+                android:textSize="@dimen/header_dimen"/>
         </TableRow>
 
         <TableRow
@@ -48,16 +47,17 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="@string/end_date"
-                android:textSize="20sp"
-                android:layout_weight="1"/>
+                android:textSize="@dimen/header_dimen"/>
 
             <Button
                 android:id="@+id/endDateButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="@string/choose_date"
-                android:layout_weight="1"/>
+                android:textSize="@dimen/header_dimen"/>
         </TableRow>
 
         <TableRow
@@ -69,16 +69,17 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="@string/time"
-                android:textSize="20sp"
-                android:layout_weight="1"/>
+                android:textSize="@dimen/header_dimen"/>
 
             <Button
                 android:id="@+id/timeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="@string/choose_time"
-                android:layout_weight="1"/>
+                android:textSize="@dimen/header_dimen"/>
         </TableRow>
 
         <TableRow
@@ -89,18 +90,18 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="@string/frequency_text"
-                android:textSize="20sp"
-                android:layout_weight="1"/>
+                android:textSize="@dimen/header_dimen"/>
 
             <Spinner
                 android:id="@+id/frequencySpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="@string/choose_time"
                 android:entries="@array/notification_options"
-                android:textSize="20sp"
-                android:layout_weight="1"/>
+                android:textSize="@dimen/header_dimen"/>
         </TableRow>
 
     </TableLayout>
@@ -109,28 +110,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="50dp"
-        >
+        android:layout_margin="50dp">
+
         <Button
             android:id="@+id/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/cancel"
-            android:textStyle="bold"
-            style="@style/customBottomBar"
+            android:layout_weight="1"
             android:layout_margin="10dp"
-            android:layout_weight="1"/>
+            style="@style/customBottomBar"
+            android:text="@string/cancel"
+            android:textSize="@dimen/large_header_dimen"
+            android:textStyle="bold"/>
 
         <Button
             android:id="@+id/setNotification"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/set"
-            android:textStyle="bold"
-            style="@style/customBottomBar"
             android:layout_weight="1"
-            android:layout_margin="10dp"/>
-
+            android:layout_margin="10dp"
+            style="@style/customBottomBar"
+            android:text="@string/set"
+            android:textSize="@dimen/large_header_dimen"
+            android:textStyle="bold"/>
     </TableRow>
-
 </RelativeLayout>

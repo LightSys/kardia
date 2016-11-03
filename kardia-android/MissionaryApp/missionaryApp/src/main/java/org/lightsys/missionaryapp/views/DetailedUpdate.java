@@ -42,7 +42,7 @@ public class DetailedUpdate extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.update_detailed_layout, container, false);
+        View v = inflater.inflate(R.layout.note_detailed_layout, container, false);
         getActivity().setTitle("Update");
 
         commentButton = (Button)v.findViewById(R.id.commentButton);
@@ -87,17 +87,17 @@ public class DetailedUpdate extends Fragment {
     private void updateUpdateView(int update_id){
 
         TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject        = (TextView)getActivity().findViewById(R.id.nameText);
+        TextView subject        = (TextView)getActivity().findViewById(R.id.subjectText);
         TextView date           = (TextView)getActivity().findViewById(R.id.dateText);
-        TextView text           = (TextView)getActivity().findViewById(R.id.commentText);
+        TextView text           = (TextView)getActivity().findViewById(R.id.noteText);
 
         LocalDBHandler db = new LocalDBHandler(getActivity());
         Note update = db.getNoteForID(update_id);
         db.close();
 
         missionaryName.setText(update.getMissionaryName());
-        subject.setText("Subject: " + update.getSubject());
-        date.setText("Date Posted: " + Formatter.getFormattedDate(update.getDate()));
+        subject.setText(update.getSubject());
+        date.setText(Formatter.getFormattedDate(update.getDate()));
         text.setText(update.getNoteText());
 
         this.update_id = update_id;
@@ -105,7 +105,7 @@ public class DetailedUpdate extends Fragment {
         loadComments();//gets list of comments
 
         String[] from = {"userName", "date", "text"};//stuff for the adapter
-        int[] to = {R.id.userName,  R.id.dateText, R.id.commentText};//more stuff for the adapter
+        int[] to = {R.id.userName,  R.id.dateText, R.id.noteText};//more stuff for the adapter
         if (!commentList.isEmpty()){
             //if we have comments, set them to the adapter
             CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, from, to);
