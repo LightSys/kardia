@@ -50,8 +50,7 @@ public class Period {
 
     @Override
     public String toString() {
-        String string = "";
-        return string;
+        return "";
     }
 	
 }

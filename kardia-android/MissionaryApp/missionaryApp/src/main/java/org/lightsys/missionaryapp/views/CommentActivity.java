@@ -46,10 +46,10 @@ public class CommentActivity extends Activity {
 
 
         TextView originalPostText = (TextView) findViewById(R.id.originalPostText);
-        commentText      = (EditText)findViewById(R.id.noteText);
-        TextView userIDText = (EditText) findViewById(R.id.accountID);
-        Button submit = (Button) findViewById(R.id.submitButton);
-        Button cancel = (Button) findViewById(R.id.cancelButton);
+        commentText               = (EditText)findViewById(R.id.noteText);
+        TextView userIDText       = (EditText) findViewById(R.id.accountID);
+        Button submit             = (Button) findViewById(R.id.submitButton);
+        Button cancel             = (Button) findViewById(R.id.cancelButton);
 
         if (getIntent().getStringExtra("text") != null) {
             originalPostText.setText(getIntent().getStringExtra("text"));

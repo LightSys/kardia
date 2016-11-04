@@ -6,7 +6,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
@@ -489,9 +488,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     /**
      * Adds a new notification item to the database
-     * @param date
-     * @param type
-     * @param message
+     * @param date, date of notification item
+     * @param type, notification type
+     * @param message, content of the notification
      */
 	public void addNewItem(String date, String type, String message) {
 		ContentValues values = new ContentValues();
@@ -567,7 +566,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	/**
 	 * Deletes the Account from the database (also any information linked with it)
 	 */
-	public void deleteAccount(){
+	private void deleteAccount(){
 
 		SQLiteDatabase db = this.getWritableDatabase();
 
@@ -684,8 +683,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	}
     /**
      * Pulls periods for the gifts in a fund
-     * @param fundId
-     * @param periodType
+     * @param fundId, identification of fund gifts are being pulled from
+     * @param periodType, type of period (year or month) for which gifts are pulled
      * @return An ArrayList of all gift periods related to a fund
      */
 	public ArrayList<Period> getFundPeriods(int fundId, String periodType) {
@@ -931,7 +930,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 	/**
 	 * Pulls all PrayedFor objects (updates and prayer requests) from the Prayed For table
-	 * @return All Prayed for objects as an arraylist
+	 * @return All Prayed for objects as an ArrayList
 	 */
 	public ArrayList<PrayedFor> getPrayedFor() {
 		ArrayList<PrayedFor> prayedFor = new ArrayList<PrayedFor>();
@@ -1406,7 +1405,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	//gets list of comments
 	public ArrayList<Comment> getComments(){
 		ArrayList<Comment> comments = new ArrayList<Comment>();
-		String queryString = "SELECT * FROM " + TABLE_COMMENT;
+		String queryString = "SELECT * FROM " + TABLE_COMMENT + " ORDER BY " + COLUMN_DATE;
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
@@ -1420,7 +1419,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             String date = c.getString(5);
             String commentText = c.getString(6);
 
-
 			comments.add(new Comment(commentId,senderId,noteId,username, noteType, date, commentText));
 		}
 		c.close();
@@ -1430,7 +1428,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     /**
      * gets list of new prayer requests and updates
-     * @return Arraylist of NewItem objects
+     * @return ArrayList of NewItem objects
      */
 	public ArrayList<NewItem> getNewItems() {
 		ArrayList<NewItem> newItems = new ArrayList<NewItem>();
@@ -1499,7 +1497,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
     /**
      * gets the JSON posts
-     * @return Arraylist of Json posts
+     * @return ArrayList of Json posts
      */
 	public ArrayList<JsonPost> getJsonPosts(){
 		String queryString = "SELECT * FROM " + TABLE_JSON_POST;

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal" >
 
@@ -8,16 +10,18 @@
         android:id="@+id/missionaryName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxWidth="400dp"
+        android:maxLines="1"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginTop="@dimen/border_dimen"
+        android:layout_marginLeft="@dimen/border_dimen"
+        android:layout_marginRight="@dimen/border_dimen"
         android:textSize="@dimen/header_dimen"/>
 
     <TextView
-        android:id="@+id/subjecText"
+        android:id="@+id/subjectText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -48,7 +52,8 @@
         android:layout_alignParentEnd="true"
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:layout_margin="8dp">
+        android:layout_margin="8dp"
+        tools:ignore="RelativeOverlap">
 
         <TextView
             android:id="@+id/textAbovePrayingButton"

@@ -257,8 +257,7 @@ public class MainActivity extends ActionBarActivity {
 			startActivity(accounts);
 			break;
 		case 6:
-			Options options = new Options();
-			fragment = options;
+			Options fragment = new Options();
 			db.close();
 			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
 			break;

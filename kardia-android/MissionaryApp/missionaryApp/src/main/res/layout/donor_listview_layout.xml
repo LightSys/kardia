@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
@@ -17,6 +19,8 @@
         android:id="@+id/userNameText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxWidth="250dp"
+        android:maxLines="2"
         android:layout_toRightOf="@id/profilePicImage"
         android:layout_toEndOf="@id/profilePicImage"
         android:layout_centerVertical="true"
@@ -26,22 +30,27 @@
         android:id="@+id/phoneText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxWidth="120dp"
+        android:maxLines="1"
         android:layout_alignTop="@id/profilePicImage"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginRight="17dp"
-        android:layout_marginEnd="17dp"
-        android:textSize="@dimen/contact_dimen"/>
+        android:layout_marginRight="@dimen/border_dimen"
+        android:layout_marginEnd="@dimen/border_dimen"
+        android:textSize="@dimen/contact_dimen"
+        tools:ignore="RelativeOverlap"/>
 
     <TextView
         android:id="@+id/emailText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/phoneText"
+        android:maxWidth="150dp"
+        android:maxLines="2"
+        android:layout_alignBottom="@id/profilePicImage"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginRight="17dp"
-        android:layout_marginEnd="17dp"
-        android:textSize="@dimen/contact_dimen" />
+        android:layout_marginRight="@dimen/border_dimen"
+        android:layout_marginEnd="@dimen/border_dimen"
+        android:textSize="@dimen/contact_dimen"
+        tools:ignore="RelativeOverlap"/>
 </RelativeLayout>
