@@ -117,10 +117,8 @@ public class GiftTimePeriodList extends Fragment {
 	}
 	
 	/**
-	 * Opens another fragment with the list of the gifts that they gave to the specific
-	 * fund on a specific year.
-	 * (Still has a donation button at the bottom, for that specific fund)
-	 * So all it does is change what is displayed in the list.
+	 * Opens another fragment with the list of the gifts for the specific
+	 * time period.
 	 * @param position, position of list that was selected
 	 */
 	private void loadRelatedGifts(int position){

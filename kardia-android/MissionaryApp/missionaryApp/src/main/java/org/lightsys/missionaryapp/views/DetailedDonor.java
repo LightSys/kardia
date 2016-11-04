@@ -39,7 +39,8 @@ public class DetailedDonor extends Fragment{
     private String          donor_email;
     private String          donor_phone;
     private String          donor_name = " ";
-    private ArrayList<Gift> gifts      = new ArrayList<Gift>();
+
+    private ArrayList<Gift> gifts = new ArrayList<Gift>();
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.donor_detailed_layout, container, false);
@@ -47,6 +48,7 @@ public class DetailedDonor extends Fragment{
         getActivity().setTitle("Donor");
         Bundle args = getArguments();
 
+        //get donor info passed from donor list or saved instance state
         if(savedInstanceState != null){
             donor_id    = savedInstanceState.getInt(ARG_DONOR_ID);
             donor_name  = savedInstanceState.getString(ARG_DONOR_NAME);
@@ -66,6 +68,13 @@ public class DetailedDonor extends Fragment{
         TextView name  = (TextView)v.findViewById(R.id.userNameText);
         TextView email = (TextView)v.findViewById(R.id.emailText);
         TextView phone = (TextView)v.findViewById(R.id.phoneText);
+        if(donor_name.length()>29){
+            donor_name = donor_name.substring(0,28);
+        }
+        if(donor_phone.length()>18){
+            donor_phone = donor_phone.substring(0,17);
+        }
+
         name.setText(donor_name);
         email.setText(donor_email);
         phone.setText(donor_phone);
@@ -96,7 +105,7 @@ public class DetailedDonor extends Fragment{
             }
         });
 
-        //put gift list for donor
+        //pull gift list for donor
         LocalDBHandler db = new LocalDBHandler(getActivity());
         gifts = db.getGiftsByDonor(donor_id);
 
@@ -105,7 +114,7 @@ public class DetailedDonor extends Fragment{
         // Map data fields to layout fields
         ArrayList<HashMap<String,String>> itemList = generateListItems();
 
-        // If list is for specific fund, display fund as smaller (not as subject)
+        // put info into ListView underneath donor info
         String[] from = {"fund_name", "gift_date", "gift_amount"};
         int[] to = {R.id.nameText, R.id.dateText, R.id.amountText};
         SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.funds_listview_item, from, to );

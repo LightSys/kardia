@@ -82,21 +82,22 @@ public class DetailedGift extends Fragment {
 
         // Map data fields to layout fields
         RelativeLayout DonorInfo = (RelativeLayout) getActivity().findViewById(R.id.donorInfoLayout);
-        //DonorInfo.setOnItemClickListener(new onDonorClicked());
-        donorName.setText(donor_name);
+
         email_info = contactinfo.getEmail();
-        email.setText(email_info);
         phone_cell = contactinfo.getCell();
         if(phone_cell==null){
             phone_cell = contactinfo.getPhone();
         }
+
+        donorName.setText(donor_name);
         phone.setText(phone_cell);
-        fundTitle.setText("Fund: " + g.getGiftFund());
+        email.setText(email_info);
+
         fundTitle.setText("Fund: " + g.getGiftFund());
         date.setText(Formatter.getFormattedDate(g.getGiftDate()));
         amount.setText(Formatter.amountToString(g.getGiftAmount()));
 
-
+        //if Donor clicked, send user to detailed donor page
         DonorInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

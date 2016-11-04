@@ -176,6 +176,7 @@ public class Search extends Fragment{
                 }else{
                     donorText.setText("");
                     donorLayout.setVisibility(View.INVISIBLE);
+                    donorList.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -191,6 +192,7 @@ public class Search extends Fragment{
                 }else{
                     fundText.setText("");
                     fundLayout.setVisibility(View.INVISIBLE);
+                    fundList.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -316,22 +318,18 @@ public class Search extends Fragment{
             results.addAll(db.getGiftSearchResults(startDate, endDate, startAmount, endAmount, fundName, donorName));
             db.close();
 
-			// Send to corresponding page depending on search results
-			if(results == null) {
-				Toast.makeText(getActivity(), "0 Gifts found.", Toast.LENGTH_SHORT).show();
-			}else{
-				if (results.size() == 0) {
-					Toast.makeText(getActivity(), "0 Gifts found.", Toast.LENGTH_SHORT).show();
-				} else if (results.size() == 1) {
-					resetAll();
-					Toast.makeText(getActivity(), "1 Gift found.", Toast.LENGTH_SHORT).show();
-					sendToDetailedGift(results.get(0).getId(), results.get(0).getGiftDonorId(), results.get(0).getGiftDonor());
-				} else {
-					resetAll();
-					Toast.makeText(getActivity(), results.size() + " Gifts found.", Toast.LENGTH_SHORT).show();
-					sendToGiftList(results, giftFund);
-				}
-			}
+            // Send to corresponding page depending on search results
+            if (results.size() == 0) {
+                Toast.makeText(getActivity(), "0 Gifts found.", Toast.LENGTH_SHORT).show();
+            } else if (results.size() == 1) {
+                resetAll();
+                Toast.makeText(getActivity(), "1 Gift found.", Toast.LENGTH_SHORT).show();
+                sendToDetailedGift(results.get(0).getId(), results.get(0).getGiftDonorId(), results.get(0).getGiftDonor());
+            } else {
+                resetAll();
+                Toast.makeText(getActivity(), results.size() + " Gifts found.", Toast.LENGTH_SHORT).show();
+                sendToGiftList(results, giftFund);
+            }
 		}
 	}
 
@@ -428,7 +426,7 @@ public class Search extends Fragment{
     private class onDonorClicked implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            donorText.setText(donorArray.get(position).toString());
+            donorText.setText(donorArray.get(position));
             donorList.setVisibility(View.INVISIBLE);
         }
     }
@@ -439,7 +437,7 @@ public class Search extends Fragment{
     private class onFundClicked implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            fundText.setText(fundArray.get(position).toString());
+            fundText.setText(fundArray.get(position));
             fundList.setVisibility(View.INVISIBLE);
         }
     }

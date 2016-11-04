@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 import org.lightsys.missionaryapp.R;
 
@@ -34,6 +35,7 @@ import org.lightsys.missionaryapp.R;
 public class FundList extends Fragment{
 	
 	private ArrayList<Fund> funds;
+    private View item;
 
 	/**
 	 * Pulls all relevant funds, and creates the view (including the bottom total bar)
@@ -43,15 +45,16 @@ public class FundList extends Fragment{
 		
 		LocalDBHandler db = new LocalDBHandler(getActivity());
 
-		// Select Active account
+		// Select Active account and get funds for account
         int accountID = db.getAccount().getId();
         funds = db.getFundsForMissionary(accountID);
 
 		db.close();
 
 		View v = inflater.inflate(R.layout.activity_main_layout, container, false);
+        item = inflater.inflate(R.layout.funds_listview_item, container, false);
 
-		getActivity().setTitle("Funds");
+        getActivity().setTitle("Funds");
 
 		if (funds == null) {
 			return v;
@@ -92,6 +95,7 @@ public class FundList extends Fragment{
 				Total[0]+=Math.floor(Total[1]/100);
 				Total[1]-=Math.floor(Total[1]/100)*100;
 			}
+
 			hm.put("fund_title", f.getFundName());
             hm.put("to_date_amount", Formatter.amountToString(Total));
 			if(gifts.size()>0) {

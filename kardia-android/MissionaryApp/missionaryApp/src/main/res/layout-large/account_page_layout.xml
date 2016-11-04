@@ -110,7 +110,7 @@
         android:textSize="@dimen/body_dimen_lg"/>
 
     <EditText
-        android:id="@+id/donorIdInput"
+        android:id="@+id/userIdInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
@@ -127,7 +127,7 @@
         android:id="@+id/connectButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/donorIdInput"
+        android:layout_below="@id/userIdInput"
         android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"
         android:text="@string/connect"

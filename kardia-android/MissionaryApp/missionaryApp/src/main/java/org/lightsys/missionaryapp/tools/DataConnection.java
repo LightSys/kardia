@@ -241,8 +241,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                             "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
                     Account_ID);
             loadPrayerLetters(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
-                            "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
-                    Account_ID);
+                            "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
 
             // Loop through donors and pull contact info
             db.deleteNewItems();
@@ -619,9 +618,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     /**
      * Loads all prayer letters into the database if they are not present
      * @param result, result from API query for specific missionary
-     * @param missionary_id, ID of missionary for the query
      */
-    private void loadPrayerLetters(String result, int missionary_id) {
+    private void loadPrayerLetters(String result) {
         JSONObject json = null;
         try {
             json = new JSONObject(result);

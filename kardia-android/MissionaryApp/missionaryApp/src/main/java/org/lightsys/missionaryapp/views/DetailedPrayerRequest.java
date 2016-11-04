@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -176,7 +175,6 @@ public class DetailedPrayerRequest extends Fragment{
         commentList.clear();
         LocalDBHandler db = new LocalDBHandler(getActivity());
         ArrayList<Comment> comments = db.getComments();
-        comments = sortByDate(comments);
 
         for (Comment comment : comments){
             HashMap<String, String> hm = new HashMap<String, String>();
@@ -188,51 +186,6 @@ public class DetailedPrayerRequest extends Fragment{
             }
         }
     }
-
-    //sorts comments by date so that newest ones are first
-    private ArrayList<Comment> sortByDate(ArrayList<Comment> comments) {
-
-        Comment highestComment = null;//this will hold the highest comment for each pass
-
-        ArrayList<Comment> sortedComments = new ArrayList<Comment>();
-        while (comments.size() > 0){
-            int[] highestDate = {0, 0, 0};//start low because we are looking for dates larger
-            for (Comment c : comments) {
-                int[] date = parseStringDate(c.getDate());
-                if (date[0] > highestDate[0]) { //if the year is bigger the date is newer
-                    highestDate = date;
-                    highestComment = c;
-                }
-                else if (date[0] == highestDate[0]){//if the years are the same look at the month
-                    if (date[1] > highestDate[1]){//if the month in bigger the date is newer
-                        highestDate = date;
-                        highestComment = c;
-                    }
-                    else if (date[1] == highestDate[1]){//if the months are the same look at the days
-                        if (date[2] >= highestDate[2]){//if the day is bigger the date is newer
-                            highestDate = date;
-                            highestComment = c;
-                        }
-                    }
-                }
-
-            }
-            sortedComments.add(highestComment);//add newest comment to list
-            comments.remove(highestComment);//get rid of newest comment in old list as to not cause confusion
-        }
-
-        return sortedComments;//return sorted list of comments
-    }
-
-    private int[] parseStringDate(String date) {
-        int[] dateInt = new int[3];
-        String[] dateSplitStr = date.split("-");
-        for (int i = 0; i < 3; i++) {
-            dateInt[i] = Integer.parseInt(dateSplitStr[i]);
-        }
-        return dateInt;
-    }
-
 
     /**
      * Updates prayer request to signify it is being prayed for

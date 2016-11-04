@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
@@ -10,6 +11,8 @@
         android:id="@+id/nameText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxWidth="300dp"
+        android:maxLines="2"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_marginTop="10dp"
@@ -22,6 +25,8 @@
         android:id="@+id/giftText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxWidth="250dp"
+        android:maxLines="1"
         android:layout_alignLeft="@id/nameText"
         android:layout_alignStart="@id/nameText"
         android:layout_below="@id/nameText"
@@ -33,19 +38,24 @@
         android:id="@+id/amountText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxWidth="220dp"
+        android:maxLines="1"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginRight="18dp"
-        android:layout_marginEnd="18dp"
+        android:layout_marginRight="@dimen/border_dimen_lg"
+        android:layout_marginEnd="@dimen/border_dimen_lg"
         android:layout_marginTop="10dp"
         android:textColor="#37AD00"
-        android:textSize="@dimen/header_dimen_lg" />
+        android:textSize="@dimen/header_dimen_lg"
+        tools:ignore="RelativeOverlap"/>
 
     <!-- The Date -->
     <TextView
         android:id="@+id/dateText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxWidth="250dp"
+        android:maxLines="1"
         android:layout_alignRight="@+id/amountText"
         android:layout_alignEnd="@+id/amountText"
         android:layout_below="@+id/amountText"
