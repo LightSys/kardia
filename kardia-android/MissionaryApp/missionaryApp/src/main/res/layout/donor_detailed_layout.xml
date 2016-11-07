@@ -25,6 +25,8 @@
             android:id="@+id/userNameText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxWidth="250dp"
+            android:maxLines="2"
             android:layout_toRightOf="@id/profilePicImage"
             android:layout_toEndOf="@id/profilePicImage"
             android:layout_centerVertical="true"
@@ -34,6 +36,8 @@
             android:id="@+id/phoneText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxWidth="120dp"
+            android:maxLines="1"
             android:layout_marginRight="17dp"
             android:layout_marginEnd="17dp"
             android:layout_alignTop="@id/profilePicImage"
@@ -46,12 +50,11 @@
             android:id="@+id/emailText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="17dp"
-            android:layout_marginEnd="17dp"
+            android:layout_marginRight="@dimen/border_dimen"
+            android:layout_marginEnd="@dimen/border_dimen"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:layout_below="@+id/phoneText"
+            android:layout_alignBottom="@+id/profilePicImage"
             android:textSize="@dimen/contact_dimen"/>
     </RelativeLayout>
 
@@ -62,10 +65,45 @@
         android:layout_below="@id/donorInfoLayout"
         android:background="#000030" />
 
+    <TextView
+        android:id="@+id/totalText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/donorInfoDivider"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:textSize="@dimen/header_dimen"
+        android:text="@string/gift_total_text"/>
+
+    <TextView
+        android:id="@+id/totalAmountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/donorInfoDivider"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="18dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        style="@style/listCustomBlue"
+        android:textColor="#37AD00"
+        android:textSize="@dimen/header_dimen"/>
+
+    <View
+        android:id="@+id/donorInfoDivider2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/totalText"
+        android:background="#000030" />
+
     <ListView
         android:id="@+id/infoList"
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/donorInfoDivider"
+        android:layout_below="@id/donorInfoDivider2"
         style="@style/listCustomBlue"/>
 </RelativeLayout>

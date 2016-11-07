@@ -58,7 +58,7 @@ public class NotificationActivity extends Activity {
             String EXTRA_DELETE = "delete";
             delete = extras.getBoolean(EXTRA_DELETE);
         }
-        if (delete == true){
+        if (delete){
             deleteNotifications();
         }
         else {
@@ -188,13 +188,9 @@ public class NotificationActivity extends Activity {
      */
     private boolean checkValidity()  {
         // If any visible field has not been selected, set to false, otherwise true
-        if(endDateRow.getVisibility()   == View.VISIBLE && endDateButton.getText().equals("Choose Date")   ||
-           startDateRow.getVisibility() == View.VISIBLE && startDateButton.getText().equals("Choose Date") ||
-           timeRow.getVisibility()      == View.VISIBLE && timeButton.getText().equals("Choose Time")) {
-            return false;
-        } else {
-            return true;
-        }
+        return !(endDateRow.getVisibility() == View.VISIBLE && endDateButton.getText().equals("Choose Date") ||
+                startDateRow.getVisibility() == View.VISIBLE && startDateButton.getText().equals("Choose Date") ||
+                timeRow.getVisibility() == View.VISIBLE && timeButton.getText().equals("Choose Time"));
     }
 
     /**
