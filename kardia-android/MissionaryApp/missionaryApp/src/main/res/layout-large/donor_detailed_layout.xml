@@ -66,10 +66,45 @@
         android:layout_below="@id/donorInfoLayout"
         android:background="#000030" />
 
+    <TextView
+        android:id="@+id/totalText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/donorInfoDivider"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="18dp"
+        android:layout_marginStart="18dp"
+        android:textSize="@dimen/header_dimen_lg"
+        android:text="@string/gift_total_text"/>
+
+    <TextView
+        android:id="@+id/totalAmountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/donorInfoDivider"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="20dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        style="@style/listCustomBlue"
+        android:textColor="#37AD00"
+        android:textSize="@dimen/header_dimen_lg"/>
+
+    <View
+        android:id="@+id/donorInfoDivider2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/totalAmountText"
+        android:background="#000030" />
+
     <ListView
         android:id="@+id/infoList"
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/donorInfoDivider"
+        android:layout_below="@id/donorInfoDivider2"
         style="@style/listCustomBlue"/>
 </RelativeLayout>

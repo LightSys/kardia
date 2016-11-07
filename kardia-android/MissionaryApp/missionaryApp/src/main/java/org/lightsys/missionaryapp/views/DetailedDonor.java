@@ -65,9 +65,11 @@ public class DetailedDonor extends Fragment{
             donor_email = "no email";
             donor_phone = "no phone";
         }
+
         TextView name  = (TextView)v.findViewById(R.id.userNameText);
         TextView email = (TextView)v.findViewById(R.id.emailText);
         TextView phone = (TextView)v.findViewById(R.id.phoneText);
+
         if(donor_name.length()>29){
             donor_name = donor_name.substring(0,28);
         }
@@ -109,6 +111,7 @@ public class DetailedDonor extends Fragment{
         LocalDBHandler db = new LocalDBHandler(getActivity());
         gifts = db.getGiftsByDonor(donor_id);
 
+        TextView totalText = (TextView)v.findViewById(R.id.totalAmountText);
         ListView listview = (ListView) v.findViewById(R.id.infoList);
 
         // Map data fields to layout fields
@@ -121,6 +124,15 @@ public class DetailedDonor extends Fragment{
         listview.setAdapter(adapter);
 
         listview.setOnItemClickListener(new onGiftClicked());
+
+        int [] total = {0,0};
+        for (Gift g : gifts){
+            total[0]+=g.getGiftAmount()[0];
+            total[1]+=g.getGiftAmount()[1];
+        }
+
+        totalText.setText(Formatter.amountToString(total));
+
 
         return v;
     }
@@ -146,20 +158,9 @@ public class DetailedDonor extends Fragment{
      */
     private ArrayList<HashMap<String,String>> generateListItems(){
         ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
-        int [] total = {0,0};
-        for (Gift g : gifts){
-            total[0]+=g.getGiftAmount()[0];
-            total[1]+=g.getGiftAmount()[1];
-        }
-        HashMap<String,String> hm = new HashMap<String,String>();
-        hm.put("fund_name", "Gift Total");
-        hm.put("gift_amount", Formatter.amountToString(total));
-        hm.put("gift_date", null);
-
-        aList.add(hm);
 
         for(Gift g : gifts){
-            hm = new HashMap<String,String>();
+            HashMap<String,String> hm = new HashMap<String,String>();
 
             hm.put("fund_name", "Gift to: " + g.getGiftFund());
             hm.put("gift_amount", Formatter.amountToString(g.getGiftAmount()));

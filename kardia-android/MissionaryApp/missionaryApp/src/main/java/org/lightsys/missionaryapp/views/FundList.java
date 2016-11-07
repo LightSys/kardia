@@ -18,7 +18,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 
 import org.lightsys.missionaryapp.R;
 
@@ -35,7 +34,6 @@ import org.lightsys.missionaryapp.R;
 public class FundList extends Fragment{
 	
 	private ArrayList<Fund> funds;
-    private View item;
 
 	/**
 	 * Pulls all relevant funds, and creates the view (including the bottom total bar)
@@ -52,7 +50,7 @@ public class FundList extends Fragment{
 		db.close();
 
 		View v = inflater.inflate(R.layout.activity_main_layout, container, false);
-        item = inflater.inflate(R.layout.funds_listview_item, container, false);
+        View item = inflater.inflate(R.layout.funds_listview_item, container, false);
 
         getActivity().setTitle("Funds");
 
