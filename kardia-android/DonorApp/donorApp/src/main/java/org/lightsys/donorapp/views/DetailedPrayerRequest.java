@@ -188,7 +188,7 @@ public class DetailedPrayerRequest extends Fragment{
                         jsonObject.put("s_date_created", dateCreated);
                         jsonObject.put("s_date_modified", dateCreated);
 
-                        String url = "http://" + account.getServerName() + ":800/apps/kardia/api/supporter/" + account.getId() + "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic";
+                        String url = account.getProtocol() + "://" + account.getServerName() + ":" + account.getPortNumber() + "/apps/kardia/api/supporter/" + account.getId() + "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic";
 
                         PostJson postJson = new PostJson(getActivity().getBaseContext(), url, jsonObject, account);
                         postJson.execute();

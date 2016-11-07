@@ -107,7 +107,7 @@ public class CommentActivity extends Activity {
                     //submit stuffs
                     try {
                         //post comment
-                        String postURL = "http://" + account.getServerName() + ":800/apps/kardia/api/crm/Partners/" + missionaryId + "/ContactHistory/" + noteId + "/Comments?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection";
+                        String postURL = account.getProtocol() + "://" + account.getServerName() + ":" + account.getPortNumber() + "/apps/kardia/api/crm/Partners/" + missionaryId + "/ContactHistory/" + noteId + "/Comments?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection";
 
                         JSONObject newComment = new JSONObject();
                         JSONObject dateCreated = new JSONObject();

@@ -1,41 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/noise_blue_repeat"
     tools:context= "org.lightsys.missionaryapp.views.MainActivity">
 
     <!-- Display List -->
-
-    <RelativeLayout
+    <TextView
+        android:id="@+id/welcomeHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:background="@drawable/noise_blue_repeat">
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal"
+        android:textSize="@dimen/large_header_dimen"
+        android:textStyle="bold"
+        android:textColor="#000"
+        android:visibility="gone"/>
 
-        <TextView
-            android:id="@+id/welcomeHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:gravity="center_horizontal"
-            android:textSize="@dimen/large_header_dimen"
-            android:textStyle="bold"
-            android:textColor="#000"
-            android:visibility="gone"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@+id/welcomeList"
+        android:background="#000030"/>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_above="@+id/welcomeList"
-            android:background="#000030"/>
-
-        <ListView
-            android:id="@+id/welcomeList"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            style="@style/homeNavigationItems"/>
-    </RelativeLayout>
+    <ListView
+        android:id="@+id/welcomeList"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        style="@style/homeNavigationItems"/>
 </RelativeLayout>
 

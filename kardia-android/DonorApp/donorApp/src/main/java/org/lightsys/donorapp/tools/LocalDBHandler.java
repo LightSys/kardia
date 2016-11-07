@@ -53,6 +53,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	private static final String COLUMN_ACCOUNTPASSWORD = "accountPassword";
 	private static final String COLUMN_SERVERNAME = "serverName";
 	private static final String COLUMN_PARTNER_NAME = "partnerName";
+	private static final String COLUMN_PORT_NUMBER = "portNumber";
+	private static final String COLUMN_PROTOCOL = "protocol";
 	//FUND TABLE
 	private static final String TABLE_FUND = "funds";
 	private static final String COLUMN_NAME = "name";
@@ -156,7 +158,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		String CREATE_ACCOUNTS_TABLE = "CREATE TABLE " + TABLE_ACCOUNTS + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_ACCOUNTNAME 
 				+ " TEXT," + COLUMN_ACCOUNTPASSWORD + " TEXT,"
-				+ COLUMN_SERVERNAME + " TEXT," 	+ COLUMN_PARTNER_NAME + " TEXT)";
+				+ COLUMN_SERVERNAME + " TEXT," 	+ COLUMN_PARTNER_NAME + " TEXT,"
+				+ COLUMN_PORT_NUMBER + " TEXT," + COLUMN_PROTOCOL + " TEXT)";
 		db.execSQL(CREATE_ACCOUNTS_TABLE);
 
 		String CREATE_MISSIONARY_TABLE = "CREATE TABLE " + TABLE_MISSIONARIES + "("
@@ -300,6 +303,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		values.put(COLUMN_ACCOUNTPASSWORD, account.getAccountPassword());
 		values.put(COLUMN_SERVERNAME, account.getServerName());
 		values.put(COLUMN_PARTNER_NAME, account.getPartnerName());
+		values.put(COLUMN_PORT_NUMBER, account.getPortNumber());
+		values.put(COLUMN_PROTOCOL, account.getProtocol());
 		
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_ACCOUNTS, null, values);
@@ -796,6 +801,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			temp.setAccountPassword(c.getString(2));
 			temp.setServerName(c.getString(3));
 			temp.setPartnerName(c.getString(4));
+			temp.setPortNumber(c.getString(5));
+			temp.setProtocol(c.getString(6));
 			
 			accounts.add(temp);
 		}
@@ -1632,11 +1639,14 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	 * @param newPass, change the password to something new
 	 * @param newServer, change the server address to something new
 	 */
-	public void updateAccount(int id, String newName, String newPass, String newServer){
+	public void updateAccount(int id, String newName, String newPass, String newServer,
+							  String newPortNumber, String newProtocol){
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_ACCOUNTNAME, newName);
 		values.put(COLUMN_ACCOUNTPASSWORD, newPass);
 		values.put(COLUMN_SERVERNAME, newServer);
+		values.put(COLUMN_PORT_NUMBER, newPortNumber);
+		values.put(COLUMN_PROTOCOL, newProtocol);
 		
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.update(TABLE_ACCOUNTS, values, COLUMN_ID + " = " + id, null);

@@ -172,17 +172,21 @@
             android:textSize="@dimen/body_dimen_lg"/>
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"/>
+
     <LinearLayout
         android:id="@+id/toggleDonorLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="40dp"
-        android:layout_marginRight="40dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true">
+        android:layout_alignLeft="@id/center"
+        android:layout_alignStart="@id/center"
+        android:layout_marginTop="50dp">
 
-        <ToggleButton
+    <ToggleButton
             android:id="@+id/toggleDonor"
             android:layout_width="80dp"
             android:layout_height="55dp"
@@ -215,6 +219,8 @@
             android:id="@+id/donorText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/border_dimen_lg"
+            android:layout_marginEnd="@dimen/border_dimen_lg"
             android:hint="@string/choose_donor"
             android:textSize="@dimen/header_dimen_lg"/>
     </LinearLayout>
@@ -261,6 +267,8 @@
             android:id="@+id/fundText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/border_dimen_lg"
+            android:layout_marginEnd="@dimen/border_dimen_lg"
             android:hint="@string/choose_fund"
             android:textSize="@dimen/header_dimen_lg"/>
     </LinearLayout>
@@ -271,6 +279,7 @@
         android:layout_below="@id/fundLayout"
         android:layout_alignLeft="@id/fundLayout"
         android:layout_alignStart="@id/fundLayout">
+
         <ListView
             android:id="@+id/fundList"
             android:layout_width="wrap_content"
@@ -286,6 +295,7 @@
         android:layout_below="@id/donorLayout"
         android:layout_alignLeft="@id/donorLayout"
         android:layout_alignStart="@id/donorLayout">
+
         <ListView
             android:id="@+id/donorList"
             android:layout_width="wrap_content"

@@ -12,8 +12,6 @@
         android:layout_marginRight="18dp"
         android:text="user name"
         android:id="@+id/userName"
-        android:password="false"
-        android:phoneNumber="false"
         android:textStyle="bold"
         android:textSize="20sp" />
 
