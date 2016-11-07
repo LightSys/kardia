@@ -60,7 +60,7 @@ public class CommentActivity extends Activity {
         }
 
         LocalDBHandler db = new LocalDBHandler(getBaseContext());
-        userIDText.setText("" + db.getAccount().getId());
+        userIDText.setText(String.valueOf(db.getAccount().getId()));
         db.close();
 
         missionaryId = getIntent().getIntExtra("missionaryId", -1);

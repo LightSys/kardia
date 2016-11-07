@@ -252,16 +252,20 @@ public class MainActivity extends ActionBarActivity {
             fragment = new FundList();
             fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
             break;
-		case 5:
+        case 5:
+            fragment = new ReportList();
+            fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+            break;
+		case 6:
 			Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
 			startActivity(accounts);
 			break;
-		case 6:
+		case 7:
 			Options fragment = new Options();
 			db.close();
 			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
 			break;
-		case 7:
+		case 8:
 			new DataConnection(this, this, account).execute("");
 			break;
 		}

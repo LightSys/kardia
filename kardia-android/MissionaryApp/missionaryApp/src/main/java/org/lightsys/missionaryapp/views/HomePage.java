@@ -1,5 +1,6 @@
 package org.lightsys.missionaryapp.views;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ public class HomePage extends Fragment {
 
     private String[] mCategories;
 
+    @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         LocalDBHandler db = new LocalDBHandler(getActivity());

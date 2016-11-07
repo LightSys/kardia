@@ -132,9 +132,9 @@ public class Search extends Fragment{
 				}else{
 					dateRange.setChecked(false);
 					dateRange.setVisibility(View.INVISIBLE);
-					date1.setText("Choose Date");
+					date1.setText(R.string.choose_date);
 					date1.setError(null);
-					date2.setText("Choose Date");
+					date2.setText(R.string.choose_date);
 					dash1.setVisibility(View.INVISIBLE);
 					date2.setVisibility(View.INVISIBLE);
 					dateLayout.setVisibility(View.INVISIBLE);
@@ -334,9 +334,9 @@ public class Search extends Fragment{
 	}
 
 	private void resetAll(){
-		date1.setText("Choose Date");
+		date1.setText(R.string.choose_date);
 		date1.setError(null);
-		date2.setText("Choose Date");
+		date2.setText(R.string.choose_date);
 		date2.setVisibility(View.INVISIBLE);
 		dash1.setVisibility(View.INVISIBLE);
 		amount1.setText("");
@@ -401,7 +401,7 @@ public class Search extends Fragment{
 		}else{
 			date2.setVisibility(View.INVISIBLE);
 			dash1.setVisibility(View.INVISIBLE);
-			date2.setText("Choose Date");
+			date2.setText(R.string.choose_date);
 		}
 	}
 

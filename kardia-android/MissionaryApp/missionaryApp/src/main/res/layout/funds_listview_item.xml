@@ -18,7 +18,7 @@
         android:layout_marginStart="16dp"
         android:textSize="@dimen/header_dimen" />
 
-    <!-- Fund for gift listview-->
+    <!-- Fund for gift ListView-->
     <TextView
         android:id="@+id/giftText"
         android:layout_width="wrap_content"
