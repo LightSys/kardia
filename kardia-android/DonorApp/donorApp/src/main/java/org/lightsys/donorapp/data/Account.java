@@ -16,16 +16,21 @@ public class Account {
 	private String AccountPassword;
 	private String ServerName;
 	private String PartnerName; //Name used for sending messages, different than AccountName
+	private String PortNumber;
+	private String Protocol;
 
 	public Account(){}
 	
 	public Account(int id, String AccountName, String AccountPassword, String ServerName,
-				    String PartnerName){
+				    String PartnerName, String PortNumber, String Protocol){
 		this.setId(id);
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
 		this.setServerName(ServerName);
 		this.setPartnerName(PartnerName);
+		this.setPortNumber(PortNumber);
+		this.setProtocol(Protocol);
+
 	}
 
 	public int getId() {
@@ -63,4 +68,12 @@ public class Account {
 	public String getPartnerName() { return PartnerName; }
 
 	public void setPartnerName(String name) { PartnerName = name; }
+
+	public String getPortNumber(){return PortNumber;}
+
+	public void setPortNumber(String portNumber){PortNumber = portNumber;}
+
+	public String getProtocol(){return Protocol;}
+
+	public void setProtocol(String protocol){Protocol = protocol;}
 }

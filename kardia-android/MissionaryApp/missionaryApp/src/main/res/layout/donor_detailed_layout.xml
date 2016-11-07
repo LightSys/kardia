@@ -50,12 +50,15 @@
             android:id="@+id/emailText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxWidth="150dp"
+            android:maxLines="2"
             android:layout_marginRight="@dimen/border_dimen"
             android:layout_marginEnd="@dimen/border_dimen"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_alignBottom="@+id/profilePicImage"
-            android:textSize="@dimen/contact_dimen"/>
+            android:textSize="@dimen/contact_dimen"
+            tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
 
     <View

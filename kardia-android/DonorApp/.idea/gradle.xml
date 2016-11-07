@@ -12,7 +12,13 @@
             <option value="$PROJECT_DIR$/donorApp" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
+        <option name="myModules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/appcompat_v7_4" />
+            <option value="$PROJECT_DIR$/donorApp" />
+          </set>
+        </option>
       </GradleProjectSettings>
     </option>
   </component>
