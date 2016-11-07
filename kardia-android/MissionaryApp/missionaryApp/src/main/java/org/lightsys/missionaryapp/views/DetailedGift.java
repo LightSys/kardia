@@ -5,6 +5,7 @@ import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -66,6 +67,7 @@ public class DetailedGift extends Fragment {
      *
      * @param gift_id, Gift Identification
      */
+    @SuppressLint("SetTextI18n")
     private void updateGiftView(final int gift_id, final int donor_id, final String donor_name) {
         TextView fundTitle = (TextView) getActivity().findViewById(R.id.fundText);
         TextView date      = (TextView) getActivity().findViewById(R.id.dateText);

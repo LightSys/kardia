@@ -7,6 +7,7 @@
         <item>Donors</item>
         <item>Prayer Requests/Updates</item>
         <item>Funds</item>
+        <item>Reports</item>
         <item>Accounts</item>
         <item>Options</item>
         <item>Refresh</item>
@@ -71,7 +72,6 @@
     <string name="choose_time">Choose Time</string>
     <string name="time">Time: </string>
     <string name="dollar_sign">$</string>
-    <string name="select_donor">Select Donor</string>
     <string name="praying">Praying</string>
     <string name="comment">Comment</string>
     <string name="comment_prompt">Enter your comment</string>
@@ -85,4 +85,6 @@
     <string name="frequency_text">Repeat Every: </string>
     <string name="apply_button">Apply</string>
     <string name="gift_total_text">Gift Total</string>
+    <string name="connected_account_text">Connected Account:</string>
+    <string name="no_account_text">No Accounts Connected.</string>
 </resources>

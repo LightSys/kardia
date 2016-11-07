@@ -1,5 +1,6 @@
 package org.lightsys.missionaryapp.views;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -87,6 +88,7 @@ public class DetailedPrayerRequest extends Fragment{
      * @param request_id, Request Identification
      */
 
+    @SuppressLint("SetTextI18n")
     private void updateRequestView(final int request_id){
         final LocalDBHandler db = new LocalDBHandler(getActivity());
 

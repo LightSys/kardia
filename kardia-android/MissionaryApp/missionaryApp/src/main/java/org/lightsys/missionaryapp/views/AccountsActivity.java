@@ -98,13 +98,13 @@ public class AccountsActivity extends Activity{
 		
 		if(account!=null){
 			finishButton.setVisibility(View.VISIBLE);
-			connectedAccount.setText("Connected Account:");
+			connectedAccount.setText(R.string.connected_account_text);
             userName.setText(account.getAccountName());
             server.setText(account.getServerName());
 
 		}else{
 			finishButton.setVisibility(View.INVISIBLE);
-			connectedAccount.setText("No Accounts Connected.");
+			connectedAccount.setText(R.string.no_account_text);
 		}
 	}
 	

@@ -50,7 +50,6 @@ public class FundList extends Fragment{
 		db.close();
 
 		View v = inflater.inflate(R.layout.activity_main_layout, container, false);
-        View item = inflater.inflate(R.layout.funds_listview_item, container, false);
 
         getActivity().setTitle("Funds");
 

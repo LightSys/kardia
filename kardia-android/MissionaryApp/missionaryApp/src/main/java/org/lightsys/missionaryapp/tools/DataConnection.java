@@ -82,7 +82,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             DataPull();
         }
         catch(Exception e){
-            Log.w(Tag, "The DataPull failed. (probably not connected to internet or vmplayer): "
+            Log.w(Tag, "The DataPull failed. (probably not connected to internet or vmPlayer): "
                     + e.getLocalizedMessage());
         }
         return null;
@@ -673,7 +673,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
     /**
      * Formats the result string into funds and if a fund was not stored yet, adds it to
-     *   the local sqlite database in a fund table
+     *   the local SQLite database in a fund table
      * Adds a relation between the fund and the specific account
      *
      * @param result, the result of the Funds API GET request
