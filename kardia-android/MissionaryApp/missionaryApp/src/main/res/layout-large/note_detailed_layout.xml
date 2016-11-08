@@ -119,6 +119,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/commentButton"
             android:layout_marginTop="10dp"
-            android:smoothScrollbar="false" />
+            android:smoothScrollbar="false"
+            android:listSelector="@android:color/transparent"/>
     </RelativeLayout>
 </ScrollView>

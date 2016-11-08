@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.lightsys.missionaryapp.data.Comment;
 import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
+import org.lightsys.missionaryapp.data.JsonPost;
 import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
@@ -97,23 +98,27 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         // If valid account was connected, close the account activity
         // Otherwise refresh the page the user was on
+        Log.d("DataConnection", "onPostExecute: " + dataContext.getClass() + ": " + MainActivity.class);
         if (dataContext.getClass() == MainActivity.class) {
-            assert dataActivity != null;
-            dataActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    ((MainActivity)dataActivity).refreshCurrentFragment();
-                }
-            });
-        } else {
-            if (validAccount) {
-                assert dataActivity != null;
+            if (dataActivity != null) {
                 dataActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        dataActivity.finish();
+                        ((MainActivity) dataActivity).refreshCurrentFragment();
+                        Log.d("DataConnection", "run: " +"it did refresh");
                     }
                 });
+            }
+        } else {
+            if (validAccount) {
+                if (dataActivity != null) {
+                    dataActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dataActivity.finish();
+                        }
+                    });
+                }
             }
         }
     }
@@ -225,6 +230,25 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         validAccount = isValidAccount(isNewAccount);
         if(!validAccount) {
             return;
+        }
+
+        //if updating, send unposted messages and notes to server
+        if (c != AccountsActivity.class && dataActivity != null) {
+            ArrayList<JsonPost> JsonToPost = db.getJsonPosts();
+            if (JsonToPost != null) {
+                for (JsonPost j : JsonToPost) {
+                    try {
+                        JSONObject newJson = new JSONObject(j.getJsonString());
+
+                        PostJson postJson = new PostJson(dataContext, j.getUrl(), newJson, account);
+                        postJson.execute();
+
+                        db.deleteJsonPost(j.getId());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
 
 

@@ -20,6 +20,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -230,46 +231,55 @@ public class MainActivity extends ActionBarActivity {
 		accountId = account.getId();
 
 		db.close();
-		switch(position){
-			//Gifts, Donor, Prayer requests/updates, Funds, Accounts, Options, Refresh
-		case 0:
-			fragment = new HomePage();
-			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
-			break;
-		case 1:
-			fragment = new GiftList();
-			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
-			break;
-		case 2:
-			fragment = new DonorList();
-			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
-			break;
-		case 3:
-			fragment = new NoteList();
-			fragmentManager.beginTransaction().replace(R.id.contentFrame,fragment).commit();
-			break;
-        case 4:
-            fragment = new FundList();
-            fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
-            break;
-        case 5:
-            fragment = new ReportList();
-            fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
-            break;
-		case 6:
-			Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
-			startActivity(accounts);
-			break;
-		case 7:
-			Options fragment = new Options();
-			db.close();
-			fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
-			break;
-		case 8:
-			new DataConnection(this, this, account).execute("");
-			break;
-		}
-		mDrawerList.setItemChecked(position, true);
+		switch(position) {
+            //Gifts, Donor, Prayer requests/updates, Funds, Accounts, Options, Refresh
+            case 0:
+                fragment = new HomePage();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                break;
+            case 1:
+                fragment = new GiftList();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                break;
+            case 2:
+                fragment = new DonorList();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                break;
+            case 3:
+                fragment = new NoteList();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                break;
+            case 4:
+                fragment = new FundList();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                break;
+            case 5:
+                fragment = new ReportList();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                break;
+            case 6:
+                Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
+                startActivity(accounts);
+                break;
+            case 7:
+                Options fragment = new Options();
+                db.close();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                break;
+            case 8:
+                new DataConnection(this, this, account).execute("");
+                break;
+            case 9:
+                Fragment test = new TransactionList();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, test).commit();
+                break;
+            case 10:
+                Fragment test_2 = new PayrollList();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, test_2).commit();
+                break;
+        }
+
+        mDrawerList.setItemChecked(position, true);
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
 	/**
@@ -277,11 +287,11 @@ public class MainActivity extends ActionBarActivity {
 	 */
 	public void refreshCurrentFragment() {
 		Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
-		FragmentTransaction fragTransaction = getSupportFragmentManager().beginTransaction();
-		fragTransaction.detach(currentFragment);
+		final FragmentTransaction fragTransaction = getSupportFragmentManager().beginTransaction();
+        fragTransaction.detach(currentFragment);
 		fragTransaction.attach(currentFragment);
 		fragTransaction.commit();
-	}
+    }
 
 	/**
 	 * Sets the title of the action bar to the text selected in the menu drawer.

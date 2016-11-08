@@ -4,17 +4,18 @@
     android:layout_height="wrap_content">
 
     <TextView
+        android:id="@+id/userName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
-        android:id="@+id/userName"
         android:textStyle="bold"
         android:textSize="@dimen/body_dimen" />
 
     <TextView
+        android:id="@+id/dateText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
@@ -23,10 +24,10 @@
         android:layout_marginRight="18dp"
         android:layout_marginStart="25dp"
         android:layout_marginEnd="18dp"
-        android:id="@+id/dateText"
         android:textSize="@dimen/small_subtitle_dimen" />
 
     <TextView
+        android:id="@+id/noteText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
@@ -34,6 +35,5 @@
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
         android:layout_marginBottom="18dp"
-        android:id="@+id/noteText"
         android:textSize="@dimen/body_dimen" />
 </LinearLayout>
