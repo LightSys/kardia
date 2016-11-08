@@ -1,5 +1,6 @@
 package org.lightsys.missionaryapp.tools;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Base64;
@@ -19,6 +20,7 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.json.JSONObject;
 import org.lightsys.missionaryapp.data.Account;
+import org.lightsys.missionaryapp.views.MainActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;

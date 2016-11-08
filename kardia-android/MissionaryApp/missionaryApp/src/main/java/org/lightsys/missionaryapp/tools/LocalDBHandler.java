@@ -248,8 +248,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		String CREATE_JSON_POST_TABLE = "CREATE TABLE " + TABLE_JSON_POST
 				+ "(" + COLUMN_JSON_ID + " INTEGER PRIMARY KEY, "
-				+ COLUMN_JSON_URL + " TEXT, "
-				+ COLUMN_JSON_STRING + " TEXT, "
+				+ COLUMN_JSON_URL + " TEXT, " + COLUMN_JSON_STRING + " TEXT, "
 				+ COLUMN_ACCOUNT_ID + " INTEGER)";
 		db.execSQL(CREATE_JSON_POST_TABLE);
 

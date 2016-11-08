@@ -8,22 +8,22 @@ package org.lightsys.missionaryapp.data;
  */
 public class JsonPost {
 
-    private long id;
+    private long Id;
     private String url;
     private String jsonString;
     private int accountID;
 
     /* ************************* Construct ************************* */
-    public JsonPost(long ID, String postUrl, String jSonString, int accountId) {
-        id = ID;
-        url = postUrl;
-        jsonString = jSonString;
-        accountID = accountId;
+    public JsonPost(long Id, String postUrl, String jSonString, int accountId) {
+        this.Id = Id;
+        this.url = postUrl;
+        this.jsonString = jSonString;
+        this.accountID = accountId;
     }
 
 	/* ************************* Set ************************* */
 
-    public void setId(long id)                   { this.id = id; }
+    public void setId(long Id)                   { this.Id = Id; }
 
     public void setUrl(String url)               { this.url = url; }
 
@@ -33,7 +33,7 @@ public class JsonPost {
 
 	/* ************************* Get ************************* */
 
-    public long   getId()          { return id; }
+    public long   getId()          { return Id; }
 
     public String getUrl()         { return url; }
 
