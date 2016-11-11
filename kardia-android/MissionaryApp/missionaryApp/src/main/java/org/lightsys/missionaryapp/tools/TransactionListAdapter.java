@@ -2,30 +2,28 @@ package org.lightsys.missionaryapp.tools;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import org.lightsys.missionaryapp.R;
-import org.lightsys.missionaryapp.data.Transaction;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Created by lauradeotte on 11/7/16.
+ *
+ * adapts transaction info for list - allows negative text to be red,
+ * while positive is green
  */
 
 public class TransactionListAdapter extends SimpleAdapter {
 
-    private Context mContext;
-    private int id;
-    private List<? extends Map<String,String>> itemList;
+    private final Context mContext;
+    private final int id;
+    private final List<? extends Map<String,String>> itemList;
 
     public TransactionListAdapter(Context context, List<? extends Map<String,String>> data,
                                   int resource, String[]from , int[] to )

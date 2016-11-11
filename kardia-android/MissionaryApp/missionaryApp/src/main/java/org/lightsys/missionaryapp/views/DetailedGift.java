@@ -6,12 +6,15 @@ import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -33,18 +36,21 @@ public class DetailedGift extends Fragment {
     final static String ARG_GIFT_ID = "gift_id";
     final static String ARG_DONOR_ID = "donor_id";
     final static String ARG_DONOR_NAME = "donor_name";
+    final static String ARG_DONOR_IMAGE = "donor_image";
 
-    private int gift_id = -1, donor_id = -1;
-    private String donor_name = "", phone_cell = "", email_info = "";
+    private int giftId = -1, donorId = -1;
+    private String donorName = "", phoneCell = "", emailInfo = "";
+    private byte[] byteImage;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.gift_detailed_layout, container, false);
         getActivity().setTitle("Gift");
 
         if (savedInstanceState != null) {
-            gift_id = savedInstanceState.getInt(ARG_GIFT_ID);
-            donor_id = savedInstanceState.getInt(ARG_DONOR_ID);
-            donor_name = savedInstanceState.getString(ARG_DONOR_NAME);
+            giftId = savedInstanceState.getInt(ARG_GIFT_ID);
+            donorId = savedInstanceState.getInt(ARG_DONOR_ID);
+            donorName = savedInstanceState.getString(ARG_DONOR_NAME);
+            byteImage = savedInstanceState.getByteArray(ARG_DONOR_IMAGE);
         }
 
         return v;
@@ -56,58 +62,68 @@ public class DetailedGift extends Fragment {
         Bundle args = getArguments();
 
         if (args != null) {
-            updateGiftView(args.getInt(ARG_GIFT_ID), args.getInt(ARG_DONOR_ID), args.getString(ARG_DONOR_NAME));
-        } else if (gift_id != -1) {
-            updateGiftView(gift_id, donor_id, donor_name);
+            updateGiftView(args.getInt(ARG_GIFT_ID), args.getInt(ARG_DONOR_ID), args.getString(ARG_DONOR_NAME), args.getByteArray(ARG_DONOR_IMAGE));
+        } else if (giftId != -1) {
+            updateGiftView(giftId, donorId, donorName, byteImage);
         }
     }
 
     /**
      * Sets each text field with the detailed information about the gift
      *
-     * @param gift_id, Gift Identification
+     * @param giftId, Gift Identification
      */
     @SuppressLint("SetTextI18n")
-    private void updateGiftView(final int gift_id, final int donor_id, final String donor_name) {
-        TextView fundTitle = (TextView) getActivity().findViewById(R.id.fundText);
-        TextView date      = (TextView) getActivity().findViewById(R.id.dateText);
-        TextView amount    = (TextView) getActivity().findViewById(R.id.giftAmountText);
-        TextView donorName = (TextView) getActivity().findViewById(R.id.userNameText);
-        TextView email     = (TextView) getActivity().findViewById(R.id.emailText);
-        TextView phone     = (TextView) getActivity().findViewById(R.id.phoneText);
+    private void updateGiftView(final int giftId, final int donorId, final String donorName, final byte[] byteImage) {
+        TextView fundTitleText = (TextView) getActivity().findViewById(R.id.fundText);
+        TextView dateText      = (TextView) getActivity().findViewById(R.id.dateText);
+        TextView amountText    = (TextView) getActivity().findViewById(R.id.giftAmountText);
+        TextView donorNameText = (TextView) getActivity().findViewById(R.id.userNameText);
+        TextView emailText     = (TextView) getActivity().findViewById(R.id.emailText);
+        TextView phoneText     = (TextView) getActivity().findViewById(R.id.phoneText);
+        ImageView donorImage   = (ImageView) getActivity().findViewById(R.id.profilePicImage);
 
 
         LocalDBHandler db = new LocalDBHandler(getActivity());
-        Gift g = db.getGift(gift_id);
-        ContactInfo contactinfo = db.getContactInfoById(donor_id);
+        Gift g = db.getGift(giftId);
+        ContactInfo contactinfo = db.getContactInfoById(donorId);
         db.close();
 
         // Map data fields to layout fields
         RelativeLayout DonorInfo = (RelativeLayout) getActivity().findViewById(R.id.donorInfoLayout);
 
-        email_info = contactinfo.getEmail();
-        phone_cell = contactinfo.getCell();
-        if(phone_cell==null){
-            phone_cell = contactinfo.getPhone();
+        emailInfo = contactinfo.getEmail();
+        phoneCell = contactinfo.getCell();
+        if(phoneCell==null){
+            phoneCell = contactinfo.getPhone();
+        }
+        //set profile picture
+        Bitmap bitmap;
+        if (byteImage != null) {
+            bitmap = BitmapFactory.decodeByteArray(byteImage, 0, byteImage.length);
+            donorImage.setImageBitmap(bitmap);
+        }else{
+            donorImage.setImageResource(R.drawable.profile_picture_standard);
         }
 
-        donorName.setText(donor_name);
-        phone.setText(phone_cell);
-        email.setText(email_info);
+        donorNameText.setText(donorName);
+        phoneText.setText(phoneCell);
+        emailText.setText(emailInfo);
 
-        fundTitle.setText("Fund: " + g.getGiftFund());
-        date.setText(Formatter.getFormattedDate(g.getGiftDate()));
-        amount.setText(Formatter.amountToString(g.getGiftAmount()));
+        fundTitleText.setText("Fund: " + g.getGiftFund());
+        dateText.setText(Formatter.getFormattedDate(g.getGiftDate()));
+        amountText.setText(Formatter.amountToString(g.getGiftAmount()));
 
         //if Donor clicked, send user to detailed donor page
         DonorInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Bundle args = new Bundle();
-                args.putString("donor_name", donor_name);
-                args.putInt("donor_id", donor_id);
-                args.putString("donor_email", email_info);
-                args.putString("donor_phone", phone_cell);
+                args.putString("donor_name", donorName);
+                args.putInt("donor_id", donorId);
+                args.putString("donor_email", emailInfo);
+                args.putString("donor_phone", phoneCell);
+                args.putByteArray("donor_image", byteImage);
 
                 DetailedDonor newFrag = new DetailedDonor();
                 newFrag.setArguments(args);
@@ -119,7 +135,7 @@ public class DetailedGift extends Fragment {
             }
         });
 
-        this.gift_id = gift_id;
+        this.giftId = giftId;
     }
 
 
@@ -130,8 +146,8 @@ public class DetailedGift extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(ARG_GIFT_ID, gift_id);
-        outState.putInt(ARG_DONOR_ID, donor_id);
-        outState.putString(ARG_DONOR_NAME, donor_name);
+        outState.putInt(ARG_GIFT_ID, giftId);
+        outState.putInt(ARG_DONOR_ID, donorId);
+        outState.putString(ARG_DONOR_NAME, donorName);
     }
 }

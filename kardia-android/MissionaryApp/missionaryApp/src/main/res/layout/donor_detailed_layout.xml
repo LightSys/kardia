@@ -50,7 +50,7 @@
             android:id="@+id/emailText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxWidth="150dp"
+            android:maxWidth="200dp"
             android:maxLines="2"
             android:layout_marginRight="@dimen/border_dimen"
             android:layout_marginEnd="@dimen/border_dimen"
