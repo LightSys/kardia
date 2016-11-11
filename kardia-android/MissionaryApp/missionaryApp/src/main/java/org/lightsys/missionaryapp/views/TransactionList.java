@@ -2,12 +2,10 @@ package org.lightsys.missionaryapp.views;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
 import org.lightsys.missionaryapp.R;
 import org.lightsys.missionaryapp.data.Transaction;

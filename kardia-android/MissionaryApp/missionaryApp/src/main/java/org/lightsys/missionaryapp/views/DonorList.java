@@ -1,5 +1,7 @@
 package org.lightsys.missionaryapp.views;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -8,11 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
 import org.lightsys.missionaryapp.R;
 import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
+import org.lightsys.missionaryapp.tools.DonorAdapter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ import java.util.HashMap;
  *
  * Class formats a listview of all donors in database
  */
+
 public class DonorList extends Fragment {
 
     private ArrayList<Donor> donors;
@@ -44,10 +47,11 @@ public class DonorList extends Fragment {
 
         // Map data fields to layout fields
         ArrayList<HashMap<String,String>>itemList = generateListItems();
+        ArrayList<Bitmap> bitmaps= getProfilePictures();
         String[] from = {"donor_name", "email","phone"};
-        int[] to = {R.id.userNameText, R.id.emailText,R.id.phoneText};
+        int[] to = {R.id.userNameText, R.id.emailText, R.id.phoneText};
 
-        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.donor_listview_layout, from, to);
+        DonorAdapter adapter = new DonorAdapter(getActivity(), itemList, R.layout.donor_listview_layout, from, to, bitmaps);
 
         ListView listview = (ListView)v.findViewById(R.id.infoList);
         listview.setAdapter(adapter);
@@ -55,6 +59,32 @@ public class DonorList extends Fragment {
 
         return v;
     }
+
+        /**
+         * collects profile pictures for donors.
+         *
+         * @return Bitmap image for each donor
+         */
+
+        private ArrayList<Bitmap> getProfilePictures(){
+            ArrayList <Bitmap> bitmaps = new ArrayList<Bitmap>();
+            LocalDBHandler db = new LocalDBHandler(getActivity());
+            Bitmap bitmap;
+            for (Donor d : donors) {
+                byte[] bytes = d.getImage();
+
+                if (bytes != null) {
+                    bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                }else{
+                    bitmap = null;
+                }
+
+                bitmaps.add(bitmap);
+            }
+            db.close();
+            return bitmaps;
+        }
+
 
         /**
          * Formats the donor information into a HashMap ArrayList.
@@ -83,7 +113,6 @@ public class DonorList extends Fragment {
                 hm.put("email", email);
                 hm.put("phone", phone);
 
-
                 aList.add(hm);
             }
             return aList;
@@ -99,6 +128,7 @@ public class DonorList extends Fragment {
             Bundle args = new Bundle();
             args.putString("donor_name", donors.get(position).getName());
             args.putInt("donor_id", ID);
+            args.putByteArray("donor_image", donors.get(position).getImage());
 
             LocalDBHandler db = new LocalDBHandler(getActivity());
             ContactInfo contactinfo = db.getContactInfoById(ID);

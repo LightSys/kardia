@@ -10,13 +10,15 @@ public class Donor {
 
     private int    id;
     private String name;
+    private byte[] image;
 
     /* ************************* Construct ************************* */
     public Donor() {}
 
-    public Donor(int id, String name) {
+    public Donor(int id, String name, byte[] image) {
         this.id   = id;
         this.name = name;
+        this.image = image;
     }
 
     /* ************************* Set ************************* */
@@ -24,9 +26,13 @@ public class Donor {
 
     public void setName(String name) { this.name = name; }
 
+    public void setImage(byte[] image) { this.image = image; }
 
     /* ************************* Get ************************* */
     public int    getId()   { return id; }
 
     public String getName() { return name; }
+
+    public byte[] getImage() { return image; }
+
 }

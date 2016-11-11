@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
@@ -100,6 +101,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	//DONOR TABLE
 	private static final String TABLE_DONORS = "donors";
     private static final String COLUMN_LAST_NAME = "last_name";
+    private static final String COLUMN_PROFILE_PICTURE = "profile_picture";
 	//FUND_ACCOUNT_MAP
 	private static final String TABLE_FUND_ACCOUNT_MAP = "fund_account_map";
 	private static final String COLUMN_ACCOUNT_ID = "account_id";
@@ -169,7 +171,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.execSQL(CREATE_ACCOUNTS_TABLE);
 
 		String CREATE_DONOR_TABLE = "CREATE TABLE " + TABLE_DONORS + "("
-				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," + COLUMN_LAST_NAME + " TEXT)";
+				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," + COLUMN_LAST_NAME + " TEXT,"
+                + COLUMN_PROFILE_PICTURE + " BLOB)";
 		db.execSQL(CREATE_DONOR_TABLE);
 
 		String CREATE_NOTES_TABLE = "CREATE TABLE " + TABLE_NOTES + "("
@@ -316,6 +319,20 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(TABLE_DONORS, null, values);
+        db.close();
+    }
+
+    /**
+     * Adds a donor image to the database
+     * @param Id, the Id of the Donor the image belongs to
+     * @param image, the profile picture for the Donor
+     */
+    public void addDonorImage(byte[]image, int Id) throws SQLiteException{
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_PROFILE_PICTURE, image);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(TABLE_DONORS, values, COLUMN_ID + " = " + Id, null);
         db.close();
     }
 
@@ -661,7 +678,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 	/* ************************* Get Queries ************************* */
 
-	/**
+    /**
 	 * Pulls the timestamp from the database
 	 * @return A timestamp of the last update in millisecond form
 	 */
@@ -872,7 +889,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         while (c.moveToNext()) {
 			//set Donor(id, name)
-            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1));
+            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3));
             donors.add(temp);
         }
         c.close();

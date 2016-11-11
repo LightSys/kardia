@@ -3,6 +3,8 @@ package org.lightsys.missionaryapp.tools;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -36,10 +38,13 @@ import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.views.MainActivity;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -98,14 +103,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         // If valid account was connected, close the account activity
         // Otherwise refresh the page the user was on
-        Log.d("DataConnection", "onPostExecute: " + dataContext.getClass() + ": " + MainActivity.class);
         if (dataContext.getClass() == MainActivity.class) {
             if (dataActivity != null) {
                 dataActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         ((MainActivity) dataActivity).refreshCurrentFragment();
-                        Log.d("DataConnection", "run: " +"it did refresh");
                     }
                 });
             }
@@ -232,7 +235,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             return;
         }
 
-        //if updating, send unposted messages and notes to server
+        //if updating, send un-posted messages and notes to server
         if (c != AccountsActivity.class && dataActivity != null) {
             ArrayList<JsonPost> JsonToPost = db.getJsonPosts();
             if (JsonToPost != null) {
@@ -274,6 +277,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 loadContact(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/" + donorID +
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
 
+                loadPicture(GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/" + donorID
+                        + "/ProfilePicture?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), donorID);
             }
             // Loop through notes and pull prayer for info
             for(Note n : db.getNotesForMissionary(Account_ID)){
@@ -502,6 +507,56 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             db.updateContactInfo(temp);
         }
     }
+
+    /**
+     * Loads all profile picture for specific donor
+     * @param result, result of API query for missionaries
+     * @param partnerId, id of the donor
+     */
+    private void loadPicture(String result, int partnerId) {
+        JSONObject json = null;
+        String url = "";
+        Log.d("DataConnection", "loadPicture: " + result.substring(0,7) + partnerId);
+        if (!result.contains("404 Not Found")) {
+            try {
+                json = new JSONObject(result);
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            }
+            if (json == null) {
+                return;
+            }
+            JSONArray tempPicInfo = json.names();
+            for (int i = 0; i < tempPicInfo.length(); i++) {
+                try {
+                    //@id signals a new object, but contains no information on that line
+                    if (!tempPicInfo.getString(i).equals("@id")) {
+                        JSONObject PicInfoObj = json.getJSONObject(tempPicInfo.getString(i));
+                        //checks the type of contact info and puts it in the correct category
+                        try{
+                            url = GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/" + partnerId + "/ProfilePicture/"
+                                    + PicInfoObj.getString("name"));
+                            //url = "https://www.globalbrigades.org/media_gallery/thumb/320/0/Medical_2014_Icon_Small.png";
+                           //url = "https://cdn.pixabay.com/photo/2016/03/28/12/35/cat-1285634_960_720.png";
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        Bitmap image = getBitmapFromURL(url);
+
+                        if (image != null) {
+                            Bitmap resizedImage = getResizedBitmap(image);
+                            byte[] data = getBitmapAsByteArray(resizedImage);
+                            db.addDonorImage(data, partnerId);
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
 
     /**
      * Loads all notes (prayer requests, updates) into database if they are not present
@@ -913,4 +968,41 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
     }
 
+    private static byte[] getBitmapAsByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
+        return outputStream.toByteArray();
+    }
+
+    private Bitmap getResizedBitmap(Bitmap image) {
+        int maxSize = 68;
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float) width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+
+        return Bitmap.createScaledBitmap(image, width, height, true);
+    }
+
+    private static Bitmap getBitmapFromURL(String src) {
+        try {
+            URL url = new URL(src);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            // Log exception
+            return null;
+        }
+    }
 }

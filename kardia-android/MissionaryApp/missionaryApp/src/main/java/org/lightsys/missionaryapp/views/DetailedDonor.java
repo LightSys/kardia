@@ -1,6 +1,8 @@
 package org.lightsys.missionaryapp.views;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -9,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -34,11 +37,13 @@ public class DetailedDonor extends Fragment{
     private final static String ARG_DONOR_NAME  = "donor_name";
     private final static String ARG_DONOR_EMAIL = "donor_email";
     private final static String ARG_DONOR_PHONE = "donor_phone";
+    private final static String ARG_DONOR_IMAGE = "donor_image";
 
-    private int             donor_id;
-    private String          donor_email;
-    private String          donor_phone;
-    private String          donor_name = " ";
+    private int             donorId;
+    private String          donorEmail;
+    private String          donorPhone;
+    private String          donorName = " ";
+    private byte[]          byteImage;
 
     private ArrayList<Gift> gifts = new ArrayList<Gift>();
 
@@ -50,42 +55,47 @@ public class DetailedDonor extends Fragment{
 
         //get donor info passed from donor list or saved instance state
         if(savedInstanceState != null){
-            donor_id    = savedInstanceState.getInt(ARG_DONOR_ID);
-            donor_name  = savedInstanceState.getString(ARG_DONOR_NAME);
-            donor_email = savedInstanceState.getString(ARG_DONOR_EMAIL);
-            donor_phone = savedInstanceState.getString(ARG_DONOR_PHONE);
+            donorId    = savedInstanceState.getInt(ARG_DONOR_ID);
+            donorName  = savedInstanceState.getString(ARG_DONOR_NAME);
+            donorEmail = savedInstanceState.getString(ARG_DONOR_EMAIL);
+            donorPhone = savedInstanceState.getString(ARG_DONOR_PHONE);
+            byteImage = savedInstanceState.getByteArray(ARG_DONOR_IMAGE);
         }else if (args != null) {
-            donor_id    = args.getInt(ARG_DONOR_ID);
-            donor_name  = args.getString(ARG_DONOR_NAME);
-            donor_email = args.getString(ARG_DONOR_EMAIL);
-            donor_phone = args.getString(ARG_DONOR_PHONE);
+            donorId    = args.getInt(ARG_DONOR_ID);
+            donorName  = args.getString(ARG_DONOR_NAME);
+            donorEmail = args.getString(ARG_DONOR_EMAIL);
+            donorPhone = args.getString(ARG_DONOR_PHONE);
+            byteImage = args.getByteArray(ARG_DONOR_IMAGE);
 
         } else{
-            donor_name  = "no name";
-            donor_email = "no email";
-            donor_phone = "no phone";
+            donorName  = "no name";
+            donorEmail = "no email";
+            donorPhone = "no phone";
         }
 
-        TextView name  = (TextView)v.findViewById(R.id.userNameText);
-        TextView email = (TextView)v.findViewById(R.id.emailText);
-        TextView phone = (TextView)v.findViewById(R.id.phoneText);
+        TextView name   = (TextView)v.findViewById(R.id.userNameText);
+        TextView email  = (TextView)v.findViewById(R.id.emailText);
+        TextView phone  = (TextView)v.findViewById(R.id.phoneText);
+        ImageView image = (ImageView)v.findViewById(R.id.profilePicImage);
 
-        if(donor_name.length()>29){
-            donor_name = donor_name.substring(0,28);
-        }
-        if(donor_phone.length()>18){
-            donor_phone = donor_phone.substring(0,17);
+        name.setText(donorName);
+        email.setText(donorEmail);
+        phone.setText(donorPhone);
+        //set profile picture
+        Bitmap bitmap;
+        if (byteImage != null) {
+            bitmap = BitmapFactory.decodeByteArray(byteImage, 0, byteImage.length);
+            image.setImageBitmap(bitmap);
+        }else{
+            image.setImageResource(R.drawable.profile_picture_standard);
         }
 
-        name.setText(donor_name);
-        email.setText(donor_email);
-        phone.setText(donor_phone);
 
         //send email to donor
         email.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent email_send = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", donor_email, null));
+                Intent email_send = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", donorEmail, null));
                 try {
                     startActivity(Intent.createChooser(email_send, "Send email..."));
                 } catch (android.content.ActivityNotFoundException ex) {
@@ -97,7 +107,7 @@ public class DetailedDonor extends Fragment{
         phone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String phoneCall = "+" + donor_phone.replaceAll("[^0-9.]", "");
+                String phoneCall = "+" + donorPhone.replaceAll("[^0-9.]", "");
                 Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneCall, null));
                 try {
                     startActivity(intent);
@@ -109,7 +119,7 @@ public class DetailedDonor extends Fragment{
 
         //pull gift list for donor
         LocalDBHandler db = new LocalDBHandler(getActivity());
-        gifts = db.getGiftsByDonor(donor_id);
+        gifts = db.getGiftsByDonor(donorId);
 
         TextView totalText = (TextView)v.findViewById(R.id.totalAmountText);
         ListView listview = (ListView) v.findViewById(R.id.infoList);
@@ -144,10 +154,11 @@ public class DetailedDonor extends Fragment{
     @Override
     public void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
-        outState.putInt(ARG_DONOR_ID, donor_id);
-        outState.putString(ARG_DONOR_EMAIL, donor_email);
-        outState.putString(ARG_DONOR_NAME, donor_name);
-        outState.putString(ARG_DONOR_PHONE, donor_phone);
+        outState.putInt(ARG_DONOR_ID, donorId);
+        outState.putString(ARG_DONOR_EMAIL, donorEmail);
+        outState.putString(ARG_DONOR_NAME, donorName);
+        outState.putString(ARG_DONOR_PHONE, donorPhone);
+        outState.putByteArray(ARG_DONOR_IMAGE, byteImage);
 
     }
 
@@ -184,6 +195,7 @@ public class DetailedDonor extends Fragment{
             args.putInt(DetailedGift.ARG_GIFT_ID, gifts.get(position).getId());
             args.putInt(DetailedGift.ARG_DONOR_ID, gifts.get(position).getGiftDonorId());
             args.putString(DetailedGift.ARG_DONOR_NAME, gifts.get(position).getGiftDonor());
+            args.putByteArray(DetailedGift.ARG_DONOR_IMAGE, byteImage);
 
             DetailedGift newFrag = new DetailedGift();
             newFrag.setArguments(args);

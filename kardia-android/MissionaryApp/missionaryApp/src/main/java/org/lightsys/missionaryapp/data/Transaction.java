@@ -21,13 +21,13 @@ public class Transaction {
 
     public Transaction(int Id, String name, String transactionFund, int[] transactionAmount,
                        String transactionDate, String transactionDonor, int transactionDonorId) {
-        this.setId(Id);
-        this.setName(name);
-        this.setTransactionFund(transactionFund);
-        this.setTransactionAmount(transactionAmount);
-        this.setTransactionDate(transactionDate);
-        this.setTransactionDonor(transactionDonor);
-        this.setTransactionDonorId(transactionDonorId);
+        this.Id = Id;
+        this.name = name;
+        this.transactionFund = transactionFund;
+        this.transactionAmount = transactionAmount;
+        this.transactionDate = transactionDate;
+        this.transactionDonor = transactionDonor;
+        this.transactionDonorId = transactionDonorId;
     }
 
 	/* ************************* Set ************************* */

@@ -1,32 +1,18 @@
 package org.lightsys.missionaryapp.views;
 
-import android.content.ActivityNotFoundException;
-import android.content.Intent;
-import android.net.Uri;
+
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
-import org.lightsys.missionaryapp.data.Account;
-import org.lightsys.missionaryapp.data.Fund;
-import org.lightsys.missionaryapp.data.Gift;
-import org.lightsys.missionaryapp.data.PrayerLetter;
-import org.lightsys.missionaryapp.tools.DownloadPDF;
-import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
