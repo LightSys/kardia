@@ -201,7 +201,7 @@ public class DetailedDonor extends Fragment{
             newFrag.setArguments(args);
 
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.contentFrame, newFrag);
+            transaction.replace(R.id.contentFrame, newFrag, "DetailedGift");
             transaction.addToBackStack("ToDetailedGiftView");
             transaction.commit();
         }

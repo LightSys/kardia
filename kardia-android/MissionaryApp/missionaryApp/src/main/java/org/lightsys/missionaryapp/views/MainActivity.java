@@ -46,6 +46,7 @@ public class MainActivity extends ActionBarActivity {
 	private CharSequence          mTitle;
 	private Fragment              fragment;
     private int                   accountId = 0;
+    private int                   currentFrag = 0;
 
 	//stuff to automatically refresh the current fragment
 	private final android.os.Handler refreshHandler = new android.os.Handler();
@@ -54,6 +55,16 @@ public class MainActivity extends ActionBarActivity {
 		public void run() {
 		}
 	};
+
+    //if back button is pressed, return home instead of exiting
+    @Override
+    public void onBackPressed() {
+        if (currentFrag != 0)  {
+            selectItem(0);
+        }else {
+            this.finish();
+        }
+    }
 
 	/**
 	 * On first open it will open the account page. If not, starts the fund
@@ -143,7 +154,7 @@ public class MainActivity extends ActionBarActivity {
 			db.close();
 			
 			if(currentTime > originalStamp + DAY_MILLI && originalStamp != -1){
-                new DataConnection(this, this, account).execute("");
+                new DataConnection(this, this, account, currentFrag).execute("");
 			}
 			selectItem(0);
 		}
@@ -160,16 +171,26 @@ public class MainActivity extends ActionBarActivity {
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.main, menu);
-		return super.onCreateOptionsMenu(menu);
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
+        if (currentFragment !=null) {
+            String fragTag = currentFragment.getTag();
+            if (fragTag != null) {
+                if (fragTag.equals("Gift") || fragTag.equals("Donor") || fragTag.equals("GiftTime")) {
+                    MenuInflater inflater = getMenuInflater();
+                    inflater.inflate(R.menu.main, menu);
+                }
+            }
+        }
+        return super.onCreateOptionsMenu(menu);
 	}
-	
+
 	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu){
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-		menu.findItem(R.id.action_search).setVisible(!drawerOpen);
+        if (menu.findItem(R.id.action_search) != null) {
+            menu.findItem(R.id.action_search).setVisible(!drawerOpen);
+        }
 		return super.onPrepareOptionsMenu(menu);
 	}
 	
@@ -229,52 +250,54 @@ public class MainActivity extends ActionBarActivity {
 		Account account = db.getAccount();
 		accountId = account.getId();
 
+
 		db.close();
 		switch(position) {
             //Gifts, Donor, Prayer requests/updates, Funds, Accounts, Options, Refresh
             case 0:
+                currentFrag = position;
                 fragment = new HomePage();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment, "Home")
+                        .commit();
                 break;
             case 1:
+                currentFrag = position;
                 fragment = new GiftList();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment, "Gift")
+                        .commit();
                 break;
             case 2:
+                currentFrag = position;
                 fragment = new DonorList();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment, "Donor")
+                        .commit();
                 break;
             case 3:
+                currentFrag = position;
                 fragment = new NoteList();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment, "Note")
+                        .commit();
                 break;
             case 4:
+                currentFrag = position;
                 fragment = new FundList();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment, "Fund")
+                        .commit();
                 break;
             case 5:
-                fragment = new ReportList();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
-                break;
-            case 6:
+                currentFrag = position;
                 Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
                 startActivity(accounts);
                 break;
-            case 7:
+            case 6:
+                currentFrag = position;
                 Options fragment = new Options();
                 db.close();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment, "Option")
+                        .commit();
                 break;
-            case 8:
-                new DataConnection(this, this, account).execute("");
-                break;
-            case 9:
-                Fragment test = new TransactionList();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, test).commit();
-                break;
-            case 10:
-                Fragment test_2 = new PayrollList();
-                fragmentManager.beginTransaction().replace(R.id.contentFrame, test_2).commit();
+            case 7:
+                new DataConnection(this, this, account, currentFrag).execute("");
                 break;
         }
 
@@ -319,7 +342,9 @@ public class MainActivity extends ActionBarActivity {
 			if (accountId != db.getAccount().getId()) {
 				FragmentManager fragmentManager = getSupportFragmentManager();
 				fragment = new HomePage();
-				fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment).commit();
+				fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment)
+                        .add(android.R.id.content,fragment,"Home")
+                        .commit();
 			}
 		}
 	}

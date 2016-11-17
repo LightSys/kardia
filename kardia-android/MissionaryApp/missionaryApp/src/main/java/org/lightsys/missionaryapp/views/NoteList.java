@@ -8,12 +8,17 @@ import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
@@ -30,6 +35,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static android.content.ContentValues.TAG;
+import static android.support.v7.appcompat.R.styleable.MenuItem;
+
 /**
  * @author Andrew Lockridge
  * created on 6/24/2015.
@@ -41,6 +49,10 @@ public class NoteList extends Fragment {
     private final ArrayList<Object>                 combined = new ArrayList<Object>();
     private final ArrayList<HashMap<String,String>> itemList = new ArrayList<HashMap<String, String>>();
 
+    private LinearLayout addLayout;
+    private ImageButton addButton;
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,11 +61,14 @@ public class NoteList extends Fragment {
 
         getActivity().setTitle("Prayer Requests/Updates");
 
+        addLayout = (LinearLayout)v.findViewById(R.id.addLayout);
+        addButton = (ImageButton)v.findViewById(R.id.addButton);
+
         LocalDBHandler db = new LocalDBHandler(getActivity());
         combined.clear();
         int account_id = db.getAccount().getId();
         ArrayList<Note> notes = db.getNotesForMissionary(account_id);
-        ArrayList<PrayerLetter> letters = db.getPrayerLettersForMissionary(account_id);
+        ArrayList<PrayerLetter>letters = db.getPrayerLetters();
 
         db.close();
 
@@ -95,15 +110,52 @@ public class NoteList extends Fragment {
         listview.setAdapter(adapter);
         listview.setOnItemClickListener(new onNoteClicked());
 
-        Button button = (Button)v.findViewById(R.id.addUpdateButton);
-        button.setVisibility(View.VISIBLE);
-        button.setOnClickListener(new View.OnClickListener() {
+        //add note and add letter buttons
+        addButton.setVisibility(View.VISIBLE);
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent goToPostNote = new Intent(getActivity(), PostNoteActivity.class);
-                startActivity(goToPostNote);
+                if(addLayout.getVisibility() == v.GONE) {
+                    addLayout.setVisibility(View.VISIBLE);
+                    addButton.setRotation(90);
+                }
+                else{
+                   addLayout.setVisibility(View.GONE);
+                   addButton.setRotation(-90);
+                }
+
             }
         });
+
+        Button letterButton = (Button)v.findViewById(R.id.addLetterButton);
+        letterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent createLetter = new Intent(getActivity(), PostLetterActivity.class);
+                startActivity(createLetter);
+            }
+        });
+
+        Button updateButton = (Button)v.findViewById(R.id.addUpdateButton);
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent createNote = new Intent(getActivity(), PostNoteActivity.class);
+                createNote.putExtra("note_type", "Update");
+                startActivity(createNote);
+            }
+        });
+
+        Button requestButton = (Button)v.findViewById(R.id.addRequestButton);
+        requestButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent createNote = new Intent(getActivity(), PostNoteActivity.class);
+                createNote.putExtra("note_type", "Prayer Request");
+                startActivity(createNote);
+            }
+        });
+
         return v;
     }
 
@@ -120,7 +172,7 @@ public class NoteList extends Fragment {
                         DetailedPrayerRequest newFrag = new DetailedPrayerRequest();
                         newFrag.setArguments(args);
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.contentFrame, newFrag);
+                        transaction.replace(R.id.contentFrame, newFrag, "DetailedPrayerRequest");
                         transaction.addToBackStack("ToDetailedRequestView");
                         transaction.commit();
                     } else if (n.getType().equals("Update")) {
@@ -128,7 +180,7 @@ public class NoteList extends Fragment {
                         DetailedUpdate newFrag = new DetailedUpdate();
                         newFrag.setArguments(args);
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.contentFrame, newFrag);
+                        transaction.replace(R.id.contentFrame, newFrag, "DetailedUpdateRequest");
                         transaction.addToBackStack("ToDetailedUpdateView");
                         transaction.commit();
                     }
@@ -152,7 +204,7 @@ public class NoteList extends Fragment {
                     if (!fileFoundInDownloads) {
                         // Download file from API
                         String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-                        String url = "http://" + account.getServerName() + ":800" + letter.getFolder() + "/" +
+                        String url = account.getProtocal() + "//" + account.getServerName() + ":" + account.getPort() + letter.getFolder() + "/" +
                                 letter.getFilename();
                         DownloadPDF download = new DownloadPDF(url, account.getServerName(), account.getAccountName(),
                                 account.getAccountPassword(), directory, letter.getFilename(), getActivity(),
@@ -180,9 +232,7 @@ public class NoteList extends Fragment {
     private void generateListItems(){
 
         int numPrayed;
-        int a=0;
         for(Object obj : combined){
-            a+=1;
             HashMap<String,String> hm = new HashMap<String,String>();
             if (obj.getClass() == Note.class) {
                 Note n = (Note) obj;

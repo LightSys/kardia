@@ -130,7 +130,7 @@ public class CommentActivity extends Activity {
 
                     //refresh the screen after post
                     //this probably won't work because separate threads and what not
-                    new DataConnection(getBaseContext(), null, account);
+                    new DataConnection(getBaseContext(), null, account, -1);
 
                     finish();
                 }

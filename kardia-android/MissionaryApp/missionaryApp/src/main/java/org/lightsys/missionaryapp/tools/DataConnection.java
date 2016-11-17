@@ -9,6 +9,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.lightsys.missionaryapp.R;
 
 import org.apache.http.HttpResponse;
@@ -44,10 +46,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * This class is used to pull JSON files (from the API URLs)
@@ -60,10 +76,13 @@ import java.util.Calendar;
 public class DataConnection extends AsyncTask<String, Void, String> {
 
     private final Account account;
-    private String Host_Name;          // Server name of account
-    private String Password;
-    private String AccountName;        // Username of account
-    private int Account_ID;
+    private String hostName;          // Server name of account
+    private String port;
+    private String protocal;
+    private String password;
+    private String accountName;        // Username of account
+    private int accountId;
+    private  int currentFrag = -1;
     private final Context dataContext; // Context that the DataConnection was executed in
     private final Activity dataActivity;
     private ProgressDialog spinner;
@@ -72,10 +91,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
     private static final String Tag = "DPS";
 
-    public DataConnection(Context context, Activity activity, Account a) {
+    public DataConnection(Context context, Activity activity, Account a, int Frag) {
         super();
         dataContext = context;
         dataActivity = activity;
+        currentFrag = Frag;
         if (activity != null) {
             spinner = new ProgressDialog(dataContext, R.style.MySpinnerStyle);
         }
@@ -108,7 +128,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 dataActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ((MainActivity) dataActivity).refreshCurrentFragment();
+                        if(currentFrag != -1) {
+                            ((MainActivity) dataActivity).selectItem(currentFrag);
+                        }else{
+                            ((MainActivity) dataActivity).refreshCurrentFragment();
+                        }
                     }
                 });
             }
@@ -134,8 +158,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         String test;
         try {
             // Attempt to pull information about the missionary from the API
-            test = GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
+            test = GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/missionary/" + accountId +
                     "/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic");
+            Log.d(TAG, "connectAccount: " + test);
             // Unauthorized signals incorrect username or password
             // 404 not found signals invalid ID
             // Empty or null signals an incorrect server name
@@ -152,7 +177,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     dataActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(dataContext, "Username/Password invalid", Toast.LENGTH_LONG).show();
+                            Toast.makeText(dataContext, "Username/password invalid", Toast.LENGTH_LONG).show();
                         }
                     });
                     return false;
@@ -194,10 +219,15 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      */
     private void DataPull()  {
         db = new LocalDBHandler(dataContext);
-        Host_Name = account.getServerName();
-        Password = account.getAccountPassword();
-        AccountName = account.getAccountName();
-        Account_ID = account.getId();
+        hostName = account.getServerName();
+        port = account.getPort();
+        if (port == null){
+            port = "800";
+        }
+        protocal = account.getProtocal();
+        password = account.getAccountPassword();
+        accountName = account.getAccountName();
+        accountId = account.getId();
 
         Log.i(Tag, "pulling data");
 
@@ -260,37 +290,37 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 // If account is new and valid, add
                 db.addAccount(account);
             }
-            loadPartnerName(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/"
-                    + Account_ID + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=element&cx__res_attrs=basic"));
-            loadDonors(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
+            loadPartnerName(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/partner/Partners/"
+                    + accountId + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=element&cx__res_attrs=basic"));
+            loadDonors(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/missionary/" + accountId +
                     "/Supporters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
-            loadNotes(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
+            loadNotes(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/missionary/" + accountId +
                             "/Notes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
-                    Account_ID);
-            loadPrayerLetters(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/" + Account_ID +
+                    accountId);
+            loadPrayerLetters(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/missionary/" + accountId +
                             "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
 
             // Loop through donors and pull contact info
             db.deleteNewItems();
             for(Donor m : db.getDonors()) {
                 int donorID = m.getId();
-                loadContact(GET("http://" + Host_Name + ":800/apps/kardia/api/partner/Partners/" + donorID +
+                loadContact(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/partner/Partners/" + donorID +
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
 
-                loadPicture(GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/" + donorID
+                loadPicture(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/" + donorID
                         + "/ProfilePicture?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), donorID);
             }
             // Loop through notes and pull prayer for info
-            for(Note n : db.getNotesForMissionary(Account_ID)){
-                loadPrayedFor(GET("http://" + Host_Name +":800/apps/kardia/api/missionary/" + Account_ID + "/Notes/" + n.getNoteId() +
+            for(Note n : db.getNotesForMissionary(accountId)){
+                loadPrayedFor(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/missionary/" + accountId + "/Notes/" + n.getNoteId() +
                         "/Prayers?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), n.getNoteId());
             }
 
-            loadFunds(GET("http://" + Host_Name + ":800/apps/kardia/api/fundmanager/"
-                    + Account_ID + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), Account_ID);
+            loadFunds(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/fundmanager/"
+                    + accountId + "/Funds?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), accountId);
 
             // Loop through funds and pull all gifts
-            for(Fund f : db.getFundsForMissionary(Account_ID)){
+            for(Fund f : db.getFundsForMissionary(accountId)){
 
                 String Fund_Name = "";
                 try {
@@ -304,14 +334,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     int donorID = m.getId();
                     String donorName = m.getName();
 
-                    loadGifts(GET("http://" + Host_Name + ":800/apps/kardia/api/donor/" + donorID + "/Funds/"
+                    loadGifts(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/donor/" + donorID + "/Funds/"
                             + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),fundId,donorName,donorID);
                 }
             }
 
             //load comments
-            loadComments(GET("http://" + Host_Name + ":800/apps/kardia/api/missionary/"
-                    + Account_ID + "/Comments?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
+            loadComments(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/missionary/"
+                    + accountId + "/Comments?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -338,26 +368,27 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     private String GET(String url) throws Exception {
         InputStream inputStream;
         String result;
-
+        Log.d(TAG, "GET: " + url);
         try {
             // Set the user credentials to allow access to API information
             CredentialsProvider credProvider = new BasicCredentialsProvider();
-            credProvider.setCredentials(new AuthScope(Host_Name, 800),
-                    new UsernamePasswordCredentials(AccountName, Password));
+            credProvider.setCredentials(new AuthScope(hostName, 800),
+                    new UsernamePasswordCredentials(accountName, password));
 
             // Set timeout parameters to avoid a long connection attempt to non-valid server
             // Timeout currently set to 10 seconds
             HttpParams params = new BasicHttpParams();
             HttpConnectionParams.setConnectionTimeout(params, 10000);
             HttpConnectionParams.setSoTimeout(params, 10000);
-
             DefaultHttpClient client = new DefaultHttpClient(params);
 
             client.setCredentialsProvider(credProvider);
 
             HttpResponse response = client.execute(new HttpGet(url));
+            Log.d(TAG, "GET: get here4");
 
             inputStream = response.getEntity().getContent();
+            Log.d(TAG, "GET: get here5");
 
             if (inputStream != null) {
                 result = convertInputStreamToString(inputStream);
@@ -365,6 +396,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 result = "";
             }
         } catch (Exception e) {
+            Log.d(TAG, "GET: error here");
             // Rethrow exception for validation server error
             throw new Exception();
         }
@@ -534,17 +566,17 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         JSONObject PicInfoObj = json.getJSONObject(tempPicInfo.getString(i));
                         //checks the type of contact info and puts it in the correct category
                         try{
-                            url = GET("http://" + Host_Name + ":800/apps/kardia/api/crm/Partners/" + partnerId + "/ProfilePicture/"
-                                    + PicInfoObj.getString("name"));
-                            //url = "https://www.globalbrigades.org/media_gallery/thumb/320/0/Medical_2014_Icon_Small.png";
-                           //url = "https://cdn.pixabay.com/photo/2016/03/28/12/35/cat-1285634_960_720.png";
+                            url = protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/" + partnerId + "/ProfilePicture/"
+                                    + PicInfoObj.getString("name");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
 
+
                         Bitmap image = getBitmapFromURL(url);
 
                         if (image != null) {
+                            Log.d(TAG, "loadPicture: " + "inside if");
                             Bitmap resizedImage = getResizedBitmap(image);
                             byte[] data = getBitmapAsByteArray(resizedImage);
                             db.addDonorImage(data, partnerId);
@@ -665,7 +697,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         PrayedFor temp = new PrayedFor();
                         temp.setPrayedForId(prayedForID);
                         temp.setPrayedForComments(PrayedForObj.getString("prayedfor_comments"));
-                        temp.setNoteId(Integer.parseInt(PrayedForObj.getString("note_id")));
+                        temp.setNoteID(Integer.parseInt(PrayedForObj.getString("note_id")));
                         temp.setSupporterId(Integer.parseInt(PrayedForObj.getString("supporter_partner_id")));
                         temp.setSupporterName(PrayedForObj.getString("supporter_partner_name"));
 
@@ -712,10 +744,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         for (int i = 0; i < tempLetters.length(); i++) {
             try{
                 //@id signals a new object, but contains no information on that line
+                Log.d(TAG, "loadPrayerLetters: made it to try");
+
                 if(!tempLetters.getString(i).equals("@id")){
                     JSONObject LetterObj = json.getJSONObject(tempLetters.getString(i));
                     int letterID = Integer.parseInt(LetterObj.getString("letter_id"));
-
                     ArrayList<Integer> currentLetterNoteIDList = new ArrayList<Integer>();
                     for (PrayerLetter p : db.getPrayerLetters()) {
                         currentLetterNoteIDList.add(p.getId());
@@ -739,7 +772,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         String year = date.getString("year");
 
                         temp.setDate(year + "-" + month + "-" + day);
-
+                        Log.d(TAG, "loadPrayerLetters: " + temp.getFilename());
                         db.addPrayerLetter(temp);
                     }
                 }
@@ -777,7 +810,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempFunds.getString(x).equals("@id")){
                     JSONObject fundObj = json.getJSONObject(tempFunds.getString(x));
                     // If fund already in database, skip that fund
-                    ArrayList<String> currentFundNames = db.getFundNames(Account_ID);
+                    ArrayList<String> currentFundNames = db.getFundNames(this.accountId);
 
 
                     if (!currentFundNames.contains(fundObj.getString("name"))) {
@@ -875,7 +908,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setGiftMonth(month_year);
 
                         db.addGift(temp);
-                        db.addGiftAccount(giftId, Account_ID);
+                        db.addGiftAccount(giftId, accountId);
                     }
                 }
             }
@@ -942,7 +975,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setNoteID(noteID);
                         temp.setNoteType(noteType);
                         temp.setDate(comment_date);
-                        temp.setSenderID(Account_ID);
+                        temp.setSenderID(accountId);
                         temp.setComment(comment);
                         temp.setUserName(userName);
 
@@ -998,10 +1031,10 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             connection.setDoInput(true);
             connection.connect();
             InputStream input = connection.getInputStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            return myBitmap;
+            return BitmapFactory.decodeStream(input);
+
         } catch (IOException e) {
-            // Log exception
+            e.printStackTrace();
             return null;
         }
     }

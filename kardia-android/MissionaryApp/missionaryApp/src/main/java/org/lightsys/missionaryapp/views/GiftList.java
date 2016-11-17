@@ -128,6 +128,8 @@ public class GiftList extends Fragment{
 
 		return v;
 	}
+
+
 	
 	/**
 	 * Formats the gift information into a HashMap ArrayList.
@@ -167,9 +169,9 @@ public class GiftList extends Fragment{
 			newFrag.setArguments(args);
 					
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-			transaction.replace(R.id.contentFrame, newFrag);
+			transaction.replace(R.id.contentFrame, newFrag, "DetailedGift");
 			transaction.addToBackStack("ToDetailedGiftView");
-			transaction.commit();
+            transaction.commit();
 		}
 	}
 	

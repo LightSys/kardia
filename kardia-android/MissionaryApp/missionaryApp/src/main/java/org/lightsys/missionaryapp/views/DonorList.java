@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,8 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * @author Andrew Lockridge
@@ -72,6 +75,7 @@ public class DonorList extends Fragment {
             Bitmap bitmap;
             for (Donor d : donors) {
                 byte[] bytes = d.getImage();
+                Log.d(TAG, "getProfilePictures: " + d.getImage());
 
                 if (bytes != null) {
                     bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
@@ -143,7 +147,7 @@ public class DonorList extends Fragment {
             newFrag.setArguments(args);
 
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.contentFrame, newFrag);
+            transaction.replace(R.id.contentFrame, newFrag, "DetailedDonor");
             transaction.addToBackStack("ToDetailedDonorView");
             transaction.commit();
         }

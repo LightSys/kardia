@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,6 +18,8 @@ import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * @author Andrew Cameron
  *
@@ -24,7 +27,7 @@ import org.lightsys.missionaryapp.R;
  */
 public class AccountsActivity extends Activity{
 
-	private EditText accountName, accountPass, serverName, UserId;
+	private EditText accountName, accountPass, serverName, UserId, port;
 	private TextView connectedAccount, server, userName;
 	private Account  account = new Account();
 	private Button   finishButton;
@@ -42,6 +45,7 @@ public class AccountsActivity extends Activity{
 		accountPass          = (EditText)findViewById(R.id.passwordInput);
 		serverName           = (EditText)findViewById(R.id.serverNameInput);
 		UserId               = (EditText)findViewById(R.id.userIdInput);
+        port                 = (EditText) findViewById(R.id.portInput);
 		connectedAccount     = (TextView)findViewById(R.id.connectedHeader);
         server               = (TextView)findViewById(R.id.server);
         userName             = (TextView)findViewById(R.id.userName);
@@ -114,8 +118,10 @@ public class AccountsActivity extends Activity{
 	private void connectAccount(){
 		String aName  = accountName.getText().toString();
 		String aPass  = accountPass.getText().toString();
-		String sName  = serverName.getText().toString();
+        String sName  = serverName.getText().toString();
+        String sPort  = port.getText().toString();
         String dIdStr = UserId.getText().toString();
+        String aProtocal = "http";
 
 		// If any field does not have information provided, set an error in that field
 		boolean allFieldsValid = true;
@@ -131,6 +137,10 @@ public class AccountsActivity extends Activity{
 			serverName.setError("Invalid Server Address");
 			allFieldsValid = false;
 		}
+        if(sPort.equals("")){
+            serverName.setError("Invalid Port");
+            allFieldsValid = false;
+        }
 		if(dIdStr.equals("")){
             UserId.setError("Invalid Donor ID.");
 			allFieldsValid = false;
@@ -158,10 +168,10 @@ public class AccountsActivity extends Activity{
                 return;
             }
         }
-		Account account = new Account(dId, aName, aPass, sName);
+		Account account = new Account(dId, aName, aPass, sName, sPort, aProtocal);
 		// Execute data connection to validate account and pull data if valid
 		// DataConnection will close activity once complete if successful
-		new DataConnection(this, this, account).execute("");
+		new DataConnection(this, this, account, -1).execute("");
 	}
 }
 

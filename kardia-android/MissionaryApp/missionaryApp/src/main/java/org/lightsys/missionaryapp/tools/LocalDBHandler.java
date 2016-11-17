@@ -56,6 +56,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_ACCOUNT_NAME = "accountName";
 	private static final String COLUMN_ACCOUNT_PASSWORD = "accountPassword";
 	private static final String COLUMN_SERVER_NAME = "serverName";
+    private static final String COLUMN_PORT = "port";
+    private static final String COLUMN_PROTOCAL = "protocal";
 	private static final String COLUMN_PARTNER_NAME = "partnerName";
 	//FUND TABLE
 	private static final String TABLE_FUND = "funds";
@@ -167,7 +169,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		String CREATE_ACCOUNTS_TABLE = "CREATE TABLE " + TABLE_ACCOUNTS + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_ACCOUNT_NAME
 				+ " TEXT," + COLUMN_ACCOUNT_PASSWORD + " TEXT,"
-				+ COLUMN_SERVER_NAME + " TEXT," + COLUMN_PARTNER_NAME + " TEXT)";
+				+ COLUMN_SERVER_NAME + " TEXT," + COLUMN_PARTNER_NAME + " TEXT," + COLUMN_PORT + " TEXT,"
+                + COLUMN_PROTOCAL + " TEXT)";
 		db.execSQL(CREATE_ACCOUNTS_TABLE);
 
 		String CREATE_DONOR_TABLE = "CREATE TABLE " + TABLE_DONORS + "("
@@ -300,6 +303,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		values.put(COLUMN_ACCOUNT_PASSWORD, account.getAccountPassword());
 		values.put(COLUMN_SERVER_NAME, account.getServerName());
 		values.put(COLUMN_PARTNER_NAME, account.getPartnerName());
+        values.put(COLUMN_PORT, account.getPort());
+        values.put(COLUMN_PROTOCAL, account.getProtocal());
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_ACCOUNTS, null, values);
@@ -381,7 +386,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_PRAYED_FOR_ID, prayed_for.getPrayedForId());
         values.put(COLUMN_PRAYED_FOR_COMMENTS, prayed_for.getPrayedForComments());
         values.put(COLUMN_PRAYED_FOR_DATE, prayed_for.getPrayedForDate());
-        values.put(COLUMN_NOTE_ID, prayed_for.getNoteId());
+        values.put(COLUMN_NOTE_ID, prayed_for.getNoteID());
         values.put(COLUMN_SUPPORTER_PARTNER_ID, prayed_for.getSupporterId());
         values.put(COLUMN_SUPPORTER_PARTNER_NAME, prayed_for.getSupporterName());
 
@@ -755,6 +760,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			temp.setAccountPassword(c.getString(2));
 			temp.setServerName(c.getString(3));
 			temp.setPartnerName(c.getString(4));
+            temp.setPort(c.getString(5));
+            temp.setProtocal(c.getString(6));
 		}else {
 			temp=null;
 		}
@@ -950,7 +957,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 */
 	public ArrayList<PrayedFor> getPrayedFor() {
 		ArrayList<PrayedFor> prayedFor = new ArrayList<PrayedFor>();
-		String queryString = "SELECT * FROM " + TABLE_PRAYED_FOR +" ORDER BY " + COLUMN_PRAYED_FOR_ID;
+		String queryString = "SELECT * FROM " + TABLE_PRAYED_FOR +" ORDER BY " + COLUMN_PRAYED_FOR_DATE + " DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
@@ -960,7 +967,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			temp.setPrayedForId(Integer.parseInt(c.getString(0)));
 			temp.setPrayedForComments(c.getString(1));
 			temp.setPrayedForDate(c.getString(2));
-			temp.setNoteId(Integer.parseInt(c.getString(3)));
+			temp.setNoteID(Integer.parseInt(c.getString(3)));
 			temp.setSupporterId(Integer.parseInt(c.getString(4)));
 			temp.setSupporterName(c.getString(5));
 
@@ -1421,7 +1428,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	//gets list of comments
 	public ArrayList<Comment> getComments(){
 		ArrayList<Comment> comments = new ArrayList<Comment>();
-		String queryString = "SELECT * FROM " + TABLE_COMMENT + " ORDER BY " + COLUMN_DATE;
+		String queryString = "SELECT * FROM " + TABLE_COMMENT + " ORDER BY " + COLUMN_DATE + " DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +18,15 @@ import org.lightsys.missionaryapp.R;
 import org.lightsys.missionaryapp.data.Comment;
 import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.data.PrayedFor;
+import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.tools.CommentListAdapter;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * @author JoshWorkman
@@ -37,13 +41,14 @@ import java.util.HashMap;
  */
 public class DetailedPrayerRequest extends Fragment{
 
+    private final ArrayList<Object>                 combined = new ArrayList<Object>();
     final static String ARG_REQUEST_ID = "request_id";
     private int         requestId = -1, isSwitched = 0;
     private TextView    supporterList;
     private Note        request;
     private String      namesList = "no one is currently praying for this request";
 
-    private final ArrayList<HashMap<String, String>> commentList = new ArrayList<HashMap<String, String>>();//list of comments for this item
+    private final ArrayList<HashMap<String, String>> itemList = new ArrayList<HashMap<String, String>>();//list of comments for this item
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -157,13 +162,40 @@ public class DetailedPrayerRequest extends Fragment{
         });
 
         //gets list of comments
-        loadComments();
+        ArrayList<PrayedFor> prayers = db.getPrayedFor();
+        ArrayList<Comment> comments = db.getComments();
+        combined.clear();
+        while (!prayers.isEmpty() || !comments.isEmpty()) {
+            // If one is empty, simply add the rest from the other
+            if (comments.isEmpty()) {
+                while(!prayers.isEmpty()) {
+                    combined.add(prayers.get(0));
+                    prayers.remove(0);
+                }
+            } else if (prayers.isEmpty()) {
+                while(!comments.isEmpty()) {
+                    combined.add(comments.get(0));
+                    comments.remove(0);
+                }
+                // If both still contain items, compare dates and add the more recent
+            } else {
+                if(isCommentDateMoreRecent(comments.get(0), prayers.get(0))) {
+                    combined.add(comments.get(0));
+                    comments.remove(0);
+                } else {
+                    combined.add(prayers.get(0));
+                    prayers.remove(0);
+                }
+            }
+        }
+
+        loadListItems();
 
         String[] from = {"userName", "date", "text"};//stuff for the adapter
         int[] to = {R.id.userName,  R.id.dateText, R.id.noteText};//more stuffs for the adapter
-        if (!commentList.isEmpty()){
+        if (!itemList.isEmpty()){
             //if haz comments, set comments to adapter
-            CommentListAdapter adapter = new CommentListAdapter(getActivity(), commentList, from, to);
+            CommentListAdapter adapter = new CommentListAdapter(getActivity(), itemList, from, to);
 
             ListView listview = (ListView)getActivity().findViewById(R.id.commentsList);
             listview.setAdapter(adapter);
@@ -173,18 +205,27 @@ public class DetailedPrayerRequest extends Fragment{
     }
 
     //loads a list of comments on the item
-    private void loadComments() {
-        commentList.clear();
-        LocalDBHandler db = new LocalDBHandler(getActivity());
-        ArrayList<Comment> comments = db.getComments();
+    private void loadListItems() {
+        itemList.clear();
+        for(Object obj : combined){
+            HashMap<String,String> hm = new HashMap<String,String>();
+            if (obj.getClass() == Comment.class) {
+                Comment c = (Comment) obj;
+                if (c.getNoteID() == requestId){
+                    hm.put("UserName", c.getUserName());
+                    hm.put("Date", c.getDate());
+                    hm.put("Text", c.getComment());
+                    itemList.add(hm);
+                }
 
-        for (Comment comment : comments){
-            HashMap<String, String> hm = new HashMap<String, String>();
-            if (comment.getNoteID() == requestId){
-                hm.put("UserName", comment.getUserName());
-                hm.put("Date", comment.getDate());
-                hm.put("Text", comment.getComment());
-                commentList.add(hm);
+            } else {
+                PrayedFor p = (PrayedFor) obj;
+                if (p.getNoteID() == requestId){
+                    hm.put("UserName", p.getSupporterName());
+                    hm.put("Date", p.getPrayedForDate());
+                    hm.put("Text", "Praying");
+                    itemList.add(hm);
+                }
             }
         }
     }
@@ -192,21 +233,21 @@ public class DetailedPrayerRequest extends Fragment{
     /**
      * Updates prayer request to signify it is being prayed for
      */
-    private void updateDbToPrayedFor() {
+    /*private void updateDbToPrayedFor() {
         LocalDBHandler db = new LocalDBHandler(getActivity());
         request = db.getNoteForID(requestId);
         db.updateNote(requestId, request.getNumberPrayed());
         db.close();
-    }
+    }*/
 
     /**
      * Called when returning from notification activity
      */
-    @Override
+    /*@Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         updateDbToPrayedFor();
-    }
+    }*/
 
     /**
      * Used to hold onto the id, in case the user comes back to this page
@@ -216,5 +257,39 @@ public class DetailedPrayerRequest extends Fragment{
     public void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
         outState.putInt(ARG_REQUEST_ID, requestId);
+    }
+
+    /**
+     * Compares a note and prayer letter to see which is more recent
+     * Dates must be "YYYY-MM-DD" format
+     * @param c, comment to be compared
+     * @param p, prayer to be compared
+     * @return true if note is more recent, false if prayer letter is more recent
+     */
+    private boolean isCommentDateMoreRecent(Comment c, PrayedFor p) {
+        int[] commentDate = parseStringDate(c.getDate());
+        int[] prayerDate = parseStringDate(p.getPrayedForDate());
+        for (int i = 0; i < 3; i++) {
+            if (commentDate[i] > prayerDate[i]) {
+                return true;
+            } else if (commentDate[i] < prayerDate[i]) {
+                return false;
+            }
+        }
+        // Only reaches this point if it is the same date, so comments take precedent over prayers
+        return true;
+    }
+    /**
+     * Parses a "-" separated date into array of integers
+     * @param date, date in String format separated by "-"
+     * @return an array of integers representing the string passed
+     */
+    private int[] parseStringDate(String date) {
+        int[] dateInt = new int[3];
+        String[] dateSplitStr = date.split("-");
+        for (int i = 0; i < 3; i++) {
+            dateInt[i] = Integer.parseInt(dateSplitStr[i]);
+        }
+        return dateInt;
     }
 }

@@ -43,6 +43,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * This class is used to pull JSON files (from the API URLs)
  * for a specific account and then format and store the data into the
@@ -125,6 +127,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         // Account details already set in DataPull()
 
         try {
+            Log.d(TAG, "isValidAccount: " + account.getProtocol() + Host_Name + account.getPortNumber());
             // Attempt to pull information about the donor from the API
             test = GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/donor/" + Account_ID +
                     "/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic");

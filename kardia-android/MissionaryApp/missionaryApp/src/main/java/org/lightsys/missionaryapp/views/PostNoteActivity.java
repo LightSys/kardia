@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -17,6 +18,7 @@ import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.tools.DataConnection;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import org.lightsys.missionaryapp.tools.PostJson;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -28,55 +30,47 @@ import java.util.Calendar;
  * allows user to post updates or prayer requests
  */
 public class PostNoteActivity extends Activity {
-    private Spinner  sender, contactType;
+
+    final static String ARG_NOTE_TYPE = "note_type";
+    private String    noteType;
     private EditText noteText, subject;
+    Account account;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.post_note_layout);
+        TextView  sender, contactType;
 
-        sender        = (Spinner) findViewById(R.id.senderName);
+        sender        = (TextView) findViewById(R.id.senderName);
         subject       = (EditText)findViewById(R.id.userNameText);
-        contactType   = (Spinner) findViewById(R.id.typeSpinner);
         noteText      = (EditText)findViewById(R.id.noteText);
+        contactType   = (TextView)findViewById(R.id.typeText);
         Button submit = (Button)  findViewById(R.id.submitButton);
         Button cancel = (Button)  findViewById(R.id.cancelButton);
 
+        noteType = getIntent().getStringExtra(ARG_NOTE_TYPE);
+
+
         if (getActionBar() != null) {
-            getActionBar().setTitle("Send Update/Prayer Request");
+            getActionBar().setTitle("Send " + noteType);
         }
 
-        // Load list of user names from accounts for user to choose who message is from
+        // Load user names that message is from
         final LocalDBHandler db = new LocalDBHandler(this);
-        ArrayList<String> partnerNames = new ArrayList<String>();
-        Account account = db.getAccount();
-
-        String aPartnerName = account.getPartnerName();
-        if (aPartnerName != null) {
-            partnerNames.add(aPartnerName);
-        }
-        // If no partner names are found, put "Unknown" as the sender, this should be rare
-        // The sender can then identify themselves in the message
-        if (partnerNames.isEmpty()) {
-            partnerNames.add("Unknown");
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                R.layout.support_simple_spinner_dropdown_item, partnerNames);
-        adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item);
-        sender.setAdapter(adapter);
-
+        account = db.getAccount();
+        final String senderStr = account.getAccountName();
+        sender.setText(senderStr);
+        contactType.setText(noteType);
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
 
-                String senderStr  = sender.getSelectedItem().toString();
                 String messageStr = noteText.getText().toString();
                 String subjectStr = subject.getText().toString();
-                String noteType   = contactType.getSelectedItem().toString();
                 Account account;
 
                 //find account
@@ -121,7 +115,7 @@ public class PostNoteActivity extends Activity {
                         newNote.put("s_modified_by",account.getAccountName() + "");
                         if (noteType.equals("Update")) {
                             newNote.put("e_contact_history_type", 7);
-                        }else if (noteType.equals("Pray")){
+                        }else if (noteType.equals("Prayer Request")){
                             newNote.put("e_contact_history_type",5);
                         }
 
@@ -132,7 +126,7 @@ public class PostNoteActivity extends Activity {
 
                     //refresh the screen after post
                     //this probably won't work because separate threads and what not
-                    new DataConnection(getBaseContext(), null, account);
+                    new DataConnection(getBaseContext(), null, account, -1);
 
                     finish();
                 }

@@ -85,9 +85,10 @@ public class Search extends Fragment{
         fundArray  = db.getFundNames(db.getAccount().getId());
         db.close();
 
-        ArrayAdapter donorAdapter = new ArrayAdapter(getActivity(), R.layout.search_listview_item, donorArray);
+
+        ArrayAdapter<String> donorAdapter = new ArrayAdapter<String>(getActivity(), R.layout.search_listview_item, donorArray);
         donorList.setAdapter(donorAdapter);
-        ArrayAdapter fundAdapter = new ArrayAdapter(getActivity(), R.layout.search_listview_item, fundArray);
+        ArrayAdapter<String> fundAdapter = new ArrayAdapter<String>(getActivity(), R.layout.search_listview_item, fundArray);
         fundList.setAdapter(fundAdapter);
 
 		dateRange.setOnClickListener(new OnClickListener(){
@@ -363,9 +364,9 @@ public class Search extends Fragment{
 		detailedgift.setArguments(args);
 		
 		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.replace(R.id.contentFrame, detailedgift);
+		transaction.replace(R.id.contentFrame, detailedgift, "DetailedGift");
 		transaction.addToBackStack("ToDetailedGiftView");
-		transaction.commit();
+        transaction.commit();
 	}
 
 	private void sendToGiftList(ArrayList<Gift> giftList, ArrayList<Fund> fundList){
@@ -387,9 +388,9 @@ public class Search extends Fragment{
 		gl.setArguments(args);
 
 		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.replace(R.id.contentFrame, gl);
-		transaction.addToBackStack("ToGiftList");
-		transaction.commit();
+		transaction.replace(R.id.contentFrame, gl, "Gift")
+                .addToBackStack("ToGiftList")
+                .commit();
 	}
 
 	private void changeDateRange(){

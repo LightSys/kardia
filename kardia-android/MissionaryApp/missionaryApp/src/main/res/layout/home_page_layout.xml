@@ -13,23 +13,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         android:gravity="center_horizontal"
-        android:textSize="@dimen/large_header_dimen"
+        android:textSize="@dimen/welcome_header_dimen"
         android:textStyle="bold"
         android:textColor="#000"
         android:visibility="gone"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_above="@+id/welcomeList"
-        android:background="#000030"/>
-
-    <ListView
-        android:id="@+id/welcomeList"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        style="@style/homeNavigationItems"/>
 </RelativeLayout>
 

@@ -31,13 +31,15 @@
                     android:text="@string/from"
                     />
 
-                <Spinner
+                <TextView
                     android:id="@+id/senderName"
                     android:layout_width="235dp"
                     android:layout_height="40dp"
-                    android:gravity="center"
+                    android:gravity="left"
                     android:layout_marginLeft="40dp"
-                    android:layout_marginStart="40dp" />
+                    android:layout_marginStart="40dp"
+                    android:textSize="@dimen/body_dimen"
+                    />
 
             </TableRow>
 
@@ -79,6 +81,7 @@
                 android:layout_marginTop="@dimen/border_dimen_lg"
                 android:layout_marginLeft="@dimen/border_dimen_lg"
                 android:layout_marginStart="@dimen/border_dimen_lg">
+
 
             <TextView
                     android:text = "@string/type_contact"
