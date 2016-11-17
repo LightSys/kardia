@@ -133,9 +133,9 @@ public class GiftTimePeriodList extends Fragment {
 		gList.setArguments(GiftArgs);
 		
 		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.replace(R.id.contentFrame, gList);
-		transaction.addToBackStack("ToGiftList");
-		transaction.commit();
+		transaction.replace(R.id.contentFrame, gList, "Gift")
+                .addToBackStack("ToGiftList")
+                .commit();
 	}
 
 	/**

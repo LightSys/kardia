@@ -12,19 +12,19 @@ public class PrayedFor {
     private int    prayedForId;
     private String prayedForComments;
     private String date;
-    private int    noteId;
+    private int    noteID;
     private int    supporterId;
     private String supporterName;
 
     /* ************************* Construct ************************* */
     public PrayedFor() {}
 
-    public PrayedFor(int prayedForId, String prayedForComments, String date, int noteId,
+    public PrayedFor(int prayedForId, String prayedForComments, String date, int noteID,
                      int supporterId, String supporterName) {
         this.prayedForId       = prayedForId;
         this.prayedForComments = prayedForComments;
         this.date              = date;
-        this.noteId            = noteId;
+        this.noteID            = noteID;
         this.supporterId       = supporterId;
         this.supporterName     = supporterName;
 
@@ -38,7 +38,7 @@ public class PrayedFor {
 
     public void setPrayedForDate(String date)          { this.date = date; }
 
-    public void setNoteId(int noteId)                  { this.noteId = noteId; }
+    public void setNoteID(int noteID)                  { this.noteID = noteID; }
 
     public void setSupporterId(int supporterId)        { this.supporterId = supporterId; }
 
@@ -52,7 +52,7 @@ public class PrayedFor {
 
     public String getPrayedForDate()     { return date; }
 
-    public int    getNoteId()            { return noteId; }
+    public int    getNoteID()            { return noteID; }
 
     public int    getSupporterId()       { return supporterId; }
 

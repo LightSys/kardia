@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:enabled="true"
             android:text="@string/choose_date"
-            android:textSize="@dimen/header_dimen_lg"/>
+            android:textSize="@dimen/body_dimen_lg"/>
 
         <TextView
             android:id="@+id/dashTextView"

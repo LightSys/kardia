@@ -1,6 +1,7 @@
 package org.lightsys.missionaryapp.tools;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleAdapter;
@@ -8,6 +9,8 @@ import android.widget.SimpleAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * @author Judah Sistrunk
@@ -42,7 +45,6 @@ public class CommentListAdapter extends SimpleAdapter {
         }
 
         final Map<String, String> pieces = data.get(position);
-
         rowView.setUserName(pieces.get("UserName"));
         rowView.setDateText(Formatter.getFormattedDate(pieces.get("Date")));
         rowView.setCommentText(pieces.get("Text"));

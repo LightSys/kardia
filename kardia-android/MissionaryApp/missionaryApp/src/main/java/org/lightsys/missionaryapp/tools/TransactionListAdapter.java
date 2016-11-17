@@ -21,8 +21,6 @@ import java.util.Map;
 
 public class TransactionListAdapter extends SimpleAdapter {
 
-    private final Context mContext;
-    private final int id;
     private final List<? extends Map<String,String>> itemList;
 
     public TransactionListAdapter(Context context, List<? extends Map<String,String>> data,
@@ -30,8 +28,6 @@ public class TransactionListAdapter extends SimpleAdapter {
     {
         super(context, data, resource, from, to);
         this.itemList = data;
-        this.mContext = context;
-        this.id = resource;
     }
 
     @Override

@@ -7,12 +7,9 @@
         <item>Donors</item>
         <item>Prayer Requests/Updates</item>
         <item>Funds</item>
-        <item>Reports</item>
         <item>Accounts</item>
         <item>Options</item>
         <item>Refresh</item>
-        <item>Transactions</item>
-        <item>Payroll</item>
     </string-array>
     <string-array name="contactTypes">
         <item>Update</item>
@@ -40,12 +37,16 @@
         <item>Year</item>
     </string-array>
     <string name="app_name">Kardia Missionary</string>
-    <string name="add_note_button">Add Update/Prayer Request</string>
+    <string name="add_update_button">Add Update</string>
+    <string name="add_request_button">Add Prayer Request</string>
+    <string name="add_letter_button"> Add Letter</string>
+    <string name="add_button">Opens Add Menu</string>
     <string name="accounts_page">Manage Accounts</string>
     <string name="change_account">Change Account:</string>
     <string name="password">password</string>
     <string name="username">username</string>
     <string name="server_name">server name</string>
+    <string name="port">port</string>
     <string name="done">Done</string>
     <string name="connect">Connect</string>
     <string name="user_id_ex_100001">User ID (ex. 100001)</string>
@@ -78,6 +79,8 @@
     <string name="comment">Comment</string>
     <string name="comment_prompt">Enter your comment</string>
     <string name="note_prompt">Enter your update/prayer request</string>
+    <string name="letter_prompt">Enter your letter</string>
+    <string name="header_prompt">Enter header</string>
     <string name="userID_Prompt">Enter Donor ID</string>
     <string name="original_message_label">Original Post</string>
     <string name="profile_pic_description">Profile Picture</string>

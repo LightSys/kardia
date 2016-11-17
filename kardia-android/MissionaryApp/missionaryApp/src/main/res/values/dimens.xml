@@ -1,5 +1,6 @@
 <resources>
     <!-- Default text dimensions -->
+    <dimen name="welcome_header_dimen">40sp</dimen>
     <dimen name="large_header_dimen">28sp</dimen>
     <dimen name="user_name_header_dimen">24sp</dimen>
     <dimen name="header_dimen">22sp</dimen>
@@ -9,6 +10,7 @@
     <dimen name="small_subtitle_dimen">14sp</dimen>
 
     <!-- Large text dimensions -->
+    <dimen name="welcome_header_dimen_lg">45sp</dimen>
     <dimen name="large_header_dimen_lg">30sp</dimen>
     <dimen name="user_name_header_dimen_lg">26sp</dimen>
     <dimen name="header_dimen_lg">24sp</dimen>

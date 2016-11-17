@@ -31,13 +31,14 @@
                     android:text="@string/from"
                     />
 
-                <Spinner
+                <TextView
                     android:id="@+id/senderName"
                     android:layout_width="260dp"
                     android:layout_height="40dp"
-                    android:gravity="center"
+                    android:gravity="start"
                     android:layout_marginLeft="40dp"
-                    android:layout_marginStart="40dp" />
+                    android:layout_marginStart="40dp"
+                    android:textSize="@dimen/body_dimen_lg"/>
 
             </TableRow>
 
@@ -59,7 +60,7 @@
                     android:textSize="@dimen/body_dimen_lg"/>
 
                 <EditText
-                    android:id="@+id/userNameText"
+                    android:id="@+id/subjectText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
@@ -86,12 +87,14 @@
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/body_dimen_lg" />
 
-                <Spinner
-                    android:id="@+id/typeSpinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:entries="@array/contactTypes"
-                    android:focusable="false" />
+                <TextView
+                    android:id="@+id/typeText"
+                    android:layout_width="260dp"
+                    android:layout_height="40dp"
+                    android:gravity="start"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginStart="40dp"
+                    android:textSize="@dimen/body_dimen_lg" />
             </TableRow>
 
             <EditText

@@ -120,9 +120,9 @@ public class FundList extends Fragment{
 			newFrag.setArguments(args);
 
 			FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-			transaction.replace(R.id.contentFrame, newFrag);
-			transaction.addToBackStack("ToGiftTimePeriodList");
-			transaction.commit();
+			transaction.replace(R.id.contentFrame, newFrag, "GiftTime")
+                    .addToBackStack("ToGiftTimePeriodList")
+                    .commit();
 		}
 	}
 

@@ -237,7 +237,7 @@ public class PostJson extends AsyncTask<String, Void, String> {
 
         if (success) {
             Toast.makeText(context, "Data posted successfully!", Toast.LENGTH_SHORT).show();
-            DataConnection connection = new DataConnection(context, null, account);
+            DataConnection connection = new DataConnection(context, null, account, -1);
             connection.execute();
         }
         else {

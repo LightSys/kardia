@@ -15,16 +15,20 @@ public class Account {
 	private String accountName;
 	private String accountPassword;
 	private String serverName;
+    private String port;
+    private String protocal;
 	private String partnerName;     //Name used for sending messages, different than accountName
 
     /* ************************* Construct ************************* */
     public Account() {}
 	
-	public Account(int id, String AccountName, String AccountPassword, String ServerName) {
+	public Account(int id, String AccountName, String AccountPassword, String ServerName, String port, String protocal) {
 		this.setId(id);
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
 		this.setServerName(ServerName);
+        this.setPort(port);
+        this.setProtocal(protocal);
 	}
 
 	/* ************************* Set ************************* */
@@ -36,6 +40,10 @@ public class Account {
 
 	public void setServerName(String serverName)    { this.serverName = serverName; }
 
+    public void setPort(String port)                { this.port = port; }
+
+    public void setProtocal(String protocal)        { this.protocal = protocal; }
+
 	public void setPartnerName(String name)         { partnerName = name; }
 
 	/* ************************* Get ************************* */
@@ -46,6 +54,10 @@ public class Account {
 	public String getAccountPassword() { return accountPassword; }
 
 	public String getServerName()      { return serverName; }
+
+    public String getPort()            { return port; }
+
+    public String getProtocal()       { return protocal; }
 
 	public String getPartnerName()     { return partnerName; }
 

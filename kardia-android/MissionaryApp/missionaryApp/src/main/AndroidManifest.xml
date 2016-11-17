@@ -45,6 +45,11 @@
             android:label="Post Note">
         </activity>
 
+        <activity
+            android:name=".views.PostLetterActivity"
+            android:label="Post Letter">
+        </activity>
+
         <activity android:name="org.lightsys.missionaryapp.views.CommentActivity"
             android:label="Post Comment">
         </activity>

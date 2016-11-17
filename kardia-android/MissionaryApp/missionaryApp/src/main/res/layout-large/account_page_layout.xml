@@ -100,9 +100,9 @@
         android:id="@+id/serverNameInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="2dp"
         android:layout_below="@id/passwordInput"
-        android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/server_name"
         android:maxLines="1"
@@ -110,11 +110,24 @@
         android:textSize="@dimen/body_dimen_lg"/>
 
     <EditText
+        android:id="@+id/portInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="2dp"
+        android:layout_below="@id/serverNameInput"
+        android:ems="10"
+        android:hint="@string/port"
+        android:maxLines="1"
+        android:text = "800"
+        android:textSize="@dimen/body_dimen_lg"/>
+
+    <EditText
         android:id="@+id/userIdInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:layout_below="@id/serverNameInput"
+        android:layout_below="@id/portInput"
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/user_id_ex_100001"
