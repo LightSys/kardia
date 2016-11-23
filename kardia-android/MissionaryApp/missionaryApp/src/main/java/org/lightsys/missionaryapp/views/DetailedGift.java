@@ -45,6 +45,8 @@ public class DetailedGift extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.gift_detailed_layout, container, false);
         getActivity().setTitle("Gift");
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         if (savedInstanceState != null) {
             giftId = savedInstanceState.getInt(ARG_GIFT_ID);

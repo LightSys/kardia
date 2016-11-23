@@ -6,8 +6,11 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.support.v4.app.Fragment;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -24,6 +27,9 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.zip.Inflater;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * @author Laura DeOtte
@@ -33,11 +39,11 @@ import java.util.HashMap;
  */
 public class DetailedDonor extends Fragment{
 
-    private final static String ARG_DONOR_ID    = "donor_id";
-    private final static String ARG_DONOR_NAME  = "donor_name";
-    private final static String ARG_DONOR_EMAIL = "donor_email";
-    private final static String ARG_DONOR_PHONE = "donor_phone";
-    private final static String ARG_DONOR_IMAGE = "donor_image";
+    final static String ARG_DONOR_ID    = "donor_id";
+    final static String ARG_DONOR_NAME  = "donor_name";
+    final static String ARG_DONOR_EMAIL = "donor_email";
+    final static String ARG_DONOR_PHONE = "donor_phone";
+    final static String ARG_DONOR_IMAGE = "donor_image";
 
     private int             donorId;
     private String          donorEmail;
@@ -49,6 +55,8 @@ public class DetailedDonor extends Fragment{
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.donor_detailed_layout, container, false);
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         getActivity().setTitle("Donor");
         Bundle args = getArguments();

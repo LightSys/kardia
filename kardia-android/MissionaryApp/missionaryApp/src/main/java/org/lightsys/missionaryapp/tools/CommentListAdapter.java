@@ -45,9 +45,15 @@ public class CommentListAdapter extends SimpleAdapter {
         }
 
         final Map<String, String> pieces = data.get(position);
+        if (pieces.get("Text").equals("PrayedForNotice"))
+            rowView.setCommentText(pieces.get("UserName") + " is praying for this request");
+        else
+            rowView.setCommentText(pieces.get("Text"));
+
+
         rowView.setUserName(pieces.get("UserName"));
         rowView.setDateText(Formatter.getFormattedDate(pieces.get("Date")));
-        rowView.setCommentText(pieces.get("Text"));
+        rowView.setPrayer(pieces.get("Text").equals("PrayedForNotice"));
 
         return rowView;
     }

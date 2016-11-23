@@ -1,72 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/noise_blue_repeat" >
 
-    <RelativeLayout
-        android:id="@+id/donorInfoLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/profilePicImage"
-            android:contentDescription="@string/profile_pic_description"
-            android:layout_width="68dp"
-            android:layout_height="68dp"
-            android:layout_margin="10dp"
-            android:layout_centerVertical="true"
-            android:src="@drawable/prayer_letter_icon"/>
-
-        <TextView
-            android:id="@+id/userNameText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxWidth="250dp"
-            android:maxLines="2"
-            android:layout_toRightOf="@id/profilePicImage"
-            android:layout_toEndOf="@id/profilePicImage"
-            android:layout_centerVertical="true"
-            android:textSize="@dimen/user_name_header_dimen"/>
-
-        <TextView
-            android:id="@+id/phoneText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxWidth="120dp"
-            android:maxLines="1"
-            android:layout_marginRight="17dp"
-            android:layout_marginEnd="17dp"
-            android:layout_alignTop="@id/profilePicImage"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:textSize="@dimen/contact_dimen_lg"
-            tools:ignore="RelativeOverlap"/>
-
-        <TextView
-            android:id="@+id/emailText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxWidth="150dp"
-            android:maxLines="2"
-            android:layout_marginRight="@dimen/border_dimen"
-            android:layout_marginEnd="@dimen/border_dimen"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignBottom="@+id/profilePicImage"
-            android:textSize="@dimen/contact_dimen_lg"
-            tools:ignore="RelativeOverlap"/>
-    </RelativeLayout>
+    <include
+        android:id = "@+id/donorInfoLayout"
+        layout="@layout/donor_listview_layout"/>
 
     <View
         android:id="@+id/donorInfoDivider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@id/donorInfoLayout"
+        android:layout_below="@+id/donorInfoLayout"
         android:background="#000030" />
 
     <TextView
