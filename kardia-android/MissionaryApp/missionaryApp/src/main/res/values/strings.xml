@@ -36,7 +36,13 @@
         <item>Month</item>
         <item>Year</item>
     </string-array>
+    <string-array name="search_name_options">
+        <item>Name</item>
+        <item>First Name</item>
+        <item>Last Name</item>
+    </string-array>
     <string name="app_name">Kardia Missionary</string>
+    <string name="app_name_2">2 Kardia Missionary</string>
     <string name="add_update_button">Add Update</string>
     <string name="add_request_button">Add Prayer Request</string>
     <string name="add_letter_button"> Add Letter</string>
@@ -61,6 +67,9 @@
     <string name="choose_donor">Choose Donor</string>
     <string name="_">" - "</string>
     <string name="by_amount">By Amount</string>
+    <string name="by_date">By Date</string>
+    <string name="by_name">By Name</string>
+    <string name="enter_name">Name</string>
     <string name="amount_range">Amount Range</string>
     <string name="by_donor">By Donor</string>
     <string name="by_fund">By Fund</string>

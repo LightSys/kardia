@@ -33,6 +33,10 @@ import static android.content.ContentValues.TAG;
 
 public class DonorList extends Fragment {
 
+    final static String ARG_DONOR_ID = "donor_id";
+
+    private ArrayList<Integer> donorId = new ArrayList<Integer>();
+
     private ArrayList<Donor> donors;
     private ArrayList<ContactInfo> contact;
 
@@ -41,8 +45,25 @@ public class DonorList extends Fragment {
 
         LocalDBHandler db = new LocalDBHandler(getActivity());
 
-        donors  = db.getDonors();
-        contact = db.getContactInfo();
+        Bundle args = getArguments();
+        //get donor info passed from donor list or saved instance state
+        if(savedInstanceState != null){
+            donorId = savedInstanceState.getIntegerArrayList(ARG_DONOR_ID);
+        }else if (args != null) {
+            donorId = args.getIntegerArrayList(ARG_DONOR_ID);
+        } else{
+            donorId = null;
+        }
+
+        if (donorId == null) {
+            donors = db.getDonors();
+            contact = db.getContactInfo();
+        }else{
+            donors = db.getDonorsById(donorId);
+            contact = db.getContactInfoById(donorId);
+        }
+
+
         db.close();
 
         View v = inflater.inflate(R.layout.activity_main_layout, container, false);

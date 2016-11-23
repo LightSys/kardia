@@ -2,6 +2,7 @@ package org.lightsys.missionaryapp.tools;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -16,6 +17,7 @@ import org.lightsys.missionaryapp.R;
 public class CommentListLayout extends RelativeLayout {
 
     private final TextView userNameView, dateView, textView;
+    private final ImageView imageView;
 
     public CommentListLayout(Context context) {
         super(context);
@@ -23,6 +25,7 @@ public class CommentListLayout extends RelativeLayout {
         userNameView = (TextView)findViewById(R.id.userName);
         dateView     = (TextView)findViewById(R.id.dateText);
         textView     = (TextView)findViewById(R.id.noteText);
+        imageView    = (ImageView)findViewById(R.id.prayingImage);
 
     }
 
@@ -33,5 +36,14 @@ public class CommentListLayout extends RelativeLayout {
     public void setDateText(String date)    {dateView.setText(date);}
 
     public void setCommentText(String text) {textView.setText(text);}
+
+    public void setPrayer(boolean pray) {
+        if (pray) {
+            imageView.setVisibility(VISIBLE);
+            imageView.setImageDrawable(getResources().getDrawable(R.drawable.active_praying_hands_icon));
+        }else{
+            imageView.setVisibility(GONE);
+        }
+    }
 
 }

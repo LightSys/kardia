@@ -20,6 +20,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -172,6 +173,7 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
+        Log.d("Main - menu create", "onCreateOptionsMenu: " + "got to menu create");
         if (currentFragment !=null) {
             String fragTag = currentFragment.getTag();
             if (fragTag != null) {
@@ -179,6 +181,8 @@ public class MainActivity extends ActionBarActivity {
                     MenuInflater inflater = getMenuInflater();
                     inflater.inflate(R.menu.main, menu);
                 }
+            }else{
+                menu.clear();
             }
         }
         return super.onCreateOptionsMenu(menu);
@@ -219,12 +223,29 @@ public class MainActivity extends ActionBarActivity {
 			return true;
 		}
 		//Handle App search
-		switch(item.getItemId()){
-			case R.id.action_search:
-				setTitle("Gift Search");
-				fragment = new Search();
+        int num = -1;
+        String fragTag = getSupportFragmentManager().findFragmentById(R.id.contentFrame).getTag();
+        if (fragTag.equals("Donor")){
+            num = 0;
+        }else if (fragTag.equals("Gift") || (fragTag.equals("GiftTime"))){
+            num=1;
+        }
+        Bundle args = new Bundle();
+		switch(num){
+			case 0:
+				setTitle("Donor Search");
+				fragment = new DonorSearch();
+                fragment.setArguments(args);
 				getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment).commit();
 				break;
+            case 1:
+                setTitle("Gift Search");
+                fragment = new GiftSearch();
+                fragment.setArguments(args);
+                getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                break;
+            case -1:
+                break;
 		}
 		
 		return super.onOptionsItemSelected(item);

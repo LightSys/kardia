@@ -896,7 +896,30 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         while (c.moveToNext()) {
 			//set Donor(id, name)
-            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3));
+            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), null, null);
+            donors.add(temp);
+        }
+        c.close();
+        db.close();
+        return donors;
+    }
+
+    /**
+     * Pulls donors with correct Ids from the database
+     * @param donorId, ArrayList of IDs for the donors to be selected
+     * @return a list donors as an ArrayList of Donor Objects ordered alphabetically
+     */
+    public ArrayList<Donor> getDonorsById(ArrayList<Integer> donorId) {
+        ArrayList<Donor> donors = new ArrayList<Donor>();
+        String queryString = "SELECT * FROM " + TABLE_DONORS + " WHERE " + COLUMN_ID + " IN " + donorId
+                + "ORDER BY " + COLUMN_LAST_NAME;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        while (c.moveToNext()) {
+            //set Donor(id, name)
+            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), null, null);
             donors.add(temp);
         }
         c.close();
@@ -1093,6 +1116,29 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         return contactInfoList;
     }
 
+    /**
+     * Pulls contact info for all donors from the database
+     * @return contact info as an ArrayList of ContactInfo Objects ordered by donor id
+     */
+
+    public ArrayList<ContactInfo> getContactInfoById(ArrayList<Integer> donorId) {
+        ArrayList<ContactInfo> contactInfoList = new ArrayList<ContactInfo>();
+        String queryString = "SELECT * FROM " + TABLE_CONTACT_INFO + " WHERE "
+                + COLUMN_ID + " IN " + donorId + " ORDER BY " + COLUMN_ID;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        while (c.moveToNext()) {
+            //set ContactInfo(partner id, email, phone, cell)
+            ContactInfo temp = new ContactInfo(Integer.parseInt(c.getString(0)), c.getString(1),
+                    c.getString(2), c.getString(3));
+            contactInfoList.add(temp);
+        }
+        c.close();
+        db.close();
+        return contactInfoList;
+    }
 	/**
 	 * Pulls all prayer letters from the database for missionary
 	 * @param missionary_id id for missionary
