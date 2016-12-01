@@ -63,21 +63,25 @@ public class AccountsActivity extends Activity{
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				new AlertDialog.Builder(AccountsActivity.this)
-						.setCancelable(false)
-						.setTitle("Connect Account")
-						.setMessage("This action will remove current account data. Continue?")
-						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								connectAccount();
-							}
-						})
-						.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-							}
-						})
-						.setIcon(android.R.drawable.ic_dialog_alert)
-						.show();
+                if (account != null) {
+                    new AlertDialog.Builder(AccountsActivity.this)
+                            .setCancelable(false)
+                            .setTitle("Connect Account")
+                            .setMessage("This action will remove current account data. Continue?")
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    connectAccount();
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                }else{
+                    connectAccount();
+                }
 			}
 		});
 

@@ -1,6 +1,7 @@
 package org.lightsys.missionaryapp.views;
 
 import org.lightsys.missionaryapp.data.ContactInfo;
+import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
@@ -88,17 +89,14 @@ public class DetailedGift extends Fragment {
 
         LocalDBHandler db = new LocalDBHandler(getActivity());
         Gift g = db.getGift(giftId);
-        ContactInfo contactinfo = db.getContactInfoById(donorId);
+        Donor contactinfo = db.getDonorInfoById(donorId);
         db.close();
 
         // Map data fields to layout fields
         RelativeLayout DonorInfo = (RelativeLayout) getActivity().findViewById(R.id.donorInfoLayout);
 
         emailInfo = contactinfo.getEmail();
-        phoneCell = contactinfo.getCell();
-        if(phoneCell==null){
-            phoneCell = contactinfo.getPhone();
-        }
+        phoneCell = contactinfo.getPhone();
         //set profile picture
         Bitmap bitmap;
         if (byteImage != null) {
@@ -123,8 +121,6 @@ public class DetailedGift extends Fragment {
                 Bundle args = new Bundle();
                 args.putString("donor_name", donorName);
                 args.putInt("donor_id", donorId);
-                args.putString("donor_email", emailInfo);
-                args.putString("donor_phone", phoneCell);
                 args.putByteArray("donor_image", byteImage);
 
                 DetailedDonor newFrag = new DetailedDonor();

@@ -38,7 +38,6 @@ public class DonorList extends Fragment {
     private ArrayList<Integer> donorId = new ArrayList<Integer>();
 
     private ArrayList<Donor> donors;
-    private ArrayList<ContactInfo> contact;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -57,10 +56,12 @@ public class DonorList extends Fragment {
 
         if (donorId == null) {
             donors = db.getDonors();
-            contact = db.getContactInfo();
         }else{
-            donors = db.getDonorsById(donorId);
-            contact = db.getContactInfoById(donorId);
+            int [] donorList=new int[donorId.size()];
+            for (int n = 0;n<donorId.size();n++) {
+                donorList[n]=donorId.get(n);
+            }
+            donors = db.getDonorsById(donorList);
         }
 
 
@@ -121,22 +122,10 @@ public class DonorList extends Fragment {
             ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
             for(Donor m : donors){
                 HashMap<String,String> hm = new HashMap<String,String>();
-                int ID = m.getId();
-                String email = "";
-                String phone = "";
-                for (ContactInfo n : contact){
-                    if (n.getPartnerId() == ID){
-                        email = n.getEmail();
-                        phone = n.getPhone();
-                        if (!n.getCell().isEmpty()) {
-                            phone = n.getCell();
-                        }
-                    }
-                }
 
                 hm.put("donor_name", m.getName());
-                hm.put("email", email);
-                hm.put("phone", phone);
+                hm.put("email", m.getEmail());
+                hm.put("phone", m.getPhone());
 
                 aList.add(hm);
             }
@@ -154,15 +143,6 @@ public class DonorList extends Fragment {
             args.putString("donor_name", donors.get(position).getName());
             args.putInt("donor_id", ID);
             args.putByteArray("donor_image", donors.get(position).getImage());
-
-            LocalDBHandler db = new LocalDBHandler(getActivity());
-            ContactInfo contactinfo = db.getContactInfoById(ID);
-            if (!contactinfo.getCell().isEmpty()) {
-                args.putString("donor_phone", contactinfo.getCell());
-            } else {
-                args.putString("donor_phone", contactinfo.getPhone());
-            }
-            args.putString("donor_email", contactinfo.getEmail());
 
             DetailedDonor newFrag = new DetailedDonor();
             newFrag.setArguments(args);

@@ -32,6 +32,7 @@ public class DonorSearch extends Fragment{
 	private LinearLayout nameLayout;
     private Spinner nameType;
     private TextView selectName;
+    private Button clearSearchButton;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -44,6 +45,7 @@ public class DonorSearch extends Fragment{
         nameLayout = (LinearLayout)v.findViewById(R.id.nameLayout);
         nameType = (Spinner)v.findViewById(R.id.nameType);
         selectName = (TextView) v.findViewById(R.id.selectName);
+        clearSearchButton = (Button)v.findViewById(R.id.clearSearchButton);
 
 
 		search.setOnClickListener(new OnClickListener() {
@@ -61,10 +63,17 @@ public class DonorSearch extends Fragment{
                 // change visibility of fund search
                 if(nameLayout.getVisibility() == View.GONE){
                     nameLayout.setVisibility(View.VISIBLE);
-                }else{
-                    nameText.setText("");
-                    nameLayout.setVisibility(View.GONE);
                 }
+            }
+        });
+
+        clearSearchButton.setOnClickListener(new OnClickListener(){
+
+            @Override
+            public void onClick(View v){
+                //clear search criteria and close window
+                nameText.setText("");
+                nameLayout.setVisibility(View.GONE);
             }
         });
 		return v;
@@ -132,15 +141,6 @@ public class DonorSearch extends Fragment{
 		args.putInt(DetailedGift.ARG_DONOR_ID, d.getId());
 		args.putString(DetailedDonor.ARG_DONOR_NAME, d.getName());
         args.putByteArray(DetailedDonor.ARG_DONOR_IMAGE, d.getImage());
-
-        LocalDBHandler db = new LocalDBHandler(getActivity());
-        ContactInfo contactinfo = db.getContactInfoById(d.getId());
-        if (!contactinfo.getCell().isEmpty()) {
-            args.putString(DetailedDonor.ARG_DONOR_PHONE, contactinfo.getCell());
-        } else {
-            args.putString(DetailedDonor.ARG_DONOR_PHONE, contactinfo.getPhone());
-        }
-        args.putString(DetailedDonor.ARG_DONOR_EMAIL, contactinfo.getEmail());
 
         DetailedDonor detailedDonor = new DetailedDonor();
         detailedDonor.setArguments(args);
