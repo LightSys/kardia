@@ -57,11 +57,9 @@ public class DonorList extends Fragment {
         if (donorId == null) {
             donors = db.getDonors();
         }else{
-            int [] donorList=new int[donorId.size()];
-            for (int n = 0;n<donorId.size();n++) {
-                donorList[n]=donorId.get(n);
-            }
-            donors = db.getDonorsById(donorList);
+            String donorIdStr = "(" +android.text.TextUtils.join(", ", donorId) + ")";
+            Log.d(TAG, "onCreateView: " + donorIdStr);
+            donors = db.getDonorsById(donorIdStr);
         }
 
 
