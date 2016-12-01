@@ -914,7 +914,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
      * @param donorId, ArrayList of IDs for the donors to be selected
      * @return a list donors as an ArrayList of Donor Objects ordered alphabetically
      */
-    public ArrayList<Donor> getDonorsById(int[] donorId) {
+    public ArrayList<Donor> getDonorsById(String donorId) {
         ArrayList<Donor> donors = new ArrayList<Donor>();
         String queryString = "SELECT * FROM " + TABLE_DONORS + " WHERE " + COLUMN_ID + " IN " + donorId
                 + " ORDER BY " + COLUMN_LAST_NAME;

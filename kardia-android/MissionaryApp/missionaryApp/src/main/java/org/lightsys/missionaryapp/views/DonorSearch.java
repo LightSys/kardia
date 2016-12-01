@@ -102,10 +102,10 @@ public class DonorSearch extends Fragment{
             for (Donor d : allDonors){
                 //get name to search
                 String donorName = d.getName().toLowerCase();
-                if (nameType.getSelectedItem().toString().equals("First Name") && donorName.contains(" ")) {
+                if (nameType.getSelectedItem().toString().equals("First Name:") && donorName.contains(" ")) {
                     String[] nameSplit = d.getName().split(" ", 2);
                     donorName = nameSplit[0].toLowerCase();
-                }else if (nameType.getSelectedItem().toString().equals("Last Name") && donorName.contains(" ")) {
+                }else if (nameType.getSelectedItem().toString().equals("Last Name:") && donorName.contains(" ")) {
                     String[] nameSplit = d.getName().split(" ", 2);
                     donorName = nameSplit[1].toLowerCase();
                 }
