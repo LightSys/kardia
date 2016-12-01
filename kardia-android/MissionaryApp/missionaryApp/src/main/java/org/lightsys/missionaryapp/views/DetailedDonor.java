@@ -15,12 +15,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
+import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
@@ -41,15 +44,14 @@ public class DetailedDonor extends Fragment{
 
     final static String ARG_DONOR_ID    = "donor_id";
     final static String ARG_DONOR_NAME  = "donor_name";
-    final static String ARG_DONOR_EMAIL = "donor_email";
-    final static String ARG_DONOR_PHONE = "donor_phone";
     final static String ARG_DONOR_IMAGE = "donor_image";
 
-    private int             donorId;
-    private String          donorEmail;
-    private String          donorPhone;
-    private String          donorName = " ";
-    private byte[]          byteImage;
+    private int    donorId = 0;
+    private String donorEmail;
+    private String donorPhone;
+    private String donorName = " ";
+    private byte[] byteImage;
+    private String donorAddress;
 
     private ArrayList<Gift> gifts = new ArrayList<Gift>();
 
@@ -65,30 +67,38 @@ public class DetailedDonor extends Fragment{
         if(savedInstanceState != null){
             donorId    = savedInstanceState.getInt(ARG_DONOR_ID);
             donorName  = savedInstanceState.getString(ARG_DONOR_NAME);
-            donorEmail = savedInstanceState.getString(ARG_DONOR_EMAIL);
-            donorPhone = savedInstanceState.getString(ARG_DONOR_PHONE);
             byteImage = savedInstanceState.getByteArray(ARG_DONOR_IMAGE);
         }else if (args != null) {
             donorId    = args.getInt(ARG_DONOR_ID);
             donorName  = args.getString(ARG_DONOR_NAME);
-            donorEmail = args.getString(ARG_DONOR_EMAIL);
-            donorPhone = args.getString(ARG_DONOR_PHONE);
             byteImage = args.getByteArray(ARG_DONOR_IMAGE);
 
         } else{
             donorName  = "no name";
-            donorEmail = "no email";
-            donorPhone = "no phone";
+        }
+
+        LocalDBHandler db = new LocalDBHandler(getActivity());
+        if(donorId != 0) {
+            Donor donorInfo = db.getDonorInfoById(donorId);
+            donorEmail = donorInfo.getEmail();
+            donorPhone = donorInfo.getPhone();
+            donorAddress = donorInfo.getAddress();
+            Log.d(TAG, "onCreateView: " + donorEmail + donorPhone + donorAddress);
+
         }
 
         TextView name   = (TextView)v.findViewById(R.id.userNameText);
         TextView email  = (TextView)v.findViewById(R.id.emailText);
         TextView phone  = (TextView)v.findViewById(R.id.phoneText);
+        TextView address = (TextView)v.findViewById(R.id.addressText);
         ImageView image = (ImageView)v.findViewById(R.id.profilePicImage);
 
         name.setText(donorName);
         email.setText(donorEmail);
         phone.setText(donorPhone);
+        address.setText(donorAddress);
+        address.setVisibility(View.VISIBLE);
+
         //set profile picture
         Bitmap bitmap;
         if (byteImage != null) {
@@ -126,7 +136,6 @@ public class DetailedDonor extends Fragment{
         });
 
         //pull gift list for donor
-        LocalDBHandler db = new LocalDBHandler(getActivity());
         gifts = db.getGiftsByDonor(donorId);
 
         TextView totalText = (TextView)v.findViewById(R.id.totalAmountText);
@@ -163,9 +172,7 @@ public class DetailedDonor extends Fragment{
     public void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
         outState.putInt(ARG_DONOR_ID, donorId);
-        outState.putString(ARG_DONOR_EMAIL, donorEmail);
         outState.putString(ARG_DONOR_NAME, donorName);
-        outState.putString(ARG_DONOR_PHONE, donorPhone);
         outState.putByteArray(ARG_DONOR_IMAGE, byteImage);
 
     }

@@ -19,7 +19,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:layout_margin="@dimen/border_dimen_lg"
+                android:layout_marginTop="@dimen/border_dimen_lg"
                 android:text="@string/by_name"
                 android:textSize="@dimen/header_dimen_lg" />
 
@@ -34,17 +34,33 @@
                     android:id="@+id/nameType"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ems="5"
                     android:enabled="true"
-                    android:entries="@array/search_name_options"/>
+                    android:entries="@array/search_name_options"
+                    android:textSize="@dimen/body_dimen_lg"/>
 
                 <EditText
                     android:id="@+id/nameText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/border_dimen_lg"
+                    android:layout_marginStart="@dimen/border_dimen_lg"
+                    android:layout_marginRight="@dimen/border_dimen_lg"
+                    android:layout_marginEnd="@dimen/border_dimen_lg"
                     android:ems="5"
                     android:enabled="true"
                     android:hint="@string/enter_name"
                     android:textSize="@dimen/body_dimen_lg"/>
+
+                <Button
+                    android:id="@+id/clearSearchButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="5"
+                    android:text="@string/clear_search"
+                    android:textSize="@dimen/body_dimen_lg"
+                    style="@style/customBottomBar"
+                    />
             </LinearLayout>
 
         </RelativeLayout>
@@ -52,6 +68,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginTop="@dimen/border_dimen_lg"
             android:background="#000030"/>
 
         <LinearLayout

@@ -60,10 +60,13 @@ public class MainActivity extends ActionBarActivity {
     //if back button is pressed, return home instead of exiting
     @Override
     public void onBackPressed() {
-        if (currentFrag != 0)  {
+
+        if (currentFrag != 0 && getSupportFragmentManager().getBackStackEntryCount() == 0) {
             selectItem(0);
-        }else {
+        } else if (currentFrag == 0) {
             this.finish();
+        } else {
+            super.onBackPressed();
         }
     }
 

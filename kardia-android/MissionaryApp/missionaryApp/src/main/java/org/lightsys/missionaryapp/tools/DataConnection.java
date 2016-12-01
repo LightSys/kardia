@@ -160,7 +160,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             // Attempt to pull information about the missionary from the API
             test = GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/missionary/" + accountId +
                     "/?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic");
-            Log.d(TAG, "connectAccount: " + test);
             // Unauthorized signals incorrect username or password
             // 404 not found signals invalid ID
             // Empty or null signals an incorrect server name
@@ -306,7 +305,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 int donorID = m.getId();
                 loadContact(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/partner/Partners/" + donorID +
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
-
+                loadAddress(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/partner/Partners/" + donorID +
+                        "/Addresses?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
                 loadPicture(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/" + donorID
                         + "/ProfilePicture?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), donorID);
             }
@@ -368,7 +368,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     private String GET(String url) throws Exception {
         InputStream inputStream;
         String result;
-        Log.d(TAG, "GET: " + url);
         try {
             // Set the user credentials to allow access to API information
             CredentialsProvider credProvider = new BasicCredentialsProvider();
@@ -385,10 +384,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             client.setCredentialsProvider(credProvider);
 
             HttpResponse response = client.execute(new HttpGet(url));
-            Log.d(TAG, "GET: get here4");
 
             inputStream = response.getEntity().getContent();
-            Log.d(TAG, "GET: get here5");
 
             if (inputStream != null) {
                 result = convertInputStreamToString(inputStream);
@@ -396,7 +393,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 result = "";
             }
         } catch (Exception e) {
-            Log.d(TAG, "GET: error here");
             // Rethrow exception for validation server error
             throw new Exception();
         }
@@ -490,9 +486,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      */
     private void loadContact(String result, int partner_id) {
         JSONObject json = null;
-        String email = " ";
-        String phone = " ";
-        String cell = " ";
+        String email = "";
+        String phone = "";
+        String cell = "";
 
         try {
             json = new JSONObject(result);
@@ -525,19 +521,46 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 e.printStackTrace();
             }
         }
-        ArrayList<Integer> currentContactInfoList = new ArrayList<Integer>();
-        for (ContactInfo p : db.getContactInfo()) {
-            currentContactInfoList.add(p.getPartnerId());
+
+        //Prioritize cell over phone
+        if(cell.equals("")) {
+            cell = phone;
         }
-        // Check to see if contact info is already in the database
-        if (!currentContactInfoList.contains(partner_id)) {
-            ContactInfo temp = new ContactInfo(partner_id, email, phone, cell);
-            db.addContactInfo(temp);
+        db.addContactInfo(partner_id, cell, email);
+    }
+
+    /**
+     * Loads all contact info for specific donor
+     * @param result, result of API query for missionaries
+     * @param partner_id, id of the donor
+     */
+    private void loadAddress(String result, int partner_id) {
+        JSONObject json = null;
+        String address = "";
+
+        try {
+            json = new JSONObject(result);
+        } catch (JSONException e1) {
+            e1.printStackTrace();
         }
-        else{
-            ContactInfo temp = new ContactInfo(partner_id, email, phone, cell);
-            db.updateContactInfo(temp);
+        if (json == null) {
+            return;
         }
+        JSONArray tempAddress = json.names();
+        for (int i = 0; i < tempAddress.length(); i++) {
+            try{
+                //@id signals a new object, but contains no information on that line
+                if(!tempAddress.getString(i).equals("@id")){
+                    JSONObject ContactInfoObj = json.getJSONObject(tempAddress.getString(i));
+                    //checks the type of contact info and puts it in the correct category
+                    address = ContactInfoObj.getString("address");
+                }
+            }
+            catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+        db.addAddress(partner_id, address);
     }
 
     /**
@@ -744,7 +767,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         for (int i = 0; i < tempLetters.length(); i++) {
             try{
                 //@id signals a new object, but contains no information on that line
-                Log.d(TAG, "loadPrayerLetters: made it to try");
 
                 if(!tempLetters.getString(i).equals("@id")){
                     JSONObject LetterObj = json.getJSONObject(tempLetters.getString(i));
@@ -772,7 +794,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         String year = date.getString("year");
 
                         temp.setDate(year + "-" + month + "-" + day);
-                        Log.d(TAG, "loadPrayerLetters: " + temp.getFilename());
                         db.addPrayerLetter(temp);
                     }
                 }

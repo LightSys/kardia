@@ -90,11 +90,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_TITLE = "title";
 	private static final String COLUMN_FILENAME = "filename";
 	private static final String COLUMN_FOLDER = "folder";
-	//CONTACT TABLE
-	private static final String TABLE_CONTACT_INFO = "contact_info";
-	private static final String COLUMN_EMAIL = "email";
-	private static final String COLUMN_PHONE = "phone";
-	private static final String COLUMN_CELL = "cell";
 	//NOTIFICATIONS TABLE
 	private static final String TABLE_NOTIFICATIONS = "notifications";
 	private static final String COLUMN_NOTIFY_TIME = "notification_time";
@@ -104,6 +99,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String TABLE_DONORS = "donors";
     private static final String COLUMN_LAST_NAME = "last_name";
     private static final String COLUMN_PROFILE_PICTURE = "profile_picture";
+    private static final String COLUMN_EMAIL = "email";
+    private static final String COLUMN_PHONE = "phone";
+    private static final String COLUMN_ADDRESS = "address";
 	//FUND_ACCOUNT_MAP
 	private static final String TABLE_FUND_ACCOUNT_MAP = "fund_account_map";
 	private static final String COLUMN_ACCOUNT_ID = "account_id";
@@ -175,7 +173,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		String CREATE_DONOR_TABLE = "CREATE TABLE " + TABLE_DONORS + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," + COLUMN_LAST_NAME + " TEXT,"
-                + COLUMN_PROFILE_PICTURE + " BLOB)";
+                + COLUMN_PROFILE_PICTURE + " BLOB," + COLUMN_PHONE + " TEXT," + COLUMN_EMAIL + " TEXT,"
+                + COLUMN_ADDRESS + " TEXT)";
 		db.execSQL(CREATE_DONOR_TABLE);
 
 		String CREATE_NOTES_TABLE = "CREATE TABLE " + TABLE_NOTES + "("
@@ -184,11 +183,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				+ COLUMN_MISSIONARY_NAME + " TEXT," + COLUMN_MISSIONARY_ID + " INTEGER,"
 				+ COLUMN_TYPE + " TEXT," + COLUMN_PRAYED_FOR_NUM + " INTEGER)";
 		db.execSQL(CREATE_NOTES_TABLE);
-
-		String CREATE_CONTACT_INFO_TABLE = "CREATE TABLE " + TABLE_CONTACT_INFO + "("
-				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_EMAIL + " TEXT," +
-				COLUMN_PHONE + " TEXT," + COLUMN_CELL + " TEXT)";
-		db.execSQL(CREATE_CONTACT_INFO_TABLE);
 
 		String CREATE_LETTERS_TABLE = "CREATE TABLE " + TABLE_LETTERS + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_DATE + " TEXT,"
@@ -361,18 +355,31 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.close();
     }
     /**
-     * Adds contact info for a donor to the database
-     * @param contactInfo, the contact info to be added
+     * Updates donor contact info
+     * @param donorId, the donor to add the contact info to
+     * @param email, the email address
+     * @param phone, the phone number
      */
-    public void addContactInfo(ContactInfo contactInfo) {
+    public void addContactInfo(int donorId, String phone, String email) {
         ContentValues values = new ContentValues();
-        values.put(COLUMN_ID, contactInfo.getPartnerId());
-        values.put(COLUMN_EMAIL, contactInfo.getEmail());
-        values.put(COLUMN_PHONE, contactInfo.getPhone());
-        values.put(COLUMN_CELL, contactInfo.getCell());
+        values.put(COLUMN_EMAIL, email);
+        values.put(COLUMN_PHONE, phone);
 
         SQLiteDatabase db = this.getWritableDatabase();
-        db.insert(TABLE_CONTACT_INFO, null, values);
+        db.update(TABLE_DONORS, values, COLUMN_ID + " = " + donorId, null);
+        db.close();
+    }
+
+    /**
+     * Updates donor address
+     * @param address, the address to be added
+     */
+    public void addAddress(int donorId, String address) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_ADDRESS, address);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(TABLE_DONORS, values, COLUMN_ID + " = " + donorId, null);
         db.close();
     }
 
@@ -604,7 +611,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.delete(TABLE_NEW_ITEM, null, null);
 
         db.delete(TABLE_DONORS, null, null);
-        db.delete(TABLE_CONTACT_INFO, null, null);
 
 		db.delete(TABLE_ACCOUNTS, null,null);
 
@@ -895,8 +901,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         Cursor c = db.rawQuery(queryString, null);
 
         while (c.moveToNext()) {
-			//set Donor(id, name)
-            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), null, null);
+            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), c.getString(4), c.getString(5), null);
             donors.add(temp);
         }
         c.close();
@@ -909,22 +914,48 @@ public class LocalDBHandler extends SQLiteOpenHelper {
      * @param donorId, ArrayList of IDs for the donors to be selected
      * @return a list donors as an ArrayList of Donor Objects ordered alphabetically
      */
-    public ArrayList<Donor> getDonorsById(ArrayList<Integer> donorId) {
+    public ArrayList<Donor> getDonorsById(int[] donorId) {
         ArrayList<Donor> donors = new ArrayList<Donor>();
         String queryString = "SELECT * FROM " + TABLE_DONORS + " WHERE " + COLUMN_ID + " IN " + donorId
-                + "ORDER BY " + COLUMN_LAST_NAME;
+                + " ORDER BY " + COLUMN_LAST_NAME;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(queryString, null);
 
         while (c.moveToNext()) {
             //set Donor(id, name)
-            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), null, null);
+            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), c.getString(4), c.getString(5), null);
             donors.add(temp);
         }
         c.close();
         db.close();
         return donors;
+    }
+
+    /**
+     * Pulls donors with correct Id from the database
+     * @param donorId, IDs for the donors to be selected
+     * @return a donor info as a Donor object
+     */
+    public Donor getDonorInfoById(int donorId) {
+        String queryString = "SELECT " + COLUMN_ID + ", " + COLUMN_PHONE
+                + ", " + COLUMN_EMAIL + ", " + COLUMN_ADDRESS + " FROM " + TABLE_DONORS
+                + " WHERE " + COLUMN_ID + " = " + donorId;
+
+        Donor temp = new Donor();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        while (c.moveToNext()) {
+            //set Donor(id, name)
+            temp.setId(Integer.parseInt(c.getString(0)));
+            temp.setPhone(c.getString(1));
+            temp.setEmail(c.getString(2));
+            temp.setAddress(c.getString(3));
+        }
+        c.close();
+        db.close();
+        return temp;
     }
 
     /**
@@ -946,32 +977,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         c.close();
         db.close();
         return donors;
-    }
-
-    /**
-     * Pulls contact info for a donor from the database
-     * @param donor_id id for donor
-     * @return contact info for donor id
-     */
-
-    public ContactInfo getContactInfoById(int donor_id) {
-        String queryString = "SELECT * FROM " + TABLE_CONTACT_INFO
-                + " WHERE " + COLUMN_ID + " = " + donor_id;
-
-        ContactInfo contact = new ContactInfo();
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor c = db.rawQuery(queryString, null);
-
-        if (c.moveToFirst()) {
-            contact.setPartnerId(Integer.parseInt(c.getString(0)));
-            contact.setEmail(c.getString(1));
-            contact.setPhone(c.getString(2));
-            contact.setCell(c.getString(3));
-
-        }
-        c.close();
-        db.close();
-        return contact;
     }
 
 	/**
@@ -1093,52 +1098,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return note;
 	}
 
-    /**
-     * Pulls contact info for all donors from the database
-     * @return contact info as an ArrayList of ContactInfo Objects ordered by donor id
-     */
-
-    public ArrayList<ContactInfo> getContactInfo() {
-        ArrayList<ContactInfo> contactInfoList = new ArrayList<ContactInfo>();
-        String queryString = "SELECT * FROM " + TABLE_CONTACT_INFO + " ORDER BY " + COLUMN_ID;
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor c = db.rawQuery(queryString, null);
-
-        while (c.moveToNext()) {
-			//set ContactInfo(partner id, email, phone, cell)
-            ContactInfo temp = new ContactInfo(Integer.parseInt(c.getString(0)), c.getString(1),
-                    c.getString(2), c.getString(3));
-            contactInfoList.add(temp);
-        }
-        c.close();
-        db.close();
-        return contactInfoList;
-    }
-
-    /**
-     * Pulls contact info for all donors from the database
-     * @return contact info as an ArrayList of ContactInfo Objects ordered by donor id
-     */
-
-    public ArrayList<ContactInfo> getContactInfoById(ArrayList<Integer> donorId) {
-        ArrayList<ContactInfo> contactInfoList = new ArrayList<ContactInfo>();
-        String queryString = "SELECT * FROM " + TABLE_CONTACT_INFO + " WHERE "
-                + COLUMN_ID + " IN " + donorId + " ORDER BY " + COLUMN_ID;
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor c = db.rawQuery(queryString, null);
-
-        while (c.moveToNext()) {
-            //set ContactInfo(partner id, email, phone, cell)
-            ContactInfo temp = new ContactInfo(Integer.parseInt(c.getString(0)), c.getString(1),
-                    c.getString(2), c.getString(3));
-            contactInfoList.add(temp);
-        }
-        c.close();
-        db.close();
-        return contactInfoList;
-    }
 	/**
 	 * Pulls all prayer letters from the database for missionary
 	 * @param missionary_id id for missionary
@@ -1617,21 +1576,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.update(TABLE_ACCOUNTS, values, COLUMN_ID + " = " + id, null);
-		db.close();
-	}
-	/**
-	 * Updates the contact info for the given id
-	 * @param contactInfo, the contact info to be updated
-	 */
-	public void updateContactInfo(ContactInfo contactInfo) {
-		ContentValues values = new ContentValues();
-		int id = contactInfo.getPartnerId();
-		values.put(COLUMN_EMAIL, contactInfo.getEmail());
-		values.put(COLUMN_PHONE, contactInfo.getPhone());
-		values.put(COLUMN_CELL, contactInfo.getCell());
-
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.update(TABLE_CONTACT_INFO, values, COLUMN_ID + " = " + id, null);
 		db.close();
 	}
 
