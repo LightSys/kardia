@@ -52,17 +52,7 @@
                     android:hint="@string/enter_name"
                     android:textSize="@dimen/body_dimen_lg"/>
 
-                <Button
-                    android:id="@+id/clearSearchButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ems="5"
-                    android:text="@string/clear_search"
-                    android:textSize="@dimen/body_dimen_lg"
-                    style="@style/customBottomBar"
-                    />
             </LinearLayout>
-
         </RelativeLayout>
 
         <View
@@ -78,13 +68,25 @@
             android:gravity="center" >
 
             <Button
+                android:id="@+id/clearBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/border_dimen_lg"
+                android:text="@string/clear_search"
+                android:textSize="@dimen/large_header_dimen_lg"
+                android:textStyle="bold"
+                style="@style/customBottomBar" />
+
+            <Button
                 android:id="@+id/searchBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_margin="@dimen/border_dimen_lg"
                 android:text="@string/search"
                 android:textSize="@dimen/large_header_dimen_lg"
                 android:textStyle="bold"
                 style="@style/customBottomBar" />
+
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

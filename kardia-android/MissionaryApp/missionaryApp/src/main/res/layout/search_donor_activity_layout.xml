@@ -28,32 +28,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/selectName"
-                android:layout_centerHorizontal="true"
-                android:visibility="gone"
-                android:orientation="horizontal">
+                android:gravity="center_horizontal"
+                android:visibility="gone">
 
                 <Spinner
                     android:id="@+id/nameType"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ems="5"
                     android:enabled="true"
-                    android:entries="@array/search_name_options"/>
+                    android:entries="@array/search_name_options"
+                    android:textSize="@dimen/body_dimen"/>
 
                 <EditText
                     android:id="@+id/nameText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/border_dimen"
+                    android:layout_marginStart="@dimen/border_dimen"
+                    android:layout_marginRight="@dimen/border_dimen"
+                    android:layout_marginEnd="@dimen/border_dimen"
                     android:ems="5"
                     android:enabled="true"
                     android:text="@string/enter_name"
                     android:textSize="@dimen/body_dimen"/>
             </LinearLayout>
-
         </RelativeLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginTop="@dimen/border_dimen"
             android:background="#000030"/>
 
         <LinearLayout

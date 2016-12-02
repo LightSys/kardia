@@ -90,7 +90,7 @@ public class DetailedDonor extends Fragment{
         TextView name   = (TextView)v.findViewById(R.id.userNameText);
         TextView email  = (TextView)v.findViewById(R.id.emailText);
         TextView phone  = (TextView)v.findViewById(R.id.phoneText);
-        TextView address = (TextView)v.findViewById(R.id.addressText);
+        final TextView address = (TextView)v.findViewById(R.id.addressText);
         ImageView image = (ImageView)v.findViewById(R.id.profilePicImage);
 
         name.setText(donorName);
@@ -107,6 +107,20 @@ public class DetailedDonor extends Fragment{
         }else{
             image.setImageResource(R.drawable.profile_picture_standard);
         }
+
+        //open maps for address
+        address.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                        Uri.parse("google.navigation:q=" + donorAddress));
+                try {
+                    startActivity(intent);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Toast.makeText(getActivity(),"No Map app Found", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
 
         //send email to donor
