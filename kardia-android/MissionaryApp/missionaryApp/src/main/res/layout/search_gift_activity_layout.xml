@@ -6,7 +6,7 @@
     android:background="@drawable/noise_blue_repeat" xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
@@ -30,6 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/selectDate"
                 android:enabled="true"
+                android:checked="false"
                 android:text="@string/date_range"
                 android:visibility="gone"/>
 
@@ -55,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/_"
                     android:textSize="@dimen/body_dimen"
-                    android:visibility="gone" />
+                    android:visibility="invisible" />
 
                 <Button
                     android:id="@+id/datePickBtn2"
@@ -64,7 +65,7 @@
                     android:enabled="true"
                     android:text="@string/choose_date"
                     android:textSize="@dimen/body_dimen"
-                    android:visibility="gone" />
+                    android:visibility="invisible" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -90,9 +91,9 @@
                 android:id="@+id/amountRange"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_below="@id/selectAmount"
                 android:enabled="true"
-                android:layout_marginLeft="@dimen/border_dimen"
-                android:layout_marginStart="@dimen/border_dimen"
+                android:checked="false"
                 android:text="@string/amount_range"
                 android:visibility="gone" />
 
@@ -100,9 +101,8 @@
                 android:id="@+id/amountLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/amountRange"
-                android:layout_marginLeft="@dimen/border_dimen"
-                android:layout_marginStart="@dimen/border_dimen"
+                android:layout_below="@id/selectAmount"
+                android:gravity="center_horizontal"
                 android:visibility="gone">
 
                 <TextView
@@ -127,7 +127,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/_"
-                    android:visibility="gone"
+                    android:visibility="invisible"
                     android:textSize="@dimen/body_dimen"/>
 
                 <TextView
@@ -135,7 +135,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/dollar_sign"
-                    android:visibility="gone"
+                    android:visibility="invisible"
                     android:textSize="@dimen/body_dimen"/>
 
                 <EditText
@@ -147,7 +147,7 @@
                     android:hint="00"
                     android:inputType="numberDecimal"
                     tools:ignore="HardcodedText"
-                    android:visibility="gone"
+                    android:visibility="invisible"
                     android:textSize="@dimen/body_dimen"/>
             </LinearLayout>
 
@@ -176,32 +176,33 @@
                 android:text="@string/by_donor"
                 android:textSize="@dimen/header_dimen"/>
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/donorText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/selectDonor"
+                android:hint="@string/choose_donor"
+                android:layout_centerHorizontal="true"
+                android:gravity="center_horizontal"
+                android:textSize="@dimen/header_dimen"
+                android:visibility="gone"/>
+
+            <RelativeLayout
                 android:id="@+id/donorLayout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="2dp"
-                android:layout_marginStart="2dp"
+                android:layout_height="170dp"
+                android:layout_below="@id/donorText"
                 android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/donorText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/border_dimen"
-                    android:layout_marginEnd="@dimen/border_dimen"
-                    android:hint="@string/choose_donor"
-                    android:textSize="@dimen/header_dimen"/>
 
                 <ListView
                     android:id="@+id/donorList"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:scrollbars="vertical"
-                    android:visibility="gone">
+                    android:scrollbars="vertical">
                 </ListView>
-            </LinearLayout>
+            </RelativeLayout>
         </RelativeLayout>
+
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -220,31 +221,31 @@
                 android:text="@string/by_fund"
                 android:textSize="@dimen/header_dimen"/>
 
-            <LinearLayout
-                android:id="@+id/fundLayout"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/fundText"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="2dp"
-                android:layout_marginStart="2dp"
-                android:visibility="gone">
+                android:layout_below="@id/selectFund"
+                android:layout_centerHorizontal="true"
+                android:gravity="center_horizontal"
+                android:hint="@string/choose_fund"
+                android:textSize="@dimen/header_dimen"
+                android:visibility="gone"/>
 
-                <TextView
-                    android:id="@+id/fundText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/border_dimen_lg"
-                    android:layout_marginEnd="@dimen/border_dimen_lg"
-                    android:hint="@string/choose_fund"
-                    android:textSize="@dimen/header_dimen"/>
+            <RelativeLayout
+                android:id="@+id/fundLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/fundText"
+                android:visibility="gone">
 
                 <ListView
                     android:id="@+id/fundList"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:scrollbars="vertical"
-                    android:visibility="gone">
+                    android:scrollbars="vertical">
                 </ListView>
-            </LinearLayout>
+            </RelativeLayout>
         </RelativeLayout>
 
         <View

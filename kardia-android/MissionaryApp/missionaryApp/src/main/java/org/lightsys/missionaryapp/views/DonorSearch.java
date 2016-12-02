@@ -32,7 +32,7 @@ public class DonorSearch extends Fragment{
 	private LinearLayout nameLayout;
     private Spinner nameType;
     private TextView selectName;
-    private Button clearSearchButton;
+    private Button clearButton;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -45,7 +45,7 @@ public class DonorSearch extends Fragment{
         nameLayout = (LinearLayout)v.findViewById(R.id.nameLayout);
         nameType = (Spinner)v.findViewById(R.id.nameType);
         selectName = (TextView) v.findViewById(R.id.selectName);
-        clearSearchButton = (Button)v.findViewById(R.id.clearSearchButton);
+        clearButton = (Button)v.findViewById(R.id.clearBtn);
 
 
 		search.setOnClickListener(new OnClickListener() {
@@ -67,13 +67,14 @@ public class DonorSearch extends Fragment{
             }
         });
 
-        clearSearchButton.setOnClickListener(new OnClickListener(){
+        clearButton.setOnClickListener(new OnClickListener(){
 
             @Override
             public void onClick(View v){
                 //clear search criteria and close window
                 nameText.setText("");
                 nameLayout.setVisibility(View.GONE);
+                Toast.makeText(getActivity(), "Search data cleared", Toast.LENGTH_SHORT).show();
             }
         });
 		return v;

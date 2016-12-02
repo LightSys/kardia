@@ -12,6 +12,7 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,10 +25,13 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
+
+import static android.content.ContentValues.TAG;
 
 public class GiftSearch extends Fragment{
 
@@ -37,7 +41,8 @@ public class GiftSearch extends Fragment{
     private TextView     selectDate, selectAmount, selectDonor, selectFund;
 	private CheckBox     dateRange, amountRange;
     private ListView     donorList, fundList;
-	private LinearLayout dateLayout, amountLayout, donorLayout, fundLayout;
+	private LinearLayout dateLayout, amountLayout;
+    private RelativeLayout donorLayout, fundLayout;
     private ArrayList<String> donorArray, fundArray;
 	
 	@Override
@@ -49,6 +54,7 @@ public class GiftSearch extends Fragment{
 		date1         = (Button)v.findViewById(R.id.datePickBtn);
 		date2         = (Button)v.findViewById(R.id.datePickBtn2);
         Button search = (Button) v.findViewById(R.id.searchBtn);
+        Button clear  = (Button)v.findViewById(R.id.clearBtn);
 		amount1       = (EditText)v.findViewById(R.id.amount1);
 		amount2       = (EditText)v.findViewById(R.id.amount2);
 		dateRange     = (CheckBox)v.findViewById(R.id.dateRange);
@@ -57,21 +63,21 @@ public class GiftSearch extends Fragment{
         fundList      = (ListView) v.findViewById(R.id.fundList);
         dateLayout    = (LinearLayout)v.findViewById(R.id.dateLayout);
 		amountLayout  = (LinearLayout)v.findViewById(R.id.amountLayout);
-        donorLayout   = (LinearLayout)v.findViewById(R.id.donorLayout);
-        fundLayout    = (LinearLayout)v.findViewById(R.id.fundLayout);
-		dash1         = (TextView)v.findViewById(R.id.dashTextView);
+        donorLayout   = (RelativeLayout)v.findViewById(R.id.donorLayout);
+        fundLayout    = (RelativeLayout)v.findViewById(R.id.fundLayout);
+        dash1         = (TextView)v.findViewById(R.id.dashTextView);
 		dash2         = (TextView)v.findViewById(R.id.dash2);
 		dollarSign2   = (TextView)v.findViewById(R.id.dollarSign2);
         donorText     = (TextView)v.findViewById(R.id.donorText);
         fundText      = (TextView)v.findViewById(R.id.fundText);
-
         selectDate    = (TextView)v.findViewById(R.id.selectDate);
         selectAmount  = (TextView)v.findViewById(R.id.selectAmount);
         selectDonor  = (TextView)v.findViewById(R.id.selectDonor);
         selectFund  = (TextView)v.findViewById(R.id.selectFund);
 
-
         amount1.addTextChangedListener(new GenericTextWatcher(v));
+        fundText.addTextChangedListener(new GenericTextWatcher(v));
+        fundText.addTextChangedListener(new GenericTextWatcher(v));
 
 		search.setOnClickListener(new OnClickListener() {
 			@Override
@@ -80,17 +86,36 @@ public class GiftSearch extends Fragment{
 			}
 		});
 
+        clear.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                resetAll();
+                Toast.makeText(getActivity(), "Search data cleared", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         LocalDBHandler db = new LocalDBHandler(getActivity());
 
         donorArray = db.getDonorsOfGifts();
         fundArray  = db.getFundNames(db.getAccount().getId());
         db.close();
 
-
         ArrayAdapter<String> donorAdapter = new ArrayAdapter<String>(getActivity(), R.layout.search_listview_item, donorArray);
         donorList.setAdapter(donorAdapter);
         ArrayAdapter<String> fundAdapter = new ArrayAdapter<String>(getActivity(), R.layout.search_listview_item, fundArray);
         fundList.setAdapter(fundAdapter);
+        if(fundAdapter.getCount() > 5){
+            View item = fundAdapter.getView(0, null, fundList);
+            item.measure(0, 0);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, (int) (5 * item.getMeasuredHeight()));
+            fundList.setLayoutParams(params);
+        }
+        if(donorAdapter.getCount() > 5){
+            View item = donorAdapter.getView(0, null, donorList);
+            item.measure(0, 0);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, (int) (5 * item.getMeasuredHeight()));
+            donorList.setLayoutParams(params);
+        }
 
 		dateRange.setOnClickListener(new OnClickListener(){
 			@Override
@@ -104,7 +129,6 @@ public class GiftSearch extends Fragment{
 				changeAmountRange();
 			}
 		});
-		
 		date1.setOnClickListener(new OnClickListener(){
 
 			@Override
@@ -124,44 +148,14 @@ public class GiftSearch extends Fragment{
 
 			@Override
 			public void onClick(View v){
-				// If date search is activated, set respective fields to visible
-                    // If date search is not activated, set fields to gone and set to default
-				if(dateLayout.getVisibility() == View.GONE){
-					dateRange.setVisibility(View.VISIBLE);
-					dateLayout.setVisibility(View.VISIBLE);
-				}else{
-					dateRange.setChecked(false);
-					dateRange.setVisibility(View.GONE);
-					date1.setText(R.string.choose_date);
-					date1.setError(null);
-					date2.setText(R.string.choose_date);
-					dash1.setVisibility(View.GONE);
-					date2.setVisibility(View.GONE);
-					dateLayout.setVisibility(View.GONE);
-				}
+                selectDate();
 			}
 		});
 		selectAmount.setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v){
-
-				// If amount search is activated, set respective fields to visible
-				// If amount search is not activated, set fields to gone and set to default
-				if(amountLayout.getVisibility() == View.GONE){
-					amountRange.setVisibility(View.VISIBLE);
-					amountLayout.setVisibility(View.VISIBLE);
-				}else{
-					amountRange.setChecked(false);
-					amountRange.setVisibility(View.GONE);
-					amount1.setText("");
-					amount1.setError(null);
-					amount2.setText("");
-					dash2.setVisibility(View.GONE);
-					amount2.setVisibility(View.GONE);
-					dollarSign2.setVisibility(View.GONE);
-					amountLayout.setVisibility(View.GONE);
-				}
+                selectAmount();
 			}
 		});
 
@@ -169,15 +163,7 @@ public class GiftSearch extends Fragment{
 
             @Override
             public void onClick(View v){
-
-                // change visibility of donor search
-                if(donorLayout.getVisibility() == View.GONE){
-                    donorLayout.setVisibility(View.VISIBLE);
-                }else{
-                    donorText.setText("");
-                    donorLayout.setVisibility(View.GONE);
-                    donorList.setVisibility(View.GONE);
-                }
+                selectDonor();
             }
         });
 
@@ -185,15 +171,7 @@ public class GiftSearch extends Fragment{
 
             @Override
             public void onClick(View v){
-
-                // change visibility of fund search
-                if(fundLayout.getVisibility() == View.GONE){
-                    fundLayout.setVisibility(View.VISIBLE);
-                }else{
-                    fundText.setText("");
-                    fundLayout.setVisibility(View.GONE);
-                    fundList.setVisibility(View.GONE);
-                }
+                selectFund();
             }
         });
 
@@ -202,10 +180,10 @@ public class GiftSearch extends Fragment{
             public void onClick(View v){
 
                 // change visibility of donorList
-                if(donorList.getVisibility() == View.VISIBLE){
-                    donorList.setVisibility(View.GONE);
+                if(donorLayout.getVisibility() == View.VISIBLE){
+                    donorLayout.setVisibility(View.GONE);
                 }else{
-                    donorList.setVisibility(View.VISIBLE);
+                    donorLayout.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -214,10 +192,10 @@ public class GiftSearch extends Fragment{
             public void onClick(View v){
 
                 // change visibility of fundList
-                if(fundList.getVisibility() == View.VISIBLE){
-                    fundList.setVisibility(View.GONE);
+                if(fundLayout.getVisibility() == View.VISIBLE){
+                    fundLayout.setVisibility(View.GONE);
                 }else{
-                    fundList.setVisibility(View.VISIBLE);
+                    fundLayout.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -281,10 +259,10 @@ public class GiftSearch extends Fragment{
 			startAmount = (!amount1.getText().toString().equals(""))? amount1.getText().toString() : "";
 			endAmount = (amount2.isEnabled() && !amount2.getText().toString().equals(""))? amount2.getText().toString() : "";
 		}
-        if(donorLayout.getVisibility() == View.VISIBLE){
+        if(donorText.getVisibility() == View.VISIBLE){
             donorName = (!donorText.getText().toString().equals(""))? donorText.getText().toString():"";
         }
-        if(fundLayout.getVisibility() == View.VISIBLE){
+        if(fundText.getVisibility() == View.VISIBLE){
             fundName = (!fundText.getText().toString().equals(""))? fundText.getText().toString():"";
         }
 		if (startDate.equals("") && endDate.equals("") && startAmount.equals("")
@@ -318,25 +296,34 @@ public class GiftSearch extends Fragment{
 	}
 
 	private void resetAll(){
-		date1.setText(R.string.choose_date);
-		date1.setError(null);
-		date2.setText(R.string.choose_date);
-		date2.setVisibility(View.GONE);
-		dash1.setVisibility(View.GONE);
-		amount1.setText("");
-		amount1.setError(null);
-		amount2.setText("");
-		amount2.setVisibility(View.GONE);
-		dash2.setVisibility(View.GONE);
-		dollarSign2.setVisibility(View.GONE);
-		dateRange.setChecked(false);
-		amountRange.setChecked(false);
-        fundText.setText("");
-        donorText.setText("");
-		donorLayout.setVisibility(View.GONE);
-        fundLayout.setVisibility(View.GONE);
+
+        //clear date
+        dateRange.setChecked(false);
+        dateRange.setVisibility(View.GONE);
         dateLayout.setVisibility(View.GONE);
-		amountLayout.setVisibility(View.GONE);
+        dash1.setVisibility(View.INVISIBLE);
+        date2.setVisibility(View.INVISIBLE);
+        date2.setText(R.string.choose_date);
+        date1.setText(R.string.choose_date);
+        date1.setError(null);
+        //clear amount
+        amountRange.setVisibility(View.GONE);
+        amountLayout.setVisibility(View.GONE);
+        dash2.setVisibility(View.INVISIBLE);
+        dollarSign2.setVisibility(View.INVISIBLE);
+        amount2.setVisibility(View.INVISIBLE);
+        amount1.setText("");
+        amount1.setError(null);
+        amount2.setText("");
+        amountRange.setChecked(false);
+        //clear donor
+        donorText.setVisibility(View.GONE);
+        donorText.setText("");
+        donorLayout.setVisibility(View.GONE);
+        //clear fund
+        fundText.setVisibility(View.GONE);
+        fundText.setText("");
+        fundLayout.setVisibility(View.GONE);
 
 	}
 
@@ -386,8 +373,8 @@ public class GiftSearch extends Fragment{
 			dash1.setVisibility(View.VISIBLE);
 			date2.setVisibility(View.VISIBLE);
 		}else{
-			date2.setVisibility(View.GONE);
-			dash1.setVisibility(View.GONE);
+			date2.setVisibility(View.INVISIBLE);
+			dash1.setVisibility(View.INVISIBLE);
 			date2.setText(R.string.choose_date);
 		}
 	}
@@ -401,9 +388,9 @@ public class GiftSearch extends Fragment{
 			amount2.setVisibility(View.VISIBLE);
 			dollarSign2.setVisibility(View.VISIBLE);
 		}else{
-			amount2.setVisibility(View.GONE);
-			dash2.setVisibility(View.GONE);
-			dollarSign2.setVisibility(View.GONE);
+			amount2.setVisibility(View.INVISIBLE);
+			dash2.setVisibility(View.INVISIBLE);
+			dollarSign2.setVisibility(View.INVISIBLE);
 			amount2.setText("");
 		}
 	}
@@ -414,7 +401,7 @@ public class GiftSearch extends Fragment{
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             donorText.setText(donorArray.get(position));
-            donorList.setVisibility(View.GONE);
+            donorLayout.setVisibility(View.GONE);
         }
     }
 
@@ -425,7 +412,7 @@ public class GiftSearch extends Fragment{
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             fundText.setText(fundArray.get(position));
-            fundList.setVisibility(View.GONE);
+            fundLayout.setVisibility(View.GONE);
         }
     }
 	
@@ -456,4 +443,60 @@ public class GiftSearch extends Fragment{
 			}
 		}
 	}
+
+    private void selectDate(){
+        // If date search is activated, set respective fields to visible
+        // If date search is not activated, set fields to gone and set to default
+        if(dateLayout.getVisibility() == View.GONE){
+            dateRange.setVisibility(View.VISIBLE);
+            dateLayout.setVisibility(View.VISIBLE);
+        }else{
+            dateRange.setChecked(false);
+            dateRange.setVisibility(View.GONE);
+            date1.setText(R.string.choose_date);
+            date1.setError(null);
+            date2.setText(R.string.choose_date);
+            dash1.setVisibility(View.INVISIBLE);
+            date2.setVisibility(View.INVISIBLE);
+            dateLayout.setVisibility(View.GONE);
+        }
+    }
+    private void selectAmount(){
+        // If amount search is activated, set respective fields to visible
+        // If amount search is not activated, set fields to gone and set to default
+        if(amountLayout.getVisibility() == View.GONE){
+            amountRange.setVisibility(View.VISIBLE);
+            amountLayout.setVisibility(View.VISIBLE);
+        }else{
+            amountRange.setChecked(false);
+            amountRange.setVisibility(View.GONE);
+            amount1.setText("");
+            amount1.setError(null);
+            amount2.setText("");
+            dash2.setVisibility(View.INVISIBLE);
+            amount2.setVisibility(View.INVISIBLE);
+            dollarSign2.setVisibility(View.INVISIBLE);
+            amountLayout.setVisibility(View.GONE);
+        }
+    }
+    private void selectDonor(){
+        // change visibility of donor search
+        if(donorText.getVisibility() == View.GONE){
+            donorText.setVisibility(View.VISIBLE);
+        }else{
+            donorText.setText("");
+            donorText.setVisibility(View.GONE);
+            donorLayout.setVisibility(View.GONE);
+        }
+    }
+    private void selectFund(){
+        // change visibility of fund search
+        if(fundText.getVisibility() == View.GONE){
+            fundText.setVisibility(View.VISIBLE);
+        }else{
+            fundText.setText("");
+            fundLayout.setVisibility(View.GONE);
+            fundText.setVisibility(View.GONE);
+        }
+    }
 }
