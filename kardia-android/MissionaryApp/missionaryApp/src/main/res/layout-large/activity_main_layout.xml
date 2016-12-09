@@ -18,9 +18,7 @@
             android:id="@+id/infoList"
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            style="@style/listCustomBlue"
-            />
-
+            style="@style/listCustomBlue"/>
     </RelativeLayout>
 
     <!-- add Update/Prayer Request/Letter Buttons -->
@@ -67,5 +65,4 @@
         android:background="@color/transparent"
         android:visibility="gone"
         android:contentDescription="@string/add_button"/>
-
 </RelativeLayout>

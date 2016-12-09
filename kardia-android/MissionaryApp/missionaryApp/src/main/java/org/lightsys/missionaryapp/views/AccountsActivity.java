@@ -8,11 +8,19 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,12 +35,9 @@ import static android.content.ContentValues.TAG;
  */
 public class AccountsActivity extends Activity{
 
-	private EditText accountName, accountPass, serverName, UserId, port;
-	private TextView connectedAccount, server, userName;
-	private Account  account = new Account();
-	private Button   finishButton;
+	private EditText accountName, accountPass, serverName, UserId, port, protocal;
 
-	/**
+    /**
 	 * Creates the view, and loads current account if available
 	 */
 	@Override
@@ -46,11 +51,8 @@ public class AccountsActivity extends Activity{
 		serverName           = (EditText)findViewById(R.id.serverNameInput);
 		UserId               = (EditText)findViewById(R.id.userIdInput);
         port                 = (EditText) findViewById(R.id.portInput);
-		connectedAccount     = (TextView)findViewById(R.id.connectedHeader);
-        server               = (TextView)findViewById(R.id.server);
-        userName             = (TextView)findViewById(R.id.userName);
 		Button connectButton = (Button)  findViewById(R.id.connectButton);
-		finishButton         = (Button)  findViewById(R.id.finishButton);
+        protocal             = (EditText) findViewById(R.id.protocalInput);
 
 		// Adds EditTexts to text listener for resetting errors
 		accountName.addTextChangedListener(new GenericTextWatcher(accountName));
@@ -58,64 +60,14 @@ public class AccountsActivity extends Activity{
 		serverName.addTextChangedListener(new GenericTextWatcher(serverName));
         UserId.addTextChangedListener(new GenericTextWatcher(UserId));
 
-		loadAccount();
-
 		connectButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-                if (account != null) {
-                    new AlertDialog.Builder(AccountsActivity.this)
-                            .setCancelable(false)
-                            .setTitle("Connect Account")
-                            .setMessage("This action will remove current account data. Continue?")
-                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    connectAccount();
-                                }
-                            })
-                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                }
-                            })
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
-                }else{
-                    connectAccount();
-                }
+                connectAccount();
 			}
 		});
+    }
 
-		finishButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				finish();
-			}
-		});
-
-	}
-
-	
-	/**
-	 * Pulls account (if connected) out of the local SQLite Database
-     * and sets header with connected account.
-	 */
-	private void loadAccount(){
-		LocalDBHandler db = new LocalDBHandler(this);
-		account = db.getAccount();
-		db.close();
-		
-		if(account!=null){
-			finishButton.setVisibility(View.VISIBLE);
-			connectedAccount.setText(R.string.connected_account_text);
-            userName.setText(account.getAccountName());
-            server.setText(account.getServerName());
-
-		}else{
-			finishButton.setVisibility(View.INVISIBLE);
-			connectedAccount.setText(R.string.no_account_text);
-		}
-	}
-	
 	/**
 	 * Adds the account to the local database from the text field on page.
 	 */
@@ -125,9 +77,8 @@ public class AccountsActivity extends Activity{
         String sName  = serverName.getText().toString();
         String sPort  = port.getText().toString();
         String dIdStr = UserId.getText().toString();
-        String aProtocal = "http";
-
-		// If any field does not have information provided, set an error in that field
+        String sProtocal = protocal.getText().toString();
+        // If any field does not have information provided, set an error in that field
 		boolean allFieldsValid = true;
 		if(aName.equals("")){
 			accountName.setError("Invalid Username");
@@ -153,29 +104,11 @@ public class AccountsActivity extends Activity{
 		if (!allFieldsValid) {
 			return;
 		}
-
-		int dId = Integer.parseInt(dIdStr);
-
-		// If account already stored, display message and return
-        LocalDBHandler db = new LocalDBHandler(this);
-        if(account!=null) {
-            if (account.getAccountName().equals(aName) && account.getServerName().equals(sName) &&
-                    account.getAccountPassword().equals(aPass) && account.getId() == dId) {
-                Toast.makeText(this, "Account already connected", Toast.LENGTH_LONG).show();
-                db.close();
-                return;
-            }
-            // Checks that current account does not have the same Id as new account
-            if (account.getId() == dId) {
-                Toast.makeText(this, "Account with this ID already connected", Toast.LENGTH_LONG).show();
-                db.close();
-                return;
-            }
-        }
-		Account account = new Account(dId, aName, aPass, sName, sPort, aProtocal);
+        int dId = Integer.parseInt(dIdStr);
+		Account account = new Account(dId, aName, aPass, sName, sPort, sProtocal);
 		// Execute data connection to validate account and pull data if valid
 		// DataConnection will close activity once complete if successful
-		new DataConnection(this, this, account, -1).execute("");
+        new DataConnection(this, this, account, -1).execute("");
 	}
 }
 

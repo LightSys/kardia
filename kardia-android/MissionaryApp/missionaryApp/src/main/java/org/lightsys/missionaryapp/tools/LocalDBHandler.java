@@ -1,6 +1,7 @@
 package org.lightsys.missionaryapp.tools;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -23,6 +24,8 @@ import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.data.UpdateNotification;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Sets up a SQLite database for the application, which is used to
@@ -120,10 +123,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_NOTE_ID = "note_id";
 	private static final String COLUMN_NOTE_TYPE = "note_type";
 	private static final String COLUMN_COMMENT_TEXT = "comment_text";
-	//NEW_ITEM
-	private static final String TABLE_NEW_ITEM = "new_item";
-	private static final String COLUMN_NEW_ITEM_DATE = "new_item_date";
-	private static final String COLUMN_MESSAGE = "message";
 	//REFRESH_PERIOD
 	//not really a table, but a variable that needs to be accessed from multiple locations
 	private static final String TABLE_REFRESH_PERIOD = "refresh_period";
@@ -143,6 +142,11 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_PRAYED_FOR_DATE = "prayed_for_date";
 	private static final String COLUMN_SUPPORTER_PARTNER_ID = "supporter_partner_id";
 	private static final String COLUMN_SUPPORTER_PARTNER_NAME = "supporter_partner_name";
+    //NEW EVENT
+    private static final String TABLE_NEW_EVENT = "new_event";
+    private static final String COLUMN_HEADER   = "header";
+    private static final String COLUMN_CONTENT = "content";
+    private static final String COLUMN_EVENT_ID = "event_id";
 	
 	/* ************************* Creation of Database and Tables ************************* */
 
@@ -233,11 +237,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				+ COLUMN_COMMENT_TEXT + " TEXT)";
 		db.execSQL(CREATE_COMMENT_TABLE);
 
-		String CREATE_NEW_ITEM_TABLE = "CREATE TABLE " + TABLE_NEW_ITEM
-				+ "(" + COLUMN_NEW_ITEM_DATE + " TEXT," + COLUMN_TYPE
-				+ " TEXT," + COLUMN_MESSAGE + " TEXT)";
-		db.execSQL(CREATE_NEW_ITEM_TABLE);
-
 		String CREATE_REFRESH_PERIOD_TABLE = "CREATE TABLE " + TABLE_REFRESH_PERIOD
 				+ "(" + COLUMN_REFRESH + " TEXT PRIMARY KEY)";
 		db.execSQL(CREATE_REFRESH_PERIOD_TABLE);
@@ -259,7 +258,13 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			+ COLUMN_NOTE_ID + " INTEGER,"
 			+ COLUMN_SUPPORTER_PARTNER_ID + " INTEGER,"
 			+ COLUMN_SUPPORTER_PARTNER_NAME + " TEXT)";
-	db.execSQL(CREATE_PRAYED_FOR_TABLE);
+	    db.execSQL(CREATE_PRAYED_FOR_TABLE);
+
+    String CREATE_NEW_EVENT_TABLE = "CREATE TABLE " + TABLE_NEW_EVENT
+            + "(" + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_TYPE
+            + " TEXT," + COLUMN_EVENT_ID + " INTEGER," +  COLUMN_HEADER + " TEXT,"
+            + COLUMN_CONTENT + " TEXT," + COLUMN_DATE + " TEXT)";
+        db.execSQL(CREATE_NEW_EVENT_TABLE);
 	}
 	/**
 	 * Since the SQLite Database is meant to stay local, it will never use this call
@@ -479,6 +484,29 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
+    /**
+     * Adds a gift to the database
+     * @param type, type of event
+     * @param eventId, id of event
+     * @param header, header to be displayed for event
+     * @param content, information from event
+     * @param date, date event occurred
+     */
+
+    // id, type, eventid, header, content, date
+    public void addNewEvent(String type, int eventId, String header, String content, String date){
+        ContentValues values = new ContentValues();
+        Log.d(TAG, "addNewEvent: " + type + eventId + header + content + date);
+        values.put(COLUMN_TYPE, type);
+        values.put(COLUMN_EVENT_ID, eventId);
+        values.put(COLUMN_HEADER, header);
+        values.put(COLUMN_CONTENT, content);
+        values.put(COLUMN_DATE, date);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(TABLE_NEW_EVENT, null, values);
+        db.close();
+    }
 	/**
 	 * Adds a connection between a fund and a account through their IDs
 	 * @param Gift_ID, Gift Identifier
@@ -511,23 +539,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.insert(TABLE_COMMENT, null, values);
-		db.close();
-	}
-
-    /**
-     * Adds a new notification item to the database
-     * @param date, date of notification item
-     * @param type, notification type
-     * @param message, content of the notification
-     */
-	public void addNewItem(String date, String type, String message) {
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_NEW_ITEM_DATE, date);
-		values.put(COLUMN_TYPE, type);
-		values.put(COLUMN_MESSAGE, message);
-
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_NEW_ITEM, null, values);
 		db.close();
 	}
 
@@ -594,7 +605,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	/**
 	 * Deletes the Account from the database (also any information linked with it)
 	 */
-	private void deleteAccount(){
+	public void deleteAccount(){
 
 		SQLiteDatabase db = this.getWritableDatabase();
 
@@ -608,11 +619,11 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.delete(TABLE_NOTIFICATIONS, null, null);
         db.delete(TABLE_COMMENT, null, null);
         db.delete(TABLE_PRAYED_FOR, null, null);
-        db.delete(TABLE_NEW_ITEM, null, null);
 
         db.delete(TABLE_DONORS, null, null);
 
 		db.delete(TABLE_ACCOUNTS, null,null);
+        db.delete(TABLE_NEW_EVENT, null, null);
 
 		db.close();
 	}
@@ -626,6 +637,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		String[] notification = {String.valueOf(notification_id)};
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_NOTIFICATIONS, COLUMN_ID + " = ?", notification);
+        db.close();
 	}
 
     /**
@@ -638,6 +650,17 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.delete(TABLE_NOTES, COLUMN_ID + " = ?", acct);
 		db.close();
 	}
+
+    /**
+     * delete NewEvent from database
+     * @param id, note to be deleted
+     */
+    public void deleteNewEvent(int id){
+        String[] acct = {String.valueOf(id)};
+        SQLiteDatabase db = this.getReadableDatabase();
+        db.delete(TABLE_NEW_EVENT, COLUMN_ID + " = ?", acct);
+        db.close();
+    }
 
     /**
      * delete comment from database
@@ -658,15 +681,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		String[] json = {String.valueOf(jsonId)};
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_JSON_POST, COLUMN_JSON_ID + " = ?", json);
-	}
-
-    /**
-     * deletes new items table
-     */
-	public void deleteNewItems() {
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.delete(TABLE_NEW_ITEM, null, null);
-		db.close();
 	}
 
     /**
@@ -901,12 +915,33 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         Cursor c = db.rawQuery(queryString, null);
 
         while (c.moveToNext()) {
-            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), c.getString(4), c.getString(5), null);
+            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), c.getString(4), c.getString(5), null, null);
             donors.add(temp);
         }
         c.close();
         db.close();
         return donors;
+    }
+
+    /**
+     * Pulls all donor matching id from database
+     * @param Id, id of the donor to be retrieved
+     * @return a list of all donors as an ArrayList of Donor Objects ordered alphabetically
+     */
+    public Donor getDonorById(int Id) {
+        Donor temp = new Donor();
+        String queryString = "SELECT * FROM " + TABLE_DONORS + " WHERE " +
+                COLUMN_ID + " = " + Id;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        while (c.moveToNext()) {
+            temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), c.getString(4), c.getString(5), null, null);
+        }
+        c.close();
+        db.close();
+        return temp;
     }
 
     /**
@@ -924,7 +959,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         while (c.moveToNext()) {
             //set Donor(id, name)
-            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), c.getString(4), c.getString(5), null);
+            Donor temp = new Donor(Integer.parseInt(c.getString(0)), c.getString(1), c.getBlob(3), c.getString(4), c.getString(5), null, null);
             donors.add(temp);
         }
         c.close();
@@ -939,8 +974,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
      */
     public Donor getDonorInfoById(int donorId) {
         String queryString = "SELECT " + COLUMN_ID + ", " + COLUMN_PHONE
-                + ", " + COLUMN_EMAIL + ", " + COLUMN_ADDRESS + " FROM " + TABLE_DONORS
-                + " WHERE " + COLUMN_ID + " = " + donorId;
+                + ", " + COLUMN_EMAIL + ", " + COLUMN_ADDRESS + ", " + COLUMN_PROFILE_PICTURE
+                + " FROM " + TABLE_DONORS + " WHERE " + COLUMN_ID + " = " + donorId;
 
         Donor temp = new Donor();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -952,6 +987,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             temp.setPhone(c.getString(1));
             temp.setEmail(c.getString(2));
             temp.setAddress(c.getString(3));
+            temp.setImage(c.getBlob(4));
         }
         c.close();
         db.close();
@@ -977,6 +1013,49 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         c.close();
         db.close();
         return donors;
+    }
+
+    /**
+     * Pulls all donors from the database associated with a gift
+     * @return a list of donors who have donated as an ArrayList of Donor Objects ordered alphabetically
+     */
+    public ArrayList<NewItem> getNewEvents() {
+        ArrayList<NewItem> events = new ArrayList<NewItem>();
+        String queryString = "SELECT * FROM " + TABLE_NEW_EVENT + " ORDER BY " +
+                COLUMN_DATE + " DESC";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        Calendar date = Calendar.getInstance();
+        long current = date.getTimeInMillis();
+
+
+        // id, type, eventid, Name, content, date
+        while (c.moveToNext()) {
+            String[] dateParts = c.getString(5).split("-");
+            date.set(Calendar.YEAR, Integer.parseInt(dateParts[0]));
+            date.set(Calendar.MONTH, Integer.parseInt(dateParts[1])-1);
+            date.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dateParts[2]));
+            date.set(Calendar.HOUR_OF_DAY, 0);
+            long eventDate = date.getTimeInMillis();
+
+            if (current - eventDate < 10*Math.pow(10,10)){//6.048*Math.pow(10,8)){
+                NewItem item = new NewItem();
+                item.setId(c.getInt(0));
+                item.setItemType(c.getString(1));
+                item.setEventId(c.getInt(2));
+                item.setHeader(c.getString(3));
+                item.setContent(c.getString(4));
+                item.setDate(c.getString(5));
+                events.add(item);
+            }else{
+                deleteNewEvent(c.getInt(0));
+            }
+        }
+        c.close();
+        db.close();
+        return events;
     }
 
 	/**
@@ -1454,24 +1533,29 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return comments;
 	}
 
-    /**
-     * gets list of new prayer requests and updates
-     * @return ArrayList of NewItem objects
-     */
-	public ArrayList<NewItem> getNewItems() {
-		ArrayList<NewItem> newItems = new ArrayList<NewItem>();
-		String queryString = "SELECT * FROM " + TABLE_NEW_ITEM;
+    //gets list of comments
+    public Comment getCommentById(int id){
+        Comment temp = new Comment();
+        String queryString = "SELECT * FROM " + TABLE_COMMENT + " WHERE " + COLUMN_COMMENT_ID + " = " + id;
 
-		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor c = db.rawQuery(queryString, null);
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
 
-		while(c.moveToNext()){
-			newItems.add(new NewItem(c.getString(1), c.getString(2)));
-		}
-		c.close();
-		db.close();
-		return newItems;
-	}
+        while(c.moveToNext()){
+            int commentId = c.getInt(0);
+            int senderId = c.getInt(1);
+            int noteId = c.getInt(2);
+            String username = c.getString(3);
+            String noteType = c.getString(4);
+            String date = c.getString(5);
+            String commentText = c.getString(6);
+
+            temp = new Comment(commentId,senderId,noteId,username, noteType, date, commentText);
+        }
+        c.close();
+        db.close();
+        return temp;
+    }
 
     /**
      * 	gets the refresh period for the auto-updater

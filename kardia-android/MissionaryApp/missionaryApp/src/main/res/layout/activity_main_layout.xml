@@ -19,20 +19,50 @@
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
             style="@style/listCustomBlue"/>
-        
     </RelativeLayout>
 
     <!-- add Update/Prayer Request/Letter Buttons -->
+
+    <LinearLayout
+        android:id="@+id/addLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/addButton"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/addUpdateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/border_dimen"
+            android:text="@string/add_update_button"
+            style="@style/customBottomBar"/>
+        <Button
+            android:id="@+id/addRequestButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/border_dimen"
+            android:text="@string/add_request_button"
+            style="@style/customBottomBar"/>
+        <Button
+            android:id="@+id/addLetterButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/border_dimen"
+            android:text="@string/add_letter_button"
+            style="@style/customBottomBar"/>
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/addButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/RLayout"
-        android:layout_margin="@dimen/border_dimen_lg"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/border_dimen"
         android:src="@drawable/ic_add_circle_black_48dp"
+        android:background="@color/transparent"
         android:visibility="gone"
-        />
-
-
+        android:contentDescription="@string/add_button"/>
 </RelativeLayout>

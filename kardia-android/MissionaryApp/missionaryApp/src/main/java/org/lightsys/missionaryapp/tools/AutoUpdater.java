@@ -111,15 +111,13 @@ public class AutoUpdater extends Service {
            new DataConnection(this, null, account, -1).execute("");
 
         //list of new notifications
-        ArrayList<NewItem> newItems = db.getNewItems();
+        ArrayList<NewItem> newItems = db.getNewEvents();
 
         //send notifications
         for (NewItem item : newItems) {
             notificationID++;
-            sendNotification("New " + item.getItemType(), item.getItemMessage(), notificationID);
+            sendNotification("New " + item.getItemType(), item.getContent(), notificationID);
         }
-
-        db.deleteNewItems();
     }
 
     private void sendNotification(String title, String subject, int ID){

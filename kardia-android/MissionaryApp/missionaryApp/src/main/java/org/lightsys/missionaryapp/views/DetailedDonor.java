@@ -174,7 +174,6 @@ public class DetailedDonor extends Fragment{
 
         totalText.setText(Formatter.amountToString(total));
 
-
         return v;
     }
 
@@ -202,7 +201,7 @@ public class DetailedDonor extends Fragment{
         for(Gift g : gifts){
             HashMap<String,String> hm = new HashMap<String,String>();
 
-            hm.put("fund_name", "Gift to: " + g.getGiftFund());
+            hm.put("fund_name", "Gift to: " + g.getGiftFundDesc());
             hm.put("gift_amount", Formatter.amountToString(g.getGiftAmount()));
             hm.put("gift_date", Formatter.getFormattedDate(g.getGiftDate()));
 
@@ -224,7 +223,6 @@ public class DetailedDonor extends Fragment{
             args.putInt(DetailedGift.ARG_GIFT_ID, gifts.get(position).getId());
             args.putInt(DetailedGift.ARG_DONOR_ID, gifts.get(position).getGiftDonorId());
             args.putString(DetailedGift.ARG_DONOR_NAME, gifts.get(position).getGiftDonor());
-            args.putByteArray(DetailedGift.ARG_DONOR_IMAGE, byteImage);
 
             DetailedGift newFrag = new DetailedGift();
             newFrag.setArguments(args);

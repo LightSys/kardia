@@ -17,6 +17,11 @@ import java.util.Map;
  *
  * This is an Adapter modeled off of Simple adapter. It's purpose is to enable the interaction
  * of the program with the buttons inside the ListView for Prayer Requests.
+ *
+ * contributers
+ *         prayer icon <div>Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+ *         letter icon <div>Icons made by <a href="http://www.flaticon.com/authors/gregor-cresnar" title="Gregor Cresnar">Gregor Cresnar</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+ *         update Icon <div>Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
  */
 public class NoteListAdapter extends SimpleAdapter {
 
@@ -56,14 +61,18 @@ public class NoteListAdapter extends SimpleAdapter {
             // Four possibilities are inactive prayer, active prayer, update, or prayer letter
             if (pieces.get("type").equals("Pray")) {
                 if (pieces.get("isPrayedFor").equals("inactive")) {
-                    rowView.setImage(R.drawable.inactive_praying_hands_icon);
+                    rowView.setImage(R.drawable.ic_not_praying);
+                    //rowView.setImage(R.drawable.inactive_praying_hands_icon);
                 } else {
-                    rowView.setImage(R.drawable.active_praying_hands_icon);
+                    rowView.setImage(R.drawable.ic_praying);
+                    //rowView.setImage(R.drawable.active_praying_hands_icon);
                 }
             } else if (pieces.get("type").equals("Update")) {
-                rowView.setImage(R.drawable.update_icon);
+                rowView.setImage(R.drawable.ic_update);
+                //rowView.setImage(R.drawable.update_icon);
             } else if (pieces.get("type").equals("Letter")) {
-                rowView.setImage(R.drawable.prayer_letter_icon);
+                rowView.setImage(R.drawable.ic_letter);
+                //rowView.setImage(R.drawable.prayer_letter_icon);
             }
 
         return rowView;

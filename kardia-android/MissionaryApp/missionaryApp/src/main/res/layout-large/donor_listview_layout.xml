@@ -31,10 +31,9 @@
         android:id="@+id/addressText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/userNameText"
+        android:layout_alignBottom="@+id/emailText"
         android:layout_alignLeft="@id/userNameText"
         android:layout_alignStart="@id/userNameText"
-        android:layout_marginBottom="5dp"
         android:textSize="@dimen/contact_dimen_lg"
         android:visibility="gone"
         />

@@ -5,77 +5,12 @@
     android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat" >
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/RLayout"
-        android:background="@android:color/darker_gray"
-        android:layout_marginBottom="10dp">
-
-        <LinearLayout
-            android:id="@+id/connectedList"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            style="@style/listCustomBlue"
-            android:layout_margin="20dp">
-
-            <TextView
-                android:id="@+id/connectedHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/body_dimen"/>
-
-            <!-- The User Name -->
-            <TextView
-                android:id="@+id/userName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginStart="10dp"
-                android:textSize="@dimen/body_dimen"/>
-
-            <!-- The Server Address -->
-            <TextView
-                android:id="@+id/server"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="end"
-                android:textSize="@dimen/small_subtitle_dimen" />
-        </LinearLayout>
-    </RelativeLayout>
-
-    <Button
-        android:id="@+id/finishButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_below="@id/RLayout"
-        android:textSize="@dimen/body_dimen"
-        android:text="@string/done"
-        android:textStyle="bold"
-        style="@style/customBottomBar" />
-
-    <TextView
-        android:id="@+id/changeAccountText"
-        android:layout_below="@id/finishButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="10dp"
-        android:text="@string/change_account"
-        android:textSize="@dimen/body_dimen"/>
-
     <EditText
         android:id="@+id/usernameInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/changeAccountText"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="80dp"
         android:ems="10"
         android:hint="@string/username"
         android:maxLines="1"
@@ -97,16 +32,42 @@
         android:textSize="@dimen/body_dimen"/>
 
     <EditText
-        android:id="@+id/serverNameInput"
+        android:id="@+id/protocalInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="2dp"
         android:layout_below="@id/passwordInput"
         android:ems="10"
+        android:hint="@string/protocal"
+        android:maxLines="1"
+        android:text = "https"
+        android:textSize="@dimen/body_dimen"/>
+
+    <EditText
+        android:id="@+id/serverNameInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="2dp"
+        android:layout_below="@id/protocalInput"
+        android:ems="10"
         android:hint="@string/server_name"
         android:maxLines="1"
-        android:text = "10.5.10.176:800"
+        android:text = "10.5.10.176"
+        android:textSize="@dimen/body_dimen"/>
+
+    <EditText
+        android:id="@+id/portInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="2dp"
+        android:layout_below="@id/serverNameInput"
+        android:ems="10"
+        android:hint="@string/port"
+        android:maxLines="1"
+        android:text = "800"
         android:textSize="@dimen/body_dimen"/>
 
     <EditText
@@ -114,7 +75,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:layout_below="@id/serverNameInput"
+        android:layout_below="@id/portInput"
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/user_id_ex_100001"
@@ -130,7 +91,7 @@
         android:layout_below="@id/userIdInput"
         android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"
-        android:text="@string/connect"
+        android:text="@string/login"
         android:textStyle="bold"
         style="@style/customBottomBar"
         android:textSize="@dimen/body_dimen"/>

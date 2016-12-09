@@ -98,7 +98,7 @@ public class GiftList extends Fragment{
 		}
 		else{
 			if (fundIds.size() == 1) {
-				String fundStr = db.getFundByFundId(fundIds.get(0)).getFundName();
+				String fundStr = db.getFundByFundId(fundIds.get(0)).getFundDesc();
 				giftListTitle += ": " + fundStr;
 			}
 			if (period_id != null) {
@@ -143,7 +143,7 @@ public class GiftList extends Fragment{
 			HashMap<String,String> hm = new HashMap<String,String>();
 
 			hm.put("donor_name", g.getGiftDonor());
-			hm.put("gift_name", g.getGiftFund());
+			hm.put("gift_name", g.getGiftFundDesc());
 			hm.put("gift_amount", Formatter.amountToString(g.getGiftAmount()));
 			hm.put("gift_date", Formatter.getFormattedDate(g.getGiftDate()));
 			

@@ -7,9 +7,9 @@
         <item>Donors</item>
         <item>Prayer Requests/Updates</item>
         <item>Funds</item>
-        <item>Accounts</item>
         <item>Options</item>
         <item>Refresh</item>
+        <item>Logout</item>
     </string-array>
     <string-array name="contactTypes">
         <item>Update</item>
@@ -45,14 +45,15 @@
     <string name="add_request_button">Add Prayer Request</string>
     <string name="add_letter_button"> Add Letter</string>
     <string name="add_button">Opens Add Menu</string>
-    <string name="accounts_page">Manage Accounts</string>
+    <string name="accounts_page">Kardia Login</string>
     <string name="change_account">Change Account:</string>
     <string name="password">password</string>
     <string name="username">username</string>
     <string name="server_name">server name</string>
+    <string name="protocal">protocal (ex. http)</string>
     <string name="port">port</string>
     <string name="done">Done</string>
-    <string name="connect">Connect</string>
+    <string name="login">Login</string>
     <string name="user_id_ex_100001">User ID (ex. 100001)</string>
     <string name="drawer_open">Drawer Open</string>
     <string name="drawer_closed">Drawer Closed</string>
@@ -63,7 +64,7 @@
     <string name="choose_date">Choose Date</string>
     <string name="choose_fund">Choose Fund</string>
     <string name="choose_donor">Choose Donor</string>
-    <string name="_">" - "</string>
+    <string name="dash">" - "</string>
     <string name="by_amount">By Amount</string>
     <string name="by_date">By Date</string>
     <string name="by_name">By Name</string>
@@ -100,4 +101,23 @@
     <string name="gift_total_text">Gift Total</string>
     <string name="connected_account_text">Connected Account:</string>
     <string name="no_account_text">No Accounts Connected.</string>
+    <string name="server_certificate">MIIDijCCAnICCQCY2dcDDhv0ATANBgkqhkiG9w0BAQUFADCBhjELMAkGA1UEBhMC
+TFMxETAPBgNVBAgMCExpZ2h0U3lzMREwDwYDVQQKDAhMaWdodFN5czERMA8GA1UE
+BwwITGlnaHRTeXMxFDASBgNVBAMMCzEwLjUuMTAuMTc2MSgwJgYJKoZIhvcNAQkB
+Fhlyb290QGthcmRpYXZtLWNybS1zYmNhdDE2MB4XDTE2MDcyNTE2MDU0N1oXDTI2
+MDcyMzE2MDU0N1owgYYxCzAJBgNVBAYTAkxTMREwDwYDVQQIDAhMaWdodFN5czER
+MA8GA1UECgwITGlnaHRTeXMxETAPBgNVBAcMCExpZ2h0U3lzMRQwEgYDVQQDDAsx
+MC41LjEwLjE3NjEoMCYGCSqGSIb3DQEJARYZcm9vdEBrYXJkaWF2bS1jcm0tc2Jj
+YXQxNjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMlMW7UmaE4Hg43W
+VM6et7r5Ehk19zABpndufP8QoYI1H603Du8QUR2laYyCLfDAtJOKo+/HZRZ7exF6
+oBaRFYa3w+8Q4LDXFOLx4OpLMdpnbJalVxUyExbZWb3D9wwOzNDtrc/EP1SFu/KF
+hED6RcNjwoPajwSHpFcAMpjDAhE5hfMKlSaJea1B3PSkOZ6vJwhyzMLH3fq73k6K
+naSTzKRQIiH+CL/WK96CDzPTz2FKAUYd7OISweJlyEa5f903lvwHz/GfSpKh9G2Y
+pViOc/1Vy0Qth9Cc1UUtKQJTqjy/4Vnb9hdOixwF/w66AWSbVWCPBj69uNnt1lZF
+UEd73RUCAwEAATANBgkqhkiG9w0BAQUFAAOCAQEASizFHx3bwLubpa9kPXzi2aSN
+UnnL6wwHvpFy3ZyQ8/vrmC50Q2r5yfRpoWq69QYbrTXJ83NGXCRJydRx3F2n+2NT
+m5nJxeCKLmghwMuZAVzKUvlFdSOVWJB6Zk6N8yPC+kCZwdvjoprk9HZSeTq4hqC1
+6qSd1Sy4vBDY48+QjJ82WNo/XwrsSy2oj2dBa1wsdt1LJ7pDzhS15qzZWEu3xHVM
+96DfsnvNWB393Tz63tj0L2qdcOOXhlI93n1b5ed6EP1SN6rBqMceBphHgWGa6mR3
+pCKI9mClQOKscqg95LVzVsDYhrQzhQIoapjJU921pRk0CuVxpkFwxwXgxz8ncA==</string><!--found by terminal: "openssl s_client -connect 127.0.0.1:1843"-->
 </resources>
