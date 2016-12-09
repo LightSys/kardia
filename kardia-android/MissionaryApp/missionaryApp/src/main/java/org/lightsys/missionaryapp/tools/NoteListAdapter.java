@@ -53,7 +53,6 @@ public class NoteListAdapter extends SimpleAdapter {
             rowView.setTitle(pieces.get("subject"));
             rowView.setDate(pieces.get("date"));
             rowView.setContentView(pieces.get("content"));
-            //rowView.setTextAboveButton(pieces.get("textAbove"));
             rowView.setTextBelowButton(pieces.get("textBelow"));
 
 

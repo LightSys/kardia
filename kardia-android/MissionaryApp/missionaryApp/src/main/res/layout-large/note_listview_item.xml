@@ -57,20 +57,10 @@
         android:layout_centerInParent="true"
         tools:ignore="RelativeOverlap">
 
-        <TextView
-            android:id="@+id/textAbovePrayingButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:textSize="@dimen/contact_dimen_lg"
-            android:textStyle="bold"
-            android:visibility="gone"/>
-
         <Button
             android:id="@+id/prayingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
             android:clickable="false"
             android:focusable = "false"/>
 
@@ -79,6 +69,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/contact_dimen_lg"
+            android:layout_gravity="center_horizontal"
+            android:gravity="bottom"
             android:textStyle="bold" />
     </LinearLayout>
 </RelativeLayout>
