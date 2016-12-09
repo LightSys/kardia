@@ -97,8 +97,8 @@ public class NoteList extends Fragment {
         // Map data fields to layout fields
         itemList.clear();
         generateListItems();
-        String[] from = {"subject", "date", "content", "textAbove", "textBelow"};
-        int[] to = {R.id.subjectText,  R.id.dateText, R.id.contentText, R.id.textAbovePrayingButton, R.id.textBelowPrayingButton};
+        String[] from = {"subject", "date", "content", "textBelow"};
+        int[] to = {R.id.subjectText,  R.id.dateText, R.id.contentText, R.id.textBelowPrayingButton};
 
         NoteListAdapter adapter = new NoteListAdapter(getActivity(), itemList,
                 from, to);
@@ -242,11 +242,10 @@ public class NoteList extends Fragment {
                 if (n.getType().equals("Pray")) {
                     hm.put("textBelow", "Praying");
                     if (numPrayed==0) {
-                        hm.put("textAbove", "Prayer");
                         hm.put("textBelow", "Request");
                         hm.put("isPrayedFor", "inactive");
                     } else {
-                        hm.put("textBelow", numPrayed + "");// + " Praying");
+                        hm.put("textBelow", Integer.toString(numPrayed) + "33333377\npraying");
                         hm.put("isPrayedFor", "active");
                     }
                 }else if (n.getType().equals("Update")){
