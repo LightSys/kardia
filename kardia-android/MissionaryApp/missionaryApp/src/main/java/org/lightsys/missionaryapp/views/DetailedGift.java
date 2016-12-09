@@ -37,10 +37,9 @@ public class DetailedGift extends Fragment {
     final static String ARG_GIFT_ID = "gift_id";
     final static String ARG_DONOR_ID = "donor_id";
     final static String ARG_DONOR_NAME = "donor_name";
-    final static String ARG_DONOR_IMAGE = "donor_image";
 
     private int giftId = -1, donorId = -1;
-    private String donorName = "", phoneCell = "", emailInfo = "";
+    private String donorName = "";
     private byte[] byteImage;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -53,7 +52,6 @@ public class DetailedGift extends Fragment {
             giftId = savedInstanceState.getInt(ARG_GIFT_ID);
             donorId = savedInstanceState.getInt(ARG_DONOR_ID);
             donorName = savedInstanceState.getString(ARG_DONOR_NAME);
-            byteImage = savedInstanceState.getByteArray(ARG_DONOR_IMAGE);
         }
 
         return v;
@@ -65,9 +63,9 @@ public class DetailedGift extends Fragment {
         Bundle args = getArguments();
 
         if (args != null) {
-            updateGiftView(args.getInt(ARG_GIFT_ID), args.getInt(ARG_DONOR_ID), args.getString(ARG_DONOR_NAME), args.getByteArray(ARG_DONOR_IMAGE));
+            updateGiftView(args.getInt(ARG_GIFT_ID), args.getInt(ARG_DONOR_ID), args.getString(ARG_DONOR_NAME));
         } else if (giftId != -1) {
-            updateGiftView(giftId, donorId, donorName, byteImage);
+            updateGiftView(giftId, donorId, donorName);
         }
     }
 
@@ -77,13 +75,11 @@ public class DetailedGift extends Fragment {
      * @param giftId, Gift Identification
      */
     @SuppressLint("SetTextI18n")
-    private void updateGiftView(final int giftId, final int donorId, final String donorName, final byte[] byteImage) {
+    private void updateGiftView(final int giftId, final int donorId, final String donorName) {
         TextView fundTitleText = (TextView) getActivity().findViewById(R.id.fundText);
         TextView dateText      = (TextView) getActivity().findViewById(R.id.dateText);
         TextView amountText    = (TextView) getActivity().findViewById(R.id.giftAmountText);
         TextView donorNameText = (TextView) getActivity().findViewById(R.id.userNameText);
-        TextView emailText     = (TextView) getActivity().findViewById(R.id.emailText);
-        TextView phoneText     = (TextView) getActivity().findViewById(R.id.phoneText);
         ImageView donorImage   = (ImageView) getActivity().findViewById(R.id.profilePicImage);
 
 
@@ -95,8 +91,7 @@ public class DetailedGift extends Fragment {
         // Map data fields to layout fields
         RelativeLayout DonorInfo = (RelativeLayout) getActivity().findViewById(R.id.donorInfoLayout);
 
-        emailInfo = contactinfo.getEmail();
-        phoneCell = contactinfo.getPhone();
+        byteImage = contactinfo.getImage();
         //set profile picture
         Bitmap bitmap;
         if (byteImage != null) {
@@ -107,10 +102,13 @@ public class DetailedGift extends Fragment {
         }
 
         donorNameText.setText(donorName);
-        phoneText.setText(phoneCell);
-        emailText.setText(emailInfo);
 
-        fundTitleText.setText("Fund: " + g.getGiftFund());
+        RelativeLayout.LayoutParams llp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        llp.addRule(RelativeLayout.CENTER_VERTICAL);
+        llp.addRule(RelativeLayout.RIGHT_OF, donorImage.getId());
+        donorNameText.setLayoutParams(llp);
+
+        fundTitleText.setText("Fund: " + g.getGiftFundDesc());
         dateText.setText(Formatter.getFormattedDate(g.getGiftDate()));
         amountText.setText(Formatter.amountToString(g.getGiftAmount()));
 

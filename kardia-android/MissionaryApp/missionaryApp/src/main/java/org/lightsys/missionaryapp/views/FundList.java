@@ -93,7 +93,7 @@ public class FundList extends Fragment{
 				Total[1]-=Math.floor(Total[1]/100)*100;
 			}
 
-			hm.put("fund_title", f.getFundName());
+			hm.put("fund_title", f.getFundDesc());
             hm.put("to_date_amount", Formatter.amountToString(Total));
 			if(gifts.size()>0) {
 				String startDate = gifts.get(gifts.size() - 1).getGiftDate().substring(0, 4);

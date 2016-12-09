@@ -55,7 +55,7 @@ public class GiftTimePeriodList extends Fragment {
         String gtpListTitle = "Gifts By " + periodType;
 
 		if (fundId!=-1) {
-			gtpListTitle += ": " + db.getFundByFundId(fundId).getFundName();
+			gtpListTitle += ": " + db.getFundByFundId(fundId).getFundDesc();
 		}
 		getActivity().setTitle(gtpListTitle);
 

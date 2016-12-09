@@ -54,7 +54,7 @@
                     android:id="@+id/dashTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/_"
+                    android:text="@string/dash"
                     android:textSize="@dimen/body_dimen_lg"
                     android:visibility="invisible" />
 
@@ -126,7 +126,7 @@
                     android:id="@+id/dash2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/_"
+                    android:text="@string/dash"
                     android:visibility="invisible"
                     android:textSize="@dimen/body_dimen_lg"/>
 
@@ -181,7 +181,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/selectDonor"
-                android:enabled="true"
                 android:hint="@string/choose_donor"
                 android:layout_centerHorizontal="true"
                 android:gravity="center_horizontal"
@@ -229,7 +228,6 @@
                 android:layout_below="@+id/selectFund"
                 android:layout_centerHorizontal="true"
                 android:gravity="center_horizontal"
-                android:enabled="true"
                 android:hint="@string/choose_fund"
                 android:textSize="@dimen/header_dimen_lg"
                 android:visibility="gone"/>

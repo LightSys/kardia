@@ -5,12 +5,33 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.Settings;
 import android.util.Log;
+import android.webkit.CookieSyncManager;
 import android.widget.Toast;
 
+import org.apache.http.HttpVersion;
+import org.apache.http.client.CookieStore;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.params.ConnManagerPNames;
+import org.apache.http.conn.params.ConnPerRouteBean;
+import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.RequestExpectContinue;
 import org.lightsys.missionaryapp.R;
 
 import org.apache.http.HttpResponse;
@@ -30,6 +51,7 @@ import org.lightsys.missionaryapp.data.Comment;
 import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.JsonPost;
+import org.lightsys.missionaryapp.data.NewItem;
 import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
@@ -39,28 +61,42 @@ import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.views.MainActivity;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.HttpURLConnection;
+import java.net.InterfaceAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import static android.content.ContentValues.TAG;
@@ -89,6 +125,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     private LocalDBHandler db;
     private boolean validAccount;
 
+    private ClientConnectionManager clientConnectionManager;
+    private HttpContext context = null;
+    private HttpParams params;
+    private DefaultHttpClient client = null;
+    private CookieStore cookies = null;
+
     private static final String Tag = "DPS";
 
     public DataConnection(Context context, Activity activity, Account a, int Frag) {
@@ -110,6 +152,13 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         catch(Exception e){
             Log.w(Tag, "The DataPull failed. (probably not connected to internet or vmPlayer): "
                     + e.getLocalizedMessage());
+        }
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(dataContext, notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -221,6 +270,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         hostName = account.getServerName();
         port = account.getPort();
         if (port == null){
+            Log.d(TAG, "DataPull: " + port);
             port = "800";
         }
         protocal = account.getProtocal();
@@ -300,7 +350,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                             "/PrayerLetters?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
 
             // Loop through donors and pull contact info
-            db.deleteNewItems();
             for(Donor m : db.getDonors()) {
                 int donorID = m.getId();
                 loadContact(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/partner/Partners/" + donorID +
@@ -356,47 +405,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             db.updateTimeStamp("" + originalStamp, "" + currentStamp);
         }
         db.close();
-    }
-
-    /**
-     * Attempts to do basic Http Authentication, and send a get request from the url
-     *
-     * @param url, url for get request.
-     * @return string results of the query.
-     * @throws Exception when could not connect to request
-     */
-    private String GET(String url) throws Exception {
-        InputStream inputStream;
-        String result;
-        try {
-            // Set the user credentials to allow access to API information
-            CredentialsProvider credProvider = new BasicCredentialsProvider();
-            credProvider.setCredentials(new AuthScope(hostName, 800),
-                    new UsernamePasswordCredentials(accountName, password));
-
-            // Set timeout parameters to avoid a long connection attempt to non-valid server
-            // Timeout currently set to 10 seconds
-            HttpParams params = new BasicHttpParams();
-            HttpConnectionParams.setConnectionTimeout(params, 10000);
-            HttpConnectionParams.setSoTimeout(params, 10000);
-            DefaultHttpClient client = new DefaultHttpClient(params);
-
-            client.setCredentialsProvider(credProvider);
-
-            HttpResponse response = client.execute(new HttpGet(url));
-
-            inputStream = response.getEntity().getContent();
-
-            if (inputStream != null) {
-                result = convertInputStreamToString(inputStream);
-            } else {
-                result = "";
-            }
-        } catch (Exception e) {
-            // Rethrow exception for validation server error
-            throw new Exception();
-        }
-        return result;
     }
 
     /**
@@ -462,14 +470,25 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                     String donor_name = DonorObj.getString("partner_name");
                     String donor_id = DonorObj.getString("partner_id");
-
+                    //JSONObject dateObj = DonorObj.getJSONObject("date_created");
                     Donor temp = new Donor();
                     temp.setName(donor_name);
                     temp.setId(Integer.parseInt(donor_id));
 
                     // If the donor id is not in the database, add the Donor Object to db
+                    /*String donor_year = dateObj.getString("year");
+                    String donor_month = dateObj.getString("month");
+                    // Convert gift dates to YYYY-MM-DD format
+                    donor_month = (donor_month.length() < 2)? "0" + donor_month : donor_month;
+                    String donor_day = dateObj.getString("day");
+                    donor_day = (donor_day.length() < 2)? "0" + donor_day : donor_day;
+                    String donor_date = donor_year + "-"
+                            + donor_month + "-" + donor_day;*/
+
+
                     if(!currentDonorIDList.contains(temp.getId())){
                         db.addDonor(temp);
+                        //db.addNewEvent("Donor", temp.getId(), donor_date);
                     }
                 }
             }
@@ -571,7 +590,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     private void loadPicture(String result, int partnerId) {
         JSONObject json = null;
         String url = "";
-        Log.d("DataConnection", "loadPicture: " + result.substring(0,7) + partnerId);
         if (!result.contains("404 Not Found")) {
             try {
                 json = new JSONObject(result);
@@ -595,11 +613,16 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                             e.printStackTrace();
                         }
 
-
-                        Bitmap image = getBitmapFromURL(url);
+                        HttpResponse response = getResponseFromUrl(url);
+                        Bitmap image = null;
+                        try {
+                            InputStream input = response.getEntity().getContent();
+                            image = BitmapFactory.decodeStream(input);
+                        }catch(IOException e){
+                            e.printStackTrace();
+                        }
 
                         if (image != null) {
-                            Log.d(TAG, "loadPicture: " + "inside if");
                             Bitmap resizedImage = getResizedBitmap(image);
                             byte[] data = getBitmapAsByteArray(resizedImage);
                             db.addDonorImage(data, partnerId);
@@ -652,12 +675,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setType(NoteObj.getString("note_type"));
                         temp.setMissionaryID(missionary_id);
                         temp.setNumberPrayed(0);
-
-                        //add new item
-                        //this lets the autoUpdater know there is something new
-                        db.addNewItem(Calendar.getInstance().getTimeInMillis() + ""
-                                , temp.getType()
-                                , "New " + temp.getType() + " from " + temp.getMissionaryName());
 
                         // Dates must be stored as YYYY-MM-DD
                         JSONObject date = new JSONObject(NoteObj.getString("note_date"));
@@ -723,11 +740,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setNoteID(Integer.parseInt(PrayedForObj.getString("note_id")));
                         temp.setSupporterId(Integer.parseInt(PrayedForObj.getString("supporter_partner_id")));
                         temp.setSupporterName(PrayedForObj.getString("supporter_partner_name"));
-
-                        //add new item
-                        //this lets the autoUpdater know there is something new
-                        db.addNewItem(Calendar.getInstance().getTimeInMillis() + "",
-                                "New Prayer from ", temp.getSupporterName());
 
                         // Dates must be stored as YYYY-MM-DD
                         JSONObject date = new JSONObject(PrayedForObj.getString("prayedfor_date"));
@@ -930,6 +942,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                         db.addGift(temp);
                         db.addGiftAccount(giftId, accountId);
+
+                        db.addNewEvent("Gift", giftId, name + " sent a gift.", Formatter.amountToString(giftTotal), gift_date);
+                        // id, type, eventid, header, content, date
+                        if (i==0) {
+                            db.addNewEvent("Donor", donorID, "New donor", donorName, gift_date);
+                        }
                     }
                 }
             }
@@ -1011,7 +1029,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         //if it's new, add it to database
                         if (newComment) {
                             db.addComment(temp.getCommentID(), temp.getSenderID(), temp.getNoteID(), temp.getUserName(), temp.getNoteType(), temp.getDate(), temp.getComment());
-                            db.addNewItem(Calendar.getInstance().getTimeInMillis() + "", "Comment", "New Comment on a post from " + db.getNoteForID(temp.getNoteID()).getMissionaryName());
+                            db.addNewEvent("Comment", ID, userName + " commented on \"" + db.getNoteForID(noteID).getSubject() + "\"",
+                                    comment, comment_date);
+                            // id, type, eventid, header, content, date
                         }
                     }
                 }
@@ -1045,18 +1065,100 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         return Bitmap.createScaledBitmap(image, width, height, true);
     }
 
-    private static Bitmap getBitmapFromURL(String src) {
+    /**
+     * Attempts to do basic Http Authentication, and send a get request from the url
+     *
+     * @param url, url for get request.
+     * @return string results of the query.
+     * @throws Exception when could not connect to request
+     */
+    private String GET(String url) throws Exception {
+        InputStream inputStream;
+        String result;
+        Log.d(TAG, "GET: " +url);
+        httpsSetup();
         try {
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            return BitmapFactory.decodeStream(input);
+            // Set the user credentials to allow access to API information
+            /*CredentialsProvider credProvider = new BasicCredentialsProvider();
+            credProvider.setCredentials(new AuthScope(hostName, Integer.parseInt(port)),
+                    new UsernamePasswordCredentials(accountName, password));
 
-        } catch (IOException e) {
+            // Set timeout parameters to avoid a long connection attempt to non-valid server
+            // Timeout currently set to 10 seconds
+            HttpParams params = new BasicHttpParams();
+            HttpConnectionParams.setConnectionTimeout(params, 10000);
+            HttpConnectionParams.setSoTimeout(params, 10000);
+            DefaultHttpClient client = new DefaultHttpClient(params);
+            client.setCredentialsProvider(credProvider);
+            HttpResponse response = client.execute(new HttpGet(url));*/
+
+            HttpResponse response = getResponseFromUrl(url);
+
+            inputStream = response.getEntity().getContent();
+
+            if (inputStream != null) {
+                result = convertInputStreamToString(inputStream);
+            } else {
+                result = "";
+            }
+        } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            // Rethrow exception for validation server error
+            throw new Exception();
         }
+        return result;
+    }
+
+
+    public HttpResponse getResponseFromUrl(String url){
+        //connection (client has to be created for every new connection)
+        try {
+            client = new DefaultHttpClient(clientConnectionManager, params);
+            client.removeRequestInterceptorByClass( RequestExpectContinue.class );//theoretically faster
+            if (cookies != null){
+                client.setCookieStore(cookies);
+            }
+
+            HttpGet get = new HttpGet(url);
+            HttpResponse response = client.execute(get, context);
+
+            if (cookies == null) {
+                cookies = client.getCookieStore();
+            }
+            return response;
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void httpsSetup(){
+
+        SchemeRegistry schemeRegistry = new SchemeRegistry();
+
+        // https scheme
+        if (protocal.equals("https")) {
+            schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
+        }
+        // http scheme
+        else {
+            schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        }
+
+        params = new BasicHttpParams();
+        params.setParameter(ConnManagerPNames.MAX_TOTAL_CONNECTIONS, 1);
+        params.setParameter(ConnManagerPNames.MAX_CONNECTIONS_PER_ROUTE, new ConnPerRouteBean(1));
+        params.setParameter(HttpProtocolParams.USE_EXPECT_CONTINUE, false);
+        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+        HttpProtocolParams.setContentCharset(params, "utf8");
+
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        //set the user credentials for our site "example.com"
+        credentialsProvider.setCredentials(new AuthScope(hostName, Integer.parseInt(port)),
+                new UsernamePasswordCredentials(accountName, password));
+        clientConnectionManager = new ThreadSafeClientConnManager(params, schemeRegistry);
+
+        context = new BasicHttpContext();
+        context.setAttribute("http.auth.credentials-provider", credentialsProvider);
     }
 }

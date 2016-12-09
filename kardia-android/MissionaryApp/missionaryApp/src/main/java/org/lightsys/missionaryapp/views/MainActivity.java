@@ -9,6 +9,8 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -61,9 +63,11 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onBackPressed() {
 
-        if (currentFrag != 0 && getSupportFragmentManager().getBackStackEntryCount() == 0) {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
+
+        if (!currentFragment.getTag().equals("Home") && getSupportFragmentManager().getBackStackEntryCount() == 0) {
             selectItem(0);
-        } else if (currentFrag == 0) {
+        } else if (currentFragment.getTag().equals("Home")) {
             this.finish();
         } else {
             super.onBackPressed();
@@ -176,7 +180,6 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
-        Log.d("Main - menu create", "onCreateOptionsMenu: " + "got to menu create");
         if (currentFragment !=null) {
             String fragTag = currentFragment.getTag();
             if (fragTag != null) {
@@ -269,7 +272,7 @@ public class MainActivity extends ActionBarActivity {
 	 * @param position, position of the drawer that has been selected
 	 */
 	public void selectItem(int position) {
-		LocalDBHandler db = new LocalDBHandler(this);
+		final LocalDBHandler db = new LocalDBHandler(this);
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		Account account = db.getAccount();
 		accountId = account.getId();
@@ -310,22 +313,36 @@ public class MainActivity extends ActionBarActivity {
                 break;
             case 5:
                 currentFrag = position;
-                Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
-                startActivity(accounts);
-                break;
-            case 6:
-                currentFrag = position;
                 Options fragment = new Options();
                 db.close();
                 fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment, "Option")
                         .commit();
                 break;
-            case 7:
+            case 6:
                 new DataConnection(this, this, account, currentFrag).execute("");
+                break;
+            case 7:
+                new AlertDialog.Builder(MainActivity.this)
+                        .setCancelable(false)
+                        .setTitle("Logout")
+                        .setMessage("This action will remove current account data. Continue?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                db.deleteAccount();
+                                Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
+                                startActivity(accounts);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
                 break;
         }
 
-        mDrawerList.setItemChecked(position, true);
+        mDrawerList.setItemChecked(currentFrag, true);
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
 	/**
@@ -365,9 +382,9 @@ public class MainActivity extends ActionBarActivity {
 		if(accountId != 0) {
 			if (accountId != db.getAccount().getId()) {
 				FragmentManager fragmentManager = getSupportFragmentManager();
+
 				fragment = new HomePage();
-				fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment)
-                        .add(android.R.id.content,fragment,"Home")
+				fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment, "Home")
                         .commit();
 			}
 		}
