@@ -17,18 +17,18 @@ import org.lightsys.missionaryapp.R;
  * and a button for Prayer Response
  */
 public class NoteListLayout extends RelativeLayout {
-    private final TextView titleView, dateView, missionaryNameView, aboveTextView, belowTextView;
+    private final TextView titleView, dateView, contentView   , aboveTextView, belowTextView;
     private final Button   prayButton;
 
     public NoteListLayout(Context context) {
         super(context);
         LayoutInflater.from(context).inflate(R.layout.note_listview_item, this, true);
-        titleView           = (TextView) findViewById(R.id.subjectText);
-        dateView            = (TextView) findViewById(R.id.dateText);
-        missionaryNameView  = (TextView) findViewById(R.id.missionaryName);
-        aboveTextView       = (TextView) findViewById(R.id.textAbovePrayingButton);
-        belowTextView       = (TextView) findViewById(R.id.textBelowPrayingButton);
-        prayButton          = (Button)   findViewById(R.id.prayingButton);
+        titleView     = (TextView) findViewById(R.id.subjectText);
+        dateView      = (TextView) findViewById(R.id.dateText);
+        contentView   = (TextView) findViewById(R.id.contentText);
+        aboveTextView = (TextView) findViewById(R.id.textAbovePrayingButton);
+        belowTextView = (TextView) findViewById(R.id.textBelowPrayingButton);
+        prayButton    = (Button)   findViewById(R.id.prayingButton);
     }
 
     public void setTitle(String title) {
@@ -39,8 +39,8 @@ public class NoteListLayout extends RelativeLayout {
         dateView.setText(date);
     }
 
-    public void setMissionaryNameView(String missionaryName) {
-        missionaryNameView.setText(missionaryName);
+    public void setContentView(String noteContent) {
+        contentView   .setText(noteContent);
     }
 
     public void setTextAboveButton(String aboveText) {

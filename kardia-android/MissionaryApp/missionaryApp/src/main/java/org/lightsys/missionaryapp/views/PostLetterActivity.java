@@ -5,26 +5,19 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Rect;
-import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.CFFFont;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import org.json.JSONObject;
@@ -35,12 +28,9 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import org.lightsys.missionaryapp.tools.PostJson;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -64,7 +54,7 @@ public class PostLetterActivity extends Activity {
 
         sender           = (TextView) findViewById(R.id.senderName);
         contactType      = (TextView) findViewById(R.id.typeText);
-        subject          = (EditText)findViewById(R.id.subjectText);
+        subject          = (EditText)findViewById(R.id.contentText);
         noteText         = (EditText)findViewById(R.id.noteText);
         Button submit    = (Button)  findViewById(R.id.submitButton);
         Button cancel    = (Button)  findViewById(R.id.cancelButton);

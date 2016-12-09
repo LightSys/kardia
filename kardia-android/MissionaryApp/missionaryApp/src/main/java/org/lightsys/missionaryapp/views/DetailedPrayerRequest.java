@@ -4,13 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.lightsys.missionaryapp.R;
@@ -18,15 +16,12 @@ import org.lightsys.missionaryapp.R;
 import org.lightsys.missionaryapp.data.Comment;
 import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.data.PrayedFor;
-import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.tools.CommentListAdapter;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * @author JoshWorkman
@@ -95,8 +90,8 @@ public class DetailedPrayerRequest extends Fragment{
     private void updateRequestView(final int request_id){
         final LocalDBHandler db = new LocalDBHandler(getActivity());
 
-        TextView missionaryName   = (TextView)getActivity().findViewById(R.id.missionaryName);
-        TextView subject          = (TextView)getActivity().findViewById(R.id.subjectText);
+        TextView missionaryName   = (TextView)getActivity().findViewById(R.id.subjectText);
+        TextView subject          = (TextView)getActivity().findViewById(R.id.contentText);
         TextView date             = (TextView)getActivity().findViewById(R.id.dateText);
         TextView text             = (TextView)getActivity().findViewById(R.id.noteText);
 
