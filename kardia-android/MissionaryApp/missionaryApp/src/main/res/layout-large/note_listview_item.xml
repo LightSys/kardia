@@ -7,7 +7,7 @@
     android:orientation="horizontal" >
 
     <TextView
-        android:id="@+id/missionaryName"
+        android:id="@+id/subjectText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxWidth="450dp"
@@ -21,13 +21,13 @@
         android:textSize="@dimen/header_dimen_lg"/>
 
     <TextView
-        android:id="@+id/subjectText"
+        android:id="@+id/contentText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/missionaryName"
-        android:layout_marginTop="10dp"
+        android:layout_below="@+id/subjectText"
+        android:layout_marginTop="5dp"
         android:layout_marginLeft="38dp"
         android:layout_marginRight="38dp"
         android:textSize="@dimen/body_dimen_lg" />
@@ -38,8 +38,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignBottom="@+id/prayingButtonLayout"
-        android:layout_marginTop="15dp"
+        android:layout_below="@+id/contentText"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="38dp"
         android:layout_marginStart="38dp"
         android:textSize="@dimen/contact_dimen_lg" />
@@ -47,27 +48,29 @@
     <LinearLayout
         android:id="@+id/prayingButtonLayout"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:orientation="vertical"
-        android:gravity="center_horizontal"
         android:layout_margin="10dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_centerInParent="true"
         tools:ignore="RelativeOverlap">
 
         <TextView
             android:id="@+id/textAbovePrayingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:textSize="@dimen/contact_dimen_lg"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/prayingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="1.5dp"
-            android:layout_marginTop="1.5dp"
+            android:layout_marginBottom="10dp"
             android:clickable="false"
             android:focusable = "false"/>
 

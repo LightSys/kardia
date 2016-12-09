@@ -52,8 +52,8 @@ public class NoteListAdapter extends SimpleAdapter {
         final Map<String, String> pieces = data.get(position);
             rowView.setTitle(pieces.get("subject"));
             rowView.setDate(pieces.get("date"));
-            rowView.setMissionaryNameView(pieces.get("missionary"));
-            rowView.setTextAboveButton(pieces.get("textAbove"));
+            rowView.setContentView(pieces.get("content"));
+            //rowView.setTextAboveButton(pieces.get("textAbove"));
             rowView.setTextBelowButton(pieces.get("textBelow"));
 
 
@@ -62,17 +62,13 @@ public class NoteListAdapter extends SimpleAdapter {
             if (pieces.get("type").equals("Pray")) {
                 if (pieces.get("isPrayedFor").equals("inactive")) {
                     rowView.setImage(R.drawable.ic_not_praying);
-                    //rowView.setImage(R.drawable.inactive_praying_hands_icon);
                 } else {
                     rowView.setImage(R.drawable.ic_praying);
-                    //rowView.setImage(R.drawable.active_praying_hands_icon);
                 }
             } else if (pieces.get("type").equals("Update")) {
                 rowView.setImage(R.drawable.ic_update);
-                //rowView.setImage(R.drawable.update_icon);
             } else if (pieces.get("type").equals("Letter")) {
                 rowView.setImage(R.drawable.ic_letter);
-                //rowView.setImage(R.drawable.prayer_letter_icon);
             }
 
         return rowView;

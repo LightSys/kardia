@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -18,7 +17,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
@@ -36,7 +34,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static android.content.ContentValues.TAG;
-import static android.support.v7.appcompat.R.styleable.MenuItem;
 
 /**
  * @author Andrew Lockridge
@@ -100,8 +97,8 @@ public class NoteList extends Fragment {
         // Map data fields to layout fields
         itemList.clear();
         generateListItems();
-        String[] from = {"subject", "date", "missionary", "textAbove", "textBelow"};
-        int[] to = {R.id.userNameText,  R.id.dateText, R.id.missionaryName, R.id.textAbovePrayingButton, R.id.textBelowPrayingButton};
+        String[] from = {"subject", "date", "content", "textAbove", "textBelow"};
+        int[] to = {R.id.subjectText,  R.id.dateText, R.id.contentText, R.id.textAbovePrayingButton, R.id.textBelowPrayingButton};
 
         NoteListAdapter adapter = new NoteListAdapter(getActivity(), itemList,
                 from, to);
@@ -237,10 +234,10 @@ public class NoteList extends Fragment {
             if (obj.getClass() == Note.class) {
                 Note n = (Note) obj;
                 numPrayed = n.getNumberPrayed();
-
+                Log.d(TAG, "generateListItems: " + n.getNoteText());
                 hm.put("date", Formatter.getFormattedDate(n.getDate()));
                 hm.put("subject", n.getSubject());
-                hm.put("missionary", n.getMissionaryName());
+                hm.put("content", n.getNoteText());
                 hm.put("type", n.getType());
                 if (n.getType().equals("Pray")) {
                     hm.put("textBelow", "Praying");
@@ -249,16 +246,19 @@ public class NoteList extends Fragment {
                         hm.put("textBelow", "Request");
                         hm.put("isPrayedFor", "inactive");
                     } else {
-                        hm.put("textBelow", numPrayed + " Praying");
+                        hm.put("textBelow", numPrayed + "");// + " Praying");
                         hm.put("isPrayedFor", "active");
                     }
+                }else if (n.getType().equals("Update")){
+                    hm.put("textBelow","Update");
                 }
             } else {
                 PrayerLetter p = (PrayerLetter) obj;
                 hm.put("date", Formatter.getFormattedDate(p.getDate()));
                 hm.put("subject", p.getTitle());
-                hm.put("missionary", p.getMissionaryName());
+                hm.put("content", "pdf update letter");
                 hm.put("type", "Letter");
+                hm.put("textBelow", "Letter");
             }
             itemList.add(hm);
         }
