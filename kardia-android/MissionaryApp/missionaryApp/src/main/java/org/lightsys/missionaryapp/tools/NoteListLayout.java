@@ -3,8 +3,10 @@ package org.lightsys.missionaryapp.tools;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 
 import org.lightsys.missionaryapp.R;
 
@@ -53,6 +55,12 @@ public class NoteListLayout extends RelativeLayout {
 
     public void setImage(int id) {
         prayButton.setBackground(getResources().getDrawable(id));
+    }
+
+    public void setImageMargin(int bottom){
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0,0,0,bottom);
+        prayButton.setLayoutParams(params);
     }
 
 }

@@ -245,7 +245,7 @@ public class NoteList extends Fragment {
                         hm.put("textBelow", "Request");
                         hm.put("isPrayedFor", "inactive");
                     } else {
-                        hm.put("textBelow", Integer.toString(numPrayed) + "33333377\npraying");
+                        hm.put("textBelow", Integer.toString(numPrayed) + "333\npraying");
                         hm.put("isPrayedFor", "active");
                     }
                 }else if (n.getType().equals("Update")){

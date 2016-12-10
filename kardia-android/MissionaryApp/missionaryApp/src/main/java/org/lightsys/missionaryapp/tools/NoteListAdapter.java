@@ -61,12 +61,16 @@ public class NoteListAdapter extends SimpleAdapter {
             if (pieces.get("type").equals("Pray")) {
                 if (pieces.get("isPrayedFor").equals("inactive")) {
                     rowView.setImage(R.drawable.ic_not_praying);
+                    rowView.setImageMargin(10);
                 } else {
                     rowView.setImage(R.drawable.ic_praying);
+                    rowView.setImageMargin(0);
                 }
             } else if (pieces.get("type").equals("Update")) {
+                rowView.setImageMargin(10);
                 rowView.setImage(R.drawable.ic_update);
             } else if (pieces.get("type").equals("Letter")) {
+                rowView.setImageMargin(10);
                 rowView.setImage(R.drawable.ic_letter);
             }
 
