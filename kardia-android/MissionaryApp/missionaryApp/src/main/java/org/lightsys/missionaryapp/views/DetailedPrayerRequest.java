@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.lightsys.missionaryapp.R;
@@ -22,6 +23,8 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static org.lightsys.missionaryapp.R.id.supporterList;
 
 /**
  * @author JoshWorkman
@@ -40,6 +43,8 @@ public class DetailedPrayerRequest extends Fragment{
     final static String ARG_REQUEST_ID = "request_id";
     private int         requestId = -1, isSwitched = 0;
     private Note        request;
+    private TextView    supporterList;
+    private String      namesList = "no one is currently praying for this request";
 
     private final ArrayList<HashMap<String, String>> itemList = new ArrayList<HashMap<String, String>>();//list of comments for this item
 
@@ -94,14 +99,60 @@ public class DetailedPrayerRequest extends Fragment{
         TextView subject          = (TextView)getActivity().findViewById(R.id.contentText);
         TextView date             = (TextView)getActivity().findViewById(R.id.dateText);
         TextView text             = (TextView)getActivity().findViewById(R.id.noteText);
+        supporterList             = (TextView)getActivity().findViewById(R.id.supporterList);
+        TextView textBelow        = (TextView)getActivity().findViewById(R.id.textBelowPrayingButton);
+        Button prayerButton       = (Button)getActivity().findViewById(R.id.prayerButton);
+        RelativeLayout prayLayout = (RelativeLayout) getActivity().findViewById(R.id.prayingButtonLayout);
 
         request = db.getNoteForID(request_id);
         this.requestId = request_id;
+
+        if (request.getNumberPrayed() > 0) {
+            namesList = "";
+            ArrayList<PrayedFor> prayedForList = db.getPrayedFor();
+            for (int i = 0; i < prayedForList.size();i++) {
+                PrayedFor p = prayedForList.get(i);
+                if (!namesList.contains(p.getSupporterName())) {
+                    if (i != 0) {
+                        namesList = namesList + ", ";
+                    }
+                    namesList = namesList + p.getSupporterName();
+                }
+            }
+        }
+        supporterList.setText(namesList);
+
 
         missionaryName.setText(request.getMissionaryName());
         subject.setText(request.getSubject());
         date.setText(Formatter.getFormattedDate(request.getDate()));
         text.setText(request.getNoteText());
+
+        prayLayout.setVisibility(View.VISIBLE);
+
+        final int numPrayed = request.getNumberPrayed();
+        if (numPrayed>0) {
+            prayerButton.setBackground(getResources().getDrawable(R.drawable.ic_praying));
+            textBelow.setText(Integer.toString(numPrayed));
+        } else {
+            textBelow.setText("");
+            prayerButton.setBackground(getResources().getDrawable(R.drawable.ic_not_praying));
+        }
+
+
+
+        //displays the username of each supporter who is praying for the request
+        //allows user to turn list of supporters on or off
+        prayerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                    if (supporterList.getVisibility() == View.VISIBLE){
+                        supporterList.setVisibility(View.INVISIBLE);
+                    }else {
+                        supporterList.setVisibility(View.VISIBLE);
+                    }
+            }
+        });
 
         //gets list of comments
         ArrayList<PrayedFor> prayers = db.getPrayedFor();

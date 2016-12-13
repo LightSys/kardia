@@ -33,35 +33,38 @@
         android:orientation="horizontal">
         <Button
             android:id="@+id/addUpdateButton"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_margin="@dimen/border_dimen"
-            android:text="@string/add_update_button"
-            style="@style/customBottomBar"/>
-        <Button
-            android:id="@+id/addRequestButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/border_dimen"
-            android:text="@string/add_request_button"
-            style="@style/customBottomBar"/>
+            android:src="@drawable/add_update"
+            android:background="@color/transparent"/>
         <Button
             android:id="@+id/addLetterButton"
-            android:layout_width="wrap_content"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_margin="@dimen/border_dimen"
-            android:text="@string/add_letter_button"
-            style="@style/customBottomBar"/>
+            android:src="@drawable/add_letter"
+            android:background="@color/transparent"/>
+        <Button
+            android:id="@+id/addRequestButton"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/border_dimen"
+            android:src="@drawable/add_prayer"
+            android:background="@color/transparent"/>
     </LinearLayout>
 
     <ImageButton
         android:id="@+id/addButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/border_dimen"
-        android:src="@drawable/ic_add_circle_black_48dp"
+        android:src="@drawable/plus"
         android:background="@color/transparent"
         android:visibility="gone"
         android:contentDescription="@string/add_button"/>

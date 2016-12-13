@@ -114,17 +114,17 @@ public class NoteList extends Fragment {
             public void onClick(View v) {
                 if(addLayout.getVisibility() == v.GONE) {
                     addLayout.setVisibility(View.VISIBLE);
-                    addButton.setRotation(90);
+                    addButton.setRotation(45);
                 }
                 else{
                    addLayout.setVisibility(View.GONE);
-                   addButton.setRotation(-90);
+                   addButton.setRotation(0);
                 }
 
             }
         });
 
-        Button letterButton = (Button)v.findViewById(R.id.addLetterButton);
+        ImageButton letterButton = (ImageButton)v.findViewById(R.id.addLetterButton);
         letterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,7 +133,7 @@ public class NoteList extends Fragment {
             }
         });
 
-        Button updateButton = (Button)v.findViewById(R.id.addUpdateButton);
+        ImageButton updateButton = (ImageButton)v.findViewById(R.id.addUpdateButton);
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -143,7 +143,7 @@ public class NoteList extends Fragment {
             }
         });
 
-        Button requestButton = (Button)v.findViewById(R.id.addRequestButton);
+        ImageButton requestButton = (ImageButton)v.findViewById(R.id.addRequestButton);
         requestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -245,7 +245,7 @@ public class NoteList extends Fragment {
                         hm.put("textBelow", "Request");
                         hm.put("isPrayedFor", "inactive");
                     } else {
-                        hm.put("textBelow", Integer.toString(numPrayed) + "333\npraying");
+                        hm.put("textBelow", Integer.toString(numPrayed) + "\npraying");
                         hm.put("isPrayedFor", "active");
                     }
                 }else if (n.getType().equals("Update")){
