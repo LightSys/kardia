@@ -59,68 +59,68 @@
                 android:paddingBottom="30dp"
                 android:textSize="@dimen/body_dimen"/>
         </ScrollView>
-
         <RelativeLayout
-            android:id="@+id/prayingButtonLayout"
+            android:id="@+id/buttonLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/scrollView"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:orientation= "vertical"
-            android:layout_marginLeft ="@dimen/border_dimen"
-            android:layout_marginStart ="@dimen/border_dimen"
-            android:layout_marginTop ="@dimen/border_dimen"
-            android:visibility="gone">
+            android:layout_below="@id/scrollView"
+            android:layout_margin="@dimen/border_dimen">
 
             <TextView
                 android:id="@+id/supporterList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize = "@dimen/contact_dimen_lg"
-                android:visibility="invisible"
                 android:layout_alignParentTop="true"
-                android:layout_toEndOf="@+id/prayerButton"
-                android:layout_toRightOf="@id/prayerButton"
+                android:layout_toLeftOf="@+id/prayingButtonLayout"
+                android:layout_toStartOf="@id/prayingButtonLayout"
                 android:layout_marginLeft="6dp"
-                android:layout_marginStart="6dp"/>
+                android:layout_marginStart="6dp"
+                android:textSize = "@dimen/contact_dimen"
+                android:visibility="invisible"/>
 
-            <Button
-                android:id="@+id/prayerButton"
-                android:layout_width="wrap_content"
-                android:layout_height="68dp"
-                android:layout_marginBottom="2dp"
-                android:layout_marginTop="2dp"
-                android:focusable="false"/>
-
-            <TextView
-                android:id="@+id/textBelowPrayingButton"
+            <RelativeLayout
+                android:id="@+id/prayingButtonLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/prayerButton"
-                android:text="@string/praying"
-                android:textSize="@dimen/contact_dimen"/>
-        </RelativeLayout>
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:orientation= "vertical"
+                android:visibility="gone">
 
-        <Button
-            android:id="@+id/commentButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/prayingButtonLayout"
-            android:layout_marginStart="@dimen/border_dimen"
-            android:layout_marginLeft="@dimen/border_dimen"
-            android:layout_marginTop="@dimen/border_dimen"
-            style="@style/customBottomBar"
-            android:text="@string/comment"/>
+                <Button
+                    android:id="@+id/prayerButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="68dp"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginTop="2dp"
+                    android:focusable="false"/>
+
+                <TextView
+                    android:id="@+id/textBelowPrayingButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/prayerButton"
+                    android:layout_centerHorizontal="true"
+                    android:text="@string/praying"
+                    android:textSize="@dimen/contact_dimen"/>
+            </RelativeLayout>
+
+            <Button
+                android:id="@+id/commentButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                style="@style/customBottomBar"
+                android:text="@string/comment"/>
+        </RelativeLayout>
 
         <org.lightsys.missionaryapp.tools.NonScrollListView
             android:id="@+id/commentsList"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/commentButton"
-            android:layout_marginTop="10dp"
+            android:layout_below="@+id/buttonLayout"
             android:smoothScrollbar="false"
             android:listSelector="@android:color/transparent"/>
     </RelativeLayout>
-
 </ScrollView>
