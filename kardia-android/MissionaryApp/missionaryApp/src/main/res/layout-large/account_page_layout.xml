@@ -41,7 +41,7 @@
         android:ems="10"
         android:hint="@string/protocal"
         android:maxLines="1"
-        android:text = "https"
+        android:text = "http"
         android:textSize="@dimen/body_dimen_lg"/>
 
     <EditText
@@ -54,7 +54,7 @@
         android:ems="10"
         android:hint="@string/server_name"
         android:maxLines="1"
-        android:text = "10.0.0.11"
+        android:text = "10.5.10.176"
         android:textSize="@dimen/body_dimen_lg"/>
 
     <EditText
@@ -67,7 +67,7 @@
         android:ems="10"
         android:hint="@string/port"
         android:maxLines="1"
-        android:text = "1843"
+        android:text = "800"
         android:textSize="@dimen/body_dimen_lg"/>
 
     <EditText
