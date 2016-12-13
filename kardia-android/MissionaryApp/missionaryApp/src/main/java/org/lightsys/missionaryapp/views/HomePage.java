@@ -21,6 +21,7 @@ import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.data.NewItem;
 import org.lightsys.missionaryapp.data.Note;
+import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
@@ -105,9 +106,8 @@ public class HomePage extends Fragment {
             } else if (eventClicked.getItemType().equals("Gift")) {
                 Gift object = db.getGift(eventClicked.getEventId());
                 sendToGift(object, eventClicked.getId());
-            } else if (eventClicked.getItemType().equals("Comment")) {
-                Comment object = db.getCommentById(eventClicked.getEventId());
-                sendToComment(object, eventClicked.getId());
+            } else if (eventClicked.getItemType().equals("Comment") || eventClicked.getItemType().equals("Prayer")) {
+                sendToComment(eventClicked.getEventId(), eventClicked.getId());
             }
         }
 
@@ -147,10 +147,10 @@ public class HomePage extends Fragment {
             transaction.commit();
         }
 
-        private void sendToComment(Comment object, int id){
+        private void sendToComment(int NoteId, int id){
             db.deleteNewEvent(id);
 
-            Note note = db.getNoteForID(object.getNoteID());
+            Note note = db.getNoteForID(NoteId);
 
             Bundle args = new Bundle();
 

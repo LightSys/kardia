@@ -105,6 +105,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     private static final String COLUMN_EMAIL = "email";
     private static final String COLUMN_PHONE = "phone";
     private static final String COLUMN_ADDRESS = "address";
+    private static final String COLUMN_PICTURE_NAME = "profile_picture_name";
 	//FUND_ACCOUNT_MAP
 	private static final String TABLE_FUND_ACCOUNT_MAP = "fund_account_map";
 	private static final String COLUMN_ACCOUNT_ID = "account_id";
@@ -178,7 +179,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		String CREATE_DONOR_TABLE = "CREATE TABLE " + TABLE_DONORS + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME + " TEXT," + COLUMN_LAST_NAME + " TEXT,"
                 + COLUMN_PROFILE_PICTURE + " BLOB," + COLUMN_PHONE + " TEXT," + COLUMN_EMAIL + " TEXT,"
-                + COLUMN_ADDRESS + " TEXT)";
+                + COLUMN_ADDRESS + " TEXT," + COLUMN_PICTURE_NAME + " TEXT)";
 		db.execSQL(CREATE_DONOR_TABLE);
 
 		String CREATE_NOTES_TABLE = "CREATE TABLE " + TABLE_NOTES + "("
@@ -331,9 +332,10 @@ public class LocalDBHandler extends SQLiteOpenHelper {
      * @param Id, the Id of the Donor the image belongs to
      * @param image, the profile picture for the Donor
      */
-    public void addDonorImage(byte[]image, int Id) throws SQLiteException{
+    public void addDonorImage(byte[]image, int Id, String name) throws SQLiteException{
         ContentValues values = new ContentValues();
         values.put(COLUMN_PROFILE_PICTURE, image);
+        values.put(COLUMN_PICTURE_NAME, name);
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.update(TABLE_DONORS, values, COLUMN_ID + " = " + Id, null);
@@ -995,6 +997,27 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     }
 
     /**
+     * gets name of a donor's image
+     * @param donorId, the Id of the Donor the image belongs to
+     */
+    public String getDonorImage(int donorId) {
+        String name = "";
+        String queryString = "SELECT " + COLUMN_PICTURE_NAME
+                + " FROM " + TABLE_DONORS + " WHERE " + COLUMN_ID + " = " + donorId;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        while (c.moveToNext()) {
+            //set Image name
+            name = c.getString(0);
+        }
+        c.close();
+        db.close();
+        return name;
+    }
+
+    /**
      * Pulls all donors from the database associated with a gift
      * @return a list of donors who have donated as an ArrayList of Donor Objects ordered alphabetically
      */
@@ -1040,7 +1063,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             date.set(Calendar.HOUR_OF_DAY, 0);
             long eventDate = date.getTimeInMillis();
 
-            if (current - eventDate < 10*Math.pow(10,10)){//6.048*Math.pow(10,8)){
+            //if items are older than 2 weeks, they will be removed
+            if (current - eventDate < 8*6.048*Math.pow(10,8)){//6.048*Math.pow(10,8)){
                 NewItem item = new NewItem();
                 item.setId(c.getInt(0));
                 item.setItemType(c.getString(1));

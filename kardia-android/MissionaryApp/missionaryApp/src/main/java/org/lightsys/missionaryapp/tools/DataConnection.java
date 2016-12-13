@@ -470,25 +470,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                     String donor_name = DonorObj.getString("partner_name");
                     String donor_id = DonorObj.getString("partner_id");
-                    //JSONObject dateObj = DonorObj.getJSONObject("date_created");
-                    Donor temp = new Donor();
-                    temp.setName(donor_name);
-                    temp.setId(Integer.parseInt(donor_id));
 
                     // If the donor id is not in the database, add the Donor Object to db
-                    /*String donor_year = dateObj.getString("year");
-                    String donor_month = dateObj.getString("month");
-                    // Convert gift dates to YYYY-MM-DD format
-                    donor_month = (donor_month.length() < 2)? "0" + donor_month : donor_month;
-                    String donor_day = dateObj.getString("day");
-                    donor_day = (donor_day.length() < 2)? "0" + donor_day : donor_day;
-                    String donor_date = donor_year + "-"
-                            + donor_month + "-" + donor_day;*/
+                    if(!currentDonorIDList.contains(donor_id)){
+                        Donor temp = new Donor();
+                        temp.setName(donor_name);
+                        temp.setId(Integer.parseInt(donor_id));
 
-
-                    if(!currentDonorIDList.contains(temp.getId())){
                         db.addDonor(temp);
-                        //db.addNewEvent("Donor", temp.getId(), donor_date);
                     }
                 }
             }
@@ -605,27 +594,31 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     //@id signals a new object, but contains no information on that line
                     if (!tempPicInfo.getString(i).equals("@id")) {
                         JSONObject PicInfoObj = json.getJSONObject(tempPicInfo.getString(i));
-                        //checks the type of contact info and puts it in the correct category
-                        try{
-                            url = protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/" + partnerId + "/ProfilePicture/"
-                                    + PicInfoObj.getString("name");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        //gets name for image
+                        String name = PicInfoObj.getString("name");
+                        //attempts to retrieve image matching name
+                        if (name.equals(db.getDonorImage(partnerId))) {
+                            try {
+                                url = protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/"
+                                        + partnerId + "/ProfilePicture/" + name;
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
 
-                        HttpResponse response = getResponseFromUrl(url);
-                        Bitmap image = null;
-                        try {
-                            InputStream input = response.getEntity().getContent();
-                            image = BitmapFactory.decodeStream(input);
-                        }catch(IOException e){
-                            e.printStackTrace();
-                        }
+                            HttpResponse response = getResponseFromUrl(url);
+                            Bitmap image = null;
+                            try {
+                                InputStream input = response.getEntity().getContent();
+                                image = BitmapFactory.decodeStream(input);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
 
-                        if (image != null) {
-                            Bitmap resizedImage = getResizedBitmap(image);
-                            byte[] data = getBitmapAsByteArray(resizedImage);
-                            db.addDonorImage(data, partnerId);
+                            if (image != null) {
+                                Bitmap resizedImage = getResizedBitmap(image);
+                                byte[] data = getBitmapAsByteArray(resizedImage);
+                                db.addDonorImage(data, partnerId, name);
+                            }
                         }
                     }
                 } catch (JSONException e) {
@@ -643,6 +636,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      */
     private void loadNotes(String result, int missionary_id) {
         JSONObject json = null;
+
         try {
             json = new JSONObject(result);
         } catch (JSONException e1) {
@@ -664,7 +658,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     for (Note n : db.getNotes()) {
                         currentNoteIDList.add(n.getNoteId());
                     }
-
                     // Check to see if prayer request is already in the database
                     if (!currentNoteIDList.contains(noteID)) {
                         Note temp = new Note();
@@ -752,6 +745,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setPrayedForDate(year + "-" + month + "-" + day);
 
                         db.addPrayedFor(temp);
+                        db.addNewEvent("Prayer", temp.getNoteID(),
+                                "New prayer on " + db.getNoteForID(temp.getNoteID()).getSubject(),
+                                temp.getSupporterName() + " is praying.", temp.getPrayedForDate());
                     }
                 }
             }
@@ -943,7 +939,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         db.addGift(temp);
                         db.addGiftAccount(giftId, accountId);
 
-                        db.addNewEvent("Gift", giftId, name + " sent a gift.", Formatter.amountToString(giftTotal), gift_date);
+                        db.addNewEvent("Gift", giftId, "New gift", donorName + " donated " + Formatter.amountToString(giftTotal), gift_date);
                         // id, type, eventid, header, content, date
                         if (i==0) {
                             db.addNewEvent("Donor", donorID, "New donor", donorName, gift_date);
@@ -1029,9 +1025,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         //if it's new, add it to database
                         if (newComment) {
                             db.addComment(temp.getCommentID(), temp.getSenderID(), temp.getNoteID(), temp.getUserName(), temp.getNoteType(), temp.getDate(), temp.getComment());
-                            db.addNewEvent("Comment", ID, userName + " commented on \"" + db.getNoteForID(noteID).getSubject() + "\"",
-                                    comment, comment_date);
-                            // id, type, eventid, header, content, date
+                            db.addNewEvent("Comment", temp.getNoteID(), "New comment on \"" + db.getNoteForID(noteID).getSubject() + "\"",
+                                    userName + " said:\n" + comment, comment_date);
                         }
                     }
                 }
