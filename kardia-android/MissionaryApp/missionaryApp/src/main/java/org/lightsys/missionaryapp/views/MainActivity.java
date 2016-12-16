@@ -162,7 +162,7 @@ public class MainActivity extends ActionBarActivity {
 			db.close();
 			
 			if(currentTime > originalStamp + DAY_MILLI && originalStamp != -1){
-                new DataConnection(this, this, account, currentFrag).execute("");
+                new DataConnection(this, this, account, currentFrag, account.getAcceptSSCert()).execute("");
 			}
 			selectItem(0);
 		}
@@ -319,7 +319,7 @@ public class MainActivity extends ActionBarActivity {
                         .commit();
                 break;
             case 6:
-                new DataConnection(this, this, account, currentFrag).execute("");
+                new DataConnection(this, this, account, currentFrag, account.getAcceptSSCert()).execute("");
                 break;
             case 7:
                 new AlertDialog.Builder(MainActivity.this)

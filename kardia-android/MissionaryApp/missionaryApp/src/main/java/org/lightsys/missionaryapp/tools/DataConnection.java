@@ -80,6 +80,7 @@ import java.net.HttpURLConnection;
 import java.net.InterfaceAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -129,6 +130,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     private ProgressDialog spinner;
     private LocalDBHandler db;
     private boolean validAccount;
+    private boolean allowSSC;
 
     private ClientConnectionManager clientConnectionManager;
     private HttpContext context = null;
@@ -138,11 +140,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
     private static final String Tag = "DPS";
 
-    public DataConnection(Context context, Activity activity, Account a, int Frag) {
+    public DataConnection(Context context, Activity activity, Account a, int Frag, boolean allowSelfSigned) {
         super();
         dataContext = context;
         dataActivity = activity;
         currentFrag = Frag;
+        allowSSC = allowSelfSigned;
         if (activity != null) {
             spinner = new ProgressDialog(dataContext, R.style.MySpinnerStyle);
         }
@@ -251,12 +254,21 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                             Toast.makeText(dataContext, "Server connection failed", Toast.LENGTH_LONG).show();
                         }
                     });
+                    return false;
                 }
             }
         }
         catch (Exception e) {
+            e.printStackTrace();
             // GET function throws an Exception if server not found
-            if(e.getClass()!=SSLHandshakeException.class) {
+            if(e.getClass()==SocketTimeoutException.class){
+                dataActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(dataContext, "Server connection timed out", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }else if(e.getClass()!=SSLHandshakeException.class) {
                 dataActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -397,6 +409,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         } catch (Exception e) {
             e.printStackTrace();
+            //todo added to cancel download if server is timing out
+            if (e.getClass().equals(SocketTimeoutException.class)){
+                Toast.makeText(dataContext, "Server connection timed out", Toast.LENGTH_LONG).show();
+            }else{
+                Toast.makeText(dataContext, "Server connection failed", Toast.LENGTH_LONG).show();
+            }
+            return;
+            //to here
         }
 
         // If no timestamp found, add timestamp, otherwise update timestamp
@@ -473,7 +493,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                     String donor_name = DonorObj.getString("partner_name");
                     String donor_id = DonorObj.getString("partner_id");
-                    
+
                     // If the donor id is not in the database, add the Donor Object to db
                     if(!currentDonorIDList.contains(Integer.parseInt(donor_id))){
                         Donor temp = new Donor();
@@ -579,7 +599,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * @param result, result of API query for missionaries
      * @param partnerId, id of the donor
      */
-    private void loadPicture(String result, int partnerId) {
+    private void loadPicture(String result, int partnerId) throws Exception{
         JSONObject json = null;
         String url = "";
         if (!result.contains("404 Not Found")) {
@@ -625,7 +645,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         }
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    throw e;
+                } catch (Exception e){
+                    throw e;
                 }
             }
         }
@@ -1076,20 +1098,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         Log.d(TAG, "GET: " +url);
         httpsSetup();
         try {
-            // Set the user credentials to allow access to API information
-            /*CredentialsProvider credProvider = new BasicCredentialsProvider();
-            credProvider.setCredentials(new AuthScope(hostName, Integer.parseInt(port)),
-                    new UsernamePasswordCredentials(accountName, password));
-
-            // Set timeout parameters to avoid a long connection attempt to non-valid server
-            // Timeout currently set to 10 seconds
-            HttpParams params = new BasicHttpParams();
-            HttpConnectionParams.setConnectionTimeout(params, 10000);
-            HttpConnectionParams.setSoTimeout(params, 10000);
-            DefaultHttpClient client = new DefaultHttpClient(params);
-            client.setCredentialsProvider(credProvider);
-            HttpResponse response = client.execute(new HttpGet(url));*/
-
             HttpResponse response = getResponseFromUrl(url);
 
             if (response!=null) {
@@ -1102,15 +1110,15 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
             // Rethrow exception for validation server error
-            throw new Exception();
+            throw e;
+            //throw new Exception();
         }
         return result;
     }
 
 
-    public HttpResponse getResponseFromUrl(final String url) {
+    public HttpResponse getResponseFromUrl(final String url) throws Exception {
         //connection (client has to be created for every new connection)
         try {
             client = new DefaultHttpClient(clientConnectionManager, params);
@@ -1127,7 +1135,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
             return response;
         } catch (IOException e) {
-            if (e.getClass().equals(SSLHandshakeException.class) && !account.getAcceptSSCert()) {
+            if (e.getClass().equals(SSLHandshakeException.class) && !allowSSC) {
                 if (dataActivity != null) {
                     dataActivity.runOnUiThread(new Runnable() {
                         @Override
@@ -1138,15 +1146,15 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                                     .setMessage("Server uses self-signed certificate. Allow connection?")
                                     .setNegativeButton(R.string.always, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
-                                            account.setAcceptSSCert(true);
                                             db.updateAcceptSSCert(true);
-                                            new DataConnection(dataContext, dataActivity, account, -1).execute("");
+                                            allowSSC = true;
+                                            new DataConnection(dataContext, dataActivity, account, -1, true).execute("");
                                         }
                                     })
                                     .setNeutralButton(R.string.allow, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
-                                            account.setAcceptSSCert(true);
-                                            new DataConnection(dataContext, dataActivity, account, -1).execute("");
+                                            allowSSC = true;
+                                            new DataConnection(dataContext, dataActivity, account, -1, true).execute("");
                                         }
                                     })
                                     .setPositiveButton(R.string.no, new DialogInterface.OnClickListener() {
@@ -1160,11 +1168,10 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         }
                     });
                 }
-            } else {
-                e.printStackTrace();
             }
+            throw e;
         }
-        return null;
+        //return null;
     }
 
     private void httpsSetup(){
@@ -1173,7 +1180,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         // https scheme
         if (protocal.equals("https")) {
-            if (!account.getAcceptSSCert()) {
+            if (!allowSSC) {
                 //todo check that this works for signed ssl
                 schemeRegistry.register(new Scheme(protocal, SSLSocketFactory.getSocketFactory(), 443));
             }else{
@@ -1189,6 +1196,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         params.setParameter(ConnManagerPNames.MAX_TOTAL_CONNECTIONS, 1);
         params.setParameter(ConnManagerPNames.MAX_CONNECTIONS_PER_ROUTE, new ConnPerRouteBean(1));
         params.setParameter(HttpProtocolParams.USE_EXPECT_CONTINUE, false);
+        params.setParameter(HttpConnectionParams.SO_TIMEOUT,15000); //set timout to 15s
+        params.setParameter(HttpConnectionParams.CONNECTION_TIMEOUT, 15000);
         HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
         HttpProtocolParams.setContentCharset(params, "utf8");
 

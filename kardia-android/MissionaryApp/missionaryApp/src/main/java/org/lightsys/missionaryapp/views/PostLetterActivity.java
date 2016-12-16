@@ -54,7 +54,7 @@ public class PostLetterActivity extends Activity {
 
         sender           = (TextView) findViewById(R.id.senderName);
         contactType      = (TextView) findViewById(R.id.typeText);
-        subject          = (EditText)findViewById(R.id.contentText);
+        subject          = (EditText)findViewById(R.id.subjectText);
         noteText         = (EditText)findViewById(R.id.noteText);
         Button submit    = (Button)  findViewById(R.id.submitButton);
         Button cancel    = (Button)  findViewById(R.id.cancelButton);
@@ -131,7 +131,7 @@ public class PostLetterActivity extends Activity {
 
                         //refresh the screen after post
                         //this probably won't work because separate threads and what not
-                        new DataConnection(getBaseContext(), null, account, -1);
+                        new DataConnection(getBaseContext(), null, account, -1, account.getAcceptSSCert());
 
                         finish();
                     }

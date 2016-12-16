@@ -108,7 +108,7 @@ public class AccountsActivity extends Activity{
 		Account account = new Account(dId, aName, aPass, sName, sPort, sProtocal, false);
 		// Execute data connection to validate account and pull data if valid
 		// DataConnection will close activity once complete if successful
-        new DataConnection(this, this, account, -1).execute("");
+        new DataConnection(this, this, account, -1, account.getAcceptSSCert()).execute("");
 	}
 }
 
