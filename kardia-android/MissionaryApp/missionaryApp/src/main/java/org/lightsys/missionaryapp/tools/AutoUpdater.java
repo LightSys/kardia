@@ -108,7 +108,7 @@ public class AutoUpdater extends Service {
         db.close();
 
         //updates each account
-           new DataConnection(this, null, account, -1).execute("");
+           new DataConnection(this, null, account, -1, account.getAcceptSSCert()).execute("");
 
         //list of new notifications
         ArrayList<NewItem> newItems = db.getNewEvents();

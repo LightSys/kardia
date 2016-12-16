@@ -126,7 +126,7 @@ public class PostNoteActivity extends Activity {
 
                     //refresh the screen after post
                     //this probably won't work because separate threads and what not
-                    new DataConnection(getBaseContext(), null, account, -1);
+                    new DataConnection(getBaseContext(), null, account, -1, account.getAcceptSSCert());
 
                     finish();
                 }
