@@ -84,7 +84,7 @@ public class DetailedGift extends Fragment {
 
 
         LocalDBHandler db = new LocalDBHandler(getActivity());
-        Gift g = db.getGift(giftId);
+        Gift g = db.getGift(giftId, null);
         Donor contactinfo = db.getDonorInfoById(donorId);
         db.close();
 

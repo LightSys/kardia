@@ -44,7 +44,7 @@ public class NotificationActivity extends Activity {
 
     private boolean      delete=false;
     private String       alarmTime, endDate, startDate;
-    private int          notificationID, frequency;
+    private int          frequency, notificationID=1;
 
     private Spinner  frequencySpinner;
     private TableRow startDateRow, endDateRow, timeRow;
@@ -69,7 +69,6 @@ public class NotificationActivity extends Activity {
 
             // For next ID, retrieve last ID from database and add 1
             LocalDBHandler db = new LocalDBHandler(this);
-            notificationID = db.getLastId("notification") + 1;
             db.close();
 
             startDateRow     = (TableRow) this.findViewById(R.id.startDateRow);

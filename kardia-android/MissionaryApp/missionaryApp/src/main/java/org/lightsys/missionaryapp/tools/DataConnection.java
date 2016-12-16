@@ -57,6 +57,7 @@ import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.JsonPost;
 import org.lightsys.missionaryapp.data.NewItem;
 import org.lightsys.missionaryapp.data.Note;
+import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.views.AccountsActivity;
@@ -400,6 +401,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                     loadGifts(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/donor/" + donorID + "/Funds/"
                             + Fund_Name + "/Gifts?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"),fundId,donorName,donorID);
+                }
+                for (Period p : db.getFundPeriods(fundId, "Month")){
+                    loadTransactions(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/fundmanager/"
+                            + accountId + "/Funds/" + Fund_Name + "/Periods/" + p.getPeriodName()
+                            + "/Transactions?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), fundId, Fund_Name);
                 }
             }
 
@@ -926,7 +932,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                                 Integer.parseInt(amountObj.getString("wholepart")),
                                 Integer.parseInt(amountObj.getString("fractionpart"))
                         };
-                        int giftId = db.getLastId("gift") + 1;
                         String name = GiftObj.getString("name");
 
                         String gift_fund = GiftObj.getString("gift_fund")+"|"+GiftObj.getString("gift_ledger");
@@ -950,7 +955,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                         Gift temp = new Gift();
                         temp.setName(name);
-                        temp.setId(giftId);
                         temp.setGiftFund(gift_fund);
                         temp.setGiftFundDesc(gift_fund_desc);
                         temp.setGiftDate(gift_date);
@@ -962,9 +966,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setGiftMonth(month_year);
 
                         db.addGift(temp);
-                        db.addGiftAccount(giftId, accountId);
 
-                        db.addNewEvent("Gift", giftId, "New gift", donorName + " donated " + Formatter.amountToString(giftTotal), gift_date);
+                        db.addNewEvent("Gift", db.getGift(0, name).getId(), "New gift", donorName + " donated " + Formatter.amountToString(giftTotal), gift_date);
                         // id, type, eventid, header, content, date
                         if (i==0) {
                             db.addNewEvent("Donor", donorID, "New donor", donorName, gift_date);
@@ -978,6 +981,86 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
     }
 
+    /**
+     * This formats the return json into transactions and if the transaction
+     * was not already stored adds it to the database
+     *
+     * @param result, result from API GET() for gifts
+     * @param Fund_ID, fund related to gift
+     */
+    private void loadTransactions(String result, int Fund_ID, String transaction_fund){
+
+        // Test to see what gifts the database already has to avoid duplicates
+        ArrayList<String> currentTransactionNameList = db.getTransactionNames(Fund_ID);
+        JSONObject json = null;
+        try {
+            json = new JSONObject(result);
+        } catch (JSONException e1) {
+            e1.printStackTrace();
+        }
+        if (json == null) {
+            return;
+        }
+        JSONArray tempTransactions = json.names();
+
+
+        for(int i = 0; i < tempTransactions.length(); i++){
+            try{
+                //@id signals a new object, but contains no information on that line
+                if(!tempTransactions.getString(i).equals("@id")){
+                    JSONObject TransactionObj = json.getJSONObject(tempTransactions.getString(i));
+
+                    if(!currentTransactionNameList.contains(TransactionObj.getString("name"))) {
+                        JSONObject dateObj = TransactionObj.getJSONObject("trx_date");
+                        JSONObject amountObj = TransactionObj.getJSONObject("amount");
+                        int[] giftTotal = {
+                                Integer.parseInt(amountObj.getString("wholepart")),
+                                Integer.parseInt(amountObj.getString("fractionpart"))
+                        };
+                        String name = TransactionObj.getString("name");
+                        String donorName = TransactionObj.getString("to_from");
+                        int donorID = Integer.parseInt(TransactionObj.getString("to_from_id"));
+
+
+                        String transaction_fund_desc = TransactionObj.getString("fund_desc");
+                        String transaction_year = dateObj.getString("year");
+                        String transaction_month = dateObj.getString("month");
+                        String month_year;
+                        // Convert gift dates to YYYY-MM-DD format
+                        month_year=transaction_year + "." + transaction_month;
+                        transaction_month = (transaction_month.length() < 2)? "0" + transaction_month : transaction_month;
+                        String gift_day = dateObj.getString("day");
+                        gift_day = (gift_day.length() < 2)? "0" + gift_day : gift_day;
+                        String gift_date = transaction_year + "-"
+                                + transaction_month + "-" + gift_day;
+
+                        if(giftTotal[1] >= 100){
+                            giftTotal[1] /= 100;
+                        }
+
+                        Gift temp = new Gift();
+                        temp.setName(name);
+                        temp.setGiftFund(transaction_fund);
+                        temp.setGiftFundDesc(transaction_fund_desc);
+                        temp.setGiftDate(gift_date);
+                        temp.setGiftAmount(giftTotal);
+                        temp.setGiftDonor(donorName);
+                        temp.setGiftDonorId(donorID);
+                        temp.setGiftYear(transaction_year);
+                        temp.setGiftMonth(month_year);
+
+                        db.addTransaction(temp);
+
+                        db.addNewEvent("Transaction", db.getGift(0, name).getId(), "New transaction", transaction_fund_desc + ": " + Formatter.amountToString(giftTotal), gift_date);
+                        // id, type, eventid, header, content, date
+                    }
+                }
+            }
+            catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+    }
     /**
      * loads comments on posts
      *

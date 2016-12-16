@@ -6,6 +6,7 @@ import java.util.Calendar;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -13,7 +14,6 @@ import android.util.Log;
 
 import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.data.Comment;
-import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.Gift;
@@ -24,8 +24,6 @@ import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.data.UpdateNotification;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Sets up a SQLite database for the application, which is used to
@@ -69,18 +67,22 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String COLUMN_FUND_DESC = "fund_desc";
 	private static final String COLUMN_FUND_CLASS = "fund_class";
 	private static final String COLUMN_ANNOTATION = "annotation";
-	private static final String COLUMN_GIFT_TOTAL_PART = "gift_total_part";
-	private static final String COLUMN_GIFT_TOTAL_WHOLE = "gift_total_whole";
 	//GIFT TABLE
 	private static final String TABLE_GIFT = "gifts";
-	private static final String COLUMN_GIFT_FUND = "gift_fund";
-	private static final String COLUMN_GIFT_FUND_DESC = "gift_fund_desc";
-	private static final String COLUMN_GIFT_DATE = "gift_date";
+	private static final String COLUMN_FUND = "gift_fund";
+	//private static final String COLUMN_FUND_DESC = "gift_fund_desc";
+	//private static final String COLUMN_DATE = "gift_date";
 	private static final String COLUMN_CHECK_NUM = "gift_check_num";
     private static final String COLUMN_DONOR_NAME = "donor_name";
     private static final String COLUMN_DONOR_ID = "donor_id";
-	private static final String COLUMN_GIFT_YEAR = "Year";
-	private static final String COLUMN_GIFT_MONTH = "Month";
+    private static final String COLUMN_GIFT_TOTAL_PART = "gift_total_part";
+    private static final String COLUMN_GIFT_TOTAL_WHOLE = "gift_total_whole";
+	private static final String COLUMN_YEAR = "Year";
+	private static final String COLUMN_MONTH = "Month";
+    //TRANSACTION TABLE
+    private static final String TABLE_TRANSACTION = "transactions";
+    private static final String COLUMN_TRANSACTION_TOTAL_PART = "gift_total_part";
+    private static final String COLUMN_TRANSACTION_TOTAL_WHOLE = "gift_total_whole";
     //NOTES TABLE
 	private static final String TABLE_NOTES = "notes";
 	private static final String COLUMN_TEXT = "text";
@@ -111,9 +113,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	private static final String TABLE_FUND_ACCOUNT_MAP = "fund_account_map";
 	private static final String COLUMN_ACCOUNT_ID = "account_id";
     private static final String COLUMN_FUND_ID = "fund_id";
-	//GIFT_ACCOUNT_MAP
-	private static final String TABLE_GIFT_ACCOUNT_MAP = "gift_account_map";
-    private static final String COLUMN_GIFT_ID = "gift_id";
 	//TIME_STAMP
 	private static final String TABLE_TIMESTAMP = "timestamp";
 	private static final String COLUMN_DATE = "date";
@@ -211,23 +210,28 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		String CREATE_GIFT_TABLE = "CREATE TABLE " + TABLE_GIFT + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME
-				+ " TEXT," + COLUMN_GIFT_FUND + " TEXT,"
-				+ COLUMN_GIFT_FUND_DESC + " TEXT," + COLUMN_GIFT_TOTAL_WHOLE
+				+ " TEXT," + COLUMN_FUND + " TEXT,"
+				+ COLUMN_FUND_DESC + " TEXT," + COLUMN_GIFT_TOTAL_WHOLE
 				+ " INTEGER," + COLUMN_GIFT_TOTAL_PART + " INTEGER,"
-				+ COLUMN_GIFT_DATE + " TEXT," + COLUMN_CHECK_NUM + " TEXT,"
-                + COLUMN_DONOR_NAME + " TEXT," + COLUMN_DONOR_ID + " INTEGER," + COLUMN_GIFT_YEAR + " TEXT,"
-				+ COLUMN_GIFT_MONTH + " TEXT)";
+				+ COLUMN_DATE + " TEXT," + COLUMN_CHECK_NUM + " TEXT,"
+                + COLUMN_DONOR_NAME + " TEXT," + COLUMN_DONOR_ID + " INTEGER," + COLUMN_YEAR + " TEXT,"
+				+ COLUMN_MONTH + " TEXT)";
 		db.execSQL(CREATE_GIFT_TABLE);
+
+        String CREATE_TRANSACTION_TABLE = "CREATE TABLE " + TABLE_TRANSACTION + "("
+                + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_NAME
+                + " TEXT," + COLUMN_FUND + " TEXT,"
+                + COLUMN_FUND_DESC + " TEXT," + COLUMN_TRANSACTION_TOTAL_WHOLE
+                + " INTEGER," + COLUMN_TRANSACTION_TOTAL_PART + " INTEGER,"
+                + COLUMN_DATE + " TEXT," + COLUMN_DONOR_NAME + " TEXT,"
+                + COLUMN_DONOR_ID + " INTEGER," + COLUMN_YEAR + " TEXT,"
+                + COLUMN_MONTH + " TEXT)";
+        db.execSQL(CREATE_TRANSACTION_TABLE);
 
 		String CREATE_FUND_ACCOUNT_MAP_TABLE = "CREATE TABLE " + TABLE_FUND_ACCOUNT_MAP
 				+ "(" + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_FUND_ID
 				+ " INTEGER," + COLUMN_ACCOUNT_ID + " INTEGER)";
 		db.execSQL(CREATE_FUND_ACCOUNT_MAP_TABLE);
-
-		String CREATE_GIFT_ACCOUNT_MAP_TABLE = "CREATE TABLE " + TABLE_GIFT_ACCOUNT_MAP
-				+ "(" + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_GIFT_ID
-				+ " INTEGER," + COLUMN_ACCOUNT_ID + " INTEGER)";
-		db.execSQL(CREATE_GIFT_ACCOUNT_MAP_TABLE);
 
 		String CREATE_COMMENT_TABLE = "CREATE TABLE " + TABLE_COMMENT
 				+ "(" + COLUMN_COMMENT_ID + " INTEGER PRIMARY KEY,"
@@ -471,22 +475,45 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	public void addGift(Gift gift){
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_NAME, gift.getName());
-		values.put(COLUMN_GIFT_FUND, gift.getGiftFund());
-		values.put(COLUMN_GIFT_FUND_DESC, gift.getGiftFundDesc());
+		values.put(COLUMN_FUND, gift.getGiftFund());
+		values.put(COLUMN_FUND_DESC, gift.getGiftFundDesc());
 		values.put(COLUMN_GIFT_TOTAL_WHOLE, gift.getGiftAmount()[0]);
 		values.put(COLUMN_GIFT_TOTAL_PART, gift.getGiftAmount()[1]);
-		values.put(COLUMN_GIFT_DATE, gift.getGiftDate());
+		values.put(COLUMN_DATE, gift.getGiftDate());
 		values.put(COLUMN_CHECK_NUM, gift.getGiftCheckNum());
         values.put(COLUMN_DONOR_NAME, gift.getGiftDonor());
         values.put(COLUMN_DONOR_ID, gift.getGiftDonorId());
-		values.put(COLUMN_GIFT_YEAR, gift.getGiftYear());
-		values.put(COLUMN_GIFT_MONTH, gift.getGiftMonth());
+		values.put(COLUMN_YEAR, gift.getGiftYear());
+		values.put(COLUMN_MONTH, gift.getGiftMonth());
 
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_GIFT, null, values);
 		db.close();
 	}
+
+    /**
+     * Adds a transaction to the database
+     * @param transaction, transaction to be stored
+     */
+    public void addTransaction(Gift transaction){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, transaction.getName());
+        values.put(COLUMN_FUND, transaction.getGiftFund());
+        values.put(COLUMN_FUND_DESC, transaction.getGiftFundDesc());
+        values.put(COLUMN_TRANSACTION_TOTAL_WHOLE, transaction.getGiftAmount()[0]);
+        values.put(COLUMN_TRANSACTION_TOTAL_PART, transaction.getGiftAmount()[1]);
+        values.put(COLUMN_DATE, transaction.getGiftDate());
+        values.put(COLUMN_DONOR_NAME, transaction.getGiftDonor());
+        values.put(COLUMN_DONOR_ID, transaction.getGiftDonorId());
+        values.put(COLUMN_YEAR, transaction.getGiftYear());
+        values.put(COLUMN_MONTH, transaction.getGiftMonth());
+
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(TABLE_TRANSACTION, null, values);
+        db.close();
+    }
 
     /**
      * Adds a gift to the database
@@ -510,20 +537,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         db.insert(TABLE_NEW_EVENT, null, values);
         db.close();
     }
-	/**
-	 * Adds a connection between a fund and a account through their IDs
-	 * @param Gift_ID, Gift Identifier
-	 * @param Account_ID, Account Identifier
-	 */
-	public void addGiftAccount(int Gift_ID, int Account_ID){
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_GIFT_ID, Gift_ID);
-		values.put(COLUMN_ACCOUNT_ID, Account_ID);
 
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.insert(TABLE_GIFT_ACCOUNT_MAP, null, values);
-		db.close();
-	}
     /**
      * Adds a comment on a note to the database
      * @param commentID, comment Identifier
@@ -613,7 +627,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getWritableDatabase();
 
 		db.delete(TABLE_GIFT, null, null);
-        db.delete(TABLE_GIFT_ACCOUNT_MAP, null, null);
         db.delete(TABLE_FUND, null, null);
 		db.delete(TABLE_FUND_ACCOUNT_MAP, null, null);
 
@@ -735,9 +748,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		ArrayList<Period> periods = new ArrayList<Period>();
 
 		String qString = "SELECT DISTINCT " + periodType + " FROM " + TABLE_GIFT + " INNER JOIN " + TABLE_FUND
-				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFT_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
-				+ " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + fundId + " ORDER BY " + COLUMN_GIFT_YEAR + " DESC, "
-				+ COLUMN_GIFT_MONTH + " DESC";
+				+ " ON " + TABLE_GIFT + "." + COLUMN_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+				+ " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + fundId + " ORDER BY " + COLUMN_YEAR + " DESC, "
+				+ COLUMN_MONTH + " DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
 
@@ -826,7 +839,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * Pulls the last ID used in the table specified
 	 * @param type, which table to pull from - 'fund','gift', or 'year'
 	 * @return the id of the last element in the given table
-	 */
+	 *
 	public int getLastId(String type){
 		int id = 0;
 		String queryString = "SELECT " + COLUMN_ID + " FROM ";
@@ -852,7 +865,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		return id;
 		
-	}
+	}*/
 	
 	/**
 	 * This is used when pulling down information, it is used to compare funds,
@@ -1283,9 +1296,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	public ArrayList<Gift> getGifts(String fund_ids){
 		ArrayList<Gift> gifts = new ArrayList<Gift>();
 		String queryString = "SELECT * FROM "+ TABLE_GIFT + " INNER JOIN " + TABLE_FUND
-				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFT_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+				+ " ON " + TABLE_GIFT + "." + COLUMN_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
 				+ " WHERE " + TABLE_FUND + "." + COLUMN_ID + " IN (" + fund_ids + ") ORDER BY DATE("
-				+ COLUMN_GIFT_DATE + ") DESC";
+				+ COLUMN_DATE + ") DESC";
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
 		
@@ -1320,7 +1333,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		ArrayList<Gift> gifts = new ArrayList<Gift>();
 		String queryString = "SELECT * FROM " + TABLE_GIFT +
 				" WHERE " + COLUMN_DONOR_ID + " = " + donor_id +
-				" ORDER BY DATE(" + COLUMN_GIFT_DATE + ") DESC";
+				" ORDER BY DATE(" + COLUMN_DATE + ") DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
@@ -1357,9 +1370,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	public ArrayList<Gift> getGiftsForPeriod(int fundId, String periodType, String period){
 		ArrayList<Gift> gifts = new ArrayList<Gift>();
 		String queryString = "SELECT * FROM "+ TABLE_GIFT + " INNER JOIN " + TABLE_FUND
-				+ " ON " + TABLE_GIFT + "." + COLUMN_GIFT_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+				+ " ON " + TABLE_GIFT + "." + COLUMN_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
 				+ " WHERE (" + TABLE_FUND + "." + COLUMN_ID + " = " + fundId + " AND " + TABLE_GIFT + "." + periodType + " = '" + period + "') ORDER BY "
-				+ COLUMN_GIFT_YEAR + ", " + COLUMN_GIFT_MONTH + " DESC";
+				+ COLUMN_YEAR + ", " + COLUMN_MONTH + " DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
@@ -1392,10 +1405,16 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * @param id, Gift Identification
 	 * @return gift with ID as a Gift Object
 	 */
-	public Gift getGift(int id){
+	public Gift getGift(int id, String name){
 		Gift gift = new Gift();
-		String queryString = "SELECT * FROM " + TABLE_GIFT + 
-				" WHERE " + COLUMN_ID + " = " + id;
+        String queryString = "";
+        if (name == null) {
+            queryString = "SELECT * FROM " + TABLE_GIFT +
+                    " WHERE " + COLUMN_ID + " = " + id;
+        }else{
+            queryString = "SELECT * FROM " + TABLE_GIFT +
+                    " WHERE " + COLUMN_NAME + " = " + DatabaseUtils.sqlEscapeString(name);
+        }
 		
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
@@ -1418,6 +1437,43 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.close();
 		return gift;
 	}
+
+    /**
+     * Pulls a single gift with a specific ID
+     * @param id, Gift Identification
+     * @return gift with ID as a Gift Object
+     */
+    public Gift getTransaction(int id, String name){
+        Gift transaction = new Gift();
+        String queryString = "";
+        if (name == null) {
+            queryString = "SELECT * FROM " + TABLE_GIFT +
+                    " WHERE " + COLUMN_ID + " = " + id;
+        }else{
+            queryString = "SELECT * FROM " + TABLE_GIFT +
+                    " WHERE " + COLUMN_NAME + " = " + name;
+        }
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        if(c.moveToFirst()){
+            transaction.setId(Integer.parseInt(c.getString(0)));
+            transaction.setName(c.getString(1));
+            transaction.setGiftFund(c.getString(2));
+            transaction.setGiftFundDesc(c.getString(3));
+            transaction.setGiftAmount(new int []{
+                    Integer.parseInt(c.getString(4)),
+                    Integer.parseInt(c.getString(5))
+            });
+            transaction.setGiftDate(c.getString(6));
+            transaction.setGiftDonor(c.getString(8));
+            transaction.setGiftDonorId(c.getInt(9));
+        }
+        c.close();
+        db.close();
+        return transaction;
+    }
 	
 	/**
 	 * Pulls a list of gift names for a specific fund
@@ -1427,7 +1483,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	public ArrayList<String> getGiftNames(int Fund_ID){
 		ArrayList<String> giftNames = new ArrayList<String>();
 		String queryString = "SELECT " + TABLE_GIFT + "." + COLUMN_NAME + " FROM " + TABLE_GIFT + " INNER JOIN " + TABLE_FUND
-                + " ON " + TABLE_GIFT + "." + COLUMN_GIFT_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+                + " ON " + TABLE_GIFT + "." + COLUMN_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
                 + " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + Fund_ID;
 		
 		SQLiteDatabase db = this.getReadableDatabase();
@@ -1441,7 +1497,31 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		return giftNames;
 	}
 
-	/**
+    /**
+     * Pulls a list of transaction names for a specific fund
+     * @param Fund_ID, Fund Identification
+     * @return Names of transactions for a fund in an ArrayList of Strings
+     */
+    public ArrayList<String> getTransactionNames(int Fund_ID){
+        ArrayList<String> transactionNames = new ArrayList<String>();
+        String queryString = "SELECT " + TABLE_TRANSACTION + "." + COLUMN_NAME + " FROM " + TABLE_TRANSACTION + " INNER JOIN " + TABLE_FUND
+                + " ON " + TABLE_TRANSACTION + "." + COLUMN_FUND_DESC + "=" + TABLE_FUND + "." + COLUMN_FUND_DESC
+                + " WHERE " + TABLE_FUND + "." + COLUMN_ID + " = " + Fund_ID;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(queryString, null);
+
+        while(c.moveToNext()){
+            transactionNames.add(c.getString(0));
+        }
+        c.close();
+        db.close();
+        return transactionNames;
+    }
+
+
+
+    /**
 	 * Pulls all gifts matching the parameters given for the search
 	 * All null or empty parameters will be ignored in the search
 	 * @param startDate, the specific date or beginning of date range in "YYYY-MM-DD" format
@@ -1459,9 +1539,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		// Build date portion of search statement
 		if(!NullOrEmpty(startDate) && !NullOrEmpty(endDate)){
-			searchStatement += " WHERE (" + COLUMN_GIFT_DATE + " BETWEEN '" + startDate + "' AND '" + endDate + "')";
+			searchStatement += " WHERE (" + COLUMN_DATE + " BETWEEN '" + startDate + "' AND '" + endDate + "')";
 		}else if(!NullOrEmpty(startDate)){
-			searchStatement += " WHERE (" + COLUMN_GIFT_DATE + " = '" + startDate + "')";
+			searchStatement += " WHERE (" + COLUMN_DATE + " = '" + startDate + "')";
 		}
 
 		// Build amount portion of search statement
@@ -1482,9 +1562,9 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		// Build fund portion of search statement
 		if(!NullOrEmpty(giftFund)){
 			if(NullOrEmpty(startDate) && NullOrEmpty(endDate) && NullOrEmpty(startAmount) && NullOrEmpty(endAmount)){
-				searchStatement += " WHERE (" + COLUMN_GIFT_FUND + " = '" + giftFund + "')";
+				searchStatement += " WHERE (" + COLUMN_FUND + " = '" + giftFund + "')";
 			}else{
-				searchStatement += " AND (" + COLUMN_GIFT_FUND + " = '" + giftFund + "')";
+				searchStatement += " AND (" + COLUMN_FUND + " = '" + giftFund + "')";
 			}
 		}
 
@@ -1499,7 +1579,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         }
 
 		// Order the resulting gifts by most recent to least recent
-		searchStatement += " ORDER BY DATE(" + COLUMN_GIFT_DATE + ") DESC";
+		searchStatement += " ORDER BY DATE(" + COLUMN_DATE + ") DESC";
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(searchStatement, null);

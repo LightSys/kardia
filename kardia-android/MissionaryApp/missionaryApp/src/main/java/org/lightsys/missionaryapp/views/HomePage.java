@@ -104,7 +104,7 @@ public class HomePage extends Fragment {
                 Donor object = db.getDonorById(eventClicked.getEventId());
                 sendToDonor(object, eventClicked.getId());
             } else if (eventClicked.getItemType().equals("Gift")) {
-                Gift object = db.getGift(eventClicked.getEventId());
+                Gift object = db.getGift(eventClicked.getEventId(), null);
                 sendToGift(object, eventClicked.getId());
             } else if (eventClicked.getItemType().equals("Comment") || eventClicked.getItemType().equals("Prayer")) {
                 sendToComment(eventClicked.getEventId(), eventClicked.getId());
