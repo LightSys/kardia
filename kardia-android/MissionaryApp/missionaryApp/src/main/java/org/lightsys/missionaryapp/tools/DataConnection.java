@@ -1,8 +1,11 @@
 package org.lightsys.missionaryapp.tools;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -12,6 +15,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.webkit.CookieSyncManager;
@@ -95,6 +99,7 @@ import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -118,7 +123,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     private String password;
     private String accountName;        // Username of account
     private int accountId;
-    private  int currentFrag = -1;
+    private int currentFrag = -1;
     private final Context dataContext; // Context that the DataConnection was executed in
     private final Activity dataActivity;
     private ProgressDialog spinner;
@@ -185,7 +190,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                     }
                 });
             }
-        } else {
+        }else {
             if (validAccount) {
                 if (dataActivity != null) {
                     dataActivity.runOnUiThread(new Runnable() {
@@ -251,12 +256,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
         catch (Exception e) {
             // GET function throws an Exception if server not found
-            dataActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(dataContext, "Server connection failed", Toast.LENGTH_LONG).show();
-                }
-            });
+            if(e.getClass()!=SSLHandshakeException.class) {
+                dataActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(dataContext, "Server connection failed", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
             return false;
         }
         return true;
@@ -269,10 +276,6 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         db = new LocalDBHandler(dataContext);
         hostName = account.getServerName();
         port = account.getPort();
-        if (port == null){
-            Log.d(TAG, "DataPull: " + port);
-            port = "800";
-        }
         protocal = account.getProtocal();
         password = account.getAccountPassword();
         accountName = account.getAccountName();
@@ -470,9 +473,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                     String donor_name = DonorObj.getString("partner_name");
                     String donor_id = DonorObj.getString("partner_id");
-
+                    
                     // If the donor id is not in the database, add the Donor Object to db
-                    if(!currentDonorIDList.contains(donor_id)){
+                    if(!currentDonorIDList.contains(Integer.parseInt(donor_id))){
                         Donor temp = new Donor();
                         temp.setName(donor_name);
                         temp.setId(Integer.parseInt(donor_id));
@@ -597,14 +600,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         //gets name for image
                         String name = PicInfoObj.getString("name");
                         //attempts to retrieve image matching name
-                        if (name.equals(db.getDonorImage(partnerId))) {
+                        if (!name.equals(db.getDonorImage(partnerId))) {
                             try {
                                 url = protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/"
                                         + partnerId + "/ProfilePicture/" + name;
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-
+                            httpsSetup();
                             HttpResponse response = getResponseFromUrl(url);
                             Bitmap image = null;
                             try {
@@ -1069,7 +1072,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      */
     private String GET(String url) throws Exception {
         InputStream inputStream;
-        String result;
+        String result = "";
         Log.d(TAG, "GET: " +url);
         httpsSetup();
         try {
@@ -1089,12 +1092,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
             HttpResponse response = getResponseFromUrl(url);
 
-            inputStream = response.getEntity().getContent();
+            if (response!=null) {
+                inputStream = response.getEntity().getContent();
 
-            if (inputStream != null) {
-                result = convertInputStreamToString(inputStream);
-            } else {
-                result = "";
+                if (inputStream != null) {
+                    result = convertInputStreamToString(inputStream);
+                } else {
+                    result = "";
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1105,12 +1110,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     }
 
 
-    public HttpResponse getResponseFromUrl(String url){
+    public HttpResponse getResponseFromUrl(final String url) {
         //connection (client has to be created for every new connection)
         try {
             client = new DefaultHttpClient(clientConnectionManager, params);
-            client.removeRequestInterceptorByClass( RequestExpectContinue.class );//theoretically faster
-            if (cookies != null){
+            client.removeRequestInterceptorByClass(RequestExpectContinue.class);//theoretically faster
+            if (cookies != null) {
                 client.setCookieStore(cookies);
             }
 
@@ -1121,8 +1126,43 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 cookies = client.getCookieStore();
             }
             return response;
-        }catch(IOException e){
-            e.printStackTrace();
+        } catch (IOException e) {
+            if (e.getClass().equals(SSLHandshakeException.class) && !account.getAcceptSSCert()) {
+                if (dataActivity != null) {
+                    dataActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(dataContext)
+                                    .setCancelable(false)
+                                    .setTitle("Server error")
+                                    .setMessage("Server uses self-signed certificate. Allow connection?")
+                                    .setNegativeButton(R.string.always, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            account.setAcceptSSCert(true);
+                                            db.updateAcceptSSCert(true);
+                                            new DataConnection(dataContext, dataActivity, account, -1).execute("");
+                                        }
+                                    })
+                                    .setNeutralButton(R.string.allow, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            account.setAcceptSSCert(true);
+                                            new DataConnection(dataContext, dataActivity, account, -1).execute("");
+                                        }
+                                    })
+                                    .setPositiveButton(R.string.no, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Toast.makeText(dataContext, "Cannot connect to server", Toast.LENGTH_SHORT).show();
+
+                                        }
+                                    })
+                                    .setIcon(android.R.drawable.ic_dialog_alert)
+                                    .show();
+                        }
+                    });
+                }
+            } else {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -1133,11 +1173,16 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         // https scheme
         if (protocal.equals("https")) {
-            schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
+            if (!account.getAcceptSSCert()) {
+                //todo check that this works for signed ssl
+                schemeRegistry.register(new Scheme(protocal, SSLSocketFactory.getSocketFactory(), 443));
+            }else{
+                schemeRegistry.register(new Scheme(protocal, new EasySSLSocketFactory(), 443));
+            }
         }
         // http scheme
         else {
-            schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+            schemeRegistry.register(new Scheme(protocal, PlainSocketFactory.getSocketFactory(), 80));
         }
 
         params = new BasicHttpParams();

@@ -43,8 +43,8 @@ public class PostNoteActivity extends Activity {
         setContentView(R.layout.post_note_layout);
         TextView  sender, contactType;
 
-        sender        = (TextView) findViewById(R.id.senderName);
-        subject       = (EditText)findViewById(R.id.userNameText);
+        sender        = (TextView)findViewById(R.id.senderName);
+        subject       = (EditText)findViewById(R.id.subjectText);
         noteText      = (EditText)findViewById(R.id.noteText);
         contactType   = (TextView)findViewById(R.id.typeText);
         Button submit = (Button)  findViewById(R.id.submitButton);
