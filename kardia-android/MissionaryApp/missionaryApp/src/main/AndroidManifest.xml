@@ -33,7 +33,8 @@
         <activity
             android:name="org.lightsys.missionaryapp.views.AccountsActivity"
             android:label="@string/accounts_page"
-            android:windowSoftInputMode="adjustResize|stateVisible" >
+            android:windowSoftInputMode="adjustResize|stateVisible"
+            android:configChanges="orientation|keyboardHidden|screenSize">
         </activity>
         <activity
             android:name="org.lightsys.missionaryapp.views.NotificationActivity"

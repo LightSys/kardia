@@ -18,17 +18,19 @@ public class Account {
     private String port;
     private String protocal;
 	private String partnerName;     //Name used for sending messages, different than accountName
+    private boolean acceptSSCert;   //allows app to accept self signed SSL certificates for https
 
     /* ************************* Construct ************************* */
     public Account() {}
 	
-	public Account(int id, String AccountName, String AccountPassword, String ServerName, String port, String protocal) {
+	public Account(int id, String AccountName, String AccountPassword, String ServerName, String port, String protocal, boolean acceptSSCert) {
 		this.setId(id);
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
 		this.setServerName(ServerName);
         this.setPort(port);
         this.setProtocal(protocal);
+        this.setAcceptSSCert(acceptSSCert);
 	}
 
 	/* ************************* Set ************************* */
@@ -46,6 +48,8 @@ public class Account {
 
 	public void setPartnerName(String name)         { partnerName = name; }
 
+    public void setAcceptSSCert(boolean acceptSSC) { acceptSSCert = acceptSSC; }
+
 	/* ************************* Get ************************* */
 	public int    getId()              { return id; }
 
@@ -57,8 +61,10 @@ public class Account {
 
     public String getPort()            { return port; }
 
-    public String getProtocal()       { return protocal; }
+    public String getProtocal()        { return protocal; }
 
 	public String getPartnerName()     { return partnerName; }
+
+    public boolean getAcceptSSCert()   { return acceptSSCert; }
 
 }

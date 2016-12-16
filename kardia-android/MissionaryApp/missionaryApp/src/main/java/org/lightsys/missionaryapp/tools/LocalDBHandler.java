@@ -56,12 +56,13 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	//ACCOUNT TABLE
 	private static final String TABLE_ACCOUNTS = "accounts";
 	private static final String COLUMN_ID = "id";
-	private static final String COLUMN_ACCOUNT_NAME = "accountName";
-	private static final String COLUMN_ACCOUNT_PASSWORD = "accountPassword";
-	private static final String COLUMN_SERVER_NAME = "serverName";
+	private static final String COLUMN_ACCOUNT_NAME = "account_name";
+	private static final String COLUMN_ACCOUNT_PASSWORD = "account_password";
+	private static final String COLUMN_SERVER_NAME = "server_name";
     private static final String COLUMN_PORT = "port";
     private static final String COLUMN_PROTOCAL = "protocal";
-	private static final String COLUMN_PARTNER_NAME = "partnerName";
+	private static final String COLUMN_PARTNER_NAME = "partner_name";
+    private static final String COLUMN_ACCEPT_SSC = "accept_self_signed_cert";
 	//FUND TABLE
 	private static final String TABLE_FUND = "funds";
 	private static final String COLUMN_NAME = "name";
@@ -173,7 +174,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_ACCOUNT_NAME
 				+ " TEXT," + COLUMN_ACCOUNT_PASSWORD + " TEXT,"
 				+ COLUMN_SERVER_NAME + " TEXT," + COLUMN_PARTNER_NAME + " TEXT," + COLUMN_PORT + " TEXT,"
-                + COLUMN_PROTOCAL + " TEXT)";
+                + COLUMN_PROTOCAL + " TEXT," + COLUMN_ACCEPT_SSC + " INTEGER)";
 		db.execSQL(CREATE_ACCOUNTS_TABLE);
 
 		String CREATE_DONOR_TABLE = "CREATE TABLE " + TABLE_DONORS + "("
@@ -305,6 +306,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		values.put(COLUMN_PARTNER_NAME, account.getPartnerName());
         values.put(COLUMN_PORT, account.getPort());
         values.put(COLUMN_PROTOCAL, account.getProtocal());
+        values.put(COLUMN_ACCEPT_SSC, account.getAcceptSSCert());
 
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_ACCOUNTS, null, values);
@@ -498,7 +500,6 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     // id, type, eventid, header, content, date
     public void addNewEvent(String type, int eventId, String header, String content, String date){
         ContentValues values = new ContentValues();
-        Log.d(TAG, "addNewEvent: " + type + eventId + header + content + date);
         values.put(COLUMN_TYPE, type);
         values.put(COLUMN_EVENT_ID, eventId);
         values.put(COLUMN_HEADER, header);
@@ -784,6 +785,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			temp.setPartnerName(c.getString(4));
             temp.setPort(c.getString(5));
             temp.setProtocal(c.getString(6));
+            temp.setAcceptSSCert((c.getInt(7)==1));
 		}else {
 			temp=null;
 		}
@@ -1064,6 +1066,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             long eventDate = date.getTimeInMillis();
 
             //if items are older than 2 weeks, they will be removed
+            //todo change to 2 weeks instead of 8
             if (current - eventDate < 8*6.048*Math.pow(10,8)){//6.048*Math.pow(10,8)){
                 NewItem item = new NewItem();
                 item.setId(c.getInt(0));
@@ -1671,19 +1674,14 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	
 	/**
 	 * Allows the user to make changes to existing accounts in the database
-	 * @param id, used to find the account within the database
-	 * @param newName, change the user name to something new
-	 * @param newPass, change the password to something new
-	 * @param newServer, change the server address to something new
+	 * @param acceptSSC, whether user allows app to connect to server with self-signed SSL certificate
 	 */
-	public void updateAccount(int id, String newName, String newPass, String newServer){
+	public void updateAcceptSSCert(boolean acceptSSC){
 		ContentValues values = new ContentValues();
-		values.put(COLUMN_ACCOUNT_NAME, newName);
-		values.put(COLUMN_ACCOUNT_PASSWORD, newPass);
-		values.put(COLUMN_SERVER_NAME, newServer);
+		values.put(COLUMN_ACCEPT_SSC, acceptSSC);
 		
 		SQLiteDatabase db = this.getWritableDatabase();
-		db.update(TABLE_ACCOUNTS, values, COLUMN_ID + " = " + id, null);
+		db.update(TABLE_ACCOUNTS, values, null, null);
 		db.close();
 	}
 

@@ -234,7 +234,6 @@ public class NoteList extends Fragment {
             if (obj.getClass() == Note.class) {
                 Note n = (Note) obj;
                 numPrayed = n.getNumberPrayed();
-                Log.d(TAG, "generateListItems: " + n.getNoteText());
                 hm.put("date", Formatter.getFormattedDate(n.getDate()));
                 hm.put("subject", n.getSubject());
                 hm.put("content", n.getNoteText());

@@ -95,7 +95,6 @@ public class DonorList extends Fragment {
             Bitmap bitmap;
             for (Donor d : donors) {
                 byte[] bytes = d.getImage();
-                Log.d(TAG, "getProfilePictures: " + d.getImage());
 
                 if (bytes != null) {
                     bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);

@@ -33,8 +33,9 @@ public class Options extends Fragment {
     private final String EXTRA_DELETE = "delete";
 
     private Spinner refreshPeriods, giftPeriods;
-    private ToggleButton    reminderOnOff;
+    private ToggleButton    reminderOnOff, ssCertOnOff;
     private TextView        reminderDetails;
+    private LocalDBHandler  db;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,7 +47,8 @@ public class Options extends Fragment {
         giftPeriods = (Spinner) v.findViewById(R.id.giftPeriodsSpinner);
         reminderOnOff = (ToggleButton) v.findViewById(R.id.reminderOnOffSwitch);
         reminderDetails = (TextView) v.findViewById(R.id.reminderDetailsText);
-
+        ssCertOnOff = (ToggleButton) v.findViewById(R.id.SSCOnOffSwitch);
+        db = new LocalDBHandler(v.getContext());
 
         reminderOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,10 +66,23 @@ public class Options extends Fragment {
             }
         });
 
+        ssCertOnOff.setChecked(db.getAccount().getAcceptSSCert());
+
+        ssCertOnOff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                if(ssCertOnOff.isChecked()) {
+                    db.updateAcceptSSCert(true);
+
+                }else{
+                    db.updateAcceptSSCert(false);
+                }
+            }
+        });
+
         applyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LocalDBHandler db = new LocalDBHandler(v.getContext());
                 db.addRefreshPeriod(refreshPeriods.getSelectedItem().toString());
                 db.addGiftPeriod(giftPeriods.getSelectedItem().toString());
                 Toast.makeText(v.getContext(), "Changes Applied", Toast.LENGTH_SHORT).show();
@@ -75,7 +90,6 @@ public class Options extends Fragment {
         });
 
 
-        LocalDBHandler db = new LocalDBHandler(v.getContext());
         String refresh = db.getRefreshPeriod();
         String period = db.getGiftPeriod();
         db.close();
@@ -93,13 +107,13 @@ public class Options extends Fragment {
             }
         }
 
-        setAlarmInfo(db);
+        setAlarmInfo();
 
         return v;
     }
 
 
-    private void setAlarmInfo(LocalDBHandler db){
+    private void setAlarmInfo(){
         ArrayList<UpdateNotification> notifications = db.getNotifications();
         if(notifications.size()>0){
             reminderOnOff.setChecked(true);
@@ -112,8 +126,7 @@ public class Options extends Fragment {
     }
     public void onResume(){
         super.onResume();
-        LocalDBHandler db = new LocalDBHandler(getActivity());
-        setAlarmInfo(db);
+        setAlarmInfo();
     }
 
 }

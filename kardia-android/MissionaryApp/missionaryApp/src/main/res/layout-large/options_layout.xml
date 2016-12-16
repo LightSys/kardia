@@ -4,8 +4,7 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:background="@drawable/noise_blue_repeat"
-    >
+    android:background="@drawable/noise_blue_repeat">
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -56,6 +55,27 @@
                 android:focusableInTouchMode="false"
                 android:layout_weight="1"/>
         </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/options_allow_SSC"/>
+
+            <ToggleButton
+                android:id="@+id/SSCOnOffSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="true"
+                android:layout_weight="1" />
+        </TableRow>
+
 
         <TableRow
             android:layout_width="match_parent"
