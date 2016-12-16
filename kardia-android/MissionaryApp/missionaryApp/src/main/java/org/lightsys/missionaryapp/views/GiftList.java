@@ -57,7 +57,7 @@ public class GiftList extends Fragment{
 
 			if((period_id==null || period_type==null)&&giftIds !=null){
 				for (Integer gift_id : giftIds) {
-					gifts.add(db.getGift(gift_id));
+					gifts.add(db.getGift(gift_id,null));
 				}
 			}else {
 				for(Integer fund_id: fundIds) {
@@ -73,7 +73,7 @@ public class GiftList extends Fragment{
 			this.giftIds     = giftArgs.getIntegerArrayList(ARG_GIFT_IDS);
 			if((period_id==null || period_type==null)&&giftIds!=null){
 				for (Integer gift_id:giftIds){
-					gifts.add(db.getGift(gift_id));
+					gifts.add(db.getGift(gift_id, null));
 				}
 			}else {
 				for(Integer fund_id: fundIds) {
