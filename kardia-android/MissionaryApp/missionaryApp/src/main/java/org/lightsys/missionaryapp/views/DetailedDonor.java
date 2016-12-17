@@ -1,5 +1,7 @@
 package org.lightsys.missionaryapp.views;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,9 +16,12 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -25,6 +30,7 @@ import android.widget.Toast;
 import org.lightsys.missionaryapp.R;
 import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Gift;
+import org.lightsys.missionaryapp.tools.DataConnection;
 import org.lightsys.missionaryapp.tools.Formatter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
@@ -108,17 +114,33 @@ public class DetailedDonor extends Fragment{
             image.setImageResource(R.drawable.profile_picture_standard);
         }
 
+
         //open maps for address
         address.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
-                        Uri.parse("google.navigation:q=" + donorAddress));
-                try {
-                    startActivity(intent);
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(getActivity(),"No Map app Found", Toast.LENGTH_SHORT).show();
-                }
+                new AlertDialog.Builder(getActivity())
+                        .setCancelable(false)
+                        .setMessage("Go to maps?")
+                        //.setMessage("Server uses self-signed certificate. Allow connection?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                                        Uri.parse("google.navigation:q=" + donorAddress));
+                                try {
+                                    startActivity(intent);
+                                } catch (android.content.ActivityNotFoundException ex) {
+                                    Toast.makeText(getActivity(), "No Map app Found", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
             }
         });
 
@@ -139,13 +161,28 @@ public class DetailedDonor extends Fragment{
         phone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String phoneCall = "+" + donorPhone.replaceAll("[^0-9.]", "");
-                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneCall, null));
-                try {
-                    startActivity(intent);
-                } catch(android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(getActivity(),"no Phone app found", Toast.LENGTH_SHORT).show();
-                }
+                new AlertDialog.Builder(getActivity())
+                        .setCancelable(false)
+                        .setMessage("Go to phone?")
+                        //.setMessage("Server uses self-signed certificate. Allow connection?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                String phoneCall = "+" + donorPhone.replaceAll("[^0-9.]", "");
+                                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneCall, null));
+                                try {
+                                    startActivity(intent);
+                                } catch(android.content.ActivityNotFoundException ex) {
+                                    Toast.makeText(getActivity(),"no Phone app found", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
             }
         });
 
