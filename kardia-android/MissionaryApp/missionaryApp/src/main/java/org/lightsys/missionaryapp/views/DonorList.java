@@ -13,7 +13,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import org.lightsys.missionaryapp.R;
-import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.tools.DonorAdapter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
@@ -74,7 +73,7 @@ public class DonorList extends Fragment {
         String[] from = {"donor_name", "email","phone"};
         int[] to = {R.id.userNameText, R.id.emailText, R.id.phoneText};
 
-        DonorAdapter adapter = new DonorAdapter(getActivity(), itemList, R.layout.donor_listview_layout, from, to, bitmaps);
+        DonorAdapter adapter = new DonorAdapter(getActivity(), itemList, R.layout.donor_info_layout, from, to, bitmaps);
 
         ListView listview = (ListView)v.findViewById(R.id.infoList);
         listview.setAdapter(adapter);

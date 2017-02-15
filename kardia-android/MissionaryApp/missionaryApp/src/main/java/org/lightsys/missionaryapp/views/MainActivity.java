@@ -22,7 +22,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -280,7 +279,7 @@ public class MainActivity extends ActionBarActivity {
 
 		db.close();
 		switch(position) {
-            //Gifts, Donor, Prayer requests/updates, Funds, Accounts, Options, Refresh
+            //Gifts, Donor, Prayer requests/updates, Funds, Accounts, Settings, Refresh
             case 0:
                 currentFrag = position;
                 fragment = new HomePage();
@@ -313,7 +312,7 @@ public class MainActivity extends ActionBarActivity {
                 break;
             case 5:
                 currentFrag = position;
-                Options fragment = new Options();
+                Settings fragment = new Settings();
                 db.close();
                 fragmentManager.beginTransaction().replace(R.id.contentFrame, fragment, "Option")
                         .commit();

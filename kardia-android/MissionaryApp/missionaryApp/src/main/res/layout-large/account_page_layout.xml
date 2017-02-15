@@ -54,7 +54,7 @@
         android:ems="10"
         android:hint="@string/server_name"
         android:maxLines="1"
-        android:text = "10.0.0.11"
+        android:text = "10.0.0.20"
         android:textSize="@dimen/body_dimen_lg"/>
 
     <EditText

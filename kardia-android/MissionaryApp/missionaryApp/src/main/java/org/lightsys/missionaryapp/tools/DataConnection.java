@@ -75,6 +75,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
@@ -405,7 +406,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 for (Period p : db.getFundPeriods(fundId, "Month")){
                     loadTransactions(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/fundmanager/"
                             + accountId + "/Funds/" + Fund_Name + "/Periods/" + p.getPeriodName()
-                            + "/Transactions?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), fundId, Fund_Name);
+                            + "/Transactions?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"),
+                            fundId, Fund_Name, p.getPeriodName());
                 }
             }
 
@@ -988,7 +990,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
      * @param result, result from API GET() for gifts
      * @param Fund_ID, fund related to gift
      */
-    private void loadTransactions(String result, int Fund_ID, String transaction_fund){
+    private void loadTransactions(String result, int Fund_ID, String transaction_fund, String periodName){
 
         // Test to see what gifts the database already has to avoid duplicates
         ArrayList<String> currentTransactionNameList = db.getTransactionNames(Fund_ID);
@@ -1048,6 +1050,48 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setGiftDonorId(donorID);
                         temp.setGiftYear(transaction_year);
                         temp.setGiftMonth(month_year);
+
+                        /*todo employ if transaction total is Fund total
+                        ArrayList<Period> currentPeriods= db.getFundPeriods(Fund_ID, "Month");
+                        if( month_year.equals(currentPeriods.get(currentPeriods.size()-1)) && i == tempTransactions.length()-1 ){
+                            try {
+                                String balanceResult = GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/fundmanager/"
+                                        + accountId + "/Funds/" + transaction_fund + "/Periods/" + periodName
+                                        + "?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic");
+                                JSONObject jsonBalance = null;
+                                try {
+                                    jsonBalance = new JSONObject(balanceResult);
+                                } catch (JSONException e1) {
+                                    e1.printStackTrace();
+                                }
+                                if (json != null) {
+                                    JSONArray tempBalance = jsonBalance.names();
+                                    for(int j = 0; j < tempBalance.length(); j++) {
+                                        JSONObject fundBalanceObj = json.getJSONObject(tempBalance.getString(j));
+                                        if(fundBalanceObj.getString("name").equals("Balances")) {
+                                            JSONObject balanceObj = fundBalanceObj.getJSONObject("balance");
+
+                                            int[] balance = {
+                                                    Integer.parseInt(balanceObj.getString("wholepart")),
+                                                    Integer.parseInt(balanceObj.getString("fractionpart"))
+                                            };
+                                            if(balance[1] >= 100){
+                                                balance[1] /= 100;
+                                            }
+                                            db.setFundBalance();
+                                        }
+                                    }
+                                }
+                            }catch (Exception ex) {
+                                ex.printStackTrace();
+                                //todo added to cancel download if server is timing out
+                                if (ex.getClass().equals(SocketTimeoutException.class)) {
+                                    Toast.makeText(dataContext, "Server connection timed out", Toast.LENGTH_LONG).show();
+                                } else {
+                                    Toast.makeText(dataContext, "Server connection failed", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }*/
 
                         db.addTransaction(temp);
 
