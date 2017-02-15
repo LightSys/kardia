@@ -31,6 +31,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * @author Andrew Lockridge
  * created on 6/1/2015.
@@ -380,6 +382,7 @@ public class NotificationActivity extends Activity {
                     // If alarm time is not in the past, set alarm for notification
                     if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
 
+
                         alarmIntent = new Intent(NotificationActivity.this, NotifyAlarmReceiver.class);
                         alarmIntent.putExtra("title", "Update Reminder: ");
                         alarmIntent.putExtra("message", "Send Ministry Update");
@@ -395,41 +398,52 @@ public class NotificationActivity extends Activity {
                         Log.w("tag", "Alarm set for: " + format.format(alarmTime) + ", ID:" +
                                 Integer.toString(notificationID));
 
-                        notificationID++;
-                        // Add selected time period for next iteration(0=week, 1=2 weeks, 2=month, 3=year)
                         String period="";
                         switch(frequency) {
                             case 0:
-                                alarmTime+=604800000;
-                                c.setTimeInMillis(alarmTime);
                                 period = "Every Week";
                                 break;
                             case 1:
-                                alarmTime+=1210000000;
-                                c.setTimeInMillis(alarmTime);
                                 period = "Every Two Weeks";
                                 break;
                             case 2:
-                                int month = c.get(Calendar.MONTH);
-                                if (month==11) {
-                                    c.set(Calendar.MONTH, 0);
-                                    c.set(Calendar.YEAR, c.get(Calendar.YEAR)+1);
-                                }else{
-                                    c.set(Calendar.MONTH, c.get(Calendar.MONTH)+1);
-                                }
                                 period = "Every Month";
                                 break;
                             case 3:
-                                c.set(Calendar.YEAR, c.get(Calendar.YEAR)+1);
                                 period = "Every Year";
                                 break;
                         }
+
+                        notificationID++;
                         notification = new UpdateNotification();
                         notification.setId(notificationID);
-                        notification.setTime(alarmTime);
                         notification.setFrequency(period);
-
+                        notification.setTime(alarmTime);
                         db.addNotification(notification);
+                    }
+
+                    // Add selected time period for next iteration(0=week, 1=2 weeks, 2=month, 3=year)
+                    switch(frequency) {
+                        case 0:
+                            alarmTime+=604800000;
+                            c.setTimeInMillis(alarmTime);
+                            break;
+                        case 1:
+                            alarmTime+=1210000000;
+                            c.setTimeInMillis(alarmTime);
+                            break;
+                        case 2:
+                            int month = c.get(Calendar.MONTH);
+                            if (month==11) {
+                                c.set(Calendar.MONTH, 0);
+                                c.set(Calendar.YEAR, c.get(Calendar.YEAR)+1);
+                            }else{
+                                c.set(Calendar.MONTH, c.get(Calendar.MONTH)+1);
+                            }
+                            break;
+                        case 3:
+                            c.set(Calendar.YEAR, c.get(Calendar.YEAR)+1);
+                            break;
                     }
                     //set new alarmTime for next iteration
                     alarmTime = c.getTimeInMillis();

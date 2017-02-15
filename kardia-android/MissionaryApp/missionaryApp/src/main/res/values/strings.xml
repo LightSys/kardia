@@ -7,7 +7,7 @@
         <item>Donors</item>
         <item>Prayer Requests/Updates</item>
         <item>Funds</item>
-        <item>Options</item>
+        <item>Settings</item>
         <item>Refresh</item>
         <item>Logout</item>
     </string-array>
@@ -93,7 +93,7 @@
     <string name="userID_Prompt">Enter Donor ID</string>
     <string name="original_message_label">Original Post</string>
     <string name="profile_pic_description">Profile Picture</string>
-    <string name="options_refresh_text">Refresh Every</string>
+    <string name="options_refresh_text">Auto Refresh</string>
     <string name="options_gift_text">Gift Period</string>
     <string name="options_allow_SSC">Allow Self-Signed SSL</string>
     <string name="options_reminder_text">Update Reminder</string>

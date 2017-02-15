@@ -3,10 +3,14 @@ package org.lightsys.missionaryapp.views;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,12 +18,18 @@ import android.widget.ToggleButton;
 
 import org.lightsys.missionaryapp.R;
 
+import org.lightsys.missionaryapp.data.Comment;
+import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.UpdateNotification;
+import org.lightsys.missionaryapp.tools.CommentListAdapter;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * @author Judah Sistrunk
@@ -28,21 +38,22 @@ import java.util.Locale;
  * Class that governs the options menu for how often the app auto-refreshes
  * */
 
-public class Options extends Fragment {
+public class Settings extends Fragment{
 
     private final String EXTRA_DELETE = "delete";
 
-    private Spinner refreshPeriods, giftPeriods;
+    private Spinner giftPeriods, refreshPeriods;
     private ToggleButton    reminderOnOff, ssCertOnOff;
     private TextView        reminderDetails;
     private LocalDBHandler  db;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View v = inflater.inflate(R.layout.options_layout, container, false);
-        getActivity().setTitle("Options");
+        final View v = inflater.inflate(R.layout.settings_layout, container, false);
+        getActivity().setTitle("Settings");
 
         Button applyButton = (Button) v.findViewById(R.id.applyButton);
+
         refreshPeriods = (Spinner) v.findViewById(R.id.refreshPeriodsSpinner);
         giftPeriods = (Spinner) v.findViewById(R.id.giftPeriodsSpinner);
         reminderOnOff = (ToggleButton) v.findViewById(R.id.reminderOnOffSwitch);
@@ -52,12 +63,12 @@ public class Options extends Fragment {
 
         reminderOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
-                if(reminderOnOff.isChecked()) {
+            public void onClick(View v) {
+                if (reminderOnOff.isChecked()) {
                     Intent reminder = new Intent(getActivity(), NotificationActivity.class);
                     startActivity(reminder);
 
-                }else{
+                } else {
                     reminderDetails.setText("");
                     Intent reminder = new Intent(getActivity(), NotificationActivity.class);
                     reminder.putExtra(EXTRA_DELETE, true);
@@ -70,23 +81,30 @@ public class Options extends Fragment {
 
         ssCertOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
-                if(ssCertOnOff.isChecked()) {
+            public void onClick(View v) {
+                if (ssCertOnOff.isChecked()) {
                     db.updateAcceptSSCert(true);
 
-                }else{
+                } else {
                     db.updateAcceptSSCert(false);
                 }
             }
         });
 
-        applyButton.setOnClickListener(new View.OnClickListener() {
+        refreshPeriods.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
+            public void onClick(View v){
                 db.addRefreshPeriod(refreshPeriods.getSelectedItem().toString());
-                db.addGiftPeriod(giftPeriods.getSelectedItem().toString());
-                Toast.makeText(v.getContext(), "Changes Applied", Toast.LENGTH_SHORT).show();
             }
+
+        });
+
+        giftPeriods.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                db.addGiftPeriod(giftPeriods.getSelectedItem().toString());
+            }
+
         });
 
 
@@ -112,13 +130,16 @@ public class Options extends Fragment {
         return v;
     }
 
-
     private void setAlarmInfo(){
         ArrayList<UpdateNotification> notifications = db.getNotifications();
+        Log.d(TAG, "setAlarmInfo: " + notifications.size());
+
         if(notifications.size()>0){
             reminderOnOff.setChecked(true);
-            SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm", Locale.US);
-            reminderDetails.setText(notifications.get(0).getFrequency() + "\nNext: " + format.format(notifications.get(0).getTime()));
+            SimpleDateFormat format = new SimpleDateFormat("MM-dd-yy", Locale.US);
+            //SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm", Locale.US);
+            reminderDetails.setText(notifications.get(0).getFrequency() + "\nuntil " + format.format(notifications.get(notifications.size()-1).getTime()));
+            //reminderDetails.setText(notifications.get(0).getFrequency() + "\nNext: " + format.format(notifications.get(0).getTime()));
         }else{
             reminderOnOff.setChecked(false);
             reminderDetails.setText("");

@@ -12,7 +12,6 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,8 +29,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
-
-import static android.content.ContentValues.TAG;
 
 public class GiftSearch extends Fragment{
 
@@ -70,7 +67,7 @@ public class GiftSearch extends Fragment{
 		dollarSign2   = (TextView)v.findViewById(R.id.dollarSign2);
         donorText     = (TextView)v.findViewById(R.id.donorText);
         fundText      = (TextView)v.findViewById(R.id.fundText);
-        selectDate    = (TextView)v.findViewById(R.id.selectDate);
+        selectDate    = (TextView)v.findViewById(R.id.refreshTitle);
         selectAmount  = (TextView)v.findViewById(R.id.selectAmount);
         selectDonor  = (TextView)v.findViewById(R.id.selectDonor);
         selectFund  = (TextView)v.findViewById(R.id.selectFund);

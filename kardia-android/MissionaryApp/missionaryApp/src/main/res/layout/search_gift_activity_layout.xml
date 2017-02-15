@@ -17,7 +17,7 @@
             android:layout_margin="@dimen/body_dimen">
 
             <TextView
-                android:id="@+id/selectDate"
+                android:id="@+id/refreshTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
@@ -28,7 +28,7 @@
                 android:id="@+id/dateRange"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/selectDate"
+                android:layout_below="@id/refreshTitle"
                 android:enabled="true"
                 android:checked="false"
                 android:text="@string/date_range"
@@ -38,7 +38,7 @@
                 android:id="@+id/dateLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/selectDate"
+                android:layout_below="@id/refreshTitle"
                 android:gravity="center_horizontal"
                 android:visibility="gone">
 
