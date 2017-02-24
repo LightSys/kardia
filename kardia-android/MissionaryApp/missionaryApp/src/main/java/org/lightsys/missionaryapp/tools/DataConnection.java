@@ -5,20 +5,13 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
-import android.webkit.CookieSyncManager;
 import android.widget.Toast;
 
 import org.apache.http.HttpVersion;
@@ -30,7 +23,6 @@ import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
@@ -52,60 +44,30 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.lightsys.missionaryapp.data.Comment;
-import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.JsonPost;
-import org.lightsys.missionaryapp.data.NewItem;
 import org.lightsys.missionaryapp.data.Note;
 import org.lightsys.missionaryapp.data.Period;
 import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
-import org.lightsys.missionaryapp.views.AccountsActivity;
+import org.lightsys.missionaryapp.views.LoginActivity;
 import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.data.Fund;
 import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.views.MainActivity;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.HttpURLConnection;
-import java.net.InterfaceAddress;
-import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 
 import static android.content.ContentValues.TAG;
 
@@ -132,7 +94,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     private ProgressDialog spinner;
     private LocalDBHandler db;
     private boolean validAccount;
-    private boolean allowSSC;
+    private int allowSSC;
 
     private ClientConnectionManager clientConnectionManager;
     private HttpContext context = null;
@@ -142,7 +104,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
     private static final String Tag = "DPS";
 
-    public DataConnection(Context context, Activity activity, Account a, int Frag, boolean allowSelfSigned) {
+    public DataConnection(Context context, Activity activity, Account a, int Frag, int allowSelfSigned) {
         super();
         dataContext = context;
         dataActivity = activity;
@@ -297,11 +259,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         Log.i(Tag, "pulling data");
 
-        // If call was from AccountsActivity or EditAccountActivity, it is an account being connected
+        // If call was from LoginActivity or EditAccountActivity, it is an account being connected
         // If it was from MainActivity, it is a database update from an existing account
         boolean isNewAccount = false;
         Class c = dataContext.getClass();
-        if (c == AccountsActivity.class) {
+        if (c == LoginActivity.class) {
             isNewAccount = true;
             spinner.setMessage("Connecting Account...");
         }  else
@@ -332,7 +294,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
         }
 
         //if updating, send un-posted messages and notes to server
-        if (c != AccountsActivity.class && dataActivity != null) {
+        if (c != LoginActivity.class && dataActivity != null) {
             ArrayList<JsonPost> JsonToPost = db.getJsonPosts();
             if (JsonToPost != null) {
                 for (JsonPost j : JsonToPost) {
@@ -352,10 +314,17 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
 
         try {
+            Log.d(TAG, "DataPull: " + isNewAccount);
             if (isNewAccount) {
+                Log.d(TAG, "DataPull: " + account);
+
                 // If account is new and valid, add
                 db.addAccount(account);
             }
+            if (allowSSC==2) {
+                db.updateAcceptSSCert(1);
+            }
+
             loadPartnerName(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/partner/Partners/"
                     + accountId + "?cx__mode=rest&cx__res_format=attrs&cx__res_type=element&cx__res_attrs=basic"));
             loadDonors(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/missionary/" + accountId +
@@ -1262,7 +1231,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
             return response;
         } catch (IOException e) {
-            if (e.getClass().equals(SSLHandshakeException.class) && !allowSSC) {
+            if (e.getClass().equals(SSLHandshakeException.class) && allowSSC==0) {
                 if (dataActivity != null) {
                     dataActivity.runOnUiThread(new Runnable() {
                         @Override
@@ -1273,21 +1242,18 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                                     .setMessage("Server uses self-signed certificate. Allow connection?")
                                     .setNegativeButton(R.string.always, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
-                                            db.updateAcceptSSCert(true);
-                                            allowSSC = true;
-                                            new DataConnection(dataContext, dataActivity, account, -1, true).execute("");
+                                            new DataConnection(dataContext, dataActivity, account, -1, 2).execute("");
                                         }
                                     })
                                     .setNeutralButton(R.string.allow, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
-                                            allowSSC = true;
-                                            new DataConnection(dataContext, dataActivity, account, -1, true).execute("");
+                                            new DataConnection(dataContext, dataActivity, account, -1, 1).execute("");
                                         }
                                     })
                                     .setPositiveButton(R.string.no, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
                                             Toast.makeText(dataContext, "Cannot connect to server", Toast.LENGTH_SHORT).show();
-
+                                            allowSSC = 0;
                                         }
                                     })
                                     .setIcon(android.R.drawable.ic_dialog_alert)
@@ -1307,7 +1273,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
         // https scheme
         if (protocal.equals("https")) {
-            if (!allowSSC) {
+            if (allowSSC==0) {
                 //todo check that this works for signed ssl
                 schemeRegistry.register(new Scheme(protocal, SSLSocketFactory.getSocketFactory(), 443));
             }else{

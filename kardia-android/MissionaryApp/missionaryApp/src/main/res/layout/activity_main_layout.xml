@@ -31,7 +31,7 @@
         android:layout_centerHorizontal="true"
         android:visibility="gone"
         android:orientation="horizontal">
-        <Button
+        <ImageButton
             android:id="@+id/addUpdateButton"
             android:layout_width="80dp"
             android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
             android:layout_margin="@dimen/border_dimen"
             android:src="@drawable/add_update"
             android:background="@color/transparent"/>
-        <Button
+        <ImageButton
             android:id="@+id/addLetterButton"
             android:layout_width="80dp"
             android:layout_height="wrap_content"
@@ -47,7 +47,7 @@
             android:layout_margin="@dimen/border_dimen"
             android:src="@drawable/add_letter"
             android:background="@color/transparent"/>
-        <Button
+        <ImageButton
             android:id="@+id/addRequestButton"
             android:layout_width="80dp"
             android:layout_height="wrap_content"

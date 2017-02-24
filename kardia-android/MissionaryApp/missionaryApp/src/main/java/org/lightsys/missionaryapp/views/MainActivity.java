@@ -145,7 +145,7 @@ public class MainActivity extends ActionBarActivity {
 				db.deleteTimeStamp();
 			}
 			db.close();
-			Intent login = new Intent(MainActivity.this, AccountsActivity.class);
+			Intent login = new Intent(MainActivity.this, LoginActivity.class);
 			startActivityForResult(login, 0);
 		}
 
@@ -182,7 +182,7 @@ public class MainActivity extends ActionBarActivity {
         if (currentFragment !=null) {
             String fragTag = currentFragment.getTag();
             if (fragTag != null) {
-                if (fragTag.equals("Gift") || fragTag.equals("Donor") || fragTag.equals("GiftTime")) {
+                if (fragTag.equals("Gift") || fragTag.equals("Donor") || fragTag.equals("GiftTime") || fragTag.equals("Fund")) {
                     MenuInflater inflater = getMenuInflater();
                     inflater.inflate(R.menu.main, menu);
                 }
@@ -232,7 +232,7 @@ public class MainActivity extends ActionBarActivity {
         String fragTag = getSupportFragmentManager().findFragmentById(R.id.contentFrame).getTag();
         if (fragTag.equals("Donor")){
             num = 0;
-        }else if (fragTag.equals("Gift") || (fragTag.equals("GiftTime"))){
+        }else if (fragTag.equals("Gift") || (fragTag.equals("GiftTime")) || (fragTag.equals("Fund"))){
             num=1;
         }
         Bundle args = new Bundle();
@@ -241,13 +241,13 @@ public class MainActivity extends ActionBarActivity {
 				setTitle("Donor Search");
 				fragment = new DonorSearch();
                 fragment.setArguments(args);
-				getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment).commit();
+				getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment, "Search").commit();
 				break;
             case 1:
                 setTitle("Gift Search");
                 fragment = new GiftSearch();
                 fragment.setArguments(args);
-                getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment, "Search").commit();
                 break;
             case -1:
                 break;
@@ -328,7 +328,7 @@ public class MainActivity extends ActionBarActivity {
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 db.deleteAccount();
-                                Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
+                                Intent accounts = new Intent(MainActivity.this, LoginActivity.class);
                                 startActivity(accounts);
                             }
                         })

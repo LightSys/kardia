@@ -67,7 +67,7 @@
         android:ems="10"
         android:hint="@string/port"
         android:maxLines="1"
-        android:text = "800"
+        android:text = "1843"
         android:textSize="@dimen/body_dimen"/>
 
     <EditText
@@ -79,6 +79,7 @@
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/user_id_ex_100001"
+        android:text = "100048"
         android:inputType="number"
         android:maxLines="1"
         android:textSize="@dimen/body_dimen"/>

@@ -7,7 +7,7 @@ package org.lightsys.missionaryapp.data;
  *
  *  user is represented by an Account object which stores all of his/her information as different properties
  *      id: unique to account, used as key to access other data from tables
- *      log in info such as password and servername are collected in the AccountsActivity class
+ *      log in info such as password and servername are collected in the LoginActivity class
  *
  */
 public class Account {
@@ -18,12 +18,12 @@ public class Account {
     private String port;
     private String protocal;
 	private String partnerName;     //Name used for sending messages, different than accountName
-    private boolean acceptSSCert;   //allows app to accept self signed SSL certificates for https
+    private int    acceptSSCert;   //allows app to accept self signed SSL certificates for https
 
     /* ************************* Construct ************************* */
     public Account() {}
 	
-	public Account(int id, String AccountName, String AccountPassword, String ServerName, String port, String protocal, boolean acceptSSCert) {
+	public Account(int id, String AccountName, String AccountPassword, String ServerName, String port, String protocal, int acceptSSCert) {
 		this.setId(id);
 		this.setAccountName(AccountName);
 		this.setAccountPassword(AccountPassword);
@@ -48,7 +48,7 @@ public class Account {
 
 	public void setPartnerName(String name)         { partnerName = name; }
 
-    public void setAcceptSSCert(boolean acceptSSC) { acceptSSCert = acceptSSC; }
+    public void setAcceptSSCert(int acceptSSC)      { acceptSSCert = acceptSSC; }
 
 	/* ************************* Get ************************* */
 	public int    getId()              { return id; }
@@ -65,6 +65,6 @@ public class Account {
 
 	public String getPartnerName()     { return partnerName; }
 
-    public boolean getAcceptSSCert()   { return acceptSSCert; }
+    public int    getAcceptSSCert()   { return acceptSSCert; }
 
 }

@@ -11,7 +11,7 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/contentText"
+            android:id="@+id/subjectText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
@@ -21,15 +21,15 @@
             android:textSize="@dimen/header_dimen"
             android:textStyle="bold"/>
 
-        <TextView
-            android:id="@+id/subjectText"
+        <!--<TextView
+            android:id="@+id/missionaryNameText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/contentText"
+            android:layout_below="@id/subjectText"
             android:layout_centerHorizontal="true"
             android:gravity="center"
             android:layout_marginTop="2dp"
-            android:textSize="@dimen/subtitle_dimen"/>
+            android:textSize="@dimen/subtitle_dimen"/>-->
 
         <TextView
             android:id="@+id/dateText"
@@ -59,6 +59,7 @@
                 android:paddingBottom="30dp"
                 android:textSize="@dimen/body_dimen"/>
         </ScrollView>
+
         <RelativeLayout
             android:id="@+id/buttonLayout"
             android:layout_width="wrap_content"
@@ -108,7 +109,7 @@
 
             <Button
                 android:id="@+id/commentButton"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 style="@style/customBottomBar"
@@ -121,6 +122,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/buttonLayout"
             android:smoothScrollbar="false"
-            android:listSelector="@android:color/transparent"/>
+            android:listSelector="@android:color/transparent"
+            android:divider="#000030"
+            android:dividerHeight="1dp"/>
     </RelativeLayout>
 </ScrollView>

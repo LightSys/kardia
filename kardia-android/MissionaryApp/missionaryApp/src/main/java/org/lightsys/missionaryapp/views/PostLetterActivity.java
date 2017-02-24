@@ -54,7 +54,7 @@ public class PostLetterActivity extends Activity {
 
         sender           = (TextView) findViewById(R.id.senderName);
         contactType      = (TextView) findViewById(R.id.typeText);
-        subject          = (EditText)findViewById(R.id.subjectText);
+        subject          = (EditText)findViewById(R.id.missionaryNameText);
         noteText         = (EditText)findViewById(R.id.noteText);
         Button submit    = (Button)  findViewById(R.id.submitButton);
         Button cancel    = (Button)  findViewById(R.id.cancelButton);

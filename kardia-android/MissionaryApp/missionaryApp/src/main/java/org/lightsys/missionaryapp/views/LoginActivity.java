@@ -3,37 +3,21 @@ package org.lightsys.missionaryapp.views;
 import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.tools.DataConnection;
 import org.lightsys.missionaryapp.tools.GenericTextWatcher;
-import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * @author Andrew Cameron
  *
- * This class is used to change app account.
+ * This class is used to login.
  */
-public class AccountsActivity extends Activity{
+public class LoginActivity extends Activity{
 
 	private EditText accountName, accountPass, serverName, UserId, port, protocal;
 
@@ -44,7 +28,7 @@ public class AccountsActivity extends Activity{
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		
-		setContentView(R.layout.account_page_layout);
+		setContentView(R.layout.login_page_layout);
 
 		accountName          = (EditText)findViewById(R.id.usernameInput);
 		accountPass          = (EditText)findViewById(R.id.passwordInput);
@@ -105,7 +89,7 @@ public class AccountsActivity extends Activity{
 			return;
 		}
         int dId = Integer.parseInt(dIdStr);
-		Account account = new Account(dId, aName, aPass, sName, sPort, sProtocal, false);
+		Account account = new Account(dId, aName, aPass, sName, sPort, sProtocal, 0);
 		// Execute data connection to validate account and pull data if valid
 		// DataConnection will close activity once complete if successful
         new DataConnection(this, this, account, -1, account.getAcceptSSCert()).execute("");

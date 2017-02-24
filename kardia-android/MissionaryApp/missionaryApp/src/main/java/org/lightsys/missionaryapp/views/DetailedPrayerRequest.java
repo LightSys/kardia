@@ -24,8 +24,6 @@ import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static org.lightsys.missionaryapp.R.id.supporterList;
-
 /**
  * @author JoshWorkman
  * created on 3/10/2015.
@@ -95,8 +93,8 @@ public class DetailedPrayerRequest extends Fragment{
     private void updateRequestView(final int request_id){
         final LocalDBHandler db = new LocalDBHandler(getActivity());
 
-        TextView missionaryName   = (TextView)getActivity().findViewById(R.id.subjectText);
-        TextView subject          = (TextView)getActivity().findViewById(R.id.contentText);
+        TextView missionaryName   = (TextView)getActivity().findViewById(R.id.missionaryNameText);
+        TextView subject          = (TextView)getActivity().findViewById(R.id.subjectText);
         TextView date             = (TextView)getActivity().findViewById(R.id.dateText);
         TextView text             = (TextView)getActivity().findViewById(R.id.noteText);
         supporterList             = (TextView)getActivity().findViewById(R.id.supporterList);
@@ -123,7 +121,7 @@ public class DetailedPrayerRequest extends Fragment{
         supporterList.setText(namesList);
 
 
-        missionaryName.setText(request.getMissionaryName());
+        //missionaryName.setText(request.getMissionaryName());
         subject.setText(request.getSubject());
         date.setText(Formatter.getFormattedDate(request.getDate()));
         text.setText(request.getNoteText());
