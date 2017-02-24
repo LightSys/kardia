@@ -5,10 +5,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,9 +16,7 @@ import org.lightsys.missionaryapp.data.Account;
 import org.lightsys.missionaryapp.tools.DataConnection;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 import org.lightsys.missionaryapp.tools.PostJson;
-import org.w3c.dom.Text;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
@@ -44,7 +40,7 @@ public class PostNoteActivity extends Activity {
         TextView  sender, contactType;
 
         sender        = (TextView)findViewById(R.id.senderName);
-        subject       = (EditText)findViewById(R.id.subjectText);
+        subject       = (EditText)findViewById(R.id.missionaryNameText);
         noteText      = (EditText)findViewById(R.id.noteText);
         contactType   = (TextView)findViewById(R.id.typeText);
         Button submit = (Button)  findViewById(R.id.submitButton);

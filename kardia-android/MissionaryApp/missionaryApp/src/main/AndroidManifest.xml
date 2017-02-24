@@ -31,7 +31,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="org.lightsys.missionaryapp.views.AccountsActivity"
+            android:name="org.lightsys.missionaryapp.views.LoginActivity"
             android:label="@string/accounts_page"
             android:windowSoftInputMode="adjustResize|stateVisible"
             android:configChanges="orientation|keyboardHidden|screenSize">

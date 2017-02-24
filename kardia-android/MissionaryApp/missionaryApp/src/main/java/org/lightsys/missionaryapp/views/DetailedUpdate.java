@@ -86,8 +86,8 @@ public class DetailedUpdate extends Fragment {
      */
     private void updateUpdateView(int update_id){
 
-        TextView missionaryName = (TextView)getActivity().findViewById(R.id.subjectText);
-        TextView subject        = (TextView)getActivity().findViewById(R.id.contentText);
+        TextView missionaryName = (TextView)getActivity().findViewById(R.id.missionaryNameText);
+        TextView subject        = (TextView)getActivity().findViewById(R.id.subjectText);
         TextView date           = (TextView)getActivity().findViewById(R.id.dateText);
         TextView text           = (TextView)getActivity().findViewById(R.id.noteText);
 
@@ -95,7 +95,7 @@ public class DetailedUpdate extends Fragment {
         Note update = db.getNoteForID(update_id);
         db.close();
 
-        missionaryName.setText(update.getMissionaryName());
+        //missionaryName.setText(update.getMissionaryName());
         subject.setText(update.getSubject());
         date.setText(Formatter.getFormattedDate(update.getDate()));
         text.setText(update.getNoteText());

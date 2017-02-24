@@ -61,7 +61,7 @@
                     android:textSize="@dimen/body_dimen"/>
 
                 <EditText
-                    android:id="@+id/subjectText"
+                    android:id="@+id/missionaryNameText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"

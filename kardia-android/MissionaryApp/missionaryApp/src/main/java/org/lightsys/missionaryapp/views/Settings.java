@@ -35,7 +35,7 @@ import static android.content.ContentValues.TAG;
  * @author Judah Sistrunk
  * created on 5/25/2016
 
- * Class that governs the options menu for how often the app auto-refreshes
+ * Class that governs the settings menu for how often the app auto-refreshes
  * */
 
 public class Settings extends Fragment{
@@ -51,8 +51,6 @@ public class Settings extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View v = inflater.inflate(R.layout.settings_layout, container, false);
         getActivity().setTitle("Settings");
-
-        Button applyButton = (Button) v.findViewById(R.id.applyButton);
 
         refreshPeriods = (Spinner) v.findViewById(R.id.refreshPeriodsSpinner);
         giftPeriods = (Spinner) v.findViewById(R.id.giftPeriodsSpinner);
@@ -77,32 +75,41 @@ public class Settings extends Fragment{
             }
         });
 
-        ssCertOnOff.setChecked(db.getAccount().getAcceptSSCert());
+        ssCertOnOff.setChecked((db.getAccount().getAcceptSSCert()==1)? true : false);
+        Log.d(TAG, "onCreateView: " + db.getAccount().getAcceptSSCert());
 
         ssCertOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (ssCertOnOff.isChecked()) {
-                    db.updateAcceptSSCert(true);
+                    db.updateAcceptSSCert(1);
 
                 } else {
-                    db.updateAcceptSSCert(false);
+                    db.updateAcceptSSCert(0);
                 }
             }
         });
 
-        refreshPeriods.setOnClickListener(new View.OnClickListener(){
+        refreshPeriods.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
-            public void onClick(View v){
+            public void onItemSelected (AdapterView<?> parent, View view, int position, long id){
                 db.addRefreshPeriod(refreshPeriods.getSelectedItem().toString());
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                //do nothing
             }
 
         });
 
-        giftPeriods.setOnClickListener(new View.OnClickListener(){
+        giftPeriods.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
-            public void onClick(View v){
+            public void onItemSelected (AdapterView<?> parent, View view, int position, long id){
                 db.addGiftPeriod(giftPeriods.getSelectedItem().toString());
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                //do nothing
             }
 
         });

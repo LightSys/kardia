@@ -8,15 +8,14 @@ import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
@@ -33,7 +32,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static android.content.ContentValues.TAG;
+import static java.lang.Thread.sleep;
 
 /**
  * @author Andrew Lockridge
@@ -47,7 +46,9 @@ public class NoteList extends Fragment {
     private final ArrayList<HashMap<String,String>> itemList = new ArrayList<HashMap<String, String>>();
 
     private LinearLayout addLayout;
-    private ImageButton addButton;
+    private ImageButton  addButton;
+    private LinearLayout addLayoutInfo;
+    private TextView     addLetterInfo;
 
 
 
@@ -98,7 +99,7 @@ public class NoteList extends Fragment {
         itemList.clear();
         generateListItems();
         String[] from = {"subject", "date", "content", "textBelow"};
-        int[] to = {R.id.subjectText,  R.id.dateText, R.id.contentText, R.id.textBelowPrayingButton};
+        int[] to = {R.id.missionaryNameText,  R.id.dateText, R.id.subjectText, R.id.textBelowPrayingButton};
 
         NoteListAdapter adapter = new NoteListAdapter(getActivity(), itemList,
                 from, to);
@@ -117,14 +118,21 @@ public class NoteList extends Fragment {
                     addButton.setRotation(45);
                 }
                 else{
-                   addLayout.setVisibility(View.GONE);
-                   addButton.setRotation(0);
+                    addLayout.setVisibility(View.GONE);
+                    addButton.setRotation(0);
+
                 }
 
             }
         });
 
+        //instantiate add buttons
+
         ImageButton letterButton = (ImageButton)v.findViewById(R.id.addLetterButton);
+        ImageButton updateButton = (ImageButton)v.findViewById(R.id.addUpdateButton);
+        ImageButton requestButton = (ImageButton)v.findViewById(R.id.addRequestButton);
+
+        //click button to start intent to add item
         letterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,18 +141,15 @@ public class NoteList extends Fragment {
             }
         });
 
-        ImageButton updateButton = (ImageButton)v.findViewById(R.id.addUpdateButton);
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent createNote = new Intent(getActivity(), PostNoteActivity.class);
                 createNote.putExtra("note_type", "Update");
-                startActivity(createNote);
-            }
+                startActivity(createNote);            }
         });
 
-        ImageButton requestButton = (ImageButton)v.findViewById(R.id.addRequestButton);
-        requestButton.setOnClickListener(new View.OnClickListener() {
+       requestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent createNote = new Intent(getActivity(), PostNoteActivity.class);

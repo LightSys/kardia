@@ -25,6 +25,8 @@ import org.lightsys.missionaryapp.data.PrayedFor;
 import org.lightsys.missionaryapp.data.PrayerLetter;
 import org.lightsys.missionaryapp.data.UpdateNotification;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * Sets up a SQLite database for the application, which is used to
  * store the user accounts.
@@ -798,7 +800,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			temp.setPartnerName(c.getString(4));
             temp.setPort(c.getString(5));
             temp.setProtocal(c.getString(6));
-            temp.setAcceptSSCert((c.getInt(7)==1));
+            temp.setAcceptSSCert(c.getInt(7));
+
 		}else {
 			temp=null;
 		}
@@ -1756,12 +1759,12 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 	 * Allows the user to make changes to existing accounts in the database
 	 * @param acceptSSC, whether user allows app to connect to server with self-signed SSL certificate
 	 */
-	public void updateAcceptSSCert(boolean acceptSSC){
+	public void updateAcceptSSCert(int acceptSSC){
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_ACCEPT_SSC, acceptSSC);
-		
-		SQLiteDatabase db = this.getWritableDatabase();
-		db.update(TABLE_ACCOUNTS, values, null, null);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(TABLE_ACCOUNTS, values, null, null);
 		db.close();
 	}
 

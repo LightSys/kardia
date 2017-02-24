@@ -1,29 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
     android:background="@drawable/noise_blue_repeat">
 
-    <TableLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginRight="100dp"
-        android:layout_marginStart="100dp"
-        android:layout_marginLeft="100dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <TableRow
+        <!-- *********** Auto Refresh *********** -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp">
+            android:layout_margin="@dimen/body_dimen">
 
             <TextView
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:layout_weight="1"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/options_refresh_text"/>
 
@@ -31,20 +25,29 @@
                 android:id="@+id/refreshPeriodsSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:textAlignment="textEnd"
+                android:gravity="end"
                 android:entries="@array/refresh_times"
                 android:focusableInTouchMode="false"/>
-        </TableRow>
 
-        <TableRow
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000030" />
+
+        <!-- *********** gift periods *********** -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp">
-
+            android:layout_margin="@dimen/body_dimen">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/options_gift_text"/>
 
@@ -52,82 +55,79 @@
                 android:id="@+id/giftPeriodsSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:textAlignment="textEnd"
+                android:gravity="end"
                 android:entries="@array/gift_periods"
-                android:focusableInTouchMode="false"
-                android:layout_weight="1"/>
-        </TableRow>
+                android:focusableInTouchMode="false"/>
+        </RelativeLayout>
 
-        <TableRow
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000030" />
+
+        <!-- *********** SSC *********** -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp">
+            android:layout_margin="@dimen/body_dimen">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/options_allow_SSC"/>
 
             <ToggleButton
                 android:id="@+id/SSCOnOffSwitch"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="true"
-                android:layout_weight="1" />
-        </TableRow>
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
+        </RelativeLayout>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000030" />
 
-        <TableRow
+        <!-- *********** Reminder *********** -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp">
-
+            android:layout_margin="@dimen/body_dimen">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/options_reminder_text"/>
 
             <ToggleButton
                 android:id="@+id/reminderOnOffSwitch"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="true"
-                android:layout_weight="1"/>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="end">
-
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"/>
             <TextView
                 android:id="@+id/reminderDetailsText"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:gravity="center_horizontal"/>
-        </TableRow>
-    </TableLayout>
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:gravity="center_horizontal"
+                android:layout_toLeftOf="@+id/reminderOnOffSwitch"
+                android:layout_toStartOf="@+id/reminderOnOffSwitch"
+                android:layout_centerVertical="true"/>
+        </RelativeLayout>
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:weightSum="3"
-        android:layout_margin="60dp">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000030"/>
 
-        <Button
-            android:id="@+id/applyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            style="@style/customBottomBar"
-            android:text="@string/apply_button"/>
-    </TableRow>
+    </LinearLayout>
 </RelativeLayout>
+
