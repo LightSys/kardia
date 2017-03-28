@@ -59,6 +59,16 @@
         <item name="android:textSize">16sp</item>
     </style>
 
+    <style name="fundSpinner" parent="android:Theme.Holo.Dialog">
+        <item name="android:alertDialogStyle">@style/CustomAlertDialogStyle</item>
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:textColorPrimary">#000</item>
+        <item name="android:textColor">#000</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">@dimen/header_dimen_lg</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
     <style name="CustomAlertDialogStyle">
         <item name="android:fullDark">@color/spinner_blue</item>
     </style>
