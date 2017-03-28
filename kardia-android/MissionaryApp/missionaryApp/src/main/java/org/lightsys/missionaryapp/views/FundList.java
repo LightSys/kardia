@@ -1,5 +1,6 @@
 package org.lightsys.missionaryapp.views;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -16,8 +17,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Spinner;
 
 import org.lightsys.missionaryapp.R;
 
@@ -34,8 +37,12 @@ import org.lightsys.missionaryapp.R;
 public class FundList extends Fragment{
 	
 	private ArrayList<Fund> funds;
+    private ArrayList<String> fundNames = new ArrayList<String>();
+    private Spinner fundSpinner;
+    private ListView listview;
 
-	/**
+
+    /**
 	 * Pulls all relevant funds, and creates the view (including the bottom total bar)
 	 */
 	@Override
@@ -49,27 +56,57 @@ public class FundList extends Fragment{
 
 		db.close();
 
-		View v = inflater.inflate(R.layout.activity_main_layout, container, false);
+		View v = inflater.inflate(R.layout.fund_layout, container, false);
+        listview = (ListView)v.findViewById(R.id.infoList);
+        fundSpinner = (Spinner)v.findViewById(R.id.fundSpinner);
 
         getActivity().setTitle("Funds");
 
 		if (funds == null) {
 			return v;
 		}
+        fundNames.clear();
+        for(Fund f :funds) {
+            fundNames.add(f.getFundDesc());
+        }
+
+        ArrayAdapter<String> fundNameAdapter = new ArrayAdapter<String>(getActivity(), R.layout.custom_fund_spinner, fundNames);
+        fundSpinner.setAdapter(fundNameAdapter);
+
 
 		// Map data fields to layout fields
 		ArrayList<HashMap<String,String>>itemList = generateListItems();
-		String[] from = {"fund_title","to_date_amount","date"};
-		int[] to = {R.id.nameText, R.id.amountText, R.id.dateText};
-		
-		SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.funds_listview_item, from, to);
-		
-		ListView listview = (ListView)v.findViewById(R.id.infoList);
-		listview.setAdapter(adapter);
-		listview.setOnItemClickListener(new onFundClicked());
-		
+		viewListItems(itemList);
+
+        fundSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView adapter, View v, int i, long lng){
+                viewListItems(generateListItems());
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView){
+
+            }
+        });
+
 		return v;
 	}
+
+    /**
+     * puts fun HashMap ArrayList into list.
+     *
+     */
+
+    private void viewListItems(ArrayList<HashMap<String,String>> itemList){
+        String[] from = {"fund_title","to_date_amount","date"};
+        int[] to = {R.id.nameText, R.id.amountText, R.id.dateText};
+
+        SimpleAdapter adapter = new SimpleAdapter(getActivity(), itemList, R.layout.funds_listview_item, from, to);
+
+        listview.setAdapter(adapter);
+        listview.setOnItemClickListener(new onFundClicked());
+
+    }
 	
 	/**
 	 * Formats the fund information into a HashMap ArrayList.
@@ -81,27 +118,31 @@ public class FundList extends Fragment{
 		ArrayList<HashMap<String,String>> aList = new ArrayList<HashMap<String,String>>();
         LocalDBHandler db = new LocalDBHandler(getActivity());
 		for(Fund f : funds){
-			HashMap<String,String> hm = new HashMap<String,String>();
-			int Total[]= new int[2];
-			ArrayList<Gift> gifts = db.getGifts(Integer.toString(f.getFundId()));
-			for(Gift g:gifts){
-				Total[0] += g.getGiftAmount()[0];
-				Total[1] += g.getGiftAmount()[1];
-			}
-			if (Total[1]>=100){
-				Total[0]+=Math.floor(Total[1]/100);
-				Total[1]-=Math.floor(Total[1]/100)*100;
-			}
+            if (f.getFundDesc().equals(fundSpinner.getSelectedItem().toString())) {
+                HashMap<String, String> hm = new HashMap<String, String>();
+                int Total[] = new int[2];
+                ArrayList<Gift> gifts = db.getGifts(Integer.toString(f.getFundId()));
+                for (Gift g : gifts) {
+                    Total[0] += g.getGiftAmount()[0];
+                    Total[1] += g.getGiftAmount()[1];
+                }
+                if (Total[1] >= 100) {
+                    Total[0] += Math.floor(Total[1] / 100);
+                    Total[1] -= Math.floor(Total[1] / 100) * 100;
+                }
 
-			hm.put("fund_title", f.getFundDesc());
-            hm.put("to_date_amount", Formatter.amountToString(Total));
-			if(gifts.size()>0) {
-				String startDate = gifts.get(gifts.size() - 1).getGiftDate().substring(0, 4);
-				String endDate = gifts.get(0).getGiftDate().substring(0, 4);
-				hm.put("date", startDate + " - " + endDate);
-			}
-			
-			aList.add(hm);
+
+                hm.put("fund_title", f.getFundDesc());
+                hm.put("to_date_amount", Formatter.amountToString(Total));
+                if (gifts.size() > 0) {
+                    String startDate = gifts.get(gifts.size() - 1).getGiftDate().substring(0, 4);
+                    String endDate = gifts.get(0).getGiftDate().substring(0, 4);
+                    hm.put("date", startDate + " - " + endDate);
+                }
+
+
+                aList.add(hm);
+            }
 		}
 		return aList;
 	}
