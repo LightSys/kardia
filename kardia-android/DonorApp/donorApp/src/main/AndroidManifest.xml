@@ -47,7 +47,8 @@
         </activity>
 
         <activity
-            android:name="org.lightsys.donorapp.views.ContactMissionaryActivity">
+            android:name="org.lightsys.donorapp.views.ContactMissionaryActivity"
+            android:windowSoftInputMode="adjustPan">
         </activity>
 
         <receiver
