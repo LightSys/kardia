@@ -1,7 +1,9 @@
 package org.lightsys.donorapp.views;
 
 
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
@@ -34,6 +36,11 @@ import java.util.HashMap;
  *
  * Created by Andrew Lockridge on 6/24/2015.
  */
+
+/*
+ *Edit: 06/14/17 Delete option added by Daniel Garcia
+ */
+
 public class NoteList extends Fragment{
 
     private ArrayList<Object> combined = new ArrayList<Object>();
@@ -45,7 +52,7 @@ public class NoteList extends Fragment{
 
         View v = inflater.inflate(R.layout.activity_main, container, false);
 
-        getActivity().setTitle("Prayer Requests/Updates");
+        getActivity().setTitle("Prayer/Updates");
 
         LocalDBHandler db = new LocalDBHandler(getActivity(), null);
         combined.clear();
@@ -93,7 +100,6 @@ public class NoteList extends Fragment{
 
         return v;
     }
-
     private class onNoteClicked implements AdapterView.OnItemClickListener {
 
         @Override

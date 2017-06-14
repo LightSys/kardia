@@ -188,6 +188,14 @@ public class MainActivity extends ActionBarActivity {
 				fragment = new Search();
 				getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
 				break;
+			case R.id.action_refresh:
+				LocalDBHandler db = new LocalDBHandler(this, null);
+				accts = db.getAccounts();
+				db.close();
+				for (Account a : accts) {
+					new DataConnection(this, this, a).execute("");
+				}
+				break;
 		}
 		
 		return super.onOptionsItemSelected(item);
@@ -236,14 +244,6 @@ public class MainActivity extends ActionBarActivity {
 		case 5:
 			Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
 			startActivity(accounts);
-			break;
-		case 6:
-			LocalDBHandler db = new LocalDBHandler(this, null);
-			accts = db.getAccounts();
-			db.close();
-			for (Account a : accts) {
-				new DataConnection(this, this, a).execute("");
-			}
 			break;
 		}
 		mDrawerList.setItemChecked(position, true);

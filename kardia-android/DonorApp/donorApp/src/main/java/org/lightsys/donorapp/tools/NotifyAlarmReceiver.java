@@ -95,7 +95,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
         nBuild = new NotificationCompat.Builder(context)
                 .setContentTitle("Prayer Reminder")
                 .setContentText(name + ": " + subject)
-                .setSmallIcon(R.drawable.kardiabeat_v2)
+                .setSmallIcon(R.drawable.kardiabeat_v3)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(name + ": " + subject));
 
         n = nBuild.build();

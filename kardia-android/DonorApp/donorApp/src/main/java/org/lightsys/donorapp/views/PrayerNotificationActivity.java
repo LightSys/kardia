@@ -15,9 +15,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -47,9 +49,11 @@ public class PrayerNotificationActivity extends Activity {
     private int requestid, notificationID, frequency;
 
     private Spinner frequencySpinner;
-    private TableRow dateRow, timeRow1, timeRow2, timeRow3, timeRow4;
-    private Button datePicker, timePicker1, timePicker2,
-            timePicker3, timePicker4;
+    private CheckBox rangeCheckBox;
+    private TextView dash1, dash2, dash3, dash4;
+    private TableRow timesDayRow, dateRow, timeRow1, timeRow2, timeRow3, timeRow4;
+    private Button datePicker, timePicker1, timePicker2, timePicker3, timePicker4,
+            timePicker1Ext, timePicker2Ext, timePicker3Ext, timePicker4Ext;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -78,6 +82,12 @@ public class PrayerNotificationActivity extends Activity {
         db.close();
 
         frequencySpinner = (Spinner) this.findViewById(R.id.times_day);
+        rangeCheckBox = (CheckBox) this.findViewById(R.id.rangeCheckBox);
+        dash1 = (TextView) this.findViewById(R.id.textView5);
+        dash2 = (TextView) this.findViewById(R.id.textView6);
+        dash3 = (TextView) this.findViewById(R.id.textView7);
+        dash4 = (TextView) this.findViewById(R.id.textView8);
+        timesDayRow = (TableRow) this.findViewById(R.id.timesDayRow);
         dateRow = (TableRow) this.findViewById(R.id.endDateRow);
         timeRow1 = (TableRow) this.findViewById(R.id.timeRow1);
         timeRow2 = (TableRow) this.findViewById(R.id.timeRow2);
@@ -88,6 +98,10 @@ public class PrayerNotificationActivity extends Activity {
         timePicker2 = (Button) this.findViewById(R.id.timePicker2);
         timePicker3 = (Button) this.findViewById(R.id.timePicker3);
         timePicker4 = (Button) this.findViewById(R.id.timePicker4);
+        timePicker1Ext = (Button) this.findViewById(R.id.timePicker1Ext);
+        timePicker2Ext = (Button) this.findViewById(R.id.timePicker2Ext);
+        timePicker3Ext = (Button) this.findViewById(R.id.timePicker3Ext);
+        timePicker4Ext = (Button) this.findViewById(R.id.timePicker4Ext);
         Button setNotificationButton = (Button) this.findViewById(R.id.setNotification);
         Button cancelButton = (Button) this.findViewById(R.id.cancel);
 
@@ -105,6 +119,14 @@ public class PrayerNotificationActivity extends Activity {
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {}
+        });
+
+        rangeCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Show second time on visible rows
+                showTimeExtensions();
+            }
         });
 
         setNotificationButton.setOnClickListener(new View.OnClickListener() {
@@ -173,6 +195,30 @@ public class PrayerNotificationActivity extends Activity {
                 openTimePicker(4);
             }
         });
+        timePicker1Ext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openTimePicker(11);
+            }
+        });
+        timePicker2Ext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openTimePicker(22);
+            }
+        });
+        timePicker3Ext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openTimePicker(33);
+            }
+        });
+        timePicker4Ext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openTimePicker(44);
+            }
+        });
     }
 
     // Called when the user presses the back button on the bottom of the screen
@@ -211,10 +257,37 @@ public class PrayerNotificationActivity extends Activity {
            timeRow1.getVisibility() == View.VISIBLE && timePicker1.getText().equals("Choose Time") ||
            timeRow2.getVisibility() == View.VISIBLE && timePicker2.getText().equals("Choose Time") ||
            timeRow3.getVisibility() == View.VISIBLE && timePicker3.getText().equals("Choose Time") ||
-           timeRow4.getVisibility() == View.VISIBLE && timePicker4.getText().equals("Choose Time")) {
+           timeRow4.getVisibility() == View.VISIBLE && timePicker4.getText().equals("Choose Time") ||
+           timePicker1Ext.getVisibility() == View.VISIBLE && timePicker1Ext.getText().equals("Choose Time") ||
+           timePicker2Ext.getVisibility() == View.VISIBLE && timePicker2Ext.getText().equals("Choose Time") ||
+           timePicker3Ext.getVisibility() == View.VISIBLE && timePicker3Ext.getText().equals("Choose Time") ||
+           timePicker4Ext.getVisibility() == View.VISIBLE && timePicker4Ext.getText().equals("Choose Time")) {
             return false;
         } else {
             return true;
+        }
+    }
+
+    //Show additional times for range notification
+    private void showTimeExtensions() {
+        if(rangeCheckBox.isChecked()) {
+            dash1.setVisibility(View.VISIBLE);
+            dash2.setVisibility(View.VISIBLE);
+            dash3.setVisibility(View.VISIBLE);
+            dash4.setVisibility(View.VISIBLE);
+            timePicker1Ext.setVisibility(View.VISIBLE);
+            timePicker2Ext.setVisibility(View.VISIBLE);
+            timePicker3Ext.setVisibility(View.VISIBLE);
+            timePicker4Ext.setVisibility(View.VISIBLE);
+        } else {
+            dash1.setVisibility(View.INVISIBLE);
+            dash2.setVisibility(View.INVISIBLE);
+            dash3.setVisibility(View.INVISIBLE);
+            dash4.setVisibility(View.INVISIBLE);
+            timePicker1Ext.setVisibility(View.INVISIBLE);
+            timePicker2Ext.setVisibility(View.INVISIBLE);
+            timePicker3Ext.setVisibility(View.INVISIBLE);
+            timePicker4Ext.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -316,6 +389,18 @@ public class PrayerNotificationActivity extends Activity {
                 break;
             case 4:
                 text = timePicker4.getText().toString();
+                break;
+            case 11:
+                text = timePicker1Ext.getText().toString();
+                break;
+            case 22:
+                text = timePicker2Ext.getText().toString();
+                break;
+            case 33:
+                text = timePicker3Ext.getText().toString();
+                break;
+            case 44:
+                text = timePicker4Ext.getText().toString();
                 break;
             default:
                 text = "???";

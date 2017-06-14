@@ -95,7 +95,7 @@ public class DetailedPrayerRequest extends Fragment{
                 } else {
                     // Ask user if they would like notifications
                     new AlertDialog.Builder(getActivity())
-                            .setCancelable(false)
+                            .setCancelable(true)
                             .setTitle("Set Notifications")
                             .setMessage("Would you like to set notifications to remind you to" +
                                     " pray/give thanks for this item?")
