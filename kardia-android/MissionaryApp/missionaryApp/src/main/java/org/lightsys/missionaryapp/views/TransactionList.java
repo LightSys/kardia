@@ -23,6 +23,8 @@ import java.util.HashMap;
  * 
  * shows report time period
  * allows user to select report for full pdf
+ *
+ * todo populate transaction list once api is created
  */
 public class TransactionList extends Fragment{
 	private ArrayList<Transaction> transactions;

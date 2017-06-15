@@ -22,6 +22,8 @@ import java.util.HashMap;
  * 
  * shows report time period
  * allows user to select report for full pdf
+ *
+ * todo waiting for api
  */
 public class PayrollList extends Fragment{
 	

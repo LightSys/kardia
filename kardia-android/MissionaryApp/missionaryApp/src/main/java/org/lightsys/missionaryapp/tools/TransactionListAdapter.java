@@ -35,8 +35,8 @@ public class TransactionListAdapter extends SimpleAdapter {
     {
         View mView = super.getView(position, v, parent);
 
+        //if amount text is negative set color to red
         TextView text = (TextView) mView.findViewById(R.id.amountText);
-
         if(itemList.get(position).get("amount").contains("-")) {
             text.setText(itemList.get(position).get("amount").replace("-",""));
             text.setTextColor(Color.RED);

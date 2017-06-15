@@ -1,6 +1,5 @@
 package org.lightsys.missionaryapp.views;
 
-import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
 import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.tools.Formatter;

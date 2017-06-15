@@ -59,6 +59,7 @@ public class Settings extends Fragment{
         ssCertOnOff = (ToggleButton) v.findViewById(R.id.SSCOnOffSwitch);
         db = new LocalDBHandler(v.getContext());
 
+        //turn on/off reminders for sending out updates
         reminderOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,6 +76,7 @@ public class Settings extends Fragment{
             }
         });
 
+        //set whether or not account accepts sscert
         ssCertOnOff.setChecked((db.getAccount().getAcceptSSCert()==1)? true : false);
         Log.d(TAG, "onCreateView: " + db.getAccount().getAcceptSSCert());
 
@@ -90,6 +92,7 @@ public class Settings extends Fragment{
             }
         });
 
+        //set refresh period for autoupdate
         refreshPeriods.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
             public void onItemSelected (AdapterView<?> parent, View view, int position, long id){
@@ -102,6 +105,7 @@ public class Settings extends Fragment{
 
         });
 
+        //set gift periods for viewing gifts
         giftPeriods.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
             public void onItemSelected (AdapterView<?> parent, View view, int position, long id){
@@ -137,6 +141,7 @@ public class Settings extends Fragment{
         return v;
     }
 
+    //set up notifications for reminders
     private void setAlarmInfo(){
         ArrayList<UpdateNotification> notifications = db.getNotifications();
         Log.d(TAG, "setAlarmInfo: " + notifications.size());

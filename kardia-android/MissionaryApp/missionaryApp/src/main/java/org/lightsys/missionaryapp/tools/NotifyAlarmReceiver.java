@@ -79,6 +79,7 @@ public class NotifyAlarmReceiver extends BroadcastReceiver {
         }
     }
 
+    //send notifications to device
     private void sendNotification(Context context, Intent intent) {
         NotificationManager notificationMgr = (NotificationManager)
                 context.getSystemService(NOTIFICATION_SERVICE);
