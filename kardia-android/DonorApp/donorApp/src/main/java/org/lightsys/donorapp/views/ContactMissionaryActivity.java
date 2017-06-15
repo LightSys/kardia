@@ -112,7 +112,7 @@ public class ContactMissionaryActivity extends Activity{
                             message.setType(Message.MessageType.Other);
                     }
                     // Send message object to API connection to insert into Kardia
-                    // Will need AsyncTask to connect to API
+                    // TODO: Will need AsyncTask to connect to API
                     finish();
                 }
             }
