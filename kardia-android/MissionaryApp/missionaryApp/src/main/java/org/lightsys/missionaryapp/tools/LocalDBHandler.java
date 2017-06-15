@@ -400,17 +400,17 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 	/**
 	 * Adds a prayed for item for a prayer request to the database
-	 * @param prayed_for, the item to be added
+	 * @param prayerForItem, the item to be added
 	 */
-	public void addPrayedFor(PrayedFor prayed_for) {
+	public void addPrayedFor(PrayedFor prayerForItem) {
         ContentValues values = new ContentValues();
 
-        values.put(COLUMN_PRAYED_FOR_ID, prayed_for.getPrayedForId());
-        values.put(COLUMN_PRAYED_FOR_COMMENTS, prayed_for.getPrayedForComments());
-        values.put(COLUMN_PRAYED_FOR_DATE, prayed_for.getPrayedForDate());
-        values.put(COLUMN_NOTE_ID, prayed_for.getNoteID());
-        values.put(COLUMN_SUPPORTER_PARTNER_ID, prayed_for.getSupporterId());
-        values.put(COLUMN_SUPPORTER_PARTNER_NAME, prayed_for.getSupporterName());
+        values.put(COLUMN_PRAYED_FOR_ID, prayerForItem.getPrayedForId());
+        values.put(COLUMN_PRAYED_FOR_COMMENTS, prayerForItem.getPrayedForComments());
+        values.put(COLUMN_PRAYED_FOR_DATE, prayerForItem.getPrayedForDate());
+        values.put(COLUMN_NOTE_ID, prayerForItem.getNoteID());
+        values.put(COLUMN_SUPPORTER_PARTNER_ID, prayerForItem.getSupporterId());
+        values.put(COLUMN_SUPPORTER_PARTNER_NAME, prayerForItem.getSupporterName());
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(TABLE_PRAYED_FOR, null, values);
@@ -545,7 +545,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
      * @param commentID, comment Identifier
      *
      */
-	//ads comment
+	//adds comment
 	public void addComment (int commentID, int senderID, int notedID, String userName, String noteType, String date, String comment){
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_COMMENT_ID, commentID);

@@ -39,6 +39,8 @@ import java.util.Date;
  * created on 7/12/16.
  *
  * allows user to post update letters
+ *
+ * todo does not yet post pdf
  */
 public class PostLetterActivity extends Activity {
     private TextView  sender, contactType;

@@ -24,12 +24,14 @@ public class Formatter {
         return formattedDate[1] + " " + formattedDate[2] + ",  " + formattedDate[0];
     }
 
+    //return month (year)
     public static String getMonthYearDate (String month, String year){
         month = getMonth(Integer.parseInt(month));
 
         return month+ " (" + year + ")";
     }
 
+    //convert month number to month name
     private static String getMonth(int num){
         switch(num){
             case 1:  return "January";

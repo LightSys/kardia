@@ -8,7 +8,7 @@ package org.lightsys.missionaryapp.data;
  */
 public class Note {
 
-    private int    note_id;
+    private int    noteId;
     private int    missionaryID;
     private String subject;
     private String noteText;
@@ -20,9 +20,9 @@ public class Note {
     /* ************************* Construct ************************* */
     public Note() {}
 
-    public Note(int note_id, int missionaryID, String missionaryName, String noteType,
+    public Note(int noteId, int missionaryID, String missionaryName, String noteType,
                 String subject, String date, String noteText, int numberPrayed) {
-        this.note_id        = note_id;
+        this.noteId        = noteId;
         this.subject        = subject;
         this.noteText       = noteText;
         this.date           = date;
@@ -34,7 +34,7 @@ public class Note {
 
     /* ************************* Set ************************* */
 
-    public void setNoteId(int note_id)            { this.note_id = note_id; }
+    public void setNoteId(int noteId)            { this.noteId = noteId; }
 
     public void setMissionaryName(String name)    { this.missionaryName = name; }
 
@@ -52,7 +52,7 @@ public class Note {
 
     /* ************************* Get ************************* */
 
-    public int    getNoteId()         { return note_id; }
+    public int    getNoteId()         { return noteId; }
 
     public String getMissionaryName() { return missionaryName; }
 

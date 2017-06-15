@@ -8,9 +8,9 @@ package org.lightsys.missionaryapp.data;
  */
 public class Comment {
 
-    private int    commentID;
-    private int    noteID;
-    private int    senderID;
+    private int    commentID; //id of comment
+    private int    noteID;    //id of note that comment is attached to
+    private int    senderID;  //id of user who posted comment
     private String userName;
     private String noteType;
     private String date;

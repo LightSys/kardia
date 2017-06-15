@@ -60,10 +60,10 @@ public class PostNoteActivity extends Activity {
         sender.setText(senderStr);
         contactType.setText(noteType);
 
+        //post note
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
 
                 String messageStr = noteText.getText().toString();
                 String subjectStr = subject.getText().toString();

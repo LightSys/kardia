@@ -72,6 +72,7 @@ public class PostJson extends AsyncTask<String, Void, String> {
 
             credProvider.setCredentials(new AuthScope(account.getServerName(), 800),
                     new UsernamePasswordCredentials(account.getAccountName(), account.getAccountPassword()));
+
             //url used to retrieve the access token
             String getUrl = "http://" + account.getServerName() + ":800/?cx__mode=appinit&cx__groupname=Kardia&cx__appname=Missionary";
 
@@ -176,61 +177,6 @@ public class PostJson extends AsyncTask<String, Void, String> {
             e.printStackTrace();
         }
     }
-
-    //unfinished attempt to switch usage of http client to url connection
-    /*public JSONObject getAccessToken(HttpURLConnection connection, String tokenUrl, Account account){
-
-        String response = "";
-
-        try {
-
-            URL url = new URL(tokenUrl);
-            connection = (HttpURLConnection) url.openConnection();
-
-            String auth = account.getAccountName() + ":" + account.getAccountPassword();
-
-
-            connection.setReadTimeout(15000);//15 second time out
-            connection.setConnectTimeout(15000);
-            connection.setRequestMethod("GET");
-            connection.setDoInput(true);
-            connection.setDoOutput(true);
-            connection.setRequestProperty("Authorization", "Basic " +
-                    Base64.encodeToString(auth.getBytes(), Base64.NO_WRAP));
-            connection.setRequestProperty("Content-Type", "application/json");
-
-            InputStream is = connection.getInputStream();
-            is.read();
-
-            int responseCode = connection.getResponseCode();
-
-            Log.e(TAG, "responseCode : " + responseCode);
-
-            //if the thing was sent properly, get the response code
-            if (responseCode == HttpsURLConnection.HTTP_OK) {
-                Log.e(TAG, "HTTP_OK");
-                String line;
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        connection.getInputStream()));
-                while ((line = br.readLine()) != null) {
-                    response += line;
-                }
-
-                JSONObject token = new JSONObject(response);
-
-
-            } else {
-                Log.e(TAG, "False - HTTP_OK");//send failed
-                response = "";
-            }
-
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        return new JSONObject();
-
-    }*/
 
     @Override
     protected void onPostExecute(String params) {

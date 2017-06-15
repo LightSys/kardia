@@ -18,10 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.lightsys.missionaryapp.R;
-import org.lightsys.missionaryapp.data.ContactInfo;
 import org.lightsys.missionaryapp.data.Donor;
-import org.lightsys.missionaryapp.data.Fund;
-import org.lightsys.missionaryapp.data.Gift;
 import org.lightsys.missionaryapp.tools.LocalDBHandler;
 
 import java.util.ArrayList;
