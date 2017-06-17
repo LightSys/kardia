@@ -1,0 +1,125 @@
+$Version=2$
+plugin_mportal_sreview_continue "widget/component-decl"
+    {
+    flag_code = "IVL";
+    flag_desc = "What is the Giving Interval?";
+    sequence = 0;
+    width=1172;
+    height=24;
+
+    Update "widget/component-decl-event" { }
+
+    support_osrc "widget/parameter" { type=object; }
+
+    sql = " -- Generate flags for new supporters with an unknown giving interval
+	    insert
+		/apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
+	    select
+		:gp:a_ledger_number,
+		:gp:p_donor_partner_key,
+		:gp:a_cost_center,
+		:gp:a_pattern_id,
+		a_flag_type = 'IVL',
+		a_comment = 'New Supporter',
+		s_date_created = getdate(),
+		s_created_by = :info:login,
+		s_date_modified = getdate(),
+		s_modified_by = :info:login
+	    from
+		/apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
+	    where
+		(:parameters:name is null or :gp:name = :parameters:name) and
+		:gp:a_ledger_number = :info:ledger and
+		:gp:a_cost_center = :info:fund and
+		:gp:a_is_active = 1 and
+		:gp:a_amount > $0 and
+		:gp:a_interval is null
+	    on duplicate
+		:a_ledger_number,
+		:p_donor_partner_key,
+		:a_cost_center,
+		--:a_flag_type,
+		datediff(month, :s_date_created, getdate())
+	    update set
+		0 = 0
+	    ";
+
+    gp_form "widget/form"
+	{
+	objectsource=support_osrc;
+
+	on_form_save "widget/connector"
+	    {
+	    event=DataSaved;
+	    target=plugin_mportal_sreview_continue;
+	    action=Update;
+	    }
+
+	gp_hbox "widget/hbox"
+	    {
+	    x=0; y=0; height=24; width=1172;
+	    spacing=10;
+	    align=left;
+
+	    //flagres "widget/variable" { fieldname="a_flag_resolution"; fr_hints "widget/hints" { default=runclient('UPD'); style=alwaysdef; } }
+	    flagres "widget/variable" { fieldname="flagres"; }
+
+	    gp_interval_lbl "widget/label"
+		{
+		text = "How often do you expect this donor to give?";
+		align = right;
+		width = 250;
+		fl_width = 0;
+		}
+	    gp_interval_dd "widget/dropdown"
+		{
+		width = 200;
+		fl_width = 0;
+		mode=dynamic_server; 
+		sql = " select label='One-Time or Gives As Able', value=0, selected=1;
+			select label='Monthly', value=1, selected=0; 
+			select label='Every Other Month', value=2, selected=0;
+			select label='Quarterly', value=3, selected=0;
+			select label='Three times a Year', value=4, selected=0;
+			select label='Twice a Year', value=6, selected=0;
+			select label='Annually', value=12, selected=0
+			";
+		numdisplay = 10;
+		fieldname = a_interval;
+		interval_hints "widget/hints" { style=notnull; default=runclient(0); }
+		set_flagres_on_value "widget/connector"
+		    {
+		    event=DataModify;
+		    target=flagres;
+		    action=SetValue;
+		    Value=runclient(condition(:Value is null, null, 'UPD'));
+		    }
+		}
+
+	    gp_comment "widget/component"
+		{
+		text = "My Notes:";
+		path = "/sys/cmp/smart_field.cmp";
+		ctl_type = editbox;
+		width = 300;
+		label_width = 80;
+		field = a_comment;
+		}
+
+	    save "widget/component"
+		{
+		path = "save_button.cmp";
+		width = 100;
+		fl_width = 0;
+		}
+
+	    cancel "widget/component"
+		{
+		path = "cancel_button.cmp";
+		width = 100;
+		fl_width = 0;
+		}
+	    }
+	gp_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+	}
+    }

@@ -1,0 +1,50 @@
+$Version=2$
+plugin_mportal_sreview_continue "widget/component-decl"
+    {
+    flag_code = "CNT";
+    flag_desc = "Is This Supporter Continuing?";
+    sequence = 100;
+    width=1172;
+    height=0;
+
+    sql = " -- Generate flags for supporters that may not be continuing to give
+	    insert
+		/apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
+	    select
+		:gp:a_ledger_number,
+		:gp:p_donor_partner_key,
+		:gp:a_cost_center,
+		:gp:a_pattern_id,
+		a_flag_type = 'CNT',
+		a_comment = 'No gift' + isnull(' since ' + substring(convert(string, :d:a_last_gift),1,11), ' in past three years'),
+		s_date_created = getdate(),
+		s_created_by = :info:login,
+		s_date_modified = getdate(),
+		s_modified_by = :info:login
+	    from
+		/apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp,
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    where
+		:gp:a_ledger_number = :info:ledger and
+		:gp:a_cost_center = :info:fund and
+		:gp:a_is_active = 1 and
+		:gp:a_amount > $0 and
+		:gp:a_interval > 0 and
+		:d:a_ledger_number = :gp:a_ledger_number and
+		:d:a_cost_center = :gp:a_cost_center and
+		:d:p_donor_partner_key = :gp:p_donor_partner_key and
+		(:d:a_act_average_amount = $0 or
+		((datediff(day, :d:a_last_gift, getdate()) >= (condition(:gp:a_interval > 0, :gp:a_interval, 12) + 1)*30 or :d:a_act_average_interval > 13) and
+		:d:a_act_average_amount < (:gp:a_amount / condition(:gp:a_interval > 0, :gp:a_interval, 12))))
+	    --having
+		--sum(condition(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -12, getdate()), :i:a_amount, $0)) / condition(datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()) >= 365, 12, condition(isnull(datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()),0) < 30*:gp:a_interval, :gp:a_interval, (datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()) + 26) / 30)) != :gp:a_amount / condition(:gp:a_interval > 0, :gp:a_interval, 12)
+	    on duplicate
+		:a_ledger_number,
+		:p_donor_partner_key,
+		:a_cost_center,
+		--:a_flag_type,
+		datediff(month, :s_date_created, getdate())
+	    update set
+		0 = 0
+	    ";
+    }

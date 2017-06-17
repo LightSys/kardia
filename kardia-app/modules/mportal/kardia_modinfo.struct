@@ -1,0 +1,8 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Missionary Portal";
+    module_abbrev = "Missionary";
+    module_description = "Portal for end-user Missionary access to reports and other functionality";
+    module_sequence = null;
+    }
