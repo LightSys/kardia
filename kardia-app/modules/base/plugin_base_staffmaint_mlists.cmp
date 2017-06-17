@@ -1,0 +1,164 @@
+$Version=2$
+plugin_base_staffmaint_mlists "widget/component-decl"
+    {
+    title = "Mailings";
+    height=272;
+    width=758;
+
+    sequence = 30;
+
+    Modified "widget/component-decl-event" { }
+
+    staff_osrc "widget/parameter" { type=object; find_container = "widget/osrc"; }
+    ledger "widget/parameter" { type=string; deploy_to_client = yes; }
+
+    vbox "widget/vbox"
+	{
+	x = 0;
+	y = 0;
+	width = 758;
+	height = 272;
+	spacing = 8;
+	cellsize = 20;
+
+	mlists_osrc "widget/osrc"
+	    {
+	    sql = " SELECT
+			:m:m_list_code,
+			:ml:m_list_description,
+			num_members = count(1)
+		    FROM
+			identity /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+			/apps/kardia/data/Kardia_DB/m_list/rows ml,
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows m2
+		    WHERE
+			:m:m_member_type = 'O' and
+			:m:m_membership_status = 'A' and
+			:ml:m_list_code = :m:m_list_code and
+			:m2:m_list_code =* :ml:m_list_code and
+			:m2:m_member_type = 'M' and
+			:m2:m_membership_status = 'A'
+		    GROUP BY
+			:m:m_list_code
+		    HAVING
+			:m_list_code is not null
+		    ";
+
+	    baseobj="/apps/kardia/data/Kardia_DB/m_list_membership/rows";
+	    replicasize=25;
+	    readahead=25;
+
+	    refresh_link "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = staff_osrc;
+		key_objname = m;
+		key_1 = p_partner_key;
+		target_key_1 = p_partner_key;
+		revealed_only = yes;
+		}
+
+	    mlist_form "widget/form"
+		{
+		form_txt "widget/label" { value="Here you can select which mailing lists this staff member manages."; height=16; }
+
+		mlist_pane "widget/pane"
+		    {
+		    height=256;
+		    style=flat;
+
+		    mlist_vbox "widget/vbox"
+			{
+			x=0; y=0;
+			height=295;
+			width=758;
+			spacing=8;
+			cellsize = 20;
+
+			form_ctls "widget/component" { path="/sys/cmp/form_controls.cmp"; height=26; object_name="Mailing List"; deletable=0; }
+
+			mlist_table_pane "widget/pane"
+			    {
+			    height=150;
+			    widget_class=table_bgnd;
+
+			    mlist_table "widget/table"
+				{
+				x=0;y=0;
+				width=756; height=148;
+				mode = dynamicrow;
+
+				t_mcode "widget/table-column" { title="Code"; fieldname="m_list_code"; width=90; }
+				t_mdesc "widget/table-column" { title="Mailing List"; fieldname="m_list_description"; width=560; }
+				t_cnt "widget/table-column" { title="# Members"; fieldname="num_members"; width=90; }
+				}
+			    }
+
+			f_listcode "widget/component"
+			    {
+			    height=24;
+			    width=300;
+			    path="/apps/kardia/modules/base/editbox_table.cmp";
+			    field='m_list_code';
+			    text='List Code:';
+			    popup_width=300;
+			    popup_height=210;
+			    popup_sql = "
+				    SELECT
+					value = :m_list_code,
+					label = :m_list_code + ': ' + :m_list_description 
+				    FROM
+					/apps/kardia/data/Kardia_DB/m_list/rows ml
+				    WHERE
+					:m_list_type = 'P' and
+					:m_list_status = 'A'
+				    ORDER BY
+					:m_list_code
+				    ";
+			    search_field_list="m_list_code,*m_list_description*";
+			    key_name="m_list_code";
+			    object_name="Mailing List";
+			    popup_text="Choose Mailing List:";
+			    empty_desc = "required";
+			    attach_point=editbox;
+			    }
+
+			membtype_v "widget/variable" { fieldname="m_member_type"; mt_hints "widget/hints" { default=runclient('O'); } }
+			membstat_v "widget/variable" { fieldname="m_membership_status"; ms_hints "widget/hints" { default=runclient('A'); } }
+			numcopies_v "widget/variable" { fieldname="m_num_copies"; nc_hints "widget/hints" { default=runclient(0); } }
+			compl_v "widget/variable" { fieldname="m_complementary"; cm_hints "widget/hints" { default=runclient(1); } }
+			showc_v "widget/variable" { fieldname="m_show_contact"; sc_hints "widget/hints" { default=runclient(1); } }
+
+			btns_hbox "widget/hbox"
+			    {
+			    x=100; height=24;
+			    spacing=8;
+
+			    save_btn "widget/textbutton"
+				{
+				height=24;
+				width=120;
+				enabled=runclient(:mlist_form:is_savable);
+				text=runclient(condition(:mlist_form:form_mode == 'New', 'Add', 'Save'));
+
+				save_cn "widget/connector" { event=Click; target=mlist_form; action=Save; }
+				}
+
+			    cancel_btn "widget/textbutton"
+				{
+				height=24;
+				width=120;
+				enabled=runclient(:mlist_form:is_discardable);
+				text="Cancel";
+
+				discard_cn "widget/connector" { event=Click; target=mlist_form; action=Discard; }
+				}
+			    }
+
+			rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+			}
+		    }
+		}
+	    }
+	}
+    }
