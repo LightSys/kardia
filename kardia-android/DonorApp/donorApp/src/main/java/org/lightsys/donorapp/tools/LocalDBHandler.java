@@ -430,7 +430,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_GIFT_ID, Gift_ID);
 		values.put(COLUMN_ACCOUNT_ID, Account_ID);
-		
+
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_GIFTACCOUNT_MAP, null, values);
 		db.close();
@@ -532,7 +532,56 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_NOTIFICATIONS, COLUMN_ID + " = ?", notification);
 	}
-	
+
+	/**
+	 * deletes the gifts from the database
+	 * this is to solve a bug with the database not updating properly
+	 * when data was removed from the server, the local DB wouldn't remove that data
+	 * this clears the gifts before pulling from the server
+	 * this should be used before pulling data from the server
+	 * created by Judah Sistrunk on May 5, 2016
+	 */
+	public void deleteGifts(int Account_ID) {
+		String[] acct = {String.valueOf(Account_ID)};
+		SQLiteDatabase db = this.getWritableDatabase();
+
+		//delete giftyear connections
+		db.delete(TABLE_GIFTYEAR_MAP, TABLE_GIFTYEAR_MAP + "." + COLUMN_GIFT_ID
+				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
+				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete giftfund connections
+		db.delete(TABLE_GIFTFUND_MAP, TABLE_GIFTFUND_MAP + "." + COLUMN_GIFT_ID
+				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
+				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete gifts
+		db.delete(TABLE_GIFT, TABLE_GIFT + "." + COLUMN_ID
+				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
+				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete giftaccount connections
+		db.delete(TABLE_GIFTACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
+
+		//delete yearfund connections
+		db.delete(TABLE_YEARFUND_MAP, TABLE_YEARFUND_MAP + "." + COLUMN_FUND_ID
+				+ " IN (SELECT " + TABLE_FUNDACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
+				+ TABLE_FUNDACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete funds
+		db.delete(TABLE_FUND, TABLE_FUND + "." + COLUMN_ID
+				+ " IN (SELECT " + TABLE_FUNDACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
+				+ TABLE_FUNDACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete fundaccount connections
+		db.delete(TABLE_FUNDACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
+
+		//delete yearaccount connections
+		db.delete(TABLE_YEARACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
+
+		db.close();
+	}
+
 	/* ************************* Get Queries ************************* */
 	
 	/**
