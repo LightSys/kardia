@@ -19,6 +19,7 @@ partner_profile "widget/component-decl"
     EditContactHistory "widget/component-decl-event" { }
     EditCollab "widget/component-decl-event" { }
     TrackSelected "widget/component-decl-event" { }
+    AdvancedResults "widget/component-decl-event" { }
 
     // Actions we support
     SelectPartner "widget/component-decl-action" { }
@@ -26,6 +27,8 @@ partner_profile "widget/component-decl"
     AllActivity "widget/component-decl-action" { }
     Refresh "widget/component-decl-action" { }
     RefreshCollab "widget/component-decl-action" { }
+    Pray "widget/component-decl-action" { }
+    Track "widget/component-decl-action" { }
 
     on_Select1 "widget/connector" { event=SelectPartner; target=profile_osrc; action=QueryParam; partner_key=runclient(:partner_key); }
     on_Select2 "widget/connector" { event=SelectPartner; target=profile_tab; action=SetTab; TabIndex=2; }
@@ -40,7 +43,11 @@ partner_profile "widget/component-decl"
 
     on_AdvSearch "widget/connector" { event=AdvancedSearch; target=profile_tab; action=SetTab; TabIndex=3; }
 
-    on_AllActivity "widget/connector" { event=AllActivity; target=profile_tab; action=SetTab; TabIndex=4; }
+    on_AllActivity "widget/connector" { event=AllActivity; target=profile_tab; action=SetTab; TabIndex=5; }
+
+    on_Pray "widget/connector" { event=Pray; target=profile_tab; action=SetTab; TabIndex=4; }
+
+    on_Track "widget/connector" { event=Track; target=profile_tab; action=SetTab; TabIndex=6; }
 
     on_Refresh0 "widget/connector" { event=Refresh; target=profile_osrc; action=Refresh; }
     on_Refresh1 "widget/connector" { event=Refresh; target=profile_info; action=Refresh; }
@@ -83,6 +90,7 @@ partner_profile "widget/component-decl"
 		    }
 		}
 	    }
+
 	main_tab "widget/tabpage"
 	    {
 	    profile_osrc "widget/osrc"
@@ -356,6 +364,37 @@ partner_profile "widget/component-decl"
 		{
 		x=0; y=0; width=700; height=580;
 		path="advanced_search.cmp";
+		collaborator_osrc = collaborator_osrc;
+
+		// We have advanced search results
+		onAdvancedResults "widget/connector"
+		    {
+		    event=AdvancedResults;
+		    target=partner_profile;
+		    action=AdvancedResults;
+		    session_id=runclient(:session_id);
+		    stage_id=runclient(:stage_id);
+		    }
+		}
+	    }
+
+	prayer_tab "widget/tabpage"
+	    {
+	    prayer_cmp "widget/component"
+		{
+		x=0; y=0; width=700; height=580;
+		path="prayer_and_praise.cmp";
+		collaborator_osrc = collaborator_osrc;
+
+		// User clicked a partner's profile
+		onProfile "widget/connector"
+		    {
+		    event=PartnerSelected;
+		    target=partner_profile;
+		    action=TriggerEvent;
+		    EventName=runclient('SelectPartner');
+		    partner_key=runclient(:partner_key);
+		    }
 		}
 	    }
 
@@ -365,6 +404,26 @@ partner_profile "widget/component-decl"
 		{
 		x=0; y=0; width=700; height=580;
 		path="all_activity.cmp";
+		}
+	    }
+
+	track_tab "widget/tabpage"
+	    {
+	    track_cmp "widget/component"
+		{
+		x=0; y=0; width=700; height=580;
+		path="manage_track.cmp";
+		collaborator_osrc = collaborator_osrc;
+
+		// User clicked a partner's profile
+		onTrkProfile "widget/connector"
+		    {
+		    event=PartnerSelected;
+		    target=partner_profile;
+		    action=TriggerEvent;
+		    EventName=runclient('SelectPartner');
+		    partner_key=runclient(:partner_key);
+		    }
 		}
 	    }
 	}

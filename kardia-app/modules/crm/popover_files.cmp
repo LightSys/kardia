@@ -86,12 +86,13 @@ popover_files "widget/component-decl"
 	    unassigned_label "widget/label"
 		{
 		height=14;
-		text="Recent or not-yet-associated file uploads:";
+		value=runclient("Files for " + :partnername_var:value + ", recent, or not-yet-associated:");
 		style=bold;
 		}
 
 	    unassigned_files_osrc "widget/osrc"
 		{
+		file_partner "widget/parameter" { type=string; default=runclient(:partner_var:value); }
 		sql = "	select
 			    :pd:p_partner_key,
 			    :d:e_document_id,
@@ -100,7 +101,7 @@ popover_files "widget/component-decl"
 			    title_txt = '\"' + :d:e_title + '\"',
 			    assign_txt = condition(:pd:p_partner_key is null, 'Unassociated', 'Associated'),
 			    assign_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
-			    age_mins = datediff(minute,isnull(:pd:s_date_created,getdate()),getdate()),
+			    age_mins = datediff(minute,isnull(:f:last_modification,getdate()),getdate()),
 			    :d:e_orig_filename,
 			    :d:e_current_folder,
 			    :d:e_current_filename,
@@ -127,7 +128,7 @@ popover_files "widget/component-decl"
 			    :p:p_partner_key = :pd:p_partner_key and
 			    :f:name != 'README'
 			having
-			    (:p_partner_key is null and :owner = user_name()) or :age_mins < 240
+			    (:p_partner_key is null and :owner = user_name()) or :age_mins < 240 or :p_partner_key = :parameters:file_partner
 			";
 		baseobj = "/apps/kardia/files";
 		replicasize=50;
