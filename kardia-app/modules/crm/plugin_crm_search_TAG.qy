@@ -1,0 +1,153 @@
+$Version=2$
+plugin_crm_search_TAG "system/query"
+    {
+    // This query object provides the search stage support for
+    // searching based on tags.
+    //
+    require_endorsement="system:from_application";
+
+    search_id "query/parameter" { type=integer; }
+    cur_stage "query/parameter" { type=integer; }
+    prev_stage "query/parameter" { type=integer; }
+
+    sql = " -- First, we need to get our search stage information and config.
+	    declare object stage;
+	    select
+		:stage:op = :s:p_stage_op,
+		:stage:tag = convert(integer,:sc:tag),
+		:stage:startdate = convert(datetime,:sc:start),
+		:stage:enddate = convert(datetime,:sc:end),
+		:stage:certainty = convert(double,:sc:certainty),
+		:stage:strength = convert(double,:sc:strength),
+		:stage:comment = lower(:sc:comment)
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
+		/apps/kardia/modules/crm/advanced_search_params.qyp sc
+	    where
+		:s:p_search_id = :parameters:search_id and
+		:s:p_search_stage_id = :parameters:cur_stage and
+		:sc:p_search_id = :s:p_search_id and
+		:sc:p_search_stage_id = :s:p_search_stage_id
+	    ;
+
+	    -- Delete any previous results.
+	    delete
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    where
+		:s_username = user_name() and
+		:p_search_session_id = :parameters:search_id and
+		:p_search_stage_id = :parameters:cur_stage
+	    ;
+
+	    -- Now create this stage's results.
+	    -- Pass #1: copy previous results if we're ADDING.
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    select
+		:p_partner_key,
+		:s_username,
+		:p_search_session_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = '',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows s
+	    where
+		:s:s_username = user_name() and
+		:s:p_search_session_id = :parameters:search_id and
+		:s:p_search_stage_id = :parameters:prev_stage and
+		:stage:op = 'A'
+	    ;
+
+	    -- Pass #2: generate new results if we're ADDING
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    select
+		:p_partner_key,
+		s_username = user_name(),
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = '',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_tag/rows t
+	    where
+		(:stage:tag is null or :e_tag_id = :stage:tag) and
+		(:e_tag_certainty >= isnull(:stage:certainty, 0.0)) and
+		(:e_tag_strength >= isnull(:stage:strength, 0.01)) and
+		(:stage:startdate is null or :t:s_date_created >= :stage:startdate) and
+		(:stage:enddate is null or :t:s_date_created <= :stage:enddate) and
+		(:stage:comment is null or charindex(:stage:comment, lower(:t:e_tag_comments)) > 0) and
+		:stage:op = 'A'
+	    ;
+
+	    -- Pass #3: filter existing results if we're restricting
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    select
+		:p_partner_key,
+		s_username = user_name(),
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = '',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		/apps/kardia/data/Kardia_DB/e_tag/rows t
+	    where
+		:sr:s_username = user_name() and
+		:sr:p_search_session_id = :parameters:search_id and
+		:sr:p_search_stage_id = :parameters:prev_stage and
+		:stage:op = 'R' and
+		:sr:p_partner_key = :t:p_partner_key and
+		(:stage:tag is null or :t:e_tag_id = :stage:tag) and
+		(:t:e_tag_certainty >= isnull(:stage:certainty, 0.0)) and
+		(:t:e_tag_strength >= isnull(:stage:strength, 0.01)) and
+		(:stage:startdate is null or :t:s_date_created >= :stage:startdate) and
+		(:stage:enddate is null or :t:s_date_created <= :stage:enddate) and
+		(:stage:comment is null or charindex(:stage:comment, lower(:t:e_tag_comments)) > 0)
+	    ;
+
+	    -- Pass #4: filter existing results if we're excluding
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    select
+		:sr:p_partner_key,
+		s_username = user_name(),
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = '',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		/apps/kardia/data/Kardia_DB/e_tag/rows t
+	    where
+		:sr:s_username = user_name() and
+		:sr:p_search_session_id = :parameters:search_id and
+		:sr:p_search_stage_id = :parameters:prev_stage and
+		:stage:op = 'E' and
+		:sr:p_partner_key *= :t:p_partner_key and
+		(:stage:tag is null or :t:e_tag_id = :stage:tag) and
+		(:t:e_tag_certainty >= isnull(:stage:certainty, 0.0)) and
+		(:t:e_tag_strength >= isnull(:stage:strength, 0.01)) and
+		(:stage:startdate is null or :t:s_date_created >= :stage:startdate) and
+		(:stage:enddate is null or :t:s_date_created <= :stage:enddate) and
+		(:stage:comment is null or charindex(:stage:comment, lower(:t:e_tag_comments)) > 0)
+	    group by
+		:sr:p_partner_key
+	    having
+		count(:t:p_partner_key) = 0
+	    ";
+    }
