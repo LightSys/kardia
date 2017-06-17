@@ -11,7 +11,7 @@ tab_menu "widget/component-decl"
 
 	tabpage_rpt "widget/repeat"
 	    {
-	    sql = "select modname = :cx__pathpart4, :module_name, :module_abbrev, :module_description, :module_ui from object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' order by :module_sequence";
+	    sql = "select modname = :cx__pathpart4, :module_name, :module_abbrev, :module_description, :module_ui from object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' where :module_sequence is not null order by :module_sequence";
 
 	    main_tabpage_custom "widget/tabpage"
 		{
