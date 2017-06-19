@@ -1,0 +1,14 @@
+$Version=2$
+advanced_search_params "system/querypivot"
+    {
+    source = "/apps/kardia/data/Kardia_DB/p_search_stage_criteria/rows";
+
+    p_search_id "system/querypivot" { type=integer; usage=key; }
+    p_search_stage_id "system/querypivot" { type=integer; usage=key; }
+    p_criteria_name "system/querypivot" { type=string; usage=name; }
+    p_criteria_value "system/querypivot" { type=string; usage=value; }
+    s_date_created "system/querypivot" { type=datetime; usage=createdate; }
+    s_created_by "system/querypivot" { type=string; usage=createuser; }
+    s_date_modified "system/querypivot" { type=datetime; usage=modifydate; }
+    s_modified_by "system/querypivot" { type=string; usage=modifyuser; }
+    }

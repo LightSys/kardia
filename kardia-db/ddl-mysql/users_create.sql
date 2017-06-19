@@ -199,6 +199,45 @@ grant select on ra to public;
 /* e_text_expansion */
 
 
+/* e_text_search_word */
+
+
+/* e_text_search_rel */
+
+
+/* e_text_search_occur */
+
+
+/* h_staff */
+
+
+/* h_group */
+
+
+/* h_group_member */
+
+
+/* h_holidays */
+
+
+/* h_work_register */
+
+
+/* h_work_register_times */
+
+
+/* h_benefit_period */
+
+
+/* h_benefit_type */
+
+
+/* h_benefit_type_sched */
+
+
+/* h_benefits */
+
+
 /* r_group */
 
 
@@ -325,6 +364,9 @@ grant select on ra to public;
 /* a_tax_allowance_table */
 
 
+/* a_salary_review */
+
+
 /* a_cc_admin_fee */
 
 
@@ -370,6 +412,24 @@ grant select on ra to public;
 /* a_giving_pattern */
 
 
+/* a_giving_pattern_allocation */
+
+
+/* a_giving_pattern_flag */
+
+
+/* a_funding_target */
+
+
+/* a_support_review */
+
+
+/* a_support_review_target */
+
+
+/* a_descriptives */
+
+
 /* a_subtrx_cashdisb */
 
 
@@ -398,6 +458,12 @@ grant select on ra to public;
 
 
 /* i_crm_import_type_option */
+
+
+/* i_disb_import_classify */
+
+
+/* i_disb_import_status */
 
 
 /* c_message */

@@ -4,6 +4,11 @@ gift_import "widget/component-decl"
     width=824;
     height=580;
 
+    // FIXME - deposit and fee posting logic requires that gifts be in gift
+    // batches before the deposits or fees can be created.  This logic causes
+    // trouble and needs to be de-coupled entirely from the existence of a
+    // gift batch.
+
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     year_period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
@@ -778,7 +783,8 @@ gift_import "widget/component-decl"
 							:eg:a_batch_number_deposit is not null,
 							'/sys/images/green_check.gif',
 							condition(
-							    :eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is not null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
+							    -- :eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is not null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
+							    :eg:i_eg_deposit_uuid is not null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
 							    '/sys/images/dotted_check.gif',
 							    condition(
 								:eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
@@ -790,7 +796,8 @@ gift_import "widget/component-decl"
 							:eg:a_batch_number_fees is not null,
 							'/sys/images/green_check.gif',
 							condition(
-							    :eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is not null,
+							    -- :eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is not null,
+							    :eg:i_eg_deposit_uuid is not null,
 							    '/sys/images/dotted_check.gif',
 							    condition(
 								:eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is null,
@@ -954,8 +961,18 @@ gift_import "widget/component-decl"
 			    btn_list_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; height=16; text="Import & View..."; }
 			    btnsep "widget/autolayoutspacer" { height=0; }
 
+			    create_lbl "widget/label"
+				{
+				condition=0;
+				height=48;
+				style=italic;
+				font_size=10;
+				text="This import function is only available when the Status: selection, above, is set to 'Ready for Import'.";
+				}
+
 			    create_dep_batch_btn "widget/textbutton"
 				{
+				//enabled = runclient((not :dep_import_osrc:is_pending) and (:dep_status_dd:value = 'R' or :dep_import_osrc:dep_batch_number is not null));
 				enabled = runclient(not :dep_import_osrc:is_pending);
 				width = 162;
 				height = 24;
@@ -971,6 +988,7 @@ gift_import "widget/component-decl"
 				}
 			    create_fee_batch_btn "widget/textbutton"
 				{
+				//enabled = runclient((not :dep_import_osrc:is_pending) and (:dep_status_dd:value = 'R' or :dep_import_osrc:fees_batch_number is not null));
 				enabled = runclient(not :dep_import_osrc:is_pending);
 				width = 162;
 				height = 24;
@@ -1105,7 +1123,7 @@ gift_import "widget/component-decl"
 				(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
 				(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 				:eg:i_eg_deposit_uuid is not null and
-				:eg:a_batch_number is not null and
+				-- :eg:a_batch_number is not null and
 				:eg:a_batch_number_deposit is null
 			group by
 				:i_eg_deposit_uuid
@@ -1237,8 +1255,8 @@ gift_import "widget/component-decl"
 			    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
 			    (char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 			    :eg:i_eg_deposit_uuid is not null and
-			    :a_batch_number_deposit is null and
-			    :a_batch_number is not null
+			    :a_batch_number_deposit is null -- and
+			    -- :a_batch_number is not null
 		    ;
 
 		    insert into
@@ -1347,7 +1365,7 @@ gift_import "widget/component-decl"
 				(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
 				(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 				:eg:i_eg_deposit_uuid is not null and
-				:eg:a_batch_number is not null and
+				-- :eg:a_batch_number is not null and
 				:eg:a_batch_number_fees is null
 			group by
 				:i_eg_deposit_uuid
@@ -1479,8 +1497,8 @@ gift_import "widget/component-decl"
 			    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
 			    (char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 			    :eg:i_eg_deposit_uuid is not null and
-			    :a_batch_number_fees is null and
-			    :a_batch_number is not null
+			    :a_batch_number_fees is null -- and
+			    -- :a_batch_number is not null
 		    ;
 
 		    insert into

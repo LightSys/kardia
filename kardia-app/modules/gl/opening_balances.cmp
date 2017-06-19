@@ -188,7 +188,8 @@ opening_balances "widget/component-decl"
 		group by
 		    :t:a_ledger_number,
 		    :t:a_cost_center,
-		    :a_account_code
+		    :a_account_code,
+		    :a_account_category
 		;
 		insert
 		    /apps/kardia/data/Kardia_DB/a_transaction_tmp/rows

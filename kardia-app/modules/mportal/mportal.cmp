@@ -1,0 +1,196 @@
+$Version=2$
+mportal "widget/component-decl"
+    {
+    width=1200; height=700;
+
+    DisableTabButtons "widget/component-decl-action" { }
+
+    disable_all_buttons "widget/connector"
+	{
+	event=DisableTabButtons;
+	target=one_tabbutton;
+	action=SetBackground;
+	Image=runclient("/sys/images/trans_1.gif");
+	}
+
+    user_osrc "widget/osrc"
+	{
+	sql = " select
+		    staff_login = :s:p_kardia_login,
+		    staff_key = :s:p_partner_key,
+		    staff_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+		    staff_cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number), '')
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :p:p_partner_key = :s:p_partner_key and
+		    :s:p_kardia_login is not null
+		having
+		    :staff_login = user_name() or
+		    has_endorsement('kardia:portal_manage','kardia')
+		order by
+		    charindex(',' + user_name() + ',', ',' + :s:p_kardia_login + ',') desc,
+		    :s:p_kardia_login asc
+		";
+	replicasize=30;
+	readahead=30;
+	autoquery=onload;
+
+	main_vbox "widget/vbox"
+	    {
+	    x=0; y=0;
+	    width=1200; height=700;
+	    spacing=10;
+
+	    // Title/Action bar
+	    action_bar "widget/pane"
+		{
+		height=60;
+		//background="/apps/kardia/images/bg/charcoal_gradient.png";
+		background="/apps/kardia/images/bg/horiz-bar-world-dark-96.png";
+		style=flat;
+		widget_class = crm_iconbar;
+		fl_height=0;
+
+		action_bar_hbox "widget/hbox"
+		    {
+		    x=10; y=0;
+		    width=1180; height=60;
+		    spacing=10;
+
+		    logo_icon "widget/image"
+			{
+			condition=runserver(:this:show_profile_only);
+			source="/apps/kardia/images/artwork/Kardia2011_transcorner.png";
+			y=10;
+			width=56;
+			height=38;
+			}
+
+		    bar_title "widget/label"
+			{
+			width=350;
+			y=11;
+			font_size=32;
+			style=bold;
+			text="Missionary Portal";
+			fgcolor=white;
+			}
+
+		    tabicon_bar "widget/hbox"
+			{
+			width=754;
+			align=right;
+			spacing=0;
+
+			select_user_label "widget/label" { require_one_endorsement="kardia:portal_manage"; endorsement_context="kardia"; height=24; width=50; y=20; text="User:"; fgcolor=white; style=bold; }
+			select_user_dd "widget/dropdown"
+			    {
+			    require_one_endorsement="kardia:portal_manage";
+			    endorsement_context="kardia";
+			    height=24; width=120; y=18;
+			    mode = objectsource;
+			    fieldname=staff_name;
+			    numdisplay=20;
+			    }
+			select_user_sep "widget/autolayoutspacer" { width=24; }
+
+			tabicons "widget/repeat"
+			    {
+			    sql = "select :cx__rowid, :icon, :title from object wildcard '/apps/kardia/modules/*/plugin_mportal_main_*.cmp' where :sequence is not null and isnull(:enabled,1) = 1 order by :sequence";
+
+			    one_tabbutton "widget/component"
+				{
+				fl_width=0;
+				width=76;
+				active=runserver(:tabicons:cx__rowid == 0);
+				path="button_tab.cmp";
+				text=runserver(:tabicons:title);
+				image=runserver(:tabicons:icon);
+
+				tabbutton_click0 "widget/connector"
+				    {
+				    event=Click;
+				    target=mportal;
+				    action=TriggerEvent;
+				    EventName=runclient("DisableTabButtons");
+				    }
+
+				tabbutton_click "widget/connector"
+				    {
+				    event=Click;
+				    target=list_tab;
+				    action=SetTab;
+				    TabIndex=runserver(:tabicons:cx__rowid + 1);
+				    }
+
+				tabbutton_click3 "widget/connector"
+				    {
+				    event=Click;
+				    target=one_tabbutton;
+				    action=SetBackground;
+				    Image=runclient("/apps/kardia/images/bg/lsblue_gradient.png");
+				    }
+				}
+			    }
+			}
+		    }
+		}
+
+	    sep1 "widget/autolayoutspacer" { height=2; }
+
+	    tab_pane "widget/pane"
+		{
+		height=620;
+		x=10; width=1180;
+		//style=bordered;
+		style=flat;
+		//border_color="#6080c0";
+		//border_radius=8;
+		//shadow_color="#6080c0";
+		//shadow_radius=8;
+
+		list_tab "widget/tab"
+		    {
+		    x=0; y=0;
+		    height=620;
+		    width=1180;
+		    //background="/apps/kardia/images/bg/light_bgnd2.jpg";
+		    //bgcolor="#f8f8f8";
+		    bgcolor=white;
+		    inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+		    border_style=none;
+		    tab_location=none;
+
+		    plugin_tabs "widget/repeat"
+			{
+			sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_mportal_main_*.cmp' where :sequence is not null order by :sequence";
+
+			plugin_tab "widget/tabpage"
+			    {
+			    title = runserver(:plugin_tabs:title);
+
+			    plugin_cmp "widget/component"
+				{
+				height=602; width=1172; x=4; y=4;
+				path = runserver(:plugin_tabs:path);
+				user_osrc = user_osrc;
+
+				on_setnumber "widget/connector"
+				    {
+				    event=SetNumber;
+				    target=mportal;
+				    action=SetNumber;
+				    Number=runclient(:Number);
+				    Which=runclient(:Which);
+				    Color=runclient(:Color);
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

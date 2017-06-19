@@ -75,7 +75,7 @@ gift_matrix "system/report"
 			:i:a_period,
 			:i:a_cost_center,
 			:i:a_confidential,
-			:g:p_donor_partner_id,
+			p_donor_partner_id = :i:p_dn_donor_partner_id,
 			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 			p1val = :p1_qy:a_period,
 			p2val = :p2_qy:a_period,
@@ -90,26 +90,29 @@ gift_matrix "system/report"
 			p11val = :p11_qy:a_period,
 			p12val = :p12_qy:a_period
 		FROM
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			-- /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p
 		WHERE
-			charindex(',' + :g:name + ',', :gifts_qy:gifts) > 0 and
-			:g:a_posted = 1 and
-			:g:a_ledger_number = :this:ledger and
-			:i:a_ledger_number = :g:a_ledger_number and
-			:i:a_batch_number = :g:a_batch_number and
-			:i:a_gift_number = :g:a_gift_number and
+			-- charindex(',' + :g:name + ',', :gifts_qy:gifts) > 0 and
+			-- :g:a_posted = 1 and
+			-- :g:a_ledger_number = :this:ledger and
+			:i:a_ledger_number = :this:ledger and
+			-- :i:a_batch_number = :g:a_batch_number and
+			-- :i:a_gift_number = :g:a_gift_number and
+			:i:a_posted = 1 and
+			:i:a_period <= :p1_qy:a_period and
+			:i:a_period >= :p12_qy:a_period and
 			:c:a_cost_center = :i:a_cost_center and
 			:c:a_ledger_number = :i:a_ledger_number and
 			" + condition(:this:costctr is null, "", "(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr) and") + "
-			:p:p_partner_key = :g:p_donor_partner_id
+			:p:p_partner_key = :i:p_dn_donor_partner_id
 		GROUP BY
 			:i:a_confidential,
-			:g:p_donor_partner_id,
+			:i:p_dn_donor_partner_id,
 			:i:a_cost_center,
-			:g:a_period
+			:i:a_period
 		");
 
 	p1 "report/aggregate" { compute="round(sum(:amt))"; where=":a_period = :p1val"; }
@@ -184,7 +187,8 @@ gift_matrix "system/report"
 
 	info_table "report/table"
 	    {
-	    source = gifts_qy, gift_sum_qy;
+	    //source = gifts_qy, gift_sum_qy;
+	    source = gift_sum_qy;
 	    //source = gifts_qy, gift_sum_qy, donor_qy;
 
 	    x=0; width=100; height=0;

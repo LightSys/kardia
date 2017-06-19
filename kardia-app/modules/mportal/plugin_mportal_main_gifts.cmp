@@ -1,0 +1,525 @@
+$Version=2$
+gifts "widget/component-decl"
+    {
+    height=602; width=1172;
+
+    title = "Gifts";
+    icon = "/apps/kardia/images/icons/ionicons-arrow-right-c.svg";
+    //icon = "/apps/kardia/images/icons/openiconic-dollar.svg";
+    sequence = 8;
+
+    user_osrc "widget/parameter" { type=object; }
+
+    gifts_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=1172; height=602;
+	spacing=10;
+
+	fund_osrc "widget/osrc"
+	    {
+	    staff_login "widget/parameter" { type=string; }
+	    sql = " -- Find what cost centers we can view
+		    select
+			selected_fund = '*',
+			username = :parameters:staff_login,
+			descr = 'All'
+		    ;
+
+		    select
+			selected_fund = :cc:a_ledger_number + '|' + :cc:a_cost_center,
+			username = :parameters:staff_login,
+			descr = :cc:a_cost_center + ' - ' + :cc:a_cc_desc,
+			:cc:a_cost_center,
+			:cc:a_ledger_number,
+			a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_ledger_number = :cc:a_ledger_number and :p:a_summary_only = 0 and :p:a_start_date < getdate() and :p:a_start_date > dateadd(year, -1, getdate()) order by :p:a_start_date desc limit 1)
+		    from
+			/apps/kardia/data/Kardia_DB/p_staff/rows s,
+			/apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows cc
+		    where
+			:cs:p_staff_partner_key = :s:p_partner_key and
+			(:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and
+			:cc:a_ledger_number = :cs:a_ledger_number and
+			:s:p_kardia_login = :parameters:staff_login
+		    order by
+			:s:p_partner_key,
+			:cs:a_ledger_number,
+			:cs:a_cost_center
+		    ";
+	    readahead=50;
+	    replicasize=50;
+	    //autoquery=onload;
+
+	    user_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=user_osrc;
+		key_1=staff_login;
+		target_key_1=staff_login;
+		revealed_only=yes;
+		}
+
+	    fund_select_hbox "widget/hbox"
+		{
+		height=24;
+		spacing=10;
+		align=center;
+
+		view_select_label "widget/label" { y=2; width=100; align=right; style=bold; text="View:"; }
+
+		view_select_dropdown "widget/dropdown"
+		    {
+		    width=100;
+		    sql = "select 'Monthly', 1, 1; select 'Yearly', 2, 0";
+		    mode = dynamic_server;
+		    bgcolor = "#f8f8f8";
+		    vsd_hints "widget/hints" { style=notnull; }
+		    }
+		
+		fund_select_label "widget/label" { y=2; width=100; align=right; style=bold; text="Select Fund:"; }
+
+		fund_select_dropdown "widget/dropdown"
+		    {
+		    width=300;
+		    mode = objectsource;
+		    bgcolor = "#f8f8f8";
+		    fieldname=descr;
+		    numdisplay=20;
+		    }
+
+		sep2 "widget/autolayoutspacer" { width=100; }
+
+		download_btn "widget/textbutton"
+		    {
+		    height=24;
+		    width=250;
+		    text=runclient(condition(:fund_osrc:selected_fund = '*', 'Select Fund to Download Report', 'Download PDF Report'));
+		    enabled=runclient(:fund_osrc:selected_fund != '*');
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+
+		    on_mtx_click "widget/connector"
+			{
+			event=Click;
+			target=gifts;
+			action=Launch;
+			Source="/apps/kardia/modules/rcpt/gift_matrix.rpt";
+			end_period=runclient(:fund_osrc:a_period);
+			ledger=runclient(:fund_osrc:a_ledger_number);
+			costctr=runclient(:fund_osrc:a_cost_center);
+			}
+		    }
+		}
+
+	    sepline "widget/image" { fl_height=0; fl_width=100; height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	    table_tab "widget/tab"
+		{
+		tab_location=none;
+		height=558;
+		border_style=none;
+		selected_index=runclient(:view_select_dropdown:value);
+		bgcolor=white;
+		inactive_bgcolor=white;
+
+		monthly_tabpage "widget/tabpage"
+		    {
+		    gifts_osrc "widget/osrc"
+			{
+			selected_fund "widget/parameter" { type=string; }
+			username "widget/parameter" { type=string; }
+
+			sql = runserver("
+				declare object giftinfo;
+
+				-- Find what cost centers we can view
+				select
+				    :giftinfo:staff_key = :p_partner_key,
+				    :giftinfo:my_cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number and (:parameters:selected_fund = '*' or :parameters:selected_fund = :cc:a_ledger_number + '|' + :cc:a_cost_center)), '')
+				from
+				    /apps/kardia/data/Kardia_DB/p_staff/rows s
+				where
+				    :p_kardia_login = :parameters:username
+				;
+
+				-- Ledger
+				select
+				    :giftinfo:ledger = first(:a_ledger_number)
+				from
+				    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs
+				where
+				    :cs:p_staff_partner_key = :giftinfo:staff_key
+				;
+
+				-- Periods
+				select
+				    :giftinfo:firstperiod = first(:a_period),
+				    :giftinfo:lastperiod = last(:a_period)
+				from
+				    /apps/kardia/data/Kardia_DB/a_period/rows p
+				where
+				    :p:a_ledger_number = :giftinfo:ledger and
+				    :p:a_summary_only = 0 and
+				    :a_start_date < getdate() and
+				    :a_start_date > dateadd(year, -1, getdate())
+				order by
+				    :a_start_date asc
+				limit
+				    12
+				;
+
+				-- Get the gift data.  We use a dynamic query here to make
+				-- it simpler to get N previous periods.
+				select
+				    " + (select sum("month" + (select count(1) from /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p2:a_summary_only = 0 and :p2:a_ledger_number = :p:a_ledger_number and :p2:a_start_date < :p:a_start_date and :p2:a_start_date >  dateadd(year, -1, getdate())) + " = condition(isnull(sum(condition(:gi:a_period = " + quote(:p:a_period) + ", :gi:a_amount, $0)), $0) != $0, isnull(sum(condition(:gi:a_period = " + quote(:p:a_period) + ", :gi:a_amount, $0)), $0), '-'),\n" ) from /apps/kardia/data/Kardia_DB/a_period/rows p where :a_ledger_number = (select first(:cs:a_ledger_number) from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name() and :cs:p_staff_partner_key = :s:p_partner_key) and :a_summary_only = 0 and :a_start_date < getdate() and :a_start_date > dateadd(year, -1, getdate()) limit 12 ) +
+				    "total=sum(condition(:gi:a_period >= :giftinfo:firstperiod and :gi:a_period <= :giftinfo:lastperiod, :gi:a_amount, $0)),
+				    :gi:a_ledger_number,
+				    :gi:a_cost_center,
+				    :cc:a_cc_desc,
+				    :p:p_partner_key,
+				    donor_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+				    :pl:p_in_care_of,
+				    :pl:p_address_1,
+				    :pl:p_address_2,
+				    :pl:p_address_3,
+				    :pl:p_city,
+				    :pl:p_state_province,
+				    :pl:p_postal_code,
+				    :pl:p_country_code,
+				    p_iso3166_2_code = isnull(:c:p_iso3166_2_code,''),
+				    p_iso3166_3_code = isnull(:c:p_iso3166_3_code,''),
+				    p_fips_code = isnull(:c:p_fips_code,''),
+				    p_country_name = upper(isnull(:c:p_country_name,'')),
+				    :af:p_format,
+				    email = (select :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'E' and :ci:p_partner_key = :p:p_partner_key limit 1),
+				    phone = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'P' and :ci:p_partner_key = :p:p_partner_key limit 1),
+				    cell = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'C' and :ci:p_partner_key = :p:p_partner_key limit 1)
+				from
+				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
+				    /apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_location/rows pl,
+				    /apps/kardia/data/Kardia_DB/p_country/rows c,
+				    /apps/kardia/data/Kardia_DB/p_address_format/rows af
+				where
+				    :gi:a_posted = 1 and
+				    isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and
+				    charindex(',' + :gi:a_ledger_number + '|' + :gi:a_cost_center + ',', ',' + :giftinfo:my_cclist + ',') > 0 and
+				    :cc:a_ledger_number = :gi:a_ledger_number and
+				    :cc:a_cost_center = :gi:a_cost_center and
+				    :p:p_partner_key = :gi:p_dn_donor_partner_id and
+				    :pl:p_partner_key =* :p:p_partner_key and
+				    :pl:p_revision_id = 0 and
+				    :c:p_country_code =* :pl:p_country_code and
+				    :af:p_country_code =* :c:p_country_code and
+				    :af:p_address_set = 'STANDARD'
+				group by
+				    :gi:p_dn_donor_partner_id,
+				    :gi:a_ledger_number,
+				    :gi:a_cost_center
+				having
+				    :total > $0
+				;
+
+				-- Get the gift totals.  We use a dynamic query here to make
+				-- it simpler to get N previous periods.
+				select
+				    " + (select sum("month" + (select count(1) from /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p2:a_summary_only = 0 and :p2:a_ledger_number = :p:a_ledger_number and :p2:a_start_date < :p:a_start_date and :p2:a_start_date >  dateadd(year, -1, getdate())) + " = condition(isnull(sum(condition(:gi:a_period = " + quote(:p:a_period) + ", :gi:a_amount, $0)), $0) != $0, isnull(sum(condition(:gi:a_period = " + quote(:p:a_period) + ", :gi:a_amount, $0)), $0), '-'),\n" ) from /apps/kardia/data/Kardia_DB/a_period/rows p where :a_ledger_number = (select first(:cs:a_ledger_number) from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name() and :cs:p_staff_partner_key = :s:p_partner_key) and :a_summary_only = 0 and :a_start_date < getdate() and :a_start_date > dateadd(year, -1, getdate()) limit 12 ) +
+				    "total=isnull(sum(condition(:gi:a_period >= :giftinfo:firstperiod and :gi:a_period <= :giftinfo:lastperiod, :gi:a_amount, $0)),$0),
+				    :gi:a_ledger_number,
+				    a_cost_center = '',
+				    a_cc_desc = '',
+				    p_partner_key = null,
+				    donor_name = 'TOTAL:',
+				    p_city = null,
+				    p_state_province = null,
+				    p_format = ''
+				from
+				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi
+				where
+				    :gi:a_posted = 1 and
+				    isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and
+				    charindex(',' + :gi:a_ledger_number + '|' + :gi:a_cost_center + ',', ',' + :giftinfo:my_cclist + ',') > 0
+				");
+			readahead=200;
+			replicasize=200;
+
+			gift_fund_link "widget/rule"
+			    {
+			    ruletype=osrc_relationship;
+			    target=fund_osrc;
+			    key_1=selected_fund;
+			    target_key_1=selected_fund;
+			    key_2=username;
+			    target_key_2=username;
+			    revealed_only=yes;
+			    }
+
+			gifts_table "widget/table"
+			    {
+			    x=0; y=0;
+			    width=1172;
+			    height=558;
+			    row_border_radius=4;
+			    demand_scrollbar = yes;
+			    overlap_scrollbar = yes;
+			    initial_selection = no;
+			    colsep = 0;
+			    titlebar = yes;
+			    min_rowheight = 16;
+			    max_rowheight = 200;
+			    cellvspacing = 4;
+			    row1_bgcolor = white;
+			    row2_bgcolor = white;
+			    show_selection = yes;
+			    inner_padding = 4;
+			    //rowhighlight_bgcolor = "#fff090";
+			    textcolorhighlight = "#000000";
+			    titlecolor = white;
+			    hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			    rowhighlight_border_color="#6080c0";
+			    rowhighlight_border_radius=3;
+			    rowhighlight_shadow_color="#6080c0";
+			    rowhighlight_shadow_radius=2;
+			    rowhighlight_shadow_offset=1;
+			    rowhighlight_shadow_angle=135;
+			    rowhighlight_bgcolor="#faf8ff";
+			    nodata_message = runclient(condition(:gifts_osrc:cx__pending, "No gifts available.", "Loading the past twelve months' gifts..."));
+
+			    gt_name "widget/table-column" { title = "Donor Name"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:gifts_osrc:p_partner_key + isnull(' - ' + :gifts_osrc:p_city + ', ' + :gifts_osrc:p_state_province, '')); }
+			    gt_fund "widget/table-column" { title = "Fund"; fieldname=a_cost_center; width=80; style=bold; font_size=16; caption_value=runclient(:gifts_osrc:a_cc_desc); }
+
+			    col_period_repeat "widget/repeat"
+				{
+				sql  = "select :p:a_period, id=(select count(1) from /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p2:a_summary_only = 0 and :p2:a_ledger_number = :p:a_ledger_number and :p2:a_start_date < :p:a_start_date and :p2:a_start_date >  dateadd(year, -1, getdate())) from /apps/kardia/data/Kardia_DB/a_period/rows p where :a_ledger_number = (select first(:cs:a_ledger_number) from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name() and :cs:p_staff_partner_key = :s:p_partner_key) and :a_summary_only = 0 and :a_start_date < getdate() and :a_start_date > dateadd(year, -1, getdate()) limit 12";
+
+				col_period "widget/table-column" { title=runserver(:col_period_repeat:a_period); fieldname=runserver("month" + :col_period_repeat:id); align=right; font_name=courier; style=bold; font_size=12; width=80; }
+				}
+
+			    gt_total "widget/table-column" { title = "Total"; value=runclient(:gifts_osrc:total); width=80; style=bold; font_name=courier; align=right; font_size=12; }
+
+			    giver_detail "widget/table-row-detail"
+				{
+				display_for=runclient(:gifts_osrc:p_partner_key is not null);
+				height=180;
+				width=1172;
+
+				giver_detail_cmp "widget/component"
+				    {
+				    x=0; y=10; height=160; width=1172;
+				    path="gift_detail.cmp";
+				    summary_osrc = gifts_osrc;
+				    }
+				}
+			    }
+			}
+		    }
+
+		yearly_tabpage "widget/tabpage"
+		    {
+		    ygifts_osrc "widget/osrc"
+			{
+			yselected_fund "widget/parameter" { param_name=selected_fund; type=string; }
+			yusername "widget/parameter" { param_name=username; type=string; }
+
+			sql = runserver("
+				declare object giftinfo;
+
+				-- Find what cost centers we can view
+				select
+				    :giftinfo:staff_key = :p_partner_key,
+				    :giftinfo:my_cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number and (:parameters:selected_fund = '*' or :parameters:selected_fund = :cc:a_ledger_number + '|' + :cc:a_cost_center)), '')
+				from
+				    /apps/kardia/data/Kardia_DB/p_staff/rows s
+				where
+				    :p_kardia_login = :parameters:username
+				;
+
+				-- Ledger
+				select
+				    :giftinfo:ledger = first(:a_ledger_number)
+				from
+				    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs
+				where
+				    :cs:p_staff_partner_key = :giftinfo:staff_key
+				;
+
+				-- Periods
+				select
+				    :giftinfo:firstperiod = first(:a_period),
+				    :giftinfo:lastperiod = last(:a_period)
+				from
+				    /apps/kardia/data/Kardia_DB/a_period/rows p
+				where
+				    :p:a_ledger_number = :giftinfo:ledger and
+				    :p:a_summary_only = 0 and
+				    datepart(year,:a_start_date) <= datepart(year,getdate()) and
+				    datepart(year,:a_start_date) > datepart(year,getdate()) - 12
+				order by
+				    :a_start_date asc
+				;
+
+				-- Get the gift data.  We use a dynamic query here to make
+				-- it simpler to get N previous periods.
+				select
+				    " + (select sum('year' + datepart(year, :p:a_start_date) + " = condition(isnull(sum(condition(datepart(year,:gper:a_start_date) = " + datepart(year,:p:a_start_date) + ", :gi:a_amount, $0)), $0) != $0, isnull(sum(condition(datepart(year,:gper:a_start_date) = " + datepart(year,:p:a_start_date) + ", :gi:a_amount, $0)), $0), '-'),\n" ) from /apps/kardia/data/Kardia_DB/a_period/rows p where :a_ledger_number = (select first(:cs:a_ledger_number) from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name() and :cs:p_staff_partner_key = :s:p_partner_key) and :a_summary_only = 1 and :a_start_date < getdate() and :a_start_date > dateadd(year, -12, getdate()) order by :p:a_start_date asc limit 12 ) +
+				    "total=sum(condition(:gi:a_period >= :giftinfo:firstperiod and :gi:a_period <= :giftinfo:lastperiod, :gi:a_amount, $0)),
+				    :gi:a_ledger_number,
+				    :gi:a_cost_center,
+				    :cc:a_cc_desc,
+				    :p:p_partner_key,
+				    donor_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+				    :pl:p_in_care_of,
+				    :pl:p_address_1,
+				    :pl:p_address_2,
+				    :pl:p_address_3,
+				    :pl:p_city,
+				    :pl:p_state_province,
+				    :pl:p_postal_code,
+				    :pl:p_country_code,
+				    p_iso3166_2_code = isnull(:c:p_iso3166_2_code,''),
+				    p_iso3166_3_code = isnull(:c:p_iso3166_3_code,''),
+				    p_fips_code = isnull(:c:p_fips_code,''),
+				    p_country_name = upper(isnull(:c:p_country_name,'')),
+				    :af:p_format,
+				    email = (select :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'E' and :ci:p_partner_key = :p:p_partner_key limit 1),
+				    phone = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'P' and :ci:p_partner_key = :p:p_partner_key limit 1),
+				    cell = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'C' and :ci:p_partner_key = :p:p_partner_key limit 1)
+				from
+				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
+				    /apps/kardia/data/Kardia_DB/a_period/rows gper,
+				    /apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_location/rows pl,
+				    /apps/kardia/data/Kardia_DB/p_country/rows c,
+				    /apps/kardia/data/Kardia_DB/p_address_format/rows af
+				where
+				    :gi:a_posted = 1 and
+				    :gper:a_period = :gi:a_period and
+				    :gper:a_ledger_number = :gi:a_ledger_number and
+				    :gi:a_period >= :giftinfo:firstperiod and
+				    :gi:a_period <= :giftinfo:lastperiod and
+				    --isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and
+				    charindex(',' + :gi:a_ledger_number + '|' + :gi:a_cost_center + ',', ',' + :giftinfo:my_cclist + ',') > 0 and
+				    :cc:a_ledger_number = :gi:a_ledger_number and
+				    :cc:a_cost_center = :gi:a_cost_center and
+				    :p:p_partner_key = :gi:p_dn_donor_partner_id and
+				    :pl:p_partner_key =* :p:p_partner_key and
+				    :pl:p_revision_id = 0 and
+				    :c:p_country_code =* :pl:p_country_code and
+				    :af:p_country_code =* :c:p_country_code and
+				    :af:p_address_set = 'STANDARD'
+				group by
+				    :gi:p_dn_donor_partner_id,
+				    :gi:a_ledger_number,
+				    :gi:a_cost_center
+				having
+				    :total > $0
+				;
+
+				-- Get the gift totals.  We use a dynamic query here to make
+				-- it simpler to get N previous periods.
+				select
+				    " + (select sum('year' + datepart(year, :p:a_start_date) + " = condition(isnull(sum(condition(datepart(year,:gper:a_start_date) = " + datepart(year,:p:a_start_date) + ", :gi:a_amount, $0)), $0) != $0, isnull(sum(condition(datepart(year,:gper:a_start_date) = " + datepart(year,:p:a_start_date) + ", :gi:a_amount, $0)), $0), '-'),\n" ) from /apps/kardia/data/Kardia_DB/a_period/rows p where :a_ledger_number = (select first(:cs:a_ledger_number) from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name() and :cs:p_staff_partner_key = :s:p_partner_key) and :a_summary_only = 1 and :a_start_date < getdate() and :a_start_date > dateadd(year, -12, getdate()) order by :p:a_start_date asc limit 12 ) +
+				    "total=isnull(sum(condition(:gi:a_period >= :giftinfo:firstperiod and :gi:a_period <= :giftinfo:lastperiod, :gi:a_amount, $0)),$0),
+				    :gi:a_ledger_number,
+				    a_cost_center = '',
+				    a_cc_desc = '',
+				    p_partner_key = null,
+				    donor_name = 'TOTAL:',
+				    p_city = null,
+				    p_state_province = null,
+				    p_format = ''
+				from
+				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
+				    /apps/kardia/data/Kardia_DB/a_period/rows gper
+				where
+				    :gi:a_posted = 1 and
+				    :gper:a_period = :gi:a_period and
+				    :gper:a_ledger_number = :gi:a_ledger_number and
+				    :gi:a_period >= :giftinfo:firstperiod and
+				    :gi:a_period <= :giftinfo:lastperiod and
+				    --isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and
+				    charindex(',' + :gi:a_ledger_number + '|' + :gi:a_cost_center + ',', ',' + :giftinfo:my_cclist + ',') > 0
+				");
+			readahead=200;
+			replicasize=200;
+
+			ygift_fund_link "widget/rule"
+			    {
+			    ruletype=osrc_relationship;
+			    target=fund_osrc;
+			    key_1=selected_fund;
+			    target_key_1=selected_fund;
+			    key_2=username;
+			    target_key_2=username;
+			    revealed_only=yes;
+			    }
+
+			ygifts_table "widget/table"
+			    {
+			    x=0; y=0;
+			    width=1172;
+			    height=558;
+			    row_border_radius=4;
+			    demand_scrollbar = yes;
+			    overlap_scrollbar = yes;
+			    initial_selection = no;
+			    colsep = 0;
+			    titlebar = yes;
+			    min_rowheight = 16;
+			    max_rowheight = 200;
+			    cellvspacing = 4;
+			    row1_bgcolor = white;
+			    row2_bgcolor = white;
+			    show_selection = yes;
+			    inner_padding = 4;
+			    //rowhighlight_bgcolor = "#fff090";
+			    textcolorhighlight = "#000000";
+			    titlecolor = white;
+			    hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			    rowhighlight_border_color="#6080c0";
+			    rowhighlight_border_radius=3;
+			    rowhighlight_shadow_color="#6080c0";
+			    rowhighlight_shadow_radius=2;
+			    rowhighlight_shadow_offset=1;
+			    rowhighlight_shadow_angle=135;
+			    rowhighlight_bgcolor="#faf8ff";
+			    nodata_message = runclient(condition(:ygifts_osrc:cx__pending, "No gifts available.", "Loading the past twelve months' gifts..."));
+
+			    ygt_name "widget/table-column" { title = "Donor Name"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:ygifts_osrc:p_partner_key + isnull(' - ' + :ygifts_osrc:p_city + ', ' + :ygifts_osrc:p_state_province, '')); }
+			    ygt_fund "widget/table-column" { title = "Fund"; fieldname=a_cost_center; width=80; style=bold; font_size=16; caption_value=runclient(:ygifts_osrc:a_cc_desc); }
+
+			    ycol_period_repeat "widget/repeat"
+				{
+				sql  = "select year=datepart(year,:p:a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p where :a_ledger_number = (select first(:cs:a_ledger_number) from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name() and :cs:p_staff_partner_key = :s:p_partner_key) and :a_summary_only = 1 and :a_start_date < getdate() and :a_start_date > dateadd(year, -12, getdate()) order by :p:a_start_date asc limit 12";
+
+				ycol_period "widget/table-column" { title=runserver('' + :ycol_period_repeat:year); fieldname=runserver("year" + :ycol_period_repeat:year); align=right; font_name=courier; style=bold; font_size=12; width=80; }
+				}
+
+			    ygt_total "widget/table-column" { title = "Total"; value=runclient(:ygifts_osrc:total); width=80; style=bold; font_name=courier; align=right; font_size=12; }
+
+			    ygiver_detail "widget/table-row-detail"
+				{
+				display_for=runclient(:ygifts_osrc:p_partner_key is not null);
+				height=180;
+				width=1172;
+
+				ygiver_detail_cmp "widget/component"
+				    {
+				    x=0; y=10; height=160; width=1172;
+				    path="gift_detail.cmp";
+				    summary_osrc = ygifts_osrc;
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+

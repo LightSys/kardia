@@ -1,0 +1,215 @@
+$Version=2$
+gift_import_report "system/report"
+    {
+    title = "Gift Import Report";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=110;
+    pageheight=51;
+    marginleft=4.0;
+    marginright=4.0;
+    margintop=2;
+    marginbottom=2;
+
+    // Give it an intelligent filename
+    filename = runserver("gift_import_" + :this:period + condition(:this:document_format2 == 'text/csv', '.csv', '.pdf') );
+
+    // Parameters for GL Fund Balance
+    ledger "report/parameter" { type=string; default=null; }
+    period "report/parameter" { type=string; default=null; }
+    document_format2 "report/parameter" { type=string; default="application/pdf"; }
+
+
+    // Get name of ledger
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    // Get period metadata (incl. start/end dates)
+    period_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		WHERE
+			:p:a_period = :this:period and
+			:p:a_ledger_number = :this:ledger
+		";
+	}
+
+    // Query to retrieve list of gifts during this period
+    gift_qy "report/query"
+	{
+	sql = "	SELECT
+			:eg:i_eg_gift_trx_date,
+			:eg:i_eg_gift_date,
+			:eg:i_eg_gift_interval,
+			card_number = condition(:eg:i_eg_gift_pmt_type == 'ACH', 'EFT-', condition(:eg:i_eg_gift_pmt_type == 'Visa', 'VISA-', condition(:eg:i_eg_gift_pmt_type == 'MasterCard', 'MC-', condition(:eg:i_eg_gift_pmt_type == 'Discover', 'DISC-', '')))) + :eg:i_eg_gift_lastfour,
+			:eg:i_eg_status,
+			:eg:i_eg_returned_status,
+			:eg:i_eg_gift_amount,
+			:eg:i_eg_net_amount,
+			:eg:i_eg_deposit_date,
+			:eg:i_eg_deposit_gross_amt,
+			:eg:i_eg_deposit_net_amt,
+			:eg:p_donor_partner_key,
+			donor_name = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			:eg:i_eg_donor_name,
+			:eg:i_eg_desig_name,
+			:c:a_cost_center,
+			:c:a_cc_desc,
+			this_period = :period_qy:a_period,
+			gift_period = :bg:a_period,
+			dep_period = :bd:a_period,
+			fee_period = :bf:a_period
+		FROM
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_batch/rows bg,
+			/apps/kardia/data/Kardia_DB/a_batch/rows bd,
+			/apps/kardia/data/Kardia_DB/a_batch/rows bf
+		WHERE
+			:eg:a_ledger_number = :this:ledger and
+			:eg:i_eg_gift_trx_date >= :period_qy:a_start_date and
+			:eg:i_eg_gift_trx_date <= :period_qy:a_end_date and
+			:p:p_partner_key =* :eg:p_donor_partner_key and
+			:c:a_ledger_number =* :eg:a_ledger_number and
+			:c:a_cost_center =* :eg:a_cost_center and
+			:bg:a_ledger_number =* :eg:a_ledger_number and
+			:bg:a_batch_number =* :eg:a_batch_number and
+			:bd:a_ledger_number =* :eg:a_ledger_number and
+			:bd:a_batch_number =* :eg:a_batch_number_deposit and
+			:bf:a_ledger_number =* :eg:a_ledger_number and
+			:bf:a_batch_number =* :eg:a_batch_number_fees
+		ORDER BY
+			:eg:i_eg_gift_trx_date
+		";
+	gift_total "report/aggregate" { compute="sum(:i_eg_gift_amount)"; reset=0; }
+	net_total "report/aggregate" { compute="sum(isnull(:i_eg_net_amount, :i_eg_gift_amount))"; reset=0; }
+	dep_next_total "report/aggregate" { compute="isnull(sum(:i_eg_gift_amount), $0)"; where=":gift_period < :dep_period"; reset=0; }
+	dep_prev_total "report/aggregate" { compute="isnull(sum(:i_eg_gift_amount), $0)"; where=":gift_period > :dep_period"; reset=0; }
+	dep_none_total "report/aggregate" { compute="isnull(sum(:i_eg_gift_amount), $0)"; where=":gift_period = :this_period and :dep_period is null"; reset=0; }
+	}
+
+    // Gift import list - entire report
+    form "report/form"
+	{
+	source = ledger_qy,period_qy;
+
+	hdrimg "report/image"
+	    {
+	    x=89.85;y=0;height=4;width=12.15;
+	    source = /apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=102; height=4;
+	    font=helvetica;
+	    align=left;
+	    t_d0 "report/data" { fontsize=15; style=bold; value = "Gift Import Report\n"; }
+	    t_d2 "report/data" { fontsize=10; style=bold; value = runserver("For: " + :ledger_qy:a_ledger_desc + "\n"); }
+	    t_d1 "report/data" { fontsize=10; style=bold; value = runserver("Reporting Period: " + :period_qy:a_period_desc + "\n"); }
+	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
+	    }
+	
+	// Table for gift list
+	gift_table "report/table"
+	    {
+	    x=0; width=102; height=0;
+	    columns=10;
+	    widths=5,23,19,7,6,7,6,6,6,8;
+	    colsep=1;
+	    nullformat="";
+	    moneyformat = "-###,###,##0.00";
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    source=gift_qy;
+
+	    hdr "report/table-row"
+		{
+		header = yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		tg_date "report/table-cell" { value='Gift Date'; }
+		tg_donor "report/table-cell" { value='Donor'; }
+		tg_desig "report/table-cell" { value='Designation'; }
+		tg_method "report/table-cell" { value='Method'; }
+		tg_freq "report/table-cell" { value='Freq.'; }
+		tg_amount "report/table-cell" { value='Amount'; align=right; }
+		tg_fper "report/table-cell" { value='Fees'; align=right; }
+		tg_gper "report/table-cell" { value='Gift Batch'; }
+		tg_dper "report/table-cell" { value='Dep. Batch'; }
+		tg_note "report/table-cell" { value='Notes'; }
+		}
+
+	    onegift "report/table-row"
+		{
+		allowbreak=no;
+		fontsize=9;
+		font=helvetica;
+		//margintop = 0.8;
+
+		g_date "report/table-cell" { value=runserver(:gift_qy:i_eg_gift_trx_date); font=courier; dateformat = "dd-MMM"; }
+		g_donor "report/table-cell" { value=runserver(isnull(:gift_qy:p_donor_partner_key + ' ' + :gift_qy:donor_name, :gift_qy:i_eg_donor_name)); }
+		g_desig "report/table-cell" { value=runserver(isnull(:gift_qy:a_cost_center + ' ' + :gift_qy:a_cc_desc, :gift_qy:i_eg_desig_name)); }
+		g_method "report/table-cell" { value=runserver(:gift_qy:card_number); }
+		g_freq "report/table-cell" { value=runserver(lower(:gift_qy:i_eg_gift_interval)); }
+		g_amount "report/table-cell" { value=runserver(:gift_qy:i_eg_gift_amount); font=courier; align=right; }
+		g_fees "report/table-cell" { value=runserver(:gift_qy:i_eg_gift_amount - :gift_qy:i_eg_net_amount); font=courier; align=right; }
+		g_gper "report/table-cell" { value=runserver(:gift_qy:gift_period); }
+		g_dper "report/table-cell" { value=runserver(:gift_qy:dep_period); }
+		g_notes "report/table-cell" { value=runserver(
+							condition(:gift_qy:donor_name is null, 'A,', '') +
+							condition(:gift_qy:a_cc_desc is null, 'B,', '') +
+							condition(:gift_qy:gift_period is not null and :gift_qy:dep_period is not null and :gift_qy:gift_period != :gift_qy:dep_period, 'C,', '') +
+							condition(:gift_qy:i_eg_status = 'pending', 'pend,', '') + 
+							condition(:gift_qy:i_eg_status = 'returned', 'RET,', '')
+							- ','
+							);
+						font=courier; }
+		}
+
+	    all_total "report/table-row"
+		{
+		summary = yes;
+		allowbreak=no;
+		fontsize=9;
+		style=bold;
+		font=helvetica;
+		topborder=0.05;
+		marginbottom = 0.2;
+
+		s_date "report/table-cell" { value=runserver(''); }
+		s_donor "report/table-cell" { value=runserver(''); }
+		s_desig "report/table-cell" { value=runserver(''); }
+		s_method "report/table-cell" { value=runserver(''); }
+		s_freq "report/table-cell" { value=runserver('TOTAL:'); }
+		s_amount "report/table-cell" { value=runserver(:gift_qy:gift_total); font=courier; align=right; }
+		s_fees "report/table-cell" { value=runserver(:gift_qy:gift_total - :gift_qy:net_total); font=courier; align=right; }
+		s_gper "report/table-cell" { value=runserver('' + round((:gift_qy:gift_total - :gift_qy:net_total) / :gift_qy:gift_total * 100, 2) + '%'); font=courier; }
+		s_dper "report/table-cell" { value=runserver(''); }
+		s_note "report/table-cell" { value=runserver(''); }
+		}
+	    }
+
+	rpt_footer "report/area"
+	    {
+	    x=0; width=102; height=4;
+	    font=helvetica;
+	    align=left;
+	    f_d0 "report/data" { fontsize=9; value = runserver("\nReconciliation Amounts:\n" + 
+			"\nGifts posted next month but deposited this month: \t" + :gift_qy:dep_prev_total + 
+			"\nGifts posted this month but deposited next month: \t" + :gift_qy:dep_next_total + 
+			"\nGifts posted this month but not yet deposited: \t" + :gift_qy:dep_none_total + 
+			"\n"); }
+	    f_d1 "report/data" { fontsize=9; value = "\nNotes Key:\n\nA - Gift has not yet been assigned a donor in Kardia yet.\nB - Gift has not yet been assigned a designation in Kardia yet.\nC - Gift batch period and Deposit batch period are different.\npend - Gift is pending from the online giving service (has not yet settled).\nRET - Gift was returned/declined.\n"; }
+	    }
+	}
+    }

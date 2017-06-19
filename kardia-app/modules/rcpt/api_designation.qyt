@@ -514,4 +514,24 @@ api_designation "system/querytree"
 		}
 	    }
 	}
+
+    GivingInfo "system/querytree"
+	{
+	text = "GivingInfo";
+
+	givinglist "system/querytree"
+	    {
+	    sql = " select
+			giving_url = :egu:i_eg_url,
+			giving_ledger = :l:a_ledger_number,
+			giving_ledger_desc = :l:a_ledger_desc
+		    from
+			identity /apps/kardia/data/Kardia_DB/a_ledger/rows l,
+			/apps/kardia/data/Kardia_DB/i_eg_giving_url/rows egu
+		    where
+			:egu:a_ledger_number =* :l:a_ledger_number and
+			:egu:a_cost_center = '*'
+		    ";
+	    }
+	}
     }

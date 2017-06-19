@@ -49,6 +49,9 @@ popover_collab "widget/component-decl"
 			    :c:e_collaborator,
 			    :c:p_partner_key,
 			    :c:e_collab_type_id,
+			    :c:e_collaborator_status,
+			    :c:e_is_automatic,
+			    status = :cst:text,
 			    :ct:e_collab_type_label,
 			    :ct:e_collab_type_desc,
 			    :c:s_date_created,
@@ -74,10 +77,12 @@ popover_collab "widget/component-decl"
 			from
 			    identity /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
 			    /apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct,
-			    /apps/kardia/data/Kardia_DB/p_partner/rows p
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			    /apps/kardia/data/Kardia_DB/_e_collaborator_status/rows cst
 			where
 			    :ct:e_collab_type_id = :c:e_collab_type_id and
-			    :p:p_partner_key = :c:e_collaborator
+			    :p:p_partner_key = :c:e_collaborator and
+			    :cst:tag = :c:e_collaborator_status
 			";
 		baseobj = "/apps/kardia/data/Kardia_DB/e_collaborator/rows";
 		replicasize=50;
@@ -107,20 +112,20 @@ popover_collab "widget/component-decl"
 
 		    editcollab_detail "widget/table-row-detail"
 			{
-			height=34;
+			height=68;
 			width=468;
 
-			editcollab_hbox "widget/hbox"
+			editcollab_form "widget/form"
 			    {
-			    x=4; y=10; height=24; width=460;
-			    spacing=10;
+			    allow_obscure=yes;
 
-			    editcollab_form "widget/form"
+			    refresh_profile_on_save2 "widget/connector" { event=DataSaved; target=popover_collab; action=CollabChanged; }
+			    refresh_profile_on_delete "widget/connector" { event=DataDeleted; target=popover_collab; action=CollabChanged; }
+
+			    editcollab_hbox "widget/hbox"
 				{
-				allow_obscure=yes;
-
-				refresh_profile_on_save2 "widget/connector" { event=DataSaved; target=popover_collab; action=CollabChanged; }
-				refresh_profile_on_delete "widget/connector" { event=DataDeleted; target=popover_collab; action=CollabChanged; }
+				x=4; y=10; height=24; width=460;
+				spacing=10;
 
 				editcollab_type "widget/component"
 				    {
@@ -133,6 +138,8 @@ popover_collab "widget/component-decl"
 				    width=250;
 				    label_width=100;
 				    numdisplay=10;
+
+				    role_hints "widget/hints" { style=notnull; }
 
 				    save_on_data_change "widget/connector" { event=DataChange; event_delay=0.05; target=editcollab_form; action=Save; }
 
@@ -154,15 +161,57 @@ popover_collab "widget/component-decl"
 				    on_delete "widget/connector" { event=Click; target=editcollab_form; action=Delete; }
 				    }
 
-				editcollab_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				editcollab_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; visual=no; }
+				}
+
+			    editstat_hbox "widget/hbox"
+				{
+				x=4; y=44; height=24; width=460;
+				spacing=10;
+
+				editstat_type "widget/component"
+				    {
+				    field=e_collaborator_status;
+				    path="/sys/cmp/smart_field.cmp";
+				    height=24;
+				    text="Change Status:";
+				    ctl_type=dropdown;
+				    sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_e_collaborator_status/rows order by :text";
+				    width=250;
+				    label_width=100;
+				    numdisplay=10;
+
+				    stat_hints "widget/hints" { style=notnull; }
+
+				    save_on_data_change2 "widget/connector" { event=DataChange; event_delay=0.05; target=editcollab_form; action=Save; }
+
+				    discard_on_lose_focus2 "widget/connector" { event=LoseFocus; event_delay=0.4; target=editcollab_form; action=Discard; }
+				    }
+
+				sep "widget/autolayoutspacer" { width=16; }
+
+				keep_collab "widget/textbutton"
+				    {
+				    height=24; width=130;
+				    text="Keep";
+				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				    fgcolor1=white;
+				    fgcolor2=black;
+				    disable_color="#334466";
+				    enabled=runclient(:editcollab_form:is_editable and :collab_osrc:e_is_automatic = 1);
+
+				    on_keep "widget/connector" { event=Click; target=collab_osrc; action=Modify; e_is_automatic=runclient(0); }
+				    }
 				}
 			    }
 			}
 
-		    t_img "widget/table-column" { fieldname="img"; width=16; type=image; image_maxwidth=12; image_maxheight=12; align=center; }
-		    t_name "widget/table-column" { fieldname="nametxt"; width=240; style=bold; }
+		    t_img "widget/table-column" { fieldname="img"; width=22; type=image; image_maxwidth=16; image_maxheight=16; align=center; }
+		    t_name "widget/table-column" { fieldname="nametxt"; width=160; style=bold; }
 		    t_editrole "widget/table-column" { width=16; value=runclient('/apps/kardia/images/icons/pencil.png'); type=image; }
-		    t_role "widget/table-column" { fieldname="e_collab_type_desc"; width=180; style=bold; textcolor="#334466"; }
+		    t_role "widget/table-column" { fieldname="e_collab_type_desc"; width=140; style=bold; textcolor="#334466"; }
+		    t_stat "widget/table-column" { fieldname="status"; width=74; style=bold; textcolor="#334466"; }
+		    t_auto "widget/table-column" { value=runclient(condition(:collab_osrc:e_is_automatic, 'auto', '')); width=40; style=bold; textcolor="#334466"; }
 		    }
 
 		add_collab_form "widget/form"
@@ -227,6 +276,8 @@ popover_collab "widget/component-decl"
 
 
 		    collab_partner "widget/variable" { fieldname=p_partner_key; collab_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
+		    collab_stat "widget/variable" { fieldname=e_collaborator_status; collab_stat_hints "widget/hints" { default=runclient('A'); } }
+		    collab_auto "widget/variable" { fieldname=e_is_automatic; collab_auto_hints "widget/hints" { default=runclient(0); } }
 		    collab_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 
 		    collab_btns "widget/hbox"

@@ -4,11 +4,700 @@ advanced_search "widget/component-decl"
     width=700;
     height=580;
 
-    coming_soon "widget/label"
+    // Advanced Search - this component allows the user to manage their saved
+    // advanced searchs, to create new ones, and to modify the criteria for
+    // their searches.
+    //
+    // The results of an advanced search show up in the search sidebar, using
+    // an alternate osrc and table that are displayed when an advanced search
+    // runs.  The search-by-editbox osrc and table in the sidebar are then only
+    // displayed if the user utilizes that quick-search mechanism.
+    //
+
+    // This event is triggered when we have a completed result set
+    AdvancedResults "widget/component-decl-event" { }
+
+    // Access to the user's info as a collaborator
+    collaborator_osrc "widget/parameter" { type=object; }
+
+    adv_hbox "widget/hbox"
 	{
-	x=0; y=280; width=700; height=20;
-	align=center;
-	style=italic;
-	text="Coming soon...";
+	x=0; y=0;
+	width=700; height=580;
+	spacing=10;
+
+	// The criteria column allows the user to set up the criteria for
+	// the search, and then actually execute the search.
+	//
+	criteria_vbox "widget/vbox"
+	    {
+	    width=430;
+	    spacing=8;
+
+	    criteria_hdr "widget/pane"
+		{
+		style=flat; height=13; 
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		border_radius=4;
+
+		criteria_label "widget/label"
+		    {
+		    x=0; y=0;
+		    width=450; height=12;
+		    text="Search Criteria Setup";
+		    align=center;
+		    style=bold;
+		    font_size=11;
+		    fgcolor=white;
+		    }
+		}
+
+	    criteria_osrc "widget/osrc"
+		{
+		p_search_id "widget/parameter" { type=integer; }
+		sql = "	-- Check to make sure first in the list is marked as 'A' (add / start-with)
+			update
+			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss
+			set
+			    :ss:p_stage_op = condition(:ss:p_stage_op != 'A' and (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence) == 0, 'A', :ss:p_stage_op)
+			where
+			    :ss:p_search_id = :parameters:p_search_id
+			;
+
+			select
+			    :ss:p_search_id,
+			    :ss:p_search_stage_id,
+			    :ss:p_stage_type,
+			    :ss:p_stage_op,
+			    :ss:p_result_count,
+			    :ss:p_sequence,
+			    :ss:s_date_created,
+			    :ss:s_created_by,
+			    :ss:s_date_modified,
+			    :ss:s_modified_by,
+			    prevcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence),
+			    stage_description = eval(:p:stage_description_expr),
+			    :p:icon,
+			    :p:stage_label
+			from
+			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
+			    object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' p
+			where
+			    :p:stage_type = :ss:p_stage_type and
+			    :ss:p_search_id = :parameters:p_search_id
+			order by
+			    :p_sequence asc
+			";
+		baseobj="/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows";
+		readahead=50;
+		replicasize=50;
+
+		on_reordered "widget/connector" { event=Sequenced; target=criteria_osrc; action=Refresh; }
+
+		criteria_seq "widget/rule"
+		    {
+		    ruletype=osrc_sequence;
+		    fieldname=p_sequence;
+		    }
+
+		criteria_link "widget/rule"
+		    {
+		    ruletype=osrc_relationship;
+		    target=searches_osrc;
+		    key_1=p_search_id;
+		    key_objname=ss;
+		    target_key_1=p_search_id;
+		    revealed_only=yes;
+		    }
+
+		criteria_form "widget/form"
+		    {
+		    allow_query=no;
+		    allow_new=no;
+		    confirm_delete=no;
+
+		    cri_record_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; visual=no; }
+		    }
+
+		criteria_table "widget/table"
+		    {
+		    height=483;
+		    min_rowheight=16;
+		    max_rowheight=64;
+		    mode=dynamicrow;
+		    allow_selection = yes;
+		    show_selection = yes;
+		    initial_selection = yes;
+		    demand_scrollbar = yes;
+		    overlap_scrollbar = yes;
+		    colsep = 0;
+		    titlebar = no;
+		    row_border_radius=6;
+		    rowhighlight_bgcolor = "#f0f0f0";
+		    rowhighlight_shadow_color = "#6080c0";
+		    rowhighlight_shadow_location = 'inside';
+		    rowhighlight_shadow_radius = 10;
+		    //rowhighlight_bgcolor = "#fff090";
+		    textcolorhighlight = "#000000";
+		    inner_padding = 4;
+		    cellvspacing = 2;
+		    row1_bgcolor = "#ffffff";
+		    row2_bgcolor = "#ffffff";
+
+		    ct_icon "widget/table-column" { title=""; width=32; fieldname=icon; type=image; image_maxwidth=24; image_maxheight=24; }
+		    ct_op "widget/table-column" { title=""; width=150; value=runclient(condition(:criteria_osrc:prevcnt = 0, '', condition(:criteria_osrc:p_stage_op = 'A', 'Add ', condition(:criteria_osrc:p_stage_op = 'E', 'Exclude ', 'Require '))) + :criteria_osrc:stage_label); style=bold; font_size=15; }
+		    ct_desc "widget/table-column" { title=""; width=250; fieldname=stage_description; wrap=yes; }
+
+
+		    criteria_op_detail "widget/table-row-detail"
+			{
+			width=430;
+			height=34;
+			criteria_op_dd "widget/component"
+			    {
+			    path="/sys/cmp/smart_field.cmp";
+			    form=criteria_form;
+			    ctl_type=dropdown;
+			    x=13; y=10;
+			    width=250;
+			    label_width=150;
+			    text = "Search By:";
+			    height=24;
+			    field=p_stage_op;
+			    sql = " select label='Start with these matching results', value='A', default=1, grp='A';
+				    select label='Add people to the results', value='A', default=0, grp='B';
+				    select label='Require the results match', value='R', default=1, grp='B';
+				    select label='Exclude from results', value='E', default=0, grp='B'
+				    ";
+			    op_dd_hints "widget/hints" { style=notnull; }
+
+			    on_row_change "widget/connector"
+				{
+				source=criteria_osrc;
+				event=DataFocusChanged;
+				action=SetGroup;
+				Group=runclient(condition(:criteria_form:recid == 1, 'A', 'B'));
+				}
+			    }
+			}
+
+		    criteria_detail_repeat "widget/repeat"
+			{
+			sql = "select path = :cx__pathname, :stage_label, :stage_type, :height  from object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' having :height > 0 order by :sequence";
+
+			criteria_detail "widget/table-row-detail"
+			    {
+			    width=430;
+			    height=runserver(:criteria_detail_repeat:height + 20 + 28);
+			    display_for=runclient(runserver(:criteria_detail_repeat:stage_type) == :criteria_osrc:p_stage_type);
+
+			    criteria_params_osrc "widget/osrc"
+				{
+				sql = "	select
+					    *
+					from
+					    /apps/kardia/modules/crm/advanced_search_params.qyp
+					limit
+					    1
+					";
+				baseobj = "/apps/kardia/modules/crm/advanced_search_params.qyp";
+				readahead=2;
+				replicasize=2;
+
+
+				criteria_params_link "widget/rule"
+				    {
+				    ruletype=osrc_relationship;
+				    target=criteria_osrc;
+				    key_1 = p_search_id;
+				    target_key_1 = p_search_id;
+				    key_2 = p_search_stage_id;
+				    target_key_2 = p_search_stage_id;
+				    revealed_only=yes;
+				    }
+
+				criteria_params_form "widget/form"
+				    {
+				    allow_query=no;
+				    confirm_delete=no;
+
+				    on_save_refresh_parent "widget/connector" { event=DataSaved; target=criteria_osrc; action=RefreshObject; }
+
+				    criteria_options_hbox "widget/hbox"
+					{
+					x=10; y=10;
+					width=410;
+					height=runserver(:criteria_detail_repeat:height);
+					spacing=10;
+
+					criteria_detail_cmp "widget/component"
+					    {
+					    width=410;
+					    height=runserver(:criteria_detail_repeat:height);
+					    path=runserver(:criteria_detail_repeat:path);
+					    criteria_osrc = criteria_osrc;
+					    }
+					}
+
+				    ctls_hbox "widget/hbox"
+					{
+					x=10;
+					y=runserver(:criteria_detail_repeat:height + 14);
+					height=24;
+					width=410;
+					align=center;
+					spacing=8;
+
+					savecri_btn "widget/component"
+					    {
+					    height=24; width=70;
+					    fl_width=50;
+					    path="save_button.cmp";
+					    save_mode=osrc;
+					    osrc=criteria_osrc;
+					    }
+					cancelcri_btn "widget/component"
+					    {
+					    height=24; width=70;
+					    fl_width=50;
+					    path="cancel_button.cmp";
+					    cancel_mode=osrc;
+					    osrc=criteria_osrc;
+					    }
+					removecri_btn "widget/textbutton"
+					    {
+					    height=24; width=70;
+					    fl_height=0;
+					    fl_width=50;
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+					    enabled = runclient(not :criteria_osrc:is_client_savable);
+					    text = "Remove";
+
+					    removecri_cn_1 "widget/connector"
+						{
+						event=Click;
+						target=delete_criteria_osrc;
+						action=QueryParam;
+						p_search_id=runclient(:criteria_osrc:p_search_id);
+						p_search_stage_id=runclient(:criteria_osrc:p_search_stage_id);
+						}
+					    }
+
+					sep "widget/autolayoutspacer" { width=20; }
+
+					up_btn "widget/textbutton"
+					    {
+					    width=70;
+					    height=24;
+					    image="/sys/images/ico13a.gif";
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+					    image_position=left;
+					    text = " Up";
+					    enabled=runclient(:criteria_form:recid != 1);
+
+					    go_up "widget/connector" { event=Click; target=criteria_osrc; action=SeqBackward; }
+					    }
+					dn_btn "widget/textbutton"
+					    {
+					    width=70;
+					    height=24;
+					    image="/sys/images/ico12a.gif";
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+					    image_position=left;
+					    text = " Down";
+					    enabled=runclient(:criteria_form:recid != :criteria_form:lastrecid);
+
+					    go_dn "widget/connector" { event=Click; target=criteria_osrc; action=SeqForward; }
+					    }
+					}
+
+				    record_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=criteria_params_form; }
+				    }
+				}
+			    }
+			}
+		    }
+
+		// We need a special process for deletion, since we need to ensure that the
+		// first criteria on the list complies with the 'A' (add / start-with) setting.
+		delete_criteria_osrc "widget/osrc"
+		    {
+		    d_p_search_id "widget/parameter" { param_name=p_search_id; type=integer; }
+		    d_p_search_stage_id "widget/parameter" { param_name=p_search_stage_id; type=integer; }
+
+		    sql = " -- Delete the criteria parameters, if any
+			    delete
+				/apps/kardia/modules/crm/advanced_search_params.qyp
+			    where
+				:p_search_id = :parameters:p_search_id and
+				:p_search_stage_id = :parameters:p_search_stage_id
+			    ;
+
+			    -- Delete the criteria item itself
+			    delete
+				/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows
+			    where
+				:p_search_id = :parameters:p_search_id and
+				:p_search_stage_id = :parameters:p_search_stage_id
+			    ;
+		    
+			    -- Check to make sure first in the list is marked as 'A' (add / start-with)
+			    update
+				identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss
+			    set
+				:ss:p_stage_op = condition(:ss:p_stage_op != 'A' and (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence) == 0, 'A', :ss:p_stage_op)
+			    where
+				:ss:p_search_id = :parameters:p_search_id
+			    ";
+		    replicasize=2;
+		    readahead=2;
+		    autoquery=never;
+
+		    on_complete_do_refresh "widget/connector" { event=EndQuery; target=criteria_osrc; action=Refresh; }
+		    }
+
+		add_criteria_pane "widget/pane"
+		    {
+		    height=36;
+		    style=bordered;
+		    border_radius=8;
+		    border_color="#6080c0";
+
+		    add_criteria_btns "widget/hbox"
+			{
+			x=10; y=6;
+			height=24;
+			width=408;
+			align=center;
+			spacing=8;
+			row_height=24;
+			fl_width=100;
+
+			add_criteria_label "widget/label"
+			    {
+			    width=100;
+			    y=2;
+			    text="Add Criteria:";
+			    align=right;
+			    style=bold;
+			    }
+
+			add_criteria_repeat "widget/repeat"
+			    {
+			    sql = "select path = :cx__pathname, :stage_label, :stage_type  from object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' order by :sequence";
+			    
+			    add_criteria_btn "widget/textbutton"
+				{
+				height=24; width=90;
+				fl_width=0;
+				background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				fgcolor1=white;
+				fgcolor2=black;
+				disable_color="#334466";
+				text=runserver(:add_criteria_repeat:stage_label);
+				enabled=runclient(:searches_osrc:p_search_id is not null and not :criteria_osrc:is_client_savable);
+
+				on_add_criteria "widget/connector"
+				    {
+				    event=Click;
+				    target=criteria_osrc;
+				    action=Create;
+				    p_stage_type=runclient('' + runserver(:add_criteria_repeat:stage_type));
+				    p_stage_op=runclient(condition(:criteria_osrc:p_stage_op is null, 'A', 'R'));
+				    p_result_count=runclient(0);
+				    s_date_created=runclient(getdate());
+				    s_created_by=runclient(user_name());
+				    s_date_modified=runclient(getdate());
+				    s_modified_by=runclient(user_name());
+				    }
+				}
+			    }
+
+			addsep "widget/autolayoutspacer" { fl_width=100; width=11; }
+			}
+		    }
+
+		horizsep "widget/image"
+		    {
+		    condition=0;
+		    height=1;
+		    fl_height=0;
+		    fl_width=100;
+		    source="/apps/kardia/images/bg/lsblue_horizsep.png";
+		    }
+
+		run_search_hbox "widget/hbox"
+		    {
+		    height=24;
+		    align=center;
+
+		    run_search_btn "widget/textbutton"
+			{
+			height=24; width=130;
+			text = "Do Search";
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+			enabled=runclient(:criteria_osrc:p_search_stage_id is not null and not :criteria_osrc:is_client_savable);
+
+			on_do_search "widget/connector"
+			    {
+			    event=Click;
+			    target=run_search_osrc;
+			    action=QueryParam;
+			    p_search_id = runclient(:searches_osrc:p_search_id);
+			    }
+			}
+		    }
+
+		run_search_osrc "widget/osrc"
+		    {
+		    r_p_search_id "widget/parameter" { param_name=p_search_id; type=integer; }
+		    sql = " select
+				1
+			    from
+				/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
+				expression ( '/apps/kardia/modules/crm/plugin_crm_search_' + :ss:p_stage_type + '.qy?search_id=' + :ss:p_search_id + '&cur_stage=' + :ss:p_search_stage_id + isnull('&prev_stage=' + (select :ss2:p_search_stage_id from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence order by :ss2:p_sequence desc limit 1) , ''))
+			    where
+				:ss:p_search_id = :parameters:p_search_id
+			    order by
+				:ss:p_sequence asc
+			    having
+				1=0
+			    ;
+
+			    select
+				:ss2:p_search_id,
+				:ss2:p_search_stage_id
+			    from
+				/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2
+			    where
+				:ss2:p_search_id = :parameters:p_search_id 
+			    order by
+				:ss2:p_sequence desc
+			    limit
+				1
+			    ";
+		    replicasize=2;
+		    readahead=2;
+		    autoquery=never;
+
+		    on_search_done "widget/connector"
+			{
+			event=EndQuery;
+			target=advanced_search;
+			action=AdvancedResults;
+			session_id=runclient(:run_search_osrc:p_search_id);
+			stage_id=runclient(:run_search_osrc:p_search_stage_id);
+			}
+		    }
+		}
+	    }
+
+	vertsep "widget/image"
+	    {
+	    width=1;
+	    fl_height=100;
+	    fl_width=0;
+	    source="/apps/kardia/images/bg/lsblue_vertsep.png";
+	    }
+
+	// This is the saved-searches column, allowing the user to start a new
+	// search or resume or re-run a previously saved search.
+	//
+	searches_vbox "widget/vbox"
+	    {
+	    width=249;
+	    spacing=8;
+	    fl_width=0;
+
+	    searches_hdr "widget/pane"
+		{
+		style=flat; height=13; 
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		border_radius=4;
+
+		searches_label "widget/label"
+		    {
+		    x=0; y=0;
+		    width=249; height=12;
+		    text="Saved Searches";
+		    align=center;
+		    style=bold;
+		    font_size=11;
+		    fgcolor=white;
+		    }
+		}
+
+	    searches_osrc "widget/osrc"
+		{
+		my_id "widget/parameter" { type=string; default=runclient(:collaborator_osrc:p_partner_key); }
+		sql = "	select
+			    :ps:p_search_id,
+			    :ps:p_search_desc,
+			    :ps:p_search_visibility,
+			    :ps:p_is_temporary,
+			    :ps:s_date_created,
+			    :ps:s_created_by,
+			    :ps:s_date_modified,
+			    :ps:s_modified_by,
+			    whom = 'Created by ' + isnull(condition(:p:p_partner_key == :parameters:my_id, 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' ', '') + 'on ' + substring(convert(string,:ps:s_date_created),1,11)
+			from
+			    identity /apps/kardia/data/Kardia_DB/p_partner_search/rows ps,
+			    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p
+			where
+			    (:ps:s_created_by = user_name() or
+			     :ps:p_search_visibility = 'A') and
+			    (:ps:p_is_temporary = 0 or
+			     :ps:s_date_modified >= dateadd(day, -1, getdate())) and
+			    :s:p_kardia_login = :ps:s_created_by and
+			    :p:p_partner_key = :s:p_partner_key
+			order by
+			    :ps:s_date_modified desc
+			";
+		baseobj="/apps/kardia/data/Kardia_DB/p_partner_search/rows";
+		readahead=30;
+		replicasize=30;
+		autoquery=onfirstreveal;
+
+		searches_table "widget/table"
+		    {
+		    height=527;
+		    min_rowheight=16;
+		    max_rowheight=64;
+		    mode=dynamicrow;
+		    allow_selection = yes;
+		    show_selection = yes;
+		    initial_selection = yes;
+		    demand_scrollbar = yes;
+		    overlap_scrollbar = yes;
+		    colsep = 0;
+		    titlebar = no;
+		    row_border_radius=6;
+		    //rowhighlight_bgcolor = "#fff090";
+		    //rowhighlight_bgcolor = white;
+		    //rowhighlight_shadow_color = "#f0e048";
+		    textcolorhighlight = "#000000";
+		    rowhighlight_bgcolor = "#f0f0f0";
+		    rowhighlight_shadow_color = "#6080c0";
+		    rowhighlight_shadow_location = 'inside';
+		    rowhighlight_shadow_radius = 10;
+		    inner_padding = 4;
+		    cellvspacing = 2;
+		    row1_bgcolor = "#ffffff";
+		    row2_bgcolor = "#ffffff";
+
+		    s_name "widget/table-column" { title=""; fieldname=p_search_desc; caption_value=runclient(:searches_osrc:whom); width=229; caption_textcolor="#a0a0a0"; style=bold; font_size=15; caption_style=italic; }
+
+		    edit_a_search_detail "widget/table-row-detail"
+			{
+			width=249;
+			height=120;
+
+			edit_a_search_form "widget/form"
+			    {
+			    allow_query=no;
+			    allow_new=no;
+
+			    record_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; visual=no; }
+
+			    edit_a_search_vbox "widget/vbox"
+				{
+				x=10; y=16; width=227; height=100;
+				spacing=4;
+				fl_height=0;
+
+				search_name "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; text="Description:"; field=p_search_desc; }
+				search_vis "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; text="Shared?"; field=p_search_visibility; ctl_type=dropdown; sql="select label='Private', value='P'; select label='Visible to All', value='A'"; vis_hints "widget/hints" { style=notnull; } }
+				search_temp "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; text="Temporary?"; field=p_is_temporary; ctl_type=checkbox; temp_hints "widget/hints" { style=notnull; } }
+
+				edit_a_search_ctls "widget/hbox"
+				    {
+				    height=24;
+				    align=center;
+				    spacing=8;
+
+				    savesearch_btn "widget/component"
+					{
+					height=24; width=70;
+					fl_height=0;
+					fl_width=50;
+					path="save_button.cmp";
+					}
+				    cancelsearch_btn "widget/component"
+					{
+					height=24; width=70;
+					fl_height=0;
+					fl_width=50;
+					path="cancel_button.cmp";
+					}
+				    removesearch_btn "widget/textbutton"
+					{
+					height=24; width=70;
+					fl_height=0;
+					fl_width=50;
+					background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					fgcolor1=white;
+					fgcolor2=black;
+					disable_color="#334466";
+					enabled = runclient(not :edit_a_search_form:is_savable);
+					text = "Remove";
+
+					removesearch_cn "widget/connector"
+					    {
+					    event=Click;
+					    target=edit_a_search_form;
+					    action=Delete;
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+
+		newsearch_btn_hbox "widget/hbox"
+		    {
+		    height=24;
+		    align=center;
+
+		    newsearch_btn "widget/textbutton"
+			{
+			height=24; width=130;
+			text = "New Search";
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_new "widget/connector"
+			    {
+			    event=Click;
+			    target=searches_osrc;
+			    action=Create;
+			    p_search_desc=runclient('(new search)');
+			    p_search_visibility=runclient('P');
+			    p_is_temporary=1;
+			    s_date_created=runclient(getdate());
+			    s_created_by=runclient(user_name());
+			    s_date_modified=runclient(getdate());
+			    s_modified_by=runclient(user_name());
+			    }
+			}
+		    }
+		}
+	    }
 	}
     }
+

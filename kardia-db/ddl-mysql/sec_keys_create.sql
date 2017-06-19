@@ -178,6 +178,18 @@ alter table e_ack
 alter table e_ack
 	add constraint e_ack_par3_idx unique  (p_dn_partner_key,e_whom,e_ack_id);
 
+alter table e_text_search_word
+	add constraint e_tsw_word_idx unique  (e_word, e_word_id);
+
+alter table h_work_register
+	add constraint h_workreg_ben_idx unique  (h_benefit_type_id, p_partner_key, h_work_register_id);
+
+alter table h_benefit_type_sched
+	add constraint h_bts_partner_idx unique  (p_partner_key, h_benefit_type_id, h_benefit_type_sched_id);
+
+alter table h_benefit_type_sched
+	add constraint h_bts_group_idx unique  (h_group_id, h_benefit_type_id, h_benefit_type_sched_id);
+
 alter table r_group
 	add constraint r_grp_modfile_idx unique  (r_group_module, r_group_file, r_group_name);
 
@@ -246,6 +258,21 @@ alter table a_subtrx_gift_item
 
 alter table a_motivational_code
 	add constraint a_motiv_code_list unique  (m_list_code, a_ledger_number, a_motivational_code);
+
+alter table a_giving_pattern
+	add constraint a_givingp_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern
+	add constraint a_givingp_actual_idx unique  (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern_allocation
+	add constraint a_givingpa_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern_allocation
+	add constraint a_givingpa_actual_idx unique  (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern_flag
+	add constraint a_givingf_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
 
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_acct_idx unique  (a_cash_account_code, a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
