@@ -229,6 +229,8 @@ crm "widget/component-decl"
 		path = "sidebar.cmp";
 		collaborator_osrc = collaborator_osrc;
 
+		on_collabchange2 "widget/connector" { event=CollabChanged; target=profile_cmp; action=RefreshCollab; }
+
 		onSetNumber "widget/connector"
 		    {
 		    event=SetNumber;
@@ -298,6 +300,16 @@ crm "widget/component-decl"
 		path = "partner_profile.cmp";
 		iconbar = iconbar;
 		collaborator_osrc = collaborator_osrc;
+
+		// We have advanced search results
+		onAdvancedResults "widget/connector"
+		    {
+		    event=AdvancedResults;
+		    target=sidebar_cmp;
+		    action=AdvancedResults;
+		    session_id=runclient(:session_id);
+		    stage_id=runclient(:stage_id);
+		    }
 
 		on_tune "widget/connector"
 		    {
@@ -381,6 +393,9 @@ crm "widget/component-decl"
 	onItemSelect_1 "widget/connector" { event=ItemSelected; target=menu_overlay; action=Close; }
 	onItemSelect_Me "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'My Profile'); target=profile_cmp; action=SelectPartner; partner_key = runclient(:collaborator_osrc:p_partner_key); }
 	onItemSelect_Sett "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'My Settings'); target=crm; action=Launch; Source="/apps/kardia/modules/base/prefs.app"; Width=500; Height=475; }
+	onItemSelect_Pray "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'Prayer and Praise'); target=profile_cmp; action=Pray; }
+	onItemSelect_Search "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'Advanced Search'); target=profile_cmp; action=AdvancedSearch; }
+	onItemSelect_Track "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'Tracks & Engagements'); target=profile_cmp; action=Track; }
 	onItemSelect_Tags "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'Manage Tags'); target=config_tags; action=Open; }
 	onItemSelect_Tracks "widget/connector" { event=ItemSelected; event_condition=runclient(:Item == 'Manage Tracks'); target=config_tracks; action=Open; }
 	}

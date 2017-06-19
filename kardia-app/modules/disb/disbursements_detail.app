@@ -76,6 +76,26 @@ disbursements_detail "widget/page"
 		    }
 		}
 	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dropdown; text='Ending Period:';  form=rpt_form; label_width=120; sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period asc"); }
+	    f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Fund:"; attach_point=editbox; empty_desc = "optional"; label_width=120; }
+	    f_payeeid "widget/component"
+		{
+		height=24;
+		width=350;
+		path="/apps/kardia/modules/base/editbox_table.cmp";
+		field='payee';
+		text='Payee ID:';
+		label_width=120;
+		popup_width=380;
+		popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + ']', '') + ' #' + :p:p_partner_key from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key and :pl:p_revision_id = 0";
+		//search_field_list="p_partner_key,*p_given_name*,p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*,*p_comments";
+		search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+		key_name="p_partner_key";
+		object_name="Payee";
+		popup_text="Select a Payee:";
+		//attach_point=editbox;
+
+		payee_hints "widget/hints" { style=applyonchange; }
+		}
 	    sep "widget/autolayoutspacer" { height=4; }
 	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=rpt_form; label_width=120; }
 	    f_line "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="show_line_items"; ctl_type='checkboxleft'; text="Show Check Line Items"; form=rpt_form; label_width=120; }
@@ -92,7 +112,7 @@ disbursements_detail "widget/page"
 		label_width=120;
 		}
 
-	    sep2 "widget/autolayoutspacer" { height=200; }
+	    sep2 "widget/autolayoutspacer" { height=144; }
 	    pn_sep2 "widget/pane" { height=2; style=lowered; }
 
 	    ctls_hbox "widget/hbox"

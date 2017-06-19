@@ -56,7 +56,7 @@ menu "widget/component-decl"
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-people.svg";
 		image_position=left;
-		image_margin=6;
+		image_margin=10;
 		text = "My Profile";
 		fgcolor1=white;
 		fgcolor2="#404040";
@@ -72,7 +72,7 @@ menu "widget/component-decl"
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-gear.svg";
 		image_position=left;
-		image_margin=6;
+		image_margin=10;
 		text = "My Settings";
 		fgcolor1=white;
 		fgcolor2="#404040";
@@ -85,6 +85,59 @@ menu "widget/component-decl"
 
 	    sep2 "widget/image" { height=1; width=180; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
+	    prayer_needs "widget/textbutton"
+		{
+		height=32; width=180;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/openiconic-wifi.svg";
+		image_position=left;
+		image_margin=10;
+		text = "Prayer and Praise";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_prayer_needs "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Prayer and Praise"; }
+		}
+
+	    advanced_search "widget/textbutton"
+		{
+		height=32; width=180;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-search.svg";
+		image_position=left;
+		image_margin=10;
+		text = "Advanced Search";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_adv_search "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Advanced Search"; }
+		}
+
+	    manage_tracks_ppl "widget/textbutton"
+		{
+		width=180; height=32;
+		widget_class=crm_iconbutton;
+		image="/apps/kardia/images/icons/ionicons-track.svg";
+		image_position=left;
+		image_margin=10;
+		text = "Track Engagements";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_manage_tracks_ppl "widget/connector" { event=Click; target=menu; action=ItemSelected; Item="Tracks & Engagements"; }
+		}
+
+	    sep3 "widget/image" { height=1; width=180; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
 	    manage_tags "widget/textbutton"
 		{
 		require_endorsements = "kardia:crm_manage";
@@ -93,7 +146,7 @@ menu "widget/component-decl"
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-pricetags.svg";
 		image_position=left;
-		image_margin=6;
+		image_margin=10;
 		text = "Manage Tags";
 		fgcolor1=white;
 		fgcolor2="#404040";
@@ -111,7 +164,7 @@ menu "widget/component-decl"
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-track.svg";
 		image_position=left;
-		image_margin=6;
+		image_margin=10;
 		text = "Manage Tracks";
 		fgcolor1=white;
 		fgcolor2="#404040";
@@ -129,7 +182,7 @@ menu "widget/component-decl"
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-people.svg";
 		image_position=left;
-		image_margin=6;
+		image_margin=10;
 		text = "Manage Roles";
 		fgcolor1=white;
 		fgcolor2="#404040";
@@ -145,7 +198,7 @@ menu "widget/component-decl"
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/openiconic-thumb-up.svg";
 		image_position=left;
-		image_margin=6;
+		image_margin=10;
 		text = "Manage Highlights";
 		fgcolor1=white;
 		fgcolor2="#404040";
@@ -163,7 +216,7 @@ menu "widget/component-decl"
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-notes.svg";
 		image_position=left;
-		image_margin=6;
+		image_margin=10;
 		text = "Manage Note Types";
 		fgcolor1=white;
 		fgcolor2="#404040";
@@ -181,7 +234,7 @@ menu "widget/component-decl"
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/ionicons-contacts2.svg";
 		image_position=left;
-		image_margin=6;
+		image_margin=10;
 		text = "Manage Contact Types";
 		fgcolor1=white;
 		fgcolor2="#404040";
@@ -199,7 +252,7 @@ menu "widget/component-decl"
 		widget_class=crm_iconbutton;
 		image="/apps/kardia/images/icons/openiconic-task.svg";
 		image_position=left;
-		image_margin=6;
+		image_margin=10;
 		text = "Manage Task Types";
 		fgcolor1=white;
 		fgcolor2="#404040";

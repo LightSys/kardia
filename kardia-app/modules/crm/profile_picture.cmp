@@ -1,7 +1,7 @@
 $Version=2$
 profile_picture "widget/component-decl"
     {
-    width=104;
+    width=110;
     height=110;
 
     partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
@@ -9,6 +9,11 @@ profile_picture "widget/component-decl"
     profile_photo_osrc "widget/osrc"
 	{
 	sql = "	select
+		    :pd:e_image_offset_x,
+		    :pd:e_image_offset_y,
+		    :pd:e_image_scale_height,
+		    :d:e_image_width,
+		    :d:e_image_height,
 		    path = :d:e_current_folder + '/' + :d:e_current_filename
 		from
 		    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
@@ -28,7 +33,7 @@ profile_picture "widget/component-decl"
 
 	profile_hdr_image_box "widget/pane"
 	    {
-	    width=104;
+	    width=110;
 	    height=110;
 	    style=bordered;
 	    border_color="#e0e0e0";
@@ -40,9 +45,13 @@ profile_picture "widget/component-decl"
 	    profile_hdr_image "widget/image"
 		{
 		x=3; y=3;
-		width=96;
+		width=102;
 		height=102;
+		aspect=preserve;
 		source=runclient(isnull(:profile_photo_osrc:path, "/apps/kardia/images/artwork/persona.png"));
+		scale=runclient(isnull(:profile_photo_osrc:e_image_scale_height / :profile_photo_osrc:e_image_height, 1));
+		xoffset=runclient(isnull(:profile_photo_osrc:e_image_offset_x * 102 / :profile_photo_osrc:e_image_height, 0));
+		yoffset=runclient(isnull(:profile_photo_osrc:e_image_offset_y * 102 / :profile_photo_osrc:e_image_height, 0));
 		}
 	    }
 	}

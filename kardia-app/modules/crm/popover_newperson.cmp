@@ -34,8 +34,8 @@ popover_newperson "widget/component-decl"
 
     newp_win "widget/childwindow"
 	{
-	width=500; height=252;
-	x=250; y=89;
+	width=500; height=282;
+	x=250; y=74;
 	fl_y=0;
 	titlebar=no;
 	visible=no;
@@ -51,7 +51,7 @@ popover_newperson "widget/component-decl"
 	newp_vbox "widget/vbox"
 	    {
 	    x=15; y=15;
-	    width=468; height=220;
+	    width=468; height=250;
 	    spacing=10;
 
 	    newp_osrc "widget/osrc"
@@ -81,13 +81,15 @@ popover_newperson "widget/component-decl"
 
 		    explain_label "widget/label" { height=40; style=italic; value=runclient(condition(:partner_var:value is null, "Add a new person via the popup window, and once the new person or organization is added, they can be added to My People here.", "Add " + isnull(:partnername_osrc:nametxt, "person") + " #" + :partner_var:value + " to My People:")); }
 
-		    collab_type "widget/component" { field=e_collab_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="My Role:"; ctl_type=dropdown; sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label"; width=280; label_width=100; collab_type_hints "widget/hints" { style=notnull; } }
+		    collab_type "widget/component" { field=e_collab_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="My Role:"; ctl_type=dropdown; sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label"; width=280; label_width=120; collab_type_hints "widget/hints" { style=notnull; } }
+		    collab_stat "widget/component" { field=e_collaborator_status; path="/sys/cmp/smart_field.cmp"; height=20; text="Priority/Status:"; ctl_type=dropdown; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_e_collaborator_status/rows order by :text"; width=300; label_width=120; collab_stat_hints "widget/hints" { style=notnull,default; default=runclient('A'); } }
 
 		    silence_label "widget/label" { height=32; text="After how many days of no contact with this person do you want to receive a reminder to check back in with them?"; style=italic; }
-		    silence_field "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; width=200; label_width=100; field=e_silence_interval; ctl_type=editbox; text="Silence Days:"; }
+		    silence_field "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; width=200; label_width=120; field=e_silence_interval; ctl_type=editbox; text="Silence Days:"; }
 
 		    collab_partner "widget/variable" { fieldname=p_partner_key; collab_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
 		    collab_me "widget/variable" { fieldname=e_collaborator; collab_me_hints "widget/hints" { default=runclient(:collab_var:value); } }
+		    collab_auto "widget/variable" { fieldname=e_is_automatic; collab_auto_hints "widget/hints" { default=runclient(0); } }
 		    collab_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 
 		    newp_btns "widget/hbox"

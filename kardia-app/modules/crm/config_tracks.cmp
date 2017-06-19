@@ -532,7 +532,7 @@ config_tracks "widget/component-decl"
 
 		    step_sep "widget/autolayoutspacer" { height=2; }
 
-		    step_collab_label "widget/label" { height=12; value=runclient("Collaborators for Step " + :track_list_osrc:e_track_name + ", " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
+		    step_collab_label "widget/label" { height=12; value=runclient("Collaborators for Step " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
 
 		    scoll_list_osrc "widget/osrc"
 			{
@@ -687,7 +687,7 @@ config_tracks "widget/component-decl"
 		    width=312;
 		    spacing=8;
 
-		    req_list_label "widget/label" { height=12; value=runclient("Requirements for Step " + :track_list_osrc:e_track_name + ", " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
+		    req_list_label "widget/label" { height=12; value=runclient("Requirements for Step " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
 
 		    req_pane "widget/pane"
 			{

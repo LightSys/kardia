@@ -27,7 +27,7 @@ disbursements "widget/page"
     checking_cmp "widget/component"
 	{
 	path = "/apps/kardia/modules/disb/cashdisb_subform.cmp";
-	width=778;height=525;
+	x=10; y=10; width=780;height=580;
 	ledger = runserver(:this:ledger);
 	external_itself=disbursements;
 	}
