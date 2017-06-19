@@ -14,6 +14,7 @@ sidebar "widget/component-decl"
     AddPerson "widget/component-decl-event" { }
     EditTask "widget/component-decl-event" { }
     SetNumber "widget/component-decl-event" { }
+    CollabChanged "widget/component-decl-event" { }
 
     // Refresh partners
     Refresh "widget/component-decl-action" { }
@@ -22,6 +23,17 @@ sidebar "widget/component-decl"
 	event=Refresh;
 	target=plugin_cmp;
 	action=Refresh;
+	}
+
+    // We have advanced search results
+    AdvancedResults "widget/component-decl-action" { }
+    onAdvancedResults "widget/connector"
+	{
+	event=AdvancedResults;
+	target=plugin_cmp;
+	action=AdvancedResults;
+	session_id=runclient(:session_id);
+	stage_id=runclient(:stage_id);
 	}
 
     // Refresh the tasks list
@@ -86,6 +98,8 @@ sidebar "widget/component-decl"
 			    height=492; width=248; x=4; y=4;
 			    path = runserver(:plugin_tabs:path);
 			    collaborator_osrc = collaborator_osrc;
+
+			    on_collabchange "widget/connector" { event=CollabChanged; target=sidebar; action=CollabChanged; }
 
 			    on_partner_select "widget/connector"
 				{

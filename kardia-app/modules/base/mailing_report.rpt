@@ -46,8 +46,8 @@ mailing_report "system/report"
     only_staff "report/parameter" { type=integer; }
     include_obs "report/parameter" { type=integer; default=0; }
     //only_postal "report/parameter" { type=integer; default=0; }
-    only_okmail "report/parameter" { type=integer; default=0; }
-    only_oksolicit "report/parameter" { type=integer; default=0; }
+    only_okmail "report/parameter" { type=integer; default=1; }
+    only_oksolicit "report/parameter" { type=integer; default=1; }
 
     // Output settings
     cntry_fmt "report/parameter" { type=string; default='full'; groupname='Format';}

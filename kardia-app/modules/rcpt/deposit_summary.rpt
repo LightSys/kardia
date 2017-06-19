@@ -1,0 +1,208 @@
+$Version=2$
+deposit_summary "system/report"
+    {
+    title = "Deposit Summary";
+
+    document_format="application/pdf";
+    resolution = 300;
+    resolution = 300;
+    pagewidth=110;
+    pageheight=51;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    filename = runserver("deposit_summary_" + :this:period + ".pdf");
+
+    // Parameters for GL Fund Balance
+    ledger "report/parameter" { type=string; default=null; }
+    period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    unposted "report/parameter" { type=integer; default=0; }
+
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+
+    period_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_ledger_number = :this:ledger and :p:a_period = :this:period";
+	}
+
+
+    // accounting_config.qyp is an EAV pivot of the a_config table
+    config_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/modules/gl/accounting_config.qyp where :a_ledger_number = :this:ledger";
+	}
+
+
+    fromacct_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_account/rows where :a_account_code = :config_qy:RcptDepFrom and :a_ledger_number = :this:ledger";
+	}
+
+
+    fund_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_cost_center/rows where :a_cost_center = :config_qy:RcptCashFund and :a_ledger_number = :this:ledger";
+	}
+
+
+    deposit_qy "report/query"
+	{
+	sql = runserver("
+		select
+			:b:a_ledger_number,
+			:b:a_batch_number,
+			:b:a_default_effective_date,
+			:b:a_period,
+			:b:a_batch_desc,
+			:d:a_effective_date,
+			:d:a_account_code,
+			:d:a_amount,
+			:d:a_cash_amount,
+			:d:a_num_checks,
+			:d:a_posted,
+			:d:a_posted_to_gl,
+			:d:a_comment,
+			:d:s_date_created,
+			:d:s_created_by,
+			:d:s_date_modified,
+			:d:s_modified_by,
+			acct_txt = isnull(:a:a_acct_desc, '** INVALID **')
+		from
+			/apps/kardia/data/Kardia_DB/a_batch/rows b,
+			/apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows d,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		where
+			:b:a_ledger_number = :this:ledger and
+			:b:a_period = :this:period and
+			:b:a_origin = 'DE' and
+			:d:a_ledger_number = :b:a_ledger_number and
+			:d:a_batch_number = :b:a_batch_number and
+			:a:a_ledger_number =* :d:a_ledger_number and
+			:a:a_account_code =* :d:a_account_code
+		");
+
+	sum_total "report/aggregate" { compute="sum(:a_amount)"; reset=0; }
+	sum_cash "report/aggregate" { compute="sum(:a_cash_amount)"; reset=0; }
+	sum_items "report/aggregate" { compute="sum(:a_num_checks)"; reset=0; }
+	}
+
+
+    // Verify totals against data posted into the general ledger
+    gl_qy "report/query"
+	{
+	sql = runserver("
+		select
+			a_amount = sum(:a_amount)
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+			:t:a_ledger_number = :this:ledger and
+			:t:a_origin = 'DE' and
+			:t:a_period = :this:period and
+			:t:a_batch_number = :deposit_qy:a_batch_number and
+			:t:a_account_code = :deposit_qy:a_account_code
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		");
+	sum_total "report/aggregate" { compute="sum(:a_amount)"; reset=0; }
+	}
+
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy, period_qy, config_qy, fromacct_qy, fund_qy;
+
+	rpt_title "report/area"
+	    {
+	    x=0; width=105; height=3;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("Deposit Summary Report for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("For Period " + :this:period + " (" + :period_qy:a_period_desc + ")\n"); }
+	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  GL DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    }
+
+	sep0 "report/data" { value="By Batch:\n"; font=helvetica; style=bold; }
+
+	table "report/table"
+	    {
+	    x=0; width=105; height=0;
+	    columns=9;
+	    widths=7,10,22.4,22.2,5,10,10,10,3;
+	    colsep=0.8;
+	    source=deposit_qy, gl_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+	    dateformat = "dd-MMM-yyyy";
+
+	    tbl_hdr "report/table-row"
+		{
+		header=yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		h_batch "report/table-cell" { value='Batch'; align=center; style=bold; }
+		h_date "report/table-cell" { value='Date'; align=center; style=bold; }
+		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_acct "report/table-cell" { value='Bank Account'; align=center; style=bold; }
+		h_cnt "report/table-cell" { value='Items'; align=center; style=bold; }
+		h_cash "report/table-cell" { value='Cash Amt'; align=center; style=bold; }
+		h_dep "report/table-cell" { value='Deposit Amt'; align=center; style=bold; }
+		h_gl "report/table-cell" { value='GL Amt'; align=center; style=bold; }
+		h_diff "report/table-cell" { value='Diff'; align=center; style=bold; }
+		}
+
+	    tbl_sep_row "report/table-row"
+		{
+		condition = runserver((:deposit_qy:cx__rowid / 5) * 5 == :deposit_qy:cx__rowid);
+		bottomborder=0.021;
+		}
+
+	    tbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.1;
+
+		d_batch "report/table-cell" { value=runserver(:deposit_qy:a_batch_number); align=left; }
+		d_date "report/table-cell" { value=runserver(:deposit_qy:a_effective_date); align=left; }
+		d_desc "report/table-cell" { value=runserver(:deposit_qy:a_batch_desc); align=left; font=helvetica; }
+		d_acct "report/table-cell" { value=runserver(:deposit_qy:acct_txt); align=left; font=helvetica; }
+		d_cnt "report/table-cell" { value=runserver(:deposit_qy:a_num_checks); align=right; }
+		d_cash "report/table-cell" { value=runserver(:deposit_qy:a_cash_amount); align=right; }
+		d_dep "report/table-cell" { value=runserver(:deposit_qy:a_amount); align=right; }
+		d_gl "report/table-cell" { value=runserver(:gl_qy:a_amount); align=right; }
+		d_diff "report/table-cell" { value=runserver(condition(:gl_qy:a_amount = :deposit_qy:a_amount, '', 'X')); align=right; }
+		}
+
+	    tbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		marginbottom=0.1;
+
+		s_batch "report/table-cell" { value=runserver(""); align=left; }
+		s_x1 "report/table-cell" { value=runserver(""); align=left; }
+		s_x2 "report/table-cell" { value=runserver(""); align=left; }
+		s_x3 "report/table-cell" { value=runserver("GRAND TOTAL:"); align=right; }
+		s_cnt "report/table-cell" { value=runserver(:deposit_qy:sum_items); align=right; }
+		s_cash "report/table-cell" { value=runserver(:deposit_qy:sum_cash); align=right; }
+		s_disb "report/table-cell" { value=runserver(:deposit_qy:sum_total); align=right; }
+		s_gl "report/table-cell" { value=runserver(:gl_qy:sum_total); align=right; }
+		s_diff "report/table-cell" { value=runserver(condition(:gl_qy:sum_total = :deposit_qy:sum_total, '', 'X')); align=right; }
+		}
+	    }
+	}
+    }

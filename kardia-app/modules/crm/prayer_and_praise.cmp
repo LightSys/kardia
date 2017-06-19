@@ -1,0 +1,184 @@
+$Version=2$
+prayer_and_praise "widget/component-decl"
+    {
+    width=700;
+    height=580;
+
+    collaborator_osrc "widget/parameter" { type=object; }
+
+    PartnerSelected "widget/component-decl-event" { }
+
+    prayer_vbox "widget/vbox"
+	{
+	x=0; y=0; width=700; height=580;
+	spacing=10;
+
+	hdr_label "widget/label"
+	    {
+	    height=24;
+	    font_size=18;
+	    style=bold;
+	    align=center;
+	    text="Prayer Requests and Praises";
+	    }
+
+	sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	prayer_osrc "widget/osrc"
+	    {
+	    sql = " select
+			chname=:ch:name,
+			:ch:e_contact_history_id,
+			:ch:p_partner_key,
+			:ch:e_subject,
+			:ch:e_contact_date,
+			:ch:e_notes,
+			partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+			disp_city = (select condition(char_length(:l:p_city) > 1, :l:p_city + ', ', '') + condition(char_length(:l:p_state_province) > 1, :l:p_state_province + ' ', '') from /apps/kardia/data/Kardia_DB/p_location/rows l where :l:p_partner_key = :ch:p_partner_key and :l:p_revision_id = 0 and :l:p_record_status_code = 'A'),
+			collab_name = condition(char_length(isnull(:pc:p_org_name,'')) > 1, :pc:p_org_name, condition(char_length(:pc:p_preferred_name) > 1, :pc:p_preferred_name, :pc:p_given_name) + ' ' + :pc:p_surname),
+			track_names = (select sum(first(:t:e_track_name) + ', ') - ', ' from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe, /apps/kardia/data/Kardia_DB/e_engagement_track/rows t where :pe:p_partner_key = :ch:p_partner_key and :pe:e_is_archived = 0 and :t:e_track_id = :pe:e_track_id group by :pe:e_track_id),
+			tag_names = (select sum(:tt:e_tag_desc + condition(char_length(:t:e_tag_comments) > 0, ' - ' + :t:e_tag_comments, '') + ', ') - ', ' from /apps/kardia/data/Kardia_DB/e_tag/rows t, /apps/kardia/data/Kardia_DB/e_tag_type/rows tt where :t:p_partner_key = :ch:p_partner_key and :t:e_tag_strength > 0.01 and :tt:e_tag_id = :t:e_tag_id),
+			prayed = (select condition(sum(count(1)) > 0, '' + sum(count(1)) + condition(sum(count(1)) > 1, ' Prayers: ', ' Prayer: '), '') + sum(condition(char_length(isnull(:pp:p_org_name,'')) > 1, :pp:p_org_name, condition(char_length(:pp:p_preferred_name) > 1, :pp:p_preferred_name, :pp:p_given_name) + ' ' + :pp:p_surname) + ' (' + substring(convert(string,max(:a:s_date_created)),1,11) + '), ') - ', ' from /apps/kardia/data/Kardia_DB/e_ack/rows a, /apps/kardia/data/Kardia_DB/p_partner/rows pp where :a:e_object_type = 'e_contact_history' and :a:e_object_id = :ch:name and :a:e_ack_type = 1 and :pp:p_partner_key = :a:e_whom group by :a:e_whom),
+			img = isnull( ( select
+				    path = :d:e_current_folder + '/' + :d:e_current_filename
+				from
+				    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+				    /apps/kardia/data/Kardia_DB/e_document/rows d,
+				    /apps/kardia/data/Kardia_DB/e_document_type/rows dt
+				where
+				    :pd:p_partner_key = :ch:p_partner_key and
+				    :pd:e_document_id = :d:e_document_id and
+				    :d:e_doc_type_id = :dt:e_doc_type_id and
+				    :dt:e_doc_type_label = 'Profile Photo'
+				order by
+				    :pd:s_date_modified desc
+				limit
+				    1
+				), '/apps/kardia/images/artwork/persona.png')
+		    from
+			identity /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_partner/rows pc
+		    where
+			:p:p_partner_key = :ch:p_partner_key and
+			:pc:p_partner_key = :ch:e_whom and
+			:ch:e_contact_history_type = 5
+		    order by
+			:ch:e_contact_date desc
+		    ";
+	    autoquery=oneachreveal;
+	    replicasize=100;
+	    readahead=100;
+
+	    prayer_table "widget/table"
+		{
+		height=535;
+		min_rowheight=16;
+		max_rowheight=200;
+		mode=dynamicrow;
+		allow_selection = yes;
+		show_selection = yes;
+		initial_selection = no;
+		demand_scrollbar = yes;
+		overlap_scrollbar = yes;
+		colsep = 0;
+		titlebar = no;
+		row_border_radius=4;
+		inner_padding = 3;
+		rowhighlight_bgcolor = "#fff090";
+		textcolorhighlight = "#000000";
+		cellvspacing = 8;
+		row1_bgcolor = runclient("#ffffff");
+		row2_bgcolor = runclient("#ffffff");
+		nodata_message = "(no prayer needs to show)";
+
+		t_img "widget/table-column" { fieldname="img"; width=40; type=image; image_maxwidth=32; image_maxheight=32; align=center; }
+		t_name "widget/table-column"
+		    {
+		    wrap=yes;
+		    fieldname=partner_name;
+		    width=180;
+		    font_size=15;
+		    style=bold;
+		    caption_value=runclient(condition(char_length(:prayer_osrc:disp_city) > 1, :prayer_osrc:disp_city + '\n', '') + 
+			    condition(char_length(:prayer_osrc:track_names) > 1, 'Tracks: ' + :prayer_osrc:track_names + '\n', '') +
+			    condition(char_length(:prayer_osrc:tag_names) > 1, 'Tags: ' + :prayer_osrc:tag_names + '\n', '')
+			    );
+		    }
+		t_request "widget/table-column"
+		    {
+		    wrap=yes;
+		    width=480;
+		    title_value=runclient(substring(convert(string,:prayer_osrc:e_contact_date),1,11) + ': ' + :prayer_osrc:e_subject);
+		    title_font_size=15;
+		    title_style=bold;
+		    value=runclient(isnull(:prayer_osrc:e_notes, '(no notes added)'));
+		    caption_value=runclient(condition(char_length(:prayer_osrc:prayed) > 1, :prayer_osrc:prayed, ''));
+		    caption_textcolor="#334466";
+		    }
+
+		cmd_buttons_detail "widget/table-row-detail"
+		    {
+		    height=30;
+		    width=700;
+		    fl_width=100;
+
+		    cmd_hbox "widget/hbox"
+			{
+			x=0; y=6; width=700; height=24;
+			spacing=10;
+			align=center;
+			fl_width=100;
+
+			profile_btn "widget/textbutton"
+			    {
+			    height=24; width=130;
+			    text = "Visit Profile";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    goto_profile "widget/connector" { event=Click; target=prayer_and_praise; action=PartnerSelected; partner_key=runclient(:prayer_osrc:p_partner_key); }
+			    }
+
+			pray_btn "widget/textbutton"
+			    {
+			    height=24; width=130;
+			    text = "Pray";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    ack_prayer "widget/connector"
+				{
+				event=Click;
+				target=addprayer_osrc;
+				action=Create;
+				e_object_type=runclient('e_contact_history');
+				e_object_id=runclient(:prayer_osrc:chname);
+				e_ack_type=1;
+				e_whom=runclient(:collaborator_osrc:p_partner_key);
+				p_dn_partner_key=runclient(:prayer_osrc:p_partner_key);
+				s_created_by=runclient(user_name());
+				s_date_created=runclient(getdate());
+				s_modified_by=runclient(user_name());
+				s_date_modified=runclient(getdate());
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+	addprayer_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/e_ack/rows";
+	    baseobj="/apps/kardia/data/Kardia_DB/e_ack/rows";
+	    autoquery=never;
+
+	    oncreate "widget/connector" { event=Created; target=prayer_osrc; action=RefreshObject; }
+	    }
+	}
+    }

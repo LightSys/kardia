@@ -36,3 +36,7 @@ drop table _e_completion_status;
 drop table _e_req_completion_status;
 drop table _e_tag_volatility;
 drop table _e_workflow_step_trigger_type;
+drop table _a_flag_type;
+drop table _a_flag_resolution;
+drop table _h_benefit_mode;
+drop table _e_collaborator_status;

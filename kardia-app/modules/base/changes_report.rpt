@@ -1,0 +1,336 @@
+$Version=2$
+changes_report "system/report"
+    {
+    // Greg Beeley / LightSys - 12-Jan-2017
+    //
+    // This report prints a list of all changes to partners who are on one
+    // or more mailing lists, or who are on a mailing list that is "owned"
+    // by a particular partner/staff.
+    //
+    // Report Criteria:
+    //   - Mailing List(s) to include (comma separated, no spaces)
+    //   - List owner partner ID
+    //   - Starting date to find changes from, or days to look back from now for changes
+    //   - Ending date to find changes, defaults to Today, or days prior to today for ending date
+    //
+    // Output Controls:
+    //   - by_list: this causes the output to be done per-list instead of per-partner.
+    //
+    title = "Mailing Changes Report";
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.0;
+    marginright=2.0;
+    margintop=3;
+    marginbottom=3;
+
+    // Report Parameters
+    include_lists "report/parameter" { type=string; badchars=" "; }
+    list_owner "report/parameter" { type=string; }
+    start_date "report/parameter" { type=string; }
+    start_lookback_days "report/parameter" { type=integer; }
+    end_date "report/parameter" { type=string; }
+    end_lookback_days "report/parameter" { type=integer; }
+    by_list "report/parameter" { type=integer; default=0; }
+
+    // Query to get site information
+    site_qy "report/query"
+	{
+	sql = "	select
+		    *
+		from
+		    object /apps/kardia/data/Site.struct
+		";
+	}
+
+
+    // Query to discover what lists the list_owner owns
+    owned_lists_qy "report/query"
+	{
+	sql = "	select
+		    lists = ',' + sum(:m_list_code + ',')
+		from
+		    /apps/kardia/data/Kardia_DB/m_list_membership/rows
+		where
+		    :p_partner_key = :this:list_owner and
+		    :m_member_type = 'O' and
+		    :m_membership_status = 'A'
+		";
+	}
+
+    // List manager info.  We use first() to trigger an aggregate result, which
+    // will be NULL if nothing is found, instead of 0 rows in the result set.
+    list_manager_qy "report/query"
+	{
+	sql = "	select
+		    p_partner_key = first(:p:p_partner_key),
+		    disp_name = first(condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname))
+		from
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :p:p_partner_key = :this:list_owner
+		";
+	}
+
+    // Date range computation - defaults to a one month range ending
+    // in the current date.
+    dates_qy "report/query"
+	{
+	sql = "	select
+		    start_date = condition(:this:start_date is null, condition(:this:start_lookback_days is null, dateadd(month, -1, getdate()), dateadd(day, 0 - :this:start_lookback_days, getdate())), convert(datetime, :this:start_date)),
+		    end_date = condition(:this:end_date is null, condition(:this:end_lookback_days is null, getdate(), dateadd(day, :this:end_lookback_days, getdate())), convert(datetime, :this:end_date))
+		";
+	}
+
+    // Get the mailing lists
+    lists_qy "report/query"
+	{
+	sql = runserver("
+		select
+		    lists=',' + sum(rtrim(:m_list_code) + ','),
+		    :ml:m_list_code,
+		    :ml:m_list_description,
+		    num_changes = sum(
+			    (select count(1) from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :ml:m_list_code and :p:p_partner_key = :m:p_partner_key and :p:s_date_modified >= :dates_qy:start_date and :p:s_date_modified <= :dates_qy:end_date and (:p:p_status_code != 'A' or :p:s_date_created < :dates_qy:start_date or :p:s_date_created > :dates_qy:end_date)) +
+			    (select count(1) from /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :ml:m_list_code and :m:m_member_type = 'M' and :m:s_date_modified >= :dates_qy:start_date and :m:s_date_modified <= :dates_qy:end_date) +
+			    (select count(1) from /apps/kardia/data/Kardia_DB/p_location/rows l, /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :ml:m_list_code and :l:p_partner_key = :m:p_partner_key and :l:p_revision_id = 0 and :l:s_date_modified >= :dates_qy:start_date and :l:s_date_modified <= :dates_qy:end_date and :m:m_membership_status = 'A') +
+			    (select count(1) from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci, /apps/kardia/data/Kardia_DB/m_list_membership/rows m where :m:m_list_code = :ml:m_list_code and :ci:p_partner_key = :m:p_partner_key and :ci:s_date_modified >= :dates_qy:start_date and :ci:s_date_modified <= :dates_qy:end_date and :m:m_membership_status = 'A')
+			    )
+		from
+		    /apps/kardia/data/Kardia_DB/m_list/rows ml
+		where
+		    :ml:m_list_type = 'P' and
+		    (:this:include_lists is null or charindex(',' + :ml:m_list_code + ',', ',' + :this:include_lists + ',') > 0) and
+		    (:owned_lists_qy:lists is null or charindex(',' + :ml:m_list_code + ',', :owned_lists_qy:lists) > 0)
+		" + condition(:this:by_list, "group by :m_list_code", "") + "
+		having
+		    :num_changes > 0
+		");
+	all_changecount "report/aggregate" { compute="sum(:num_changes)"; }
+	}
+
+    // Main query for list members
+    partners_qy "report/query"
+	{
+	sql = runserver("
+		select
+		    :p:p_partner_key,
+		    disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		    :p:p_org_name,
+		    :p:p_surname,
+		    :p:p_given_name,
+		    :p:p_title,
+		    :p:p_no_mail,
+		    :p:p_no_solicitations,
+		    :p:p_status_code,
+		    :p:s_date_created,
+		    :p:s_date_modified,
+		    :p:p_comments,
+		    stat=min(:m:m_membership_status), -- gives 'A' if any are active, or something else if none active.
+		    lists=isnull(sum(:m:m_list_code + ',') - ',', '')
+		from
+		    /apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :m:p_partner_key = :p:p_partner_key and
+		    :m:m_member_type = 'M' and
+		    charindex(',' + :m:m_list_code + ',', :lists_qy:lists) > 0
+		group by
+		    :m:p_partner_key
+		");
+	}
+
+    // Query to list changes.  This is a series of individual queries that look for
+    // different kinds of changes to addresses, emails, etc.
+    changes_qy "report/query"
+	{
+	sql = "	-- Name
+		select
+		    datatype = 'Person',
+		    changedate = :partners_qy:s_date_modified,
+		    changetype = condition(:partners_qy:p_status_code = 'A', condition(:partners_qy:s_date_created >= :dates_qy:start_date and :partners_qy:s_date_created <= :dates_qy:end_date, 'New', 'Change'), 'Remove'),
+		    changedesc = condition(char_length(rtrim(:partners_qy:p_org_name)) > 0, :partners_qy:p_org_name, :partners_qy:p_given_name + ' ' + :partners_qy:p_surname),
+		    changecomm = :partners_qy:p_comments
+		having
+		    :partners_qy:s_date_modified >= :dates_qy:start_date and
+		    :partners_qy:s_date_modified <= :dates_qy:end_date and
+		    :changetype != 'New'
+		;
+
+		-- List Membership
+		select
+		    datatype = 'List Member',
+		    changedate = :m:s_date_modified,
+		    changetype = condition(:m:m_membership_status = 'A' or :m:m_membership_status = 'P', condition(:m:s_date_created >= :dates_qy:start_date and :m:s_date_created <= :dates_qy:end_date, 'New', 'Change'), 'Remove'),
+		    changedesc = :ml:m_list_description,
+		    changecomm = ''
+		from
+		    /apps/kardia/data/Kardia_DB/m_list/rows ml,
+		    /apps/kardia/data/Kardia_DB/m_list_membership/rows m
+		where
+		    :m:p_partner_key = :partners_qy:p_partner_key and
+		    :m:m_member_type = 'M' and
+		    :m:m_list_code = :ml:m_list_code and
+		    charindex(',' + :m:m_list_code + ',', ',' + :partners_qy:lists + ',') > 0 and
+		    :m:s_date_modified >= :dates_qy:start_date and
+		    :m:s_date_modified <= :dates_qy:end_date 
+		;
+
+		-- Address
+		select
+		    datatype = 'Address',
+		    changedate = :l:s_date_modified,
+		    changetype = condition(:l:p_record_status_code = 'A', condition(:l:s_date_created >= :dates_qy:start_date and :l:s_date_created <= :dates_qy:end_date, 'New', 'Change'), 'Remove'),
+		    changedesc = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=partners_qy,c=c'),
+		    changecomm = :l:p_location_comments
+		from
+		    /apps/kardia/data/Kardia_DB/p_location/rows l,
+		    /apps/kardia/data/Kardia_DB/p_country/rows c,
+		    /apps/kardia/data/Kardia_DB/p_address_format/rows af
+		where
+		    :l:p_partner_key = :partners_qy:p_partner_key and
+		    :l:p_revision_id = 0 and
+		    :c:p_country_code =* :l:p_country_code and
+		    :af:p_country_code =* :c:p_country_code and
+		    :af:p_address_set = 'STANDARD' and
+		    :l:s_date_modified >= :dates_qy:start_date and
+		    :l:s_date_modified <= :dates_qy:end_date and
+		    :partners_qy:stat = 'A'
+		;
+		    
+		-- Contact info (email, phone, etc.)
+		select
+		    datatype = :ct:text,
+		    changedate = :ci:s_date_modified,
+		    changetype = condition(:ci:p_record_status_code = 'A', condition(:ci:s_date_created >= :dates_qy:start_date and :ci:s_date_created <= :dates_qy:end_date, 'New', 'Change'), 'Remove'),
+		    changedesc = condition(char_length(rtrim(:ci:p_phone_country)) > 0, rtrim(:ci:p_phone_country) + ' ', '') + condition(char_length(rtrim(:ci:p_phone_area_city)) > 0, rtrim(:ci:p_phone_area_city) + ' ', '') + rtrim(:ci:p_contact_data),
+		    changecomm = :ci:p_contact_comments
+		from
+		    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+		    /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct
+		where
+		    :ci:p_partner_key = :partners_qy:p_partner_key and
+		    :ci:s_date_modified >= :dates_qy:start_date and
+		    :ci:s_date_modified <= :dates_qy:end_date and
+		    :ct:tag = :ci:p_contact_type and
+		    :partners_qy:stat = 'A'
+		";
+	}
+
+    // Main body of the report.
+    main_form "report/form"
+	{
+	moneyformat = "-###,###,##0.00";
+	dateformat = "dd-MMM-yyyy";
+
+	source = site_qy, list_manager_qy, owned_lists_qy, dates_qy;
+
+	hdrimg "report/image"
+	    {
+	    x=67.85;y=0;
+	    height=4;
+	    width = 12.15;
+	    source = /apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=80; height=4;
+	    font=helvetica;
+	    align=left;
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Mailing Changes Report\n"); }
+	    t_d1 "report/data" { condition=runserver(not (:this:include_lists is null));
+			fontsize=10; value = runserver("Only Mailing Lists: " + :this:include_lists + "\n"); }
+	    t_d1b "report/data" { condition=runserver((:this:include_lists is null and :this:list_owner is null));
+			fontsize=10; value = runserver("All Mailing Lists\n"); }
+	    t_d2 "report/data" { condition=runserver(:this:list_owner is not null);
+			fontsize=10; value = runserver("Only Lists Managed By: " + :this:list_owner + " - " + :list_manager_qy:disp_name + "\n"); }
+	    t_d3 "report/data" { fontsize=10; value = runserver("Date Range: " + substring(convert(string,:dates_qy:start_date),1,11) + ' - ' + substring(convert(string,:dates_qy:end_date),1,11) + "\n"); }
+	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+	    }
+
+	lists_form "report/form"
+	    {
+	    source = lists_qy;
+	    ffsep = yes;
+
+	    list_header "report/area"
+		{
+		condition=runserver(:this:by_list and :lists_qy:num_changes > 0);
+		x=0; width=80; height=1.5;
+		font=helvetica;
+		style=bold;
+		align=center;
+		value=runserver(:lists_qy:m_list_code + ' - ' + :lists_qy:m_list_description + ': ' + :lists_qy:num_changes + ' change' + condition(:lists_qy:num_changes = 1, '', 's'));
+		}
+
+	    partners_table "report/table"
+		{
+		condition=runserver(:lists_qy:num_changes > 0);
+		x=0; width=80; height=0;
+		columns=5;
+		widths=6,20,9,13,30;
+		colsep=0.5;
+		nullformat="";
+		moneyformat = "-###,###,##0.00";
+		dateformat = "dd-MMM-yyyy";
+		bottomborder=0.3;
+		margintop=0;
+		source=partners_qy, changes_qy;
+
+		hdr "report/table-row"
+		    {
+		    header = yes;
+		    font=helvetica;
+		    style=bold;
+		    fontsize=8;
+		    topborder=0.3;
+		    bottomborder=0.05;
+
+		    tg_id "report/table-cell" { value='Partner #'; align=center; }
+		    tg_name "report/table-cell" { value='Partner Name'; align=center; }
+		    tg_date "report/table-cell" { value='Date'; align=center; }
+		    tg_chg "report/table-cell" { value='Change'; align=center; }
+		    tg_desc "report/table-cell" { value='Description'; align=center; }
+		    }
+
+		person_sep "report/table-row"
+		    {
+		    condition=runserver(:changes_qy:cx__rowid = 0);
+		    //summary = yes;
+		    //summarize_for = runserver(:partners_qy:p_partner_key);
+		    margintop = 0.2;
+		    fontsize = 1;
+		    value=runserver("");
+		    }
+
+		one_change "report/table-row"
+		    {
+		    allowbreak=no;
+		    fontsize=9;
+		    font=helvetica;
+		    margintop = 0.1;
+
+		    d_id "report/table-cell" { value=runserver(condition(:changes_qy:cx__rowid == 0, :partners_qy:p_partner_key, '')); }
+		    d_name "report/table-cell" { value=runserver(condition(:changes_qy:cx__rowid == 0, :partners_qy:disp_name, '')); }
+		    d_date "report/table-cell" { value=runserver(:changes_qy:changedate); }
+		    d_chg "report/table-cell" { value=runserver(:changes_qy:changetype + ' ' + :changes_qy:datatype); }
+		    d_desc "report/table-cell" { value=runserver(:changes_qy:changedesc + condition(char_length(:changes_qy:changecomm) > 1, ' (' + :changes_qy:changecomm + ')', '')); }
+		    }
+		}
+	    }
+
+	no_changes "report/area"
+	    {
+	    condition=runserver(not (:lists_qy:all_changecount > 0));
+	    x=0; width=80; height=1.5;
+	    font=helvetica;
+	    style=bold;
+	    align=center;
+	    value=runserver("No changes to any selected lists during the date range");
+	    }
+	}
+    }
+

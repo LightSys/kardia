@@ -1,0 +1,12 @@
+$Version=2$
+plugin_crm_timeline_FLAG "widget/component-decl"
+    {
+    width=434;
+    height=0;
+    icon = "/apps/kardia/images/icons/ionicons-people.svg";
+    //icon = "/apps/kardia/images/icons/ionicons-pricetags.svg";
+    type = "FLAG";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-pricetags.svg";
+    iconbar_label = "Tags";
+    iconbar_sequence = 20;
+    }

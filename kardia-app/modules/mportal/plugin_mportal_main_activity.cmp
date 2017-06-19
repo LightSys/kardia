@@ -1,0 +1,142 @@
+$Version=2$
+activity "widget/component-decl"
+    {
+    height=602; width=1172;
+
+    title = "Activity";
+    icon = "/apps/kardia/images/icons/openiconic-bell.svg";
+    sequence = 1;
+
+    user_osrc "widget/parameter" { type=object; }
+
+    activity_data_osrc "widget/osrc"
+	{
+	staff_login "widget/parameter" { type=string; }
+	sql = "select :activity_group_id from expression ('/apps/kardia/modules/mportal/activity.qy?login=' + :parameters:staff_login)";
+	baseobj = "/apps/kardia/modules/mportal/activity.qy";
+	readahead=2;
+	replicasize=2;
+
+	user_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=user_osrc;
+	    key_1=staff_login;
+	    target_key_1=staff_login;
+	    revealed_only=yes;
+	    }
+
+	refresh_timeline_on_data "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=activity_osrc;
+	    action=Refresh;
+	    }
+	}
+
+    activity_osrc "widget/osrc"
+	{
+	activity_id "widget/parameter" { type=integer; default=runclient(:activity_data_osrc:activity_group_id); }
+
+	autoquery=never;
+	sql = " declare object info;
+
+		select :info:my_id = :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :p_kardia_login = user_name()
+		;
+
+		select
+		    name = :e_activity_type + ':' + :e:e_reference_info,
+		    img = :c:icon,
+		    detail_height = :c:height,
+		    :e:e_activity_date,
+		    :e:e_activity_type,
+		    :e:e_reference_info,
+		    :e:e_info,
+		    first_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, 1, charindex('\n', :e:e_info) - 1), :e:e_info),
+		    last_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, charindex('\n', :e:e_info) + 1), null),
+		    :e:p_partner_key,
+		    shortdate = substring(convert(string,:e:e_activity_date),1,11),
+		    datewhom = isnull(condition(:e:e_whom == :info:my_id, 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' ', '') + 'on ' + substring(convert(string,:e:e_activity_date),1,11)
+		from
+		    /apps/kardia/data/Kardia_DB/e_activity/rows e,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    object wildcard '/apps/kardia/modules/mportal/plugin_mportal_activity_*.cmp' c
+		where
+		    :e:e_activity_group_id = :parameters:activity_id and
+		    :p:p_partner_key =* :e:e_whom and
+		    :c:type = rtrim(:e:e_activity_type)
+		order by
+		    :e:e_activity_date desc
+		";
+	readahead=50;
+	replicasize=50;
+
+	activity_table "widget/table"
+	    {
+	    x=0; y=0;
+	    height=602;
+	    width=1172;
+	    row_border_radius=4;
+	    demand_scrollbar = yes;
+	    overlap_scrollbar = yes;
+	    initial_selection = no;
+	    colsep = 0;
+	    titlebar = no;
+	    min_rowheight = 16;
+	    max_rowheight = 200;
+	    cellvspacing = 4;
+	    row1_bgcolor = white;
+	    row2_bgcolor = white;
+	    show_selection = yes;
+	    inner_padding = 2;
+	    rowhighlight_bgcolor = "#fff090";
+	    textcolorhighlight = "#000000";
+	    nodata_message = runclient(condition(:activity_osrc:cx__pending, "No activity available.", "Loading the last three months' of activity..."));
+
+	    detail_rows "widget/repeat"
+		{
+		sql = "	select
+			    path = :cx__pathname,
+			    :type,
+			    :height,
+			    :icon
+			from
+			    object wildcard '/apps/kardia/modules/mportal/plugin_mportal_activity_*.cmp'
+			";
+
+		detail_item "widget/table-row-detail"
+		    {
+		    condition=runserver(:detail_rows:height > 0);
+		    display_for=runclient(:activity_osrc:e_activity_type == runserver(:detail_rows:type));
+		    height=runserver(:detail_rows:height + 8);
+		    width=1136;
+
+		    detail_cmp "widget/component"
+			{
+			x=4; y=4;
+			width=1128;
+			height=runserver(:detail_rows:height);
+			fl_height=0;
+			path = runserver(:detail_rows:path);
+			activity_osrc = activity_osrc;
+			}
+		    }
+		}
+
+	    t_img "widget/table-column" { title=""; fieldname="img"; width=36; type=image; align=center; image_maxwidth=24; image_maxheight=24; }
+	    t_info "widget/table-column"
+		{
+		width=1112;
+		wrap=yes;
+		title="Description";
+		title_fieldname="first_info";
+		title_style=bold;
+		fieldname="last_info";
+		caption_fieldname=datewhom;
+		caption_textcolor = "#a0a0a0";
+		caption_style=italic;
+		}
+	    }
+	}
+    }
+

@@ -1,0 +1,537 @@
+$Version=2$
+de_batches "widget/component-decl"
+    {
+    width=780;
+    height=542;
+
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    periods_osrc "widget/parameter" { type=object; default=null; }
+    cash_cc "widget/parameter" { type=string; default=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptCashFund' and :a_ledger_number = :this:ledger), '')); deploy_to_client=yes; }
+    cash_fromacct "widget/parameter" { type=string; default=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptDepFrom' and :a_ledger_number = :this:ledger), '')); deploy_to_client=yes; }
+    cash_toacct "widget/parameter" { type=string; default=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptDepTo' and :a_ledger_number = :this:ledger), '')); deploy_to_client=yes; }
+
+    post_de "widget/component"
+	{
+	path = "/apps/kardia/modules/rcpt/post_de_batch.cmp";
+
+	post_cn "widget/connector" { event=Posted; target=dep_osrc; action=Refresh; }
+	glpost_cn "widget/connector" { event=GLPosted; target=dep_osrc; action=Refresh; }
+	unpost_cn "widget/connector" { event=Unposted; target=dep_osrc; action=Refresh; }
+	glunpost_cn "widget/connector" { event=GLUnposted; target=dep_osrc; action=Refresh; }
+	}
+
+    refresh_timer "widget/timer"
+	{
+	msec=300000; // 5min = 300sec = 300000msec
+	auto_reset=1;
+	auto_start=0;
+	refresh_cn "widget/connector" 
+	    {
+	    event=Expire;
+	    event_condition=runclient(:deposit_batch_form:form_mode == 'View' and :deposit_batch_window:is_visible = 0 and :post_to_gl_window:is_visible = 0);
+	    target=dep_osrc;
+	    action=Refresh;
+	    }
+	}
+
+    dep_osrc "widget/osrc"
+	{
+	sql = runserver("
+		SELECT
+			:b:a_ledger_number,
+			:b:a_batch_number, 
+			:b:a_batch_desc, 
+			:b:a_default_effective_date,
+			date_txt = substring(convert(string,:b:a_default_effective_date),1,11),
+			:b:s_date_created,
+			:b:s_created_by,
+			:b:s_date_modified,
+			:b:s_modified_by,
+			:b:a_period,
+			drec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows de where :de:a_batch_number = :b:a_batch_number and :de:a_ledger_number = :b:a_ledger_number limit 1),0),
+			dpost = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows de where :de:a_batch_number = :b:a_batch_number and :de:a_ledger_number = :b:a_ledger_number and :de:a_posted = 1 limit 1),0),
+			glrec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1),0),
+			damt = (select sum(:de:a_amount) from /apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows de where :de:a_batch_number = :b:a_batch_number and :de:a_ledger_number = :b:a_ledger_number)
+		FROM 
+			/apps/kardia/data/Kardia_DB/a_batch/rows b
+		WHERE
+			:b:a_origin = 'DE'
+		ORDER BY
+			:b:a_batch_number
+		");
+	baseobj = "/apps/kardia/data/Kardia_DB/a_batch/rows";
+	replicasize=50;
+	readahead=25;
+	autoquery=never;
+	indicates_activity = no;
+
+	dep_endquery_cn "widget/connector" { target=refresh_timer; event=EndQuery; action=SetTimer; Time=300000; }
+
+	period_sync "widget/rule"
+	    {
+	    ruletype = "osrc_relationship";
+	    target = periods_osrc;
+	    is_slave = yes;
+	    key_1 = a_ledger_number;
+	    target_key_1 = a_ledger_number;
+	    key_2 = a_period;
+	    target_key_2 = a_period;
+	    autoquery = true;
+	    }
+
+	dep_form "widget/form" { }
+
+	unpost_req_cmp "widget/component"
+	    {
+	    path = "unpost_req_de.cmp";
+	    }
+
+	unpostde_win "widget/childwindow"
+	    {
+	    style=dialog;
+	    titlebar=no;
+	    toplevel=yes;
+	    width=480; height=300;
+	    x=150; y=140;
+	    visible=no;
+
+	    on_req_unpost_1 "widget/connector" { event=Open; target=gl_only_var; action=SetValue; Value=:gl_only; }
+	    on_req_unpost_2 "widget/connector" { event=Open; target=unpost_from_gl; action=SetValue; Value=runclient(condition(:dep_form:glrec > 0, 1, 0)); }
+	    on_req_unpost_3 "widget/connector" { event=Open; target=unpost_from_de; action=SetValue; Value=runclient(condition(:gl_only, 0, 1)); }
+
+	    gl_only_var "widget/variable" { type=integer; }
+
+	    unpost_vbox "widget/vbox"
+		{
+		width=458; height=220; x=10; y=10;
+		spacing=10;
+
+		unpost_lbl "widget/label" { height=24; font_size=16; value=runclient("Request Unposting of " + :dep_osrc:a_batch_number + ":"); align=center; style=bold; }
+		unpost_sep "widget/pane" { height=2; style=lowered; }
+		//sp4 "widget/autolayoutspacer" { height=8; }
+
+		unpost_desc "widget/label" { height=50; style=italic; text="Unposting a batch is a privileged operation; you can request here that this batch be unposted, but another user who also has receipting and/or GL management privileges will need to approve the request"; }
+
+		unpost_from_gl "widget/component" { x=10; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=checkboxleft; text="Unpost and Remove from General Ledger"; unpost_gl_hints "widget/hints" { default=runclient(condition(:dep_form:glrec > 0, 1, 0)); style=notnull,readonly; } }
+		unpost_from_de "widget/component" { x=10; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=checkboxleft; text="Unpost from Deposits Journal"; unpost_de_hints "widget/hints" { default=runclient(condition(:gl_only_var:value, 0, 1)); style=notnull,readonly; } }
+		unpost_comment "widget/component" { height=50; path="/sys/cmp/smart_field.cmp"; ctl_type=textarea; text="Comments:"; }
+
+		sp4 "widget/autolayoutspacer" { height=2; }
+
+		unpost_btns "widget/hbox"
+		    {
+		    height=24;
+		    spacing=8;
+		    align=center;
+
+		    unpost_req "widget/textbutton"
+			{
+			height=24; width=150;
+			text="Request Unposting";
+
+			on_unpost_request_1 "widget/connector" { event=Click; target=unpost_req_cmp; action=RequestUnposting; ledger=runclient(:ledger:value); batch=runclient(:dep_osrc:a_batch_number); gl=runclient(:unpost_from_gl:value); de=runclient(:unpost_from_de:value); comment=runclient(:unpost_comment:value); }
+			on_unpost_request_2 "widget/connector" { event=Click; target=unpostde_win; action=Close; }
+			}
+
+		    unpost_cancel "widget/textbutton"
+			{
+			height=24; width=150;
+			text="Cancel";
+
+			on_unpost_cancel "widget/connector" { event=Click; target=unpostde_win; action=Close; }
+			}
+		    }
+		}
+	    }
+
+	post_to_gl_window "widget/childwindow"
+	    {
+	    style=dialog;
+	    titlebar=no;
+	    toplevel=yes;
+	    width=480; height=300;
+	    x=150; y=140;
+	    visible=no;
+
+	    preload_cc_on_open "widget/connector" { event=Open; target=gl_post_cc; action=SetValue; Value=runclient(:cash_cc:value); }
+	    preload_acct_on_open "widget/connector" { event=Open; target=gl_post_acct; action=SetValue; Value=runclient(:cash_toacct:value); }
+	    preload_pendacct_on_open "widget/connector" { event=Open; target=gl_post_pendacct; action=SetValue; Value=runclient(:cash_fromacct:value); }
+
+	    gl_post_vbox "widget/vbox"
+		{
+		width=458; height=220; x=10; y=10;
+		spacing=10;
+
+		gl_post_lbl "widget/label" { height=24; font_size=16; value=runclient("Post " + :dep_osrc:a_batch_number + " to General Ledger"); align=center; style=bold; }
+		gl_post_sep "widget/pane" { height=2; style=lowered; }
+
+		sp3 "widget/autolayoutspacer" { height=8; }
+
+		gl_post_cc "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Cash CostCtr:"; tooltip="Cost Center / Fund for Cash Transactions"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select CostCtr:"; width=300; empty_desc = "cost center"; }
+		gl_post_pendacct "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Undeposited Account:"; tooltip="Undeposited Funds GL Account"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; width=300; empty_desc = "GL account"; }
+		gl_post_acct "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Bank Account:"; tooltip="Cash GL Account for Deposit"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; width=300; empty_desc = "GL account"; }
+		}
+	    gl_post_ctls_hbox "widget/hbox"
+		{
+		width=458; height=24; x=10; y=240;
+		spacing=10;
+		align=center;
+
+		gl_post_ok "widget/textbutton"
+		    {
+		    text = "Post";
+		    enabled = runclient(char_length(:gl_post_acct:content) > 0 and char_length(:gl_post_cc:content) > 0);
+
+		    doglpost_cn "widget/connector"
+			{
+			event=Click;
+			target=post_de;
+			action=GLPost;
+			a_ledger_number=runclient(:de_batches:ledger);
+			a_period=runclient(:periods_osrc:a_period);
+			a_batch_number=runclient(:dep_osrc:a_batch_number);
+			}
+		    win_close_cn "widget/connector" { event=Click; target=post_to_gl_window; action=Close; }
+		    }
+		gl_post_cancel "widget/textbutton"
+		    {
+		    text = "Cancel";
+		    cancel_cn "widget/connector" { event=Click; target=post_to_gl_window; action=Close; }
+		    }
+		}
+	    }
+
+	deposit_batch_window "widget/childwindow"
+	    {
+	    style=dialog;
+	    titlebar=no;
+	    modal=yes;
+	    toplevel=yes;
+	    width=680; height=316;
+	    x=50; y=113;
+	    visible=no;
+
+	    batch_window_vbox "widget/vbox"
+		{
+		x=10; y=10;
+		width=658; height=294;
+		spacing=6;
+
+		hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; height=20; text="Deposit Information:"; }
+
+		deposit_batch_form "widget/form"
+		    {
+		    allow_query=no;
+		    next_form=details_form;
+		    enter_mode=nextfield;
+
+		    set_ledger_on_new "widget/connector" { event=New; target=f_a_ledger_no; action=SetValue; Value=runclient(:ledger:value); }
+		    new_details_on_new "widget/connector" { event=New; target=details_form; action=New; }
+
+		    batch_origin "widget/variable" { fieldname="a_origin"; batch_origin_hints "widget/hints" { default=runclient('DE'); } }
+		    nextjnl_v "widget/variable" { fieldname="a_next_journal_number"; nextjnl_hints "widget/hints" { default=1; } }
+		    nexttrx_v "widget/variable" { fieldname="a_next_transaction_number"; nexttrx_hints "widget/hints" { default=1; } }
+		    //ledger_v "widget/variable" { fieldname="a_ledger_number"; ledger_hints "widget/hints" { default=runclient(:de_batches:ledger); } }
+		    f_a_ledger_no "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_ledger_number; text="Ledger:"; ctl_type="label"; label_width=120; width=350; }
+		    f_a_batch_no "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_batch_number; text="Batch Number:"; ctl_type="editbox"; tooltip="Batch Number (automatically generated)"; label_width=120; width=350; bn_hint "widget/hints" { style=readonly; } }
+		    f_a_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_period; text="Period:"; ctl_type="dropdown"; tooltip="Period Number"; label_width=120; sql=runserver("select :a_period + ' - ' + :a_period_desc, :a_period, (getdate() >= :a_start_date and getdate() <= :a_end_date), '', :a_status != 'O' from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); width=350; label_width=120; per_hints "widget/hints" { style=readonly; } }
+		    f_a_batch_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_batch_desc; text="Description:"; ctl_type="editbox"; tooltip="Batch Description"; label_width=120; width=350; }
+		    f_a_batch_eff_date "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_default_effective_date; text="Effective Date:"; ctl_type="datetime"; tooltip="Effective (accrual) date for transactions"; label_width=120; width=350; eff_date_hints "widget/hints" { default=runclient(getdate()); } }
+
+		    rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=deposit_batch_form; visual=no; }
+		    }
+
+
+		//bsep "widget/autolayoutspacer" { height=8; }
+
+		//deposit_detail_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; height=20; text="Deposit Item Details:"; }
+
+		details_osrc "widget/osrc"
+		    {
+		    sql = " SELECT
+				:a_ledger_number,
+				:a_batch_number,
+				:a_period,
+				:a_effective_date,
+				:a_account_code,
+				acct_desc = :a_account_code + ': ' + (select :a_acct_desc from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :de:a_ledger_number and :a:a_account_code = :de:a_account_code),
+				:a_amount,
+				:a_cash_amount,
+				:a_num_checks,
+				:a_posted,
+				:a_posted_to_gl,
+				:a_comment,
+				:s_date_created,
+				:s_created_by,
+				:s_date_modified,
+				:s_modified_by
+			    FROM
+				/apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows de
+			    ";
+		    replicasize=20;
+		    readahead=20;
+		    baseobj = "/apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows";
+
+		    details_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=dep_osrc;
+			key_1=a_ledger_number;
+			target_key_1=a_ledger_number;
+			key_2=a_batch_number;
+			target_key_2=a_batch_number;
+			key_3=a_period;
+			target_key_3=a_period;
+			//revealed_only=yes;
+			}
+
+		    details_table_pane "widget/pane"
+			{
+			condition=0;
+			widget_class=table_bgnd;
+			height=130;
+
+			details_table "widget/table"
+			    {
+			    x=0; y=0; width=656; height=128;
+
+			    t_acct "widget/table-column" { title="Account"; fieldname="acct_desc"; width=200; }
+			    t_ttlamt "widget/table-column" { title="Total Amt"; fieldname="a_amount"; width=75; align=right; }
+			    t_cash "widget/table-column" { title="Cash Amt"; fieldname="a_cash_amount"; width=75; align=right; }
+			    t_cks "widget/table-column" { title="#Items"; fieldname="a_num_checks"; width=60; }
+			    t_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=224; }
+			    }
+			}
+
+		    details_form "widget/form"
+			{
+			allow_query=no;
+			next_form=deposit_batch_form;
+			enter_mode=nextfield;
+
+			set_acct_on_new "widget/connector" { event=New; target=f_acct; action=SetValue; Value=runclient(:cash_toacct:value); }
+			details_saved_cn "widget/connector" { event=DataSaved; target=dep_osrc; action=Refresh; }
+
+			f_amt "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_amount; text="Total Amount:"; ctl_type="editbox"; tooltip="Total Deposit Amount"; label_width=120; width=250; }
+			f_cash_amt "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_cash_amount; text="Cash Amount:"; ctl_type="editbox"; tooltip="Cash Deposit Amount"; label_width=120; width=250; }
+			f_checks "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_num_checks; text="# Of Items:"; ctl_type="editbox"; tooltip="Enter how many items deposited"; label_width=120; width=250; }
+			f_acct "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_account_code; text="Bank Account:"; ctl_type="dropdown"; tooltip="GL Account Code for Bank"; label_width=120; width=550; sql = runserver("select label = :bd:a_account_code + ' - ' + :bt:p_banking_desc + ', ' + :p:p_org_name + ' #' + :bd:p_bank_account_number, value = :bd:a_account_code, selected = (select count(1) from /apps/kardia/data/Kardia_DB/a_config/rows cf where :cf:a_config_name = 'RcptDepTo' and :cf:a_ledger_number = " + quote(:this:ledger) + " and :cf:a_config_value = :bd:a_account_code and :cf:a_ledger_number = :bd:a_ledger_number) from /apps/kardia/data/Kardia_DB/p_banking_details/rows bd, /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_banking_type/rows bt where :p:p_partner_key = :bd:p_bank_partner_id and :bd:p_banking_type = :bt:p_banking_type"); invalid_select_default=yes; f_acct_hints "widget/hints" { style=notnull; } }
+			f_a_eff_date "widget/variable" { fieldname=a_effective_date; det_eff_date_hints "widget/hints" { default=runclient(:f_a_batch_eff_date:value); } }
+
+			details_rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+			}
+		    }
+
+		batch_buttons "widget/hbox"
+		    {
+		    height=32;
+		    align=center;
+		    spacing=8;
+
+		    bsave_btn "widget/textbutton"
+			{
+			width=100; height=24;
+			text = "Save";
+			enabled = runclient(:dep_osrc:is_client_savable and char_length(:f_amt:content) > 0 and char_length(:f_cash_amt:content) > 0 and char_length(:f_checks:content) > 0 and char_length(:f_a_batch_desc:content) > 0 and not (:deposit_batch_form:form_mode == 'New' and :details_form:form_mode != 'New') and not (:deposit_batch_form:form_mode != 'New' and :details_form:form_mode == 'New'));
+
+			bsave_cn "widget/connector" { event=Click; target=dep_osrc; action=SaveClients; }
+			}
+
+		    bcancel_btn "widget/textbutton"
+			{
+			width=100; height=24;
+			text = runclient(condition(:dep_osrc:is_client_savable,"Cancel","Close"));
+
+			bcancel_cn1 "widget/connector" { event=Click; event_condition=runclient(:dep_osrc:is_client_savable); target=details_form; action=Discard; }
+			bcancel_cn2 "widget/connector" { event=Click; event_condition=runclient(:dep_osrc:is_client_savable); target=deposit_batch_form; action=Discard; }
+			bcancel_cn3 "widget/connector" { event=Click; event_condition=runclient(not :dep_osrc:is_client_savable); target=deposit_batch_window; action=Close; }
+			}
+		    }
+		}
+	    }
+
+	batch_tbl_pane "widget/pane"
+	    {
+	    x=0;y=0; width=600;height=542;
+	    widget_class = "table_bgnd";
+
+	    batch_tbl "widget/table"
+		{
+		x=0;y=0;width=598;height=540;
+		mode=dynamicrow;
+
+		t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=55; }
+		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=180; }
+		t_amt "widget/table-column" { title="Amount"; fieldname="damt"; width=75; align=right; }
+		t_dt "widget/table-column" { title="Eff. Date"; fieldname="date_txt"; width=75; }
+		t_user "widget/table-column" { title="User"; fieldname="s_created_by"; width=50; }
+		//t_rcnt "widget/table-column" { title="Recs"; fieldname="drec"; width=40; type=check; }
+		t_rpost "widget/table-column" { title="Post?"; fieldname="dpost"; width=40; type=check; }
+		t_glcnt "widget/table-column" { title="GL?"; fieldname="glrec"; width=40; type=check; }
+		}
+	    }
+	}
+
+    btn_vbox "widget/vbox"
+	{
+	x = 608; y=0; width=172; height=542;
+	spacing=8;
+	cellsize=40;
+
+	new_batch "widget/textbutton"
+	    {
+	    require_one_endorsement="kardia:dep_manage","kardia:dep_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    width = 172;
+	    height = 40;
+	    text = "New Deposit";
+	    enabled = runclient(:deposit_batch_form:is_newable and :periods_osrc:a_status == 'O');
+
+	    new_cn "widget/connector" { event=Click; target=deposit_batch_form; action=New; }
+	    }
+	view_details "widget/textbutton"
+	    {
+	    invert_security_check=yes;
+	    require_one_endorsement="kardia:dep_manage","kardia:dep_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    width = 172;
+	    height = 40;
+	    text = "View Deposit";
+	    enabled = runclient(:deposit_batch_form:is_editable and :periods_osrc:a_status == 'O');
+
+	    detail_cn "widget/connector" { event=Click; target=deposit_batch_window; action=Open; }
+	    }
+	edit_details "widget/textbutton"
+	    {
+	    require_one_endorsement="kardia:dep_manage","kardia:dep_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    width = 172;
+	    height = 40;
+	    text = "Edit Deposit";
+	    enabled = runclient(:deposit_batch_form:is_editable and :periods_osrc:a_status == 'O');
+
+	    detail_cn "widget/connector" { event=Click; target=deposit_batch_window; action=Open; }
+	    }
+
+
+	sep_line2 "widget/pane"
+	    {
+	    require_one_endorsement="kardia:dep_manage","kardia:dep_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    height=2;
+	    fl_height=0;
+	    style=lowered;
+	    }
+	posting_lbl "widget/label"
+	    {
+	    require_one_endorsement="kardia:dep_manage","kardia:dep_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    height=15;
+	    text="Posting";
+	    align=center;
+	    style=bold;
+	    }
+	post "widget/textbutton"
+	    {
+	    require_one_endorsement="kardia:dep_manage","kardia:dep_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    width = 172;
+	    height = 40;
+	    text = runclient(condition(:dep_form:dpost > 0 and has_endorsement('kardia:dep_manage','kardia:ledger:' + :ledger:value), condition(:dep_form:glrec > 0, "Request Unpost from Deposits and GL", "Request Unpost from Deposits Journal"), "Post To Deposits Journal"));
+	    enabled = runclient(:dep_form:drec > 0 and :dep_form:is_editable and ((:dep_form:glrec != 1 and :dep_form:dpost != 1) or has_endorsement('kardia:dep_manage','kardia:ledger:' + :ledger:value)));
+
+	    dopost_cn "widget/connector"
+		{
+		event=Click;
+		event_condition = runclient(:dep_form:is_editable and :dep_form:drec == 1 and :dep_form:glrec != 1 and :dep_form:dpost != 1);
+		event_confirm = runclient("Really post batch #" + :dep_form:a_batch_number + " to the Deposits journal?");
+		target=post_de;
+		action=Post;
+		a_ledger_number=runclient(:de_batches:ledger);
+		a_period=runclient(:periods_osrc:a_period);
+		a_batch_number=runclient(:dep_osrc:a_batch_number);
+		}
+
+	    unpostdep_cn "widget/connector"
+		{
+		event=Click;
+		event_condition = runclient(not (:dep_form:is_editable and :dep_form:drec == 1 and :dep_form:glrec != 1 and :dep_form:dpost != 1));
+		target=unpostde_win;
+		action=Open;
+		IsModal=1;
+		gl_only=0;
+		}
+	    }
+	post_to_gl "widget/textbutton"
+	    {
+	    require_endorsements="kardia:dep_manage";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    width = 172;
+	    height = 40;
+	    //text = "Post Batch To GL";
+	    text = runclient(condition(:dep_form:glrec > 0 and has_endorsement('kardia:dep_manage','kardia:ledger:' + :ledger:value), "Request Unpost from GL", "Post To GL"));
+	    //enabled = runclient(:dep_form:is_editable and :dep_form:glrec != 1 and :dep_form:dpost == 1);
+	    enabled = runclient(:dep_form:drec > 0 and :dep_form:is_editable and ((:dep_form:glrec != 1 and :dep_form:dpost == 1) or has_endorsement('kardia:dep_manage','kardia:ledger:' + :ledger:value)));
+
+	    win_open_cn "widget/connector"
+		{
+		event=Click;
+		event_condition=runclient(:dep_form:drec > 0 and :dep_form:is_editable and :dep_form:glrec == 0 and :dep_form:dpost > 0);
+		target=post_to_gl_window;
+		action=Open;
+		IsModal=1;
+		}
+	    unpostgl_cn "widget/connector"
+		{
+		event=Click;
+		event_condition = runclient(:dep_form:drec > 0 and :dep_form:is_editable and :dep_form:glrec >= 1 and :dep_form:dpost > 0);
+		target=unpostde_win;
+		action=Open;
+		IsModal=1;
+		gl_only=1;
+		}
+	    }
+
+
+	sep_line3 "widget/pane" { height=2; fl_height=0; style=lowered; }
+	reporting_lbl "widget/label" { height=15; text="Reports and Printing"; align=center; style=bold; }
+	print_detail "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = runclient("Report: Deposit " + isnull(:dep_osrc:a_batch_number, ''));
+	    enabled = runclient(:dep_form:is_editable);
+
+	    doprintdetail_cn "widget/connector" { event=Click; target = de_batches; action = Launch; Source=runclient("/apps/kardia/modules/rcpt/deposit_detail.rpt"); Width=800; Height=600; ledger=runclient(:periods_osrc:a_ledger_number); period=runclient(:periods_osrc:a_period); batch=runclient(:dep_osrc:a_batch_number); unposted=1; }
+	    }
+	print_summary "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = runclient("Report: Deposits Summary " + isnull(:periods_osrc:a_period, ''));
+	    enabled = runclient(:dep_form:is_editable);
+
+	    rpt_print_cn "widget/connector" { event="Click"; target="de_batches"; action="Launch"; Source=runclient("/apps/kardia/modules/rcpt/deposit_summary.rpt"); Width=runclient(800); Height=runclient(600); ledger=runclient(:periods_osrc:a_ledger_number); period=runclient(:periods_osrc:a_period); unposted=1; }
+	    }
+	}
+
+    nextbatch "widget/component"
+	{
+	path = "/apps/kardia/modules/gl/next_batch.cmp";
+
+	generate_batchno_on_new "widget/connector"
+	    {
+	    source=deposit_batch_form;
+	    event=New;
+	    action=GetBatchNumber;
+	    ledger=runclient(:de_batches:ledger);
+	    }
+	got_batchno "widget/connector"
+	    {
+	    event=BatchNumber;
+	    target=f_a_batch_no;
+	    action=SetValue;
+	    Value = runclient(:batch);
+	    }
+	}
+    }

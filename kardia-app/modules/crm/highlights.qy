@@ -76,7 +76,7 @@ highlights "system/query"
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
 		e_highlight_id = 'DATA' + :di:name,
-		e_highlight_name = :dit:e_data_item_type_label,
+		e_highlight_name = isnull(:pdit:e_data_item_type_label + '::', '') + :dit:e_data_item_type_label,
 		e_highlight_type = 'DATA',
 		e_highlight_reference_info = convert(string, :di:e_data_item_id),
 		e_highlight_data = :di:e_data_item_value,
@@ -89,10 +89,14 @@ highlights "system/query"
 		s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/e_data_item/rows di,
-		/apps/kardia/data/Kardia_DB/e_data_item_type/rows dit
+		/apps/kardia/data/Kardia_DB/e_data_item_type/rows dit,
+		/apps/kardia/data/Kardia_DB/e_data_item_type/rows pdit
 	    where
 		:di:p_partner_key = :parameters:partner_key and
-		:dit:e_data_item_type_id = :di:e_data_item_type_id
+		:dit:e_data_item_type_id = :di:e_data_item_type_id and
+		isnull(:di:e_data_item_highlight, 1) > 0 and
+		(:dit:e_data_item_type_highlight > 0 or :dit:e_data_item_type_highlight_if = :di:e_data_item_value) and
+		:pdit:e_data_item_type_id =* :dit:e_parent_data_item_type_id
 	    ;
 
 	    -- TAG - highlight tags applied to the person
