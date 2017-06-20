@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.lightsys.donorapp.data.Account;
-import org.lightsys.donorapp.tools.AutoUpdater;
 import org.lightsys.donorapp.tools.DataConnection;
 import org.lightsys.donorapp.tools.LocalDBHandler;
+
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -36,7 +36,7 @@ import com.example.donorapp.R;
  * The main activity for the app. Creates the side-menu drawer used throughout the
  * app. This is used for switching between fragment activities.
  * @author Andrew Cameron
- *
+ * 
  */
 public class MainActivity extends ActionBarActivity {
 	private DrawerLayout mDrawerLayout;
@@ -46,22 +46,7 @@ public class MainActivity extends ActionBarActivity {
 	private Fragment fragment;
 	private ArrayList<Account> accts = new ArrayList<Account>();
 	private static final long DAY_MILLI = 86400000;
-
-	//stuff to automatically refresh the current fragment
-	private android.os.Handler refreshHandler = new android.os.Handler();
-	private Runnable refreshRunnable = new Runnable() {
-		@Override
-		public void run() {
-		//	refreshCurrentFragment();
-			//refreshes the current fragment every second
-			//this is not very efficient
-			//it should be altered eventually
-			//ideally it should refresh whenever the auto-updater updates
-			//refreshHandler.postDelayed(refreshRunnable, 1000);
-			//it was having issues, so it is now gone
-		}
-	};
-
+	
 	/**
 	 * On first open it will open the account page. If not, starts the fund
 	 * list view. Also Creates the drawer menu
@@ -70,7 +55,7 @@ public class MainActivity extends ActionBarActivity {
 	 * (non-Javadoc)
 	 * The SuppressLint is used because at line 138 a method is used
 	 * which is available in Ice_cream_sandwich (api 14) or later
-	 * I have a build check to make sure it isn't called unless it matches
+	 * I have a build check to make sure it isn't called unless it matches 
 	 * the requirements.
 	 */
 	@SuppressLint("NewApi")
@@ -79,12 +64,8 @@ public class MainActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.drawer_layout);
 
-		/*set up auto updater*/
-		Intent updateIntent = new Intent(getBaseContext(), AutoUpdater.class);
-		startService(updateIntent);
-		refreshHandler.postDelayed(refreshRunnable, 1000);
-
 		/* Setting up the Drawer Navigation */
+
 		String [] mCategories = getResources().getStringArray(R.array.categories);
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow_v1, GravityCompat.START);
@@ -118,15 +99,15 @@ public class MainActivity extends ActionBarActivity {
 		if(Build.VERSION.SDK_INT >= 14){
 			getSupportActionBar().setHomeButtonEnabled(true);
 		}
-
+		
 		/* End of setting up the Drawer Navigation */
 
 		/* Check for accounts, updates, and load content */
-
+		
 		LocalDBHandler dbh = new LocalDBHandler(this, null);
 
 		accts = dbh.getAccounts();
-
+		
 		//Delete timestamp if no accounts exist
 		//Launch login page to add account
 		if (savedInstanceState == null && accts.size() == 0) {
@@ -137,8 +118,6 @@ public class MainActivity extends ActionBarActivity {
 			Intent login = new Intent(MainActivity.this, AccountsActivity.class);
 			startActivityForResult(login, 0);
 		}
-
-
 		/*
 		 * if account(s) do exist check the time stamp, for whether or not to update data
 		 * send to fund list to begin
@@ -148,7 +127,7 @@ public class MainActivity extends ActionBarActivity {
 			long originalStamp = dbh.getTimeStamp();
 			long currentTime = Calendar.getInstance().getTimeInMillis();
 			dbh.close();
-
+			
 			if(currentTime > originalStamp + DAY_MILLI && originalStamp != -1){
 				for (Account a : accts) {
 					new DataConnection(this, this, a).execute("");
@@ -157,12 +136,7 @@ public class MainActivity extends ActionBarActivity {
 			selectItem(0);
 		}
 	}// END OF onCreate
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-	}
-
+	
 	/**
 	 * Used to create the options menu
 	 */
@@ -172,8 +146,8 @@ public class MainActivity extends ActionBarActivity {
 		inflater.inflate(R.menu.main, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
-
-
+	
+	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu){
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
@@ -181,7 +155,7 @@ public class MainActivity extends ActionBarActivity {
 		menu.findItem(R.id.action_refresh).setVisible(!drawerOpen);
 		return super.onPrepareOptionsMenu(menu);
 	}
-
+	
 	/**
 	 * Used by the drawer to refresh the toggle button
 	 * (on activity resume)
@@ -191,14 +165,14 @@ public class MainActivity extends ActionBarActivity {
 		super.onPostCreate(savedInstanceState);
 		mDrawerToggle.syncState();
 	}
-
-
+	
+	
 	@Override
 	public void onConfigurationChanged(Configuration newConfig){
 		super.onConfigurationChanged(newConfig);
 		mDrawerToggle.onConfigurationChanged(newConfig);
 	}
-
+	
 	/**
 	 * Used to handle click events for the action bar
 	 */
@@ -223,7 +197,7 @@ public class MainActivity extends ActionBarActivity {
 				}
 				break;
 		}
-
+		
 		return super.onOptionsItemSelected(item);
 	}
 
@@ -243,7 +217,6 @@ public class MainActivity extends ActionBarActivity {
 	 * @param position, position of the drawer that has been selected
 	 */
 	private void selectItem(int position) {
-		LocalDBHandler db = new LocalDBHandler(this, null);
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		switch(position){
 		case 0:
@@ -255,13 +228,10 @@ public class MainActivity extends ActionBarActivity {
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 2:
-			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(db.getGivingUrl()));
-			if (db.getGivingUrl().equals("")){
-				Toast.makeText(MainActivity.this, "Your organization has not supplied a donation link", Toast.LENGTH_SHORT).show();
-			}
-			else {
-				startActivity(browserIntent);
-			}
+			Toast.makeText(MainActivity.this, "To Be Implemented: General Donation Link", Toast.LENGTH_SHORT).show();
+			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("INSERT HERE"));
+			//TODO: replace url with actually donation site
+			//startActivity(browserIntent);
 			break;
         case 3:
             fragment = new NoteList();

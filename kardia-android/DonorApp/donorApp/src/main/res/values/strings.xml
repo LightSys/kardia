@@ -5,11 +5,9 @@
         <item>Designations</item>
         <item>Gifts</item>
         <item>Donate</item>
-        <item>Prayer Requests/Updates</item>
+        <item>Prayer/Updates</item>
         <item>Contact Missionary</item>
         <item>Accounts</item>
-        <item>Refresh Options</item>
-        <item>Refresh</item>
     </string-array>
     <string-array name="contactTypes">
         <item>Encouragement</item>
@@ -54,6 +52,7 @@
     <string name="drawer_open">Drawer Open</string>
     <string name="drawer_closed">Drawer Closed</string>
     <string name="action_search">Search</string>
+    <string name="action_refresh">Refresh</string>
     <string name="submit">Submit</string>
     <string name="search">Search</string>
     <string name="date_range">Date Range</string>
@@ -72,12 +71,13 @@
     <string name="from">From:</string>
     <string name="name">name</string>
     <string name="set">Set</string>
-    <string name="end_date">End Date: </string>
+    <string name="end_date">End Date:</string>
     <string name="choose_time">Choose Time</string>
-    <string name="time1">Time #1: </string>
-    <string name="time2">Time #2: </string>
-    <string name="time3">Time #3: </string>
-    <string name="time4">Time #4: </string>
+    <string name="time1">Time #1:\ </string>
+    <string name="time2">Time #2:\ </string>
+    <string name="time3">Time #3:\ </string>
+    <string name="time4">Time #4:\ </string>
+    <string name="range_check_box">Notify me randomly\nwithin a timeframe</string>
     <string name="dollar_sign">$</string>
     <string name="praying">Praying</string>
     <string name="comment">Comment</string>

@@ -18,7 +18,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/kardiabeat_v2"
+        android:icon="@drawable/kardiabeat_v3"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
@@ -48,8 +48,9 @@
         <activity android:name="org.lightsys.donorapp.views.ContactMissionaryActivity" >
         </activity>
 
-        <activity android:name="org.lightsys.donorapp.views.CommentActivity"
-            android:label="Post Comment">
+        <activity
+            android:name="org.lightsys.donorapp.views.ContactMissionaryActivity"
+            android:windowSoftInputMode="adjustPan">
         </activity>
 
         <receiver android:name="org.lightsys.donorapp.tools.NotifyAlarmReceiver" >

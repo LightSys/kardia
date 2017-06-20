@@ -36,7 +36,7 @@ import com.example.donorapp.R;
  * The main activity for the app. Creates the side-menu drawer used throughout the
  * app. This is used for switching between fragment activities.
  * @author Andrew Cameron
- *
+ * 
  */
 public class MainActivity extends ActionBarActivity {
 	private DrawerLayout mDrawerLayout;
@@ -70,7 +70,7 @@ public class MainActivity extends ActionBarActivity {
 	 * (non-Javadoc)
 	 * The SuppressLint is used because at line 138 a method is used
 	 * which is available in Ice_cream_sandwich (api 14) or later
-	 * I have a build check to make sure it isn't called unless it matches
+	 * I have a build check to make sure it isn't called unless it matches 
 	 * the requirements.
 	 */
 	@SuppressLint("NewApi")
@@ -118,11 +118,11 @@ public class MainActivity extends ActionBarActivity {
 		if(Build.VERSION.SDK_INT >= 14){
 			getSupportActionBar().setHomeButtonEnabled(true);
 		}
-
+		
 		/* End of setting up the Drawer Navigation */
 
 		/* Check for accounts, updates, and load content */
-
+		
 		LocalDBHandler dbh = new LocalDBHandler(this, null);
 
 		accts = dbh.getAccounts();
@@ -148,7 +148,7 @@ public class MainActivity extends ActionBarActivity {
 			long originalStamp = dbh.getTimeStamp();
 			long currentTime = Calendar.getInstance().getTimeInMillis();
 			dbh.close();
-
+			
 			if(currentTime > originalStamp + DAY_MILLI && originalStamp != -1){
 				for (Account a : accts) {
 					new DataConnection(this, this, a).execute("");
@@ -172,16 +172,15 @@ public class MainActivity extends ActionBarActivity {
 		inflater.inflate(R.menu.main, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
-
-
+	
+	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu){
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
 		menu.findItem(R.id.action_search).setVisible(!drawerOpen);
-		menu.findItem(R.id.action_refresh).setVisible(!drawerOpen);
 		return super.onPrepareOptionsMenu(menu);
 	}
-
+	
 	/**
 	 * Used by the drawer to refresh the toggle button
 	 * (on activity resume)
@@ -191,14 +190,14 @@ public class MainActivity extends ActionBarActivity {
 		super.onPostCreate(savedInstanceState);
 		mDrawerToggle.syncState();
 	}
-
-
+	
+	
 	@Override
 	public void onConfigurationChanged(Configuration newConfig){
 		super.onConfigurationChanged(newConfig);
 		mDrawerToggle.onConfigurationChanged(newConfig);
 	}
-
+	
 	/**
 	 * Used to handle click events for the action bar
 	 */
@@ -214,16 +213,8 @@ public class MainActivity extends ActionBarActivity {
 				fragment = new Search();
 				getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
 				break;
-			case R.id.action_refresh:
-				LocalDBHandler db = new LocalDBHandler(this, null);
-				accts = db.getAccounts();
-				db.close();
-				for (Account a : accts) {
-					new DataConnection(this, this, a).execute("");
-				}
-				break;
 		}
-
+		
 		return super.onOptionsItemSelected(item);
 	}
 
@@ -274,6 +265,22 @@ public class MainActivity extends ActionBarActivity {
 		case 5:
 			Intent accounts = new Intent(MainActivity.this, AccountsActivity.class);
 			startActivity(accounts);
+			break;
+		case 6:
+			RefreshOptions refresh = new RefreshOptions();
+			fragment = refresh;
+			accts = db.getAccounts();
+			refresh.setDb(db);
+			db.close();
+			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+			break;
+		case 7:
+			//refresh
+			accts = db.getAccounts();
+			db.close();
+			for (Account a : accts) {
+				new DataConnection(this, this, a).execute("");
+				}
 			break;
 		}
 		mDrawerList.setItemChecked(position, true);
