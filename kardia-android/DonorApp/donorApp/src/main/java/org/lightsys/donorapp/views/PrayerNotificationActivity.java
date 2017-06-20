@@ -15,9 +15,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -38,6 +40,12 @@ import java.util.Locale;
  *
  * This activity allows the user to set up a notification system to remind them to pray
  */
+
+/*
+ * Edit: Daniel Garcia 06/15/17
+ *
+ * Added a function that allows the user to set a random alarm within the timeframe specified
+ */
 public class PrayerNotificationActivity extends Activity {
 
     private Note request;
@@ -47,9 +55,11 @@ public class PrayerNotificationActivity extends Activity {
     private int requestid, notificationID, frequency;
 
     private Spinner frequencySpinner;
-    private TableRow dateRow, timeRow1, timeRow2, timeRow3, timeRow4;
-    private Button datePicker, timePicker1, timePicker2,
-            timePicker3, timePicker4;
+    private CheckBox rangeCheckBox;
+    private TextView dash1, dash2, dash3, dash4;
+    private TableRow timesDayRow, dateRow, timeRow1, timeRow2, timeRow3, timeRow4;
+    private Button datePicker, timePicker1, timePicker2, timePicker3, timePicker4,
+            timePicker1Ext, timePicker2Ext, timePicker3Ext, timePicker4Ext;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,6 +80,11 @@ public class PrayerNotificationActivity extends Activity {
         alarmTimes.add("12:00");
         alarmTimes.add("17:00");
         alarmTimes.add("19:00");
+        alarmTimes.add("8:00");
+        alarmTimes.add("13:00");
+        alarmTimes.add("18:00");
+        alarmTimes.add("20:00");
+
 
         // For next ID, retrieve last ID from database and add 1
         LocalDBHandler db = new LocalDBHandler(this, null);
@@ -78,6 +93,12 @@ public class PrayerNotificationActivity extends Activity {
         db.close();
 
         frequencySpinner = (Spinner) this.findViewById(R.id.times_day);
+        rangeCheckBox = (CheckBox) this.findViewById(R.id.rangeCheckBox);
+        dash1 = (TextView) this.findViewById(R.id.textView5);
+        dash2 = (TextView) this.findViewById(R.id.textView6);
+        dash3 = (TextView) this.findViewById(R.id.textView7);
+        dash4 = (TextView) this.findViewById(R.id.textView8);
+        timesDayRow = (TableRow) this.findViewById(R.id.timesDayRow);
         dateRow = (TableRow) this.findViewById(R.id.endDateRow);
         timeRow1 = (TableRow) this.findViewById(R.id.timeRow1);
         timeRow2 = (TableRow) this.findViewById(R.id.timeRow2);
@@ -88,6 +109,10 @@ public class PrayerNotificationActivity extends Activity {
         timePicker2 = (Button) this.findViewById(R.id.timePicker2);
         timePicker3 = (Button) this.findViewById(R.id.timePicker3);
         timePicker4 = (Button) this.findViewById(R.id.timePicker4);
+        timePicker1Ext = (Button) this.findViewById(R.id.timePicker1Ext);
+        timePicker2Ext = (Button) this.findViewById(R.id.timePicker2Ext);
+        timePicker3Ext = (Button) this.findViewById(R.id.timePicker3Ext);
+        timePicker4Ext = (Button) this.findViewById(R.id.timePicker4Ext);
         Button setNotificationButton = (Button) this.findViewById(R.id.setNotification);
         Button cancelButton = (Button) this.findViewById(R.id.cancel);
 
@@ -105,6 +130,14 @@ public class PrayerNotificationActivity extends Activity {
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {}
+        });
+
+        rangeCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Show second time on visible rows if box is checked
+                showTimeExtensions();
+            }
         });
 
         setNotificationButton.setOnClickListener(new View.OnClickListener() {
@@ -173,6 +206,30 @@ public class PrayerNotificationActivity extends Activity {
                 openTimePicker(4);
             }
         });
+        timePicker1Ext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openTimePicker(11);
+            }
+        });
+        timePicker2Ext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openTimePicker(22);
+            }
+        });
+        timePicker3Ext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openTimePicker(33);
+            }
+        });
+        timePicker4Ext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openTimePicker(44);
+            }
+        });
     }
 
     // Called when the user presses the back button on the bottom of the screen
@@ -211,10 +268,45 @@ public class PrayerNotificationActivity extends Activity {
            timeRow1.getVisibility() == View.VISIBLE && timePicker1.getText().equals("Choose Time") ||
            timeRow2.getVisibility() == View.VISIBLE && timePicker2.getText().equals("Choose Time") ||
            timeRow3.getVisibility() == View.VISIBLE && timePicker3.getText().equals("Choose Time") ||
-           timeRow4.getVisibility() == View.VISIBLE && timePicker4.getText().equals("Choose Time")) {
+           timeRow4.getVisibility() == View.VISIBLE && timePicker4.getText().equals("Choose Time") ||
+           timePicker1Ext.getVisibility() == View.VISIBLE &&
+           timePicker1Ext.getText().equals("Choose Time") ||
+           timePicker2Ext.getVisibility() == View.VISIBLE && timeRow2.getVisibility() == View.VISIBLE &&
+           timePicker2Ext.getText().equals("Choose Time") ||
+           timePicker3Ext.getVisibility() == View.VISIBLE && timeRow3.getVisibility() == View.VISIBLE &&
+           timePicker3Ext.getText().equals("Choose Time") ||
+           timePicker4Ext.getVisibility() == View.VISIBLE && timeRow4.getVisibility() == View.VISIBLE &&
+           timePicker4Ext.getText().equals("Choose Time")) {
             return false;
         } else {
             return true;
+        }
+    }
+
+    //Show additional times for range notification
+    private void showTimeExtensions() {
+        if(rangeCheckBox.isChecked()) {
+            dash1.setVisibility(View.VISIBLE);
+            dash2.setVisibility(View.VISIBLE);
+            dash3.setVisibility(View.VISIBLE);
+            dash4.setVisibility(View.VISIBLE);
+            timePicker1Ext.setVisibility(View.VISIBLE);
+            timePicker2Ext.setVisibility(View.VISIBLE);
+            timePicker3Ext.setVisibility(View.VISIBLE);
+            timePicker4Ext.setVisibility(View.VISIBLE);
+        } else {
+            dash1.setVisibility(View.INVISIBLE);
+            dash2.setVisibility(View.INVISIBLE);
+            dash3.setVisibility(View.INVISIBLE);
+            dash4.setVisibility(View.INVISIBLE);
+            timePicker1Ext.setVisibility(View.INVISIBLE);
+            timePicker2Ext.setVisibility(View.INVISIBLE);
+            timePicker3Ext.setVisibility(View.INVISIBLE);
+            timePicker4Ext.setVisibility(View.INVISIBLE);
+            timePicker1Ext.setText(R.string.choose_time);
+            timePicker2Ext.setText(R.string.choose_time);
+            timePicker3Ext.setText(R.string.choose_time);
+            timePicker4Ext.setText(R.string.choose_time);
         }
     }
 
@@ -236,7 +328,6 @@ public class PrayerNotificationActivity extends Activity {
                 timeRow2.setVisibility(View.VISIBLE);
             case 1:
                 timeRow1.setVisibility(View.VISIBLE);
-
         }
     }
 
@@ -316,6 +407,18 @@ public class PrayerNotificationActivity extends Activity {
                 break;
             case 4:
                 text = timePicker4.getText().toString();
+                break;
+            case 11:
+                text = timePicker1Ext.getText().toString();
+                break;
+            case 22:
+                text = timePicker2Ext.getText().toString();
+                break;
+            case 33:
+                text = timePicker3Ext.getText().toString();
+                break;
+            case 44:
+                text = timePicker4Ext.getText().toString();
                 break;
             default:
                 text = "???";
@@ -401,6 +504,22 @@ public class PrayerNotificationActivity extends Activity {
                     timePicker4.setText(timeStr);
                     alarmTimes.set(3, timeStr24Hr);
                     break;
+                case 11:
+                    timePicker1Ext.setText(timeStr);
+                    alarmTimes.set(4, timeStr24Hr);
+                    break;
+                case 22:
+                    timePicker2Ext.setText(timeStr);
+                    alarmTimes.set(5, timeStr24Hr);
+                    break;
+                case 33:
+                    timePicker3Ext.setText(timeStr);
+                    alarmTimes.set(6, timeStr24Hr);
+                    break;
+                case 44:
+                    timePicker4Ext.setText(timeStr);
+                    alarmTimes.set(7, timeStr24Hr);
+                    break;
             }
         }
     }
@@ -412,7 +531,7 @@ public class PrayerNotificationActivity extends Activity {
 
         @Override
         protected String doInBackground(String... params) {
-            remind(alarmTimes, endDate, request.getMissionaryName(), request.getSubject());
+            remind(alarmTimes, endDate, request.getMissionaryName(), request.getSubject(), rangeCheckBox);
             return null;
         }
 
@@ -423,7 +542,7 @@ public class PrayerNotificationActivity extends Activity {
          * @param title, title for notification to display
          * @param message, message for notification to display
          */
-        private void remind (ArrayList<String> times, String date, String title, String message)
+        private void remind (ArrayList<String> times, String date, String title, String message, CheckBox checkBox)
         {
             PrayerNotification notification;
             Intent alarmIntent;
@@ -446,46 +565,108 @@ public class PrayerNotificationActivity extends Activity {
 
             // Setting alarms requires sdk version 19 or higher
             if (Build.VERSION.SDK_INT >= 19) {
+                if(!rangeCheckBox.isChecked()) {
+                    // Loop through all times until the end date, setting a notification at each one
+                    for (int i = 0; i < frequency; i++) {
+                        String[] timeSplit = times.get(i).split(":");
+                        c = Calendar.getInstance();
+                        c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeSplit[0]));
+                        c.set(Calendar.MINUTE, Integer.parseInt(timeSplit[1]));
+                        c.set(Calendar.SECOND, 0);
+                        alarmTime = c.getTimeInMillis();
+                        for (int j = 0; j < numberOfDays; j++) {
 
-                // Loop through all times until the end date, setting a notification at each one
-                for (int i = 0; i < frequency; i++) {
-                    String[] timeSplit = times.get(i).split(":");
-                    c = Calendar.getInstance();
-                    c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeSplit[0]));
-                    c.set(Calendar.MINUTE, Integer.parseInt(timeSplit[1]));
-                    c.set(Calendar.SECOND, 0);
-                    alarmTime = c.getTimeInMillis();
-                    for (int j = 0; j < numberOfDays; j++) {
+                            // If alarm time is not in the past, set alarm for notification
+                            if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
 
-                        // If alarm time is not in the past, set alarm for notification
-                        if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
+                                alarmIntent = new Intent(PrayerNotificationActivity.this, NotifyAlarmReceiver.class);
+                                alarmIntent.putExtra("title", title);
+                                alarmIntent.putExtra("message", message);
+                                alarmIntent.putExtra("id", notificationID);
 
-                            alarmIntent = new Intent(PrayerNotificationActivity.this, NotifyAlarmReceiver.class);
-                            alarmIntent.putExtra("title", title);
-                            alarmIntent.putExtra("message", message);
-                            alarmIntent.putExtra("id", notificationID);
+                                pendingIntent = PendingIntent.getBroadcast(PrayerNotificationActivity.this,
+                                        notificationID, alarmIntent, 0);
 
-                            pendingIntent = PendingIntent.getBroadcast(PrayerNotificationActivity.this,
-                                    notificationID, alarmIntent, 0);
+                                notification = new PrayerNotification();
+                                notification.setId(notificationID);
+                                notification.setNotificationTime(alarmTime);
+                                notification.setRequest_id(requestid);
 
-                            notification = new PrayerNotification();
-                            notification.setId(notificationID);
-                            notification.setNotificationTime(alarmTime);
-                            notification.setRequest_id(requestid);
+                                db.addNotification(notification);
 
-                            db.addNotification(notification);
+                                // Set alarm and increment notification ID
+                                alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
 
-                            // Set alarm and increment notification ID
-                            alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
+                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                                Log.w("tag", "Alarm set for: " + format.format(alarmTime) + ", ID:" +
+                                        Integer.toString(notificationID) + ", Name:" + title);
 
-                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
-                            Log.w("tag", "Alarm set for: " + format.format(alarmTime) + ", ID:" +
-                                    Integer.toString(notificationID) + ", Name:" + title);
-
-                            notificationID++;
+                                notificationID++;
+                            }
+                            // Add one day for next notification
+                            alarmTime += DAY_IN_MILLIS;
                         }
-                        // Add one day for next notification
-                        alarmTime += DAY_IN_MILLIS;
+                    }
+                } else if(rangeCheckBox.isChecked()){
+
+                    for (int i = 0; i < frequency; i++) {
+                        //Set calendar to today
+                        c = Calendar.getInstance();
+                        for(int j = 0; j < numberOfDays; j++){
+
+                            //Get and split initial and final times in the range
+                            String time1 = times.get(i);
+                            String time2 = times.get(i+4);
+                            String[] time1Split = time1.split(":");
+                            String[] time2Split = time2.split(":");
+
+                            //Turn times 1 and 2 into integers (in minutes) to make randomizing possible
+                            int minTime = (Integer.parseInt(time1Split[0]) * 60) + Integer.parseInt(time1Split[1]);
+                            int maxTime = (Integer.parseInt(time2Split[0]) * 60) + Integer.parseInt(time2Split[1]);
+
+                            //Generate a random number between minTime and maxTime,
+                            //then separate into minute and hour
+                            int randomTime = minTime + (int)(Math.random() * (maxTime - minTime + 1));
+                            int randomMinute = randomTime % 60;
+                            int randomHour = (randomTime - randomMinute) / 60;
+
+                            //Set time according to randomizer in millisecond format
+                            c.set(Calendar.HOUR_OF_DAY, randomHour);
+                            c.set(Calendar.MINUTE, randomMinute);
+                            c.set(Calendar.SECOND, 0);
+                            alarmTime = c.getTimeInMillis();
+                            if (alarmTime > Calendar.getInstance().getTimeInMillis()) {
+
+                                alarmIntent = new Intent(PrayerNotificationActivity.this, NotifyAlarmReceiver.class);
+                                alarmIntent.putExtra("title", title);
+                                alarmIntent.putExtra("message", message);
+                                alarmIntent.putExtra("id", notificationID);
+
+                                pendingIntent = PendingIntent.getBroadcast(PrayerNotificationActivity.this,
+                                        notificationID, alarmIntent, 0);
+
+                                notification = new PrayerNotification();
+                                notification.setId(notificationID);
+                                notification.setNotificationTime(alarmTime);
+                                notification.setRequest_id(requestid);
+
+                                db.addNotification(notification);
+
+                                // Set alarm and increment notification ID
+                                alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
+
+                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+                                Log.w("tag", "Alarm set for: " + format.format(alarmTime) + ", ID:" +
+                                        Integer.toString(notificationID) + ", Name:" + title);
+
+                                notificationID++;
+                            }
+
+                            //Set c to following day by resetting it to today then
+                            //adding a day for each increment of the loop
+                            c = Calendar.getInstance();
+                            c.setTimeInMillis(c.getTimeInMillis() + (DAY_IN_MILLIS * j));
+                        }
                     }
                 }
             } else {
