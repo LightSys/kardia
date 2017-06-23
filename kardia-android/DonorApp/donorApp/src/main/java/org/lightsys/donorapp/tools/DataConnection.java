@@ -161,6 +161,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
         }
         catch (Exception e) {
+            e.printStackTrace();
             // GET function throws an Exception if server not found
             dataActivity.runOnUiThread(new Runnable() {
                 @Override
@@ -340,7 +341,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
         } catch (Exception e) {
             // Rethrow exception for validation server error
-            throw new Exception();
+            e.printStackTrace();
+            throw e;
         }
         return result;
     }
