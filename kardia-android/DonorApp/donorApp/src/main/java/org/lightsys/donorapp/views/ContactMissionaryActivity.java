@@ -119,7 +119,7 @@ public class ContactMissionaryActivity extends Activity{
                     Toast.makeText(ContactMissionaryActivity.this,
                             "Message not sent; function not implemented.", Toast.LENGTH_SHORT).show();
                     // Send message object to API connection to insert into Kardia
-                    // Will need AsyncTask to connect to API
+                    // TODO: Will need AsyncTask to connect to API
 
                     try{//send message to api
                         Account account = db.getAccounts().get(accountIndex);
