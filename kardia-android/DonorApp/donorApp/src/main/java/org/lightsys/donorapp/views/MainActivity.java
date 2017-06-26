@@ -255,13 +255,8 @@ public class MainActivity extends ActionBarActivity {
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
 		case 2:
-			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(db.getGivingUrl()));
-			if (db.getGivingUrl().equals("")){
-				Toast.makeText(MainActivity.this, "Your organization has not supplied a donation link", Toast.LENGTH_SHORT).show();
-			}
-			else {
-				startActivity(browserIntent);
-			}
+			fragment = new LinkBar();
+			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 			break;
         case 3:
             fragment = new NoteList();
