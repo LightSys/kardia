@@ -30,6 +30,7 @@
         android:layout_marginTop="5dp"
         android:layout_marginLeft="38dp"
         android:layout_marginRight="38dp"
+        android:maxLines="1"
         android:textSize="@dimen/body_dimen_lg" />
 
     <TextView
@@ -43,6 +44,7 @@
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="38dp"
         android:layout_marginStart="38dp"
+        android:maxLines="1"
         android:textSize="@dimen/contact_dimen_lg" />
 
     <LinearLayout
