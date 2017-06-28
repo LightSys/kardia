@@ -3,7 +3,8 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context="org.lightsys.missionaryapp.views.MainActivity" >
+                tools:context="org.lightsys.missionaryapp.views.MainActivity"
+                android:background="@drawable/noise_blue_repeat">
 
     <!-- Display List -->
 
@@ -11,8 +12,7 @@
         android:id="@+id/fundSpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:background="@drawable/noise_blue_repeat">
+        android:layout_alignParentTop="true">
     </Spinner>
 
     <View
@@ -29,7 +29,7 @@
 
         <ListView
             android:id="@+id/infoList"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             style="@style/listCustomBlue"/>
     </RelativeLayout>

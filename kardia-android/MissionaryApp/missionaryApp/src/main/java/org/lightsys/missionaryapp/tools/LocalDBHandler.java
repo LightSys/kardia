@@ -1074,12 +1074,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
         // id, type, eventid, Name, content, date
         while (c.moveToNext()) {
-            String[] dateParts = c.getString(5).split("-");
-            date.set(Calendar.YEAR, Integer.parseInt(dateParts[0]));
-            date.set(Calendar.MONTH, Integer.parseInt(dateParts[1])-1);
-            date.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dateParts[2]));
-            date.set(Calendar.HOUR_OF_DAY, 0);
-            long eventDate = date.getTimeInMillis();
+            long eventDate = dateToLong(c.getString(5));
 
             //if items are older than 2 weeks, they will be removed
             //todo change to 2 weeks instead of 8
@@ -1090,7 +1085,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
                 item.setEventId(c.getInt(2));
                 item.setHeader(c.getString(3));
                 item.setContent(c.getString(4));
-                item.setDate(c.getString(5));
+                item.setDate(c.getString(5).split(" ")[0]);
                 events.add(item);
             }else{
                 deleteNewEvent(c.getInt(0));
@@ -1116,7 +1111,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 			PrayedFor temp = new PrayedFor();
 			temp.setPrayedForId(Integer.parseInt(c.getString(0)));
 			temp.setPrayedForComments(c.getString(1));
-			temp.setPrayedForDate(c.getString(2));
+			temp.setPrayedForDate(c.getString(2).split(" ")[0]);
 			temp.setNoteID(Integer.parseInt(c.getString(3)));
 			temp.setSupporterId(Integer.parseInt(c.getString(4)));
 			temp.setSupporterName(c.getString(5));
@@ -1144,7 +1139,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		while(c.moveToNext()){
 			Note temp = new Note();
 			temp.setNoteId(Integer.parseInt(c.getString(0)));
-			temp.setDate(c.getString(1));
+			temp.setDate(c.getString(1).split(" ")[0]);
 			temp.setNoteText(c.getString(2));
 			temp.setSubject(c.getString(3));
 			temp.setMissionaryName(c.getString(4));
@@ -1174,7 +1169,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         while(c.moveToNext()){
             Note temp = new Note();
             temp.setNoteId(Integer.parseInt(c.getString(0)));
-            temp.setDate(c.getString(1));
+            temp.setDate(c.getString(1).split(" ")[0]);
             temp.setNoteText(c.getString(2));
             temp.setSubject(c.getString(3));
 			temp.setMissionaryName(c.getString(4));
@@ -1206,7 +1201,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		if(c.moveToFirst()){
 			note.setNoteId(Integer.parseInt(c.getString(0)));
-			note.setDate(c.getString(1));
+			note.setDate(c.getString(1).split(" ")[0]);
 			note.setNoteText(c.getString(2));
 			note.setSubject(c.getString(3));
 			note.setMissionaryName(c.getString(4));
@@ -1235,7 +1230,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		while(c.moveToNext()) {
 			//set PrayerLetter(id, Date, title, MissionaryName, folder, filename, missionaryId) {
-			PrayerLetter temp = new PrayerLetter(Integer.parseInt(c.getString(0)), c.getString(1), c.getString(2),
+			PrayerLetter temp = new PrayerLetter(Integer.parseInt(c.getString(0)), c.getString(1).split(" ")[0], c.getString(2),
 					c.getString(3), c.getString(4), c.getString(5), c.getInt(6));
 			letterList.add(temp);
 		}
@@ -1257,7 +1252,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 
 		while(c.moveToNext()) {
 			//set PrayerLetter(id, Date, title, MissionaryName, folder, filename, missionaryId) {
-			PrayerLetter temp = new PrayerLetter(Integer.parseInt(c.getString(0)), c.getString(1), c.getString(2),
+			PrayerLetter temp = new PrayerLetter(Integer.parseInt(c.getString(0)), c.getString(1).split(" ")[0], c.getString(2),
 					c.getString(3), c.getString(4), c.getString(5), c.getInt(6));
 
 			letterList.add(temp);
@@ -1315,7 +1310,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 					Integer.parseInt(c.getString(4)),
 					Integer.parseInt(c.getString(5))
 			});
-			temp.setGiftDate(c.getString(6));
+			temp.setGiftDate(c.getString(6).split(" ")[0]);
 			temp.setGiftCheckNum(c.getString(7));
             temp.setGiftDonor(c.getString(8));
             temp.setGiftDonorId(c.getInt(9));
@@ -1351,7 +1346,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 					Integer.parseInt(c.getString(4)),
 					Integer.parseInt(c.getString(5))
 			});
-			temp.setGiftDate(c.getString(6));
+			temp.setGiftDate(c.getString(6).split(" ")[0]);
 			temp.setGiftCheckNum(c.getString(7));
 			temp.setGiftDonor(c.getString(8));
 			temp.setGiftDonorId(c.getInt(9));
@@ -1390,7 +1385,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 					Integer.parseInt(c.getString(4)),
 					Integer.parseInt(c.getString(5))
 			});
-			gift.setGiftDate(c.getString(6));
+			gift.setGiftDate(c.getString(6).split(" ")[0]);
 			gift.setGiftCheckNum(c.getString(7));
 			gift.setGiftDonor(c.getString(8));
 			gift.setGiftDonorId(c.getInt(9));
@@ -1431,7 +1426,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				Integer.parseInt(c.getString(4)),
 				Integer.parseInt(c.getString(5))
 			});
-			gift.setGiftDate(c.getString(6));
+			gift.setGiftDate(c.getString(6).split(" ")[0]);
 			gift.setGiftCheckNum(c.getString(7));
             gift.setGiftDonor(c.getString(8));
             gift.setGiftDonorId(c.getInt(9));
@@ -1469,7 +1464,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
                     Integer.parseInt(c.getString(4)),
                     Integer.parseInt(c.getString(5))
             });
-            transaction.setGiftDate(c.getString(6));
+            transaction.setGiftDate(c.getString(6).split(" ")[0]);
             transaction.setGiftDonor(c.getString(8));
             transaction.setGiftDonorId(c.getInt(9));
         }
@@ -1527,8 +1522,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
     /**
 	 * Pulls all gifts matching the parameters given for the search
 	 * All null or empty parameters will be ignored in the search
-	 * @param startDate, the specific date or beginning of date range in "YYYY-MM-DD" format
-	 * @param endDate, the end of the date range in "YYYY-MM-DD" format
+	 * @param startDate, the specific date or beginning of date range in "YYYY-MM-DD HH:mm:ss" format
+	 * @param endDate, the end of the date range in "YYYY-MM-DD HH:mm:ss" format
 	 * @param startAmount, the specific amount or beginning of amount range
 	 * @param endAmount, the end of the amount range
 	 * @param donorName, the name of the donor
@@ -1539,6 +1534,8 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 											String endAmount, String giftFund, String donorName){
 		ArrayList<Gift> gifts = new ArrayList<Gift>();
 		String searchStatement = "SELECT * FROM " + TABLE_GIFT;
+        startDate += " 00:00:00";
+        endDate += " 23:59:59";
 
 		// Build date portion of search statement
 		if(!NullOrEmpty(startDate) && !NullOrEmpty(endDate)){
@@ -1597,7 +1594,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 				Integer.parseInt(c.getString(4)),
 				Integer.parseInt(c.getString(5))
 			});
-			temp.setGiftDate(c.getString(6));
+			temp.setGiftDate(c.getString(6).split(" ")[0]);
 			Log.w("BasicAuth", "The date is:" + c.getString(6));
 			temp.setGiftCheckNum(c.getString(7));
             temp.setGiftDonor(c.getString(8));
@@ -1633,7 +1630,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             int noteId = c.getInt(2);
             String username = c.getString(3);
             String noteType = c.getString(4);
-            String date = c.getString(5);
+            String date = c.getString(5).split(" ")[0];
             String commentText = c.getString(6);
 
 			comments.add(new Comment(commentId,senderId,noteId,username, noteType, date, commentText));
@@ -1657,7 +1654,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
             int noteId = c.getInt(2);
             String username = c.getString(3);
             String noteType = c.getString(4);
-            String date = c.getString(5);
+            String date = c.getString(5).split(" ")[0];
             String commentText = c.getString(6);
 
             temp = new Comment(commentId,senderId,noteId,username, noteType, date, commentText);
@@ -1796,4 +1793,21 @@ public class LocalDBHandler extends SQLiteOpenHelper {
 		db.update(TABLE_NOTES, values, COLUMN_ID + " = " + id, null);
 		db.close();
 	}
+
+	private long dateToLong(String dateString){
+        Calendar date = Calendar.getInstance();
+
+        String[] dateParts = dateString.split(" ");
+        String[] datePartsDay = dateParts[0].split("-");
+        date.set(Calendar.YEAR, Integer.parseInt(datePartsDay[0]));
+        date.set(Calendar.MONTH, Integer.parseInt(datePartsDay[1])-1);
+        date.set(Calendar.DAY_OF_MONTH, Integer.parseInt(datePartsDay[2]));
+        String[] datePartsTime = dateParts[1].split(":");
+        date.set(Calendar.HOUR_OF_DAY, Integer.parseInt(datePartsTime[0]));
+        date.set(Calendar.MINUTE, Integer.parseInt(datePartsTime[1]));
+        date.set(Calendar.SECOND, Integer.parseInt(datePartsTime[2]));
+
+        return date.getTimeInMillis();
+    }
+
 }
