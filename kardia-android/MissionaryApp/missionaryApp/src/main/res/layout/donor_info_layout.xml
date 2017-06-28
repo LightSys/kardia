@@ -28,39 +28,37 @@
         android:textSize="@dimen/user_name_header_dimen"/>
 
     <TextView
-        android:id="@+id/addressText"
+        android:id="@+id/phoneText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/emailText"
+        android:layout_below="@id/userNameText"
         android:layout_alignLeft="@id/userNameText"
         android:layout_alignStart="@id/userNameText"
+        android:layout_marginTop="5dp"
         android:textSize="@dimen/contact_dimen"
         android:visibility="gone"
         />
 
     <TextView
-        android:id="@+id/phoneText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/profilePicImage"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="@dimen/border_dimen"
-        android:layout_marginEnd="@dimen/border_dimen"
-        android:layout_marginTop="5dp"
-        android:textSize="@dimen/contact_dimen"
-        tools:ignore="RelativeOverlap"/>
-
-    <TextView
         android:id="@+id/emailText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/profilePicImage"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="@dimen/border_dimen"
-        android:layout_marginEnd="@dimen/border_dimen"
+        android:layout_below="@id/phoneText"
+        android:layout_alignLeft="@id/userNameText"
+        android:layout_alignStart="@id/userNameText"
         android:layout_marginBottom="5dp"
         android:textSize="@dimen/contact_dimen"
-        tools:ignore="RelativeOverlap"/>
+        android:visibility="gone"
+        />
+
+    <TextView
+        android:id="@+id/addressText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/emailText"
+        android:layout_alignLeft="@id/userNameText"
+        android:layout_alignStart="@id/userNameText"
+        android:textSize="@dimen/contact_dimen"
+        android:visibility="gone"
+        />
 </RelativeLayout>
