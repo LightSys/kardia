@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.lightsys.donorapp.data.Account;
+import org.lightsys.donorapp.data.Fund;
 import org.lightsys.donorapp.tools.AutoUpdater;
 import org.lightsys.donorapp.tools.DataConnection;
 import org.lightsys.donorapp.tools.LocalDBHandler;
@@ -16,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -175,9 +177,17 @@ public class MainActivity extends ActionBarActivity {
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu){
-		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-		menu.findItem(R.id.action_search).setVisible(!drawerOpen);
-		menu.findItem(R.id.action_refresh).setVisible(!drawerOpen);
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        CharSequence fragTitle = this.mTitle;
+        menu.findItem(R.id.action_search).setVisible(false);
+
+        //Only displays search function on fund related views
+        if (fragTitle.equals("Designations") || fragTitle.equals("Gifts By Year") || fragTitle.equals("General Donations")) {
+            menu.findItem(R.id.action_search).setVisible(!drawerOpen);
+        }
+
+        //Display refresh option alwasy as long as menu is closed
+        menu.findItem(R.id.action_refresh).setVisible(!drawerOpen);
 		return super.onPrepareOptionsMenu(menu);
 	}
 
