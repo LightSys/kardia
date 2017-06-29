@@ -116,14 +116,15 @@ public class ContactMissionaryActivity extends Activity{
                         default:
                             message.setType(Message.MessageType.Other);
                     }
-                    Toast.makeText(ContactMissionaryActivity.this,
-                            "Message not sent; function not implemented.", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(ContactMissionaryActivity.this,
+                    //        "Message not sent; function not implemented.", Toast.LENGTH_SHORT).show();
                     // Send message object to API connection to insert into Kardia
                     // TODO: Will need AsyncTask to connect to API
 
                     try{//send message to api
                         Account account = db.getAccounts().get(accountIndex);
-                        String url = "INSERT URL";
+                        //TODO: Insert the right URL
+                        String url = "http://10.5.10.176:800/apps/kardia/api/donor/100001";
 
                         JSONObject jsonMessage = new JSONObject();
                         JSONObject dateCreated = new JSONObject();
@@ -142,9 +143,16 @@ public class ContactMissionaryActivity extends Activity{
                         jsonMessage.put("s_date_created", dateCreated);
                         jsonMessage.put("s_date_modified", dateCreated);
                         //insert other stuff into json message
+                        jsonMessage.put("s_message_type", message.getType());
+                        jsonMessage.put("s_sender", message.getSender());
+                        jsonMessage.put("s_subject", message.getSubject());
+                        jsonMessage.put("s_text", message.getText());
+                        jsonMessage.put("s_missionary_id", message.getMissionaryId());
+                        jsonMessage.put("s_missionary_name", message.getMissionaryName());
+
 
                         PostJson postJson = new PostJson(getBaseContext(), url, jsonMessage, account);
-                        //postJson.execute();
+                        postJson.execute();
 
                     }
                     catch (Exception e){
