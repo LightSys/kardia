@@ -534,6 +534,7 @@ public class LocalDBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_HEADER, header);
         values.put(COLUMN_CONTENT, content);
         values.put(COLUMN_DATE, date);
+        Log.d(TAG, "addNewEvent: " + date);
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(TABLE_NEW_EVENT, null, values);
