@@ -180,9 +180,13 @@ public class MainActivity extends ActionBarActivity {
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
         CharSequence fragTitle = this.mTitle;
         menu.findItem(R.id.action_search).setVisible(false);
+
+        //Only displays search function on fund related views
         if (fragTitle.equals("Designations") || fragTitle.equals("Gifts By Year") || fragTitle.equals("General Donations")) {
             menu.findItem(R.id.action_search).setVisible(!drawerOpen);
         }
+
+        //Display refresh option alwasy as long as menu is closed
         menu.findItem(R.id.action_refresh).setVisible(!drawerOpen);
 		return super.onPrepareOptionsMenu(menu);
 	}
