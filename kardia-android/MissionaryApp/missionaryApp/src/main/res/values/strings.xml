@@ -8,7 +8,6 @@
         <item>Prayer Requests/Updates</item>
         <item>Funds</item>
         <item>Settings</item>
-        <item>Refresh</item>
         <item>Logout</item>
     </string-array>
     <string-array name="contactTypes">
@@ -58,6 +57,7 @@
     <string name="drawer_open">Drawer Open</string>
     <string name="drawer_closed">Drawer Closed</string>
     <string name="action_search">Search</string>
+    <string name="action_refresh">Refresh</string>
     <string name="submit">Submit</string>
     <string name="search">Search</string>
     <string name="date_range">Date Range</string>
