@@ -342,8 +342,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
                 loadAddress(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/partner/Partners/" + donorID +
                         "/Addresses?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
-                loadPicture(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/" + donorID
-                        + "/ProfilePicture?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), donorID);
+                //loadPicture(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/" + donorID
+                       // + "/ProfilePicture?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), donorID);
             }
             // Loop through notes and pull prayer for info
             for(Note n : db.getNotesForMissionary(accountId)){
@@ -1224,6 +1224,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
 
             HttpGet get = new HttpGet(url);
+
             HttpResponse response = client.execute(get, context);
 
             if (cookies == null) {
