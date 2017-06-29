@@ -15,6 +15,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.http.HttpVersion;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerPNames;
@@ -342,8 +343,8 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         "/ContactInfo?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
                 loadAddress(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/partner/Partners/" + donorID +
                         "/Addresses?cx__mode=rest&cx__res_format=attrs&cx__res_type=collection&cx__res_attrs=basic"), donorID);
-                //loadPicture(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/" + donorID
-                       // + "/ProfilePicture?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), donorID);
+                loadPicture(GET(protocal + "://" + hostName + ":" + port + "/apps/kardia/api/crm/Partners/" + donorID
+                        + "/ProfilePicture?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"), donorID);
             }
             // Loop through notes and pull prayer for info
             for(Note n : db.getNotesForMissionary(accountId)){
@@ -579,7 +580,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     private void loadPicture(String result, int partnerId) throws Exception{
         JSONObject json = null;
         String url = "";
-        if (!result.contains("404 Not Found")) {
+        if (!result.contains("404 Not Found") && !result.equals("")) {
             try {
                 json = new JSONObject(result);
             } catch (JSONException e1) {
@@ -1278,10 +1279,12 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         }
                     });
                 }
+            }else if (e.getClass().equals(ClientProtocolException.class)){
+                e.printStackTrace();
+                return null;
             }
             throw e;
         }
-        //return null;
     }
 
     private void httpsSetup(){
