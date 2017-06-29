@@ -22,6 +22,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -35,7 +36,7 @@ import org.lightsys.missionaryapp.R;
 /**
  * @author Andrew Cameron
  *
- * The main activity for the app. Creates the side-menu drawer used throughout the
+ * The search_menu activity for the app. Creates the side-menu drawer used throughout the
  * app. This is used for switching between fragment activities.
  * 
  */
@@ -179,17 +180,21 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
+        MenuInflater inflater = getMenuInflater();
+
         if (currentFragment !=null) {
             String fragTag = currentFragment.getTag();
             if (fragTag != null) {
                 if (fragTag.equals("Gift") || fragTag.equals("Donor") || fragTag.equals("GiftTime") || fragTag.equals("Fund")) {
-                    MenuInflater inflater = getMenuInflater();
-                    inflater.inflate(R.menu.main, menu);
+                    inflater.inflate(R.menu.search_menu, menu);
+
                 }
             }else{
                 menu.clear();
             }
         }
+        inflater.inflate(R.menu.refresh_menu, menu);
+
         return super.onCreateOptionsMenu(menu);
 	}
 
@@ -197,8 +202,13 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu){
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
+
         if (menu.findItem(R.id.action_search) != null) {
             menu.findItem(R.id.action_search).setVisible(!drawerOpen);
+        }
+        if (menu.findItem(R.id.action_refresh) != null) {
+            menu.findItem(R.id.action_refresh).setVisible(!drawerOpen);
         }
 		return super.onPrepareOptionsMenu(menu);
 	}
@@ -227,31 +237,37 @@ public class MainActivity extends ActionBarActivity {
 		if(mDrawerToggle.onOptionsItemSelected(item)){
 			return true;
 		}
-		//Handle App search
-        int num = -1;
-        String fragTag = getSupportFragmentManager().findFragmentById(R.id.contentFrame).getTag();
-        if (fragTag.equals("Donor")){
-            num = 0;
-        }else if (fragTag.equals("Gift") || (fragTag.equals("GiftTime")) || (fragTag.equals("Fund"))){
-            num=1;
+
+        //Handle App search
+        if (item.getItemId() == R.id.action_search) {
+            int num = -1;
+            String fragTag = getSupportFragmentManager().findFragmentById(R.id.contentFrame).getTag();
+            if (fragTag.equals("Donor")) {
+                num = 0;
+            } else if (fragTag.equals("Gift") || (fragTag.equals("GiftTime")) || (fragTag.equals("Fund"))) {
+                num = 1;
+            }
+            Bundle args = new Bundle();
+            switch (num) {
+                case 0:
+                    setTitle("Donor Search");
+                    fragment = new DonorSearch();
+                    fragment.setArguments(args);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment, "Search").commit();
+                    break;
+                case 1:
+                    setTitle("Gift Search");
+                    fragment = new GiftSearch();
+                    fragment.setArguments(args);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment, "Search").commit();
+                    break;
+                case -1:
+                    break;
+            }
+        } else if (item.getItemId() == R.id.action_refresh){
+            Account account = new LocalDBHandler(this).getAccount();
+            new DataConnection(this, this, account, currentFrag, account.getAcceptSSCert()).execute("");
         }
-        Bundle args = new Bundle();
-		switch(num){
-			case 0:
-				setTitle("Donor Search");
-				fragment = new DonorSearch();
-                fragment.setArguments(args);
-				getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment, "Search").commit();
-				break;
-            case 1:
-                setTitle("Gift Search");
-                fragment = new GiftSearch();
-                fragment.setArguments(args);
-                getSupportFragmentManager().beginTransaction().replace(R.id.contentFrame, fragment, "Search").commit();
-                break;
-            case -1:
-                break;
-		}
 		
 		return super.onOptionsItemSelected(item);
 	}
@@ -318,9 +334,6 @@ public class MainActivity extends ActionBarActivity {
                         .commit();
                 break;
             case 6:
-                new DataConnection(this, this, account, currentFrag, account.getAcceptSSCert()).execute("");
-                break;
-            case 7:
                 new AlertDialog.Builder(MainActivity.this)
                         .setCancelable(false)
                         .setTitle("Logout")
