@@ -1,6 +1,7 @@
 package org.lightsys.donorapp.views;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import org.lightsys.donorapp.data.Account;
 import org.lightsys.donorapp.data.Comment;
 import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.tools.CommentListAdapter;
+import org.lightsys.donorapp.tools.DataConnection;
 import org.lightsys.donorapp.tools.Formatter;
 import org.lightsys.donorapp.tools.LocalDBHandler;
 import org.lightsys.donorapp.tools.PostJson;
@@ -51,7 +53,9 @@ public class DetailedPrayerRequest extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         View v = inflater.inflate(R.layout.prayer_request_detailedview, container, false);
+
         getActivity().setTitle("Prayer Request");
 
         commentButton = (Button)v.findViewById(R.id.commentButton);
@@ -66,7 +70,6 @@ public class DetailedPrayerRequest extends Fragment{
                 startCommentActivity.putExtra("noteId", request_id);
                 startCommentActivity.putExtra("noteType", "Update");
                 startCommentActivity.putExtra("missionaryId", note.getMissionaryID());
-                Log.e("Detailed Update", note.getMissionaryID() + "");
 
                 getActivity().startActivity(startCommentActivity);
             }

@@ -282,9 +282,29 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             }
 
             //load comments
-            loadComments(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/crm/Partners/"
-                    + Account_ID + "/Comments/Own?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection"));
+            ArrayList<Comment> serverComments = new ArrayList<Comment>();
+            for (Missionary m: db.getMissionaries()) {
+                int accountId = m.getId();
+                ArrayList<Comment> tempComments = loadComments(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/missionary/"
+                        + accountId + "/Comments?cx__mode=rest&cx__res_format=attrs&cx__res_attrs=basic&cx__res_type=collection"));
+                if (tempComments != null){
+                    serverComments.addAll(tempComments);
+                }
+            }
+            //get rid of stale comments
+            for (Comment lComment : db.getComments()){
+                boolean onServer = false;
+                for (Comment sComment : serverComments){
+                    if (lComment.getCommentID() == sComment.getCommentID()){
+                        onServer = true;
+                    }
+                }
+                if (!onServer){
+                    db.deleteComment(lComment);
+                }
+            }
 
+            //load giving URL
             loadGivingUrl(GET(account.getProtocol() + "://" + Host_Name + ":" + account.getPortNumber() + "/apps/kardia/api/donor/"+ Account_ID + "/" +
                     "GivingInfo?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic"));
 
@@ -841,10 +861,9 @@ public class DataConnection extends AsyncTask<String, Void, String> {
     /*
     loads comments on posts
      */
-    private void loadComments(String result){
+    private ArrayList<Comment> loadComments(String result){
 
         //check to see what the database already has
-        ArrayList<Comment> currentComments = db.getComments();
         ArrayList<Comment> serverComments = new ArrayList<Comment>();
         JSONObject json = null;
 
@@ -854,7 +873,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
             e1.printStackTrace();
         }
         if (json == null) {
-            return;
+            return null;
         }
         JSONArray tempComments = json.names();
 
@@ -865,15 +884,14 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 if(!tempComments.getString(i).equals("@id")){
                     JSONObject CommentObj = json.getJSONObject(tempComments.getString(i));
 
-                    if(CommentObj.getString("on_what").equals("ContactHistory")) {
                         JSONObject dateObj = CommentObj.getJSONObject("comment_date");
 
                         int ID = Integer.parseInt(CommentObj.getString("comment_id"));
-                        String noteType = CommentObj.getString("on_what");
-                        int noteID = Integer.parseInt(CommentObj.getString("on_what_id"));
+                        //String noteType = CommentObj.getString("on_what");
+                        int noteID = Integer.parseInt(CommentObj.getString("note_id"));
                         String comment = CommentObj.getString("comment");
 
-                        String userName = CommentObj.getString("commenter_partner_name");
+                        String userName = CommentObj.getString("supporter_partner_name");
 
                         String comment_year = dateObj.getString("year");
                         String comment_month = dateObj.getString("month");
@@ -888,7 +906,7 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         Comment temp = new Comment();
                         temp.setCommentID(ID);
                         temp.setNoteID(noteID);
-                        temp.setNoteType(noteType);
+                        //temp.setNoteType(noteType);
                         temp.setDate(comment_date);
                         temp.setSenderID(Account_ID);
                         temp.setComment(comment);
@@ -896,54 +914,53 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                         serverComments.add(temp);
 
+
                         //check to see if this is new
                         Boolean newComment = true;
-                        for (Comment c : currentComments){
+                        for (Comment c : db.getComments()){
                             if (c.getCommentID() == temp.getCommentID()){
                                 newComment = false;
                             }
                         }
-
                         //if it's new, add it to database
                         if (newComment) {
                             db.addComment(temp.getCommentID(), temp.getSenderID(), temp.getNoteID(), temp.getUserName(), temp.getNoteType(), temp.getDate(), temp.getComment());
                             db.addNew_Item(Calendar.getInstance().getTimeInMillis() + "", "Comment", "New Comment on a post from " + db.getNoteForID(temp.getNoteID()).getMissionaryName());
                         }
                     }
-                }
+
             }
             catch(JSONException e){
                 e.printStackTrace();
             }
         }
-
-        //get rid of stale comments
-        for (Comment lComment : currentComments){
-            boolean onServer = false;
-            for (Comment sComment : serverComments){
-                if (lComment.getCommentID() == sComment.getCommentID()){
-                    onServer = true;
-                }
-            }
-            if (!onServer){
-                db.deleteComment(lComment);
-            }
-        }
+        return serverComments;
     }
+
 
     private void loadGivingUrl(String result){
 
-        JSONObject json;
+        JSONObject json = null;
 
         try {
             json = new JSONObject(result);
-                db.addGiving_url(json.getString("giving_url"));
-        } catch (JSONException e1) {
-            e1.printStackTrace();
-            db.addGiving_url("");
+        }catch(JSONException e1) {
+                return;
         }
 
+        JSONArray tempURL = json.names();
 
+        for (int i = 0; i<tempURL.length(); i++) {
+            try {
+                if (!tempURL.getString(i).equals("@id")) {
+                    JSONObject urlObj = json.getJSONObject(tempURL.getString(i));
+                    db.addGiving_url(urlObj.getString("giving_url"));
+                }
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+                db.addGiving_url("");
+            }
+        }
 
     }
 

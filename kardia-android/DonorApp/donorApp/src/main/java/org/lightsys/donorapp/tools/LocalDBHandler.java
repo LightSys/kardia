@@ -189,7 +189,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 				+ " TEXT," + COLUMN_FUND + " TEXT,"
 				+ COLUMN_GIFTCOUNT + " INTEGER," + COLUMN_GIFTTOTALWHOLE
 				+ " INTEGER," + COLUMN_GIFTTOTALPART + " INTEGER,"
-				+ COLUMN_GIVINGURL + " TEXT, " + COLUMN_FUNDDESC + " TEXT)";
+				+ COLUMN_GIVINGURL + " TEXT," + COLUMN_FUNDDESC + " TEXT)";
 		db.execSQL(CREATE_FUND_TABLE);
 		
 		String CREATE_GIFT_TABLE = "CREATE TABLE " + TABLE_GIFT + "("
@@ -790,11 +790,12 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	public ArrayList<Account> getAccounts(){
 		ArrayList<Account> accounts = new ArrayList<Account>();
 		String queryString = "SELECT * FROM " + TABLE_ACCOUNTS;
-		
+
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
-		
+
 		while(c.moveToNext()){
+
 			Account temp = new Account();
 			temp.setId(Integer.parseInt(c.getString(0)));
 			temp.setAccountName(c.getString(1));
@@ -834,6 +835,37 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 							Integer.parseInt(c.getString(4)),
 							Integer.parseInt(c.getString(5))
 							});
+			temp.setGiving_url(c.getString(6));
+			temp.setFund_desc(c.getString(7));
+		}
+		c.close();
+		db.close();
+		return temp;
+	}
+
+	/**
+	 * Pulls a specific fund from an ID
+	 * @param fund_desc, Fund ID to retrieve
+	 * @return The fund with the id of fund_id
+	 */
+	public Fund getFundByDescription(String fund_desc){
+		Fund temp = new Fund();
+		String queryString = "SELECT * FROM " + TABLE_FUND
+				+ " WHERE " + COLUMN_FUNDDESC + " = '" + fund_desc + "'";
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		if(c.moveToFirst()){
+			temp.setID(Integer.parseInt(c.getString(0)));
+			temp.setFullName(c.getString(1));
+			temp.setName(c.getString(2));
+			temp.setGift_count(Integer.parseInt(c.getString(3)));
+			temp.setGift_total(
+					new int [] {
+							Integer.parseInt(c.getString(4)),
+							Integer.parseInt(c.getString(5))
+					});
 			temp.setGiving_url(c.getString(6));
 			temp.setFund_desc(c.getString(7));
 		}
@@ -1528,7 +1560,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//gets list of comments
 	public ArrayList<Comment> getComments(){
 		ArrayList<Comment> comments = new ArrayList<Comment>();
-		String queryString = "SELECT *" + " FROM " + TABLE_COMMENT;
+		String queryString = "SELECT * FROM " + TABLE_COMMENT;
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
@@ -1600,19 +1632,19 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	public String getGivingUrl(){
 		String queryString = "SELECT * FROM " + TABLE_GIVING_URL;
 
-		ArrayList<String> url = new ArrayList<String>();
+		String url = "";
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
 
 		while (c.moveToNext()){
-			url.add(c.getString(0));
+			url = c.getString(0);
 		}
 
 		c.close();
 		db.close();
 
-		return url.get(0);
+		return url;
 
 	}
 
