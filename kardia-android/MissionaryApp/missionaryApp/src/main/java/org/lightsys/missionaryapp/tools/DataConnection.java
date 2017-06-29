@@ -671,15 +671,17 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setMissionaryID(missionary_id);
                         temp.setNumberPrayed(0);
 
-                        // Dates must be stored as YYYY-MM-DD
-                        JSONObject date = new JSONObject(NoteObj.getString("note_date"));
-                        String day = date.getString("day");
-                        day = day.length() < 2 ? "0" + day : day;
-                        String month = date.getString("month");
-                        month = month.length() < 2 ? "0" + month : month;
-                        String year = date.getString("year");
+                        // Dates must be stored as YYYY-MM-DD HH:MM:SS format
+                        JSONObject dateObj = new JSONObject(NoteObj.getString("note_date"));
 
-                        temp.setDate(year + "-" + month + "-" + day);
+                        String note_date = dateObj.getString("year");
+                        note_date += "-"+formatDate(dateObj.getString("month"));
+                        note_date += "-"+formatDate(dateObj.getString("day"));
+                        note_date += " "+formatDate(dateObj.getString("hour"));
+                        note_date += ":"+formatDate(dateObj.getString("minute"));
+                        note_date += ":"+formatDate(dateObj.getString("second"));
+
+                        temp.setDate(note_date);
 
                         db.addNote(temp);
                     }
@@ -736,15 +738,17 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setSupporterId(Integer.parseInt(PrayedForObj.getString("supporter_partner_id")));
                         temp.setSupporterName(PrayedForObj.getString("supporter_partner_name"));
 
-                        // Dates must be stored as YYYY-MM-DD
-                        JSONObject date = new JSONObject(PrayedForObj.getString("prayedfor_date"));
-                        String day = date.getString("day");
-                        day = day.length() < 2 ? "0" + day : day;
-                        String month = date.getString("month");
-                        month = month.length() < 2 ? "0" + month : month;
-                        String year = date.getString("year");
+                        // Dates must be stored as YYYY-MM-DD HH:MM:SS format
+                        JSONObject dateObj = new JSONObject(PrayedForObj.getString("prayedfor_date"));
 
-                        temp.setPrayedForDate(year + "-" + month + "-" + day);
+                        String prayer_for_date = dateObj.getString("year");
+                        prayer_for_date += "-"+formatDate(dateObj.getString("month"));
+                        prayer_for_date += "-"+formatDate(dateObj.getString("day"));
+                        prayer_for_date += " "+formatDate(dateObj.getString("hour"));
+                        prayer_for_date += ":"+formatDate(dateObj.getString("minute"));
+                        prayer_for_date += ":"+formatDate(dateObj.getString("second"));
+
+                        temp.setPrayedForDate(prayer_for_date);
 
                         db.addPrayedFor(temp);
                         db.addNewEvent("Prayer", temp.getNoteID(),
@@ -795,15 +799,17 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         temp.setFilename(LetterObj.getString("letter_filename"));
                         temp.setFolder(LetterObj.getString("letter_folder"));
 
-                        // Dates must be stored as YYYY-MM-DD
-                        JSONObject date = new JSONObject(LetterObj.getString("letter_date"));
-                        String day = date.getString("day");
-                        day = day.length() < 2 ? "0" + day : day;
-                        String month = date.getString("month");
-                        month = month.length() < 2 ? "0" + month : month;
-                        String year = date.getString("year");
+                        // Dates must be stored as YYYY-MM-DD HH:MM:SS format
+                        JSONObject dateObj = new JSONObject(LetterObj.getString("letter_date"));
 
-                        temp.setDate(year + "-" + month + "-" + day);
+                        String letter_date = dateObj.getString("year");
+                        letter_date += "-"+formatDate(dateObj.getString("month"));
+                        letter_date += "-"+formatDate(dateObj.getString("day"));
+                        letter_date += " "+formatDate(dateObj.getString("hour"));
+                        letter_date += ":"+formatDate(dateObj.getString("minute"));
+                        letter_date += ":"+formatDate(dateObj.getString("second"));
+
+                        temp.setDate(letter_date);
                         db.addPrayerLetter(temp);
                     }
                 }
@@ -910,13 +916,15 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         String gift_year = dateObj.getString("year");
                         String gift_month = dateObj.getString("month");
                         String month_year;
-                        // Convert gift dates to YYYY-MM-DD format
+                        // Convert gift dates to YYYY-MM-DD HH:MM:SS format
                         month_year=gift_year + "." + gift_month;
-                        gift_month = (gift_month.length() < 2)? "0" + gift_month : gift_month;
-                        String gift_day = dateObj.getString("day");
-                        gift_day = (gift_day.length() < 2)? "0" + gift_day : gift_day;
-                        String gift_date = gift_year + "-"
-                                + gift_month + "-" + gift_day;
+
+                        String gift_date = gift_year;
+                        gift_date += "-"+ gift_month;
+                        gift_date += "-"+formatDate(dateObj.getString("day"));
+                        gift_date += " "+formatDate(dateObj.getString("hour"));
+                        gift_date += ":"+formatDate(dateObj.getString("minute"));
+                        gift_date += ":"+formatDate(dateObj.getString("second"));
 
                         String gift_check_num = GiftObj.getString("gift_check_num");
 
@@ -997,13 +1005,16 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                         String transaction_year = dateObj.getString("year");
                         String transaction_month = dateObj.getString("month");
                         String month_year;
-                        // Convert gift dates to YYYY-MM-DD format
+
+                        // Convert gift dates to YYYY-MM-DD HH:MM:SS format
                         month_year=transaction_year + "." + transaction_month;
-                        transaction_month = (transaction_month.length() < 2)? "0" + transaction_month : transaction_month;
-                        String gift_day = dateObj.getString("day");
-                        gift_day = (gift_day.length() < 2)? "0" + gift_day : gift_day;
-                        String gift_date = transaction_year + "-"
-                                + transaction_month + "-" + gift_day;
+
+                        String gift_date = transaction_year;
+                        gift_date += "-"+transaction_month;
+                        gift_date += "-"+formatDate(dateObj.getString("day"));
+                        gift_date += " "+formatDate(dateObj.getString("hour"));
+                        gift_date += ":"+formatDate(dateObj.getString("minute"));
+                        gift_date += ":"+formatDate(dateObj.getString("second"));
 
                         if(giftTotal[1] >= 100){
                             giftTotal[1] /= 100;
@@ -1116,15 +1127,15 @@ public class DataConnection extends AsyncTask<String, Void, String> {
 
                         String userName = CommentObj.getString("supporter_partner_name");
 
-                        String comment_year = dateObj.getString("year");
-                        String comment_month = dateObj.getString("month");
+                        String comment_date = dateObj.getString("year");
 
-                        // Convert gift dates to YYYY-MM-DD format
-                        comment_month = (comment_month.length() < 2)? "0" + comment_month : comment_month;
-                        String comment_day = dateObj.getString("day");
-                        comment_day = (comment_day.length() < 2)? "0" + comment_day : comment_day;
-                        String comment_date = comment_year + "-"
-                                + comment_month + "-" + comment_day;
+                        // Convert comment date to YYYY-MM-DD HH:MM:SS format
+                        comment_date += "-"+formatDate(dateObj.getString("month"));
+                        comment_date += "-"+formatDate(dateObj.getString("day"));
+                        comment_date += " "+formatDate(dateObj.getString("hour"));
+                        comment_date += ":"+formatDate(dateObj.getString("minute"));
+                        comment_date += ":"+formatDate(dateObj.getString("second"));
+
 
                         Comment temp = new Comment();
                         temp.setCommentID(ID);
@@ -1156,6 +1167,11 @@ public class DataConnection extends AsyncTask<String, Void, String> {
                 e.printStackTrace();
             }
         }
+    }
+
+    private String formatDate(String date){
+        date = (date.length() < 2)? "0" + date : date;
+        return date;
     }
 
     private static byte[] getBitmapAsByteArray(Bitmap bitmap) {
