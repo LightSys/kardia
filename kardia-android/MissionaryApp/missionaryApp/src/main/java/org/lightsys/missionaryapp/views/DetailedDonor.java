@@ -89,7 +89,6 @@ public class DetailedDonor extends Fragment{
             donorEmail = donorInfo.getEmail();
             donorPhone = donorInfo.getPhone();
             donorAddress = donorInfo.getAddress();
-            Log.d(TAG, "onCreateView: " + donorEmail + donorPhone + donorAddress);
 
         }
 
@@ -100,10 +99,18 @@ public class DetailedDonor extends Fragment{
         ImageView image = (ImageView)v.findViewById(R.id.profilePicImage);
 
         name.setText(donorName);
-        email.setText(donorEmail);
-        phone.setText(donorPhone);
-        address.setText(donorAddress);
-        address.setVisibility(View.VISIBLE);
+        if (!donorEmail.equals("") && donorEmail != null) {
+            email.setText(donorEmail);
+            email.setVisibility(View.VISIBLE);
+        }
+        if (!donorPhone.equals("") && donorPhone != null) {
+            phone.setText(donorPhone);
+            phone.setVisibility(View.VISIBLE);
+        }
+        if (!donorAddress.equals("") && donorAddress != null) {
+            address.setText(donorAddress);
+            address.setVisibility(View.VISIBLE);
+        }
 
         //set profile picture
         Bitmap bitmap;
