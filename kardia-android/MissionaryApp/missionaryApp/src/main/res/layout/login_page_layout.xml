@@ -14,7 +14,6 @@
         android:ems="10"
         android:hint="@string/username"
         android:maxLines="1"
-        android:text = "Laura"
         android:textSize="@dimen/body_dimen"/>
 
     <EditText
@@ -28,7 +27,6 @@
         android:hint="@string/password"
         android:inputType="textPassword"
         android:maxLines="1"
-        android:text = "E2Ra!car0line"
         android:textSize="@dimen/body_dimen"/>
 
     <EditText
@@ -79,7 +77,6 @@
         android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="@string/user_id_ex_100001"
-        android:text = "100048"
         android:inputType="number"
         android:maxLines="1"
         android:textSize="@dimen/body_dimen"/>
