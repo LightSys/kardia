@@ -3579,26 +3579,39 @@ function getTrackTagStaff(username, password) {
 	doHttpRequest("apps/kardia/api/crm_config/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (trackListResp) {
       // If not 404
       if (trackListResp != null) {
-	 remove_atid(trackListResp);
-         kardiacrm.data.trackList = trackListResp;
-	 for(var k in trackListResp) {
-	    if (k != '@id') {
-		kardiacrm.data.trackList[k].filtered = false;
-	    }
-	 }
+		 remove_atid(trackListResp);
+        
+		 // sort list of tracks
+		 kardiacrm.data.trackList = [];
+		 Object.keys(trackListResp).sort().forEach(function(key) {
+			 kardiacrm.data.trackList[key] = trackListResp[key];
+		 });
+
+		 for(var k in trackListResp) {
+		    if (k != '@id') {
+				kardiacrm.data.trackList[k].filtered = false;
+			}
+		 }
 
          // get list of tags
          doHttpRequest("apps/kardia/api/crm_config/TagTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (tagResp) {
          // If not 404
          if (tagResp != null) {
 	       remove_atid(tagResp);
-	       kardiacrm.data.tagList = tagResp;
-	       for(var k in tagResp) {
-		    if (k != '@id') {
-			kardiacrm.data.tagList[k].filtered = false;
-		    }
-	       }
-               
+	       //kardiacrm.data.tagList = tagResp;
+
+		   // sort list of tags
+		   kardiacrm.data.tagList = [];
+		   let names = [];
+		   for (var k in tagResp) {
+				if (tagResp[k] != null) names.push([tagResp[k].tag_label, k]);
+				if (k != '@id') tagResp[k].filtered = false;
+		   }
+		   names.sort().forEach(function(key) {
+			   kardiacrm.data.tagList.push(tagResp[key[1]]);
+		   });
+		   console.log('done');
+
                // get list of contact history item types (note/prayer/etc)
                doHttpRequest("apps/kardia/api/crm_config/ContactHistTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (noteTypeResp) {
                // If not 404
