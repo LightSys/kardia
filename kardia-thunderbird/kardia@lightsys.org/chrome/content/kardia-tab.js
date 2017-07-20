@@ -137,124 +137,133 @@ function reloadFilters(addButtons) {
 	
 	kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
 
-	// add to my collaborators view
-	for (var i=0;i<mainWindow.collaborateeIds.length;i++) {					
-		var tracksSelected = false;
-		var tagsSelected = false;
-		for(var k in kardiacrm.data.trackList) {
-		    if (kardiacrm.data.trackList[k].filtered)
-			tracksSelected = true;
-		}
-		for(var k in kardiacrm.data.tagList) {
-		    if (kardiacrm.data.tagList[k].filtered)
-			tagsSelected = true;
-		}
-		
-		var addPerson = true;
-		// check whether the person should be displayed based on tracks
-		if (tracksSelected) {
-			if (mainWindow.filterBy == "any") {
-				addPerson = false;
-				for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
-					var onetrack = find_item(kardiacrm.data.trackList, "track_name", mainWindow.collaborateeTracks[i][j]);
-					if (onetrack.filtered) {
-						addPerson = true;
-						break;
-					}
-				}
-			}
-			else if (mainWindow.filterBy == "all") {
-				for (var k in kardiacrm.data.trackList) {
-					var onetrack = kardiacrm.data.trackList[k];
-					if (onetrack.filtered) {
-						if (mainWindow.collaborateeTracks[i].indexOf(onetrack.track_name) < 0) {
-							addPerson = false;
-							break;
-						}
-					}
-				}
-			}
-		}
-		// check tags
-		if (tagsSelected) {
-			// find magnitude and certainty thresholds
-			var tagMagMin = kardiaTab.document.getElementById("filter-by-magnitude-min").value/100;
-			var tagMagMax = kardiaTab.document.getElementById("filter-by-magnitude-max").value/100;
-			var tagCertThreshold = kardiaTab.document.getElementById("filter-by-certainty").value/100;
-			
-			if (mainWindow.filterBy == "any" && (!addPerson || !tracksSelected)) {
-				addPerson = false;
-				for (var j=0;j<mainWindow.collaborateeTags[i].length;j+=3) {
-					var onetag = find_item(kardiacrm.data.tagList, "tag_label", mainWindow.collaborateeTags[i][j]);
-					if (onetag.filtered && mainWindow.collaborateeTags[i][j+1]*1 >= tagMagMin && mainWindow.collaborateeTags[i][j+1]*1 <= tagMagMax && mainWindow.collaborateeTags[i][j+2]*1 >= tagCertThreshold) {
-						addPerson = true;
-						break;
-					}
-				}
-			}
-			else if (mainWindow.filterBy == "all" && addPerson) {
-				for (var k in kardiacrm.data.tagList) {
-					var onetag = kardiacrm.data.tagList[k];
-					if (onetag.filtered) {	
-						if (mainWindow.collaborateeTags[i].indexOf(onetag.tag_label) < 0 || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(onetag.tag_label)+1]*1 < tagMagMin || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(onetag.tag_label)+1]*1 > tagMagMax || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(onetag.tag_label)+1]*1 < tagCertThreshold) {
-							addPerson = false;
-							break;
-						}
-					}
-				}
-			}
-		}
-		// check data items
-		if (mainWindow.filterData.length > 0) {
-			if (mainWindow.filterBy == "any" && (!addPerson || (!tracksSelected && !tagsSelected))) {
-				addPerson = false;
-				for (var j=0;j<mainWindow.filterData.length;j++) {
-					if (mainWindow.collaborateeData[i].indexOf(mainWindow.filterData[j]) >= 0) {
-						addPerson = true;
-						break;
-					}
-				}
-			}
-			else if (mainWindow.filterBy == "all" && addPerson) {
-				for (var j=0;j<mainWindow.filterData.length;j++) {
-						if (mainWindow.collaborateeData[i].indexOf(mainWindow.filterData[j]) < 0) {
-						addPerson = false;
-						break;
-					}
-				}
-			}
-		}
-		
-		// check funds
-		if (mainWindow.filterFunds.length > 0) {
-			if (mainWindow.filterBy == "any" && (!addPerson || (!tracksSelected && !tagsSelected && mainWindow.filterData.length <= 0))) {
-				addPerson = false;
-				for (var j=0;j<mainWindow.filterFunds.length;j++) {
-					if (mainWindow.collaborateeFunds[i].indexOf(mainWindow.filterFunds[j]) >= 0) {
-						addPerson = true;
-						break;
-					}
-				}
-			}
-			else if (mainWindow.filterBy == "all" && addPerson) {
-				for (var j=0;j<mainWindow.filterFunds.length;j++) {
-						if (mainWindow.collaborateeFunds[i].indexOf(mainWindow.filterFunds[j]) < 0) {
-						addPerson = false;
-						break;
-					}
-				}
-			}
-		}
-		
-		// add partner only if tag, track, data item, and fund filters say we should
-		if (addPerson) {
-			reloadCollaboratee(i);
-		}
+	var tracksSelected = false;
+	var tagsSelected = false;
+	for(var k in kardiacrm.data.trackList) {
+	    if (kardiacrm.data.trackList[k].filtered)
+		tracksSelected = true;
 	}
-	
-	// if no collaboratees, display "no results"
-	if (kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML == "") {
-		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '<label class="bold-text" value="No results found."/>';
+	for(var k in kardiacrm.data.tagList) {
+	    if (kardiacrm.data.tagList[k].filtered)
+		tagsSelected = true;
+	}
+
+	if (!tracksSelected && !tagsSelected && mainWindow.filterData.length == 0 && 
+mainWindow.filterFunds.length == 0)
+	{
+		// if no search options, ask user to choose some
+		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '<label class="bold-text" value="Please select at least one search criterion."/>';
+	}
+	else
+	{
+		// filter and display people
+		for (var i=0;i<mainWindow.collaborateeIds.length;i++) {				
+			var addPerson = true;
+			// check whether the person should be displayed based on tracks
+			if (tracksSelected) {
+				if (mainWindow.filterBy == "any") {
+					addPerson = false;
+					for (var j=0;j<mainWindow.collaborateeTracks[i].length;j+=2) {
+						var onetrack = find_item(kardiacrm.data.trackList, "track_name", mainWindow.collaborateeTracks[i][j]);
+						if (onetrack.filtered) {
+							addPerson = true;
+							break;
+						}
+					}
+				}
+				else if (mainWindow.filterBy == "all") {
+					for (var k in kardiacrm.data.trackList) {
+						var onetrack = kardiacrm.data.trackList[k];
+						if (onetrack.filtered) {
+							if (mainWindow.collaborateeTracks[i].indexOf(onetrack.track_name) < 0) {
+								addPerson = false;
+								break;
+							}
+						}
+					}
+				}
+			}
+			// check tags
+			if (tagsSelected) {
+				// find magnitude and certainty thresholds
+				var tagMagMin = kardiaTab.document.getElementById("filter-by-magnitude-min").value/100;
+				var tagMagMax = kardiaTab.document.getElementById("filter-by-magnitude-max").value/100;
+				var tagCertThreshold = kardiaTab.document.getElementById("filter-by-certainty").value/100;
+				
+				if (mainWindow.filterBy == "any" && (!addPerson || !tracksSelected)) {
+					addPerson = false;
+					for (var j=0;j<mainWindow.collaborateeTags[i].length;j+=3) {
+						var onetag = find_item(kardiacrm.data.tagList, "tag_label", mainWindow.collaborateeTags[i][j]);
+						if (onetag.filtered && mainWindow.collaborateeTags[i][j+1]*1 >= tagMagMin && mainWindow.collaborateeTags[i][j+1]*1 <= tagMagMax && mainWindow.collaborateeTags[i][j+2]*1 >= tagCertThreshold) {
+							addPerson = true;
+							break;
+						}
+					}
+				}
+				else if (mainWindow.filterBy == "all" && addPerson) {
+					for (var k in kardiacrm.data.tagList) {
+						var onetag = kardiacrm.data.tagList[k];
+						if (onetag.filtered) {	
+							if (mainWindow.collaborateeTags[i].indexOf(onetag.tag_label) < 0 || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(onetag.tag_label)+1]*1 < tagMagMin || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(onetag.tag_label)+1]*1 > tagMagMax || mainWindow.collaborateeTags[i][mainWindow.collaborateeTags[i].indexOf(onetag.tag_label)+1]*1 < tagCertThreshold) {
+								addPerson = false;
+								break;
+							}
+						}
+					}
+				}
+			}
+			// check data items
+			if (mainWindow.filterData.length > 0) {
+				if (mainWindow.filterBy == "any" && (!addPerson || (!tracksSelected && !tagsSelected))) {
+					addPerson = false;
+					for (var j=0;j<mainWindow.filterData.length;j++) {
+						if (mainWindow.collaborateeData[i].indexOf(mainWindow.filterData[j]) >= 0) {
+							addPerson = true;
+							break;
+						}
+					}
+				}
+				else if (mainWindow.filterBy == "all" && addPerson) {
+					for (var j=0;j<mainWindow.filterData.length;j++) {
+							if (mainWindow.collaborateeData[i].indexOf(mainWindow.filterData[j]) < 0) {
+							addPerson = false;
+							break;
+						}
+					}
+				}
+			}
+			
+			// check funds
+			if (mainWindow.filterFunds.length > 0) {
+				if (mainWindow.filterBy == "any" && (!addPerson || (!tracksSelected && !tagsSelected && mainWindow.filterData.length <= 0))) {
+					addPerson = false;
+					for (var j=0;j<mainWindow.filterFunds.length;j++) {
+						if (mainWindow.collaborateeFunds[i].indexOf(mainWindow.filterFunds[j]) >= 0) {
+							addPerson = true;
+							break;
+						}
+					}
+				}
+				else if (mainWindow.filterBy == "all" && addPerson) {
+					for (var j=0;j<mainWindow.filterFunds.length;j++) {
+							if (mainWindow.collaborateeFunds[i].indexOf(mainWindow.filterFunds[j]) < 0) {
+							addPerson = false;
+							break;
+						}
+					}
+				}
+			}
+			
+			// add partner only if tag, track, data item, and fund filters say we should
+			if (addPerson) {
+				reloadCollaboratee(i);
+			}
+		}
+		
+		// if no collaboratees, display "no results"
+		if (kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML == "") {
+			kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '<label class="bold-text" value="No results found."/>';
+		}
 	}
 }
 
