@@ -35,6 +35,11 @@ function filterBy() {
 	reloadFilters(false);
 }
 
+// search collaboratees by name
+function searchByName() {
+	reloadFilters(false);
+}
+
 // sort collaborating with by whatever the buttons say
 function sortBy() {
 	// find out what we're sorting by
@@ -136,6 +141,7 @@ function reloadFilters(addButtons) {
 	sortCollaboratees(addButtons);
 	
 	kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '';
+	var name = document.getElementById("search-by-name").value.toLowerCase().trim();
 
 	var tracksSelected = false;
 	var tagsSelected = false;
@@ -149,8 +155,7 @@ function reloadFilters(addButtons) {
 	}
 
 	if (!tracksSelected && !tagsSelected && mainWindow.filterData.length == 0 && 
-mainWindow.filterFunds.length == 0)
-	{
+mainWindow.filterFunds.length == 0 && !name) {
 		// if no search options, ask user to choose some
 		kardiaTab.document.getElementById("tab-collaborators-inner").innerHTML = '<label class="bold-text" value="Please select at least one search criterion."/>';
 	}
@@ -159,6 +164,13 @@ mainWindow.filterFunds.length == 0)
 		// filter and display people
 		for (var i=0;i<mainWindow.collaborateeIds.length;i++) {				
 			var addPerson = true;
+			// check whether the person should be displayed based on name
+			if (!name || !mainWindow.collaborateeNames[i].toLowerCase().includes(name))
+			{
+				// skip person entirely
+				continue;
+			}
+
 			// check whether the person should be displayed based on tracks
 			if (tracksSelected) {
 				if (mainWindow.filterBy == "any") {
