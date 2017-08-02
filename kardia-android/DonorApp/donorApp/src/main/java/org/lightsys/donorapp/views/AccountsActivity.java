@@ -184,7 +184,7 @@ public class AccountsActivity extends Activity{
 		}
 
 
-		Account account = new Account(dId, aName, aPass, sName, null);
+		Account account = new Account(dId, aName, aPass, sName, null, "800", "http");
 		// Execute data connection to validate account and pull data if valid
 		// DataConnection will close activity once complete if successful
 		new DataConnection(this, this, account).execute("");
@@ -256,6 +256,8 @@ public class AccountsActivity extends Activity{
 			intent.putExtra("oldpass", temp.getAccountPassword());
 			intent.putExtra("oldserver", temp.getServerName());
 			intent.putExtra("olddonorid", temp.getId());
+			intent.putExtra("oldprotocol", temp.getProtocol());
+			intent.putExtra("oldportnumber", temp.getPortNumber());
 
 			startActivityForResult(intent, 0);
 

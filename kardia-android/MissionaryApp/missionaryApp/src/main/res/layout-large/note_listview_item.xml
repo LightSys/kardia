@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+    <TextView
+        android:id="@+id/missionaryNameText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="450dp"
+        android:maxLines="1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="@dimen/border_dimen_lg"
+        android:layout_marginLeft="@dimen/border_dimen_lg"
+        android:layout_marginRight="@dimen/border_dimen_lg"
+        android:textSize="@dimen/header_dimen_lg"/>
+
+    <TextView
+        android:id="@+id/subjectText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/missionaryNameText"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="38dp"
+        android:layout_marginRight="38dp"
+        android:maxLines="1"
+        android:textSize="@dimen/body_dimen_lg" />
+
+    <TextView
+        android:id="@+id/dateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/subjectText"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="38dp"
+        android:layout_marginStart="38dp"
+        android:maxLines="1"
+        android:textSize="@dimen/contact_dimen_lg" />
+
+    <LinearLayout
+        android:id="@+id/prayingButtonLayout"
+        android:layout_width="96dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="5dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        tools:ignore="RelativeOverlap">
+
+        <Button
+            android:id="@+id/prayingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:focusable = "false"/>
+
+        <TextView
+            android:id="@+id/textBelowPrayingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:textSize="@dimen/contact_dimen_lg"
+            android:textStyle="bold" />
+    </LinearLayout>
+</RelativeLayout>

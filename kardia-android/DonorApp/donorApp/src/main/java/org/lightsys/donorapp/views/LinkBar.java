@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -15,11 +16,14 @@ import android.widget.Toast;
 
 import com.example.donorapp.R;
 
+import static android.content.ContentValues.TAG;
+
 public class LinkBar extends Fragment {
 
-	public static String ARG_FUND_ID = "fund";
+	public final String ARG_FUND_ID = "fund_id"; //The position of the fund that was clicked
 	private static String giving_url = "";
 	int fund_id = -1;
+	String temp_url;
 	
 	Button b;
 	
@@ -27,7 +31,8 @@ public class LinkBar extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		
 		View v = inflater.inflate(R.layout.linkbar_layout, container, false);
-	
+		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+
 		Bundle args = getArguments();
 		if(savedInstanceState != null){
 			fund_id = savedInstanceState.getInt(ARG_FUND_ID);
@@ -35,11 +40,16 @@ public class LinkBar extends Fragment {
 		else if(args != null){
 			fund_id = args.getInt(ARG_FUND_ID);
 		}
-		
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+		else {
+			getActivity().setTitle("General Donations");
+			temp_url = db.getGivingUrl();
+		}
 
 		// Retrieve giving URL from database for specific fund
-		String temp_url = db.getFundById(fund_id).getGiving_url();
+		if (temp_url == null) {
+			temp_url = db.getFundById(fund_id).getGiving_url();
+		}
+		String testString = db.getGivingUrl();
 		db.close();
 
 		// If URL not found, set to unavailable status
@@ -48,6 +58,8 @@ public class LinkBar extends Fragment {
 			giving_url = "Unavailable";
 		} else if (!temp_url.contains("http://") && !temp_url.contains("https://")) {
 			giving_url = "http://" + giving_url;
+		}else{
+			giving_url = temp_url;
 		}
 
 		b = (Button)v.findViewById(R.id.sendButton);

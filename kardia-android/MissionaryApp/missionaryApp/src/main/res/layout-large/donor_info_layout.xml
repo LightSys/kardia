@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/donorInfoLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/profilePicImage"
+        android:contentDescription="@string/profile_pic_description"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/profile_picture_standard"/>
+
+    <TextView
+        android:id="@+id/userNameText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/profilePicImage"
+        android:layout_toEndOf="@id/profilePicImage"
+        android:layout_marginTop="5dp"
+        android:maxLines="1"
+        android:textSize="@dimen/user_name_header_dimen_lg"/>
+
+    <TextView
+        android:id="@+id/addressText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/emailText"
+        android:layout_alignLeft="@id/userNameText"
+        android:layout_alignStart="@id/userNameText"
+        android:textSize="@dimen/contact_dimen_lg"
+        android:visibility="gone"
+        />
+
+    <TextView
+        android:id="@+id/phoneText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/profilePicImage"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="@dimen/border_dimen_lg"
+        android:layout_marginEnd="@dimen/border_dimen_lg"
+        android:layout_marginTop="5dp"
+        android:textSize="@dimen/contact_dimen_lg"
+        tools:ignore="RelativeOverlap"/>
+
+    <TextView
+        android:id="@+id/emailText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/profilePicImage"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="@dimen/border_dimen_lg"
+        android:layout_marginEnd="@dimen/border_dimen_lg"
+        android:layout_marginBottom="5dp"
+        android:textSize="@dimen/contact_dimen_lg"
+        tools:ignore="RelativeOverlap"/>
+</RelativeLayout>

@@ -31,9 +31,9 @@
     </TableRow>
 
     <TableRow
+        android:id="@+id/subjectRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/subjectRow"
         android:layout_below="@id/senderRow"
         android:layout_marginLeft="20dp"
         android:layout_marginStart="20dp"
@@ -87,30 +87,32 @@
         android:id="@+id/scrollView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/contactTypeRow"
+        android:layout_below="@+id/contactTypeRow"
         android:layout_above="@+id/buttonRow"
-        android:gravity="center"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="25dp"
-        android:ems="15">
+        android:ems="15"
+        android:gravity="center"
+        android:clipToPadding="false"
+        android:fillViewport="false">
 
         <EditText
             android:id="@+id/message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:hint="@string/message"
             android:inputType="textMultiLine"
-            android:textSize="22sp"
-            android:hint="@string/message" />
+            android:textSize="22sp" />
     </ScrollView>
 
     <TableRow
         android:id="@+id/buttonRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp"
         android:gravity="center">
 
         <Button
@@ -119,19 +121,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/cancel"
-            android:textSize="22sp"
-            android:textStyle="bold"
+            android:layout_marginEnd="20dp"
             android:layout_marginRight="20dp"
-            android:layout_marginEnd="20dp"/>
+            android:textStyle="bold"
+            android:textSize="22sp"/>
 
         <Button
             android:id="@+id/submitButton"
             style="@style/customBottomBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="22sp"
             android:text="@string/submit"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textSize="22sp" />
 
     </TableRow>
 
