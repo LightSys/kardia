@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -31,9 +32,9 @@
     </TableRow>
 
     <TableRow
+        android:id="@+id/subjectRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/subjectRow"
         android:layout_below="@id/senderRow"
         android:layout_marginLeft="20dp"
         android:layout_marginStart="20dp"
@@ -80,36 +81,39 @@
             android:id="@+id/typeSpinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:entries="@array/contactTypes" />
+            android:entries="@array/contactTypes"
+            android:focusable="false" />
     </TableRow>
 
     <ScrollView
         android:id="@+id/scrollView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/contactTypeRow"
+        android:layout_below="@+id/contactTypeRow"
         android:layout_above="@+id/buttonRow"
-        android:gravity="center"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:ems="15">
+        android:ems="15"
+        android:gravity="center"
+        android:clipToPadding="false"
+        android:fillViewport="false">
 
         <EditText
             android:id="@+id/message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:hint="@string/message" />
+            android:hint="@string/message"
+            android:inputType="textMultiLine" />
     </ScrollView>
 
     <TableRow
         android:id="@+id/buttonRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
         android:gravity="center">
 
         <Button
@@ -118,9 +122,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/cancel"
-            android:textStyle="bold"
+            android:layout_marginEnd="20dp"
             android:layout_marginRight="20dp"
-            android:layout_marginEnd="20dp"/>
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/submitButton"

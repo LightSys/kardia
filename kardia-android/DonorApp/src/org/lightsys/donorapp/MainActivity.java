@@ -248,7 +248,7 @@ public class MainActivity extends ActionBarActivity {
 			break;
 		case 2:
 			Toast.makeText(MainActivity.this, "To Be Implemented: General Donation Link", Toast.LENGTH_SHORT).show();
-			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com")); //TODO: replace url with actually donation site
+			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
 			startActivity(browserIntent);
 			break;
 		case 3:

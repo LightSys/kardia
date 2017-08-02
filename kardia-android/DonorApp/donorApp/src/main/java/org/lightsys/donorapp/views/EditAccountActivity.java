@@ -63,6 +63,8 @@ public class EditAccountActivity extends Activity {
 		String oldName = intent.getStringExtra("oldname");
 		String oldPass = intent.getStringExtra("oldpass");
 		String oldServer = intent.getStringExtra("oldserver");
+		String oldProtocol = intent.getStringExtra("oldprotocol");
+		String oldPortNumber = intent.getStringExtra("oldportnumber");
 		account_id = intent.getIntExtra("olddonorid", -1);
 
 		editName.setText(oldName);
@@ -117,7 +119,7 @@ public class EditAccountActivity extends Activity {
 				}
 
 				db.close();
-				Account a = new Account(account_id, name, pass, server, null);
+				Account a = new Account(account_id, name, pass, server, null, "http", "800");
 
 				// Execute data connection to validate account and pull data if valid
 				// DataConnection will close activity once complete if successful

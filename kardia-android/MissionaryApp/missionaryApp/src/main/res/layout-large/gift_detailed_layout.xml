@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/noise_blue_repeat" >
+
+    <include
+        android:id = "@+id/donorInfoLayout"
+        layout="@layout/donor_info_layout"/>
+
+    <View
+        android:id="@+id/donorInfoDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/donorInfoLayout"
+        android:background="#000030" />
+
+    <TextView
+        android:id="@+id/fundText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/dateText"
+        android:gravity="center"
+        android:textSize="@dimen/large_header_dimen_lg"/>
+
+    <TextView
+        android:id="@+id/dateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/giftAmountText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:textSize="@dimen/user_name_header_dimen_lg" />
+
+    <TextView
+        android:id="@+id/giftAmountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="20dp"
+        android:textSize="@dimen/user_name_header_dimen_lg"
+        android:textColor="#37AD00" />
+</RelativeLayout>
