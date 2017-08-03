@@ -1,6 +1,6 @@
 $Version=2$
 apis "system/query"
     {
-    sql = "SELECT name = substring(:name,5,char_length(:name) - 8), realname=:name, * FROM subtree /apps/kardia/modules/ HAVING substring(:realname,1,4) = 'api_' and right(:realname,4) = '.qyt' and :__cx_depth <= 2";
-    name_expression = "substring(:name,5,char_length(:name) - 8)";
+    sql = "SELECT name = substring(:name,5,char_length(:name) - condition(right(:name,4) = '.qyt', 8, 7)), realname=:name, * FROM subtree /apps/kardia/modules/ HAVING substring(:realname,1,4) = 'api_' and (right(:realname,4) = '.qyt' or right(:realname,3) = '.qy') and :__cx_depth <= 2";
+    name_expression = "substring(:name,5,char_length(:name) - condition(right(:name,4) = '.qyt', 8, 7))";
     }
