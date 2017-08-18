@@ -103,7 +103,6 @@ var contactFooter = {
 	//
 	reSync: function(cb) {
 		var date = new Date();
-
 		// This is called once all create/update/delete modifications have finished
 		// hitting the server.  At that point we call a custom callback, reset the
 		// data (this happens if the user just used forward/back in the message window
@@ -563,6 +562,9 @@ var contactFooter = {
 
 		// Find author of email
 		if (gMessageDisplay && gMessageDisplay.displayedMessage) {
+			// if a message is displayed, show the toolbar
+			contactFooter.jQuery("#contact-box").prop("hidden", false);
+
 			var author = gMessageDisplay.displayedMessage.author;
 			var parser = Components.classes["@mozilla.org/messenger/headerparser;1"].getService(Components.interfaces["nsIMsg" + "HeaderParser"]); // workaround for overzealous regex on AMO.
 			var authorAddressArray = {};
@@ -592,7 +594,7 @@ var contactFooter = {
 				}
 			}
 		}
-
+		
 		// Things we do only if we've just switched to this particular email message
 		if (!contactFooter.initialized) {
 			// Is author in Kardia?  If not, note that this is a new sender so that we
@@ -786,7 +788,16 @@ var contactFooter = {
 			contactFooter.enableControls();
 			contactFooter.initialized = true;
 		}
-
+		else {
+			// Wait until it's ready to display everything. The data_loaded and do_sidebar are killing it here and we need
+			// to give it a chance to load.		
+			$.when(kardiacrm.partner_data_loaded_deferred).then( function(value) {
+				contactFooter.log("initialized");
+				contactFooter.enableControls();
+				contactFooter.initialized = true;
+			});
+			//if (kardiacrm.partner_data_loaded) kardiacrm.partner_data_loaded_deferred.resolve();
+		}
 		// Save changes, if needed.
 		contactFooter.reSync();
 
@@ -809,12 +820,14 @@ var contactFooter = {
 	// Disable all controls
 	disableControls: function() {
 		contactFooter.jQuery("#contact-box").find("textbox,menulist,checkbox").prop("disabled", true);
+		contactFooter.jQuery("#contact-box").css({display: "none"});
 	},
 
 
 	// Enable all controls
 	enableControls: function() {
 		contactFooter.jQuery("#contact-box").find("textbox,menulist,checkbox").removeProp("disabled");
+		contactFooter.jQuery("#contact-box").css({display: "block"});
 	},
 
 
@@ -847,6 +860,8 @@ var contactFooter = {
 	// Reset the window and checkboxes as if it had just been opened.
 	reset: function() {
 		contactFooter.log("reset()");
+		console.log("reset");
+		contactFooter.jQuery("#contact-box").prop("hidden", true);
 		if (!kardiacrm.isPending('resync')) {
 			contactFooter.reSync(contactFooter.reset_bh);
 		}
@@ -944,13 +959,20 @@ var contactFooter = {
 	}
 };
 
+document.getElementById('folderTree').addEventListener("select", function() {
+	// hide footer if we changed folders and now no message is displayed
+	if (!gMessageDisplay || !gMessageDisplay.displayedMessage) {
+		contactFooter.disableControls();
+	}
+}, false);
+
+
 addEventListener("unload", function() {
 	contactFooter.log("unload");
 	contactFooter.reset();
 }, false);
 
-addEventListener("load", function() {
-	return; // disable this for now, need quick release of TB 45.0 update
+addEventListener("load", function(event) {
 
 	// Load jQuery
 	var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
@@ -975,6 +997,7 @@ addEventListener("load", function() {
 		onStartAttachments: function () {},
 		onEndAttachments: function () {},
 		onBeforeShowHeaderPane: function () {},
+		onDisplayingFolder: function () {}
 	});
 
 	// Trap interactions with the checkboxes
