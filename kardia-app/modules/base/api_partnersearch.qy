@@ -1,0 +1,250 @@
+$Version=2$
+api_partnersearch "system/query"
+    {
+    string "query/parameter" { type=string; }
+
+    sql = " declare object info;
+    
+	    -- Clean up our temporary sort lists
+	    delete
+		/apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+	    where
+		:s_username = user_name() and
+		dateadd(hour, 2, :s_date_modified) < getdate()
+	    ;
+
+	    -- Get a new ID
+	    select
+		:info:newid = isnull(max(:p_sort_session_id),0) + 1
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+	    where
+		:s_username = user_name()
+	    ;
+
+	    -- Break out the search criteria
+	    select
+		:info:len = char_length(:parameters:string), :info:pos1 = charindex(',', :parameters:string + ',');
+	    select
+		:info:pos2 = :info:pos1 + 1 + charindex(',', substring(:parameters:string + ',', :info:pos1 + 1)) - 1;
+	    select
+		:info:pos3 = :info:pos2 + 1 + charindex(',', substring(:parameters:string + ',', :info:pos2 + 1)) - 1;
+	    select
+		:info:pos4 = :info:pos3 + 1 + charindex(',', substring(:parameters:string + ',', :info:pos3 + 1)) - 1;
+	    select
+		:info:cri1 = lower(substring(:parameters:string, 1, condition(:info:pos1 > 0, :info:pos1 - 1, :info:len))),
+		:info:cri2 = lower(substring(:parameters:string, :info:pos1 + 1, condition(:info:pos2 > 0, :info:pos2 - :info:pos1 - 1, :info:len))),
+		:info:cri3 = lower(substring(:parameters:string, :info:pos2 + 1, condition(:info:pos3 > 0, :info:pos3 - :info:pos2 - 1, :info:len))),
+		:info:cri4 = lower(substring(:parameters:string, :info:pos3 + 1, condition(:info:pos4 > 0, :info:pos4 - :info:pos3 - 1, :info:len)))
+	    ;
+
+	    -- Search based on name
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+	    select
+		:p_partner_key,
+		s_username = user_name(),
+		p_sort_session_id = :info:newid,
+		p_sortkey = convert(string,
+			condition(
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, lower(:p:p_given_name)) > 0) or
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, lower(:p:p_preferred_name)) > 0) or
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, lower(:p:p_surname)) = 1) or
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, lower(:p:p_org_name)) > 0), 1, 0) +
+			condition(
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, lower(:p:p_given_name)) > 0) or
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, lower(:p:p_preferred_name)) > 0) or
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, lower(:p:p_surname)) = 1) or
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, lower(:p:p_org_name)) > 0), 1, 0) +
+			condition(
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, lower(:p:p_given_name)) > 0) or
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, lower(:p:p_preferred_name)) > 0) or
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, lower(:p:p_surname)) = 1) or
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, lower(:p:p_org_name)) > 0), 1, 0) +
+			condition(
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, lower(:p:p_given_name)) > 0) or
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, lower(:p:p_preferred_name)) > 0) or
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, lower(:p:p_surname)) = 1) or
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, lower(:p:p_org_name)) > 0), 1, 0)
+			),
+		s_created_by = user_name(),
+		s_date_created = getdate(),
+		s_modified_by = user_name(),
+		s_date_modified = getdate()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    where
+		charindex(nullif(:info:cri1,''), lower(:p:p_given_name)) > 0 or
+		charindex(nullif(:info:cri2,''), lower(:p:p_given_name)) > 0 or
+		charindex(nullif(:info:cri3,''), lower(:p:p_given_name)) > 0 or
+		charindex(nullif(:info:cri4,''), lower(:p:p_given_name)) > 0 or
+		charindex(nullif(:info:cri1,''), lower(:p:p_preferred_name)) > 0 or
+		charindex(nullif(:info:cri2,''), lower(:p:p_preferred_name)) > 0 or
+		charindex(nullif(:info:cri3,''), lower(:p:p_preferred_name)) > 0 or
+		charindex(nullif(:info:cri4,''), lower(:p:p_preferred_name)) > 0 or
+		charindex(nullif(:info:cri1,''), lower(:p:p_surname)) = 1 or
+		charindex(nullif(:info:cri2,''), lower(:p:p_surname)) = 1 or
+		charindex(nullif(:info:cri3,''), lower(:p:p_surname)) = 1 or
+		charindex(nullif(:info:cri4,''), lower(:p:p_surname)) = 1 or
+		charindex(nullif(:info:cri1,''), lower(:p:p_org_name)) > 0 or
+		charindex(nullif(:info:cri2,''), lower(:p:p_org_name)) > 0 or
+		charindex(nullif(:info:cri3,''), lower(:p:p_org_name)) > 0 or
+		charindex(nullif(:info:cri4,''), lower(:p:p_org_name)) > 0
+	    limit
+		10
+	    ;
+
+	    -- Search based on address (city, state)
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+	    select
+		:p_partner_key,
+		s_username = user_name(),
+		p_sort_session_id = :info:newid,
+		p_sortkey = convert(string, 
+			condition(
+				nullif(:info:cri1,'') = lower(:l:p_city) or
+				nullif(:info:cri1,'') = lower(:l:p_state_province), 1, 0) +
+			condition(
+				nullif(:info:cri2,'') = lower(:l:p_city) or
+				nullif(:info:cri2,'') = lower(:l:p_state_province), 1, 0) +
+			condition(
+				nullif(:info:cri3,'') = lower(:l:p_city) or
+				nullif(:info:cri3,'') = lower(:l:p_state_province), 1, 0) +
+			condition(
+				nullif(:info:cri4,'') = lower(:l:p_city) or
+				nullif(:info:cri4,'') = lower(:l:p_state_province), 1, 0)
+			),
+		p_location_id = :l:p_location_id,
+		s_created_by = user_name(),
+		s_date_created = getdate(),
+		s_modified_by = user_name(),
+		s_date_modified = getdate()
+	    from
+		/apps/kardia/data/Kardia_DB/p_location/rows l
+	    where
+		nullif(:info:cri1,'') = lower(:l:p_city) or
+		nullif(:info:cri2,'') = lower(:l:p_city) or
+		nullif(:info:cri3,'') = lower(:l:p_city) or
+		nullif(:info:cri4,'') = lower(:l:p_city) or
+		nullif(:info:cri1,'') = lower(:l:p_state_province) or
+		nullif(:info:cri2,'') = lower(:l:p_state_province) or
+		nullif(:info:cri3,'') = lower(:l:p_state_province) or
+		nullif(:info:cri4,'') = lower(:l:p_state_province)
+	    on duplicate
+		:p_partner_key, :s_username, :p_sort_session_id
+	    update set
+		:p_location_id = :l:p_location_id,
+		:p_sortkey = convert(string, convert(integer, :this:p_sortkey) + 
+			condition(
+				nullif(:info:cri1,'') = lower(:l:p_city) or
+				nullif(:info:cri1,'') = lower(:l:p_state_province), 1, 0) +
+			condition(
+				nullif(:info:cri2,'') = lower(:l:p_city) or
+				nullif(:info:cri2,'') = lower(:l:p_state_province), 1, 0) +
+			condition(
+				nullif(:info:cri3,'') = lower(:l:p_city) or
+				nullif(:info:cri3,'') = lower(:l:p_state_province), 1, 0) +
+			condition(
+				nullif(:info:cri4,'') = lower(:l:p_city) or
+				nullif(:info:cri4,'') = lower(:l:p_state_province), 1, 0)
+			)
+	    ;
+
+	    -- Search based on email, phone, etc.
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows
+	    select
+		:p_partner_key,
+		s_username = user_name(),
+		p_sort_session_id = :info:newid,
+		p_sortkey = '1',
+		p_contact_id = :ci:p_contact_id,
+		s_created_by = user_name(),
+		s_date_created = getdate(),
+		s_modified_by = user_name(),
+		s_date_modified = getdate()
+	    from
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+	    where
+		nullif(:info:cri1,'') = lower(:ci:p_contact_data) or
+		nullif(:info:cri2,'') = lower(:ci:p_contact_data) or
+		nullif(:info:cri3,'') = lower(:ci:p_contact_data) or
+		nullif(:info:cri4,'') = lower(:ci:p_contact_data) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri1,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri2,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri3,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri4,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri1,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri2,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri3,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri4,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-',''))
+	    on duplicate
+		:p_partner_key, :s_username, :p_sort_session_id
+	    update set
+		:p_contact_id = :ci:p_contact_id,
+		:p_sortkey = convert(string, convert(integer, :this:p_sortkey) + 1)
+	    ;
+
+	    -- Find maximum
+	    select
+		:info:max = max(convert(integer,:p_sortkey))
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows st
+	    where
+		:st:s_username = user_name() and
+		:st:p_sort_session_id = :info:newid
+	    ;
+
+	    -- Return the results
+	    select
+		partner_id = :p:p_partner_key,
+		partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		'@partner_ref' = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key + '',
+		partner_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=p,c=c'),
+		'@location_ref' = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key + '/Addresses/' + :p:p_partner_key + '|' + :st:p_location_id + '|0',
+		contact = isnull('+' + :ci:p_phone_country + ' ', '') + isnull('(' + :ci:p_phone_area_city + ') ', '') + isnull(:ci:p_contact_data,''),
+		contact_type = (select :text from /apps/kardia/data/Kardia_DB/_p_contact_type/rows pl where :pl:tag = :ci:p_contact_type),
+		'@contact_ref' = '/apps/kardia/api/partner/Partners/' + :p:p_partner_key + '/ContactInfo/' + :p:p_partner_key + '|' + :st:p_contact_id + '',
+		class = (select :text from /apps/kardia/data/Kardia_DB/_p_partner_class/rows pc where :pc:tag = :p:p_partner_class),
+		is_valid = condition(:p:p_status_code == 'A', 1, 0),
+		surname = :p:p_surname,
+		given_names = :p:p_given_name,
+		title = :p:p_title,
+		preferred_name = :p:p_preferred_name,
+		suffix = :p:p_suffix,
+		org_name = :p:p_org_name,
+		gender = (select :text from /apps/kardia/data/Kardia_DB/_p_partner_gender/rows pg where :pg:tag = :p:p_gender),
+		comments = :p:p_comments,
+		no_mail = :p:p_no_mail,
+		no_solicitations = :p:p_no_solicitations,
+		score = convert(integer, :st:p_sortkey),
+		date_created = :p:s_date_created,
+		created_by = :p:s_created_by,
+		date_modified = :p:s_date_modified,
+		modified_by = :p:s_modified_by
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_partner_sort_tmp/rows st,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p,
+		/apps/kardia/data/Kardia_DB/p_location/rows l,
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+		/apps/kardia/data/Kardia_DB/p_country/rows c,
+		/apps/kardia/data/Kardia_DB/p_address_format/rows af
+	    where
+		:st:s_username = user_name() and
+		:st:p_sort_session_id = :info:newid and
+		convert(integer, :st:p_sortkey) > :info:max / 2 and
+		:p:p_partner_key = :st:p_partner_key and
+		:ci:p_partner_key =* :st:p_partner_key and
+		:ci:p_contact_id =* :st:p_contact_id and
+		:l:p_partner_key =* :st:p_partner_key and
+		:l:p_location_id =* :st:p_location_id and
+		:l:p_revision_id = 0 and
+		:c:p_country_code =* :l:p_country_code and
+		:af:p_country_code =* :c:p_country_code and
+		:af:p_address_set = 'STANDARD'
+	    order by
+		convert(integer,:st:p_sortkey) desc,
+		:st:p_partner_key
+	    ";
+    }
