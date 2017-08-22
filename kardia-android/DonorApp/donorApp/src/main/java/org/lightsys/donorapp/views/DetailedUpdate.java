@@ -39,6 +39,7 @@ public class DetailedUpdate extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         View v = inflater.inflate(R.layout.update_detailedview_layout, container, false);
         getActivity().setTitle("Update");
 

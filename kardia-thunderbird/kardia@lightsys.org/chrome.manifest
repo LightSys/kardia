@@ -2,6 +2,7 @@ content     kardia    chrome/content/
 
 overlay chrome://messenger/content/messenger.xul chrome://kardia/content/main-overlay.xul
 overlay chrome://messenger/content/preferences/preferences.xul chrome://kardia/content/prefs-overlay.xul
+overlay chrome://messenger/content/messenger.xul chrome://kardia/content/contact-footer-overlay.xul
 overlay chrome://messenger/content/messageWindow.xul chrome://kardia/content/message-overlay.xul
 overlay chrome://messenger/content/messengercompose/messengercompose.xul chrome://kardia/content/compose-overlay.xul
 overlay chrome://messenger/content/msgComposeContextOverlay.xul chrome://kardia/content/compose-context-overlay.xul
