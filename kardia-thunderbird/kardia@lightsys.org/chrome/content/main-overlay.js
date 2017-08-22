@@ -164,6 +164,9 @@ var kardiacrm = {
 	partners_loaded:false,
 	partner_data_loaded:false,
 	find_emails_busy:false,
+	
+	// for avoiding busy waiting on partner_data_loaded
+	partner_data_loaded_deferred:null,
 
 	// current server connection data
 	load_done:false,
@@ -301,6 +304,13 @@ var kardiacrm = {
 		return kardiacrm.dispatch_queue[dclass].length > 0 || kardiacrm.dispatch_queue[dclass].active_cnt > 0;
 	}
 };
+
+// Load jQuery
+var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
+//loader.loadSubScript("chrome://messenger/content/jquery.js", window);
+loader.loadSubScript("chrome://kardia/content/jquery-1.11.1.js", window);
+//contactFooter.jQuery = window.jQuery.noConflict(true);
+kardiacrm.partner_data_loaded_deferred = $.Deferred();
 
 if (kardiaTab) {
 	kardiaTab.kardiacrm = kardiacrm;
@@ -530,7 +540,8 @@ function findEmails(selected, force) {
 	kardiacrm.find_emails_busy = true;
 	kardiacrm.partners_loaded = false;
 	kardiacrm.partner_data_loaded = false;
-	
+	// avoid busy waiting on partner_data_loaded
+	kardiacrm.partner_data_loaded_deferred = $.Deferred();
 	// if 0 or > 1 email selected, don't search Kardia
 	//if (gFolderDisplay.selectedCount < 1 && numSelected >= 1) {   // TumblerQ: Logic doesn't match comment. This intended?
 	if (selected.length < 1 && numSelected >= 1) {   // TumblerQ: Logic doesn't match comment. This intended?
@@ -665,6 +676,8 @@ function findEmails(selected, force) {
 	      // Update newly opened message window
 	      kardiacrm.partners_loaded = true;
 	      kardiacrm.partner_data_loaded = true;
+		  // avoid busy waiting on partner_data_loaded
+		  kardiacrm.partner_data_loaded_deferred.resolve();
 	      if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
 		    kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
 	      }
@@ -1619,6 +1632,8 @@ function findUser(index) {
                   else {
 		     // No email addresses to look up.
 		     kardiacrm.partner_data_loaded = true;
+			 // avoid busy waiting on partner_data_loaded
+			 kardiacrm.partner_data_loaded_deferred.resolve();
 		     if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
 			kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
 		     }
@@ -1633,6 +1648,8 @@ function findUser(index) {
          emailRequest.onerror = function() {
 		kardiacrm.partners_loaded = true;
 		kardiacrm.partner_data_loaded = true;
+		// avoid busy waiting on partner_data_loaded
+		kardiacrm.partner_data_loaded_deferred.resolve();
 		if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
 			kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
 		}
@@ -1656,6 +1673,8 @@ function getOtherInfo(start, isDefault) {
 	//
 	var complete = function() {
 		kardiacrm.partner_data_loaded = true;
+		// avoid busy waiting on partner_data_loaded
+		kardiacrm.partner_data_loaded_deferred.resolve();
 		if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
 			kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
 		}
@@ -3579,26 +3598,38 @@ function getTrackTagStaff(username, password) {
 	doHttpRequest("apps/kardia/api/crm_config/Tracks?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (trackListResp) {
       // If not 404
       if (trackListResp != null) {
-	 remove_atid(trackListResp);
-         kardiacrm.data.trackList = trackListResp;
-	 for(var k in trackListResp) {
-	    if (k != '@id') {
-		kardiacrm.data.trackList[k].filtered = false;
-	    }
-	 }
+		 remove_atid(trackListResp);
+        
+		 // sort list of tracks
+		 kardiacrm.data.trackList = [];
+		 Object.keys(trackListResp).sort().forEach(function(key) {
+			 kardiacrm.data.trackList[key] = trackListResp[key];
+		 });
+
+		 for(var k in trackListResp) {
+		    if (k != '@id') {
+				kardiacrm.data.trackList[k].filtered = false;
+			}
+		 }
 
          // get list of tags
          doHttpRequest("apps/kardia/api/crm_config/TagTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (tagResp) {
          // If not 404
          if (tagResp != null) {
 	       remove_atid(tagResp);
-	       kardiacrm.data.tagList = tagResp;
-	       for(var k in tagResp) {
-		    if (k != '@id') {
-			kardiacrm.data.tagList[k].filtered = false;
-		    }
-	       }
-               
+	       //kardiacrm.data.tagList = tagResp;
+
+		   // sort list of tags
+		   kardiacrm.data.tagList = [];
+		   let names = [];
+		   for (var k in tagResp) {
+				if (tagResp[k] != null) names.push([tagResp[k].tag_label, k]);
+				if (k != '@id') tagResp[k].filtered = false;
+		   }
+		   names.sort().forEach(function(key) {
+			   kardiacrm.data.tagList.push(tagResp[key[1]]);
+		   });
+
                // get list of contact history item types (note/prayer/etc)
                doHttpRequest("apps/kardia/api/crm_config/ContactHistTypes?cx__mode=rest&cx__res_type=collection&cx__res_format=attrs&cx__res_attrs=basic", function (noteTypeResp) {
                // If not 404

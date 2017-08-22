@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,8 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import com.example.donorapp.R;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * This class shows the year-to-date list for a certain fund, with the amount
@@ -69,6 +72,7 @@ public class YTDList extends Fragment{
 		String ytdListTitle = "Gifts By Year";
 		if (fund_id != -1) {
 			ytdListTitle += " - " + db.getFundById(fund_id).getFund_desc();
+			Log.d(TAG, "onCreateView: "+ db.getFundById(fund_id).getGiving_url());
 		}
 		getActivity().setTitle(ytdListTitle);
 
