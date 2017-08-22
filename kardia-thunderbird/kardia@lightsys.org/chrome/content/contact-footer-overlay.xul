@@ -7,8 +7,8 @@
 	<script type="application/javascript" src="chrome://kardia/content/contact-footer-overlay.js"/>
 
 	<!-- insert contact history dialog at end of message display -->
-	<box id="kardia-contact-footer">
-		<vbox id="contact-box" flex="0" insertafter="findbar"> <!-- or, possibly, after "messagepane" -->
+	<vbox id="singlemessage">
+		<vbox id="contact-box" flex="0" insertafter="messagepanewrapper" style="display:none">
 			<hbox id="contact-options" align="center">
 				<checkbox id="record-contact" checked="false" label="Record this email in Kardia"/>
 				<checkbox id="record-future" checked="false" label="Automatically record future emails with this person"/>
@@ -57,7 +57,7 @@
 				</hbox>
 			</hbox>
 		</vbox>
-	</box>
+	</vbox>
 
 	<!-- <grid id="expandedHeaders" style="background-color:yellow"></grid> -->
 </overlay>

@@ -37,14 +37,15 @@ public class GiftList extends Fragment{
 	private ArrayList<Gift> gifts = new ArrayList<Gift>();
 	private ArrayList<Integer> giftIDs = new ArrayList<Integer>();
 	private boolean isSpecificFund = false;
-	
+	LocalDBHandler db;
+
 	/**
 	 * Grab the needed Ids, load data and view.
 	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
-		LocalDBHandler db = new LocalDBHandler(getActivity(), null);
+		db = new LocalDBHandler(getActivity(), null);
 		Bundle giftArgs = getArguments();
 		
 		if(savedInstanceState != null){
@@ -149,7 +150,8 @@ public class GiftList extends Fragment{
 			
 			Bundle args = new Bundle();
 			args.putInt(DetailedGift.ARG_GIFT_ID, gifts.get(position).getId());
-			
+			args.putInt(ARG_FUND_ID, db.getFundByDescription(gifts.get(position).getGift_fund_desc()).getID());
+
 			DetailedGift newfrag = new DetailedGift();
 			newfrag.setArguments(args);
 					

@@ -14,7 +14,6 @@ import com.example.donorapp.R;
 import org.json.JSONObject;
 
 import org.lightsys.donorapp.data.Account;
-import org.lightsys.donorapp.tools.DataConnection;
 import org.lightsys.donorapp.tools.LocalDBHandler;
 import org.lightsys.donorapp.tools.PostJson;
 
@@ -138,12 +137,6 @@ public class CommentActivity extends Activity {
                         postJson.execute();
 
                     } catch (Exception e) {e.printStackTrace();}
-
-                    //refresh the screen after post
-                    //this probably won't work because separate threads and what not
-                     for (Account a : accts){
-                         new DataConnection(getBaseContext(), null, a);
-                    }
 
                     finish();
                 }
