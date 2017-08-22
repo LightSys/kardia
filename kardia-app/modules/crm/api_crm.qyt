@@ -341,6 +341,7 @@ api_crm "system/querytree"
 					engagement_track = :et:e_track_name,
 					engagement_step = :es:e_step_name,
 					engagement_comments = :pe:e_comments,
+					completion_status_code = :pe:e_completion_status,
 					completion_status = condition(:pe:e_completion_status == 'I', 'Incomplete', condition(:pe:e_completion_status == 'E', 'Exited', 'Complete')),
 					start_date = :pe:e_start_date,
 					started_by_partner_id = :pe:e_started_by,
