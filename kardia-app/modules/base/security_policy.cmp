@@ -894,6 +894,7 @@ security_policy "widget/component-decl"
 		k_user_list_osrc "widget/osrc"
 		    {
 		    sql = " SELECT
+				    name = :ux:username,
 				    :ux:description,
 				    :ux:username,
 				    is_online = (select count(1) from /sys/cx.sysinfo/session/users u where :u:name = :ux:username)
