@@ -279,7 +279,8 @@ fund_gift_list "system/report"
 	    x=0; y=0; width=102; height=4;
 	    font=helvetica;
 	    align=left;
-	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver(:this:costctr + ' - ' + condition(charindex("-Work", :costctr_qy:a_cc_desc) > 0, substring(:costctr_qy:a_cc_desc, 1, charindex("-Work", :costctr_qy:a_cc_desc) - 1), :costctr_qy:a_cc_desc) + "\n"); }
+	    //t_d0 "report/data" { fontsize=15; style=bold; value = runserver(:this:costctr + ' - ' + condition(charindex("-Work", :costctr_qy:a_cc_desc) > 0, substring(:costctr_qy:a_cc_desc, 1, charindex("-Work", :costctr_qy:a_cc_desc) - 1), :costctr_qy:a_cc_desc) + "\n"); }
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver(:this:costctr + ' - ' + :costctr_qy:a_cc_desc + "\n"); }
 	    t_d3a "report/data"
 		{
 		condition=runserver(:startperiod_qy:a_period == :endperiod_qy:a_period);
