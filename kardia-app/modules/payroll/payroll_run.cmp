@@ -220,7 +220,8 @@ payroll_run "widget/component-decl"
 
 	    period_osrc "widget/osrc"
 		{
-		period_year "widget/parameter" { param_name=year; type=string; default=runclient(:year_osrc:year); }
+		period_year "widget/parameter" { param_name=year; type=integer; default=runclient(:year_osrc:year); }
+		baseobj="/apps/kardia/data/Kardia_DB/a_payroll_period/rows";
 		sql = runserver("
 			select 
 				:ap:a_payroll_period,
@@ -381,7 +382,7 @@ payroll_run "widget/component-decl"
 			    a_ledger_number = runclient(:ledger_osrc:a_ledger_number);
 			    a_payroll_group_id = runclient(:group_osrc:a_payroll_group_id);
 			    payperiod = runclient(:period_osrc:a_payroll_period);
-			    paydate = runclient(:period_osrc:a_pay_date);
+			    paydate = runclient(:period_osrc:a_accrual_date);
 			    payacctperiod = runclient(:period_osrc:a_period);
 			    payrefperiod = runclient(:period_osrc:a_ref_period);
 			    paylastperiod = runclient(:period_osrc:a_base_on_period);
@@ -1160,7 +1161,7 @@ payroll_run "widget/component-decl"
 			    :i:a_ledger_number = :y:a_ledger_number and
 			    :i:a_payroll_id = :y:a_payroll_id and
 			    :i:a_payroll_group_id = :y:a_payroll_group_id and
-			    substring(convert(string,isnull(:i:a_effective_date, convert(datetime,'1/1/1970'))),1,11) != substring(convert(string,:groupinfo:accrual_date),1,11) and
+			    substring(convert(string,isnull(:i:a_effective_date, convert(datetime,'1/1/1970'))),1,11) != substring(convert(string,convert(datetime,:groupinfo:accrual_date)),1,11) and
 			    :i:a_period = :parameters:period and
 			    :par:p_partner_key = :y:p_payee_partner_key
 			having
