@@ -45,6 +45,11 @@ drop table p_partner_relationship
 go
 
 
+/* p_partner_relationship_type */
+drop table p_partner_relationship_type
+go
+
+
 /* p_church */
 drop table p_church
 go
@@ -85,6 +90,11 @@ drop table p_banking_details
 go
 
 
+/* p_banking_type */
+drop table p_banking_type
+go
+
+
 /* p_title */
 drop table p_title
 go
@@ -105,6 +115,31 @@ drop table p_partner_sort_tmp
 go
 
 
+/* p_acquisition_code */
+drop table p_acquisition_code
+go
+
+
+/* p_partner_search */
+drop table p_partner_search
+go
+
+
+/* p_partner_search_stage */
+drop table p_partner_search_stage
+go
+
+
+/* p_partner_search_results */
+drop table p_partner_search_results
+go
+
+
+/* p_search_stage_criteria */
+drop table p_search_stage_criteria
+go
+
+
 /* m_list */
 drop table m_list
 go
@@ -112,6 +147,246 @@ go
 
 /* m_list_membership */
 drop table m_list_membership
+go
+
+
+/* e_contact_autorecord */
+drop table e_contact_autorecord
+go
+
+
+/* e_contact_history_type */
+drop table e_contact_history_type
+go
+
+
+/* e_contact_history */
+drop table e_contact_history
+go
+
+
+/* e_activity */
+drop table e_activity
+go
+
+
+/* e_engagement_track */
+drop table e_engagement_track
+go
+
+
+/* e_engagement_track_collab */
+drop table e_engagement_track_collab
+go
+
+
+/* e_engagement_step */
+drop table e_engagement_step
+go
+
+
+/* e_engagement_step_collab */
+drop table e_engagement_step_collab
+go
+
+
+/* e_engagement_step_req */
+drop table e_engagement_step_req
+go
+
+
+/* e_partner_engagement */
+drop table e_partner_engagement
+go
+
+
+/* e_partner_engagement_req */
+drop table e_partner_engagement_req
+go
+
+
+/* e_tag_type */
+drop table e_tag_type
+go
+
+
+/* e_tag_type_relationship */
+drop table e_tag_type_relationship
+go
+
+
+/* e_tag */
+drop table e_tag
+go
+
+
+/* e_tag_activity */
+drop table e_tag_activity
+go
+
+
+/* e_document_type */
+drop table e_document_type
+go
+
+
+/* e_document */
+drop table e_document
+go
+
+
+/* e_document_comment */
+drop table e_document_comment
+go
+
+
+/* e_partner_document */
+drop table e_partner_document
+go
+
+
+/* e_workflow_type */
+drop table e_workflow_type
+go
+
+
+/* e_workflow_type_step */
+drop table e_workflow_type_step
+go
+
+
+/* e_workflow */
+drop table e_workflow
+go
+
+
+/* e_collaborator_type */
+drop table e_collaborator_type
+go
+
+
+/* e_collaborator */
+drop table e_collaborator
+go
+
+
+/* e_todo_type */
+drop table e_todo_type
+go
+
+
+/* e_todo */
+drop table e_todo
+go
+
+
+/* e_data_item_type */
+drop table e_data_item_type
+go
+
+
+/* e_data_item_group */
+drop table e_data_item_group
+go
+
+
+/* e_data_item */
+drop table e_data_item
+go
+
+
+/* e_highlights */
+drop table e_highlights
+go
+
+
+/* e_data_highlight */
+drop table e_data_highlight
+go
+
+
+/* e_ack */
+drop table e_ack
+go
+
+
+/* e_ack_type */
+drop table e_ack_type
+go
+
+
+/* e_trackactivity */
+drop table e_trackactivity
+go
+
+
+/* e_text_expansion */
+drop table e_text_expansion
+go
+
+
+/* e_text_search_word */
+drop table e_text_search_word
+go
+
+
+/* e_text_search_rel */
+drop table e_text_search_rel
+go
+
+
+/* e_text_search_occur */
+drop table e_text_search_occur
+go
+
+
+/* h_staff */
+drop table h_staff
+go
+
+
+/* h_group */
+drop table h_group
+go
+
+
+/* h_group_member */
+drop table h_group_member
+go
+
+
+/* h_holidays */
+drop table h_holidays
+go
+
+
+/* h_work_register */
+drop table h_work_register
+go
+
+
+/* h_work_register_times */
+drop table h_work_register_times
+go
+
+
+/* h_benefit_period */
+drop table h_benefit_period
+go
+
+
+/* h_benefit_type */
+drop table h_benefit_type
+go
+
+
+/* h_benefit_type_sched */
+drop table h_benefit_type_sched
+go
+
+
+/* h_benefits */
+drop table h_benefits
 go
 
 
@@ -325,6 +600,11 @@ drop table a_tax_allowance_table
 go
 
 
+/* a_salary_review */
+drop table a_salary_review
+go
+
+
 /* a_cc_admin_fee */
 drop table a_cc_admin_fee
 go
@@ -400,6 +680,36 @@ drop table a_giving_pattern
 go
 
 
+/* a_giving_pattern_allocation */
+drop table a_giving_pattern_allocation
+go
+
+
+/* a_giving_pattern_flag */
+drop table a_giving_pattern_flag
+go
+
+
+/* a_funding_target */
+drop table a_funding_target
+go
+
+
+/* a_support_review */
+drop table a_support_review
+go
+
+
+/* a_support_review_target */
+drop table a_support_review_target
+go
+
+
+/* a_descriptives */
+drop table a_descriptives
+go
+
+
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb
 go
@@ -425,6 +735,41 @@ drop table i_eg_gift_import
 go
 
 
+/* i_eg_giving_url */
+drop table i_eg_giving_url
+go
+
+
+/* i_crm_partner_import */
+drop table i_crm_partner_import
+go
+
+
+/* i_crm_partner_import_option */
+drop table i_crm_partner_import_option
+go
+
+
+/* i_crm_import_type */
+drop table i_crm_import_type
+go
+
+
+/* i_crm_import_type_option */
+drop table i_crm_import_type_option
+go
+
+
+/* i_disb_import_classify */
+drop table i_disb_import_classify
+go
+
+
+/* i_disb_import_status */
+drop table i_disb_import_status
+go
+
+
 /* c_message */
 drop table c_message
 go
@@ -437,6 +782,11 @@ go
 
 /* c_member */
 drop table c_member
+go
+
+
+/* s_config */
+drop table s_config
 go
 
 

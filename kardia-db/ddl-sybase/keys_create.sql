@@ -58,6 +58,12 @@ alter table p_partner_relationship
 	add constraint p_partner_relationship_pk primary key clustered (p_partner_key, p_relation_type, p_relation_key)
 go
 
+print "working on table p_partner_relationship_type"
+
+alter table p_partner_relationship_type
+	add constraint p_relat_type_pk primary key clustered (p_relation_type)
+go
+
 print "working on table p_church"
 
 alter table p_church
@@ -106,6 +112,12 @@ alter table p_banking_details
 	add constraint p_banking_details_pk primary key clustered (p_banking_details_key)
 go
 
+print "working on table p_banking_type"
+
+alter table p_banking_type
+	add constraint p_banking_type_pk primary key clustered (p_banking_type)
+go
+
 print "working on table p_title"
 
 alter table p_title
@@ -134,6 +146,36 @@ alter table p_partner_sort_tmp
 	add constraint p_sort_pk primary key clustered (p_partner_key,s_username,p_sort_session_id)
 go
 
+print "working on table p_acquisition_code"
+
+alter table p_acquisition_code
+	add constraint p_acqcode_pk primary key clustered (p_acquisition_code)
+go
+
+print "working on table p_partner_search"
+
+alter table p_partner_search
+	add constraint p_search_pk primary key clustered (p_search_id)
+go
+
+print "working on table p_partner_search_stage"
+
+alter table p_partner_search_stage
+	add constraint p_searchstage_pk primary key clustered (p_search_id,p_search_stage_id)
+go
+
+print "working on table p_partner_search_results"
+
+alter table p_partner_search_results
+	add constraint p_searchres_pk primary key clustered (p_partner_key,s_username,p_search_session_id,p_search_stage_id)
+go
+
+print "working on table p_search_stage_criteria"
+
+alter table p_search_stage_criteria
+	add constraint p_stage_criteria_pk primary key clustered (p_search_id,p_search_stage_id,p_criteria_name)
+go
+
 print "working on table m_list"
 
 alter table m_list
@@ -143,7 +185,295 @@ go
 print "working on table m_list_membership"
 
 alter table m_list_membership
-	add constraint m_list_membership_clustered_pk primary key clustered (m_list_code, p_partner_key)
+	add constraint m_list_membership_clustered_pk primary key clustered (m_list_code, p_partner_key, m_hist_id)
+go
+
+print "working on table e_contact_autorecord"
+
+alter table e_contact_autorecord
+	add constraint e_autorec_pk primary key clustered (p_partner_key, e_collaborator_id, e_contact_history_type, e_contact_id)
+go
+
+print "working on table e_contact_history_type"
+
+alter table e_contact_history_type
+	add constraint e_cnt_hist_type_pk primary key clustered (e_contact_history_type)
+go
+
+print "working on table e_contact_history"
+
+alter table e_contact_history
+	add constraint e_cnt_hist_pk primary key clustered (e_contact_history_id)
+go
+
+print "working on table e_activity"
+
+alter table e_activity
+	add constraint e_act_pk primary key clustered (e_activity_group_id, e_activity_id)
+go
+
+print "working on table e_engagement_track"
+
+alter table e_engagement_track
+	add constraint e_trk_pk primary key clustered (e_track_id)
+go
+
+print "working on table e_engagement_track_collab"
+
+alter table e_engagement_track_collab
+	add constraint e_trkcoll_pk primary key clustered (e_track_id, p_collab_partner_key)
+go
+
+print "working on table e_engagement_step"
+
+alter table e_engagement_step
+	add constraint e_step_pk primary key clustered (e_track_id, e_step_id)
+go
+
+print "working on table e_engagement_step_collab"
+
+alter table e_engagement_step_collab
+	add constraint e_stepcoll_pk primary key clustered (e_track_id, e_step_id, p_collab_partner_key)
+go
+
+print "working on table e_engagement_step_req"
+
+alter table e_engagement_step_req
+	add constraint e_req_pk primary key clustered (e_track_id, e_step_id, e_req_id)
+go
+
+print "working on table e_partner_engagement"
+
+alter table e_partner_engagement
+	add constraint e_pareng_pk primary key clustered (p_partner_key, e_engagement_id, e_hist_id)
+go
+
+print "working on table e_partner_engagement_req"
+
+alter table e_partner_engagement_req
+	add constraint e_parreq_pk primary key clustered (p_partner_key, e_engagement_id, e_hist_id, e_req_item_id)
+go
+
+print "working on table e_tag_type"
+
+alter table e_tag_type
+	add constraint e_tagtype_pk primary key clustered (e_tag_id)
+go
+
+print "working on table e_tag_type_relationship"
+
+alter table e_tag_type_relationship
+	add constraint e_tagtyperel_pk primary key clustered (e_tag_id, e_rel_tag_id)
+go
+
+print "working on table e_tag"
+
+alter table e_tag
+	add constraint e_tag_pk primary key clustered (e_tag_id, p_partner_key)
+go
+
+print "working on table e_tag_activity"
+
+alter table e_tag_activity
+	add constraint e_tagact_pk primary key clustered (e_tag_activity_group, e_tag_activity_id)
+go
+
+print "working on table e_document_type"
+
+alter table e_document_type
+	add constraint e_doctype_pk primary key clustered (e_doc_type_id)
+go
+
+print "working on table e_document"
+
+alter table e_document
+	add constraint e_doc_pk primary key clustered (e_document_id)
+go
+
+print "working on table e_document_comment"
+
+alter table e_document_comment
+	add constraint e_doccom_pk primary key clustered (e_document_id, e_doc_comment_id)
+go
+
+print "working on table e_partner_document"
+
+alter table e_partner_document
+	add constraint e_pardoc_pk primary key clustered (e_document_id, p_partner_key, e_pardoc_assoc_id)
+go
+
+print "working on table e_workflow_type"
+
+alter table e_workflow_type
+	add constraint e_work_pk primary key clustered (e_workflow_id)
+go
+
+print "working on table e_workflow_type_step"
+
+alter table e_workflow_type_step
+	add constraint e_workstep_pk primary key clustered (e_workflow_step_id)
+go
+
+print "working on table e_workflow"
+
+alter table e_workflow
+	add constraint e_workinst_pk primary key clustered (e_workflow_instance_id)
+go
+
+print "working on table e_collaborator_type"
+
+alter table e_collaborator_type
+	add constraint e_collabtype_pk primary key clustered (e_collab_type_id)
+go
+
+print "working on table e_collaborator"
+
+alter table e_collaborator
+	add constraint e_collab_pk primary key clustered (e_collaborator, p_partner_key)
+go
+
+print "working on table e_todo_type"
+
+alter table e_todo_type
+	add constraint e_todotype_pk primary key clustered (e_todo_type_id)
+go
+
+print "working on table e_todo"
+
+alter table e_todo
+	add constraint e_todo_pk primary key clustered (e_todo_id)
+go
+
+print "working on table e_data_item_type"
+
+alter table e_data_item_type
+	add constraint e_ditype_pk primary key clustered (e_data_item_type_id)
+go
+
+print "working on table e_data_item_group"
+
+alter table e_data_item_group
+	add constraint e_digrp_pk primary key clustered (e_data_item_group_id)
+go
+
+print "working on table e_data_item"
+
+alter table e_data_item
+	add constraint e_dataitem_pk primary key clustered (e_data_item_id)
+go
+
+print "working on table e_highlights"
+
+alter table e_highlights
+	add constraint e_h_pk primary key clustered (e_highlight_user, e_highlight_partner, e_highlight_id)
+go
+
+print "working on table e_data_highlight"
+
+alter table e_data_highlight
+	add constraint e_dh_pk primary key clustered (e_highlight_subject, e_highlight_object_type, e_highlight_object_id)
+go
+
+print "working on table e_ack"
+
+alter table e_ack
+	add constraint e_ack_pk primary key clustered (e_ack_id)
+go
+
+print "working on table e_ack_type"
+
+alter table e_ack_type
+	add constraint e_ackt_pk primary key clustered (e_ack_type)
+go
+
+print "working on table e_trackactivity"
+
+alter table e_trackactivity
+	add constraint e_trkact_pk primary key clustered (p_partner_key,e_username,e_sort_key)
+go
+
+print "working on table e_text_expansion"
+
+alter table e_text_expansion
+	add constraint e_exp_pk primary key clustered (e_exp_tag)
+go
+
+print "working on table e_text_search_word"
+
+alter table e_text_search_word
+	add constraint e_tsw_pk primary key clustered (e_word_id)
+go
+
+print "working on table e_text_search_rel"
+
+alter table e_text_search_rel
+	add constraint e_tsr_pk primary key clustered (e_word_id, e_target_word_id)
+go
+
+print "working on table e_text_search_occur"
+
+alter table e_text_search_occur
+	add constraint e_tso_pk primary key clustered (e_word_id, e_document_id, e_sequence)
+go
+
+print "working on table h_staff"
+
+alter table h_staff
+	add constraint h_staff_pk primary key clustered (p_partner_key)
+go
+
+print "working on table h_group"
+
+alter table h_group
+	add constraint h_group_pk primary key clustered (h_group_id)
+go
+
+print "working on table h_group_member"
+
+alter table h_group_member
+	add constraint h_groupm_pk primary key clustered (h_group_id, p_partner_key)
+go
+
+print "working on table h_holidays"
+
+alter table h_holidays
+	add constraint h_holiday_pk primary key clustered (h_holiday_id)
+go
+
+print "working on table h_work_register"
+
+alter table h_work_register
+	add constraint h_workreg_pk primary key clustered (p_partner_key, h_work_register_id)
+go
+
+print "working on table h_work_register_times"
+
+alter table h_work_register_times
+	add constraint h_workregt_pk primary key clustered (p_partner_key, h_work_register_time_id)
+go
+
+print "working on table h_benefit_period"
+
+alter table h_benefit_period
+	add constraint h_benper_pk primary key clustered (h_benefit_period_id)
+go
+
+print "working on table h_benefit_type"
+
+alter table h_benefit_type
+	add constraint h_bentype_pk primary key clustered (h_benefit_type_id)
+go
+
+print "working on table h_benefit_type_sched"
+
+alter table h_benefit_type_sched
+	add constraint h_bentypesch_pk primary key clustered (h_benefit_type_id, h_benefit_type_sched_id)
+go
+
+print "working on table h_benefits"
+
+alter table h_benefits
+	add constraint h_ben_pk primary key clustered (h_benefit_type_id, p_partner_key, h_benefit_period_id)
 go
 
 print "working on table r_group"
@@ -406,6 +736,12 @@ alter table a_tax_allowance_table
 	add constraint a_taxalltable_pk primary key clustered (a_tax_allowance_entry_id)
 go
 
+print "working on table a_salary_review"
+
+alter table a_salary_review
+	add constraint a_salreview_pk primary key clustered (a_ledger_number, a_payroll_id, a_review)
+go
+
 print "working on table a_cc_admin_fee"
 
 alter table a_cc_admin_fee
@@ -501,7 +837,43 @@ go
 print "working on table a_giving_pattern"
 
 alter table a_giving_pattern
-	add constraint a_givingp_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id)
+	add constraint a_givingp_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+print "working on table a_giving_pattern_allocation"
+
+alter table a_giving_pattern_allocation
+	add constraint a_givingpa_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+print "working on table a_giving_pattern_flag"
+
+alter table a_giving_pattern_flag
+	add constraint a_givingf_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+print "working on table a_funding_target"
+
+alter table a_funding_target
+	add constraint a_target_pk primary key clustered (a_ledger_number, a_cost_center, a_target_id)
+go
+
+print "working on table a_support_review"
+
+alter table a_support_review
+	add constraint a_supportreview_pk primary key clustered (a_ledger_number, a_review)
+go
+
+print "working on table a_support_review_target"
+
+alter table a_support_review_target
+	add constraint a_supptgt_pk primary key clustered (a_ledger_number, a_cost_center, a_target_id, a_review)
+go
+
+print "working on table a_descriptives"
+
+alter table a_descriptives
+	add constraint a_descr_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center)
 go
 
 print "working on table a_subtrx_cashdisb"
@@ -534,6 +906,48 @@ alter table i_eg_gift_import
 	add constraint i_eg_gift_import_pk primary key clustered (a_ledger_number, i_eg_trx_uuid)
 go
 
+print "working on table i_eg_giving_url"
+
+alter table i_eg_giving_url
+	add constraint i_eg_giving_url_pk primary key clustered (a_ledger_number, a_cost_center)
+go
+
+print "working on table i_crm_partner_import"
+
+alter table i_crm_partner_import
+	add constraint i_crm_partner_import_pk primary key clustered (i_crm_import_id, i_crm_import_session_id)
+go
+
+print "working on table i_crm_partner_import_option"
+
+alter table i_crm_partner_import_option
+	add constraint i_crm_partner_import_opt_pk primary key clustered (i_crm_import_id, i_crm_import_session_id, i_crm_import_type_option_id)
+go
+
+print "working on table i_crm_import_type"
+
+alter table i_crm_import_type
+	add constraint i_crm_import_type_pk primary key clustered (i_crm_import_type_id)
+go
+
+print "working on table i_crm_import_type_option"
+
+alter table i_crm_import_type_option
+	add constraint i_crm_import_type_option_pk primary key clustered (i_crm_import_type_id,i_crm_import_type_option_id)
+go
+
+print "working on table i_disb_import_classify"
+
+alter table i_disb_import_classify
+	add constraint i_disb_import_pk primary key clustered (a_ledger_number, i_disb_classify_item)
+go
+
+print "working on table i_disb_import_status"
+
+alter table i_disb_import_status
+	add constraint i_disb_legacy_pk primary key clustered (a_ledger_number, i_disb_legacy_key)
+go
+
 print "working on table c_message"
 
 alter table c_message
@@ -550,6 +964,12 @@ print "working on table c_member"
 
 alter table c_member
 	add constraint c_member_pk primary key clustered (c_chat_id, s_username)
+go
+
+print "working on table s_config"
+
+alter table s_config
+	add constraint s_config_pk primary key clustered (s_config_name)
 go
 
 print "working on table s_user_data"

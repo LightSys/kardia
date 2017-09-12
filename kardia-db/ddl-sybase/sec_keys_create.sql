@@ -50,12 +50,208 @@ alter table p_staff
 	add constraint p_staff_weblogin_idx unique nonclustered (p_kardiaweb_login, p_partner_key)
 go
 
+alter table p_banking_details
+	add constraint p_bankd_partner_idx unique nonclustered (p_partner_id, p_banking_details_key)
+go
+
+alter table p_banking_details
+	add constraint p_bankd_bpartner_idx unique nonclustered (p_bank_partner_id, p_banking_details_key)
+go
+
+alter table p_banking_details
+	add constraint p_bankd_acct_idx unique nonclustered (a_ledger_number, a_account_code, p_banking_details_key)
+go
+
 alter table p_gazetteer
 	add constraint p_gaz_altid_idx unique nonclustered (p_alt_feature_id, p_country_code, p_feature_type, p_feature_id)
 go
 
 alter table p_gazetteer
 	add constraint p_gaz_state_idx unique nonclustered (p_state_province, p_country_code, p_feature_type, p_feature_id)
+go
+
+alter table e_contact_history
+	add constraint e_cnt_hist_type_idx unique nonclustered (e_contact_history_type, p_partner_key, e_contact_history_id)
+go
+
+alter table e_contact_history
+	add constraint e_cnt_hist_par_idx unique nonclustered (p_partner_key, e_contact_history_type, e_contact_history_id)
+go
+
+alter table e_contact_history
+	add constraint e_cnt_hist_locpar_idx unique nonclustered (p_location_partner_key, e_contact_history_type, e_contact_history_id)
+go
+
+alter table e_contact_history
+	add constraint e_cnt_hist_whom_idx unique nonclustered (e_whom, p_partner_key, e_contact_history_type, e_contact_history_id)
+go
+
+alter table e_activity
+	add constraint e_act_type_idx unique nonclustered (e_activity_type, e_activity_group_id, e_activity_id)
+go
+
+alter table e_activity
+	add constraint e_act_par_idx unique nonclustered (p_partner_key, e_activity_group_id, e_activity_id)
+go
+
+alter table e_activity
+	add constraint e_act_sort_idx unique nonclustered (e_sort_key, e_activity_group_id, e_activity_id)
+go
+
+alter table e_engagement_track
+	add constraint e_trk_name_idx unique nonclustered (e_track_name, e_track_id)
+go
+
+alter table e_engagement_step
+	add constraint e_step_name_idx unique nonclustered (e_step_name, e_track_id, e_step_id)
+go
+
+alter table e_partner_engagement
+	add constraint e_pareng_trackstep_idx unique nonclustered (e_track_id, e_step_id, p_partner_key, e_engagement_id, e_hist_id)
+go
+
+alter table e_partner_engagement
+	add constraint e_pareng_start_idx unique nonclustered (e_started_by, p_partner_key, e_engagement_id, e_hist_id)
+go
+
+alter table e_tag_activity
+	add constraint e_tagact_tagid_idx unique nonclustered (e_tag_id, p_partner_key, e_tag_activity_group, e_tag_activity_id)
+go
+
+alter table e_tag_activity
+	add constraint e_tagact_ptnr_idx unique nonclustered (p_partner_key, e_tag_id, e_tag_activity_group, e_tag_activity_id)
+go
+
+alter table e_document_type
+	add constraint e_doctype_parent_idx unique nonclustered (e_parent_doc_type_id, e_doc_type_id)
+go
+
+alter table e_document_type
+	add constraint e_doctype_label_idx unique nonclustered (e_doc_type_label, e_doc_type_id)
+go
+
+alter table e_document
+	add constraint e_doc_work_idx unique nonclustered (e_workflow_instance_id, e_document_id)
+go
+
+alter table e_document
+	add constraint e_doc_type_idx unique nonclustered (e_doc_type_id, e_document_id)
+go
+
+alter table e_document
+	add constraint e_doc_curpath_idx unique nonclustered (e_current_folder, e_current_filename, e_document_id)
+go
+
+alter table e_document_comment
+	add constraint e_doccom_collab_idx unique nonclustered (e_collaborator, e_document_id, e_doc_comment_id)
+go
+
+alter table e_document_comment
+	add constraint e_doccom_tgtcollab_idx unique nonclustered (e_target_collaborator, e_document_id, e_doc_comment_id)
+go
+
+alter table e_document_comment
+	add constraint e_doccom_work_idx unique nonclustered (e_workflow_state_id, e_document_id, e_doc_comment_id)
+go
+
+alter table e_workflow_type_step
+	add constraint e_workstep_type_idx unique nonclustered (e_workflow_id, e_workflow_step_id)
+go
+
+alter table e_workflow_type_step
+	add constraint e_workstep_trig_idx unique nonclustered (e_workflow_step_trigger_type, e_workflow_step_trigger, e_workflow_step_id)
+go
+
+alter table e_workflow
+	add constraint e_workinst_type_idx unique nonclustered (e_workflow_id, e_workflow_instance_id)
+go
+
+alter table e_workflow
+	add constraint e_workinst_trig_idx unique nonclustered (e_workflow_trigger_type, e_workflow_trigger_id, e_workflow_instance_id)
+go
+
+alter table e_workflow
+	add constraint e_workinst_steptrig_idx unique nonclustered (e_workflow_step_trigger_id, e_workflow_instance_id)
+go
+
+alter table e_collaborator
+	add constraint e_collab_type_idx unique nonclustered (e_collab_type_id, e_collaborator, p_partner_key)
+go
+
+alter table e_todo
+	add constraint e_todo_type_idx unique nonclustered (e_todo_type_id, e_todo_id)
+go
+
+alter table e_todo
+	add constraint e_todo_collab_idx unique nonclustered (e_todo_collaborator, e_todo_id)
+go
+
+alter table e_todo
+	add constraint e_todo_par_idx unique nonclustered (e_todo_partner, e_todo_id)
+go
+
+alter table e_todo
+	add constraint e_todo_eng_idx unique nonclustered (e_todo_engagement_id, e_todo_id)
+go
+
+alter table e_todo
+	add constraint e_todo_doc_idx unique nonclustered (e_todo_document_id, e_todo_id)
+go
+
+alter table e_todo
+	add constraint e_todo_reqitem_idx unique nonclustered (e_todo_req_item_id, e_todo_id)
+go
+
+alter table e_data_item_type
+	add constraint e_ditype_parent_idx unique nonclustered (e_parent_data_item_type_id, e_data_item_type_id)
+go
+
+alter table e_data_item_group
+	add constraint e_digrp_type_idx unique nonclustered (e_data_item_type_id, e_data_item_group_id)
+go
+
+alter table e_data_item
+	add constraint e_dataitem_type_idx unique nonclustered (e_data_item_type_id, e_data_item_id)
+go
+
+alter table e_data_item
+	add constraint e_dataitem_group_idx unique nonclustered (e_data_item_group_id, e_data_item_id)
+go
+
+alter table e_highlights
+	add constraint e_h_nt_idx unique nonclustered (e_highlight_type, e_highlight_name, e_highlight_user, e_highlight_partner, e_highlight_id)
+go
+
+alter table e_ack
+	add constraint e_ack_obj_idx unique nonclustered (e_object_type,e_object_id,e_ack_type,e_whom,e_ack_id)
+go
+
+alter table e_ack
+	add constraint e_ack_par_idx unique nonclustered (e_whom,e_ack_type,e_object_type,e_object_id,e_ack_id)
+go
+
+alter table e_ack
+	add constraint e_ack_par2_idx unique nonclustered (p_dn_partner_key,e_ack_type,e_object_type,e_object_id,e_ack_id)
+go
+
+alter table e_ack
+	add constraint e_ack_par3_idx unique nonclustered (p_dn_partner_key,e_whom,e_ack_id)
+go
+
+alter table e_text_search_word
+	add constraint e_tsw_word_idx unique nonclustered (e_word, e_word_id)
+go
+
+alter table h_work_register
+	add constraint h_workreg_ben_idx unique nonclustered (h_benefit_type_id, p_partner_key, h_work_register_id)
+go
+
+alter table h_benefit_type_sched
+	add constraint h_bts_partner_idx unique nonclustered (p_partner_key, h_benefit_type_id, h_benefit_type_sched_id)
+go
+
+alter table h_benefit_type_sched
+	add constraint h_bts_group_idx unique nonclustered (h_group_id, h_benefit_type_id, h_benefit_type_sched_id)
 go
 
 alter table r_group
@@ -148,6 +344,26 @@ go
 
 alter table a_motivational_code
 	add constraint a_motiv_code_list unique nonclustered (m_list_code, a_ledger_number, a_motivational_code)
+go
+
+alter table a_giving_pattern
+	add constraint a_givingp_review_idx unique nonclustered (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+alter table a_giving_pattern
+	add constraint a_givingp_actual_idx unique nonclustered (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+alter table a_giving_pattern_allocation
+	add constraint a_givingpa_review_idx unique nonclustered (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+alter table a_giving_pattern_allocation
+	add constraint a_givingpa_actual_idx unique nonclustered (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+alter table a_giving_pattern_flag
+	add constraint a_givingf_review_idx unique nonclustered (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
 go
 
 alter table a_subtrx_cashdisb

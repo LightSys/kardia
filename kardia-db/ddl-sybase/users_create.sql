@@ -37,6 +37,9 @@ go
 /* p_partner_relationship */
 
 
+/* p_partner_relationship_type */
+
+
 /* p_church */
 
 
@@ -61,6 +64,9 @@ go
 /* p_banking_details */
 
 
+/* p_banking_type */
+
+
 /* p_title */
 
 
@@ -73,10 +79,169 @@ go
 /* p_partner_sort_tmp */
 
 
+/* p_acquisition_code */
+
+
+/* p_partner_search */
+
+
+/* p_partner_search_stage */
+
+
+/* p_partner_search_results */
+
+
+/* p_search_stage_criteria */
+
+
 /* m_list */
 
 
 /* m_list_membership */
+
+
+/* e_contact_autorecord */
+
+
+/* e_contact_history_type */
+
+
+/* e_contact_history */
+
+
+/* e_activity */
+
+
+/* e_engagement_track */
+
+
+/* e_engagement_track_collab */
+
+
+/* e_engagement_step */
+
+
+/* e_engagement_step_collab */
+
+
+/* e_engagement_step_req */
+
+
+/* e_partner_engagement */
+
+
+/* e_partner_engagement_req */
+
+
+/* e_tag_type */
+
+
+/* e_tag_type_relationship */
+
+
+/* e_tag */
+
+
+/* e_tag_activity */
+
+
+/* e_document_type */
+
+
+/* e_document */
+
+
+/* e_document_comment */
+
+
+/* e_partner_document */
+
+
+/* e_workflow_type */
+
+
+/* e_workflow_type_step */
+
+
+/* e_workflow */
+
+
+/* e_collaborator_type */
+
+
+/* e_collaborator */
+
+
+/* e_todo_type */
+
+
+/* e_todo */
+
+
+/* e_data_item_type */
+
+
+/* e_data_item_group */
+
+
+/* e_data_item */
+
+
+/* e_highlights */
+
+
+/* e_data_highlight */
+
+
+/* e_ack */
+
+
+/* e_ack_type */
+
+
+/* e_trackactivity */
+
+
+/* e_text_expansion */
+
+
+/* e_text_search_word */
+
+
+/* e_text_search_rel */
+
+
+/* e_text_search_occur */
+
+
+/* h_staff */
+
+
+/* h_group */
+
+
+/* h_group_member */
+
+
+/* h_holidays */
+
+
+/* h_work_register */
+
+
+/* h_work_register_times */
+
+
+/* h_benefit_period */
+
+
+/* h_benefit_type */
+
+
+/* h_benefit_type_sched */
+
+
+/* h_benefits */
 
 
 /* r_group */
@@ -205,6 +370,9 @@ go
 /* a_tax_allowance_table */
 
 
+/* a_salary_review */
+
+
 /* a_cc_admin_fee */
 
 
@@ -247,6 +415,27 @@ go
 /* a_motivational_code */
 
 
+/* a_giving_pattern */
+
+
+/* a_giving_pattern_allocation */
+
+
+/* a_giving_pattern_flag */
+
+
+/* a_funding_target */
+
+
+/* a_support_review */
+
+
+/* a_support_review_target */
+
+
+/* a_descriptives */
+
+
 /* a_subtrx_cashdisb */
 
 
@@ -262,6 +451,27 @@ go
 /* i_eg_gift_import */
 
 
+/* i_eg_giving_url */
+
+
+/* i_crm_partner_import */
+
+
+/* i_crm_partner_import_option */
+
+
+/* i_crm_import_type */
+
+
+/* i_crm_import_type_option */
+
+
+/* i_disb_import_classify */
+
+
+/* i_disb_import_status */
+
+
 /* c_message */
 
 
@@ -269,6 +479,9 @@ go
 
 
 /* c_member */
+
+
+/* s_config */
 
 
 /* s_user_data */
