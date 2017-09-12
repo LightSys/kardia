@@ -1,0 +1,10 @@
+$Version=2$
+send_reports "system/shell"
+{
+    program = "/usr/bin/sudo";
+    arg="sudo","/usr/local/sbin/helper_send_email_reports.sh";
+    changeable="PERIOD","HALF";
+    PERIOD="";
+    HALF="A";
+    require_endorsements = "system:from_application";
+}
