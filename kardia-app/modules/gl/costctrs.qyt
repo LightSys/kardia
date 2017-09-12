@@ -9,12 +9,12 @@ costctrs "system/querytree"
 	ccprefix "system/querytree"
 	    {
 	    source="/apps/kardia/data/Kardia_DB/a_cost_center_prefix/rows";
-	    where="char_length(rtrim(:a_cost_center_prefix)) == 2 and :a_ledger_number = ::a_ledger_number";
+	    where="char_length(rtrim(:a_cost_center_prefix)) >= 1 and :a_ledger_number = ::a_ledger_number";
 
 	    cctop "system/querytree"
 		{
 		source="/apps/kardia/data/Kardia_DB/a_cost_center/rows";
-		where=":a_ledger_number = ::a_ledger_number and :a_parent_cost_center is NULL and substring(::a_cost_center_prefix,1,2) = substring(:a_cost_center,1,2)";
+		where=":a_ledger_number = ::a_ledger_number and :a_parent_cost_center is NULL and ::a_cost_center_prefix = substring(:a_cost_center,1,char_length(::a_cost_center_prefix))";
 
 		cctree "system/querytree"
 		    {
