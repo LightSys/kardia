@@ -1,0 +1,42 @@
+$Version=2$
+// Created by:	Greg Beeley
+// Last change:	07/01/2017
+percent_done_svg "system/report"
+    {
+    document_format="text/plain";
+    content_type="image/svg+xml";
+    pagewidth=255;
+    pageheight=255;
+    marginleft=0;
+    marginright=0;
+    margintop=0;
+    marginbottom=0;
+    text_pagebreak = no;
+
+    image_width "report/parameter" { type=integer; default=100; }
+    image_height "report/parameter" { type=integer; default=24; }
+    done "report/parameter" { type=integer; default=100; }
+    color "report/parameter" { type=string; default="black"; }
+    text_color "report/parameter" { type=string; default="white"; }
+    text_outside_color "report/parameter" { type=string; default="black"; }
+    text "report/parameter" { type=string; default="100%"; }
+    box_color "report/parameter" { type=string; default=null; }
+    bg_color "report/parameter" { type=string; default=null; }
+
+    // SVG data 
+    data "report/area"
+	{
+	x=0; y=0; width=255; height=0;
+	value=runserver('<?xml version="1.0" standalone="no"?>\n' +
+			'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
+			'<svg width="' + :this:image_width + 'px" height="' + :this:image_height + 'px" viewBox="0 0 ' + :this:image_width + 'px ' + :this:image_height + 'px" xmlns="http://www.w3.org/2000/svg" version="1.1">\n' +
+			'    <rect x="0" y="0" width="' + :this:done + 'px" height="' + :this:image_height + 'px" style="stroke:none; fill:' + :this:color + ';" />\n' +
+			condition(char_length(:this:text) * 12 < :this:done, 
+			    '    <text x="' + (:this:done - 2) + 'px" y="' + (:this:image_height / 2 + 5) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:11pt; font-weight:bold; stroke:none; fill:' + :this:text_color + '; text-anchor:end;">' + :this:text + '</text>\n',
+			    '    <text x="' + (:this:done + 2) + 'px" y="' + (:this:image_height / 2 + 5) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:11pt; font-weight:bold; stroke:none; fill:' + :this:text_outside_color + ';">' + :this:text + '</text>\n'
+			    ) +
+			condition(:this:box_color is null, '', '    <rect x="0" y="0" width="' + :this:image_width + 'px" height="' + :this:image_height + 'px" style="stroke-width:1px; stroke:' + :this:box_color + '; fill:none;" />\n') +
+			'</svg>\n'
+			);
+	}
+    }

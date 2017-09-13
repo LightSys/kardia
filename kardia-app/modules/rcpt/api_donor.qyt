@@ -3,7 +3,8 @@ api_donors "system/querytree"
     {
     donors "system/querytree"
 	{
-	sql = "select :name, :annotation, :p_partner_key from identity /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_donor/rows pd where :pd:p_partner_key = :p:p_partner_key";
+	//sql = "select :name, :annotation, :p_partner_key from identity /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_donor/rows pd where :pd:p_partner_key = :p:p_partner_key";
+	sql = "select :name, :annotation, :p_partner_key from identity /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_donor/rows pd where :pd:p_partner_key =* :p:p_partner_key";
 
 	Gifts "system/querytree"
 	    {
@@ -37,7 +38,17 @@ api_donors "system/querytree"
 			    :cr:a_cost_center =* :i:a_cost_center and
 			    :cr:a_account_code =* :i:a_account_code
 			";
-			    
+
+		Receipt "system/querytree"
+		    {
+		    sql = " select
+				name = 'Receipt',
+				*
+			    from
+				identity object expression ( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :allgifts_list:gift_ledger and :a_config_name = 'ReceiptReport'), '/apps/kardia/modules/rcpt/gift_receipt.rpt') + '?ledger=' + :allgifts_list:gift_ledger + '&receipt_number=' + :allgifts_list:gift_receipt_num )
+			    ";
+		    use_having = yes;
+		    }
 		}
 	    }
 
@@ -97,7 +108,17 @@ api_donors "system/querytree"
 				    :cr:a_cost_center =* :i:a_cost_center and
 				    :cr:a_account_code =* :i:a_account_code
 				";
-				    
+
+			Receipt2 "system/querytree"
+			    {
+			    sql = " select
+					name = 'Receipt',
+					*
+				    from
+					identity object expression ( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :yeargifts_list:gift_ledger and :a_config_name = 'ReceiptReport'), '/apps/kardia/modules/rcpt/gift_receipt.rpt') + '?ledger=' + :yeargifts_list:gift_ledger + '&receipt_number=' + :yeargifts_list:gift_receipt_num )
+				    ";
+			    use_having = yes;
+			    }
 			}
 		    }
 
@@ -171,7 +192,17 @@ api_donors "system/querytree"
 					    :cr:a_cost_center =* :i:a_cost_center and
 					    :cr:a_account_code =* :i:a_account_code
 					";
-					    
+
+				Receipt3 "system/querytree"
+				    {
+				    sql = " select
+						name = 'Receipt',
+						*
+					    from
+						identity object expression ( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :yearfundgifts_list:gift_ledger and :a_config_name = 'ReceiptReport'), '/apps/kardia/modules/rcpt/gift_receipt.rpt') + '?ledger=' + :yearfundgifts_list:gift_ledger + '&receipt_number=' + :yearfundgifts_list:gift_receipt_num )
+					    ";
+				    use_having = yes;
+				    }
 				}
 			    }
 			}
@@ -247,7 +278,17 @@ api_donors "system/querytree"
 				    :cr:a_cost_center =* :i:a_cost_center and
 				    :cr:a_account_code =* :i:a_account_code
 				";
-				    
+
+			Receipt4 "system/querytree"
+			    {
+			    sql = " select
+					name = 'Receipt',
+					*
+				    from
+					identity object expression ( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :fundgifts_list:gift_ledger and :a_config_name = 'ReceiptReport'), '/apps/kardia/modules/rcpt/gift_receipt.rpt') + '?ledger=' + :fundgifts_list:gift_ledger + '&receipt_number=' + :fundgifts_list:gift_receipt_num )
+				    ";
+			    use_having = yes;
+			    }
 			}
 		    }
 
@@ -311,7 +352,17 @@ api_donors "system/querytree"
 					    :cr:a_cost_center =* :i:a_cost_center and
 					    :cr:a_account_code =* :i:a_account_code
 					";
-					    
+
+				Receipt5 "system/querytree"
+				    {
+				    sql = " select
+						name = 'Receipt',
+						*
+					    from
+						identity object expression ( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :fundyeargifts_list:gift_ledger and :a_config_name = 'ReceiptReport'), '/apps/kardia/modules/rcpt/gift_receipt.rpt') + '?ledger=' + :fundyeargifts_list:gift_ledger + '&receipt_number=' + :fundyeargifts_list:gift_receipt_num )
+					    ";
+				    use_having = yes;
+				    }
 				}
 			    }
 			}

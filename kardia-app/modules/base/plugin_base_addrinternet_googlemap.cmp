@@ -17,7 +17,7 @@ plugin_base_addrinternet_googlemap "widget/component-decl"
 	Width=800;
 	Height=600;
 	Source=runclient("https://maps.google.com/");
-	q=runclient(isnull(:person_location_osrc:p_address_1 + " ", "") + isnull(:person_location_osrc:p_address_2 + " ", "") + isnull(:person_location_osrc:p_address_3 + " ", "") + isnull(:person_location_osrc:p_postal_code, ""));
+	q=runclient(isnull(:person_location_osrc:p_address_1 + " ", "") + isnull(:person_location_osrc:p_address_2 + " ", "") + isnull(:person_location_osrc:p_address_3 + " ", "") + isnull(:person_location_osrc:p_postal_code, isnull(:person_location_osrc:p_city + " ", "") + isnull(:person_location_osrc:p_state_province + " ", "") + isnull(:person_location_osrc:p_country, "")));
 	Multi=1;
 	}
     launch_map_on_click_secure "widget/connector"
@@ -30,7 +30,7 @@ plugin_base_addrinternet_googlemap "widget/component-decl"
 	Width=800;
 	Height=600;
 	Source=runclient("https://maps.google.com/");
-	q=runclient(isnull(:person_location_osrc:p_address_1 + " ", "") + isnull(:person_location_osrc:p_address_2 + " ", "") + isnull(:person_location_osrc:p_address_3 + " ", "") + isnull(:person_location_osrc:p_postal_code, ""));
+	q=runclient(isnull(:person_location_osrc:p_address_1 + " ", "") + isnull(:person_location_osrc:p_address_2 + " ", "") + isnull(:person_location_osrc:p_address_3 + " ", "") + isnull(:person_location_osrc:p_postal_code, isnull(:person_location_osrc:p_city + " ", "") + isnull(:person_location_osrc:p_state_province + " ", "") + isnull(:person_location_osrc:p_country, "")));
 	Multi=1;
 	}
     }

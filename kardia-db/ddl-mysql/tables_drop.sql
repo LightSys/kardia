@@ -71,6 +71,10 @@ drop table p_country;
 drop table p_banking_details;
 
 
+/* p_banking_type */
+drop table p_banking_type;
+
+
 /* p_title */
 drop table p_title;
 
@@ -251,6 +255,62 @@ drop table e_ack_type;
 drop table e_trackactivity;
 
 
+/* e_text_expansion */
+drop table e_text_expansion;
+
+
+/* e_text_search_word */
+drop table e_text_search_word;
+
+
+/* e_text_search_rel */
+drop table e_text_search_rel;
+
+
+/* e_text_search_occur */
+drop table e_text_search_occur;
+
+
+/* h_staff */
+drop table h_staff;
+
+
+/* h_group */
+drop table h_group;
+
+
+/* h_group_member */
+drop table h_group_member;
+
+
+/* h_holidays */
+drop table h_holidays;
+
+
+/* h_work_register */
+drop table h_work_register;
+
+
+/* h_work_register_times */
+drop table h_work_register_times;
+
+
+/* h_benefit_period */
+drop table h_benefit_period;
+
+
+/* h_benefit_type */
+drop table h_benefit_type;
+
+
+/* h_benefit_type_sched */
+drop table h_benefit_type_sched;
+
+
+/* h_benefits */
+drop table h_benefits;
+
+
 /* r_group */
 drop table r_group;
 
@@ -419,6 +479,10 @@ drop table a_tax_table;
 drop table a_tax_allowance_table;
 
 
+/* a_salary_review */
+drop table a_salary_review;
+
+
 /* a_cc_admin_fee */
 drop table a_cc_admin_fee;
 
@@ -479,6 +543,30 @@ drop table a_motivational_code;
 drop table a_giving_pattern;
 
 
+/* a_giving_pattern_allocation */
+drop table a_giving_pattern_allocation;
+
+
+/* a_giving_pattern_flag */
+drop table a_giving_pattern_flag;
+
+
+/* a_funding_target */
+drop table a_funding_target;
+
+
+/* a_support_review */
+drop table a_support_review;
+
+
+/* a_support_review_target */
+drop table a_support_review_target;
+
+
+/* a_descriptives */
+drop table a_descriptives;
+
+
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb;
 
@@ -501,6 +589,30 @@ drop table i_eg_gift_import;
 
 /* i_eg_giving_url */
 drop table i_eg_giving_url;
+
+
+/* i_crm_partner_import */
+drop table i_crm_partner_import;
+
+
+/* i_crm_partner_import_option */
+drop table i_crm_partner_import_option;
+
+
+/* i_crm_import_type */
+drop table i_crm_import_type;
+
+
+/* i_crm_import_type_option */
+drop table i_crm_import_type_option;
+
+
+/* i_disb_import_classify */
+drop table i_disb_import_classify;
+
+
+/* i_disb_import_status */
+drop table i_disb_import_status;
 
 
 /* c_message */

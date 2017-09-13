@@ -45,6 +45,39 @@ api_supporter "system/querytree"
 		}
 	    }
 
+	ack_comm_label "system/querytree"
+	    {
+	    text = "Comments";
+
+	    ack_comm_list "system/querytree"
+		{
+		sql = " select
+			    comment_id = :a:e_ack_id,
+			    comment = :a:e_ack_comments,
+			    comment_date = :a:s_date_created,
+			    note_id = :ch:e_contact_history_id,
+			    note_subject = :ch:e_subject,
+			    note_text = :ch:e_notes,
+			    note_type = :ct:e_short_name,
+			    note_date = :ch:e_contact_date,
+			    missionary_partner_id = :p:p_partner_key,
+			    missionary_partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+			from
+			    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
+			    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+			    /apps/kardia/data/Kardia_DB/e_contact_history_type/rows ct,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p
+			where
+			    :a:e_whom = :supporters:partner_id and
+			    :a:e_ack_type = 3 and   -- type 3 is 'comment'
+			    :a:e_object_type = 'e_contact_history' and
+			    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
+			    :p:p_partner_key = :ch:p_partner_key and
+			    :ct:e_contact_history_type = :ch:e_contact_history_type
+			";
+		}
+	    }
+
 	bymis_label "system/querytree"
 	    {
 	    text = "Missionaries";
@@ -85,6 +118,38 @@ api_supporter "system/querytree"
 				where
 				    :a:e_whom = :supporters:partner_id and
 				    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
+				    :a:p_dn_partner_key = :bymis_list:partner_id and
+				    :a:e_object_type = 'e_contact_history' and
+				    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
+				    :ct:e_contact_history_type = :ch:e_contact_history_type
+				";
+			}
+		    }
+
+		comm_bymis_label "system/querytree"
+		    {
+		    text = "Comments";
+
+		    comm_bymis_list "system/querytree"
+			{
+			sql = " select
+				    comment_id = :a:e_ack_id,
+				    comment = :a:e_ack_comments,
+				    comment_date = :a:s_date_created,
+				    note_id = :ch:e_contact_history_id,
+				    note_subject = :ch:e_subject,
+				    note_text = :ch:e_notes,
+				    note_type = :ct:e_short_name,
+				    note_date = :ch:e_contact_date,
+				    missionary_partner_id = :bymis_list:partner_id,
+				    missionary_partner_name = :bymis_list:partner_name
+				from
+				    identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
+				    /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+				    /apps/kardia/data/Kardia_DB/e_contact_history_type/rows ct
+				where
+				    :a:e_whom = :supporters:partner_id and
+				    :a:e_ack_type = 3 and   -- type 3 is 'comment'
 				    :a:p_dn_partner_key = :bymis_list:partner_id and
 				    :a:e_object_type = 'e_contact_history' and
 				    :ch:e_contact_history_id = convert(integer, :a:e_object_id) and
@@ -138,6 +203,35 @@ api_supporter "system/querytree"
 					where
 					    :a:e_whom = :supporters:partner_id and
 					    :a:e_ack_type = 1 and   -- type 1 is 'prayed'
+					    :a:p_dn_partner_key = :bymis_list:partner_id and
+					    :a:e_object_type = 'e_contact_history' and
+					    :a:e_object_id = convert(string, :needs_list:note_id)
+					";
+				}
+			    }
+
+			needs_comms "system/querytree"
+			    {
+			    text = "Comments";
+
+			    needs_comms_list "system/querytree"
+				{
+				sql = " select
+					    comment_id = :a:e_ack_id,
+					    comment = :a:e_ack_comments,
+					    comment_date = :a:s_date_created,
+					    note_id = :needs_list:note_id,
+					    note_subject = :needs_list:note_subject,
+					    note_text = :needs_list:note_text,
+					    note_type = :needs_list:note_type,
+					    note_date = :needs_list:note_date,
+					    missionary_partner_id = :bymis_list:partner_id,
+					    missionary_partner_name = :bymis_list:partner_name
+					from
+					    identity /apps/kardia/data/Kardia_DB/e_ack/rows a
+					where
+					    :a:e_whom = :supporters:partner_id and
+					    :a:e_ack_type = 3 and   -- type 3 is 'prayed'
 					    :a:p_dn_partner_key = :bymis_list:partner_id and
 					    :a:e_object_type = 'e_contact_history' and
 					    :a:e_object_id = convert(string, :needs_list:note_id)

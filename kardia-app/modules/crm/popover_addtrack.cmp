@@ -16,6 +16,47 @@ popover_addtrack "widget/component-decl"
     partnername_var "widget/variable" { type=string; }
     collab_var "widget/variable" { type=string; }
 
+    // This OSRC adds the configured requirements for the initial step
+    addreq_osrc "widget/osrc"
+	{
+	addreq_par "widget/parameter" { param_name=p_partner_key; type=string; }
+	addreq_eng "widget/parameter" { param_name=e_engagement_id; type=integer; }
+	sql = "	insert
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows
+		select
+		    :e:p_partner_key,
+		    :e:e_engagement_id,
+		    :e:e_hist_id,
+		    :e:e_track_id,
+		    :e:e_step_id,
+		    :sr:e_req_id,
+		    e_req_completion_status = 'I',
+		    :sr:e_req_name,
+		    :sr:e_due_days_from_step,
+		    :sr:e_due_days_from_req,
+		    :sr:e_due_days_from_req_id,
+		    :sr:e_req_whom,
+		    :sr:e_req_doc_type_id,
+		    :sr:e_req_waivable,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e,
+		    /apps/kardia/data/Kardia_DB/e_engagement_step_req/rows sr
+		where
+		    :e:e_completion_status = 'I' and
+		    :sr:e_track_id = :e:e_track_id and
+		    :sr:e_step_id = :e:e_step_id and
+		    :e:p_partner_key = :parameters:p_partner_key and
+		    :e:e_engagement_id = :parameters:e_engagement_id
+		";
+	replicasize=2;
+	readahead=2;
+	autoquery=never;
+	}
+
     // This OSRC fetches the correct starting step.
     step_osrc "widget/osrc"
 	{
@@ -79,6 +120,7 @@ popover_addtrack "widget/component-decl"
 		    allow_modify=no;
 		    allow_new=yes;
 
+		    addreq_on_save "widget/connector" { event=DataSaved; target=addreq_osrc; action=QueryParam; p_partner_key=runclient(:addtrack_osrc:p_partner_key); e_engagement_id=runclient(:addtrack_osrc:e_engagement_id); }
 		    close_on_save "widget/connector" { event=DataSaved; target=addtrack_win; action=Close; }
 		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_addtrack; action=TrackAdded; }
 		    close_on_discard "widget/connector" { event=Discard; target=addtrack_win; action=Close; }

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context="org.lightsys.missionaryapp.views.MainActivity"
+                android:background="@drawable/noise_blue_repeat">
+
+    <!-- Display List -->
+
+    <Spinner
+        android:id="@+id/fundSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true">
+    </Spinner>
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_arrow_drop_down_black_48dp"/>
+
+    <RelativeLayout
+        android:id="@+id/RLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/fundSpinner"
+        android:background="@drawable/noise_blue_repeat" >
+
+        <ListView
+            android:id="@+id/infoList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            style="@style/listCustomBlue"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/spinnerItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"/>
+
+</RelativeLayout>

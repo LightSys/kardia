@@ -7,7 +7,7 @@ mlists "system/querytree"
 	top_pubs "system/querytree"
 	    {
 	    source = "/apps/kardia/data/Kardia_DB/m_list/rows";
-	    where = ":m_list_parent is null and :m_list_type = 'P'";
+	    where = ":m_list_parent is null and :m_list_type = 'P' and :m_list_status = 'A' and (:m_discard_after is null or :m_discard_after > getdate())";
 	    order = ":m_list_code";
 	    sub_pubs "system/querytree"
 		{
@@ -24,7 +24,7 @@ mlists "system/querytree"
 	top_sels "system/querytree"
 	    {
 	    source = "/apps/kardia/data/Kardia_DB/m_list/rows";
-	    where = ":m_list_parent is null and :m_list_type = 'S'";
+	    where = ":m_list_parent is null and :m_list_type = 'S' and :m_list_status = 'A' and (:m_discard_after is null or :m_discard_after > getdate())";
 	    order = ":m_list_code";
 	    sub_sels "system/querytree"
 		{
@@ -32,6 +32,23 @@ mlists "system/querytree"
 		where = ":m_list_parent = ::m_list_code";
 		order = ":m_list_code";
 		recurse = sub_sels;
+		}
+	    }
+	}
+    archived "system/querytree"
+	{
+	text = "Obsolete";
+	top_arch "system/querytree"
+	    {
+	    source = "/apps/kardia/data/Kardia_DB/m_list/rows";
+	    where = ":m_list_parent is null and (:m_list_status = 'O' or :m_discard_after < getdate())";
+	    order = ":m_list_code";
+	    sub_arch "system/querytree"
+		{
+		source = "/apps/kardia/data/Kardia_DB/m_list/rows";
+		where = ":m_list_parent = ::m_list_code";
+		order = ":m_list_code";
+		recurse = sub_arch;
 		}
 	    }
 	}

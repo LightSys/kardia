@@ -7,7 +7,7 @@ labels "system/report"
     pagewidth=85;
     pageheight=66;
     marginleft=1.875;
-    marginright=0.625;
+    marginright=0;
     margintop=3.2;
     marginbottom=2.8;
 
@@ -201,7 +201,7 @@ labels "system/report"
 
 	row_area "report/area"
 	    {
-	    x=0; width=82.50; height=6.0;
+	    x=0; width=83.10; height=6.0;
 	    fixedsize=yes;
 	    allowbreak=no;
 
@@ -213,7 +213,7 @@ labels "system/report"
 
 		label_row_noborder "report/area"
 		    {
-		    width=26.25 + 1.25; height=6.00;
+		    width=26.45 + 1.25; height=6.00;
 		    marginleft=0.8;
 		    margintop=0.3;
 		    marginright=1.25;
@@ -253,7 +253,7 @@ labels "system/report"
     multicol "report/section"
 	{
 	condition=runserver(:this:layoutdir = 'cols');
-	x=0; y=0; width=81.25; height=0;
+	x=0; y=0; width=81.875; height=0;
 	colsep = 1.25;
 	columns = 3;
 	balanced = no;

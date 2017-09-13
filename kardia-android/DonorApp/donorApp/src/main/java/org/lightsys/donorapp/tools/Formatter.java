@@ -13,7 +13,8 @@ public class Formatter {
      */
     public static String getFormattedDate(String date){
         String[] formattedDate = date.split("-");
-        formattedDate[1] = getMonth(Integer.parseInt(formattedDate[1]));
+        int month = Integer.parseInt(formattedDate[1]);
+        formattedDate[1] = getMonth(month);
         if (formattedDate[2].substring(0,1).equals("0")) {
             formattedDate[2] = formattedDate[2].substring(1);
         }

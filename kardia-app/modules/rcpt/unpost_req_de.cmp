@@ -1,0 +1,69 @@
+$Version=2$
+unpost_req_de "widget/component-decl"
+    {
+    // Request Unpost a Deposits batch - process
+    RequestUnposting "widget/component-decl-action" { }
+    Requested "widget/component-decl-event" { }
+    unpost_cn "widget/connector"
+	{
+	event=RequestUnposting;
+	target=req_osrc;
+	action=QueryParam;
+	event_all_params=1;
+	}
+
+    req_osrc "widget/osrc"
+	{
+	req_a_batch_number "widget/parameter"	{ param_name=batch; type=integer; }
+	req_a_ledger_number "widget/parameter"	{ param_name=ledger; type=string; }
+	req_gl "widget/parameter"		{ param_name=gl; type=integer; }
+	req_de "widget/parameter"		{ param_name=de; type=integer; }
+	req_comm "widget/parameter"		{ param_name=comment; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " INSERT
+			/apps/kardia/data/Kardia_DB/s_request/rows r
+		SELECT
+			s_request_type = 'UNPOSTDEGL',
+			s_object_key_1 = :parameters:ledger,
+			s_object_key_2 = convert(string,:parameters:batch),
+			s_date_requested = getdate(),
+			s_request_comment = :parameters:comment,
+			s_requested_by = user_name(),
+			s_request_sec_context = 'kardia:ledger:' + :parameters:ledger,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		HAVING
+			:parameters:gl = 1
+		;
+
+		INSERT
+			/apps/kardia/data/Kardia_DB/s_request/rows r
+		SELECT
+			s_request_type = 'UNPOSTDE',
+			s_object_key_1 = :parameters:ledger,
+			s_object_key_2 = convert(string,:parameters:batch),
+			s_date_requested = getdate(),
+			s_request_comment = :parameters:comment,
+			s_requested_by = user_name(),
+			s_request_sec_context = 'kardia:ledger:' + :parameters:ledger,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		HAVING
+			:parameters:de = 1
+		";
+
+	end_unpost "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=unpost_req;
+	    action=Requested;
+	    batch = runclient(:req_osrc:batch);
+	    ledger = runclient(:req_osrc:ledger);
+	    }
+	}
+    }

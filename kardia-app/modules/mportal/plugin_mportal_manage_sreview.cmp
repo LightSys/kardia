@@ -1,0 +1,277 @@
+$Version=2$
+manage_support_review "widget/component-decl"
+    {
+    height=602; width=1172;
+
+    title = "Support";
+    icon = "/apps/kardia/images/icons/ionicons-people.svg";
+    sequence = 10;
+
+    user_osrc "widget/parameter" { type=object; }
+
+    reviews_hbox "widget/hbox"
+	{
+	x=0; y=0;
+	width=1172; height=602;
+	spacing=10;
+
+	review_osrc "widget/osrc"
+	    {
+	    sql = " select
+			:sr:a_ledger_number,
+			:sr:a_review,
+			:sr:a_review_desc,
+			review_txt = :sr:a_review + ' - ' + :sr:a_review_desc,
+			:sr:a_review_date,
+			date_txt = substring(convert(string, :sr:a_review_date),1,11),
+			is_latest = condition(:sr:a_review = (select :a_review from /apps/kardia/data/Kardia_DB/a_support_review/rows sr2 order by :sr2:a_review_date desc limit 1), 1, 0),
+			:sr:s_date_created,
+			:sr:s_created_by,
+			:sr:s_date_modified,
+			:sr:s_modified_by
+		    from
+			/apps/kardia/data/Kardia_DB/a_support_review/rows sr
+		    order by
+			:sr:a_review_date desc
+		    ";
+	    readahead=50;
+	    replicasize=50;
+
+	    review_table "widget/table"
+		{
+		width=250;
+		row_border_radius=4;
+		demand_scrollbar = yes;
+		overlap_scrollbar = yes;
+		initial_selection = yes;
+		show_selection = yes;
+		colsep = 0;
+		titlebar = yes;
+		min_rowheight = 16;
+		max_rowheight = 200;
+		cellvspacing = 4;
+		row1_bgcolor = white;
+		row2_bgcolor = white;
+		inner_padding = 4;
+		textcolorhighlight = "#000000";
+		titlecolor = white;
+		hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+		rowhighlight_border_color="#6080c0";
+		rowhighlight_border_radius=3;
+		rowhighlight_shadow_color="#6080c0";
+		rowhighlight_shadow_radius=2;
+		rowhighlight_shadow_offset=1;
+		rowhighlight_shadow_angle=135;
+		rowhighlight_bgcolor="#faf8ff";
+		nodata_message = runclient(condition(:review_osrc:cx__pending, "No support reviews.", "Looking up reviews..."));
+
+		rt_review "widget/table-column" { title = "Support Review"; value=runclient(:review_osrc:a_review); width=140; style="bold"; font_size=16; caption_value=runclient(:review_osrc:a_review_desc); }
+		rt_date "widget/table-column" { title = ""; value=runclient(:review_osrc:date_txt); width=100; style="bold"; font_size=16; align=right; }
+		}
+	    }
+
+	vertsep "widget/image"
+	    {
+	    width=1; fl_width=0; fl_height=100;
+	    source="/apps/kardia/images/bg/lsblue_vertsep.png";
+	    }
+
+	funds_osrc "widget/osrc"
+	    {
+	    sql = " select
+			:srt:a_ledger_number,
+			:srt:a_cost_center,
+			:c:a_cc_desc,
+			:srt:a_comment,
+			:srt:a_amount,
+			:srt:a_target_amount,
+			:srt:a_review,
+			unanswered =    (select
+					    count(1)
+					from
+					    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
+					where
+					    :gpf:a_cost_center = :srt:a_cost_center and
+					    :gpf:a_ledger_number = :srt:a_ledger_number and
+					    :a_flag_resolution is null),
+			support_amt =   (select
+					    sum(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval))
+					from
+					    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
+					where
+					    :gp:a_cost_center = :srt:a_cost_center and
+					    :gp:a_ledger_number = :srt:a_ledger_number),
+			status = condition(isnull(:a_amount,$0) = $0, 'Incomplete', 'Complete'),
+			review_amt =    condition(isnull(:a_amount,$0) = $0, null, :a_amount),
+			review_pct =	round(100 * convert(double, condition(:srt:a_amount = $0, null, :srt:a_amount)) / convert(double, :a_target_amount), 1),
+			percent =	round(100 * convert(double, (select
+					    sum(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval))
+					from
+					    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
+					where
+					    :gp:a_cost_center = :srt:a_cost_center and
+					    :gp:a_ledger_number = :srt:a_ledger_number))
+					/ convert(double, :a_target_amount), 1),
+			manager_list = (select sum(condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + '\n') - '\n' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/p_partner/rows p where :cs:a_ledger_number = :srt:a_ledger_number and :cs:a_cost_center = :srt:a_cost_center and :p:p_partner_key = :cs:p_staff_partner_key),
+			:srt:s_date_created,
+			:srt:s_created_by,
+			:srt:s_date_modified,
+			:srt:s_modified_by
+		    from
+			identity /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		    where
+			:srt:a_cost_center = :c:a_cost_center and
+			:srt:a_ledger_number = :c:a_ledger_number
+		    order by
+			:srt:a_cost_center asc
+		    ";
+	    readahead=50;
+	    replicasize=50;
+
+	    funds_review_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=review_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		key_2=a_review;
+		target_key_2=a_review;
+		}
+
+	    funds_table "widget/table"
+		{
+		width=901;
+		row_border_radius=4;
+		demand_scrollbar = yes;
+		overlap_scrollbar = yes;
+		initial_selection = no;
+		show_selection = yes;
+		colsep = 0;
+		titlebar = yes;
+		min_rowheight = 16;
+		max_rowheight = 200;
+		cellvspacing = 4;
+		row1_bgcolor = white;
+		row2_bgcolor = white;
+		inner_padding = 4;
+		textcolorhighlight = "#000000";
+		titlecolor = white;
+		hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+		rowhighlight_border_color="#6080c0";
+		rowhighlight_border_radius=3;
+		rowhighlight_shadow_color="#6080c0";
+		rowhighlight_shadow_radius=2;
+		rowhighlight_shadow_offset=1;
+		rowhighlight_shadow_angle=135;
+		rowhighlight_bgcolor="#faf8ff";
+		nodata_message = runclient(condition(:review_osrc:cx__pending, "No funds being reviewed.", "Looking up funds..."));
+
+		ft_detail "widget/table-row-detail"
+		    {
+		    height=200; width=901;
+
+		    patterns_osrc "widget/osrc"
+			{
+			p_review "widget/parameter" { type=string; }
+			p_fund "widget/parameter" { type=string; }
+			p_ledger "widget/parameter" { type=string; }
+
+			sql = "	select
+				    q_date = substring(convert(string,:gpf:s_date_created),1,11),
+				    donor_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+				    flag = :ft:flag_desc + isnull(' (' + :gpf:a_comment + ')', ''),
+				    flagres = :fr:text + ' (' + :gp:a_amount + ' ' + condition(:gp:a_interval is null, 'unknown', condition(:gp:a_interval = 0, 'onetime / as-able', condition(:gp:a_interval = 1, 'monthly', condition(:gp:a_interval = 12, 'annual', 'every ' + :gp:a_interval + ' months')))) + ')'
+				from
+				    /apps/kardia/data/Kardia_DB/a_support_review/rows sr,
+				    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf,
+				    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    object wildcard '/apps/kardia/modules/*/plugin_mportal_sreview_*.cmp' ft,
+				    /apps/kardia/data/Kardia_DB/_a_flag_resolution/rows fr
+				where
+				    :gpf:s_date_modified > dateadd(day, -60, :sr:a_review_date) and
+				    :gpf:s_date_modified < dateadd(day, 10, :sr:a_review_date) and
+				    :gpf:a_ledger_number = :sr:a_ledger_number and
+				    :gp:a_ledger_number = :gpf:a_ledger_number and
+				    :gp:a_cost_center = :gpf:a_cost_center and
+				    :gp:p_donor_partner_key = :gpf:p_donor_partner_key and
+				    :gp:a_pattern_id = :gpf:a_pattern_id and
+				    :p:p_partner_key = :gpf:p_donor_partner_key and
+				    :ft:flag_code = :gpf:a_flag_type and
+				    :fr:tag =* :gpf:a_flag_resolution and
+				    :gpf:a_ledger_number = :parameters:p_ledger and
+				    :gpf:a_cost_center = :parameters:p_fund and
+				    :sr:a_review = :parameters:p_review
+				";
+			readahead=20;
+			replicasize=20;
+
+			sreview_link "widget/rule"
+			    {
+			    condition=0;
+			    ruletype=osrc_relationship;
+			    target=review_osrc;
+			    key_objname=sr;
+			    key_1=a_review;
+			    target_key_1=a_review;
+			    revealed_only=yes;
+			    }
+
+			fund_link "widget/rule"
+			    {
+			    ruletype=osrc_relationship;
+			    target=funds_osrc;
+			    //key_objname=gpf;
+			    key_1=p_ledger;
+			    target_key_1=a_ledger_number;
+			    key_2=p_fund;
+			    target_key_2=a_cost_center;
+			    key_3=p_review;
+			    target_key_3=a_review;
+			    revealed_only=yes;
+			    }
+
+			patterns_table "widget/table"
+			    {
+			    x=10; y=10; width=880; height=180;
+			    row_border_radius=4;
+			    demand_scrollbar = yes;
+			    overlap_scrollbar = yes;
+			    initial_selection = no;
+			    allow_selection = no;
+			    colsep = 0;
+			    titlebar = yes;
+			    min_rowheight = 12;
+			    max_rowheight = 200;
+			    cellvspacing = 1;
+			    row1_bgcolor = "#faf8ff";
+			    row2_bgcolor = "#faf8ff";
+			    show_selection = no;
+			    inner_padding = 3;
+			    textcolorhighlight = "#000000";
+			    titlecolor = white;
+			    hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			    nodata_message = runclient(condition(:patterns_osrc:cx__pending, "No questions this review.", "Loading questions..."));
+
+			    pt_date "widget/table-column" { title = "Date"; fieldname=q_date; width=100; }
+			    pt_donor "widget/table-column" { title = "Donor"; fieldname=donor_name; width=200; }
+			    pt_ques "widget/table-column" { title = "Question"; fieldname=flag; width=300; }
+			    pt_res "widget/table-column" { title = "Resolution"; fieldname=flagres; width=200; }
+			    }
+			}
+		    }
+
+		ft_fund "widget/table-column" { title = "Fund"; value=runclient(:funds_osrc:a_cost_center); width=140; style="bold"; font_size=16; caption_value=runclient(:funds_osrc:a_cc_desc); }
+		ft_managers "widget/table-column" { title = ""; value=runclient(:funds_osrc:manager_list); width=140; wrap=yes; }
+		ft_stat "widget/table-column" { title = "Status"; value=runclient(:funds_osrc:status); width=100; style=bold; font_size=16; }
+		ft_qs "widget/table-column" { title = "Q's"; value=runclient(condition(:review_osrc:is_latest, :funds_osrc:unanswered, '-')); width=40; style=bold; font_size=16; align=right; }
+		ft_target "widget/table-column" { title = "Target"; value=runclient(:funds_osrc:a_target_amount); width=100; style=bold; font_size=16; align=right; }
+		//ft_actual "widget/table-column" { title = "Actual"; value=runclient(:funds_osrc:support_amt); width=100; style=bold; font_size=16; align=right; }
+		ft_reviewed "widget/table-column" { title = "Raised"; value=runclient(isnull(:funds_osrc:review_amt, '-')); width=100; style=bold; font_size=16; align=right; }
+		//ft_percent "widget/table-column" { title = "Percent"; value=runclient(isnull('' + :funds_osrc:review_pct + '%', '-')); width=100; type=image; image_maxwidth=100; image_maxheight=24; style=bold; font_size=16; align=right; }
+		ft_percent "widget/table-column" { title = "Percent"; value=runclient('/apps/kardia/modules/mportal/percent_done_svg.rpt?text=' + isnull('' + :funds_osrc:review_pct + '%25', '-') + '&done=' + isnull(condition(:funds_osrc:review_pct > 100, 100, :funds_osrc:review_pct), 0) + '&color=' + condition(:funds_osrc:review_pct >= 80, 'green', 'red') + '&image_height=22'); width=100; type=image; image_maxwidth=100; image_maxheight=22; style=bold; font_size=16; align=right; }
+		}
+	    }
+	}
+    }

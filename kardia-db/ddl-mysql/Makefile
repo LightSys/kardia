@@ -1,7 +1,7 @@
-DBUSER=root
-DBHOST=localhost
-LOGINHOST=localhost
-LOGINUSER=root
+DBUSER?=root
+DBHOST?=localhost
+LOGINHOST?=localhost
+LOGINUSER?=root
 DEFAULTPASS=newuserpass
 #MYSQLOPTS=-u $(DBUSER) -p -f -h $(DBHOST)
 MYSQLOPTS=-u $(DBUSER) -f -h $(DBHOST)

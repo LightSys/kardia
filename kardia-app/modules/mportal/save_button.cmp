@@ -1,0 +1,41 @@
+$Version=2$
+save_button "widget/component-decl"
+    {
+    width=100;
+    height=24;
+
+    form "widget/parameter" { type = "object"; find_container = "widget/form"; }
+    osrc "widget/parameter" { type = "object"; find_container = "widget/osrc"; }
+    object_name "widget/parameter" { type = "string"; default = "Record"; }
+    save_mode "widget/parameter" { type = "string"; default = "form"; }
+
+    btnSave "widget/textbutton"
+	{
+	condition=runserver(:this:save_mode == 'form');
+	x=0;y=0;
+	width=100;
+	height=24;
+	text = "Save";
+	background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	fgcolor1=white;
+	fgcolor2=black;
+	disable_color="#334466";
+	enabled = runclient(:form:is_savable);
+	cnSave "widget/connector" { event="Click"; target=form; action="Save"; }
+	}
+
+    btnSaveOsrc "widget/textbutton"
+	{
+	condition=runserver(:this:save_mode == 'osrc');
+	x=0;y=0;
+	width=100;
+	height=24;
+	text = "Save";
+	background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	fgcolor1=white;
+	fgcolor2=black;
+	disable_color="#334466";
+	enabled = runclient(:osrc:is_client_savable);
+	cnSaveOsrc "widget/connector" { event="Click"; target=osrc; action="SaveClients"; }
+	}
+    }

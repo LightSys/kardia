@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<!-- dialog to allow users to add and update text expansions -->
+<dialog id="add-update-expansion-dialog"
+        title="Add/Update Text Expansion"
+        buttons="cancel,accept"
+        ondialogaccept="return controller.cmdSave();"
+        ondialogcancel="return controller.cmdCancel();"
+	onload="controller.cmdInitialize();"
+        persist="screenX screenY width height"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+		
+<!-- script that makes buttons work -->
+<script type="application/javascript" src="chrome://messenger/content/jquery.js"/>
+<script type="application/javascript" src="chrome://kardia/content/add-update-expansion-dialog.js"/>
+
+	<vbox>
+		<label value="Update Text Expansion or (add new):"/>
+		<!-- menulist has options of engagement tracks to select -->
+		<menulist id="exp-list-dropdown">
+			<menupopup>
+				<menuitem label="(add new)" value=""/>
+			</menupopup>
+		</menulist>
+
+		<hbox id="exp-tag-hbox" align="center">
+			<label class="exp-label" value="Tag:"/>
+			<textbox id="exp-tag" value="" size="16"/>
+			<label id="exp-warn" value=""/>
+		</hbox>
+
+		<hbox id="exp-desc-hbox" align="center">
+			<label class="exp-label" value="Description:"/>
+			<textbox id="exp-desc" value="" size="32" flex="1"/>
+		</hbox>
+
+		<hbox id="exp-expansion-hbox" align="center" flex="1">
+			<label class="exp-label" value="Expansion:"/>
+			<textbox id="exp-expansion" multiline="true" cols="50" rows="10" flex="1"/>
+		</hbox>
+	</vbox>
+	
+</dialog>
+

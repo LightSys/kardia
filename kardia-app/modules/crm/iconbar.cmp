@@ -1,7 +1,7 @@
 $Version=2$
 iconbar "widget/component-decl"
     {
-    width=runserver(condition(:this:show_profile_only, 76, 1000));
+    width=runserver(condition(:this:show_profile_only, 76, 1200));
     height=runserver(condition(:this:show_profile_only, 630, 76));
 
     SidebarSelect "widget/component-decl-event" { }
@@ -22,6 +22,29 @@ iconbar "widget/component-decl"
     SetNumber "widget/component-decl-action" { }
     onSetNumber1 "widget/connector" { event=SetNumber; target=one_tabbutton; action=SetNumber; Number=runclient(:Number); Which=runclient(:Which); Color=runclient(:Color); }
     onSetNumber2 "widget/connector" { event=SetNumber; target=newperson_btn; action=SetNumber; Number=runclient(:Number); Which=runclient(:Which); Color=runclient(:Color); }
+
+    SetTab "widget/component-decl-action" { }
+    onSetTab0 "widget/connector"
+	{
+	event=SetTab;
+	target=iconbar;
+	action=TriggerEvent;
+	EventName=runclient("DisableTabButtons");
+	}
+    onSetTab1 "widget/connector"
+	{
+	event=SetTab;
+	target=iconbar;
+	action=SidebarSelect;
+	PageID=runserver(:page_id);
+	}
+    onSetTab2 "widget/connector"
+	{
+	event=SetTab;
+	target=one_tabbutton;
+	action=SetBackground;
+	Image=runclient("/apps/kardia/images/bg/lsblue_gradient.png");
+	}
 
     DisableTabButtons "widget/component-decl-action" { }
 
@@ -72,7 +95,7 @@ iconbar "widget/component-decl"
 	event_condition=runclient(:processing_toggle_off:value == 1);
 	target=EnabledTypes;
 	action=SetValue;
-	Value=runclient(:except + ',ADDR,PAR');
+	Value=runclient(:except + ',ADDR,PAR,AUTO');
 	}
 
     on_toggle_all "widget/connector" { event=ToggleAll; target=one_type_btn; action=Update; }
@@ -81,7 +104,7 @@ iconbar "widget/component-decl"
     menu_pane "widget/pane"
 	{
 	x=0; y=0;
-	width=runserver(condition(:this:show_profile_only, 76, 1000));
+	width=runserver(condition(:this:show_profile_only, 76, 1200));
 	height=runserver(condition(:this:show_profile_only, 630, 76));
 	fl_height=runserver(condition(:this:show_profile_only, null, 0));
 	background=runserver(condition(:this:show_profile_only, "/apps/kardia/images/bg/charcoal_gradient_horiz.png", "/apps/kardia/images/bg/charcoal_gradient.png"));
@@ -92,7 +115,7 @@ iconbar "widget/component-decl"
 	    style=runserver(condition(:this:show_profile_only, "vbox", "hbox"));
 	    x=runserver(condition(:this:show_profile_only, 0, 8));
 	    y=runserver(condition(:this:show_profile_only, 8, 0));
-	    width=runserver(condition(:this:show_profile_only, 76, 984));
+	    width=runserver(condition(:this:show_profile_only, 76, 1184));
 	    height=runserver(condition(:this:show_profile_only, 614, 76));
 	    cellsize=48;
 	    spacing=0;
@@ -148,7 +171,7 @@ iconbar "widget/component-decl"
 
 	    sep1 "widget/autolayoutspacer"
 		{
-		width=24;
+		width=91;
 		fl_width=100;
 		height=8;
 		fl_height=100;
@@ -173,12 +196,12 @@ iconbar "widget/component-decl"
 		image="/apps/kardia/images/icons/ionicons-person-edit.svg";
 		enabled = runclient(char_length(:profile:p_partner_key) > 0);
 		direction = runserver(condition(:this:show_profile_only, 'horizontal', 'vertical'));
-		do_edit "widget/connector" { event=Click; target=iconbar; action=EditPartner; Origin=contacts_btn; }
+		do_edit "widget/connector" { event=Click; target=iconbar; action=EditPartner; Origin=editperson_btn; }
 		}
 
 	    sep1b "widget/autolayoutspacer"
 		{
-		width=24;
+		width=90;
 		height=8;
 		fl_width=100;
 		fl_height=100;
@@ -283,7 +306,7 @@ iconbar "widget/component-decl"
 	    sep1c "widget/autolayoutspacer"
 		{
 		condition=runserver(not :this:show_profile_only);
-		width=24;
+		width=91;
 		fl_width=100;
 		}
 

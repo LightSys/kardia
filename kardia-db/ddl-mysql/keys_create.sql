@@ -58,6 +58,9 @@ alter table p_country
 alter table p_banking_details
 	add constraint p_banking_details_pk primary key  (p_banking_details_key);
 
+alter table p_banking_type
+	add constraint p_banking_type_pk primary key  (p_banking_type);
+
 alter table p_title
 	add constraint p_title_pk primary key  (p_title);
 
@@ -196,6 +199,48 @@ alter table e_ack_type
 alter table e_trackactivity
 	add constraint e_trkact_pk primary key  (p_partner_key,e_username,e_sort_key);
 
+alter table e_text_expansion
+	add constraint e_exp_pk primary key  (e_exp_tag);
+
+alter table e_text_search_word
+	add constraint e_tsw_pk primary key  (e_word_id);
+
+alter table e_text_search_rel
+	add constraint e_tsr_pk primary key  (e_word_id, e_target_word_id);
+
+alter table e_text_search_occur
+	add constraint e_tso_pk primary key  (e_word_id, e_document_id, e_sequence);
+
+alter table h_staff
+	add constraint h_staff_pk primary key  (p_partner_key);
+
+alter table h_group
+	add constraint h_group_pk primary key  (h_group_id);
+
+alter table h_group_member
+	add constraint h_groupm_pk primary key  (h_group_id, p_partner_key);
+
+alter table h_holidays
+	add constraint h_holiday_pk primary key  (h_holiday_id);
+
+alter table h_work_register
+	add constraint h_workreg_pk primary key  (p_partner_key, h_work_register_id);
+
+alter table h_work_register_times
+	add constraint h_workregt_pk primary key  (p_partner_key, h_work_register_time_id);
+
+alter table h_benefit_period
+	add constraint h_benper_pk primary key  (h_benefit_period_id);
+
+alter table h_benefit_type
+	add constraint h_bentype_pk primary key  (h_benefit_type_id);
+
+alter table h_benefit_type_sched
+	add constraint h_bentypesch_pk primary key  (h_benefit_type_id, h_benefit_type_sched_id);
+
+alter table h_benefits
+	add constraint h_ben_pk primary key  (h_benefit_type_id, p_partner_key, h_benefit_period_id);
+
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);
 
@@ -328,6 +373,9 @@ alter table a_tax_table
 alter table a_tax_allowance_table
 	add constraint a_taxalltable_pk primary key  (a_tax_allowance_entry_id);
 
+alter table a_salary_review
+	add constraint a_salreview_pk primary key  (a_ledger_number, a_payroll_id, a_review);
+
 alter table a_cc_admin_fee
 	add constraint a_cc_admin_fee_pk primary key  (a_cost_center, a_ledger_number);
 
@@ -377,7 +425,25 @@ alter table a_motivational_code
 	add constraint a_motivational_code_pk primary key  (a_ledger_number, a_motivational_code);
 
 alter table a_giving_pattern
-	add constraint a_givingp_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id);
+	add constraint a_givingp_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern_allocation
+	add constraint a_givingpa_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern_flag
+	add constraint a_givingf_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_funding_target
+	add constraint a_target_pk primary key  (a_ledger_number, a_cost_center, a_target_id);
+
+alter table a_support_review
+	add constraint a_supportreview_pk primary key  (a_ledger_number, a_review);
+
+alter table a_support_review_target
+	add constraint a_supptgt_pk primary key  (a_ledger_number, a_cost_center, a_target_id, a_review);
+
+alter table a_descriptives
+	add constraint a_descr_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center);
 
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
@@ -396,6 +462,24 @@ alter table i_eg_gift_import
 
 alter table i_eg_giving_url
 	add constraint i_eg_giving_url_pk primary key  (a_ledger_number, a_cost_center);
+
+alter table i_crm_partner_import
+	add constraint i_crm_partner_import_pk primary key  (i_crm_import_id, i_crm_import_session_id);
+
+alter table i_crm_partner_import_option
+	add constraint i_crm_partner_import_opt_pk primary key  (i_crm_import_id, i_crm_import_session_id, i_crm_import_type_option_id);
+
+alter table i_crm_import_type
+	add constraint i_crm_import_type_pk primary key  (i_crm_import_type_id);
+
+alter table i_crm_import_type_option
+	add constraint i_crm_import_type_option_pk primary key  (i_crm_import_type_id,i_crm_import_type_option_id);
+
+alter table i_disb_import_classify
+	add constraint i_disb_import_pk primary key  (a_ledger_number, i_disb_classify_item);
+
+alter table i_disb_import_status
+	add constraint i_disb_legacy_pk primary key  (a_ledger_number, i_disb_legacy_key);
 
 alter table c_message
 	add constraint c_message_pk primary key  (c_chat_id, c_message_id);

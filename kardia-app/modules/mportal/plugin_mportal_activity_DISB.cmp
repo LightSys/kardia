@@ -1,0 +1,11 @@
+$Version=2$
+plugin_mportal_activity_DISB "widget/component-decl"
+    {
+    width=434;
+    height=0;
+    icon = "/apps/kardia/images/icons/ionicons-arrow-left-c.svg";
+    type = "DISB";
+    iconbar_icon = "/apps/kardia/images/icons/ionicons-arrow-left-c.svg";
+    iconbar_label = "Checks";
+    iconbar_sequence = 30;
+    }

@@ -96,14 +96,14 @@ chat "system/query"
 		img = isnull( ( select
 			    path = :d:e_current_folder + '/' + :d:e_current_filename
 			from
-			    /apps/kardia/data/Kardia_DB/e_document/rows d,
 			    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+			    /apps/kardia/data/Kardia_DB/e_document/rows d,
 			    /apps/kardia/data/Kardia_DB/e_document_type/rows dt
 			where
-			    :dt:e_doc_type_label = 'Profile Photo' and
-			    :d:e_doc_type_id = :dt:e_doc_type_id and
+			    :pd:p_partner_key = :s:p_partner_key and
 			    :pd:e_document_id = :d:e_document_id and
-			    :pd:p_partner_key = :s:p_partner_key
+			    :d:e_doc_type_id = :dt:e_doc_type_id and
+			    :dt:e_doc_type_label = 'Profile Photo'
 			order by
 			    :pd:s_date_modified desc
 			limit
@@ -113,6 +113,7 @@ chat "system/query"
 		:msg:c_chat_id,
 		is_hdr = 0,
 		is_new = condition(isnull(:m1:c_last_read_message_id,0) < :msg:c_message_id, 1, 0),
+		is_not_seen = condition(isnull(:m2:c_last_read_message_id,0) < :msg:c_message_id, 1, 0),
 		date_txt = isnull(condition(:msg:s_created_by == user_name(), 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' ', '') + 'on ' + substring(convert(string,:msg:s_date_created),1,17)
 	    from
 		/apps/kardia/data/Kardia_DB/c_member/rows m1,
@@ -133,10 +134,13 @@ chat "system/query"
 
 	    -- Update the last-read-message-id values
 	    update
-		identity /apps/kardia/data/Kardia_DB/c_member/rows m1
+		identity /apps/kardia/data/Kardia_DB/c_member/rows m1,
+		/apps/kardia/data/Kardia_DB/c_member/rows m2
 	    where
-		:m1:s_username = user_name()
+		:m1:s_username = user_name() and
+		:m2:s_username = :parameters:focus_user and
+		:m1:c_chat_id = :m2:c_chat_id
 	    set
-		:m1:c_last_read_message_id = isnull((select max(:msg:c_message_id) from /apps/kardia/data/Kardia_DB/c_member/rows m2, /apps/kardia/data/Kardia_DB/c_message/rows msg where :m2:s_username = :parameters:focus_user and :m1:c_chat_id = :m2:c_chat_id and :msg:c_chat_id = :m1:c_chat_id), 0)
+		:m1:c_last_read_message_id = isnull((select max(:msg:c_message_id) from /apps/kardia/data/Kardia_DB/c_message/rows msg where :msg:c_chat_id = :m1:c_chat_id), 0)
 	    ";
     }

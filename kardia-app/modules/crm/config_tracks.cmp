@@ -173,14 +173,14 @@ config_tracks "widget/component-decl"
 				    img = isnull( ( select
 						path = :d:e_current_folder + '/' + :d:e_current_filename
 					    from
-						/apps/kardia/data/Kardia_DB/e_document/rows d,
 						/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+						/apps/kardia/data/Kardia_DB/e_document/rows d,
 						/apps/kardia/data/Kardia_DB/e_document_type/rows dt
 					    where
-						:dt:e_doc_type_label = 'Profile Photo' and
-						:d:e_doc_type_id = :dt:e_doc_type_id and
+						:pd:p_partner_key = :p:p_partner_key and
 						:pd:e_document_id = :d:e_document_id and
-						:pd:p_partner_key = :p:p_partner_key
+						:d:e_doc_type_id = :dt:e_doc_type_id and
+						:dt:e_doc_type_label = 'Profile Photo'
 					    order by
 						:pd:s_date_modified desc
 					    limit
@@ -532,7 +532,7 @@ config_tracks "widget/component-decl"
 
 		    step_sep "widget/autolayoutspacer" { height=2; }
 
-		    step_collab_label "widget/label" { height=12; value=runclient("Collaborators for Step " + :track_list_osrc:e_track_name + ", " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
+		    step_collab_label "widget/label" { height=12; value=runclient("Collaborators for Step " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
 
 		    scoll_list_osrc "widget/osrc"
 			{
@@ -551,14 +551,14 @@ config_tracks "widget/component-decl"
 				    img = isnull( ( select
 						path = :d:e_current_folder + '/' + :d:e_current_filename
 					    from
-						/apps/kardia/data/Kardia_DB/e_document/rows d,
 						/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+						/apps/kardia/data/Kardia_DB/e_document/rows d,
 						/apps/kardia/data/Kardia_DB/e_document_type/rows dt
 					    where
-						:dt:e_doc_type_label = 'Profile Photo' and
-						:d:e_doc_type_id = :dt:e_doc_type_id and
+						:pd:p_partner_key = :p:p_partner_key and
 						:pd:e_document_id = :d:e_document_id and
-						:pd:p_partner_key = :p:p_partner_key
+						:d:e_doc_type_id = :dt:e_doc_type_id and
+						:dt:e_doc_type_label = 'Profile Photo'
 					    order by
 						:pd:s_date_modified desc
 					    limit
@@ -687,7 +687,7 @@ config_tracks "widget/component-decl"
 		    width=312;
 		    spacing=8;
 
-		    req_list_label "widget/label" { height=12; value=runclient("Requirements for Step " + :track_list_osrc:e_track_name + ", " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
+		    req_list_label "widget/label" { height=12; value=runclient("Requirements for Step " + :step_list_osrc:e_step_name + ":"); style=bold; align=center; }
 
 		    req_pane "widget/pane"
 			{

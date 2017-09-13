@@ -1,0 +1,98 @@
+$Version=2$
+plugin_crm_search_TAG "widget/component-decl"
+    {
+    stage_label = "Tag";
+    stage_description_expr = "isnull((select isnull('' + (select :e_tag_label + ', ' from /apps/kardia/data/Kardia_DB/e_tag_type/rows tt where :tt:e_tag_id = :param:tag),'') + isnull('After: ' + substring(convert(string,:param:start),1,11) + ', ', '') + isnull('Before: ' + substring(convert(string,:param:end),1,11) + ', ', '') + isnull('Min. Certainty: ' + :param:certainty + ', ', '') + isnull('Min. Strength: ' + :param:strength + ', ', '') + isnull('Comment Contains: ' + :param:comment + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
+    stage_type = "TAG";
+    icon = "/apps/kardia/images/icons/ionicons-pricetags.svg";
+    sequence = 20;
+    width=410;
+    height=136;
+
+    criteria_osrc "widget/parameter" { type=object; }
+    criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    criteria_params_form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    tag_param_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=410; height=136;
+	spacing=4;
+
+	tag_type "widget/component"
+	    {
+	    form=criteria_params_form;
+	    path="/sys/cmp/smart_field.cmp";
+	    field=tag;
+	    text="Tag:";
+	    width=300;
+	    label_width=150;
+	    height=24;
+	    ctl_type=dropdown;
+	    numdisplay=12;
+	    sql="select label=:tt:e_tag_label + ' (' + :tt:e_tag_desc + ')', value=:tt:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows tt order by :tt:e_tag_label";
+	    }
+
+	tag_dates "widget/hbox"
+	    {
+	    height=24;
+	    spacing=10;
+	    startdate "widget/component"
+		{
+		form=criteria_params_form;
+		path="/sys/cmp/smart_field.cmp";
+		field=start;
+		text="Tagged Between:";
+		width=250;
+		label_width=150;
+		ctl_type=datetime;
+		}
+	    enddate "widget/component"
+		{
+		form=criteria_params_form;
+		path="/sys/cmp/smart_field.cmp";
+		field=end;
+		text="And:";
+		width=140;
+		label_width=40;
+		ctl_type=datetime;
+		}
+	    }
+	
+	tag_certainty "widget/component"
+	    {
+	    form=criteria_params_form;
+	    path="/sys/cmp/smart_field.cmp";
+	    height=24;
+	    field=certainty;
+	    text="Min. Certainty (0.0 - 1.0):";
+	    width=300;
+	    label_width=150;
+	    tc_hints "widget/hints" { style=strnull; }
+	    }
+
+	tag_strength "widget/component"
+	    {
+	    form=criteria_params_form;
+	    path="/sys/cmp/smart_field.cmp";
+	    height=24;
+	    field=strength;
+	    text="Min. Strength (-1.0 - 1.0):";
+	    width=300;
+	    label_width=150;
+	    ts_hints "widget/hints" { style=strnull; }
+	    }
+
+	tag_comm "widget/component"
+	    {
+	    form=criteria_params_form;
+	    path="/sys/cmp/smart_field.cmp";
+	    height=24;
+	    field=comment;
+	    text="Tag Comment Contains:";
+	    width=300;
+	    label_width=150;
+	    tcomm_hints "widget/hints" { style=strnull; }
+	    }
+	}
+    }

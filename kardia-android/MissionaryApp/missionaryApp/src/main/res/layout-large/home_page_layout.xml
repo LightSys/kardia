@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/noise_blue_repeat"
+    tools:context= "org.lightsys.missionaryapp.views.MainActivity">
+
+    <!-- Display List -->
+    <TextView
+        android:id="@+id/welcomeHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal"
+        android:layout_marginTop = "100dp"
+        android:textSize="@dimen/welcome_header_dimen_lg"
+        android:textStyle="bold"
+        android:textColor="#000"/>
+
+    <RelativeLayout
+        android:id="@+id/eventLayout"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_alignParentBottom = "true">
+
+        <ListView
+            android:id="@+id/eventList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scrollbars="vertical"
+            android:layout_alignParentBottom="true">
+        </ListView>
+    </RelativeLayout>
+
+</RelativeLayout>
+

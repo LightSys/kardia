@@ -9,6 +9,7 @@ search "widget/component-decl"
 
     PartnerSelected "widget/component-decl-event" { }
     AdvancedSearch "widget/component-decl-event" { }
+    AdvancedResults "widget/component-decl-action" { }
     AddPerson "widget/component-decl-event" { }
     Refresh "widget/component-decl-action" { }
     RefreshTasks "widget/component-decl-action" { }
@@ -37,6 +38,15 @@ search "widget/component-decl"
 		height=24;
 		empty_description="type search, press Enter";
 
+		enter_pressed_switch_tab "widget/connector"
+		    {
+		    event=BeforeKeyPress;
+		    event_condition=runclient(:Name == 'enter' and char_length(:search_edit:content) > 2);
+		    target = search_tab;
+		    action = SetTab;
+		    TabIndex = 2;
+		    }
+
 		enter_pressed_do_search "widget/connector"
 		    {
 		    event=BeforeKeyPress;
@@ -59,6 +69,15 @@ search "widget/component-decl"
 		//image_position=top;
 		//background="/apps/kardia/images/bg/lsblue_btngradient.png";
 		image = "/apps/kardia/images/icons/ionicons-search.svg";
+
+		btn_switch_tab "widget/connector"
+		    {
+		    event = Click;
+		    event_condition=runclient(char_length(:search_edit:content) > 2);
+		    target = search_tab;
+		    action = SetTab;
+		    TabIndex = 2;
+		    }
 
 		btn_do_search "widget/connector"
 		    {
@@ -84,6 +103,15 @@ search "widget/component-decl"
 
 	    search_crm_hints "widget/hints" { style=notnull; }
 
+	    onchange_switch_tab "widget/connector"
+		{
+		event = DataChange;
+		event_condition=runclient(char_length(:search_edit:content) > 2);
+		target = search_tab;
+		action = SetTab;
+		TabIndex = 2;
+		}
+
 	    redo_search_on_change "widget/connector"
 		{
 		event=DataChange;
@@ -97,113 +125,269 @@ search "widget/component-decl"
 		}
 	    }
 
-	search_osrc "widget/osrc"
+	search_tab "widget/tab"
 	    {
-	    only_crm "widget/parameter" { type=integer; default=runclient(:search_only_crm:value); }
-	    sql = " SELECT
-			    :p:p_partner_key,
-			    nm = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
-			    loc = isnull(:pl:p_city + ', ','') + isnull(:pl:p_state_province + ' ','') + isnull(:pl:p_postal_code, ''),
-			    in_crm_collab = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key),
-			    in_crm_collab_me = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c, /apps/kardia/data/Kardia_DB/p_staff/rows s where :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :s:p_partner_key and :s:p_kardia_login = user_name()),
-			    in_crm_track = (select count(1) from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e where :e:p_partner_key = :p:p_partner_key and :e:e_completion_status = 'I'),
-			    img = isnull( ( select
-					path = :d:e_current_folder + '/' + :d:e_current_filename
-				    from
-					/apps/kardia/data/Kardia_DB/e_document/rows d,
-					/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
-					/apps/kardia/data/Kardia_DB/e_document_type/rows dt
-				    where
-					:dt:e_doc_type_label = 'Profile Photo' and
-					:d:e_doc_type_id = :dt:e_doc_type_id and
-					:pd:e_document_id = :d:e_document_id and
-					:pd:p_partner_key = :p:p_partner_key
-				    order by
-					:pd:s_date_modified desc
-				    limit
-					1
-				    ), '/apps/kardia/images/artwork/persona.png')
-		    FROM
-			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
-			    /apps/kardia/data/Kardia_DB/p_location/rows pl
-		    WHERE
-			    :p:p_partner_key *= :pl:p_partner_key and
-			    :pl:p_revision_id = 0 and
-			    :pl:p_record_status_code = 'A' and
-			    :p:p_record_status_code = 'A' and
-			    :p:p_status_code = 'A'
-		    GROUP BY
-			    :p:p_partner_key
-		    HAVING
-			    (not :parameters:only_crm) or
-			    :in_crm_collab > 0 or
-			    :in_crm_track > 0
-		    ";
-	    autoquery=never;
-	    replicasize=50;
-	    readahead=50;
+	    height=321;
+	    tab_location = none;
+	    border_style=none;
+	    background=null;
+	    bgcolor=null;
 
-	    search_table "widget/table"
+	    advanced_results_tab "widget/tabpage"
 		{
-		height=319;
-		//rowheight = 20;
-		min_rowheight=16;
-		max_rowheight=64;
-		mode=dynamicrow;
-		allow_selection = yes;
-		show_selection = yes;
-		initial_selection = no;
-		demand_scrollbar = yes;
-		overlap_scrollbar = yes;
-		colsep = 0;
-		titlebar = no;
-		//row_border_color="#e0e0e0";
-		//row_shadow_offset=1;
-		//row_shadow_color="#c0c0c0";
-		row_border_radius=4;
-		rowhighlight_bgcolor = "#fff090";
-		textcolorhighlight = "#000000";
-		inner_padding = 2;
-		cellvspacing = 4;
-		row1_bgcolor = "#f8f8f8";
-		row2_bgcolor = "#f8f8f8";
-
-		search_item_detail "widget/table-row-detail"
+		advanced_results_osrc "widget/osrc"
 		    {
-		    width=240;
-		    height=32;
-		    display_for=runclient(not :search_osrc:in_crm_collab_me);
-
-		    add_btn "widget/textbutton"
+		    update_results "widget/connector"
 			{
-			x=50;
-			y=8;
-			width=140;
-			height=24;
-			text="Add to My People";
-			background="/apps/kardia/images/bg/lsblue_btngradient.png";
-			fgcolor1=white;
-			fgcolor2=black;
-			disable_color="#334466";
-			enabled=runclient(not :search_osrc:in_crm_collab_me);
+			source=search;
+			event=AdvancedResults;
+			action=QueryParam;
+			session_id = runclient(:session_id);
+			stage_id = runclient(:stage_id);
+			}
 
-			on_add "widget/connector"
+		    update_results_select_tab "widget/connector"
+			{
+			source=search;
+			event=AdvancedResults;
+			target=search_tab;
+			action=SetTab;
+			TabIndex = 1;
+			}
+
+		    session_id "widget/parameter" { type=integer; }
+		    stage_id "widget/parameter" { type=integer; }
+		    a_only_crm "widget/parameter" { param_name=only_crm; type=integer; default=runclient(:search_only_crm:value); }
+
+		    sql = " select
+				    :p:p_partner_key,
+				    nm = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				    loc = isnull(:pl:p_city + ', ','') + isnull(:pl:p_state_province + ' ','') + isnull(:pl:p_postal_code, ''),
+				    in_crm_collab = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key),
+				    in_crm_collab_me = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c, /apps/kardia/data/Kardia_DB/p_staff/rows s where :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :s:p_partner_key and :s:p_kardia_login = user_name()),
+				    in_crm_track = (select count(1) from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e where :e:p_partner_key = :p:p_partner_key and :e:e_completion_status = 'I'),
+				    img = isnull( (
+					    select
+						path = :d:e_current_folder + '/' + :d:e_current_filename
+					    from
+						/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+						/apps/kardia/data/Kardia_DB/e_document/rows d,
+						/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+					    where
+						:pd:p_partner_key = :p:p_partner_key and
+						:pd:e_document_id = :d:e_document_id and
+						:d:e_doc_type_id = :dt:e_doc_type_id and
+						:dt:e_doc_type_label = 'Profile Photo'
+					    order by
+						:pd:s_date_modified desc
+					    limit
+						1
+					    ), '/apps/kardia/images/artwork/persona.png')
+			    from
+				    /apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_location/rows pl
+			    where
+				    :sr:p_search_session_id = :parameters:session_id and
+				    :sr:p_search_stage_id = :parameters:stage_id and
+				    :p:p_partner_key = :sr:p_partner_key and
+				    :p:p_partner_key *= :pl:p_partner_key and
+				    :pl:p_revision_id = 0 and
+				    :pl:p_record_status_code = 'A' and
+				    :p:p_record_status_code = 'A' and
+				    :p:p_status_code = 'A'
+			    order by
+				    :sr:p_sortkey,
+				    :sr:p_partner_key
+			    having
+				    (not :parameters:only_crm) or
+				    :in_crm_collab > 0 or
+				    :in_crm_track > 0
+			    ";
+		    readahead=200;
+		    replicasize=200;
+		    autoquery=never;
+
+		    advanced_table "widget/table"
+			{
+			x=0; y=0;
+			width=240;
+			height=321;
+			//rowheight = 20;
+			min_rowheight=16;
+			max_rowheight=64;
+			mode=dynamicrow;
+			allow_selection = yes;
+			show_selection = yes;
+			initial_selection = no;
+			demand_scrollbar = yes;
+			overlap_scrollbar = yes;
+			colsep = 0;
+			titlebar = no;
+			//row_border_color="#e0e0e0";
+			//row_shadow_offset=1;
+			//row_shadow_color="#c0c0c0";
+			row_border_radius=4;
+			rowhighlight_bgcolor = "#fff090";
+			textcolorhighlight = "#000000";
+			inner_padding = 2;
+			cellvspacing = 4;
+			row1_bgcolor = "#f8f8f8";
+			row2_bgcolor = "#f8f8f8";
+
+			advanced_item_detail "widget/table-row-detail"
 			    {
-			    event=Click;
-			    target=search;
-			    action=AddPerson;
-			    Origin=add_btn;
-			    partner=runclient(:search_osrc:p_partner_key);
-			    partnername=runclient(:search_osrc:nm);
+			    width=240;
+			    height=32;
+			    display_for=runclient(not :advanced_results_osrc:in_crm_collab_me);
+
+			    a_add_btn "widget/textbutton"
+				{
+				x=50;
+				y=8;
+				width=140;
+				height=24;
+				text="Add to My People";
+				background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				fgcolor1=white;
+				fgcolor2=black;
+				disable_color="#334466";
+				enabled=runclient(not :advanced_results_osrc:in_crm_collab_me);
+
+				on_a_add "widget/connector"
+				    {
+				    event=Click;
+				    target=search;
+				    action=AddPerson;
+				    Origin=a_add_btn;
+				    partner=runclient(:advanced_results_osrc:p_partner_key);
+				    partnername=runclient(:advanced_results_osrc:nm);
+				    }
+				}
 			    }
+
+			a_onclick "widget/connector" { event=Click; target=search; action=PartnerSelected; partner_key=runclient(:p_partner_key); }
+
+			ta_crm_image "widget/table-column" { width=22; value=runclient(condition(:advanced_results_osrc:in_crm_collab or :advanced_results_osrc:in_crm_track, condition(:advanced_results_osrc:in_crm_collab_me, '/sys/images/green_check.gif', '/sys/images/dotted_check.gif'), '/sys/images/trans_1.gif')); type=image; image_maxwidth=16; image_maxheight=16; }
+			ta_img "widget/table-column" { title=""; fieldname="img"; width=30; type=image; image_maxwidth=24; image_maxheight=24; align=center; }
+			ta_name "widget/table-column" { title="Partner"; fieldname=nm; caption_value=runclient(:advanced_results_osrc:loc + ' (ID# ' + :advanced_results_osrc:p_partner_key + ')'); width=184; caption_textcolor="#9b8707"; style=bold; font_size=15; caption_style=italic; }
 			}
 		    }
+		}
 
-		onclick "widget/connector" { event=Click; target=search; action=PartnerSelected; partner_key=runclient(:p_partner_key); }
+	    search_box_tab "widget/tabpage"
+		{
+		search_osrc "widget/osrc"
+		    {
+		    only_crm "widget/parameter" { type=integer; default=runclient(:search_only_crm:value); }
+		    sql = " SELECT
+				    :p:p_partner_key,
+				    nm = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+				    loc = isnull(:pl:p_city + ', ','') + isnull(:pl:p_state_province + ' ','') + isnull(:pl:p_postal_code, ''),
+				    in_crm_collab = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key),
+				    in_crm_collab_me = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c, /apps/kardia/data/Kardia_DB/p_staff/rows s where :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :s:p_partner_key and :s:p_kardia_login = user_name()),
+				    in_crm_track = (select count(1) from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e where :e:p_partner_key = :p:p_partner_key and :e:e_completion_status = 'I'),
+				    img = isnull( ( select
+						path = :d:e_current_folder + '/' + :d:e_current_filename
+					    from
+						/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+						/apps/kardia/data/Kardia_DB/e_document/rows d,
+						/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+					    where
+						:pd:p_partner_key = :p:p_partner_key and
+						:pd:e_document_id = :d:e_document_id and
+						:d:e_doc_type_id = :dt:e_doc_type_id and
+						:dt:e_doc_type_label = 'Profile Photo'
+					    order by
+						:pd:s_date_modified desc
+					    limit
+						1
+					    ), '/apps/kardia/images/artwork/persona.png')
+			    FROM
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_location/rows pl
+			    WHERE
+				    :p:p_partner_key *= :pl:p_partner_key and
+				    :pl:p_revision_id = 0 and
+				    :pl:p_record_status_code = 'A' and
+				    :p:p_record_status_code = 'A' and
+				    :p:p_status_code = 'A'
+			    GROUP BY
+				    :p:p_partner_key
+			    HAVING
+				    (not :parameters:only_crm) or
+				    :in_crm_collab > 0 or
+				    :in_crm_track > 0
+			    ";
+		    autoquery=never;
+		    replicasize=50;
+		    readahead=50;
 
-		t_crm_image "widget/table-column" { width=22; value=runclient(condition(:search_osrc:in_crm_collab or :search_osrc:in_crm_track, condition(:search_osrc:in_crm_collab_me, '/sys/images/green_check.gif', '/sys/images/dotted_check.gif'), '/sys/images/trans_1.gif')); type=image; image_maxwidth=16; image_maxheight=16; }
-		t_img "widget/table-column" { title=""; fieldname="img"; width=30; type=image; image_maxwidth=24; image_maxheight=24; align=center; }
-		t_name "widget/table-column" { title="Partner"; fieldname=nm; caption_value=runclient(:search_osrc:loc + ' (ID# ' + :search_osrc:p_partner_key + ')'); width=184; caption_textcolor="#9b8707"; style=bold; font_size=15; caption_style=italic; }
+		    search_table "widget/table"
+			{
+			x=0; y=0;
+			width=240;
+			height=321;
+			//rowheight = 20;
+			min_rowheight=16;
+			max_rowheight=64;
+			mode=dynamicrow;
+			allow_selection = yes;
+			show_selection = yes;
+			initial_selection = no;
+			demand_scrollbar = yes;
+			overlap_scrollbar = yes;
+			colsep = 0;
+			titlebar = no;
+			//row_border_color="#e0e0e0";
+			//row_shadow_offset=1;
+			//row_shadow_color="#c0c0c0";
+			row_border_radius=4;
+			rowhighlight_bgcolor = "#fff090";
+			textcolorhighlight = "#000000";
+			inner_padding = 2;
+			cellvspacing = 4;
+			row1_bgcolor = "#f8f8f8";
+			row2_bgcolor = "#f8f8f8";
+
+			search_item_detail "widget/table-row-detail"
+			    {
+			    width=240;
+			    height=32;
+			    display_for=runclient(not :search_osrc:in_crm_collab_me);
+
+			    add_btn "widget/textbutton"
+				{
+				x=50;
+				y=8;
+				width=140;
+				height=24;
+				text="Add to My People";
+				background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				fgcolor1=white;
+				fgcolor2=black;
+				disable_color="#334466";
+				enabled=runclient(not :search_osrc:in_crm_collab_me);
+
+				on_add "widget/connector"
+				    {
+				    event=Click;
+				    target=search;
+				    action=AddPerson;
+				    Origin=add_btn;
+				    partner=runclient(:search_osrc:p_partner_key);
+				    partnername=runclient(:search_osrc:nm);
+				    }
+				}
+			    }
+
+			onclick "widget/connector" { event=Click; target=search; action=PartnerSelected; partner_key=runclient(:p_partner_key); }
+
+			t_crm_image "widget/table-column" { width=22; value=runclient(condition(:search_osrc:in_crm_collab or :search_osrc:in_crm_track, condition(:search_osrc:in_crm_collab_me, '/sys/images/green_check.gif', '/sys/images/dotted_check.gif'), '/sys/images/trans_1.gif')); type=image; image_maxwidth=16; image_maxheight=16; }
+			t_img "widget/table-column" { title=""; fieldname="img"; width=30; type=image; image_maxwidth=24; image_maxheight=24; align=center; }
+			t_name "widget/table-column" { title="Partner"; fieldname=nm; caption_value=runclient(:search_osrc:loc + ' (ID# ' + :search_osrc:p_partner_key + ')'); width=184; caption_textcolor="#9b8707"; style=bold; font_size=15; caption_style=italic; }
+			}
+		    }
 		}
 	    }
 

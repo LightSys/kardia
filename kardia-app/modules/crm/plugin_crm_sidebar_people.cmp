@@ -9,6 +9,7 @@ people_list "widget/component-decl"
 
     PartnerSelected "widget/component-decl-event" { }
     SetNumber "widget/component-decl-event" { }
+    CollabChanged "widget/component-decl-event" { }
 
     RefreshTasks "widget/component-decl-action" { }
     Refresh "widget/component-decl-action" { }
@@ -46,7 +47,7 @@ people_list "widget/component-decl"
 					/apps/kardia/data/Kardia_DB/e_collaborator/rows c
 				    where
 					:c:e_collaborator = :parameters:collaborator and
-					(select count(1) from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :parameters:collaborator) = 0
+					isnull((select 1 from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :parameters:collaborator and :a:e_ack_type = 4 limit 1),0) = 0
 				    )
 		";
 	replicasize=2;
@@ -68,7 +69,8 @@ people_list "widget/component-decl"
 	    target=people_list;
 	    action=SetNumber;
 	    Which=runclient("People");
-	    Number=runclient(condition(:people_stats_osrc:new_collab_cnt > 0, '' + (:people_stats_osrc:all_collab_cnt - :people_stats_osrc:new_collab_cnt) + '+' + :people_stats_osrc:new_collab_cnt, :people_stats_osrc:all_collab_cnt));
+	    //Number=runclient(condition(:people_stats_osrc:new_collab_cnt > 0, '' + (:people_stats_osrc:all_collab_cnt - :people_stats_osrc:new_collab_cnt) + '+' + :people_stats_osrc:new_collab_cnt, :people_stats_osrc:all_collab_cnt));
+	    Number=runclient(condition(:people_stats_osrc:new_collab_cnt > 0, '+' + :people_stats_osrc:new_collab_cnt, :people_stats_osrc:all_collab_cnt));
 	    Color=runclient(condition(:people_stats_osrc:new_collab_cnt > 0, 'red', 'black'));
 	    }
 	}
@@ -80,35 +82,45 @@ people_list "widget/component-decl"
 
 	active_collab_osrc "widget/osrc"
 	    {
+	    act_collaborator "widget/parameter" { param_name=collaborator; type=string; default=runclient(:collaborator_osrc:p_partner_key); }
+	    search_tag1 "widget/parameter" { type=integer; }
+	    search_tag2 "widget/parameter" { type=integer; }
+	    search_track "widget/parameter" { type=integer; }
+	    search_newonly "widget/parameter" { type=integer; }
+	    search_role "widget/parameter" { type=integer; }
+	    search_stat "widget/parameter" { type=string; }
+
 	    sql = " select
 			collaborator_id = :c:e_collaborator,
 			collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:e_collaborator),
 			collaborator_type_id = :c:e_collab_type_id, 
 			collaborator_type = (select :e_collab_type_label from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows where :e_collab_type_id = :c:e_collab_type_id),
+			collaborator_status = :c:e_collaborator_status,
 			partner_id = :c:p_partner_key,
 			partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:p_partner_key),
 			role_id = :c:e_collab_type_id,
 			role_name = :ct:e_collab_type_desc,
 			track_ids = (select sum('X' + :pe:e_track_id + 'X') from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe where :pe:p_partner_key = :c:p_partner_key and :pe:e_is_archived = 0 group by :pe:e_track_id),
 			track_names = (select sum(first(:t:e_track_name) + ', ') - ', ' from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe, /apps/kardia/data/Kardia_DB/e_engagement_track/rows t where :pe:p_partner_key = :c:p_partner_key and :pe:e_is_archived = 0 and :t:e_track_id = :pe:e_track_id group by :pe:e_track_id),
+			tag_ids = (select sum('X' + :t:e_tag_id + 'X') from /apps/kardia/data/Kardia_DB/e_tag/rows t where :t:p_partner_key = :c:p_partner_key and :t:e_tag_strength > 0.01),
 			img = isnull( ( select
 				    path = :d:e_current_folder + '/' + :d:e_current_filename
 				from
-				    /apps/kardia/data/Kardia_DB/e_document/rows d,
 				    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+				    /apps/kardia/data/Kardia_DB/e_document/rows d,
 				    /apps/kardia/data/Kardia_DB/e_document_type/rows dt
 				where
-				    :dt:e_doc_type_label = 'Profile Photo' and
-				    :d:e_doc_type_id = :dt:e_doc_type_id and
+				    :pd:p_partner_key = :c:p_partner_key and
 				    :pd:e_document_id = :d:e_document_id and
-				    :pd:p_partner_key = :c:p_partner_key
+				    :d:e_doc_type_id = :dt:e_doc_type_id and
+				    :dt:e_doc_type_label = 'Profile Photo'
 				order by
 				    :pd:s_date_modified desc
 				limit
 				    1
 				), '/apps/kardia/images/artwork/persona.png'),
 			last_date = substring(convert(string, (select max(:e_contact_date) from /apps/kardia/data/Kardia_DB/e_contact_history/rows ch where :ch:p_partner_key = :c:p_partner_key) ),1,11),
-			is_new = condition((select count(1) from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :c:e_collaborator) = 0, 1, 0)
+			is_new = condition(datediff(hour,isnull((select :a:s_date_created from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :c:e_collaborator and :a:e_ack_type = 4), getdate()),getdate()) <= 24, 1, 0)
 		    from
 			identity /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
 			/apps/kardia/data/Kardia_DB/p_staff/rows s,
@@ -116,11 +128,18 @@ people_list "widget/component-decl"
 		    where
 			:c:e_collaborator = :s:p_partner_key and
 			:s:p_kardia_login = user_name() and
-			:ct:e_collab_type_id = :c:e_collab_type_id
+			:ct:e_collab_type_id = :c:e_collab_type_id and
+			charindex(:c:e_collaborator_status, isnull(:parameters:search_stat, 'AP')) > 0
+		    having
+			(:parameters:search_tag1 is null or charindex('X' + :parameters:search_tag1 + 'X', :tag_ids) > 0) and
+			(:parameters:search_tag2 is null or charindex('X' + :parameters:search_tag2 + 'X', :tag_ids) > 0) and
+			(:parameters:search_track is null or charindex('X' + :parameters:search_track + 'X', :track_ids) > 0) and
+			(:parameters:search_role is null or :parameters:search_role = :role_id) and
+			(:parameters:search_newonly is null or :parameters:search_newonly = 0 or :parameters:search_newonly = :is_new)
 		    ";
-	    readahead=200;
-	    replicasize=200;
-	    use_having_clause=1;
+	    readahead=400;
+	    replicasize=400;
+	    //use_having_clause=1;
 	    refresh_interval=30000;
 	    
 	    stats_link "widget/connector"
@@ -134,7 +153,7 @@ people_list "widget/component-decl"
 
 	    active_collab_table "widget/table"
 		{
-		height=381;
+		height=372;
 		//rowheight = 20;
 		min_rowheight=16;
 		max_rowheight=72;
@@ -170,83 +189,425 @@ people_list "widget/component-decl"
 			    isnull('My Role: ' + :active_collab_osrc:role_name + '\n', '') +
 			    isnull('Last Communication: ' + :active_collab_osrc:last_date + '\n', '')
 			    );
-		    caption_textcolor="#9b8707";
+		    caption_textcolor=runclient(condition(:active_collab_osrc:collaborator_status = 'A', '#9b8707', condition(:active_collab_osrc:collaborator_status = 'I', '#cdc383', '#00a000')));
+		    textcolor=runclient(condition(:active_collab_osrc:collaborator_status = 'A', 'black', condition(:active_collab_osrc:collaborator_status = 'I', '#a0a0a0', '#008000')));
 		    style=bold;
 		    font_size=15;
 		    caption_style=italic;
 		    wrap=yes;
 		    }
+
+		editcollab_detail "widget/table-row-detail"
+		    {
+		    height=34;
+		    width=248;
+
+		    editcollab_form "widget/form"
+			{
+			//allow_obscure=yes;
+			confirm_discard=no;
+
+			refresh_profile_on_save2 "widget/connector" { event=DataSaved; target=people_list; action=CollabChanged; }
+			refresh_profile_on_delete "widget/connector" { event=DataDeleted; target=people_list; action=CollabChanged; }
+
+			editcollab_hbox "widget/hbox"
+			    {
+			    x=4; y=10; height=24; width=240;
+			    spacing=10;
+
+			    editcollab_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; visual=no; }
+
+			    editstat_type "widget/component"
+				{
+				field=collaborator_status;
+				path="/sys/cmp/smart_field.cmp";
+				height=24;
+				text="Status:";
+				ctl_type=dropdown;
+				sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_e_collaborator_status/rows order by :text";
+				width=110;
+				label_width=55;
+				numdisplay=10;
+
+				stat_hints "widget/hints" { style=notnull; }
+
+				save_on_data_change2 "widget/connector" { event=DataChange; event_delay=0.05; target=editcollab_form; action=Save; }
+
+				discard_on_lose_focus2 "widget/connector" { event=LoseFocus; event_delay=0.4; target=editcollab_form; action=Discard; }
+				}
+
+			    editcollab_type "widget/component"
+				{
+				field=collaborator_type_id;
+				path="/sys/cmp/smart_field.cmp";
+				height=24;
+				text="My Role:";
+				ctl_type=dropdown;
+				sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label";
+				width=110;
+				label_width=55;
+				numdisplay=10;
+
+				role_hints "widget/hints" { style=notnull; }
+
+				save_on_data_change "widget/connector" { event=DataChange; event_delay=0.05; target=editcollab_form; action=Save; }
+
+				discard_on_lose_focus "widget/connector" { event=LoseFocus; event_delay=0.4; target=editcollab_form; action=Discard; }
+				}
+
+			    }
+			}
+		    }
 		}
 	    }
 
-	role_select_dd "widget/dropdown"
+	customize_pane "widget/pane"
 	    {
-	    x=4;
-	    height=24;
-	    width=240;
-	    mode=dynamic_server;
-	    numdisplay=16;
-	    sql = " select
-			'All of My People',
-			'A',
-			1
-		    ;
+	    height=36; x=4; width=240;
+	    style=bordered;
+	    border_radius=8;
+	    border_color="#6080c0";
 
-		    select
-			'New People Only',
-			'N',
-			0
-		    ;
-
-		    select
-			'My Role: ' + :e_collab_type_label,
-			'R' + convert(string,:e_collab_type_id),
-			0
-		    from
-			/apps/kardia/data/Kardia_DB/e_collaborator_type/rows
-		    ;
-
-		    select
-			'Track: ' + :e_track_name,
-			'T' + convert(string,:e_track_id),
-			0
-		    from
-			/apps/kardia/data/Kardia_DB/e_engagement_track/rows
-		    ";
-
-	    role_dd_hints "widget/hints" { style=notnull; }
-
-	    on_role_select_all "widget/connector"
+	    customize_hbox "widget/hbox"
 		{
-		event=DataChange;
-		event_condition=runclient(substring(:Value,1,1) == 'A');
-		target=active_collab_osrc;
-		action=QueryParam;
+		x=6; y=3;
+		width=226; height=24;
+		spacing=10; x=4;
+
+		customize_label "widget/label" { y=5; style=bold; width=190; value=runclient(isnull(:with_status:label + ': ', 'Active or Priority: ') + condition(not (:only_newpeople:value > 0) and :with_tag1:value is null and :with_tag2:value is null and :in_track:value is null and :in_role:value is null , '', condition(:only_newpeople:value > 0, 'Only New People, ', '') + condition(:with_tag1:value is not null, '' + :with_tag1:label + ', ', '') + condition(:with_tag2:value is not null, '' + :with_tag2:label + ', ', '') + condition(:in_track:value is not null, 'Track ' + :in_track:label + ', ', '') + condition(:in_role:value is not null, 'My Role is ' + :in_role:label + ', ', ''))); }
+
+		customize_menu "widget/textbutton"
+		    {
+		    widget_class=crm_iconbutton;
+		    height=20; width=30;
+		    fl_width=0;
+		    text=" ";
+		    image="/apps/kardia/images/icons/ionicons-hamburger.svg";
+		    image_position=right;
+		    image_margin=4;
+		    background=null;
+		    align=right;
+		    image_width=18;
+		    image_height=18;
+
+		    on_click "widget/connector"
+			{
+			event=Click;
+			target=customize_win;
+			action=ToggleVisibility;
+			IsModal=1;
+			PointAt=customize_menu;
+			PointSide=runclient('bottom');
+			}
+		    }
 		}
-	    on_role_select_new "widget/connector"
+	    }
+
+	customize_win "widget/childwindow"
+	    {
+	    titlebar=no;
+	    toplevel=yes;
+	    visible=no;
+	    x=0; y=0; width=400; height=264;
+	    fl_width=100;
+	    border_radius=8;
+	    border_style=solid;
+	    border_color="#6080c0";
+	    shadow_radius=8;
+	    shadow_color="#6080c0";
+	    shadow_offset=0;
+	    background=null;
+	    bgcolor="#f8f8f8";
+
+	    customize_vbox "widget/vbox"
 		{
-		event=DataChange;
-		event_condition=runclient(substring(:Value,1,1) == 'N');
-		target=active_collab_osrc;
-		action=QueryParam;
-		is_new=1;
-		}
-	    on_role_select_role "widget/connector"
-		{
-		event=DataChange;
-		event_condition=runclient(substring(:Value,1,1) == 'R');
-		target=active_collab_osrc;
-		action=QueryParam;
-		role_id=runclient(convert(integer,substring(:Value,2)));
-		}
-	    on_role_select_track "widget/connector"
-		{
-		event=DataChange;
-		event_condition=runclient(substring(:Value,1,1) == 'T');
-		target=active_collab_osrc;
-		action=QueryText;
-		query=runclient('X' + substring(:Value,2) + 'X');
-		field_list="*track_ids*";
+		x=10; y=10; width=378; height=242;
+		spacing=8;
+
+		customize_form "widget/form"
+		    {
+		    allow_nodata=no;
+		    allow_new=yes;
+		    allow_query=no;
+		    allow_view=no;
+		    allow_modify=no;
+		    allow_obscure=yes;
+		    //confirm_discard=no;
+
+		    search_on_change "widget/connector"
+			{
+			event=DataChange;
+			target=active_collab_osrc;
+			action=QueryParam;
+			search_newonly=runclient(:only_newpeople:value);
+			search_tag1=runclient(:with_tag1:value);
+			search_tag2=runclient(:with_tag2:value);
+			search_track=runclient(:in_track:value);
+			search_role=runclient(:in_role:value);
+			search_stat=runclient(:with_status:value);
+			}
+
+		    heading "widget/label"
+			{
+			height=24;
+			font_size=15;
+			style=bold;
+			align=center;
+			text="Search Within My People:";
+			}
+
+		    only_newpeople "widget/component"
+			{
+			height=20;
+			width=300;
+			path="/sys/cmp/smart_field.cmp";
+			ctl_type=checkbox;
+			text="Only New?";
+			fieldname=search_newonly;
+
+			only_new_hints "widget/hints" { style=notnull; default=0; }
+			}
+
+		    with_tag1 "widget/component"
+			{
+			height=20;
+			width=300;
+			path="/sys/cmp/smart_field.cmp";
+			ctl_type=dropdown;
+			numdisplay=12;
+			text="With Tag:";
+			fieldname=search_tag1;
+			sql = " select
+				    :e_tag_label,
+				    :e_tag_id
+				from
+				    /apps/kardia/data/Kardia_DB/e_tag_type/rows
+				order by
+				    :e_tag_label
+				";
+			}
+
+		    with_tag2 "widget/component"
+			{
+			height=20;
+			width=300;
+			path="/sys/cmp/smart_field.cmp";
+			ctl_type=dropdown;
+			numdisplay=12;
+			text="With Tag:";
+			fieldname=search_tag2;
+			sql = " select
+				    :e_tag_label,
+				    :e_tag_id
+				from
+				    /apps/kardia/data/Kardia_DB/e_tag_type/rows
+				order by
+				    :e_tag_label
+				";
+			}
+
+		    in_track "widget/component"
+			{
+			height=20;
+			width=300;
+			path="/sys/cmp/smart_field.cmp";
+			ctl_type=dropdown;
+			numdisplay=12;
+			text="In Track:";
+			fieldname=search_track;
+			sql = " select
+				    :e_track_name,
+				    :e_track_id
+				from
+				    /apps/kardia/data/Kardia_DB/e_engagement_track/rows
+				order by
+				    :e_track_name
+				";
+			}
+
+		    in_role "widget/component"
+			{
+			height=20;
+			width=300;
+			path="/sys/cmp/smart_field.cmp";
+			ctl_type=dropdown;
+			numdisplay=12;
+			text="My Role:";
+			fieldname=search_role;
+			sql = " select
+				    :e_collab_type_label,
+				    :e_collab_type_id
+				from
+				    /apps/kardia/data/Kardia_DB/e_collaborator_type/rows
+				order by
+				    :e_collab_type_label
+				";
+			}
+
+		    with_status "widget/component"
+			{
+			height=20;
+			width=300;
+			path="/sys/cmp/smart_field.cmp";
+			ctl_type=dropdown;
+			text="Status:";
+			fieldname=search_stat;
+			sql = " select label='Active or Priority', value='AP', sel=1;
+				select label='Priority', value='P', sel=0;
+				select label='Active, Priority, or Inactive', value='API', sel=0;
+				select label='Only Inactive', value='I', sel=0
+				";
+			ws_hints "widget/hints" { style=notnull,default; default=runclient('AP'); }
+			}
+
+		    sep1 "widget/autolayoutspacer" { height=1; }
+
+		    role_select_dd "widget/dropdown"
+			{
+			condition = 0;
+			height=24;
+			mode=dynamic_server;
+			numdisplay=24;
+			sql = " select
+				    'All of My People',
+				    'A',
+				    1
+				;
+
+				select
+				    'New People Only',
+				    'N',
+				    0
+				;
+
+				select
+				    'My Role: ' + :e_collab_type_label,
+				    'R' + convert(string,:e_collab_type_id),
+				    0
+				from
+				    /apps/kardia/data/Kardia_DB/e_collaborator_type/rows
+				order by
+				    :e_collab_type_label
+				;
+
+				select
+				    'Track: ' + :e_track_name,
+				    'T' + convert(string,:e_track_id),
+				    0
+				from
+				    /apps/kardia/data/Kardia_DB/e_engagement_track/rows
+				order by
+				    :e_track_name
+				;
+
+				select
+				    'Tag: ' + :e_tag_label,
+				    'G' + convert(string,:e_tag_id),
+				    0
+				from
+				    /apps/kardia/data/Kardia_DB/e_tag_type/rows
+				order by
+				    :e_tag_label
+				";
+
+			role_dd_hints "widget/hints" { style=notnull; }
+
+			on_role_select_all "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(substring(:Value,1,1) == 'A');
+			    target=active_collab_osrc;
+			    action=QueryParam;
+			    }
+			on_role_select_new "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(substring(:Value,1,1) == 'N');
+			    target=active_collab_osrc;
+			    action=QueryParam;
+			    is_new=1;
+			    }
+			on_role_select_role "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(substring(:Value,1,1) == 'R');
+			    target=active_collab_osrc;
+			    action=QueryParam;
+			    role_id=runclient(convert(integer,substring(:Value,2)));
+			    }
+			on_role_select_track "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(substring(:Value,1,1) == 'T');
+			    target=active_collab_osrc;
+			    action=QueryText;
+			    query=runclient('X' + substring(:Value,2) + 'X');
+			    field_list="*track_ids*";
+			    }
+			on_role_select_tag "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(substring(:Value,1,1) == 'G');
+			    target=active_collab_osrc;
+			    action=QueryText;
+			    query=runclient('X' + substring(:Value,2) + 'X');
+			    field_list="*tag_ids*";
+			    }
+
+			on_select_close "widget/connector"
+			    {
+			    event=DataChange;
+			    target=customize_win;
+			    action=Close;
+			    }
+			}
+		    }
+
+		buttons_hbox "widget/hbox"
+		    {
+		    height=24; align=center; spacing=10;
+
+		    cancel_btn "widget/textbutton"
+			{
+			text = "Close";
+			height=24; width=130;
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_cancel "widget/connector" { event=Click; target=customize_win; action=Close; }
+			}
+
+		    everyone_btn "widget/textbutton"
+			{
+			text = "Show All";
+			height=24; width=130;
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_everyone_1 "widget/connector"
+			    {
+			    event=Click;
+			    target=active_collab_osrc;
+			    action=QueryParam;
+			    }
+			on_everyone_2 "widget/connector"
+			    {
+			    event=Click;
+			    target=customize_win;
+			    action=Close;
+			    }
+			on_everyone_3 "widget/connector"
+			    {
+			    event=Click;
+			    target=customize_form;
+			    action=Discard;
+			    }
+			}
+		    }
 		}
 	    }
 	}

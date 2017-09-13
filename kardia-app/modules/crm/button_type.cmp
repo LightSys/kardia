@@ -128,6 +128,12 @@ button_type "widget/component-decl"
 		    height = 12;
 		    x=runserver(condition(:this:direction == 'vertical', 18, 0));
 		    y=runserver(condition(:this:direction == 'vertical', 0, 18));
+		    ionMouseDown1 "widget/connector" { event=MouseDown; target=all_timer; action=SetTimer; Time=500; AutoReset=1; }
+		    ionMouseDown2 "widget/connector" { event=MouseDown; target=blocking_click; action=SetValue; Value=0; }
+		    ionMouseUp "widget/connector" { event=MouseUp; target=all_timer; action=CancelTimer; }
+		    ionMouseOut "widget/connector" { event=MouseOut; target=all_timer; action=CancelTimer; }
+		    ionClick "widget/connector" { event=Click; event_cancel=runclient(:blocking_click:value); target=blocking_click; action=SetValue; Value=0; }
+		    ionClick2 "widget/connector" { event=Click; target=button_type; action=TriggerEvent; EventName=runclient('Toggle'); Update=1; }
 		    }
 		}
 	    }

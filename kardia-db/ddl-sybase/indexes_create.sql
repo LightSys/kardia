@@ -70,6 +70,13 @@ go
 /* p_partner_relationship */
 /* create  clustered index p_partner_relationship_pk on p_partner_relationship (p_partner_key, p_relation_type, p_relation_key)*/ 
 /* go */
+create  index p_relate_reverse_idx on p_partner_relationship (p_relation_key, p_relation_type, p_partner_key)
+go
+
+
+/* p_partner_relationship_type */
+/* create  clustered index p_relat_type_pk on p_partner_relationship_type (p_relation_type)*/ 
+/* go */
 
 
 /* p_church */
@@ -116,7 +123,18 @@ go
 
 
 /* p_banking_details */
+create  index p_bankd_acct_idx on p_banking_details (a_ledger_number, a_account_code, p_banking_details_key)
+go
+create  index p_bankd_bpartner_idx on p_banking_details (p_bank_partner_id, p_banking_details_key)
+go
+create  index p_bankd_partner_idx on p_banking_details (p_partner_id, p_banking_details_key)
+go
 /* create  clustered index p_banking_details_pk on p_banking_details (p_banking_details_key)*/ 
+/* go */
+
+
+/* p_banking_type */
+/* create  clustered index p_banking_type_pk on p_banking_type (p_banking_type)*/ 
 /* go */
 
 
@@ -152,16 +170,411 @@ go
 /* go */
 
 
+/* p_acquisition_code */
+/* create  clustered index p_acqcode_pk on p_acquisition_code (p_acquisition_code)*/ 
+/* go */
+
+
+/* p_partner_search */
+/* create  clustered index p_search_pk on p_partner_search (p_search_id)*/ 
+/* go */
+
+
+/* p_partner_search_stage */
+/* create  clustered index p_searchstage_pk on p_partner_search_stage (p_search_id,p_search_stage_id)*/ 
+/* go */
+
+
+/* p_partner_search_results */
+create  index p_search_stage_idx on p_partner_search_results (s_username,p_search_session_id,p_search_stage_id,p_partner_key)
+go
+/* create  clustered index p_searchres_pk on p_partner_search_results (p_partner_key,s_username,p_search_session_id,p_search_stage_id)*/ 
+/* go */
+
+
+/* p_search_stage_criteria */
+/* create  clustered index p_stage_criteria_pk on p_search_stage_criteria (p_search_id,p_search_stage_id,p_criteria_name)*/ 
+/* go */
+
+
 /* m_list */
 /* create  clustered index m_list_pk on m_list (m_list_code)*/ 
 /* go */
 
 
 /* m_list_membership */
-/* create  clustered index m_list_membership_clustered_pk on m_list_membership (m_list_code, p_partner_key)*/ 
+/* create  clustered index m_list_membership_clustered_pk on m_list_membership (m_list_code, p_partner_key, m_hist_id)*/ 
 /* go */
-create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_code)
+create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_code, m_hist_id)
 go
+
+
+/* e_contact_autorecord */
+create  index e_autorec_collab_idx on e_contact_autorecord (e_collaborator_id, p_partner_key, e_contact_history_type, e_contact_id)
+go
+create  index e_autorec_collabhist_idx on e_contact_autorecord (e_collaborator_id, e_contact_history_type, p_partner_key, e_contact_id)
+go
+create  index e_autorec_histtype_idx on e_contact_autorecord (p_partner_key, e_contact_history_type, e_collaborator_id, e_contact_id)
+go
+/* create  clustered index e_autorec_pk on e_contact_autorecord (p_partner_key, e_collaborator_id, e_contact_history_type, e_contact_id)*/ 
+/* go */
+
+
+/* e_contact_history_type */
+/* create  clustered index e_cnt_hist_type_pk on e_contact_history_type (e_contact_history_type)*/ 
+/* go */
+
+
+/* e_contact_history */
+create  index e_cnt_hist_locpar_idx on e_contact_history (p_location_partner_key, e_contact_history_type, e_contact_history_id)
+go
+create  index e_cnt_hist_par_idx on e_contact_history (p_partner_key, e_contact_history_type, e_contact_history_id)
+go
+/* create  clustered index e_cnt_hist_pk on e_contact_history (e_contact_history_id)*/ 
+/* go */
+create  index e_cnt_hist_type_idx on e_contact_history (e_contact_history_type, p_partner_key, e_contact_history_id)
+go
+create  index e_cnt_hist_whom_idx on e_contact_history (e_whom, p_partner_key, e_contact_history_type, e_contact_history_id)
+go
+
+
+/* e_activity */
+create  index e_act_par_idx on e_activity (p_partner_key, e_activity_group_id, e_activity_id)
+go
+/* create  clustered index e_act_pk on e_activity (e_activity_group_id, e_activity_id)*/ 
+/* go */
+create  index e_act_sort_idx on e_activity (e_sort_key, e_activity_group_id, e_activity_id)
+go
+create  index e_act_type_idx on e_activity (e_activity_type, e_activity_group_id, e_activity_id)
+go
+
+
+/* e_engagement_track */
+create  index e_trk_name_idx on e_engagement_track (e_track_name, e_track_id)
+go
+/* create  clustered index e_trk_pk on e_engagement_track (e_track_id)*/ 
+/* go */
+
+
+/* e_engagement_track_collab */
+/* create  clustered index e_trkcoll_pk on e_engagement_track_collab (e_track_id, p_collab_partner_key)*/ 
+/* go */
+create  index e_trkcoll_ptnr_idx on e_engagement_track_collab (p_collab_partner_key, e_track_id)
+go
+
+
+/* e_engagement_step */
+create  index e_step_name_idx on e_engagement_step (e_step_name, e_track_id, e_step_id)
+go
+/* create  clustered index e_step_pk on e_engagement_step (e_track_id, e_step_id)*/ 
+/* go */
+
+
+/* e_engagement_step_collab */
+/* create  clustered index e_stepcoll_pk on e_engagement_step_collab (e_track_id, e_step_id, p_collab_partner_key)*/ 
+/* go */
+create  index e_stepcoll_ptnr_idx on e_engagement_step_collab (p_collab_partner_key, e_track_id, e_step_id)
+go
+
+
+/* e_engagement_step_req */
+/* create  clustered index e_req_pk on e_engagement_step_req (e_track_id, e_step_id, e_req_id)*/ 
+/* go */
+
+
+/* e_partner_engagement */
+/* create  clustered index e_pareng_pk on e_partner_engagement (p_partner_key, e_engagement_id, e_hist_id)*/ 
+/* go */
+create  index e_pareng_start_idx on e_partner_engagement (e_started_by, p_partner_key, e_engagement_id, e_hist_id)
+go
+create  index e_pareng_trackstep_idx on e_partner_engagement (e_track_id, e_step_id, p_partner_key, e_engagement_id, e_hist_id)
+go
+
+
+/* e_partner_engagement_req */
+/* create  clustered index e_parreq_pk on e_partner_engagement_req (p_partner_key, e_engagement_id, e_hist_id, e_req_item_id)*/ 
+/* go */
+
+
+/* e_tag_type */
+/* create  clustered index e_tagtype_pk on e_tag_type (e_tag_id)*/ 
+/* go */
+
+
+/* e_tag_type_relationship */
+/* create  clustered index e_tagtyperel_pk on e_tag_type_relationship (e_tag_id, e_rel_tag_id)*/ 
+/* go */
+
+
+/* e_tag */
+/* create  clustered index e_tag_pk on e_tag (e_tag_id, p_partner_key)*/ 
+/* go */
+
+
+/* e_tag_activity */
+create  index e_tagact_gptnr_idx on e_tag_activity (e_tag_activity_group, p_partner_key, e_tag_id, e_tag_activity_id)
+go
+create  index e_tagact_gtag_idx on e_tag_activity (e_tag_activity_group, e_tag_id, p_partner_key, e_tag_activity_id)
+go
+/* create  clustered index e_tagact_pk on e_tag_activity (e_tag_activity_group, e_tag_activity_id)*/ 
+/* go */
+create  index e_tagact_ptnr_idx on e_tag_activity (p_partner_key, e_tag_id, e_tag_activity_group, e_tag_activity_id)
+go
+create  index e_tagact_tagid_idx on e_tag_activity (e_tag_id, p_partner_key, e_tag_activity_group, e_tag_activity_id)
+go
+
+
+/* e_document_type */
+create  index e_doctype_label_idx on e_document_type (e_doc_type_label, e_doc_type_id)
+go
+create  index e_doctype_parent_idx on e_document_type (e_parent_doc_type_id, e_doc_type_id)
+go
+/* create  clustered index e_doctype_pk on e_document_type (e_doc_type_id)*/ 
+/* go */
+
+
+/* e_document */
+create  index e_doc_curpath_idx on e_document (e_current_folder, e_current_filename, e_document_id)
+go
+/* create  clustered index e_doc_pk on e_document (e_document_id)*/ 
+/* go */
+create  index e_doc_type_idx on e_document (e_doc_type_id, e_document_id)
+go
+create  index e_doc_work_idx on e_document (e_workflow_instance_id, e_document_id)
+go
+
+
+/* e_document_comment */
+create  index e_doccom_collab_idx on e_document_comment (e_collaborator, e_document_id, e_doc_comment_id)
+go
+/* create  clustered index e_doccom_pk on e_document_comment (e_document_id, e_doc_comment_id)*/ 
+/* go */
+create  index e_doccom_tgtcollab_idx on e_document_comment (e_target_collaborator, e_document_id, e_doc_comment_id)
+go
+create  index e_doccom_work_idx on e_document_comment (e_workflow_state_id, e_document_id, e_doc_comment_id)
+go
+
+
+/* e_partner_document */
+create  index e_pardoc_egagement_idx on e_partner_document (e_engagement_id, p_partner_key, e_document_id, e_pardoc_assoc_id)
+go
+/* create  clustered index e_pardoc_pk on e_partner_document (e_document_id, p_partner_key, e_pardoc_assoc_id)*/ 
+/* go */
+create  index e_pardoc_rev_idx on e_partner_document (p_partner_key, e_document_id, e_pardoc_assoc_id)
+go
+create  index e_pardoc_work_idx on e_partner_document (e_workflow_instance_id, p_partner_key, e_document_id, e_pardoc_assoc_id)
+go
+
+
+/* e_workflow_type */
+/* create  clustered index e_work_pk on e_workflow_type (e_workflow_id)*/ 
+/* go */
+
+
+/* e_workflow_type_step */
+/* create  clustered index e_workstep_pk on e_workflow_type_step (e_workflow_step_id)*/ 
+/* go */
+create  index e_workstep_trig_idx on e_workflow_type_step (e_workflow_step_trigger_type, e_workflow_step_trigger, e_workflow_step_id)
+go
+create  index e_workstep_type_idx on e_workflow_type_step (e_workflow_id, e_workflow_step_id)
+go
+
+
+/* e_workflow */
+/* create  clustered index e_workinst_pk on e_workflow (e_workflow_instance_id)*/ 
+/* go */
+create  index e_workinst_steptrig_idx on e_workflow (e_workflow_step_trigger_id, e_workflow_instance_id)
+go
+create  index e_workinst_trig_idx on e_workflow (e_workflow_trigger_type, e_workflow_trigger_id, e_workflow_instance_id)
+go
+create  index e_workinst_type_idx on e_workflow (e_workflow_id, e_workflow_instance_id)
+go
+
+
+/* e_collaborator_type */
+/* create  clustered index e_collabtype_pk on e_collaborator_type (e_collab_type_id)*/ 
+/* go */
+
+
+/* e_collaborator */
+/* create  clustered index e_collab_pk on e_collaborator (e_collaborator, p_partner_key)*/ 
+/* go */
+create  index e_collab_rev_idx on e_collaborator (p_partner_key, e_collaborator)
+go
+create  index e_collab_type_idx on e_collaborator (e_collab_type_id, e_collaborator, p_partner_key)
+go
+
+
+/* e_todo_type */
+/* create  clustered index e_todotype_pk on e_todo_type (e_todo_type_id)*/ 
+/* go */
+
+
+/* e_todo */
+create  index e_todo_collab_idx on e_todo (e_todo_collaborator, e_todo_id)
+go
+create  index e_todo_doc_idx on e_todo (e_todo_document_id, e_todo_id)
+go
+create  index e_todo_eng_idx on e_todo (e_todo_engagement_id, e_todo_id)
+go
+create  index e_todo_par_idx on e_todo (e_todo_partner, e_todo_id)
+go
+/* create  clustered index e_todo_pk on e_todo (e_todo_id)*/ 
+/* go */
+create  index e_todo_reqitem_idx on e_todo (e_todo_req_item_id, e_todo_id)
+go
+create  index e_todo_type_idx on e_todo (e_todo_type_id, e_todo_id)
+go
+
+
+/* e_data_item_type */
+create  index e_ditype_parent_idx on e_data_item_type (e_parent_data_item_type_id, e_data_item_type_id)
+go
+/* create  clustered index e_ditype_pk on e_data_item_type (e_data_item_type_id)*/ 
+/* go */
+
+
+/* e_data_item_group */
+/* create  clustered index e_digrp_pk on e_data_item_group (e_data_item_group_id)*/ 
+/* go */
+create  index e_digrp_type_idx on e_data_item_group (e_data_item_type_id, e_data_item_group_id)
+go
+
+
+/* e_data_item */
+create  index e_dataitem_group_idx on e_data_item (e_data_item_group_id, e_data_item_id)
+go
+/* create  clustered index e_dataitem_pk on e_data_item (e_data_item_id)*/ 
+/* go */
+create  index e_dataitem_type_idx on e_data_item (e_data_item_type_id, e_data_item_id)
+go
+
+
+/* e_highlights */
+create  index e_h_nt_idx on e_highlights (e_highlight_type, e_highlight_name, e_highlight_user, e_highlight_partner, e_highlight_id)
+go
+/* create  clustered index e_h_pk on e_highlights (e_highlight_user, e_highlight_partner, e_highlight_id)*/ 
+/* go */
+create  index e_h_prec_idx on e_highlights (e_highlight_user, e_highlight_partner, e_highlight_precedence, e_highlight_id)
+go
+
+
+/* e_data_highlight */
+create  index e_dh_obj_idx on e_data_highlight (e_highlight_object_type, e_highlight_object_id, e_highlight_subject)
+go
+/* create  clustered index e_dh_pk on e_data_highlight (e_highlight_subject, e_highlight_object_type, e_highlight_object_id)*/ 
+/* go */
+
+
+/* e_ack */
+create  index e_ack_obj_idx on e_ack (e_object_type,e_object_id,e_ack_type,e_whom,e_ack_id)
+go
+create  index e_ack_par2_idx on e_ack (p_dn_partner_key,e_ack_type,e_object_type,e_object_id,e_ack_id)
+go
+create  index e_ack_par3_idx on e_ack (p_dn_partner_key,e_whom,e_ack_id)
+go
+create  index e_ack_par_idx on e_ack (e_whom,e_ack_type,e_object_type,e_object_id,e_ack_id)
+go
+/* create  clustered index e_ack_pk on e_ack (e_ack_id)*/ 
+/* go */
+
+
+/* e_ack_type */
+/* create  clustered index e_ackt_pk on e_ack_type (e_ack_type)*/ 
+/* go */
+
+
+/* e_trackactivity */
+/* create  clustered index e_trkact_pk on e_trackactivity (p_partner_key,e_username,e_sort_key)*/ 
+/* go */
+
+
+/* e_text_expansion */
+/* create  clustered index e_exp_pk on e_text_expansion (e_exp_tag)*/ 
+/* go */
+
+
+/* e_text_search_word */
+/* create  clustered index e_tsw_pk on e_text_search_word (e_word_id)*/ 
+/* go */
+create  index e_tsw_word_idx on e_text_search_word (e_word, e_word_id)
+go
+
+
+/* e_text_search_rel */
+/* create  clustered index e_tsr_pk on e_text_search_rel (e_word_id, e_target_word_id)*/ 
+/* go */
+create  index e_tsr_rev_idx on e_text_search_rel (e_target_word_id, e_word_id)
+go
+
+
+/* e_text_search_occur */
+/* create  clustered index e_tso_pk on e_text_search_occur (e_word_id, e_document_id, e_sequence)*/ 
+/* go */
+create  index e_tso_seq_idx on e_text_search_occur (e_document_id, e_sequence, e_word_id)
+go
+
+
+/* h_staff */
+/* create  clustered index h_staff_pk on h_staff (p_partner_key)*/ 
+/* go */
+
+
+/* h_group */
+/* create  clustered index h_group_pk on h_group (h_group_id)*/ 
+/* go */
+
+
+/* h_group_member */
+create  index h_group_ptnr_idx on h_group_member (p_partner_key, h_group_id)
+go
+/* create  clustered index h_groupm_pk on h_group_member (h_group_id, p_partner_key)*/ 
+/* go */
+
+
+/* h_holidays */
+/* create  clustered index h_holiday_pk on h_holidays (h_holiday_id)*/ 
+/* go */
+
+
+/* h_work_register */
+create  index h_workreg_ben_idx on h_work_register (h_benefit_type_id, p_partner_key, h_work_register_id)
+go
+/* create  clustered index h_workreg_pk on h_work_register (p_partner_key, h_work_register_id)*/ 
+/* go */
+
+
+/* h_work_register_times */
+/* create  clustered index h_workregt_pk on h_work_register_times (p_partner_key, h_work_register_time_id)*/ 
+/* go */
+
+
+/* h_benefit_period */
+/* create  clustered index h_benper_pk on h_benefit_period (h_benefit_period_id)*/ 
+/* go */
+
+
+/* h_benefit_type */
+/* create  clustered index h_bentype_pk on h_benefit_type (h_benefit_type_id)*/ 
+/* go */
+
+
+/* h_benefit_type_sched */
+/* create  clustered index h_bentypesch_pk on h_benefit_type_sched (h_benefit_type_id, h_benefit_type_sched_id)*/ 
+/* go */
+create  index h_bts_group_idx on h_benefit_type_sched (h_group_id, h_benefit_type_id, h_benefit_type_sched_id)
+go
+create  index h_bts_partner_idx on h_benefit_type_sched (p_partner_key, h_benefit_type_id, h_benefit_type_sched_id)
+go
+
+
+/* h_benefits */
+create  index h_ben_partner_idx on h_benefits (p_partner_key, h_benefit_type_id, h_benefit_period_id)
+go
+create  index h_ben_period_idx on h_benefits (h_benefit_period_id, h_benefit_type_id, p_partner_key)
+go
+/* create  clustered index h_ben_pk on h_benefits (h_benefit_type_id, p_partner_key, h_benefit_period_id)*/ 
+/* go */
 
 
 /* r_group */
@@ -456,6 +869,13 @@ go
 /* go */
 
 
+/* a_salary_review */
+/* create  clustered index a_salreview_pk on a_salary_review (a_ledger_number, a_payroll_id, a_review)*/ 
+/* go */
+create  index a_salreview_review_idx on a_salary_review (a_review, a_ledger_number, a_payroll_id)
+go
+
+
 /* a_cc_admin_fee */
 /* create  clustered index a_cc_admin_fee_pk on a_cc_admin_fee (a_cost_center, a_ledger_number)*/ 
 /* go */
@@ -575,11 +995,59 @@ go
 
 
 /* a_giving_pattern */
-create  index a_givingp_donor_idx on a_giving_pattern (p_donor_partner_key, a_ledger_number, a_cost_center, a_pattern_id)
+create  index a_givingp_actual_idx on a_giving_pattern (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
 go
-create  index a_givingp_fund_idx on a_giving_pattern (a_cost_center, a_ledger_number, p_donor_partner_key, a_pattern_id)
+create  index a_givingp_donor_idx on a_giving_pattern (p_donor_partner_key, a_ledger_number, a_cost_center, a_pattern_id, a_history_id)
 go
-/* create  clustered index a_givingp_pk on a_giving_pattern (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id)*/ 
+create  index a_givingp_fund_idx on a_giving_pattern (a_cost_center, a_ledger_number, p_donor_partner_key, a_pattern_id, a_history_id)
+go
+/* create  clustered index a_givingp_pk on a_giving_pattern (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)*/ 
+/* go */
+create  index a_givingp_review_idx on a_giving_pattern (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+
+/* a_giving_pattern_allocation */
+create  index a_givingpa_actual_idx on a_giving_pattern_allocation (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+create  index a_givingpa_donor_idx on a_giving_pattern_allocation (p_donor_partner_key, a_ledger_number, a_cost_center, a_pattern_id, a_history_id)
+go
+create  index a_givingpa_fund_idx on a_giving_pattern_allocation (a_cost_center, a_ledger_number, p_donor_partner_key, a_pattern_id, a_history_id)
+go
+/* create  clustered index a_givingpa_pk on a_giving_pattern_allocation (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)*/ 
+/* go */
+create  index a_givingpa_review_idx on a_giving_pattern_allocation (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+
+/* a_giving_pattern_flag */
+/* create  clustered index a_givingf_pk on a_giving_pattern_flag (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)*/ 
+/* go */
+create  index a_givingf_review_idx on a_giving_pattern_flag (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+go
+
+
+/* a_funding_target */
+/* create  clustered index a_target_pk on a_funding_target (a_ledger_number, a_cost_center, a_target_id)*/ 
+/* go */
+
+
+/* a_support_review */
+/* create  clustered index a_supportreview_pk on a_support_review (a_ledger_number, a_review)*/ 
+/* go */
+
+
+/* a_support_review_target */
+/* create  clustered index a_supptgt_pk on a_support_review_target (a_ledger_number, a_cost_center, a_target_id, a_review)*/ 
+/* go */
+create  index a_supptgt_review_idx on a_support_review_target (a_review, a_ledger_number, a_cost_center, a_target_id)
+go
+create  index a_supptgt_target_idx on a_support_review_target (a_target_id, a_ledger_number, a_cost_center, a_review)
+go
+
+
+/* a_descriptives */
+/* create  clustered index a_descr_pk on a_descriptives (a_ledger_number, p_donor_partner_key, a_cost_center)*/ 
 /* go */
 
 
@@ -624,6 +1092,8 @@ go
 /* go */
 create  index i_eg_kdepbatch_idx on i_eg_gift_import (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid)
 go
+create  index i_eg_kdoncc_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, a_cost_center, i_eg_trx_uuid)
+go
 create  index i_eg_kdonor_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid)
 go
 create  index i_eg_kfeebatch_idx on i_eg_gift_import (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid)
@@ -632,6 +1102,43 @@ create  index i_eg_kfund_idx on i_eg_gift_import (a_cost_center, a_account_code,
 go
 create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_number, i_eg_trx_uuid)
 go
+
+
+/* i_eg_giving_url */
+create  index i_eg_giveurl_revidx on i_eg_giving_url (a_cost_center, a_ledger_number)
+go
+/* create  clustered index i_eg_giving_url_pk on i_eg_giving_url (a_ledger_number, a_cost_center)*/ 
+/* go */
+
+
+/* i_crm_partner_import */
+/* create  clustered index i_crm_partner_import_pk on i_crm_partner_import (i_crm_import_id, i_crm_import_session_id)*/ 
+/* go */
+
+
+/* i_crm_partner_import_option */
+/* create  clustered index i_crm_partner_import_opt_pk on i_crm_partner_import_option (i_crm_import_id, i_crm_import_session_id, i_crm_import_type_option_id)*/ 
+/* go */
+
+
+/* i_crm_import_type */
+/* create  clustered index i_crm_import_type_pk on i_crm_import_type (i_crm_import_type_id)*/ 
+/* go */
+
+
+/* i_crm_import_type_option */
+/* create  clustered index i_crm_import_type_option_pk on i_crm_import_type_option (i_crm_import_type_id,i_crm_import_type_option_id)*/ 
+/* go */
+
+
+/* i_disb_import_classify */
+/* create  clustered index i_disb_import_pk on i_disb_import_classify (a_ledger_number, i_disb_classify_item)*/ 
+/* go */
+
+
+/* i_disb_import_status */
+/* create  clustered index i_disb_legacy_pk on i_disb_import_status (a_ledger_number, i_disb_legacy_key)*/ 
+/* go */
 
 
 /* c_message */
@@ -651,6 +1158,11 @@ go
 /* go */
 create  index s_username_idx on c_member (s_username, c_chat_id)
 go
+
+
+/* s_config */
+/* create  clustered index s_config_pk on s_config (s_config_name)*/ 
+/* go */
 
 
 /* s_user_data */

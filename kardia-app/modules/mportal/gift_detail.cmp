@@ -1,0 +1,97 @@
+$Version=2$
+gift_detail "widget/component-decl"
+    {
+    width=1172;
+    height=160;
+
+    summary_osrc "widget/parameter" { type=object; }
+
+    giver_detail_hbox "widget/hbox"
+	{
+	x=0; y=0; height=160; width=1172;
+	spacing=8;
+
+	sep1 "widget/autolayoutspacer" { width=22; }
+
+	address_contact_pane "widget/label"
+	    {
+	    width=220;
+	    style=bold;
+	    value=runclient(:summary_osrc:donor_name + '\n' + substitute(isnull(:summary_osrc:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=summary_osrc,p=summary_osrc') + '\n' + isnull('\nE: ' + :summary_osrc:email, '') + isnull('\nP: ' + :summary_osrc:phone, '') + isnull('\nC: ' + :summary_osrc:cell, ''));
+	    }
+
+	gift_detail_osrc "widget/osrc"
+	    {
+	    on_begin_qy "widget/connector" { event=BeginQuery; target=gift_detail_table; action=Clear; }
+
+	    a_cost_center "widget/parameter" { type=string; }
+	    alt_costctr "widget/parameter" { type=string; }
+
+	    sql = "	select
+			:a:a_acct_desc,
+			:gi:a_account_code,
+			comments = condition(:parameters:alt_costctr = :gi:a_cost_center and :gi:a_cost_center != :parameters:a_cost_center, '(given to ' + (select :c:a_cost_center + ' - ' + :c:a_cc_desc from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :gi:a_ledger_number and :c:a_cost_center = :gi:a_cost_center) + ') ', '') + :gi:a_comment,
+			:gi:a_dn_receipt_number,
+			:gi:a_period,
+			:gi:a_amount,
+			giftdate = substring(convert(string,isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date)),1,11)
+		    from
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		    where
+			:gi:a_posted = 1 and
+			:a:a_ledger_number = :gi:a_ledger_number and
+			:a:a_account_code = :gi:a_account_code and
+			(:gi:a_cost_center = :parameters:a_cost_center or :gi:a_cost_center = :parameters:alt_costctr)
+		    order by
+			isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) desc
+		    ";
+	    replicasize=50;
+	    readahead=50;
+
+	    detail_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=summary_osrc;
+		key_objname=gi;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		key_2=p_dn_donor_partner_id;
+		target_key_2=p_partner_key;
+		key_3=a_cost_center;
+		target_key_3=a_cost_center;
+		key_4=alt_costctr;
+		target_key_4=alt_costctr;
+		revealed_only=yes;
+		}
+
+	    gift_detail_table "widget/table"
+		{
+		width=814;
+		row_border_radius=4;
+		demand_scrollbar = yes;
+		overlap_scrollbar = yes;
+		initial_selection = no;
+		allow_selection = no;
+		colsep = 0;
+		titlebar = yes;
+		min_rowheight = 12;
+		max_rowheight = 200;
+		cellvspacing = 1;
+		row1_bgcolor = "#faf8ff";
+		row2_bgcolor = "#faf8ff";
+		show_selection = no;
+		inner_padding = 3;
+		textcolorhighlight = "#000000";
+		titlecolor = white;
+		hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+		nodata_message = runclient(condition(:gift_detail_osrc:cx__pending, "No gift data.", "Loading gift data for donor..."));
+		dt_date "widget/table-column" { title = "Date"; fieldname=giftdate; width=100; }
+		dt_rcpt "widget/table-column" { title = "Receipt#"; fieldname=a_dn_receipt_number; width=100; }
+		dt_amt "widget/table-column" { title = "Amount"; fieldname=a_amount; width=100; }
+		dt_acct "widget/table-column" { title = "Type"; fieldname=a_acct_desc; width=150; }
+		dt_comm "widget/table-column" { title = "Comments"; fieldname=comments; width=350; wrap=yes; }
+		}
+	    }
+	}
+    }

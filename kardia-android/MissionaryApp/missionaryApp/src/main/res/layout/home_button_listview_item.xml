@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/navigateButton"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_centerVertical="true"
+    android:layout_centerHorizontal="true"
+    android:gravity="center"
+    android:padding="12dp"
+    style="@style/homeNavigationItems"
+    android:textStyle="bold"
+    android:textSize="@dimen/large_header_dimen"/>

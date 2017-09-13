@@ -1,0 +1,292 @@
+$Version=2$
+timeoff "widget/component-decl"
+    {
+    height=602; width=1172;
+
+    title = "My Time";
+    icon = "/apps/kardia/images/icons/openiconic-clock.svg";
+    sequence = 20;
+    enabled = 0;
+
+
+    years_osrc "widget/osrc"
+	{
+	sql = "	select 
+		    :bp:h_benefit_period_id,
+		    :bp:h_benefit_period_label,
+		    start_date = convert(string,:bp:h_benefit_period_start_date),
+		    end_date = convert(string,:bp:h_benefit_period_end_date)
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+		    /apps/kardia/data/Kardia_DB/h_staff/rows hs,
+		    /apps/kardia/data/Kardia_DB/h_benefits/rows b,
+		    /apps/kardia/data/Kardia_DB/h_benefit_period/rows bp
+		where
+		    :s:p_kardia_login = user_name() and
+		    :hs:p_partner_key = :s:p_partner_key and
+		    :b:p_partner_key = :hs:p_partner_key and
+		    :bp:h_benefit_period_id = :b:h_benefit_period_id
+		group by
+		    :s:p_partner_key,
+		    :b:h_benefit_period_id
+		";
+	replicasize=20;
+	readahead=20;
+	autoquery=onload;
+
+	mytime_vbox "widget/vbox"
+	    {
+	    x=0; y=0; height=602; width=1172;
+	    spacing=10;
+
+	    selectyear_hbox "widget/hbox"
+		{
+		height=24;
+		spacing=8;
+
+		selectyear_label "widget/label" { y=2; width=100; text="Period/Year:"; style=bold; align=right; }
+		selectyear_dd "widget/dropdown"
+		    {
+		    width=200;
+		    mode=objectsource;
+		    fieldname=h_benefit_period_label;
+		    numdisplay=10;
+		    bgcolor="#f8f8f8";
+		    }
+		}
+
+	    sepline "widget/image" { fl_height=0; fl_width=100; height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	    data_hbox "widget/hbox"
+		{
+		height=557;
+		spacing=10;
+
+		// Objectsource and table for the benefits view
+		summary_osrc "widget/osrc"
+		    {
+		    period "widget/parameter" { type=integer; }
+		    sql = " -- Find staff partner ID
+			    declare object staff;
+			    select :staff:p_partner_key = :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name();
+
+			    declare object period;
+			    select :period:h_benefit_period_start_date = :h_benefit_period_start_date, :period:h_benefit_period_end_date = :h_benefit_period_end_date from /apps/kardia/data/Kardia_DB/h_benefit_period/rows where :h_benefit_period_id = :parameters:period;
+
+			    -- First, regular benefits
+			    select 
+				:hs:p_partner_key,
+				:bt:h_benefit_type_id,
+				:bt:h_benefit_type_label,
+				:b:h_benefit_period_id,
+				:b:h_carried_over,
+				:b:h_newly_accrued,
+				:bts:h_group_id,
+				:bts:h_benefit_mode,
+				:bts:h_new_benefits,
+				:bts:h_carryover_benefits,
+				:bts:h_accrual_threshold,
+				:bts:h_usage_increment,
+				used = isnull((select sum(:wr:h_work_hours) from /apps/kardia/data/Kardia_DB/h_work_register/rows wr where :wr:p_partner_key = :staff:p_partner_key and :wr:h_benefit_type_id = :bt:h_benefit_type_id and :wr:h_work_date >= :period:h_benefit_period_start_date and :wr:h_work_date <= :period:h_benefit_period_end_date), 0)
+			    from
+				identity /apps/kardia/data/Kardia_DB/h_benefit_type/rows bt,
+				/apps/kardia/data/Kardia_DB/h_staff/rows hs,
+				/apps/kardia/data/Kardia_DB/h_benefits/rows b,
+				/apps/kardia/data/Kardia_DB/h_benefit_type_sched/rows bts
+			    where
+				:hs:p_partner_key = :staff:p_partner_key and
+				:b:p_partner_key = :hs:p_partner_key and
+				:b:h_benefit_type_id = :bt:h_benefit_type_id and
+				:b:h_benefit_period_id = :parameters:period and
+				:bts:h_benefit_type_id =* :b:h_benefit_type_id and
+				:bts:h_benefit_type_sched_id =* :b:h_benefit_type_sched_id
+			    ;
+
+			    -- Second, benefits without a matching Benefits record for the person
+			    select
+				:hs:p_partner_key,
+				:bt:h_benefit_type_id,
+				:bt:h_benefit_type_label,
+				:b:h_benefit_period_id,
+				:b:h_carried_over,
+				:b:h_newly_accrued,
+				:bts:h_group_id,
+				:bts:h_benefit_mode,
+				:bts:h_new_benefits,
+				:bts:h_carryover_benefits,
+				:bts:h_accrual_threshold,
+				:bts:h_usage_increment,
+				used = isnull((select sum(:wr:h_work_hours) from /apps/kardia/data/Kardia_DB/h_work_register/rows wr where :wr:p_partner_key = :staff:p_partner_key and :wr:h_benefit_type_id = :bt:h_benefit_type_id and :wr:h_work_date >= :period:h_benefit_period_start_date and :wr:h_work_date <= :period:h_benefit_period_end_date), 0)
+			    from
+				identity /apps/kardia/data/Kardia_DB/h_benefit_type/rows bt,
+				/apps/kardia/data/Kardia_DB/h_staff/rows hs,
+				/apps/kardia/data/Kardia_DB/h_benefit_type_sched/rows bts,
+				/apps/kardia/data/Kardia_DB/h_benefits/rows b
+			    where
+				:hs:p_partner_key = :staff:p_partner_key and
+				:bts:h_benefit_type_id = :bt:h_benefit_type_id and
+				(:bts:p_partner_key is null or :bts:p_partner_key = :hs:p_partner_key) and
+				(:bts:h_min_years is null or :bts:h_min_years <= datediff(year, :hs:h_start_date, getdate())) and
+				(:bts:h_max_years is null or :bts:h_max_years >= datediff(year, :hs:h_start_date, getdate())) and
+				:b:h_benefit_type_id =* :bts:h_benefit_type_id and
+				:b:p_partner_key =* :hs:p_partner_key and
+				:b:h_benefit_period_id = :parameters:period
+			    having
+				(:h_group_id is null or (select count(1) from /apps/kardia/data/Kardia_DB/h_group_member/rows gm where :gm:p_partner_key = :this:p_partner_key and :gm:h_group_id = :this:h_group_id) > 0) and
+				:h_carried_over is null
+			    ";
+		    replicasize=30;
+		    readahead=30;
+
+		    period_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=years_osrc;
+			key_1=period;
+			target_key_1=h_benefit_period_id;
+			revealed_only=yes;
+			}
+
+		    summary_table "widget/table"
+			{
+			width=380;
+			row_border_radius=4;
+			demand_scrollbar = yes;
+			overlap_scrollbar = yes;
+			initial_selection = no;
+			colsep = 0;
+			titlebar = yes;
+			min_rowheight = 16;
+			max_rowheight = 200;
+			cellvspacing = 4;
+			row1_bgcolor = white;
+			row2_bgcolor = white;
+			show_selection = yes;
+			inner_padding = 4;
+			//rowhighlight_bgcolor = "#fff090";
+			textcolorhighlight = "#000000";
+			titlecolor = white;
+			hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			rowhighlight_border_color="#6080c0";
+			rowhighlight_border_radius=3;
+			rowhighlight_shadow_color="#6080c0";
+			rowhighlight_shadow_radius=2;
+			rowhighlight_shadow_offset=1;
+			rowhighlight_shadow_angle=135;
+			rowhighlight_bgcolor="#faf8ff";
+			nodata_message = runclient(condition(:summary_osrc:cx__pending, "No benefits information.", "Looking up your benefits..."));
+
+			st_name "widget/table-column" { title = "Benefit"; value=runclient(:summary_osrc:h_benefit_type_label); width=140; style=runclient(condition(:summary_osrc:h_benefit_type_label is null, 'bold', 'plain')); font_size=16; caption_value=runclient(condition(:summary_osrc:h_benefit_mode == 'P', '(see policy for usage)', '(carry and given as shown)')); }
+			st_carried "widget/table-column" { title = "Carry"; value=runclient(condition(:summary_osrc:h_carried_over is null, '-', :summary_osrc:h_carried_over / 8)); width=60; style=runclient(condition(:summary_osrc:h_benefit_type_label is null, 'bold', 'plain')); font_size=16; align=right; }
+			st_given "widget/table-column" { title = "Given"; value=runclient(condition(:summary_osrc:h_newly_accrued is null, '-', :summary_osrc:h_newly_accrued / 8)); width=60; style=runclient(condition(:summary_osrc:h_benefit_type_label is null, 'bold', 'plain')); font_size=16; align=right; }
+			st_used "widget/table-column" { title = "Used"; value=runclient(condition(:summary_osrc:used is null, '-', :summary_osrc:used / 8)); width=60; style=runclient(condition(:summary_osrc:h_benefit_type_label is null, 'bold', 'plain')); font_size=16; align=right; }
+			st_avail "widget/table-column" { title = "Avail"; value=runclient(condition(:summary_osrc:h_newly_accrued is null, '-', (isnull(:summary_osrc:h_newly_accrued,0) + isnull(:summary_osrc:h_carried_over,0) - :summary_osrc:used) / 8)); width=60; style=runclient(condition(:summary_osrc:h_benefit_type_label is null, 'bold', 'plain')); font_size=16; align=right; }
+			}
+		    }
+
+		vsepline "widget/image" { fl_width=0; fl_height=100; width=1; source="/apps/kardia/images/bg/lsblue_vertsep.png"; }
+
+		// Objectsource and table for the calendar view
+		calendar_osrc "widget/osrc"
+		    {
+		    start_date "widget/parameter" { type=string; }
+		    end_date "widget/parameter" { type=string; }
+
+		    sql = " declare object staff;
+			    select :staff:p_partner_key = :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name();
+
+			    declare object dates;
+			    select :dates:start_date = convert(datetime, :parameters:start_date), :dates:end_date = convert(datetime, :parameters:end_date);
+			    select :dates:weekday = datepart(weekday, :dates:start_date) - 1;
+
+			    select
+				weekname = 'Week ' + (convert(integer, :name) + 1),
+				weekstart = dateadd(day, convert(integer, :name)*7 - :dates:weekday, :dates:start_date),
+				weekend = dateadd(day, convert(integer, :name)*7 - :dates:weekday + 6, :dates:start_date),
+				day1 = datepart(day, dateadd(day, convert(integer, :name)*7 - :dates:weekday, :dates:start_date)),
+				day2 = datepart(day, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 1, :dates:start_date)),
+				day3 = datepart(day, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 2, :dates:start_date)),
+				day4 = datepart(day, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 3, :dates:start_date)),
+				day5 = datepart(day, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 4, :dates:start_date)),
+				day6 = datepart(day, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 5, :dates:start_date)),
+				day7 = datepart(day, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 6, :dates:start_date)),
+				mon1 = datepart(month, dateadd(day, convert(integer, :name)*7 - :dates:weekday, :dates:start_date)),
+				mon2 = datepart(month, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 1, :dates:start_date)),
+				mon3 = datepart(month, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 2, :dates:start_date)),
+				mon4 = datepart(month, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 3, :dates:start_date)),
+				mon5 = datepart(month, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 4, :dates:start_date)),
+				mon6 = datepart(month, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 5, :dates:start_date)),
+				mon7 = datepart(month, dateadd(day, convert(integer, :name)*7 - :dates:weekday + 6, :dates:start_date)),
+				ben1 = (select sum(:bt:h_benefit_type_abbrev + ', ') - ', ' from /apps/kardia/data/Kardia_DB/h_work_register/rows wr, /apps/kardia/data/Kardia_DB/h_benefit_type/rows bt where datediff(day, dateadd(day, convert(integer, :cnt:name)*7 - :dates:weekday, :dates:start_date), :wr:h_work_date) = 0 and :wr:p_partner_key = :staff:p_partner_key and :bt:h_benefit_type_id = :wr:h_benefit_type_id and :wr:h_work_type = 'T'),
+				ben2 = (select sum(:bt:h_benefit_type_abbrev + ', ') - ', ' from /apps/kardia/data/Kardia_DB/h_work_register/rows wr, /apps/kardia/data/Kardia_DB/h_benefit_type/rows bt where datediff(day, dateadd(day, convert(integer, :cnt:name)*7 - :dates:weekday + 1, :dates:start_date), :wr:h_work_date) = 0 and :wr:p_partner_key = :staff:p_partner_key and :bt:h_benefit_type_id = :wr:h_benefit_type_id and :wr:h_work_type = 'T')
+				--ben1 = sum(:bt:h_benefit_type_abbrev + ', ') - ', '
+			    from
+				/apps/kardia/modules/mportal/106rows.csv/rows cnt
+				--/apps/kardia/data/Kardia_DB/h_work_register/rows wr,
+				--/apps/kardia/data/Kardia_DB/h_benefit_type/rows bt
+			    --where
+				--(dateadd(day, convert(integer, :cnt:name)*7 - :dates:weekday, :dates:start_date) *<= :wr:h_work_date and
+				--dateadd(day, convert(integer, :cnt:name)*7 - :dates:weekday + 6, :dates:start_date) *>= :wr:h_work_date) and
+				--:bt:h_benefit_type_id = :wr:h_benefit_type_id and
+				--:wr:p_partner_key = :staff:p_partner_key and
+				--:wr:h_work_type = 'T'
+			    having
+				:dates:start_date <= :weekend and
+				:dates:end_date >= :weekstart
+			    limit
+				106
+			    ";
+		    replicasize=107;
+		    readahead=107;
+
+		    period_link2 "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=years_osrc;
+			key_1=start_date;
+			key_2=end_date;
+			target_key_1=start_date;
+			target_key_2=end_date;
+			revealed_only=yes;
+			}
+
+		    calendar_table "widget/table"
+			{
+			width=771;
+			row_border_radius=4;
+			demand_scrollbar = yes;
+			overlap_scrollbar = yes;
+			initial_selection = no;
+			colsep = 0;
+			titlebar = yes;
+			min_rowheight = 16;
+			max_rowheight = 200;
+			cellvspacing = 4;
+			row1_bgcolor = white;
+			row2_bgcolor = white;
+			show_selection = yes;
+			inner_padding = 4;
+			//rowhighlight_bgcolor = "#fff090";
+			textcolorhighlight = "#000000";
+			titlecolor = white;
+			hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			rowhighlight_border_color="#6080c0";
+			rowhighlight_border_radius=3;
+			rowhighlight_shadow_color="#6080c0";
+			rowhighlight_shadow_radius=2;
+			rowhighlight_shadow_offset=1;
+			rowhighlight_shadow_angle=135;
+			rowhighlight_bgcolor="#faf8ff";
+			nodata_message = runclient(condition(:calendar_osrc:cx__pending, "(no work register found)", "Looking up your work register information..."));
+
+			ct_name "widget/table-column" { title = "Workweek"; value=runclient(:calendar_osrc:weekname); width=140; style=runclient(condition(:calendar_osrc:weekname is null, 'bold', 'plain')); font_size=16; caption_value=runclient(substring(:calendar_osrc:weekstart,1,11) + ' - ' + substring(:calendar_osrc:weekend,1,11)); }
+
+			ct_day1 "widget/table-column" { title = "Sunday"; value=runclient('' + :calendar_osrc:day1 + condition(:calendar_osrc:day1 == 1, ' ' + substring("JanFebMarAprMayJunJulAugSepOctNovDec", :calendar_osrc:mon1 * 3 - 2, 3), '')); width=90; style=runclient(condition(:calendar_osrc:weekname is null, 'bold', 'plain')); font_size=16; caption_value=runclient(:calendar_osrc:ben1); }
+			ct_day2 "widget/table-column" { title = "Monday"; value=runclient('' + :calendar_osrc:day2 + condition(:calendar_osrc:day2 == 1, ' ' + substring("JanFebMarAprMayJunJulAugSepOctNovDec", :calendar_osrc:mon2 * 3 - 2, 3), '')); width=90; style=runclient(condition(:calendar_osrc:weekname is null, 'bold', 'plain')); font_size=16; caption_value=runclient(:calendar_osrc:ben2); }
+			}
+		    }
+		}
+	    }
+	}
+    }
+

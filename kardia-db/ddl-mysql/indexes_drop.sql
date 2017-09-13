@@ -104,7 +104,15 @@ alter table p_staff drop index p_staff_weblogin_idx;
 
 
 /* p_banking_details */
+alter table p_banking_details drop index p_bankd_acct_idx;
+alter table p_banking_details drop index p_bankd_bpartner_idx;
+alter table p_banking_details drop index p_bankd_partner_idx;
 /* drop index p_banking_details.p_banking_details_pk */ 
+/* go */
+
+
+/* p_banking_type */
+/* drop index p_banking_type.p_banking_type_pk */ 
 /* go */
 
 
@@ -268,6 +276,7 @@ alter table e_tag_activity drop index e_tagact_tagid_idx;
 
 
 /* e_document_type */
+alter table e_document_type drop index e_doctype_label_idx;
 alter table e_document_type drop index e_doctype_parent_idx;
 /* drop index e_document_type.e_doctype_pk */ 
 /* go */
@@ -393,6 +402,85 @@ alter table e_ack drop index e_ack_par_idx;
 
 /* e_trackactivity */
 /* drop index e_trackactivity.e_trkact_pk */ 
+/* go */
+
+
+/* e_text_expansion */
+/* drop index e_text_expansion.e_exp_pk */ 
+/* go */
+
+
+/* e_text_search_word */
+/* drop index e_text_search_word.e_tsw_pk */ 
+/* go */
+alter table e_text_search_word drop index e_tsw_word_idx;
+
+
+/* e_text_search_rel */
+/* drop index e_text_search_rel.e_tsr_pk */ 
+/* go */
+alter table e_text_search_rel drop index e_tsr_rev_idx;
+
+
+/* e_text_search_occur */
+/* drop index e_text_search_occur.e_tso_pk */ 
+/* go */
+alter table e_text_search_occur drop index e_tso_seq_idx;
+
+
+/* h_staff */
+/* drop index h_staff.h_staff_pk */ 
+/* go */
+
+
+/* h_group */
+/* drop index h_group.h_group_pk */ 
+/* go */
+
+
+/* h_group_member */
+alter table h_group_member drop index h_group_ptnr_idx;
+/* drop index h_group_member.h_groupm_pk */ 
+/* go */
+
+
+/* h_holidays */
+/* drop index h_holidays.h_holiday_pk */ 
+/* go */
+
+
+/* h_work_register */
+alter table h_work_register drop index h_workreg_ben_idx;
+/* drop index h_work_register.h_workreg_pk */ 
+/* go */
+
+
+/* h_work_register_times */
+/* drop index h_work_register_times.h_workregt_pk */ 
+/* go */
+
+
+/* h_benefit_period */
+/* drop index h_benefit_period.h_benper_pk */ 
+/* go */
+
+
+/* h_benefit_type */
+/* drop index h_benefit_type.h_bentype_pk */ 
+/* go */
+
+
+/* h_benefit_type_sched */
+/* drop index h_benefit_type_sched.h_bentypesch_pk */ 
+/* go */
+alter table h_benefit_type_sched drop index h_bts_group_idx;
+alter table h_benefit_type_sched drop index h_bts_partner_idx;
+
+
+/* h_benefits */
+alter table h_benefits drop index h_ben_partner_idx;
+alter table h_benefits drop index h_ben_period_idx;
+/* drop index h_benefits.h_ben_pk */ 
 /* go */
 
 
@@ -650,6 +738,12 @@ alter table a_payroll_import drop index a_payrolli_payee_idx;
 /* go */
 
 
+/* a_salary_review */
+/* drop index a_salary_review.a_salreview_pk */ 
+/* go */
+alter table a_salary_review drop index a_salreview_review_idx;
+
+
 /* a_cc_admin_fee */
 /* drop index a_cc_admin_fee.a_cc_admin_fee_pk */ 
 /* go */
@@ -747,9 +841,48 @@ alter table a_motivational_code drop index a_motiv_code_parent;
 
 
 /* a_giving_pattern */
+alter table a_giving_pattern drop index a_givingp_actual_idx;
 alter table a_giving_pattern drop index a_givingp_donor_idx;
 alter table a_giving_pattern drop index a_givingp_fund_idx;
 /* drop index a_giving_pattern.a_givingp_pk */ 
+/* go */
+alter table a_giving_pattern drop index a_givingp_review_idx;
+
+
+/* a_giving_pattern_allocation */
+alter table a_giving_pattern_allocation drop index a_givingpa_actual_idx;
+alter table a_giving_pattern_allocation drop index a_givingpa_donor_idx;
+alter table a_giving_pattern_allocation drop index a_givingpa_fund_idx;
+/* drop index a_giving_pattern_allocation.a_givingpa_pk */ 
+/* go */
+alter table a_giving_pattern_allocation drop index a_givingpa_review_idx;
+
+
+/* a_giving_pattern_flag */
+/* drop index a_giving_pattern_flag.a_givingf_pk */ 
+/* go */
+alter table a_giving_pattern_flag drop index a_givingf_review_idx;
+
+
+/* a_funding_target */
+/* drop index a_funding_target.a_target_pk */ 
+/* go */
+
+
+/* a_support_review */
+/* drop index a_support_review.a_supportreview_pk */ 
+/* go */
+
+
+/* a_support_review_target */
+/* drop index a_support_review_target.a_supptgt_pk */ 
+/* go */
+alter table a_support_review_target drop index a_supptgt_review_idx;
+alter table a_support_review_target drop index a_supptgt_target_idx;
+
+
+/* a_descriptives */
+/* drop index a_descriptives.a_descr_pk */ 
 /* go */
 
 
@@ -785,6 +918,7 @@ alter table i_eg_gift_import drop index i_eg_egift_idx;
 /* drop index i_eg_gift_import.i_eg_gift_import_pk */ 
 /* go */
 alter table i_eg_gift_import drop index i_eg_kdepbatch_idx;
+alter table i_eg_gift_import drop index i_eg_kdoncc_idx;
 alter table i_eg_gift_import drop index i_eg_kdonor_idx;
 alter table i_eg_gift_import drop index i_eg_kfeebatch_idx;
 alter table i_eg_gift_import drop index i_eg_kfund_idx;
@@ -794,6 +928,36 @@ alter table i_eg_gift_import drop index i_eg_kgiftbatch_idx;
 /* i_eg_giving_url */
 alter table i_eg_giving_url drop index i_eg_giveurl_revidx;
 /* drop index i_eg_giving_url.i_eg_giving_url_pk */ 
+/* go */
+
+
+/* i_crm_partner_import */
+/* drop index i_crm_partner_import.i_crm_partner_import_pk */ 
+/* go */
+
+
+/* i_crm_partner_import_option */
+/* drop index i_crm_partner_import_option.i_crm_partner_import_opt_pk */ 
+/* go */
+
+
+/* i_crm_import_type */
+/* drop index i_crm_import_type.i_crm_import_type_pk */ 
+/* go */
+
+
+/* i_crm_import_type_option */
+/* drop index i_crm_import_type_option.i_crm_import_type_option_pk */ 
+/* go */
+
+
+/* i_disb_import_classify */
+/* drop index i_disb_import_classify.i_disb_import_pk */ 
+/* go */
+
+
+/* i_disb_import_status */
+/* drop index i_disb_import_status.i_disb_legacy_pk */ 
 /* go */
 
 

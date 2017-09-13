@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context= "org.lightsys.missionaryapp.views.MainActivity">
+
+    <!-- Display List -->
+    
+    <RelativeLayout
+        android:id="@+id/RLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/noise_blue_repeat" >
+
+        <ListView
+            android:id="@+id/infoList"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            style="@style/listCustomBlue"/>
+    </RelativeLayout>
+
+    <!-- add Update/Prayer Request/Letter Buttons -->
+
+    <LinearLayout
+        android:id="@+id/addLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/addButton"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/addUpdateButton"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/border_dimen"
+            android:src="@drawable/add_update"
+            android:background="@color/transparent"/>
+        <ImageButton
+            android:id="@+id/addLetterButton"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/border_dimen"
+            android:src="@drawable/add_letter"
+            android:background="@color/transparent"/>
+        <ImageButton
+            android:id="@+id/addRequestButton"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/border_dimen"
+            android:src="@drawable/add_prayer"
+            android:background="@color/transparent"/>
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/addButton"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/border_dimen"
+        android:src="@drawable/plus"
+        android:background="@color/transparent"
+        android:visibility="gone"
+        android:contentDescription="@string/add_button"/>
+</RelativeLayout>
