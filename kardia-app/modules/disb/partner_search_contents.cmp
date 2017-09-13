@@ -481,6 +481,7 @@ partner_search_component "widget/component-decl"
 						Width=844;
 						Height=600;
 						id=runclient(:partner_search_form:p_partner_key);
+						ledger=runclient(:partner_search_component:ledger);
 					}
 				}
 			}
