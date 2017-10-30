@@ -6,9 +6,9 @@
 	<!-- JavaScript file -->
 	<script type="application/javascript" src="chrome://kardia/content/message-overlay.js"/>
 
-	<!-- insert contact history dialog at end of message display -->
+	<!-- insert record-this dialog at end of message display -->
 	<vbox id="messagepanebox">
-		<vbox id="contact-box" flex="0" insertafter="findbar"> <!-- or, possibly, after "messagepane" -->
+		<vbox id="contact-box" flex="0" insertafter="findbar">
 			<hbox id="contact-options" align="center">
 				<checkbox id="record-contact" checked="false" label="Record this email in Kardia"/>
 				<checkbox id="record-future" checked="false" label="Automatically record future emails with this person"/>

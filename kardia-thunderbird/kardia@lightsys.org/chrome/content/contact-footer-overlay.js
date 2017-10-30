@@ -959,13 +959,14 @@ var contactFooter = {
 	}
 };
 
-document.getElementById('folderTree').addEventListener("select", function() {
-	// hide footer if we changed folders and now no message is displayed
-	if (!gMessageDisplay || !gMessageDisplay.displayedMessage) {
-		contactFooter.disableControls();
-	}
-}, false);
-
+if (false) {//document.getElementById('folderTree')) {
+	document.getElementById('folderTree').addEventListener("select", function() {
+		// hide footer if we changed folders and now no message is displayed
+		if (!gMessageDisplay || !gMessageDisplay.displayedMessage) {
+			contactFooter.disableControls();
+		}
+	}, false);
+}
 
 addEventListener("unload", function() {
 	contactFooter.log("unload");
