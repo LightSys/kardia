@@ -86,7 +86,7 @@ post_payroll "widget/component-decl"
 		    :i:a_effective_date,
 		    a_transaction_type='T',
 		    a_cost_center = isnull(:i:a_ref_cost_center, :y:a_cost_center),
-		    a_account_category=condition(isnull(:i:a_ref_account_code,:t:a_ref_account_code) > '5000', condition(:c1:a_bal_cost_center = :c2:a_bal_cost_center,'51','52'), condition(isnull(:i:a_ref_account_code,:t:a_ref_account_code) > '4000', condition(:c1:a_bal_cost_center = :c2:a_bal_cost_center,'41','42') , :a1:a_default_category)),
+		    a_account_category=condition(isnull(:i:a_ref_account_code,:t:a_ref_account_code) > '5000', condition(isnull(:i:a_xfer_account_code,:t:a_xfer_account_code) <= '2999', '50', condition(:c1:a_bal_cost_center = :c2:a_bal_cost_center,'51','52')), condition(isnull(:i:a_ref_account_code,:t:a_ref_account_code) > '4000', condition(isnull(:i:a_xfer_account_code,:t:a_xfer_account_code) <= '2999', '40', condition(:c1:a_bal_cost_center = :c2:a_bal_cost_center,'41','42')) , :a1:a_default_category)),
 		    a_account_code = isnull(:i:a_ref_account_code,:t:a_ref_account_code),
 		    a_amount = :i:a_actual_amount,
 		    a_posted = 0,
@@ -141,8 +141,8 @@ post_payroll "widget/component-decl"
 		    a_period=(select :a_period from /apps/kardia/data/Kardia_DB/a_payroll_period/rows pp where :pp:a_payroll_period=:parameters:period),
 		    :i:a_effective_date,
 		    a_transaction_type='T',
-		    a_cost_center = isnull(:i:a_xfer_cost_center,:t:a_xfer_cost_center),
-		    a_account_category=condition(isnull(:i:a_xfer_account_code,:t:a_xfer_account_code) > '5000', condition(:c1:a_bal_cost_center = :c2:a_bal_cost_center,'51','52'), condition(isnull(:i:a_xfer_account_code,:t:a_xfer_account_code) > '4000', condition(:c1:a_bal_cost_center = :c2:a_bal_cost_center,'41','42') , :a1:a_default_category)),
+		    a_cost_center = isnull(isnull(:i:a_xfer_cost_center,:t:a_xfer_cost_center), isnull(:i:a_ref_cost_center,:y:a_cost_center)),
+		    a_account_category=condition(isnull(:i:a_xfer_account_code,:t:a_xfer_account_code) > '5000', condition(isnull(:i:a_ref_account_code, :t:a_ref_account_code) <= '2999', '50', condition(:c1:a_bal_cost_center = :c2:a_bal_cost_center,'51','52')), condition(isnull(:i:a_xfer_account_code,:t:a_xfer_account_code) > '4000', condition(isnull(:i:a_ref_account_code, :t:a_ref_account_code) <= '2999', '40', condition(:c1:a_bal_cost_center = :c2:a_bal_cost_center,'41','42')), :a1:a_default_category)),
 		    a_account_code = isnull(:i:a_xfer_account_code,:t:a_xfer_account_code),
 		    a_amount = $0 - :a_actual_amount,
 		    a_posted = 0,
@@ -252,7 +252,7 @@ post_payroll "widget/component-decl"
 		    a_period=(select :a_period from /apps/kardia/data/Kardia_DB/a_payroll_period/rows pp where :pp:a_payroll_period=:parameters:period),
 		    :i:a_effective_date,
 		    a_transaction_type='T',
-		    a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center),
+		    a_cost_center = isnull(isnull(:i:a_xfer_cost_center, :t:a_xfer_cost_center), isnull(:i:a_ref_cost_center,:y:a_cost_center)),
 		    a_account_category=condition(isnull(:i:a_xfer_account_code,:t:a_xfer_account_code) > '5000', '50', condition(isnull(:i:a_xfer_account_code,:t:a_xfer_account_code) > '4000', '40', :a1:a_default_category)),
 		    a_account_code = isnull(:i:a_xfer_account_code,:t:a_xfer_account_code),
 		    a_amount = $0 - :a_actual_amount,
@@ -414,7 +414,7 @@ post_payroll "widget/component-decl"
 		    a_period=(select :a_period from /apps/kardia/data/Kardia_DB/a_payroll_period/rows pp where :pp:a_payroll_period=:parameters:period),
 		    :i:a_effective_date,
 		    a_transaction_type='T',
-		    a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center),
+		    a_cost_center = isnull(isnull(:i:a_xfer_cost_center, :t:a_xfer_cost_center), isnull(:i:a_ref_cost_center,:y:a_cost_center)),
 		    a_account_category=condition(isnull(:i:a_ref_account_code,:t:a_ref_account_code) > '5000', '50', condition(isnull(:i:a_ref_account_code,:t:a_ref_account_code) > '4000', '40', :a1:a_default_category)),
 		    a_account_code = isnull(:i:a_ref_account_code,:t:a_ref_account_code),
 		    a_amount = $0 - :a_actual_amount,
@@ -597,7 +597,7 @@ post_payroll "widget/component-decl"
 		    :a_ledger_number = :parameters:ledger and
 		    :a_account_code >= '2000' and
 		    :a_account_code <= '2999' and
-		    not (charindex(',' + :a_account_code + ',', ',' + :config:no_xfer_liabs + ',') >= 1)
+		    not (charindex(',' + rtrim(:a_account_code) + ',', ',' + :config:no_xfer_liabs + ',') >= 1)
 		GROUP BY
 		    :a_cost_center,
 		    :a_account_code
@@ -643,7 +643,7 @@ post_payroll "widget/component-decl"
 		    :a_ledger_number = :parameters:ledger and
 		    :a_account_code >= '2000' and
 		    :a_account_code <= '2999' and
-		    not (charindex(',' + :a_account_code + ',', ',' + :config:no_xfer_liabs + ',') >= 1)
+		    not (charindex(',' + rtrim(:a_account_code) + ',', ',' + :config:no_xfer_liabs + ',') >= 1)
 		GROUP BY
 		    :a_account_code
 		HAVING

@@ -2804,6 +2804,8 @@ create table a_giving_pattern_flag (
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the giving pattern flag (since past/historical ones are kept around). However this DOES NOT relate to the history ID in the a_giving_pattern table. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this flag is associated with, if any --  */
+        a_prior_interval                      integer  null,           /* The recorded giving interval at the time this flag was generated. --  */
+        a_prior_amount                        decimal(14,4)  null,     /* The recorded giving amount at the time this flag was generated. --  */
         a_flag_type                           char(3)  not null,       /* The type of flag (see _a_flag_type validation table) --  */
         a_flag_resolution                     char(3)  null,           /* How this flag was resolved (NULL if not yet resolved, or see _a_flag_resolution for values) --  */
         a_new_interval                        integer  null,           /* If the resolution involved a new giving interval, this specifies it. --  */

@@ -82,7 +82,7 @@ while (<INFILE>)
 	    print OUTC "  __cx_osml_control varchar(255) null";
 	    print OUTC ")$cmd_terminator";
 	    if ($backend eq "sybase") {
-		foreach $user (split(/,/, $userlist)) {
+		foreach $user (split(/\n/, $userlist)) {
 		    print OUTC "grant all on $table to $user$cmd_terminator";
 		}
 	    }

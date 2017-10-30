@@ -19,6 +19,8 @@ plugin_mportal_sreview_increase "widget/component-decl"
 		:gp:p_donor_partner_key,
 		:gp:a_cost_center,
 		:gp:a_pattern_id,
+		a_prior_interval = :gp:a_interval,
+		a_prior_amount = :gp:a_amount,
 		a_flag_type = 'INC',
 		a_comment = condition(:d:a_act_average_interval > 8, 'Most recent gift', 'Most recent two or more gifts') + ' increased to ' + :d:a_last_gift_amount,
 		s_date_created = getdate(),
@@ -47,7 +49,7 @@ plugin_mportal_sreview_increase "widget/component-decl"
 		:p_donor_partner_key,
 		:a_cost_center,
 		--:a_flag_type,
-		datediff(month, :s_date_created, getdate())
+		datediff(month, :s_date_modified, getdate())
 	    update set
 		0 = 0
 	    ";
@@ -74,9 +76,12 @@ plugin_mportal_sreview_increase "widget/component-decl"
 		target=support_osrc;
 		action=Modify;
 		flagres=runclient('UPD');
+		flagnewamt=runclient(substring(:support_osrc:flagcomm, char_length(:support_osrc:flagcomm) - charindex(' ', reverse(:support_osrc:flagcomm)) + 1));
 		a_amount=runclient(substring(:support_osrc:flagcomm, char_length(:support_osrc:flagcomm) - charindex(' ', reverse(:support_osrc:flagcomm)) + 1));
 		s_modified_by=runclient(user_name());
 		s_date_modified=runclient(getdate());
+		flagmodby=runclient(user_name());
+		flagmod=runclient(getdate());
 		}
 	    }
 
@@ -95,9 +100,11 @@ plugin_mportal_sreview_increase "widget/component-decl"
 		event=Click;
 		target=support_osrc;
 		action=Modify;
-		flagres=runclient('UPD');
-		s_modified_by=runclient(user_name());
-		s_date_modified=runclient(getdate());
+		flagres=runclient('NOC');
+		//s_modified_by=runclient(user_name());
+		//s_date_modified=runclient(getdate());
+		flagmodby=runclient(user_name());
+		flagmod=runclient(getdate());
 		}
 	    }
 	}

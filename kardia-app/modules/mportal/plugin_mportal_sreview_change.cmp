@@ -19,6 +19,8 @@ plugin_mportal_sreview_continue "widget/component-decl"
 		:gp:p_donor_partner_key,
 		:gp:a_cost_center,
 		:gp:a_pattern_id,
+		a_prior_interval = :gp:a_interval,
+		a_prior_amount = :gp:a_amount,
 		a_flag_type = 'AMT',
 		a_comment = 'Actual average differs by ' + round(abs(:d:a_act_average_amount - :gp:a_amount / condition(:gp:a_interval > 0, :gp:a_interval, 12)) / (:gp:a_amount / condition(:gp:a_interval > 0, :gp:a_interval, 12)) * 100) + '%',
 		s_date_created = getdate(),
@@ -54,7 +56,7 @@ plugin_mportal_sreview_continue "widget/component-decl"
 		:p_donor_partner_key,
 		:a_cost_center,
 		--:a_flag_type,
-		datediff(month, :s_date_created, getdate())
+		datediff(month, :s_date_modified, getdate())
 	    update set
 		0 = 0
 	    ";
@@ -80,9 +82,11 @@ plugin_mportal_sreview_continue "widget/component-decl"
 		event=Click;
 		target=support_osrc;
 		action=Modify;
-		flagres=runclient('UPD');
-		s_modified_by=runclient(user_name());
-		s_date_modified=runclient(getdate());
+		flagres=runclient('NOC');
+		//s_modified_by=runclient(user_name());
+		//s_date_modified=runclient(getdate());
+		flagmodby=runclient(user_name());
+		flagmod=runclient(getdate());
 		}
 	    }
 
@@ -102,9 +106,12 @@ plugin_mportal_sreview_continue "widget/component-decl"
 		target=support_osrc;
 		action=Modify;
 		flagres=runclient('UPD');
+		flagnewivl=runclient(0);
 		a_interval=runclient(0);
 		s_modified_by=runclient(user_name());
 		s_date_modified=runclient(getdate());
+		flagmodby=runclient(user_name());
+		flagmod=runclient(getdate());
 		}
 	    }
 
@@ -124,9 +131,12 @@ plugin_mportal_sreview_continue "widget/component-decl"
 		target=support_osrc;
 		action=Modify;
 		flagres=runclient('UPD');
+		flagnewamt=runclient(:support_osrc:last_amt);
 		a_amount=runclient(:support_osrc:last_amt);
 		s_modified_by=runclient(user_name());
 		s_date_modified=runclient(getdate());
+		flagmodby=runclient(user_name());
+		flagmod=runclient(getdate());
 		}
 	    }
 
@@ -146,8 +156,10 @@ plugin_mportal_sreview_continue "widget/component-decl"
 		target=support_osrc;
 		action=Modify;
 		flagres=runclient('UPD');
-		s_modified_by=runclient(user_name());
-		s_date_modified=runclient(getdate());
+		//s_modified_by=runclient(user_name());
+		//s_date_modified=runclient(getdate());
+		flagmodby=runclient(user_name());
+		flagmod=runclient(getdate());
 		}
 	    }
 	}

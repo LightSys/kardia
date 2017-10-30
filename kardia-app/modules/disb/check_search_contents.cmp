@@ -63,6 +63,7 @@ check_search_component "widget/component-decl"
 			x=0;y=0; 
 			height=440; width=700; 
 			path = "/apps/kardia/modules/disb/partner_search_contents.cmp";
+			ledger = runserver(:this:ledger);
 			// sync_osrc=p_partner_osrc; 
 			// sync_form=p_partner_form; 
 			

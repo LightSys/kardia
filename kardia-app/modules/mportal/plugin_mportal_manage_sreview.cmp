@@ -85,6 +85,7 @@ manage_support_review "widget/component-decl"
 			:srt:a_comment,
 			:srt:a_amount,
 			:srt:a_target_amount,
+			:srt:a_review,
 			unanswered =    (select
 					    count(1)
 					from
@@ -144,7 +145,7 @@ manage_support_review "widget/component-decl"
 		row_border_radius=4;
 		demand_scrollbar = yes;
 		overlap_scrollbar = yes;
-		initial_selection = yes;
+		initial_selection = no;
 		show_selection = yes;
 		colsep = 0;
 		titlebar = yes;
@@ -166,6 +167,101 @@ manage_support_review "widget/component-decl"
 		rowhighlight_bgcolor="#faf8ff";
 		nodata_message = runclient(condition(:review_osrc:cx__pending, "No funds being reviewed.", "Looking up funds..."));
 
+		ft_detail "widget/table-row-detail"
+		    {
+		    height=200; width=901;
+
+		    patterns_osrc "widget/osrc"
+			{
+			p_review "widget/parameter" { type=string; }
+			p_fund "widget/parameter" { type=string; }
+			p_ledger "widget/parameter" { type=string; }
+
+			sql = "	select
+				    q_date = substring(convert(string,:gpf:s_date_created),1,11),
+				    donor_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+				    flag = :ft:flag_desc + isnull(' (' + :gpf:a_comment + ')', ''),
+				    flagres = :fr:text + ' (' + :gp:a_amount + ' ' + condition(:gp:a_interval is null, 'unknown', condition(:gp:a_interval = 0, 'onetime / as-able', condition(:gp:a_interval = 1, 'monthly', condition(:gp:a_interval = 12, 'annual', 'every ' + :gp:a_interval + ' months')))) + ')'
+				from
+				    /apps/kardia/data/Kardia_DB/a_support_review/rows sr,
+				    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf,
+				    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    object wildcard '/apps/kardia/modules/*/plugin_mportal_sreview_*.cmp' ft,
+				    /apps/kardia/data/Kardia_DB/_a_flag_resolution/rows fr
+				where
+				    :gpf:s_date_modified > dateadd(day, -60, :sr:a_review_date) and
+				    :gpf:s_date_modified < dateadd(day, 10, :sr:a_review_date) and
+				    :gpf:a_ledger_number = :sr:a_ledger_number and
+				    :gp:a_ledger_number = :gpf:a_ledger_number and
+				    :gp:a_cost_center = :gpf:a_cost_center and
+				    :gp:p_donor_partner_key = :gpf:p_donor_partner_key and
+				    :gp:a_pattern_id = :gpf:a_pattern_id and
+				    :p:p_partner_key = :gpf:p_donor_partner_key and
+				    :ft:flag_code = :gpf:a_flag_type and
+				    :fr:tag =* :gpf:a_flag_resolution and
+				    :gpf:a_ledger_number = :parameters:p_ledger and
+				    :gpf:a_cost_center = :parameters:p_fund and
+				    :sr:a_review = :parameters:p_review
+				";
+			readahead=20;
+			replicasize=20;
+
+			sreview_link "widget/rule"
+			    {
+			    condition=0;
+			    ruletype=osrc_relationship;
+			    target=review_osrc;
+			    key_objname=sr;
+			    key_1=a_review;
+			    target_key_1=a_review;
+			    revealed_only=yes;
+			    }
+
+			fund_link "widget/rule"
+			    {
+			    ruletype=osrc_relationship;
+			    target=funds_osrc;
+			    //key_objname=gpf;
+			    key_1=p_ledger;
+			    target_key_1=a_ledger_number;
+			    key_2=p_fund;
+			    target_key_2=a_cost_center;
+			    key_3=p_review;
+			    target_key_3=a_review;
+			    revealed_only=yes;
+			    }
+
+			patterns_table "widget/table"
+			    {
+			    x=10; y=10; width=880; height=180;
+			    row_border_radius=4;
+			    demand_scrollbar = yes;
+			    overlap_scrollbar = yes;
+			    initial_selection = no;
+			    allow_selection = no;
+			    colsep = 0;
+			    titlebar = yes;
+			    min_rowheight = 12;
+			    max_rowheight = 200;
+			    cellvspacing = 1;
+			    row1_bgcolor = "#faf8ff";
+			    row2_bgcolor = "#faf8ff";
+			    show_selection = no;
+			    inner_padding = 3;
+			    textcolorhighlight = "#000000";
+			    titlecolor = white;
+			    hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			    nodata_message = runclient(condition(:patterns_osrc:cx__pending, "No questions this review.", "Loading questions..."));
+
+			    pt_date "widget/table-column" { title = "Date"; fieldname=q_date; width=100; }
+			    pt_donor "widget/table-column" { title = "Donor"; fieldname=donor_name; width=200; }
+			    pt_ques "widget/table-column" { title = "Question"; fieldname=flag; width=300; }
+			    pt_res "widget/table-column" { title = "Resolution"; fieldname=flagres; width=200; }
+			    }
+			}
+		    }
+
 		ft_fund "widget/table-column" { title = "Fund"; value=runclient(:funds_osrc:a_cost_center); width=140; style="bold"; font_size=16; caption_value=runclient(:funds_osrc:a_cc_desc); }
 		ft_managers "widget/table-column" { title = ""; value=runclient(:funds_osrc:manager_list); width=140; wrap=yes; }
 		ft_stat "widget/table-column" { title = "Status"; value=runclient(:funds_osrc:status); width=100; style=bold; font_size=16; }
@@ -173,7 +269,8 @@ manage_support_review "widget/component-decl"
 		ft_target "widget/table-column" { title = "Target"; value=runclient(:funds_osrc:a_target_amount); width=100; style=bold; font_size=16; align=right; }
 		//ft_actual "widget/table-column" { title = "Actual"; value=runclient(:funds_osrc:support_amt); width=100; style=bold; font_size=16; align=right; }
 		ft_reviewed "widget/table-column" { title = "Raised"; value=runclient(isnull(:funds_osrc:review_amt, '-')); width=100; style=bold; font_size=16; align=right; }
-		ft_percent "widget/table-column" { title = "Percent"; value=runclient(isnull('' + :funds_osrc:review_pct + '%', '-')); width=50; style=bold; font_size=16; align=right; }
+		//ft_percent "widget/table-column" { title = "Percent"; value=runclient(isnull('' + :funds_osrc:review_pct + '%', '-')); width=100; type=image; image_maxwidth=100; image_maxheight=24; style=bold; font_size=16; align=right; }
+		ft_percent "widget/table-column" { title = "Percent"; value=runclient('/apps/kardia/modules/mportal/percent_done_svg.rpt?text=' + isnull('' + :funds_osrc:review_pct + '%25', '-') + '&done=' + isnull(condition(:funds_osrc:review_pct > 100, 100, :funds_osrc:review_pct), 0) + '&color=' + condition(:funds_osrc:review_pct >= 80, 'green', 'red') + '&image_height=22'); width=100; type=image; image_maxwidth=100; image_maxheight=22; style=bold; font_size=16; align=right; }
 		}
 	    }
 	}

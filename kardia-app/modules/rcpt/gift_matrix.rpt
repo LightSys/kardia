@@ -1,7 +1,7 @@
 $Version=2$
 gift_matrix "system/report"
     {
-    title = "Gift Matrix";
+    title = "Gifts by Month";
     resolution = 300;
     document_format = "application/pdf";
 
@@ -181,7 +181,7 @@ gift_matrix "system/report"
 	    paymtx_hdr_info "report/data"
 		{
 		align=center;
-		value=runserver("Gift Matrix on [" + getdate() + " ET] requested by [" + user_name() + "]\nFor ledger " + :this:ledger + ", ending " + :this:end_period + "\n\n");
+		value=runserver("Gifts by Month on [" + getdate() + " ET] requested by [" + user_name() + "]\nFor ledger " + :this:ledger + condition(:this:costctr is null, "", ", fund " + :this:costctr) + ", ending " + :this:end_period + "\n\n");
 		}
 	    }
 
