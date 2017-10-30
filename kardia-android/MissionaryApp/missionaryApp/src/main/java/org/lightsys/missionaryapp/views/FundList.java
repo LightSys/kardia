@@ -26,7 +26,7 @@ import org.lightsys.missionaryapp.R;
 
 /**
  *  * @author Andrew Cameron
- * edited from DonorApp to MissionaryApp by Laura DeOtte
+ * edited from DonorApp to MissionaryApp by otter57
 
  * This page displays a list of all funds that the user manages
  * with some info.

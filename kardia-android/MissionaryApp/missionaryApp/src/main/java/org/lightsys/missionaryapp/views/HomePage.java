@@ -33,7 +33,7 @@ import java.util.List;
 import static android.content.ContentValues.TAG;
 
 /**
- * @author Laura DeOtte on 6/11/2015.
+ * @author otter57 on 6/11/2015.
  *
  * Home Page for Missionary app
  * welcomes user and displays page buttons

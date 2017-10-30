@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by lauradeotte on 11/7/16.
+ * Created by otter57 on 11/7/16.
  *
  * Creates list of donors for DonorList
  * allows profile pictures to be added to List

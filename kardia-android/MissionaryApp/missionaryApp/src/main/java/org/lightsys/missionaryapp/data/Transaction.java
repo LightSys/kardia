@@ -2,7 +2,7 @@ package org.lightsys.missionaryapp.data;
 
 
 /**
- * @author Laura DeOtte
+ * @author otter57
  *
  *Basic Class used to organize information about Transactions for the user
  */

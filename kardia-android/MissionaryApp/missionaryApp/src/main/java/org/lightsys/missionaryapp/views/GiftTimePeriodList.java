@@ -24,7 +24,7 @@ import org.lightsys.missionaryapp.R;
  * This class shows the year-to-date or month to date list for a certain fund
  * and shows amount given towards that fund.
  * 
- * @author Laura DeOtte
+ * @author otter57
  * created 7-27-16
  */
 public class GiftTimePeriodList extends Fragment {

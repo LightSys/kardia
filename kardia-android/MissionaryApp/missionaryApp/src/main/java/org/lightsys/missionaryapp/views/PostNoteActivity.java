@@ -20,7 +20,7 @@ import org.lightsys.missionaryapp.tools.PostJson;
 import java.util.Calendar;
 
 /**
- * @author Laura DeOtte
+ * @author otter57
  * created on 7/12/16.
  *
  * allows user to post updates or prayer requests

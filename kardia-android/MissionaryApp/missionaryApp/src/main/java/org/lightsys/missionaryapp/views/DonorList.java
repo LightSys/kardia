@@ -25,7 +25,7 @@ import static android.content.ContentValues.TAG;
 /**
  * @author Andrew Lockridge
  * created on 6/11/2015.
- * edited by Laura DeOtte from DonorApp to MissionaryApp
+ * edited by otter57 from DonorApp to MissionaryApp
  *
  * Class formats a listview of all donors in database
  */

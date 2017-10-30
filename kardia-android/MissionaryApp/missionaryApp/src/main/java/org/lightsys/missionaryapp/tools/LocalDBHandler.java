@@ -45,7 +45,7 @@ import static android.content.ContentValues.TAG;
  * Edited by Judah Sistrunk on 6/2/2016
  * 	added information relevent to the auto-updater
  *
- * 	Edited by Laura DeOtte for missionaryapp
+ * 	Edited by otter57 for missionaryapp
  * 	 added information for prayer for
  * 	 removed Missionary Table
  *

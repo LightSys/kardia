@@ -23,7 +23,7 @@ import org.lightsys.missionaryapp.R;
 /**
  *  * @author Andrew Cameron
  *
- * edited by Laura DeOtte from donorapp setup to missionaryapp setup
+ * edited by otter57 from donorapp setup to missionaryapp setup
  *
  * This is used to display detailed information about a specific gift.
  * The gift is determined by the "position" int passed into the fragment

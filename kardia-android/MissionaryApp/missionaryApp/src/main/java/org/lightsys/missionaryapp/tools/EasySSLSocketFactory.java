@@ -1,7 +1,7 @@
 package org.lightsys.missionaryapp.tools;
 
 /**
- * Created by lauradeotte on 12/7/16.
+ * Created by otter57 on 12/7/16.
  */
 
 import org.apache.http.conn.ConnectTimeoutException;

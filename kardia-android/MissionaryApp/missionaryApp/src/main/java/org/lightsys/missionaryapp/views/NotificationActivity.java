@@ -37,7 +37,7 @@ import static android.content.ContentValues.TAG;
  * @author Andrew Lockridge
  * created on 6/1/2015.
  *
- * edited by Laura DeOtte for missionaryapp from donorapp
+ * edited by otter57 for missionaryapp from donorapp
  * on 9/22/2016
  *
  * This activity allows the user to set up a notification system to remind them to pray

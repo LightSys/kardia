@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- *  * @author Laura DeOtte
+ *  * @author otter57
  *
  * This page displays a list of all fund reports for the user.
  * 

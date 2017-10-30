@@ -35,7 +35,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * @author Laura DeOtte
+ * @author otter57
  * created on 7/12/16.
  *
  * allows user to post update letters

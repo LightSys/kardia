@@ -41,7 +41,7 @@ import java.util.zip.Inflater;
 import static android.content.ContentValues.TAG;
 
 /**
- * @author Laura DeOtte
+ * @author otter57
  *
  * Shows Donor name, contact info, and donations
  * allows user to email, call, or text donor

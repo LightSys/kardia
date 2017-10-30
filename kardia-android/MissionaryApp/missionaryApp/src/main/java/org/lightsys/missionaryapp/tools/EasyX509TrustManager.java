@@ -11,7 +11,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * Created by lauradeotte on 12/6/16.
+ * Created by otter57 on 12/6/16.
  */
 
 public class EasyX509TrustManager implements X509TrustManager {

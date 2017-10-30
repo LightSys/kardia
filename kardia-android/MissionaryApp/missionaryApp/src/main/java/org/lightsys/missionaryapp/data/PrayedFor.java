@@ -3,7 +3,7 @@ package org.lightsys.missionaryapp.data;
 /**
  * @author Andrew Lockridge
  * created on 6/24/2015
- * Edited from DonorApp to MissionaryApp by Laura DeOtte
+ * Edited from DonorApp to MissionaryApp by otter57
  *
  * Class represents a Prayer for a prayer request or update
  */

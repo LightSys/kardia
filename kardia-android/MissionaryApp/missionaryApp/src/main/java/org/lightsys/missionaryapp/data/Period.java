@@ -1,7 +1,7 @@
 package org.lightsys.missionaryapp.data;
 
 /**
- * @author Laura DeOtte
+ * @author otter57
  *
  * Class used to organize gifts given to the user into time periods
  */

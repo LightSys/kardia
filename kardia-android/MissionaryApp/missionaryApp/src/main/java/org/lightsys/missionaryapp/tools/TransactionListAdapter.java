@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by lauradeotte on 11/7/16.
+ * Created by otter57 on 11/7/16.
  *
  * adapts transaction info for list - allows negative text to be red,
  * while positive is green
