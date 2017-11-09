@@ -1,0 +1,118 @@
+$Version=2$
+plugin_rcpt_giftimport_EGS "widget/component-decl"
+    {
+    // In the future this will be an actual visual config tool,
+    // but for now we just use it to supply the infrastructure.
+    //
+    description = "Stewardship Technology EGS via XML / POST API";
+    tag = "EGS";
+    sql = "		i_eg_processor = 'Stewardship Technology',
+			i_eg_receipt_desired = null,
+			i_eg_anonymous = null,
+			i_eg_prayforme = null,
+			i_eg_acctmap_future = 1,
+			i_eg_fundmap_future = 1,
+			i_eg_donormap_future = 1,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name(),
+
+			i_eg_donor_uuid = :t:DonorGUID,
+			i_eg_trx_uuid = :t:TransactionGUID,
+			i_eg_gift_uuid = :t:AccountScheduleGUID,
+			i_eg_account_uuid = :t:AccountGUID,
+			i_eg_gift_trx_date = convert(datetime, :t:TransactionDate),
+			i_eg_gift_settlement_date = convert(datetime, :t:SettlementDate),
+			i_eg_status = condition(:t:Status = 'Cleared', 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', 'pending'))),
+
+			i_eg_deposit_uuid = convert(string, :depdet:DepositID),
+			i_eg_net_amount = convert(money, :depdet:NetAmount),
+
+			i_eg_returned_status = (select :rc:ResponseCodeDescr from /apps/kardia/modules/rcpt/egsapi.http/ResponseCodesSelect/ResponseCodes rc where :rc:ResponseCodeValue = :t:ResponseCode),
+
+			i_eg_desig_name = :desig:DesignationName,
+			i_eg_gift_amount = convert(money, :desig:DesignationAmount),
+			i_eg_desig_notes = :desig:DesignationMemo,
+			i_eg_desig_uuid = :desig:DesignationGUID,
+
+			i_eg_donor_alt_id = convert(string, :p:DonorID),
+			i_eg_donor_name = :p:FirstName + ' ' + :p:LastName,
+			i_eg_donor_given_name = :p:FirstName,
+			i_eg_donor_surname = :p:LastName,
+			i_eg_donor_middle_name = :p:MiddleName,
+			i_eg_donor_prefix = :p:Prefix,
+			i_eg_donor_suffix = :p:Suffix,
+			i_eg_donor_addr1 = convert(string, :p:Address1),
+			i_eg_donor_addr2 = convert(string, :p:Address2),
+			i_eg_donor_addr3 = convert(string, :p:Address3),
+			i_eg_donor_city = :p:City,
+			i_eg_donor_state = :p:StateCode,
+			i_eg_donor_postal = convert(string, :p:PostalCode),
+			i_eg_donor_country = (select :ct:CountryCode from /apps/kardia/modules/rcpt/egsapi.http/CountrySelect/Countries ct where :ct:CountryName = :p:CountryName),
+			i_eg_donor_email = :p:EmailAddress,
+			i_eg_donor_phone = convert(string, :p:WorkPhoneNumber),
+
+			i_eg_deposit_date = convert(datetime, :dep:DepositDate),
+			i_eg_deposit_gross_amt = convert(money, :dep:GrossAmount),
+			i_eg_deposit_amt = convert(money, :dep:NetAmount),
+
+			i_eg_gift_interval = upper(isnull(:ac:RecurringName, '')),
+			i_eg_gift_date = convert(datetime, :ac:CreateDateTime)
+		from
+			/apps/kardia/modules/rcpt/egsapi_trx.http/DonorsTransactionInformation?Page=1&RecordsPerPage=9999/Transactions t,
+			expression ('/apps/kardia/modules/rcpt/egsapi_trx.http/DonorsTransactionInformation?Page=1&RecordsPerPage=9999/Transactions/' + :t:name + '/Designations') desig,
+			/apps/kardia/modules/rcpt/egsapi.http/DonorInformationReport/Donors p,
+			/apps/kardia/modules/rcpt/egsapi_sched.http/AccountSchedules?StatusType=0&Page=1&RecordsPerPage=9999/AccountSchedules ac,
+			/apps/kardia/modules/rcpt/egsapi_trx.http/DepositDesignationDetail/DepositDesignationDetails depdet,
+			/apps/kardia/modules/rcpt/egsapi_trx.http/DepositSummary/Deposits dep
+		where
+			:p:DonorGUID = :t:DonorGUID and
+			:ac:AccountScheduleGUID = :t:AccountScheduleGUID and
+			:depdet:TransactionGUID =* :t:TransactionGUID and
+			:depdet:DesignationGUID =* :desig:DesignationGUID and
+			:dep:DepositID = :depdet:DepositID and
+			:t:TransactionGUID is not null
+		limit
+			3
+		";
+
+    upsert_sql="on duplicate
+			:a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid
+		update set
+			:i_eg_deposit_date = convert(datetime, :dep:DepositDate),
+			:i_eg_deposit_uuid = convert(string, :depdet:DepositID),
+			:i_eg_deposit_gross_amt = convert(money, :dep:GrossAmount),
+			:i_eg_deposit_amt = convert(money, :dep:NetAmount),
+			:i_eg_net_amount = convert(money, :depdet:NetAmount),
+			:i_eg_status = condition(:t:Status = 'Cleared', 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', 'pending'))),
+			:i_eg_returned_status = (select :rc:ResponseCodeDescr from /apps/kardia/modules/rcpt/egsapi.http/ResponseCodesSelect/ResponseCodes rc where :rc:ResponseCodeValue = :t:ResponseCode),
+			:i_eg_gift_settlement_date = convert(datetime, :t:SettlementDate),
+			:s_date_modified = getdate(),
+			:s_modified_by = user_name()
+		";
+
+    postprocess_sql="
+		update
+			identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+		set
+			:eg:i_eg_gift_lastfour = (select :eg2:i_eg_gift_lastfour from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg2 where :eg2:a_ledger_number = :eg:a_ledger_number and :eg2:i_eg_donor_uuid = :eg:i_eg_donor_uuid and :eg2:i_eg_account_uuid = :eg:i_eg_account_uuid order by :eg2:i_eg_gift_trx_date desc limit 1),
+			:eg:i_eg_gift_pmt_type = (select :eg2:i_eg_gift_pmt_type from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg2 where :eg2:a_ledger_number = :eg:a_ledger_number and :eg2:i_eg_donor_uuid = :eg:i_eg_donor_uuid and :eg2:i_eg_account_uuid = :eg:i_eg_account_uuid order by :eg2:i_eg_gift_trx_date desc limit 1)
+		where
+			:eg:i_eg_processor = 'Stewardship Technology' and
+			(:eg:i_eg_gift_pmt_type is null or :eg:i_eg_gift_lastfour is null)
+		;
+
+		update
+			identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+			wildcard expression ('/apps/kardia/modules/rcpt/egsapi.http/SelectAccounts?DonorGUID=' + :eg:i_eg_donor_uuid + '/Accounts/*') sa
+		set
+			:eg:i_eg_gift_lastfour = right(isnull(:sa:MaskedCardNumber, :sa:MaskedAccountNumber), 4),
+			:eg:i_eg_gift_pmt_type = condition(:sa:Type = 'VISA', 'Visa', condition(:sa:Type = 'Checking' or :sa:Type = 'Savings', 'ACH', condition(:sa:Type = 'MSTR', 'MasterCard', condition(:sa:Type = 'DISC', 'Discover', ''))))
+		where
+			:sa:AccountGUID =* :eg:i_eg_account_uuid and
+			:eg:i_eg_processor = 'Stewardship Technology' and
+			:eg:i_eg_gift_lastfour is null
+		";
+			
+    }

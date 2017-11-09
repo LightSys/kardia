@@ -15,79 +15,28 @@ gift_import "widget/component-decl"
 
     do_import_osrc "widget/osrc"
 	{
-	// SQL to actually pull gift data in.
-	// Test version - using egiving.http (for egiving.com)
+	// SQL to actually pull gift data in - get SQL from plugin(s) and then do
+	// the correlations.
 	//
-	sql = runserver("
-		-- Main import routine from electronic giving service:
-		--
-		insert into
-			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
-		select
-			a_ledger_number = " + quote(:this:ledger) + ",
-			i_eg_gift_uuid = :'gift-id',
-			i_eg_trx_uuid = :'txn-id',
-			i_eg_donor_uuid = :'giver-id',
-			i_eg_status = :'status',
-			i_eg_returned_status = :'returned-status',
-			i_eg_processor = :'processor',
-			i_eg_donor_name = :'__cx_literal_name',
-			i_eg_donor_addr1 = convert(string,:'address-line-1'),
-			i_eg_donor_addr2 = convert(string,:'address-line-2'),
-			i_eg_donor_city = :'city',
-			i_eg_donor_state = :'state',
-			i_eg_donor_postal = convert(string,:'postal'),
-			i_eg_donor_country = :'country',
-			i_eg_donor_phone = convert(string,:'phone'),
-			i_eg_donor_email = :'email',
-			i_eg_gift_amount = convert(money,:'amount'),
-			i_eg_gift_pmt_type = :'payment-type',
-			i_eg_gift_lastfour = convert(string,:'last-four'),
-			i_eg_gift_interval = :'recurring-interval',
-			i_eg_gift_date = convert(datetime,:'given-on'),
-			i_eg_gift_trx_date = convert(datetime,:'txn-date'),
-			i_eg_gift_settlement_date = convert(datetime,:'settlement-date'),
-			i_eg_receipt_desired = null,
-			i_eg_anonymous = null,
-			i_eg_prayforme = null,
-			i_eg_desig_name = :'designation',
-			i_eg_desig_notes = :'notes',
-			i_eg_net_amount = convert(money,:'net'),
-			i_eg_deposit_date = convert(datetime,:'deposit-date'),
-			i_eg_deposit_uuid = convert(string,:'deposit-id'),
-			i_eg_deposit_gross_amt = convert(money,:'deposit-gross'),
-			i_eg_deposit_amt = convert(money,:'deposit-net'),
-			i_eg_acctmap_future = 1,
-			i_eg_fundmap_future = 1,
-			i_eg_donormap_future = 1,
-			s_date_created = getdate(),
-			s_created_by = user_name(),
-			s_date_modified = getdate(),
-			s_modified_by = user_name()
+	sql = runserver(
+		isnull((select
+			sum('set showplan 1 insert into /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows select a_ledger_number = ' + quote(:this:ledger) + ',\n' + :p:sql + ' ' + :p:upsert_sql + '\n;\n' + isnull(:p:postprocess_sql + '\n;\n', ''))
 		from
-			/apps/kardia/data/egiving.http/transactions/ egtrx
-		on duplicate
-			:a_ledger_number, :i_eg_trx_uuid
-		update set
-			:i_eg_deposit_date = convert(datetime,:egtrx:'deposit-date'),
-			:i_eg_deposit_uuid = convert(string,:egtrx:'deposit-id'),
-			:i_eg_deposit_gross_amt = convert(money,:egtrx:'deposit-gross'),
-			:i_eg_deposit_amt = convert(money,:egtrx:'deposit-net'),
-			:i_eg_net_amount = convert(money,:egtrx:'net'),
-			:i_eg_status = :egtrx:'status',
-			:i_eg_returned_status = :egtrx:'returned-status',
-			:i_eg_gift_settlement_date = convert(datetime,:egtrx:'settlement-date'),
-			:s_date_modified = getdate(),
-			:s_modified_by = user_name()
-		;
-
+			object wildcard '/apps/kardia/modules/*/plugin_rcpt_giftimport_*.cmp' p,
+			/apps/kardia/data/Kardia_DB/a_config/rows ac
+		where
+			:ac:a_ledger_number = :this:ledger and
+			:ac:a_config_name = 'GiftImport_' + :p:tag and
+			:ac:a_config_value = '1'
+		), '') +
+		"
 		-- Try to set donor key correlation based on prior data
 		--
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set
-			:p_donor_partner_key = (select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where :e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc),
-			:i_eg_donormap_confidence = condition((select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where :e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+			:p_donor_partner_key = (select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or :e1:i_eg_donor_alt_id = :e2:i_eg_donor_alt_id) and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_donormap_confidence = condition((select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or :e1:i_eg_donor_alt_id = :e2:i_eg_donor_alt_id) and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
 			:p_donor_partner_key is null
 		;
@@ -97,8 +46,8 @@ gift_import "widget/component-decl"
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set
-			:a_cost_center = (select :e2:a_cost_center from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where :e1:i_eg_desig_name = :e2:i_eg_desig_name and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_cost_center is not null order by :e2:i_eg_gift_trx_date desc),
-			:i_eg_fundmap_confidence = condition((select :e2:a_cost_center from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where :e1:i_eg_desig_name = :e2:i_eg_desig_name and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_cost_center is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+			:a_cost_center = (select :e2:a_cost_center from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_cost_center is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_fundmap_confidence = condition((select :e2:a_cost_center from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_cost_center is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
 			:a_cost_center is null
 		;
@@ -110,16 +59,16 @@ gift_import "widget/component-decl"
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set
-			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where :e1:i_eg_desig_name = :e2:i_eg_desig_name and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
-			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where :e1:i_eg_desig_name = :e2:i_eg_desig_name and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or :e1:i_eg_donor_alt_id = :e2:i_eg_donor_alt_id) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or :e1:i_eg_donor_alt_id = :e2:i_eg_donor_alt_id) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
 			:a_account_code is null
 		;
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set
-			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where :e1:i_eg_desig_name = :e2:i_eg_desig_name and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
-			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where :e1:i_eg_desig_name = :e2:i_eg_desig_name and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
 			:a_account_code is null
 		");
