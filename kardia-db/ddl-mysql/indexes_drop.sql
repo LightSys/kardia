@@ -1057,3 +1057,18 @@ alter table s_audit drop index s_audit_name_idx;
 /* drop index s_audit.s_audit_pk */ 
 /* go */
 alter table s_audit drop index s_audit_strval_idx;
+
+
+/* s_role */
+/* drop index s_role.s_role_pk */ 
+/* go */
+
+
+/* s_role_exclusivity */
+/* drop index s_role_exclusivity.s_role_ex_pk */ 
+/* go */
+
+
+/* s_user_role */
+/* drop index s_user_role.s_user_role_pk */ 
+/* go */

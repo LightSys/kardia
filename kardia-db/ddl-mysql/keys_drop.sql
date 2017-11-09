@@ -1144,3 +1144,15 @@ alter table s_audit
 
 alter table s_audit
 	drop index s_audit_intval_idx;
+
+
+alter table s_role
+	drop primary key;
+
+
+alter table s_role_exclusivity
+	drop primary key;
+
+
+alter table s_user_role
+	drop primary key;

@@ -514,3 +514,12 @@ revoke select on ra to public;
 
 
 /* s_audit */
+
+
+/* s_role */
+
+
+/* s_role_exclusivity */
+
+
+/* s_user_role */
