@@ -100,11 +100,11 @@ email_reports "widget/component-decl"
 			select
 			    reportcnt = count(1),
 			    dirname = :periodinfo:dirname,
-			    prefix = :cx__pathpart6
+			    prefix = :cx__pathpart7
 			from
-			    wildcard '/apps/kardia/files/reports/*'
+			    wildcard '/apps/kardia/modules/local/action-data/reports/*'
 			where
-			    :cx__pathpart6 = :periodinfo:dirname
+			    :cx__pathpart7 = :periodinfo:dirname
 			";
 		readahead=2;
 		replicasize=2;
