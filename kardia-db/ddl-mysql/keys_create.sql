@@ -458,7 +458,7 @@ alter table a_subtrx_cashxfer
 	add constraint a_subtrx_cashxfer_pk primary key  (a_ledger_number, a_batch_number, a_journal_number);
 
 alter table i_eg_gift_import
-	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_giving_url
 	add constraint i_eg_giving_url_pk primary key  (a_ledger_number, a_cost_center);
@@ -534,3 +534,12 @@ alter table s_request_type
 
 alter table s_audit
 	add constraint s_audit_pk primary key  (s_sequence);
+
+alter table s_role
+	add constraint s_role_pk primary key  (s_role_id);
+
+alter table s_role_exclusivity
+	add constraint s_role_ex_pk primary key  (s_role1_id, s_role2_id);
+
+alter table s_user_role
+	add constraint s_user_role_pk primary key  (s_role_id, s_username);

@@ -685,3 +685,15 @@ drop table s_request_type;
 
 /* s_audit */
 drop table s_audit;
+
+
+/* s_role */
+drop table s_role;
+
+
+/* s_role_exclusivity */
+drop table s_role_exclusivity;
+
+
+/* s_user_role */
+drop table s_user_role;

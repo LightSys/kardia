@@ -3022,15 +3022,24 @@ create table a_subtrx_cashxfer (
 
 create table i_eg_gift_import (
         a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
-        i_eg_gift_uuid                        char(36)  not null,      /* eGiving.com UUID for the gift record (xml:gift-id) --  */
-        i_eg_trx_uuid                         char(36)  not null,      /* eGiving.com UUID for the transaction record (xml:txn-id) --  */
-        i_eg_donor_uuid                       char(36)  not null,      /* eGiving.com UUID for the donor (xml:giver-id) --  */
+        i_eg_gift_uuid                        char(36)  not null,      /* UUID for the gift record (xml:gift-id) --  */
+        i_eg_desig_uuid                       varchar(36)  null,       /* ID of designation that the donor chose --  */
+        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record (xml:txn-id) --  */
+        i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor (xml:giver-id) --  */
+        i_eg_donor_alt_id                     char(36)  null,          /* alternate ID for the donor --  */
+        i_eg_account_uuid                     varchar(36)  null,       /* ID of donation account that the donor used --  */
         i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) (xml:status) --  */
         i_eg_returned_status                  varchar(16)  null,       /* Reason for a return (xml:returned-status) --  */
         i_eg_processor                        varchar(80)  not null,   /* Name of payment processor (xml:processor) --  */
         i_eg_donor_name                       varchar(80)  not null,   /* Name (given name and surname) of the donor (xml:name) --  */
+        i_eg_donor_given_name                 varchar(80)  null,       /* given name of the donor --  */
+        i_eg_donor_surname                    varchar(80)  null,       /* surname of the donor --  */
+        i_eg_donor_middle_name                varchar(80)  null,       /* middle name of the donor --  */
+        i_eg_donor_prefix                     varchar(80)  null,       /* prefix/title of donor --  */
+        i_eg_donor_suffix                     varchar(80)  null,       /* suffix (jr/sr/etc) of donor --  */
         i_eg_donor_addr1                      varchar(80)  null,       /* Address line 1 of donor. (xml:address-line-1) --  */
         i_eg_donor_addr2                      varchar(80)  null,       /* Address line 2 of donor. (xml:address-line-2) --  */
+        i_eg_donor_addr3                      varchar(80)  null,       /* Address line 3 of donor. --  */
         i_eg_donor_city                       varchar(80)  null,       /* City of donor. (xml:city) --  */
         i_eg_donor_state                      varchar(80)  null,       /* State of donor. (xml:state) --  */
         i_eg_donor_postal                     varchar(80)  null,       /* Postal Code of donor. (xml:postal) --  */
@@ -3039,8 +3048,8 @@ create table i_eg_gift_import (
         i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. (xml:email) --  */
         i_eg_gift_amount                      decimal(14,4)  not null,
                                                                       /* amount of gift (xml:amount) --  */
-        i_eg_gift_pmt_type                    varchar(16)  not null,   /* Payment type (xml:payment-type) --  */
-        i_eg_gift_lastfour                    char(4)  not null,       /* Last four digits of account number (xml:last-four) --  */
+        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type (xml:payment-type) --  */
+        i_eg_gift_lastfour                    char(4)  null,           /* Last four digits of account number (xml:last-four) --  */
         i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval (xml:recurring-interval) --  */
         i_eg_gift_date                        datetime  not null,      /* Date of gift (xml:given-on) --  */
         i_eg_gift_trx_date                    datetime  null,          /* Date of transaction (xml:txn-date) --  */
@@ -3053,6 +3062,7 @@ create table i_eg_gift_import (
         i_eg_net_amount                       decimal(14,4)  null,     /* Net gift (less fees for this transaction) (xml:net) --  */
         i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account (xml:deposit-date) --  */
         i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. (xml:deposit-id) --  */
+        i_eg_deposit_status                   char(16)  null,          /* status of the deposit --  */
         i_eg_deposit_gross_amt                decimal(14,4)  null,     /* gross amount of the deposit before fees (xml:deposit-gross) --  */
         i_eg_deposit_amt                      decimal(14,4)  null,     /* net amount of the deposit (xml:deposit-net) --  */
         p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
@@ -3554,6 +3564,51 @@ create table s_audit (
         s_valuedatetime                       datetime  null,          /* date/time value --  */
         s_date_created                        datetime  not null,      /* date the modification was made --  */
         s_created_by                          varchar(20)  not null,   /* user who made the modification --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_role */
+
+create table s_role (
+        s_role_id                             integer  not null,       /* id of this role --  */
+        s_role_label                          varchar(32)  not null,   /* short label for this role --  */
+        s_role_desc                           varchar(255)  null,      /* description of this role --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_role_exclusivity */
+
+create table s_role_exclusivity (
+        s_role1_id                            integer  not null,       /* id of role #1 --  */
+        s_role2_id                            integer  not null,       /* id of role #2 --  */
+        s_is_compatible                       bit,                     /* set to 1 if the roles are compatible with each other for simultaneous engagement --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_user_role */
+
+create table s_user_role (
+        s_role_id                             integer  not null,       /* id of this role --  */
+        s_username                            varchar(20)  not null,   /* name of user --  */
+        s_is_enabled                          bit,                     /* whether the user's access to this role is enabled or not --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );

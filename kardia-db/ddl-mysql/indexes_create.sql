@@ -911,18 +911,18 @@ create  index a_subtrx_dep_batch_idx on a_subtrx_deposit (a_batch_number, a_ledg
 
 
 /* i_eg_gift_import */
-create  index i_eg_edeposit_idx on i_eg_gift_import (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid);
-create  index i_eg_edonor_idx on i_eg_gift_import (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid);
-create  index i_eg_efund_idx on i_eg_gift_import (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid);
-create  index i_eg_egift_idx on i_eg_gift_import (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid);
-/* create  index i_eg_gift_import_pk on i_eg_gift_import (a_ledger_number, i_eg_trx_uuid)*/ 
+create  index i_eg_edeposit_idx on i_eg_gift_import (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_edonor_idx on i_eg_gift_import (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_efund_idx on i_eg_gift_import (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_egift_idx on i_eg_gift_import (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+/* create  index i_eg_gift_import_pk on i_eg_gift_import (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)*/ 
 /* go */
-create  index i_eg_kdepbatch_idx on i_eg_gift_import (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid);
-create  index i_eg_kdoncc_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, a_cost_center, i_eg_trx_uuid);
-create  index i_eg_kdonor_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid);
-create  index i_eg_kfeebatch_idx on i_eg_gift_import (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid);
-create  index i_eg_kfund_idx on i_eg_gift_import (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid);
-create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_number, i_eg_trx_uuid);
+create  index i_eg_kdepbatch_idx on i_eg_gift_import (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_kdoncc_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, a_cost_center, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_kdonor_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_kfeebatch_idx on i_eg_gift_import (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_kfund_idx on i_eg_gift_import (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 
 /* i_eg_giving_url */
@@ -1057,3 +1057,18 @@ create  index s_audit_name_idx on s_audit (s_table, s_key, s_attrname, s_sequenc
 /* create  index s_audit_pk on s_audit (s_sequence)*/ 
 /* go */
 create  index s_audit_strval_idx on s_audit (s_table, s_attrname, s_valuestring, s_key, s_sequence);
+
+
+/* s_role */
+/* create  index s_role_pk on s_role (s_role_id)*/ 
+/* go */
+
+
+/* s_role_exclusivity */
+/* create  index s_role_ex_pk on s_role_exclusivity (s_role1_id, s_role2_id)*/ 
+/* go */
+
+
+/* s_user_role */
+/* create  index s_user_role_pk on s_user_role (s_role_id, s_username)*/ 
+/* go */

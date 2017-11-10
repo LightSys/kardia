@@ -1,0 +1,16 @@
+#!/bin/sh
+
+#run using sh -e filename
+
+mkdir -p mdpi hdpi xhdpi xxhdpi
+
+
+for f in ./*.svg; do
+    filename=`dirname $f`/`basename $f .svg`.png
+    echo "Converting $f to $filename"
+    convert -density 300 -background none $f -resize 72x72 -gravity center -extent 72x72  	mdpi/$filename # 2>/dev/null
+	convert -density 300 -background none $f -resize 96x96 -gravity center -extent 		96x96  hdpi/$filename # 2>/dev/null
+	convert -density 300 -background none $f -resize 144x144 -gravity center -extent 	144x144  xhdpi/$filename # 2>/dev/null
+	convert -density 300 -background none $f -resize 192x192 -gravity center -extent 	192x192  xxhdpi/$filename # 2>/dev/null
+    echo 'Done'
+done;
