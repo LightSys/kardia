@@ -1989,7 +1989,9 @@ cashdisb_subform "widget/component-decl"
 							// have an osrc that does this calculation -- similar to gljournal_edit::jnl_total_osrc
 							batch_total_lbl2 "widget/label"
 							{
-								width=200;valign="middle";
+								width=200;
+								valign="middle";
+								height=20;
 								value = runclient("Batch Total: $0.00"); // + isnull(:batch_total_form:total, "(empty)"));
 							}
 							

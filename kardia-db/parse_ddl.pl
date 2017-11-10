@@ -1548,7 +1548,7 @@ open(KEY_D,">${keys_out}_drop.sql");
 open(WIKI,">${wiki_out}.txt");
 
 
-# Logins - use PAM (uses linux passwd)
+# Logins - use ASE (internal) as using PAM (uses linux passwd) is a paid add-on to ASE.
 print SEC_C "use master$cmd_terminator\n";
 
 if ($glob_backend eq "sybase") {
@@ -1559,7 +1559,7 @@ foreach $a (split /[,\s]+/,$userlist) {
     $a=~s/ //g;
     print SEC_C "if not exists (select * from syslogins where name='$a')\n"; 
     print SEC_C "begin\n";
-    print SEC_C "\texecute sp_addlogin $a, dummypassword, \@auth_mech=PAM\n";
+    print SEC_C "\texecute sp_addlogin $a, dummypassword, \@auth_mech=ASE\n";
     print SEC_C "end\n";
 }
 print SEC_C "\n\n";

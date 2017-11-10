@@ -16,5 +16,5 @@ tracks "system/query"
 	    having
 		:p_partner_key is not null
 	    ";
-    name_expression = ":p_partner_key + '|' + convert(string,:e_engagement_id)";
+    name_expression = "rtrim(:p_partner_key) + '|' + convert(string,:e_engagement_id)";
     }
