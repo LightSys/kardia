@@ -40,6 +40,7 @@ cd_batches "widget/component-decl"
 			:b:a_origin = 'CD'
 		ORDER BY
 			:b:a_batch_number");
+	baseobj = "/apps/kardia/data/Kardia_DB/a_batch/rows";
 	replicasize=50;
 	readahead=25;
 	autoquery=never;
