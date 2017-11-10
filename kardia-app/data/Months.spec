@@ -18,30 +18,24 @@ Months "application/filespec"
 	hints "column/hints" { min=5; max=20; }
 	}
 
-    lang "filespec/column"
-	{
-	type=string;
-	id=2;
-	}
-
     short_name "filespec/column"
 	{
 	type=string;
-	id=3;
+	id=2;
 	hints "column/hints" { length=3; }
 	}
 
     full_name "filespec/column"
 	{
 	type=string;
-	id=4;
+	id=3;
 	hints "column/hints" { length=10; }
 	}
 
     num_days "filespec/column"
 	{
 	type=integer;
-	id=5;
+	id=4;
 	format='10';
 	hints "column/hints" { min=28; max=31; }
 	}
@@ -49,7 +43,7 @@ Months "application/filespec"
     num_leapyear_days "filespec/column"
 	{
 	type=integer;
-	id=6;
+	id=5;
 	format='10';
 	hints "column/hints" { min=29; max=31; }
 	}

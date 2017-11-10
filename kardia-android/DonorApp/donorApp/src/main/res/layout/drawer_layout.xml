@@ -12,7 +12,6 @@
         android:layout_height="match_parent"/>
     
     <!-- The Navigation Drawer -->
-    
     <ListView 
         android:id="@+id/drawer"
         android:layout_width="240dp"

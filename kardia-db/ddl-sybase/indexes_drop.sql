@@ -69,6 +69,13 @@ go
 /* p_partner_relationship */
 /* drop index p_partner_relationship.p_partner_relationship_pk */ 
 /* go */
+drop index p_partner_relationship.p_relate_reverse_idx
+go
+
+
+/* p_partner_relationship_type */
+/* drop index p_partner_relationship_type.p_relat_type_pk */ 
+/* go */
 
 
 /* p_church */
@@ -115,7 +122,18 @@ go
 
 
 /* p_banking_details */
+drop index p_banking_details.p_bankd_acct_idx
+go
+drop index p_banking_details.p_bankd_bpartner_idx
+go
+drop index p_banking_details.p_bankd_partner_idx
+go
 /* drop index p_banking_details.p_banking_details_pk */ 
+/* go */
+
+
+/* p_banking_type */
+/* drop index p_banking_type.p_banking_type_pk */ 
 /* go */
 
 
@@ -151,6 +169,33 @@ go
 /* go */
 
 
+/* p_acquisition_code */
+/* drop index p_acquisition_code.p_acqcode_pk */ 
+/* go */
+
+
+/* p_partner_search */
+/* drop index p_partner_search.p_search_pk */ 
+/* go */
+
+
+/* p_partner_search_stage */
+/* drop index p_partner_search_stage.p_searchstage_pk */ 
+/* go */
+
+
+/* p_partner_search_results */
+drop index p_partner_search_results.p_search_stage_idx
+go
+/* drop index p_partner_search_results.p_searchres_pk */ 
+/* go */
+
+
+/* p_search_stage_criteria */
+/* drop index p_search_stage_criteria.p_stage_criteria_pk */ 
+/* go */
+
+
 /* m_list */
 /* drop index m_list.m_list_pk */ 
 /* go */
@@ -161,6 +206,374 @@ go
 /* go */
 drop index m_list_membership.m_lists_by_partner
 go
+
+
+/* e_contact_autorecord */
+drop index e_contact_autorecord.e_autorec_collab_idx
+go
+drop index e_contact_autorecord.e_autorec_collabhist_idx
+go
+drop index e_contact_autorecord.e_autorec_histtype_idx
+go
+/* drop index e_contact_autorecord.e_autorec_pk */ 
+/* go */
+
+
+/* e_contact_history_type */
+/* drop index e_contact_history_type.e_cnt_hist_type_pk */ 
+/* go */
+
+
+/* e_contact_history */
+drop index e_contact_history.e_cnt_hist_locpar_idx
+go
+drop index e_contact_history.e_cnt_hist_par_idx
+go
+/* drop index e_contact_history.e_cnt_hist_pk */ 
+/* go */
+drop index e_contact_history.e_cnt_hist_type_idx
+go
+drop index e_contact_history.e_cnt_hist_whom_idx
+go
+
+
+/* e_activity */
+drop index e_activity.e_act_par_idx
+go
+/* drop index e_activity.e_act_pk */ 
+/* go */
+drop index e_activity.e_act_sort_idx
+go
+drop index e_activity.e_act_type_idx
+go
+
+
+/* e_engagement_track */
+drop index e_engagement_track.e_trk_name_idx
+go
+/* drop index e_engagement_track.e_trk_pk */ 
+/* go */
+
+
+/* e_engagement_track_collab */
+/* drop index e_engagement_track_collab.e_trkcoll_pk */ 
+/* go */
+drop index e_engagement_track_collab.e_trkcoll_ptnr_idx
+go
+
+
+/* e_engagement_step */
+drop index e_engagement_step.e_step_name_idx
+go
+/* drop index e_engagement_step.e_step_pk */ 
+/* go */
+
+
+/* e_engagement_step_collab */
+/* drop index e_engagement_step_collab.e_stepcoll_pk */ 
+/* go */
+drop index e_engagement_step_collab.e_stepcoll_ptnr_idx
+go
+
+
+/* e_engagement_step_req */
+/* drop index e_engagement_step_req.e_req_pk */ 
+/* go */
+
+
+/* e_partner_engagement */
+/* drop index e_partner_engagement.e_pareng_pk */ 
+/* go */
+drop index e_partner_engagement.e_pareng_start_idx
+go
+drop index e_partner_engagement.e_pareng_trackstep_idx
+go
+
+
+/* e_partner_engagement_req */
+/* drop index e_partner_engagement_req.e_parreq_pk */ 
+/* go */
+
+
+/* e_tag_type */
+/* drop index e_tag_type.e_tagtype_pk */ 
+/* go */
+
+
+/* e_tag_type_relationship */
+/* drop index e_tag_type_relationship.e_tagtyperel_pk */ 
+/* go */
+
+
+/* e_tag */
+/* drop index e_tag.e_tag_pk */ 
+/* go */
+
+
+/* e_tag_activity */
+drop index e_tag_activity.e_tagact_gptnr_idx
+go
+drop index e_tag_activity.e_tagact_gtag_idx
+go
+/* drop index e_tag_activity.e_tagact_pk */ 
+/* go */
+drop index e_tag_activity.e_tagact_ptnr_idx
+go
+drop index e_tag_activity.e_tagact_tagid_idx
+go
+
+
+/* e_document_type */
+drop index e_document_type.e_doctype_label_idx
+go
+drop index e_document_type.e_doctype_parent_idx
+go
+/* drop index e_document_type.e_doctype_pk */ 
+/* go */
+
+
+/* e_document */
+drop index e_document.e_doc_curpath_idx
+go
+/* drop index e_document.e_doc_pk */ 
+/* go */
+drop index e_document.e_doc_type_idx
+go
+drop index e_document.e_doc_work_idx
+go
+
+
+/* e_document_comment */
+drop index e_document_comment.e_doccom_collab_idx
+go
+/* drop index e_document_comment.e_doccom_pk */ 
+/* go */
+drop index e_document_comment.e_doccom_tgtcollab_idx
+go
+drop index e_document_comment.e_doccom_work_idx
+go
+
+
+/* e_partner_document */
+drop index e_partner_document.e_pardoc_egagement_idx
+go
+/* drop index e_partner_document.e_pardoc_pk */ 
+/* go */
+drop index e_partner_document.e_pardoc_rev_idx
+go
+drop index e_partner_document.e_pardoc_work_idx
+go
+
+
+/* e_workflow_type */
+/* drop index e_workflow_type.e_work_pk */ 
+/* go */
+
+
+/* e_workflow_type_step */
+/* drop index e_workflow_type_step.e_workstep_pk */ 
+/* go */
+drop index e_workflow_type_step.e_workstep_trig_idx
+go
+drop index e_workflow_type_step.e_workstep_type_idx
+go
+
+
+/* e_workflow */
+/* drop index e_workflow.e_workinst_pk */ 
+/* go */
+drop index e_workflow.e_workinst_steptrig_idx
+go
+drop index e_workflow.e_workinst_trig_idx
+go
+drop index e_workflow.e_workinst_type_idx
+go
+
+
+/* e_collaborator_type */
+/* drop index e_collaborator_type.e_collabtype_pk */ 
+/* go */
+
+
+/* e_collaborator */
+/* drop index e_collaborator.e_collab_pk */ 
+/* go */
+drop index e_collaborator.e_collab_rev_idx
+go
+drop index e_collaborator.e_collab_type_idx
+go
+
+
+/* e_todo_type */
+/* drop index e_todo_type.e_todotype_pk */ 
+/* go */
+
+
+/* e_todo */
+drop index e_todo.e_todo_collab_idx
+go
+drop index e_todo.e_todo_doc_idx
+go
+drop index e_todo.e_todo_eng_idx
+go
+drop index e_todo.e_todo_par_idx
+go
+/* drop index e_todo.e_todo_pk */ 
+/* go */
+drop index e_todo.e_todo_reqitem_idx
+go
+drop index e_todo.e_todo_type_idx
+go
+
+
+/* e_data_item_type */
+drop index e_data_item_type.e_ditype_parent_idx
+go
+/* drop index e_data_item_type.e_ditype_pk */ 
+/* go */
+
+
+/* e_data_item_group */
+/* drop index e_data_item_group.e_digrp_pk */ 
+/* go */
+drop index e_data_item_group.e_digrp_type_idx
+go
+
+
+/* e_data_item */
+drop index e_data_item.e_dataitem_group_idx
+go
+/* drop index e_data_item.e_dataitem_pk */ 
+/* go */
+drop index e_data_item.e_dataitem_type_idx
+go
+
+
+/* e_highlights */
+drop index e_highlights.e_h_nt_idx
+go
+/* drop index e_highlights.e_h_pk */ 
+/* go */
+drop index e_highlights.e_h_prec_idx
+go
+
+
+/* e_data_highlight */
+drop index e_data_highlight.e_dh_obj_idx
+go
+/* drop index e_data_highlight.e_dh_pk */ 
+/* go */
+
+
+/* e_ack */
+drop index e_ack.e_ack_obj_idx
+go
+drop index e_ack.e_ack_par2_idx
+go
+drop index e_ack.e_ack_par3_idx
+go
+drop index e_ack.e_ack_par_idx
+go
+/* drop index e_ack.e_ack_pk */ 
+/* go */
+
+
+/* e_ack_type */
+/* drop index e_ack_type.e_ackt_pk */ 
+/* go */
+
+
+/* e_trackactivity */
+/* drop index e_trackactivity.e_trkact_pk */ 
+/* go */
+
+
+/* e_text_expansion */
+/* drop index e_text_expansion.e_exp_pk */ 
+/* go */
+
+
+/* e_text_search_word */
+/* drop index e_text_search_word.e_tsw_pk */ 
+/* go */
+drop index e_text_search_word.e_tsw_word_idx
+go
+
+
+/* e_text_search_rel */
+/* drop index e_text_search_rel.e_tsr_pk */ 
+/* go */
+drop index e_text_search_rel.e_tsr_rev_idx
+go
+
+
+/* e_text_search_occur */
+/* drop index e_text_search_occur.e_tso_pk */ 
+/* go */
+drop index e_text_search_occur.e_tso_seq_idx
+go
+
+
+/* h_staff */
+/* drop index h_staff.h_staff_pk */ 
+/* go */
+
+
+/* h_group */
+/* drop index h_group.h_group_pk */ 
+/* go */
+
+
+/* h_group_member */
+drop index h_group_member.h_group_ptnr_idx
+go
+/* drop index h_group_member.h_groupm_pk */ 
+/* go */
+
+
+/* h_holidays */
+/* drop index h_holidays.h_holiday_pk */ 
+/* go */
+
+
+/* h_work_register */
+drop index h_work_register.h_workreg_ben_idx
+go
+/* drop index h_work_register.h_workreg_pk */ 
+/* go */
+
+
+/* h_work_register_times */
+/* drop index h_work_register_times.h_workregt_pk */ 
+/* go */
+
+
+/* h_benefit_period */
+/* drop index h_benefit_period.h_benper_pk */ 
+/* go */
+
+
+/* h_benefit_type */
+/* drop index h_benefit_type.h_bentype_pk */ 
+/* go */
+
+
+/* h_benefit_type_sched */
+/* drop index h_benefit_type_sched.h_bentypesch_pk */ 
+/* go */
+drop index h_benefit_type_sched.h_bts_group_idx
+go
+drop index h_benefit_type_sched.h_bts_partner_idx
+go
+
+
+/* h_benefits */
+drop index h_benefits.h_ben_partner_idx
+go
+drop index h_benefits.h_ben_period_idx
+go
+/* drop index h_benefits.h_ben_pk */ 
+/* go */
 
 
 /* r_group */
@@ -455,6 +868,13 @@ go
 /* go */
 
 
+/* a_salary_review */
+/* drop index a_salary_review.a_salreview_pk */ 
+/* go */
+drop index a_salary_review.a_salreview_review_idx
+go
+
+
 /* a_cc_admin_fee */
 /* drop index a_cc_admin_fee.a_cc_admin_fee_pk */ 
 /* go */
@@ -574,11 +994,59 @@ go
 
 
 /* a_giving_pattern */
+drop index a_giving_pattern.a_givingp_actual_idx
+go
 drop index a_giving_pattern.a_givingp_donor_idx
 go
 drop index a_giving_pattern.a_givingp_fund_idx
 go
 /* drop index a_giving_pattern.a_givingp_pk */ 
+/* go */
+drop index a_giving_pattern.a_givingp_review_idx
+go
+
+
+/* a_giving_pattern_allocation */
+drop index a_giving_pattern_allocation.a_givingpa_actual_idx
+go
+drop index a_giving_pattern_allocation.a_givingpa_donor_idx
+go
+drop index a_giving_pattern_allocation.a_givingpa_fund_idx
+go
+/* drop index a_giving_pattern_allocation.a_givingpa_pk */ 
+/* go */
+drop index a_giving_pattern_allocation.a_givingpa_review_idx
+go
+
+
+/* a_giving_pattern_flag */
+/* drop index a_giving_pattern_flag.a_givingf_pk */ 
+/* go */
+drop index a_giving_pattern_flag.a_givingf_review_idx
+go
+
+
+/* a_funding_target */
+/* drop index a_funding_target.a_target_pk */ 
+/* go */
+
+
+/* a_support_review */
+/* drop index a_support_review.a_supportreview_pk */ 
+/* go */
+
+
+/* a_support_review_target */
+/* drop index a_support_review_target.a_supptgt_pk */ 
+/* go */
+drop index a_support_review_target.a_supptgt_review_idx
+go
+drop index a_support_review_target.a_supptgt_target_idx
+go
+
+
+/* a_descriptives */
+/* drop index a_descriptives.a_descr_pk */ 
 /* go */
 
 
@@ -623,6 +1091,8 @@ go
 /* go */
 drop index i_eg_gift_import.i_eg_kdepbatch_idx
 go
+drop index i_eg_gift_import.i_eg_kdoncc_idx
+go
 drop index i_eg_gift_import.i_eg_kdonor_idx
 go
 drop index i_eg_gift_import.i_eg_kfeebatch_idx
@@ -631,6 +1101,43 @@ drop index i_eg_gift_import.i_eg_kfund_idx
 go
 drop index i_eg_gift_import.i_eg_kgiftbatch_idx
 go
+
+
+/* i_eg_giving_url */
+drop index i_eg_giving_url.i_eg_giveurl_revidx
+go
+/* drop index i_eg_giving_url.i_eg_giving_url_pk */ 
+/* go */
+
+
+/* i_crm_partner_import */
+/* drop index i_crm_partner_import.i_crm_partner_import_pk */ 
+/* go */
+
+
+/* i_crm_partner_import_option */
+/* drop index i_crm_partner_import_option.i_crm_partner_import_opt_pk */ 
+/* go */
+
+
+/* i_crm_import_type */
+/* drop index i_crm_import_type.i_crm_import_type_pk */ 
+/* go */
+
+
+/* i_crm_import_type_option */
+/* drop index i_crm_import_type_option.i_crm_import_type_option_pk */ 
+/* go */
+
+
+/* i_disb_import_classify */
+/* drop index i_disb_import_classify.i_disb_import_pk */ 
+/* go */
+
+
+/* i_disb_import_status */
+/* drop index i_disb_import_status.i_disb_legacy_pk */ 
+/* go */
 
 
 /* c_message */
@@ -650,6 +1157,11 @@ go
 /* go */
 drop index c_member.s_username_idx
 go
+
+
+/* s_config */
+/* drop index s_config.s_config_pk */ 
+/* go */
 
 
 /* s_user_data */

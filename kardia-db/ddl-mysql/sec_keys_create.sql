@@ -178,6 +178,18 @@ alter table e_ack
 alter table e_ack
 	add constraint e_ack_par3_idx unique  (p_dn_partner_key,e_whom,e_ack_id);
 
+alter table e_text_search_word
+	add constraint e_tsw_word_idx unique  (e_word, e_word_id);
+
+alter table h_work_register
+	add constraint h_workreg_ben_idx unique  (h_benefit_type_id, p_partner_key, h_work_register_id);
+
+alter table h_benefit_type_sched
+	add constraint h_bts_partner_idx unique  (p_partner_key, h_benefit_type_id, h_benefit_type_sched_id);
+
+alter table h_benefit_type_sched
+	add constraint h_bts_group_idx unique  (h_group_id, h_benefit_type_id, h_benefit_type_sched_id);
+
 alter table r_group
 	add constraint r_grp_modfile_idx unique  (r_group_module, r_group_file, r_group_name);
 
@@ -247,6 +259,21 @@ alter table a_subtrx_gift_item
 alter table a_motivational_code
 	add constraint a_motiv_code_list unique  (m_list_code, a_ledger_number, a_motivational_code);
 
+alter table a_giving_pattern
+	add constraint a_givingp_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern
+	add constraint a_givingp_actual_idx unique  (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern_allocation
+	add constraint a_givingpa_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern_allocation
+	add constraint a_givingpa_actual_idx unique  (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
+alter table a_giving_pattern_flag
+	add constraint a_givingf_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_acct_idx unique  (a_cash_account_code, a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
 
@@ -254,31 +281,31 @@ alter table a_subtrx_deposit
 	add constraint a_subtrx_dep_acct_idx unique  (a_account_code, a_ledger_number, a_batch_number);
 
 alter table i_eg_gift_import
-	add constraint i_eg_kdonor_idx unique  (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_kdonor_idx unique  (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_edonor_idx unique  (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_edonor_idx unique  (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_kfund_idx unique  (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_kfund_idx unique  (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_efund_idx unique  (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_efund_idx unique  (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_egift_idx unique  (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_egift_idx unique  (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_edeposit_idx unique  (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_edeposit_idx unique  (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_kgiftbatch_idx unique  (a_batch_number, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_kgiftbatch_idx unique  (a_batch_number, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_kfeebatch_idx unique  (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_kfeebatch_idx unique  (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_kdepbatch_idx unique  (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid);
+	add constraint i_eg_kdepbatch_idx unique  (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table c_chat
 	add constraint c_public_idx unique  (c_public, c_chat_id);

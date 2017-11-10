@@ -1,0 +1,109 @@
+$Version=2$
+mlists "system/report"
+    {
+    title = "Master Mailing Lists Report";
+
+    document_format="application/pdf";
+
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    mlists_qy "report/query"
+	{
+	sql = "	select
+		    :ml:m_list_code,
+		    :ml:m_list_description,
+		    :ml:m_list_status,
+		    :ml:m_list_type,
+		    :ml:m_delivery_method,
+		    :ml:m_discard_after,
+		    :ml:m_list_frozen,
+		    :ml:m_date_sent,
+		    :ml:m_charge_ledger,
+		    :ml:p_postal_mode,
+		    :ml:m_charge_cost_ctr,
+		    :ml:s_date_created,
+		    :ml:s_created_by,
+		    :ml:s_date_modified,
+		    :ml:s_modified_by,
+		    subcnt = (select count(1) from /apps/kardia/data/Kardia_DB/m_list_membership/rows mm where :mm:m_list_code = :ml:m_list_code and :mm:m_membership_status = 'A')
+		from
+		    /apps/kardia/data/Kardia_DB/m_list/rows ml
+		order by
+		    :ml:m_list_code
+		";
+
+	}
+
+
+    hdrimg "report/image"
+	{
+	x=67.85;y=0;
+	height=4;
+	width = 12.15;
+	source = /apps/kardia/data/Site.struct:site_report_logo;
+	}
+
+    rpt_title "report/area"
+	{
+	x=0; y=0; width=80; height=4;
+	font=helvetica;
+	align=left;
+	t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Master Mailing Lists Report\n"); }
+	t_d15 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+	}
+
+    //mlists_mcol "report/section"
+//	{
+//	x=0; width=80; height=0;
+//	colsep = 1.25;
+//	columns = 3;
+//	balanced = no;
+
+	mlists_table "report/table"
+	    {
+	    x=0; width=39.3; height=0;
+	    columns=3;
+	    widths=5,5,28.3;
+	    colsep=0.5;
+	    nullformat="";
+	    moneyformat = "-###,###,##0.00";
+	    dateformat = "dd-MMM-yyyy";
+	    bottomborder=0.3;
+	    margintop=0;
+	    source=mlists_qy;
+
+	    hdr "report/table-row"
+		{
+		header = yes;
+		font=helvetica;
+		fontsize=8;
+		style=bold;
+		topborder=0.3;
+		bottomborder=0.05;
+
+		h_id "report/table-cell" { value='List'; align=center; }
+		h_cnt "report/table-cell" { value='#'; align=center; }
+		h_name "report/table-cell" { value='Description'; align=center; }
+		}
+
+	    one_list "report/table-row"
+		{
+		allowbreak=no;
+		fontsize=8;
+		font=helvetica;
+		margintop = 0.1;
+
+		d_id "report/table-cell" { value=runserver(:mlists_qy:m_list_code); }
+		d_cnt "report/table-cell" { value=runserver(:mlists_qy:subcnt); }
+		d_name "report/table-cell" { value=runserver(:mlists_qy:m_list_description); }
+		}
+	    }
+//	}
+    }
+

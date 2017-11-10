@@ -147,13 +147,13 @@ plugin_crm_timeline_FILE "widget/component-decl"
 	    {
 	    width=280;
 	    height=24;
-	    text=runclient("Delete File from " + :partner_osrc:partnername);
+	    text=runclient("Remove File from " + :partner_osrc:partnername);
 	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
 	    fgcolor1=white;
 	    fgcolor2=black;
 	    disable_color="#334466";
 
-	    on_dissoc "widget/connector" { event=Click; event_confirm="Delete this file from this person?"; target=dissoc_osrc; action=QueryParam; document_id=runclient(convert(integer, :timeline_osrc:e_reference_info)); partner=runclient(:partner_osrc:p_partner_key); }
+	    on_dissoc "widget/connector" { event=Click; event_confirm="Remove file from this person's profile?"; target=dissoc_osrc; action=QueryParam; document_id=runclient(convert(integer, :timeline_osrc:e_reference_info)); partner=runclient(:partner_osrc:p_partner_key); }
 	    }
 
 	dissoc_osrc "widget/osrc"
@@ -166,7 +166,7 @@ plugin_crm_timeline_FILE "widget/component-decl"
 			:e_document_id = :parameters:document_id and
 			:p_partner_key = :parameters:partner
 		    ";
-	    ttttttttt=never;
+	    autoquery=never;
 	    readahead=2;
 	    replicasize=2;
 

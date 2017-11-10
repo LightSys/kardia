@@ -55,8 +55,25 @@ OBJECT STRUCTURE...
 	    note_text	    - the content of the prayer request
 	    note_type	    - the type of note (Pray or Update)
 	    note_date	    - the date that the prayer request was posted
-	    supporter_partner_id - the ID of the missionary
-	    supporter_partner_name - the name of the missionary
+	    supporter_partner_id - the ID of the supporter
+	    supporter_partner_name - the name of the supporter
+
+    /apps/kardia/api/missionary/{missionaryid}/Comments -- Information about the
+    comments that the missionary has received on prayer requests, updates, etc.
+
+	This URL is a collection, and will contain objects with the following
+	properties:
+
+	    comment_id	    - the ID of the comment
+	    comment	    - text of the comment
+	    comment_date    - the date/time the comment was left
+	    note_id	    - the id of the missionary's request or note
+	    note_subject    - the subject of the missionary's request or note
+	    note_text	    - the content of the request or note
+	    note_type	    - the type of note (Pray or Update)
+	    note_date	    - the date that the request or note was posted
+	    supporter_partner_id - the ID of the supporter
+	    supporter_partner_name - the name of the supporter
 
     /apps/kardia/api/missionary/{missionaryid}/Supporters -- A list of
     supporters.  The list may only include those supporters who support the
@@ -86,6 +103,13 @@ OBJECT STRUCTURE...
 	    supporter_partner_id - the ID of the supporter
 	    supporter_partner_name - the name of the supporter
 
+    /apps/kardia/api/missionary/{missionaryid}/Supporters/{suppID}/Comments --
+    Information about the comments that the missionary has received on prayer
+    requests, updates, etc., from a particular supporter.
+
+	This URL is a collection, and will contain objects with the same
+	properties as the general Comments collection, see above.
+
     /apps/kardia/api/missionary/{missionaryid}/Notes -- A list of prayer
     requests and updates that the missionary has posted.
 
@@ -113,6 +137,13 @@ OBJECT STRUCTURE...
 	    note_date	    - the date that the prayer request was posted
 	    supporter_partner_id - the ID of the supporter
 	    supporter_partner_name - the name of the supporter
+
+    /apps/kardia/api/missionary/{missionaryid}/Notes/{noteID}/Comments --
+    Information about the comments that the missionary has received on prayer
+    requests, updates, etc., regarding a particular note or prayer request.
+
+	This URL is a collection, and will contain objects with the same
+	properties as the general Comments collection, see above.
 
     /apps/kardia/api/missionary/{missionaryid}/PrayerLetters -- a list of
     prayer / support letters that the missionary has published.

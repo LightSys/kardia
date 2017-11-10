@@ -44,8 +44,8 @@ mailing_report "system/report"
     only_payees "report/parameter" { type=integer; }
     only_staff "report/parameter" { type=integer; }
     //only_postal "report/parameter" { type=integer; default=0; }
-    only_okmail "report/parameter" { type=integer; default=0; }
-    only_oksolicit "report/parameter" { type=integer; default=0; }
+    only_okmail "report/parameter" { type=integer; default=1; }
+    only_oksolicit "report/parameter" { type=integer; default=1; }
     cntry_fmt "report/parameter" { type=string; default='full'; }
     include_obs "report/parameter" { type=integer; default=0; }
     mincopies "report/parameter" { type=integer; default=0; }

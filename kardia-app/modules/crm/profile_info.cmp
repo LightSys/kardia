@@ -65,7 +65,8 @@ profile_info "widget/component-decl"
 		    txt = :ct:text + ': ' + isnull('+' + :c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + isnull(:c:p_contact_data,''),
 		    size = 'small',
 		    type = :ct:text,
-		    ref = :c:name
+		    ref = :c:name,
+		    contact = :c:p_contact_data
 		from
 		    /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
 		    /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct
@@ -110,6 +111,34 @@ profile_info "widget/component-decl"
 	    cellvspacing = 0;
 	    row1_bgcolor = white;
 	    row2_bgcolor = white;
+
+	    email_detail "widget/table-row-detail"
+		{
+		display_for=runclient(:partner_info_osrc:type == 'Email');
+		width=300; height=32;
+		email_detail_hbox "widget/hbox"
+		    {
+		    x=4; y=4; width=296; height=24; spacing=8;
+
+		   send_email_btn "widget/textbutton"
+			{
+			width=130;
+			text="Send Email";
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_send_email "widget/connector"
+			    {
+			    event=Click;
+			    target=profile_info;
+			    action=Launch;
+			    Source=runclient("mailto:" + :partner_info_osrc:contact);
+			    }
+			}
+		    }
+		}
 
 	    address_detail "widget/table-row-detail"
 		{

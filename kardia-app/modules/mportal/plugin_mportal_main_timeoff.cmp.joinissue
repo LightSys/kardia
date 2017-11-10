@@ -1,0 +1,180 @@
+$Version=2$
+timeoff "widget/component-decl"
+    {
+    height=602; width=1172;
+
+    title = "My Time";
+    icon = "/apps/kardia/images/icons/openiconic-clock.svg";
+    sequence = 20;
+
+
+    years_osrc "widget/osrc"
+	{
+	sql = "	select 
+		    :bp:h_benefit_period_label,
+		    :bp:h_benefit_period_start_date,
+		    :bp:h_benefit_period_end_date
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+		    /apps/kardia/data/Kardia_DB/h_staff/rows hs,
+		    /apps/kardia/data/Kardia_DB/h_benefits/rows b,
+		    /apps/kardia/data/Kardia_DB/h_benefit_period/rows bp
+		where
+		    :s:p_kardia_login = user_name() and
+		    :hs:p_partner_key = :s:p_partner_key and
+		    :b:p_partner_key = :hs:p_partner_key and
+		    :bp:h_benefit_period_id = :b:h_benefit_period_id
+		group by
+		    :s:p_partner_key,
+		    :b:h_benefit_period_id
+		";
+	replicasize=20;
+	readahead=20;
+	autoquery=onload;
+
+	mytime_vbox "widget/vbox"
+	    {
+	    x=0; y=0; height=602; width=1172;
+	    spacing=10;
+
+	    selectyear_hbox "widget/hbox"
+		{
+		height=24;
+		spacing=8;
+
+		selectyear_label "widget/label" { y=2; width=100; text="Period/Year:"; style=bold; align=right; }
+		selectyear_dd "widget/dropdown"
+		    {
+		    width=200;
+		    mode=objectsource;
+		    fieldname=h_benefit_period_label;
+		    numdisplay=10;
+		    bgcolor="#f8f8f8";
+		    }
+		}
+
+	    sepline "widget/image" { fl_height=0; fl_width=100; height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	    data_hbox "widget/hbox"
+		{
+		height=557;
+		spacing=10;
+
+		summary_osrc "widget/osrc"
+		    {
+		    period "widget/parameter" { type=integer; }
+		    sql = " -- First, regular benefits
+			    select 
+				:s:p_partner_key,
+				:bt:h_benefit_type_id,
+				:bt:h_benefit_type_label,
+				:b:h_benefit_period_id,
+				:b:h_carried_over,
+				:b:h_newly_accrued,
+				:bts:h_group_id,
+				:bts:h_benefit_mode,
+				:bts:h_new_benefits,
+				:bts:h_carryover_benefits,
+				:bts:h_accrual_threshold,
+				:bts:h_usage_increment
+			    from
+				identity /apps/kardia/data/Kardia_DB/h_benefit_type/rows bt,
+				/apps/kardia/data/Kardia_DB/p_staff/rows s,
+				/apps/kardia/data/Kardia_DB/h_staff/rows hs,
+				/apps/kardia/data/Kardia_DB/h_benefits/rows b,
+				/apps/kardia/data/Kardia_DB/h_benefit_type_sched/rows bts
+			    where
+				:s:p_kardia_login = user_name() and
+				:hs:p_partner_key = :s:p_partner_key and
+				:b:p_partner_key = :hs:p_partner_key and
+				:b:h_benefit_type_id = :bt:h_benefit_type_id and
+				:b:h_benefit_period_id = :parameters:period and
+				:bts:h_benefit_type_id =* :b:h_benefit_type_id and
+				:bts:h_benefit_type_sched_id =* :b:h_benefit_type_sched_id
+			    ;
+
+			    -- Second, benefits without a matching Benefits record for the person
+			    select
+				:s:p_partner_key,
+				:bt:h_benefit_type_id,
+				:bt:h_benefit_type_label,
+				:b:h_benefit_period_id,
+				:b:h_carried_over,
+				:b:h_newly_accrued,
+				:bts:h_group_id,
+				:bts:h_benefit_mode,
+				:bts:h_new_benefits,
+				:bts:h_carryover_benefits,
+				:bts:h_accrual_threshold,
+				:bts:h_usage_increment
+			    from
+				identity /apps/kardia/data/Kardia_DB/h_benefit_type/rows bt,
+				/apps/kardia/data/Kardia_DB/p_staff/rows s,
+				/apps/kardia/data/Kardia_DB/h_staff/rows hs,
+				/apps/kardia/data/Kardia_DB/h_benefit_type_sched/rows bts,
+				/apps/kardia/data/Kardia_DB/h_benefits/rows b
+			    where
+				:s:p_kardia_login = user_name() and
+				:hs:p_partner_key = :s:p_partner_key and
+				:bts:h_benefit_type_id = :bt:h_benefit_type_id and
+				(:bts:p_partner_key is null or :bts:p_partner_key = :hs:p_partner_key) and
+				(:bts:h_min_years is null or :bts:h_min_years <= datediff(year, :hs:h_start_date, getdate())) and
+				(:bts:h_max_years is null or :bts:h_max_years >= datediff(year, :hs:h_start_date, getdate())) and
+				:b:h_benefit_type_id =* :bts:h_benefit_type_id and
+				:b:p_partner_key =* :hs:p_partner_key and
+				:b:h_benefit_period_id = :parameters:period
+			    having
+				(:h_group_id is null or (select count(1) from /apps/kardia/data/Kardia_DB/h_group_member/rows gm where :gm:p_partner_key = :this:p_partner_key and :gm:h_group_id = :this:h_group_id) > 0) and
+				:h_carried_over is null
+			    ";
+		    replicasize=30;
+		    readahead=30;
+
+		    period_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=years_osrc;
+			key_1=period;
+			target_key_1=h_benefit_period_id;
+			revealed_only=yes;
+			}
+
+		    summary_table "widget/table"
+			{
+			width=300;
+			row_border_radius=4;
+			demand_scrollbar = yes;
+			overlap_scrollbar = yes;
+			initial_selection = no;
+			colsep = 0;
+			titlebar = yes;
+			min_rowheight = 16;
+			max_rowheight = 200;
+			cellvspacing = 4;
+			row1_bgcolor = white;
+			row2_bgcolor = white;
+			show_selection = yes;
+			inner_padding = 4;
+			//rowhighlight_bgcolor = "#fff090";
+			textcolorhighlight = "#000000";
+			titlecolor = white;
+			hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			rowhighlight_border_color="#6080c0";
+			rowhighlight_border_radius=3;
+			rowhighlight_shadow_color="#6080c0";
+			rowhighlight_shadow_radius=2;
+			rowhighlight_shadow_offset=1;
+			rowhighlight_shadow_angle=135;
+			rowhighlight_bgcolor="#faf8ff";
+			nodata_message = runclient(condition(:summary_osrc:cx__pending, "No benefit information.", "Looking up your benefits..."));
+
+			st_name "widget/table-column" { title = "Benefit"; value=runclient(:summary_osrc:h_benefit_type_label); width=100; style=runclient(condition(:summary_osrc:h_benefit_type_label is null, 'bold', 'plain')); font_size=16; }
+			}
+		    }
+
+		vsepline "widget/image" { fl_width=0; fl_height=100; width=1; source="/apps/kardia/images/bg/lsblue_vertsep.png"; }
+		}
+	    }
+	}
+    }
+

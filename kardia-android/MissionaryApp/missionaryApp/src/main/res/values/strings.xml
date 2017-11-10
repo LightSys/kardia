@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="categories">
+        <item>Home</item>
+        <item>Gifts</item>
+        <item>Donors</item>
+        <item>Prayer Requests/Updates</item>
+        <item>Funds</item>
+        <item>Settings</item>
+        <item>Logout</item>
+    </string-array>
+    <string-array name="contactTypes">
+        <item>Update</item>
+        <item>Prayer Request</item>
+    </string-array>
+    <string-array name="notification_options">
+        <item>Week</item>
+        <item>Two Weeks</item>
+        <item>Month</item>
+        <item>Year</item>
+    </string-array>
+    <string-array name="refresh_times">
+        <item>Never</item>
+        <item>Minute</item>
+        <item>Thirty Minutes</item>
+        <item>Hour</item>
+        <item>Twelve Hours</item>
+        <item>Day</item>
+        <item>Week</item>
+    </string-array>
+    <string-array name="gift_periods">
+        <item>Month</item>
+        <item>Year</item>
+    </string-array>
+    <string-array name="search_name_options">
+        <item>Name:</item>
+        <item>First Name:</item>
+        <item>Last Name:</item>
+    </string-array>
+    <string name="app_name">Kardia Missionary</string>
+    <string name="app_name_2">2 Kardia Missionary</string>
+    <string name="add_update_button">Add Update</string>
+    <string name="add_request_button">Add Request</string>
+    <string name="add_letter_button"> Add Letter</string>
+    <string name="add_button">Opens Add Menu</string>
+    <string name="accounts_page">Kardia Login</string>
+    <string name="change_account">Change Account:</string>
+    <string name="password">password</string>
+    <string name="username">username</string>
+    <string name="server_name">server name</string>
+    <string name="protocal">protocal (ex. http)</string>
+    <string name="port">port</string>
+    <string name="done">Done</string>
+    <string name="login">Login</string>
+    <string name="user_id_ex_100001">User ID (ex. 100001)</string>
+    <string name="drawer_open">Drawer Open</string>
+    <string name="drawer_closed">Drawer Closed</string>
+    <string name="action_search">Search</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="submit">Submit</string>
+    <string name="search">Search</string>
+    <string name="date_range">Date Range</string>
+    <string name="choose_date">Choose Date</string>
+    <string name="choose_fund">Choose Fund</string>
+    <string name="choose_donor">Choose Donor</string>
+    <string name="dash">" - "</string>
+    <string name="by_amount">By Amount</string>
+    <string name="by_date">By Date</string>
+    <string name="by_name">By Name</string>
+    <string name="enter_name">Name</string>
+    <string name="clear_search">Clear</string>
+    <string name="amount_range">Amount Range</string>
+    <string name="by_donor">By Donor</string>
+    <string name="by_fund">By Fund</string>
+    <string name="subject_title">Subject:</string>
+    <string name="subject">subject</string>
+    <string name="type_contact">Type Of Contact:</string>
+    <string name="cancel">Cancel</string>
+    <string name="from">From:</string>
+    <string name="set">Set</string>
+    <string name="end_date">End Date: </string>
+    <string name="start_date">Start Date: </string>
+    <string name="choose_time">Choose Time</string>
+    <string name="time">Time: </string>
+    <string name="dollar_sign">$</string>
+    <string name="praying">Praying</string>
+    <string name="comment">Comment</string>
+    <string name="comment_prompt">Enter your comment</string>
+    <string name="note_prompt">Enter your update/prayer request</string>
+    <string name="letter_prompt">Enter your letter</string>
+    <string name="header_prompt">Enter header</string>
+    <string name="userID_Prompt">Enter Donor ID</string>
+    <string name="original_message_label">Original Post</string>
+    <string name="profile_pic_description">Profile Picture</string>
+    <string name="options_refresh_text">Auto Refresh</string>
+    <string name="options_gift_text">Gift Period</string>
+    <string name="options_allow_SSC">Allow Self-Signed SSL</string>
+    <string name="options_reminder_text">Update Reminder</string>
+    <string name="frequency_text">Repeat Every: </string>
+    <string name="apply_button">Apply</string>
+    <string name="gift_total_text">Gift Total</string>
+    <string name="connected_account_text">Connected Account:</string>
+    <string name="no_account_text">No Accounts Connected.</string>
+    <string name="always">Always allow</string>
+    <string name="allow">Allow once</string>
+    <string name="no">No</string>
+</resources>

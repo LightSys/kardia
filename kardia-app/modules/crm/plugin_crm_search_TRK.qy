@@ -1,0 +1,165 @@
+$Version=2$
+plugin_crm_search_TRK "system/query"
+    {
+    // This query object provides the search stage support for
+    // searching based on tracks and steps.
+    //
+    require_endorsement="system:from_application";
+
+    search_id "query/parameter" { type=integer; }
+    cur_stage "query/parameter" { type=integer; }
+    prev_stage "query/parameter" { type=integer; }
+
+    sql = " -- First, we need to get our search stage information and config.
+	    declare object stage;
+	    select
+		:stage:op = :s:p_stage_op,
+		:stage:track = convert(integer,:sc:track),
+		:stage:step = convert(integer,:sc:step),
+		:stage:notstep = convert(integer,:sc:notstep),
+		:stage:startdate = convert(datetime,:sc:start),
+		:stage:enddate = convert(datetime,:sc:end),
+		:stage:comment = lower(:sc:comment)
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
+		/apps/kardia/modules/crm/advanced_search_params.qyp sc
+	    where
+		:s:p_search_id = :parameters:search_id and
+		:s:p_search_stage_id = :parameters:cur_stage and
+		:sc:p_search_id = :s:p_search_id and
+		:sc:p_search_stage_id = :s:p_search_stage_id
+	    ;
+
+	    -- Delete any previous results.
+	    delete
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    where
+		:s_username = user_name() and
+		:p_search_session_id = :parameters:search_id and
+		:p_search_stage_id = :parameters:cur_stage
+	    ;
+
+	    -- Now create this stage's results.
+	    -- Pass #1: copy previous results if we're ADDING.
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    select
+		:p_partner_key,
+		:s_username,
+		:p_search_session_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = '',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows s
+	    where
+		:s:s_username = user_name() and
+		:s:p_search_session_id = :parameters:search_id and
+		:s:p_search_stage_id = :parameters:prev_stage and
+		:stage:op = 'A'
+	    ;
+
+	    -- Pass #2: generate new results if we're ADDING
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    select
+		:e:p_partner_key,
+		s_username = user_name(),
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = '',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_partner_engagement/rows e
+	    where
+		:e:e_is_archived = 0 and
+		:e:e_completion_status != 'E' and
+		(:stage:track is null or :e:e_track_id = :stage:track) and
+		(:stage:comment is null or charindex(:stage:comment, lower(:e:e_comments)) > 0 or charindex(:stage:comment, lower(:e:e_desc)) > 0) and
+		:stage:op = 'A'
+	    group by
+		:e:p_partner_key
+	    having
+		(:stage:step is null or sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track, 1, 0)) > 0) and
+		(:stage:notstep is null or isnull(sum(condition(:e:e_step_id = :stage:notstep and :e:e_track_id = :stage:track, 1, 0)), 0) = 0) and
+		(:stage:startdate is null or sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track and :e:e_start_date >= :stage:startdate, 1, 0)) > 0) and
+		(:stage:enddate is null or sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track and :e:e_start_date <= :stage:enddate, 1, 0)) > 0)
+	    ;
+
+	    -- Pass #3: filter existing results if we're restricting
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    select
+		:p_partner_key,
+		s_username = user_name(),
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = '',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		/apps/kardia/data/Kardia_DB/e_partner_engagement/rows e
+	    where
+		:sr:s_username = user_name() and
+		:sr:p_search_session_id = :parameters:search_id and
+		:sr:p_search_stage_id = :parameters:prev_stage and
+		:stage:op = 'R' and
+		:sr:p_partner_key = :e:p_partner_key and
+		:e:e_is_archived = 0 and
+		:e:e_completion_status != 'E' and
+		(:stage:track is null or :e:e_track_id = :stage:track) and
+		(:stage:comment is null or charindex(:stage:comment, lower(:e:e_comments)) > 0 or charindex(:stage:comment, lower(:e:e_desc)) > 0)
+	    group by
+		:sr:p_partner_key
+	    having
+		(:stage:step is null or sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track, 1, 0)) > 0) and
+		(:stage:notstep is null or isnull(sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track, 1, 0)), 0) = 0) and
+		(:stage:startdate is null or sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track and :e:e_start_date >= :stage:startdate, 1, 0)) > 0) and
+		(:stage:enddate is null or sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track and :e:e_start_date <= :stage:enddate, 1, 0)) > 0)
+	    ;
+
+	    -- Pass #4: filter existing results if we're excluding
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+	    select
+		:sr:p_partner_key,
+		s_username = user_name(),
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = '',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		/apps/kardia/data/Kardia_DB/e_partner_engagement/rows e
+	    where
+		:sr:s_username = user_name() and
+		:sr:p_search_session_id = :parameters:search_id and
+		:sr:p_search_stage_id = :parameters:prev_stage and
+		:stage:op = 'E' and
+		:sr:p_partner_key *= :e:p_partner_key and
+		:e:e_is_archived = 0 and
+		:e:e_completion_status != 'E' and
+		(:stage:track is null or :e:e_track_id = :stage:track) and
+		(:stage:comment is null or charindex(:stage:comment, lower(:e:e_comments)) > 0 or charindex(:stage:comment, lower(:e:e_desc)) > 0)
+	    group by
+		:sr:p_partner_key
+	    having
+		count(:e:p_partner_key) = 0 or
+		(:stage:step is not null and not sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track, 1, 0)) > 0) or
+		(:stage:notstep is not null and isnull(sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track, 1, 0)), 0) > 0) or
+		(:stage:startdate is not null and not sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track and :e:e_start_date >= :stage:startdate, 1, 0)) > 0) or
+		(:stage:enddate is not null and not sum(condition(:e:e_step_id = :stage:step and :e:e_track_id = :stage:track and :e:e_start_date <= :stage:enddate, 1, 0)) > 0)
+	    ";
+    }

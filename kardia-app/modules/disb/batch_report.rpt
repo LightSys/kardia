@@ -45,7 +45,7 @@ check_report "system/report"
     resolution = 100;
 	//pagewidth = 215.9;		// QUESTION: what measurement system is this? ANSWER: "US Forms" units
 	//pageheight = 279.4;
-	marginleft=.01;
+	marginleft=1;
 	marginright=.01;
 	margintop=.01;
 	marginbottom=1;
@@ -459,7 +459,7 @@ check_report "system/report"
 			colsep=1;
 			source=check_qy,acct_cc_name_qy;
 			moneyformat = "-$###,###,##0.00";
-			font=hevetica;
+			//font=hevetica;
 			fontsize=8;
 			
 			li_hdr_a "report/table-row"
@@ -519,7 +519,7 @@ check_report "system/report"
 			colsep=1;
 			source=check_qy,acct_cc_name_qy;
 			moneyformat = "-$###,###,##0.00";
-			font=hevetica;
+			//font=hevetica;
 			fontsize=8;
 			
 			li_hdr_b "report/table-row"

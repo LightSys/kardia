@@ -11,9 +11,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import org.lightsys.donorapp.data.Account;
+import org.lightsys.donorapp.data.Comment;
 import org.lightsys.donorapp.data.Fund;
 import org.lightsys.donorapp.data.Gift;
+import org.lightsys.donorapp.data.JsonPost;
 import org.lightsys.donorapp.data.Missionary;
+import org.lightsys.donorapp.data.NewItem;
 import org.lightsys.donorapp.data.Note;
 import org.lightsys.donorapp.data.PrayerLetter;
 import org.lightsys.donorapp.data.PrayerNotification;
@@ -33,6 +36,11 @@ import org.lightsys.donorapp.data.Year;
  *   Items are added to tables by passing values in ContentValue objects
  *   Each table typically has at least a getObjects() which returns an array of all known elements, and an addObject(Object o) which adds the element(try to keep each element unique)
  *
+ * Edited by Judah Sistrunk on 6/2/2016
+ * 	added information relevent to the auto-updater
+ *	added information related to comments
+ *	also added information related to posting stuff to server
+ *
  */
 public class LocalDBHandler extends SQLiteOpenHelper{
 	
@@ -45,6 +53,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	private static final String COLUMN_ACCOUNTPASSWORD = "accountPassword";
 	private static final String COLUMN_SERVERNAME = "serverName";
 	private static final String COLUMN_PARTNER_NAME = "partnerName";
+	private static final String COLUMN_PORT_NUMBER = "portNumber";
+	private static final String COLUMN_PROTOCOL = "protocol";
 	//FUND TABLE
 	private static final String TABLE_FUND = "funds";
 	private static final String COLUMN_NAME = "name";
@@ -65,6 +75,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
     private static final String COLUMN_TEXT = "text";
     private static final String COLUMN_SUBJECT = "subject";
     private static final String COLUMN_MISSIONARY_NAME = "missionary_name";
+	private static final String COLUMN_MISSIONARY_ID = "missionary_id";
 	private static final String COLUMN_TYPE = "type";
 	private static final String COLUMN_PRAYED_FOR = "prayed_for";
 	//LETTERS TABLE
@@ -99,6 +110,31 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	//Time_Stamp
 	private static final String TABLE_TIMESTAMP = "timestamp";
 	private static final String COLUMN_DATE  = "date";
+	//comment table
+	private static final String TABLE_COMMENT = "comment";
+	private static final String COLUMN_COMMENT_ID = "comment_id";
+	private static final String COLUMN_SENDER_ID = "sender_id";
+	private static final String COLUMN_USER_NAME = "userName";
+	private static final String COLUMN_NOTE_ID = "note_id";
+	private static final String COLUMN_NOTE_TYPE = "note_type";
+	private static final String COLUMN_COMMENT_TEXT = "comment_text";
+	//new item table
+	private static final String TABLE_NEW_ITEM = "new_item";
+	private static final String COLUMN_NEW_ITEM_DATE = "new_item_date";
+	private static final String COLUMN_MESSAGE = "message";
+	//REFRESH_PERIOD
+	//not really a table, but a variable that needs to be accessed from multiple locations
+	private static final String TABLE_REFRESH_PERIOD = "refresh_period";
+	private static final String COLUMN_REFRESH = "refresh";
+	//giving url
+	private static final String TABLE_GIVING_URL = "giving_url";
+	private static final String COLUMN_URL = "url";
+	//json Posts
+	private static final String TABLE_JSON_POST = "json_post";
+	private static final String COLUMN_JSON_ID = "id";
+	private static final String COLUMN_JSON_STRING = "json_string";
+	private static final String COLUMN_JSON_URL = "json_url";
+
 	
 	/* ************************* Creation of Database and Tables ************************* */
 	/**
@@ -122,7 +158,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		String CREATE_ACCOUNTS_TABLE = "CREATE TABLE " + TABLE_ACCOUNTS + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_ACCOUNTNAME 
 				+ " TEXT," + COLUMN_ACCOUNTPASSWORD + " TEXT,"
-				+ COLUMN_SERVERNAME + " TEXT," 	+ COLUMN_PARTNER_NAME + " TEXT)";
+				+ COLUMN_SERVERNAME + " TEXT," 	+ COLUMN_PARTNER_NAME + " TEXT,"
+				+ COLUMN_PORT_NUMBER + " TEXT," + COLUMN_PROTOCOL + " TEXT)";
 		db.execSQL(CREATE_ACCOUNTS_TABLE);
 
 		String CREATE_MISSIONARY_TABLE = "CREATE TABLE " + TABLE_MISSIONARIES + "("
@@ -132,8 +169,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		String CREATE_NOTES_TABLE = "CREATE TABLE " + TABLE_NOTES + "("
 				+ COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_DATE + " TEXT,"
 				+ COLUMN_TEXT + " TEXT," + COLUMN_SUBJECT + " TEXT,"
-				+ COLUMN_MISSIONARY_NAME + " TEXT," + COLUMN_TYPE + " TEXT,"
-				+ COLUMN_PRAYED_FOR + " TEXT)";
+				+ COLUMN_MISSIONARY_NAME + " TEXT," + COLUMN_MISSIONARY_ID + " INTEGER,"
+				+ COLUMN_TYPE + " TEXT," + COLUMN_PRAYED_FOR + " TEXT)";
 		db.execSQL(CREATE_NOTES_TABLE);
 
 		String CREATE_LETTERS_TABLE = "CREATE TABLE " + TABLE_LETTERS + "("
@@ -152,7 +189,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 				+ " TEXT," + COLUMN_FUND + " TEXT,"
 				+ COLUMN_GIFTCOUNT + " INTEGER," + COLUMN_GIFTTOTALWHOLE
 				+ " INTEGER," + COLUMN_GIFTTOTALPART + " INTEGER,"
-				+ COLUMN_GIVINGURL + " TEXT, " + COLUMN_FUNDDESC + " TEXT)";
+				+ COLUMN_GIVINGURL + " TEXT," + COLUMN_FUNDDESC + " TEXT)";
 		db.execSQL(CREATE_FUND_TABLE);
 		
 		String CREATE_GIFT_TABLE = "CREATE TABLE " + TABLE_GIFT + "("
@@ -199,6 +236,36 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 				+ "(" + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_GIFT_ID
 				+ " INTEGER," + COLUMN_ACCOUNT_ID + " INTEGER)";
 		db.execSQL(CREATE_GIFTACCOUNT_MAP_TABLE);
+
+		String CREATE_COMMENT_TABLE = "CREATE TABLE " + TABLE_COMMENT
+				+ "(" + COLUMN_COMMENT_ID + " INTEGER PRIMARY KEY,"
+				+ COLUMN_SENDER_ID + " INTEGER,"
+				+ COLUMN_NOTE_ID + " INTEGER,"
+				+ COLUMN_USER_NAME + " TEXT,"
+				+ COLUMN_NOTE_TYPE + " TEXT,"
+				+ COLUMN_DATE + " TEXT,"
+				+ COLUMN_COMMENT_TEXT + " TEXT)";
+		db.execSQL(CREATE_COMMENT_TABLE);
+
+		String CREATE_NEW_ITEM_TABLE = "CREATE TABLE " + TABLE_NEW_ITEM
+				+ "(" + COLUMN_NEW_ITEM_DATE + " TEXT," + COLUMN_TYPE
+				+ " TEXT," + COLUMN_MESSAGE + " TEXT)";
+		db.execSQL(CREATE_NEW_ITEM_TABLE);
+
+		String CREATE_REFRESH_PERIOD_TABLE = "CREATE TABLE " + TABLE_REFRESH_PERIOD
+				+ "(" + COLUMN_REFRESH + " TEXT PRIMARY KEY)";
+		db.execSQL(CREATE_REFRESH_PERIOD_TABLE);
+
+		String CREATE_GIVING_URL_TABLE = "CREATE TABLE " + TABLE_GIVING_URL
+				+ "(" + COLUMN_URL + " TEXT PRIMARY KEY)";
+		db.execSQL(CREATE_GIVING_URL_TABLE);
+
+		String CREATE_JSON_POST_TABLE = "CREATE TABLE " + TABLE_JSON_POST
+				+ "(" + COLUMN_JSON_ID + " INTEGER PRIMARY KEY, "
+				+ COLUMN_JSON_URL + " TEXT, "
+				+ COLUMN_JSON_STRING + " TEXT, "
+				+ COLUMN_ACCOUNT_ID + " INTEGER)";
+		db.execSQL(CREATE_JSON_POST_TABLE);
 	}
 	
 	/**
@@ -236,6 +303,8 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		values.put(COLUMN_ACCOUNTPASSWORD, account.getAccountPassword());
 		values.put(COLUMN_SERVERNAME, account.getServerName());
 		values.put(COLUMN_PARTNER_NAME, account.getPartnerName());
+		values.put(COLUMN_PORT_NUMBER, account.getPortNumber());
+		values.put(COLUMN_PROTOCOL, account.getProtocol());
 		
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_ACCOUNTS, null, values);
@@ -266,6 +335,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
         values.put(COLUMN_DATE, note.getDate());
         values.put(COLUMN_SUBJECT,note.getSubject());
         values.put(COLUMN_MISSIONARY_NAME,note.getMissionaryName());
+		values.put(COLUMN_MISSIONARY_ID, note.getMissionaryID());
         values.put(COLUMN_ID, note.getId());
 		values.put(COLUMN_TYPE, note.getType());
 		values.put(COLUMN_PRAYED_FOR, note.getIsPrayedFor());
@@ -430,7 +500,7 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_GIFT_ID, Gift_ID);
 		values.put(COLUMN_ACCOUNT_ID, Account_ID);
-		
+
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_GIFTACCOUNT_MAP, null, values);
 		db.close();
@@ -454,6 +524,73 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.insert(TABLE_YEARACCOUNT_MAP, null, values);
 		db.close();
+	}
+
+	//ads comment
+	public void addComment (int commentID, int senderID, int notedID, String userName, String noteType, String date, String comment){
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_COMMENT_ID, commentID);
+		values.put(COLUMN_SENDER_ID, senderID);
+		values.put(COLUMN_NOTE_ID, notedID);
+		values.put(COLUMN_USER_NAME, userName);
+		values.put(COLUMN_NOTE_TYPE, noteType);
+		values.put(COLUMN_DATE, date);
+		values.put(COLUMN_COMMENT_TEXT, comment);
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.insert(TABLE_COMMENT, null, values);
+		db.close();
+	}
+
+	//adds new notification item
+	public void addNew_Item (String date, String type, String message) {
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_NEW_ITEM_DATE, date);
+		values.put(COLUMN_TYPE, type);
+		values.put(COLUMN_MESSAGE, message);
+
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.insert(TABLE_NEW_ITEM, null, values);
+		db.close();
+	}
+
+	//sets the current refresh period
+	public void addRefresh_Period (String period){
+		deleteRefreshPeriod();
+
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_REFRESH, period);
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.insert(TABLE_REFRESH_PERIOD, null, values);
+		db.close();
+	}
+
+	public void addGiving_url(String url){
+		deleteGivingUrl();
+
+		ContentValues values = new ContentValues();
+		values.put(COLUMN_URL, url);
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.insert(TABLE_GIVING_URL, null, values);
+		db.close();
+	}
+
+	public void addJson_post(long jsonTableId, String url, String jsonString, int accountID){
+		ContentValues values = new ContentValues();
+		Log.e("dbh", "pre stuff");
+		values.put(COLUMN_JSON_ID, jsonTableId);
+		values.put(COLUMN_JSON_URL, url);
+		values.put(COLUMN_JSON_STRING, jsonString);
+		values.put(COLUMN_ACCOUNT_ID, accountID);
+		Log.e("dbh", "post stuff");
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.insert(TABLE_JSON_POST, null, values);
+		db.close();
+		Log.e("dbh", "all the things done");
+
 	}
 
 	/* ************************* Deletion Queries ************************* */
@@ -532,7 +669,98 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		SQLiteDatabase db = this.getReadableDatabase();
 		db.delete(TABLE_NOTIFICATIONS, COLUMN_ID + " = ?", notification);
 	}
-	
+
+	/**
+	 * deletes the gifts from the database
+	 * this is to solve a bug with the database not updating properly
+	 * when data was removed from the server, the local DB wouldn't remove that data
+	 * this clears the gifts before pulling from the server
+	 * this should be used before pulling data from the server
+	 * created by Judah Sistrunk on May 5, 2016
+	 */
+	public void deleteGifts(int Account_ID) {
+		String[] acct = {String.valueOf(Account_ID)};
+		SQLiteDatabase db = this.getWritableDatabase();
+
+		//delete giftyear connections
+		db.delete(TABLE_GIFTYEAR_MAP, TABLE_GIFTYEAR_MAP + "." + COLUMN_GIFT_ID
+				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
+				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete giftfund connections
+		db.delete(TABLE_GIFTFUND_MAP, TABLE_GIFTFUND_MAP + "." + COLUMN_GIFT_ID
+				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
+				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete gifts
+		db.delete(TABLE_GIFT, TABLE_GIFT + "." + COLUMN_ID
+				+ " IN (SELECT " + TABLE_GIFTACCOUNT_MAP + "." + COLUMN_GIFT_ID
+				+ " FROM " + TABLE_GIFTACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete giftaccount connections
+		db.delete(TABLE_GIFTACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
+
+		//delete yearfund connections
+		db.delete(TABLE_YEARFUND_MAP, TABLE_YEARFUND_MAP + "." + COLUMN_FUND_ID
+				+ " IN (SELECT " + TABLE_FUNDACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
+				+ TABLE_FUNDACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete funds
+		db.delete(TABLE_FUND, TABLE_FUND + "." + COLUMN_ID
+				+ " IN (SELECT " + TABLE_FUNDACCOUNT_MAP + "." + COLUMN_FUND_ID + " FROM "
+				+ TABLE_FUNDACCOUNT_MAP + " WHERE " + COLUMN_ACCOUNT_ID + " = ?)", acct);
+
+		//delete fundaccount connections
+		db.delete(TABLE_FUNDACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
+
+		//delete yearaccount connections
+		db.delete(TABLE_YEARACCOUNT_MAP, COLUMN_ACCOUNT_ID + " = ?", acct);
+
+		db.close();
+	}
+
+	//delete note
+	public void deleteNote(Note note){
+		String[] dNote = {String.valueOf(note.getId())};
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.delete(TABLE_NOTES, COLUMN_ID + " = ?", dNote);
+		db.close();
+	}
+
+	//delete comment
+	public void deleteComment(Comment comment){
+		String[] comm = {String.valueOf(comment.getCommentID())};
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.delete(TABLE_COMMENT, COLUMN_COMMENT_ID + " = ?", comm);
+		db.close();
+	}
+
+	public void deleteJsonPost(long jsonId){
+		String[] json = {String.valueOf(jsonId)};
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.delete(TABLE_JSON_POST, COLUMN_JSON_ID + " = ?", json);
+	}
+
+	//deletes new items table
+	public void deleteNewItems() {
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.delete(TABLE_NEW_ITEM, null, null);
+		db.close();
+	}
+
+	//deletes the period of refresh for the auto-updater
+	public void deleteRefreshPeriod(){
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.delete(TABLE_REFRESH_PERIOD, null, null);
+		db.close();
+	}
+
+	public void deleteGivingUrl(){
+		SQLiteDatabase db = this.getReadableDatabase();
+		db.delete(TABLE_GIVING_URL, null, null);
+		db.close();
+	}
+
 	/* ************************* Get Queries ************************* */
 	
 	/**
@@ -562,17 +790,20 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	public ArrayList<Account> getAccounts(){
 		ArrayList<Account> accounts = new ArrayList<Account>();
 		String queryString = "SELECT * FROM " + TABLE_ACCOUNTS;
-		
+
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor c = db.rawQuery(queryString, null);
-		
+
 		while(c.moveToNext()){
+
 			Account temp = new Account();
 			temp.setId(Integer.parseInt(c.getString(0)));
 			temp.setAccountName(c.getString(1));
 			temp.setAccountPassword(c.getString(2));
 			temp.setServerName(c.getString(3));
 			temp.setPartnerName(c.getString(4));
+			temp.setPortNumber(c.getString(5));
+			temp.setProtocol(c.getString(6));
 			
 			accounts.add(temp);
 		}
@@ -604,6 +835,37 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 							Integer.parseInt(c.getString(4)),
 							Integer.parseInt(c.getString(5))
 							});
+			temp.setGiving_url(c.getString(6));
+			temp.setFund_desc(c.getString(7));
+		}
+		c.close();
+		db.close();
+		return temp;
+	}
+
+	/**
+	 * Pulls a specific fund from an ID
+	 * @param fund_desc, Fund ID to retrieve
+	 * @return The fund with the id of fund_id
+	 */
+	public Fund getFundByDescription(String fund_desc){
+		Fund temp = new Fund();
+		String queryString = "SELECT * FROM " + TABLE_FUND
+				+ " WHERE " + COLUMN_FUNDDESC + " = '" + fund_desc + "'";
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		if(c.moveToFirst()){
+			temp.setID(Integer.parseInt(c.getString(0)));
+			temp.setFullName(c.getString(1));
+			temp.setName(c.getString(2));
+			temp.setGift_count(Integer.parseInt(c.getString(3)));
+			temp.setGift_total(
+					new int [] {
+							Integer.parseInt(c.getString(4)),
+							Integer.parseInt(c.getString(5))
+					});
 			temp.setGiving_url(c.getString(6));
 			temp.setFund_desc(c.getString(7));
 		}
@@ -771,8 +1033,9 @@ public class LocalDBHandler extends SQLiteOpenHelper{
             temp.setText(c.getString(2));
             temp.setSubject(c.getString(3));
 			temp.setMissionaryName(c.getString(4));
-			temp.setType(c.getString(5));
-			String booleanStr = c.getString(6);
+			temp.setMissionaryID(c.getInt(5));
+			temp.setType(c.getString(6));
+			String booleanStr = c.getString(7);
 			// Database stores boolean values as "0" and "1"
 			if (booleanStr.equals("1")) {
 				temp.setIsPrayedFor(true);
@@ -807,8 +1070,9 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 			note.setText(c.getString(2));
 			note.setSubject(c.getString(3));
 			note.setMissionaryName(c.getString(4));
-			note.setType(c.getString(5));
-			String booleanStr = c.getString(6);
+			note.setMissionaryID(c.getInt(5));
+			note.setType(c.getString(6));
+			String booleanStr = c.getString(7);
 			// Database stores boolean string values as "0" and "1"
 			if (booleanStr.equals("1")) {
 				note.setIsPrayedFor(true);
@@ -1292,7 +1556,98 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 		db.close();
 		return years;
 	}
-	
+
+	//gets list of comments
+	public ArrayList<Comment> getComments(){
+		ArrayList<Comment> comments = new ArrayList<Comment>();
+		String queryString = "SELECT * FROM " + TABLE_COMMENT;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()){
+			comments.add(new Comment(c.getInt(0), c.getInt(1), c.getInt(2), c.getString(3), c.getString(4), c.getString(5), c.getString(6)));
+		}
+		c.close();
+		db.close();
+		return comments;
+	}
+
+	//gets list of new prayer requests and updates
+	public ArrayList<NewItem> getNewItems() {
+		ArrayList<NewItem> newItems = new ArrayList<NewItem>();
+		String queryString = "SELECT *" + " FROM " + TABLE_NEW_ITEM;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while(c.moveToNext()){
+			newItems.add(new NewItem(c.getString(1), c.getString(2)));
+		}
+		c.close();
+		db.close();
+		return newItems;
+	}
+
+	//gets the refresh period for the auto-updater
+	public String getRefreshPeriod(){
+		ArrayList<String> refreshPeriods = new ArrayList<String>();
+		String queryString = "SELECT *" + " FROM " + TABLE_REFRESH_PERIOD;
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while (c.moveToNext()){
+			refreshPeriods.add(c.getString(0));
+		}
+
+		c.close();
+		db.close();
+		if (refreshPeriods.size() > 0){
+			return refreshPeriods.get(0);
+		}
+		else {
+			return "Day";
+		}
+	}
+
+	public ArrayList<JsonPost> getJsonPosts(){
+		String queryString = "SELECT * FROM " + TABLE_JSON_POST;
+		ArrayList<JsonPost> posts = new ArrayList<JsonPost>();
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while (c.moveToNext()){
+			JsonPost jsonPost = new JsonPost(Long.parseLong(c.getString(0)), c.getString(1), c.getString(2), Integer.parseInt(c.getString(3)));
+			posts.add(jsonPost);
+		}
+
+		c.close();
+		db.close();
+
+		return posts;
+	}
+
+	public String getGivingUrl(){
+		String queryString = "SELECT * FROM " + TABLE_GIVING_URL;
+
+		String url = "";
+
+		SQLiteDatabase db = this.getReadableDatabase();
+		Cursor c = db.rawQuery(queryString, null);
+
+		while (c.moveToNext()){
+			url = c.getString(0);
+		}
+
+		c.close();
+		db.close();
+
+		return url;
+
+	}
+
 	/* ************************* Update Queries ************************* */
 	
 	/**
@@ -1316,11 +1671,14 @@ public class LocalDBHandler extends SQLiteOpenHelper{
 	 * @param newPass, change the password to something new
 	 * @param newServer, change the server address to something new
 	 */
-	public void updateAccount(int id, String newName, String newPass, String newServer){
+	public void updateAccount(int id, String newName, String newPass, String newServer,
+							  String newPortNumber, String newProtocol){
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_ACCOUNTNAME, newName);
 		values.put(COLUMN_ACCOUNTPASSWORD, newPass);
 		values.put(COLUMN_SERVERNAME, newServer);
+		values.put(COLUMN_PORT_NUMBER, newPortNumber);
+		values.put(COLUMN_PROTOCOL, newProtocol);
 		
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.update(TABLE_ACCOUNTS, values, COLUMN_ID + " = " + id, null);

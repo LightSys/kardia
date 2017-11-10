@@ -869,6 +869,9 @@ cashdisb_subform "widget/component-decl"
 		{
 			// On DataDeleted, Refresh the underlying cashdisb_osrc
 			del_cn1 "widget/connector" { event="DataDeleted"; target="cashdisb_osrc"; action="Refresh"; }
+
+			// On new, try to set the line item effective date.
+			on_new_item "widget/connector" { event=New; target=line_item_date; action=SetValue; Value=runclient(isnull(:cashdisb_osrc:a_effective_date, :batch_osrc:a_default_effective_date)); }
 			
 			// On DataSaved, Run several required updates and other things... to maintain data consistency...
 			
@@ -907,10 +910,10 @@ cashdisb_subform "widget/component-decl"
 			//var_payee_partner_key "widget/variable" { fieldname="a_payee_partner_key"; } // QUESTION: Are hints needed here?
 			var_saved_payee_partner_key "widget/variable" {  } // QUESTION: Are hints needed here?
 			
-			var_effective_date "widget/variable" { fieldname="a_effective_date"; var_effective_date_hints "widget/hints" { default=runclient(getdate()); } }
+			//var_effective_date "widget/variable" { fieldname="a_effective_date"; var_effective_date_hints "widget/hints" { default=runclient(getdate()); } }
 			var_line_item "widget/variable" { fieldname="a_line_item"; }
 			var_period "widget/variable" { fieldname="a_period"; }
-			var_cash_account_code "widget/variable" { fieldname="a_cash_account_code"; postproc_cash_acct_code "widget/hints" { style=readonly; default='1111'; } }
+			var_cash_account_code "widget/variable" { fieldname="a_cash_account_code"; postproc_cash_acct_code "widget/hints" { style=readonly; default='1101'; } }
 			var_posted_to_gl "widget/variable" { fieldname = "a_posted_to_gl"; postproc_posted_to_gl "widget/hints" { style=readonly; default=0; } }
 			
 			// TODO: Get Period Value from Higher a_batch table (batch_osrc: see gljournal_edit )
@@ -1576,7 +1579,7 @@ cashdisb_subform "widget/component-decl"
 				
 				trx_vbox "widget/vbox"
 				{
-					x=8;y=8;width=272;height=250;spacing=5;cellsize=20;
+					x=8;y=8;width=272;height=250;spacing=4;cellsize=20;
 					
 					// Line Item Thingy
 					trx_details_hbox "widget/hbox"
@@ -1721,6 +1724,8 @@ cashdisb_subform "widget/component-decl"
 					// TODO: If enter key is pressed, wire to trigger Save button click, then New Trx Line Button
 					// DONE: Cancel Button Wire up...
 					comment_lbl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=editbox; text="Comment: "; label_width=75; }
+
+					line_item_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_effective_date; ctl_type=datetime; text="Date "; label_width=75; effective_date_hints "widget/hints" { default=runclient(getdate()); } }
 					
 					// el Spacer 'o...
 					sp1 "widget/autolayoutspacer" { height=4; }
@@ -1896,6 +1901,7 @@ cashdisb_subform "widget/component-decl"
 					// Bug Detected - 20090811
 					EffBatchChange_cn2 "widget/connector"
 					{
+						condition=0;
 						event="DataChange";
 						target=update_batch_eff_date_osrc;
 						action="QueryParam";
@@ -1983,7 +1989,9 @@ cashdisb_subform "widget/component-decl"
 							// have an osrc that does this calculation -- similar to gljournal_edit::jnl_total_osrc
 							batch_total_lbl2 "widget/label"
 							{
-								width=200;valign="middle";
+								width=200;
+								valign="middle";
+								height=20;
 								value = runclient("Batch Total: $0.00"); // + isnull(:batch_total_form:total, "(empty)"));
 							}
 							

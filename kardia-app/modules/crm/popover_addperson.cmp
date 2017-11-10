@@ -18,8 +18,8 @@ popover_addperson "widget/component-decl"
 
     addp_win "widget/childwindow"
 	{
-	width=500; height=202;
-	x=250; y=89;
+	width=500; height=232;
+	x=250; y=74;
 	fl_y=0;
 	titlebar=no;
 	visible=no;
@@ -37,7 +37,7 @@ popover_addperson "widget/component-decl"
 	addp_vbox "widget/vbox"
 	    {
 	    x=15; y=15;
-	    width=468; height=172;
+	    width=468; height=202;
 	    spacing=10;
 
 	    addp_osrc "widget/osrc"
@@ -66,6 +66,7 @@ popover_addperson "widget/component-decl"
 		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("Add " + :partnername_var:value + " to My People..."); align=center; }
 
 		    collab_type "widget/component" { field=e_collab_type_id; path="/sys/cmp/smart_field.cmp"; height=20; text="My Role:"; ctl_type=dropdown; sql="select :e_collab_type_label, :e_collab_type_id from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows order by :e_collab_type_label"; width=300; label_width=120; collab_type_hints "widget/hints" { style=notnull; } }
+		    collab_stat "widget/component" { field=e_collaborator_status; path="/sys/cmp/smart_field.cmp"; height=20; text="Priority/Status:"; ctl_type=dropdown; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_e_collaborator_status/rows order by :text"; width=300; label_width=120; collab_stat_hints "widget/hints" { style=notnull,default; default=runclient('A'); } }
 
 		    silence_label "widget/label" { height=32; text="After how many days of no contact with this person do you want to receive a reminder to check back in with them?"; style=italic; }
 		    silence_field "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; width=220; label_width=120; field=e_silence_interval; ctl_type=editbox; text="Silence Days:"; }
@@ -75,6 +76,7 @@ popover_addperson "widget/component-decl"
 
 		    collab_partner "widget/variable" { fieldname=p_partner_key; collab_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
 		    collab_me "widget/variable" { fieldname=e_collaborator; collab_me_hints "widget/hints" { default=runclient(:collab_var:value); } }
+		    collab_auto "widget/variable" { fieldname=e_is_automatic; collab_auto_hints "widget/hints" { default=runclient(0); } }
 		    collab_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 
 		    addp_btns "widget/hbox"

@@ -1,0 +1,235 @@
+$Version=2$
+email_reports "widget/component-decl"
+    {
+    width=828;height=584;
+
+    ClosePressed "widget/component-decl-event" { }
+
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
+    sending "widget/variable" { type=integer; value=0; }
+
+    cur_period_osrc "widget/osrc"
+	{
+	ledgerparam "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+	periodparam "widget/parameter" { param_name=period; type=string; default=runclient(:period:value); }
+	dateparam "widget/parameter" { param_name=date; type=datetime; default=runserver(getdate()); }
+	//dateparam "widget/parameter" { param_name=date; type=datetime; default=runserver(convert(datetime,'01/12/2016 12:00')); }
+	sql = "	select
+		    *,
+		    curdate = :parameters:date,
+		    curday = datepart(day, :parameters:date),
+		    curmonth = datepart(month, :parameters:date),
+		    curyear = datepart(year, :parameters:date),
+		    defperiod = condition(datepart(day, :parameters:date) >= 13,
+			    (select :p2:a_period from /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p2:a_ledger_number = :p:a_ledger_number and :p2:a_summary_only = 0 and :p2:a_end_date >= :parameters:date and :p2:a_start_date <= :parameters:date),
+			    (select max(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p2:a_ledger_number = :p:a_ledger_number and :p2:a_summary_only = 0 and :p2:a_end_date < :parameters:date)
+			    ),
+		    defhalf = condition(datepart(day, :parameters:date) >= 13 and datepart(day, :parameters:date) <= 27,
+			    'A',
+			    'B',
+			    )
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_period = :parameters:period
+		limit
+		    1
+		";
+	replicasize=2;
+	readahead=2;
+
+	set_period_on_endquery "widget/connector" { event=EndQuery; target=f_period; action=SetValue; Value=runclient(:cur_period_osrc:defperiod); }
+	set_half_on_endquery "widget/connector" { event=EndQuery; target=f_half; action=SetValue; Value=runclient(:cur_period_osrc:defhalf); }
+
+	send_emails_vbox "widget/vbox"
+	    {
+	    x=0;y=0;
+	    width=828;height=560;
+	    spacing=8;
+
+	    hdr_label "widget/label"
+		{
+		height=20;
+		font_size=16;
+		style=bold;
+		text="Send Emailed Reports";
+		align=center;
+		}
+
+	    sep_line "widget/pane" { height=2; style=lowered; }
+
+	    sep1 "widget/autolayoutspacer" { height=2; }
+
+	    f_period "widget/component" { height=24; width=400; path="/sys/cmp/smart_field.cmp"; text="Period/Month:"; empty_desc = "required"; ctl_type=dropdown; label_width=140; sql=runserver("select :a_period + ' - ' + :a_period_desc, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period desc"); }
+	    f_half "widget/component" { height=24; width=400; path="/sys/cmp/smart_field.cmp"; text="Half:"; empty_desc = "required"; ctl_type=dropdown; label_width=140; sql="select 'First Half 1st-15th', 'A'; select 'Second Half 1st-END', 'B'"; }
+
+	    info_osrc "widget/osrc"
+		{
+		refresh_on_period_change "widget/connector" { event_condition=runclient(char_length(:f_half:value) > 0); source=f_period; event=DataChange; action=Refresh; }
+		refresh_on_half_change "widget/connector" { source=f_half; event=DataChange; action=Refresh; }
+
+		i_periodparam "widget/parameter" { param_name=period; type=string; default=runclient(:f_period:value); }
+		i_halfparam "widget/parameter" { param_name=half; type=string; default=runclient(:f_half:value); }
+		i_ledgerparam "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+
+		sql = "	declare object periodinfo
+			;
+
+			select
+			    :periodinfo:startdate = :a_start_date,
+			    :periodinfo:enddate = :a_end_date
+			from
+			    /apps/kardia/data/Kardia_DB/a_period/rows
+			where
+			    :a_ledger_number = :parameters:ledger and
+			    :a_period = :parameters:period
+			;
+
+			select
+			    :periodinfo:start = 1,
+			    :periodinfo:end = condition(:parameters:half == 'A', 15, datepart(day, :periodinfo:enddate))
+			;
+
+			select
+			    :periodinfo:dirname = :parameters:period + '.' + condition(:periodinfo:end < 10, '0' + :periodinfo:end, '' + :periodinfo:end)
+			;
+
+			select
+			    reportcnt = count(1),
+			    dirname = :periodinfo:dirname,
+			    prefix = :cx__pathpart7
+			from
+			    wildcard '/apps/kardia/modules/local/action-data/reports/*'
+			where
+			    :cx__pathpart7 = :periodinfo:dirname
+			";
+		readahead=2;
+		replicasize=2;
+		autoquery=never;
+		refresh_interval = 10000;
+
+		info_form "widget/form"
+		    {
+		    f_dir "widget/component" { height=24; width=400; path="/sys/cmp/smart_field.cmp"; text="End Date:"; ctl_type=label; label_width=140; field=dirname; }
+		    f_cnt "widget/component" { height=24; width=400; path="/sys/cmp/smart_field.cmp"; text="Reports Generated:"; ctl_type=label; label_width=140; field=reportcnt; }
+		    }
+
+		}
+
+	    send_osrc "widget/osrc"
+		{
+		sql = " ";
+		autoquery=never;
+		replicasize=2;
+		readahead=2;
+		}
+
+	    buttons_hbox "widget/hbox"
+		{
+		//x=0; y=560; height=24; width=828;
+		height=24;
+		spacing=8;
+		align=center;
+
+		send_button "widget/textbutton"
+		    {
+		    width=130;
+		    text = "Send Reports";
+		    enabled = runclient(:info_osrc:reportcnt == 0 and :sending:value == 0);
+
+		    send_cn0 "widget/connector"
+			{
+			event=Click;
+			target=sending;
+			action=SetValue;
+			Value=runclient(1);
+			}
+
+		    send_cn "widget/connector"
+			{
+			event=Click;
+			target=send_osrc;
+			action=Query;
+			query=runclient("select :objcontent from object /apps/kardia/modules/base/send_reports.shl?PERIOD=" + :f_period:value + "&HALF=" + :f_half:value);
+			}
+		    }
+
+		cancel_button "widget/textbutton"
+		    {
+		    width=130;
+		    text = "Close";
+		    close_cn "widget/connector" { event=Click; target=email_reports; action=ClosePressed; }
+		    }
+		}
+
+	    sep2 "widget/autolayoutspacer" { height=8; }
+	    list_hdr "widget/label" { height=16; style=bold; text="Currently Configured Reports and Recipients:"; }
+
+	    list_osrc "widget/osrc"
+		{
+		sql = " SELECT
+			    report_type = :r:r_group_name,
+			    :s:p_partner_key,
+			    email = isnull(:ci2:p_contact_data, :ci1:p_contact_data),
+			    disp_name = rtrim(condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ','')),
+			    costctr = sum(:rp:r_param_value + ',') - ','
+			FROM
+			    /apps/kardia/data/Kardia_DB/r_group_report/rows r,
+			    /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp,
+			    /apps/kardia/data/Kardia_DB/p_staff/rows s,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+			    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci1,
+			    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci2,
+			    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs
+			WHERE
+			    (:r:r_group_name = 'DonLists' or :r:r_group_name = 'TntLists') and
+			    :r:r_is_active = 1 and
+			    :rp:r_group_name = :r:r_group_name and
+			    :rp:r_delivery_method = :r:r_delivery_method and
+			    :rp:p_recipient_partner_key = :r:p_recipient_partner_key and
+			    :rp:r_report_id = :r:r_report_id and
+			    :rp:r_param_name = 'costctr' and
+			    :s:p_partner_key = :rp:p_recipient_partner_key and
+			    :p:p_partner_key = :s:p_partner_key and
+			    :ci1:p_partner_key =* :p:p_partner_key and
+			    :ci1:p_record_status_code = 'A' and
+			    :ci1:p_contact_type = 'E' and
+			    :ci2:p_partner_key =* :p:p_partner_key and
+			    :ci2:p_record_status_code = 'A' and
+			    :ci2:p_contact_type = 'E' and
+			    :ci2:p_contact_id =* :s:p_preferred_email_id and
+			    :s:p_is_staff = 1 and
+			    :cs:p_staff_partner_key = :s:p_partner_key and
+			    :cs:a_cost_center = :rp:r_param_value
+			GROUP BY
+			    :r:r_group_name,
+			    :r:p_recipient_partner_key --,
+			    --:rp:r_param_value
+			";
+		readahead=200;
+		replicasize=200;
+
+		list_table_pane "widget/pane"
+		    {
+		    height=338;
+		    widget_class="table_bgnd";
+
+		    list_table "widget/table"
+			{
+			x=0;y=0;
+			width=826;height=336;
+
+			t_rpttype "widget/table-column" { title="Report"; fieldname=report_type; width=80; }
+			t_partner "widget/table-column" { title="Partner"; fieldname=p_partner_key; width=80; }
+			t_name "widget/table-column" { title="Name"; fieldname=disp_name; width=200; }
+			t_email "widget/table-column" { title="Email"; fieldname=email; width=200; }
+			t_costctr "widget/table-column" { title="Funds"; fieldname=costctr; width=200; }
+			}
+		    }
+		}
+	    }
+	}
+    }

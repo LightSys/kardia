@@ -1,6 +1,6 @@
                         Kardia Virtual Appliance README
-                (C) 2011-2015 LightSys Technology Services, Inc.
-                                  Jul 6, 2015
+                (C) 2011-2017 LightSys Technology Services, Inc.
+                                  Jun 27, 2017
 -------------------------------------------------------------------------------
 
 Kardia is designed to help meet the software needs of non-profit organizations
@@ -14,7 +14,7 @@ features a menu-based interface for setup and use.
 
 The VM uses Git to download the latest Kardia and Centrallix source code, and
 provides multiple workflow and development options.  The Git repositories are
-shared via Samba, so an external IDE can be used to develop, as well.  Or, you
+shared via Samba, so an external IDE can be used to develop as well.  Or, you
 can just as easily use the VM to simply try out Kardia.
 
 At the time of writing, the current Git version of Kardia is not yet complete.
@@ -28,13 +28,14 @@ Documentation:
     ApplianceQuickReference_1_0.pdf (307 KB)
 
 VM Image (md5 59ea039ed7b59dd3c9e0571e954c9ce2):
-
     KardiaVM_1_0.zip (568 MB)
+VM Image (md5 d8a49d86d972332a7dc6ebf4190424d4):
+    KardiaVM1_2.zip (618MB)
 
 Requirements:
 
     - x86-based system (Windows, Linux, or Mac)
-    - 4.0 GB free hard disk space (7.0 GB for Hyper-V)
+    - 4.0 GB free hard disk space (8.0 GB for Hyper-V)
     - 2 GB memory in your computer
     - Virtualization Software (tested: KVM, VMware Player, VirtualBox, Xen,
       and Hyper-V)

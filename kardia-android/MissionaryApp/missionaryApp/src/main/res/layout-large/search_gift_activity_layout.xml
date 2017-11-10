@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/noise_blue_repeat" xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- *********** Date *********** -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/body_dimen_lg">
+
+            <TextView
+                android:id="@+id/refreshTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/by_date"
+                android:textSize="@dimen/header_dimen_lg"/>
+
+            <CheckBox
+                android:id="@+id/dateRange"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/refreshTitle"
+                android:enabled="true"
+                android:checked="false"
+                android:text="@string/date_range"
+                android:visibility="gone"/>
+
+            <LinearLayout
+                android:id="@+id/dateLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/refreshTitle"
+                android:gravity="center_horizontal"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/datePickBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:enabled="true"
+                    android:text="@string/choose_date"
+                    android:textSize="@dimen/body_dimen_lg"/>
+
+                <TextView
+                    android:id="@+id/dashTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dash"
+                    android:textSize="@dimen/body_dimen_lg"
+                    android:visibility="invisible" />
+
+                <Button
+                    android:id="@+id/datePickBtn2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:enabled="true"
+                    android:text="@string/choose_date"
+                    android:textSize="@dimen/body_dimen_lg"
+                    android:visibility="invisible" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000030" />
+
+        <!-- *********** Amount *********** -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/selectAmount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_margin="@dimen/border_dimen_lg"
+                android:text="@string/by_amount"
+                android:textSize="@dimen/header_dimen_lg" />
+
+            <CheckBox
+                android:id="@+id/amountRange"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/selectAmount"
+                android:enabled="true"
+                android:checked="false"
+                android:text="@string/amount_range"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/amountLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/selectAmount"
+                android:gravity="center_horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dollar_sign"
+                    android:textSize="@dimen/body_dimen_lg"/>
+
+                <EditText
+                    android:id="@+id/amount1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="5"
+                    android:enabled="true"
+                    android:hint="00"
+                    android:inputType="number|numberDecimal"
+                    tools:ignore="HardcodedText"
+                    android:textSize="@dimen/body_dimen_lg"/>
+
+                <TextView
+                    android:id="@+id/dash2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dash"
+                    android:visibility="invisible"
+                    android:textSize="@dimen/body_dimen_lg"/>
+
+                <TextView
+                    android:id="@+id/dollarSign2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dollar_sign"
+                    android:visibility="invisible"
+                    android:textSize="@dimen/body_dimen_lg"/>
+
+                <EditText
+                    android:id="@+id/amount2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="5"
+                    android:enabled="true"
+                    android:hint="00"
+                    android:inputType="numberDecimal"
+                    tools:ignore="HardcodedText"
+                    android:visibility="invisible"
+                    android:textSize="@dimen/body_dimen_lg"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"/>
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000030" />
+
+        <!-- *********** Donor *********** -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/selectDonor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_margin="@dimen/border_dimen_lg"
+                android:text="@string/by_donor"
+                android:textSize="@dimen/header_dimen_lg"/>
+
+            <TextView
+                android:id="@+id/donorText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/selectDonor"
+                android:hint="@string/choose_donor"
+                android:layout_centerHorizontal="true"
+                android:gravity="center_horizontal"
+                android:textSize="@dimen/header_dimen_lg"
+                android:visibility="gone"/>
+
+            <RelativeLayout
+                android:id="@+id/donorLayout"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:layout_below="@id/donorText"
+                android:visibility="gone">
+
+                <ListView
+                    android:id="@+id/donorList"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="vertical">
+                </ListView>
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000030" />
+
+        <!-- *********** Fund *********** -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/selectFund"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_margin="@dimen/border_dimen_lg"
+                android:text="@string/by_fund"
+                android:textSize="@dimen/header_dimen_lg"/>
+
+            <TextView
+                android:id="@+id/fundText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/selectFund"
+                android:layout_centerHorizontal="true"
+                android:gravity="center_horizontal"
+                android:hint="@string/choose_fund"
+                android:textSize="@dimen/header_dimen_lg"
+                android:visibility="gone"/>
+
+            <RelativeLayout
+                android:id="@+id/fundLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/fundText"
+                android:visibility="gone">
+
+                <ListView
+                    android:id="@+id/fundList"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="vertical">
+                </ListView>
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000030"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:gravity="center" >
+
+            <Button
+                android:id="@+id/clearBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/border_dimen_lg"
+                android:text="@string/clear_search"
+                android:textSize="@dimen/large_header_dimen_lg"
+                android:textStyle="bold"
+                style="@style/customBottomBar"/>
+
+            <Button
+                android:id="@+id/searchBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/border_dimen_lg"
+                android:text="@string/search"
+                android:textSize="@dimen/large_header_dimen_lg"
+                android:textStyle="bold"
+                style="@style/customBottomBar"/>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

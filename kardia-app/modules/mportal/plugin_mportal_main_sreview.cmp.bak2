@@ -1,0 +1,340 @@
+$Version=2$
+support_review "widget/component-decl"
+    {
+    height=602; width=1172;
+
+    title = "Support";
+    icon = "/apps/kardia/images/icons/ionicons-people.svg";
+    sequence = 10;
+
+    support_osrc "widget/osrc"
+	{
+	sql = "	declare object info;
+		select
+		    :info:year = datepart(year,getdate())
+		;
+		select
+		    :info:staff_key = :s:p_partner_key,
+		    :info:login = :s:p_kardia_login
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows s
+		where
+		    :s:p_kardia_login = user_name()
+		;
+		select
+		    :info:fund = :c:a_cost_center,
+		    :info:ledger = :c:a_ledger_number
+		from
+		    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		where
+		    :cs:p_staff_partner_key = :info:staff_key and
+		    :c:a_ledger_number = :cs:a_ledger_number and
+		    :c:a_cost_center = :cs:a_cost_center and
+		    :c:a_bal_cost_center = :c:a_cost_center and
+		    :c:a_cost_center_class = 'MIS'
+		limit
+		    1
+		;
+		select
+		    :info:office_key = min(:p_partner_key)
+		from
+		    /apps/kardia/data/Kardia_DB/p_partner/rows
+		where
+		    :p_partner_class = 'OFC'
+		;
+
+		-- New donors?  We scan for gifts that don't have a corresponding a_giving_pattern entry,
+		-- and also look up any electronic giving gift import data that implies a recurring gift.
+		insert
+		    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows
+		select
+		    a_ledger_number = :info:ledger,
+		    p_donor_partner_key = :i:p_dn_donor_partner_id,
+		    a_cost_center = :info:fund,
+		    a_amount = :i:a_amount,
+		    a_interval = condition(first(:eg:i_eg_gift_interval) = 'MONTHLY', 1, condition(first(:eg:i_eg_gift_interval) = 'QUARTERLY', 3, null)),
+		    a_is_active = 1,
+		    a_start_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+		    a_evaluation_date = getdate(),
+		    a_comment = '',
+		    s_date_created = getdate(),
+		    s_created_by = :info:login,
+		    s_date_modified = getdate(),
+		    s_modified_by = :info:login
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+		where
+		    datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)) >= (:info:year - 1) and
+		    :i:a_cost_center = :info:fund and
+		    :i:a_ledger_number = :info:ledger and
+		    :eg:a_ledger_number =* :i:a_ledger_number and
+		    :eg:a_cost_center =* :i:a_cost_center and
+		    :eg:p_donor_partner_key =* :i:p_dn_donor_partner_id and
+		    :eg:i_eg_gift_amount =* :i:a_amount
+		group by
+		    :i:p_dn_donor_partner_id
+		order by
+		    :eg:i_eg_gift_trx_date desc
+		on duplicate
+		    :a_ledger_number,
+		    :p_donor_partner_key,
+		    :a_cost_center
+		update set
+		    0 = 0
+		;
+
+		-- Clear out any existing unresolved flags for this fund's donors
+		delete
+		    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
+		where
+		    :gpf:a_cost_center = :info:fund and
+		    :gpf:a_ledger_number = :info:ledger and
+		    :gpf:a_flag_resolution is null
+		;
+
+		-- Generate flags for supporters who may be increasing their support
+		insert
+		    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
+		select
+		    :gp:a_ledger_number,
+		    :gp:p_donor_partner_key,
+		    :gp:a_cost_center,
+		    :gp:a_pattern_id,
+		    a_flag_type = 'INC',
+		    a_comment = 'No gift' + isnull(' since ' + substring(convert(string, max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))),1,11), ' in past 24 months'),
+		    s_date_created = getdate(),
+		    s_created_by = :info:login,
+		    s_date_modified = getdate(),
+		    s_modified_by = :info:login
+		from
+		    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		where
+		    :gp:a_ledger_number = :info:ledger and
+		    :gp:a_cost_center = :info:fund and
+		    :gp:a_is_active = 1 and
+		    :gp:a_amount > $0 and
+		    :gp:a_interval > 0 and
+		    :i:a_ledger_number =* :gp:a_ledger_number and
+		    :i:a_cost_center =* :gp:a_cost_center and
+		    :i:p_dn_donor_partner_id =* :gp:p_donor_partner_key and
+		    datediff(month, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date), getdate()) <= 12
+		group by
+		    :gp:p_donor_partner_key
+		order by
+		    isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
+		having
+		    first(:i:a_amount) > :gp:a_amount and
+		    first(:i:a_amount) / :gp:a_amount != round(first(:i:a_amount) / :gp:a_amount, 0) and
+		    nth(:i:a_amount, 2) > :gp:a_amount and
+		    nth(:i:a_amount, 2) / :gp:a_amount != round(nth(:i:a_amount, 2) / :gp:a_amount, 0) and
+		    nth(:i:a_amount, 2) = first(:i:a_amount) and
+		    sum(condition(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -12, getdate()), :i:a_amount, $0)) / condition(datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()) >= 365, 12, condition(isnull(datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()),0) < 30*:gp:a_interval, :gp:a_interval, (datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()) + 26) / 30)) > :gp:a_amount / condition(:gp:a_interval > 0, :gp:a_interval, 12)
+		on duplicate
+		    :a_ledger_number,
+		    :p_donor_partner_key,
+		    :a_cost_center,
+		    --:a_flag_type,
+		    datediff(month, :s_date_created, getdate())
+		update set
+		    0 = 0
+		;
+
+		-- Generate flags for supporters that may not be continuing to give
+		insert
+		    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
+		select
+		    :gp:a_ledger_number,
+		    :gp:p_donor_partner_key,
+		    :gp:a_cost_center,
+		    :gp:a_pattern_id,
+		    a_flag_type = 'CNT',
+		    a_comment = 'No gift' + isnull(' since ' + substring(convert(string, max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))),1,11), ' in past 24 months'),
+		    s_date_created = getdate(),
+		    s_created_by = :info:login,
+		    s_date_modified = getdate(),
+		    s_modified_by = :info:login
+		from
+		    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		where
+		    :gp:a_ledger_number = :info:ledger and
+		    :gp:a_cost_center = :info:fund and
+		    :gp:a_is_active = 1 and
+		    :gp:a_amount > $0 and
+		    :gp:a_interval > 0 and
+		    :i:a_ledger_number =* :gp:a_ledger_number and
+		    :i:a_cost_center =* :gp:a_cost_center and
+		    :i:p_dn_donor_partner_id =* :gp:p_donor_partner_key and
+		    datediff(month, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date), getdate()) <= 24
+		group by
+		    :gp:p_donor_partner_key
+		having
+		    datediff(month, max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), getdate()) >= condition(:gp:a_interval > 0, :gp:a_interval, 12) + 1 and
+		    sum(condition(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -12, getdate()), :i:a_amount, $0)) / condition(datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()) >= 365, 12, condition(isnull(datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()),0) < 30*:gp:a_interval, :gp:a_interval, (datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()) + 26) / 30)) != :gp:a_amount / condition(:gp:a_interval > 0, :gp:a_interval, 12)
+		on duplicate
+		    :a_ledger_number,
+		    :p_donor_partner_key,
+		    :a_cost_center,
+		    --:a_flag_type,
+		    datediff(month, :s_date_created, getdate())
+		update set
+		    0 = 0
+		;
+    
+		-- Grab the supporter list
+		select
+		    :c:a_cc_desc,
+		    :l:a_ledger_desc,
+		    :gp:a_ledger_number,
+		    :gp:p_donor_partner_key,
+		    :gp:a_cost_center,
+		    :gp:a_pattern_id,
+		    :gp:a_amount,
+		    :gp:a_interval,
+		    :gp:a_is_active,
+		    :gp:a_start_date,
+		    :gp:a_end_date,
+		    :gp:a_evaluation_date,
+		    :gp:a_comment,
+		    :gp:s_date_created,
+		    :gp:s_created_by,
+		    :gp:s_date_modified,
+		    :gp:s_modified_by,
+		    flag = (select :ft:text + isnull(' (' + :gpf:a_comment + ')', '') from /apps/kardia/data/Kardia_DB/_a_flag_type/rows ft, /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf where :gpf:a_ledger_number = :gp:a_ledger_number and :gpf:a_cost_center = :gp:a_cost_center and :gpf:p_donor_partner_key = :gp:p_donor_partner_key and :gpf:a_pattern_id = :gp:a_pattern_id and :gpf:a_flag_resolution is null and :ft:tag = :gpf:a_flag_type),
+		    donor_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+		    :pl:p_city,
+		    :pl:p_state_province,
+		    month_equiv = condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval),
+
+		    last_gift = max(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),
+		    last_amt = last(:g:a_amount),
+		    actavg = sum(condition(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(month, -12, getdate()), :g:a_amount, $0)) / condition(datediff(day, isnull(min(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),getdate()), getdate()) >= 365, 12, condition(isnull(datediff(day, isnull(min(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),getdate()), getdate()),0) < 30*:gp:a_interval, :gp:a_interval, (datediff(day, isnull(min(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),getdate()), getdate()) + 26) / 30)),
+		    actavg_months = condition(datediff(day, isnull(min(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),getdate()), getdate()) >= 365, 12, condition(isnull(datediff(day, isnull(min(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),getdate()), getdate()),0) < 30*:gp:a_interval, :gp:a_interval, (datediff(day, isnull(min(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),getdate()), getdate()) + 26) / 30)),
+		    -- year_amt = isnull(sum(condition(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(month, -12, getdate()), :g:a_amount, $0)),$0),
+		    -- qtr_amt = isnull(sum(condition(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(month, -3, getdate()), :g:a_amount, $0)),$0),
+		    -- mo_amt = isnull(sum(condition(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(month, -1, getdate()), :g:a_amount, $0)),$0),
+		    -- year_cnt = isnull(sum(condition(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(month, -12, getdate()), 1, 0)),0),
+		    -- qtr_cnt = isnull(sum(condition(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(month, -3, getdate()), 1, 0)),0),
+		    -- mo_cnt = isnull(sum(condition(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(month, -1, getdate()), 1, 0)),0),
+
+		    last_year = isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 1, 'J', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 2, 'F', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 3, 'M', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 4, 'A', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 5, 'M', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 6, 'J', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 7, 'J', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 8, 'A', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 9, 'S', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 10, 'O', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 11, 'N', ' ')),' ') + 
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year - 1 and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 12, 'D', ' ')),' '),
+		    cur_year = isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 1, 'J', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 2, 'F', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 3, 'M', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 4, 'A', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 5, 'M', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 6, 'J', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 7, 'J', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 8, 'A', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 9, 'S', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 10, 'O', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 11, 'N', ' ')),' ') +
+		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 12, 'D', ' ')),' ')
+		from
+		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+		    /apps/kardia/data/Kardia_DB/a_ledger/rows l,
+		    IDENTITY /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_location/rows pl,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g
+		where
+		    :c:a_cost_center = :info:fund and
+		    :c:a_ledger_number = :info:ledger and
+		    :l:a_ledger_number = :c:a_ledger_number and
+		    :gp:a_cost_center = :c:a_cost_center and
+		    :gp:a_ledger_number = :c:a_ledger_number and
+		    :gp:a_amount > $0 and
+		    :p:p_partner_key = :gp:p_donor_partner_key and
+		    :pl:p_partner_key =* :p:p_partner_key and
+		    :g:a_ledger_number =* :gp:a_ledger_number and
+		    :g:a_cost_center =* :gp:a_cost_center and
+		    :g:p_dn_donor_partner_id =* :gp:p_donor_partner_key and
+		    isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(year, -3, getdate())
+		group by
+		    :c:a_cost_center,
+		    :c:a_ledger_number,
+		    :gp:p_donor_partner_key,
+		    :gp:a_pattern_id
+		;
+
+		-- Show the total support
+		select
+		    a_ledger_number = :info:ledger,
+		    donor_name = 'TOTAL:',
+		    p_donor_partner_key = null,
+		    a_amount = sum(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval)),
+		    a_interval = 1
+		from
+		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+		    /apps/kardia/data/Kardia_DB/a_ledger/rows l,
+		    IDENTITY /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
+		where
+		    :c:a_cost_center = :info:fund and
+		    :c:a_ledger_number = :info:ledger and
+		    :l:a_ledger_number = :c:a_ledger_number and
+		    :gp:a_cost_center = :c:a_cost_center and
+		    :gp:a_ledger_number = :c:a_ledger_number and
+		    :gp:a_amount > $0
+		";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_giving_pattern/rows";
+	readahead=200;
+	replicasize=200;
+	autoquery=onfirstreveal;
+
+	support_table "widget/table"
+	    {
+	    x=0; y=0;
+	    height=602; width=1172;
+	    overlap_scrollbar = yes;
+	    demand_scrollbar = yes;
+	    initial_selection = no;
+	    max_rowheight=200;
+	    colsep = 0;
+	    cellvspacing=4;
+	    inner_padding=4;
+	    row_border_radius=4;
+	    rowhighlight_border_color="#6080c0";
+	    rowhighlight_shadow_color="#6080c0";
+	    rowhighlight_shadow_radius=2;
+	    rowhighlight_shadow_offset=1;
+	    rowhighlight_shadow_angle=135;
+	    //row1_bgcolor="#faf8ff";
+	    //row2_bgcolor="#faf8ff";
+	    row1_bgcolor="white";
+	    row2_bgcolor="white";
+	    rowhighlight_bgcolor="#faf8ff";
+	    //rowhighlight_bgcolor="#e8e0ff";
+	    textcolorhighlight="black";
+	    titlecolor = white;
+	    titlebar = yes;
+	    hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+	    rowcache_size=200;
+	    nodata_message = runclient(condition(:support_osrc:cx__pending, "No support information available.", "Looking up your supporters..."));
+
+	    st_name "widget/table-column" { title = "Supporter"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:support_osrc:p_donor_partner_key + isnull(' - ' + :support_osrc:p_city + ', ' + :support_osrc:p_state_province, '')); }
+	    st_amt "widget/table-column" { title = "Amount"; fieldname=a_amount; width=90; style=bold; font_size=16; caption_value=runclient(condition(:support_osrc:a_interval is null, 'unknown', condition(:support_osrc:a_interval = 0, 'onetime / as-able', condition(:support_osrc:a_interval = 1, 'monthly', condition(:support_osrc:a_interval = 12, 'annual', 'every ' + :support_osrc:a_interval + ' months'))))); align=right; caption_align=right; }
+	    st_equiv "widget/table-column" { title = ""; value=runclient(condition(:support_osrc:a_interval = 1, '', :support_osrc:month_equiv)); width=90; style=bold; font_size=16; fgcolor='#a0a0a0'; caption_value=runclient(condition(:support_osrc:a_interval = 1, '', 'month equiv')); caption_fgcolor=runclient(condition(:support_osrc:a_interval = 1, 'white', '#a0a0a0')); align=right; caption_align=right; }
+	    st_actual "widget/table-column" { title = "Actual Avg"; fieldname=actavg; width=90; style=bold; font_size=16; caption_value=runclient('last ' + :support_osrc:actavg_months + ' months'); align=right; caption_align=right; }
+	    st_lastgift "widget/table-column" { title = "Last Gift"; fieldname=last_amt; width=90; style=bold; font_size=16; caption_value=runclient(substring(convert(string,:support_osrc:last_gift),1,11)); align=right; caption_align=right; }
+	    st_lastyr "widget/table-column" { title = '    ' + (datepart(year, getdate()) - 1) + '    '; font=courier; style=bold; width=110; value=runclient(isnull(:support_osrc:last_year, '')); }
+	    st_curyr "widget/table-column" { title = '    ' + (datepart(year, getdate())) + '    '; font=courier; style=bold; width=110; value=runclient(isnull(:support_osrc:cur_year, '')); }
+	    st_comment "widget/table-column" { title = "Comment"; font_size=runclient(condition(:support_osrc:a_ledger_number is null, 16, null)); style=runclient(condition(:support_osrc:a_ledger_number is null, "bold", null)); fieldname=a_comment; width=140; }
+	    st_flag "widget/table-column" { title = "Attn."; font_size=runclient(condition(:support_osrc:a_ledger_number is null, 16, null)); style="bold"; fieldname=flag; width=200; textcolor=runclient(condition(:support_osrc:a_ledger_number is null, "white", "#800000")); wrap=yes; }
+	    }
+	}
+    }
+

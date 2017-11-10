@@ -1,0 +1,20 @@
+$Version=2$
+tracks "system/query"
+    {
+    id "query/parameter" { type=integer; }
+
+    sql = " select
+		name=:p_partner_key + '|' + :e_engagement_id,
+		*
+	    from
+		/apps/kardia/data/Kardia_DB/e_partner_engagement/rows
+	    where
+		:parameters:id is null or :e_track_id = :parameters:id
+	    group by
+		:p_partner_key,
+		:e_engagement_id
+	    having
+		:p_partner_key is not null
+	    ";
+    name_expression = "rtrim(:p_partner_key) + '|' + convert(string,:e_engagement_id)";
+    }

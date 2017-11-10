@@ -60,6 +60,12 @@
       <!--Tags and collaborators-->
 		<vbox id="tab-top-panel" maxheight="500" flex="100">
 			<vbox id="tab-collaborators" flex="1">
+				<!-- search by-->
+				<hbox class="top-bottom-margin">
+					<label value="Search by name..." class="bold-text"/>
+					<textbox id="search-by-name" type="search" oninput="searchByName()"/>
+				</hbox>
+
 				<!-- filter by -->
 				<hbox class="top-bottom-margin">
 					<label value="Filter by..." class="bold-text"/>

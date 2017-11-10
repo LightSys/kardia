@@ -1,0 +1,137 @@
+$Version=2$
+plugin_mportal_sreview_continue "widget/component-decl"
+    {
+    flag_code = "CNT";
+    flag_desc = "Is This Supporter Continuing?";
+    sequence = 100;
+    width=1172;
+    height=24;
+
+    Update "widget/component-decl-event" { }
+
+    support_osrc "widget/parameter" { type=object; }
+
+    sql = " -- Generate flags for supporters that may not be continuing to give
+	    insert
+		/apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
+	    select
+		:gp:a_ledger_number,
+		:gp:p_donor_partner_key,
+		:gp:a_cost_center,
+		:gp:a_pattern_id,
+		a_prior_interval = :gp:a_interval,
+		a_prior_amount = :gp:a_amount,
+		a_flag_type = 'CNT',
+		a_comment = 'No gift' + isnull(' since ' + substring(convert(string, :d:a_last_gift),1,11), ' in past three years'),
+		s_date_created = getdate(),
+		s_created_by = :info:login,
+		s_date_modified = getdate(),
+		s_modified_by = :info:login
+	    from
+		/apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp,
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    where
+		(:parameters:name is null or :gp:name = :parameters:name) and
+		:gp:a_ledger_number = :info:ledger and
+		:gp:a_cost_center = :info:fund and
+		:gp:a_is_active = 1 and
+		:gp:a_amount > $0 and
+		:gp:a_interval > 0 and
+		:d:a_ledger_number = :gp:a_ledger_number and
+		:d:a_cost_center = :gp:a_cost_center and
+		:d:p_donor_partner_key = :gp:p_donor_partner_key
+	    having
+		(:d:a_act_average_amount = $0 or
+		((datediff(day, :d:a_last_gift, getdate()) >= (condition(:gp:a_interval > 0, :gp:a_interval, 12) + 1)*30 ) and --or :d:a_act_average_interval > 13) and
+		:d:a_act_average_amount < (:gp:a_amount / condition(:gp:a_interval > 0, :gp:a_interval, 12))))
+		--sum(condition(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -12, getdate()), :i:a_amount, $0)) / condition(datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()) >= 365, 12, condition(isnull(datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()),0) < 30*:gp:a_interval, :gp:a_interval, (datediff(day, isnull(min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),getdate()), getdate()) + 26) / 30)) != :gp:a_amount / condition(:gp:a_interval > 0, :gp:a_interval, 12)
+	    on duplicate
+		:a_ledger_number,
+		:p_donor_partner_key,
+		:a_cost_center,
+		--:a_flag_type,
+		datediff(month, :s_date_modified, getdate())
+	    update set
+		0 = 0
+	    ";
+
+    gp_hbox "widget/hbox"
+	{
+	x=0; y=0; height=24; width=1172;
+	spacing=10;
+	align=center;
+
+	yes_btn "widget/textbutton"
+	    {
+	    width = 200;
+	    height = 24;
+	    text = "Yes";
+	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	    fgcolor1=white;
+	    fgcolor2=black;
+	    disable_color="#334466";
+
+	    on_yes "widget/connector"
+		{
+		event=Click;
+		target=support_osrc;
+		action=Modify;
+		flagres=runclient('NOC');
+		//s_modified_by=runclient(user_name());
+		//s_date_modified=runclient(getdate());
+		flagmodby=runclient(user_name());
+		flagmod=runclient(getdate());
+		}
+	    }
+
+	as_able_btn "widget/textbutton"
+	    {
+	    width = 200;
+	    height = 24;
+	    text = "Possibly, but only as able";
+	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	    fgcolor1=white;
+	    fgcolor2=black;
+	    disable_color="#334466";
+
+	    on_as_able "widget/connector"
+		{
+		event=Click;
+		target=support_osrc;
+		action=Modify;
+		flagres=runclient('UPD');
+		a_interval=runclient(0);
+		flagnewivl=runclient(0);
+		s_modified_by=runclient(user_name());
+		s_date_modified=runclient(getdate());
+		flagmodby=runclient(user_name());
+		flagmod=runclient(getdate());
+		}
+	    }
+
+	no_btn "widget/textbutton"
+	    {
+	    width = 200;
+	    height = 24;
+	    text = "No, I don't think so";
+	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	    fgcolor1=white;
+	    fgcolor2=black;
+	    disable_color="#334466";
+
+	    on_no "widget/connector"
+		{
+		event=Click;
+		target=support_osrc;
+		action=Modify;
+		flagres=runclient('OLD');
+		a_amount=runclient(0);
+		flagnewamt=runclient(0);
+		s_modified_by=runclient(user_name());
+		s_date_modified=runclient(getdate());
+		flagmodby=runclient(user_name());
+		flagmod=runclient(getdate());
+		}
+	    }
+	}
+    }

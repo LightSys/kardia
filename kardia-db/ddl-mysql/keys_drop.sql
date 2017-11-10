@@ -506,6 +506,74 @@ alter table e_text_expansion
 	drop primary key;
 
 
+alter table e_text_search_word
+	drop primary key;
+
+
+alter table e_text_search_word
+	drop index e_tsw_word_idx;
+
+
+alter table e_text_search_rel
+	drop primary key;
+
+
+alter table e_text_search_occur
+	drop primary key;
+
+
+alter table h_staff
+	drop primary key;
+
+
+alter table h_group
+	drop primary key;
+
+
+alter table h_group_member
+	drop primary key;
+
+
+alter table h_holidays
+	drop primary key;
+
+
+alter table h_work_register
+	drop primary key;
+
+
+alter table h_work_register
+	drop index h_workreg_ben_idx;
+
+
+alter table h_work_register_times
+	drop primary key;
+
+
+alter table h_benefit_period
+	drop primary key;
+
+
+alter table h_benefit_type
+	drop primary key;
+
+
+alter table h_benefit_type_sched
+	drop primary key;
+
+
+alter table h_benefit_type_sched
+	drop index h_bts_partner_idx;
+
+
+alter table h_benefit_type_sched
+	drop index h_bts_group_idx;
+
+
+alter table h_benefits
+	drop primary key;
+
+
 alter table r_group
 	drop primary key;
 
@@ -742,6 +810,10 @@ alter table a_tax_allowance_table
 	drop primary key;
 
 
+alter table a_salary_review
+	drop primary key;
+
+
 alter table a_cc_admin_fee
 	drop primary key;
 
@@ -842,6 +914,50 @@ alter table a_giving_pattern
 	drop primary key;
 
 
+alter table a_giving_pattern
+	drop index a_givingp_review_idx;
+
+
+alter table a_giving_pattern
+	drop index a_givingp_actual_idx;
+
+
+alter table a_giving_pattern_allocation
+	drop primary key;
+
+
+alter table a_giving_pattern_allocation
+	drop index a_givingpa_review_idx;
+
+
+alter table a_giving_pattern_allocation
+	drop index a_givingpa_actual_idx;
+
+
+alter table a_giving_pattern_flag
+	drop primary key;
+
+
+alter table a_giving_pattern_flag
+	drop index a_givingf_review_idx;
+
+
+alter table a_funding_target
+	drop primary key;
+
+
+alter table a_support_review
+	drop primary key;
+
+
+alter table a_support_review_target
+	drop primary key;
+
+
+alter table a_descriptives
+	drop primary key;
+
+
 alter table a_subtrx_cashdisb
 	drop primary key;
 
@@ -923,6 +1039,14 @@ alter table i_crm_import_type
 
 
 alter table i_crm_import_type_option
+	drop primary key;
+
+
+alter table i_disb_import_classify
+	drop primary key;
+
+
+alter table i_disb_import_status
 	drop primary key;
 
 
@@ -1020,3 +1144,15 @@ alter table s_audit
 
 alter table s_audit
 	drop index s_audit_intval_idx;
+
+
+alter table s_role
+	drop primary key;
+
+
+alter table s_role_exclusivity
+	drop primary key;
+
+
+alter table s_user_role
+	drop primary key;

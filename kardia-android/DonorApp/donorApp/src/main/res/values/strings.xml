@@ -5,10 +5,9 @@
         <item>Designations</item>
         <item>Gifts</item>
         <item>Donate</item>
-        <item>Prayer Requests/Updates</item>
+        <item>Prayer/Updates</item>
         <item>Contact Missionary</item>
         <item>Accounts</item>
-        <item>Refresh</item>
     </string-array>
     <string-array name="contactTypes">
         <item>Encouragement</item>
@@ -24,6 +23,15 @@
         <item>Twice per day</item>
         <item>3 times per day</item>
         <item>4 times per day</item>
+    </string-array>
+    <string-array name="refresh_times">
+        <item>Never</item>
+        <item>Minute</item>
+        <item>Thirty Minutes</item>
+        <item>Hour</item>
+        <item>Twelve Hours</item>
+        <item>Day</item>
+        <item>Week</item>
     </string-array>
     <string name="app_name">Kardia Donor</string>
     <string name="action_settings">Settings</string>
@@ -44,6 +52,7 @@
     <string name="drawer_open">Drawer Open</string>
     <string name="drawer_closed">Drawer Closed</string>
     <string name="action_search">Search</string>
+    <string name="action_refresh">Refresh</string>
     <string name="submit">Submit</string>
     <string name="search">Search</string>
     <string name="date_range">Date Range</string>
@@ -62,14 +71,19 @@
     <string name="from">From:</string>
     <string name="name">name</string>
     <string name="set">Set</string>
-    <string name="end_date">End Date: </string>
+    <string name="end_date">End Date:</string>
     <string name="choose_time">Choose Time</string>
-    <string name="time1">Time #1: </string>
-    <string name="time2">Time #2: </string>
-    <string name="time3">Time #3: </string>
-    <string name="time4">Time #4: </string>
+    <string name="time1">Time #1:\ </string>
+    <string name="time2">Time #2:\ </string>
+    <string name="time3">Time #3:\ </string>
+    <string name="time4">Time #4:\ </string>
+    <string name="range_check_box">Notify me randomly\nwithin a timeframe</string>
     <string name="dollar_sign">$</string>
     <string name="praying">Praying</string>
+    <string name="comment">Comment</string>
+    <string name="comment_prompt">Enter your comment</string>
+    <string name="userID_Prompt">Enter Donor ID</string>
+    <string name="original_message_label">Original Post</string>
     <string name="view_pdf">View Letter</string>
 
 </resources>

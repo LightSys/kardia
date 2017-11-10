@@ -14,12 +14,13 @@ activity_list "widget/component-decl"
     AllActivity "widget/component-decl-event" { }
 
     prev_lastrecord "widget/variable" { type=integer; }
+    prev_source "widget/variable" { type=string; }
 
     refresh_timer "widget/timer"
 	{
 	auto_start=0;
 	auto_reset=1;
-	msec=30000;
+	msec=60000;
 
 	on_refresh "widget/connector" { event=Expire; target=activity_osrc; action=Refresh; }
 	}
@@ -70,6 +71,7 @@ activity_list "widget/component-decl"
 	    {
 	    activity_id "widget/parameter" { type=integer; default=runclient(:activity_osrc:activity_group_id); }
 	    sql = " select
+			:e:p_partner_key,
 			name = :e:e_reference_info,
 			:e:e_activity_date,
 			:e:e_activity_type,
@@ -148,14 +150,16 @@ activity_list "widget/component-decl"
 
 		// Clicking on a single-partner collaboration event
 		onclick "widget/connector" { event=Click; event_condition=runclient(:e_activity_type == 'COLL' and charindex(',', :e_reference_info) = 0); target=activity_list; action=PartnerSelected; partner_key=runclient(substring(:e_reference_info, charindex('|',:e_reference_info) + 1)); }
+		onclicktrk "widget/connector" { event=Click; event_condition=runclient(:e_activity_type == 'TRK' and charindex(',', :e_reference_info) = 0); target=activity_list; action=PartnerSelected; partner_key=runclient(substring(:e_reference_info, 1, charindex('|',:e_reference_info) - 1)); }
+		onclicktask "widget/connector" { event=Click; event_condition=runclient(:e_activity_type == 'TASK' and charindex(',', :e_reference_info) = 0); target=activity_list; action=PartnerSelected; partner_key=runclient(:p_partner_key); }
 
 		// Columns in the activity table
-		t_img "widget/table-column" { fieldname="img"; width=34; type=image; image_maxwidth=26; image_maxheight=26; align=center; }
+		t_img "widget/table-column" { fieldname="img"; width=40; type=image; image_maxwidth=32; image_maxheight=32; align=center; }
 		t_name "widget/table-column"
 		    {
 		    textcolor=runclient(condition(charindex('(offline)', :activity_data_osrc:info_1) > 0, '#808080', '#000000'));
 		    fieldname="info_1";
-		    width=208;
+		    width=202;
 		    caption_textcolor=runclient(condition(charindex('(offline)', :activity_data_osrc:info_1) > 0, '#808080', '#000000'));
 		    caption_value=runclient(condition(char_length(:activity_data_osrc:info_2) > 1, :activity_data_osrc:info_2 + '\n', '') + :activity_data_osrc:textdate);
 		    style=bold;
@@ -243,15 +247,27 @@ activity_list "widget/component-decl"
 		t_rowdetail_chat "widget/table-row-detail"
 		    {
 		    display_for=runclient(char_length(:activity_data_osrc:info_1) > 1 and :activity_data_osrc:e_reference_info != user_name());
-		    height=120;
+		    height=150;
 		    width=244;
 
 		    t_chat_osrc "widget/osrc"
 			{
 			sql = "	select
-				    *
+				    :c:img,
+				    :c:message_txt,
+				    :c:date_txt,
+				    :c:is_hdr,
+				    :c:c_chat_id,
+				    :c:is_new,
+				    :c:is_not_seen,
+				    :c:name,
+				    :p:p_partner_key,
+				    partner_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)
 				from
-				    /apps/kardia/modules/crm/chat.qy
+				    identity /apps/kardia/modules/crm/chat.qy c,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p
+				where
+				    :p:p_partner_key =* condition(charindex('#', :c:message_txt) > 0, convert(string, convert(integer, substring(:c:message_txt, charindex('#', :c:message_txt) + 1))), null)
 				";
 			baseobj="/apps/kardia/modules/crm/chat.qy";
 			autoquery=never;
@@ -259,16 +275,20 @@ activity_list "widget/component-decl"
 			replicasize=40;
 			refresh_interval=10000;
 
-			chat_change_focus1 "widget/connector" { source=activity_data_osrc; event=DataFocusChanged; target=prev_lastrecord; action=SetValue; Value=0; }
+			//chat_change_focus1 "widget/connector" { source=activity_data_osrc; event=DataFocusChanged; event_condition=runclient(:t_rowdetail_chat:is_visible); target=prev_lastrecord; action=SetValue; Value=0; }
+			chat_change_focus1 "widget/connector" { source=t_rowdetail_chat; event=Open; target=prev_lastrecord; action=SetValue; Value=0; }
+			chat_change_focus2 "widget/connector" { source=t_rowdetail_chat; event=Open; event_condition=runclient(:prev_source:value != "/apps/kardia/modules/crm/chat.qy?focus_user=" + :activity_data_osrc:e_reference_info); target=t_chat_table; action=Clear; }
 			//chat_change_focus2 "widget/connector" { source=activity_data_osrc; event=DataFocusChanged; event_condition=runclient(:activity_data_osrc:e_activity_type = 'USER'); action=Clear; }
-			chat_change_focus3 "widget/connector" { source=activity_data_osrc; event=DataFocusChanged; event_condition=runclient(:activity_data_osrc:e_activity_type = 'USER'); action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/chat.qy?focus_user=" + :activity_data_osrc:e_reference_info); }
+			//chat_change_focus3 "widget/connector" { source=activity_data_osrc; event=DataFocusChanged; event_condition=runclient(:t_rowdetail_chat:is_visible and :activity_data_osrc:e_activity_type = 'USER'); action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/chat.qy?focus_user=" + :activity_data_osrc:e_reference_info); }
+			chat_change_focus3 "widget/connector" { source=t_rowdetail_chat; event=Open; event_condition=runclient(:activity_data_osrc:e_activity_type = 'USER'); action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/chat.qy?focus_user=" + :activity_data_osrc:e_reference_info); }
+			chat_change_focus4 "widget/connector" { source=t_rowdetail_chat; event=Open; event_condition=runclient(:activity_data_osrc:e_activity_type = 'USER'); target=prev_source; action=SetValue; Value=runclient("/apps/kardia/modules/crm/chat.qy?focus_user=" + :activity_data_osrc:e_reference_info); }
 
 			scroll_end_on_load "widget/connector" { event_condition=runclient(:LastRecord != isnull(:prev_lastrecord:value,0)); event=EndQuery; target=t_chat_osrc; action=Last; }
 			save_last_rec "widget/connector" { event=EndQuery; target=prev_lastrecord; action=SetValue; Value=runclient(:LastRecord); }
 
 			t_chat_table "widget/table"
 			    {
-			    x=32; y=4; width=192; height=80;
+			    x=32; y=4; width=192; height=110;
 			    fl_x=0;
 			    min_rowheight=16;
 			    max_rowheight=72;
@@ -288,8 +308,18 @@ activity_list "widget/component-decl"
 			    nodata_message_textcolor="#808080";
 			    rowcache_size=40;
 
-			    t_chat_img "widget/table-column" { type=image; width=24; fieldname=img; image_maxheight=16; image_maxwidth=16; align=center; }
-			    t_chat_text "widget/table-column" { width=172; fieldname=message_txt; wrap=yes; font_size=10; style=runclient(condition(:t_chat_osrc:is_hdr, 'bold', 'plain')); caption_fieldname=date_txt; caption_font_size=10; caption_style=italic; caption_textcolor="#c0c0c0"; }
+			    t_chat_img "widget/table-column" { type=image; width=30; fieldname=img; image_maxheight=22; image_maxwidth=22; align=center; }
+			    t_chat_text "widget/table-column" { width=166; fieldname=message_txt; wrap=yes; font_size=10; style=runclient(condition(:t_chat_osrc:is_hdr, 'bold', 'plain')); caption_value=runclient(:t_chat_osrc:date_txt + condition(:t_chat_osrc:is_not_seen, ' (not seen)', '')); caption_font_size=10; caption_style=italic; caption_textcolor="#c0c0c0"; }
+
+			    // Open a partner if we see the partner ID and '#' in the chat message.
+			    on_click_ref "widget/connector"
+				{
+				event=Click;
+				event_condition=runclient(:p_partner_key is not null);
+				target=activity_list;
+				action=PartnerSelected;
+				partner_key = runclient(:p_partner_key);
+				}
 			    }
 
 			t_chat_newosrc "widget/osrc"
@@ -338,7 +368,7 @@ activity_list "widget/component-decl"
 
 				t_chat_editbox "widget/editbox"
 				    {
-				    x=32; y=88; width=192; height=24;
+				    x=32; y=118; width=192; height=24;
 				    fieldname=c_message;
 				    empty_description="type a new message here";
 				    }

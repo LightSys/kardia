@@ -160,10 +160,10 @@ fund_gift_list "system/report"
     gift_qy "report/query"
 	{
 	sql = "	SELECT
-			id = :g:p_donor_partner_id,
-			display_date = isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
+			id = :i:p_dn_donor_partner_id,
+			display_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
 			period_start_date = :p:a_start_date,
-			period = :g:a_period,
+			period = :i:a_period,
 			amount = :i:a_amount,
 			donation_id = :i:name,
 			designation = :i:a_cost_center + condition(:i:a_account_code != '4100' and :i:a_account_code != '2120', ':' + :i:a_account_code, ''),
@@ -172,31 +172,31 @@ fund_gift_list "system/report"
 			anon = :i:a_confidential,
 			comments = :i:a_comment
 		FROM
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			--/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_period/rows p
 		WHERE
-			:g:a_ledger_number = :this:ledger and
-			:g:a_period >= :startperiod_qy:a_period and
-			:g:a_period <= :endperiod_qy:a_period and
-			:g:a_posted = 1 and
-			(datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) >= :this:startday or (:g:a_period > :startperiod_qy:a_period)) and
-			-- datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
-			(datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday or isnull(:g:a_gift_postmark_date, :g:a_gift_received_date) < :endperiod_qy:a_start_date) and
-			charindex(',' + rtrim(:g:a_ledger_number) + '|' + convert(string, :g:a_batch_number) + '|' + convert(string, :g:a_gift_number) + '|', :item_qy:items) > 0 and
-			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_ledger_number = :this:ledger and
 			:i:a_period >= :startperiod_qy:a_period and
 			:i:a_period <= :endperiod_qy:a_period and
-			:i:a_batch_number = :g:a_batch_number and
-			:i:a_gift_number = :g:a_gift_number and
+			:i:a_posted = 1 and
+			(datepart(day, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)) >= :this:startday or (:i:a_period > :startperiod_qy:a_period)) and
+			-- datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
+			(datepart(day, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)) <= :this:endday or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) < :endperiod_qy:a_start_date) and
+			charindex(',' + rtrim(:i:a_ledger_number) + '|' + convert(string, :i:a_batch_number) + '|' + convert(string, :i:a_gift_number) + '|', :item_qy:items) > 0 and
+			--:i:a_ledger_number = :g:a_ledger_number and
+			--:i:a_period >= :startperiod_qy:a_period and
+			--:i:a_period <= :endperiod_qy:a_period and
+			--:i:a_batch_number = :g:a_batch_number and
+			--:i:a_gift_number = :g:a_gift_number and
 			:i:a_amount != $0 and
 			-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
 			:i:a_cost_center = :cclist_qy:a_cost_center and
 			:p:a_ledger_number = :i:a_ledger_number and
 			:p:a_period = :i:a_period
 		ORDER BY
-			:g:a_period,
-			isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)
+			:i:a_period,
+			isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)
 		";
 	acct_sum "report/aggregate" { compute="sum(:amount)"; reset=1; }
 	acct_cnt "report/aggregate" { compute="count(:amount)"; reset=1; }
@@ -279,7 +279,8 @@ fund_gift_list "system/report"
 	    x=0; y=0; width=102; height=4;
 	    font=helvetica;
 	    align=left;
-	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver(:this:costctr + ' - ' + condition(charindex("-Work", :costctr_qy:a_cc_desc) > 0, substring(:costctr_qy:a_cc_desc, 1, charindex("-Work", :costctr_qy:a_cc_desc) - 1), :costctr_qy:a_cc_desc) + "\n"); }
+	    //t_d0 "report/data" { fontsize=15; style=bold; value = runserver(:this:costctr + ' - ' + condition(charindex("-Work", :costctr_qy:a_cc_desc) > 0, substring(:costctr_qy:a_cc_desc, 1, charindex("-Work", :costctr_qy:a_cc_desc) - 1), :costctr_qy:a_cc_desc) + "\n"); }
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver(:this:costctr + ' - ' + :costctr_qy:a_cc_desc + "\n"); }
 	    t_d3a "report/data"
 		{
 		condition=runserver(:startperiod_qy:a_period == :endperiod_qy:a_period);
