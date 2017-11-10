@@ -85,8 +85,8 @@ gift_entry "widget/component-decl"
 			    :p:p_partner_key =* :g:p_donor_partner_id
 		    ");
 	    baseobj = "/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows";
-	    replicasize=490;
-	    readahead=490;
+	    replicasize=700;
+	    readahead=700;
 	    autoquery = never;
 
 	    rcpt_link_rule "widget/rule"
