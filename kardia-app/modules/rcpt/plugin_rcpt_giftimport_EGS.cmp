@@ -36,7 +36,7 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			i_eg_desig_notes = :desig:DesignationMemo,
 			i_eg_desig_uuid = :desig:DesignationGUID,
 
-			i_eg_donor_alt_id = convert(string, :p:DonorID),
+			i_eg_donor_alt_id = condition(char_length(convert(string, :p:DonorID)) > 1, convert(string, :p:DonorID), null),
 			i_eg_donor_name = :p:FirstName + ' ' + :p:LastName,
 			i_eg_donor_given_name = :p:FirstName,
 			i_eg_donor_surname = :p:LastName,
