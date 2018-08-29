@@ -55,7 +55,8 @@ function Root
 
 function Connected
     {
-    target=$(echo $CX_KEY | sed 's/ .*//')
+    #target=$(echo $CX_KEY | sed 's/ .*//')
+    target=$( echo $CX_GITREPO | sed 's/\/.*//')
     echo -n "Checking for Internet connectivity to $target: "
     if ping -c1 $target >/dev/null 2>/dev/null; then
 	echo Yes
