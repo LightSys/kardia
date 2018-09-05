@@ -10,9 +10,8 @@ profile_timeline "widget/component-decl"
     // Our events
     EditTask "widget/component-decl-event" { }
     EditContactHistory "widget/component-decl-event" { }
-
-    // Our events
     TrackSelected "widget/component-decl-event" { }
+    FileNeedsEditing "widget/component-decl-event" { }
 
     // Iconbar passed in so we can access the 'EnabledTypes' property it has
     iconbar "widget/parameter" { type=object; deploy_to_client=yes; }
@@ -186,6 +185,16 @@ profile_timeline "widget/component-decl"
 				    hist_id=runclient(:hist_id);
 				    origin=runclient(:origin);
 				    partner=runclient(:partner);
+				    }
+
+				on_editfile "widget/connector"
+				    {
+				    event=FileNeedsEditing;
+				    target=profile_timeline;
+				    action=FileNeedsEditing;
+				    DocID=runclient(:DocID);
+				    AssocID=runclient(:AssocID);
+				    Filename=runclient(:Filename);
 				    }
 				}
 			    }

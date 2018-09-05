@@ -7,6 +7,8 @@ popover_files "widget/component-decl"
 
     FileUpdated "widget/component-decl-event" { }
 
+    FileNeedsEditing "widget/component-decl-event" { }
+
     onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
     onOpen1b "widget/connector" { event=Open; target=partnername_var; action=SetValue; Value=runclient(:partnername); }
     onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
@@ -53,7 +55,7 @@ popover_files "widget/component-decl"
 
     files_win "widget/childwindow"
 	{
-	width=600; height=344;
+	width=700; height=428;
 	x=250; y=89;
 	fl_y=0;
 	titlebar=no;
@@ -78,7 +80,7 @@ popover_files "widget/component-decl"
 	files_vbox "widget/vbox"
 	    {
 	    x=15; y=15;
-	    width=568; height=312;
+	    width=668; height=396;
 	    spacing=8;
 
 	    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("Manage and Upload Files..."); align=center; }
@@ -113,6 +115,7 @@ popover_files "widget/component-decl"
 			    :d:s_created_by,
 			    :d:s_date_modified,
 			    :d:s_modified_by,
+			    :pd:e_pardoc_assoc_id,
 			    :f:size,
 			    :f:owner,
 			    filename = :f:name,
@@ -253,7 +256,7 @@ popover_files "widget/component-decl"
 
 				assign_btn "widget/textbutton"
 				    {
-				    width=330;
+				    width=322;
 				    text=runclient(condition(:doc_form:is_savable and isnull(:doctype:value,'') and char_length(:doctitle:content) > 1, "Save & ", "") + "Assoc. With " + :partnername_var:value);
 				    enabled=runclient(:unassigned_files_osrc:assign_name is null and ((:doc_form:is_savable and :doctype:value and char_length(:doctitle:content) > 1) or (:unassigned_files_osrc:e_title is not null and :unassigned_files_osrc:e_doc_type_id is not null)));
 				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
@@ -292,6 +295,33 @@ popover_files "widget/component-decl"
 
 				    on_delete1 "widget/connector" { event=Click; event_confirm=runclient("Delete this file?"); target=doc_form; action=Delete; }
 				    on_delete2 "widget/connector" { event=Click; target=unassigned_form; action=Delete; }
+				    }
+
+				edit_btn "widget/textbutton"
+				    {
+				    width=100;
+				    text="Edit";
+				    enabled=runclient(not :doc_form:is_discardable and upper(right(:unassigned_files_osrc:e_current_filename,4)) = '.TXT');
+				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				    fgcolor1=white;
+				    fgcolor2=black;
+				    disable_color="#334466";
+
+				    on_edit1 "widget/connector"
+					{
+					event=Click;
+					target=popover_files;
+					action=FileNeedsEditing;
+					Filename=runclient(:unassigned_files_osrc:e_current_filename);
+					DocID=runclient(:unassigned_files_osrc:e_document_id);
+					AssocID=runclient(:unassigned_files_osrc:e_pardoc_assoc_id);
+					}
+				    on_edit2 "widget/connector"
+					{
+					event=Click;
+					target=files_win;
+					action=Close;
+					}
 				    }
 				}
 			    }
@@ -401,6 +431,146 @@ popover_files "widget/component-decl"
 		    }
 		}
 
+	    sep "widget/autolayoutspacer" { height=2; }
+
+	    newfile_label "widget/label" { height=14; text="Or, Create a New File:"; style=bold; }
+
+	    newfile_pane "widget/pane"
+		{
+		height=36;
+		border_radius=10;
+		border_color="#6080c0";
+		style=bordered;
+
+		newfile_hbox "widget/hbox"
+		    {
+		    x=6; y=6; height=24; width=556;
+		    spacing=8;
+
+		    newfile_form "widget/form"
+			{
+			//newfile_type "widget/component" { path="/sys/cmp/smart_field.cmp"; field=doc_type; ctl_type=dropdown; text="Type:"; sql="select :e_doc_type_label, :e_doc_type_id from /apps/kardia/data/Kardia_DB/e_document_type/rows dt where :e_doc_type_label = 'Document' order by :e_doc_type_label"; width=160; label_width=40; nft_hints "widget/hints" { style=notnull; } }
+			//newfile_format "widget/component" { path="/sys/cmp/smart_field.cmp"; field=doc_format; ctl_type=dropdown; text="Format:"; sql="select 'Text file', 'txt'"; width=180; label_width=60; nff_hints "widget/hints" { style=notnull; } }
+			newfile_name "widget/component" { path="/sys/cmp/smart_field.cmp"; field=doc_name; ctl_type=editbox; text="Name:"; width=300; label_width=40; empty_desc="enter filename"; }
+			newfile_create "widget/textbutton"
+			    {
+			    height=24; width=100;
+			    text = "Create";
+			    enabled=runclient(char_length(:newfile_name:content) > 0);
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    on_create "widget/connector"
+				{
+				event=Click;
+				target=newfile_osrc;
+				action=QueryParam;
+				p_newfile_name=runclient(:newfile_name:content);
+				p_collab_id=runclient(:collab_var:value);
+				p_partner_id=runclient(:partner_var:value);
+				}
+
+			    on_create_2 "widget/connector"
+				{
+				event=Click;
+				target=newfile_form;
+				action=Discard;
+				}
+			    }
+			}
+
+		    newfile_osrc "widget/osrc"
+			{
+			p_newfile_name "widget/parameter" { type=string; }
+			p_collab_id "widget/parameter" { type=string; }
+			p_partner_id "widget/parameter" { type=string; }
+
+			sql = "	declare object fileinfo;
+
+				-- Remove the .txt / .TXT from provided name, if any.
+				select :fileinfo:given_name = condition(upper(right(:parameters:p_newfile_name, 4)) == '.TXT', substring(:parameters:p_newfile_name, 1, char_length(:parameters:p_newfile_name) - 4), :parameters:p_newfile_name);
+
+				-- Create the file itself in the filesystem.
+				insert into
+				    /apps/kardia/files
+				select
+				    name = :fileinfo:given_name + '-' + convert(string,convert(integer,rand()*1000000)) + convert(string,convert(integer,rand()*1000000)) + '.txt',
+				    objcontent = ''
+				;
+
+				select
+				    :fileinfo:filename = :__inserted:name
+				;
+
+				-- Create the e_document record for the file.
+				insert into
+				    /apps/kardia/data/Kardia_DB/e_document/rows
+				select
+				    e_doc_type_id = 5, -- generic document
+				    e_title = :fileinfo:given_name,
+				    e_orig_filename = :fileinfo:given_name + '.txt',
+				    e_current_folder = '/apps/kardia/files',
+				    e_current_filename = :fileinfo:filename,
+				    e_uploading_collaborator = :parameters:p_collab_id,
+				    s_date_created = getdate(),
+				    s_created_by = user_name(),
+				    s_date_modified = getdate(),
+				    s_modified_by = user_name()
+				;
+
+				select
+				    :fileinfo:doc_id = :__inserted:e_document_id
+				;
+
+				-- Create the e_partner_document association record.
+				insert into
+				    /apps/kardia/data/Kardia_DB/e_partner_document/rows
+				select
+				    e_document_id = :fileinfo:doc_id,
+				    p_partner_key = :parameters:p_partner_id,
+				    s_date_created = getdate(),
+				    s_created_by = user_name(),
+				    s_date_modified = getdate(),
+				    s_modified_by = user_name()
+				;
+				
+				select
+				    :fileinfo:assoc_id = :__inserted:e_pardoc_assoc_id
+				;
+
+				-- Return the information
+				select
+				    :fileinfo:filename,
+				    :fileinfo:given_name,
+				    :fileinfo:doc_id,
+				    :fileinfo:assoc_id
+				";
+			autoquery=never;
+			replicasize=2;
+
+			start_edit1 "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=popover_files;
+			    action=FileNeedsEditing;
+			    Filename=runclient(:newfile_osrc:filename);
+			    DocID=runclient(:newfile_osrc:doc_id);
+			    AssocID=runclient(:newfile_osrc:assoc_id);
+			    }
+			start_edit2 "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=files_win;
+			    action=Close;
+			    }
+			}
+		    }
+		}
+
+	    sep2 "widget/autolayoutspacer" { height=2; }
+
 	    btns_hbox "widget/hbox"
 		{
 		height=24; spacing=8;
@@ -409,14 +579,15 @@ popover_files "widget/component-decl"
 		close_btn "widget/textbutton"
 		    {
 		    height=24; width=100;
-		    text = runclient(condition(:doc_form:is_savable, "Cancel", "Close"));
+		    text = runclient(condition(:doc_form:is_savable or :newfile_form:is_savable, "Cancel", "Close"));
 		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
 		    fgcolor1=white;
 		    fgcolor2=black;
 		    disable_color="#334466";
 
 		    on_close1 "widget/connector" { event=Click; target=doc_form; action=Discard; }
-		    on_close2 "widget/connector" { event=Click; target=files_win; action=Close; }
+		    on_close2 "widget/connector" { event=Click; target=newfile_form; action=Discard; }
+		    on_close3 "widget/connector" { event=Click; target=files_win; action=Close; }
 		    }
 		}
 	    }
