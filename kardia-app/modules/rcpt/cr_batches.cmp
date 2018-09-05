@@ -51,6 +51,7 @@ cr_batches "widget/component-decl"
 			:b:s_date_modified,
 			:b:s_modified_by,
 			:b:a_period,
+			amt = isnull((select sum(:a_amount) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number), $0),
 			rrec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number limit 1),0),
 			rpost = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_posted = 1 limit 1),0),
 			print = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows cr where :cr:a_batch_number = :b:a_batch_number and :cr:a_ledger_number = :b:a_ledger_number and :cr:a_receipt_sent = 1 limit 1),0),
@@ -242,7 +243,7 @@ cr_batches "widget/component-decl"
 
 	unpost_req_cmp "widget/component"
 	    {
-	    path = "unpost_req.cmp";
+	    path = "/apps/kardia/modules/rcpt/unpost_req.cmp";
 	    }
 
 	unpostcr_win "widget/childwindow"
@@ -397,14 +398,21 @@ cr_batches "widget/component-decl"
 		x=0;y=0;width=598;height=540;
 		mode=dynamicrow;
 
-		t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=55; }
-		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=140; }
-		t_dt "widget/table-column" { title="Eff. Date"; fieldname="date_txt"; width=75; }
+		t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=50; }
+		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=150; }
+		t_amt "widget/table-column"
+		    {
+		    title="Amount";
+		    fieldname="amt";
+		    width=65;
+		    align=right; 
+		    require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+		    }
+		t_dt "widget/table-column" { title="Date"; fieldname="date_txt"; width=75; }
 		t_user "widget/table-column" { title="User"; fieldname="s_created_by"; width=50; }
-		t_rcnt "widget/table-column" { title="Recs"; fieldname="rrec"; width=40; type=check; }
-		t_rpost "widget/table-column" { title="Post?"; fieldname="rpost"; width=40; type=check; }
-		t_print "widget/table-column" { title="Print?"; fieldname="print"; width=40; type=check; }
-		t_glcnt "widget/table-column" { title="GL?"; fieldname="glrec"; width=40; type=check; }
+		t_rpost "widget/table-column" { title="Post?"; fieldname="rpost"; width=35; type=check; }
+		t_print "widget/table-column" { title="Print?"; fieldname="print"; width=35; type=check; }
+		t_glcnt "widget/table-column" { title="GL?"; fieldname="glrec"; width=35; type=check; }
 		}
 	    }
 	}
