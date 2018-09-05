@@ -1,0 +1,251 @@
+$Version=2$
+security_permissions "system/report"
+    {
+    // Greg Beeley / LightSys - 10-Jul-2018
+    //
+    // This report prints a list of permissions granted to users
+    //
+    // Information Presented:
+    //   - Staff Login
+    //   - Staff Name
+    //   - List of Permissions:
+    //     + Permission id and description
+    //     + Context id and description
+    //     + Granted by
+    //     + Granted when
+    //   - Last 3 Logins
+    //
+    // Report Criteria:
+    //   - Username (optional)
+    //   - Permission (optional)
+    //   - Context (optional)
+    //
+    //
+    title = "Permissions Report";
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=110;
+    pageheight=51;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Report Parameters
+    users "report/parameter" { type=string; }
+    perm "report/parameter" { type=string; }
+    ctx "report/parameter" { type=string; }
+
+    // Require system admin permission to run this report
+    //require_endorsements = "kardia:sys_admin";
+
+    // Query to get site information
+    site_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			OBJECT /apps/kardia/data/Site.struct
+		";
+	}
+
+    // Users query
+    users_qy "report/query"
+	{
+	sql = " SELECT
+			:ux:description,
+			:ux:username,
+			privcnt = (select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows se where substring(:se:s_subject,1,2) = 'u:' and substring(:se:s_subject,3,32) = :ux:username),
+			logincnt = (select count(1) from /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows lh where :ux:username = :lh:s_username),
+			is_staff = (select count(1) from /apps/kardia/data/Kardia_DB/p_staff/rows staff where :ux:username = :staff:p_kardia_login)
+		FROM
+			/apps/kardia/data/Users.uxu ux, 
+			/apps/kardia/data/DBusers.qy su
+		WHERE
+			:ux:username = :su:username and
+			:ux:uid >= 200 and
+			(:this:users is null or charindex(',' + :ux:username + ',', ',' + :this:users +',') > 0)
+		ORDER BY
+			:ux:username asc
+		";
+	}
+
+    // Permissions query
+    perms_qy "report/query"
+	{
+	sql = "	SELECT
+			checked = condition(:se:s_date_created is null, 0, 1),
+			:st:s_endorsement,
+			:st:s_endorsement_desc,
+			:sc:s_context,
+			:sc:s_context_desc,
+			:st:s_endorsement_context_type,
+			:se:s_date_created,
+			:se:s_created_by
+		FROM
+			/apps/kardia/data/Kardia_DB/s_sec_endorsement_type/rows st,
+			/apps/kardia/data/Kardia_DB/s_sec_endorsement_context/rows sc,
+			/apps/kardia/data/Kardia_DB/s_sec_endorsement/rows se
+		WHERE
+			(:sc:s_context = :this:ctx or :this:ctx is null) and
+			(:st:s_endorsement = :this:perm or :this:perm is null) and
+			substring(:se:s_subject,1,2) = 'u:' and
+			substring(:se:s_subject,3,999) = :users_qy:username and
+			:se:s_endorsement = :st:s_endorsement and
+			:se:s_context = :sc:s_context and
+			:se:s_date_created is not null
+		HAVING
+			((:s_endorsement_context_type = :s_context) or
+			 (:s_endorsement_context_type + ':' = substring(:s_context, 1, char_length(:s_endorsement_context_type) + 1) and
+			  charindex(':', substring(:s_context, char_length(:s_endorsement_context_type) + 1 + 1, 999)) == 0))
+		ORDER BY
+			:sc:s_context
+		";
+	}
+
+    // Logins query
+    logins_qy "report/query"
+	{
+	sql = " SELECT
+			*,
+			--last_act_txt = condition(dateadd(minute, 15, :lh:s_last_seen) > getdate(), 'now', :lh:s_last_seen)
+			last_act_txt = :lh:s_last_seen
+		FROM
+			/apps/kardia/data/Kardia_DB/s_user_loginhistory/rows lh
+		WHERE
+			:lh:s_username = :users_qy:username
+		ORDER BY
+			:lh:s_first_seen desc
+		LIMIT
+			1
+		";
+	}
+
+    // Main body of the report.
+    main_form "report/form"
+	{
+	dateformat = "dd-MMM-yyyy";
+	source = site_qy;
+
+	hdrimg "report/image"
+	    {
+	    x=92.85;y=0;
+	    height=4;
+	    //width=runserver(4.0 * :site_qy:site_report_logo_width / :site_qy:site_report_logo_height);
+	    width = 12.15;
+	    //height=12.15 * /apps/kardia/data/Site.struct:site_report_logo_height / /apps/kardia/data/Site.struct:site_report_logo_width;
+	    source = /apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=105; height=5;
+	    font=helvetica;
+	    align=left;
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Permissions Report\n"); }
+	    t_d15 "report/data" { fontsize=8; value = runserver("Printed on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+	    }
+
+	main_table "report/table"
+	    {
+	    x=0; width=105; height=0;
+	    columns=3;
+	    widths=20,13.5,70.5;
+	    colsep=0.5;
+	    nullformat="";
+	    dateformat = "dd-MMM-yyyy";
+	    bottomborder=0.3;
+	    margintop=0;
+	    source=users_qy;
+
+	    hdr "report/table-row"
+		{
+		header = yes;
+		font=helvetica;
+		fontsize=8;
+		topborder=0.3;
+		bottomborder=0.05;
+
+		//sp_user "report/table-cell" { value='User'; align=left; }
+		sp_name "report/table-cell" { value='Name'; align=left; }
+		sp_log "report/table-cell" { value='Last Login'; align=left; }
+		sp_perm "report/table-cell" { value='Permission / Context / Granted By'; align=left; }
+		}
+
+	    one_user "report/table-row"
+		{
+		allowbreak=no;
+		fontsize=8;
+		font=helvetica;
+		margintop = 0.1;
+
+		//d_user "report/table-cell" { value=runserver(:users_qy:username); }
+		d_name "report/table-cell" { value=runserver(:users_qy:description); }
+		d_log "report/table-cell"
+		    {
+		    login_table "report/table"
+			{
+			condition = runserver(:users_qy:logincnt > 0);
+			x=0; width=13.5; height=0;
+			columns=1;
+			widths=13.5;
+			colsep=0.5;
+			nullformat="";
+			dateformat = "dd-MMM-yyyy";
+			margintop=0;
+			source=logins_qy;
+
+			ldata "report/table-row"
+			    {
+			    allowbreak=no;
+			    fontsize=8;
+			    font=helvetica;
+
+			    ld_date "report/table-cell" { value=runserver(:logins_qy:last_act_txt); }
+			    }
+			}
+		    }
+		d_perm "report/table-cell"
+		    {
+		    perm_table "report/table"
+			{
+			condition = runserver(:users_qy:privcnt > 0);
+			x=0; width=70.5; height=0;
+			columns=3;
+			widths=31.5,17,21;
+			colsep=0.5;
+			nullformat="";
+			dateformat = "dd-MMM-yyyy";
+			//bottomborder=0.3;
+			margintop=0;
+			source=perms_qy;
+
+			phdr "report/table-row"
+			    {
+			    condition = 0;
+			    header = yes;
+			    font=helvetica;
+			    fontsize=8;
+
+			    h_perm "report/table-cell" { value='Permission'; align=center; }
+			    h_ctx "report/table-cell" { value='Context'; align=center; }
+			    h_grant "report/table-cell" { value='Granted'; align=center; }
+			    }
+
+			pdata "report/table-row"
+			    {
+			    allowbreak=no;
+			    fontsize=8;
+			    font=helvetica;
+
+			    pd_perm "report/table-cell" { value=runserver(:perms_qy:s_endorsement + ' - ' + :perms_qy:s_endorsement_desc); }
+			    pd_ctx "report/table-cell" { value=runserver(:perms_qy:s_context_desc); }
+			    pd_grant "report/table-cell" { value=runserver('By ' + :perms_qy:s_created_by + ' on ' + :perms_qy:s_date_created); }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
