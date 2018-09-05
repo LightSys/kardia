@@ -75,6 +75,7 @@ support_review "widget/component-decl"
 		    :gp:a_ledger_number = :info:ledger and
 		    :gp:a_amount = $0 and
 		    :gp:a_is_active = 1 and
+		    :gp:a_interval != 0 and
 		    isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > :gp:s_date_modified and
 		    (:i:a_cost_center = :gp:a_cost_center or :i:a_cost_center = :gp:a_actual_cost_center) and
 		    :i:a_ledger_number = :gp:a_ledger_number and
@@ -206,7 +207,7 @@ support_review "widget/component-decl"
 		    :gp:a_ledger_number = :info:ledger and
 		    :gp:a_cost_center = :info:fund and
 		    :gp:a_is_active = 1 and
-		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate())) and
+		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate()) or :gp:a_interval = 0) and
 		    isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -37, getdate()) and
 		    (:i:a_cost_center =* :gp:a_cost_center or :i:a_cost_center =* :gp:a_actual_cost_center) and
 		    :i:a_ledger_number =* :gp:a_ledger_number and
