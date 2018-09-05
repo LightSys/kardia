@@ -47,6 +47,8 @@ profile_picture "widget/component-decl"
 		x=3; y=3;
 		width=102;
 		height=102;
+		fl_width=10;
+		fl_height=10;
 		aspect=preserve;
 		source=runclient(isnull(:profile_photo_osrc:path, "/apps/kardia/images/artwork/persona.png"));
 		scale=runclient(isnull(:profile_photo_osrc:e_image_scale_height / :profile_photo_osrc:e_image_height, 1));
