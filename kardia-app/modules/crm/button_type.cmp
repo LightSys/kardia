@@ -49,7 +49,8 @@ button_type "widget/component-decl"
 	event=Toggle;
 	target=pane;
 	action=SetBackground;
-	Image=runclient(condition(charindex('openiconic-eye',:check:source) > 0, '/apps/kardia/images/bg/charcoal_gradient', '/apps/kardia/images/bg/lsblue_gradient') + condition(:direction:value == 'vertical', '', '_horiz') + '.png');
+	//Image=runclient(condition(charindex('openiconic-eye',:check:source) > 0, '/apps/kardia/images/bg/charcoal_gradient', '/apps/kardia/images/bg/lsblue_gradient') + condition(:direction:value == 'vertical', '', '_horiz') + '.png');
+	Image=runclient(condition(charindex('openiconic-eye',:check:source) > 0, '/sys/images/trans_1.gif', '/apps/kardia/images/bg/lsblue_gradient' + condition(:direction:value == 'vertical', '', '_horiz') + '.png'));
 	}
     toggle_1 "widget/connector"
 	{

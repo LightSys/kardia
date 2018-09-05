@@ -20,7 +20,7 @@ gift_import "widget/component-decl"
 	//
 	sql = runserver(
 		isnull((select
-			sum('set showplan 1 insert into /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows select a_ledger_number = ' + quote(:this:ledger) + ',\n' + :p:sql + ' ' + :p:upsert_sql + '\n;\n' + isnull(:p:postprocess_sql + '\n;\n', ''))
+			sum('insert into /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows select a_ledger_number = ' + quote(:this:ledger) + ',\n' + :p:sql + ' ' + :p:upsert_sql + '\n;\n' + isnull(:p:postprocess_sql + '\n;\n', ''))
 		from
 			object wildcard '/apps/kardia/modules/*/plugin_rcpt_giftimport_*.cmp' p,
 			/apps/kardia/data/Kardia_DB/a_config/rows ac
@@ -261,6 +261,7 @@ gift_import "widget/component-decl"
 				    :eg:i_eg_gift_trx_date,
 				    :eg:i_eg_gift_settlement_date,
 				    :eg:i_eg_deposit_date,
+				    :eg:i_eg_deposit_uuid,
 				    import_country_code = isnull(:egco:p_country_code, :eg:i_eg_donor_country)
 			    FROM
 				    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
@@ -645,7 +646,8 @@ gift_import "widget/component-decl"
 					ready = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid'),
 					need_qa = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid'),
 					pending = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :i_eg_status == 'pending'),
-					mostrecent = (select substring(convert(string,max(:i_eg_gift_trx_date)),1,11) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows )
+					mostrecent = (select substring(convert(string,max(:i_eg_gift_trx_date)),1,11) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows ),
+					notimpamount = (select sum(:i_eg_gift_amount) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and :i_eg_status != 'returned' )
 				";
 			autoquery = onfirstreveal;
 			readahead = 2;
@@ -658,6 +660,7 @@ gift_import "widget/component-decl"
 			    numneed_qa "widget/component" { path="/sys/cmp/smart_field.cmp"; x=320; height=16; y=4; width=170; label_width=140; text="Needing QA:"; field=need_qa; color=white; ctl_type=label; }
 			    numpending "widget/component" { path="/sys/cmp/smart_field.cmp"; x=320; height=16; y=20; width=170; label_width=140; text="Pending from Service:"; field=pending; color=white; ctl_type=label; }
 			    mostrecent "widget/component" { path="/sys/cmp/smart_field.cmp"; x=490; height=16; y=4; width=270; label_width=140; text="Most Recent Gift:"; field=mostrecent; color=white; ctl_type=label; }
+			    notimpamt "widget/component" { path="/sys/cmp/smart_field.cmp"; x=490; height=16; y=20; width=270; label_width=140; text="To Be Imported:"; field=notimpamount; color=white; ctl_type=label; }
 			    }
 			}
 		    }
@@ -1006,6 +1009,7 @@ gift_import "widget/component-decl"
 		id_trxdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_gift_trx_date; text="Transaction:"; ctl_type=label; }
 		id_settdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_gift_settlement_date; text="Settlement:"; ctl_type=label; }
 		id_depdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_date; text="Deposited:"; ctl_type=label; }
+		id_depid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_uuid; text="Deposit ID:"; ctl_type=label; }
 		id_desig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; text="Designation:"; ctl_type=label; }
 		id_notes "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; text="Notes:"; ctl_type=label; }
 		}
@@ -1488,7 +1492,7 @@ gift_import "widget/component-decl"
 			    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashAcct'),
 			    a_account_category = (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_config/rows conf, /apps/kardia/data/Kardia_DB/a_account/rows a where :conf:a_ledger_number = :parameters:ledger and :conf:a_config_name = 'RcptCashAcct' and :a:a_ledger_number = :conf:a_ledger_number and :a:a_account_code = :conf:a_config_value),
 			    a_amount = $0 - (:eg:i_eg_deposit_gross_amt - :eg:i_eg_deposit_amt),
-			    a_posted = 0,
+			    a_posted = 1,
 			    a_modified = 0,
 			    a_corrected = 0,
 			    a_correcting = 0,

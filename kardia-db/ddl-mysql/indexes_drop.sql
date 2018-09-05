@@ -53,6 +53,16 @@ alter table p_address_format drop index p_af_country_idx;
 /* go */
 
 
+/* p_contact_usage */
+/* drop index p_contact_usage.p_contact_usg_pk */ 
+/* go */
+
+
+/* p_contact_usage_type */
+/* drop index p_contact_usage_type.p_contact_ut_pk */ 
+/* go */
+
+
 /* p_partner_relationship */
 /* drop index p_partner_relationship.p_partner_relationship_pk */ 
 /* go */
@@ -264,6 +274,8 @@ alter table e_partner_engagement drop index e_pareng_trackstep_idx;
 /* e_tag */
 /* drop index e_tag.e_tag_pk */ 
 /* go */
+alter table e_tag drop index e_tag_rev_idx;
+alter table e_tag drop index e_tag_strength_idx;
 
 
 /* e_tag_activity */
@@ -801,6 +813,7 @@ alter table a_subtrx_gift drop index a_gifttrx_recip_id_idx;
 
 
 /* a_subtrx_gift_group */
+alter table a_subtrx_gift_group drop index a_gifttrxgrp_ack_id_idx;
 alter table a_subtrx_gift_group drop index a_gifttrxgrp_batch_idx;
 alter table a_subtrx_gift_group drop index a_gifttrxgrp_donor_id_idx;
 alter table a_subtrx_gift_group drop index a_gifttrxgrp_gift_idx;
@@ -890,6 +903,16 @@ alter table a_support_review_target drop index a_supptgt_target_idx;
 alter table a_subtrx_cashdisb drop index a_subtrx_cashdisb_acct_idx;
 alter table a_subtrx_cashdisb drop index a_subtrx_cashdisb_batch_idx;
 /* drop index a_subtrx_cashdisb.a_subtrx_cashdisb_pk */ 
+/* go */
+
+
+/* a_subtrx_payable */
+/* drop index a_subtrx_payable.a_subtrx_payable_pk */ 
+/* go */
+
+
+/* a_subtrx_payable_item */
+/* drop index a_subtrx_payable_item.a_subtrx_payable_item_pk */ 
 /* go */
 
 

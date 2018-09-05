@@ -363,7 +363,7 @@ de_batches "widget/component-decl"
 		t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=55; }
 		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=180; }
 		t_amt "widget/table-column" { title="Amount"; fieldname="damt"; width=75; align=right; }
-		t_dt "widget/table-column" { title="Eff. Date"; fieldname="date_txt"; width=75; }
+		t_dt "widget/table-column" { title="Date"; fieldname="date_txt"; width=75; }
 		t_user "widget/table-column" { title="User"; fieldname="s_created_by"; width=50; }
 		//t_rcnt "widget/table-column" { title="Recs"; fieldname="drec"; width=40; type=check; }
 		t_rpost "widget/table-column" { title="Post?"; fieldname="dpost"; width=40; type=check; }

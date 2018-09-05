@@ -14,7 +14,8 @@ generic_byperiod "widget/component-decl"
 	periods_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
 	sql = runserver("
 		SELECT
-			:p:a_period, :p:a_period_desc, :p:a_ledger_number, txt=:p:a_period + ' - ' + :p:a_period_desc,
+			:p:a_period, :p:a_period_desc, :p:a_ledger_number, 
+			txt=:p:a_period + ' - ' + :p:a_period_desc + isnull(' (' + condition(:p:a_status = 'O', 'Open', condition(:p:a_status = 'N', 'Not yet open', condition(:p:a_status = 'C', 'Closed', null))) + ')', ''),
 			:p:a_status, :p:a_parent_period
 		FROM
 			/apps/kardia/data/Kardia_DB/a_period/rows p
@@ -44,7 +45,7 @@ generic_byperiod "widget/component-decl"
 
 	    rcpt_label "widget/label"
 		{
-		width=345;
+		width=295;
 		text = runserver(:this:title); 
 		style=bold;
 		font_size=16;
@@ -59,7 +60,7 @@ generic_byperiod "widget/component-decl"
 		}
 	    periods_select "widget/dropdown"
 		{
-		width=200;
+		width=250;
 		mode=objectsource;
 		fieldname=txt;
 		numdisplay=12;

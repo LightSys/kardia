@@ -26,7 +26,7 @@ index "widget/page"
     title = "Kardia CRM - Structured Engagement";
     width = 1200;
     height = 700;
-    max_requests = 6;
+    max_requests = 7;
 
     // This is the template to use -- it is much like a CSS stylesheet,
     // providing basic information about the look and feel of the 

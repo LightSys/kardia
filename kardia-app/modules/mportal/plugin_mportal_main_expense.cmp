@@ -1,0 +1,65 @@
+$Version=2$
+expenses "widget/component-decl"
+    {
+    height=602; width=1172;
+
+    title = "Expenses";
+    icon = "/apps/kardia/images/icons/openiconic-dollar.svg";
+    sequence = 14;
+
+    user_osrc "widget/parameter" { type=object; }
+
+    expense_hbox "widget/hbox"
+	{
+	x=0; y=0;
+	width=1172; height=602;
+	spacing=10;
+
+	expense_osrc "widget/osrc"
+	    {
+	    sql = " select 1 limit 0
+		    ";
+	    readahead=100;
+	    replicasize=100;
+
+	    expense_table "widget/table"
+		{
+		width=250;
+		row_border_radius=4;
+		demand_scrollbar = yes;
+		overlap_scrollbar = yes;
+		initial_selection = yes;
+		show_selection = yes;
+		colsep = 0;
+		titlebar = yes;
+		min_rowheight = 16;
+		max_rowheight = 200;
+		cellvspacing = 4;
+		row1_bgcolor = white;
+		row2_bgcolor = white;
+		inner_padding = 4;
+		textcolorhighlight = "#000000";
+		titlecolor = white;
+		hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+		rowhighlight_border_color="#6080c0";
+		rowhighlight_border_radius=3;
+		rowhighlight_shadow_color="#6080c0";
+		rowhighlight_shadow_radius=2;
+		rowhighlight_shadow_offset=1;
+		rowhighlight_shadow_angle=135;
+		rowhighlight_bgcolor="#faf8ff";
+		nodata_message = runclient(condition(:expense_osrc:cx__pending, "No expense reports.", "Looking up expense reports..."));
+
+		ex_stat "widget/table-column" { title = "Status"; value=runclient(''); width=140; style="bold"; font_size=16; caption_value=runclient(''); }
+		ex_date "widget/table-column" { title = "Date"; value=runclient(''); width=100; style="bold"; font_size=16; align=right; }
+		}
+	    }
+
+	vertsep "widget/image"
+	    {
+	    width=1; fl_width=0; fl_height=100;
+	    source="/apps/kardia/images/bg/lsblue_vertsep.png";
+	    }
+	}
+    }
+

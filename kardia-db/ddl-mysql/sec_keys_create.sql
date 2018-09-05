@@ -244,6 +244,9 @@ alter table a_subtrx_gift
 alter table a_subtrx_gift_group
 	add constraint a_gifttrxgrp_donor_id_idx unique  (p_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number);
 
+alter table a_subtrx_gift_group
+	add constraint a_gifttrxgrp_ack_id_idx unique  (p_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number);
+
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_recip_id_idx unique  (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 

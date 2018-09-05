@@ -178,6 +178,43 @@ create table p_contact_info (
 );
 
 
+/* p_contact_usage */
+
+create table p_contact_usage (
+        p_contact_usage_type_code             varchar(4)  not null,    /* Unique code for this usage type --  */
+        p_partner_key                         char(10)  not null,      /* The partner ID that this applies to --  */
+        p_contact_location_id                 integer  not null,       /* The contact or location ID this applies to --  */
+        p_contact_or_location                 char(1)  not null,       /* C = contact, L = location --  */
+        p_start_date                          datetime  null,          /* The first validity date for this usage --  */
+        p_end_date                            datetime  null,          /* The last validity date for this usage --  */
+        p_daterange_no_year                   bit  not null,           /* If set to 1, ignore the year part of the start-end date range (the range recurs yearly) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_contact_usage_type */
+
+create table p_contact_usage_type (
+        p_contact_usage_type_code             varchar(4)  not null,    /* Unique code for this usage type --  */
+        p_system_provided                     bit  not null,           /* 1 = this code is provided with the system and cannot be changed or removed --  */
+        p_use_for_locations                   bit  not null,           /* 1 = this code can be used for p_location records. --  */
+        p_use_for_contacts                    bit  not null,           /* 1 = this code can be used for contact data (phone, email, etc.) --  */
+        p_contact_types                       varchar(32)  not null,   /* a list of contact type codes that this code applies to. --  */
+        p_contact_usage_label                 varchar(80)  not null,   /* The label/description for this usage code. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* p_partner_relationship */
 
 create table p_partner_relationship (
@@ -2638,6 +2675,7 @@ create table a_subtrx_gift_group (
         a_gift_type                           char(1)  not null,       /* Type of gift: (C)ash, chec(K), credit car(D), (E)FT --  */
         a_receipt_number                      varchar(64)  null,       /* Receipt number that we sent out --  */
         p_donor_partner_id                    char(10)  null,          /* Partner ID of donor --  */
+        p_ack_partner_id                      char(10)  null,          /* Partner ID to send non-receipt acknowledgment to --  */
         a_receipt_sent                        bit  default 0,          /* Receipt sent to donor --  */
         a_receipt_desired                     char(1)  default 'I'  null,
                                                                       /* Receipt needed -- 'I' for immediate, 'A' for annual, 'N' for no receipt --  */
@@ -2937,6 +2975,67 @@ create table a_subtrx_cashdisb (
         a_posted_to_gl                        bit  default 0,          /* Has this disbursement been posted into the GL - yes (1) or no (0)? --  */
         a_voided                              bit  default 0,          /* Has this check been voided --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_subtrx_payable */
+
+create table a_subtrx_payable (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this disbursement --  */
+        a_payable_id                          integer  not null,       /* id number for this payable item --  */
+        a_batch_number_payable                integer  not null,       /* Batch id for the payable/liability journal --  */
+        a_batch_number_resolution             integer  not null,       /* Batch id for the resolution journal (cash disbursement) --  */
+        a_posted                              bit,                     /* Whether the payable is posted or not (0/1) --  */
+        a_requested_by                        char(10)  null,          /* Partner who requested the payable --  */
+        a_requested_date                      datetime  null,          /* Date the payable was requested --  */
+        a_approved_by                         char(10)  null,          /* Partner who approved the payable --  */
+        a_approved_date                       datetime  null,          /* Date the payable was approved --  */
+        a_resolved_by                         char(10)  null,          /* Partner who resolved (paid) the payable --  */
+        a_resolved_date                       datetime  null,          /* When the payable was actually paid --  */
+        a_taxable                             bit,                     /* Whether this is a taxable payable (0/1) --  */
+        a_advance                             bit,                     /* Whether this is an expense advance (0/1) --  */
+        a_payment_terms                       varchar(16)  null,       /* The terms on which the payment is required. Use "PAYROLL" to cause this to be disbursed with next payroll. --  */
+        a_payment_method                      integer  null,           /* Requested payment method --  */
+        a_document_id                         integer  null,           /* A document/image providing proof of this expense, if available, such as a receipt or invoice --  */
+        a_due_date                            datetime  null,          /* When the payable is due to be paid --  */
+        a_payee_partner_key                   char(10)  not null,      /* Partner id of the payee (recipient) --  */
+        a_account_with_payee                  varchar(20)  null,       /* Account number at payee --  */
+        a_invoice_number                      varchar(64)  null,       /* Invoice number associated with this payable --  */
+        a_make_payment_to                     varchar(80)  not null,   /* Name to make the payment to, if different from payee name --  */
+        a_payment_comment                     varchar(255)  null,      /* Comment to be included on the check or payment when it is sent --  */
+        a_comment                             varchar(255)  null,      /* Payable comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_subtrx_payable_item */
+
+create table a_subtrx_payable_item (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this disbursement --  */
+        a_payable_id                          integer  not null,       /* id number for this payable item --  */
+        a_line_item                           integer  not null,       /* item number for the line item in the payable --  */
+        a_requested_terms                     varchar(16)  null,       /* The terms on which the request was made --  */
+        a_document_id                         integer  null,           /* A document/image providing proof of this expense, if available, such as a receipt or invoice --  */
+        a_occurrence_date                     datetime  null,          /* When the event happened that triggered this payable (e.g. date of expense on an expense report) --  */
+        a_accrued_date                        datetime  not null,      /* When the payable accrues as an expense --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* Amount of payable --  */
+        a_cost_center                         char(20)  not null,      /* Cost center for the expense generated by the payable --  */
+        a_account_code                        char(10)  not null,      /* GL account for the expense generated by the payable --  */
+        a_liab_cost_center                    char(20)  not null,      /* Cost center for the liability generated by the payable --  */
+        a_liab_account_code                   char(10)  not null,      /* GL account for the liability generated by the payable --  */
+        a_comment                             varchar(255)  null,      /* Payable comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

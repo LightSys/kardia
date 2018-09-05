@@ -107,7 +107,8 @@ iconbar "widget/component-decl"
 	width=runserver(condition(:this:show_profile_only, 76, 1200));
 	height=runserver(condition(:this:show_profile_only, 630, 76));
 	fl_height=runserver(condition(:this:show_profile_only, null, 0));
-	background=runserver(condition(:this:show_profile_only, "/apps/kardia/images/bg/charcoal_gradient_horiz.png", "/apps/kardia/images/bg/charcoal_gradient.png"));
+	//background=runserver(condition(:this:show_profile_only, "/apps/kardia/images/bg/charcoal_gradient_horiz.png", "/apps/kardia/images/bg/charcoal_gradient.png"));
+	background=runserver(condition(:this:show_profile_only, "/apps/kardia/images/bg/charcoal_gradient_horiz.png", "/apps/kardia/images/bg/horiz-bar-world-dark-96.png"));
 	widget_class = crm_iconbar;
 
 	icons_hbox "widget/autolayout"
@@ -221,7 +222,7 @@ iconbar "widget/component-decl"
 		    style=flat;
 		    fl_width=0;
 		    border_radius=5;
-		    width=64;
+		    width=50;
 		    bgcolor="#334466";
 		    height=39;
 
@@ -245,7 +246,7 @@ iconbar "widget/component-decl"
 		    style=flat;
 		    fl_width=0;
 		    border_radius=5;
-		    width=64;
+		    width=50;
 		    bgcolor="#334466";
 		    height=15;
 

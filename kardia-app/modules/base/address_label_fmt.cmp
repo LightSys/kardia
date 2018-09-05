@@ -26,10 +26,6 @@ address_label_fmt "widget/component-decl"
 			condition(char_length(rtrim(:partner:p_given_name + :partner:p_surname)) > 0, :partner:p_given_name + ' ' + :partner:p_surname + condition(char_length(:partner:p_suffix) > 0, ', ' + :partner:p_suffix, '') + '\n', '') +
 			condition(char_length(:partner:p_org_name) > 0, :partner:p_org_name + "\n", "") +
 			substitute(isnull(:location:p_format, "[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]"), "l=location,p=partner")
-			//condition(char_length(:location:p_address_1) > 0, :location:p_address_1 + "\n", "") +
-			//condition(char_length(:location:p_address_2) > 0, :location:p_address_2 + "\n", "") +
-			//condition(char_length(:location:p_address_3) > 0, :location:p_address_3 + "\n", "") +
-			//isnull(:location:p_city + condition(char_length(isnull(rtrim(:location:p_city),'')) > 1, ", ", "") + :location:p_state_province + " " + :location:p_postal_code + " " + isnull("\n" + upper(:location:p_country_name), isnull("\n" + :location:p_country_code, "")), "")
 			);
 	    }
 	}

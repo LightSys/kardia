@@ -1,0 +1,263 @@
+$Version=2$
+popover_managerels "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+
+    RelsUpdated "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
+    onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen3 "widget/connector" { event=Open; target=partnername_var; action=SetValue; Value=runclient(:partnername); }
+    onOpen4 "widget/connector" { event=Open; target=managerels_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
+
+    partner_var "widget/variable" { type=string; }
+    partnername_var "widget/variable" { type=string; }
+    collab_var "widget/variable" { type=string; }
+
+    managerels_win "widget/childwindow"
+	{
+	width=600; height=296;
+	x=250; y=89;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	on_managerels_open "widget/connector" { event=Open; target=managerels_osrc; action=QueryParam; profile_key=runclient(:partner_var:value); }
+
+	managerels_vbox "widget/vbox"
+	    {
+	    x=15; y=15;
+	    width=568; height=264;
+	    spacing=10;
+
+	    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("Manage Relationships for " + :partnername_var:value + "..."); align=center; }
+
+	    managerels_osrc "widget/osrc"
+		{
+		profile_key "widget/parameter" { type=string; }
+		sql = "	select
+			    reltype = condition(:pr:p_partner_key == :parameters:profile_key, :prt:p_relation_type_label, :prt:p_relation_type_rev_label),
+			    nametxt = condition(:pr:p_partner_key == :parameters:profile_key,
+				    condition(char_length(:p2:p_org_name) > 1, :p2:p_org_name, isnull(condition(char_length(:p2:p_preferred_name) > 1, :p2:p_preferred_name, :p2:p_given_name) + ' ', '') + isnull(:p2:p_surname,'')),
+				    condition(char_length(:p1:p_org_name) > 1, :p1:p_org_name, isnull(condition(char_length(:p1:p_preferred_name) > 1, :p1:p_preferred_name, :p1:p_given_name) + ' ', '') + isnull(:p1:p_surname,''))),
+			    :pr:p_partner_key,
+			    :pr:p_relation_type,
+			    :pr:p_relation_key,
+			    :pr:p_relation_comments,
+			    :pr:p_relation_start_date,
+			    :pr:p_relation_end_date,
+			    :pr:s_date_created,
+			    :pr:s_created_by,
+			    :pr:s_date_modified,
+			    :pr:s_modified_by,
+			    img = isnull( ( select
+					path = :d:e_current_folder + '/' + :d:e_current_filename,
+					img_partner = :pd:p_partner_key
+				    from
+					/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+					/apps/kardia/data/Kardia_DB/e_document/rows d,
+					/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+				    where
+					(:pd:p_partner_key = :pr:p_partner_key or :pd:p_partner_key = :pr:p_relation_key) and
+					:pd:e_document_id = :d:e_document_id and
+					:d:e_doc_type_id = :dt:e_doc_type_id and
+					:dt:e_doc_type_label = 'Profile Photo'
+				    order by
+					:pd:s_date_modified desc
+				    having
+					(:img_partner = :pr:p_partner_key and :pr:p_partner_key != :parameters:profile_key) or
+					(:img_partner = :pr:p_relation_key and :pr:p_partner_key = :parameters:profile_key)
+				    limit
+					1
+				    ), '/apps/kardia/images/artwork/persona.png')
+			from
+			    identity /apps/kardia/data/Kardia_DB/p_partner_relationship/rows pr,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p1,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p2,
+			    /apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows prt
+			where
+			    (:pr:p_partner_key = :parameters:profile_key or :pr:p_relation_key = :parameters:profile_key) and
+			    :p1:p_partner_key = :pr:p_partner_key and
+			    :p2:p_partner_key = :pr:p_relation_key and
+			    :prt:p_relation_type = :pr:p_relation_type
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/p_partner_relationship/rows";
+		replicasize=50;
+		readahead=50;
+		autoquery=never;
+
+		managerels_table "widget/table"
+		    {
+		    height=140;
+		    min_rowheight=12;
+		    max_rowheight=64;
+		    allow_selection = yes;
+		    show_selection = yes;
+		    initial_selection = no;
+		    demand_scrollbar = yes;
+		    overlap_scrollbar = yes;
+		    colsep = 0;
+		    titlebar = no;
+		    row_border_radius=4;
+		    inner_padding = 2;
+		    cellvspacing = 2;
+		    row1_bgcolor = "#f8f8f8";
+		    row2_bgcolor = "#f8f8f8";
+		    rowhighlight_bgcolor = "#fff090";
+		    textcolorhighlight = "#000000";
+
+		    editrel_detail "widget/table-row-detail"
+			{
+			height=34; width=568;
+
+			editrel_hbox "widget/hbox"
+			    {
+			    x=20; y=10; height=24; width=544;
+			    spacing=8;
+
+			    editrel_form "widget/form"
+				{
+				comment_box "widget/component" { width=250; path="/sys/cmp/smart_field.cmp"; label_width=70; text="Comment:"; ctl_type=editbox; field=p_relation_comments; }
+				save_rel "widget/component" { width=18; path="/sys/cmp/save_btn.cmp"; object_name="Relationship"; }
+				cancel_rel "widget/component" { width=18; path="/sys/cmp/cancel_btn.cmp"; object_name="Relationship"; }
+				delete_rel "widget/component" { width=18; path="/sys/cmp/delete_btn.cmp"; object_name="Relationship"; }
+				}
+			    }
+			}
+
+		    t_img "widget/table-column" { fieldname="img"; width=22; type=image; image_maxwidth=16; image_maxheight=16; align=center; }
+		    t_name "widget/table-column" { fieldname="nametxt"; width=320; style=bold; caption_fieldname=p_relation_comments; caption_style=italic; caption_textcolor="#a0a0a0"; }
+		    t_type "widget/table-column" { fieldname="reltype"; width=180; style=bold; textcolor="#334466"; }
+		    }
+
+		add_rel_form "widget/form"
+		    {
+		    allow_search=no;
+		    allow_view=no;
+		    allow_modify=no;
+		    allow_new=yes;
+		    allow_obscure=yes;
+
+		    refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_managerels; action=RelsUpdated; }
+
+		    add_rel_pane "widget/pane"
+			{
+			style=bordered;
+			border_radius=8;
+			border_color="#6080c0";
+			//bgcolor="#afbfdf";
+			height=42;
+
+			add_rel_hbox "widget/hbox"
+			    {
+			    x=8; y=8; width=550; height=24;
+			    spacing=8;
+
+			    //select_tag_type "widget/component"
+			    //    {
+			    //    path="/apps/kardia/modules/base/editbox_table.cmp";
+			    //    field='e_tag_id';
+			    //    text='Add:';
+			    //    width=200;
+			    //    height=24;
+			    //    label_width=40;
+			    //    popup_width=280;
+			    //    popup_sql="select value = :tt:e_tag_id, label = :tt:e_tag_desc from /apps/kardia/data/Kardia_DB/e_tag_type/rows tt";
+			    //    search_field_list="*e_tag_label*,*e_tag_desc*";
+			    //    key_name="e_tag_id";
+			    //    object_name="Tag";
+			    //    popup_text="Select a Tag:";
+			    //    //attach_point=editbox;
+
+			    //    tag_type_hints "widget/hints" { style=applyonchange; }
+			    //    }
+
+			    select_relative "widget/component"
+				{
+				path="/apps/kardia/modules/base/editbox_table.cmp";
+				field='selectedkey';
+				text='Add:';
+				width=230;
+				height=24;
+				label_width=40;
+				popup_width=280;
+				popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
+				search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+				key_name="p_partner_key";
+				object_name="Relative";
+				popup_text="Select a Relative:";
+				//attach_point=editbox;
+
+				collab_hints "widget/hints" { style=applyonchange; }
+				}
+
+			    select_rel_type "widget/component"
+				{
+				path="/sys/cmp/smart_field.cmp";
+				field='selectedtype';
+				text="As:";
+				width=230;
+				label_width=30;
+				height=24;
+				ctl_type=dropdown;
+				numdisplay=12;
+				sql="select label=:prt:p_relation_type_label + ' of ' + :prt:p_relation_type_rev_label, value='A' + :prt:p_relation_type from /apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows prt; select label=:prt:p_relation_type_rev_label + ' of ' + :prt:p_relation_type_label, value='B' + :prt:p_relation_type from /apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows prt";
+				}
+
+			    add_btn "widget/textbutton"
+				{
+				height=24; width=68;
+				text = "Add";
+				background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				fgcolor1=white;
+				fgcolor2=black;
+				disable_color="#334466";
+
+				enabled = runclient(:add_rel_form:is_savable and :select_rel_type:value is not null);
+
+				on_add "widget/connector" { event=Click; target=add_rel_form; action=Save; }
+				}
+			    }
+			}
+
+
+		    rel_partner "widget/variable" { fieldname=p_partner_key; rel_partner_hints "widget/hints" { default=runclient(condition(substring(:select_rel_type:value,1,1) = 'A', :partner_var:value, :select_relative:value)); } }
+		    rel_relpartner "widget/variable" { fieldname=p_relation_key; relrel_partner_hints "widget/hints" { default=runclient(condition(substring(:select_rel_type:value,1,1) = 'B', :partner_var:value, :select_relative:value)); } }
+		    rel_type "widget/variable" { fieldname=p_relation_type; reltype_hints "widget/hints" { default=runclient(convert(integer, substring(:select_rel_type:value,2))); } }
+		    rel_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+		    }
+		}
+
+	    managerels_btns "widget/hbox"
+		{
+		height=24;
+		align=center;
+		spacing=10;
+
+		done_btn "widget/textbutton"
+		    {
+		    height=24; width=150;
+		    text = runclient(condition(:add_rel_form:is_discardable, "Cancel", "Done"));
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+
+		    on_done1 "widget/connector" { event=Click; target=add_rel_form; action=Discard; }
+		    //on_done2 "widget/connector" { event=Click; target=edittag_form; action=Discard; }
+		    on_done3 "widget/connector" { event=Click; target=managerels_win; action=Close; }
+		    }
+		}
+	    }
+	}
+    }

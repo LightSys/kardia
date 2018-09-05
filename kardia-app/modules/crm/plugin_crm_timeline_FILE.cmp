@@ -14,6 +14,8 @@ plugin_crm_timeline_FILE "widget/component-decl"
     timeline_data_osrc "widget/parameter" { type=object; }
     collaborator_osrc "widget/parameter" { type=object; }
 
+    FileNeedsEditing "widget/component-decl-event" { }
+
     comments_vbox "widget/vbox"
 	{
 	x=38; y=0; width=392; height=162;
@@ -175,30 +177,67 @@ plugin_crm_timeline_FILE "widget/component-decl"
 
 	fileinfo_osrc "widget/osrc"
 	    {
+	    fdocid "widget/parameter" { param_name=e_document_id; type=integer; }
+	    fparid "widget/parameter" { param_name=partner_id; type=integer; }
 	    sql = " select
-			*
+			:d:e_document_id,
+			:pd:e_pardoc_assoc_id,
+			:d:e_current_folder,
+			:d:e_current_filename
 		    from
-			/apps/kardia/data/Kardia_DB/e_document/rows
+			/apps/kardia/data/Kardia_DB/e_document/rows d,
+			/apps/kardia/data/Kardia_DB/e_partner_document/rows pd
+		    where
+			:d:e_document_id = :parameters:e_document_id and
+			:pd:e_document_id = :d:e_document_id and
+			:pd:p_partner_key = :parameters:partner_id
 		    ";
 	    replicasize=2;
 	    readahead=2;
 	    autoquery=never;
 
-	    filesync "widget/connector" { source=timeline_osrc; event=DataFocusChanged; action=QueryParam; e_document_id=runclient(convert(integer, :timeline_osrc:e_reference_info)); }
+	    filesync "widget/connector" { source=timeline_osrc; event=DataFocusChanged; action=QueryParam; e_document_id=runclient(convert(integer, :timeline_osrc:e_reference_info)); partner_id=runclient(:partner_osrc:p_partner_key); }
 	    }
 
-	download_btn "widget/textbutton"
+	controls_hbox "widget/hbox"
 	    {
-	    width=150;
 	    height=24;
-	    text="View this file";
-	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
-	    fgcolor1=white;
-	    fgcolor2=black;
-	    disable_color="#334466";
-	    enabled=runclient(isnull(:fileinfo_osrc:e_document_id, -1) = isnull(convert(integer, :timeline_osrc:e_reference_info), -2));
+	    spacing=10;
 
-	    on_dl "widget/connector" { event=Click; target=plugin_crm_timeline_FILE; action=Launch; Source=runclient(condition(substring(:fileinfo_osrc:e_current_folder,1,1) = '/', '', '/') + :fileinfo_osrc:e_current_folder + '/' + :fileinfo_osrc:e_current_filename); }
+	    download_btn "widget/textbutton"
+		{
+		width=100;
+		height=24;
+		text="View";
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+		enabled=runclient(isnull(:fileinfo_osrc:e_document_id, -1) = isnull(convert(integer, :timeline_osrc:e_reference_info), -2));
+
+		on_dl "widget/connector" { event=Click; target=plugin_crm_timeline_FILE; action=Launch; Source=runclient(condition(substring(:fileinfo_osrc:e_current_folder,1,1) = '/', '', '/') + :fileinfo_osrc:e_current_folder + '/' + :fileinfo_osrc:e_current_filename); }
+		}
+	    edit_btn "widget/textbutton"
+		{
+		width=100;
+		height=24;
+		text="Edit";
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+		enabled=runclient(isnull(:fileinfo_osrc:e_document_id, -1) = isnull(convert(integer, :timeline_osrc:e_reference_info), -2) and upper(right(:fileinfo_osrc:e_current_filename, 4)) = '.TXT');
+
+		on_edit "widget/connector"
+		    {
+		    event=Click;
+		    target=plugin_crm_timeline_FILE;
+		    action=FileNeedsEditing;
+		    DocID=runclient(:fileinfo_osrc:e_document_id);
+		    AssocID=runclient(:fileinfo_osrc:e_pardoc_assoc_id);
+		    Filename=runclient(:fileinfo_osrc:e_current_filename);
+		    }
+		}
 	    }
 	}
     }

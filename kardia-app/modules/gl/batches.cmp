@@ -28,25 +28,18 @@ batches "widget/component-decl"
 
 		cb_hints "widget/hints" { style=notnull; }
 
-		show_all_batches "widget/connector"
+		update_batches "widget/connector"
 		    {
-		    event_condition=runclient(:Value == 0);
 		    event=DataChange;
 		    target=batch_osrc;
 		    action=QueryParam;
-		    }
-		show_je_batches "widget/connector"
-		    {
-		    event_condition=runclient(:Value == 1);
-		    event=DataChange;
-		    target=batch_osrc;
-		    action=QueryParam;
-		    a_origin = runclient('GL');
 		    }
 		}
 
 	    batch_osrc "widget/osrc"
 		{
+		only_je "widget/parameter" { type=integer; default=runclient(:show_only_je:value); }
+
 		sql = runserver("
 			SELECT
 				:b:a_ledger_number,
@@ -64,6 +57,8 @@ batches "widget/component-decl"
 				glrec = (select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1)
 			FROM 
 				/apps/kardia/data/Kardia_DB/a_batch/rows b
+			WHERE
+				:parameters:only_je = 0 or :b:a_origin = 'GL'
 			ORDER BY
 				:b:a_batch_number");
 		baseobj = "/apps/kardia/data/Kardia_DB/a_batch/rows";

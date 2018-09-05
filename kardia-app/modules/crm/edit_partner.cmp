@@ -1,0 +1,43 @@
+$Version=2$
+edit_partner "widget/component-decl"
+    {
+    width=700;
+    height=580;
+
+    send_refresh "widget/parameter" { type=integer; default=0; }
+    send_refresh_to "widget/parameter" { type=object; }
+
+    collaborator_osrc "widget/parameter" { type=object; }
+
+    // Action for looking up a partner
+    Lookup "widget/component-decl-action" { }
+    onLookup "widget/connector" 
+	{
+	event=Lookup;
+	target=partner_edit_cmp;
+	action=Lookup;
+	partner_key=runclient(:partner_key);
+	}
+
+    wrapper_pane "widget/pane"
+	{
+	x=0; y=0; width=700; height=580;
+	style=bordered;
+	border_color="#6080c0";
+	border_radius=8;
+	//shadow_color="#6080c0";
+	//shadow_radius=8;
+	bgcolor="#f8f8f8";
+
+	partner_edit_cmp "widget/component" 
+	    { 
+	    x=8; y=8;
+	    width=682;
+	    height=562;
+	    path="/apps/kardia/modules/base/partner_edit.cmp"; 
+	    send_refresh = runserver(:this:send_refresh);
+	    send_refresh_to = send_refresh_to;
+	    partner_only = 1;
+	    }
+	}
+    }

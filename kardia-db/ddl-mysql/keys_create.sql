@@ -28,6 +28,12 @@ alter table p_address_format_set
 alter table p_contact_info
 	add constraint p_contact_info_pk primary key  (p_partner_key, p_contact_id);
 
+alter table p_contact_usage
+	add constraint p_contact_usg_pk primary key  (p_partner_key, p_contact_usage_type_code, p_contact_or_location, p_contact_location_id);
+
+alter table p_contact_usage_type
+	add constraint p_contact_ut_pk primary key  (p_contact_usage_type_code);
+
 alter table p_partner_relationship
 	add constraint p_partner_relationship_pk primary key  (p_partner_key, p_relation_type, p_relation_key);
 
@@ -447,6 +453,12 @@ alter table a_descriptives
 
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
+
+alter table a_subtrx_payable
+	add constraint a_subtrx_payable_pk primary key  (a_ledger_number, a_payable_id);
+
+alter table a_subtrx_payable_item
+	add constraint a_subtrx_payable_item_pk primary key  (a_ledger_number, a_payable_id, a_line_item);
 
 alter table a_subtrx_xfer
 	add constraint a_subtrx_xfer_pk primary key  (a_ledger_number, a_batch_number, a_journal_number);

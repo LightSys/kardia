@@ -1,0 +1,140 @@
+$Version=2$
+edit_file "widget/component-decl"
+    {
+    width=700;
+    height=580;
+
+    EditFile "widget/component-decl-action" { }
+    on_EditFile "widget/connector"
+	{
+	event=EditFile;
+	target=fi_osrc;
+	action=QueryParam;
+	doc_id=runclient(:DocID);
+	assoc_id=runclient(:AssocID);
+	}
+
+    collaborator_osrc "widget/parameter" { type=object; }
+    profile_osrc "widget/parameter" { type=object; }
+
+    autosave_timer "widget/timer"
+	{
+	auto_start = 0;
+	auto_reset = 1;
+	msec = 2000;
+
+	onExpire1 "widget/connector"
+	    {
+	    event=Expire;
+	    event_condition=runclient(:file_form:is_savable or :file_form:file_content != :file_content:content);
+	    target=doccontent;
+	    action=SetValue;
+	    Value=runclient(:file_content:content);
+	    }
+	onExpire2 "widget/connector"
+	    {
+	    event=Expire;
+	    event_condition=runclient(:file_form:is_savable);
+	    target=file_form;
+	    action=Save;
+	    }
+	}
+
+    file_editor_vbox "widget/vbox"
+	{
+	x=0; y=0; width=700; height=580;
+	spacing=8;
+
+	file_title_label "widget/label"
+	    {
+	    height=16;
+	    font_size=16;
+	    style=bold;
+	    value=runclient(:profile_osrc:partnername + ': ' + :fi_osrc:e_title);
+	    }
+
+	file_subtitle_label "widget/label"
+	    {
+	    height=12;
+	    font_size=12;
+	    value=runclient(:fi_osrc:e_current_filename + ', originally by ' + :fi_osrc:uploadername + ' as ' + :fi_osrc:e_orig_filename);
+	    }
+
+	fi_osrc "widget/osrc"
+	    {
+	    doc_id "widget/parameter" { type=integer; }
+	    assoc_id "widget/parameter" { type=integer; }
+	    sql = "	select
+			:d:e_title,
+			:d:e_current_filename,
+			:d:e_orig_filename,
+			:d:s_date_created,
+			:d:s_created_by,
+			:d:s_date_modified,
+			:d:s_modified_by,
+			file_content = :f:objcontent,
+			uploadername = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+		    from
+			identity /apps/kardia/data/Kardia_DB/e_document/rows d,
+			/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			object expression (:d:e_current_folder + '/' + :d:e_current_filename) f
+		    where
+			:d:e_document_id = :parameters:doc_id and
+			:pd:e_document_id =* :d:e_document_id and
+			:pd:e_pardoc_assoc_id = :parameters:assoc_id and
+			:p:p_partner_key = :d:e_uploading_collaborator
+		    ";
+	    autoquery=never;
+	    replicasize=2;
+
+	    file_form "widget/form"
+		{
+
+		on_view_populate_edit "widget/connector" { event=DataLoaded; target=file_content; action=SetValue; Value=runclient(:file_form:file_content); }
+
+		file_settings_pane "widget/pane"
+		    {
+		    height=36;
+		    border_radius=10;
+		    border_color="#6080c0";
+		    style=bordered;
+		    bgcolor="#f8f8f8";
+
+		    file_settings_hbox "widget/hbox"
+			{
+			x=6; y=6; height=24; width=684;
+			spacing=8;
+
+			doctitle "widget/component" { path="/sys/cmp/smart_field.cmp"; field=e_title; ctl_type=editbox; text="Title:"; label_width=70; width=300; fl_width=30; }
+			docstatus "widget/label" { width=300; style=italic; value=runclient('Auto-Save enabled; ' + condition(:file_form:is_savable or :file_form:file_content != :file_content:content, 'editing...', 'all changes saved.')); fl_width=30; }
+			doccontent "widget/variable" { type=string; fieldname=file_content; }
+			}
+		    }
+		}
+	    }
+
+	file_content_pane "widget/pane"
+	    {
+	    height=492;
+	    style=bordered;
+	    border_radius=10;
+	    border_color="#6080c0";
+	    bgcolor="#f8f8f8";
+
+	    file_content "widget/textarea"
+		{
+		x=8; y=8; height=472; width=680;
+
+		setTimer1 "widget/connector"
+		    {
+		    event=KeyPress;
+		    target=autosave_timer;
+		    action=SetTimer;
+		    Time=2000;
+		    AutoReset=1;
+		    }
+		}
+	    }
+	}
+    }

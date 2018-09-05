@@ -23,8 +23,8 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			i_eg_gift_uuid = :t:AccountScheduleGUID,
 			i_eg_account_uuid = :t:AccountGUID,
 			i_eg_gift_trx_date = convert(datetime, :t:TransactionDate),
-			i_eg_gift_settlement_date = convert(datetime, :t:SettlementDate),
-			i_eg_status = condition(:t:Status = 'Cleared', 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', 'pending'))),
+			i_eg_gift_settlement_date = condition(char_length(:t:SettlementDate) > 1, convert(datetime, :t:SettlementDate), null),
+			i_eg_status = condition(:t:Status = 'Cleared' and char_length(:t:SettlementDate) > 1, 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', 'pending'))),
 
 			i_eg_deposit_uuid = convert(string, :depdet:DepositID),
 			i_eg_net_amount = convert(money, :depdet:NetAmount),
@@ -36,7 +36,7 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			i_eg_desig_notes = :desig:DesignationMemo,
 			i_eg_desig_uuid = :desig:DesignationGUID,
 
-			i_eg_donor_alt_id = convert(string, :p:DonorID),
+			i_eg_donor_alt_id = condition(char_length(convert(string, :p:DonorID)) > 1, convert(string, :p:DonorID), null),
 			i_eg_donor_name = :p:FirstName + ' ' + :p:LastName,
 			i_eg_donor_given_name = :p:FirstName,
 			i_eg_donor_surname = :p:LastName,
@@ -73,8 +73,6 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			:depdet:DesignationGUID =* :desig:DesignationGUID and
 			:dep:DepositID = :depdet:DepositID and
 			:t:TransactionGUID is not null
-		limit
-			3
 		";
 
     upsert_sql="on duplicate
@@ -85,11 +83,11 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			:i_eg_deposit_gross_amt = convert(money, :dep:GrossAmount),
 			:i_eg_deposit_amt = convert(money, :dep:NetAmount),
 			:i_eg_net_amount = convert(money, :depdet:NetAmount),
-			:i_eg_status = condition(:t:Status = 'Cleared', 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', 'pending'))),
+			:i_eg_status = condition(:t:Status = 'Cleared' and char_length(:t:SettlementDate) > 1, 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', 'pending'))),
 			:i_eg_returned_status = (select :rc:ResponseCodeDescr from /apps/kardia/modules/rcpt/egsapi.http/ResponseCodesSelect/ResponseCodes rc where :rc:ResponseCodeValue = :t:ResponseCode),
-			:i_eg_gift_settlement_date = convert(datetime, :t:SettlementDate),
-			:s_date_modified = getdate(),
-			:s_modified_by = user_name()
+			:i_eg_gift_settlement_date = condition(char_length(:t:SettlementDate) > 1, convert(datetime, :t:SettlementDate), null),
+			:s_date_modified = getdate() IF MODIFIED,
+			:s_modified_by = user_name() IF MODIFIED
 		";
 
     postprocess_sql="
