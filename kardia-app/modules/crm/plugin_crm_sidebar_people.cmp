@@ -53,6 +53,7 @@ people_list "widget/component-decl"
 	replicasize=2;
 	readahead=2;
 	indicates_activity=no;
+	autoquery=never;
 
 	set_cnt_on_load "widget/connector"
 	    {
@@ -137,10 +138,11 @@ people_list "widget/component-decl"
 			(:parameters:search_role is null or :parameters:search_role = :role_id) and
 			(:parameters:search_newonly is null or :parameters:search_newonly = 0 or :parameters:search_newonly = :is_new)
 		    ";
-	    readahead=400;
-	    replicasize=400;
+	    readahead=600;
+	    replicasize=600;
 	    //use_having_clause=1;
 	    refresh_interval=30000;
+	    autoquery=never; // triggered by customize_form entering New state.
 	    
 	    stats_link "widget/connector"
 		{
@@ -567,21 +569,9 @@ people_list "widget/component-decl"
 		    {
 		    height=24; align=center; spacing=10;
 
-		    cancel_btn "widget/textbutton"
-			{
-			text = "Close";
-			height=24; width=130;
-			background="/apps/kardia/images/bg/lsblue_btngradient.png";
-			fgcolor1=white;
-			fgcolor2=black;
-			disable_color="#334466";
-
-			on_cancel "widget/connector" { event=Click; target=customize_win; action=Close; }
-			}
-
 		    everyone_btn "widget/textbutton"
 			{
-			text = "Show All";
+			text = "Reset";
 			height=24; width=130;
 			background="/apps/kardia/images/bg/lsblue_btngradient.png";
 			fgcolor1=white;
@@ -596,6 +586,7 @@ people_list "widget/component-decl"
 			    }
 			on_everyone_2 "widget/connector"
 			    {
+			    condition=0;
 			    event=Click;
 			    target=customize_win;
 			    action=Close;
@@ -606,6 +597,18 @@ people_list "widget/component-decl"
 			    target=customize_form;
 			    action=Discard;
 			    }
+			}
+
+		    cancel_btn "widget/textbutton"
+			{
+			text = "Close";
+			height=24; width=130;
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_cancel "widget/connector" { event=Click; target=customize_win; action=Close; }
 			}
 		    }
 		}
