@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.8
+# version: 1.0.9
 # os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
@@ -55,7 +55,8 @@ function Root
 
 function Connected
     {
-    target=$(echo $CX_KEY | sed 's/ .*//')
+    #target=$(echo $CX_KEY | sed 's/ .*//')
+    target=$( echo $CX_GITREPO | sed 's/\/.*//')
     echo -n "Checking for Internet connectivity to $target: "
     if ping -c1 $target >/dev/null 2>/dev/null; then
 	echo Yes
@@ -562,7 +563,10 @@ function manageUser
 	fi
 	#Create a .tpl file for the user
 	if [ ! -f "$KSRC/kardia-app/tpl/$N_USER.tpl" ]; then
-	    cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$N_USER.tpl"
+	    #Kardia may not yet be downloaded.  If not, this will fail
+	    if [ -f "$KSRC/kardia-app/tpl/newuser_default.tpl" ]; then
+		cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$N_USER.tpl"
+	    fi
 	fi 
 	if [ "$N_ALLOW_SSH" != "$ALLOW_SSH" -o "$N_ALLOW_SRC" != "$ALLOW_SRC" -o "$N_ALLOW_ROOT" != "$ALLOW_ROOT" ]; then
 	    GRPS=""
