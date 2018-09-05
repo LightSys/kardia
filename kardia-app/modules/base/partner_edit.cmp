@@ -19,6 +19,20 @@ p_partner_component "widget/component-decl"
     send_refresh "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     send_refresh_to "widget/parameter" { type=object; deploy_to_client=yes; }
 
+    // Whether to strictly display partner data, no search or add-on tabs
+    partner_only "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+
+    // Action for looking up a partner
+    Lookup "widget/component-decl-action" { }
+
+    onLookup "widget/connector" 
+	{
+	event=Lookup;
+	target=primary_partner_osrc;
+	action=QueryParam;
+	p_partner_key=runclient(:partner_key);
+	}
+
     // If pre-loading a record, trigger the osrc here.
     preload_primary_partner "widget/connector"
 	{
@@ -32,6 +46,7 @@ p_partner_component "widget/component-decl"
     // If not pre-loading, open up the search window
     open_search_first "widget/connector"
 	{
+	condition=runserver(:this:partner_only == 0);
 	event_condition=runclient(not (char_length(:p_partner_component:id) > 0));
 	event=LoadComplete;
 	target=partner_search_window;
@@ -194,6 +209,7 @@ p_partner_component "widget/component-decl"
 
 		    prev_srch_btn "widget/imagebutton"
 			{
+			condition=runserver(:this:partner_only == 0);
 			y=1;
 			width=18; height=18;
 			image="/sys/images/ico16ba.gif";
@@ -209,6 +225,7 @@ p_partner_component "widget/component-decl"
 
 		    search_btn "widget/imagebutton"
 			{
+			condition=runserver(:this:partner_only == 0);
 			y=1;
 			width=18; height=18;
 			image="/sys/images/ico21a.gif";
@@ -223,6 +240,7 @@ p_partner_component "widget/component-decl"
 
 		    next_srch_btn "widget/imagebutton"
 			{
+			condition=runserver(:this:partner_only == 0);
 			y=1;
 			width=18; height=18;
 			image="/sys/images/ico16ca.gif";
@@ -426,6 +444,7 @@ p_partner_component "widget/component-decl"
 
 		    plugin_tabs "widget/repeat"
 			{
+			condition=runserver(:this:partner_only == 0);
 			sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_base_partneredit_*.cmp'";
 
 			plugin_tab "widget/tabpage"
@@ -448,6 +467,7 @@ p_partner_component "widget/component-decl"
 
     partner_search_window "widget/childwindow"
         {
+	condition=runserver(:this:partner_only == 0);
         x=53;y=45;
         height=494; width=722;
         visible=false;
