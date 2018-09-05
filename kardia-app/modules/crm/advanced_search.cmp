@@ -145,7 +145,7 @@ advanced_search "widget/component-decl"
 		    row2_bgcolor = "#ffffff";
 
 		    ct_icon "widget/table-column" { title=""; width=32; fieldname=icon; type=image; image_maxwidth=24; image_maxheight=24; }
-		    ct_op "widget/table-column" { title=""; width=150; value=runclient(condition(:criteria_osrc:prevcnt = 0, '', condition(:criteria_osrc:p_stage_op = 'A', 'Add ', condition(:criteria_osrc:p_stage_op = 'E', 'Exclude ', 'Require '))) + :criteria_osrc:stage_label); style=bold; font_size=15; }
+		    ct_op "widget/table-column" { title=""; width=150; value=runclient(condition(:criteria_osrc:prevcnt = 0, 'With ', condition(:criteria_osrc:p_stage_op = 'A', 'Add With ', condition(:criteria_osrc:p_stage_op = 'E', 'Exclude ', 'Require '))) + :criteria_osrc:stage_label); style=bold; font_size=15; }
 		    ct_desc "widget/table-column" { title=""; width=250; fieldname=stage_description; wrap=yes; }
 
 
