@@ -31,6 +31,14 @@ drop table p_address_format_set;
 drop table p_contact_info;
 
 
+/* p_contact_usage */
+drop table p_contact_usage;
+
+
+/* p_contact_usage_type */
+drop table p_contact_usage_type;
+
+
 /* p_partner_relationship */
 drop table p_partner_relationship;
 
@@ -569,6 +577,14 @@ drop table a_descriptives;
 
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb;
+
+
+/* a_subtrx_payable */
+drop table a_subtrx_payable;
+
+
+/* a_subtrx_payable_item */
+drop table a_subtrx_payable_item;
 
 
 /* a_subtrx_xfer */

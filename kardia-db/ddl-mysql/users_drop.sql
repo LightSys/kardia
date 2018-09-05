@@ -24,6 +24,12 @@ revoke select on ra to public;
 /* p_contact_info */
 
 
+/* p_contact_usage */
+
+
+/* p_contact_usage_type */
+
+
 /* p_partner_relationship */
 
 
@@ -427,6 +433,12 @@ revoke select on ra to public;
 
 
 /* a_subtrx_cashdisb */
+
+
+/* a_subtrx_payable */
+
+
+/* a_subtrx_payable_item */
 
 
 /* a_subtrx_xfer */

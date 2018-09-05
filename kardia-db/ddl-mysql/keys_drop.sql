@@ -78,6 +78,14 @@ alter table p_contact_info
 	drop primary key;
 
 
+alter table p_contact_usage
+	drop primary key;
+
+
+alter table p_contact_usage_type
+	drop primary key;
+
+
 alter table p_partner_relationship
 	drop primary key;
 
@@ -870,6 +878,10 @@ alter table a_subtrx_gift_group
 	drop index a_gifttrxgrp_donor_id_idx;
 
 
+alter table a_subtrx_gift_group
+	drop index a_gifttrxgrp_ack_id_idx;
+
+
 alter table a_subtrx_gift_item
 	drop primary key;
 
@@ -964,6 +976,14 @@ alter table a_subtrx_cashdisb
 
 alter table a_subtrx_cashdisb
 	drop index a_subtrx_cashdisb_acct_idx;
+
+
+alter table a_subtrx_payable
+	drop primary key;
+
+
+alter table a_subtrx_payable_item
+	drop primary key;
 
 
 alter table a_subtrx_xfer

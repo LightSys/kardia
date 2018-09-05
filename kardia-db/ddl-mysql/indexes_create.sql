@@ -53,6 +53,16 @@ create  index p_af_country_idx on p_address_format (p_country_code, p_address_se
 /* go */
 
 
+/* p_contact_usage */
+/* create  index p_contact_usg_pk on p_contact_usage (p_partner_key, p_contact_usage_type_code, p_contact_or_location, p_contact_location_id)*/ 
+/* go */
+
+
+/* p_contact_usage_type */
+/* create  index p_contact_ut_pk on p_contact_usage_type (p_contact_usage_type_code)*/ 
+/* go */
+
+
 /* p_partner_relationship */
 /* create  index p_partner_relationship_pk on p_partner_relationship (p_partner_key, p_relation_type, p_relation_key)*/ 
 /* go */
@@ -264,6 +274,8 @@ create  index e_pareng_trackstep_idx on e_partner_engagement (e_track_id, e_step
 /* e_tag */
 /* create  index e_tag_pk on e_tag (e_tag_id, p_partner_key)*/ 
 /* go */
+create  index e_tag_rev_idx on e_tag (p_partner_key, e_tag_id);
+create  index e_tag_strength_idx on e_tag (p_partner_key, e_tag_strength);
 
 
 /* e_tag_activity */
@@ -801,6 +813,7 @@ create  index a_gifttrx_recip_id_idx on a_subtrx_gift (p_recip_partner_id, a_led
 
 
 /* a_subtrx_gift_group */
+create  index a_gifttrxgrp_ack_id_idx on a_subtrx_gift_group (p_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number);
 create  index a_gifttrxgrp_batch_idx on a_subtrx_gift_group (a_batch_number, a_ledger_number, a_gift_number);
 create  index a_gifttrxgrp_donor_id_idx on a_subtrx_gift_group (p_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number);
 create  index a_gifttrxgrp_gift_idx on a_subtrx_gift_group (a_gift_number, a_ledger_number, a_batch_number);
@@ -890,6 +903,16 @@ create  index a_supptgt_target_idx on a_support_review_target (a_target_id, a_le
 create  index a_subtrx_cashdisb_acct_idx on a_subtrx_cashdisb (a_cash_account_code, a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
 create  index a_subtrx_cashdisb_batch_idx on a_subtrx_cashdisb (a_batch_number, a_ledger_number, a_disbursement_id, a_line_item);
 /* create  index a_subtrx_cashdisb_pk on a_subtrx_cashdisb (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item)*/ 
+/* go */
+
+
+/* a_subtrx_payable */
+/* create  index a_subtrx_payable_pk on a_subtrx_payable (a_ledger_number, a_payable_id)*/ 
+/* go */
+
+
+/* a_subtrx_payable_item */
+/* create  index a_subtrx_payable_item_pk on a_subtrx_payable_item (a_ledger_number, a_payable_id, a_line_item)*/ 
 /* go */
 
 
