@@ -144,23 +144,34 @@ crm "widget/component-decl"
 	    editpartner_cn "widget/connector"
 		{
 		event=EditPartner;
-		target=crm;
-		action=Launch;
-		Width=844;
-		Height=600;
-		Source="/apps/kardia/modules/base/partner_window.app";
-		id=runclient(:profile_cmp:p_partner_key);
-		send_refresh=1;
-		send_refresh_to=us;
-		//return_to=f_rcpt_donorid;
-		//set_donor=1;
-		//ledger=runclient(:gift_entry:ledger);
+		target=profile_cmp;
+		action=EditPartner;
+		partner_key=runclient(:profile_cmp:p_partner_key);
+		//action=Launch;
+		//Width=844;
+		//Height=600;
+		//Source="/apps/kardia/modules/base/partner_window.app";
+		//id=runclient(:profile_cmp:p_partner_key);
+		//send_refresh=1;
+		//send_refresh_to=us;
 		}
 	    newtrk_cn "widget/connector"
 		{
 		event=ButtonPressed;
 		event_condition=runclient(:Button == '#Tracks');
 		target=newtrack_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient(condition(:show_profile_only:value, "left", "top"));
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		partnername=runclient(:profile_cmp:partnername);
+		}
+	    newrel_cn "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == '#Relate');
+		target=rels_popover;
 		action=Open;
 		PointAt=runclient(:Origin);
 		PointSide=runclient(condition(:show_profile_only:value, "left", "top"));
@@ -300,6 +311,7 @@ crm "widget/component-decl"
 		path = "partner_profile.cmp";
 		iconbar = iconbar;
 		collaborator_osrc = collaborator_osrc;
+		us = profile_cmp;
 
 		// We have advanced search results
 		onAdvancedResults "widget/connector"
@@ -536,6 +548,16 @@ crm "widget/component-decl"
 	width=1000; height=600;
 	path="popover_files.cmp";
 	on_file_upd "widget/connector" { event=FileUpdated; target=profile_cmp; action=Refresh; }
+	on_file_edit "widget/connector" { event=FileNeedsEditing; target=profile_cmp; action=EditFile; Filename=runclient(:Filename); DocID=runclient(:DocID); AssocID=runclient(:AssocID); }
+	}
+
+    rels_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_managerels.cmp";
+	on_rel_upd1 "widget/connector" { event=RelsUpdated; target=profile_cmp; action=Refresh; }
+	on_rel_upd2 "widget/connector" { event=RelsUpdated; target=sidebar_cmp; action=Refresh; }
 	}
 
     tags_popover "widget/component"

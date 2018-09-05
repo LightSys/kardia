@@ -4,6 +4,9 @@ partner_profile "widget/component-decl"
     width=700;
     height=580;
 
+    // Self-reference
+    us "widget/parameter" { type=object; deploy_to_client=yes; }
+
     // Iconbar passed in so we can access the 'EnabledTypes' property it has
     iconbar "widget/parameter" { type=object; deploy_to_client=yes; }
 
@@ -29,6 +32,17 @@ partner_profile "widget/component-decl"
     RefreshCollab "widget/component-decl-action" { }
     Pray "widget/component-decl-action" { }
     Track "widget/component-decl-action" { }
+    EditFile "widget/component-decl-action" { }
+    EditPartner "widget/component-decl-action" { }
+
+    on_EditPartner1 "widget/connector"
+	{
+	event=EditPartner;
+	target=editpartner_cmp;
+	action=Lookup;
+	partner_key=runclient(:partner_key);
+	}
+    on_EditPartner2 "widget/connector" { event=EditPartner; target=profile_tab; action=SetTab; TabIndex=8; }
 
     on_Select1 "widget/connector" { event=SelectPartner; target=profile_osrc; action=QueryParam; partner_key=runclient(:partner_key); }
     on_Select2 "widget/connector" { event=SelectPartner; target=profile_tab; action=SetTab; TabIndex=2; }
@@ -49,6 +63,9 @@ partner_profile "widget/component-decl"
 
     on_Track "widget/connector" { event=Track; target=profile_tab; action=SetTab; TabIndex=6; }
 
+    on_EditFile1 "widget/connector" { event=EditFile; target=profile_tab; action=SetTab; TabIndex=7; }
+    on_EditFile2 "widget/connector" { event=EditFile; target=editfile_cmp; action=EditFile; Filename=runclient(:Filename); DocID=runclient(:DocID); AssocID=runclient(:AssocID); }
+    
     on_Refresh0 "widget/connector" { event=Refresh; target=profile_osrc; action=Refresh; }
     on_Refresh1 "widget/connector" { event=Refresh; target=profile_info; action=Refresh; }
     on_Refresh2 "widget/connector" { event=Refresh; target=profile_timeline; action=Refresh; }
@@ -286,6 +303,24 @@ partner_profile "widget/component-decl"
 				    point_side=runclient(null);
 				    center=runclient('yes');
 				    }
+
+				on_editfile1 "widget/connector"
+				    {
+				    event=FileNeedsEditing;
+				    target=editfile_cmp;
+				    action=EditFile;
+				    Filename=runclient(:Filename);
+				    DocID=runclient(:DocID);
+				    AssocID=runclient(:AssocID);
+				    }
+
+				on_editfile2 "widget/connector"
+				    {
+				    event=FileNeedsEditing;
+				    target=profile_tab;
+				    action=SetTab;
+				    TabIndex=7;
+				    }
 				}
 			    }
 
@@ -424,6 +459,29 @@ partner_profile "widget/component-decl"
 		    EventName=runclient('SelectPartner');
 		    partner_key=runclient(:partner_key);
 		    }
+		}
+	    }
+
+	editfile_tab "widget/tabpage"
+	    {
+	    editfile_cmp "widget/component"
+		{
+		x=0; y=0; width=700; height=580;
+		path="edit_file.cmp";
+		collaborator_osrc = collaborator_osrc;
+		profile_osrc = profile_osrc;
+		}
+	    }
+
+	editpartner_tab "widget/tabpage"
+	    {
+	    editpartner_cmp "widget/component"
+		{
+		x=0; y=0; width=700; height=580;
+		path="edit_partner.cmp";
+		collaborator_osrc = collaborator_osrc;
+		send_refresh=1;
+		send_refresh_to=us;
 		}
 	    }
 	}
