@@ -211,7 +211,7 @@ donor_report "system/report"
 			:pl:p_postal_code,
 			:pl:p_country_code,
 			gift_total = isnull(sum(:i:a_amount), $0),
-			last_gift = max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)),
+			last_gift = max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
 			p_iso3166_2_code = isnull(:c:p_iso3166_2_code,''),
 			p_iso3166_3_code = isnull(:c:p_iso3166_3_code,''),
 			p_fips_code = isnull(:c:p_fips_code,''),
@@ -219,30 +219,30 @@ donor_report "system/report"
 			oneemail = (select :p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code == 'A' and :ci:p_contact_type == 'E' limit 1),
 			allemail = (select sum(:p_contact_data + ' / ') - ' / ' from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code == 'A' and :ci:p_contact_type == 'E')
 		FROM
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			--/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
 			/apps/kardia/data/Kardia_DB/p_location/rows pl,
 			/apps/kardia/data/Kardia_DB/p_country/rows c
 		WHERE
-			:g:a_ledger_number = :this:ledger and
-			" + condition(:this:start_period is null, "", ":g:a_period >= :this:start_period and ") + "
-			" + condition(:this:end_period is null, "", ":g:a_period <= :this:end_period and ") + "
-			:g:a_posted = 1 and
-			:i:a_ledger_number = :g:a_ledger_number and
-			:i:a_batch_number = :g:a_batch_number and
-			:i:a_gift_number = :g:a_gift_number and
+			:i:a_ledger_number = :this:ledger and
+			" + condition(:this:start_period is null, "", ":i:a_period >= :this:start_period and ") + "
+			" + condition(:this:end_period is null, "", ":i:a_period <= :this:end_period and ") + "
+			:i:a_posted = 1 and
+			--:i:a_ledger_number = :g:a_ledger_number and
+			--:i:a_batch_number = :g:a_batch_number and
+			--:i:a_gift_number = :g:a_gift_number and
 			" + condition(:this:include_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:include_accts) > 0 and") + "
 			" + condition(:this:exclude_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:exclude_accts) == 0 and") + "
 			" + condition(:this:include_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_include_qy:cclist) > 0 and") + "
 			" + condition(:this:exclude_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_exclude_qy:cclist) == 0 and") + "
 			" + condition(:this:comment_text is null, "", "charindex(upper(:this:comment_text), upper(:i:a_comment)) > 0 and") + "
-			:p:p_partner_key =* :g:p_donor_partner_id and
+			:p:p_partner_key =* :i:p_dn_donor_partner_id and
 			:pl:p_partner_key =* :p:p_partner_key and
 			:pl:p_revision_id = 0 and
 			:c:p_country_code =* :pl:p_country_code
 		GROUP BY
-			:g:p_donor_partner_id
+			:i:p_dn_donor_partner_id
 		HAVING
 			" + condition(:this:min_total is null, "", ":gift_total >= " + :this:min_total + " and") + "
 			" + condition(:this:include_states is null, "", "charindex(:p_state_province, " + quote(:this:include_states) + ") > 0 and") + "
@@ -265,23 +265,23 @@ donor_report "system/report"
 		SELECT
 			gift_total = isnull(sum(:i:a_amount), $0)
 		FROM
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			--/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 		WHERE
-			:g:a_ledger_number = :this:ledger and
-			" + condition(:this:start_period is null, "", ":g:a_period >= :this:start_period and ") + "
-			" + condition(:this:end_period is null, "", ":g:a_period <= :this:end_period and ") + "
-			:g:a_posted = 1 and
-			:i:a_ledger_number = :g:a_ledger_number and
-			:i:a_batch_number = :g:a_batch_number and
-			:i:a_gift_number = :g:a_gift_number and
+			:i:a_ledger_number = :this:ledger and
+			" + condition(:this:start_period is null, "", ":i:a_period >= :this:start_period and ") + "
+			" + condition(:this:end_period is null, "", ":i:a_period <= :this:end_period and ") + "
+			:i:a_posted = 1 and
+			--:i:a_ledger_number = :g:a_ledger_number and
+			--:i:a_batch_number = :g:a_batch_number and
+			--:i:a_gift_number = :g:a_gift_number and
 			" + condition(:this:include_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:include_accts) > 0 and") + "
 			" + condition(:this:exclude_accts is null, "", "charindex(rtrim(:i:a_account_code), :this:exclude_accts) == 0 and") + "
 			" + condition(:this:include_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_include_qy:cclist) > 0 and") + "
 			" + condition(:this:exclude_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_exclude_qy:cclist) == 0 and") + "
-			:g:p_donor_partner_id = :donors_qy:p_partner_key
+			:i:p_dn_donor_partner_id = :donors_qy:p_partner_key
 		GROUP BY
-			:g:p_donor_partner_id
+			:i:p_dn_donor_partner_id
 		HAVING
 			" + condition(:this:max_total is null, "", ":gift_total <= " + :this:max_total + " and") + "
 			" + condition(:this:min_total is null, "", ":gift_total >= " + :this:min_total + " and") + "
