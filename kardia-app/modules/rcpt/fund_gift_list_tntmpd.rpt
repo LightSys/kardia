@@ -13,7 +13,7 @@ fund_gift_list_tntmpd "system/report"
     marginbottom=3;
 
     // Give it an intelligent filename
-    filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + ".tntmpd");
+    filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + ".tntdatasync");
 
     // Parameters for TntMPD gift/donor list report
     ledger "report/parameter" { type=string; default=null; }
