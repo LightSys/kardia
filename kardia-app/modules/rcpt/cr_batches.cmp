@@ -407,6 +407,7 @@ cr_batches "widget/component-decl"
 		    width=65;
 		    align=right; 
 		    require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+		    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 		    }
 		t_dt "widget/table-column" { title="Date"; fieldname="date_txt"; width=75; }
 		t_user "widget/table-column" { title="User"; fieldname="s_created_by"; width=50; }
