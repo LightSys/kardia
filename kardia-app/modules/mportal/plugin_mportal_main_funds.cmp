@@ -12,7 +12,19 @@ funds "widget/component-decl"
     funds_osrc "widget/osrc"
 	{
 	staff_login "widget/parameter" { type=string; }
-	sql = "	select
+	sql = "	declare object fundinfo;
+
+		-- Find what cost centers we can view
+		select
+		    :fundinfo:staff_key = :p_partner_key,
+		    :fundinfo:my_cclist = isnull( (select sum(rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center) + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number), '')
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows s
+		where
+		    :p_kardia_login = :parameters:staff_login
+		;
+
+		select
 		    :cc:a_cost_center,
 		    :cc:a_bal_cost_center,
 		    :cc:a_cc_desc,
@@ -30,20 +42,15 @@ funds "widget/component-decl"
 		    -- actions at all for the fund in question, or 2) if we
 		    -- have prior year transactions but no opening balance yet.
 		    --
-		    bal = condition((select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number) = 0 or ((select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pps:a_period and :t:a_period <= :ppe:a_period) > 0 and (select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B') == 0), '-', isnull((select $0 - sum(:t:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pc:a_period and :t:a_account_code >= '3000' and :t:a_account_code <= '5999' and :t:a_transaction_type != 'B'), $0) + isnull((select $0 - sum(:t:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B' and :t:a_account_code >= '3000' and :t:a_account_code <= '3999'), $0))
+		    bal = condition((select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number limit 1) = 0 or ((select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pps:a_period and :t:a_period <= :ppe:a_period limit 1) > 0 and (select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B' limit 1) == 0), '-', isnull((select $0 - sum(:t:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pc:a_period and :t:a_account_code >= '3000' and :t:a_account_code <= '5999' and :t:a_transaction_type != 'B'), $0) + isnull((select $0 - sum(:t:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B' and :t:a_account_code >= '3000' and :t:a_account_code <= '3999'), $0))
 		from
-		    /apps/kardia/data/Kardia_DB/p_staff/rows s,
-		    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
 		    /apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
 		    /apps/kardia/data/Kardia_DB/a_period/rows pc,
 		    /apps/kardia/data/Kardia_DB/a_period/rows pps,
 		    /apps/kardia/data/Kardia_DB/a_period/rows ppe,
 		    /apps/kardia/data/Kardia_DB/a_ledger/rows l
 		where
-		    :s:p_kardia_login = :parameters:staff_login and
-		    :cs:p_staff_partner_key = :s:p_partner_key and
-		    (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and
-		    :cc:a_ledger_number = :cs:a_ledger_number and
+		    charindex(',' + rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center) + ',', ',' + :fundinfo:my_cclist + ',') > 0 and
 		    :l:a_ledger_number = :cc:a_ledger_number and
 		    :pc:a_ledger_number = :cc:a_ledger_number and
 		    :pc:a_summary_only = 0 and
@@ -58,7 +65,6 @@ funds "widget/component-decl"
 		    datepart(year, :ppe:a_start_date) = datepart(year, getdate()) - 1 and
 		    datepart(month, :ppe:a_start_date) = 12
 		order by
-		    :cs:a_cost_center asc,
 		    :cc:a_cost_center asc
 		";
 	readahead=50;
