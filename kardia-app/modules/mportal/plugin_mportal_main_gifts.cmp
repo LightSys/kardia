@@ -27,7 +27,7 @@ gifts "widget/component-decl"
 		    ;
 
 		    select
-			selected_fund = :cc:a_ledger_number + '|' + :cc:a_cost_center,
+			selected_fund = rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center),
 			username = :parameters:staff_login,
 			descr = :cc:a_cost_center + ' - ' + :cc:a_cc_desc,
 			:cc:a_cost_center,
@@ -138,7 +138,7 @@ gifts "widget/component-decl"
 				-- Find what cost centers we can view
 				select
 				    :giftinfo:staff_key = :p_partner_key,
-				    :giftinfo:my_cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number and (:parameters:selected_fund = '*' or :parameters:selected_fund = :cc:a_ledger_number + '|' + :cc:a_cost_center)), '')
+				    :giftinfo:my_cclist = isnull( (select sum(rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center) + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number and (:parameters:selected_fund = '*' or :parameters:selected_fund = rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center))), '')
 				from
 				    /apps/kardia/data/Kardia_DB/p_staff/rows s
 				where
@@ -207,7 +207,7 @@ gifts "widget/component-decl"
 				where
 				    :gi:a_posted = 1 and
 				    isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and
-				    charindex(',' + :gi:a_ledger_number + '|' + :gi:a_cost_center + ',', ',' + :giftinfo:my_cclist + ',') > 0 and
+				    charindex(',' + rtrim(:gi:a_ledger_number) + '|' + rtrim(:gi:a_cost_center) + ',', ',' + :giftinfo:my_cclist + ',') > 0 and
 				    :cc:a_ledger_number = :gi:a_ledger_number and
 				    :cc:a_cost_center = :gi:a_cost_center and
 				    :p:p_partner_key = :gi:p_dn_donor_partner_id and
@@ -242,7 +242,7 @@ gifts "widget/component-decl"
 				where
 				    :gi:a_posted = 1 and
 				    isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and
-				    charindex(',' + :gi:a_ledger_number + '|' + :gi:a_cost_center + ',', ',' + :giftinfo:my_cclist + ',') > 0
+				    charindex(',' + rtrim(:gi:a_ledger_number) + '|' + rtrim(:gi:a_cost_center) + ',', ',' + :giftinfo:my_cclist + ',') > 0
 				");
 			readahead=200;
 			replicasize=200;
@@ -331,7 +331,7 @@ gifts "widget/component-decl"
 				-- Find what cost centers we can view
 				select
 				    :giftinfo:staff_key = :p_partner_key,
-				    :giftinfo:my_cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number and (:parameters:selected_fund = '*' or :parameters:selected_fund = :cc:a_ledger_number + '|' + :cc:a_cost_center)), '')
+				    :giftinfo:my_cclist = isnull( (select sum(rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center) + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number and (:parameters:selected_fund = '*' or :parameters:selected_fund = rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center))), '')
 				from
 				    /apps/kardia/data/Kardia_DB/p_staff/rows s
 				where
@@ -403,7 +403,7 @@ gifts "widget/component-decl"
 				    :gi:a_period >= :giftinfo:firstperiod and
 				    :gi:a_period <= :giftinfo:lastperiod and
 				    --isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and
-				    charindex(',' + :gi:a_ledger_number + '|' + :gi:a_cost_center + ',', ',' + :giftinfo:my_cclist + ',') > 0 and
+				    charindex(',' + rtrim(:gi:a_ledger_number) + '|' + rtrim(:gi:a_cost_center) + ',', ',' + :giftinfo:my_cclist + ',') > 0 and
 				    :cc:a_ledger_number = :gi:a_ledger_number and
 				    :cc:a_cost_center = :gi:a_cost_center and
 				    :p:p_partner_key = :gi:p_dn_donor_partner_id and
@@ -443,7 +443,7 @@ gifts "widget/component-decl"
 				    :gi:a_period >= :giftinfo:firstperiod and
 				    :gi:a_period <= :giftinfo:lastperiod and
 				    --isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and
-				    charindex(',' + :gi:a_ledger_number + '|' + :gi:a_cost_center + ',', ',' + :giftinfo:my_cclist + ',') > 0
+				    charindex(',' + rtrim(:gi:a_ledger_number) + '|' + rtrim(:gi:a_cost_center) + ',', ',' + :giftinfo:my_cclist + ',') > 0
 				");
 			readahead=200;
 			replicasize=200;
@@ -488,7 +488,7 @@ gifts "widget/component-decl"
 			    rowhighlight_shadow_offset=1;
 			    rowhighlight_shadow_angle=135;
 			    rowhighlight_bgcolor="#faf8ff";
-			    nodata_message = runclient(condition(:ygifts_osrc:cx__pending, "No gifts available.", "Loading the past twelve months' gifts..."));
+			    nodata_message = runclient(condition(:ygifts_osrc:cx__pending, "No gifts available.", "Loading the past twelve years' gifts..."));
 
 			    ygt_name "widget/table-column" { title = "Donor Name"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:ygifts_osrc:p_partner_key + isnull(' - ' + :ygifts_osrc:p_city + ', ' + :ygifts_osrc:p_state_province, '')); }
 			    ygt_fund "widget/table-column" { title = "Fund"; fieldname=a_cost_center; width=80; style=bold; font_size=16; caption_value=runclient(:ygifts_osrc:a_cc_desc); }
