@@ -330,7 +330,7 @@ funds "widget/component-decl"
 			    it_date "widget/table-column" { title = "Yearly Reports:"; fieldname=rptperiod; width=120; style=runclient(condition(:yearly_detail_osrc:rptperiod is not null, 'plain', 'bold')); }
 			    it_trx "widget/table-column" { title = "Transactions"; fieldname=trx_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:trx_rptname is not null, 'underline', 'bold')); }
 			    it_don "widget/table-column" { title = "Donors"; fieldname=donor_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:donor_rptname is not null, 'underline', 'bold')); }
-			    it_mtx "widget/table-column" { title = "Gift Matrix"; fieldname=mtx_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:mtx_rptname is not null, 'underline', 'bold')); }
+			    it_mtx "widget/table-column" { title = "Gifts by Month"; fieldname=mtx_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:mtx_rptname is not null, 'underline', 'bold')); }
 			    //it_revexp "widget/table-column" { title = "Rev. & Exp."; fieldname=incexp_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:incexp_rptname is not null, 'underline', 'bold')); }
 			    it_revexpall "widget/table-column" { title = "Rev. & Exp. (all)"; fieldname=incexpall_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:incexpall_rptname is not null, condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'underline', 'plain'), 'bold')); }
 
