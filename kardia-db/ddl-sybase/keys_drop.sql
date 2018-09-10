@@ -98,6 +98,16 @@ alter table p_contact_info
 go
 
 
+alter table p_contact_usage
+	drop constraint p_contact_usg_pk
+go
+
+
+alter table p_contact_usage_type
+	drop constraint p_contact_ut_pk
+go
+
+
 alter table p_partner_relationship
 	drop constraint p_partner_relationship_pk
 go
@@ -1088,6 +1098,11 @@ alter table a_subtrx_gift_group
 go
 
 
+alter table a_subtrx_gift_group
+	drop constraint a_gifttrxgrp_ack_id_idx
+go
+
+
 alter table a_subtrx_gift_item
 	drop constraint a_gifttrx_pk
 go
@@ -1198,6 +1213,11 @@ alter table a_descriptives
 go
 
 
+alter table a_descriptives_hist
+	drop constraint a_descrhist_pk
+go
+
+
 alter table a_subtrx_cashdisb
 	drop constraint a_subtrx_cashdisb_pk
 go
@@ -1205,6 +1225,16 @@ go
 
 alter table a_subtrx_cashdisb
 	drop constraint a_subtrx_cashdisb_acct_idx
+go
+
+
+alter table a_subtrx_payable
+	drop constraint a_subtrx_payable_pk
+go
+
+
+alter table a_subtrx_payable_item
+	drop constraint a_subtrx_payable_item_pk
 go
 
 
@@ -1430,4 +1460,19 @@ go
 
 alter table s_audit
 	drop constraint s_audit_intval_idx
+go
+
+
+alter table s_role
+	drop constraint s_role_pk
+go
+
+
+alter table s_role_exclusivity
+	drop constraint s_role_ex_pk
+go
+
+
+alter table s_user_role
+	drop constraint s_user_role_pk
 go

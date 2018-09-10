@@ -209,6 +209,47 @@ create table p_contact_info (
 go
 
 
+/* p_contact_usage */
+print "Creating table p_contact_usage"
+
+create table p_contact_usage (
+        p_contact_usage_type_code             varchar(4)  not null,    /* Unique code for this usage type --  */
+        p_partner_key                         char(10)  not null,      /* The partner ID that this applies to --  */
+        p_contact_location_id                 integer  not null,       /* The contact or location ID this applies to --  */
+        p_contact_or_location                 char(1)  not null,       /* C = contact, L = location --  */
+        p_start_date                          datetime  null,          /* The first validity date for this usage --  */
+        p_end_date                            datetime  null,          /* The last validity date for this usage --  */
+        p_daterange_no_year                   bit  not null,           /* If set to 1, ignore the year part of the start-end date range (the range recurs yearly) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* p_contact_usage_type */
+print "Creating table p_contact_usage_type"
+
+create table p_contact_usage_type (
+        p_contact_usage_type_code             varchar(4)  not null,    /* Unique code for this usage type --  */
+        p_system_provided                     bit  not null,           /* 1 = this code is provided with the system and cannot be changed or removed --  */
+        p_use_for_locations                   bit  not null,           /* 1 = this code can be used for p_location records. --  */
+        p_use_for_contacts                    bit  not null,           /* 1 = this code can be used for contact data (phone, email, etc.) --  */
+        p_contact_types                       varchar(32)  not null,   /* a list of contact type codes that this code applies to. --  */
+        p_contact_usage_label                 varchar(80)  not null,   /* The label/description for this usage code. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
 /* p_partner_relationship */
 print "Creating table p_partner_relationship"
 
@@ -2380,6 +2421,8 @@ create table a_cc_staff (
         a_ledger_number                       char(10)  not null,      /* ledger number (a_ledger) --  */
         a_cost_center                         char(20)  not null,      /* cost center code (a_cost_center) --  */
         p_staff_partner_key                   varchar(10)  not null,   /* Partner key (p_partner) --  */
+        p_start_date                          datetime  null,          /* starting date that data is available to fund manager --  */
+        p_end_date                            datetime  null,          /* ending date that data is available to fund manager --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2958,6 +3001,7 @@ create table a_subtrx_gift_group (
         a_gift_type                           char(1)  not null,       /* Type of gift: (C)ash, chec(K), credit car(D), (E)FT --  */
         a_receipt_number                      varchar(64)  null,       /* Receipt number that we sent out --  */
         p_donor_partner_id                    char(10)  null,          /* Partner ID of donor --  */
+        p_ack_partner_id                      char(10)  null,          /* Partner ID to send non-receipt acknowledgment to --  */
         a_receipt_sent                        bit  default 0,          /* Receipt sent to donor --  */
         a_receipt_desired                     char(1)  default 'I'  null,
                                                                       /* Receipt needed -- 'I' for immediate, 'A' for annual, 'N' for no receipt --  */
@@ -3233,6 +3277,8 @@ create table a_descriptives (
         a_act_average_amount                  money  null,             /* actual average giving since first gift or within last 12 months, whichever is shorter --  */
         a_act_average_months                  integer  null,           /* number of months for the above average. --  */
         a_act_average_interval                float  null,             /* actual average interval since first gift or within last 12 months, whichever is shorter --  */
+        a_act_count                           integer  null,           /* actual number of gifts within the lookahead/lookback range --  */
+        a_act_total                           money  null,             /* actual total giving within the lookahead/lookback range --  */
         a_hist_1_amount                       money  null,             /* gift histogram most common - amount --  */
         a_hist_1_count                        integer  null,           /* gift histogram most common - count --  */
         a_hist_1_first                        datetime  null,          /* gift histogram most common - first occurrence --  */
@@ -3245,6 +3291,33 @@ create table a_descriptives (
         a_hist_3_count                        integer  null,           /* gift histogram 3nd most common - count --  */
         a_hist_3_first                        datetime  null,          /* gift histogram 3nd most common - first occurrence --  */
         a_hist_3_last                         datetime  null,          /* gift histogram 3nd most common - last occurrence --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* a_descriptives_hist */
+print "Creating table a_descriptives_hist"
+
+create table a_descriptives_hist (
+        a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
+        p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
+        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_amount                              money  not null,         /* amount given --  */
+        a_first_gift                          datetime  null,          /* first gift date --  */
+        a_last_gift                           datetime  null,          /* most recent gift date --  */
+        a_ntl_gift                            datetime  null,          /* next to last gift date --  */
+        a_count                               integer  null,           /* actual number of gifts of this amount --  */
+        a_total                               money  null,             /* actual total giving for this gift amount --  */
+        a_act_average_amount                  money  null,             /* actual monthly average due to this gift amount --  */
+        a_act_average_months                  integer  null,           /* number of months used for the average --  */
+        a_act_average_interval                float  null,             /* actual average giving interval due to this gift amount --  */
+        a_merged_amount                       money  null,             /* if we're doing a merge of catch-up amounts, we indicate it here --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3275,6 +3348,70 @@ create table a_subtrx_cashdisb (
         a_posted_to_gl                        bit  default 0,          /* Has this disbursement been posted into the GL - yes (1) or no (0)? --  */
         a_voided                              bit  default 0,          /* Has this check been voided --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* a_subtrx_payable */
+print "Creating table a_subtrx_payable"
+
+create table a_subtrx_payable (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this disbursement --  */
+        a_payable_id                          integer  not null,       /* id number for this payable item --  */
+        a_batch_number_payable                integer  not null,       /* Batch id for the payable/liability journal --  */
+        a_batch_number_resolution             integer  not null,       /* Batch id for the resolution journal (cash disbursement) --  */
+        a_posted                              bit,                     /* Whether the payable is posted or not (0/1) --  */
+        a_requested_by                        char(10)  null,          /* Partner who requested the payable --  */
+        a_requested_date                      datetime  null,          /* Date the payable was requested --  */
+        a_approved_by                         char(10)  null,          /* Partner who approved the payable --  */
+        a_approved_date                       datetime  null,          /* Date the payable was approved --  */
+        a_resolved_by                         char(10)  null,          /* Partner who resolved (paid) the payable --  */
+        a_resolved_date                       datetime  null,          /* When the payable was actually paid --  */
+        a_taxable                             bit,                     /* Whether this is a taxable payable (0/1) --  */
+        a_advance                             bit,                     /* Whether this is an expense advance (0/1) --  */
+        a_payment_terms                       varchar(16)  null,       /* The terms on which the payment is required. Use "PAYROLL" to cause this to be disbursed with next payroll. --  */
+        a_payment_method                      integer  null,           /* Requested payment method --  */
+        a_document_id                         integer  null,           /* A document/image providing proof of this expense, if available, such as a receipt or invoice --  */
+        a_due_date                            datetime  null,          /* When the payable is due to be paid --  */
+        a_payee_partner_key                   char(10)  not null,      /* Partner id of the payee (recipient) --  */
+        a_account_with_payee                  varchar(20)  null,       /* Account number at payee --  */
+        a_invoice_number                      varchar(64)  null,       /* Invoice number associated with this payable --  */
+        a_make_payment_to                     varchar(80)  not null,   /* Name to make the payment to, if different from payee name --  */
+        a_payment_comment                     varchar(255)  null,      /* Comment to be included on the check or payment when it is sent --  */
+        a_comment                             varchar(255)  null,      /* Payable comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* a_subtrx_payable_item */
+print "Creating table a_subtrx_payable_item"
+
+create table a_subtrx_payable_item (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this disbursement --  */
+        a_payable_id                          integer  not null,       /* id number for this payable item --  */
+        a_line_item                           integer  not null,       /* item number for the line item in the payable --  */
+        a_requested_terms                     varchar(16)  null,       /* The terms on which the request was made --  */
+        a_document_id                         integer  null,           /* A document/image providing proof of this expense, if available, such as a receipt or invoice --  */
+        a_occurrence_date                     datetime  null,          /* When the event happened that triggered this payable (e.g. date of expense on an expense report) --  */
+        a_accrued_date                        datetime  not null,      /* When the payable accrues as an expense --  */
+        a_amount                              money  not null,         /* Amount of payable --  */
+        a_cost_center                         char(20)  not null,      /* Cost center for the expense generated by the payable --  */
+        a_account_code                        char(10)  not null,      /* GL account for the expense generated by the payable --  */
+        a_liab_cost_center                    char(20)  not null,      /* Cost center for the liability generated by the payable --  */
+        a_liab_account_code                   char(10)  not null,      /* GL account for the liability generated by the payable --  */
+        a_comment                             varchar(255)  null,      /* Payable comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3364,15 +3501,24 @@ print "Creating table i_eg_gift_import"
 
 create table i_eg_gift_import (
         a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
-        i_eg_gift_uuid                        char(36)  not null,      /* eGiving.com UUID for the gift record (xml:gift-id) --  */
-        i_eg_trx_uuid                         char(36)  not null,      /* eGiving.com UUID for the transaction record (xml:txn-id) --  */
-        i_eg_donor_uuid                       char(36)  not null,      /* eGiving.com UUID for the donor (xml:giver-id) --  */
+        i_eg_gift_uuid                        char(36)  not null,      /* UUID for the gift record (xml:gift-id) --  */
+        i_eg_desig_uuid                       varchar(36)  not null,   /* ID of designation that the donor chose --  */
+        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record (xml:txn-id) --  */
+        i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor (xml:giver-id) --  */
+        i_eg_donor_alt_id                     char(36)  null,          /* alternate ID for the donor --  */
+        i_eg_account_uuid                     varchar(36)  null,       /* ID of donation account that the donor used --  */
         i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) (xml:status) --  */
         i_eg_returned_status                  varchar(16)  null,       /* Reason for a return (xml:returned-status) --  */
         i_eg_processor                        varchar(80)  not null,   /* Name of payment processor (xml:processor) --  */
         i_eg_donor_name                       varchar(80)  not null,   /* Name (given name and surname) of the donor (xml:name) --  */
+        i_eg_donor_given_name                 varchar(80)  null,       /* given name of the donor --  */
+        i_eg_donor_surname                    varchar(80)  null,       /* surname of the donor --  */
+        i_eg_donor_middle_name                varchar(80)  null,       /* middle name of the donor --  */
+        i_eg_donor_prefix                     varchar(80)  null,       /* prefix/title of donor --  */
+        i_eg_donor_suffix                     varchar(80)  null,       /* suffix (jr/sr/etc) of donor --  */
         i_eg_donor_addr1                      varchar(80)  null,       /* Address line 1 of donor. (xml:address-line-1) --  */
         i_eg_donor_addr2                      varchar(80)  null,       /* Address line 2 of donor. (xml:address-line-2) --  */
+        i_eg_donor_addr3                      varchar(80)  null,       /* Address line 3 of donor. --  */
         i_eg_donor_city                       varchar(80)  null,       /* City of donor. (xml:city) --  */
         i_eg_donor_state                      varchar(80)  null,       /* State of donor. (xml:state) --  */
         i_eg_donor_postal                     varchar(80)  null,       /* Postal Code of donor. (xml:postal) --  */
@@ -3380,8 +3526,8 @@ create table i_eg_gift_import (
         i_eg_donor_phone                      varchar(80)  null,       /* Phone number of donor. (xml:phone) --  */
         i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. (xml:email) --  */
         i_eg_gift_amount                      money  not null,         /* amount of gift (xml:amount) --  */
-        i_eg_gift_pmt_type                    varchar(16)  not null,   /* Payment type (xml:payment-type) --  */
-        i_eg_gift_lastfour                    char(4)  not null,       /* Last four digits of account number (xml:last-four) --  */
+        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type (xml:payment-type) --  */
+        i_eg_gift_lastfour                    char(4)  null,           /* Last four digits of account number (xml:last-four) --  */
         i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval (xml:recurring-interval) --  */
         i_eg_gift_date                        datetime  not null,      /* Date of gift (xml:given-on) --  */
         i_eg_gift_trx_date                    datetime  null,          /* Date of transaction (xml:txn-date) --  */
@@ -3394,6 +3540,7 @@ create table i_eg_gift_import (
         i_eg_net_amount                       money  null,             /* Net gift (less fees for this transaction) (xml:net) --  */
         i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account (xml:deposit-date) --  */
         i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. (xml:deposit-id) --  */
+        i_eg_deposit_status                   char(16)  null,          /* status of the deposit --  */
         i_eg_deposit_gross_amt                money  null,             /* gross amount of the deposit before fees (xml:deposit-gross) --  */
         i_eg_deposit_amt                      money  null,             /* net amount of the deposit (xml:deposit-net) --  */
         p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
@@ -3966,6 +4113,57 @@ create table s_audit (
         s_valuedatetime                       datetime  null,          /* date/time value --  */
         s_date_created                        datetime  not null,      /* date the modification was made --  */
         s_created_by                          varchar(20)  not null,   /* user who made the modification --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* s_role */
+print "Creating table s_role"
+
+create table s_role (
+        s_role_id                             integer  not null,       /* id of this role --  */
+        s_role_label                          varchar(32)  not null,   /* short label for this role --  */
+        s_role_desc                           varchar(255)  null,      /* description of this role --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* s_role_exclusivity */
+print "Creating table s_role_exclusivity"
+
+create table s_role_exclusivity (
+        s_role1_id                            integer  not null,       /* id of role #1 --  */
+        s_role2_id                            integer  not null,       /* id of role #2 --  */
+        s_is_compatible                       bit,                     /* set to 1 if the roles are compatible with each other for simultaneous engagement --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* s_user_role */
+print "Creating table s_user_role"
+
+create table s_user_role (
+        s_role_id                             integer  not null,       /* id of this role --  */
+        s_username                            varchar(20)  not null,   /* name of user --  */
+        s_is_enabled                          bit,                     /* whether the user's access to this role is enabled or not --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 )

@@ -52,6 +52,18 @@ alter table p_contact_info
 	add constraint p_contact_info_pk primary key clustered (p_partner_key, p_contact_id)
 go
 
+print "working on table p_contact_usage"
+
+alter table p_contact_usage
+	add constraint p_contact_usg_pk primary key clustered (p_partner_key, p_contact_usage_type_code, p_contact_or_location, p_contact_location_id)
+go
+
+print "working on table p_contact_usage_type"
+
+alter table p_contact_usage_type
+	add constraint p_contact_ut_pk primary key clustered (p_contact_usage_type_code)
+go
+
 print "working on table p_partner_relationship"
 
 alter table p_partner_relationship
@@ -876,10 +888,28 @@ alter table a_descriptives
 	add constraint a_descr_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center)
 go
 
+print "working on table a_descriptives_hist"
+
+alter table a_descriptives_hist
+	add constraint a_descrhist_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_amount)
+go
+
 print "working on table a_subtrx_cashdisb"
 
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key clustered (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item)
+go
+
+print "working on table a_subtrx_payable"
+
+alter table a_subtrx_payable
+	add constraint a_subtrx_payable_pk primary key clustered (a_ledger_number, a_payable_id)
+go
+
+print "working on table a_subtrx_payable_item"
+
+alter table a_subtrx_payable_item
+	add constraint a_subtrx_payable_item_pk primary key clustered (a_ledger_number, a_payable_id, a_line_item)
 go
 
 print "working on table a_subtrx_xfer"
@@ -903,7 +933,7 @@ go
 print "working on table i_eg_gift_import"
 
 alter table i_eg_gift_import
-	add constraint i_eg_gift_import_pk primary key clustered (a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_gift_import_pk primary key clustered (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 print "working on table i_eg_giving_url"
@@ -1054,4 +1084,22 @@ print "working on table s_audit"
 
 alter table s_audit
 	add constraint s_audit_pk primary key clustered (s_sequence)
+go
+
+print "working on table s_role"
+
+alter table s_role
+	add constraint s_role_pk primary key clustered (s_role_id)
+go
+
+print "working on table s_role_exclusivity"
+
+alter table s_role_exclusivity
+	add constraint s_role_ex_pk primary key clustered (s_role1_id, s_role2_id)
+go
+
+print "working on table s_user_role"
+
+alter table s_user_role
+	add constraint s_user_role_pk primary key clustered (s_role_id, s_username)
 go

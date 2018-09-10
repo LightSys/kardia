@@ -66,6 +66,16 @@ go
 /* go */
 
 
+/* p_contact_usage */
+/* drop index p_contact_usage.p_contact_usg_pk */ 
+/* go */
+
+
+/* p_contact_usage_type */
+/* drop index p_contact_usage_type.p_contact_ut_pk */ 
+/* go */
+
+
 /* p_partner_relationship */
 /* drop index p_partner_relationship.p_partner_relationship_pk */ 
 /* go */
@@ -308,6 +318,10 @@ go
 /* e_tag */
 /* drop index e_tag.e_tag_pk */ 
 /* go */
+drop index e_tag.e_tag_rev_idx
+go
+drop index e_tag.e_tag_strength_idx
+go
 
 
 /* e_tag_activity */
@@ -941,6 +955,8 @@ go
 
 
 /* a_subtrx_gift_group */
+drop index a_subtrx_gift_group.a_gifttrxgrp_ack_id_idx
+go
 drop index a_subtrx_gift_group.a_gifttrxgrp_batch_idx
 go
 drop index a_subtrx_gift_group.a_gifttrxgrp_donor_id_idx
@@ -1046,7 +1062,22 @@ go
 
 
 /* a_descriptives */
+drop index a_descriptives.a_descr_cc_idx
+go
+drop index a_descriptives.a_descr_par_idx
+go
 /* drop index a_descriptives.a_descr_pk */ 
+/* go */
+
+
+/* a_descriptives_hist */
+drop index a_descriptives_hist.a_descrhist_cc_idx
+go
+drop index a_descriptives_hist.a_descrhist_merge_idx
+go
+drop index a_descriptives_hist.a_descrhist_par_idx
+go
+/* drop index a_descriptives_hist.a_descrhist_pk */ 
 /* go */
 
 
@@ -1056,6 +1087,16 @@ go
 drop index a_subtrx_cashdisb.a_subtrx_cashdisb_batch_idx
 go
 /* drop index a_subtrx_cashdisb.a_subtrx_cashdisb_pk */ 
+/* go */
+
+
+/* a_subtrx_payable */
+/* drop index a_subtrx_payable.a_subtrx_payable_pk */ 
+/* go */
+
+
+/* a_subtrx_payable_item */
+/* drop index a_subtrx_payable_item.a_subtrx_payable_item_pk */ 
 /* go */
 
 
@@ -1244,3 +1285,18 @@ go
 /* go */
 drop index s_audit.s_audit_strval_idx
 go
+
+
+/* s_role */
+/* drop index s_role.s_role_pk */ 
+/* go */
+
+
+/* s_role_exclusivity */
+/* drop index s_role_exclusivity.s_role_ex_pk */ 
+/* go */
+
+
+/* s_user_role */
+/* drop index s_user_role.s_user_role_pk */ 
+/* go */

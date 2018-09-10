@@ -40,6 +40,16 @@ drop table p_contact_info
 go
 
 
+/* p_contact_usage */
+drop table p_contact_usage
+go
+
+
+/* p_contact_usage_type */
+drop table p_contact_usage_type
+go
+
+
 /* p_partner_relationship */
 drop table p_partner_relationship
 go
@@ -710,8 +720,23 @@ drop table a_descriptives
 go
 
 
+/* a_descriptives_hist */
+drop table a_descriptives_hist
+go
+
+
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb
+go
+
+
+/* a_subtrx_payable */
+drop table a_subtrx_payable
+go
+
+
+/* a_subtrx_payable_item */
+drop table a_subtrx_payable_item
 go
 
 
@@ -857,4 +882,19 @@ go
 
 /* s_audit */
 drop table s_audit
+go
+
+
+/* s_role */
+drop table s_role
+go
+
+
+/* s_role_exclusivity */
+drop table s_role_exclusivity
+go
+
+
+/* s_user_role */
+drop table s_user_role
 go

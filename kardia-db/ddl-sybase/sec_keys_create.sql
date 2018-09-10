@@ -326,6 +326,10 @@ alter table a_subtrx_gift_group
 	add constraint a_gifttrxgrp_donor_id_idx unique nonclustered (p_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number)
 go
 
+alter table a_subtrx_gift_group
+	add constraint a_gifttrxgrp_ack_id_idx unique nonclustered (p_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number)
+go
+
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_recip_id_idx unique nonclustered (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
@@ -375,39 +379,39 @@ alter table a_subtrx_deposit
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kdonor_idx unique nonclustered (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_kdonor_idx unique nonclustered (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_edonor_idx unique nonclustered (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_edonor_idx unique nonclustered (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kfund_idx unique nonclustered (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_kfund_idx unique nonclustered (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_efund_idx unique nonclustered (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_efund_idx unique nonclustered (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_egift_idx unique nonclustered (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_egift_idx unique nonclustered (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_edeposit_idx unique nonclustered (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_edeposit_idx unique nonclustered (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kgiftbatch_idx unique nonclustered (a_batch_number, a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_kgiftbatch_idx unique nonclustered (a_batch_number, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kfeebatch_idx unique nonclustered (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_kfeebatch_idx unique nonclustered (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kdepbatch_idx unique nonclustered (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid)
+	add constraint i_eg_kdepbatch_idx unique nonclustered (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
 alter table c_chat
