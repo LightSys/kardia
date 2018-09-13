@@ -1,0 +1,275 @@
+$Version=2$
+update_descriptives "system/query"
+    {
+    fund "query/parameter" { type=string; }
+    lookback "query/parameter" { type=integer; default=37; }
+
+    sql = " -- Clear out any old descriptives
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+	    ;
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center)
+	    ;
+
+	    -- Build a list of giving pattern descriptives for each of the fund's donors.  We want
+	    -- to optimize this to help staff interact with donors and ask good questions, instead
+	    -- of generating results simply based on math.
+	    insert
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    select
+		-- Primary key
+		:i:a_ledger_number,
+		:i:a_cost_center,
+		p_donor_partner_key = :i:p_dn_donor_partner_id,
+
+		-- Basic descriptives
+		a_first_gift = last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+		a_first_gift_amount = last(:i:a_amount),
+		a_last_gift = first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+		a_last_gift_amount = first(:i:a_amount),
+		a_ntl_gift = nth(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date), 2),
+		a_ntl_gift_amount = nth(:i:a_amount, 2),
+
+		-- Bootstrap the analysis process using the data we have.
+		a_act_lookback_date = last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+		a_act_lookahead_date = first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+		a_act_count = count(1),
+		a_act_total = sum(:i:a_amount),
+		a_act_average_months = convert(integer, round(datediff(day, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) / 30.5)),
+		a_act_average_interval = condition(
+			count(1) < 2 or datediff(day, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) = 0,
+			null,
+			(datediff(day, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) / 30.5) / convert(double, count(1) - 1)
+			),
+		a_act_average_amount = condition(
+			count(1) < 2 or datediff(month, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) = 0,
+			null,
+			sum(:i:a_amount) * (convert(double, count(1) - 1) / count(1)) / datediff(month, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)))
+			),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+	    where
+		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
+		(:parameters:fund is null or :parameters:fund = :i:a_cost_center)
+	    group by
+		:i:a_ledger_number,
+		:i:a_cost_center,
+		:i:p_dn_donor_partner_id
+	    order by
+		:i:a_ledger_number,
+		:i:a_cost_center,
+		:i:p_dn_donor_partner_id,
+		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
+	    ;
+
+	    -- Generate the amount histogram data, starting with the most recent gift amount.
+	    insert into
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows
+	    select
+		:i:a_ledger_number,
+		p_donor_partner_key = :i:p_dn_donor_partner_id,
+		:i:a_cost_center,
+		:i:a_amount,
+		a_first_gift = last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+		a_last_gift = first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
+		a_ntl_gift = nth(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date), 2),
+		a_count = count(1),
+		a_total = sum(:i:a_amount),
+		a_act_average_months = convert(integer, round(datediff(day, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) / 30.5)),
+		a_act_average_interval = condition(
+			count(1) < 2 or datediff(day, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) = 0,
+			null,
+			(datediff(day, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) / 30.5) / convert(double, count(1) - 1)
+			),
+		a_act_average_amount = condition(
+			count(1) < 2 or datediff(month, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) = 0,
+			null,
+			sum(:i:a_amount) * (convert(double, count(1) - 1) / count(1)) / datediff(month, last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)))
+			),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+	    where
+		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
+		(:parameters:fund is null or :parameters:fund = :i:a_cost_center)
+	    group by
+		:i:a_ledger_number,
+		:i:a_cost_center,
+		:i:p_dn_donor_partner_id,
+		:i:a_amount
+	    order by
+		:i:a_ledger_number,
+		:i:a_cost_center,
+		:i:p_dn_donor_partner_id,
+		:i:a_amount,
+		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
+	    ;
+
+	    -- Merge in 'catch up' giving.  dh1 is the larger catch up amount, and dh2 is
+	    -- the regular giving.
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+	    set
+		:a_merged_amount = :dh2:a_amount
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh2:a_amount != :dh1:a_amount and
+		(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and
+		:dh2:a_first_gift < :dh1:a_first_gift and
+		:dh2:a_last_gift > :dh1:a_last_gift and
+		:dh2:a_count >= 2 and
+		:dh2:a_first_gift < :dh2:a_last_gift and
+		round(:dh2:a_act_average_interval, 0) != 0 and
+		(:dh2:a_total * (1.0 * (:dh2:a_count - 1) / :dh2:a_count) / datediff(day, :dh2:a_first_gift, :dh2:a_last_gift)) * 30.5 < 0.95 * (:dh2:a_amount / round(:dh2:a_act_average_interval,0)) and
+		((:dh2:a_total * (1.0 * (:dh2:a_count - 1) / :dh2:a_count) + :dh1:a_total) / datediff(day, :dh2:a_first_gift, :dh2:a_last_gift)) * 30.5 > 0.95 * (:dh2:a_amount / round(:dh2:a_act_average_interval,0)) and
+		((:dh2:a_total * (1.0 * (:dh2:a_count - 1) / :dh2:a_count) + :dh1:a_total) / datediff(day, :dh2:a_first_gift, :dh2:a_last_gift)) * 30.5 < 1.05 * (:dh2:a_amount / round(:dh2:a_act_average_interval,0))
+	    ;
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    set
+		:dh2:a_act_average_amount = :dh2:a_act_average_amount / :dh2:a_total * (:dh2:a_total + :dh1:a_total),
+		:dh2:a_act_average_interval = :dh2:a_act_average_interval * convert(double, :dh2:a_count - 1) / (:dh2:a_count + round(:dh1:a_amount / :dh2:a_amount, 0)),
+		:dh2:a_count = :dh2:a_count + round(:dh1:a_amount / :dh2:a_amount, 0),
+		:dh2:a_total = :dh2:a_total + :dh1:a_total
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh1:a_merged_amount = :dh2:a_amount
+	    ;
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		:dh1:a_merged_amount is not null
+	    ;
+
+	    -- First histogram value
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_hist_1_amount = (select
+					first(:dh:a_amount)
+				    from
+					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+				    where
+					:d:a_ledger_number = :dh:a_ledger_number and
+					:d:a_cost_center = :dh:a_cost_center and
+					:d:p_donor_partner_key = :dh:p_donor_partner_key
+				    order by
+					:dh:a_last_gift desc
+				    )
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+	    ;
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:d:a_hist_1_count = :dh:a_count,
+		:d:a_hist_1_first = :dh:a_first_gift,
+		:d:a_hist_1_last = :dh:a_last_gift
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		:d:a_hist_1_amount = :dh:a_amount and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+	    ;
+
+	    -- Second histogram value
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_hist_2_amount = (select
+					first(:dh:a_amount)
+				    from
+					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+				    where
+					:d:a_ledger_number = :dh:a_ledger_number and
+					:d:a_cost_center = :dh:a_cost_center and
+					:d:p_donor_partner_key = :dh:p_donor_partner_key and
+					:dh:a_amount != :d:a_hist_1_amount
+				    order by
+					:dh:a_last_gift desc
+				    )
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+	    ;
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:d:a_hist_2_count = :dh:a_count,
+		:d:a_hist_2_first = :dh:a_first_gift,
+		:d:a_hist_2_last = :dh:a_last_gift
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		:d:a_hist_2_amount = :dh:a_amount and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+	    ;
+
+	    -- Third histogram value
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_hist_3_amount = (select
+					first(:dh:a_amount)
+				    from
+					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+				    where
+					:d:a_ledger_number = :dh:a_ledger_number and
+					:d:a_cost_center = :dh:a_cost_center and
+					:d:p_donor_partner_key = :dh:p_donor_partner_key and
+					:dh:a_amount != :d:a_hist_1_amount and
+					:dh:a_amount != :d:a_hist_2_amount
+				    order by
+					:dh:a_last_gift desc
+				    )
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+	    ;
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:d:a_hist_3_count = :dh:a_count,
+		:d:a_hist_3_first = :dh:a_first_gift,
+		:d:a_hist_3_last = :dh:a_last_gift
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		:d:a_hist_3_amount = :dh:a_amount and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+	    ;
+
+	    -- Return the dataset to the caller
+	    select
+		*
+	    from
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+	    ";
+    }
