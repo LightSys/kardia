@@ -85,6 +85,7 @@ plugin_crm_searchreport_donor "system/report"
 		WHERE
 		    :sr:p_search_session_id = :this:session_id and
 		    :sr:p_search_stage_id = :this:stage_id and
+		    :sr:s_username = user_name() and
 		    :p:p_partner_key =* :sr:p_partner_key
 		ORDER BY
 		    isnull(:p:p_org_name,'') + isnull(:p:p_surname,'') + isnull(:p:p_given_name,'')

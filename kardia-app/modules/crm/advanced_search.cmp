@@ -36,14 +36,14 @@ advanced_search "widget/component-decl"
 
 	    criteria_hdr "widget/pane"
 		{
-		style=flat; height=13; 
+		style=flat; height=14; 
 		background="/apps/kardia/images/bg/lsblue_btngradient.png";
 		border_radius=4;
 
 		criteria_label "widget/label"
 		    {
 		    x=0; y=0;
-		    width=450; height=12;
+		    width=450; height=13;
 		    text="Search Criteria Setup";
 		    align=center;
 		    style=bold;
@@ -76,6 +76,7 @@ advanced_search "widget/component-decl"
 			    :ss:s_date_modified,
 			    :ss:s_modified_by,
 			    prevcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence),
+			    nextcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence > :ss:p_sequence),
 			    stage_description = eval(:p:stage_description_expr),
 			    :p:icon,
 			    :p:stage_label
@@ -121,7 +122,7 @@ advanced_search "widget/component-decl"
 
 		criteria_table "widget/table"
 		    {
-		    height=483;
+		    height=482;
 		    min_rowheight=16;
 		    max_rowheight=64;
 		    mode=dynamicrow;
@@ -153,6 +154,7 @@ advanced_search "widget/component-decl"
 			{
 			width=430;
 			height=34;
+
 			criteria_op_dd "widget/component"
 			    {
 			    path="/sys/cmp/smart_field.cmp";
@@ -323,6 +325,24 @@ advanced_search "widget/component-decl"
 				    record_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=criteria_params_form; }
 				    }
 				}
+			    }
+			}
+
+		    criteria_arrow "widget/table-row-detail"
+			{
+			condition = 0;
+			width=430;
+			height=24;
+
+			arrow_img "widget/image"
+			    {
+			    x=203;
+			    y=0;
+			    height=24;
+			    width=24;
+			    fl_height=0;
+			    fl_width=0;
+			    source="/apps/kardia/images/icons/ionicons-arrow-down-b.svg";
 			    }
 			}
 		    }
@@ -524,14 +544,14 @@ advanced_search "widget/component-decl"
 
 	    searches_hdr "widget/pane"
 		{
-		style=flat; height=13; 
+		style=flat; height=14; 
 		background="/apps/kardia/images/bg/lsblue_btngradient.png";
 		border_radius=4;
 
 		searches_label "widget/label"
 		    {
 		    x=0; y=0;
-		    width=249; height=12;
+		    width=249; height=13;
 		    text="Saved Searches";
 		    align=center;
 		    style=bold;
@@ -574,7 +594,7 @@ advanced_search "widget/component-decl"
 
 		searches_table "widget/table"
 		    {
-		    height=527;
+		    height=526;
 		    min_rowheight=16;
 		    max_rowheight=64;
 		    mode=dynamicrow;

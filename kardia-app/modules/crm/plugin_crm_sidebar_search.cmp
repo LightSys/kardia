@@ -305,6 +305,7 @@ search "widget/component-decl"
 			    where
 				    :sr:p_search_session_id = :parameters:session_id and
 				    :sr:p_search_stage_id = :parameters:stage_id and
+				    :sr:s_username = user_name() and
 				    :p:p_partner_key = :sr:p_partner_key and
 				    :p:p_partner_key *= :pl:p_partner_key and
 				    :pl:p_revision_id = 0 and
@@ -445,6 +446,16 @@ search "widget/component-decl"
 			fgcolor1=white;
 			fgcolor2=black;
 			disable_color="#334466";
+
+			on_ml_click "widget/connector"
+			    {
+			    event=Click;
+			    target=makelist_win;
+			    action=ToggleVisibility;
+			    IsModal=1;
+			    PointAt=mklist_btn;
+			    PointSide=runclient('bottom');
+			    }
 			}
 		    }
 		}
@@ -465,6 +476,12 @@ search "widget/component-decl"
 	    }
 	}
 
+    makelist_osrc "widget/osrc"
+	{
+	m_session_id "widget/parameter" { type=integer; }
+	m_stage_id "widget/parameter" { type=integer; }
+	}
+
     email_em_osrc "widget/osrc"
 	{
 	e_session_id "widget/parameter" { type=integer; }
@@ -480,6 +497,7 @@ search "widget/component-decl"
 		where
 			:sr:p_search_session_id = :parameters:e_session_id and
 			:sr:p_search_stage_id = :parameters:e_stage_id and
+			:sr:s_username = user_name() and
 			:p:p_partner_key = :sr:p_partner_key and
 			:p:p_record_status_code = 'A' and
 			:p:p_status_code = 'A' and
@@ -512,12 +530,67 @@ search "widget/component-decl"
 	    }
 	}
 
+    makelist_win "widget/childwindow"
+	{
+	titlebar=no;
+	toplevel=yes;
+	visible=no;
+	x=0; y=0; width=248; height=204;
+	fl_width=100;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	makelist_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=228; height=158;
+	    spacing=8;
+
+	    makelist_title "widget/label" { height=16; font_size=15; align=center; style=bold; text="Create or Add To a List:"; }
+	    makelist_sep "widget/image" { height=1; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	    // Mailing List / Group setup
+	    list_form "widget/form"
+		{
+		list_code "widget/component" { width=220; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="list_code"; popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/"); popup_text="Choose List to Add To:"; text="List Code:"; attach_point=editbox; empty_desc = "list to create or add to"; label_width=120; popup_height=250; lists_hints2 "widget/hints" { badchars=" ,"; } }
+		lbl1b "widget/label" { height=18; text="For a new list, please specify the following:"; style=bold; align=center; }
+		list_desc "widget/component" { width=220; height=24; path="/sys/cmp/smart_field.cmp"; field="list_desc"; text="List Description:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; }
+		list_type "widget/component" { width=220; height=24; path="/sys/cmp/smart_field.cmp"; field="list_type"; text="List Type:"; ctl_type=dropdown; label_width=120; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_type/rows where :tag != 'I'"; }
+		}
+	    }
+
+	makelist_ctls_hbox "widget/hbox"
+	    {
+	    x=10; y=168;
+	    height=24;
+	    width=228;
+	    align=center; spacing=10;
+
+	    makelist_cancel_btn "widget/textbutton"
+		{
+		text = "Close";
+		height=24; width=130;
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+
+		on_makelist_cancel "widget/connector" { event=Click; target=makelist_win; action=Close; }
+		}
+	    }
+	}
+
     reports_win "widget/childwindow"
 	{
 	titlebar=no;
 	toplevel=yes;
 	visible=no;
-	x=0; y=0; width=400; height=164;
+	x=0; y=0; width=248; height=164;
 	fl_width=100;
 	border_radius=8;
 	border_style=solid;
@@ -530,11 +603,11 @@ search "widget/component-decl"
 
 	reports_vbox "widget/vbox"
 	    {
-	    x=10; y=10; width=378; height=118;
+	    x=10; y=10; width=228; height=118;
 	    spacing=8;
 
 	    reports_title "widget/label" { height=16; font_size=15; align=center; style=bold; text="Download Report:"; }
-	    reports_sep1 "widget/autolayoutspacer" { height=1; }
+	    reports_sep "widget/image" { height=1; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
 	    reports_repeat "widget/repeat"
 		{
@@ -542,8 +615,8 @@ search "widget/component-decl"
 
 		one_report_btn "widget/textbutton"
 		    {
-		    height=24; width=300;
-		    x=39;
+		    height=24; width=200;
+		    x=14;
 		    text=runserver(:reports_repeat:title);
 		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
 		    fgcolor1=white;
@@ -574,7 +647,7 @@ search "widget/component-decl"
 	    {
 	    x=10; y=128;
 	    height=24;
-	    width=378;
+	    width=228;
 	    align=center; spacing=10;
 
 	    cancel_btn "widget/textbutton"
