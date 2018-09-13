@@ -389,25 +389,62 @@ search "widget/component-decl"
 			}
 		    }
 
-		email_searched_btn "widget/textbutton"
+		action_btns "widget/hbox"
 		    {
-		    x=45;
-		    y=297;
-		    height=24;
-		    width=150;
-		    text="Email These";
-		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
-		    fgcolor1=white;
-		    fgcolor2=black;
-		    disable_color="#334466";
+		    x=0; y=297; height=24; width=240;
+		    spacing=8;
+		    align=center;
 
-		    on_email_em "widget/connector"
+		    email_searched_btn "widget/textbutton"
 			{
-			event=Click;
-			target=email_em_osrc;
-			action=QueryParam;
-			e_session_id = runclient(:advanced_results_osrc:session_id);
-			e_stage_id = runclient(:advanced_results_osrc:stage_id);
+			height=24;
+			width=75;
+			text="Send Email";
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_email_em "widget/connector"
+			    {
+			    event=Click;
+			    target=email_em_osrc;
+			    action=QueryParam;
+			    e_session_id = runclient(:advanced_results_osrc:session_id);
+			    e_stage_id = runclient(:advanced_results_osrc:stage_id);
+			    }
+			}
+
+		    report_btn "widget/textbutton"
+			{
+			height=24;
+			width=75;
+			text="Download";
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_dl_click "widget/connector"
+			    {
+			    event=Click;
+			    target=reports_win;
+			    action=ToggleVisibility;
+			    IsModal=1;
+			    PointAt=report_btn;
+			    PointSide=runclient('bottom');
+			    }
+			}
+
+		    mklist_btn "widget/textbutton"
+			{
+			height=24;
+			width=75;
+			text="Make List";
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
 			}
 		    }
 		}
@@ -456,12 +493,101 @@ search "widget/component-decl"
 	replicasize=2;
 	autoquery=never;
 
+	on_no_emails "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:email_em_osrc:emails is null);
+	    target=search;
+	    action=Alert;
+	    Message=runclient("Sorry! There were no email addresses found for any of the search results.");
+	    }
+
 	on_got_emails "widget/connector"
 	    {
 	    event=EndQuery;
+	    event_condition=runclient(:email_em_osrc:emails is not null);
 	    target=search;
 	    action=Launch;
 	    Source=runclient("mailto:" + :email_em_osrc:emails);
+	    }
+	}
+
+    reports_win "widget/childwindow"
+	{
+	titlebar=no;
+	toplevel=yes;
+	visible=no;
+	x=0; y=0; width=400; height=164;
+	fl_width=100;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	reports_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=378; height=118;
+	    spacing=8;
+
+	    reports_title "widget/label" { height=16; font_size=15; align=center; style=bold; text="Download Report:"; }
+	    reports_sep1 "widget/autolayoutspacer" { height=1; }
+
+	    reports_repeat "widget/repeat"
+		{
+		sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_crm_searchreport_*.rpt?ls__type=system%2fstructure' order by :sequence";
+
+		one_report_btn "widget/textbutton"
+		    {
+		    height=24; width=300;
+		    x=39;
+		    text=runserver(:reports_repeat:title);
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+
+		    one_report_launch "widget/connector"
+			{
+			event=Click;
+			target=search;
+			action=Launch;
+			Source=runserver(:reports_repeat:path);
+			session_id=runclient(:advanced_results_osrc:session_id);
+			stage_id=runclient(:advanced_results_osrc:stage_id);
+			}
+
+		    one_report_closewin "widget/connector"
+			{
+			event=Click;
+			target=reports_win;
+			action=Close;
+			}
+		    }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    x=10; y=128;
+	    height=24;
+	    width=378;
+	    align=center; spacing=10;
+
+	    cancel_btn "widget/textbutton"
+		{
+		text = "Close";
+		height=24; width=130;
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+
+		on_cancel "widget/connector" { event=Click; target=reports_win; action=Close; }
+		}
 	    }
 	}
     }

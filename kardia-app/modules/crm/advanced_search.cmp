@@ -145,7 +145,7 @@ advanced_search "widget/component-decl"
 		    row2_bgcolor = "#ffffff";
 
 		    ct_icon "widget/table-column" { title=""; width=32; fieldname=icon; type=image; image_maxwidth=24; image_maxheight=24; }
-		    ct_op "widget/table-column" { title=""; width=150; value=runclient(condition(:criteria_osrc:prevcnt = 0, 'With ', condition(:criteria_osrc:p_stage_op = 'A', 'Add With ', condition(:criteria_osrc:p_stage_op = 'E', 'Exclude ', 'Require '))) + :criteria_osrc:stage_label); style=bold; font_size=15; }
+		    ct_op "widget/table-column" { title=""; width=150; value=runclient(condition(:criteria_osrc:prevcnt = 0, 'Start With ', condition(:criteria_osrc:p_stage_op = 'A', 'Add With ', condition(:criteria_osrc:p_stage_op = 'E', 'Exclude ', 'Require '))) + :criteria_osrc:stage_label); style=bold; font_size=15; }
 		    ct_desc "widget/table-column" { title=""; width=250; fieldname=stage_description; wrap=yes; }
 
 
@@ -161,7 +161,7 @@ advanced_search "widget/component-decl"
 			    x=13; y=10;
 			    width=250;
 			    label_width=150;
-			    text = "Search By:";
+			    text = "Action:";
 			    height=24;
 			    field=p_stage_op;
 			    sql = " select label='Start with these matching results', value='A', default=1, grp='A';
@@ -183,7 +183,7 @@ advanced_search "widget/component-decl"
 
 		    criteria_detail_repeat "widget/repeat"
 			{
-			sql = "select path = :cx__pathname, :stage_label, :stage_type, :height  from object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' having :height > 0 order by :sequence";
+			sql = "select path = :cx__pathname, :stage_label, shortlabel = isnull(:stage_short_label, :stage_label), :stage_type, :height  from object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' having :height > 0 order by :sequence";
 
 			criteria_detail "widget/table-row-detail"
 			    {
@@ -385,6 +385,7 @@ advanced_search "widget/component-decl"
 			add_criteria_label "widget/label"
 			    {
 			    width=100;
+			    fl_width=0;
 			    y=2;
 			    text="Add Criteria:";
 			    align=right;
@@ -393,17 +394,17 @@ advanced_search "widget/component-decl"
 
 			add_criteria_repeat "widget/repeat"
 			    {
-			    sql = "select path = :cx__pathname, :stage_label, :stage_type  from object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' order by :sequence";
+			    sql = "select path = :cx__pathname, :stage_label, shortlabel = isnull(:stage_short_label, :stage_label), :stage_type  from object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' order by :sequence";
 			    
 			    add_criteria_btn "widget/textbutton"
 				{
-				height=24; width=90;
+				height=24; width=70;
 				fl_width=0;
 				background="/apps/kardia/images/bg/lsblue_btngradient.png";
 				fgcolor1=white;
 				fgcolor2=black;
 				disable_color="#334466";
-				text=runserver(:add_criteria_repeat:stage_label);
+				text=runserver(:add_criteria_repeat:shortlabel);
 				enabled=runclient(:searches_osrc:p_search_id is not null and not :criteria_osrc:is_client_savable);
 
 				on_add_criteria "widget/connector"

@@ -1,0 +1,105 @@
+$Version=2$
+plugin_crm_search_lists "widget/component-decl"
+    {
+    stage_label = "List Membership";
+    stage_short_label = "List";
+    stage_description_expr = "isnull((select condition(isnull(:param:searchtype, 'M') == 'M', isnull('List Code(s): ' + (:param:incl_lists - ',') + ', ', ''), condition(:param:searchtype == 'A', 'On Any List, ', 'On No Lists, ')) + isnull('Added After: ' + substring(convert(string,:param:start),1,12) + ', ', '') + isnull('Added Before: ' + substring(convert(string,:param:end),1,12) + ', ', '') + isnull('Added By User: ' + :param:adduser + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
+    stage_type = "LST";
+    icon = "/apps/kardia/images/icons/openiconic-envelope-closed.svg";
+    sequence = 17;
+    width=410;
+    height=108;
+
+    criteria_osrc "widget/parameter" { type=object; }
+    criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    criteria_params_form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    param_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=410; height=108;
+	spacing=4;
+
+	searchtype "widget/component"
+	    {
+	    height=24;
+	    width=300;
+	    label_width=150;
+	    path="/sys/cmp/smart_field.cmp";
+	    ctl_type=dropdown;
+	    field=searchtype;
+	    text="Type of Search:";
+	    sql = " select label='Find Members of Specific List(s) Below', value='M', default=1, grp='A';
+		    select label='Find People on No Lists', value='N', default=0, grp='A';
+		    select label='Find People on Any List', value='A', default=0, grp='A'";
+	    form=criteria_params_form;
+	    st_dd_hints "widget/hints" { style=notnull; default=runclient('M'); }
+	    }
+
+	f_inclists "widget/component"
+	    {
+	    height=24;
+	    width=300;
+	    label_width=150;
+	    popup_width=300;
+	    popup_height=210;
+	    path="/apps/kardia/modules/base/editbox_table.cmp";
+	    field='incl_lists';
+	    text='Member of List(s):';
+	    popup_sql="select value = :m:m_list_code, label = :m:m_list_description + ' (' + :m:m_list_code + ')' from /apps/kardia/data/Kardia_DB/m_list/rows m where (:m:m_list_type = 'P' or :m:m_list_type = 'S')";
+	    search_field_list="m_list_code,*m_list_description*";
+	    key_name="m_list_code";
+	    object_name="Mailing List";
+	    popup_text="Choose List(s):";
+	    empty_desc = "optional; comma-separated";
+	    attach_point=editbox;
+	    form=criteria_params_form;
+	    multiselect=1;
+	    listcode_hints "widget/hints" { style=applyonchange; }
+	    }
+
+	//comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=comment; height=24; width=300; label_width=150; form=criteria_params_form; text="Comment Contains:"; comm_hints "widget/hints" { style=strnull; } }
+
+	added_dates "widget/hbox"
+	    {
+	    height=24;
+	    spacing=10;
+	    startdate "widget/component"
+		{
+		form=criteria_params_form;
+		path="/sys/cmp/smart_field.cmp";
+		field=start;
+		text="Added Between:";
+		width=250;
+		label_width=150;
+		ctl_type=datetime;
+		date_only=1; default_time="00:00:00";
+		}
+	    enddate "widget/component"
+		{
+		form=criteria_params_form;
+		path="/sys/cmp/smart_field.cmp";
+		field=end;
+		text="And:";
+		width=140;
+		label_width=40;
+		ctl_type=datetime;
+		date_only=1; default_time="23:59:59";
+		}
+	    }
+	
+	addedby "widget/component"
+	    {
+	    form=criteria_params_form;
+	    path="/sys/cmp/smart_field.cmp";
+	    field=adduser;
+	    text="Added By:";
+	    width=300;
+	    label_width=150;
+	    height=24;
+	    ctl_type=dropdown;
+	    numdisplay=12;
+	    sql="select label=:u:description + ' (' + :u:name + ')', value=:u:name from /apps/kardia/data/Users.uxu u, /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :u:name and :s:p_is_staff = 1 order by :u:name";
+	    }
+	}
+    }

@@ -1,8 +1,8 @@
 $Version=2$
-plugin_crm_search_PAR "system/query"
+plugin_crm_search_LST "system/query"
     {
     // This query object provides the search stage support for
-    // searching based on partner information (name, gender, comment
+    // searching based on list membership (list, status, date
     // when added, and by whom)
     //
     require_endorsement="system:from_application";
@@ -15,15 +15,11 @@ plugin_crm_search_PAR "system/query"
 	    declare object stage;
 	    select
 		:stage:op = :s:p_stage_op,
-		:stage:given_name = lower(:sc:given_name),
-		:stage:surname = lower(:sc:surname),
-		:stage:org_name = lower(:sc:org_name),
 		:stage:startdate = convert(datetime,:sc:start),
 		:stage:enddate = convert(datetime,:sc:end),
-		:stage:gender = :sc:gender,
-		:stage:ptype = :sc:ptype,
 		:stage:adduser = :sc:adduser,
-		:stage:comment = lower(:sc:comment)
+		:stage:incl_lists = :sc:incl_lists,
+		:stage:searchtype = :sc:searchtype
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
 		/apps/kardia/modules/crm/advanced_search_params.qyp sc
@@ -80,17 +76,14 @@ plugin_crm_search_PAR "system/query"
 		s_date_modified = getdate(),
 		s_modified_by = user_name()
 	    from
-		/apps/kardia/data/Kardia_DB/p_partner/rows p
+		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+		/apps/kardia/data/Kardia_DB/m_list/rows l
 	    where
-		(:stage:adduser is null or :p:s_created_by = :stage:adduser) and
-		(:stage:gender is null or :p:p_gender = :stage:gender) and
-		(:stage:ptype is null or :p:p_partner_class = :stage:ptype) and
-		(:stage:given_name is null or charindex(:stage:given_name, lower(:p:p_preferred_name)) > 0 or charindex(:stage:given_name, lower(:p:p_given_name)) > 0) and
-		(:stage:surname is null or charindex(:stage:surname, lower(:p:p_surname)) = 1) and
-		(:stage:org_name is null or charindex(:stage:org_name, lower(:p:p_org_name)) > 0) and
-		(:stage:startdate is null or :p:s_date_created >= :stage:startdate) and
-		(:stage:enddate is null or :p:s_date_created <= :stage:enddate) and
-		(:stage:comment is null or charindex(:stage:comment, lower(:p:p_comments)) > 0) and
+		:l:m_list_code = :m:m_list_code and
+		(:stage:searchtype == 'A' or ((isnull(:stage:searchtype, 'M') == 'M') and (:stage:incl_lists is null or charindex(',' + :m:m_list_code + ',', ',' + :stage:incl_lists + ',') > 0))) and
+		(:stage:adduser is null or :m:s_created_by = :stage:adduser) and
+		(:stage:startdate is null or :m:s_date_created >= :stage:startdate) and
+		(:stage:enddate is null or :m:s_date_created <= :stage:enddate) and
 		:stage:op = 'A'
 	    ;
 
@@ -109,22 +102,19 @@ plugin_crm_search_PAR "system/query"
 		s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
-		/apps/kardia/data/Kardia_DB/p_partner/rows p
+		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+		/apps/kardia/data/Kardia_DB/m_list/rows l
 	    where
 		:sr:s_username = user_name() and
 		:sr:p_search_session_id = :parameters:search_id and
 		:sr:p_search_stage_id = :parameters:prev_stage and
 		:stage:op = 'R' and
-		:sr:p_partner_key = :p:p_partner_key and
-		(:stage:adduser is null or :p:s_created_by = :stage:adduser) and
-		(:stage:gender is null or :p:p_gender = :stage:gender) and
-		(:stage:ptype is null or :p:p_partner_class = :stage:ptype) and
-		(:stage:given_name is null or charindex(:stage:given_name, lower(:p:p_preferred_name)) > 0 or charindex(:stage:given_name, lower(:p:p_given_name)) > 0) and
-		(:stage:surname is null or charindex(:stage:surname, lower(:p:p_surname)) = 1) and
-		(:stage:org_name is null or charindex(:stage:org_name, lower(:p:p_org_name)) > 0) and
-		(:stage:startdate is null or :p:s_date_created >= :stage:startdate) and
-		(:stage:enddate is null or :p:s_date_created <= :stage:enddate) and
-		(:stage:comment is null or charindex(:stage:comment, lower(:p:p_comments)) > 0)
+		:sr:p_partner_key = :m:p_partner_key and
+		:l:m_list_code = :m:m_list_code and
+		(:stage:searchtype == 'A' or ((isnull(:stage:searchtype, 'M') == 'M') and (:stage:incl_lists is null or charindex(',' + :m:m_list_code + ',', ',' + :stage:incl_lists + ',') > 0))) and
+		(:stage:adduser is null or :m:s_created_by = :stage:adduser) and
+		(:stage:startdate is null or :m:s_date_created >= :stage:startdate) and
+		(:stage:enddate is null or :m:s_date_created <= :stage:enddate)
 	    ;
 
 	    -- Pass #4: filter existing results if we're excluding
@@ -142,22 +132,19 @@ plugin_crm_search_PAR "system/query"
 		s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
-		/apps/kardia/data/Kardia_DB/p_partner/rows p
+		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
+		/apps/kardia/data/Kardia_DB/m_list/rows l
 	    where
 		:sr:s_username = user_name() and
 		:sr:p_search_session_id = :parameters:search_id and
 		:sr:p_search_stage_id = :parameters:prev_stage and
 		:stage:op = 'E' and
-		:sr:p_partner_key *= :p:p_partner_key and
-		(:stage:adduser is null or :p:s_created_by = :stage:adduser) and
-		(:stage:gender is null or :p:p_gender = :stage:gender) and
-		(:stage:ptype is null or :p:p_partner_class = :stage:ptype) and
-		(:stage:given_name is null or charindex(:stage:given_name, lower(:p:p_preferred_name)) > 0 or charindex(:stage:given_name, lower(:p:p_given_name)) > 0) and
-		(:stage:surname is null or charindex(:stage:surname, lower(:p:p_surname)) = 1) and
-		(:stage:org_name is null or charindex(:stage:org_name, lower(:p:p_org_name)) > 0) and
-		(:stage:startdate is null or :p:s_date_created >= :stage:startdate) and
-		(:stage:enddate is null or :p:s_date_created <= :stage:enddate) and
-		(:stage:comment is null or charindex(:stage:comment, lower(:p:p_comments)) > 0)
+		:sr:p_partner_key *= :m:p_partner_key and
+		:l:m_list_code = :m:m_list_code and
+		(:stage:searchtype == 'A' or ((isnull(:stage:searchtype, 'M') == 'M') and (:stage:incl_lists is null or charindex(',' + :m:m_list_code + ',', ',' + :stage:incl_lists + ',') > 0))) and
+		(:stage:adduser is null or :m:s_created_by = :stage:adduser) and
+		(:stage:startdate is null or :m:s_date_created >= :stage:startdate) and
+		(:stage:enddate is null or :m:s_date_created <= :stage:enddate)
 	    group by
 		:sr:p_partner_key
 	    having
