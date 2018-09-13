@@ -139,7 +139,7 @@ timeline "system/query"
 		:i:p_dn_donor_partner_id = :parameters:partner_key and
 		:cc:a_ledger_number = :i:a_ledger_number and
 		:cc:a_cost_center = :i:a_cost_center and
-		charindex(',' + :i:a_ledger_number + '|' + :i:a_cost_center + ',', ',' + :parameters:my_cclist + ',') > 0 and
+		charindex(',' + rtrim(:i:a_ledger_number) + '|' + rtrim(:i:a_cost_center) + ',', ',' + :parameters:my_cclist + ',') > 0 and
 		:i:a_posted = 1
 	    having
 		not has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1)) and

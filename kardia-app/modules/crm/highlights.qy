@@ -244,7 +244,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
-		e_highlight_id = 'GIFT-THIS|' + first(:g:a_ledger_number),
+		e_highlight_id = 'GIFT-THIS;' + first(:g:a_ledger_number),
 		e_highlight_name = 'Giving This Year',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = convert(string, sum(:g:a_amount)),
@@ -262,9 +262,9 @@ highlights "system/query"
 		substring(:g:a_period,1,4) = convert(string, datepart(year,getdate())) and
 		:g:a_posted = 1
 	    having
-		(has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1)) and
-		 has_endorsement('kardia:gift_amt', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1))) or
-		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1))
+		(has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) and
+		 has_endorsement('kardia:gift_amt', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1))) or
+		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1))
 	    ;
 
 	    -- GIFT / Giving Last Year
@@ -273,7 +273,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
-		e_highlight_id = 'GIFT-LAST|' + first(:g:a_ledger_number),
+		e_highlight_id = 'GIFT-LAST;' + first(:g:a_ledger_number),
 		e_highlight_name = 'Giving Last Year',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = convert(string, sum(:g:a_amount)),
@@ -291,9 +291,9 @@ highlights "system/query"
 		substring(:g:a_period,1,4) = convert(string, datepart(year,getdate()) - 1) and
 		:g:a_posted = 1
 	    having
-		(has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1)) and
-		 has_endorsement('kardia:gift_amt', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1))) or
-		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1))
+		(has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) and
+		 has_endorsement('kardia:gift_amt', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1))) or
+		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1))
 	    ;
 
 	    -- GIFT / Giving All-Time
@@ -302,7 +302,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
-		e_highlight_id = 'GIFT-ALL|' + first(:g:a_ledger_number),
+		e_highlight_id = 'GIFT-ALL;' + first(:g:a_ledger_number),
 		e_highlight_name = 'Giving All-Time',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = convert(string, sum(:g:a_amount)),
@@ -319,9 +319,9 @@ highlights "system/query"
 		:g:p_donor_partner_id = :parameters:partner_key and
 		:g:a_posted = 1
 	    having
-		(has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1)) and
-		 has_endorsement('kardia:gift_amt', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1))) or
-		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1))
+		(has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) and
+		 has_endorsement('kardia:gift_amt', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1))) or
+		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1))
 	    ;
 
 	    -- GIFT / First Gift
@@ -330,7 +330,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
-		e_highlight_id = 'GIFT-DATES|' + first(:g:a_ledger_number),
+		e_highlight_id = 'GIFT-DATES;' + first(:g:a_ledger_number),
 		e_highlight_name = 'Giving Dates',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = condition(min(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) = max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)), substring(convert(string, min(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))),1,11),  substring(convert(string, min(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))),1,11) + ' - ' +  substring(convert(string, max(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))),1,11)),
@@ -347,8 +347,8 @@ highlights "system/query"
 		:g:p_donor_partner_id = :parameters:partner_key and
 		:g:a_posted = 1
 	    having
-		has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1)) or
-		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1))
+		has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) or
+		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1))
 	    ;
 
 	    -- GIFT / Giving Funds
@@ -357,7 +357,7 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
-		e_highlight_id = 'GIFT-FUNDS|' + first(:i:a_ledger_number),
+		e_highlight_id = 'GIFT-FUNDS;' + first(:i:a_ledger_number),
 		e_highlight_name = 'Giving Funds',
 		e_highlight_type = 'GIFT',
 		e_highlight_data = sum(first(:i:a_cost_center + ' - ' + :c:a_cc_desc) + '\n') - '\n',
@@ -380,8 +380,115 @@ highlights "system/query"
 		:i:a_ledger_number,
 		:i:a_cost_center
 	    having
-		has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1)) or
-		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex('|',:e_highlight_id) + 1))
+		1 = 0 and (
+		has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) or
+		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)))
+	    ;
+
+	    -- GIFT / Overall Giving Pattern
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-0GEN;' + first(:d:a_ledger_number),
+		e_highlight_name = 'Giving',
+		e_highlight_type = 'GIFT',
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name(),
+		e_highlight_data = condition(count(1) = 0, '',
+		    condition(max(:a_act_count) >= 2,
+			condition(max(:a_last_gift) > dateadd(month, -1 - convert(integer, round(max(:a_act_average_interval))), getdate()),
+			    'Gives ',
+			    'Gave ') +
+			condition(
+			    round(min(:a_act_average_interval)) <= 1, 'Monthly',
+			    condition(round(min(:a_act_average_interval)) > 9 and round(min(:a_act_average_interval)) < 15, 'Annually',
+			    condition(round(min(:a_act_average_interval)) = 3, 'Quarterly',
+			    condition(round(min(:a_act_average_interval)) <= 9, 'Every ' + convert(integer, round(min(:a_act_average_interval))) + ' Months',
+			    'Infrequently')))),
+		    'Gave once') +
+		    ', ' + count(1) + ' designation' + condition(count(1) != 1, 's', '') +
+		    condition(max(:a_last_gift) > dateadd(month, -2 - convert(integer, round(max(:a_act_average_interval))), getdate()),
+			'',
+			condition(datediff(month, max(:a_last_gift), getdate()) < 12,
+			    ', ' + datediff(month, max(:a_last_gift), getdate()) + ' Month' + condition(datediff(month, max(:a_last_gift), getdate()) == 1, '', 's') + ' ago',
+			    ', ' + datediff(month, max(:a_last_gift), getdate()) / 12 + ' Years ago'
+			)
+		    )
+		)
+	    from
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    where
+		:d:p_donor_partner_key = :parameters:partner_key
+	    having
+		:e_highlight_data != '' and
+		(has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) or
+		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)))
+	    ;
+
+	    -- GIFT / Fund Specific Giving
+	    insert
+		/apps/kardia/data/Kardia_DB/e_highlights/rows h
+	    select
+		e_highlight_user = user_name(),
+		e_highlight_partner = :parameters:partner_key,
+		e_highlight_id = 'GIFT-1FND;' + :d:a_ledger_number + ';' + :d:a_cost_center,
+		e_highlight_name = 'Giving to ' + :c:a_cost_center,
+		e_highlight_type = 'GIFT',
+		e_highlight_precedence = 1.0,
+		e_highlight_strength = 0.0,
+		e_highlight_certainty = 1.0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name(),
+		e_highlight_data = 
+			ltrim('' + :d:a_hist_1_amount) +
+			' ' + 
+			condition(:d:a_hist_1_count == 1,
+			    'Once',
+			    condition(
+				round(:d:a_act_average_interval) <= 1, 'Monthly',
+				condition(round(:d:a_act_average_interval) > 9 and round(:d:a_act_average_interval) < 15, 'Annually',
+				condition(round(:d:a_act_average_interval) = 3, 'Quarterly',
+				condition(round(:d:a_act_average_interval) <= 9, 'Every ' + convert(integer, round(:d:a_act_average_interval)) + ' Months',
+				'Infrequently'))))
+			    ) +
+			' to ' +
+			:c:a_cc_desc +
+			', ' +
+			dateformat(:d:a_hist_1_first, 'MMM yyyy') +
+			condition(:d:a_hist_1_count == 1,
+			    '',
+			    ' - ' + dateformat(:d:a_hist_1_last, 'MMM yyyy')
+			) +
+			condition(:d:a_hist_2_count > 0,
+			    ', plus other gifts',
+			    ''
+			)
+	    from
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d,
+		/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    where
+		:d:p_donor_partner_key = :parameters:partner_key and
+		:dh1:p_donor_partner_key = :d:p_donor_partner_key and
+		:dh1:a_ledger_number = :d:a_ledger_number and
+		:dh1:a_cost_center = :d:a_cost_center and
+		:dh1:a_amount = :d:a_hist_1_amount and
+		:c:a_ledger_number = :d:a_ledger_number and
+		:c:a_cost_center = :d:a_cost_center
+	    having
+		((has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id, charindex(';',:e_highlight_id) + 1, charindex(';',substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) - 1)) and
+		  has_endorsement('kardia:gift_amt', 'kardia:ledger:' + substring(:e_highlight_id, charindex(';',:e_highlight_id) + 1, charindex(';',substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) - 1))) or
+		 has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id, charindex(';',:e_highlight_id) + 1, charindex(';',substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) - 1))) or
+		charindex(',' + replace(substring(:e_highlight_id, charindex(';', :e_highlight_id) + 1), ';', '|') + ',', ',' + :parameters:my_cclist + ',') > 0
 	    ;
 
 	    -- Update highlight precedence via system-wide settings
