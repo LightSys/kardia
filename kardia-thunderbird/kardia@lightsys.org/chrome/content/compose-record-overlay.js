@@ -49,7 +49,7 @@ var messageWindow = {
 	do_sidebar:false,
 
 	// Information about the message recipient(s) 
-	isNewRecipient:false,
+	isNewRecipient:[],
 	recipientAddresses:[],
 	recipientFullNames:[],
 	recipientFirstNames:[],
@@ -66,33 +66,30 @@ var messageWindow = {
 	recipient_data_loaded_deferred:null,
 	recipient_data_loading:false,
 
-	// Saved copies of data from the form.  This allows us to determine if data has
-	// changed from one re-evaluation to another, so we can (for instance) trigger
-	// PATCH requests to modify data on the server.
-	curData: { assignee:null, todotype:null, roletype:null, days:null, first:null, last:null, email:null, todo_comment:null },
-	prevData: { },
+	// Saved copies of data from the form. In the other footers, this allows
+	// us to do PATCH requests, but in this case, it just saves the data until
+	// we send the email and it gets sent via POST. 
+	curData: { assignee:[], todotype:[], roletype:[], days:[], first:[], last:[], email:[], todo_comment:[] },
 
-	// Flags that tell us whether new records are being created.
-	creatingPartner:false,
-	creatingLocation:false,
-	creatingEmail:false,
-	creatingCollab:false,
-	creatingContactHistory:false,
-	creatingAutorecord:false,
-	creatingTodo:false,
+	// Flags that tell us whether new records are being created.	
+	creatingPartner:[],
+	creatingLocation:[], 
+	creatingEmail:[], 
+	creatingCollab:[], 
+	creatingContactHistory:[], 
+	creatingAutorecord:[],
+	creatingTodo:[], 
 
 	// Here we squirrel away the primary keys (API object names) for the
-	// new records we explicitly create.  If the user changes his/her mind,
-	// we can know to delete the records via these keys.
-	newPartnerKey:null,
-	newLocationKey:null,
-	newEmailKey:null,
-	newCollabKey:null,
-	newContactHistoryKey:null,
-	newAutorecordKey:null,
-	newTodoKey:null,
-
-
+	// new records we explicitly create.
+	newPartnerKey:[], 
+	newLocationKey:[], 
+	newEmailKey:[], 
+	newCollabKey:[], 
+	newContactHistoryKey:[], 
+	newAutorecordKey:[], 
+	newTodoKey:[], 
+	
 	// This function extracts a new key out of the Location data that results from
 	// a POST request to create a new record.  The key is embedded in the Location:
 	// header's filename, and we need to extract it.
@@ -108,23 +105,20 @@ var messageWindow = {
 		return null;
 	},
 
-	// TEMP AJT
+	// TODO AJT
 	fakeRequestPost: function(url, data, dclass, completion, callback) {
 		console.log(url + " " + data + " " + dclass);
 		callback();
-		// TODO completion
 	},
 	
 	fakeRequestPatch: function(url, data, dclass, completion, callback) {
 		console.log(url + " " + data + " " + dclass);
 		callback();
-		// TODO completion
 	},
 	
 	fakeRequestDelete: function(url, dclass, completion, callback) {
 		console.log(url + " " + dclass);
 		callback();
-		// TODO completion
 	},
 	
 
@@ -133,8 +127,6 @@ var messageWindow = {
 	//
 	postChanges: function() {
 		var date = new Date();
-		// TODO AJT creatingPartner always false
-
 		// This is called once all create/update/delete modifications have finished
 		// hitting the server.  At that point we call a custom callback, reset the
 		// data (this happens if the user just used forward/back in the message window
@@ -151,51 +143,53 @@ var messageWindow = {
 		////
 		////  CREATE PHASE - first step, creation of the partner record, if needed.
 		////
-		if (messageWindow.creatingPartner && messageWindow.newPartnerKey === null) {
-			kardiacrm.requestGet('partner/NextPartnerKey?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic', 'resync', completion, function(resp) {
-				if (resp) {
-					messageWindow.fakeRequestPost('partner/Partners', 
-							{
-							p_partner_key: resp.partner_id,
-							p_creating_office: ' ',
-							p_partner_class: 'IND',
-							p_status_code: 'A',
-							p_given_name: messageWindow.curData.first,
-							p_surname: messageWindow.curData.last,
-							p_record_status_code: 'A',
-							p_surname_first: 0,
-							p_no_solicitations: 0,
-							p_no_mail: 0,
-							s_date_created: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
-							s_created_by: kardiacrm.username,
-							s_date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
-							s_modified_by: kardiacrm.username,
-							},
-						'resync', completion, function(resp) {
-							if (resp) {
-								if (resp.Location) {
-									messageWindow.newPartnerKey = messageWindow.getKeyFromLocation(resp.Location, '/Partners/');
-									messageWindow.prevData.first = messageWindow.curData.first;
-									messageWindow.prevData.last = messageWindow.curData.last;
+		for (var i=0; i<messageWindow.recipientAddresses.length; i++) {
+			if (messageWindow.creatingPartner[i] && messageWindow.newPartnerKey[i] === null) {
+				console.log("Creating " + messageWindow.recipientAddresses[i]);
+				kardiacrm.requestGet('partner/NextPartnerKey?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic', 'resync', completion, function(resp) {
+					if (resp) {
+						messageWindow.fakeRequestPost('partner/Partners', 
+								{
+								p_partner_key: resp.partner_id,
+								p_creating_office: ' ',
+								p_partner_class: 'IND',
+								p_status_code: 'A',
+								p_given_name: messageWindow.curData.first[i],
+								p_surname: messageWindow.curData.last[i],
+								p_record_status_code: 'A',
+								p_surname_first: 0,
+								p_no_solicitations: 0,
+								p_no_mail: 0,
+								s_date_created: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
+								s_created_by: kardiacrm.username,
+								s_date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
+								s_modified_by: kardiacrm.username,
+								},
+							'resync', completion, function(resp) {
+								if (resp) {
+									if (resp.Location) {
+										messageWindow.newPartnerKey[i] = messageWindow.getKeyFromLocation(resp.Location, '/Partners/');
+									}
+									messageWindow.reSyncPostPartner(i, completion, false);
 								}
-								messageWindow.reSyncPostPartner(completion, false);
-							}
-					});
-				}
-			});
-		}
-		else {
-			messageWindow.reSyncPostPartner(completion, true);
+						});
+					}
+				});
+			}
+			else {
+				messageWindow.reSyncPostPartner(i, completion, true);
+			}
 		}
 	},
 
 	// Done after partner creation, or if no create was needed.
-	reSyncPostPartner: function(completion, no_changes) {
+	reSyncPostPartner: function(index, completion, no_changes) {
 		var date = new Date();
 		// Make sure we have a partner key.
-		var partner = messageWindow.newPartnerKey;
+		var partner = messageWindow.newPartnerKey[index];
 		if (!partner && messageWindow.recipientAddresses.length > 0) {
-			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[document.getElementById("contact-which-recipient").selectedIndex]); 
+			// TODO not sure how to make this work...
+			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[0]); // TODO document.getElementById("contact-which-recipient").selectedIndex]); 
 			
 			if (idx >= 0) {
 				partner = messageWindow.ids[idx];
@@ -208,7 +202,7 @@ var messageWindow = {
 		////
 		if (partner) {
 			// Create partner location record?
-			if (messageWindow.creatingLocation && messageWindow.newLocationKey === null) {
+			if (messageWindow.creatingLocation[index] && messageWindow.newLocationKey[index] === null) {
 				no_changes = false;
 				messageWindow.fakeRequestPost('partner/Partners/' + partner + '/Addresses', 
 						{
@@ -223,19 +217,19 @@ var messageWindow = {
 						},
 					'resync', completion, function(resp) {
 						if (resp) {
-							messageWindow.newLocationKey = messageWindow.getKeyFromLocation(resp.Location, '/Addresses/');
+							messageWindow.newLocationKey[index] = messageWindow.getKeyFromLocation(resp.Location, '/Addresses/');
 						}
 				});
 			}
 
 			// Create collab record?
-			if (messageWindow.creatingCollab && messageWindow.newCollabKey === null && messageWindow.curData.roletype) {
+			if (messageWindow.creatingCollab[index] && messageWindow.newCollabKey[index] === null && messageWindow.curData.roletype[index]) {
 				no_changes = false;
 				messageWindow.fakeRequestPost('crm/Partners/' + partner + '/Collaborators', 
 						{
 						p_partner_key: partner,
 						e_collaborator: mainWindow.myId,
-						e_collab_type_id: parseInt(messageWindow.curData.roletype),
+						e_collab_type_id: parseInt(messageWindow.curData.roletype[index]),
 						s_date_created: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
 						s_created_by: kardiacrm.username,
 						s_date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
@@ -244,24 +238,23 @@ var messageWindow = {
 					'resync', completion, function(resp) {
 						if (resp) {
 							if (resp.Location) {
-								messageWindow.newCollabKey = messageWindow.getKeyFromLocation(resp.Location, '/Collaborators/');
-								messageWindow.prevData.roletype = messageWindow.curData.roletype;
+								messageWindow.newCollabKey[index] = messageWindow.getKeyFromLocation(resp.Location, '/Collaborators/');
 							}
 						}
 				});
 			}
 
 			// Create todo record?
-			if (messageWindow.creatingTodo && messageWindow.newTodoKey === null && messageWindow.curData.todotype && messageWindow.curData.assignee && messageWindow.curData.days) {
+			if (messageWindow.creatingTodo[index] && messageWindow.newTodoKey[index] === null && messageWindow.curData.todotype[index] && messageWindow.curData.assignee[index] && messageWindow.curData.days[index]) {
 				no_changes = false;
 				var duedate = new Date(date);
-				duedate.setDate(duedate.getDate() + parseInt(messageWindow.curData.days));
+				duedate.setDate(duedate.getDate() + parseInt(messageWindow.curData.days[index]));
 				messageWindow.fakeRequestPost('crm/Partners/' + partner + '/Todos', 
 						{
-						e_todo_type_id: parseInt(messageWindow.curData.todotype),
-						e_todo_desc: messageWindow.curData.todo_comment,
+						e_todo_type_id: parseInt(messageWindow.curData.todotype[index]),
+						e_todo_desc: messageWindow.curData.todo_comment[index],
 						e_todo_status: 'I',
-						e_todo_collaborator: messageWindow.curData.assignee,
+						e_todo_collaborator: messageWindow.curData.assignee[index],
 						e_todo_partner: partner,
 						e_todo_due_date: {year: duedate.getFullYear(), month: duedate.getMonth()+1, day:duedate.getDate(), hour:duedate.getHours(), minute:duedate.getMinutes(), second:duedate.getSeconds() },
 						s_date_created: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
@@ -272,23 +265,19 @@ var messageWindow = {
 					'resync', completion, function(resp) {
 						if (resp) {
 							if (resp.Location) {
-								messageWindow.newTodoKey = messageWindow.getKeyFromLocation(resp.Location, '/Todos/');
-								messageWindow.prevData.todotype = messageWindow.curData.todotype;
-								messageWindow.prevData.assignee = messageWindow.curData.assignee;
-								messageWindow.prevData.days = messageWindow.curData.days;
-								messageWindow.prevData.todo_comment = messageWindow.curData.todo_comment;
+								messageWindow.newTodoKey[index] = messageWindow.getKeyFromLocation(resp.Location, '/Todos/');
 							}
 						}
 				});
 			}
 
 			// Create email record?
-			if (messageWindow.creatingEmail && messageWindow.newEmailKey === null && messageWindow.curData.email) {
+			if (messageWindow.creatingEmail[index] && messageWindow.newEmailKey[index] === null && messageWindow.curData.email[index]) {
 				messageWindow.fakeRequestPost('partner/Partners/' + partner + '/ContactInfo', 
 						{
 						p_partner_key: partner,
 						p_contact_type: 'E',
-						p_contact_data: messageWindow.curData.email,
+						p_contact_data: messageWindow.curData.email[index],
 						p_record_status_code: 'A',
 						s_date_created: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
 						s_created_by: kardiacrm.username,
@@ -298,38 +287,37 @@ var messageWindow = {
 					'resync', completion, function(resp) {
 						if (resp) {
 							if (resp.Location) {
-								messageWindow.newEmailKey = messageWindow.getKeyFromLocation(resp.Location, '/ContactInfo/');
-								messageWindow.prevData.email = messageWindow.curData.email;
+								messageWindow.newEmailKey[index] = messageWindow.getKeyFromLocation(resp.Location, '/ContactInfo/');
 							}
-							messageWindow.reSyncPostEmail(completion, false);
+							messageWindow.reSyncPostEmail(index, completion, false);
 						}
 				});
 			}
 			else {
-				messageWindow.reSyncPostEmail(completion, no_changes);
+				messageWindow.reSyncPostEmail(index, completion, no_changes);
 			}
 		} else {
-			messageWindow.reSyncPostEmail(completion, no_changes);
+			messageWindow.reSyncPostEmail(index, completion, no_changes);
 		}
 	},
 
 
 	// Done after email creation, or if no email creation needed.
-	reSyncPostEmail: function(completion, no_changes) {
+	reSyncPostEmail: function(index, completion, no_changes) {
 		var date = new Date();
 		// Make sure we have a partner key.
-		var partner = messageWindow.newPartnerKey;
+		var partner = messageWindow.newPartnerKey[index];
 		if (!partner && messageWindow.recipientAddresses.length > 0) {
-			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[document.getElementById("contact-which-recipient").selectedIndex]); 
+			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[0]); // TODO document.getElementById("contact-which-recipient").selectedIndex]); 
 			if (idx >= 0) {
 				partner = messageWindow.ids[idx];
 			}
 		}
 
 		// Make sure we have an email key.
-		var email = messageWindow.newEmailKey;
+		var email = messageWindow.newEmailKey[index];
 		if (!email && messageWindow.recipientAddresses.length > 0) {
-			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[document.getElementById("contact-which-recipient").selectedIndex]); 
+			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[0]); // TODO document.getElementById("contact-which-recipient").selectedIndex]); 
 			if (idx >= 0) {
 				email = mainWindow.emailIds[idx];
 			}
@@ -354,9 +342,8 @@ var messageWindow = {
 			}
 
 			// Create contact history record?
-			if (messageWindow.creatingContactHistory && messageWindow.newContactHistoryKey === null) {
+			if (messageWindow.creatingContactHistory[index] && messageWindow.newContactHistoryKey[index] === null) {
 				// Date of email
-				// TODO AJT
 				var email_date = new Date(gMessageDisplay.displayedMessage.dateInSeconds * 1000);
 
 				// Text content preview of email.  This is a very rough cut here and loses ALL
@@ -399,14 +386,14 @@ var messageWindow = {
 							},
 						'resync', completion, function(resp) {
 							if (resp) {
-								messageWindow.newContactHistoryKey = messageWindow.getKeyFromLocation(resp.Location, '/ContactHistory/');
+								messageWindow.newContactHistoryKey[index] = messageWindow.getKeyFromLocation(resp.Location, '/ContactHistory/');
 							}
 					});
 				}
 			}
 
 			// Create autorecord record?  (and... when a fox is in the bottle where the tweetle beetles battle...)
-			if (messageWindow.creatingAutorecord && messageWindow.newAutorecordKey === null) {
+			if (messageWindow.creatingAutorecord[index] && messageWindow.newAutorecordKey[index] === null) {
 				// Do the create for the e_contact_autorecord data
 				if (contact_type) {
 					no_changes = false;
@@ -425,113 +412,13 @@ var messageWindow = {
 							},
 						'resync', completion, function(resp) {
 							if (resp) {
-								messageWindow.newAutorecordKey = messageWindow.getKeyFromLocation(resp.Location, '/ContactAutorecord/');
+								messageWindow.newAutorecordKey[index] = messageWindow.getKeyFromLocation(resp.Location, '/ContactAutorecord/');
 							}
 					});
 				}
 			}
 		}
 
-		////
-		////  MODIFY PHASE - update data if user has modified it, via PATCH REST requests.
-		////
-		if (messageWindow.creatingPartner && partner && (messageWindow.curData.first != messageWindow.prevData.first || messageWindow.curData.last != messageWindow.prevData.last)) {
-			no_changes = false;
-			messageWindow.fakeRequestPatch('partner/Partners/' + partner, 
-					{
-					surname: messageWindow.curData.last,
-					given_names: messageWindow.curData.first,
-					date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
-					modified_by: kardiacrm.username,
-					},
-				'resync', completion, function(resp) {
-			});
-		}
-		if (messageWindow.creatingEmail && email && messageWindow.curData.email != messageWindow.prevData.email) {
-			no_changes = false;
-			messageWindow.fakeRequestPatch('partner/Partners/' + partner + '/ContactInfo/' + email, 
-					{
-					contact_data: messageWindow.curData.email,
-					date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
-					modified_by: kardiacrm.username,
-					},
-				'resync', completion, function(resp) {
-			});
-		}
-		if (messageWindow.creatingCollab && messageWindow.newCollabKey && messageWindow.curData.roletype != messageWindow.prevData.roletype) {
-			no_changes = false;
-			messageWindow.fakeRequestPatch('crm/Partners/' + partner + '/Collaborators/' + messageWindow.newCollabKey, 
-					{
-					collaborator_type_id: parseInt(messageWindow.curData.roletype),
-					date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
-					modified_by: kardiacrm.username,
-					},
-				'resync', completion, function(resp) {
-			});
-		}
-		if (messageWindow.creatingTodo && messageWindow.newTodoKey && (messageWindow.curData.todotype != messageWindow.prevData.todotype || messageWindow.curData.assignee != messageWindow.prevData.assignee || messageWindow.curData.todo_comment !=messageWindow.prevData.todo_comment || messageWindow.curData.days != messageWindow.prevData.days)) {
-			no_changes = false;
-			var duedate = new Date(date);
-			duedate.setDate(duedate.getDate() + parseInt(messageWindow.curData.days));
-			messageWindow.fakeRequestPatch('crm/Partners/' + partner + '/Todos/' + messageWindow.newTodoKey, 
-					{
-					todo_type_id: parseInt(messageWindow.curData.todotype),
-					desc: messageWindow.curData.todo_comment,
-					due_date: {year: duedate.getFullYear(), month: duedate.getMonth()+1, day:duedate.getDate(), hour:duedate.getHours(), minute:duedate.getMinutes(), second:duedate.getSeconds() },
-					collaborator_id: messageWindow.curData.assignee,
-					date_modified: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
-					modified_by: kardiacrm.username,
-					},
-				'resync', completion, function(resp) {
-			});
-		}
-
-		////
-		////  DELETE PHASE - remove data if user changed mind about creating it.
-		////
-		if (messageWindow.newEmailKey && !messageWindow.creatingEmail && partner) {
-			no_changes = false;
-			messageWindow.fakeRequestDelete('partner/Partners/' + partner + '/ContactInfo/' + messageWindow.newEmailKey, 'resync', completion, function(resp) {
-				messageWindow.newEmailKey = null;
-			});
-		}
-		if (messageWindow.newLocationKey && !messageWindow.creatingLocation && partner) {
-			no_changes = false;
-			messageWindow.fakeRequestDelete('partner/Partners/' + partner + '/Addresses/' + messageWindow.newLocationKey, 'resync', completion, function(resp) {
-				messageWindow.newLocationKey = null;
-			});
-		}
-		if (messageWindow.newCollabKey && !messageWindow.creatingCollab && partner) {
-			no_changes = false;
-			messageWindow.fakeRequestDelete('crm/Partners/' + partner + '/Collaborators/' + messageWindow.newCollabKey, 'resync', completion, function(resp) {
-				messageWindow.newCollabKey = null;
-			});
-		}
-		if (messageWindow.newTodoKey && !messageWindow.creatingTodo && partner) {
-			no_changes = false;
-			messageWindow.fakeRequestDelete('crm/Partners/' + partner + '/Todos/' + messageWindow.newTodoKey, 'resync', completion, function(resp) {
-				messageWindow.newTodoKey = null;
-			});
-		}
-		if (messageWindow.newContactHistoryKey && !messageWindow.creatingContactHistory && partner) {
-			no_changes = false;
-			messageWindow.fakeRequestDelete('crm/Partners/' + partner + '/ContactHistory/' + messageWindow.newContactHistoryKey, 'resync', completion, function(resp) {
-				messageWindow.newContactHistoryKey = null;
-			});
-		}
-		if (messageWindow.newAutorecordKey && !messageWindow.creatingAutorecord && partner) {
-			no_changes = false;
-			messageWindow.fakeRequestDelete('crm/Partners/' + partner + '/ContactAutorecord/' + messageWindow.newAutorecordKey, 'resync', completion, function(resp) {
-				messageWindow.newAutorecordKey = null;
-			});
-		}
-		if (messageWindow.newPartnerKey && !messageWindow.creatingPartner) {
-			no_changes = false;
-			messageWindow.fakeRequestDelete('partner/Partners/' + messageWindow.newPartnerKey, 'resync', completion, function(resp) {
-				messageWindow.newPartnerKey = null;
-			});
-		}
-		
 		// If no requests are pending, call completion now.
 		if (!kardiacrm.isPending('resync')) {
 			completion(no_changes);
@@ -555,32 +442,30 @@ var messageWindow = {
 		if (!event) { // only redo email address list if it wasn't a click event
 			
 			// Make a note of current field values, and save previous ones.
-			messageWindow.prevData = {};
-			for(var k in messageWindow.curData)
-				messageWindow.prevData[k] = messageWindow.curData[k];
-			messageWindow.curData.assignee = messageWindow.jQuery("#todo-assignee")[0].value;
-			messageWindow.curData.todotype = messageWindow.jQuery("#todo-type")[0].value;
-			messageWindow.curData.roletype = messageWindow.jQuery("#newperson-role")[0].value;
-			messageWindow.curData.days = messageWindow.jQuery("#todo-days")[0].value;
-			messageWindow.curData.first = messageWindow.jQuery("#newperson-first")[0].value;
-			messageWindow.curData.last = messageWindow.jQuery("#newperson-last")[0].value;
-			messageWindow.curData.email = messageWindow.jQuery("#newperson-email")[0].value;
-			messageWindow.curData.todo_comment = messageWindow.jQuery("#todo-comment")[0].value;
+			messageWindow.curData.assignee[0]/* TODO this and below only works for 1 recipient */ = messageWindow.jQuery("#todo-assignee")[0].value;
+			messageWindow.curData.todotype[0] = messageWindow.jQuery("#todo-type")[0].value;
+			messageWindow.curData.roletype[0] = messageWindow.jQuery("#newperson-role")[0].value;
+			messageWindow.curData.days[0] = messageWindow.jQuery("#todo-days")[0].value;
+			messageWindow.curData.first[0] = messageWindow.jQuery("#newperson-first")[0].value;
+			messageWindow.curData.last[0] = messageWindow.jQuery("#newperson-last")[0].value;
+			messageWindow.curData.email[0] = messageWindow.jQuery("#newperson-email")[0].value;
+			messageWindow.curData.todo_comment[0] = messageWindow.jQuery("#todo-comment")[0].value;
 	
 			// Save current values of fields that may be re-used when the user re-opens
 			// this screen later on.
-			if (messageWindow.curData.assignee)
-				kardiacrm.last_assignee = messageWindow.curData.assignee;
-			if (messageWindow.curData.todotype)
-				kardiacrm.last_todo_type = messageWindow.curData.todotype;
-			if (messageWindow.curData.roletype !== null)
-				kardiacrm.last_role_type = messageWindow.curData.roletype;
-			if (messageWindow.curData.days)
-				kardiacrm.last_due_days = messageWindow.curData.days;
+			if (messageWindow.curData.assignee[0])
+				kardiacrm.last_assignee = messageWindow.curData.assignee[0];
+			if (messageWindow.curData.todotype[0])
+				kardiacrm.last_todo_type = messageWindow.curData.todotype[0];
+			if (messageWindow.curData.roletype[0] !== null)
+				kardiacrm.last_role_type = messageWindow.curData.roletype[0];
+			if (messageWindow.curData.days[0])
+				kardiacrm.last_due_days = messageWindow.curData.days[0];
 	
 			// Find recipient(s) of email
 			var parser = Components.classes["@mozilla.org/messenger/headerparser;1"].getService(Components.interfaces["nsIMsg" + "HeaderParser"]); // workaround for overzealous regex on AMO.
-				
+			
+			messageWindow.isNewRecipient = [];
 			messageWindow.recipientAddresses=[];
 			messageWindow.recipientFullNames=[];
 			messageWindow.recipientFirstNames=[];
@@ -588,8 +473,6 @@ var messageWindow = {
 	
 			var i=1;
 			var field = document.getElementById("addressCol2#" + i);
-			if (document.getElementById("contact-which-recipient"))
-				document.getElementById("contact-which-recipient").removeAllItems();
 			
 			while (field) {
 				if (field.value && field.value.trim().length > 0) {
@@ -597,6 +480,7 @@ var messageWindow = {
 					var addressArray = {};
 					var nameArray = {};
 					parser.parseHeadersWithArray(recipient, addressArray, nameArray, {});
+					messageWindow.isNewRecipient.push(false);
 					messageWindow.recipientAddresses.push(addressArray.value[0]);
 					var fullName = nameArray.value[0];
 					messageWindow.recipientFullNames.push(fullName);
@@ -623,13 +507,11 @@ var messageWindow = {
 						messageWindow.recipientFirstNames.push(fullName);
 						messageWindow.recipientLastNames.push("");
 					}
-					document.getElementById("contact-which-recipient").appendItem(recipient, addressArray.value[0], null);
-						
 				}
 	
 				field = document.getElementById("addressCol2#" + ++i);
 			}
-			document.getElementById("contact-which-recipient").selectedIndex = 0;
+			// TODO document.getElementById("contact-which-recipient").selectedIndex = 0;
 
 			// update email address list
 			if (messageWindow.recipientAddresses.length > 0) messageWindow.findRecipientEmails(messageWindow.recipientAddresses);
@@ -640,22 +522,21 @@ var messageWindow = {
 				// Is recipient in Kardia?  If not, note that this is a new recipient so that we
 				// auto-create a record in Kardia for them when the user wants to record the
 				// email or whatnot.
-				messageWindow.isNewRecipient = false;
-				if (kardiacrm.partners_loaded && messageWindow.recipientAddresses.length > 0
-					&& messageWindow.getEmailIndex(messageWindow.recipientAddresses[y]) < 0)
+				for (var i=0; i<messageWindow.recipientAddresses.length; i++) {
+					messageWindow.isNewRecipient[i] = false;
+					if (messageWindow.getEmailIndex(messageWindow.recipientAddresses[i]) < 0)
 					messageWindow.isNewRecipient = true;
-
+				}
 
 				// The Message ID can't already be in the Kardia DB, because it doesn't exist yet.
 				// The note or task cannot be saved until the email is sent, because that is when the ID is generated.
 			
-				var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[document.getElementById("contact-which-recipient").selectedIndex]);
+				var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[0]); // TODO document.getElementById("contact-which-recipient").selectedIndex]);
 
 				// Look for a Contact Auto-Record entry in the database, and automatically
 				// select that option if so (and set the newAutorecordKey, so that if the user
 				// un-checks the box, we can delete the entry from Kardia).
 				//
-				// TODO AJT should this really be here??
 				// FIXME - this currently only works for the simple case of one autorecord entry
 				// for the partner.  It does not handle override entries (one system-wide enabled
 				// for the partner, and one specific to the collaborator but which is turned off),
@@ -663,7 +544,6 @@ var messageWindow = {
 				// will need to update this to solve the override problem once override capability
 				// is exposed in the web UI.
 				//
-				// TODO AJT testing
 				// TODO remove partner_data_loaded?
 				if (kardiacrm.partner_data_loaded && idx >= 0 && mainWindow.autorecord[idx]) {
 					var has_autorecord = false;
@@ -676,7 +556,7 @@ var messageWindow = {
 					}
 					if (has_autorecord) {
 						messageWindow.jQuery("#record-future").prop("checked", true);
-						messageWindow.newAutorecordKey = has_autorecord;
+						messageWindow.newAutorecordKey[0 /* TODO*/] = has_autorecord;
 					}
 				}
 
@@ -692,121 +572,123 @@ var messageWindow = {
 			});
 		}
 
-		recipientIndex = document.getElementById("contact-which-recipient").selectedIndex;
+		recipientIndex = 0;// TODO document.getElementById("contact-which-recipient").selectedIndex;
 
 		// Whether to show the new person info box at bottom
-		if ((messageWindow.jQuery("#record-contact").prop("checked") || messageWindow.jQuery("#record-todo").prop("checked") || messageWindow.jQuery("#record-future").prop("checked")) && messageWindow.isNewRecipient) {
-			messageWindow.jQuery("#newperson-box").css({display: "block"});
-			messageWindow.creatingPartner = true;
-			messageWindow.creatingLocation = true;
-			messageWindow.creatingEmail = true;
+		if (messageWindow.recipientAddresses.length < 2) {
+			if ((messageWindow.jQuery("#record-contact").prop("checked") || messageWindow.jQuery("#record-todo").prop("checked") || messageWindow.jQuery("#record-future").prop("checked")) && messageWindow.isNewRecipient) {
+				messageWindow.jQuery("#newperson-box").css({display: "block"});
+				messageWindow.creatingPartner[0] = true;
+				messageWindow.creatingLocation[0] = true;
+				messageWindow.creatingEmail[0] = true;
 
-			// Fill the editboxes for email, first name, and last name.
-			if (!messageWindow.jQuery("#newperson-email")[0].value) {
-				messageWindow.jQuery("#newperson-email").prop("value", messageWindow.recipientAddresses[recipientIndex]);
-				messageWindow.curData.email = messageWindow.jQuery("#newperson-email")[0].value;
-			}
-			if (!messageWindow.jQuery("#newperson-first")[0].value) {
-				messageWindow.jQuery("#newperson-first").prop("value", messageWindow.recipientFirstNames[recipientIndex]);
-				messageWindow.curData.first = messageWindow.jQuery("#newperson-first")[0].value;
-			}
-			if (!messageWindow.jQuery("#newperson-last")[0].value) {
-				messageWindow.jQuery("#newperson-last").prop("value", messageWindow.recipientLastNames[recipientIndex]);
-				messageWindow.curData.last = messageWindow.jQuery("#newperson-last")[0].value;
-			}
+				// Fill the editboxes for email, first name, and last name.
+				if (!messageWindow.jQuery("#newperson-email")[0].value) {
+					messageWindow.jQuery("#newperson-email").prop("value", messageWindow.recipientAddresses[recipientIndex]);
+					messageWindow.curData.email[0] = messageWindow.jQuery("#newperson-email")[0].value;
+				}
+				if (!messageWindow.jQuery("#newperson-first")[0].value) {
+					messageWindow.jQuery("#newperson-first").prop("value", messageWindow.recipientFirstNames[recipientIndex]);
+					messageWindow.curData.first[0] = messageWindow.jQuery("#newperson-first")[0].value;
+				}
+				if (!messageWindow.jQuery("#newperson-last")[0].value) {
+					messageWindow.jQuery("#newperson-last").prop("value", messageWindow.recipientLastNames[recipientIndex]);
+					messageWindow.curData.last[0] = messageWindow.jQuery("#newperson-last")[0].value;
+				}
 
-			// Fill in the role options
-			messageWindow.jQuery("#newperson-role menupopup")
-				.empty()
-				.append(
-					messageWindow.jQuery("<menuitem>", {
-						value: '',
-						label: '(none)',
-					})
-				);
-			for (var i in kardiacrm.data.collabTypeList) {
+				// Fill in the role options
 				messageWindow.jQuery("#newperson-role menupopup")
+					.empty()
 					.append(
 						messageWindow.jQuery("<menuitem>", {
-							value: '' + i,
-							label: kardiacrm.data.collabTypeList[i].label,
+							value: '',
+							label: '(none)',
 						})
 					);
-				if (kardiacrm.last_role_type !== null)
-					messageWindow.jQuery("#newperson-role")[0].value = kardiacrm.last_role_type;
-			}
-		}
-		else {
-			messageWindow.jQuery("#newperson-box").css({display: "none"});
-			messageWindow.creatingPartner = false; 
-			messageWindow.creatingLocation = false; 
-			messageWindow.creatingEmail = false;
-		}
-
-		// Whether to create a contact history record for this email
-		if (messageWindow.jQuery("#record-contact").prop("checked")) {
-			messageWindow.creatingContactHistory = true;
-		}
-		else {
-			messageWindow.creatingContactHistory = false;
-		}
-
-		// Whether to create the collaborator record (role not '(none)')
-		if (messageWindow.creatingPartner && messageWindow.jQuery("#newperson-role")[0].value) {
-			messageWindow.creatingCollab = true;
-		}
-		else {
-			messageWindow.creatingCollab = false;
-		}
-
-		// Whether to create an autorecord entry for this person
-		if (messageWindow.jQuery("#record-future").prop("checked")) {
-			messageWindow.creatingAutorecord = true;
-		}
-		else {
-			messageWindow.creatingAutorecord = false;
-		}
-
-		// Whether to show the new task info
-		if (messageWindow.jQuery("#record-todo").prop("checked")) {
-			messageWindow.jQuery("#todo-options").css({display: "block"});
-			messageWindow.creatingTodo = true;
-
-			// Fill in the task type options and assignee options
-			messageWindow.jQuery("#todo-type menupopup").empty();
-			for (var i in kardiacrm.data.todoTypeList) {
-				messageWindow.jQuery("#todo-type menupopup")
-					.append(
-						messageWindow.jQuery("<menuitem>", {
-							value: '' + i,
-							label: kardiacrm.data.todoTypeList[i].type_label,
-						})
-					);
-				if (kardiacrm.last_todo_type)
-					messageWindow.jQuery("#todo-type")[0].value = kardiacrm.last_todo_type;
-			}
-			messageWindow.jQuery("#todo-assignee menupopup").empty();
-			for (var i in kardiacrm.data.staffList) {
-				if (kardiacrm.data.staffList[i].is_staff && kardiacrm.data.staffList[i].kardia_login) {
-					messageWindow.jQuery("#todo-assignee menupopup")
+				for (var i in kardiacrm.data.collabTypeList) {
+					messageWindow.jQuery("#newperson-role menupopup")
 						.append(
 							messageWindow.jQuery("<menuitem>", {
-								value: kardiacrm.data.staffList[i].partner_id,
-								label: kardiacrm.data.staffList[i].partner_name,
+								value: '' + i,
+								label: kardiacrm.data.collabTypeList[i].label,
 							})
 						);
-					if (kardiacrm.last_assignee)
-						messageWindow.jQuery("#todo-assignee")[0].value = kardiacrm.last_assignee;
-					else
-						messageWindow.jQuery("#todo-assignee")[0].value = mainWindow.myId;
+					if (kardiacrm.last_role_type !== null)
+						messageWindow.jQuery("#newperson-role")[0].value = kardiacrm.last_role_type;
 				}
 			}
-			if (kardiacrm.last_due_days)
-				messageWindow.jQuery("#todo-days")[0].value = '' + kardiacrm.last_due_days;
-		}
-		else {
-			messageWindow.jQuery("#todo-options").css({display: "none"});
-			messageWindow.creatingTodo = false;
+			else {
+				messageWindow.jQuery("#newperson-box").css({display: "none"});
+				messageWindow.creatingPartner[0] = false; 
+				messageWindow.creatingLocation[0] = false; 
+				messageWindow.creatingEmail[0] = false;
+			}
+
+			// Whether to create a contact history record for this email
+			if (messageWindow.jQuery("#record-contact").prop("checked")) {
+				messageWindow.creatingContactHistory[0] = true;
+			}
+			else {
+				messageWindow.creatingContactHistory[0] = false;
+			}
+
+			// Whether to create the collaborator record (role not '(none)')
+			if (messageWindow.creatingPartner[0] && messageWindow.jQuery("#newperson-role")[0].value) {
+				messageWindow.creatingCollab[0] = true;
+			}
+			else {
+				messageWindow.creatingCollab[0] = false;
+			}
+
+			// Whether to create an autorecord entry for this person
+			if (messageWindow.jQuery("#record-future").prop("checked")) {
+				messageWindow.creatingAutorecord[0] = true;
+			}
+			else {
+				messageWindow.creatingAutorecord[0] = false;
+			}
+
+			// Whether to show the new task info
+			if (messageWindow.jQuery("#record-todo").prop("checked")) {
+				messageWindow.jQuery("#todo-options").css({display: "block"});
+				messageWindow.creatingTodo[0] = true;
+
+				// Fill in the task type options and assignee options
+				messageWindow.jQuery("#todo-type menupopup").empty();
+				for (var i in kardiacrm.data.todoTypeList) {
+					messageWindow.jQuery("#todo-type menupopup")
+						.append(
+							messageWindow.jQuery("<menuitem>", {
+								value: '' + i,
+								label: kardiacrm.data.todoTypeList[i].type_label,
+							})
+						);
+					if (kardiacrm.last_todo_type)
+						messageWindow.jQuery("#todo-type")[0].value = kardiacrm.last_todo_type;
+				}
+				messageWindow.jQuery("#todo-assignee menupopup").empty();
+				for (var i in kardiacrm.data.staffList) {
+					if (kardiacrm.data.staffList[i].is_staff && kardiacrm.data.staffList[i].kardia_login) {
+						messageWindow.jQuery("#todo-assignee menupopup")
+							.append(
+								messageWindow.jQuery("<menuitem>", {
+									value: kardiacrm.data.staffList[i].partner_id,
+									label: kardiacrm.data.staffList[i].partner_name,
+								})
+							);
+						if (kardiacrm.last_assignee)
+							messageWindow.jQuery("#todo-assignee")[0].value = kardiacrm.last_assignee;
+						else
+							messageWindow.jQuery("#todo-assignee")[0].value = mainWindow.myId;
+					}
+				}
+				if (kardiacrm.last_due_days)
+					messageWindow.jQuery("#todo-days")[0].value = '' + kardiacrm.last_due_days;
+			}
+			else {
+				messageWindow.jQuery("#todo-options").css({display: "none"});
+				messageWindow.creatingTodo[0] = false;
+			}
 		}
 
 		// This footer is different in that we want to re-initialize every time the email
@@ -822,6 +704,18 @@ var messageWindow = {
 			// disable until all data is ready
 			messageWindow.disableControls();
 			messageWindow.jQuery.when(messageWindow.recipient_data_loaded_deferred).then(function(value) {
+				if (messageWindow.recipientAddresses.length > 1) {
+					messageWindow.jQuery("#contact-which-recipient").show();
+					messageWindow.jQuery("#record-contact").hide();
+					messageWindow.jQuery("#record-future").hide();
+					messageWindow.jQuery("#record-todo").hide();
+				}
+				else {
+					messageWindow.jQuery("#contact-which-recipient").hide();
+					messageWindow.jQuery("#record-contact").show();
+					messageWindow.jQuery("#record-future").show();
+					messageWindow.jQuery("#record-todo").show();
+				}
 				messageWindow.log("initialized");
 				messageWindow.enableControls();
 				messageWindow.initialized = true;
@@ -883,6 +777,7 @@ var messageWindow = {
 					if (resp) {
 						for (key in resp) {
 							if (key != "@id") {
+								console.log(key);
 								var recipient = resp[key];
 								messageWindow.emailAddresses.push(addressArray[0]);
 								messageWindow.names.push(recipient.partner_name);
@@ -892,6 +787,30 @@ var messageWindow = {
 					}
 					getNext(addressArray.slice(1));
 				});
+				messageWindow.curData.assignee.push(null);
+				messageWindow.curData.todotype.push(null);
+				messageWindow.curData.roletype.push(null);
+				messageWindow.curData.days.push(null);
+				messageWindow.curData.first.push(null);
+				messageWindow.curData.last.push(null);
+				messageWindow.curData.email.push(null);
+				messageWindow.curData.todo_comment.push(null);
+
+				messageWindow.creatingPartner.push(false);
+				messageWindow.creatingLocation.push(false);
+				messageWindow.creatingEmail.push(false);
+				messageWindow.creatingCollab.push(false);
+				messageWindow.creatingContactHistory.push(false);
+				messageWindow.creatingAutorecord.push(false);
+				messageWindow.creatingTodo.push(false);
+
+				messageWindow.newPartnerKey.push(null);
+				messageWindow.newLocationKey.push(null);
+				messageWindow.newEmailKey.push(null);
+				messageWindow.newCollabKey.push(null);
+				messageWindow.newContactHistoryKey.push(null);
+				messageWindow.newAutorecordKey.push(null);
+				messageWindow.newTodoKey.push(null);
 			}
 			else {
 				messageWindow.recipient_data_loaded_deferred.resolve();
@@ -903,6 +822,25 @@ var messageWindow = {
 		messageWindow.emailAddresses = [];
 		messageWindow.names = [];
 		messageWindow.ids = [];
+		
+		messageWindow.curData = { assignee:[], todotype:[], roletype:[], days:[], first:[], last:[], email:[], todo_comment:[] };
+
+		messageWindow.creatingPartner = [];
+		messageWindow.creatingLocation = [];
+		messageWindow.creatingEmail = [];
+		messageWindow.creatingCollab = [];
+		messageWindow.creatingContactHistory = [];
+		messageWindow.creatingAutorecord = [];
+		messageWindow.creatingTodo = [];
+
+		messageWindow.newPartnerKey = [];
+		messageWindow.newLocationKey = [];
+		messageWindow.newEmailKey = [];
+		messageWindow.newCollabKey = [];
+		messageWindow.newContactHistoryKey = [];
+		messageWindow.newAutorecordKey = [];
+		messageWindow.newTodoKey = [];
+
 		getNext(addrs);
 	},
 
@@ -938,13 +876,13 @@ var messageWindow = {
 	},
 
 	// Bottom half of the reset logic; this is where the work is done.
-	reset_bh: function () {
+	reset_bh: function () {	
 		messageWindow.log("reset_bh()");
 		messageWindow.disableControls();
 
 		messageWindow.initialized = false;
 		messageWindow.do_reset=false;
-		messageWindow.isNewRecipient=false;
+		messageWindow.isNewRecipient = [];
 		messageWindow.recipientAddresses=[];
 		messageWindow.recipientFullNames=[];
 		messageWindow.recipientFirstNames=[];
@@ -954,28 +892,28 @@ var messageWindow = {
 		messageWindow.names = [];
 		messageWindow.ids = [];
 
-		messageWindow.curData = { assignee:null, todotype:null, roletype:null, days:null, first:null, last:null, email:null, todo_comment:null };
-		messageWindow.prevData = { };
+		messageWindow.curData = { assignee:[], todotype:[], roletype:[], days:[], first:[], last:[], email:[], todo_comment:[] };
 
-		messageWindow.creatingPartner=false;
-		messageWindow.creatingLocation=false;
-		messageWindow.creatingEmail=false;
-		messageWindow.creatingCollab=false;
-		messageWindow.creatingContactHistory=false;
-		messageWindow.creatingAutorecord=false;
-		messageWindow.creatingTodo=false;
+		messageWindow.creatingPartner = [];
+		messageWindow.creatingLocation = [];
+		messageWindow.creatingEmail = [];
+		messageWindow.creatingCollab = [];
+		messageWindow.creatingContactHistory = [];
+		messageWindow.creatingAutorecord = [];
+		messageWindow.creatingTodo = [];
 
-		messageWindow.newPartnerKey=null;
-		messageWindow.newLocationKey=null;
-		messageWindow.newEmailKey=null;
-		messageWindow.newCollabKey=null;
-		messageWindow.newContactHistoryKey=null;
-		messageWindow.newAutorecordKey=null;
-		messageWindow.newTodoKey=null;
+		messageWindow.newPartnerKey = [];
+		messageWindow.newLocationKey = [];
+		messageWindow.newEmailKey = [];
+		messageWindow.newCollabKey = [];
+		messageWindow.newContactHistoryKey = [];
+		messageWindow.newAutorecordKey = [];
+		messageWindow.newTodoKey = [];
 
 		messageWindow.jQuery("#record-contact").removeProp("checked");
 		messageWindow.jQuery("#record-todo").removeProp("checked");
 		messageWindow.jQuery("#record-future").removeProp("checked");
+		messageWindow.jQuery("#contact-which-recipient").hide();
 
 		// Chain to other queued operations that could not be done until
 		// after the reset finished.
@@ -987,10 +925,24 @@ var messageWindow = {
 		}
 	},
 
+	// Called when the contents of the recipients textbox is changed
 	customOnRecipientsChanged : function() {
 		messageWindow.initialized = false;
 		messageWindow.reEvaluate(null);
-	}	
+	},	
+
+	// Called when user clicks the "Recipients list" button 
+	// Shows dialog allowing them to pick which actions occur for which recipients
+	chooseRecipientsToRecord: function() {
+		openDialog("chrome://kardia/content/compose-record-dialog.xul",
+			"Choose Recipients to Record Email/Task",
+			"resizable,chrome,modal,centerscreen",
+			messageWindow.recipientAddresses, messageWindow.recipientFirstNames, messageWindow.recipientLastNames,
+			messageWindow.emailAddresses, messageWindow.names,
+			kardiacrm,
+			mainWindow.myId,
+			messageWindow);
+	}
 };
 
 addEventListener("load", function() {
@@ -1005,19 +957,10 @@ addEventListener("load", function() {
 	        .getService(Components.interfaces.nsIConsoleService);
 	messageWindow.log("load");
 
-	// Add the kardia icons/flags when the message is rendered.
-	/*gMessageListeners.push ({
-		onEndHeaders: function () {*/
-			kardiacrm.lastMessageWindow = window;
-			messageWindow.do_reeval = true;
-			messageWindow.do_sidebar = true;
-			messageWindow.reset();
-	/*	},
-		onStartHeaders: function() {},
-		onStartAttachments: function () {},
-		onEndAttachments: function () {},
-		onBeforeShowHeaderPane: function () {},
-	});*/
+	kardiacrm.lastMessageWindow = window;
+	messageWindow.do_reeval = true;
+	messageWindow.do_sidebar = true;
+	messageWindow.reset();
 
 	// Trap interactions with the checkboxes
 	messageWindow.jQuery("#record-contact").click(function(event) {

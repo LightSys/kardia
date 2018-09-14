@@ -33,7 +33,7 @@
 					<menupopup oncommand="">
 					</menupopup>
 				</menulist> -->
-				<button id="contact-which-recipient" oncommand="console.log('hi')">
+				<button id="contact-which-recipient" label="Record this email or create a task in Kardia..." oncommand="messageWindow.chooseRecipientsToRecord()"/>
 				<checkbox id="record-contact" checked="false" label="Record this email in Kardia"/>
 				<checkbox id="record-future" checked="false" label="Automatically record future emails with this person"/>
 				<checkbox id="record-todo" checked="false" label="Create a Task"/>
