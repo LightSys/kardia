@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+
+<overlay id="kardia" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<!-- JavaScript file -->
+	<script type="application/javascript" src="chrome://kardia/content/compose-record-overlay.js"/>
+
+	<!-- override addressing widget input box to add listener -->
+	<textbox id="addressCol2#1" class="plain textbox-addressingWidget uri-element"
+    	aria-labelledby="addressCol1#1"
+        type="autocomplete" flex="1"
+        autocompletesearch="mydomain addrbook ldap news"
+        autocompletesearchparam="{}"
+        timeout="300"
+        maxrows="6"
+        completedefaultindex="true" forcecomplete="true"
+        minresultsforpopup="2" ignoreblurwhilesearching="true"
+        ontextentered="awRecipientTextCommand(param, this)"
+        onchange="messageWindow.customOnRecipientsChanged();"
+        oninput="onRecipientsChanged();"
+        onkeypress="awRecipientKeyPress(event, this)"
+        onkeydown="awRecipientKeyDown(event, this)"
+        disableonsend="true">
+    </textbox>
+
+	<!-- insert contact history dialog at end of message display -->
+	<vbox id="appcontent">
+		<vbox id="contact-box" flex="0" insertafter="findbar">
+			<hbox id="contact-options" align="center">
+				<!--<menulist id="contact-which-recipient">
+					<menupopup oncommand="">
+					</menupopup>
+				</menulist> -->
+				<button id="contact-which-recipient" oncommand="console.log('hi')">
+				<checkbox id="record-contact" checked="false" label="Record this email in Kardia"/>
+				<checkbox id="record-future" checked="false" label="Automatically record future emails with this person"/>
+				<checkbox id="record-todo" checked="false" label="Create a Task"/>
+			</hbox>
+			<vbox id="newperson-box" align="start">
+				<hbox align="center">
+					<label value="New Person - Email:"/>
+					<textbox id="newperson-email" width="180"/>
+					<spacer flex="1" width="5"/>
+					<label value="First Name:"/>
+					<textbox id="newperson-first" width="90"/>
+					<spacer flex="1" width="5"/>
+					<label value="Last Name:"/>
+					<textbox id="newperson-last" width="90"/>
+					<spacer flex="1" width="5"/>
+					<label value="My Role:"/>
+					<menulist id="newperson-role">
+						<menupopup>
+						<menuitem label="(none)" value=""/>
+					</menupopup>
+					</menulist>
+				</hbox>
+			</vbox>
+			<hbox id="todo-hbox" align="center">
+				<hbox id="todo-options" align="center">
+					<label value="Task Type:"/>
+					<menulist id="todo-type">
+						<menupopup>
+							<menuitem label="(none)" value=""/>
+						</menupopup>
+					</menulist>
+					<spacer flex="1" width="5"/>
+					<label value="Days 'til Due:"/>
+					<textbox id="todo-days" width="40"/>
+					<spacer flex="1" width="5"/>
+					<label value="Assign To:"/>
+					<menulist id="todo-assignee">
+						<menupopup>
+							<menuitem label="(nobody)" value=""/>
+						</menupopup>
+					</menulist>
+					<spacer flex="1" width="5"/>
+					<label value="Comment:"/>
+					<textbox id="todo-comment" width="225"/>
+				</hbox>
+			</hbox>
+		</vbox>
+	</vbox>
+
+	<!-- contact footer -->
+	<box id="kardia-contact-footer"/>
+
+
+	
+</overlay>
