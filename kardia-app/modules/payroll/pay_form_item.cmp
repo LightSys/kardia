@@ -316,7 +316,7 @@ pay_form_item "widget/component-decl"
 					SET
 						:a_actual_amount = constrain( (
 							SELECT
-								((isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'A') > 0, :i:a_actual_amount, $0)), $0) - isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'GEBP') > 0 and (:it:a_payroll_item_class_code != 'G' or :i:a_payroll_id != " + :this:payroll_id + ") and ((:it:a_payroll_item_type_code != 'MDE' and :it:a_payroll_item_type_code != 'SSE') or :i:a_payroll_id != " + :this:payroll_id + "), :i:a_actual_amount, $0)), $0)) / 1.0765 - isnull(sum(condition(:it:a_payroll_item_class_code == 'G' and :it:a_payroll_item_type_code != " + quote(:this:type_code) + " and :i:a_payroll_id = " + :this:payroll_id + ", :i:a_actual_amount, $0)), $0) )
+								truncate((isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'A') > 0, :i:a_actual_amount, $0)), $0) - isnull(sum(condition(charindex(:it:a_payroll_item_class_code, 'GEBP') > 0 and (:it:a_payroll_item_class_code != 'G' or :i:a_payroll_id != " + :this:payroll_id + ") and ((:it:a_payroll_item_type_code != 'MDE' and :it:a_payroll_item_type_code != 'SSE') or :i:a_payroll_id != " + :this:payroll_id + "), :i:a_actual_amount, $0)), $0)) / 1.0765 - isnull(sum(condition(:it:a_payroll_item_class_code == 'G' and :it:a_payroll_item_type_code != " + quote(:this:type_code) + " and :i:a_payroll_id = " + :this:payroll_id + ", :i:a_actual_amount, $0)), $0), 2)
 							FROM
 								/apps/kardia/data/Kardia_DB/a_payroll/rows y,
 								/apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
