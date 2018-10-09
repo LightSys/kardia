@@ -111,19 +111,6 @@ var messageWindow = {
 		return null;
 	},
 
-	// TODO replace with kardiacrm.requestPost, requestGet 
-	fakeRequestPost: function(url, data, dclass, completion, callback) {
-		console.log("Post: " + url + " " + dclass);
-		console.log(data);
-		callback({Location: url+"/12345?args=blah"});
-	},
-
-	fakeRequestGet: function(url, dclass, completion, callback) {
-		console.log("Get: " + url + " " + dclass);
-		callback({partner_id: 12345});
-	},
-
-
 	// This function makes the necessary updates into the Kardia database to reflect
 	// what the user has asked for on this message display window.
 	//
@@ -147,9 +134,9 @@ var messageWindow = {
 		////
 		for (var i=0; i<messageWindow.recipientAddresses.length; i++) {
 			if (messageWindow.creatingPartner[i] && messageWindow.newPartnerKey[i] === null) {
-				messageWindow.fakeRequestGet('partner/NextPartnerKey?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic', 'resync', completion, function(resp) {
+				kardiacrm.requestGet('partner/NextPartnerKey?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic', 'resync', completion, function(resp) {
 					if (resp) {
-						messageWindow.fakeRequestPost('partner/Partners', 
+						kardiacrm.requestPost('partner/Partners', 
 								{
 								p_partner_key: resp.partner_id,
 								p_creating_office: ' ',
@@ -204,7 +191,7 @@ var messageWindow = {
 			// Create partner location record?
 			if (messageWindow.creatingLocation[index] && messageWindow.newLocationKey[index] === null) {
 				no_changes = false;
-				messageWindow.fakeRequestPost('partner/Partners/' + partner + '/Addresses', 
+				kardiacrm.requestPost('partner/Partners/' + partner + '/Addresses', 
 						{
 						p_partner_key: partner,
 						p_revision_id: 0,
@@ -225,7 +212,7 @@ var messageWindow = {
 			// Create collab record?
 			if (messageWindow.creatingCollab[index] && messageWindow.newCollabKey[index] === null && messageWindow.curData.roletype[index]) {
 				no_changes = false;
-				messageWindow.fakeRequestPost('crm/Partners/' + partner + '/Collaborators', 
+				kardiacrm.requestPost('crm/Partners/' + partner + '/Collaborators', 
 						{
 						p_partner_key: partner,
 						e_collaborator: mainWindow.myId,
@@ -249,7 +236,7 @@ var messageWindow = {
 				no_changes = false;
 				var duedate = new Date(date);
 				duedate.setDate(duedate.getDate() + parseInt(messageWindow.curData.days[index]));
-				messageWindow.fakeRequestPost('crm/Partners/' + partner + '/Todos', 
+				kardiacrm.requestPost('crm/Partners/' + partner + '/Todos', 
 						{
 						e_todo_type_id: parseInt(messageWindow.curData.todotype[index]),
 						e_todo_desc: messageWindow.curData.todo_comment[index],
@@ -273,7 +260,7 @@ var messageWindow = {
 
 			// Create email record?
 			if (messageWindow.creatingEmail[index] && messageWindow.newEmailKey[index] === null && messageWindow.curData.email[index]) {
-				messageWindow.fakeRequestPost('partner/Partners/' + partner + '/ContactInfo', 
+				kardiacrm.requestPost('partner/Partners/' + partner + '/ContactInfo', 
 						{
 						p_partner_key: partner,
 						p_contact_type: 'E',
@@ -368,7 +355,7 @@ var messageWindow = {
 				// Do the create if we have a valid email contact type.
 				if (contact_type) {
 					no_changes = false;
-					messageWindow.fakeRequestPost('crm/Partners/' + partner + '/ContactHistory', 
+					kardiacrm.requestPost('crm/Partners/' + partner + '/ContactHistory', 
 							{
 							p_partner_key: partner,
 							e_contact_history_type: contact_type,
@@ -397,7 +384,7 @@ var messageWindow = {
 				// Do the create for the e_contact_autorecord data
 				if (contact_type) {
 					no_changes = false;
-					messageWindow.fakeRequestPost('crm/Partners/' + partner + '/ContactAutorecord',
+					kardiacrm.requestPost('crm/Partners/' + partner + '/ContactAutorecord',
 							{
 							p_partner_key: partner,
 							e_collaborator_id: mainWindow.myId,
