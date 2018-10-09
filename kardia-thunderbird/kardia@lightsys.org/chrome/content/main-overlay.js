@@ -4075,7 +4075,7 @@ function doDeleteHttpRequest(url, authenticate, username, password, doAfter) {
 // clicking the button takes you to that person in the Kardia pane
 function addKardiaButton(win){
 	// save list of header views we need to check
-	if (win.gExpandedHeaderView.from) {
+	if (win.gExpandedHeaderView && win.gExpandedHeaderView.from) {
 		var headersArray = [win.gExpandedHeaderView.from.textNode.childNodes, win.gExpandedHeaderView.to.textNode.childNodes, win.gExpandedHeaderView.cc.textNode.childNodes, win.gExpandedHeaderView.bcc.textNode.childNodes];
 		// iterate through header views
 		for (var j=0;j<headersArray.length;j++) {

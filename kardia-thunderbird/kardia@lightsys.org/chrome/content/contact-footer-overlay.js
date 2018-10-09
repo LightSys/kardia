@@ -521,6 +521,9 @@ var contactFooter = {
 	// to this controller function.
 	//
 	reEvaluate: function(event) {
+		// Skip everything if no message display window
+		if (typeof gMessageDisplay == "undefined") return;
+
 		// If reset pending, don't do this, instead defer until later.
 		if (contactFooter.do_reset) {
 			contactFooter.do_reeval = true;
@@ -561,7 +564,7 @@ var contactFooter = {
 		}
 
 		// Find author of email
-		if (gMessageDisplay && gMessageDisplay.displayedMessage) {
+		if (gMessageDisplay.displayedMessage) {
 			// if a message is displayed, show the toolbar
 			contactFooter.jQuery("#contact-box").prop("hidden", false);
 
@@ -598,7 +601,7 @@ var contactFooter = {
 		// Things we do only if we've just switched to this particular email message
 		if (!contactFooter.initialized) {
 			// the Deferred object will call the init code only once partner_data_loaded = true;
-			$.when(kardiacrm.partner_data_loaded_deferred).then( function(value) {
+			contactFooter.jQuery.when(kardiacrm.partner_data_loaded_deferred).then( function(value) {
 			
 				// Is author in Kardia?  If not, note that this is a new sender so that we
 				// auto-create a record in Kardia for them when the user wants to record the

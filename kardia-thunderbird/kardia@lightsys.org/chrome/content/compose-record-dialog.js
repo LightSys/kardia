@@ -56,19 +56,21 @@ function saveChoices(){
 			messageWindow.curData.first[i] = $("#dialog-newperson-first-" + i)[0].value;
 			messageWindow.curData.last[i] = $("#dialog-newperson-last-" + i)[0].value;
 			messageWindow.curData.roletype[i] = $("#dialog-newperson-role-" + i)[0].value;
+			if (messageWindow.curData.roletype[i]) kardiacrm.last_role_type = messageWindow.curData.roletype[i];
 		}
 
 		// return todo type/days/assignto/comment, if necessary
 		if (messageWindow.creatingTodo[i]) {
 			messageWindow.curData.todotype[i] = $("#dialog-todo-type-" + i)[0].value;
+			if (messageWindow.curData.todotype[i]) kardiacrm.last_todo_type = messageWindow.curData.todotype[i];
 			messageWindow.curData.days[i] = $("#dialog-todo-days-" + i)[0].value;
+			if (messageWindow.curData.days[i]) kardiacrm.last_due_days = messageWindow.curData.days[i];
 			messageWindow.curData.assignee[i] = $("#dialog-todo-assignee-" + i)[0].value;
+			if (messageWindow.curData.assignee[i]) kardiacrm.last_assignee = messageWindow.curData.assignee[i];
 			messageWindow.curData.todo_comment[i] = $("#dialog-todo-comment-" + i)[0].value;
 		}
 
 	}
-
-	// TODO save messageWindow.curData.assignee, todotype, roletype, days in kardiacrm.last_assignee, todo_type, role_type, days
 
 	return true;
 }
@@ -124,7 +126,7 @@ function setupSection(index) {
 			$("#dialog-newperson-role-" + index)[0].value = messageWindow.curData.roletype[index];
 		}
 		else if (kardiacrm.last_role_type !== null) {
-			$("#dialog-newperson-role-" + index)[0].value = kardiacrm.last_role_type;	// TODO?
+			$("#dialog-newperson-role-" + index)[0].value = kardiacrm.last_role_type;
 		}
 	}
 
@@ -138,48 +140,6 @@ function setupSection(index) {
 	$("#dialog-record-todo-" + index).click(function(event) {
 		setSectionVisibility(index);
 	});
-
-	
-	// We are not auto-recording for messages TO a recipient
-	
-		/*var idx = messageWindow.getEmailIndex(recipientAddresses[index]);
-
-		// Look for a Contact Auto-Record entry in the database, and automatically
-		// select that option if so (and set the newAutorecordKey, so that if the user
-		// un-checks the box, we can delete the entry from Kardia).
-		//
-		// FIXME - this currently only works for the simple case of one autorecord entry
-		// for the partner.  It does not handle override entries (one system-wide enabled
-		// for the partner, and one specific to the collaborator but which is turned off),
-		// as that will require additional UI work to properly present to the user.  We
-		// will need to update this to solve the override problem once override capability
-		// is exposed in the web UI.
-		//
-		if (idx >= 0 && mainWindow.autorecord[idx]) {
-			var has_autorecord = false;
-			for(var k=0;k<mainWindow.autorecord[idx].length;k++) {
-				var ar = mainWindow.autorecord[idx][k];
-				if (ar.auto_record && (ar.collab_partner_id == mainWindow.myId || ar.auto_record_apply_all)) {
-					has_autorecord = ar.name;
-					break;
-				}
-			}
-			if (has_autorecord) {
-				$("#dialog-record-future-" + index).prop("checked", true);
-				messageWindow.newAutorecordKey = has_autorecord;
-			}
-		}
-
-		// If we're auto-recording, BUT this message isn't yet marked for recording, then
-		// mark it for recording.  We don't do this automatically when the user checks the
-		// "future" checkbox initially.  But if they close and re-open this window right
-		// away, or if they open this window on any future or past email from the same
-		// email address, this here gets triggered.
-		//
-		if ($("#dialog-record-future-" + index).prop("checked") && !$("#dialog-record-contact-" + index).prop("checked")) {
-			$("#dialog-record-contact-" + index).prop("checked", true);
-		}*/
-
 
 	// Fill in the task type options and assignee options
 	$("#dialog-todo-type-" + index + " menupopup").empty();
@@ -235,11 +195,9 @@ function setSectionVisibility(index) {
 	
 	var alreadyInKardia = (kardiaAddresses.indexOf(recipientAddresses[index]) >= 0);
 	messageWindow.creatingPartner[index] =
-		!alreadyInKardia &&	(
-			messageWindow.creatingContactHistory[index] ||
-			messageWindow.creatingAutorecord[index]
-			|| messageWindow.creatingTodo[index]
-		);
+		!alreadyInKardia &&	(	messageWindow.creatingContactHistory[index] ||
+								messageWindow.creatingAutorecord[index]		||
+								messageWindow.creatingTodo[index]);
 	messageWindow.creatingLocation[index] = messageWindow.creatingPartner[index];
 	messageWindow.creatingEmail[index] = messageWindow.creatingPartner[index];
 

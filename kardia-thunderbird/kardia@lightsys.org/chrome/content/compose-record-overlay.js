@@ -89,6 +89,12 @@ var messageWindow = {
 	newContactHistoryKey:[], 
 	newAutorecordKey:[], 
 	newTodoKey:[], 
+
+	// Info about the message is stored here once the message is sent
+	subject:null,
+	messageId:null,
+	messageBody:null,
+	messageDate:null,
 	
 	// This function extracts a new key out of the Location data that results from
 	// a POST request to create a new record.  The key is embedded in the Location:
@@ -105,22 +111,18 @@ var messageWindow = {
 		return null;
 	},
 
-	// TODO AJT
+	// TODO replace with kardiacrm.requestPost, requestGet 
 	fakeRequestPost: function(url, data, dclass, completion, callback) {
-		console.log(url + " " + data + " " + dclass);
-		callback();
+		console.log("Post: " + url + " " + dclass);
+		console.log(data);
+		callback({Location: url+"/12345?args=blah"});
 	},
-	
-	fakeRequestPatch: function(url, data, dclass, completion, callback) {
-		console.log(url + " " + data + " " + dclass);
-		callback();
+
+	fakeRequestGet: function(url, dclass, completion, callback) {
+		console.log("Get: " + url + " " + dclass);
+		callback({partner_id: 12345});
 	},
-	
-	fakeRequestDelete: function(url, dclass, completion, callback) {
-		console.log(url + " " + dclass);
-		callback();
-	},
-	
+
 
 	// This function makes the necessary updates into the Kardia database to reflect
 	// what the user has asked for on this message display window.
@@ -145,8 +147,7 @@ var messageWindow = {
 		////
 		for (var i=0; i<messageWindow.recipientAddresses.length; i++) {
 			if (messageWindow.creatingPartner[i] && messageWindow.newPartnerKey[i] === null) {
-				console.log("Creating " + messageWindow.recipientAddresses[i]);
-				kardiacrm.requestGet('partner/NextPartnerKey?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic', 'resync', completion, function(resp) {
+				messageWindow.fakeRequestGet('partner/NextPartnerKey?cx__mode=rest&cx__res_type=element&cx__res_format=attrs&cx__res_attrs=basic', 'resync', completion, function(resp) {
 					if (resp) {
 						messageWindow.fakeRequestPost('partner/Partners', 
 								{
@@ -188,8 +189,7 @@ var messageWindow = {
 		// Make sure we have a partner key.
 		var partner = messageWindow.newPartnerKey[index];
 		if (!partner && messageWindow.recipientAddresses.length > 0) {
-			// TODO not sure how to make this work...
-			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[0]); // TODO document.getElementById("contact-which-recipient").selectedIndex]); 
+			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[index]);
 			
 			if (idx >= 0) {
 				partner = messageWindow.ids[idx];
@@ -308,7 +308,7 @@ var messageWindow = {
 		// Make sure we have a partner key.
 		var partner = messageWindow.newPartnerKey[index];
 		if (!partner && messageWindow.recipientAddresses.length > 0) {
-			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[0]); // TODO document.getElementById("contact-which-recipient").selectedIndex]); 
+			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[index]);
 			if (idx >= 0) {
 				partner = messageWindow.ids[idx];
 			}
@@ -317,7 +317,7 @@ var messageWindow = {
 		// Make sure we have an email key.
 		var email = messageWindow.newEmailKey[index];
 		if (!email && messageWindow.recipientAddresses.length > 0) {
-			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[0]); // TODO document.getElementById("contact-which-recipient").selectedIndex]); 
+			var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[index]);
 			if (idx >= 0) {
 				email = mainWindow.emailIds[idx];
 			}
@@ -344,7 +344,7 @@ var messageWindow = {
 			// Create contact history record?
 			if (messageWindow.creatingContactHistory[index] && messageWindow.newContactHistoryKey[index] === null) {
 				// Date of email
-				var email_date = new Date(gMessageDisplay.displayedMessage.dateInSeconds * 1000);
+				var email_date = messageWindow.messageDate;
 
 				// Text content preview of email.  This is a very rough cut here and loses ALL
 				// formatting, but to preserve formatting we're dealing with parsing HTML, and
@@ -357,7 +357,7 @@ var messageWindow = {
 				// that, but we're again dealing with some restrictions there that have to be
 				// worked around somehow.
 				//
-				var email_text = messageWindow.jQuery(messageWindow.jQuery("#messagepane")[0].contentWindow.document.children[0].children[1]).text();
+				var email_text = messageWindow.messageBody;
 				if (email_text) {
 					email_text = email_text.substr(0,900);
 				}
@@ -375,8 +375,8 @@ var messageWindow = {
 							p_contact_id: email_id,
 							e_whom: mainWindow.myId,
 							e_initiation: 'P',
-							e_subject: gMessageDisplay.displayedMessage.subject,
-							e_message_id: gMessageDisplay.displayedMessage.messageId,
+							e_subject: messageWindow.subject,
+							e_message_id: messageWindow.messageId,
 							e_contact_date: {year: email_date.getFullYear(), month: email_date.getMonth()+1, day:email_date.getDate(), hour:email_date.getHours(), minute:email_date.getMinutes(), second:email_date.getSeconds() },
 							e_notes: email_text,
 							s_date_created: {year: date.getFullYear(), month: date.getMonth()+1, day:date.getDate(), hour:date.getHours(), minute:date.getMinutes(), second:date.getSeconds() },
@@ -441,26 +441,18 @@ var messageWindow = {
 
 		if (!event) { // only redo email address list if it wasn't a click event
 			
-			// Make a note of current field values, and save previous ones.
-			messageWindow.curData.assignee[0]/* TODO this and below only works for 1 recipient */ = messageWindow.jQuery("#todo-assignee")[0].value;
-			messageWindow.curData.todotype[0] = messageWindow.jQuery("#todo-type")[0].value;
-			messageWindow.curData.roletype[0] = messageWindow.jQuery("#newperson-role")[0].value;
-			messageWindow.curData.days[0] = messageWindow.jQuery("#todo-days")[0].value;
-			messageWindow.curData.first[0] = messageWindow.jQuery("#newperson-first")[0].value;
-			messageWindow.curData.last[0] = messageWindow.jQuery("#newperson-last")[0].value;
-			messageWindow.curData.email[0] = messageWindow.jQuery("#newperson-email")[0].value;
-			messageWindow.curData.todo_comment[0] = messageWindow.jQuery("#todo-comment")[0].value;
-	
 			// Save current values of fields that may be re-used when the user re-opens
 			// this screen later on.
-			if (messageWindow.curData.assignee[0])
-				kardiacrm.last_assignee = messageWindow.curData.assignee[0];
-			if (messageWindow.curData.todotype[0])
-				kardiacrm.last_todo_type = messageWindow.curData.todotype[0];
-			if (messageWindow.curData.roletype[0] !== null)
-				kardiacrm.last_role_type = messageWindow.curData.roletype[0];
-			if (messageWindow.curData.days[0])
-				kardiacrm.last_due_days = messageWindow.curData.days[0];
+			if (messageWindow.recipientAddresses.length == 1) {
+				if (messageWindow.curData.assignee[0])
+					kardiacrm.last_assignee = messageWindow.curData.assignee[0];
+				if (messageWindow.curData.todotype[0])
+					kardiacrm.last_todo_type = messageWindow.curData.todotype[0];
+				if (messageWindow.curData.roletype[0] !== null)
+					kardiacrm.last_role_type = messageWindow.curData.roletype[0];
+				if (messageWindow.curData.days[0])
+					kardiacrm.last_due_days = messageWindow.curData.days[0];
+			}
 	
 			// Find recipient(s) of email
 			var parser = Components.classes["@mozilla.org/messenger/headerparser;1"].getService(Components.interfaces["nsIMsg" + "HeaderParser"]); // workaround for overzealous regex on AMO.
@@ -511,91 +503,8 @@ var messageWindow = {
 	
 				field = document.getElementById("addressCol2#" + ++i);
 			}
-			// TODO document.getElementById("contact-which-recipient").selectedIndex = 0;
-
-			// update email address list
-			if (messageWindow.recipientAddresses.length > 0) messageWindow.findRecipientEmails(messageWindow.recipientAddresses);
-		}
-		else {
-			messageWindow.jQuery.when(messageWindow.recipient_data_loaded_deferred).then( function(value) {
-				// a checkbox was clicked, so do tasks relevant to the selected item
-				// Is recipient in Kardia?  If not, note that this is a new recipient so that we
-				// auto-create a record in Kardia for them when the user wants to record the
-				// email or whatnot.
-				for (var i=0; i<messageWindow.recipientAddresses.length; i++) {
-					messageWindow.isNewRecipient[i] = false;
-					if (messageWindow.getEmailIndex(messageWindow.recipientAddresses[i]) < 0)
-					messageWindow.isNewRecipient = true;
-				}
-
-				// The Message ID can't already be in the Kardia DB, because it doesn't exist yet.
-				// The note or task cannot be saved until the email is sent, because that is when the ID is generated.
 			
-				var idx = messageWindow.getEmailIndex(messageWindow.recipientAddresses[0]); // TODO document.getElementById("contact-which-recipient").selectedIndex]);
-
-				// Look for a Contact Auto-Record entry in the database, and automatically
-				// select that option if so (and set the newAutorecordKey, so that if the user
-				// un-checks the box, we can delete the entry from Kardia).
-				//
-				// FIXME - this currently only works for the simple case of one autorecord entry
-				// for the partner.  It does not handle override entries (one system-wide enabled
-				// for the partner, and one specific to the collaborator but which is turned off),
-				// as that will require additional UI work to properly present to the user.  We
-				// will need to update this to solve the override problem once override capability
-				// is exposed in the web UI.
-				//
-				// TODO remove partner_data_loaded?
-				if (kardiacrm.partner_data_loaded && idx >= 0 && mainWindow.autorecord[idx]) {
-					var has_autorecord = false;
-					for(var k=0;k<mainWindow.autorecord[idx].length;k++) {
-						var ar = mainWindow.autorecord[idx][k];
-						if (ar.auto_record && (ar.collab_partner_id == mainWindow.myId || ar.auto_record_apply_all)) {
-							has_autorecord = ar.name;
-							break;
-						}
-					}
-					if (has_autorecord) {
-						messageWindow.jQuery("#record-future").prop("checked", true);
-						messageWindow.newAutorecordKey[0 /* TODO*/] = has_autorecord;
-					}
-				}
-
-				// If we're auto-recording, BUT this message isn't yet marked for recording, then
-				// mark it for recording.  We don't do this automatically when the user checks the
-				// "future" checkbox initially.  But if they close and re-open this window right
-				// away, or if they open this window on any future or past email from the same
-				// email address, this here gets triggered.
-				//
-				if (kardiacrm.partners_loaded && messageWindow.jQuery("#record-future").prop("checked") && !messageWindow.jQuery("#record-contact").prop("checked")) {
-					messageWindow.jQuery("#record-contact").prop("checked", true);
-				}
-			});
-		}
-
-		recipientIndex = 0;// TODO document.getElementById("contact-which-recipient").selectedIndex;
-
-		// Whether to show the new person info box at bottom
-		if (messageWindow.recipientAddresses.length < 2) {
-			if ((messageWindow.jQuery("#record-contact").prop("checked") || messageWindow.jQuery("#record-todo").prop("checked") || messageWindow.jQuery("#record-future").prop("checked")) && messageWindow.isNewRecipient) {
-				messageWindow.jQuery("#newperson-box").css({display: "block"});
-				messageWindow.creatingPartner[0] = true;
-				messageWindow.creatingLocation[0] = true;
-				messageWindow.creatingEmail[0] = true;
-
-				// Fill the editboxes for email, first name, and last name.
-				if (!messageWindow.jQuery("#newperson-email")[0].value) {
-					messageWindow.jQuery("#newperson-email").prop("value", messageWindow.recipientAddresses[recipientIndex]);
-					messageWindow.curData.email[0] = messageWindow.jQuery("#newperson-email")[0].value;
-				}
-				if (!messageWindow.jQuery("#newperson-first")[0].value) {
-					messageWindow.jQuery("#newperson-first").prop("value", messageWindow.recipientFirstNames[recipientIndex]);
-					messageWindow.curData.first[0] = messageWindow.jQuery("#newperson-first")[0].value;
-				}
-				if (!messageWindow.jQuery("#newperson-last")[0].value) {
-					messageWindow.jQuery("#newperson-last").prop("value", messageWindow.recipientLastNames[recipientIndex]);
-					messageWindow.curData.last[0] = messageWindow.jQuery("#newperson-last")[0].value;
-				}
-
+			if (messageWindow.recipientAddresses.length == 1) {
 				// Fill in the role options
 				messageWindow.jQuery("#newperson-role menupopup")
 					.empty()
@@ -616,42 +525,6 @@ var messageWindow = {
 					if (kardiacrm.last_role_type !== null)
 						messageWindow.jQuery("#newperson-role")[0].value = kardiacrm.last_role_type;
 				}
-			}
-			else {
-				messageWindow.jQuery("#newperson-box").css({display: "none"});
-				messageWindow.creatingPartner[0] = false; 
-				messageWindow.creatingLocation[0] = false; 
-				messageWindow.creatingEmail[0] = false;
-			}
-
-			// Whether to create a contact history record for this email
-			if (messageWindow.jQuery("#record-contact").prop("checked")) {
-				messageWindow.creatingContactHistory[0] = true;
-			}
-			else {
-				messageWindow.creatingContactHistory[0] = false;
-			}
-
-			// Whether to create the collaborator record (role not '(none)')
-			if (messageWindow.creatingPartner[0] && messageWindow.jQuery("#newperson-role")[0].value) {
-				messageWindow.creatingCollab[0] = true;
-			}
-			else {
-				messageWindow.creatingCollab[0] = false;
-			}
-
-			// Whether to create an autorecord entry for this person
-			if (messageWindow.jQuery("#record-future").prop("checked")) {
-				messageWindow.creatingAutorecord[0] = true;
-			}
-			else {
-				messageWindow.creatingAutorecord[0] = false;
-			}
-
-			// Whether to show the new task info
-			if (messageWindow.jQuery("#record-todo").prop("checked")) {
-				messageWindow.jQuery("#todo-options").css({display: "block"});
-				messageWindow.creatingTodo[0] = true;
 
 				// Fill in the task type options and assignee options
 				messageWindow.jQuery("#todo-type menupopup").empty();
@@ -682,13 +555,102 @@ var messageWindow = {
 							messageWindow.jQuery("#todo-assignee")[0].value = mainWindow.myId;
 					}
 				}
-				if (kardiacrm.last_due_days)
-					messageWindow.jQuery("#todo-days")[0].value = '' + kardiacrm.last_due_days;
 			}
-			else {
-				messageWindow.jQuery("#todo-options").css({display: "none"});
-				messageWindow.creatingTodo[0] = false;
-			}
+
+			// update email address list
+			if (messageWindow.recipientAddresses.length > 0) messageWindow.findRecipientEmails(messageWindow.recipientAddresses);
+		}
+		else {
+			messageWindow.jQuery.when(messageWindow.recipient_data_loaded_deferred).then( function(value) {
+				// a checkbox was clicked or some data changed, so do tasks relevant to the selected item
+				// Is recipient in Kardia?  If not, note that this is a new recipient so that we
+				// auto-create a record in Kardia for them when the user wants to record the
+				// email or whatnot.
+				for (var i=0; i<messageWindow.recipientAddresses.length; i++) {
+					messageWindow.isNewRecipient[i] = false;
+					if (messageWindow.getEmailIndex(messageWindow.recipientAddresses[i]) < 0)
+						messageWindow.isNewRecipient[i] = true;
+				}
+
+				// Whether to show the new person info box at bottom
+				if (messageWindow.recipientAddresses.length < 2) {
+					if ((messageWindow.jQuery("#record-contact").prop("checked") || messageWindow.jQuery("#record-todo").prop("checked") || messageWindow.jQuery("#record-future").prop("checked")) && messageWindow.isNewRecipient[0]) {
+						messageWindow.jQuery("#newperson-box").css({display: "block"});
+						messageWindow.creatingLocation[0] = true;
+						messageWindow.creatingEmail[0] = true;
+
+						// initialize fields if this was just clicked
+						if (!messageWindow.creatingPartner[0])
+						{
+							messageWindow.creatingPartner[0] = true;
+							messageWindow.jQuery("#newperson-email").prop("value", messageWindow.recipientAddresses[0]);
+							messageWindow.curData.email[0] = messageWindow.jQuery("#newperson-email")[0].value;
+							messageWindow.jQuery("#newperson-first").prop("value", messageWindow.recipientFirstNames[0]);
+							messageWindow.curData.first[0] = messageWindow.jQuery("#newperson-first")[0].value;
+							messageWindow.jQuery("#newperson-last").prop("value", messageWindow.recipientLastNames[0]);
+							messageWindow.curData.last[0] = messageWindow.jQuery("#newperson-last")[0].value;
+						}
+						else {
+							messageWindow.curData.email[0] = messageWindow.jQuery("#newperson-email")[0].value;
+							messageWindow.curData.first[0] = messageWindow.jQuery("#newperson-first")[0].value;
+							messageWindow.curData.last[0] = messageWindow.jQuery("#newperson-last")[0].value;
+							messageWindow.curData.roletype[0] = messageWindow.jQuery("#newperson-role")[0].value;
+						}
+					}
+					else {
+						messageWindow.jQuery("#newperson-box").css({display: "none"});
+						messageWindow.creatingPartner[0] = false; 
+						messageWindow.creatingLocation[0] = false; 
+						messageWindow.creatingEmail[0] = false;
+					}
+
+					// Whether to create a contact history record for this email
+					if (messageWindow.jQuery("#record-contact").prop("checked")) {
+						messageWindow.creatingContactHistory[0] = true;
+					}
+					else {
+						messageWindow.creatingContactHistory[0] = false;
+					}
+
+					// Whether to create the collaborator record (role not '(none)')
+					if (messageWindow.creatingPartner[0] && messageWindow.jQuery("#newperson-role")[0].value) {
+						messageWindow.creatingCollab[0] = true;
+					}
+					else {
+						messageWindow.creatingCollab[0] = false;
+					}
+
+					// Whether to create an autorecord entry for this person
+					if (messageWindow.jQuery("#record-future").prop("checked")) {
+						messageWindow.creatingAutorecord[0] = true;
+					}
+					else {
+						messageWindow.creatingAutorecord[0] = false;
+					}
+
+					// Whether to show the new task info
+					if (messageWindow.jQuery("#record-todo").prop("checked")) {
+						messageWindow.jQuery("#todo-options").css({display: "block"});
+						messageWindow.creatingTodo[0] = true;
+
+						if (kardiacrm.last_due_days)
+							messageWindow.jQuery("#todo-days")[0].value = '' + kardiacrm.last_due_days;
+						
+						messageWindow.curData.todotype[0] = messageWindow.jQuery("#todo-type")[0].value;
+						messageWindow.curData.days[0] = messageWindow.jQuery("#todo-days")[0].value;
+						messageWindow.curData.assignee[0] = messageWindow.jQuery("#todo-assignee")[0].value;
+						messageWindow.curData.todo_comment[0] = messageWindow.jQuery("#todo-comment")[0].value;
+					}
+					else {
+						messageWindow.jQuery("#todo-options").css({display: "none"});
+						messageWindow.creatingTodo[0] = false;
+					}
+				}
+				else {
+					messageWindow.jQuery("#newperson-box").css({display: "none"});
+					messageWindow.jQuery("#todo-options").css({display: "none"});
+				}
+			});
 		}
 
 		// This footer is different in that we want to re-initialize every time the email
@@ -700,22 +662,27 @@ var messageWindow = {
 		// The check for !do_sidebar here prevents us from calling things initialized
 		// if we're about to reload the sidebar from a message context change.
 		//
-		if (!messageWindow.initialized && !messageWindow.do_sidebar && messageWindow.recipientAddresses.length > 0) {
+		if (!messageWindow.initialized && !messageWindow.do_sidebar) {
 			// disable until all data is ready
 			messageWindow.disableControls();
 			messageWindow.jQuery.when(messageWindow.recipient_data_loaded_deferred).then(function(value) {
 				if (messageWindow.recipientAddresses.length > 1) {
-					messageWindow.jQuery("#contact-which-recipient").show();
 					messageWindow.jQuery("#record-contact").hide();
 					messageWindow.jQuery("#record-future").hide();
 					messageWindow.jQuery("#record-todo").hide();
 				}
 				else {
-					messageWindow.jQuery("#contact-which-recipient").hide();
 					messageWindow.jQuery("#record-contact").show();
 					messageWindow.jQuery("#record-future").show();
 					messageWindow.jQuery("#record-todo").show();
+					messageWindow.jQuery("#record-contact").prop("checked", false);
+					messageWindow.jQuery("#record-future").prop("checked", false);
+					messageWindow.jQuery("#record-todo").prop("checked", false);
+					messageWindow.jQuery("#todo-comment").prop("value", "");
 				}
+				messageWindow.jQuery("#newperson-box").css({display: "none"});
+				messageWindow.jQuery("#todo-options").css({display: "none"});
+
 				messageWindow.log("initialized");
 				messageWindow.enableControls();
 				messageWindow.initialized = true;
@@ -747,12 +714,16 @@ var messageWindow = {
 	// Disable all controls
 	disableControls: function() {
 		messageWindow.jQuery("#contact-box").find("textbox,menulist,checkbox").prop("disabled", true);
+		messageWindow.jQuery("#contact-box").hide();
+		messageWindow.jQuery("#loading-message").show();
 	},
 
 
 	// Enable all controls
 	enableControls: function() {
 		messageWindow.jQuery("#contact-box").find("textbox,menulist,checkbox").removeProp("disabled");
+		messageWindow.jQuery("#contact-box").show();
+		messageWindow.jQuery("#loading-message").hide();
 	},
 
 
@@ -779,38 +750,14 @@ var messageWindow = {
 							if (key != "@id") {
 								console.log(key);
 								var recipient = resp[key];
-								messageWindow.emailAddresses.push(addressArray[0]);
-								messageWindow.names.push(recipient.partner_name);
-								messageWindow.ids.push(recipient.partner_id);
+								messageWindow.addPersonToList(addressArray[0], recipient.partner_name, recipient.partner_id);
 							}
 						}
 					}
+					else messageWindow.addPersonToList(null, null, null);
+
 					getNext(addressArray.slice(1));
 				});
-				messageWindow.curData.assignee.push(null);
-				messageWindow.curData.todotype.push(null);
-				messageWindow.curData.roletype.push(null);
-				messageWindow.curData.days.push(null);
-				messageWindow.curData.first.push(null);
-				messageWindow.curData.last.push(null);
-				messageWindow.curData.email.push(null);
-				messageWindow.curData.todo_comment.push(null);
-
-				messageWindow.creatingPartner.push(false);
-				messageWindow.creatingLocation.push(false);
-				messageWindow.creatingEmail.push(false);
-				messageWindow.creatingCollab.push(false);
-				messageWindow.creatingContactHistory.push(false);
-				messageWindow.creatingAutorecord.push(false);
-				messageWindow.creatingTodo.push(false);
-
-				messageWindow.newPartnerKey.push(null);
-				messageWindow.newLocationKey.push(null);
-				messageWindow.newEmailKey.push(null);
-				messageWindow.newCollabKey.push(null);
-				messageWindow.newContactHistoryKey.push(null);
-				messageWindow.newAutorecordKey.push(null);
-				messageWindow.newTodoKey.push(null);
 			}
 			else {
 				messageWindow.recipient_data_loaded_deferred.resolve();
@@ -843,7 +790,39 @@ var messageWindow = {
 
 		getNext(addrs);
 	},
+	
+	// Add a person to the lists of found people, if the email/name/id are not null
+	// Regardless, add a blank record for them in all the other pertinent lists
+	addPersonToList: function(email, name, id) {
+		if (email) messageWindow.emailAddresses.push(email);
+		if (name) messageWindow.names.push(name);
+		if (id) messageWindow.ids.push(id);
 
+		messageWindow.curData.assignee.push(null);
+		messageWindow.curData.todotype.push(null);
+		messageWindow.curData.roletype.push(null);
+		messageWindow.curData.days.push(null);
+		messageWindow.curData.first.push(null);
+		messageWindow.curData.last.push(null);
+		messageWindow.curData.email.push(null);
+		messageWindow.curData.todo_comment.push(null);
+
+		messageWindow.creatingPartner.push(false);
+		messageWindow.creatingLocation.push(false);
+		messageWindow.creatingEmail.push(false);
+		messageWindow.creatingCollab.push(false);
+		messageWindow.creatingContactHistory.push(false);
+		messageWindow.creatingAutorecord.push(false);
+		messageWindow.creatingTodo.push(false);
+
+		messageWindow.newPartnerKey.push(null);
+		messageWindow.newLocationKey.push(null);
+		messageWindow.newEmailKey.push(null);
+		messageWindow.newCollabKey.push(null);
+		messageWindow.newContactHistoryKey.push(null);
+		messageWindow.newAutorecordKey.push(null);
+		messageWindow.newTodoKey.push(null);
+	},
 
 	// Send a log message to the console log.  This is used for certain types of
 	// debugging, since 1) this is event-driven and that can get a little crazy, and 2)
@@ -913,7 +892,6 @@ var messageWindow = {
 		messageWindow.jQuery("#record-contact").removeProp("checked");
 		messageWindow.jQuery("#record-todo").removeProp("checked");
 		messageWindow.jQuery("#record-future").removeProp("checked");
-		messageWindow.jQuery("#contact-which-recipient").hide();
 
 		// Chain to other queued operations that could not be done until
 		// after the reset finished.
@@ -1000,13 +978,18 @@ addEventListener("load", function() {
 }, false);
 
 // capture the send event AFTER message id was generated and post changes at that time
-function MyMsgSendListener(){
-	this.onStartSending = function(aMsgId, aMsgSize) {};
+function MyMsgSendListener(myGMsgCompose){
+	this.onStartSending = function(aMsgId, aMsgSize) {
+		messageWindow.subject = myGMsgCompose.compFields.subject;
+		messageWindow.messageBody = new DOMParser().parseFromString(myGMsgCompose.compFields.body, "text/html").body.innerText.trim();
+	};
 	this.onProgress = function(aMsgID, aProgress, aProgressMax){};
 	this.onStatus = function(aMsgID, aMsg){};
 	this.onGetDraftFolderURI = function(aFolderUri){};
 	this.onStopSending = function(aMsgID, aStatus, aMsg, aFile){
-		console.log("done: " + aMsgID);
+		console.log("Saving " + aMsgID);
+		messageWindow.messageId = aMsgID;
+		messageWindow.messageDate = new Date();
 		messageWindow.postChanges();
 	};
 	this.onSendNotPerformed = function(aMsgID, aStatus){};
@@ -1014,6 +997,6 @@ function MyMsgSendListener(){
 var observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
 observerService.addObserver({
 	observe: function(subject, topic, data) {
-		subject.gMsgCompose.addMsgSendListener(new MyMsgSendListener());
+		subject.gMsgCompose.addMsgSendListener(new MyMsgSendListener(subject.gMsgCompose));
 	}
 }, "mail:composeOnSend", false);

@@ -29,10 +29,6 @@
 	<vbox id="appcontent">
 		<vbox id="contact-box" flex="0" insertafter="findbar">
 			<hbox id="contact-options" align="center">
-				<!--<menulist id="contact-which-recipient">
-					<menupopup oncommand="">
-					</menupopup>
-				</menulist> -->
 				<button id="contact-which-recipient" label="Record this email or create a task in Kardia..." oncommand="messageWindow.chooseRecipientsToRecord()"/>
 				<checkbox id="record-contact" checked="false" label="Record this email in Kardia"/>
 				<checkbox id="record-future" checked="false" label="Automatically record future emails with this person"/>
@@ -80,6 +76,9 @@
 					<textbox id="todo-comment" width="225"/>
 				</hbox>
 			</hbox>
+		</vbox>
+		<vbox id="loading-message">
+			<label value="Loading Kardia options..."/>
 		</vbox>
 	</vbox>
 
