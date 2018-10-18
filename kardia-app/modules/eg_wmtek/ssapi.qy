@@ -1,0 +1,103 @@
+$Version=2$
+ssapi "system/query"
+    {
+    start "query/parameter" { type=integer; default=0; }
+    limit "query/parameter" { type=integer; default=50; }
+
+    sql = "	select
+			name = :cb:id + '|' + :contrib:id,
+			i_eg_gift_uuid = convert(string, :cb:id),
+			i_eg_gift_date = convert(datetime, isnull(:rec:created, :cb:created)),
+			i_eg_gift_interval = condition(:rec:recurring_period == 'month' and convert(string,:rec:recurring_interval) == '1', 'MONTHLY',
+						condition(:rec:recurring_period == 'month' and convert(string, :rec:recurring_interval) == '3', 'QUARTERLY',
+						condition((:rec:recurring_period == 'year' and convert(string, :rec:recurring_interval) == '1') or (:rec:recurring_period == 'month' and :rec:recurring_interval == '12'), 'ANNUAL',
+						upper(convert(string, :rec:recurring_interval) + :rec:recurring_period)
+						))),
+			i_eg_receipt_desired = null,
+			i_eg_anonymous = null,
+			i_eg_prayforme = null,
+			i_eg_acctmap_future = 1,
+			i_eg_fundmap_future = 1,
+			i_eg_donormap_future = 1,
+
+			i_eg_donor_uuid = convert(string, :don:id),
+			i_eg_donor_alt_id = convert(string, :don:external_id),
+			i_eg_donor_prefix = :don:title,
+			i_eg_donor_name = :don:fullname,
+			i_eg_donor_given_name = :don:firstname,
+			i_eg_donor_middle_name = :don:middlename,
+			i_eg_donor_surname = :don:lastname,
+			i_eg_donor_suffix = :don:suffix,
+
+			i_eg_donor_addr1 = :addr:address1,
+			i_eg_donor_addr2 = :addr:address2,
+			i_eg_donor_city = :addr:city,
+			i_eg_donor_state = :addr:state_code,
+			i_eg_donor_postal = convert(string, :addr:zip),
+			i_eg_donor_country = isnull((select :p_country_code from /apps/kardia/data/Kardia_DB/p_country/rows where :p_iso3166_2_code = :addr:country_code), 'US'),
+
+			i_eg_donor_phone = convert(string, :phone:number),
+			i_eg_donor_email = :email:email,
+
+			i_eg_account_uuid = convert(string, :pay:id),
+			i_eg_processor = :pay:gateway,
+			i_eg_lastfour = convert(string, :pay:last_four),
+			i_eg_gift_pmt_type = condition(:card:card_type is not null, :card:card_type, 
+						condition(:check:checking_type is not null, :check:checking_type,
+						    condition(:paypal:gateway is not null, 'paypal', 'unknown'
+						    )
+						)
+					     ),
+
+			i_eg_gift_amount = convert(money, :contrib:amount),
+			i_eg_net_amount = convert(money, :contrib:amount),
+			i_eg_desig_notes = :contrib:notes,
+			i_eg_desig_uuid = convert(string, :cmp:id),
+			i_eg_desig_name = :cmpitem:__cx_literal_name,
+
+			i_eg_status = condition(:trx:pending, 'pending', condition(:trx:success, 'paid', 'returned')),
+			i_eg_returned_status = condition(not :trx:pending and not :trx:success, :trx:error_message, null),
+			i_eg_trx_uuid = convert(string, :trx:transaction_code),
+			i_eg_gift_trx_date = convert(datetime, :trx:created),
+			i_eg_gift_settlement_date = convert(datetime, :trx:settled),
+
+			i_eg_deposit_date = null,
+			i_eg_deposit_uuid = null,
+			i_eg_deposit_status = null,
+			i_eg_deposit_gross_amt = null,
+			i_eg_deposit_amt = null,
+
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		from
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit ) cb,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name) rec,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name) don,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/donor') addr,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/donor') email,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/donor') phone,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name) pay,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/payment_method') card,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/payment_method') check,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/payment_method') paypal,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/contributions') contrib,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/contributions/' + :contrib:name) cmp,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/contributions/' + :contrib:name + '/campaign') cmpitem,
+			expression ('/apps/kardia/modules/eg_wmtek/ssapi.http/' + :parameters:start + '/' + :parameters:limit + '/' + :cb:name + '/transactions') trx
+		where
+			:rec:name == 'recurring' and
+			:don:name == 'donor' and
+			:addr:name == 'address' and
+			:email:name == 'email' and
+			:phone:name == 'phone' and
+			:pay:name == 'payment_method' and
+			:card:name == 'card' and
+			:check:name == 'check' and
+			:paypal:name == 'paypal' and
+			:cmp:name == 'campaign' and
+			:cmpitem:name == 'item'
+		";
+
+    }

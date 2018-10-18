@@ -1,0 +1,5 @@
+$Version=2$
+testss "system/query"
+    {
+    sql = runserver("select name = :cb:name + '|' + :contrib:name, " + /apps/kardia/modules/eg_wmtek/plugin_rcpt_giftimport_SS.cmp:sql);
+    }

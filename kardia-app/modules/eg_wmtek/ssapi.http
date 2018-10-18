@@ -1,0 +1,23 @@
+$Version=2$
+ssapi "application/http"
+    {
+    // Headers
+    "Authorization" "http/parameter" { type=string; source=none; usage=header; default=runserver('HMAC ' + (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Username') + ':' + hmac('sha256', 'GET\n\n' + :headers:Date, (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Secret'))); }
+
+    // URL Parameters
+    offset "http/parameter" { type=integer; source=path; usage=url; pathpart=1; }
+    limit "http/parameter" { type=integer; source=path; usage=url; pathpart=2; }
+    order "http/parameter" { type=string; source=none; usage=url; default=runserver('id'); }
+    dir "http/parameter" { type=string; source=none; usage=url; default=runserver('desc'); }
+
+    // Connection
+    server = runserver((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Site'));
+    path = "/api/contribution-batches";
+    protocol = "http";
+    method = GET;
+    allowsubdirs = 0;
+
+    // Caching
+    cache_max_ttl = 86400000; // one day max
+    cache_min_ttl = 3600000; // one hour min
+    }

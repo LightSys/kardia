@@ -1,0 +1,8 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "WMTek Site Stacker Electronic Giving Integration";
+    module_abbrev = "WMTek Integration";
+    module_description = "This module provides integration with WMTek's Site Stacker platform.";
+    module_sequence = null;
+    }

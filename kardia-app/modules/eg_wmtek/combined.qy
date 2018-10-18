@@ -1,0 +1,61 @@
+$Version=2$
+combined "system/query"
+    {
+    sql = " select
+		:eg:name,
+		:eg:i_eg_gift_uuid,
+		:eg:i_eg_desig_uuid,
+		:eg:i_eg_trx_uuid,
+		:eg:i_eg_donor_uuid,
+		:eg:i_eg_account_uuid,
+		:eg:i_eg_status,
+		:eg:i_eg_returned_status,
+		:eg:i_eg_processor,
+		:eg:i_eg_donor_name,
+		:eg:i_eg_donor_given_name,
+		:eg:i_eg_donor_surname,
+		:eg:i_eg_donor_middle_name,
+		:eg:i_eg_donor_prefix,
+		:eg:i_eg_donor_suffix,
+		:eg:i_eg_donor_addr1,
+		:eg:i_eg_donor_addr2,
+		:eg:i_eg_donor_city,
+		:eg:i_eg_donor_state,
+		:eg:i_eg_donor_postal,
+		:eg:i_eg_donor_country,
+		:eg:i_eg_donor_phone,
+		:eg:i_eg_donor_email,
+		:eg:i_eg_gift_amount,
+		:eg:i_eg_gift_pmt_type,
+		:eg:i_eg_gift_interval,
+		:eg:i_eg_gift_date,
+		:eg:i_eg_gift_trx_date,
+		:eg:i_eg_gift_settlement_date,
+		:eg:i_eg_receipt_desired,
+		:eg:i_eg_anonymous,
+		:eg:i_eg_prayforme,
+		:eg:i_eg_desig_name,
+		:eg:i_eg_desig_notes,
+		:eg:i_eg_net_amount,
+		:eg:i_eg_deposit_date,
+		:eg:i_eg_deposit_uuid,
+		:eg:i_eg_deposit_status,
+		:eg:i_eg_deposit_gross_amt,
+		:eg:i_eg_deposit_amt,
+		:eg:i_eg_donormap_future,
+		:eg:i_eg_fundmap_future,
+		:eg:i_eg_acctmap_future,
+		:eg:s_date_created,
+		:eg:s_created_by,
+		:eg:s_date_modified,
+		:eg:s_modified_by
+	    from
+		/apps/kardia/data/Kardia_DB/a_config/rows cf,
+		/apps/kardia/modules/eg_wmtek/100rows.csv/rows cnt,
+		expression ('/apps/kardia/modules/eg_wmtek/ssapi.qy?start=' + (1 + convert(integer, :cnt:name) * 50) + '&limit=50') eg
+	    where
+		:cf:a_config_name = 'SS_Lookback' and
+		convert(integer, :cnt:name) * 50 < convert(integer, :cf:a_config_value)
+	    ";
+    }
+
