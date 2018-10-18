@@ -1,0 +1,8 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Stewardship Technology Electronic Giving Integration";
+    module_abbrev = "ST Integration";
+    module_description = "This module provides integration with Stewardship Technology's EGS platform.";
+    module_sequence = null;
+    }
