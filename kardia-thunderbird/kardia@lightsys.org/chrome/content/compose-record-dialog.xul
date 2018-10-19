@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="style.css" type="text/css"?>
+
+<!-- dialog to allow users to add new engagement tracks -->
+<dialog id="compose-record-dialog"
+        title="Choose Recipients to Record Email/Task"
+        buttons="accept"
+        ondialogaccept="return saveChoices();"
+		onload="startDialog();"
+        persist="screenX screenY width height"
+		maxheight="200px"
+		overflow="scroll"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+		
+	<!-- script that makes buttons work -->
+	<script type="application/javascript" src="chrome://messenger/content/jquery.js"/>
+	<script type="application/javascript" src="chrome://kardia/content/compose-record-dialog.js"/>
+
+	    <!-- vbox holds dropdown menus -->
+		<vbox id="dialog-section-0" flex="0"> 
+			<hbox align="center">
+				<label id="dialog-person-name-0" value="Person Name"/>
+				<checkbox id="dialog-record-contact-0" checked="false" label="Record this email in Kardia"/>
+				<checkbox id="dialog-record-future-0" checked="false" label="Automatically record future emails with this person"/>
+				<checkbox id="dialog-record-todo-0" checked="false" label="Create a Task"/>
+			</hbox>
+			<vbox id="dialog-newperson-box-0">
+				<hbox align="center">
+					<label value="New Person - Email:"/>
+					<textbox id="dialog-newperson-email-0" width="180"/>
+					<spacer flex="1" width="5"/>
+					<label value="First Name:"/>
+					<textbox id="dialog-newperson-first-0" width="90"/>
+					<spacer flex="1" width="5"/>
+					<label value="Last Name:"/>
+					<textbox id="dialog-newperson-last-0" width="90"/>
+					<spacer flex="1" width="5"/>
+					<label value="My Role:"/>
+					<menulist id="dialog-newperson-role-0">
+						<menupopup>
+						<menuitem label="(none)" value=""/>
+					</menupopup>
+					</menulist>
+				</hbox>
+			</vbox>
+			<vbox id="dialog-todo-box-0">
+				<hbox align="center">
+					<label value="Task Type:"/>
+					<menulist id="dialog-todo-type-0">
+						<menupopup>
+							<menuitem label="(none)" value=""/>
+						</menupopup>
+					</menulist>
+					<spacer flex="1" width="5"/>
+					<label value="Days 'til Due:"/>
+					<textbox id="dialog-todo-days-0" width="40"/>
+					<spacer flex="1" width="5"/>
+					<label value="Assign To:"/>
+					<menulist id="dialog-todo-assignee-0">
+						<menupopup>
+							<menuitem label="(nobody)" value=""/>
+						</menupopup>
+					</menulist>
+					<spacer flex="1" width="5"/>
+					<label value="Comment:"/>
+					<textbox id="dialog-todo-comment-0" width="225"/>
+				</hbox>
+			</vbox>
+		</vbox>
+</dialog>
+

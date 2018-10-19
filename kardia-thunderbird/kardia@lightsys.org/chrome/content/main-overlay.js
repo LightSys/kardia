@@ -681,7 +681,7 @@ function findEmails(selected, force) {
 	      if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
 		    kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
 	      }
-	      kardiacrm.find_emails_busy = false;
+		  kardiacrm.find_emails_busy = false;
 	}
                
 	// save number of emails selected so we can see if the number of emails selected has changed later
@@ -689,81 +689,6 @@ function findEmails(selected, force) {
 
 }
 
-
-// TODO AJT
-function findRecipientEmails(addressArray, selected) {
-
-	// This routine isn't reentrant.
-	if (kardiacrm.find_emails_busy) {
-		return;
-	}
-
-	if (selectedMessages != selected) {//true) {//selectedMessages != se) {
-		kardiacrm.find_emails_busy = true;
-		kardiacrm.partners_loaded = false;
-		kardiacrm.partner_data_loaded = false;
-		// avoid busy waiting on partner_data_loaded
-		kardiacrm.partner_data_loaded_deferred = $.Deferred();
-			
-		// select the 0th partner and generate a new list of partners
-		kardiacrm.selected_partner = 0;
-				
-		// get email addresses involved in this email message
-		var parser = Components.classes["@mozilla.org/messenger/headerparser;1"].getService(Components.interfaces["nsIMsg" + "HeaderParser"]); // workaround for overzealous regex on AMO.
-		
-		addressArray.sort();
-
-		// save email addresses and initialize other information about partner
-		emailAddresses = addressArray;
-		names = new Array(emailAddresses.length);
-		ids = new Array(emailAddresses.length);
-		emailIds = new Array(emailAddresses.length);
-		addresses = new Array(emailAddresses.length);
-		phoneNumbers = new Array(emailAddresses.length);
-		allEmailAddresses = new Array(emailAddresses.length);
-		websites = new Array(emailAddresses.length);
-		engagementTracks = new Array(emailAddresses.length);
-		recentActivity = new Array(emailAddresses.length);
-		profilePhotos = new Array(emailAddresses.length);
-		todos = new Array(emailAddresses.length);
-		notes = new Array(emailAddresses.length);
-		autorecord = new Array(emailAddresses.length);
-		collaborators = new Array(emailAddresses.length);
-		documents = new Array(emailAddresses.length);
-		tags = new Array(emailAddresses.length);
-		data = new Array(emailAddresses.length);
-		dataGroups = new Array(emailAddresses.length);
-		gifts = new Array(emailAddresses.length);
-		funds = new Array(emailAddresses.length);
-		types = new Array(emailAddresses.length);
-
-		// no need to remove blank (no blank emails are passed)
-	
-		// remove all Kardia buttons in the email message
-		clearKardiaButton();
-
-		// save headers for other purpose TODO AJT
-		selectedMessages = selected;
-		
-		// get data from Kardia
-		findUser(0);
-	}
-	else {
-	      // Update newly opened message window
-	      kardiacrm.partners_loaded = true;
-	      kardiacrm.partner_data_loaded = true;
-		  // avoid busy waiting on partner_data_loaded
-		  kardiacrm.partner_data_loaded_deferred.resolve();
-	      if (kardiacrm.lastMessageWindow && kardiacrm.lastMessageWindow.messageWindow && kardiacrm.lastMessageWindow.messageWindow.reEvaluate) {
-		    kardiacrm.lastMessageWindow.messageWindow.reEvaluate(null);
-	      }
-	      kardiacrm.find_emails_busy = false;
-	}
-               
-	// save number of emails selected so we can see if the number of emails selected has changed later
-	numSelected = selected.length;
-
-}
 
 // do email header lists match?
 function headersMatch(first, second) {
@@ -1571,7 +1496,7 @@ function findUser(index) {
             if(emailRequest.readyState == 4 && emailRequest.status == 200) {
                // parse the JSON file we received
                emailResp = JSON.parse(emailRequest.responseText);
-               
+
                // get the keys in the JSON file
                var keys = [];
                for(var k in emailResp) keys.push(k);
@@ -1660,6 +1585,7 @@ function findUser(index) {
                   // start getting the other information about all the partners we found
                   getOtherInfo(0, true);
                }
+
             }
             else if (emailRequest.readyState == 4) {
                // we didn't get the 200 success status, so no partners were found with this email; remove the partner and reload the Kardia pane
@@ -1685,7 +1611,7 @@ function findUser(index) {
                gifts.splice(index,1);	
                funds.splice(index,1);	
                types.splice(index,1);	
-               
+
                // if we aren't at the end of the list of email addresses, find partners for the next address
                if (index < emailAddresses.length) {
                   findUser(index);
@@ -4149,7 +4075,7 @@ function doDeleteHttpRequest(url, authenticate, username, password, doAfter) {
 // clicking the button takes you to that person in the Kardia pane
 function addKardiaButton(win){
 	// save list of header views we need to check
-	if (win.gExpandedHeaderView.from) {
+	if (win.gExpandedHeaderView && win.gExpandedHeaderView.from) {
 		var headersArray = [win.gExpandedHeaderView.from.textNode.childNodes, win.gExpandedHeaderView.to.textNode.childNodes, win.gExpandedHeaderView.cc.textNode.childNodes, win.gExpandedHeaderView.bcc.textNode.childNodes];
 		// iterate through header views
 		for (var j=0;j<headersArray.length;j++) {

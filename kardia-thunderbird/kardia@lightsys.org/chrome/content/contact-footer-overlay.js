@@ -521,6 +521,9 @@ var contactFooter = {
 	// to this controller function.
 	//
 	reEvaluate: function(event) {
+		// Skip everything if no message display window
+		if (typeof gMessageDisplay == "undefined") return;
+
 		// If reset pending, don't do this, instead defer until later.
 		if (contactFooter.do_reset) {
 			contactFooter.do_reeval = true;
@@ -561,7 +564,7 @@ var contactFooter = {
 		}
 
 		// Find author of email
-		if (gMessageDisplay && gMessageDisplay.displayedMessage) {
+		if (gMessageDisplay.displayedMessage) {
 			// if a message is displayed, show the toolbar
 			contactFooter.jQuery("#contact-box").prop("hidden", false);
 
@@ -597,69 +600,88 @@ var contactFooter = {
 		
 		// Things we do only if we've just switched to this particular email message
 		if (!contactFooter.initialized) {
-			// Is author in Kardia?  If not, note that this is a new sender so that we
-			// auto-create a record in Kardia for them when the user wants to record the
-			// email or whatnot.
-			//
-			contactFooter.isNewSender = false;
-			if (kardiacrm.partners_loaded && contactFooter.authorAddress && contactFooter.getEmailIndex(contactFooter.authorAddress) < 0)
-				contactFooter.isNewSender = true;
+			// the Deferred object will call the init code only once partner_data_loaded = true;
+			contactFooter.jQuery.when(kardiacrm.partner_data_loaded_deferred).then( function(value) {
+			
+				// Is author in Kardia?  If not, note that this is a new sender so that we
+				// auto-create a record in Kardia for them when the user wants to record the
+				// email or whatnot.
+				//
+				contactFooter.isNewSender = false;
+				if (kardiacrm.partners_loaded && contactFooter.authorAddress && contactFooter.getEmailIndex(contactFooter.authorAddress) < 0)
+					contactFooter.isNewSender = true;	
 
-			// Automatically check the Record Contact checkbox if this email's Message ID
-			// is already in the database.  Also set the newContactHistoryKey value so that
-			// the user can "undo" the recording of the email in Kardia by unchecking the box.
-			//
-			var idx = contactFooter.getEmailIndex(contactFooter.authorAddress);
-			if (kardiacrm.partner_data_loaded && idx >= 0 && mainWindow.notes[idx] && gMessageDisplay.displayedMessage) {
-				var msgid_exists = false;
-				for(var k=0;k<mainWindow.notes[idx].length;k++) {
-					var note = mainWindow.notes[idx][k];
-					if (note.message_id == gMessageDisplay.displayedMessage.messageId && note.contact_history_type == 'Email') {
-						msgid_exists = note.name;
-						break;
+				// Automatically check the Record Contact checkbox if this email's Message ID
+				// is already in the database.  Also set the newContactHistoryKey value so that
+				// the user can "undo" the recording of the email in Kardia by unchecking the box.
+				//
+			
+				var idx = contactFooter.getEmailIndex(contactFooter.authorAddress);
+				if (kardiacrm.partner_data_loaded && idx >= 0 && mainWindow.notes[idx] && gMessageDisplay.displayedMessage) {
+					
+					var msgid_exists = false;
+					for(var k=0;k<mainWindow.notes[idx].length;k++) {
+						var note = mainWindow.notes[idx][k];
+						if (note.message_id == gMessageDisplay.displayedMessage.messageId && note.contact_history_type == 'Email') {
+							msgid_exists = note.name;
+							break;
+						}
+					}
+					if (msgid_exists) {
+						contactFooter.jQuery("#record-contact").prop("checked", true);
+						contactFooter.newContactHistoryKey = msgid_exists;
 					}
 				}
-				if (msgid_exists) {
+
+				// Also look for a Contact Auto-Record entry in the database, and automatically
+				// select that option if so (and set the newAutorecordKey, so that if the user
+				// un-checks the box, we can delete the entry from Kardia).
+				//
+				// FIXME - this currently only works for the simple case of one autorecord entry
+				// for the partner.  It does not handle override entries (one system-wide enabled
+				// for the partner, and one specific to the collaborator but which is turned off),
+				// as that will require additional UI work to properly present to the user.  We
+				// will need to update this to solve the override problem once override capability
+				// is exposed in the web UI.
+				//
+				if (kardiacrm.partner_data_loaded && idx >= 0 && mainWindow.autorecord[idx]) {
+					var has_autorecord = false;
+					for(var k=0;k<mainWindow.autorecord[idx].length;k++) {
+						var ar = mainWindow.autorecord[idx][k];
+						if (ar.auto_record && (ar.collab_partner_id == mainWindow.myId || ar.auto_record_apply_all)) {
+							has_autorecord = ar.name;
+							break;
+						}
+					}
+					if (has_autorecord) {
+						contactFooter.jQuery("#record-future").prop("checked", true);
+						contactFooter.newAutorecordKey = has_autorecord;
+					}
+				}
+
+				// If we're auto-recording, BUT this message isn't yet marked for recording, then
+				// mark it for recording.  We don't do this automatically when the user checks the
+				// "future" checkbox initially.  But if they close and re-open this window right
+				// away, or if they open this window on any future or past email from the same
+				// email address, this here gets triggered.
+				//
+				if (kardiacrm.partners_loaded && contactFooter.jQuery("#record-future").prop("checked") && !contactFooter.jQuery("#record-contact").prop("checked")) {
 					contactFooter.jQuery("#record-contact").prop("checked", true);
-					contactFooter.newContactHistoryKey = msgid_exists;
 				}
-			}
 
-			// Also look for a Contact Auto-Record entry in the database, and automatically
-			// select that option if so (and set the newAutorecordKey, so that if the user
-			// un-checks the box, we can delete the entry from Kardia).
-			//
-			// FIXME - this currently only works for the simple case of one autorecord entry
-			// for the partner.  It does not handle override entries (one system-wide enabled
-			// for the partner, and one specific to the collaborator but which is turned off),
-			// as that will require additional UI work to properly present to the user.  We
-			// will need to update this to solve the override problem once override capability
-			// is exposed in the web UI.
-			//
-			if (kardiacrm.partner_data_loaded && idx >= 0 && mainWindow.autorecord[idx]) {
-				var has_autorecord = false;
-				for(var k=0;k<mainWindow.autorecord[idx].length;k++) {
-					var ar = mainWindow.autorecord[idx][k];
-					if (ar.auto_record && (ar.collab_partner_id == mainWindow.myId || ar.auto_record_apply_all)) {
-						has_autorecord = ar.name;
-						break;
-					}
-				}
-				if (has_autorecord) {
-					contactFooter.jQuery("#record-future").prop("checked", true);
-					contactFooter.newAutorecordKey = has_autorecord;
-				}
-			}
 
-			// If we're auto-recording, BUT this message isn't yet marked for recording, then
-			// mark it for recording.  We don't do this automatically when the user checks the
-			// "future" checkbox initially.  But if they close and re-open this window right
-			// away, or if they open this window on any future or past email from the same
-			// email address, this here gets triggered.
-			//
-			if (kardiacrm.partners_loaded && contactFooter.jQuery("#record-future").prop("checked") && !contactFooter.jQuery("#record-contact").prop("checked")) {
-				contactFooter.jQuery("#record-contact").prop("checked", true);
-			}
+				// Mark initialization complete if we operated with full data awareness
+				// on this pass.  After initialization, we don't go automatically clicking
+				// contact-record checkboxes for the user (we want the user to like us).
+				// The check for !do_sidebar here prevents us from calling things initialized
+				// if we're about to reload the sidebar from a message context change.
+				//
+				if (!contactFooter.initialized && kardiacrm.partner_data_loaded && !contactFooter.do_sidebar && gMessageDisplay.displayedMessage) {
+					contactFooter.log("initialized");
+					contactFooter.enableControls();
+					contactFooter.initialized = true;
+				}
+			});
 		}
 
 		// Whether to show the new person info box at bottom
@@ -777,27 +799,6 @@ var contactFooter = {
 			contactFooter.creatingTodo = false;
 		}
 
-		// Mark initialization complete if we operated with full data awareness
-		// on this pass.  After initialization, we don't go automatically clicking
-		// contact-record checkboxes for the user (we want the user to like us).
-		// The check for !do_sidebar here prevents us from calling things initialized
-		// if we're about to reload the sidebar from a message context change.
-		//
-		if (!contactFooter.initialized && kardiacrm.partner_data_loaded && !contactFooter.do_sidebar && gMessageDisplay.displayedMessage) {
-			contactFooter.log("initialized");
-			contactFooter.enableControls();
-			contactFooter.initialized = true;
-		}
-		else {
-			// Wait until it's ready to display everything. The data_loaded and do_sidebar are killing it here and we need
-			// to give it a chance to load.		
-			$.when(kardiacrm.partner_data_loaded_deferred).then( function(value) {
-				contactFooter.log("initialized");
-				contactFooter.enableControls();
-				contactFooter.initialized = true;
-			});
-			//if (kardiacrm.partner_data_loaded) kardiacrm.partner_data_loaded_deferred.resolve();
-		}
 		// Save changes, if needed.
 		contactFooter.reSync();
 
@@ -860,7 +861,6 @@ var contactFooter = {
 	// Reset the window and checkboxes as if it had just been opened.
 	reset: function() {
 		contactFooter.log("reset()");
-		console.log("reset");
 		contactFooter.jQuery("#contact-box").prop("hidden", true);
 		if (!kardiacrm.isPending('resync')) {
 			contactFooter.reSync(contactFooter.reset_bh);
@@ -987,7 +987,7 @@ addEventListener("load", function(event) {
 	contactFooter.log("load");
 
 	// Add the kardia icons/flags when the message is rendered.
-	gMessageListeners.push ({
+	if (typeof gMessageListeners !== 'undefined') gMessageListeners.push ({
 		onEndHeaders: function () {
 			kardiacrm.lastMessageWindow = window;
 			contactFooter.do_reeval = true;

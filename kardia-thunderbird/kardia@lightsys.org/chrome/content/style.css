@@ -201,3 +201,4 @@ mail-emailaddress {-moz-binding:url('chrome://kardia/content/email-binding.xml#k
 #kardia-compose-box { border-top:1px solid #a0a0a0; }
 #exp-preview { display:none; max-height:40px; font-size:80%; }
 .exp-label { min-width:100px; text-align:right; }
+.dialog-content-box {overflow-y:auto;}
