@@ -52,7 +52,7 @@ combined "system/query"
 	    from
 		/apps/kardia/data/Kardia_DB/a_config/rows cf,
 		/apps/kardia/modules/eg_wmtek/100rows.csv/rows cnt,
-		expression ('/apps/kardia/modules/eg_wmtek/ssapi.qy?start=' + (1 + convert(integer, :cnt:name) * 50) + '&limit=50') eg
+		expression ('/apps/kardia/modules/eg_wmtek/ssapi.qy?start=' + (0 + convert(integer, :cnt:name) * 50) + '&limit=50') eg
 	    where
 		:cf:a_config_name = 'SS_Lookback' and
 		convert(integer, :cnt:name) * 50 < convert(integer, :cf:a_config_value)
