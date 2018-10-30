@@ -1,0 +1,85 @@
+$Version=2$
+plugin_base_config_ss "widget/component-decl"
+    {
+    width=858;
+    height=490;
+    title = "TntConnect / MPDx";
+    description = "Configure Kardia integration with TntConnect and MPDx via .tntdatasync files.";
+    sequence = 1010;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=858; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_lbl "widget/label" { height=16; style=bold; text="TntDataSync File Generation:"; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		tnt_label_0 "widget/label" { height=45; text="The following values are included in each .tntdatasync file that is generated and are displayed to the missionary when using TntConnect or MPDx.  The 'Organization' should be the name of your mission group.  The 'Abbreviation' should be a shortened version of the organization name, and the 'Code' should be a short code that identifies your organization."; }
+		tnt_org_name "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="TntName"; text="Organization:"; width=500; ctl_type=editbox; }
+		tnt_abbrev "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="TntAbbrev"; text="Abbreviation:"; width=200; ctl_type=editbox; }
+		tnt_code "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="TntCode"; text="Code:"; width=200; ctl_type=editbox; }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+

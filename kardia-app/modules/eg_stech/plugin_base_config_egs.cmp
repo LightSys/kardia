@@ -1,0 +1,89 @@
+$Version=2$
+plugin_base_config_egs "widget/component-decl"
+    {
+    width=858;
+    height=490;
+    title = "StewardshipTech EGS";
+    description = "Configure electronic giving integration with Stewardship Technology's EGS online giving service, so that donations in EGS can be easily imported into the Kardia receipting and finance system";
+    sequence = 1000;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=858; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_lbl "widget/label" { height=16; style=bold; text="EGS Integration Configuration:"; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		ss_label_0 "widget/label" { height=15; text="Select this checkbox to allow Kardia to import data from EGS using Kardia's Gift Import tool."; }
+		ss_enab "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GiftImport_EGS"; text="Enabled:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
+		ss_label_1 "widget/label" { height=30; text="The API Username, Password, and Merchant Key, are values that need to be obtained from Stewardship Technology.  You can typically find these values in the Tools -> API section of your EGS account."; }
+		ss_user "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EGS_Username"; text="API Username:"; width=300; ctl_type=editbox; }
+		ss_pass "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EGS_Password"; text="API Password:"; width=300; ctl_type=editbox; }
+		ss_mkey "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EGS_MerchantKey"; text="Merchant Key:"; width=500; ctl_type=editbox; }
+		ss_label_2 "widget/label" { height=30; text="The Lookback controls how many months of data Kardia looks at when it connects to EGS to examine the online giving data for new and changed gift information.  We recommend setting this to between 1 and 3 months."; }
+		ss_lookback "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EGS_Lookback"; text="Lookback Months:"; width=200; ctl_type=editbox; }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+

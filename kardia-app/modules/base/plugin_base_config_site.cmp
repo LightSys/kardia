@@ -1,0 +1,86 @@
+$Version=2$
+plugin_base_config_site "widget/component-decl"
+    {
+    width=858;
+    height=490;
+    title = "Kardia Site";
+    description = "Configure general Kardia site settings";
+    sequence = 1;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=858; height=490;
+	spacing=7;
+
+	config_lbl "widget/label" { height=16; style=bold; text="Kardia Site Configuration:"; }
+
+	config_osrc "widget/osrc"
+	    {
+	    sql = "select * from object /apps/kardia/data/Site.struct";
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		site_name "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="site_name"; text="Site Name:"; width=200; ctl_type=editbox; }
+		site_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="site_description"; text="Description:"; width=500; ctl_type=editbox; }
+
+		site_rptlogo_hbox "widget/hbox"
+		    {
+		    width=550;
+		    height=24;
+		    spacing=10;
+		    site_rptlogo "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="site_report_logo"; text="Report Logo:"; width=500; ctl_type=editbox; }
+		    choose_file_btn "widget/textbutton"
+			{
+			width=40;
+			height=20;
+			text="...";
+			on_choose "widget/connector" { event=Click; target=filedialog; action=OpenModal; }
+			}
+		    }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+
+    filedialog "widget/component"
+	{
+	path = "/sys/cmp/window_container.cmp";
+	component = "/sys/cmp/file_selection.cmp";
+	visible = no;
+	title = "Select Report Image:";
+	toplevel = yes;
+	padding = 10;
+
+	select_cn1 "widget/connector" { event="Selected"; target=site_rptlogo; action=SetValue; Value=runclient(:Pathname); }
+	select_cn2 "widget/connector" { event="Selected"; target=filedialog; action=Close; }
+	cancel_cn1 "widget/connector" { event="Cancel"; target=filedialog; action=Close; }
+	}
+    }
+
