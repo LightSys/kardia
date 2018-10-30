@@ -11,7 +11,7 @@ ssapi "system/query"
 			i_eg_gift_interval = condition(:rec:recurring_period == 'month' and convert(string,:rec:recurring_interval) == '1', 'MONTHLY',
 						condition(:rec:recurring_period == 'month' and convert(string, :rec:recurring_interval) == '3', 'QUARTERLY',
 						condition((:rec:recurring_period == 'year' and convert(string, :rec:recurring_interval) == '1') or (:rec:recurring_period == 'month' and :rec:recurring_interval == '12'), 'ANNUAL',
-						upper(convert(string, :rec:recurring_interval) + :rec:recurring_period)
+						isnull(upper(convert(string, :rec:recurring_interval) + :rec:recurring_period), '')
 						))),
 			i_eg_receipt_desired = null,
 			i_eg_anonymous = null,
@@ -42,9 +42,18 @@ ssapi "system/query"
 			i_eg_account_uuid = convert(string, :pay:id),
 			i_eg_processor = :pay:gateway,
 			i_eg_lastfour = convert(string, :pay:last_four),
-			i_eg_gift_pmt_type = condition(:card:card_type is not null, :card:card_type, 
-						condition(:check:checking_type is not null, :check:checking_type,
-						    condition(:paypal:gateway is not null, 'paypal', 'unknown'
+			i_eg_gift_pmt_type = condition(:card:card_type is not null, 
+						condition(upper(:card:card_type) = 'VISA', 'Visa',
+						    condition(upper(:card:card_type) = 'MASTERCARD' or upper(:card:card_type) = 'MASTER CARD' or upper(:card:card_type) = 'MSTR' or upper(:card:card_type) = 'MSTRCARD' or upper(:card:card_type) = 'MC', 'MasterCard',
+							condition(upper(:card:card_type) = 'DISCOVER' or upper(:card:card_type) = 'DISC', 'Discover',
+							    condition(upper(:card:card_type) = 'AMEX' or upper(:card:card_type) = 'AMERICAN EXPRESS' or upper(:card:card_type) = 'AMERICANEXPRESS', 'Amex',
+							    :card:card_type
+							    )
+							)
+						    )
+						),
+						condition(:check:checking_type is not null, 'ACH',
+						    condition(:paypal:gateway is not null, 'Paypal', 'unknown'
 						    )
 						)
 					     ),
@@ -97,7 +106,11 @@ ssapi "system/query"
 			:check:name == 'check' and
 			:paypal:name == 'paypal' and
 			:cmp:name == 'campaign' and
-			:cmpitem:name == 'item'
+			:cmpitem:name == 'item' and
+			:cb:is_online == 1
+		having
+			char_length(isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways'), '')) <= 1 or
+			charindex(',' + :i_eg_processor + ',', ',' + (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways') + ',') > 0
 		";
 
     }

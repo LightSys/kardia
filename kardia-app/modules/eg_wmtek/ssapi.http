@@ -7,13 +7,13 @@ ssapi "application/http"
     // URL Parameters
     offset "http/parameter" { type=integer; source=path; usage=url; pathpart=1; }
     limit "http/parameter" { type=integer; source=path; usage=url; pathpart=2; }
-    order "http/parameter" { type=string; source=none; usage=url; default=runserver('id'); }
+    order "http/parameter" { type=string; source=none; usage=url; default=runserver('modified'); }
     dir "http/parameter" { type=string; source=none; usage=url; default=runserver('desc'); }
 
     // Connection
     server = runserver((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Site'));
     path = "/api/contribution-batches";
-    protocol = "http";
+    protocol = "https";
     method = GET;
     allowsubdirs = 0;
 
