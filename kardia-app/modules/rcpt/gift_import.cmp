@@ -35,8 +35,8 @@ gift_import "widget/component-decl"
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set
-			:p_donor_partner_key = (select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or :e1:i_eg_donor_alt_id = :e2:i_eg_donor_alt_id) and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc),
-			:i_eg_donormap_confidence = condition((select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or :e1:i_eg_donor_alt_id = :e2:i_eg_donor_alt_id) and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+			:p_donor_partner_key = (select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_donormap_confidence = condition((select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
 			:p_donor_partner_key is null
 		;
@@ -59,8 +59,8 @@ gift_import "widget/component-decl"
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set
-			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or :e1:i_eg_donor_alt_id = :e2:i_eg_donor_alt_id) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
-			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or :e1:i_eg_donor_alt_id = :e2:i_eg_donor_alt_id) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2)) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
 			:a_account_code is null
 		;
@@ -252,6 +252,7 @@ gift_import "widget/component-decl"
 				    :eg:i_eg_returned_status,
 				    :eg:i_eg_processor,
 				    :eg:i_eg_gift_amount,
+				    :eg:i_eg_gift_currency,
 				    :eg:i_eg_net_amount,
 				    fees = :eg:i_eg_gift_amount - :eg:i_eg_net_amount,
 				    :eg:i_eg_gift_pmt_type,
@@ -999,6 +1000,7 @@ gift_import "widget/component-decl"
 		id_doncountry "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_country; text="Country:"; ctl_type=label; }
 		id_donphone "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_phone; text="Phone:"; ctl_type=label; }
 		id_donemail "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_email; text="Email:"; ctl_type=label; }
+		id_curr "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_gift_currency; text="Currency:"; ctl_type=label; }
 		id_amount "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_gift_amount; text="Gift Amount:"; ctl_type=label; }
 		id_fees "widget/component" { path="/sys/cmp/smart_field.cmp"; field=fees; text="Fees:"; ctl_type=label; }
 		id_netamount "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_net_amount; text="Net Amount:"; ctl_type=label; }
