@@ -6,8 +6,10 @@ ssapi "system/query"
 
     sql = "	select
 			name = :cb:id + '|' + :contrib:id,
+			i_eg_service = 'SS',
 			i_eg_gift_uuid = convert(string, :cb:id),
 			i_eg_gift_date = convert(datetime, isnull(:rec:created, :cb:created)),
+			i_eg_gift_currency = convert(string, :cb:currency),
 			i_eg_gift_interval = condition(:rec:recurring_period == 'month' and convert(string,:rec:recurring_interval) == '1', 'MONTHLY',
 						condition(:rec:recurring_period == 'month' and convert(string, :rec:recurring_interval) == '3', 'QUARTERLY',
 						condition((:rec:recurring_period == 'year' and convert(string, :rec:recurring_interval) == '1') or (:rec:recurring_period == 'month' and :rec:recurring_interval == '12'), 'ANNUAL',
@@ -41,7 +43,7 @@ ssapi "system/query"
 
 			i_eg_account_uuid = convert(string, :pay:id),
 			i_eg_processor = :pay:gateway,
-			i_eg_lastfour = convert(string, :pay:last_four),
+			i_eg_gift_lastfour = convert(string, :pay:last_four),
 			i_eg_gift_pmt_type = condition(:card:card_type is not null, 
 						condition(upper(:card:card_type) = 'VISA', 'Visa',
 						    condition(upper(:card:card_type) = 'MASTERCARD' or upper(:card:card_type) = 'MASTER CARD' or upper(:card:card_type) = 'MSTR' or upper(:card:card_type) = 'MSTRCARD' or upper(:card:card_type) = 'MC', 'MasterCard',
@@ -107,10 +109,13 @@ ssapi "system/query"
 			:paypal:name == 'paypal' and
 			:cmp:name == 'campaign' and
 			:cmpitem:name == 'item' and
-			:cb:is_online == 1
+			:cb:is_online == 1 and
+			:cb:is_testing == 0
 		having
-			char_length(isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways'), '')) <= 1 or
-			charindex(',' + :i_eg_processor + ',', ',' + (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways') + ',') > 0
+			(char_length(isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways'), '')) <= 1 or
+			 charindex(',' + :i_eg_processor + ',', ',' + (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways') + ',') > 0) and
+			(char_length(isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Currencies'), '')) <= 1 or
+			 charindex(',' + :i_eg_gift_currency + ',', ',' + (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Currencies') + ',') > 0)
 		";
 
     }
