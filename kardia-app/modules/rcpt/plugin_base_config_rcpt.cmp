@@ -1,0 +1,93 @@
+$Version=2$
+plugin_base_config_rcpt "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Receipting";
+    description = "Configure receipting options";
+    sequence = 600;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		rcpt_lbl "widget/label" { height=16; style=bold; text="Receipting Configuration:"; }
+
+		rcpt_label_1 "widget/label" { height=30; text="Asset account and fund: when a receipting batch is posted, this determines what cash account and fund are used.  The account should either be a deposit account, an undeposited funds account, or a receivable account."; }
+		//rcpt_post_cc "widget/component" { height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Asset Fund:"; tooltip="Cost Center / Fund for cash side of GL batch"; label_width=100; popup_source = runclient("/apps/kardia/modules/gl/costctrs.qyt/" + :ledger_osrc:a_ledger_number + "/"); popup_text="Select Fund:"; width=250; empty_desc = "asset fund"; field="RcptCashFund"; }
+		//rcpt_post_acct "widget/component" { height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Asset Account:"; tooltip="Cash GL Account for Deposit"; label_width=100; popup_source = runclient("/apps/kardia/modules/gl/accounts.qyt/" + :ledger_osrc:a_ledger_number + "/"); popup_text="Select Account:"; width=250; empty_desc = "GL account"; field="RcptCashAcct"; }
+		rcpt_cacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptCashAcct"; text="Asset Account:"; width=300; label_width=150; ctl_type=editbox; }
+		rcpt_cfund "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptCashFund"; text="Asset Fund:"; width=300; label_width=150; ctl_type=editbox; }
+
+		rcpt_label_2 "widget/label" { height=15; text="Admin Fees Accounts: This determines what GL accounts are used for the inter-fund transfer of admin fees for gifts."; }
+		rcpt_expacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptAdminExp"; text="Admin Expense:"; width=300; label_width=150; ctl_type=editbox; }
+		rcpt_revacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptAdminRev"; text="Admin Revenue:"; width=300; label_width=150; ctl_type=editbox; }
+
+		rcpt_label_3 "widget/label" { height=15; text="Gift received date: This controls whether the 'received date' field on the gift entry form is disabled (read only) or not."; }
+		rcpt_disrcv "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptDisabRcvdDt"; text="Disable Received Date:"; width=300; label_width=150; ctl_type=checkbox; rcvd_hints "widget/hints" { style=notnull; } }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+

@@ -1,7 +1,7 @@
 $Version=2$
 plugin_base_config_ss "widget/component-decl"
     {
-    width=858;
+    width=828;
     height=490;
     title = "WMTEK SiteStacker";
     description = "Configure electronic giving integration with WMTEK's SiteStacker online giving service, so that donations in SiteStacker can be easily imported into the Kardia receipting and finance system";
@@ -10,7 +10,7 @@ plugin_base_config_ss "widget/component-decl"
     vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=858; height=490;
+	width=828; height=490;
 	spacing=7;
 
 	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
@@ -53,18 +53,23 @@ plugin_base_config_ss "widget/component-decl"
 		ss_enab "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GiftImport_SS"; text="Enabled:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
 
 		ss_label_1 "widget/label" { height=30; text="The Hostname, API ID, and API Secret, are values that need to be obtained from WMTEK.  You can typcially generate an API ID and API Secret that are associated with a user in the admin interface for your SiteStacker account."; }
-		ss_host "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_Site"; text="Hostname:"; width=300; ctl_type=editbox; }
+		ss_host "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_Site"; text="Hostname:"; width=500; ctl_type=editbox; }
 		ss_id "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_Username"; text="API ID:"; width=300; ctl_type=editbox; }
 		ss_secret "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_Secret"; text="API Secret:"; width=500; ctl_type=editbox; }
 
-		ss_label_2 "widget/label" { height=30; text="The Lookback controls how much data Kardia looks at when it connects to SiteStacker to examine the online giving data for new and changed gift information.  Set this to about 3 or 4 times the maximum number of gifts you expect to process each time you run the Gift Import tool."; }
-		ss_lookback "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_Lookback"; text="Lookback:"; width=200; ctl_type=editbox; }
+		ss_label_2 "widget/label" { height=60; text="The Lookback controls how much data Kardia looks at when it connects to SiteStacker to examine the online giving data for new and changed gift information.  Set this to at least about 5 times the maximum number of gifts you expect to process each time you run the Gift Import tool.  If your payment gateway does not provide settlement data, you can use 'Settlement' to provide a minimum delay (in days) before a transaction is importable into Kardia, to simulate a settlement interval."; }
 
-		ss_label_3 "widget/label" { height=30; text="Import Filters: with the 'Gateways' setting you can control what gateway data is imported into Kardia.  If this is left blank, transactions for all gateways will be imported, otherwise only those in the comma-separated list below will be imported."; }
+		lb_settle_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    ss_lookback "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_Lookback"; text="Lookback:"; width=200; ctl_type=editbox; }
+		    ss_settle "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_MinSettlement"; text="Settlement:"; width=200; ctl_type=editbox; }
+		    }
+
+		ss_label_3 "widget/label" { height=30; text="Import Filters: here you can control what gateway and currency data is imported into Kardia.  If this is left blank, transactions for all gateways and currencies will be imported, otherwise only those in the comma-separated lists below will be imported."; }
 		ss_procs "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_Gateways"; text="Gateways:"; width=500; ctl_type=editbox; }
+		ss_currs "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_Currencies"; text="Currencies:"; width=500; ctl_type=editbox; }
 
-		ss_label_4 "widget/label" { height=30; text="If your payment gateway does not provide settlement data, you can use this to provide a minimum delay (in days) before a transaction is importable into Kardia, to simulate a settlement interval."; }
-		ss_settle "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SS_MinSettlement"; text="Settlement:"; width=200; ctl_type=editbox; }
 		}
 	    }
 

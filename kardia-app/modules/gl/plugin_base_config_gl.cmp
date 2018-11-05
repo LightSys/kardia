@@ -1,0 +1,136 @@
+$Version=2$
+plugin_base_config_gl "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "GL Numbering";
+    description = "Configure the numbering plan for funds and accounts in the General Ledger";
+    sequence = 500;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		//fund_label_1 "widget/label" { height=15; text="Fund numbering: this specifies the minimum and maximum allowed values for GL fund codes."; }
+		fund_lbl "widget/label" { height=16; style=bold; text="GL Funds Configuration:"; }
+
+		fund_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    fund_min "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLFundLow"; text="Fund Minimum:"; width=250; label_width=150; ctl_type=editbox; }
+		    fund_max "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLFundHigh"; text="Maximum:"; width=200; ctl_type=editbox; }
+		    }
+
+		acct_lbl "widget/label" { height=16; style=bold; text="GL Accounts Configuration:"; }
+
+		asset_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    asset_min "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLAssetLow"; text="Asset Acct Minimum:"; width=250; label_width=150; ctl_type=editbox; }
+		    asset_max "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLAssetHigh"; text="Maximum:"; width=200; ctl_type=editbox; }
+		    }
+		asset_ifa "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLIfaAcct"; text="Interfund Asset:"; width=250; label_width=150; ctl_type=editbox; }
+
+		liab_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    liab_min "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLLiabLow"; text="Liability Acct Minimum:"; width=250; label_width=150; ctl_type=editbox; }
+		    liab_max "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLLiabHigh"; text="Maximum:"; width=200; ctl_type=editbox; }
+		    }
+
+		equity_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    equity_min "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLEquLow"; text="Equity Acct Minimum:"; width=250; label_width=150; ctl_type=editbox; }
+		    equity_max "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLEquHigh"; text="Maximum:"; width=200; ctl_type=editbox; }
+		    }
+		equity_gen "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLGenEquity"; text="General Equity:"; width=250; label_width=150; ctl_type=editbox; }
+
+		rev_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    rev_min "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLRevLow"; text="Revenue Acct Minimum:"; width=250; label_width=150; ctl_type=editbox; }
+		    rev_max "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLRevHigh"; text="Maximum:"; width=200; ctl_type=editbox; }
+		    }
+
+		exp_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    exp_min "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLExpLow"; text="Expense Acct Minimum:"; width=250; label_width=150; ctl_type=editbox; }
+		    exp_max "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLExpHigh"; text="Maximum:"; width=200; ctl_type=editbox; }
+		    }
+
+		batch_lbl "widget/label" { height=16; style=bold; text="GL Batch Numbers Configuration:"; }
+
+		batch_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    batch_min "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLBatchLow"; text="Batch # Minimum:"; width=250; label_width=150; ctl_type=editbox; }
+		    batch_max "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLBatchHigh"; text="Maximum:"; width=200; ctl_type=editbox; }
+		    }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+
