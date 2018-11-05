@@ -66,7 +66,7 @@ ssapi "system/query"
 			i_eg_desig_uuid = convert(string, :cmp:id),
 			i_eg_desig_name = :cmpitem:__cx_literal_name,
 
-			i_eg_status = condition(:trx:pending, 'pending', condition(:trx:success, 'paid', 'returned')),
+			i_eg_status = condition(:trx:pending or (:trx:success and not :trx:pending and convert(integer, isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_MinSettlement'), '0')) > 0 and datediff(day, convert(datetime, :trx:created), getdate()) < convert(integer, isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_MinSettlement'), '0'))), 'pending', condition(:trx:success, 'paid', 'returned')),
 			i_eg_returned_status = condition(not :trx:pending and not :trx:success, :trx:error_message, null),
 			i_eg_trx_uuid = convert(string, :trx:transaction_code),
 			i_eg_gift_trx_date = convert(datetime, :trx:created),
