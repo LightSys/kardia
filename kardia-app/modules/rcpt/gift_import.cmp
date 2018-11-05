@@ -1812,7 +1812,7 @@ gift_import "widget/component-decl"
 			    a_receipt_number = '', -- to be assigned later
 			    p_donor_partner_id = :p_donor_partner_key,
 			    a_receipt_sent = 0,
-			    a_receipt_desired = isnull((select :p_receipt_desired from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:p_partner_key = :eg:p_donor_partner_key and :d:a_gl_ledger_number = :eg:a_ledger_number), 'I'),
+			    a_receipt_desired = isnull((select :p_receipt_desired from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:p_partner_key = :eg:p_donor_partner_key and :d:a_gl_ledger_number = :eg:a_ledger_number), isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptEGDefRcpt' and :a_ledger_number = :eg:a_ledger_number), 'I')),
 			    a_first_gift = 0,
 			    a_goods_provided = $0,
 			    a_gift_received_date = :i_eg_gift_trx_date,

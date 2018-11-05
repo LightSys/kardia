@@ -47,7 +47,7 @@ gift_import_report "system/report"
 			:eg:i_eg_gift_trx_date,
 			:eg:i_eg_gift_date,
 			:eg:i_eg_gift_interval,
-			card_number = condition(:eg:i_eg_gift_pmt_type == 'ACH', 'EFT-', condition(:eg:i_eg_gift_pmt_type == 'Visa', 'VISA-', condition(:eg:i_eg_gift_pmt_type == 'MasterCard', 'MC-', condition(:eg:i_eg_gift_pmt_type == 'Discover', 'DISC-', '')))) + :eg:i_eg_gift_lastfour,
+			card_number = condition(:eg:i_eg_gift_pmt_type == 'ACH', 'EFT-', condition(:eg:i_eg_gift_pmt_type == 'Visa', 'VISA-', condition(:eg:i_eg_gift_pmt_type == 'MasterCard', 'MC-', condition(:eg:i_eg_gift_pmt_type == 'Discover', 'DISC-', condition(:i_eg_gift_pmt_type == 'Amex', 'AMEX-', ''))))) + :eg:i_eg_gift_lastfour,
 			:eg:i_eg_status,
 			:eg:i_eg_returned_status,
 			:eg:i_eg_gift_amount,
@@ -122,7 +122,7 @@ gift_import_report "system/report"
 	    {
 	    x=0; width=102; height=0;
 	    columns=10;
-	    widths=5,23,19,7,6,7,6,6,6,8;
+	    widths=5,22.5,19,7.5,6,7,6,6,6,8;
 	    colsep=1;
 	    nullformat="";
 	    moneyformat = "-###,###,##0.00";
