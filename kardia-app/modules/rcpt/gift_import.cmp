@@ -562,7 +562,7 @@ gift_import "widget/component-decl"
 				    {
 				    height=2;
 				    style=lowered;
-				    x=8; width=144;
+				    x=8; width=122;
 				    }
 
 				partner_rec_btn "widget/textbutton"
@@ -1864,6 +1864,7 @@ gift_import "widget/component-decl"
 			    a_confidential = 0,
 			    a_non_tax_deductible = isnull((select :a_non_tax_deductible from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ra where :ra:a_cost_center = :eg:a_cost_center and :ra:a_ledger_number = :eg:a_ledger_number and :ra:a_account_code = :eg:a_account_code), 0),
 			    a_comment = :i_eg_desig_notes,
+			    a_gift_admin_subtype = (select :ac:a_default_subtype from /apps/kardia/data/Kardia_DB/a_cc_admin_fee/rows ac where :ac:a_ledger_number = :eg:a_ledger_number and :ac:a_cost_center = :eg:a_cost_center),
 			    p_dn_donor_partner_id = :p_donor_partner_key,
 			    a_dn_gift_received_date = :i_eg_gift_trx_date,
 			    a_dn_receipt_number = (select :a_receipt_number from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_batch_number = convert(integer, :parameters:batchno) and :g:p_donor_partner_id = :eg:p_donor_partner_key and :g:a_ledger_number = :eg:a_ledger_number),
