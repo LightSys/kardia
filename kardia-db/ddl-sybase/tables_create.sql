@@ -3567,6 +3567,27 @@ create table i_eg_gift_import (
 go
 
 
+/* i_eg_gift_trx_fees */
+print "Creating table i_eg_gift_trx_fees"
+
+create table i_eg_gift_trx_fees (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this set of fees --  */
+        i_eg_service                          varchar(16)  not null,   /* Service ID (e.g. EG, EGS, SS) from Kardia online giving service plugin --  */
+        i_eg_processor                        varchar(80)  not null,   /* Name of payment processor (xml:processor) --  */
+        i_eg_gift_currency                    varchar(16)  not null,   /* currency of gift (e.g. USD, CAD, etc) --  */
+        i_eg_gift_pmt_type                    varchar(16)  not null,   /* Payment type (xml:payment-type) --  */
+        i_eg_fee_flat_amt                     money  not null,         /* Flat part of fee --  */
+        i_eg_fee_pct_amt                      float  not null,         /* Percentage part of fee --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
 /* i_eg_giving_url */
 print "Creating table i_eg_giving_url"
 

@@ -760,6 +760,11 @@ drop table i_eg_gift_import
 go
 
 
+/* i_eg_gift_trx_fees */
+drop table i_eg_gift_trx_fees
+go
+
+
 /* i_eg_giving_url */
 drop table i_eg_giving_url
 go

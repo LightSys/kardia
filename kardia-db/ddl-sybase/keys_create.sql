@@ -936,6 +936,12 @@ alter table i_eg_gift_import
 	add constraint i_eg_gift_import_pk primary key clustered (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
 go
 
+print "working on table i_eg_gift_trx_fees"
+
+alter table i_eg_gift_trx_fees
+	add constraint i_eg_gift_trx_fees_pk primary key clustered (a_ledger_number, i_eg_service, i_eg_processor, i_eg_gift_currency, i_eg_gift_pmt_type)
+go
+
 print "working on table i_eg_giving_url"
 
 alter table i_eg_giving_url

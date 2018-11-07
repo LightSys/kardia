@@ -1145,6 +1145,11 @@ create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_
 go
 
 
+/* i_eg_gift_trx_fees */
+/* create  clustered index i_eg_gift_trx_fees_pk on i_eg_gift_trx_fees (a_ledger_number, i_eg_service, i_eg_processor, i_eg_gift_currency, i_eg_gift_pmt_type)*/ 
+/* go */
+
+
 /* i_eg_giving_url */
 create  index i_eg_giveurl_revidx on i_eg_giving_url (a_cost_center, a_ledger_number)
 go
