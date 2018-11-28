@@ -4,7 +4,7 @@ plugin_rcpt_giftimport_SS "widget/component-decl"
     // This plugin provides integration with WMtek's Site Stacker online
     // giving service, via Site Stacker's JSON/REST API.
     //
-    description = "WMtek Site Stacker via JSON / REST API";
+    description = "WMTek Site Stacker via JSON / REST API";
     tag = "SS";
 
     // This SQL fragment pulls in the bulk of the data.  The ledger number

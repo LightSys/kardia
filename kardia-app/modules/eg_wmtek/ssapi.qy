@@ -23,7 +23,7 @@ ssapi "system/query"
 			i_eg_donormap_future = 1,
 
 			i_eg_donor_uuid = convert(string, :don:id),
-			i_eg_donor_alt_id = convert(string, :don:external_id),
+			i_eg_donor_alt_id = condition(convert(string, :don:external_id) is null or convert(string, :don:external_id) = '' or convert(string, :don:external_id) = ' ', null, convert(string, :don:external_id)),
 			i_eg_donor_prefix = :don:title,
 			i_eg_donor_name = :don:fullname,
 			i_eg_donor_given_name = :don:firstname,
