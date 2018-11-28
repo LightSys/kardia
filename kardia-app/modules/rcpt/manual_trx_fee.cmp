@@ -1,0 +1,737 @@
+$Version=2$
+manual_trx_fee "widget/component-decl"
+    {
+    // Design geometry
+    width=824;
+    height=620;
+
+    // Received parameters
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
+    vbox "widget/vbox"
+	{
+	x=0;
+	y=0;
+	width=824;
+	height=620;
+	spacing=10;
+
+	trx_fee_hdr "widget/hbox"
+	    {
+	    height=16;
+	    spacing=10;
+
+	    hdr_label "widget/label" { height=16; font_size=16; width=684; style=bold; text="Manual Transaction Fee Setup:"; }
+
+	    new_btn "widget/textbutton"
+		{
+		height=24;
+		width=130;
+		text = "New Fee";
+		fl_width=0;
+
+		on_new "widget/connector"
+		    {
+		    event=Click;
+		    target=trx_fee_osrc;
+		    action=Create;
+		    a_ledger_number = runclient(:ledger:value);
+		    s_date_created = runclient(getdate());
+		    s_created_by = runclient(user_name());
+		    s_date_modified = runclient(getdate());
+		    s_modified_by = runclient(user_name());
+		    }
+		}
+	    }
+
+	trx_fee_osrc "widget/osrc"
+	    {
+	    sql = " select
+			:a_ledger_number,
+			:i_eg_fees_id,
+			:i_eg_service,
+			svcname = (select :description from object wildcard '/apps/kardia/modules/*/plugin_rcpt_giftimport_*.cmp' pl where :pl:tag = :tf:i_eg_service),
+			:i_eg_processor,
+			:i_eg_gift_currency,
+			:i_eg_gift_pmt_type,
+			:i_eg_fee_flat_amt,
+			:i_eg_fee_pct_amt,
+			:s_date_created,
+			:s_created_by,
+			:s_date_modified,
+			:s_modified_by
+		    from
+			/apps/kardia/data/Kardia_DB/i_eg_gift_trx_fees/rows tf
+		    ";
+	    replicasize=200;
+	    readahead=200;
+	    baseobj="/apps/kardia/data/Kardia_DB/i_eg_gift_trx_fees/rows";
+
+	    trx_fee_table "widget/table"
+		{
+		height=208;
+		overlap_scrollbar = yes;
+		demand_scrollbar = yes;
+		initial_selection = no;
+		max_rowheight=100;
+		colsep = 0;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=4;
+		row_shadow_color="#a0a0a0";
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_angle=135;
+		row1_bgcolor=white;
+		row2_bgcolor=white;
+		rowhighlight_bgcolor="#e0e0e0";
+		textcolorhighlight=black;
+		rowcache_size=200;
+		nodata_message = "No fees configured yet.";
+
+		tf_ledger "widget/table-column" { title="Ledger"; width=60; value=runclient(:trx_fee_osrc:a_ledger_number); style=bold; }
+
+		tf_svc "widget/table-column" { title="Service/Currency"; width=200; value=runclient(isnull(:trx_fee_osrc:i_eg_service + '/', '') + isnull(:trx_fee_osrc:i_eg_processor + '/','') + isnull(:trx_fee_osrc:i_eg_gift_currency, '')); style=bold; }
+
+		tf_type "widget/table-column" { title="Payment Type"; width=80; value=runclient(isnull(:trx_fee_osrc:i_eg_gift_pmt_type, '')); style=bold; }
+
+		tf_flat "widget/table-column" { title="Flat Fee"; width=80; value=runclient(isnull(:trx_fee_osrc:i_eg_fee_flat_amt, '')); style=bold; }
+
+		tf_pct "widget/table-column" { title="Percent Fee"; width=80; value=runclient(isnull(:trx_fee_osrc:i_eg_fee_pct_amt, '')); style=bold; }
+
+		trx_fee_detail "widget/table-row-detail"
+		    {
+		    width=824; height=92;
+
+		    trx_fee_form "widget/form"
+			{
+			allow_query=no;
+
+			fields_hbox "widget/hbox"
+			    {
+			    x=0; y=10;
+			    width=824; height=58;
+			    row_height=24;
+			    spacing=5;
+
+			    f_service "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_service; width=250; text="Service:"; ctl_type=dropdown; sql="select label=:description, value=:tag from object wildcard '/apps/kardia/modules/*/plugin_rcpt_giftimport_*.cmp'"; }
+			    f_proc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_processor; width=250; text="Processor:"; ctl_type=dropdown; sql="select label=:i_eg_processor, value=:i_eg_processor from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows group by :i_eg_processor"; }
+			    f_curr "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_gift_currency; width=200; text="Currency:"; ctl_type=dropdown; sql="select label=:i_eg_gift_currency, value=:i_eg_gift_currency from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows group by :i_eg_gift_currency"; }
+			    f_type "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_gift_pmt_type; width=250; text="Payment Type:"; ctl_type=dropdown; sql="select label='Visa', value='Visa'; select label='MasterCard', value='MasterCard'; select label='Discover', value='Discover'; select label='Amex', value='Amex'; select label='ACH', value='ACH'"; }
+			    f_flatfee "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_fee_flat_amt; width=250; text="Flat Fee:"; ctl_type=editbox; }
+			    f_pctfee "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_fee_pct_amt; width=250; text="Percent Fee:"; ctl_type=editbox; }
+			    }
+			hidden_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+			}
+
+		    btns_hbox "widget/hbox"
+			{
+			x=0; y=68;
+			width=824; height=24;
+			spacing=10;
+			align=center;
+
+			save_btn "widget/textbutton"
+			    {
+			    width=130;
+			    height=24;
+			    text = "Save";
+			    enabled=runclient(:trx_fee_form:is_savable);
+			    
+			    on_save "widget/connector" { event=Click; target=trx_fee_form; action=Save; }
+			    }
+
+			cancel_btn "widget/textbutton"
+			    {
+			    width=130;
+			    height=24;
+			    text = "Cancel";
+			    enabled=runclient(:trx_fee_form:is_discardable);
+
+			    on_cancel "widget/connector" { event=Click; target=trx_fee_form; action=Discard; }
+			    }
+
+			delete_btn "widget/textbutton"
+			    {
+			    width=130;
+			    height=24;
+			    text = "Delete";
+			    
+			    on_delete "widget/connector"
+				{
+				event=Click;
+				target=trx_fee_form;
+				action=Delete;
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+	hbox "widget/hbox"
+	    {
+	    height=376;
+	    spacing=20;
+
+	    gift_selection_vbox "widget/vbox"
+		{
+		width=604;
+		spacing=10;
+
+		gift_range_label "widget/label" { height=16; font_size=16; style=bold; text="Gift Selection Options:"; }
+
+		gift_range "widget/hbox"
+		    {
+		    height=40;
+		    spacing=10;
+
+		    gift_range_form "widget/form"
+			{
+			allow_obscure=yes;
+			allow_query=no;
+
+			gift_range_start "widget/vbox"
+			    {
+			    width=195;
+			    spacing=3;
+
+			    start_label "widget/label" { height=12; style=bold; text="Start Date:"; }
+			    start_dt "widget/datetime" { height=24; date_only=1; default_time="00:00:00"; fieldname=startdt; }
+			    }
+
+			gift_range_end "widget/vbox"
+			    {
+			    width=195;
+			    spacing=3;
+
+			    end_label "widget/label" { height=12; style=bold; text="End Date:"; }
+			    end_dt "widget/datetime" { height=24; date_only=1; default_time="23:59:59"; fieldname=enddt; }
+			    }
+
+			gift_range_period "widget/vbox"
+			    {
+			    width=194;
+			    spacing=3;
+
+			    gper_label "widget/label" { height=12; style=bold; text="Gift Batch Period:"; }
+			    gper_dd "widget/dropdown"
+				{
+				height=24;
+				mode=dynamic_server;
+				sql = runserver("select label=:a_period_desc, value=:a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number=" + quote(:this:ledger) + " and :a_summary_only = 0 and :a_status = 'O' order by :a_start_date desc");
+				fieldname=giftperiod;
+				}
+			    }
+			}
+		    }
+
+		gift_sel_sep "widget/autolayoutspacer" { height=2; }
+
+		gift_sel_label_hbox "widget/hbox"
+		    {
+		    height=16;
+		    spacing=10;
+
+		    gift_sel_label "widget/label" { height=16; width=464; font_size=16; style=bold; text="Gift Selection and Fees Preview:"; }
+
+		    preview_btn "widget/textbutton"
+			{
+			height=24;
+			width=130;
+			fl_width=0;
+			text = "Preview";
+
+			on_preview "widget/connector"
+			    {
+			    event=Click;
+			    target=gift_sel_osrc;
+			    action=QueryParam;
+			    }
+			}
+		    }
+
+		gift_sel_osrc "widget/osrc"
+		    {
+		    gso_period "widget/parameter" { param_name=period; type=string; default=runclient(:period:value); }
+		    gso_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+		    gso_start "widget/parameter" { param_name=start; type=string; default=runclient(condition(:start_dt:value is null or :start_dt:value = '' or :start_dt:value = ' ', null, :start_dt:value)); }
+		    gso_end "widget/parameter" { param_name=end; type=string; default=runclient(condition(:end_dt:value is null or :end_dt:value = '' or :end_dt:value = ' ', null, :end_dt:value)); }
+		    gso_gper "widget/parameter" { param_name=giftperiod; type=string; default=runclient(condition(:gper_dd:value is null or :gper_dd:value = '' or :gper_dd:value = ' ', null, :gper_dd:value)); }
+
+		    sql = " declare object dateinfo;
+
+			    select :dateinfo:start = convert(datetime, :parameters:start);
+			    select :dateinfo:end = convert(datetime, :parameters:end);
+		    
+			    select
+				:eg:a_cost_center,
+				fundtxt = :eg:a_cost_center + ' - ' + :cc:a_cc_desc,
+				datetxt = condition(min(:i_eg_gift_trx_date) = max(:i_eg_gift_trx_date), '', substring(convert(string, min(:i_eg_gift_trx_date)), 1, 6) + ' - ') + substring(convert(string, max(:i_eg_gift_trx_date)), 1, 11),
+				amt = sum(:eg:i_eg_gift_amount),
+				cnt = count(1),
+				fee = round(sum(:eg:i_eg_gift_amount) * (select first(:i_eg_fee_pct_amt) from /apps/kardia/data/Kardia_DB/i_eg_gift_trx_fees/rows f where :f:a_ledger_number = :eg:a_ledger_number and :f:i_eg_service = :eg:i_eg_service and :f:i_eg_processor = :eg:i_eg_processor and :f:i_eg_gift_currency = :eg:i_eg_gift_currency and :f:i_eg_gift_pmt_type = :eg:i_eg_gift_pmt_type) + count(1) * (select first(:i_eg_fee_flat_amt) from /apps/kardia/data/Kardia_DB/i_eg_gift_trx_fees/rows f where :f:a_ledger_number = :eg:a_ledger_number and :f:i_eg_service = :eg:i_eg_service and :f:i_eg_processor = :eg:i_eg_processor and :f:i_eg_gift_currency = :eg:i_eg_gift_currency and :f:i_eg_gift_pmt_type = :eg:i_eg_gift_pmt_type), 2),
+				:eg:i_eg_service,
+				:eg:i_eg_processor,
+				:eg:i_eg_gift_currency,
+				:eg:i_eg_gift_pmt_type
+			    from
+				/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+				/apps/kardia/data/Kardia_DB/a_cost_center/rows cc
+			    where
+				:eg:a_ledger_number = :i:a_ledger_number and
+				:eg:a_batch_number = :i:a_batch_number and
+				:eg:i_eg_gift_amount = :i:a_amount and
+				:eg:i_eg_gift_trx_date = :i:a_dn_gift_received_date and
+				:eg:a_cost_center = :i:a_cost_center and
+				:eg:a_account_code = :i:a_account_code and
+				:eg:p_donor_partner_key = :i:p_dn_donor_partner_id and
+				:eg:a_ledger_number = :parameters:ledger and
+				:eg:a_batch_number_fees is null and
+				:cc:a_ledger_number = :eg:a_ledger_number and 
+				:cc:a_cost_center = :eg:a_cost_center and
+				(:parameters:giftperiod is null or :parameters:giftperiod = :i:a_period) and
+				(:dateinfo:start is null or :dateinfo:start <= :eg:i_eg_gift_trx_date) and
+				(:dateinfo:end is null or :dateinfo:end >= :eg:i_eg_gift_trx_date)
+			    order by
+				:eg:i_eg_gift_trx_date asc
+			    group by
+				:eg:a_cost_center,
+				:eg:i_eg_service,
+				:eg:i_eg_processor,
+				:eg:i_eg_gift_currency,
+				:eg:i_eg_gift_pmt_type
+			    having
+				:cnt > 0
+			    ";
+		    replicasize=200;
+		    readahead=200;
+
+		    gift_sel_table "widget/table"
+			{
+			height=262;
+			overlap_scrollbar = yes;
+			demand_scrollbar = yes;
+			initial_selection = no;
+			max_rowheight=64;
+			colsep = 0;
+			cellvspacing=4;
+			inner_padding=2;
+			row_border_radius=4;
+			row_shadow_color="#a0a0a0";
+			row_shadow_radius=2;
+			row_shadow_offset=1;
+			row_shadow_angle=135;
+			rowcache_size=200;
+			nodata_message = "No gifts needing transaction fees.";
+
+			tg_svc "widget/table-column" { title="Service/Currency"; width=120; value=runclient(isnull(:gift_sel_osrc:i_eg_service + '/', '') + isnull(:gift_sel_osrc:i_eg_processor + '/','') + isnull(:gift_sel_osrc:i_eg_gift_currency, '')); }
+			tg_dates "widget/table-column" { title="Gift Dates"; width=120; fieldname=datetxt; }
+			tg_type "widget/table-column" { title="Type"; width=65; fieldname=i_eg_gift_pmt_type; }
+			tg_costctr "widget/table-column" { title="Fund"; width=60; fieldname=a_cost_center; }
+			tg_cnt "widget/table-column" { title="# Gifts"; width=40; fieldname=cnt; align=right; }
+			tg_amt "widget/table-column" { title="Amount"; width=60; fieldname=amt; align=right; }
+			tg_fee "widget/table-column" { title="Fee"; width=60; fieldname=fee; align=right; }
+			}
+		    }
+		}
+
+	    create_vbox "widget/vbox"
+		{
+		width=200;
+		spacing=10;
+
+		create_form "widget/form"
+		    {
+		    allow_query=no;
+		    allow_obscure=yes;
+
+		    create_label "widget/label" { height=16; font_size=16; style=bold; text="Batch Options:"; }
+
+		    name_vbox "widget/vbox"
+			{
+			height=40;
+			spacing=3;
+
+			name_label "widget/label" { height=12; style=bold; text="Fees Batch Name:"; }
+			name_eb "widget/editbox" { height=24; fieldname=bname; }
+			}
+
+		    per_vbox "widget/vbox"
+			{
+			height=40;
+			spacing=3;
+
+			per_label "widget/label" { height=12; style=bold; text="Fees Batch Period:"; }
+			per_dd "widget/dropdown"
+			    {
+			    height=24;
+			    mode=dynamic_server;
+			    sql = runserver("select label=:a_period_desc, value=:a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number=" + quote(:this:ledger) + " and :a_summary_only = 0 and :a_status = 'O' order by :a_start_date desc");
+			    fieldname=bper;
+			    }
+			}
+
+		    bdate_vbox "widget/vbox"
+			{
+			height=40;
+			spacing=3;
+
+			bdate_label "widget/label" { height=12; style=bold; text="Fees Batch Date:"; }
+			bdate_dt "widget/datetime" { height=24; date_only=1; default_time="12:00:00"; fieldname=bdate; }
+			}
+
+		    dacct_vbox "widget/vbox"
+			{
+			height=40;
+			spacing=3;
+
+			dacct_label "widget/label" { height=12; style=bold; text="Debit GL Account:"; }
+			dacct_eb "widget/component" { height=24; path="/apps/kardia/modules/gl/select_acct.cmp"; field=dacct; label=""; label_width=0; ledger=runserver(:this:ledger); popup_label="Debit Account Code"; }
+			}
+
+		    cacct_vbox "widget/vbox"
+			{
+			height=40;
+			spacing=3;
+
+			cacct_label "widget/label" { height=12; style=bold; text="Credit GL Account:"; }
+			cacct_eb "widget/component" { height=24; path="/apps/kardia/modules/gl/select_acct.cmp"; field=cacct; label=""; label_width=0; ledger=runserver(:this:ledger); popup_label="Credit Account Code"; }
+			}
+
+		    cfund_vbox "widget/vbox"
+			{
+			height=40;
+			spacing=3;
+
+			cfund_label "widget/label" { height=12; style=bold; text="Credit Fund:"; }
+			cfund_eb "widget/component" { height=24; path="/apps/kardia/modules/gl/select_fund.cmp"; field=cfund; label=""; label_width=0; ledger=runserver(:this:ledger); popup_label="Credit Fund"; }
+			}
+		    }
+
+		create_sep "widget/autolayoutspacer" { height=2; }
+
+		create_btn "widget/textbutton"
+		    {
+		    height=24;
+		    width=200;
+		    text = "Create Fees Batch";
+		    enabled=runclient(not (:bdate_dt:value is null) and not (:name_eb:content is null) and not (:per_dd:value is null) and not (:cfund_eb:content is null) and not (:cacct_eb:content is null) and not (:dacct_eb:content is null) and :dacct_eb:description != '**INVALID**' and :cacct_eb:description != '**INVALID**' and :cfund_eb:description != '**INVALID**' and char_length(:dacct_eb:description) > 1 and char_length(:cacct_eb:description) > 1 and char_length(:cfund_eb:description) > 1 and char_length(:name_eb:content) > 1);
+
+		    on_create "widget/connector"
+			{
+			event=Click;
+			target=create_fee_batch_osrc;
+			action=QueryParam;
+			}
+		    }
+		}
+	    }
+	}
+
+    create_fee_batch_osrc "widget/osrc"
+	{
+	// Gift selection parameters
+	cfb_start "widget/parameter" { param_name=start; type=string; default=runclient(condition(:start_dt:value is null or :start_dt:value = '' or :start_dt:value = ' ', null, :start_dt:value)); }
+	cfb_end "widget/parameter" { param_name=end; type=string; default=runclient(condition(:end_dt:value is null or :end_dt:value = '' or :end_dt:value = ' ', null, :end_dt:value)); }
+	cfb_gper "widget/parameter" { param_name=giftperiod; type=string; default=runclient(condition(:gper_dd:value is null or :gper_dd:value = '' or :gper_dd:value = ' ', null, :gper_dd:value)); }
+
+	// Batch creation parameters
+	cfb_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+	cfb_period "widget/parameter" { param_name=period; type=string; default=runclient(:per_dd:value); }
+	cfb_bdate "widget/parameter" { param_name=bdate; type=string; default=runclient(:bdate_dt:value); }
+	cfb_bname "widget/parameter" { param_name=bname; type=string; default=runclient(:name_eb:content); }
+	cfb_dacct "widget/parameter" { param_name=dacct; type=string; default=runclient(:dacct_eb:content); }
+	cfb_cacct "widget/parameter" { param_name=cacct; type=string; default=runclient(:cacct_eb:content); }
+	cfb_cfund "widget/parameter" { param_name=cfund; type=string; default=runclient(:cfund_eb:content); }
+
+	sql = "	declare object info;
+
+		-- Validate batch date and period information
+		select :info:bdate = convert(datetime, :parameters:bdate);
+		select :info:pstart=:a_start_date, :info:pend=:a_end_date from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_period = :parameters:period;
+		select :info:error = '';
+		select :info:start = convert(datetime, :parameters:start);
+		select :info:end = convert(datetime, :parameters:end);
+
+		select
+		    :info:error = 'Batch date ' + :parameters:bdate + ' is not within period ' + :parameters:period
+		where
+		    :info:bdate < :info:pstart or :info:bdate > :info:pend
+		;
+
+		select
+		    :info:error = 'Period ' + :parameters:period + ' is not valid'
+		where
+		    :info:pstart is null
+		;
+
+		-- Validate GL accounts
+		select :info:ccat=:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows where :a_ledger_number = :parameters:ledger and :a_account_code = :parameters:cacct;
+		select :info:dcat=:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows where :a_ledger_number = :parameters:ledger and :a_account_code = :parameters:dacct;
+
+		select
+		    :info:error = 'Debit Account ' + :parameters:dacct + ' is not valid'
+		where
+		    :info:dcat is null
+		;
+
+		select
+		    :info:error = 'Credit Account ' + :parameters:cacct + ' is not valid'
+		where
+		    :info:ccat is null
+		;
+
+		select
+		    :info:error = 'Interfund/External Mismatch between Debit Account ' + :parameters:dacct + ' and Credit Account ' + :parameters:cacct
+		where
+		    (substring(:info:dcat, 1, 1) != '5' and substring(:info:dcat, 1, 1) != '4') or (substring(:info:ccat, 1, 1) != '5' and substring(:info:ccat, 1, 1) != '4') or substring(:info:dcat, 2, 1) != substring(:info:ccat, 2, 1)
+		;
+
+		-- Interfund asset data
+		select :info:ifa_acct = isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows ac where :ac:a_ledger_number = :parameters:ledger and :ac:a_config_name = 'GLIfaAcct'), '1900');
+		select :info:ifa_class = isnull( (select :a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:ledger and :a:a_account_code = :info:ifa_acct), '19');
+
+		-- Create the batch
+		select
+		    :info:batch = :a_next_batch_number
+		from
+		    /apps/kardia/data/Kardia_DB/a_ledger/rows l
+		where
+		    :l:a_ledger_number = :parameters:ledger and
+		    :info:error = ''
+		;
+		update
+		    /apps/kardia/data/Kardia_DB/a_ledger/rows l
+		set
+		    :a_next_batch_number = :a_next_batch_number + 1
+		where
+		    :l:a_ledger_number = :parameters:ledger and
+		    :info:error = ''
+		;
+		insert into
+		    /apps/kardia/data/Kardia_DB/a_batch/rows
+		select
+		    a_batch_number = :info:batch,
+		    a_ledger_number = :parameters:ledger,
+		    a_period = :parameters:period,
+		    a_batch_desc = :parameters:bname,
+		    a_next_journal_number = 0,
+		    a_next_transaction_number = 0,
+		    a_default_effective_date = :info:bdate,
+		    a_origin = 'EG',
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		where
+		    :info:error = ''
+		;
+
+		-- Mark the gifts as having a fees batch.
+		update
+		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		set
+		    :eg:a_batch_number_fees = :info:batch
+		where
+		    :eg:a_ledger_number = :i:a_ledger_number and
+		    :eg:a_batch_number = :i:a_batch_number and
+		    :eg:i_eg_gift_amount = :i:a_amount and
+		    :eg:i_eg_gift_trx_date = :i:a_dn_gift_received_date and
+		    :eg:a_cost_center = :i:a_cost_center and
+		    :eg:a_account_code = :i:a_account_code and
+		    :eg:p_donor_partner_key = :i:p_dn_donor_partner_id and
+		    :eg:a_ledger_number = :parameters:ledger and
+		    (:parameters:giftperiod is null or :parameters:giftperiod = :i:a_period) and
+		    (:info:start is null or :info:start <= :eg:i_eg_gift_trx_date) and
+		    (:info:end is null or :info:end >= :eg:i_eg_gift_trx_date) and
+		    :info:error = ''
+		;
+
+		-- Create the debit transaction entries
+		insert into
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows
+		select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :info:batch,
+		    a_journal_number = 1,
+		    a_period = :parameters:period,
+		    a_effective_date = :info:bdate,
+		    a_transaction_type = 'T',
+		    a_cost_center = :eg:a_cost_center,
+		    a_account_code = :parameters:dacct,
+		    a_account_category = :info:dcat,
+		    a_amount = round(sum(:eg:i_eg_gift_amount) * (select first(:i_eg_fee_pct_amt) from /apps/kardia/data/Kardia_DB/i_eg_gift_trx_fees/rows f where :f:a_ledger_number = :eg:a_ledger_number and :f:i_eg_service = :eg:i_eg_service and :f:i_eg_processor = :eg:i_eg_processor and :f:i_eg_gift_currency = :eg:i_eg_gift_currency and :f:i_eg_gift_pmt_type = :eg:i_eg_gift_pmt_type) + count(1) * (select first(:i_eg_fee_flat_amt) from /apps/kardia/data/Kardia_DB/i_eg_gift_trx_fees/rows f where :f:a_ledger_number = :eg:a_ledger_number and :f:i_eg_service = :eg:i_eg_service and :f:i_eg_processor = :eg:i_eg_processor and :f:i_eg_gift_currency = :eg:i_eg_gift_currency and :f:i_eg_gift_pmt_type = :eg:i_eg_gift_pmt_type), 2),
+		    a_posted = 1,
+		    a_modified = 0,
+		    a_corrected = 0,
+		    a_correcting = 0,
+		    a_reconciled = 0,
+		    a_postprocessed = 0,
+		    a_postprocess_type = 'XX',
+		    a_origin = 'EG',
+		    a_recv_document_id = '',
+		    a_receipt_sent = 0,
+		    a_receipt_desired = 0,
+		    a_first_gift = 0,
+		    a_goods_provided = $0,
+		    a_comment = 'Electronic giving fees for ' + count(1) + ' gift' + condition(count(1) == 1, '', 's'),
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+		where
+		    :eg:a_ledger_number = :parameters:ledger and
+		    :eg:a_batch_number_fees = :info:batch and
+		    :info:error = ''
+		order by
+		    :eg:i_eg_gift_trx_date asc
+		group by
+		    :eg:a_cost_center,
+		    :eg:i_eg_service,
+		    :eg:i_eg_processor,
+		    :eg:i_eg_gift_currency,
+		    :eg:i_eg_gift_pmt_type
+		having
+		    :a_amount != $0
+		;
+
+		-- Create the credit side of the transaction entries
+		insert into
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows
+		select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :info:batch,
+		    a_journal_number = 1,
+		    a_period = :parameters:period,
+		    a_effective_date = :info:bdate,
+		    a_transaction_type = 'T',
+		    a_cost_center = :parameters:cfund,
+		    a_account_code = :parameters:cacct,
+		    a_account_category = :info:ccat,
+		    a_amount = $0 - sum(:t:a_amount),
+		    a_posted = 1,
+		    a_modified = 0,
+		    a_corrected = 0,
+		    a_correcting = 0,
+		    a_reconciled = 0,
+		    a_postprocessed = 0,
+		    a_postprocess_type = 'XX',
+		    a_origin = 'EG',
+		    a_recv_document_id = '',
+		    a_receipt_sent = 0,
+		    a_receipt_desired = 0,
+		    a_first_gift = 0,
+		    a_goods_provided = $0,
+		    a_comment = 'Electronic giving fees credit',
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_batch_number = :info:batch and
+		    :t:a_account_code = :parameters:dacct and
+		    :info:error = ''
+		having
+		    :a_amount != $0
+		;
+
+		-- Interfund asset balancing journal
+		insert into
+			/apps/kardia/data/Kardia_DB/a_transaction/rows
+		select
+			a_amount = $0 - sum(:t:a_amount),
+			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_cost_center,
+			a_account_code = :info:ifa_acct,
+			a_cost_center=:c:a_bal_cost_center,
+			a_journal_number = 2,
+			:t:a_batch_number,
+			:t:a_ledger_number,
+			:t:a_period,
+			:t:a_effective_date,
+			:t:a_transaction_type,
+			a_account_category = :info:ifa_class,
+			a_posted = 1,
+			a_modified = 0,
+			a_corrected = 0,
+			:t:a_correcting,
+			:t:a_corrected_batch,
+			:t:a_corrected_journal,
+			:t:a_corrected_transaction,
+			:t:a_reconciled,
+			:t:a_postprocessed,
+			:t:a_postprocess_type,
+			:t:a_origin,
+			a_receipt_sent = 0,
+			a_receipt_desired = 0,
+			a_first_gift = 0,
+			a_goods_provided = $0,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		where
+			:t:a_ledger_number = :c:a_ledger_number and
+			:t:a_cost_center = :c:a_cost_center and
+			:t:a_ledger_number = :parameters:ledger and
+			:t:a_batch_number = :info:batch and
+			:t:a_journal_number = 1 and
+			:info:error = ''
+		group by
+			:t:a_ledger_number,
+			:t:a_batch_number,
+			:t:a_journal_number,
+			:c:a_bal_cost_center
+		order by
+			:t:a_cost_center
+		having
+			:a_amount != $0
+		;
+
+		-- Return error status to user
+		select
+		    :info:error,
+		    :info:batch
+		";
+	autoquery=never;
+	replicasize=2;
+	readahead=2;
+
+	on_complete "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_delay=0.2;
+	    target=manual_trx_fee;
+	    action=Alert;
+	    Message=runclient(condition(:create_fee_batch_osrc:error == '', 'Batch ' + :create_fee_batch_osrc:batch + ' created successfully', :create_fee_batch_osrc:error));
+	    }
+
+	on_complete_2 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_delay=0.7;
+	    target=gift_sel_osrc;
+	    action=QueryParam;
+	    }
+
+	on_complete_3 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_delay=0.7;
+	    target=name_eb;
+	    action=SetValue;
+	    Value=runclient('');
+	    }
+	}
+    }

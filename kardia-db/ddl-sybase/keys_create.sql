@@ -939,7 +939,7 @@ go
 print "working on table i_eg_gift_trx_fees"
 
 alter table i_eg_gift_trx_fees
-	add constraint i_eg_gift_trx_fees_pk primary key clustered (a_ledger_number, i_eg_service, i_eg_processor, i_eg_gift_currency, i_eg_gift_pmt_type)
+	add constraint i_eg_gift_trx_fees_pk primary key clustered (a_ledger_number, i_eg_fees_id)
 go
 
 print "working on table i_eg_giving_url"
