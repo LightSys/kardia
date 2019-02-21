@@ -1,0 +1,245 @@
+$Version=2$
+task_burnup_svg "system/report"
+    {
+    // Created by:	Greg Beeley
+    // Last change:	01/25/2019
+    document_format="text/plain";
+    content_type="image/svg+xml";
+    pagewidth=255;
+    pageheight=255;
+    marginleft=0;
+    marginright=0;
+    margintop=0;
+    marginbottom=0;
+    text_pagebreak = no;
+
+    // Rendering controls
+    image_width "report/parameter" { type=integer; default=400; }
+    image_height "report/parameter" { type=integer; }
+
+    // Data controls
+    project "report/parameter" { type=integer; }
+    sprint "report/parameter" { type=integer; }
+
+    // Compute block size, etc.
+    overall_qy "report/query"
+	{
+	sql = "	declare object info;
+
+		-- Color
+		select
+		    :info:color = :t_project_color
+		from
+		    /apps/kardia/data/Kardia_DB/t_project/rows
+		where
+		    :t_project_id = :this:project
+		;
+
+		-- Which sprint?
+		select
+		    :info:sprint = :t_sprint_id,
+		    :info:sprintname = :t_sprint_label
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		where
+		    :t_project_id = :this:project and
+		    (:t_sprint_id = :this:sprint or
+		    (getdate() >= :t_sprint_start and getdate() <= :t_sprint_end))
+		order by
+		    :t_sprint_start desc
+		limit
+		    1
+		;
+
+		-- Did not find one?
+		select
+		    :info:sprint = isnull(:info:sprint, :t_sprint_id),
+		    :info:sprintname = isnull(:info:sprintname, :t_sprint_label)
+		where
+		    :t_project_id = :this:project
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		order by
+		    :t_sprint_start desc
+		limit
+		    1
+		;
+
+		-- Find all the tasks in-scope for this sprint
+		select
+		    :info:taskcnt = count(1),
+		    :info:taskhours = isnull(sum(:t:t_task_hours), 0.0),
+		    :info:taskhoursdone = isnull(sum(condition(:ts:t_task_state_type = 'C', :t:t_task_hours, :t:t_task_hours * isnull(:t:t_task_percent, 0.0))), 0.0)
+		from
+		    /apps/kardia/data/Kardia_DB/t_task/rows t,
+		    /apps/kardia/data/Kardia_DB/t_task_state/rows ts
+		where
+		    :t:t_sprint_id = :info:sprint and
+		    :ts:t_task_state_id = :t:t_task_state
+		;
+
+		-- Find the team multiplier for hours
+		select
+		    :info:multiplier = isnull(sum(isnull(:p:t_skill_ratio, 1.0)), 1.0)
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint_participant/rows sp,
+		    /apps/kardia/data/Kardia_DB/t_participant/rows p
+		where
+		    :sp:t_sprint_id = :info:sprint and
+		    :sp:t_project_id = :p:t_project_id and
+		    :sp:p_partner_key = :p:p_partner_key
+		;
+
+		-- Find the work hours in-scope for this sprint
+		select
+		    :info:workhours = :info:multiplier * isnull(sum(:st:t_time_hours), 0.0),
+		    :info:workhoursdone = :info:multiplier * isnull(sum(condition(getdate() < :st:t_time_start, 0.0, condition(datediff(minute, :st:t_time_start, getdate()) / 60.0 > :st:t_time_hours, :st:t_time_hours, datediff(minute, :st:t_time_start, getdate()) / 60.0))), 0.0)
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint_time/rows st
+		where
+		    :st:t_sprint_id = :info:sprint
+		;
+
+		select
+		    :info:image_height = isnull(:this:image_height, :this:image_width * 2 / 3)
+		;
+
+		select
+		    :info:color,
+		    :info:multiplier,
+		    :info:sprint,
+		    :info:sprintname,
+		    :info:taskcnt,
+		    :info:taskhours,
+		    :info:taskhoursdone,
+		    :info:workhours,
+		    :info:workhoursdone,
+		    image_width = :this:image_width,
+		    :info:image_height,
+		    y_task = (:info:image_height) - (:info:image_height) * (condition(:info:workhours = 0, 0.0, :info:taskhours / :info:workhours))
+		";
+	}
+
+    // List of data points for the actual progress line.  For this, we pull
+    // from the t_task_history table, to know what has happened to the tasks
+    // over the course of the sprint.
+    //
+    data_points_qy "report/query"
+	{
+	sql = "	declare object tasklist;
+
+		select
+		    :tasklist:tasks = sum(',' + :t_task_id) + ','
+		from
+		    /apps/kardia/data/Kardia_DB/t_task/rows t
+		where
+		    :t:t_sprint_id = :overall_qy:sprint
+		;
+		    
+		select
+		    transition_date = max(:th1:t_transition_date),
+		    min_transition_date = min(:th1:t_transition_date),
+		    tasks = :tasklist:tasks
+		from
+		    /apps/kardia/data/Kardia_DB/t_task_history/rows th1
+		where
+		    charindex(',' + convert(string, :th1:t_task_id) + ',', :tasklist:tasks) > 0
+		order by
+		    datepart(year, :th1:t_transition_date) asc,
+		    datepart(month, :th1:t_transition_date) asc,
+		    datepart(day, :th1:t_transition_date) asc,
+		    datepart(hour, :th1:t_transition_date) asc
+		group by
+		    datepart(year, :th1:t_transition_date),
+		    datepart(month, :th1:t_transition_date),
+		    datepart(day, :th1:t_transition_date),
+		    datepart(hour, :th1:t_transition_date)
+		having
+		    :transition_date is not null
+		";
+
+	rowid "report/aggregate" { compute="count(1)"; reset=0; }
+	}
+
+    // Here we find the actual task completion metrics at a given data point
+    data_point_detail_qy "report/query"
+	{
+	sql = "	select
+		    taskhours = sum(last(isnull(:t_task_hours, 0.0))),
+		    taskhoursdone = sum(last(isnull(:t_task_hours, 0.0) * isnull(:t_task_percent, 0.0)))
+		from
+		    /apps/kardia/data/Kardia_DB/t_task_history/rows th2
+		where
+		    charindex(',' + convert(string, :th2:t_task_id) + ',', :data_points_qy:tasks) > 0 and
+		    :th2:t_transition_date <= :data_points_qy:transition_date
+		group by
+		    :th2:t_task_id
+		order by
+		    :th2:t_task_id,
+		    :th2:t_transition_date
+		";
+	}
+
+    // Here we find the work time elapsed for a given data point
+    data_point_work_qy "report/query"
+	{
+	sql = "	select
+		    workhoursdone = :overall_qy:multiplier * isnull(sum(condition(:data_points_qy:transition_date < :st:t_time_start, 0.0, condition(datediff(minute, :st:t_time_start, :data_points_qy:transition_date) / 60.0 > :st:t_time_hours, :st:t_time_hours, datediff(minute, :st:t_time_start, :data_points_qy:transition_date) / 60.0))), 0.0)
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint_time/rows st
+		where
+		    :st:t_sprint_id = :overall_qy:sprint
+		";
+	}
+
+    // Geometry for the data point
+    dp_geom_qy "report/query"
+	{
+	sql = "	select
+		    x = :overall_qy:image_width * condition(:overall_qy:workhours == 0, 0.0, (:data_point_work_qy:workhoursdone / :overall_qy:workhours)),
+		    y = :overall_qy:image_height - :overall_qy:image_height * condition(:overall_qy:taskhours == 0, 0.0, (:data_point_detail_qy:taskhoursdone / :overall_qy:workhours))
+		";
+	}
+
+    // Here's our SVG
+    main_form "report/form"
+	{
+	source = overall_qy;
+
+	// SVG header
+	data "report/area"
+	    {
+	    x=0; y=0; width=255; height=0;
+	    value=runserver('<?xml version="1.0" standalone="no"?>\n' +
+			    '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
+			    '<svg width="' + :this:image_width + 'px" height="' + :overall_qy:image_height + 'px" viewBox="0 0 ' + :this:image_width + 'px ' + :overall_qy:image_height + 'px" xmlns="http://www.w3.org/2000/svg" version="1.1">\n' +
+			    //'    <line x1="0" y1="0" x2="0" y2="' + :overall_qy:image_height + '" style="stroke:#334466; stroke-width:2px;"/>\n' + 
+			    //'    <line x1="0" y1="' + :overall_qy:image_height + '" x2="' + :overall_qy:image_width + '" y2="' + :overall_qy:image_height + '" style="stroke:#334466; stroke-width:2px;"/>\n' +
+			    '    <line x1="0" y1="' + :overall_qy:image_height + '" x2="' + :overall_qy:image_width + '" y2="0" style="stroke:#496293; stroke-width:1px;"/>\n' +
+			    '    <line x1="0" y1="' + :overall_qy:image_height + '" x2="' + :overall_qy:image_width + '" y2="' + :overall_qy:y_task + '" style="stroke:' + :overall_qy:color + '; stroke-width:2px; stroke-dasharray:3,2;"/>\n'
+			    );
+	    }
+
+	// Here come the blocks
+	task_form "report/form"
+	    {
+	    source = data_points_qy, data_point_detail_qy, data_point_work_qy, dp_geom_qy;
+
+	    task_data "report/area"
+		{
+		x=0; width=255; height=0;
+		value=runserver(condition(:data_points_qy:rowid == 1,
+				'    <path stroke="' + :overall_qy:color + '" stroke-width="2" fill="none" d="M ' + :dp_geom_qy:x + ' ' + :dp_geom_qy:y + ' ',
+				'L ' + :dp_geom_qy:x + ' ' + :dp_geom_qy:y + ' ')
+			);
+		}
+	    }
+
+	// End
+	end_data "report/area"
+	    {
+	    x=0; width=255; height=0;
+	    value=runserver(condition(:data_points_qy:rowid == 0, '', '"/>\n') + '</svg>\n');
+	    }
+	}
+    } 

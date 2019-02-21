@@ -287,6 +287,12 @@ alter table e_tag_activity drop index e_tagact_ptnr_idx;
 alter table e_tag_activity drop index e_tagact_tagid_idx;
 
 
+/* e_tag_source */
+/* drop index e_tag_source.e_tagsrc_pk */ 
+/* go */
+alter table e_tag_source drop index e_tagsrc_src_idx;
+
+
 /* e_document_type */
 alter table e_document_type drop index e_doctype_label_idx;
 alter table e_document_type drop index e_doctype_parent_idx;
@@ -831,6 +837,7 @@ alter table a_subtrx_gift_item drop index a_gifttrxi_gift_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_mcode_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_rcpt_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_recip_id_idx;
+alter table a_subtrx_gift_item drop index a_gifttrxi_src_idx;
 
 
 /* a_subtrx_gift_rcptcnt */
@@ -895,7 +902,17 @@ alter table a_support_review_target drop index a_supptgt_target_idx;
 
 
 /* a_descriptives */
+alter table a_descriptives drop index a_descr_cc_idx;
+alter table a_descriptives drop index a_descr_par_idx;
 /* drop index a_descriptives.a_descr_pk */ 
+/* go */
+
+
+/* a_descriptives_hist */
+alter table a_descriptives_hist drop index a_descrhist_cc_idx;
+alter table a_descriptives_hist drop index a_descrhist_merge_idx;
+alter table a_descriptives_hist drop index a_descrhist_par_idx;
+/* drop index a_descriptives_hist.a_descrhist_pk */ 
 /* go */
 
 
@@ -946,6 +963,11 @@ alter table i_eg_gift_import drop index i_eg_kdonor_idx;
 alter table i_eg_gift_import drop index i_eg_kfeebatch_idx;
 alter table i_eg_gift_import drop index i_eg_kfund_idx;
 alter table i_eg_gift_import drop index i_eg_kgiftbatch_idx;
+
+
+/* i_eg_gift_trx_fees */
+/* drop index i_eg_gift_trx_fees.i_eg_gift_trx_fees_pk */ 
+/* go */
 
 
 /* i_eg_giving_url */
@@ -999,6 +1021,60 @@ alter table c_chat drop index c_public_idx;
 /* drop index c_member.c_member_pk */ 
 /* go */
 alter table c_member drop index s_username_idx;
+
+
+/* t_project */
+/* drop index t_project.t_project_pk */ 
+/* go */
+
+
+/* t_sprint */
+/* drop index t_sprint.t_sprint_pk */ 
+/* go */
+alter table t_sprint drop index t_sprint_proj_idx;
+
+
+/* t_sprint_time */
+/* drop index t_sprint_time.t_sprint_time_pk */ 
+/* go */
+alter table t_sprint_time drop index t_time_proj_idx;
+alter table t_sprint_time drop index t_time_sprint_idx;
+
+
+/* t_task */
+/* drop index t_task.t_task_pk */ 
+/* go */
+alter table t_task drop index t_task_proj_idx;
+alter table t_task drop index t_task_sprint_idx;
+
+
+/* t_participant */
+alter table t_participant drop index t_part_proj_idx;
+/* drop index t_participant.t_participant_pk */ 
+/* go */
+
+
+/* t_sprint_participant */
+alter table t_sprint_participant drop index t_spart_proj_idx;
+alter table t_sprint_participant drop index t_spart_sprint_idx;
+/* drop index t_sprint_participant.t_sprint_participant_pk */ 
+/* go */
+
+
+/* t_assignee */
+/* drop index t_assignee.t_assignee_pk */ 
+/* go */
+alter table t_assignee drop index t_assignee_task_idx;
+
+
+/* t_task_state */
+/* drop index t_task_state.t_tstate_pk */ 
+/* go */
+
+
+/* t_task_history */
+/* drop index t_task_history.t_history_pk */ 
+/* go */
 
 
 /* s_config */
@@ -1094,4 +1170,9 @@ alter table s_audit drop index s_audit_strval_idx;
 
 /* s_user_role */
 /* drop index s_user_role.s_user_role_pk */ 
+/* go */
+
+
+/* s_global_search */
+/* drop index s_global_search.s_global_search_pk */ 
 /* go */

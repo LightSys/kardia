@@ -1,7 +1,7 @@
 $Version=2$
 TableMaintenance "widget/page"
     {
-    height=680; width=1000;
+    height=680; width=1080;
     title = "Kardia - Table Maintenance";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl";
     bgcolor = "#e0e0e0";
@@ -12,7 +12,7 @@ TableMaintenance "widget/page"
     mnMain "widget/menu"
 	{
 	widget_class = "bar";
-	x=0; y=0; width=1000;
+	x=0; y=0; width=1080;
 
 	type_rpt "widget/repeat"
 	    {
