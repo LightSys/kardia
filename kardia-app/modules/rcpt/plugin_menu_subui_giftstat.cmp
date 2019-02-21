@@ -1,0 +1,167 @@
+$Version=2$
+plugin_menu_subui_giftstat "widget/component-decl"
+    {
+    width=924;
+    height=180;
+
+    vbox "widget/vbox"
+	{
+	x=20; y=0;
+	width=884;
+	height=200;
+	spacing=10;
+
+	stats_title "widget/label" { height=18; font_size=16; style=bold; align=center; text="Giving Overview..."; fl_width=100; }
+
+	search_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	data_hbox "widget/hbox"
+	    {
+	    height=141;
+	    spacing=20;
+
+	    summary_pane "widget/pane"
+		{
+		width=190;
+		style=flat;
+
+		summary_osrc "widget/osrc"
+		    {
+		    period "widget/parameter" { type=string; }
+		    ledger "widget/parameter" { type=string; }
+		    sql = " declare object info;
+
+			    select
+				:info:start = :a_start_date,
+				:info:end = :a_end_date,
+				:info:parent = :a_parent_period
+			    from
+				/apps/kardia/data/Kardia_DB/a_period/rows
+			    where
+				:a_period = :parameters:period and
+				:a_ledger_number = :parameters:ledger
+			    ;
+
+			    select
+				:info:startperiod = first(:a_period),
+				:info:endperiod = last(:a_period)
+			    from
+				/apps/kardia/data/Kardia_DB/a_period/rows
+			    where
+				:a_parent_period = :info:parent and
+				:a_ledger_number = :parameters:ledger
+			    order by
+				:a_start_date asc
+			    ;
+
+			    select
+				period = :info:parent,
+				cnt = count(1),
+				amt = sum(:a_amount)
+			    from
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+			    where
+				:g:a_ledger_number = :parameters:ledger and
+				:g:a_period >= :info:startperiod and
+				:g:a_period <= :info:endperiod
+			    ;
+
+			    select
+				period = :a_period,
+				cnt = count(1),
+				amt = sum(:a_amount)
+			    from
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+			    where
+				:g:a_ledger_number = :parameters:ledger and
+				:g:a_period >= :info:startperiod and
+				:g:a_period <= :info:endperiod
+			    group by
+				:a_period desc
+			    order by
+				:a_period desc
+			    ;
+
+			    --select :info:prevperiod = :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_period < :parameters:period and :a_ledger_number = :parameters:ledger order by :a_start_date desc limit 1;
+
+			    --select
+			--	:info:prevperiod,
+			--	total = (select isnull(sum(:a_amount),$0) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_ledger_number = :parameters:ledger and :g:a_period = :parameters:period and :g:a_posted = 1),
+			--	cnt = (select count(:a_amount) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_ledger_number = :parameters:ledger and :g:a_period = :parameters:period and :g:a_posted = 1),
+			--	prevtotal = (select isnull(sum(:a_amount),$0) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_ledger_number = :parameters:ledger and :g:a_period = :info:prevperiod and :g:a_posted = 1),
+			--	prevcnt = (select count(:a_amount) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_ledger_number = :parameters:ledger and :g:a_period = :info:prevperiod and :g:a_posted = 1)
+			    ";
+		    replicasize=20;
+		    readahead=20;
+
+		    summary_label "widget/label"
+			{
+			condition =0;
+			x=0; y=0;
+			fl_width=10;
+			fl_height=10;
+			width=190;
+			height=141;
+			style=bold;
+			value=runclient('Giving for ' + :kardia_sysattrs_osrc:CurrentPeriod + ': ' + :summary_osrc:total + '\nGifts for ' + :kardia_sysattrs_osrc:CurrentPeriod + ': ' + :summary_osrc:cnt + '\n\nGiving for ' + :summary_osrc:prevperiod + ': ' + :summary_osrc:prevtotal + '\nGifts for ' + :summary_osrc:prevperiod + ': ' + :summary_osrc:prevcnt + '');
+			}
+
+		    summary_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=kardia_sysattrs_osrc;
+			target_key_1=Ledger;
+			key_1=ledger;
+			target_key_2=CurrentPeriod;
+			key_2=period;
+			revealed_only=yes;
+			}
+
+		    summary_table "widget/table"
+			{
+			x=0; y=0;
+			fl_width=10;
+			fl_height=10;
+			width=190;
+			height=141;
+			overlap_scrollbar = yes;
+			demand_scrollbar = yes;
+			show_mouse_focus = no;
+			initial_selection = no;
+			max_rowheight=200;
+			colsep = 0;
+			cellvspacing=2;
+			inner_padding=2;
+			row_border_radius=4;
+			rowhighlight_border_color="#6080c0";
+			rowhighlight_shadow_color="#6080c0";
+			rowhighlight_shadow_radius=2;
+			rowhighlight_shadow_offset=1;
+			rowhighlight_shadow_angle=135;
+			row1_bgcolor="white";
+			row2_bgcolor="white";
+			rowhighlight_bgcolor="#faf8ff";
+			textcolorhighlight="black";
+			titlecolor = white;
+			titlebar = yes;
+			hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			rowcache_size=200;
+			nodata_message = "one moment...";
+
+			t_period "widget/table-column" { title="Period"; fieldname=period; style=bold; }
+			t_cnt "widget/table-column" { title="# Gifts"; fieldname=cnt; style=bold; }
+			t_amt "widget/table-column" { title="Amount"; fieldname=amt; style=bold; }
+			}
+		    }
+		}
+
+	    chart "widget/image"
+		{
+		width=674;
+		fl_width=10;
+		fl_height=10;
+		source=runclient("/apps/kardia/modules/rcpt/gift_bar_chart_svg.rpt?ledger=" + :kardia_sysattrs_osrc:Ledger + "&bar_color=%233E7D38&image_height=" + :chart:height + "&image_width=" + :chart:width + "&months=25");
+		}
+	    }
+	}
+    }

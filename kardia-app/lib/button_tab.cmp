@@ -1,0 +1,100 @@
+$Version=2$
+button_tab "widget/component-decl"
+    {
+    width=48; height=76;
+
+    image "widget/parameter" { type=string; }
+    text "widget/parameter" { type=string; deploy_to_client=yes; }
+    active "widget/parameter" { type=integer; deploy_to_client=yes; default=0; }
+
+    expose_events_for = btn;
+
+    // Reminder number that can be displayed on a button
+    SetNumber "widget/component-decl-action" { }
+    onSetNumber1 "widget/connector"
+	{
+	event_condition=runclient(:Which == :text:value);
+	event=SetNumber; target=num_visib_var; action=SetValue; Value=runclient(condition(char_length(convert(string, :Number)) > 1 or :Number > 0, 'yes', 'no'));
+	}
+    onSetNumber2 "widget/connector"
+	{
+	event_condition=runclient(:Which == :text:value);
+	event=SetNumber; target=num_color_var; action=SetValue; Value=runclient(isnull(:Color, 'red'));
+	}
+    onSetNumber3 "widget/connector"
+	{
+	event_condition=runclient(:Which == :text:value);
+	event=SetNumber; target=number_label; action=SetValue; Value=runclient(:Number);
+	}
+    num_visib_var "widget/variable" { type=string; default='no'; }
+    num_color_var "widget/variable" { type=string; default='red'; }
+
+    // Enable/Disable the point-triangle when button is active/inactive
+    point_change1 "widget/connector"
+	{
+	source=active;
+	event=DataChange;
+	event_condition=runclient(:Value != 0);
+	target=pane;
+	action=Point;
+	X=runclient(:pane:width / 2);
+	Y=runclient(:pane:height + 12);
+	BorderColor=runclient('transparent');
+	//FillColor=runclient('#6080c0');
+	FillColor=runclient('#5d7cba');
+	}
+    point_change2 "widget/connector"
+	{
+	source=active;
+	event=DataChange;
+	event_condition=runclient(:Value == 0);
+	target=pane;
+	action=Point;
+	}
+
+    // The widget itself
+    pane "widget/pane"
+	{
+	x=0; y=0;
+	width=48; height=76;
+	style=flat;
+	background=runclient(condition(:active:value,"/apps/kardia/images/bg/lsblue_gradient.png",null));
+
+	vbox "widget/vbox"
+	    {
+	    x=0; y=10;
+	    width=48; height=60;
+	    spacing=0;
+
+	    btn "widget/textbutton"
+		{
+		width=48;
+		height=50;
+		//fl_width=0;
+		border_style=none;
+		image=runserver(:this:image);
+		text=runserver(:this:text);
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		widget_class=crm_iconbutton;
+		}
+
+	    number_label "widget/label"
+		{
+		height=12;
+		font_size=9;
+		fgcolor=white;
+		bgcolor=runclient(isnull(:num_color_var:value, 'red'));
+		border_color=white;
+		border_radius=4;
+		padding=1;
+		style=bold;
+		text="";
+		visible=runclient(isnull(:num_visib_var:value, 'no'));
+		align=center;
+		}
+	    }
+	}
+    }

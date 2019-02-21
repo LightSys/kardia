@@ -1,0 +1,153 @@
+$Version=2$
+plugin_menu_act_logins "widget/component-decl"
+    {
+    width=216;
+    height=142;
+    type = "Settings";
+    sql = null;
+
+    menu_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    t_rowdetail "widget/parameter" { type=object; find_container="widget/table-row-detail"; }
+
+    reload_ledgers_on_open "widget/connector"
+	{
+	source=t_rowdetail;
+	event=Open;
+	target=f_ledger;
+	action=SetItems;
+	SQL = runserver("select label = :a_ledger_number + ' - ' + :a_ledger_desc, value = :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows");
+	}
+    reload_years_on_open "widget/connector"
+	{
+	source=t_rowdetail;
+	event=Open;
+	target=f_year;
+	action=SetItems;
+	SQL = runserver("select label = :a_period + ' - ' + :a_period_desc, value = :a_period, grp = :a_ledger_number from /apps/kardia/data/Kardia_DB/a_period/rows where :a_parent_period is null order by :a_period desc");
+	}
+    reload_periods_on_open "widget/connector"
+	{
+	source=t_rowdetail;
+	event=Open;
+	target=f_start;
+	action=SetItems;
+	RowLimit=360;
+	SQL = runserver("select label = :a_period + ' - ' + :a_period_desc, value = :a_period, grp = :a_ledger_number + '|' + :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 order by :a_period asc");
+	}
+
+    settings_pane "widget/pane"
+	{
+	x=0; y=0;
+	width=216; height=142;
+	border_radius=4;
+	bgcolor="#faf8ff";
+	style=flat;
+	shadow_angle=135;
+	shadow_radius=4;
+	shadow_color=black;
+	shadow_location=inside;
+
+	settings_form "widget/form"
+	    {
+	    objectsource = "kardia_sysattrs_osrc";
+
+	    settings_vbox "widget/vbox"
+		{
+		x=10;y=10;
+		width=196;height=122;
+		spacing=8;
+
+		f_ledger "widget/component"
+		    { 
+		    height=24; 
+		    path="/sys/cmp/smart_field.cmp"; 
+		    field='Ledger';
+		    ctl_type=dropdown;
+		    text='Ledger:';
+		    label_width=70;
+		    sql = runserver("select :a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows");
+
+		    ledger_sel_cn "widget/connector"
+			{
+			event="DataChange";
+			event_condition=runclient(char_length(:Value) > 0);
+			target=f_year;
+			action=SetGroup;
+			Group = runclient(:Value);
+			}
+		    ledger_sel_cn2 "widget/connector"
+			{
+			event="DataChange";
+			event_condition=runclient(char_length(:Value) > 0);
+			target=f_start;
+			action=SetGroup;
+			Group = runclient(:Value + '|' + :f_year:value);
+			}
+		    }
+
+		f_year "widget/component"
+		    { 
+		    height=24;
+		    path="/sys/cmp/smart_field.cmp"; 
+		    field='YearPeriod'; 
+		    ctl_type=dropdown; 
+		    text='Year:'; 
+		    sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_period/rows where :a_parent_period is null order by :a_period desc");
+		    label_width=70;
+
+		    year_sel_cn "widget/connector"
+			{
+			event="DataChange";
+			event_condition=runclient(char_length(:Value) > 0);
+			target=f_start;
+			action=SetGroup;
+			Group = runclient(:f_ledger:value + '|' + :Value);
+			}
+		    }
+
+		f_start "widget/component"
+		    {
+		    height=24;
+		    path="/sys/cmp/smart_field.cmp";
+		    field='CurrentPeriod';
+		    ctl_type=dropdown;
+		    text='Period:';
+		    label_width=70;
+		    sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_ledger_number + '|' + :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 order by :a_period asc");
+
+		    }
+
+		controls_hbox "widget/hbox"
+		    {
+		    height=30;
+		    spacing=8;
+		    align=center;
+
+		    ok_btn "widget/textbutton"
+			{
+			text="Apply";
+			width=90; height=24;
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+			enabled=runclient(:settings_form:is_savable);
+			ok_cn "widget/connector" { event=Click; target=settings_form; action=Save; }
+			}
+
+		    cancel_btn "widget/textbutton"
+			{
+			text="Cancel";
+			width=90; height=24;
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+			enabled=runclient(:settings_form:is_discardable);
+			cancel_cn "widget/connector" { event=Click; target=settings_form; action=Discard; }
+			}
+		    }
+		}
+	    }
+	}
+    }
