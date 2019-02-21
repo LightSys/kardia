@@ -183,7 +183,7 @@ cd_batches "widget/component-decl"
 	    width = 172;
 	    height = 40;
 	    text = "New Batch";
-	    enabled = runclient(:new_batch_form:is_newable and :periods_osrc:a_status == 'O');
+	    enabled = runclient(:new_batch_form:is_newable and (:periods_osrc:a_status == 'O' or :periods_osrc:a_status == 'P'));
 
 	    new_cn "widget/connector" { event=Click; target=new_batch_form; action=New; }
 	    }
@@ -194,7 +194,7 @@ cd_batches "widget/component-decl"
 	    width = 172;
 	    height = 40;
 	    text = "Edit Batch Details";
-	    enabled = runclient(:new_batch_form:is_editable and :periods_osrc:a_status == 'O');
+	    enabled = runclient(:new_batch_form:is_editable and (:periods_osrc:a_status == 'O' or :periods_osrc:a_status == 'P'));
 
 	    detail_cn "widget/connector" { event=Click; target=new_batch_form; action=Edit; }
 	    }
