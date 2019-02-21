@@ -6,8 +6,10 @@ ssapi "system/query"
 
     sql = "	select
 			name = :cb:id + '|' + :contrib:id,
+			i_eg_service = 'SS',
 			i_eg_gift_uuid = convert(string, :cb:id),
 			i_eg_gift_date = convert(datetime, isnull(:rec:created, :cb:created)),
+			i_eg_gift_currency = convert(string, :cb:currency),
 			i_eg_gift_interval = condition(:rec:recurring_period == 'month' and convert(string,:rec:recurring_interval) == '1', 'MONTHLY',
 						condition(:rec:recurring_period == 'month' and convert(string, :rec:recurring_interval) == '3', 'QUARTERLY',
 						condition((:rec:recurring_period == 'year' and convert(string, :rec:recurring_interval) == '1') or (:rec:recurring_period == 'month' and :rec:recurring_interval == '12'), 'ANNUAL',
@@ -21,7 +23,7 @@ ssapi "system/query"
 			i_eg_donormap_future = 1,
 
 			i_eg_donor_uuid = convert(string, :don:id),
-			i_eg_donor_alt_id = convert(string, :don:external_id),
+			i_eg_donor_alt_id = condition(convert(string, :don:external_id) is null or convert(string, :don:external_id) = '' or convert(string, :don:external_id) = ' ', null, convert(string, :don:external_id)),
 			i_eg_donor_prefix = :don:title,
 			i_eg_donor_name = :don:fullname,
 			i_eg_donor_given_name = :don:firstname,
@@ -41,7 +43,7 @@ ssapi "system/query"
 
 			i_eg_account_uuid = convert(string, :pay:id),
 			i_eg_processor = :pay:gateway,
-			i_eg_lastfour = convert(string, :pay:last_four),
+			i_eg_gift_lastfour = convert(string, :pay:last_four),
 			i_eg_gift_pmt_type = condition(:card:card_type is not null, 
 						condition(upper(:card:card_type) = 'VISA', 'Visa',
 						    condition(upper(:card:card_type) = 'MASTERCARD' or upper(:card:card_type) = 'MASTER CARD' or upper(:card:card_type) = 'MSTR' or upper(:card:card_type) = 'MSTRCARD' or upper(:card:card_type) = 'MC', 'MasterCard',
@@ -64,7 +66,7 @@ ssapi "system/query"
 			i_eg_desig_uuid = convert(string, :cmp:id),
 			i_eg_desig_name = :cmpitem:__cx_literal_name,
 
-			i_eg_status = condition(:trx:pending, 'pending', condition(:trx:success, 'paid', 'returned')),
+			i_eg_status = condition(:trx:pending or (:trx:success and not :trx:pending and convert(integer, isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_MinSettlement'), '0')) > 0 and datediff(day, convert(datetime, :trx:created), getdate()) < convert(integer, isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_MinSettlement'), '0'))), 'pending', condition(:trx:success, 'paid', 'returned')),
 			i_eg_returned_status = condition(not :trx:pending and not :trx:success, :trx:error_message, null),
 			i_eg_trx_uuid = convert(string, :trx:transaction_code),
 			i_eg_gift_trx_date = convert(datetime, :trx:created),
@@ -107,10 +109,13 @@ ssapi "system/query"
 			:paypal:name == 'paypal' and
 			:cmp:name == 'campaign' and
 			:cmpitem:name == 'item' and
-			:cb:is_online == 1
+			:cb:is_online == 1 and
+			:cb:is_testing == 0
 		having
-			char_length(isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways'), '')) <= 1 or
-			charindex(',' + :i_eg_processor + ',', ',' + (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways') + ',') > 0
+			(char_length(isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways'), '')) <= 1 or
+			 charindex(',' + :i_eg_processor + ',', ',' + (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Gateways') + ',') > 0) and
+			(char_length(isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Currencies'), '')) <= 1 or
+			 charindex(',' + :i_eg_gift_currency + ',', ',' + (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'SS_Currencies') + ',') > 0)
 		";
 
     }

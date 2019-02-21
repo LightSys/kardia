@@ -1,7 +1,7 @@
 $Version=2$
 plugin_base_config_ss "widget/component-decl"
     {
-    width=858;
+    width=828;
     height=490;
     title = "TntConnect / MPDx";
     description = "Configure Kardia integration with TntConnect and MPDx via .tntdatasync files.";
@@ -10,7 +10,7 @@ plugin_base_config_ss "widget/component-decl"
     vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=858; height=490;
+	width=828; height=490;
 	spacing=7;
 
 	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
@@ -51,8 +51,8 @@ plugin_base_config_ss "widget/component-decl"
 
 		tnt_label_0 "widget/label" { height=45; text="The following values are included in each .tntdatasync file that is generated and are displayed to the missionary when using TntConnect or MPDx.  The 'Organization' should be the name of your mission group.  The 'Abbreviation' should be a shortened version of the organization name, and the 'Code' should be a short code that identifies your organization."; }
 		tnt_org_name "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="TntName"; text="Organization:"; width=500; ctl_type=editbox; }
-		tnt_abbrev "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="TntAbbrev"; text="Abbreviation:"; width=200; ctl_type=editbox; }
-		tnt_code "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="TntCode"; text="Code:"; width=200; ctl_type=editbox; }
+		tnt_abbrev "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="TntAbbrev"; text="Abbreviation:"; width=250; ctl_type=editbox; }
+		tnt_code "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="TntCode"; text="Code:"; width=250; ctl_type=editbox; }
 		}
 	    }
 

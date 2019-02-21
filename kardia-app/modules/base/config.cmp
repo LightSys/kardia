@@ -4,48 +4,46 @@ config "widget/component-decl"
     width=1000;
     height=580;
 
-    config_vbox "widget/vbox"
+    hdr_label "widget/label"
 	{
-	x=0; y=0; width=1000; height=580;
-	spacing=10;
+	x=0; y=0;
+	width=1000;
+	height=16;
+	font_size=16;
+	style=bold;
+	align=center;
+	text="Kardia System Configuration";
+	}
 
-	hdr_label "widget/label"
+    config_tab "widget/tab"
+	{
+	x=0; y=26;
+	height=554;
+	width=850;
+	tab_location=left;
+	tab_width=150;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+
+	plugin_tabs "widget/repeat"
 	    {
-	    font_size=16;
-	    style=bold;
-	    align=center;
-	    text="Kardia System Configuration";
-	    }
+	    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title, :description from object wildcard '/apps/kardia/modules/*/plugin_base_config_*.cmp' order by :sequence asc";
 
-	config_tab "widget/tab"
-	    {
-	    height=554;
-	    width=850;
-	    tab_location=left;
-	    tab_width=150;
-	    background="/apps/kardia/images/bg/light_bgnd2.jpg";
-	    inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
-
-	    plugin_tabs "widget/repeat"
+	    plugin_tab "widget/tabpage"
 		{
-		sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title, :description from object wildcard '/apps/kardia/modules/*/plugin_base_config_*.cmp' order by :sequence asc";
+		title = runserver(:plugin_tabs:title);
 
-		plugin_tab "widget/tabpage"
+		descrip "widget/label"
 		    {
-		    title = runserver(:plugin_tabs:title);
+		    x=10; y=4; width=828; height=40;
+		    text=runserver(:plugin_tabs:description);
+		    style=italic;
+		    }
 
-		    descrip "widget/label"
-			{
-			x=10; y=4; width=828; height=40;
-			text=runserver(:plugin_tabs:description);
-			style=italic;
-			}
-
-		    plugin_cmp "widget/component"
-			{
-			height=490; width=828; x=10; y=50;
-			path = runserver(:plugin_tabs:path);
-			}
+		plugin_cmp "widget/component"
+		    {
+		    height=490; width=828; x=10; y=50;
+		    path = runserver(:plugin_tabs:path);
 		    }
 		}
 	    }

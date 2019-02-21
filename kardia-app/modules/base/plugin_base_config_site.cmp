@@ -1,7 +1,7 @@
 $Version=2$
 plugin_base_config_site "widget/component-decl"
     {
-    width=858;
+    width=828;
     height=490;
     title = "Kardia Site";
     description = "Configure general Kardia site settings";
@@ -10,7 +10,7 @@ plugin_base_config_site "widget/component-decl"
     vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=858; height=490;
+	width=828; height=490;
 	spacing=7;
 
 	config_lbl "widget/label" { height=16; style=bold; text="Kardia Site Configuration:"; }

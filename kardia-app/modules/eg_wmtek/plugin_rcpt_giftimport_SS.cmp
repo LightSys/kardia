@@ -4,7 +4,7 @@ plugin_rcpt_giftimport_SS "widget/component-decl"
     // This plugin provides integration with WMtek's Site Stacker online
     // giving service, via Site Stacker's JSON/REST API.
     //
-    description = "WMtek Site Stacker via JSON / REST API";
+    description = "WMTek Site Stacker via JSON / REST API";
     tag = "SS";
 
     // This SQL fragment pulls in the bulk of the data.  The ledger number
@@ -26,9 +26,9 @@ plugin_rcpt_giftimport_SS "widget/component-decl"
 			:a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid
 		update set
 			-- someday maybe we will have deposits data and fee data in here too to update.
-			i_eg_status = :eg:i_eg_status,
-			i_eg_returned_status = :eg:i_eg_returned_status,
-			i_eg_gift_settlement_date = :eg:i_eg_gift_settlement_date,
+			:i_eg_status = :eg:i_eg_status,
+			:i_eg_returned_status = :eg:i_eg_returned_status,
+			:i_eg_gift_settlement_date = :eg:i_eg_gift_settlement_date,
 			:s_date_modified = getdate() IF MODIFIED,
 			:s_modified_by = user_name() IF MODIFIED
 		";

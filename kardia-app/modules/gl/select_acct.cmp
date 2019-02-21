@@ -1,0 +1,43 @@
+$Version=2$
+select_acct "widget/component-decl"
+    {
+    width=200;
+    height=24;
+
+    form "widget/parameter" { type=object; find_container="widget/form"; }
+    ledger "widget/parameter" { type=string; deploy_to_client=yes; }
+    label "widget/parameter" { type=string; default="Acct:"; }
+    label_width "widget/parameter" { type=integer; default=100; }
+    popup_label "widget/parameter" { type=string; default="Account Code"; }
+    field "widget/parameter" { type=string; default="a_account_code"; }
+
+    expose_properties_for=f_trx_acct;
+
+    f_trx_acct "widget/component"
+	{
+	width=200;
+	height=24;
+	form=form;
+	path="/apps/kardia/modules/base/editbox_tree.cmp";
+	field=runserver(:this:field);
+	text=runserver(:this:label);
+	tooltip=runserver(:this:popup_label);
+	label_width=runserver(:this:label_width);
+	popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/");
+	popup_text=runserver(:this:popup_label + ":");
+
+	ac_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(:form:is_savable); target=acdesc_osrc; action=QueryParam; a_ledger_number=runclient(:ledger:value); a_account_code=runclient(:f_trx_acct:content); }
+
+	acdesc_osrc "widget/osrc"
+	    {
+	    acdesc_param1 "widget/parameter" { type=string; param_name=a_account_code; }
+	    acdesc_param2 "widget/parameter" { type=string; param_name=a_ledger_number; }
+	    sql = "select a_acct_desc = isnull(first(:ac:a_acct_desc),'**INVALID**'), :parameters:a_account_code from /apps/kardia/data/Kardia_DB/a_account/rows ac where :ac:a_ledger_number = :parameters:a_ledger_number and :ac:a_account_code = :parameters:a_account_code";
+	    autoquery = never;
+	    replicasize=2;
+	    readahead=2;
+
+	    ac_get_desc_2 "widget/connector" { event=EndQuery; target=f_trx_acct; event_condition=runclient(:acdesc_osrc:a_account_code = :f_trx_acct:content); action=SetValueDescription; Description=runclient(:acdesc_osrc:a_acct_desc); }
+	    }
+	}
+    }

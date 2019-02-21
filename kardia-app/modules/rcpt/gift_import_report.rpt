@@ -47,7 +47,7 @@ gift_import_report "system/report"
 			:eg:i_eg_gift_trx_date,
 			:eg:i_eg_gift_date,
 			:eg:i_eg_gift_interval,
-			card_number = condition(:eg:i_eg_gift_pmt_type == 'ACH', 'EFT-', condition(:eg:i_eg_gift_pmt_type == 'Visa', 'VISA-', condition(:eg:i_eg_gift_pmt_type == 'MasterCard', 'MC-', condition(:eg:i_eg_gift_pmt_type == 'Discover', 'DISC-', '')))) + :eg:i_eg_gift_lastfour,
+			card_number = condition(:eg:i_eg_gift_pmt_type == 'ACH', 'EFT-', condition(:eg:i_eg_gift_pmt_type == 'Visa', 'VISA-', condition(:eg:i_eg_gift_pmt_type == 'MasterCard', 'MC-', condition(:eg:i_eg_gift_pmt_type == 'Discover', 'DISC-', condition(:i_eg_gift_pmt_type == 'Amex', 'AMEX-', ''))))) + :eg:i_eg_gift_lastfour,
 			:eg:i_eg_status,
 			:eg:i_eg_returned_status,
 			:eg:i_eg_gift_amount,
@@ -95,6 +95,41 @@ gift_import_report "system/report"
 	dep_none_total "report/aggregate" { compute="isnull(sum(:i_eg_gift_amount), $0)"; where=":gift_period = :this_period and :dep_period is null"; reset=0; }
 	}
 
+    // Summary by day of gifts given.
+    gifts_by_day "report/query"
+	{
+	sql = "	select
+			day = first(:eg:i_eg_gift_trx_date),
+			daytxt = substring(convert(string, :eg:i_eg_gift_trx_date), 1, 11),
+			visa = sum(condition(:eg:i_eg_gift_pmt_type = 'Visa', :eg:i_eg_gift_amount, null)),
+			mc = sum(condition(:eg:i_eg_gift_pmt_type = 'MasterCard', :eg:i_eg_gift_amount, null)),
+			disc = sum(condition(:eg:i_eg_gift_pmt_type = 'Discover', :eg:i_eg_gift_amount, null)),
+			vmd = sum(condition(:eg:i_eg_gift_pmt_type = 'Visa' or :eg:i_eg_gift_pmt_type = 'MasterCard' or :eg:i_eg_gift_pmt_type = 'Discover', :eg:i_eg_gift_amount, null)),
+			amex = sum(condition(:eg:i_eg_gift_pmt_type = 'Amex', :eg:i_eg_gift_amount, null)),
+			cred = sum(condition(:eg:i_eg_gift_pmt_type = 'Visa' or :eg:i_eg_gift_pmt_type = 'MasterCard' or :eg:i_eg_gift_pmt_type = 'Discover' or :eg:i_eg_gift_pmt_type = 'Amex', :eg:i_eg_gift_amount, null)),
+			ach = sum(condition(:eg:i_eg_gift_pmt_type = 'ACH', :eg:i_eg_gift_amount, null)),
+			other = sum(condition(:eg:i_eg_gift_pmt_type = 'Visa' or :eg:i_eg_gift_pmt_type = 'MasterCard' or :eg:i_eg_gift_pmt_type = 'Discover' or :eg:i_eg_gift_pmt_type = 'Amex' or :eg:i_eg_gift_pmt_type = 'ACH', null, :eg:i_eg_gift_amount)),
+			all = sum(:eg:i_eg_gift_amount)
+		from
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+		where
+			:eg:a_ledger_number = :this:ledger and
+			:eg:i_eg_gift_trx_date >= :period_qy:a_start_date and
+			:eg:i_eg_gift_trx_date <= :period_qy:a_end_date
+		group by
+			datepart(day, :eg:i_eg_gift_trx_date)
+		";
+	all_total "report/aggregate" { compute="sum(:all)"; reset=0; }
+	visa_total "report/aggregate" { compute="sum(:visa)"; reset=0; }
+	mc_total "report/aggregate" { compute="sum(:mc)"; reset=0; }
+	disc_total "report/aggregate" { compute="sum(:disc)"; reset=0; }
+	vmd_total "report/aggregate" { compute="sum(:vmd)"; reset=0; }
+	amex_total "report/aggregate" { compute="sum(:amex)"; reset=0; }
+	cred_total "report/aggregate" { compute="sum(:cred)"; reset=0; }
+	ach_total "report/aggregate" { compute="sum(:ach)"; reset=0; }
+	other_total "report/aggregate" { compute="sum(:other)"; reset=0; }
+	}
+
     // Gift import list - entire report
     form "report/form"
 	{
@@ -115,6 +150,7 @@ gift_import_report "system/report"
 	    t_d2 "report/data" { fontsize=10; style=bold; value = runserver("For: " + :ledger_qy:a_ledger_desc + "\n"); }
 	    t_d1 "report/data" { fontsize=10; style=bold; value = runserver("Reporting Period: " + :period_qy:a_period_desc + "\n"); }
 	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
+	    t_d5 "report/data" { style=bold; fontsize=11; value = runserver("\nGift Detail:\n"); }
 	    }
 	
 	// Table for gift list
@@ -122,7 +158,7 @@ gift_import_report "system/report"
 	    {
 	    x=0; width=102; height=0;
 	    columns=10;
-	    widths=5,23,19,7,6,7,6,6,6,8;
+	    widths=5,22.5,19,7.5,6,7,6,6,6,8;
 	    colsep=1;
 	    nullformat="";
 	    moneyformat = "-###,###,##0.00";
@@ -204,12 +240,92 @@ gift_import_report "system/report"
 	    x=0; width=102; height=4;
 	    font=helvetica;
 	    align=left;
-	    f_d0 "report/data" { fontsize=9; value = runserver("\nReconciliation Amounts:\n" + 
-			"\nGifts posted next month but deposited this month: \t" + :gift_qy:dep_prev_total + 
+
+	    f_d2 "report/data" { style=bold; fontsize=11; value = "\nNotes Key:\n"; }
+	    f_d3 "report/data" { fontsize=9; value = "A - Gift has not yet been assigned a donor in Kardia yet.\nB - Gift has not yet been assigned a designation in Kardia yet.\nC - Gift batch period and Deposit batch period are different.\npend - Gift is pending from the online giving service (has not yet settled).\nRET - Gift was returned/declined.\n"; }
+
+	    f_d0 "report/data" { style=bold; fontsize=11; value = runserver("\n\nReconciliation Amounts:\n"); }
+	    f_d1 "report/data" { fontsize=9; value = runserver(
+			"Gifts posted next month but deposited this month: \t" + :gift_qy:dep_prev_total + 
 			"\nGifts posted this month but deposited next month: \t" + :gift_qy:dep_next_total + 
 			"\nGifts posted this month but not yet deposited: \t" + :gift_qy:dep_none_total + 
 			"\n"); }
-	    f_d1 "report/data" { fontsize=9; value = "\nNotes Key:\n\nA - Gift has not yet been assigned a donor in Kardia yet.\nB - Gift has not yet been assigned a designation in Kardia yet.\nC - Gift batch period and Deposit batch period are different.\npend - Gift is pending from the online giving service (has not yet settled).\nRET - Gift was returned/declined.\n"; }
+
+	    f_d4 "report/data" { style=bold; fontsize=11; value = runserver("\n\nGifts by Day:\n"); }
+	    }
+
+	// Table for daily list
+	daily_table "report/table"
+	    {
+	    x=0; width=102; height=0;
+	    columns=10;
+	    widths=12,9,9,9,9,9,9,9,9,9;
+	    colsep=1;
+	    nullformat="";
+	    moneyformat = "-###,###,##0.00";
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    source=gifts_by_day;
+
+	    dhdr "report/table-row"
+		{
+		header = yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		td_date "report/table-cell" { value='Date'; }
+		td_visa "report/table-cell" { value='Visa'; align=right; }
+		td_mc "report/table-cell" { value='MasterCard'; align=right; }
+		td_disc "report/table-cell" { value='Discover'; align=right; }
+		td_vmd "report/table-cell" { value='V+Mc+D'; align=right; }
+		td_amex "report/table-cell" { value='Amex'; align=right; }
+		td_allcc "report/table-cell" { value='All Credit'; align=right; }
+		td_ach "report/table-cell" { value='ACH'; align=right; }
+		td_oth "report/table-cell" { value='Other'; align=right; }
+		td_all "report/table-cell" { value='All'; align=right; }
+		}
+
+	    day "report/table-row"
+		{
+		allowbreak=no;
+		fontsize=9;
+		font=helvetica;
+		nullformat="-";
+
+		d_date "report/table-cell" { value=runserver(:gifts_by_day:day); dateformat = "dd-MMM-yyyy"; }
+		d_visa "report/table-cell" { value=runserver(:gifts_by_day:visa); font=courier; align=right; }
+		d_mc "report/table-cell" { value=runserver(:gifts_by_day:mc); font=courier; align=right; }
+		d_disc "report/table-cell" { value=runserver(:gifts_by_day:disc); font=courier; align=right; }
+		d_vmd "report/table-cell" { value=runserver(:gifts_by_day:vmd); font=courier; align=right; }
+		d_amex "report/table-cell" { value=runserver(:gifts_by_day:amex); font=courier; align=right; }
+		d_cred "report/table-cell" { value=runserver(:gifts_by_day:cred); font=courier; align=right; }
+		d_ach "report/table-cell" { value=runserver(:gifts_by_day:ach); font=courier; align=right; }
+		d_oth "report/table-cell" { value=runserver(:gifts_by_day:other); font=courier; align=right; }
+		d_all "report/table-cell" { value=runserver(:gifts_by_day:all); font=courier; align=right; }
+		}
+
+	    totalday "report/table-row"
+		{
+		summary = yes;
+		allowbreak=no;
+		fontsize=9;
+		style=bold;
+		font=helvetica;
+		topborder=0.05;
+		marginbottom = 0.2;
+
+		sd_date "report/table-cell" { value=runserver('TOTAL:'); align=right; }
+		sd_visa "report/table-cell" { value=runserver(:gifts_by_day:visa_total); font=courier; align=right; }
+		sd_mc "report/table-cell" { value=runserver(:gifts_by_day:mc_total); font=courier; align=right; }
+		sd_disc "report/table-cell" { value=runserver(:gifts_by_day:disc_total); font=courier; align=right; }
+		sd_vmd "report/table-cell" { value=runserver(:gifts_by_day:vmd_total); font=courier; align=right; }
+		sd_amex "report/table-cell" { value=runserver(:gifts_by_day:amex_total); font=courier; align=right; }
+		sd_cred "report/table-cell" { value=runserver(:gifts_by_day:cred_total); font=courier; align=right; }
+		sd_ach "report/table-cell" { value=runserver(:gifts_by_day:ach_total); font=courier; align=right; }
+		sd_oth "report/table-cell" { value=runserver(:gifts_by_day:other_total); font=courier; align=right; }
+		sd_all "report/table-cell" { value=runserver(:gifts_by_day:all_total); font=courier; align=right; }
+		}
 	    }
 	}
     }

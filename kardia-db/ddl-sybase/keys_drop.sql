@@ -1308,6 +1308,11 @@ alter table i_eg_gift_import
 go
 
 
+alter table i_eg_gift_trx_fees
+	drop constraint i_eg_gift_trx_fees_pk
+go
+
+
 alter table i_eg_giving_url
 	drop constraint i_eg_giving_url_pk
 go

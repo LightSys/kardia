@@ -78,3 +78,6 @@ go
 
 alter table e_trackactivity lock datarows
 go
+
+alter table p_partner_search_results lock datarows
+go

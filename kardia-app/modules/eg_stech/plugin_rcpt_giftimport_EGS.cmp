@@ -6,7 +6,8 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
     //
     description = "Stewardship Technology EGS via XML / POST API";
     tag = "EGS";
-    sql = "		i_eg_processor = 'Stewardship Technology',
+    sql = "		i_eg_service = 'EGS',
+			i_eg_processor = 'Stewardship Technology',
 			i_eg_receipt_desired = null,
 			i_eg_anonymous = null,
 			i_eg_prayforme = null,

@@ -1144,6 +1144,11 @@ drop index i_eg_gift_import.i_eg_kgiftbatch_idx
 go
 
 
+/* i_eg_gift_trx_fees */
+/* drop index i_eg_gift_trx_fees.i_eg_gift_trx_fees_pk */ 
+/* go */
+
+
 /* i_eg_giving_url */
 drop index i_eg_giving_url.i_eg_giveurl_revidx
 go

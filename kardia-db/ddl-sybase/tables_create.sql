@@ -3507,6 +3507,7 @@ create table i_eg_gift_import (
         i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor (xml:giver-id) --  */
         i_eg_donor_alt_id                     char(36)  null,          /* alternate ID for the donor --  */
         i_eg_account_uuid                     varchar(36)  null,       /* ID of donation account that the donor used --  */
+        i_eg_service                          varchar(16)  null,       /* Service ID (e.g. EG, EGS, SS) from Kardia online giving service plugin --  */
         i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) (xml:status) --  */
         i_eg_returned_status                  varchar(16)  null,       /* Reason for a return (xml:returned-status) --  */
         i_eg_processor                        varchar(80)  not null,   /* Name of payment processor (xml:processor) --  */
@@ -3526,6 +3527,7 @@ create table i_eg_gift_import (
         i_eg_donor_phone                      varchar(80)  null,       /* Phone number of donor. (xml:phone) --  */
         i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. (xml:email) --  */
         i_eg_gift_amount                      money  not null,         /* amount of gift (xml:amount) --  */
+        i_eg_gift_currency                    varchar(16)  null,       /* currency of gift (e.g. USD, CAD, etc) --  */
         i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type (xml:payment-type) --  */
         i_eg_gift_lastfour                    char(4)  null,           /* Last four digits of account number (xml:last-four) --  */
         i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval (xml:recurring-interval) --  */
@@ -3555,6 +3557,28 @@ create table i_eg_gift_import (
         a_batch_number                        integer  null,           /* Kardia GL batch used to process this gift record --  */
         a_batch_number_fees                   integer  null,           /* Kardia GL batch used to process the fees for this gift record --  */
         a_batch_number_deposit                integer  null,           /* Kardia GL batch used to process the deposit for this gift record --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* i_eg_gift_trx_fees */
+print "Creating table i_eg_gift_trx_fees"
+
+create table i_eg_gift_trx_fees (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this set of fees --  */
+        i_eg_fees_id                          integer  not null,       /* A unique ID for the fees data. --  */
+        i_eg_service                          varchar(16)  null,       /* Service ID (e.g. EG, EGS, SS) from Kardia online giving service plugin --  */
+        i_eg_processor                        varchar(80)  null,       /* Name of payment processor (xml:processor) --  */
+        i_eg_gift_currency                    varchar(16)  null,       /* currency of gift (e.g. USD, CAD, etc) --  */
+        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type (xml:payment-type) --  */
+        i_eg_fee_flat_amt                     money  null,             /* Flat part of fee --  */
+        i_eg_fee_pct_amt                      float  null,             /* Percentage part of fee --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
