@@ -30,7 +30,7 @@ gift_detail "widget/component-decl"
 	    sql = "	select
 			:a:a_acct_desc,
 			:gi:a_account_code,
-			comments = condition(:parameters:alt_costctr = :gi:a_cost_center and :gi:a_cost_center != :parameters:a_cost_center, '(given to ' + (select :c:a_cost_center + ' - ' + :c:a_cc_desc from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :gi:a_ledger_number and :c:a_cost_center = :gi:a_cost_center) + ') ', '') + :gi:a_comment,
+			comments = condition(:parameters:alt_costctr = :gi:a_cost_center and :gi:a_cost_center != :parameters:a_cost_center, '(given to ' + (select :c:a_cost_center + ' - ' + :c:a_cc_desc from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :gi:a_ledger_number and :c:a_cost_center = :gi:a_cost_center) + ') ', '') + isnull(:gi:a_comment, ''),
 			:gi:a_dn_receipt_number,
 			:gi:a_period,
 			:gi:a_amount,

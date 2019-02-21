@@ -23,7 +23,7 @@ index "widget/page"
     // its width and height and uses that when launching the application
     // from the menu.
     //
-    title = "Kardia Missionary Portal";
+    title = "Kardia Missionary Portal Management";
     width = 1200;
     height = 700;
     max_requests = 6;
