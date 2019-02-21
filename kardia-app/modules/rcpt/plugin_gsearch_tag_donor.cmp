@@ -1,0 +1,11 @@
+$Version=2$
+plugin_gsearch_tag_donor "widget/component-decl"
+    {
+    field = "is_donor";
+    text = "Donor";
+    //tag_bgcolor = "#008020";
+    //tag_textcolor = "#ffffff";
+    tag_textcolor = "#008020";
+    tag_bgcolor = '';
+    sql = "select 'Donor' from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:p_donor_partner_id = :gs:s_key and :g:a_posted = 1 and :gs:s_type = 'PAR' limit 1";
+    }
