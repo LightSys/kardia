@@ -1,0 +1,301 @@
+$Version=2$
+plugin_crm_searchreport_engage "system/report"
+    {
+    title = "CRM Engagements Report";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.0;
+    marginright=2.0;
+    margintop=3;
+    marginbottom=3;
+
+    // Parameters for us to look up the result set
+    stage_id "report/parameter" { type=integer; default=null; }
+    session_id "report/parameter" { type=integer; default=null; }
+
+    // This report can modify data (the create/add-to mailing list feature).
+    // Therefore we can't allow direct access - must be via an app.  This
+    // prevents CSRF type attacks.
+    require_endorsements = "system:from_appgroup";
+
+    // Query to get site information
+    site_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			OBJECT /apps/kardia/data/Site.struct
+		";
+	}
+
+    // Query for overall search information
+    search_qy "report/query"
+	{
+	sql = "	SELECT
+		    *
+		FROM
+		    /apps/kardia/data/Kardia_DB/p_partner_search/rows
+		WHERE
+		    :p_search_id = :this:session_id
+		";
+	}
+
+    // Query for search description
+    stages_qy "report/query"
+	{
+	sql = " select
+		    :ss:p_search_id,
+		    :ss:p_search_stage_id,
+		    :ss:p_stage_type,
+		    :ss:p_stage_op,
+		    :ss:p_result_count,
+		    :ss:p_sequence,
+		    :ss:s_date_created,
+		    :ss:s_created_by,
+		    :ss:s_date_modified,
+		    :ss:s_modified_by,
+		    prevcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence),
+		    stage_description = eval(:p:stage_description_expr),
+		    :p:icon,
+		    :p:stage_label
+		from
+		    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
+		    object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' p
+		where
+		    :p:stage_type = :ss:p_stage_type and
+		    :ss:p_search_id = :this:session_id
+		order by
+		    :p_sequence asc
+		";
+	}
+
+    // Query to pull the search resultset
+    results_qy "report/query"
+	{
+	sql = "	SELECT
+		    :p:p_partner_key,
+		    acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		    acct_attn = condition(char_length(rtrim(:p:p_org_name)) > 0 and char_length(rtrim(:p:p_surname)) > 0, 'Attn: ' + isnull(:p:p_given_name + ' ', '') + :p:p_surname, null)
+		FROM    
+		    identity /apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+		    :sr:p_search_session_id = :this:session_id and
+		    :sr:p_search_stage_id = :this:stage_id and
+		    :sr:s_username = user_name() and
+		    :p:p_partner_key =* :sr:p_partner_key
+		ORDER BY
+		    isnull(:p:p_org_name,'') + isnull(:p:p_surname,'') + isnull(:p:p_given_name,'')
+		";
+
+	cnt "report/aggregate" { compute="count(1)"; }
+	}
+
+    // Information from the CRM:  tags, notes, tracks, gifts, subscriptions
+    eng_qy "report/query"
+	{
+	sql = runserver("
+		DECLARE object qinfo;
+
+		SELECT
+		    :qinfo:id = :activity_group_id
+		FROM
+		    /apps/kardia/modules/crm/timeline.qy?partner_key=" + :results_qy:p_partner_key + "
+		;
+		
+		SELECT
+		    name = :e:e_activity_type + ':' + :e:e_reference_info,
+		    :e:e_activity_date,
+		    :e:e_activity_type,
+		    :e:e_reference_info,
+		    :e:e_info,
+		    first_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, 1, charindex('\n', :e:e_info) - 1), :e:e_info),
+		    last_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, charindex('\n', :e:e_info) + 1), null),
+		    :e:p_partner_key,
+		    shortdate = substring(convert(string,:e:e_activity_date),1,11)
+		FROM
+		    /apps/kardia/data/Kardia_DB/e_activity/rows e
+		WHERE
+		    :e:e_activity_group_id = :qinfo:id and
+		    charindex(rtrim(:e:e_activity_type), 'TAG,TRK,GIFT,NOTE,COMM') > 0
+		ORDER BY
+		    :e:e_activity_date desc
+		");
+	}
+
+    // Information about the person - address, etc.
+    dinfo_qy "report/query"
+	{
+	sql = "	SELECT
+			:p:p_partner_key,
+			acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			:p:p_org_name,
+			:p:p_surname,
+			:p:p_given_name,
+			:p:p_title,
+			:pl:p_in_care_of,
+			:pl:p_address_1,
+			:pl:p_address_2,
+			:pl:p_address_3,
+			:pl:p_city,
+			:pl:p_state_province,
+			:pl:p_postal_code,
+			:pl:p_country_code,
+			partner_changed = :p:s_date_modified,
+			addr_changed = :pl:s_date_modified,
+			p_country_name = upper(:c:p_country_name),
+			:af:p_format
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows pl,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
+		WHERE
+			:p:p_partner_key = :results_qy:p_partner_key and
+			:pl:p_partner_key =* :p:p_partner_key and
+			:c:p_country_code =* :pl:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = 'STANDARD'
+		GROUP BY
+			:p:p_partner_key
+		";
+	}
+
+    // Contact info
+    contact_qy "report/query"
+	{
+	sql = "	SELECT
+		    info = isnull(sum(:t:text + ': ' + condition(char_length(rtrim(:ci:p_phone_country)) > 0, rtrim(:ci:p_phone_country) + ' ', '') + condition(char_length(rtrim(:ci:p_phone_area_city)) > 0, rtrim(:ci:p_phone_area_city) + ' ', '') + rtrim(:ci:p_contact_data) + condition(char_length(:ci:p_contact_comments) > 1, ' (' + :ci:p_contact_comments + ')', '') + '\n'), '') - '\n'
+		FROM
+		    /apps/kardia/data/Kardia_DB/_p_contact_type/rows t,
+		    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+		WHERE
+		    :t:tag = :ci:p_contact_type and
+		    :ci:p_partner_key = :results_qy:p_partner_key and
+		    :ci:p_record_status_code != 'O'
+		";
+	}
+
+    // Main body of the report.
+    ledger_form "report/form"
+	{
+	moneyformat = "-###,###,##0.00";
+	dateformat = "dd-MMM-yyyy";
+
+	source = site_qy,search_qy;
+
+	hdrimg "report/image"
+	    {
+	    x=67.85;y=0;
+	    height=4;
+	    width = 12.15;
+	    source = /apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=80; height=1;
+	    autoheight=yes;
+	    font=helvetica;
+	    align=left;
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver("CRM Engagements Report\n"); }
+	    t_d12 "report/data" { fontsize=10; value = runserver(:search_qy:p_search_desc + ""); }
+	    }
+
+	stages_area "report/area"
+	    {
+	    x=0; width=80; height=0.5;
+	    autoheight=yes;
+	    font=helvetica;
+	    fontsize=8;
+
+	    stages_form "report/form"
+		{
+		source = stages_qy;
+
+		d_stage_1 "report/data" { style=bold; value=runserver(condition(:stages_qy:prevcnt = 0, 'Start With ', condition(:stages_qy:p_stage_op = 'A', 'Add With ', condition(:stages_qy:p_stage_op = 'E', 'Exclude ', 'Require '))) + :stages_qy:stage_label + ':  '); }
+		d_stage_2 "report/data" { value=runserver(:stages_qy:stage_description + '\n'); }
+		}
+	    t_d13 "report/data" { fontsize=8; value = runserver("Printed on " + getdate() + "\n\n"); dateformat="dd-MMM-yyyy hh:mm"; }
+	    }
+
+	person_table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    colsep=1.0;
+	    nullformat="";
+	    moneyformat = "-###,###,##0.00";
+	    dateformat = "dd-MMM-yyyy";
+	    bottomborder=0.3;
+	    margintop=0;
+	    source=results_qy,dinfo_qy,contact_qy;
+	    autowidth=yes;
+
+	    hdr "report/table-row"
+		{
+		header = yes;
+		font=helvetica;
+		fontsize=8;
+		topborder=0.3;
+		bottomborder=0.05;
+
+		tg_name "report/table-cell" { value='Name'; align=left; width=22; }
+		tg_cont "report/table-cell" { value='Contact'; align=left; width=20; }
+		tg_eng "report/table-cell" { value='Engagement'; align=left; width=36; }
+		}
+
+	    one_person "report/table-row"
+		{
+		allowbreak=no;
+		fontsize=8;
+		font=helvetica;
+		margintop = 0.5;
+
+		d_name "report/table-cell"
+		    {
+		    rpt_title "report/area"
+			{
+			x=0; y=0; width=22; height=1;
+			font=helvetica;
+			align=left;
+			fixedheight=no;
+
+			name_1 "report/data" { fontsize=10; style=bold; value = runserver(:results_qy:acct_name + ' (' + :results_qy:p_partner_key + ')'); }
+			name_2 "report/data" { fontsize=8; value = runserver(isnull('\n' + :results_qy:acct_attn, '')); }
+			name_3 "report/data" { fontsize=8; value = runserver(isnull('\n' + substitute(isnull(:dinfo_qy:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=dinfo_qy,p=dinfo_qy'), '')); }
+			}
+		    }
+		d_cont "report/table-cell" { value=runserver(:contact_qy:info); }
+		d_eng "report/table-cell"
+		    {
+		    eng_area "report/area"
+			{
+			eng_form "report/form"
+			    {
+			    source=eng_qy;
+
+			    gd_2 "report/data" { fontsize=8; value=runserver(:eng_qy:shortdate + ': ' + :eng_qy:first_info + isnull(' -- ' + :eng_qy:last_info, '') + '\n'); }
+			    }
+			}
+		    }
+		}
+
+	    totals "report/table-row"
+		{
+		summary=yes;
+		fontsize=9;
+		font=helvetica;
+		topborder = 0.03;
+		margintop = 0.1;
+
+		s_name "report/table-cell" { value=""; }
+		s_addr "report/table-cell" { value=""; }
+		s_last "report/table-cell" { value=runserver('' + :results_qy:cnt + ' Partners Shown'); style=bold; }
+		}
+	    }
+	}
+    }
+
