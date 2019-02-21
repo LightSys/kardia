@@ -240,7 +240,7 @@ todo_list "widget/component-decl"
 
 		// Main value
 		textcolor=runclient(condition(:todo_osrc:days_til_due < 0 and :todo_osrc:e_todo_status == 'I', '#ff0000',condition(:todo_osrc:days_til_due == 0 and :todo_osrc:e_todo_status == 'I', '#a00000', '#000000')));
-		value=runclient(substring(convert(string,:todo_osrc:e_todo_due_date),1,11) + ': ' + :todo_osrc:e_todo_type_label + ' - ' + :todo_osrc:partner_name);
+		value=runclient(isnull(substring(convert(string,:todo_osrc:e_todo_due_date),1,11) + ': ', '') + :todo_osrc:e_todo_type_label + ' - ' + :todo_osrc:partner_name);
 		style=bold;
 		font_size=12;
 
