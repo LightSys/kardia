@@ -14,7 +14,9 @@ inc_exp_matrix "system/report"
 
     ledger "report/parameter" { type=string; }
     costctr "report/parameter" { type=string; }
+    exclude_costctr "report/parameter" { type=string; }
     balcostctr "report/parameter" { type=string; }
+    exclude_balcostctr "report/parameter" { type=string; }
     end_period "report/parameter" { type=string; }
     trx_end_period "report/parameter" { type=string; }
     invert "report/parameter" { type=integer; default=0; }
@@ -51,12 +53,14 @@ inc_exp_matrix "system/report"
 			:t:a_period >= :p12_qy:a_period and
 			:t:a_period <= :p1_qy:a_period and
 			:t:a_period <= isnull(:this:trx_end_period, :p1_qy:a_period) and
-			" + condition(:this:balcostctr is not null, 
+			" + condition(:this:balcostctr is not null or :this:exclude_balcostctr is not null, 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50' or :t:a_account_category = '42' or :t:a_account_category = '52')", 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50')") + " and
 			(:a:a_acct_type = 'E' or :a:a_acct_type = 'R')
 			" + condition(:this:costctr is not null, "and :t:a_cost_center = :this:costctr", "") + "
-			" + condition(:this:balcostctr is not null, "and :c:a_bal_cost_center = :this:balcostctr", "") + "
+			" + condition(:this:exclude_costctr is not null, "and charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :this:exclude_costctr + ',') = 0", "") + "
+			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
+			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
 		");
 	}
 
@@ -109,12 +113,14 @@ inc_exp_matrix "system/report"
 			:t:a_period >= :p12_qy:a_period and
 			:t:a_period <= :p1_qy:a_period and
 			:t:a_period <= isnull(:this:trx_end_period, :p1_qy:a_period) and
-			" + condition(:this:balcostctr is not null, 
+			" + condition(:this:balcostctr is not null or :this:exclude_balcostctr is not null, 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50' or :t:a_account_category = '42' or :t:a_account_category = '52')", 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50')") + " and
 			:a:a_acct_type = 'E'
 			" + condition(:this:costctr is not null, "and :t:a_cost_center = :this:costctr", "") + "
-			" + condition(:this:balcostctr is not null, "and :c:a_bal_cost_center = :this:balcostctr", "") + "
+			" + condition(:this:exclude_costctr is not null, "and charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :this:exclude_costctr + ',') = 0", "") + "
+			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
+			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
 		");
 	}
 
@@ -134,7 +140,8 @@ inc_exp_matrix "system/report"
 			:t:a_account_code <= '5999' and
 			:c:a_ledger_number = :t:a_ledger_number and
 			:c:a_cost_center = :t:a_cost_center
-			" + condition(:this:balcostctr is not null, "and :c:a_bal_cost_center = :this:balcostctr", "") + "
+			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
+			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
 		");
 	}
 
@@ -178,7 +185,9 @@ inc_exp_matrix "system/report"
 			:a:a_default_category != '11' and
 			:a:a_acct_type = 'A'
 			" + condition(:this:costctr is not null, "and :t:a_cost_center = :this:costctr", "") + "
-			" + condition(:this:balcostctr is not null, "and :c:a_bal_cost_center = :this:balcostctr", "") + "
+			" + condition(:this:exclude_costctr is not null, "and charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :this:exclude_costctr + ',') = 0", "") + "
+			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
+			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
 		");
 	}
 
@@ -221,12 +230,14 @@ inc_exp_matrix "system/report"
 			:t:a_period <= :p1_qy:a_period and
 			:t:a_period <= isnull(:this:trx_end_period, :p1_qy:a_period) and
 			:t:a_transaction_type = 'T' and
-			" + condition(:this:balcostctr is not null, 
+			" + condition(:this:balcostctr is not null or :this:exclude_balcostctr is not null, 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50' or :t:a_account_category = '30' or :t:a_account_category = '42' or :t:a_account_category = '52')", 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50' or :t:a_account_category = '30')") + " and
 			(:a:a_acct_type = 'E' or :a:a_acct_type = 'R' or :a:a_acct_type = 'Q')
 			" + condition(:this:costctr is not null, "and :t:a_cost_center = :this:costctr", "") + "
-			" + condition(:this:balcostctr is not null, "and :c:a_bal_cost_center = :this:balcostctr", "") + "
+			" + condition(:this:exclude_costctr is not null, "and charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :this:exclude_costctr + ',') = 0", "") + "
+			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
+			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
 		GROUP BY
 			:t:a_account_code,
 			:t:a_account_category,
@@ -333,7 +344,12 @@ inc_exp_matrix "system/report"
 		{
 		align=center;
 		moneyformat = "$###,###,##0.00";
-		value=runserver("Revenue & Expense by Period on [" + getdate() + " ET] requested by [" + user_name() + "]\nFor ledger " + :this:ledger + condition(:this:balcostctr is null, "", ", fund " + :this:balcostctr) + ", ending " + :this:end_period + condition(:this:reserve_factor is not null, "\nReserve Goal: " + :this:reserve_factor + " months; Monthly expenses: " + :expense_total_qy:amt_per_month +  " (averaged over " + :periods_qy:num_trx_periods + " periods)", "") + "\n\n");
+		value=runserver(
+			"Revenue & Expense by Period on [" + getdate() + " ET] requested by [" + user_name() + "]" + 
+			"\nFor ledger " + :this:ledger + condition(:this:balcostctr is null, "", ", fund(s) " + :this:balcostctr) + ", ending " + :this:end_period + 
+			condition(:this:exclude_balcostctr is null, "", "\nExcluding fund(s): " + :this:exclude_balcostctr) + 
+			condition(:this:reserve_factor is not null, "\nReserve Goal: " + :this:reserve_factor + " months; Monthly expenses: " + :expense_total_qy:amt_per_month +  " (averaged over " + :periods_qy:num_trx_periods + " periods)", "") +
+			"\n\n");
 		}
 	    }
 
