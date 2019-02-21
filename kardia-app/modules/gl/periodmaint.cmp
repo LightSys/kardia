@@ -360,8 +360,8 @@ periodmaint "widget/component-decl"
 			openper_btn "widget/textbutton"
 			    {
 			    height=24; width=150;
-			    text = runclient(condition(:period_osrc:a_status = 'C', "Reopen Period", "Open Period"));
-			    enabled = runclient((:period_osrc:a_status = 'N' or :period_osrc:a_status = 'C') and :peredit_form:form_mode == 'View');
+			    text = runclient(condition(:period_osrc:a_status = 'C' or :period_osrc:a_status = 'P', "Reopen Period", "Open Period"));
+			    enabled = runclient((:period_osrc:a_status = 'N' or :period_osrc:a_status = 'C' or :period_osrc:a_status = 'P') and :peredit_form:form_mode == 'View');
 
 			    openper_cn "widget/connector"
 				{
@@ -372,11 +372,25 @@ periodmaint "widget/component-decl"
 				a_first_opened=runclient(condition(char_length(:period_osrc:a_first_opened) > 0, :period_osrc:a_first_opened, getdate()));
 				}
 			    }
+			provper_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "Mark Provisional";
+			    enabled = runclient((:period_osrc:a_status = 'O') and :peredit_form:form_mode == 'View');
+
+			    closeper_cn "widget/connector"
+				{
+				event=Click;
+				target=period_osrc;
+				action=Modify;
+				a_status=runclient('P');
+				}
+			    }
 			closeper_btn "widget/textbutton"
 			    {
 			    height=24; width=150;
 			    text = "Close Period";
-			    enabled = runclient(:period_osrc:a_status = 'O' and :peredit_form:form_mode == 'View');
+			    enabled = runclient((:period_osrc:a_status = 'O' or :period_osrc:a_status = 'P') and :peredit_form:form_mode == 'View');
 
 			    closeper_cn "widget/connector"
 				{
