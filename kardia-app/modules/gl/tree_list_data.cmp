@@ -9,6 +9,16 @@ tree_list_data "widget/component-decl"
     osrc_source "widget/parameter" { type=string; default=null; }
     detail_cmp_path "widget/parameter" { type=string; default=null; }
     object_name "widget/parameter" { type=string; default="Item"; }
+    preselect "widget/parameter" { type=string; deploy_to_client=yes; }
+
+    do_preselect "widget/connector"
+	{
+	event=LoadComplete;
+	event_condition=runclient(not (:preselect:value is null));
+	target=tree;
+	action=Search;
+	Value = runclient(:preselect:value);
+	}
 
     search_box "widget/editbox"
 	{
