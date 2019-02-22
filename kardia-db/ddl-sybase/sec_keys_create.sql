@@ -346,6 +346,10 @@ alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_rcpt_idx unique nonclustered (a_dn_receipt_number, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_src_idx unique nonclustered (i_eg_source_key, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
+
 alter table a_motivational_code
 	add constraint a_motiv_code_list unique nonclustered (m_list_code, a_ledger_number, a_motivational_code)
 go
@@ -416,6 +420,26 @@ go
 
 alter table c_chat
 	add constraint c_public_idx unique nonclustered (c_public, c_chat_id)
+go
+
+alter table t_sprint
+	add constraint t_sprint_proj_idx unique nonclustered (t_project_id, t_sprint_id)
+go
+
+alter table t_sprint_time
+	add constraint t_time_sprint_idx unique nonclustered (t_sprint_id, t_time_id)
+go
+
+alter table t_sprint_time
+	add constraint t_time_proj_idx unique nonclustered (t_project_id, t_sprint_id, t_time_id)
+go
+
+alter table t_task
+	add constraint t_task_sprint_idx unique nonclustered (t_sprint_id, t_task_id)
+go
+
+alter table t_task
+	add constraint t_task_proj_idx unique nonclustered (t_project_id, t_sprint_id, t_task_id)
 go
 
 alter table s_request

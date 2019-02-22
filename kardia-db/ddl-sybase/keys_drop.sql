@@ -398,6 +398,11 @@ alter table e_tag_activity
 go
 
 
+alter table e_tag_source
+	drop constraint e_tagsrc_pk
+go
+
+
 alter table e_document_type
 	drop constraint e_doctype_pk
 go
@@ -1133,6 +1138,11 @@ alter table a_subtrx_gift_item
 go
 
 
+alter table a_subtrx_gift_item
+	drop constraint a_gifttrxi_src_idx
+go
+
+
 alter table a_subtrx_gift_rcptcnt
 	drop constraint a_rcptno_pk
 go
@@ -1368,6 +1378,76 @@ alter table c_member
 go
 
 
+alter table t_project
+	drop constraint t_project_pk
+go
+
+
+alter table t_sprint
+	drop constraint t_sprint_pk
+go
+
+
+alter table t_sprint
+	drop constraint t_sprint_proj_idx
+go
+
+
+alter table t_sprint_time
+	drop constraint t_sprint_time_pk
+go
+
+
+alter table t_sprint_time
+	drop constraint t_time_sprint_idx
+go
+
+
+alter table t_sprint_time
+	drop constraint t_time_proj_idx
+go
+
+
+alter table t_task
+	drop constraint t_task_pk
+go
+
+
+alter table t_task
+	drop constraint t_task_sprint_idx
+go
+
+
+alter table t_task
+	drop constraint t_task_proj_idx
+go
+
+
+alter table t_participant
+	drop constraint t_participant_pk
+go
+
+
+alter table t_sprint_participant
+	drop constraint t_sprint_participant_pk
+go
+
+
+alter table t_assignee
+	drop constraint t_assignee_pk
+go
+
+
+alter table t_task_state
+	drop constraint t_tstate_pk
+go
+
+
+alter table t_task_history
+	drop constraint t_history_pk
+go
+
+
 alter table s_config
 	drop constraint s_config_pk
 go
@@ -1480,4 +1560,9 @@ go
 
 alter table s_user_role
 	drop constraint s_user_role_pk
+go
+
+
+alter table s_global_search
+	drop constraint s_global_search_pk
 go

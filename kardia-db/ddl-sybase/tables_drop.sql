@@ -235,6 +235,11 @@ drop table e_tag_activity
 go
 
 
+/* e_tag_source */
+drop table e_tag_source
+go
+
+
 /* e_document_type */
 drop table e_document_type
 go
@@ -815,6 +820,51 @@ drop table c_member
 go
 
 
+/* t_project */
+drop table t_project
+go
+
+
+/* t_sprint */
+drop table t_sprint
+go
+
+
+/* t_sprint_time */
+drop table t_sprint_time
+go
+
+
+/* t_task */
+drop table t_task
+go
+
+
+/* t_participant */
+drop table t_participant
+go
+
+
+/* t_sprint_participant */
+drop table t_sprint_participant
+go
+
+
+/* t_assignee */
+drop table t_assignee
+go
+
+
+/* t_task_state */
+drop table t_task_state
+go
+
+
+/* t_task_history */
+drop table t_task_history
+go
+
+
 /* s_config */
 drop table s_config
 go
@@ -902,4 +952,9 @@ go
 
 /* s_user_role */
 drop table s_user_role
+go
+
+
+/* s_global_search */
+drop table s_global_search
 go

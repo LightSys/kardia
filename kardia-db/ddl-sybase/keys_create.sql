@@ -290,6 +290,12 @@ alter table e_tag_activity
 	add constraint e_tagact_pk primary key clustered (e_tag_activity_group, e_tag_activity_id)
 go
 
+print "working on table e_tag_source"
+
+alter table e_tag_source
+	add constraint e_tagsrc_pk primary key clustered (e_tag_id, e_tag_source_type, e_tag_source_key)
+go
+
 print "working on table e_document_type"
 
 alter table e_document_type
@@ -1002,6 +1008,60 @@ alter table c_member
 	add constraint c_member_pk primary key clustered (c_chat_id, s_username)
 go
 
+print "working on table t_project"
+
+alter table t_project
+	add constraint t_project_pk primary key clustered (t_project_id)
+go
+
+print "working on table t_sprint"
+
+alter table t_sprint
+	add constraint t_sprint_pk primary key clustered (t_sprint_id)
+go
+
+print "working on table t_sprint_time"
+
+alter table t_sprint_time
+	add constraint t_sprint_time_pk primary key clustered (t_time_id)
+go
+
+print "working on table t_task"
+
+alter table t_task
+	add constraint t_task_pk primary key clustered (t_task_id)
+go
+
+print "working on table t_participant"
+
+alter table t_participant
+	add constraint t_participant_pk primary key clustered (p_partner_key, t_project_id)
+go
+
+print "working on table t_sprint_participant"
+
+alter table t_sprint_participant
+	add constraint t_sprint_participant_pk primary key clustered (p_partner_key, t_sprint_id)
+go
+
+print "working on table t_assignee"
+
+alter table t_assignee
+	add constraint t_assignee_pk primary key clustered (p_partner_key, t_task_id)
+go
+
+print "working on table t_task_state"
+
+alter table t_task_state
+	add constraint t_tstate_pk primary key clustered (t_task_state_id)
+go
+
+print "working on table t_task_history"
+
+alter table t_task_history
+	add constraint t_history_pk primary key clustered (t_task_id, t_history_id)
+go
+
 print "working on table s_config"
 
 alter table s_config
@@ -1108,4 +1168,10 @@ print "working on table s_user_role"
 
 alter table s_user_role
 	add constraint s_user_role_pk primary key clustered (s_role_id, s_username)
+go
+
+print "working on table s_global_search"
+
+alter table s_global_search
+	add constraint s_global_search_pk primary key clustered (s_search_id, s_username, s_search_res_id)
 go
