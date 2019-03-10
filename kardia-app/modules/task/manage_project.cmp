@@ -901,7 +901,7 @@ manage_project "widget/component-decl"
 					    }
 
 					onSpartCreate "widget/connector" { event=Created; target=sprints_osrc; action=RefreshObject; }
-					onSpartCreate2 "widget/connector" { event=Created; target=part_osrc; action=RefreshObject; }
+					onSpartCreate2 "widget/connector" { event=Created; target=part_osrc; action=Refresh; }
 					onSpartCreate3 "widget/connector" { event=Created; target=manage_project; action=TriggerEvent; EventName=runclient('RefreshTaskData'); }
 
 					spart_vbox "widget/vbox"
@@ -934,9 +934,9 @@ manage_project "widget/component-decl"
 							spart_form "widget/form"
 							    {
 							    onSpartModify "widget/connector" { event=DataSaved; target=sprints_osrc; action=RefreshObject; }
-							    onSpartModify2 "widget/connector" { event=DataSaved; target=part_osrc; action=RefreshObject; }
+							    onSpartModify2 "widget/connector" { event=DataSaved; target=part_osrc; action=Refresh; }
 							    onSpartDelete "widget/connector" { event=DataDeleted; target=sprints_osrc; action=RefreshObject; }
-							    onSpartDelete2 "widget/connector" { event=DataDeleted; target=part_osrc; action=RefreshObject; }
+							    onSpartDelete2 "widget/connector" { event=DataDeleted; target=part_osrc; action=Refresh; }
 							    onSpartModify3 "widget/connector" { event=DataSaved; target=manage_project; action=TriggerEvent; EventName=runclient('RefreshTaskData'); }
 							    onSpartDelete3 "widget/connector" { event=DataDeleted; target=manage_project; action=TriggerEvent; EventName=runclient('RefreshTaskData'); }
 
@@ -1041,7 +1041,7 @@ manage_project "widget/component-decl"
 				    width=696;
 				    x=20;
 				    height=282;
-				    rowheight=20;
+				    //rowheight=20;
 				    initial_selection=noexpand;
 				    nodata_message="No tasks yet...";
 
