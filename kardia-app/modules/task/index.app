@@ -20,7 +20,7 @@ index "widget/page"
 	{
 	auto_start = 1;
 	auto_reset = 1;
-	msec = 30000;
+	msec = 120000;
 
 	onExpire1 "widget/connector"
 	    {
@@ -36,5 +36,6 @@ index "widget/page"
 	x=10; y=10;
 	width=980; height=780;
 	path="dashboard.cmp";
+	only_current=1;
 	}
     }

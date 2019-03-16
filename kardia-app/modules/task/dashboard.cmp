@@ -9,6 +9,7 @@ dashboard "widget/component-decl"
     // a single project instead of all of them.
     //
     project_id "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+    only_current "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     page "widget/parameter" { type=object; find_container="widget/page"; }
 
     // Refresh 
@@ -19,21 +20,39 @@ dashboard "widget/component-decl"
     project_osrc "widget/osrc"
 	{
 	po_project_id "widget/parameter" { param_name=project_id; type=integer; default=runclient(:project_id:value); }
-	sql = "	select
+	po_only_current "widget/parameter" { param_name=only_current; type=integer; default=runclient(:only_current:value); }
+	sql = "	declare collection tmp;
+	
+		insert
+		    collection tmp
+		select
 		    :pr:t_project_id,
 		    :pr:t_project_label,
 		    t_project_desc = isnull(:pr:t_project_desc, ''),
 		    :pr:s_date_modified,
+		    :pr:t_project_start,
+		    :pr:t_project_end,
 		    participants = isnull((select sum(:p:p_given_name + ' ' + :p:p_surname + '\n') - '\n' from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/t_participant/rows pa where :pa:t_project_id = :pr:t_project_id and :p:p_partner_key = :pa:p_partner_key), ''),
-		    rev = datepart(minute, getdate()) * 60 + datepart(second, getdate())
+		    rev = datepart(minute, getdate()) * 60 + datepart(second, getdate()),
+		    lasttask = (select max(:th:t_transition_date) from /apps/kardia/data/Kardia_DB/t_task_history/rows th, /apps/kardia/data/Kardia_DB/t_task/rows t where :t:t_project_id = :pr:t_project_id and :th:t_task_id = :t:t_task_id)
 		from	
 		    /apps/kardia/data/Kardia_DB/t_project/rows pr
 		where
 		    (:parameters:project_id is null or :parameters:project_id = :pr:t_project_id)
 		having
-		    has_endorsement('kardia:sys_admin', 'kardia') or
-		    (select count(1) from /apps/kardia/data/Kardia_DB/t_participant/rows pa, /apps/kardia/data/Kardia_DB/p_staff/rows s where :pa:t_project_id = :pr:t_project_id and :pa:p_partner_key = :s:p_partner_key and :s:p_kardia_login = user_name() and :s:p_is_staff = 1) >= 1
-		order by :s_date_modified desc
+		    (has_endorsement('kardia:sys_admin', 'kardia') or
+		     (select count(1) from /apps/kardia/data/Kardia_DB/t_participant/rows pa, /apps/kardia/data/Kardia_DB/p_staff/rows s where :pa:t_project_id = :pr:t_project_id and :pa:p_partner_key = :s:p_partner_key and :s:p_kardia_login = user_name() and :s:p_is_staff = 1) >= 1) and
+		    (:parameters:only_current = 0 or
+		     (:pr:t_project_start <= getdate() and :pr:t_project_end >= getdate()))
+		;
+
+		select
+		    *
+		from
+		    collection tmp
+		order by
+		    --:s_date_modified desc
+		    :lasttask desc
 		";
 
 	// Here's where we display the projects.

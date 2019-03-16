@@ -18,6 +18,7 @@ task_cell_svg "system/report"
 
     // Data controls
     project "report/parameter" { type=integer; }
+    sprint "report/parameter" { type=integer; }
     state "report/parameter" { type=integer; }
 
     // Compute block size, etc.
@@ -25,12 +26,52 @@ task_cell_svg "system/report"
 	{
 	sql = "	declare object block;
 
+		-- Which sprint?
+		select
+		    :block:sprint = :t_sprint_id,
+		    :block:sprintname = :t_sprint_label
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		where
+		    :t_project_id = :this:project and
+		    :t_sprint_id = :this:sprint
+		;
+		select
+		    :block:sprint = isnull(:block:sprint, :t_sprint_id),
+		    :block:sprintname = isnull(:block:sprintname, :t_sprint_label)
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		where
+		    :t_project_id = :this:project and
+		    getdate() >= :t_sprint_start and
+		    getdate() <= :t_sprint_end
+		order by
+		    :t_sprint_start desc
+		limit
+		    1
+		;
+
+		-- Did not find one?
+		select
+		    :block:sprint = isnull(:block:sprint, :t_sprint_id),
+		    :block:sprintname = isnull(:block:sprintname, :t_sprint_label)
+		where
+		    :t_project_id = :this:project
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		order by
+		    :t_sprint_start desc
+		limit
+		    1
+		;
+
 		select
 		    :block:cnt = count(1)
 		from
 		    /apps/kardia/data/Kardia_DB/t_task/rows t
 		where
 		    :t:t_project_id = :this:project and
+		    :t:t_sprint_id = :block:sprint and
 		    :t:t_task_state = :this:state
 		;
 
@@ -39,7 +80,8 @@ task_cell_svg "system/report"
 		from
 		    /apps/kardia/data/Kardia_DB/t_task/rows t
 		where
-		    :t:t_project_id = :this:project
+		    :t:t_project_id = :this:project and
+		    :t:t_sprint_id = :block:sprint
 		group by
 		    :t:t_task_state
 		;
@@ -58,7 +100,7 @@ task_cell_svg "system/report"
 		;
 
 		select
-		    :block:color = :t_project_color
+		    :block:color = isnull(max(:t_project_color), '#606060')
 		from
 		    /apps/kardia/data/Kardia_DB/t_project/rows
 		where
@@ -77,7 +119,8 @@ task_cell_svg "system/report"
 		    :block:oneside,
 		    :block:color,
 		    :block:titlesize,
-		    :block:textsize
+		    :block:textsize,
+		    :block:sprint
 		";
 	}
 
@@ -95,8 +138,10 @@ task_cell_svg "system/report"
 		    /apps/kardia/data/Kardia_DB/t_task/rows t2
 		where
 		    :t1:t_project_id = :this:project and
+		    :t1:t_sprint_id = :block_qy:sprint and
 		    :t1:t_task_state = :this:state and
 		    :t2:t_project_id =* :t1:t_project_id and
+		    :t2:t_sprint_id =* :t1:t_sprint_id and
 		    :t2:t_task_state =* :t1:t_task_state and
 		    :t2:t_task_id <* :t1:t_task_id
 		order by
