@@ -108,8 +108,8 @@ task_cell_svg "system/report"
 		;
 
 		select
-		    :block:titlesize = 18 / :block:oneside,
-		    :block:textsize = 12 / :block:oneside
+		    :block:titlesize = convert(integer, round(18.0 / :block:oneside,0)),
+		    :block:textsize = convert(integer, round(12.0 / :block:oneside,0))
 		;
 
 		select
@@ -202,7 +202,7 @@ task_cell_svg "system/report"
 		x=0; width=255; height=0;
 		value=runserver(
 			'    <rect x="' + :task_geom_qy:x + 'px" y="' + :task_geom_qy:y + 'px" width="' + :task_geom_qy:width + 'px" height="' + :task_geom_qy:height + 'px" rx="4px" ry="4px" style="stroke:none; fill:' + :block_qy:color + ';" />\n' +
-			'    <text x="' + (:task_geom_qy:title_x) + 'px" y="' + (:task_geom_qy:title_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + :tasks_qy:t_task_label + '</text>\n' +
+			'    <text x="' + (:task_geom_qy:title_x) + 'px" y="' + (:task_geom_qy:title_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + replace(replace(replace(:tasks_qy:t_task_label, '&', '&amp;'), '<', '&lt;'), '>', '&gt;')  + '</text>\n' +
 			'    <text x="' + (:task_geom_qy:num_x) + 'px" y="' + (:task_geom_qy:num_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + :tasks_qy:t_task_hours + '</text>\n' +
 			'    <text x="' + (:task_geom_qy:assign_x) + 'px" y="' + (:task_geom_qy:assign_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + :assign_qy:assignees + '</text>\n'
 			);
