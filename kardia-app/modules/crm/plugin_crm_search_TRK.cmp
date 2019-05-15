@@ -2,11 +2,11 @@ $Version=2$
 plugin_crm_search_TAG "widget/component-decl"
     {
     stage_label = "Track";
-    stage_short_label = "Trk";
+    stage_short_label = "Track";
     stage_description_expr = "isnull((select isnull('' + (select :e_track_name + ', ' from /apps/kardia/data/Kardia_DB/e_engagement_track/rows trk where :trk:e_track_id = :param:track),'') + isnull('Reached Step: ' + (select :e_step_name + ', ' from /apps/kardia/data/Kardia_DB/e_engagement_step/rows stp where :stp:e_step_id = :param:step and :stp:e_track_id = :param:track),'') + isnull('But Not Step: ' + (select :e_step_name + ', ' from /apps/kardia/data/Kardia_DB/e_engagement_step/rows stp where :stp:e_step_id = :param:notstep and :stp:e_track_id = :param:track),'') + isnull('After: ' + substring(convert(string,:param:start),1,11) + ', ', '') + isnull('Before: ' + substring(convert(string,:param:end),1,11) + ', ', '') + isnull('Comment Contains: ' + :param:comment + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
     stage_type = "TRK";
     icon = "/apps/kardia/images/tango/start-here.png";
-    sequence = 30;
+    sequence = 35;
     width=410;
     height=136;
 

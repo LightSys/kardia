@@ -5,7 +5,7 @@ plugin_crm_search_TAG "widget/component-decl"
     stage_description_expr = "isnull((select isnull('' + (select :e_tag_label + ', ' from /apps/kardia/data/Kardia_DB/e_tag_type/rows tt where :tt:e_tag_id = :param:tag),'') + isnull('After: ' + substring(convert(string,:param:start),1,11) + ', ', '') + isnull('Before: ' + substring(convert(string,:param:end),1,11) + ', ', '') + isnull('Min. Certainty: ' + :param:certainty + ', ', '') + isnull('Min. Strength: ' + :param:strength + ', ', '') + isnull('Comment Contains: ' + :param:comment + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
     stage_type = "TAG";
     icon = "/apps/kardia/images/icons/ionicons-pricetags.svg";
-    sequence = 20;
+    sequence = 30;
     width=410;
     height=136;
 

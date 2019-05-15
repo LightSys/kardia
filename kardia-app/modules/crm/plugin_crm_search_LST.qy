@@ -12,6 +12,7 @@ plugin_crm_search_LST "system/query"
     prev_stage "query/parameter" { type=integer; }
 
     sql = " -- First, we need to get our search stage information and config.
+	    declare collection advsearch scope application;
 	    declare object stage;
 	    select
 		:stage:op = :s:p_stage_op,
@@ -31,32 +32,34 @@ plugin_crm_search_LST "system/query"
 	    ;
 
 	    -- Delete any previous results.
-	    delete
-		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
-	    where
-		:s_username = user_name() and
-		:p_search_session_id = :parameters:search_id and
-		:p_search_stage_id = :parameters:cur_stage
-	    ;
+--	    delete
+--		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+--	    where
+--		:s_username = user_name() and
+--		:p_search_session_id = :parameters:search_id and
+--		:p_search_stage_id = :parameters:cur_stage
+--	    ;
 
 	    -- Now create this stage's results.
 	    -- Pass #1: copy previous results if we're ADDING.
 	    insert
-		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+		collection advsearch
 	    select
 		:p_partner_key,
-		:s_username,
+		--:s_username,
 		:p_search_session_id,
 		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = '',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		p_sortkey = ''--,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
-		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows s
+		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows s
+		collection advsearch s
 	    where
-		:s:s_username = user_name() and
+		--:s:s_username = user_name() and
 		:s:p_search_session_id = :parameters:search_id and
 		:s:p_search_stage_id = :parameters:prev_stage and
 		:stage:op = 'A'
@@ -64,54 +67,67 @@ plugin_crm_search_LST "system/query"
 
 	    -- Pass #2: generate new results if we're ADDING
 	    insert
-		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+		collection advsearch
 	    select
-		:p_partner_key,
-		s_username = user_name(),
+		:m:p_partner_key,
+		--s_username = user_name(),
 		p_search_session_id = :parameters:search_id,
 		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = '',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		p_sortkey = ''--,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
 		/apps/kardia/data/Kardia_DB/m_list/rows l
 	    where
 		:l:m_list_code = :m:m_list_code and
-		(:stage:searchtype == 'A' or ((isnull(:stage:searchtype, 'M') == 'M') and (:stage:incl_lists is null or charindex(',' + :m:m_list_code + ',', ',' + :stage:incl_lists + ',') > 0))) and
+		(isnull(:stage:searchtype, 'M') == 'M' or :stage:searchtype = 'A') and
+		(:stage:searchtype = 'A' or :stage:incl_lists is null or charindex(',' + :m:m_list_code + ',', ',' + :stage:incl_lists + ',') > 0) and
 		(:stage:adduser is null or :m:s_created_by = :stage:adduser) and
 		(:stage:startdate is null or :m:s_date_created >= :stage:startdate) and
 		(:stage:enddate is null or :m:s_date_created <= :stage:enddate) and
 		:stage:op = 'A'
+	    group by
+		:m:p_partner_key
+	    on duplicate
+		:p_partner_key,
+		:p_search_session_id,
+		:p_search_stage_id
+	    update set
+		:p_partner_key = :p_partner_key
 	    ;
 
 	    -- Pass #3: filter existing results if we're restricting
 	    insert
-		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+		collection advsearch
 	    select
 		:p_partner_key,
-		s_username = user_name(),
+		--s_username = user_name(),
 		p_search_session_id = :parameters:search_id,
 		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = '',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		p_sortkey = ''--,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
-		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		collection advsearch sr,
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
 		/apps/kardia/data/Kardia_DB/m_list/rows l
 	    where
-		:sr:s_username = user_name() and
+		--:sr:s_username = user_name() and
 		:sr:p_search_session_id = :parameters:search_id and
 		:sr:p_search_stage_id = :parameters:prev_stage and
 		:stage:op = 'R' and
 		:sr:p_partner_key = :m:p_partner_key and
 		:l:m_list_code = :m:m_list_code and
-		(:stage:searchtype == 'A' or ((isnull(:stage:searchtype, 'M') == 'M') and (:stage:incl_lists is null or charindex(',' + :m:m_list_code + ',', ',' + :stage:incl_lists + ',') > 0))) and
+		(isnull(:stage:searchtype, 'M') == 'M' or :stage:searchtype = 'A') and
+		(:stage:searchtype = 'A' or :stage:incl_lists is null or charindex(',' + :m:m_list_code + ',', ',' + :stage:incl_lists + ',') > 0) and
 		(:stage:adduser is null or :m:s_created_by = :stage:adduser) and
 		(:stage:startdate is null or :m:s_date_created >= :stage:startdate) and
 		(:stage:enddate is null or :m:s_date_created <= :stage:enddate)
@@ -119,35 +135,38 @@ plugin_crm_search_LST "system/query"
 
 	    -- Pass #4: filter existing results if we're excluding
 	    insert
-		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
+		collection advsearch
 	    select
 		:sr:p_partner_key,
-		s_username = user_name(),
+		--s_username = user_name(),
 		p_search_session_id = :parameters:search_id,
 		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = '',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		p_sortkey = ''--,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
-		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		collection advsearch sr,
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
 		/apps/kardia/data/Kardia_DB/m_list/rows l
 	    where
-		:sr:s_username = user_name() and
+		--:sr:s_username = user_name() and
 		:sr:p_search_session_id = :parameters:search_id and
 		:sr:p_search_stage_id = :parameters:prev_stage and
 		:stage:op = 'E' and
 		:sr:p_partner_key *= :m:p_partner_key and
 		:l:m_list_code = :m:m_list_code and
-		(:stage:searchtype == 'A' or ((isnull(:stage:searchtype, 'M') == 'M') and (:stage:incl_lists is null or charindex(',' + :m:m_list_code + ',', ',' + :stage:incl_lists + ',') > 0))) and
+		(isnull(:stage:searchtype, 'M') == 'M' or :stage:searchtype = 'A') and
+		(:stage:searchtype = 'A' or :stage:incl_lists is null or charindex(',' + :m:m_list_code + ',', ',' + :stage:incl_lists + ',') > 0) and
 		(:stage:adduser is null or :m:s_created_by = :stage:adduser) and
 		(:stage:startdate is null or :m:s_date_created >= :stage:startdate) and
 		(:stage:enddate is null or :m:s_date_created <= :stage:enddate)
 	    group by
 		:sr:p_partner_key
 	    having
-		count(:p:p_partner_key) = 0
+		count(:m:p_partner_key) = 0
 	    ";
     }

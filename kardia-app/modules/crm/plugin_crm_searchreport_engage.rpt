@@ -19,7 +19,7 @@ plugin_crm_searchreport_engage "system/report"
     // This report can modify data (the create/add-to mailing list feature).
     // Therefore we can't allow direct access - must be via an app.  This
     // prevents CSRF type attacks.
-    require_endorsements = "system:from_appgroup";
+    require_endorsements = "system:from_application";
 
     // Query to get site information
     site_qy "report/query"
@@ -75,17 +75,20 @@ plugin_crm_searchreport_engage "system/report"
     // Query to pull the search resultset
     results_qy "report/query"
 	{
-	sql = "	SELECT
+	sql = "	declare collection advsearch scope application;
+	
+		SELECT
 		    :p:p_partner_key,
 		    acct_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 		    acct_attn = condition(char_length(rtrim(:p:p_org_name)) > 0 and char_length(rtrim(:p:p_surname)) > 0, 'Attn: ' + isnull(:p:p_given_name + ' ', '') + :p:p_surname, null)
 		FROM    
-		    identity /apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		    --identity /apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
+		    identity collection advsearch sr,
 		    /apps/kardia/data/Kardia_DB/p_partner/rows p
 		WHERE
 		    :sr:p_search_session_id = :this:session_id and
 		    :sr:p_search_stage_id = :this:stage_id and
-		    :sr:s_username = user_name() and
+		    --:sr:s_username = user_name() and
 		    :p:p_partner_key =* :sr:p_partner_key
 		ORDER BY
 		    isnull(:p:p_org_name,'') + isnull(:p:p_surname,'') + isnull(:p:p_given_name,'')
