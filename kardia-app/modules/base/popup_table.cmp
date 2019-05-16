@@ -129,6 +129,7 @@ popup_table "widget/component-decl"
 	    {
 	    event = "BeforeKeyPress";
 	    event_condition = runclient(not (:popup:is_visible) and :Name = 'f3');
+	    event_cancel = runclient(not (:popup:is_visible) and :Name = 'f3');
 	    target = popup;
 	    action = Popup;
 	    PopTo = attach_to;
