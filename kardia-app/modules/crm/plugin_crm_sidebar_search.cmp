@@ -207,6 +207,7 @@ search "widget/component-decl"
 			cellvspacing = 4;
 			row1_bgcolor = "#f8f8f8";
 			row2_bgcolor = "#f8f8f8";
+			nodata_message = "(no results)";
 
 			search_item_detail "widget/table-row-detail"
 			    {
@@ -353,6 +354,7 @@ search "widget/component-decl"
 			cellvspacing = 4;
 			row1_bgcolor = "#f8f8f8";
 			row2_bgcolor = "#f8f8f8";
+			nodata_message = "(no results)";
 
 			advanced_item_detail "widget/table-row-detail"
 			    {
