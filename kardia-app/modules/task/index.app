@@ -16,11 +16,26 @@ index "widget/page"
     max_requests = 7;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl";
 
+    refresh_timer "widget/timer"
+	{
+	auto_start = 1;
+	auto_reset = 1;
+	msec = 120000;
+
+	onExpire1 "widget/connector"
+	    {
+	    event=Expire;
+	    target=proj_list;
+	    action=Refresh;
+	    }
+	}
+
     // Here we insert the list of projects.
     proj_list "widget/component"
 	{
 	x=10; y=10;
 	width=980; height=780;
 	path="dashboard.cmp";
+	only_current=1;
 	}
     }
