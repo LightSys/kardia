@@ -61,6 +61,18 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 			:cs:s_created_by,
 			:cs:s_date_modified,
 			:cs:s_modified_by,
+			:cs:p_start_date,
+			:cs:p_end_date,
+			date_range = condition(:cs:p_start_date is null and :cs:p_end_date is null,
+				'All',
+				condition(:cs:p_start_date is null,
+					'Until ' + substring(convert(string, :cs:p_end_date), 1, 11),
+					condition(:cs:p_end_date is null,
+						substring(convert(string, :cs:p_start_date), 1, 11) + ' onward',
+						substring(convert(string, :cs:p_start_date), 1, 11) + ' - ' +  substring(convert(string, :cs:p_end_date), 1, 11)
+					)
+				)
+			),
 			:c:a_cc_desc,
 			disp_name = :cs:a_cost_center + ' - ' + :c:a_cc_desc,
 			-- Below we build the list of report groups, as well as their
@@ -144,6 +156,7 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 				//t_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=70; }
 				//t_name "widget/table-column" { title="Name"; fieldname="a_cc_desc"; width=450; }
 				t_disp "widget/table-column" { title="Fund"; fieldname="disp_name"; width=450; }
+				t_dates "widget/table-column" { title="Dates Managed"; fieldname="date_range"; width=160; }
 
 				t_items_rpt "widget/repeat"
 				    {
@@ -193,31 +206,60 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 				}
 			    }
 
-			f_costctr "widget/component"
+			ctls_hbox "widget/hbox"
 			    {
 			    height=24;
-			    width=300;
-			    path="/apps/kardia/modules/base/editbox_table.cmp";
-			    field='a_cost_center';
-			    text='Fund:';
-			    popup_width=300;
-			    popup_height=210;
-			    popup_sql = runserver("
-				    SELECT
-					value = :a_cost_center,
-					label = :a_cost_center + ' ' + :a_cc_desc
-				    FROM
-					/apps/kardia/data/Kardia_DB/a_cost_center/rows c
-				    WHERE
-					:a_ledger_number = " + quote(:this:ledger) + " and
-					:a_bal_cost_center = :a_cost_center
-				    ");
-			    search_field_list="a_cost_center,*a_cc_desc*,a_legacy_code";
-			    key_name="a_cost_center";
-			    object_name="Funds";
-			    popup_text="Choose Fund:";
-			    empty_desc = "required";
-			    attach_point=editbox;
+
+			    f_costctr "widget/component"
+				{
+				width=260;
+				label_width=60;
+				path="/apps/kardia/modules/base/editbox_table.cmp";
+				field='a_cost_center';
+				text='Fund:';
+				popup_width=300;
+				popup_height=210;
+				popup_sql = runserver("
+					SELECT
+					    value = :a_cost_center,
+					    label = :a_cost_center + ' ' + :a_cc_desc
+					FROM
+					    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+					WHERE
+					    :a_ledger_number = " + quote(:this:ledger) + " and
+					    :a_bal_cost_center = :a_cost_center
+					");
+				search_field_list="a_cost_center,*a_cc_desc*,a_legacy_code";
+				key_name="a_cost_center";
+				object_name="Funds";
+				popup_text="Choose Fund:";
+				empty_desc = "required";
+				attach_point=editbox;
+				}
+
+			    f_startdt "widget/component"
+				{
+				width=260;
+				label_width=120;
+				path="/sys/cmp/smart_field.cmp";
+				field="p_start_date";
+				text="Managed From:";
+				ctl_type=datetime;
+				date_only=1;
+				default_time="00:00:00";
+				}
+
+			    f_enddt "widget/component"
+				{
+				width=190;
+				label_width=50;
+				path="/sys/cmp/smart_field.cmp";
+				field="p_end_date";
+				text="To:";
+				ctl_type=datetime;
+				date_only=1;
+				default_time="23:59:59";
+				}
 			    }
 
 			ledger_v "widget/variable" { fieldname="a_ledger_number"; ledger_hints "widget/hints" { default=runclient(:plugin_base_staffmaint_ccmanage:ledger); } }

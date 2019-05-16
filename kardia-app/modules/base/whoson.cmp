@@ -21,7 +21,9 @@ whoson "widget/component-decl"
 
     whoson_osrc "widget/osrc"
 	{
-	sql = " insert
+	sql = " declare collections whoson;
+	
+		insert
 			/apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
 		select
 			s_username = user_name(),
@@ -66,6 +68,8 @@ whoson "widget/component-decl"
 			:s_username = user_name()
 		;
 
+		insert
+			collection whoson
 		select
 			img='/apps/kardia/images/icons/person.gif',
 			:ud:s_status,
@@ -80,8 +84,14 @@ whoson "widget/component-decl"
 		where
 			:s:name = :u:name and
 			:s:name *= :ud:s_username
+		;
+
+		select
+			*
+		from
+			collection whoson
 		order by
-			:u:description
+			:description
 		";
 	replicasize=100;
 	readahead=100;

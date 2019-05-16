@@ -337,6 +337,13 @@ drop index e_tag_activity.e_tagact_tagid_idx
 go
 
 
+/* e_tag_source */
+/* drop index e_tag_source.e_tagsrc_pk */ 
+/* go */
+drop index e_tag_source.e_tagsrc_src_idx
+go
+
+
 /* e_document_type */
 drop index e_document_type.e_doctype_label_idx
 go
@@ -982,6 +989,8 @@ drop index a_subtrx_gift_item.a_gifttrxi_rcpt_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_recip_id_idx
 go
+drop index a_subtrx_gift_item.a_gifttrxi_src_idx
+go
 
 
 /* a_subtrx_gift_rcptcnt */
@@ -1205,6 +1214,69 @@ drop index c_member.s_username_idx
 go
 
 
+/* t_project */
+/* drop index t_project.t_project_pk */ 
+/* go */
+
+
+/* t_sprint */
+/* drop index t_sprint.t_sprint_pk */ 
+/* go */
+drop index t_sprint.t_sprint_proj_idx
+go
+
+
+/* t_sprint_time */
+/* drop index t_sprint_time.t_sprint_time_pk */ 
+/* go */
+drop index t_sprint_time.t_time_proj_idx
+go
+drop index t_sprint_time.t_time_sprint_idx
+go
+
+
+/* t_task */
+/* drop index t_task.t_task_pk */ 
+/* go */
+drop index t_task.t_task_proj_idx
+go
+drop index t_task.t_task_sprint_idx
+go
+
+
+/* t_participant */
+drop index t_participant.t_part_proj_idx
+go
+/* drop index t_participant.t_participant_pk */ 
+/* go */
+
+
+/* t_sprint_participant */
+drop index t_sprint_participant.t_spart_proj_idx
+go
+drop index t_sprint_participant.t_spart_sprint_idx
+go
+/* drop index t_sprint_participant.t_sprint_participant_pk */ 
+/* go */
+
+
+/* t_assignee */
+/* drop index t_assignee.t_assignee_pk */ 
+/* go */
+drop index t_assignee.t_assignee_task_idx
+go
+
+
+/* t_task_state */
+/* drop index t_task_state.t_tstate_pk */ 
+/* go */
+
+
+/* t_task_history */
+/* drop index t_task_history.t_history_pk */ 
+/* go */
+
+
 /* s_config */
 /* drop index s_config.s_config_pk */ 
 /* go */
@@ -1304,4 +1376,9 @@ go
 
 /* s_user_role */
 /* drop index s_user_role.s_user_role_pk */ 
+/* go */
+
+
+/* s_global_search */
+/* drop index s_global_search.s_global_search_pk */ 
 /* go */

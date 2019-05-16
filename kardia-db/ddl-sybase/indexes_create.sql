@@ -338,6 +338,13 @@ create  index e_tagact_tagid_idx on e_tag_activity (e_tag_id, p_partner_key, e_t
 go
 
 
+/* e_tag_source */
+/* create  clustered index e_tagsrc_pk on e_tag_source (e_tag_id, e_tag_source_type, e_tag_source_key)*/ 
+/* go */
+create  index e_tagsrc_src_idx on e_tag_source (e_tag_source_type, e_tag_source_key, e_tag_id)
+go
+
+
 /* e_document_type */
 create  index e_doctype_label_idx on e_document_type (e_doc_type_label, e_doc_type_id)
 go
@@ -983,6 +990,8 @@ create  index a_gifttrxi_rcpt_idx on a_subtrx_gift_item (a_dn_receipt_number, a_
 go
 create  index a_gifttrxi_recip_id_idx on a_subtrx_gift_item (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
+create  index a_gifttrxi_src_idx on a_subtrx_gift_item (i_eg_source_key, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
 
 
 /* a_subtrx_gift_rcptcnt */
@@ -1206,6 +1215,69 @@ create  index s_username_idx on c_member (s_username, c_chat_id)
 go
 
 
+/* t_project */
+/* create  clustered index t_project_pk on t_project (t_project_id)*/ 
+/* go */
+
+
+/* t_sprint */
+/* create  clustered index t_sprint_pk on t_sprint (t_sprint_id)*/ 
+/* go */
+create  index t_sprint_proj_idx on t_sprint (t_project_id, t_sprint_id)
+go
+
+
+/* t_sprint_time */
+/* create  clustered index t_sprint_time_pk on t_sprint_time (t_time_id)*/ 
+/* go */
+create  index t_time_proj_idx on t_sprint_time (t_project_id, t_sprint_id, t_time_id)
+go
+create  index t_time_sprint_idx on t_sprint_time (t_sprint_id, t_time_id)
+go
+
+
+/* t_task */
+/* create  clustered index t_task_pk on t_task (t_task_id)*/ 
+/* go */
+create  index t_task_proj_idx on t_task (t_project_id, t_sprint_id, t_task_id)
+go
+create  index t_task_sprint_idx on t_task (t_sprint_id, t_task_id)
+go
+
+
+/* t_participant */
+create  index t_part_proj_idx on t_participant (t_project_id, p_partner_key)
+go
+/* create  clustered index t_participant_pk on t_participant (p_partner_key, t_project_id)*/ 
+/* go */
+
+
+/* t_sprint_participant */
+create  index t_spart_proj_idx on t_sprint_participant (t_project_id, t_sprint_id, p_partner_key)
+go
+create  index t_spart_sprint_idx on t_sprint_participant (t_sprint_id, p_partner_key)
+go
+/* create  clustered index t_sprint_participant_pk on t_sprint_participant (p_partner_key, t_sprint_id)*/ 
+/* go */
+
+
+/* t_assignee */
+/* create  clustered index t_assignee_pk on t_assignee (p_partner_key, t_task_id)*/ 
+/* go */
+create  index t_assignee_task_idx on t_assignee (t_task_id, p_partner_key)
+go
+
+
+/* t_task_state */
+/* create  clustered index t_tstate_pk on t_task_state (t_task_state_id)*/ 
+/* go */
+
+
+/* t_task_history */
+/* create  clustered index t_history_pk on t_task_history (t_task_id, t_history_id)*/ 
+/* go */
+
+
 /* s_config */
 /* create  clustered index s_config_pk on s_config (s_config_name)*/ 
 /* go */
@@ -1305,4 +1377,9 @@ go
 
 /* s_user_role */
 /* create  clustered index s_user_role_pk on s_user_role (s_role_id, s_username)*/ 
+/* go */
+
+
+/* s_global_search */
+/* create  clustered index s_global_search_pk on s_global_search (s_search_id, s_username, s_search_res_id)*/ 
 /* go */
