@@ -1,0 +1,44 @@
+$Version=2$
+plugin_menu_act_logins_me "widget/component-decl"
+    {
+    width=216;
+    height=40;
+    type="Me";
+    sql = null;
+
+    menu_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    stat_vbox "widget/vbox"
+	{
+	x=0;
+	y=0;
+	width=216;
+	height=40;
+
+	stat_osrc "widget/osrc"
+	    {
+	    sql = runserver("select * from /apps/kardia/data/Kardia_DB/s_user_data/rows where :s_username = " + quote(user_name()));
+	    baseobj = "/apps/kardia/data/Kardia_DB/s_user_data/rows";
+	    replicasize=2;
+	    readahead=2;
+	    autoquery=onfirstreveal;
+
+	    stat_form "widget/form"
+		{
+		allow_query = no;
+		allow_nodata = no;
+		confirm_discard = no;
+		auto_focus = no;
+
+		save_cn "widget/connector" { event=DataSaved; target=menu_osrc; action=Refresh; }
+
+		status_lbl "widget/label" { height=16; text="My Status:"; fgcolor=white; }
+		status_eb "widget/editbox" { height=24; tooltip="What are you doing right now?"; fieldname=s_status; empty_description="What are you doing now?"; }
+		}
+
+	    status_who "widget/variable" { fieldname=s_username; status_who_hints "widget/hints" { default=runclient(user_name()); } }
+
+	    status_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+	    }
+	}
+    }

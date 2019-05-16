@@ -15,7 +15,7 @@ generic_byperiod "widget/component-decl"
 	sql = runserver("
 		SELECT
 			:p:a_period, :p:a_period_desc, :p:a_ledger_number, 
-			txt=:p:a_period + ' - ' + :p:a_period_desc + isnull(' (' + condition(:p:a_status = 'O', 'Open', condition(:p:a_status = 'N', 'Not yet open', condition(:p:a_status = 'C', 'Closed', null))) + ')', ''),
+			txt=:p:a_period + ' - ' + :p:a_period_desc + isnull(' (' + condition(:p:a_status = 'P', 'Provisional', condition(:p:a_status = 'O', 'Open', condition(:p:a_status = 'N', 'Not yet open', condition(:p:a_status = 'C', 'Closed', null)))) + ')', ''),
 			:p:a_status, :p:a_parent_period
 		FROM
 			/apps/kardia/data/Kardia_DB/a_period/rows p

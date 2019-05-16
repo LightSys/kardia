@@ -148,6 +148,9 @@ alter table e_tag
 alter table e_tag_activity
 	add constraint e_tagact_pk primary key  (e_tag_activity_group, e_tag_activity_id);
 
+alter table e_tag_source
+	add constraint e_tagsrc_pk primary key  (e_tag_id, e_tag_source_type, e_tag_source_key);
+
 alter table e_document_type
 	add constraint e_doctype_pk primary key  (e_doc_type_id);
 
@@ -451,6 +454,9 @@ alter table a_support_review_target
 alter table a_descriptives
 	add constraint a_descr_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center);
 
+alter table a_descriptives_hist
+	add constraint a_descrhist_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_amount);
+
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
 
@@ -471,6 +477,9 @@ alter table a_subtrx_cashxfer
 
 alter table i_eg_gift_import
 	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+
+alter table i_eg_gift_trx_fees
+	add constraint i_eg_gift_trx_fees_pk primary key  (a_ledger_number, i_eg_fees_id);
 
 alter table i_eg_giving_url
 	add constraint i_eg_giving_url_pk primary key  (a_ledger_number, a_cost_center);
@@ -501,6 +510,33 @@ alter table c_chat
 
 alter table c_member
 	add constraint c_member_pk primary key  (c_chat_id, s_username);
+
+alter table t_project
+	add constraint t_project_pk primary key  (t_project_id);
+
+alter table t_sprint
+	add constraint t_sprint_pk primary key  (t_sprint_id);
+
+alter table t_sprint_time
+	add constraint t_sprint_time_pk primary key  (t_time_id);
+
+alter table t_task
+	add constraint t_task_pk primary key  (t_task_id);
+
+alter table t_participant
+	add constraint t_participant_pk primary key  (p_partner_key, t_project_id);
+
+alter table t_sprint_participant
+	add constraint t_sprint_participant_pk primary key  (p_partner_key, t_sprint_id);
+
+alter table t_assignee
+	add constraint t_assignee_pk primary key  (p_partner_key, t_task_id);
+
+alter table t_task_state
+	add constraint t_tstate_pk primary key  (t_task_state_id);
+
+alter table t_task_history
+	add constraint t_history_pk primary key  (t_task_id, t_history_id);
 
 alter table s_config
 	add constraint s_config_pk primary key  (s_config_name);
@@ -555,3 +591,6 @@ alter table s_role_exclusivity
 
 alter table s_user_role
 	add constraint s_user_role_pk primary key  (s_role_id, s_username);
+
+alter table s_global_search
+	add constraint s_global_search_pk primary key  (s_search_id, s_username, s_search_res_id);

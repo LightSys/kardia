@@ -4,6 +4,7 @@ partner_window "widget/page"
     width = 844;
     height=600;
     title = "Kardia - Partners";
+    icon = "/apps/kardia/images/icons/ionicons-people.svg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
 

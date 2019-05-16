@@ -1,0 +1,65 @@
+$Version=2$
+update_tag_implications "system/query"
+    {
+    partner "query/parameter" { type=string; }
+    tagtype "query/parameter" { type=integer; }
+
+    sql = " -- Now, generate new or modified tag implications
+	    insert
+		/apps/kardia/data/Kardia_DB/e_tag/rows
+	    select
+		--e_tag_id = condition(:tt:e_tag_id = :tr:e_tag_id, :tr:e_rel_tag_id, :tr:e_tag_id),
+		e_tag_id = :tr:e_rel_tag_id,
+		:t:p_partner_key,
+		e_tag_strength = :t:e_tag_strength * :tr:e_rel_strength,
+		e_tag_certainty = :t:e_tag_certainty * :tr:e_rel_certainty,
+		e_tag_volatility = '*',
+		e_tag_comments = 'Implied by ' + :tt:e_tag_label,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/e_tag/rows t,
+		/apps/kardia/data/Kardia_DB/e_tag_type/rows tt,
+		/apps/kardia/data/Kardia_DB/e_tag_type_relationship/rows tr
+	    where
+		:t:e_tag_id = :tt:e_tag_id and
+		--(:tt:e_tag_id = :tr:e_tag_id or :tt:e_tag_id = :tr:e_rel_tag_id) and
+		:tt:e_tag_id = :tr:e_tag_id and
+		(:parameters:partner is null or :t:p_partner_key = :parameters:partner) and
+		(:parameters:tagtype is null or :t:e_tag_id = :parameters:tagtype)
+	    having
+		abs(:this:e_tag_strength) > (select :tt2:e_tag_threshold from /apps/kardia/data/Kardia_DB/e_tag_type/rows tt2 where :tt2:e_tag_id = :this:e_tag_id) and
+		:this:e_tag_certainty > 0.1
+	    on duplicate
+		:e_tag_id, :p_partner_key
+	    update set
+		-- Strength and Certainty: we only update if we are increasing it, and only
+		-- if the tag was already an Implied tag.
+		:e_tag_strength = condition(:e_tag_volatility = 'I' or :e_tag_volatility = '*', condition(abs(:e_tag_strength) < abs(:t:e_tag_strength * :tr:e_rel_strength), :t:e_tag_strength * :tr:e_rel_strength, :e_tag_strength), :e_tag_strength),
+		:e_tag_certainty = condition(:e_tag_volatility = 'I' or :e_tag_volatility = '*', condition(:e_tag_certainty < :t:e_tag_certainty * :tr:e_rel_certainty, :t:e_tag_certainty * :tr:e_rel_certainty, :e_tag_certainty), :e_tag_certainty),
+		:e_tag_comments = condition(:e_tag_volatility = '*', :e_tag_comments + ', ' + :tt:e_tag_label, condition(:e_tag_volatility = 'I', 'Implied by ' + :tt:e_tag_label, :e_tag_comments)),
+		:e_tag_volatility = condition(:e_tag_volatility = 'I', '*', :e_tag_volatility),
+		:s_date_modified = getdate() IF MODIFIED,
+		:s_modified_by = user_name() IF MODIFIED
+	    ;
+
+	    -- Next, delete tag implications that we do not need anymore
+	    delete
+		/apps/kardia/data/Kardia_DB/e_tag/rows
+	    where
+		:e_tag_volatility = 'I' and
+		(:parameters:partner is null or :p_partner_key = :parameters:partner) and
+		(:parameters:tagtype is null or :e_tag_id = :parameters:tagtype)
+	    ;
+
+	    -- Now properly mark the new and updated implications
+	    update
+		/apps/kardia/data/Kardia_DB/e_tag/rows
+	    set
+		:e_tag_volatility = 'I'
+	    where
+		:e_tag_volatility = '*'
+	    ";
+    }

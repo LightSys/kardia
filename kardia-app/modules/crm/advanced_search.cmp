@@ -122,7 +122,7 @@ advanced_search "widget/component-decl"
 
 		criteria_table "widget/table"
 		    {
-		    height=482;
+		    height=450;
 		    min_rowheight=16;
 		    max_rowheight=64;
 		    mode=dynamicrow;
@@ -387,63 +387,73 @@ advanced_search "widget/component-decl"
 
 		add_criteria_pane "widget/pane"
 		    {
-		    height=36;
+		    height=68;
 		    style=bordered;
 		    border_radius=8;
 		    border_color="#6080c0";
 
-		    add_criteria_btns "widget/hbox"
+		    add_criteria_hbox "widget/hbox"
 			{
 			x=10; y=6;
-			height=24;
-			width=408;
-			align=center;
+			height=56;
 			spacing=8;
-			row_height=24;
 			fl_width=100;
+			width=408;
 
 			add_criteria_label "widget/label"
 			    {
-			    width=100;
+			    width=95;
 			    fl_width=0;
-			    y=2;
+			    y=18;
 			    text="Add Criteria:";
 			    align=right;
 			    style=bold;
 			    }
 
-			add_criteria_repeat "widget/repeat"
+			add_criteria_btns "widget/hbox"
 			    {
-			    sql = "select path = :cx__pathname, :stage_label, shortlabel = isnull(:stage_short_label, :stage_label), :stage_type  from object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' order by :sequence";
-			    
-			    add_criteria_btn "widget/textbutton"
-				{
-				height=24; width=70;
-				fl_width=0;
-				background="/apps/kardia/images/bg/lsblue_btngradient.png";
-				fgcolor1=white;
-				fgcolor2=black;
-				disable_color="#334466";
-				text=runserver(:add_criteria_repeat:shortlabel);
-				enabled=runclient(:searches_osrc:p_search_id is not null and not :criteria_osrc:is_client_savable);
+			    x=0; y=0;
+			    height=56;
+			    align=center;
+			    spacing=8;
+			    row_height=24;
+			    fl_width=100;
+			    width=305;
 
-				on_add_criteria "widget/connector"
+			    add_criteria_repeat "widget/repeat"
+				{
+				sql = "select path = :cx__pathname, :stage_label, shortlabel = isnull(:stage_short_label, :stage_label), :stage_type  from object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' order by :sequence";
+				
+				add_criteria_btn "widget/textbutton"
 				    {
-				    event=Click;
-				    target=criteria_osrc;
-				    action=Create;
-				    p_stage_type=runclient('' + runserver(:add_criteria_repeat:stage_type));
-				    p_stage_op=runclient(condition(:criteria_osrc:p_stage_op is null, 'A', 'R'));
-				    p_result_count=runclient(0);
-				    s_date_created=runclient(getdate());
-				    s_created_by=runclient(user_name());
-				    s_date_modified=runclient(getdate());
-				    s_modified_by=runclient(user_name());
+				    height=24; width=70;
+				    fl_width=100;
+				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				    fgcolor1=white;
+				    fgcolor2=black;
+				    disable_color="#334466";
+				    //text=runclient(condition(:add_criteria_btn:width > 90, runserver(:add_criteria_repeat:stage_label), runserver(:add_criteria_repeat:shortlabel)));
+				    text=runserver(:add_criteria_repeat:shortlabel);
+				    enabled=runclient(:searches_osrc:p_search_id is not null and not :criteria_osrc:is_client_savable);
+
+				    on_add_criteria "widget/connector"
+					{
+					event=Click;
+					target=criteria_osrc;
+					action=Create;
+					p_stage_type=runclient('' + runserver(:add_criteria_repeat:stage_type));
+					p_stage_op=runclient(condition(:criteria_osrc:p_stage_op is null, 'A', 'R'));
+					p_result_count=runclient(0);
+					s_date_created=runclient(getdate());
+					s_created_by=runclient(user_name());
+					s_date_modified=runclient(getdate());
+					s_modified_by=runclient(user_name());
+					}
 				    }
 				}
-			    }
 
-			addsep "widget/autolayoutspacer" { fl_width=100; width=11; }
+			    addsep "widget/autolayoutspacer" { fl_width=100; width=11; }
+			    }
 			}
 		    }
 
@@ -484,7 +494,11 @@ advanced_search "widget/component-decl"
 		run_search_osrc "widget/osrc"
 		    {
 		    r_p_search_id "widget/parameter" { param_name=p_search_id; type=integer; }
-		    sql = " select
+		    sql = " declare collection advsearch scope application;
+
+			    delete from collection advsearch where :p_search_session_id = :parameters:p_search_id;
+		    
+			    select
 				1
 			    from
 				/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,

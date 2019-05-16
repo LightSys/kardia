@@ -2,18 +2,21 @@ $Version=2$
 update_descriptives "system/query"
     {
     fund "query/parameter" { type=string; }
+    donor "query/parameter" { type=string; }
     lookback "query/parameter" { type=integer; default=37; }
 
     sql = " -- Clear out any old descriptives
 	    delete
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    delete
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 
 	    -- Build a list of giving pattern descriptives for each of the fund's donors.  We want
@@ -59,7 +62,8 @@ update_descriptives "system/query"
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
-		(:parameters:fund is null or :parameters:fund = :i:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :i:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :i:p_dn_donor_partner_id)
 	    group by
 		:i:a_ledger_number,
 		:i:a_cost_center,
@@ -103,7 +107,8 @@ update_descriptives "system/query"
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
-		(:parameters:fund is null or :parameters:fund = :i:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :i:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :i:p_dn_donor_partner_id)
 	    group by
 		:i:a_ledger_number,
 		:i:a_cost_center,
@@ -126,6 +131,7 @@ update_descriptives "system/query"
 		:a_merged_amount = :dh2:a_amount
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
 		:dh2:a_cost_center = :dh1:a_cost_center and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
@@ -150,6 +156,7 @@ update_descriptives "system/query"
 		:dh2:a_total = :dh2:a_total + :dh1:a_total
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
 		:dh2:a_cost_center = :dh1:a_cost_center and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
@@ -159,6 +166,7 @@ update_descriptives "system/query"
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
 		:dh1:a_merged_amount is not null
 	    ;
 
@@ -178,7 +186,8 @@ update_descriptives "system/query"
 					:dh:a_last_gift desc
 				    )
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
@@ -192,7 +201,8 @@ update_descriptives "system/query"
 		:d:a_cost_center = :dh:a_cost_center and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		:d:a_hist_1_amount = :dh:a_amount and
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
 	    -- Second histogram value
@@ -212,7 +222,8 @@ update_descriptives "system/query"
 					:dh:a_last_gift desc
 				    )
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
@@ -226,7 +237,8 @@ update_descriptives "system/query"
 		:d:a_cost_center = :dh:a_cost_center and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		:d:a_hist_2_amount = :dh:a_amount and
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
 	    -- Third histogram value
@@ -247,7 +259,8 @@ update_descriptives "system/query"
 					:dh:a_last_gift desc
 				    )
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
@@ -261,7 +274,57 @@ update_descriptives "system/query"
 		:d:a_cost_center = :dh:a_cost_center and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		:d:a_hist_3_amount = :dh:a_amount and
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+
+	    -- Overall adjustments to a_act_average_xyz for a_descriptives
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_act_average_interval = null,
+		:a_act_average_months = null,
+		:a_act_average_amount = null,
+		:a_act_lookahead_date = getdate(),
+		:a_act_lookback_date = dateadd(day, -366, getdate())
+	    where
+		(datediff(day, :a_hist_1_first, :a_hist_1_last) >= 365 and
+		(isnull(:a_hist_2_count, 0) <= 1 or :a_hist_2_last < :a_hist_1_first) and
+		(isnull(:a_hist_3_count, 0) <= 1 or :a_hist_3_last < :a_hist_1_first)) and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+	    update 
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_act_average_interval = null,
+		:a_act_average_months = null,
+		:a_act_average_amount = null,
+		:a_act_lookahead_date = getdate(),
+		:a_act_lookback_date = condition(:a_hist_1_last < dateadd(day, -366, getdate()), dateadd(day, -366, getdate()), :a_hist_1_last)
+	    where
+		:a_act_average_months = 0 and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+	    update 
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_act_average_months = convert(integer, round(datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5)),
+		:a_act_average_amount = isnull((select condition(
+			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
+			null,
+			sum(:i:a_amount) / (datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5)
+		) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :d:a_act_lookback_date and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :d:a_act_lookahead_date and (:i:a_cost_center = :d:a_cost_center) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), $0),
+		:a_act_average_interval = (select condition(
+			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
+			null,
+			(datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5) / convert(double, count(1))
+		) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :d:a_act_lookback_date and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :d:a_act_lookahead_date and :i:a_cost_center = :d:a_cost_center and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key)
+	    where
+		:d:a_act_average_interval is null and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
 	    -- Return the dataset to the caller
@@ -270,6 +333,7 @@ update_descriptives "system/query"
 	    from
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center)
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ";
     }

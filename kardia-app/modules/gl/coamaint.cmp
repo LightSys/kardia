@@ -3,6 +3,8 @@ coamaint "widget/component-decl"
     {
     width=780; height=580;
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+    mainfund "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    fund "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
     adding_subfund "widget/variable" { type=integer; value=0; }
 
@@ -83,6 +85,22 @@ coamaint "widget/component-decl"
 		    readahead=300;
 		    autoquery=onfirstreveal;
 
+		    preselect_mainfund "widget/connector"
+			{
+			event=EndQuery;
+			event_condition=runclient(not (:mainfund:value is null));
+			action=FindObject;
+			a_cost_center = runclient(:mainfund:value);
+			}
+		    dont_preselect_mainfund_twice "widget/connector"
+			{
+			event=EndQuery;
+			event_condition=runclient(not (:mainfund:value is null));
+			target=mainfund;
+			action=SetValue;
+			Value=runclient(null);
+			}
+				    
 		    searchlisttbl "widget/table"
 			{
 			height=518; width=248; x=0; y=0;
@@ -210,6 +228,22 @@ coamaint "widget/component-decl"
 
 		    after_create1 "widget/connector" { event=Created; event_condition=runclient(not :adding_subfund:value); target=searchlistosrc; action=QueryParam; a_cost_center=runclient(:subfund_osrc:a_cost_center); }
 
+		    preselect_fund "widget/connector"
+			{
+			event=EndQuery;
+			event_condition=runclient(not (:fund:value is null));
+			action=FindObject;
+			a_cost_center = runclient(:fund:value);
+			}
+		    dont_preselect_fund_twice "widget/connector"
+			{
+			event=EndQuery;
+			event_condition=runclient(not (:fund:value is null));
+			target=fund;
+			action=SetValue;
+			Value=runclient(null);
+			}
+				    
 		    subfund_table "widget/table"
 			{
 			height=143; width=512; x=0; y=0;

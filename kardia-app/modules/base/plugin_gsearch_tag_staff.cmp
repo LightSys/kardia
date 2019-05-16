@@ -1,0 +1,11 @@
+$Version=2$
+plugin_gsearch_tag_staff "widget/component-decl"
+    {
+    field = "is_staff";
+    text = "Staff";
+    //tag_bgcolor = "#008020";
+    //tag_textcolor = "#ffffff";
+    tag_textcolor = "#101080";
+    tag_bgcolor = '';
+    sql = "select 'Staff' from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_partner_key = :gs:s_key and :s:p_is_staff = 1 and :gs:s_type = 'PAR' limit 1";
+    }

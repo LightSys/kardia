@@ -10,6 +10,7 @@ acctmaint "widget/page"
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    acct "widget/parameter" { type=string; default=null; }
 
     ledger_osrc "widget/osrc"
 	{
@@ -27,6 +28,7 @@ acctmaint "widget/page"
 	//condition = runserver((not (:this:ledger is null)) and ((select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows where :s_endorsement = 'gl_manage' and :s_context = 'ledger=' + :this:ledger and :s_subject = 'u:' + user_name()) > 0 or (select count(1) from /apps/kardia/data/Kardia_DB/s_sec_endorsement/rows where :s_endorsement = 'gl_manage' and :s_context = 'ledger=' + :this:ledger) == 0));
 	path = "/apps/kardia/modules/gl/accts_edit.cmp";
 	ledger = runserver(:this:ledger);
+	acct = runserver(:this:acct);
 	ledger_osrc = ledger_osrc;
 	}
     }

@@ -78,6 +78,9 @@ manage_support_review "widget/component-decl"
 
 	funds_osrc "widget/osrc"
 	    {
+	    fund_ledger "widget/parameter" { param_name=a_ledger_number; type=string; }
+	    fund_review "widget/parameter" { param_name=a_review; type=string; }
+
 	    sql = " select
 			:srt:a_ledger_number,
 			:srt:a_cost_center,
@@ -121,10 +124,37 @@ manage_support_review "widget/component-decl"
 			identity /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt,
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
 		    where
+			:srt:a_ledger_number = :parameters:a_ledger_number and
+			:srt:a_review = :parameters:a_review and
 			:srt:a_cost_center = :c:a_cost_center and
 			:srt:a_ledger_number = :c:a_ledger_number
 		    order by
 			:srt:a_cost_center asc
+		    ;
+
+		    select
+			a_ledger_number = '',
+			a_cost_center = 'TOTAL:',
+			a_cc_desc = '',
+			manager_list = '',
+			unanswered = sum( (select
+					    count(1)
+					from
+					    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
+					where
+					    :gpf:a_cost_center = :srt:a_cost_center and
+					    :gpf:a_ledger_number = :srt:a_ledger_number and
+					    :a_flag_resolution is null)
+					),
+			status = '' + sum(condition(isnull(:a_amount,$0) = $0, 0, 1)) + '/' + count(1) + ' Complete',
+			a_target_amount = sum(:srt:a_target_amount),
+			review_amt = sum(isnull(:a_amount,$0)),
+			review_pct = round(100 * convert(double, sum(:srt:a_amount)) / convert(double, sum(:srt:a_target_amount)), 1)
+		    from
+			identity /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt
+		    where
+			:srt:a_ledger_number = :parameters:a_ledger_number and
+			:srt:a_review = :parameters:a_review
 		    ";
 	    readahead=50;
 	    replicasize=50;
@@ -165,11 +195,12 @@ manage_support_review "widget/component-decl"
 		rowhighlight_shadow_offset=1;
 		rowhighlight_shadow_angle=135;
 		rowhighlight_bgcolor="#faf8ff";
-		nodata_message = runclient(condition(:review_osrc:cx__pending, "No funds being reviewed.", "Looking up funds..."));
+		nodata_message = runclient(condition(:funds_osrc:cx__pending, "No funds being reviewed.", "Looking up funds..."));
 
 		ft_detail "widget/table-row-detail"
 		    {
 		    height=200; width=901;
+		    display_for=runclient(isnull(:funds_osrc:a_ledger_number,'') != '');
 
 		    patterns_osrc "widget/osrc"
 			{

@@ -1,0 +1,242 @@
+$Version=2$
+plugin_menu_subui_glstat "widget/component-decl"
+    {
+    width=924;
+    height=180;
+
+    vbox "widget/vbox"
+	{
+	x=20; y=0;
+	width=884;
+	height=200;
+	spacing=10;
+
+	stats_title "widget/label" { height=18; font_size=16; style=bold; align=center; text="Financial Overview..."; fl_width=100; }
+
+	search_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	data_hbox "widget/hbox"
+	    {
+	    height=141;
+	    spacing=20;
+
+	    summary_pane "widget/pane"
+		{
+		width=350;
+		style=flat;
+		fl_width=10;
+
+		summary_osrc "widget/osrc"
+		    {
+		    period "widget/parameter" { type=string; }
+		    ledger "widget/parameter" { type=string; }
+		    sql = " declare object info;
+			    declare collection trxdata;
+
+			    select
+				:info:start = :a_start_date,
+				:info:end = :a_end_date,
+				:info:parent = :a_parent_period
+			    from
+				/apps/kardia/data/Kardia_DB/a_period/rows
+			    where
+				:a_period = :parameters:period and
+				:a_ledger_number = :parameters:ledger
+			    ;
+
+			    select
+				:info:startperiod = first(:a_period),
+				:info:endperiod = last(:a_period)
+			    from
+				/apps/kardia/data/Kardia_DB/a_period/rows
+			    where
+				:a_parent_period = :info:parent and
+				:a_ledger_number = :parameters:ledger
+			    order by
+				:a_start_date asc
+			    ;
+
+			    select
+				:info:ratio = convert(double, isnull(:GLRsrvThres, '0.167')),
+				:info:equlo = :GLEquLow,
+				:info:equhi = :GLEquHigh,
+				:info:explo = :GLExpLow,
+				:info:exphi = :GLExpHigh,
+				:info:revlo = :GLRevLow,
+				:info:revhi = :GLRevHigh,
+				:info:astlo = :GLAssetLow,
+				:info:asthi = :GLAssetHigh,
+				:info:lialo = :GLLiabLow,
+				:info:liahi = :GLLiabHigh
+			    from
+				object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:ledger)
+			    ;
+
+			    select
+				:info:openperiods = sum(:a_period + ',') - ','
+			    from
+				/apps/kardia/data/Kardia_DB/a_period/rows
+			    where
+				:a_ledger_number = :parameters:ledger and
+				:a_period >= :info:startperiod and
+				:a_period <= :info:endperiod and
+				:a_status = 'O'
+			    ;
+				
+			    select
+				:info:avgexp = sum(sum(condition((:a_account_code >= :info:explo and :a_account_code <= :info:exphi and :a_account_category = '50'), :a_amount, $0))) / count(count(1))
+			    from
+				/apps/kardia/data/Kardia_DB/a_transaction/rows t
+			    where
+				:t:a_ledger_number = :parameters:ledger and
+				:t:a_period >= :info:startperiod and
+				:t:a_period <= :info:endperiod and
+				charindex(',' + :t:a_period + ',', ',' + :info:openperiods + ',') == 0
+			    group by
+				:t:a_period
+			    ;
+
+			    insert
+				collection trxdata
+			    select
+				is_summary = 1,
+				period = :info:parent,
+				expense = sum(condition((:a_account_code >= :info:explo and :a_account_code <= :info:exphi and :a_account_category = '50'), :a_amount, $0)),
+				revenue = $0 - sum(condition((:a_account_code >= :info:revlo and :a_account_code <= :info:revhi and :a_account_category = '40'), :a_amount, $0)),
+				fundbal = $0 - sum(condition((:a_account_code >= :info:equlo and :a_account_code <= :info:equhi and :a_account_category = '30') or (:a_account_code >= :info:revlo and :a_account_code <= :info:revhi and :a_account_category = '40') or (:a_account_code >= :info:explo and :a_account_code <= :info:exphi and :a_account_category = '50'), :a_amount, $0)),
+				gainloss = $0 - sum(condition((:a_account_code >= :info:revlo and :a_account_code <= :info:revhi and :a_account_category = '40') or (:a_account_code >= :info:explo and :a_account_code <= :info:exphi and :a_account_category = '50'), :a_amount, $0)),
+				noncurr = isnull(sum(condition(:a_account_code >= :info:astlo and :a_account_code <= :info:asthi and :a_account_category != '11', :a_amount, $0)), $0)
+			    from
+				/apps/kardia/data/Kardia_DB/a_transaction/rows t
+			    where
+				:t:a_ledger_number = :parameters:ledger and
+				:t:a_period >= :info:startperiod and
+				:t:a_period <= :info:endperiod
+			    ;
+
+			    insert
+				collection trxdata
+			    select
+				is_summary = 0,
+				period = :a_period,
+				expense = sum(condition((:a_account_code >= :info:explo and :a_account_code <= :info:exphi and :a_account_category = '50'), :a_amount, $0)),
+				revenue = $0 - sum(condition((:a_account_code >= :info:revlo and :a_account_code <= :info:revhi and :a_account_category = '40'), :a_amount, $0)),
+				fundbal = isnull($0 - sum(condition(((:a_account_code >= :info:equlo and :a_account_code <= :info:equhi and :a_account_category = '30') or (:a_account_code >= :info:revlo and :a_account_code <= :info:revhi and :a_account_category = '40') or (:a_account_code >= :info:explo and :a_account_code <= :info:exphi and :a_account_category = '50')), :a_amount, $0)), $0),
+				gainloss = $0 - sum(condition((:a_account_code >= :info:revlo and :a_account_code <= :info:revhi and :a_account_category = '40') or (:a_account_code >= :info:explo and :a_account_code <= :info:exphi and :a_account_category = '50'), :a_amount, $0)),
+				noncurr = isnull(sum(condition(:a_account_code >= :info:astlo and :a_account_code <= :info:asthi and :a_account_category != '11', :a_amount, $0)), $0)
+			    from
+				/apps/kardia/data/Kardia_DB/a_transaction/rows t
+			    where
+				:t:a_ledger_number = :parameters:ledger and
+				:t:a_period >= :info:startperiod and
+				:t:a_period <= :info:endperiod
+			    group by
+				:a_period desc
+			    order by
+				:a_period desc
+			    ;
+
+			    update
+				collection trxdata t
+			    set
+				:fundbal = :fundbal + isnull(($0 - (select sum(condition((:t2:a_account_code >= :info:equlo and :t2:a_account_code <= :info:equhi) or (:t2:a_account_code >= :info:revlo and :t2:a_account_code <= :info:revhi) or (:t2:a_account_code >= :info:explo and :t2:a_account_code <= :info:exphi), :t2:a_amount, $0)) from /apps/kardia/data/Kardia_DB/a_transaction/rows t2 where :t2:a_ledger_number = :parameters:ledger and :t2:a_period >= :info:startperiod and :t2:a_period < :t:period)), $0),
+				:noncurr = :noncurr + isnull(((select sum(condition((:t2:a_account_code >= :info:astlo and :t2:a_account_code <= :info:asthi and :t2:a_account_category != '11'), :t2:a_amount, $0)) from /apps/kardia/data/Kardia_DB/a_transaction/rows t2 where :t2:a_ledger_number = :parameters:ledger and :t2:a_period >= :info:startperiod and :t2:a_period < :t:period)), $0)
+			    where
+				:period != :info:parent
+			    ;
+
+			    update
+				collection trxdata t
+			    set
+				:ratio = round(convert(double, :fundbal - :noncurr) / convert(double, (:info:avgexp * 12)), 3)
+			    ;
+
+			    select
+				:period,
+				:is_summary,
+				expense = convert(integer, round(:expense,0)),
+				revenue = convert(integer, round(:revenue,0)),
+				fundbal = convert(integer, round(:fundbal,0)),
+				noncurr = convert(integer, round(:noncurr,0)),
+				nca = convert(integer, round(:fundbal,0)) - convert(integer, round(:noncurr,0)),
+				gainloss = convert(integer, round(:gainloss,0)),
+				avgexp = convert(integer, round(:info:avgexp, 0)),
+				:ratio,
+				thres = :info:ratio
+			    from
+				collection trxdata
+
+			    ";
+		    replicasize=20;
+		    readahead=20;
+
+		    summary_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=kardia_sysattrs_osrc;
+			target_key_1=Ledger;
+			key_1=ledger;
+			target_key_2=CurrentPeriod;
+			key_2=period;
+			revealed_only=yes;
+			}
+
+		    summary_table "widget/table"
+			{
+			x=0; y=0;
+			fl_width=10;
+			fl_height=10;
+			width=350;
+			height=141;
+			overlap_scrollbar = yes;
+			demand_scrollbar = yes;
+			show_mouse_focus = no;
+			initial_selection = no;
+			max_rowheight=200;
+			colsep = 0;
+			cellvspacing=2;
+			inner_padding=2;
+			row_border_radius=4;
+			rowhighlight_border_color="#6080c0";
+			rowhighlight_shadow_color="#6080c0";
+			rowhighlight_shadow_radius=2;
+			rowhighlight_shadow_offset=1;
+			rowhighlight_shadow_angle=135;
+			row1_bgcolor=runclient(condition(:summary_osrc:is_summary == 1, "#f0e0ff", "white"));
+			row2_bgcolor=runclient(condition(:summary_osrc:is_summary == 1, "#f0e0ff", "white"));
+			rowhighlight_bgcolor="#faf8ff";
+			textcolorhighlight="black";
+			titlecolor = white;
+			titlebar = yes;
+			hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			rowcache_size=200;
+			nodata_message = "one moment...";
+
+			t_period "widget/table-column" { title="Period"; fieldname=period; style=bold; }
+			t_rev "widget/table-column" { title="Revenue"; fieldname=revenue; style=bold; align=right; }
+			t_exp "widget/table-column" { title="Expense"; fieldname=expense; style=bold; align=right; }
+			t_gl "widget/table-column" { title="Period G/L"; fieldname=gainloss; style=bold; align=right; textcolor=runclient(condition(:summary_osrc:gainloss is null, "white", condition(charindex('-', convert(string, :summary_osrc:gainloss)) > 0, "red", "black"))); }
+			t_fb "widget/table-column" { title="Net Cur Ast"; fieldname=nca; style=bold; align=right; }
+			t_ratio "widget/table-column" { title="Reserve"; fieldname=ratio; style=bold; align=center; textcolor=runclient(condition(:summary_osrc:ratio is null, "white", condition(:summary_osrc:ratio >= :summary_osrc:thres, "black", "red"))); }
+			}
+		    }
+		}
+
+	    revexp_chart "widget/image"
+		{
+		width=257;
+		fl_width=10;
+		fl_height=10;
+		source=runclient("/apps/kardia/modules/gl/gl_revexp_bar_chart_svg.rpt?ledger=" + :kardia_sysattrs_osrc:Ledger + "&rev_bar_color=%233E7D38&exp_bar_color=%23964347&image_height=" + :revexp_chart:height + "&image_width=" + :revexp_chart:width + "&months=13");
+		}
+
+	    reserve_chart "widget/image"
+		{
+		width=257;
+		fl_width=10;
+		fl_height=10;
+		source=runclient("/apps/kardia/modules/gl/gl_reserve_bar_chart_svg.rpt?ledger=" + :kardia_sysattrs_osrc:Ledger + "&bar_color=%23997C44&line_color=%23DDB261&image_height=" + :reserve_chart:height + "&image_width=" + :reserve_chart:width + "&months=13");
+		}
+	    }
+	}
+    }

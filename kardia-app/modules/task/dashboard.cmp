@@ -1,0 +1,141 @@
+$Version=2$
+dashboard "widget/component-decl"
+    {
+    width=980;
+    height=780;
+    widget_template = "/apps/kardia/modules/task/tasks.tpl";
+    
+    // Project ID can be passed in as a parameter to make this just show
+    // a single project instead of all of them.
+    //
+    project_id "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+    only_current "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    page "widget/parameter" { type=object; find_container="widget/page"; }
+
+    // Refresh 
+    Refresh "widget/component-decl-action" { }
+    onRefresh "widget/connector" { event=Refresh; target=project_osrc; action=Refresh; }
+
+    // Objectsource giving us the list of projects
+    project_osrc "widget/osrc"
+	{
+	po_project_id "widget/parameter" { param_name=project_id; type=integer; default=runclient(:project_id:value); }
+	po_only_current "widget/parameter" { param_name=only_current; type=integer; default=runclient(:only_current:value); }
+	sql = "	declare collection tmp;
+	
+		insert
+		    collection tmp
+		select
+		    :pr:t_project_id,
+		    :pr:t_project_label,
+		    t_project_desc = isnull(:pr:t_project_desc, ''),
+		    :pr:s_date_modified,
+		    :pr:t_project_start,
+		    :pr:t_project_end,
+		    participants = isnull((select sum(:p:p_given_name + ' ' + :p:p_surname + ', ') - ', ' from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/t_participant/rows pa where :pa:t_project_id = :pr:t_project_id and :p:p_partner_key = :pa:p_partner_key), ''),
+		    rev = datediff(second, convert(datetime, '2019-01-01 00:00'), isnull((select max(:th:t_transition_date) from /apps/kardia/data/Kardia_DB/t_task_history/rows th, /apps/kardia/data/Kardia_DB/t_task/rows t where :t:t_project_id = :pr:t_project_id and :th:t_task_id = :t:t_task_id), convert(datetime, '2019-01-01 00:00'))),
+		    color = hash('md5', isnull(:pr:t_project_color, 'gray')),
+		    hours = (select isnull(sum(:p:t_skill_ratio), 0.0) from /apps/kardia/data/Kardia_DB/t_participant/rows p, /apps/kardia/data/Kardia_DB/t_sprint_participant/rows sp where :p:t_project_id = :pr:t_project_id and :sp:t_project_id = :p:t_project_id and :sp:p_partner_key = :p:p_partner_key),
+		    -- rev = datepart(minute, getdate()) * 60 + datepart(second, getdate()),
+		    lasttask = (select max(:th:t_transition_date) from /apps/kardia/data/Kardia_DB/t_task_history/rows th, /apps/kardia/data/Kardia_DB/t_task/rows t where :t:t_project_id = :pr:t_project_id and :th:t_task_id = :t:t_task_id)
+		from	
+		    /apps/kardia/data/Kardia_DB/t_project/rows pr
+		where
+		    (:parameters:project_id is null or :parameters:project_id = :pr:t_project_id)
+		having
+		    (has_endorsement('kardia:sys_admin', 'kardia') or
+		     (select count(1) from /apps/kardia/data/Kardia_DB/t_participant/rows pa, /apps/kardia/data/Kardia_DB/p_staff/rows s where :pa:t_project_id = :pr:t_project_id and :pa:p_partner_key = :s:p_partner_key and :s:p_kardia_login = user_name() and :s:p_is_staff = 1) >= 1) and
+		    (:parameters:only_current = 0 or
+		     (:pr:t_project_start <= getdate() and :pr:t_project_end >= getdate()))
+		;
+
+		select
+		    *
+		from
+		    collection tmp
+		order by
+		    --:s_date_modified desc
+		    :lasttask desc
+		";
+
+	// Here's where we display the projects.
+	proj_table "widget/table"
+	    {
+	    x=0; y=0;
+	    width=980; height=780;
+	    nodata_message = "no projects yet";
+
+	    td_admin_project "widget/table-row-detail"
+		{
+		width=980; height=34;
+		condition = runserver(:this:project_id is null);
+
+		td_admin_project_hbox "widget/hbox"
+		    {
+		    x=10; y=10; width=960; height=24;
+		    align=center;
+
+		    admin_btn "widget/textbutton"
+			{
+			width = 200;
+			text = "Manage this Project";
+
+			manage_on_click "widget/connector"
+			    {
+			    event=Click;
+			    target=page;
+			    action=LoadPage;
+			    Source="/apps/kardia/modules/task/manage_project.app";
+			    project=runclient(:project_osrc:t_project_id);
+			    }
+			}
+		    }
+		}
+
+	    t_name "widget/table-column"
+		{
+		title = "Project";
+		title_value=runclient(:project_osrc:t_project_label);
+		title_style=bold;
+		title_font_size=18;
+		value=runclient(:project_osrc:t_project_desc);
+		textcolor=runclient(condition(:project_osrc:t_project_label is null, 'white', 'white'));
+		style=runclient(condition(:project_osrc:t_project_label is null, 'bold', 'plain'));
+		align=runclient(condition(:project_osrc:t_project_label is null, 'center', 'left'));
+		font_size=runclient(condition(:project_osrc:t_project_label is null, 18, null));
+		wrap=yes;
+		caption_value=runclient(:project_osrc:participants);
+		caption_style=italic;
+		}
+
+	    stages "widget/repeat"
+		{
+		sql = "select * from /apps/kardia/data/Kardia_DB/t_task_state/rows order by :t_task_state_sequence asc";
+
+		one_state_col "widget/table-column"
+		    {
+		    title = runserver(:stages:t_task_state_label);
+		    font_size = 18;
+		    style = bold;
+		    align = center;
+		    textcolor=runclient(condition(:project_osrc:t_project_label is null, 'white', 'black'));
+		    type = image;
+		    image_maxwidth=runclient(:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )));
+		    value=runclient("/apps/kardia/modules/task/task_cell_svg.rpt?now=" + :project_osrc:rev + "&c=" + :project_osrc:color + "&h=" + :project_osrc:hours + "&project=" + :project_osrc:t_project_id + "&state=" + runserver(:stages:t_task_state_id) + "&image_width=" + (:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )) - 8));
+		    }
+		}
+
+	    t_burnup "widget/table-column"
+		{
+		title = "Progress Chart";
+		font_size = 18;
+		style = bold;
+		align = center;
+		textcolor=runclient(condition(:project_osrc:t_project_label is null, 'white', 'black'));
+		type = image;
+		image_maxwidth=runclient(:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )));
+		value=runclient("/apps/kardia/modules/task/task_burnup_svg.rpt?now=" + :project_osrc:rev + "&c=" + :project_osrc:color + "&h=" + :project_osrc:hours + "&project=" + :project_osrc:t_project_id + "&image_width=" + (:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )) - 8));
+		}
+	    }
+	}
+    }

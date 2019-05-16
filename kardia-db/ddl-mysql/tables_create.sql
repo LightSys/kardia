@@ -964,6 +964,24 @@ create table e_tag_activity (
 );
 
 
+/* e_tag_source */
+
+create table e_tag_source (
+        e_tag_id                              integer  not null,       /* ID of the tag being derived --  */
+        e_tag_source_type                     varchar(32)  not null,   /* Source type (GIFT, MLIST, etc.) --  */
+        e_tag_source_key                      varchar(255)  not null,  /* They identity for the specific source record (for example, a ledger/fund/acct combination for gift tags) --  */
+        e_is_active                           bit  not null,           /* 1 if active, or 0 if this derivation is not active. --  */
+        e_tag_strength                        float  not null,         /* A value between -1.0 and 1.0 that indicates the strength of the derivation (negative values work against the tag) --  */
+        e_tag_certainty                       float  not null,         /* A value between 0.0 and 1.0 that indicates the certainty of the derivation. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* e_document_type */
 
 create table e_document_type (
@@ -2140,6 +2158,8 @@ create table a_cc_staff (
         a_ledger_number                       char(10)  not null,      /* ledger number (a_ledger) --  */
         a_cost_center                         char(20)  not null,      /* cost center code (a_cost_center) --  */
         p_staff_partner_key                   varchar(10)  not null,   /* Partner key (p_partner) --  */
+        p_start_date                          datetime  null,          /* starting date that data is available to fund manager --  */
+        p_end_date                            datetime  null,          /* ending date that data is available to fund manager --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2720,6 +2740,7 @@ create table a_subtrx_gift_item (
         a_non_tax_deductible                  bit  default 0,          /* Set this if the gift is a non-tax-deductible gift, such as a personal gift (i.e., payable to missionary instead of support gift) --  */
         a_motivational_code                   varchar(16)  null,       /* Optional motivational code that indicates what motivated the donor to give this gift. --  */
         a_comment                             varchar(255)  null,      /* Gift comments --  */
+        i_eg_source_key                       varchar(255)  null,      /* If imported, this is the key value for i_eg_gift_import. --  */
         p_dn_donor_partner_id                 char(10)  null,          /* **Denormalized** Partner ID of gift donor. --  */
         a_dn_receipt_number                   varchar(64)  null,       /* **Denormalized** Receipt number we sent out. --  */
         a_dn_gift_received_date               datetime  null,          /* **Denormalized** Date gift was received --  */
@@ -2934,6 +2955,8 @@ create table a_descriptives (
         a_act_average_amount                  decimal(14,4)  null,     /* actual average giving since first gift or within last 12 months, whichever is shorter --  */
         a_act_average_months                  integer  null,           /* number of months for the above average. --  */
         a_act_average_interval                float  null,             /* actual average interval since first gift or within last 12 months, whichever is shorter --  */
+        a_act_count                           integer  null,           /* actual number of gifts within the lookahead/lookback range --  */
+        a_act_total                           decimal(14,4)  null,     /* actual total giving within the lookahead/lookback range --  */
         a_hist_1_amount                       decimal(14,4)  null,     /* gift histogram most common - amount --  */
         a_hist_1_count                        integer  null,           /* gift histogram most common - count --  */
         a_hist_1_first                        datetime  null,          /* gift histogram most common - first occurrence --  */
@@ -2946,6 +2969,32 @@ create table a_descriptives (
         a_hist_3_count                        integer  null,           /* gift histogram 3nd most common - count --  */
         a_hist_3_first                        datetime  null,          /* gift histogram 3nd most common - first occurrence --  */
         a_hist_3_last                         datetime  null,          /* gift histogram 3nd most common - last occurrence --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_descriptives_hist */
+
+create table a_descriptives_hist (
+        a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
+        p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
+        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_amount                              decimal(14,4)  not null,
+                                                                      /* amount given --  */
+        a_first_gift                          datetime  null,          /* first gift date --  */
+        a_last_gift                           datetime  null,          /* most recent gift date --  */
+        a_ntl_gift                            datetime  null,          /* next to last gift date --  */
+        a_count                               integer  null,           /* actual number of gifts of this amount --  */
+        a_total                               decimal(14,4)  null,     /* actual total giving for this gift amount --  */
+        a_act_average_amount                  decimal(14,4)  null,     /* actual monthly average due to this gift amount --  */
+        a_act_average_months                  integer  null,           /* number of months used for the average --  */
+        a_act_average_interval                float  null,             /* actual average giving interval due to this gift amount --  */
+        a_merged_amount                       decimal(14,4)  null,     /* if we're doing a merge of catch-up amounts, we indicate it here --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3122,11 +3171,12 @@ create table a_subtrx_cashxfer (
 create table i_eg_gift_import (
         a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
         i_eg_gift_uuid                        char(36)  not null,      /* UUID for the gift record (xml:gift-id) --  */
-        i_eg_desig_uuid                       varchar(36)  null,       /* ID of designation that the donor chose --  */
+        i_eg_desig_uuid                       varchar(36)  not null,   /* ID of designation that the donor chose --  */
         i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record (xml:txn-id) --  */
         i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor (xml:giver-id) --  */
         i_eg_donor_alt_id                     char(36)  null,          /* alternate ID for the donor --  */
         i_eg_account_uuid                     varchar(36)  null,       /* ID of donation account that the donor used --  */
+        i_eg_service                          varchar(16)  null,       /* Service ID (e.g. EG, EGS, SS) from Kardia online giving service plugin --  */
         i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) (xml:status) --  */
         i_eg_returned_status                  varchar(16)  null,       /* Reason for a return (xml:returned-status) --  */
         i_eg_processor                        varchar(80)  not null,   /* Name of payment processor (xml:processor) --  */
@@ -3147,6 +3197,7 @@ create table i_eg_gift_import (
         i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. (xml:email) --  */
         i_eg_gift_amount                      decimal(14,4)  not null,
                                                                       /* amount of gift (xml:amount) --  */
+        i_eg_gift_currency                    varchar(16)  null,       /* currency of gift (e.g. USD, CAD, etc) --  */
         i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type (xml:payment-type) --  */
         i_eg_gift_lastfour                    char(4)  null,           /* Last four digits of account number (xml:last-four) --  */
         i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval (xml:recurring-interval) --  */
@@ -3176,6 +3227,26 @@ create table i_eg_gift_import (
         a_batch_number                        integer  null,           /* Kardia GL batch used to process this gift record --  */
         a_batch_number_fees                   integer  null,           /* Kardia GL batch used to process the fees for this gift record --  */
         a_batch_number_deposit                integer  null,           /* Kardia GL batch used to process the deposit for this gift record --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* i_eg_gift_trx_fees */
+
+create table i_eg_gift_trx_fees (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this set of fees --  */
+        i_eg_fees_id                          integer  not null,       /* A unique ID for the fees data. --  */
+        i_eg_service                          varchar(16)  null,       /* Service ID (e.g. EG, EGS, SS) from Kardia online giving service plugin --  */
+        i_eg_processor                        varchar(80)  null,       /* Name of payment processor (xml:processor) --  */
+        i_eg_gift_currency                    varchar(16)  null,       /* currency of gift (e.g. USD, CAD, etc) --  */
+        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type (xml:payment-type) --  */
+        i_eg_fee_flat_amt                     decimal(14,4)  null,     /* Flat part of fee --  */
+        i_eg_fee_pct_amt                      float  null,             /* Percentage part of fee --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3388,6 +3459,157 @@ create table c_member (
         c_status                              char(1)  not null,       /* The user's status in the chat. 'I' is unanswered invitation, 'O' is in the chat (open chat), and 'C' is closed chat. This record is deleted if the user declines the invitation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /* Here, this is used for the person that invited them to the chat. --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_project */
+
+create table t_project (
+        t_project_id                          integer  not null,       /* unique project ID --  */
+        t_project_label                       varchar(64)  not null,   /* a short label (name) for the project. --  */
+        t_project_desc                        varchar(900)  null,      /* a description for the project --  */
+        t_project_start                       datetime  null,          /* starting date for the project --  */
+        t_project_end                         datetime  null,          /* ending date for the project --  */
+        t_project_color                       varchar(32)  null,       /* a color (hex triplet, "#ffffff", or common name, "white") for the project --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_sprint */
+
+create table t_sprint (
+        t_sprint_id                           integer  not null,       /* unique sprint ID --  */
+        t_project_id                          integer  not null,       /* unique project ID --  */
+        t_sprint_label                        varchar(64)  not null,   /* a short label (name) for the sprint. --  */
+        t_sprint_start                        datetime  null,          /* starting date for the sprint --  */
+        t_sprint_end                          datetime  null,          /* ending date for the sprint --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_sprint_time */
+
+create table t_sprint_time (
+        t_time_id                             integer  not null,       /* unique time interval ID --  */
+        t_sprint_id                           integer  not null,       /* unique sprint ID --  */
+        t_project_id                          integer  not null,       /* unique project ID --  */
+        t_time_start                          datetime  not null,      /* starting date and time for the time interval --  */
+        t_time_hours                          float  not null,         /* number of hours in this time interval --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_task */
+
+create table t_task (
+        t_task_id                             integer  not null,       /* unique task ID --  */
+        t_sprint_id                           integer  null,           /* unique sprint ID this task is assigned to (NULL if not assigned to a sprint yet) --  */
+        t_project_id                          integer  not null,       /* unique project ID this task is assigned to --  */
+        t_task_label                          varchar(64)  not null,   /* label for the task --  */
+        t_task_desc                           varchar(900)  null,      /* description for the task --  */
+        t_task_hours                          float  null,             /* estimated number of hours needed for this task --  */
+        t_task_percent                        float  null,             /* percent done (in decimal form: 0.0 through 1.0) --  */
+        t_task_state                          integer  null,           /* the state that the task is in (e.g.: back burner, to-do, in-progress, testing, done) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_participant */
+
+create table t_participant (
+        p_partner_key                         char(10)  not null,      /* participant partner key in Kardia --  */
+        t_project_id                          integer  not null,       /* unique project ID this participant is working in --  */
+        t_role                                varchar(64)  null,       /* label for the role of this participant in the project --  */
+        t_skill_ratio                         float  null,             /* the typical skill of this participant (1.0 is nominal, <1.0 lower skill, and >1.0 greater skill) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_sprint_participant */
+
+create table t_sprint_participant (
+        p_partner_key                         char(10)  not null,      /* participant partner key in Kardia --  */
+        t_sprint_id                           integer  not null,       /* unique sprint ID this participant is working in --  */
+        t_project_id                          integer  not null,       /* unique project ID this participant is working in --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_assignee */
+
+create table t_assignee (
+        p_partner_key                         char(10)  not null,      /* assignee partner key in Kardia --  */
+        t_task_id                             integer  not null,       /* unique task ID that is assigned to this person --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_task_state */
+
+create table t_task_state (
+        t_task_state_id                       integer  not null,       /* unique ID for the task state --  */
+        t_task_state_label                    varchar(64)  not null,   /* short label for the task state --  */
+        t_task_state_sequence                 integer  not null,       /* the order of the task states --  */
+        t_task_state_type                     char(1)  not null,       /* Type of task state: 'N' = task not started, 'I' = task in progress, 'C' = task completion --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_task_history */
+
+create table t_task_history (
+        t_task_id                             integer  not null,       /* unique ID for the task state --  */
+        t_history_id                          integer  not null,       /* unique ID for this task history record --  */
+        t_task_state_id                       integer  null,           /* the current state for the task --  */
+        t_task_hours                          float  null,             /* the number of hours overall for the task --  */
+        t_task_percent                        float  null,             /* the percent done (0.0 = none, 1.0 = finished) of the task --  */
+        t_transition_date                     datetime  not null,      /* The date and time of the task state/hours/percent change --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
         s_modified_by                         varchar(20)  not null,   /*  --  */
         __cx_osml_control                     varchar(255)  null       /*  --  */
@@ -3704,6 +3926,32 @@ create table s_user_role (
         s_role_id                             integer  not null,       /* id of this role --  */
         s_username                            varchar(20)  not null,   /* name of user --  */
         s_is_enabled                          bit,                     /* whether the user's access to this role is enabled or not --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_global_search */
+
+create table s_global_search (
+        s_search_id                           integer  not null,       /* ID of search, a unique integer. --  */
+        s_username                            varchar(20)  not null,   /* User who performed the search --  */
+        s_search_res_id                       integer  not null,       /* ID of search result, a unique integer. --  */
+        s_score                               float  not null,         /* Relevance of the result (0.0 = none, 100.0 = full) --  */
+        s_cri1                                int  not null,           /* Whether a given criteria was matched --  */
+        s_cri2                                int  not null,           /* Whether a given criteria was matched --  */
+        s_cri3                                int  not null,           /* Whether a given criteria was matched --  */
+        s_cri4                                int  not null,           /* Whether a given criteria was matched --  */
+        s_cri5                                int  not null,           /* Whether a given criteria was matched --  */
+        s_type                                varchar(20)  not null,   /* Type of result (PAR = partner, etc.) --  */
+        s_label                               varchar(255)  not null,  /* Brief label of search result --  */
+        s_desc                                varchar(1536)  not null,
+                                                                      /* Expanded description of search result --  */
+        s_key                                 varchar(255)  not null,  /* Unique ID so we can find the actual relevant object for this result --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

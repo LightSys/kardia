@@ -1,0 +1,219 @@
+$Version=2$
+task_cell_svg "system/report"
+    {
+    // Created by:	Greg Beeley
+    // Last change:	01/24/2019
+    document_format="text/plain";
+    content_type="image/svg+xml";
+    pagewidth=255;
+    pageheight=255;
+    marginleft=0;
+    marginright=0;
+    margintop=0;
+    marginbottom=0;
+    text_pagebreak = no;
+
+    // Rendering controls
+    image_width "report/parameter" { type=integer; default=400; }
+
+    // Data controls
+    project "report/parameter" { type=integer; }
+    sprint "report/parameter" { type=integer; }
+    state "report/parameter" { type=integer; }
+
+    // Compute block size, etc.
+    block_qy "report/query"
+	{
+	sql = "	declare object block;
+
+		-- Which sprint?
+		select
+		    :block:sprint = :t_sprint_id,
+		    :block:sprintname = :t_sprint_label
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		where
+		    :t_project_id = :this:project and
+		    :t_sprint_id = :this:sprint
+		;
+		select
+		    :block:sprint = isnull(:block:sprint, :t_sprint_id),
+		    :block:sprintname = isnull(:block:sprintname, :t_sprint_label)
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		where
+		    :t_project_id = :this:project and
+		    getdate() >= :t_sprint_start and
+		    getdate() <= :t_sprint_end
+		order by
+		    :t_sprint_start desc
+		limit
+		    1
+		;
+
+		-- Did not find one?
+		select
+		    :block:sprint = isnull(:block:sprint, :t_sprint_id),
+		    :block:sprintname = isnull(:block:sprintname, :t_sprint_label)
+		where
+		    :t_project_id = :this:project
+		from
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		order by
+		    :t_sprint_start desc
+		limit
+		    1
+		;
+
+		select
+		    :block:cnt = count(1)
+		from
+		    /apps/kardia/data/Kardia_DB/t_task/rows t
+		where
+		    :t:t_project_id = :this:project and
+		    :t:t_sprint_id = :block:sprint and
+		    :t:t_task_state = :this:state
+		;
+
+		select
+		    :block:maxcnt = max(count(1))
+		from
+		    /apps/kardia/data/Kardia_DB/t_task/rows t
+		where
+		    :t:t_project_id = :this:project and
+		    :t:t_sprint_id = :block:sprint
+		group by
+		    :t:t_task_state
+		;
+
+		select
+		    :block:oneside = convert(integer,condition(:block:maxcnt = 0, 1, round(sqrt(:block:maxcnt) + 0.49)))
+		;
+		select
+		    :block:oneside = condition(:block:oneside < 2, 2, :block:oneside)
+		;
+		select
+		    :block:width = :this:image_width / :block:oneside
+		;
+		select
+		    :block:height = :block:width * 2 / 3
+		;
+
+		select
+		    :block:color = isnull(max(:t_project_color), '#606060')
+		from
+		    /apps/kardia/data/Kardia_DB/t_project/rows
+		where
+		    :t_project_id = :this:project
+		;
+
+		select
+		    :block:titlesize = convert(integer, round(18.0 / :block:oneside,0)),
+		    :block:textsize = convert(integer, round(12.0 / :block:oneside,0))
+		;
+
+		select
+		    :block:cnt,
+		    :block:width,
+		    :block:height,
+		    :block:oneside,
+		    :block:color,
+		    :block:titlesize,
+		    :block:textsize,
+		    :block:sprint
+		";
+	}
+
+    // List of tasks
+    tasks_qy "report/query"
+	{
+	sql = "	select
+		    :t1:t_task_id,
+		    :t1:t_task_label,
+		    :t1:t_task_desc,
+		    :t1:t_task_hours,
+		    seq = count(:t2:t_task_id)
+		from
+		    /apps/kardia/data/Kardia_DB/t_task/rows t1,
+		    /apps/kardia/data/Kardia_DB/t_task/rows t2
+		where
+		    :t1:t_project_id = :this:project and
+		    :t1:t_sprint_id = :block_qy:sprint and
+		    :t1:t_task_state = :this:state and
+		    :t2:t_project_id =* :t1:t_project_id and
+		    :t2:t_sprint_id =* :t1:t_sprint_id and
+		    :t2:t_task_state =* :t1:t_task_state and
+		    :t2:t_task_id <* :t1:t_task_id
+		order by
+		    :t1:t_task_id asc
+		group by
+		    :t1:t_task_id
+		having
+		    :t_task_id is not null
+		";
+	}
+
+    assign_qy "report/query"
+	{
+	sql = "	select
+		    assignees = isnull((select sum(substring(:p:p_given_name, 1, 1) + substring(:p:p_surname, 1, 1) + ', ') - ', ' from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/t_assignee/rows a where :a:t_task_id = :tasks_qy:t_task_id and :p:p_partner_key = :a:p_partner_key), '')
+		";
+	}
+
+    // Geometry
+    task_geom_qy "report/query"
+	{
+	sql = "	select
+		    x = (:tasks_qy:seq - (:tasks_qy:seq / :block_qy:oneside * :block_qy:oneside)) * :block_qy:width,
+		    y = (:tasks_qy:seq / :block_qy:oneside) * :block_qy:height,
+		    width = :block_qy:width - 5,
+		    height = :block_qy:height - 5,
+		    title_x = (:tasks_qy:seq - (:tasks_qy:seq / :block_qy:oneside * :block_qy:oneside)) * :block_qy:width + 2,
+		    title_y = (:tasks_qy:seq / :block_qy:oneside) * :block_qy:height + 2 + :block_qy:titlesize,
+		    num_x = (:tasks_qy:seq - (:tasks_qy:seq / :block_qy:oneside * :block_qy:oneside)) * :block_qy:width + 2,
+		    num_y = (:tasks_qy:seq / :block_qy:oneside) * :block_qy:height + 2 + :block_qy:titlesize * 2 + 4,
+		    assign_x = (:tasks_qy:seq - (:tasks_qy:seq / :block_qy:oneside * :block_qy:oneside)) * :block_qy:width + 2,
+		    assign_y = (:tasks_qy:seq / :block_qy:oneside) * :block_qy:height + :block_qy:height - 8
+		";
+	}
+
+    // Here's our SVG
+    main_form "report/form"
+	{
+	source=block_qy;
+
+	// SVG header
+	data "report/area"
+	    {
+	    x=0; y=0; width=255; height=0;
+	    value=runserver('<?xml version="1.0" standalone="no"?>\n' +
+			    '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
+			    '<svg width="' + :this:image_width + 'px" height="' + (:this:image_width * 2 / 3) + 'px" viewBox="0 0 ' + :this:image_width + 'px ' + (:this:image_width * 2 / 3) + 'px" xmlns="http://www.w3.org/2000/svg" version="1.1">\n'
+			    );
+	    }
+
+	// Here come the blocks
+	task_form "report/form"
+	    {
+	    source=tasks_qy, assign_qy, task_geom_qy;
+
+	    task_data "report/area"
+		{
+		x=0; width=255; height=0;
+		value=runserver(
+			'    <rect x="' + :task_geom_qy:x + 'px" y="' + :task_geom_qy:y + 'px" width="' + :task_geom_qy:width + 'px" height="' + :task_geom_qy:height + 'px" rx="4px" ry="4px" style="stroke:none; fill:' + :block_qy:color + ';" />\n' +
+			'    <text x="' + (:task_geom_qy:title_x) + 'px" y="' + (:task_geom_qy:title_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + replace(replace(replace(:tasks_qy:t_task_label, '&', '&amp;'), '<', '&lt;'), '>', '&gt;')  + '</text>\n' +
+			'    <text x="' + (:task_geom_qy:num_x) + 'px" y="' + (:task_geom_qy:num_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + :tasks_qy:t_task_hours + '</text>\n' +
+			'    <text x="' + (:task_geom_qy:assign_x) + 'px" y="' + (:task_geom_qy:assign_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + :assign_qy:assignees + '</text>\n'
+			);
+		}
+	    }
+
+	// End
+	end_data "report/area"
+	    {
+	    x=0; width=255; height=0;
+	    value=runserver('</svg>\n');
+	    }
+	}
+    }

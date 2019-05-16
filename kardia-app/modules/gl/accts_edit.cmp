@@ -4,6 +4,7 @@ accts_edit "widget/component-decl"
     width=756;height=449;
     
     ledger "widget/parameter" { type=string; default=null; }
+    acct "widget/parameter" { type=string; default=null; }
 
     ledger_osrc "widget/parameter"
 	{
@@ -20,6 +21,7 @@ accts_edit "widget/component-decl"
 	osrc_source = "/apps/kardia/modules/gl/accounts.qyt/0US";
 	ledger_osrc = ledger_osrc;
 	ledger = runserver(:this:ledger);
+	preselect = runserver(:this:acct);
 	detail_cmp_path = "/apps/kardia/modules/gl/acct_one_edit.cmp";
 	}
     }

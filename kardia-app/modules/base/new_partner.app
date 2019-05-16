@@ -4,6 +4,7 @@ new_partner "widget/page"
     width = 844;
     height=600;
     title = "Kardia - Add a Partner";
+    icon = "/apps/kardia/images/icons/ionicons-person-add.svg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
 

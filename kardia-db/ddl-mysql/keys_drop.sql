@@ -318,6 +318,10 @@ alter table e_tag_activity
 	drop index e_tagact_ptnr_idx;
 
 
+alter table e_tag_source
+	drop primary key;
+
+
 alter table e_document_type
 	drop primary key;
 
@@ -906,6 +910,10 @@ alter table a_subtrx_gift_item
 	drop index a_gifttrxi_rcpt_idx;
 
 
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_src_idx;
+
+
 alter table a_subtrx_gift_rcptcnt
 	drop primary key;
 
@@ -967,6 +975,10 @@ alter table a_support_review_target
 
 
 alter table a_descriptives
+	drop primary key;
+
+
+alter table a_descriptives_hist
 	drop primary key;
 
 
@@ -1042,6 +1054,10 @@ alter table i_eg_gift_import
 	drop index i_eg_kdepbatch_idx;
 
 
+alter table i_eg_gift_trx_fees
+	drop primary key;
+
+
 alter table i_eg_giving_url
 	drop primary key;
 
@@ -1083,6 +1099,62 @@ alter table c_chat
 
 
 alter table c_member
+	drop primary key;
+
+
+alter table t_project
+	drop primary key;
+
+
+alter table t_sprint
+	drop primary key;
+
+
+alter table t_sprint
+	drop index t_sprint_proj_idx;
+
+
+alter table t_sprint_time
+	drop primary key;
+
+
+alter table t_sprint_time
+	drop index t_time_sprint_idx;
+
+
+alter table t_sprint_time
+	drop index t_time_proj_idx;
+
+
+alter table t_task
+	drop primary key;
+
+
+alter table t_task
+	drop index t_task_sprint_idx;
+
+
+alter table t_task
+	drop index t_task_proj_idx;
+
+
+alter table t_participant
+	drop primary key;
+
+
+alter table t_sprint_participant
+	drop primary key;
+
+
+alter table t_assignee
+	drop primary key;
+
+
+alter table t_task_state
+	drop primary key;
+
+
+alter table t_task_history
 	drop primary key;
 
 
@@ -1175,4 +1247,8 @@ alter table s_role_exclusivity
 
 
 alter table s_user_role
+	drop primary key;
+
+
+alter table s_global_search
 	drop primary key;

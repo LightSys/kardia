@@ -187,6 +187,10 @@ drop table e_tag;
 drop table e_tag_activity;
 
 
+/* e_tag_source */
+drop table e_tag_source;
+
+
 /* e_document_type */
 drop table e_document_type;
 
@@ -575,6 +579,10 @@ drop table a_support_review_target;
 drop table a_descriptives;
 
 
+/* a_descriptives_hist */
+drop table a_descriptives_hist;
+
+
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb;
 
@@ -601,6 +609,10 @@ drop table a_subtrx_cashxfer;
 
 /* i_eg_gift_import */
 drop table i_eg_gift_import;
+
+
+/* i_eg_gift_trx_fees */
+drop table i_eg_gift_trx_fees;
 
 
 /* i_eg_giving_url */
@@ -641,6 +653,42 @@ drop table c_chat;
 
 /* c_member */
 drop table c_member;
+
+
+/* t_project */
+drop table t_project;
+
+
+/* t_sprint */
+drop table t_sprint;
+
+
+/* t_sprint_time */
+drop table t_sprint_time;
+
+
+/* t_task */
+drop table t_task;
+
+
+/* t_participant */
+drop table t_participant;
+
+
+/* t_sprint_participant */
+drop table t_sprint_participant;
+
+
+/* t_assignee */
+drop table t_assignee;
+
+
+/* t_task_state */
+drop table t_task_state;
+
+
+/* t_task_history */
+drop table t_task_history;
 
 
 /* s_config */
@@ -713,3 +761,7 @@ drop table s_role_exclusivity;
 
 /* s_user_role */
 drop table s_user_role;
+
+
+/* s_global_search */
+drop table s_global_search;

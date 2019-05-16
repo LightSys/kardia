@@ -1,0 +1,383 @@
+$Version=2$
+gl_reserve_bar_chart_svg "system/report"
+    {
+    // Created by:	Greg Beeley
+    // Last change:	01/12/2019
+    document_format="text/plain";
+    content_type="image/svg+xml";
+    pagewidth=255;
+    pageheight=255;
+    marginleft=0;
+    marginright=0;
+    margintop=0;
+    marginbottom=0;
+    text_pagebreak = no;
+
+    // Rendering controls
+    image_width "report/parameter" { type=integer; default=400; }
+    image_height "report/parameter" { type=integer; default=150; }
+    bar_color "report/parameter" { type=string; default="black"; }
+    line_color "report/parameter" { type=string; default="#808080"; }
+    text_inside_color "report/parameter" { type=string; default="white"; }
+    text_outside_color "report/parameter" { type=string; default="black"; }
+
+    // Data controls
+    ledger "report/parameter" { type=string; }
+    fund "report/parameter" { type=string; }
+    start_period "report/parameter" { type=string; }
+    end_period "report/parameter" { type=string; }
+    months "report/parameter" { type=integer; default=12; }
+
+    // Get accounting period range
+    end_period_qy "report/query"
+	{
+	sql = "	select
+		    :a_period,
+		    :a_start_date,
+		    sel_period = :this:end_period
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :this:ledger and
+		    :a_summary_only = 0 and
+		    (:a_period = :this:end_period or :a_start_date <= getdate())
+		order by
+		    :a_end_date desc
+		having
+		    :sel_period is null or :a_period = :sel_period
+		limit
+		    1
+		";
+	}
+    start_period_qy "report/query"
+	{
+	sql = "	select
+		    :a_period,
+		    :a_parent_period,
+		    :a_start_date,
+		    sel_period = :this:start_period,
+		    n_periods = datediff(month, :a_start_date, :end_period_qy:a_start_date) + 1
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :this:ledger and
+		    :a_summary_only = 0 and
+		    (:a_period = :this:start_period or :a_start_date > dateadd(month, 0 - :this:months, getdate()))
+		order by
+		    :a_end_date asc
+		having
+		    :sel_period is null or :a_period = :sel_period
+		limit
+		    1
+		";
+	}
+    data_start_period_qy "report/query"
+	{
+	sql = "	select
+		    :a_period,
+		    :a_start_date,
+		    n_periods = datediff(month, :a_start_date, :end_period_qy:a_start_date) + 1
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :this:ledger and
+		    :a_summary_only = 0 and
+		    :a_parent_period = :start_period_qy:a_parent_period
+		order by
+		    :a_end_date asc
+		limit
+		    1
+		";
+	}
+
+
+    // Current assets accounts list
+    curasset_qy "report/query"
+	{
+	sql = "	select
+		    assets = sum(:a_account_code + ',') - ','
+		from
+		    /apps/kardia/data/Kardia_DB/a_account/rows
+		where
+		    :a_ledger_number = :this:ledger and
+		    :a_default_category = '11'
+		";
+	}
+
+    // Parameters from config
+    config_qy "report/query"
+	{
+	sql = " select
+		    *
+		from
+		    object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :this:ledger)
+		";
+	}
+
+    // Various totals for the period
+    ranges_qy "report/query"
+	{
+	sql = "	declare collection gldata scope application;
+		declare object info;
+
+		delete from collection gldata;
+	
+		insert
+		    collection gldata
+		select
+		    :p:a_period,
+		    :p:a_parent_period,
+		    :p:a_start_date,
+		    :p:a_status,
+		    expense = isnull(sum(condition((:t:a_account_code >= :config_qy:GLExpLow and :t:a_account_code <= :config_qy:GLExpHigh and :t:a_account_category = '50'), :t:a_amount, $0)), $0),
+		    curassets = sum(condition((:t:a_account_code >= :config_qy:GLAssetLow and :t:a_account_code <= :config_qy:GLAssetHigh) and charindex(',' + :t:a_account_code + ',', ',' + :curasset_qy:assets + ',') > 0, :t:a_amount, $0)),
+		    noncurassets = sum(condition((:t:a_account_code >= :config_qy:GLAssetLow and :t:a_account_code <= :config_qy:GLAssetHigh) and charindex(',' + :t:a_account_code + ',', ',' + :curasset_qy:assets + ',') = 0, :t:a_amount, $0)),
+		    curliabs = sum(condition((:t:a_account_code >= :config_qy:GLLiabLow and :t:a_account_code <= :config_qy:GLLiabHigh), :t:a_amount, $0)),
+		    noncurliabs = $0
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows p,
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+		    :p:a_ledger_number = :this:ledger and
+		    :p:a_period >= :data_start_period_qy:a_period and
+		    :p:a_period <= :end_period_qy:a_period and
+		    :p:a_summary_only = 0 and
+		    :t:a_ledger_number =* :p:a_ledger_number and
+		    :t:a_period =* :p:a_period and
+		    (:this:fund is null or :t:a_cost_center = :this:fund)
+		group by
+		    :p:a_period
+		order by
+		    :p:a_start_date asc
+		;
+
+		update
+		    collection gldata gd1
+		set
+		    :nca = (select isnull(sum(:gd2:curassets), $0) + isnull(sum(:gd2:curliabs), $0) from collection gldata gd2 where :gd2:a_start_date <= :gd1:a_start_date and :gd2:a_parent_period = :gd1:a_parent_period)
+		;
+
+		select
+		    :info:max_nca = isnull(max(:gd:nca), $0)
+		from
+		    collection gldata gd
+		where
+		    :a_period >= :start_period_qy:a_period
+		;
+
+		select
+		    :info:avg_exp = avg(:gd:expense)
+		from
+		    collection gldata gd
+		where
+		    :a_period >= :start_period_qy:a_period and
+		    :a_status != 'N' and :a_status != 'O'
+		;
+
+		-- Determine chart range
+		select :info:maxval = $0;
+		select :info:maxval = condition(:info:maxval > :info:max_nca, :info:maxval, :info:max_nca);
+		select :info:minval = $0;
+
+		select
+		    :info:maxval,
+		    :info:minval,
+		    :info:avg_exp,
+		    range = :info:maxval - :info:minval
+		";
+	}
+
+    gldata_qy "report/query"
+	{
+	sql = "	declare collection gldata scope application;
+	
+		select
+		    *,
+		    year = datepart(year, :a_start_date),
+		    month = dateformat(:a_start_date, 'MMM'),
+		    idx = datediff(month, :start_period_qy:a_start_date, :a_start_date)
+		from
+		    collection gldata
+		where
+		    :a_period >= :start_period_qy:a_period
+		order by
+		    :a_start_date asc
+		";
+
+	cum_nca "report/aggregate" { compute="sum(:nca)"; reset=0; }
+	}
+
+    // Geometry data for gifts
+    geom_qy "report/query"
+	{
+	sql = "	select
+		    x = round((:this:image_width - 30) / :start_period_qy:n_periods, 0) * :gldata_qy:idx + 30,
+		    width = round((:this:image_width - 30) / :start_period_qy:n_periods, 0) - 2,
+		    y = :this:image_height - 10 - round(:gldata_qy:nca / :ranges_qy:maxval * (:this:image_height - 10)),
+		    height = round(:gldata_qy:nca / :ranges_qy:maxval * (:this:image_height - 10)),
+		    text_y = :this:image_height - 15,
+		    text_x = round(round((:this:image_width - 30) / :start_period_qy:n_periods, 0) * (:gldata_qy:idx + 0.5)) - 2 + 30
+		";
+	}
+
+    // The years we're covering
+    years_qy "report/query"
+	{
+	sql = "	select
+		    year = datepart(year, :p:a_start_date),
+		    cnt = count(1),
+		    is_first = condition(datepart(year, :p:a_start_date) == datepart(year, :start_period_qy:a_start_date), 1, 0)
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :p:a_ledger_number = :this:ledger and
+		    :p:a_period >= :start_period_qy:a_period and
+		    :p:a_period <= :end_period_qy:a_period and
+		    :p:a_summary_only = 0
+		group by
+		    datepart(year, :p:a_start_date)
+		";
+
+	totalcnt "report/aggregate" { compute="isnull(sum(:cnt),0)"; reset=0; }
+	}
+
+    // Geometry data for years
+    year_geom_qy "report/query"
+	{
+	sql = "	select
+		    y = :this:image_height,
+		    lineto_y = :this:image_height - 10,
+		    line_x = (:years_qy:totalcnt) * round((:this:image_width - 30) / :start_period_qy:n_periods, 0) - 1 + 30,
+		    x = (:years_qy:totalcnt) * round((:this:image_width - 30) / :start_period_qy:n_periods, 0) + 3 + 30
+		";
+	}
+
+    // Amounts for the lefthand side
+    scale_qy "report/query"
+	{
+	sql = "	select
+		    scale = round(log10(:ranges_qy:range / 7.0)),
+		    interval = power(10, round(log10(:ranges_qy:range / 7.0))),
+		    icnt = round(:ranges_qy:range / power(10, round(log10(:ranges_qy:range / 7.0)))),
+		    adj = condition(round(:ranges_qy:range / power(10, round(log10(:ranges_qy:range / 7.0)))) <= 6, 1, condition(round(:ranges_qy:range / power(10, round(log10(:ranges_qy:range / 7.0)))) <= 12, 2, 4))
+		";
+	}
+    final_scale_qy "report/query"
+	{
+	sql = "	select
+		    icnt = round(:scale_qy:icnt / :scale_qy:adj),
+		    interval = :scale_qy:interval * :scale_qy:adj,
+		    divisor = condition(:scale_qy:interval < 1000.0, 1, condition(:scale_qy:interval < 1000000.0, 1000, 1000000)),
+		    suffix = condition(:scale_qy:interval < 1000.0, '', condition(:scale_qy:interval < 1000000.0, 'K', 'M'))
+		";
+	}
+    scale_item_qy "report/query"
+	{
+	sql = "	select
+		    value = :id * :final_scale_qy:interval,
+		    valtxt = '' + convert(integer, (:id * :final_scale_qy:interval) / :final_scale_qy:divisor) + :final_scale_qy:suffix
+		from
+		    /apps/kardia/data/Months.csv/rows -- just need a source of repeating data
+		having
+		    :value <= :ranges_qy:maxval
+		";
+	}
+    scale_geom_qy "report/query"
+	{
+	sql = "	select
+		    line_x = 25,
+		    lineto_x = 29,
+		    line_y = :this:image_height - 10 - round(convert(money,:scale_item_qy:value) / :ranges_qy:maxval * (:this:image_height - 10)) - 1,
+		    x = 0,
+		    y = :this:image_height - 10 - round(convert(money,:scale_item_qy:value) / :ranges_qy:maxval * (:this:image_height - 10)) + 2
+		";
+	}
+
+    reserve_geom_qy "report/query"  
+	{
+	sql = "	select
+		    line_x = 25,
+		    lineto_x = :this:image_width,
+		    line_y = :this:image_height - 10 - round(convert(double,:ranges_qy:avg_exp) * 12 * :config_qy:GLRsrvThres / convert(double,:ranges_qy:maxval) * (:this:image_height - 10))
+		";
+	}
+
+    // Here's our SVG
+    main_form "report/form"
+	{
+	source=end_period_qy, start_period_qy, data_start_period_qy, config_qy, curasset_qy, ranges_qy, reserve_geom_qy;
+
+	// SVG header
+	data "report/area"
+	    {
+	    x=0; y=0; width=255; height=0;
+	    value=runserver('<?xml version="1.0" standalone="no"?>\n' +
+			    '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
+			    '<svg width="' + :this:image_width + 'px" height="' + :this:image_height + 'px" viewBox="0 0 ' + :this:image_width + 'px ' + :this:image_height + 'px" xmlns="http://www.w3.org/2000/svg" version="1.1">\n'
+			    );
+	    }
+
+	// Here comes the gift data
+	gl_form "report/form"
+	    {
+	    source=gldata_qy, geom_qy;
+
+	    gl_data "report/area"
+		{
+		x=0; width=255; height=0;
+		value=runserver(
+			'    <rect x="' + :geom_qy:x + 'px" y="' + :geom_qy:y + 'px" width="' + :geom_qy:width + 'px" height="' + :geom_qy:height + 'px" style="stroke:none; fill:' + :this:bar_color + ';" />\n' +
+			'    <text x="' + (:geom_qy:text_x) + 'px" y="' + (:geom_qy:text_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:7pt; font-weight:bold; stroke:none; fill:' + :this:text_inside_color + '; text-anchor:middle">' + :gldata_qy:month + '</text>\n'
+			);
+		}
+	    }
+
+	// Mark out the years
+	years_form "report/form"
+	    {
+	    source=years_qy, year_geom_qy;
+
+	    year_txt "report/area"
+		{
+		x=0; width=255; height=0;
+		condition=runserver(:years_qy:cnt >= 2);
+		value=runserver(
+			'    <text x="' + :year_geom_qy:x + 'px" y="' + :year_geom_qy:y + 'px" style="font-family:arial,helvetica,sans-serif; font-size:7pt; font-weight:bold; stroke:none; fill:' + :this:text_outside_color + ';">' + :years_qy:year + '</text>\n'
+			);
+		}
+
+	    year_line "report/area"
+		{
+		x=0; width=255; height=0;
+		condition=runserver(not :years_qy:is_first);
+		value=runserver(
+			'   <line x1="' + :year_geom_qy:line_x + 'px" y1="' + :year_geom_qy:y + 'px" x2="' + :year_geom_qy:line_x + 'px" y2="' + :year_geom_qy:lineto_y + 'px" style="stroke:' + :this:text_outside_color + '; stroke-width:2px;"/>\n'
+			);
+		}
+	    }
+
+	// Scale along lefthand side
+	scale_form "report/form"
+	    {
+	    source=scale_qy, final_scale_qy, scale_item_qy, scale_geom_qy;
+
+	    scale_txt "report/area"
+		{
+		x=0; width=255; height=0;
+		value=runserver(
+			'    <text x="' + :scale_geom_qy:x + 'px" y="' + :scale_geom_qy:y + 'px" style="font-family:arial,helvetica,sans-serif; font-size:7pt; font-weight:bold; stroke:none; fill:' + :this:text_outside_color + ';">' + :scale_item_qy:valtxt + '</text>\n' +
+			'    <line x1="' + :scale_geom_qy:line_x + 'px" y1="' + :scale_geom_qy:line_y + 'px" x2="' + :scale_geom_qy:lineto_x + 'px" y2="' + :scale_geom_qy:line_y + 'px" style="stroke:' + :this:text_outside_color + '; stroke-width:2px;"/>\n'
+			);
+		}
+	    }
+
+	// End
+	end_data "report/area"
+	    {
+	    x=0; width=255; height=0;
+	    value=runserver(
+		    '    <line x1="' + :reserve_geom_qy:line_x + 'px" y1="' + :reserve_geom_qy:line_y + 'px" x2="' + :reserve_geom_qy:lineto_x + 'px" y2="' + :reserve_geom_qy:line_y + 'px" style="stroke:' + :this:line_color + '; stroke-width:2px; stroke-dasharray:3,2;"/>\n' + 
+		    '</svg>\n');
+	    }
+	}
+    }

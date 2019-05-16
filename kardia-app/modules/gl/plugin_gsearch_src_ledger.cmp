@@ -1,0 +1,57 @@
+$Version=2$
+plugin_gsearch_ledger "widget/component-decl"
+    {
+    icon = "/apps/kardia/images/icons/openiconic-dollar.svg";
+    type = "LEDGER";
+    width = 904;
+    height = 0;
+    sql = " -- Search based on ledger
+	    insert
+		collection global_search
+		--/apps/kardia/data/Kardia_DB/s_global_search/rows
+	    select
+		s_search_id = :info:search_id,
+		s_username = user_name(),
+		s_type = 'LEDGER',
+		s_key = :a_ledger_number,
+		s_label = 'Accounting Ledger: ' + :a_ledger_desc,
+		s_desc = :a_ledger_number + ' - ' + :a_ledger_desc,
+		s_score = 100.0,
+		s_cri1 = condition(
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, condition(:info:lower1 > 0, lower(:a_ledger_desc), :a_ledger_desc)) > 0) or
+				(char_length(:info:cri1) > 1 and :info:cri1 = condition(:info:lower1 > 0, lower(:a_ledger_number), :a_ledger_number)), 1, 0),
+		s_cri2 = condition(
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, condition(:info:lower2 > 0, lower(:a_ledger_desc), :a_ledger_desc)) > 0) or
+				(char_length(:info:cri2) > 1 and :info:cri2 = condition(:info:lower2 > 0, lower(:a_ledger_number), :a_ledger_number)), 1, 0),
+		s_cri3 = condition(
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, condition(:info:lower3 > 0, lower(:a_ledger_desc), :a_ledger_desc)) > 0) or
+				(char_length(:info:cri3) > 1 and :info:cri3 = condition(:info:lower3 > 0, lower(:a_ledger_number), :a_ledger_number)), 1, 0),
+		s_cri4 = condition(
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, condition(:info:lower4 > 0, lower(:a_ledger_desc), :a_ledger_desc)) > 0) or
+				(char_length(:info:cri4) > 1 and :info:cri4 = condition(:info:lower4 > 0, lower(:a_ledger_number), :a_ledger_number)), 1, 0),
+		s_cri5 = condition(
+				(char_length(:info:cri5) > 1 and charindex(:info:cri5, condition(:info:lower5 > 0, lower(:a_ledger_desc), :a_ledger_desc)) > 0) or
+				(char_length(:info:cri5) > 1 and :info:cri5 = condition(:info:lower5 > 0, lower(:a_ledger_number), :a_ledger_number)), 1, 0),
+		s_created_by = user_name(),
+		s_date_created = getdate(),
+		s_modified_by = user_name(),
+		s_date_modified = getdate()
+	    from
+		/apps/kardia/data/Kardia_DB/a_ledger/rows
+	    where
+		charindex(lower(nullif(:info:cri1, '')), lower(:a_ledger_desc)) > 0 or
+		lower(nullif(:info:cri1, '')) = lower(:a_ledger_number) or
+		charindex(lower(nullif(:info:cri2, '')), lower(:a_ledger_desc)) > 0 or
+		lower(nullif(:info:cri2, '')) = lower(:a_ledger_number) or
+		charindex(lower(nullif(:info:cri3, '')), lower(:a_ledger_desc)) > 0 or
+		lower(nullif(:info:cri3, '')) = lower(:a_ledger_number) or
+		charindex(lower(nullif(:info:cri4, '')), lower(:a_ledger_desc)) > 0 or
+		lower(nullif(:info:cri4, '')) = lower(:a_ledger_number) or
+		charindex(lower(nullif(:info:cri5, '')), lower(:a_ledger_desc)) > 0 or
+		lower(nullif(:info:cri5, '')) = lower(:a_ledger_number)
+	    having
+		:s_cri1 + :s_cri2 + :s_cri3 + :s_cri4 + :s_cri5 > 0
+	    limit
+		100
+	    ";
+    }

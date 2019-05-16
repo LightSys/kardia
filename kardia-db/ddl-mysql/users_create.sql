@@ -145,6 +145,9 @@ grant select on ra to public;
 /* e_tag_activity */
 
 
+/* e_tag_source */
+
+
 /* e_document_type */
 
 
@@ -436,6 +439,9 @@ grant select on ra to public;
 /* a_descriptives */
 
 
+/* a_descriptives_hist */
+
+
 /* a_subtrx_cashdisb */
 
 
@@ -455,6 +461,9 @@ grant select on ra to public;
 
 
 /* i_eg_gift_import */
+
+
+/* i_eg_gift_trx_fees */
 
 
 /* i_eg_giving_url */
@@ -485,6 +494,33 @@ grant select on ra to public;
 
 
 /* c_member */
+
+
+/* t_project */
+
+
+/* t_sprint */
+
+
+/* t_sprint_time */
+
+
+/* t_task */
+
+
+/* t_participant */
+
+
+/* t_sprint_participant */
+
+
+/* t_assignee */
+
+
+/* t_task_state */
+
+
+/* t_task_history */
 
 
 /* s_config */
@@ -539,3 +575,6 @@ grant select on ra to public;
 
 
 /* s_user_role */
+
+
+/* s_global_search */

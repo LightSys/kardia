@@ -30,7 +30,7 @@ plugin_crm_search_lists "widget/component-decl"
 	    field=searchtype;
 	    text="Type of Search:";
 	    sql = " select label='Find Members of Specific List(s) Below', value='M', default=1, grp='A';
-		    select label='Find People on No Lists', value='N', default=0, grp='A';
+		    --select label='Find People on No Lists', value='N', default=0, grp='A';
 		    select label='Find People on Any List', value='A', default=0, grp='A'";
 	    form=criteria_params_form;
 	    st_dd_hints "widget/hints" { style=notnull; default=runclient('M'); }

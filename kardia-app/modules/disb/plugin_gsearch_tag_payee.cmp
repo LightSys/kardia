@@ -1,0 +1,11 @@
+$Version=2$
+plugin_gsearch_tag_payee "widget/component-decl"
+    {
+    field = "is_payee";
+    text = "Payee";
+    //tag_bgcolor = "#008020";
+    //tag_textcolor = "#ffffff";
+    tag_textcolor = "#a00000";
+    tag_bgcolor = '';
+    sql = "select 'Payee' from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d where :d:a_payee_partner_key = :gs:s_key and :d:a_posted = 1 and :gs:s_type = 'PAR' limit 1";
+    }

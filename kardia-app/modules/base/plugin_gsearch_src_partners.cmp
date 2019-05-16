@@ -1,0 +1,287 @@
+$Version=2$
+plugin_gsearch_partners "widget/component-decl"
+    {
+    icon = "/apps/kardia/images/icons/ionicons-people.svg";
+    type = "PAR";
+    width = 904;
+    height = 24;
+    sql = " -- Search based on name
+	    insert
+		collection global_search
+		--/apps/kardia/data/Kardia_DB/s_global_search/rows
+	    select
+		s_search_id = :info:search_id,
+		s_username = user_name(),
+		s_type = 'PAR',
+		s_key = :p_partner_key,
+		s_label = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		s_desc = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		s_score = 100.0,
+		s_cri1 = condition(
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, condition(:info:lower1 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0) or
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, condition(:info:lower1 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0) or
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, condition(:info:lower1 > 0, lower(:p:p_surname), :p:p_surname)) = 1) or
+				nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, condition(:info:lower1 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0), 1, 0),
+		s_cri2 = condition(
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, condition(:info:lower2 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0) or
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, condition(:info:lower2 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0) or
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, condition(:info:lower2 > 0, lower(:p:p_surname), :p:p_surname)) = 1) or
+				nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, condition(:info:lower2 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0), 1, 0),
+		s_cri3 = condition(
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, condition(:info:lower3 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0) or
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, condition(:info:lower3 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0) or
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, condition(:info:lower3 > 0, lower(:p:p_surname), :p:p_surname)) = 1) or
+				nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, condition(:info:lower3 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0), 1, 0),
+		s_cri4 = condition(
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, condition(:info:lower4 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0) or
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, condition(:info:lower4 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0) or
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, condition(:info:lower4 > 0, lower(:p:p_surname), :p:p_surname)) = 1) or
+				nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, condition(:info:lower4 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0), 1, 0),
+		s_cri5 = condition(
+				(char_length(:info:cri5) > 1 and charindex(:info:cri5, condition(:info:lower5 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0) or
+				(char_length(:info:cri5) > 1 and charindex(:info:cri5, condition(:info:lower5 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0) or
+				(char_length(:info:cri5) > 1 and charindex(:info:cri5, condition(:info:lower5 > 0, lower(:p:p_surname), :p:p_surname)) = 1) or
+				nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+				(char_length(:info:cri5) > 1 and charindex(:info:cri5, condition(:info:lower5 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0), 1, 0),
+		s_created_by = user_name(),
+		s_date_created = getdate(),
+		s_modified_by = user_name(),
+		s_date_modified = getdate()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    where
+		charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0 or
+		charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0 or
+		charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0 or
+		charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0 or
+		charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0 or
+		nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+		nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+		nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+		nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+		nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:p:p_partner_key), :p:p_partner_key) or
+		charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0 or
+		charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0 or
+		charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0 or
+		charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0 or
+		charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:p:p_preferred_name), :p:p_preferred_name)) > 0 or
+		charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:p:p_surname), :p:p_surname)) = 1 or
+		charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:p:p_surname), :p:p_surname)) = 1 or
+		charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:p:p_surname), :p:p_surname)) = 1 or
+		charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:p:p_surname), :p:p_surname)) = 1 or
+		charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:p:p_surname), :p:p_surname)) = 1 or
+		charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0 or
+		charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0 or
+		charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0 or
+		charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0 or
+		charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:p:p_org_name), :p:p_org_name)) > 0
+	    having
+		:s_cri1 + :s_cri2 + :s_cri3 + :s_cri4 + :s_cri5 > 0
+	    limit
+		100
+	    ;
+
+	    -- Search based on address (city,''), state)
+	    insert
+		collection global_search
+		--/apps/kardia/data/Kardia_DB/s_global_search/rows
+	    select
+		s_search_id = :info:search_id,
+		s_username = user_name(),
+		s_type = 'PAR',
+		s_key = :l:p_partner_key,
+		s_label = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		s_desc = isnull(:l:p_city + ', ','') + isnull(:l:p_state_province,'') + ' (' + rtrim(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3,'')) + ')',
+		s_score = 100.0,
+		s_cri1 = condition(
+				charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
+		s_cri2 = condition(
+				charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
+		s_cri3 = condition(
+				charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
+		s_cri4 = condition(
+				charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
+		s_cri5 = condition(
+				charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
+		s_created_by = user_name(),
+		s_date_created = getdate(),
+		s_modified_by = user_name(),
+		s_date_modified = getdate()
+	    from
+		/apps/kardia/data/Kardia_DB/p_location/rows l,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    where
+		:p:p_partner_key = :l:p_partner_key and
+		(charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+		charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+		charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+		charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+		charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+		nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_state_province), :l:p_state_province) or
+		nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_state_province), :l:p_state_province) or
+		nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_state_province), :l:p_state_province) or
+		nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_state_province), :l:p_state_province) or
+		nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_state_province), :l:p_state_province) or
+		nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+		nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+		nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+		nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+		nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code))
+	    having
+		:s_cri1 + :s_cri2 + :s_cri3 + :s_cri4 + :s_cri5 > 0
+	    on duplicate
+		:s_search_id, :s_username, :s_key
+	    update set
+		:s_desc = :s_desc + ', ' + isnull(:l:p_city + ', ','') + isnull(:l:p_state_province,'') + ' (' + rtrim(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3,'')) + ')',
+		:s_cri1 = :s_cri1 + condition(
+				charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
+		:s_cri2 = :s_cri2 + condition(
+				charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
+		:s_cri3 = :s_cri3 + condition(
+				charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
+		:s_cri4 = :s_cri4 + condition(
+				charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
+		:s_cri5 = :s_cri5 + condition(
+				charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:l:p_city), :l:p_city)) > 0 or
+				nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0)
+	    ;
+
+	    -- Search based on email, phone, etc.
+	    insert
+		collection global_search
+		--/apps/kardia/data/Kardia_DB/s_global_search/rows
+	    select
+		s_search_id = :info:search_id,
+		s_username = user_name(),
+		s_type = 'PAR',
+		s_key = :ci:p_partner_key,
+		s_label = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		s_desc = isnull(:ci:p_phone_country + ' ','') + isnull(:ci:p_phone_area_city + ' ','') + isnull(:ci:p_contact_data,''),
+		s_score = 100.0,
+		s_cri1 = condition(
+			    nullif(lower(:info:cri1),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri1,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri1,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0),
+		s_cri2 = condition(
+			    nullif(lower(:info:cri2),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri2,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri2,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0),
+		s_cri3 = condition(
+			    nullif(lower(:info:cri3),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri3,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri3,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0),
+		s_cri4 = condition(
+			    nullif(lower(:info:cri4),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri4,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri4,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0),
+		s_cri5 = condition(
+			    nullif(lower(:info:cri5),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri5,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri5,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0),
+		s_created_by = user_name(),
+		s_date_created = getdate(),
+		s_modified_by = user_name(),
+		s_date_modified = getdate()
+	    from
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    where
+		:p:p_partner_key = :ci:p_partner_key and
+		(nullif(lower(:info:cri1),'') = lower(:ci:p_contact_data) or
+		nullif(lower(:info:cri2),'') = lower(:ci:p_contact_data) or
+		nullif(lower(:info:cri3),'') = lower(:ci:p_contact_data) or
+		nullif(lower(:info:cri4),'') = lower(:ci:p_contact_data) or
+		nullif(lower(:info:cri5),'') = lower(:ci:p_contact_data) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri1,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri2,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri3,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri4,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri5,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri1,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri2,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri3,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri4,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+		replace(replace(replace(replace(replace(replace(nullif(:info:cri5,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')))
+	    having
+		:s_cri1 + :s_cri2 + :s_cri3 + :s_cri4 + :s_cri5 > 0
+	    on duplicate
+		:s_search_id, :s_username, :s_key
+	    update set
+		:s_desc = :s_desc + ', ' + isnull(:ci:p_phone_country + ' ','') + isnull(:ci:p_phone_area_city,'') + isnull(:ci:p_contact_data,''),
+		:s_cri1 = :s_cri1 + condition(
+			    nullif(lower(:info:cri1),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri1,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri1,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0),
+		:s_cri2 = :s_cri2 + condition(
+			    nullif(lower(:info:cri2),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri2,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri2,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0),
+		:s_cri3 = :s_cri3 + condition(
+			    nullif(lower(:info:cri3),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri3,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri3,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0),
+		:s_cri4 = :s_cri4 + condition(
+			    nullif(lower(:info:cri4),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri4,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri4,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0),
+		:s_cri5 = :s_cri5 + condition(
+			    nullif(lower(:info:cri5),'') = lower(:ci:p_contact_data) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri5,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')) or
+			    replace(replace(replace(replace(replace(replace(nullif(:info:cri5,''), '(',''),')',''),' ',''),'+',''),'.',''),'-','') = lower(replace(replace(replace(replace(replace(replace(:ci:p_phone_country + :ci:p_phone_area_city + :ci:p_contact_data, '(',''),')',''),' ',''),'+',''),'.',''),'-','')), 1, 0)
+	    ";
+
+    search_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    ctls_hbox "widget/hbox"
+	{
+	x=0; y=0; width=904; height=24;
+	align=center;
+	spacing=10;
+
+	view_partner "widget/textbutton"
+	    {
+	    width=130;
+	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+	    fgcolor1=white;
+	    fgcolor2=black;
+	    disable_color="#334466";
+	    text="View Partner";
+
+	    on_view "widget/connector"
+		{
+		event=Click;
+		target=plugin_gsearch_partners;
+		action=Launch;
+		Multi = 1;
+		Source = runclient("/apps/kardia/modules/base/partner_window.app?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod + "&id=" + :search_osrc:s_key);
+		//Width = runserver((select :width from object /apps/kardia/modules/base/partner_window.app));
+		//Height = runserver((select :height from object /apps/kardia/modules/base/partner_window.app));
+		Width=844;
+		Height=600;
+		}
+	    }
+	}
+    }

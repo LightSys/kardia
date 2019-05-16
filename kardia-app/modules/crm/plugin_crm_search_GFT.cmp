@@ -6,7 +6,7 @@ plugin_crm_search_lists "widget/component-decl"
     stage_description_expr = "isnull((select isnull('Fund: ' + :param:fund + ', ', '') + isnull('Comment: ' + :param:comment + ', ', '') + isnull('Min: ' + :param:minamt + ', ', '') + isnull('Max: ' + :param:maxamt + ', ', '') + isnull('Gift After: ' + substring(convert(string,:param:start),1,12) + ', ', '') + isnull('Gift Before: ' + substring(convert(string,:param:end),1,12) + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
     stage_type = "GFT";
     icon = "/apps/kardia/images/icons/openiconic-dollar.svg";
-    sequence = 17;
+    sequence = 20;
     width=410;
     height=136;
 

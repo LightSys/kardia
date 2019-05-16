@@ -1,0 +1,8 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Project and Task Management";
+    module_abbrev = "Project & Task";
+    module_description = "This module provides project and task management capability in Kardia";
+    module_sequence = null;
+    }
