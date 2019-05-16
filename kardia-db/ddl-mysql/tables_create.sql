@@ -2969,6 +2969,10 @@ create table a_descriptives (
         a_hist_3_count                        integer  null,           /* gift histogram 3nd most common - count --  */
         a_hist_3_first                        datetime  null,          /* gift histogram 3nd most common - first occurrence --  */
         a_hist_3_last                         datetime  null,          /* gift histogram 3nd most common - last occurrence --  */
+        a_is_current                          int  null,               /* is this giving pattern current (1) or lapsed/past (0)? --  */
+        a_is_increase                         int  null,               /* is this giving pattern an increase over the previous one? --  */
+        a_is_decrease                         int  null,               /* is this giving pattern a decrease over the previous one? --  */
+        a_is_extra                            int  null,               /* is this giving pattern a one-time / occasional "extra" amount? --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2995,6 +2999,10 @@ create table a_descriptives_hist (
         a_act_average_months                  integer  null,           /* number of months used for the average --  */
         a_act_average_interval                float  null,             /* actual average giving interval due to this gift amount --  */
         a_merged_amount                       decimal(14,4)  null,     /* if we're doing a merge of catch-up amounts, we indicate it here --  */
+        a_is_current                          int  null,               /* is this giving pattern current (1) or lapsed/past (0)? --  */
+        a_is_increase                         int  null,               /* is this giving pattern an increase over the previous one? --  */
+        a_is_decrease                         int  null,               /* is this giving pattern a decrease over the previous one? --  */
+        a_is_extra                            int  null,               /* is this giving pattern a one-time / occasional "extra" amount? --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
