@@ -5,4 +5,6 @@ kardia_modinfo "system/structure"
     module_abbrev = "CRM";
     module_description = "Structured Engagement (Constituent Relationship Management) system for Kardia";
     module_sequence = 200;
+    module_context = 'kardia';
+    module_endorsement = 'kardia:crm';
     }

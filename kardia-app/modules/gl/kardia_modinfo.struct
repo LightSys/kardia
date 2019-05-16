@@ -5,4 +5,6 @@ kardia_modinfo "system/structure"
     module_abbrev = "GL";
     module_description = "Provides core financial system functionality for Kardia";
     module_sequence = 100;
+    module_context = 'kardia:ledger';
+    module_endorsement = 'kardia:gl';
     }
