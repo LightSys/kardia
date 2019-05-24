@@ -90,6 +90,7 @@ gift_import_report "system/report"
 		";
 	gift_total "report/aggregate" { compute="sum(:i_eg_gift_amount)"; reset=0; }
 	net_total "report/aggregate" { compute="sum(isnull(:i_eg_net_amount, :i_eg_gift_amount))"; reset=0; }
+	refund_total "report/aggregate" { compute="isnull(sum(:i_eg_gift_amount), $0)"; where=":i_eg_returned_status = 'REFUND'"; reset=0; }
 	dep_next_total "report/aggregate" { compute="isnull(sum(:i_eg_gift_amount), $0)"; where=":gift_period < :dep_period"; reset=0; }
 	dep_prev_total "report/aggregate" { compute="isnull(sum(:i_eg_gift_amount), $0)"; where=":gift_period > :dep_period"; reset=0; }
 	dep_none_total "report/aggregate" { compute="isnull(sum(:i_eg_gift_amount), $0)"; where=":gift_period = :this_period and :dep_period is null"; reset=0; }
@@ -206,7 +207,8 @@ gift_import_report "system/report"
 							condition(:gift_qy:a_cc_desc is null, 'B,', '') +
 							condition(:gift_qy:gift_period is not null and :gift_qy:dep_period is not null and :gift_qy:gift_period != :gift_qy:dep_period, 'C,', '') +
 							condition(:gift_qy:i_eg_status = 'pending', 'pend,', '') + 
-							condition(:gift_qy:i_eg_status = 'returned', 'RET,', '')
+							condition(:gift_qy:i_eg_status = 'returned', 'RET,', '') +
+							condition(:gift_qy:i_eg_returned_status = 'REFUND', 'REF,', '')
 							- ','
 							);
 						font=courier; }
@@ -242,13 +244,14 @@ gift_import_report "system/report"
 	    align=left;
 
 	    f_d2 "report/data" { style=bold; fontsize=11; value = "\nNotes Key:\n"; }
-	    f_d3 "report/data" { fontsize=9; value = "A - Gift has not yet been assigned a donor in Kardia yet.\nB - Gift has not yet been assigned a designation in Kardia yet.\nC - Gift batch period and Deposit batch period are different.\npend - Gift is pending from the online giving service (has not yet settled).\nRET - Gift was returned/declined.\n"; }
+	    f_d3 "report/data" { fontsize=9; value = "A - Gift has not yet been assigned a donor in Kardia yet.\nB - Gift has not yet been assigned a designation in Kardia yet.\nC - Gift batch period and Deposit batch period are different.\npend - Gift is pending from the online giving service (has not yet settled).\nRET - Gift was returned/declined.\nREF - Gift was refunded."; }
 
 	    f_d0 "report/data" { style=bold; fontsize=11; value = runserver("\n\nReconciliation Amounts:\n"); }
 	    f_d1 "report/data" { fontsize=9; value = runserver(
 			"Gifts posted next month but deposited this month: \t" + :gift_qy:dep_prev_total + 
 			"\nGifts posted this month but deposited next month: \t" + :gift_qy:dep_next_total + 
 			"\nGifts posted this month but not yet deposited: \t" + :gift_qy:dep_none_total + 
+			"\nGifts refunded: \t\t\t" + :gift_qy:refund_total + 
 			"\n"); }
 
 	    f_d4 "report/data" { style=bold; fontsize=11; value = runserver("\n\nGifts by Day:\n"); }
