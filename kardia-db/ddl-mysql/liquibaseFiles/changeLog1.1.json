@@ -1,0 +1,34 @@
+{
+    "databaseChangeLog":[
+        {
+            "changeSet":{
+                "id":"1",
+                "author":"Nate Gamble",
+                "changes":[
+                    {
+                        "createTable":{
+                            "tableName":"NatesTable",
+                            "columns":[
+                                {
+                                    "column":{
+                                        "name":"id",
+                                        "type":"int",
+                                        "constraints":{
+                                            "nullable":false
+                                        },
+                                    }
+                                }]
+                        },
+                        "tagDatabase":{
+                            "tag":"NatesUpdate"
+                        }
+                    }],
+                "rollback":[
+                    {
+                        "dropTable":{
+                           "tableName":"NatesTable"
+                        }
+                    }]
+            }
+        }]
+}
