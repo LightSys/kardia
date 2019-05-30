@@ -5,4 +5,6 @@ kardia_modinfo "system/structure"
     module_abbrev = "Payroll";
     module_description = "Payroll system with integration into the Kardia General Ledger";
     module_sequence = 130;
+    module_context = 'kardia:ledger';
+    module_endorsement = 'kardia:pay_manage';
     }

@@ -5,4 +5,6 @@ kardia_modinfo "system/structure"
     module_abbrev = "Missionary";
     module_description = "Portal for end-user Missionary access to reports and other functionality";
     module_sequence = null;
+    module_context = 'kardia';
+    module_endorsement = null;
     }

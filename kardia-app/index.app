@@ -269,7 +269,7 @@ index "widget/page"
 
 		    action_bar_buttons "widget/repeat"
 			{
-			sql = "select modname = :cx__pathpart4, :module_name, :module_abbrev, :module_description, :cx__rowid, icon = '/apps/kardia/images/icons/ionicons-gear-w.svg', :module_ui from object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' where :module_sequence is not null and :module_ui is null order by :module_sequence asc";
+			sql = "select modname = :cx__pathpart4, :module_name, :module_abbrev, :module_description, :cx__rowid, icon = '/apps/kardia/images/icons/ionicons-gear-w.svg', :module_ui, permission = condition(:mi:module_endorsement is not null, condition(:mi:module_context = 'kardia', has_endorsement(:mi:module_endorsement, 'kardia'), (select max(has_endorsement(:mi:module_endorsement, :mi:module_context + ':' + rtrim(:l:a_ledger_number))) from /apps/kardia/data/Kardia_DB/a_ledger/rows l )), 1) from object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' mi where :module_sequence is not null and :module_ui is null order by :module_sequence asc having :permission = 1";
 
 			one_button "widget/component"
 			    {
@@ -312,7 +312,8 @@ index "widget/page"
 				:module_description,
 				icon = '/apps/kardia/images/icons/ionicons-gear-w.svg',
 				:module_ui,
-				h_adj = (select isnull(sum(:height + 10), 0) from object wildcard expression ('/apps/kardia/modules/' + :m:cx__pathpart4 + '/plugin_menu_subui_*.cmp') m2)
+				h_adj = (select isnull(sum(:height + 10), 0) from object wildcard expression ('/apps/kardia/modules/' + :m:cx__pathpart4 + '/plugin_menu_subui_*.cmp') m2),
+				permission = condition(:m:module_endorsement is not null, condition(:m:module_context = 'kardia', has_endorsement(:m:module_endorsement, 'kardia'), (select max(has_endorsement(:m:module_endorsement, :m:module_context + ':' + rtrim(:l:a_ledger_number))) from /apps/kardia/data/Kardia_DB/a_ledger/rows l )), 1)
 			    from
 				object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' m
 			    where
@@ -320,6 +321,8 @@ index "widget/page"
 				:module_ui is null
 			    order by
 				:module_sequence asc
+			    having
+				:permission = 1
 			    ";
 
 		    one_tabpage "widget/tabpage"

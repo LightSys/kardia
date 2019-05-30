@@ -5,4 +5,6 @@ kardia_modinfo "system/structure"
     module_abbrev = "Gift";
     module_description = "Gift Receipting system with integration into the Kardia General Ledger";
     module_sequence = 120;
+    module_context = 'kardia:ledger';
+    module_endorsement = 'kardia:gift';
     }
