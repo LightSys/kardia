@@ -16,7 +16,7 @@
         },
         {
             "include":{
-                "file":"liquibaseFiles\\testBaseChangeLog.json",
+                "file":"liquibaseFiles\\baseChangeLog.json",
                 "file":"liquibaseFiles\\changeLog1.1.json"
 
             }

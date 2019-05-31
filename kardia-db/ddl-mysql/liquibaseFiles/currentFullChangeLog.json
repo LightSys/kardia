@@ -1,0 +1,383 @@
+{ "databaseChangeLog": [
+  {
+    "changeSet": {
+      "id": "Original-1",
+      "author": "Nate Gamble (generated)",
+      "changes": [
+        {
+          "createTable": {
+            "columns": [
+              {
+                "column": {
+                  "constraints": {
+                    "primaryKey": true
+                  },
+                  "name": "tag",
+                  "type": "CHAR(1)"
+                }
+              },
+              {
+                "column": {
+                  "constraints": {
+                    "nullable": false
+                  },
+                  "name": "text",
+                  "type": "VARCHAR(60)"
+                }
+              },
+              {
+                "column": {
+                  "name": "description",
+                  "type": "VARCHAR(255)"
+                }
+              },
+              {
+                "column": {
+                  "name": "__cx_osml_control",
+                  "type": "VARCHAR(255)"
+                }
+              }]
+            ,
+            "tableName": "_a_account_type"
+          }
+        }]
+      
+    }
+  },
+  
+  {
+    "changeSet": {
+      "id": "Original-2",
+      "author": "Nate Gamble (generated)",
+      "changes": [
+        {
+          "createTable": {
+            "columns": [
+              {
+                "column": {
+                  "constraints": {
+                    "primaryKey": true
+                  },
+                  "name": "tag",
+                  "type": "CHAR(1)"
+                }
+              },
+              {
+                "column": {
+                  "constraints": {
+                    "nullable": false
+                  },
+                  "name": "text",
+                  "type": "VARCHAR(60)"
+                }
+              },
+              {
+                "column": {
+                  "name": "description",
+                  "type": "VARCHAR(255)"
+                }
+              },
+              {
+                "column": {
+                  "name": "__cx_osml_control",
+                  "type": "VARCHAR(255)"
+                }
+              }]
+            ,
+            "tableName": "_a_alphabet"
+          }
+        }]
+      
+    }
+  },
+{
+  "changeSet": {
+  "id": "201904311501-1",
+  "author": "parse_ddl.pl",
+  "changes": [
+      {
+    "createTable": {
+        "tableName": "p_partner",
+        "columns": [
+        {
+      "column": {
+          "name": "p_partner_key",
+          "type": "char(10)",
+          "constraints": {
+        "primaryKey": true
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_creating_office",
+          "type": "char(10)"
+      }
+        },
+        {
+      "column": {
+          "name": "p_parent_key",
+          "type": "char(10)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_partner_class",
+          "type": "char(3)"
+      }
+        },
+        {
+      "column": {
+          "name": "p_status_code",
+          "type": "char(1)"
+      }
+        },
+        {
+      "column": {
+          "name": "p_status_change_date",
+          "type": "datetime",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_title",
+          "type": "varchar(64)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_given_name",
+          "type": "varchar(64)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_preferred_name",
+          "type": "varchar(64)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_surname",
+          "type": "varchar(64)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_surname_first",
+          "type": "bit",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_localized_name",
+          "type": "varchar(96)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_suffix",
+          "type": "varchar(64)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_org_name",
+          "type": "varchar(64)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_gender",
+          "type": "char(1)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_language_code",
+          "type": "char(3)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_acquisition_code",
+          "type": "char(3)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_comments",
+          "type": "varchar(1536)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_record_status_code",
+          "type": "char(1)"
+      }
+        },
+        {
+      "column": {
+          "name": "p_no_mail_reason",
+          "type": "char(1)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_no_solicitations",
+          "type": "bit",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_no_mail",
+          "type": "bit",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_cost_center",
+          "type": "varchar(20)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_best_contact",
+          "type": "char(10)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_merged_with",
+          "type": "char(10)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_legacy_key_1",
+          "type": "char(10)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_legacy_key_2",
+          "type": "char(10)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "p_legacy_key_3",
+          "type": "char(10)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        },
+        {
+      "column": {
+          "name": "s_date_created",
+          "type": "datetime"
+      }
+        },
+        {
+      "column": {
+          "name": "s_created_by",
+          "type": "varchar(20)"
+      }
+        },
+        {
+      "column": {
+          "name": "s_date_modified",
+          "type": "datetime"
+      }
+        },
+        {
+      "column": {
+          "name": "s_modified_by",
+          "type": "varchar(20)"
+      }
+        },
+        {
+      "column": {
+          "name": "__cx_osml_control",
+          "type": "varchar(255)",
+          "constraints": {
+        "nullable": false
+          }
+      }
+        }
+    ]},
+    "tagDatabase":{
+      "tag":"NatesTest"
+    }
+      }
+      ]
+  }
+    }]
+}

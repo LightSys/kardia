@@ -22,32 +22,11 @@
                         "tagDatabase":{
                             "tag":"NatesUpdate"
                         }
-                    }]
-            }
-            
-
-        },
-        {
-            "changeSet":{
-                "id":"2",
-                "author":"Nate Gamble",
-                "changes":[
+                    }],
+                "rollback":[
                     {
-                        "createTable":{
-                            "tableName":"NatesTable2",
-                            "columns":[
-                                {
-                                    "column":{
-                                        "name":"id",
-                                        "type":"int",
-                                        "constraints":{
-                                            "nullable":true
-                                        }
-                                    }
-                                }]
-                        },
-                        "tagDatabase":{
-                            "tag":"NatesUpdate2"
+                        "dropTable":{
+                           "tableName":"NatesTable"
                         }
                     }]
             }
