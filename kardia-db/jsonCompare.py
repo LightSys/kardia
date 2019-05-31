@@ -119,6 +119,7 @@ class ChangeSet:
 		self.rollback = (inputDict["rollback"] if "rollback" in inputDict else "")
 
 	def __eq__(self, other):
+		print("testing changeSet equality...")
 		if not isinstance(other, ChangeSet):
 			return False
 		if (self.inputDict == other.inputDict):
@@ -127,8 +128,8 @@ class ChangeSet:
 			try:
 				#Don't need to check id and author because those will probably change from auto-generating the full ChangeLog
 				#Use set(variable) to check if lists are the same, just in scrambled order
-				assert(self.changes == other.changes)
-				assert(set(self.dbms) == set(other.dmbs))
+				# assert(self.changes == other.changes)
+				assert(set(self.dbms) == set(other.dbms))
 				assert(set(self.runAlways) == set(other.runAlways))
 				assert(set(self.runOnChange) == set(other.runOnChange))
 				assert(set(self.context) == set(other.context))
@@ -198,7 +199,8 @@ if __name__ == "__main__":
 			if changeSet not in wikiChangeSets:
 				#Shouln't happen unless there's been (offline) mods to the current database without using the wiki
 				#or something has been deleted from the wiki
-				raise Exception("There is a change set in the current Kardia database that isn't in the wiki. Please rollback your database to before this changeset ({}) was implemented.".format(changeSet))
+				# raise Exception("There is a change set in the current Kardia database that isn't in the wiki. Please rollback your database to before this changeset ({}) was implemented.".format(changeSet))
+				pass
 				# TODO: Nicer Handling to be implemented
 				# print("Note that a changeSet is in the current file, but not in the wiki file:\n{}".format(changeSet))
 				# print("Would you like to rollback this changeSet? (y/n)\n(Note: this will undo this changeSet. Data cannot be recovered from dropping a table)")
