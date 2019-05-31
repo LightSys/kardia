@@ -2,7 +2,7 @@ $Version=2$
 kardia_modinfo "system/structure"
     {
     module_name = "Cash Disbursements";
-    module_abbrev = "Disbursements";
+    module_abbrev = "Payments";
     module_description = "Cash Disbursements (check writing) system with integration into the Kardia General Ledger";
     module_sequence = 110;
     module_context = 'kardia:ledger';

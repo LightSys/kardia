@@ -2,7 +2,7 @@ $Version=2$
 kardia_modinfo "system/structure"
     {
     module_name = "Gift Receipting";
-    module_abbrev = "Gift";
+    module_abbrev = "Receipts";
     module_description = "Gift Receipting system with integration into the Kardia General Ledger";
     module_sequence = 120;
     module_context = 'kardia:ledger';
