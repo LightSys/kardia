@@ -32,7 +32,6 @@ use File::Slurp;
 ####Get the day we were run so we can make a unique ID for the JSON
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
 $year+=1900;
-$mon+=1; #For some reason, month is one less than actual
 $jsonRun=sprintf("%04d%02d%02d%02d%02d",$year,$mon,$mday,$hour,$min); 
 $jsonID=1;
 
@@ -1063,7 +1062,6 @@ sub print_table() {
     print JSON "	\"id\": \"$jsonRun-$jsonID\",\n";
     $jsonID++; #increment the id for every table we print
     print JSON "	\"author\": \"parse_ddl.pl\",\n";
-    print JSON "	\"tagDatabase\": { \"tag\": \"tag-$jsonRun-$jsonID\" } ,\n";
     print JSON "	\"changes\": [\n";
     print JSON "	    {\n";
     print JSON "		\"createTable\": {\n";
