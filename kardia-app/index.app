@@ -331,7 +331,7 @@ index "widget/page"
 
 			tabpage_vbox "widget/vbox"
 			    {
-			    x=10; y=20; width=924; height=600;
+			    x=20; y=20; width=904; height=600;
 			    spacing=10;
 
 			    tabpage_hbox "widget/hbox"
@@ -341,7 +341,7 @@ index "widget/page"
 
 				apps_list_vbox "widget/vbox"
 				    {
-				    width=457;
+				    width=447;
 				    spacing=10;
 
 				    apps_list_title "widget/label" { height=18; font_size=16; style=bold; align=center; text=runserver("Applications for " + :tabpages:module_abbrev); fl_width=100; }
@@ -377,6 +377,7 @@ index "widget/page"
 					    mode=dynamicrow;
 					    show_mouse_focus = no;
 					    allow_selection = yes;
+					    allow_deselection = no;
 					    show_selection = yes;
 					    initial_selection = no;
 					    demand_scrollbar = yes;
@@ -384,10 +385,15 @@ index "widget/page"
 					    colsep = 0;
 					    titlebar = no;
 					    row_border_radius=4;
+					    //rowhighlight_bgcolor = "#f0f0f0";
+					    //rowhighlight_shadow_color = "#6080c0";
+					    //rowhighlight_shadow_location = 'inside';
+					    //rowhighlight_shadow_radius = 10;
 					    rowhighlight_bgcolor = "#f0f0f0";
-					    rowhighlight_shadow_color = "#6080c0";
-					    rowhighlight_shadow_location = 'inside';
-					    rowhighlight_shadow_radius = 10;
+					    rowhighlight_shadow_angle=180;
+					    rowhighlight_shadow_radius=4;
+					    rowhighlight_shadow_offset=1;
+					    rowhighlight_shadow_color="#808080";
 					    //rowhighlight_bgcolor = "#6080c0";
 					    //rowhighlight_shadow_angle=180;
 					    //rowhighlight_shadow_radius=4;
@@ -422,7 +428,7 @@ index "widget/page"
 
 				rpts_list_vbox "widget/vbox"
 				    {
-				    width=457;
+				    width=447;
 				    spacing=10;
 
 				    rpts_list_title "widget/label" { height=18; font_size=16; style=bold; align=center; text=runserver("Reports for " + :tabpages:module_abbrev); fl_width=100; }
@@ -458,6 +464,7 @@ index "widget/page"
 					    mode=dynamicrow;
 					    show_mouse_focus = no;
 					    allow_selection = yes;
+					    allow_deselection = no;
 					    show_selection = yes;
 					    initial_selection = no;
 					    demand_scrollbar = yes;
@@ -465,10 +472,15 @@ index "widget/page"
 					    colsep = 0;
 					    titlebar = no;
 					    row_border_radius=4;
+					    //rowhighlight_bgcolor = "#f0f0f0";
+					    //rowhighlight_shadow_color = "#6080c0";
+					    //rowhighlight_shadow_location = 'inside';
+					    //rowhighlight_shadow_radius = 10;
 					    rowhighlight_bgcolor = "#f0f0f0";
-					    rowhighlight_shadow_color = "#6080c0";
-					    rowhighlight_shadow_location = 'inside';
-					    rowhighlight_shadow_radius = 10;
+					    rowhighlight_shadow_angle=180;
+					    rowhighlight_shadow_radius=4;
+					    rowhighlight_shadow_offset=1;
+					    rowhighlight_shadow_color="#808080";
 					    //rowhighlight_bgcolor = "#6080c0";
 					    //rowhighlight_shadow_angle=180;
 					    //rowhighlight_shadow_radius=4;
@@ -515,7 +527,7 @@ index "widget/page"
 				one_tab_cmp "widget/component"
 				    {
 				    path=runserver(:tab_cmps:path);
-				    width=924;
+				    width=904;
 				    height=runserver(:tab_cmps:height);
 				    }
 				}

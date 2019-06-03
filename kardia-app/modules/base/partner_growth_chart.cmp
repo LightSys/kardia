@@ -1,0 +1,104 @@
+$Version=2$
+partner_growth_chart "widget/component-decl"
+    {
+    width=257;
+    height=135;
+
+    ledger_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    before_bar_color "widget/parameter" { type=string; default="#3e7d38"; }
+    after_bar_color "widget/parameter" { type=string; default="#997c44"; }
+    chart_title "widget/parameter" { type=string; }
+    fund "widget/parameter" { type=string; deploy_to_client=yes; }
+    months "widget/parameter" { type=integer; default=13; deploy_to_client=yes; }
+
+    growth_chart_osrc "widget/osrc"
+	{
+	chart_ledger "widget/parameter" { param_name=ledger; type=string; }
+	chart_months "widget/parameter" { param_name=months; type=integer; default=runclient(:months:value); }
+	chart_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:fund:value); }
+
+	sql = " declare object info;
+
+		select
+		    label = convert(string, datepart(year, :p:s_date_created)),
+		    cnt_before = sum(condition(dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created) < getdate(), 1, 0)),
+		    cnt_after = sum(condition(dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created) < getdate(), 0, 1))
+		from
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		group by
+		    datepart(year, :p:s_date_created)
+		    --round((datediff(day, dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created), getdate()) - 0.5) / abs(datediff(day, dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created), getdate()) - 0.5))
+
+--		select
+--		    :info:thisyear = count(1) from /apps/kardia/data/Kardia_DB/p_partner/rows p where datepart(year, :p:s_date_created) = datepart(year, getdate()) and :p_status_code = 'A'
+--		;
+--
+--		select
+--		    :info:lastyear = count(1) from /apps/kardia/data/Kardia_DB/p_partner/rows p where datepart(year, :p:s_date_created) = datepart(year, getdate()) - 1 and :p_status_code = 'A'
+--		;
+--
+--		select
+--		    :info:prevyears = count(1) from /apps/kardia/data/Kardia_DB/p_partner/rows p where datepart(year, :p:s_date_created) <= datepart(year, getdate()) - 2 and :p_status_code = 'A'
+--		;
+--
+--		select label='Added in ' + datepart(year, getdate()), cnt=:info:thisyear;
+--		select label='Added in ' + (datepart(year, getdate()) - 1), cnt=:info:lastyear;
+--		select label='Added in ' + (datepart(year, getdate()) - 2) + ' or Before', cnt=:info:prevyears
+		";
+	readahead=30;
+	replicasize=30;
+	//autoquery=onload;
+
+	chart_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=ledger_osrc;
+	    target_key_1=Ledger;
+	    key_1=ledger;
+	    revealed_only=yes;
+	    }
+
+	chart "widget/chart"
+	    {
+	    x=0;
+	    y=0;
+	    width=257;
+	    height=135;
+	    fl_width=10;
+	    fl_height=10;
+	    chart_type="bar";
+	    title=runserver(:this:chart_title);
+	    titlecolor="#334466";
+	    legend_position="right";
+	    start_at_zero=yes;
+	    title_size=16;
+	    stacked=1;
+
+	    series1 "widget/chart-series"
+		{
+		color=runserver(:this:before_bar_color);
+		y_column="cnt_before";
+		label=runserver("By " + dateformat(getdate(), 'MMM dd'));
+		}
+	    
+	    series2 "widget/chart-series"
+		{
+		color=runserver(:this:after_bar_color);
+		y_column="cnt_after";
+		label=runserver("After " + dateformat(getdate(), 'MMM dd'));
+		}
+	    
+	    y_axis "widget/chart-axis" 
+		{
+		axis="y";
+		label="Partners Added by Year";
+		}
+
+	    x_axis "widget/chart-axis" 
+		{
+		condition=0;
+		label="Month";
+		}
+	    }
+	}
+    }

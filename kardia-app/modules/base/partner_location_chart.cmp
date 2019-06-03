@@ -1,0 +1,113 @@
+$Version=2$
+partner_location_chart "widget/component-decl"
+    {
+    width=257;
+    height=135;
+
+    ledger_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    before_bar_color "widget/parameter" { type=string; default="#3e7d38"; }
+    after_bar_color "widget/parameter" { type=string; default="#997c44"; }
+    chart_title "widget/parameter" { type=string; }
+    fund "widget/parameter" { type=string; deploy_to_client=yes; }
+    months "widget/parameter" { type=integer; default=13; deploy_to_client=yes; }
+
+    growth_chart_osrc "widget/osrc"
+	{
+	chart_ledger "widget/parameter" { param_name=ledger; type=string; }
+	chart_months "widget/parameter" { param_name=months; type=integer; default=runclient(:months:value); }
+	chart_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:fund:value); }
+
+	sql = " declare object info;
+		declare collection ploc;
+
+		insert
+		    collection ploc
+		select
+		    :p_state_province,
+		    :p_country_code,
+		    label = isnull(:p_country_code, 'US') + condition(char_length(isnull(:p_state_province, '')) > 1, '-' + :p_state_province, '   '),
+		    cnt = count(1)
+		from
+		    /apps/kardia/data/Kardia_DB/p_location/rows l
+		where
+		    :p_record_status_code = 'A'
+		group by
+		    :p_state_province,
+		    isnull(:p_country_code, 'US')
+		;
+
+		select
+		    :info:states = substring(sum(rtrim(:label) + ',') - ',', 1, 38)
+		from
+		    collection ploc
+		order by
+		    :cnt desc
+		;
+
+		select
+		    label = :label + ' (' + :cnt + ')',
+		    :cnt
+		from
+		    collection ploc
+		where
+		    charindex(',' + :label + ',', ',' + :info:states + ',') > 0
+		order by
+		    :cnt desc
+		;
+
+		select
+		    label = 'Other' + ' (' + isnull(sum(:cnt), 0) + ')',
+		    cnt = isnull(sum(:cnt), 0)
+		from
+		    collection ploc
+		where
+		    charindex(',' + :label + ',', ',' + :info:states + ',') = 0
+		";
+	readahead=30;
+	replicasize=30;
+	//autoquery=onload;
+
+	chart_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=ledger_osrc;
+	    target_key_1=Ledger;
+	    key_1=ledger;
+	    revealed_only=yes;
+	    }
+
+	chart "widget/chart"
+	    {
+	    x=0;
+	    y=0;
+	    width=257;
+	    height=135;
+	    fl_width=10;
+	    fl_height=10;
+	    chart_type="doughnut";
+	    title=runserver(:this:chart_title);
+	    titlecolor="#334466";
+	    legend_position="right";
+	    start_at_zero=yes;
+	    title_size=16;
+
+	    series1 "widget/chart-series"
+		{
+		//color=runserver(:this:before_bar_color);
+		y_column="cnt";
+		}
+	    
+	    y_axis "widget/chart-axis" 
+		{
+		axis="y";
+		label="Partners By Location";
+		}
+
+	    x_axis "widget/chart-axis" 
+		{
+		condition=0;
+		label="Month";
+		}
+	    }
+	}
+    }

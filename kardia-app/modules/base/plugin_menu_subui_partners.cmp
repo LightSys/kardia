@@ -1,0 +1,94 @@
+$Version=2$
+plugin_menu_subui_partners "widget/component-decl"
+    {
+    width=904;
+    height=180;
+
+    vbox "widget/vbox"
+	{
+	x=10; y=0;
+	width=884;
+	height=200;
+	spacing=10;
+
+	stats_title "widget/label" { height=18; font_size=16; style=bold; align=center; text="Partner Overview..."; fl_width=100; }
+
+	search_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	data_hbox "widget/hbox"
+	    {
+	    height=141;
+	    spacing=40;
+
+	    summary_pane "widget/pane"
+		{
+		condition=0;
+		width=350;
+		style=flat;
+		fl_width=10;
+
+		summary_osrc "widget/osrc"
+		    {
+		    period "widget/parameter" { type=string; }
+		    ledger "widget/parameter" { type=string; }
+		    sql = " select
+				cnt = sum(condition(:p:p_status_code = 'A', 1, 0)),
+				todaycnt = sum(condition(:p:p_status_code = 'A' and datediff(day, getdate(), :p:s_date_created) = 0, 1, 0)),
+				monthcnt = sum(condition(:p:p_status_code = 'A' and datediff(month, getdate(), :p:s_date_created) = 0, 1, 0)),
+				yearcnt = sum(condition(:p:p_status_code = 'A' and datediff(year, getdate(), :p:s_date_created) = 0, 1, 0))
+			    from
+				/apps/kardia/data/Kardia_DB/p_partner/rows p
+			    ";
+		    replicasize=20;
+		    readahead=20;
+
+		    summary_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=kardia_sysattrs_osrc;
+			target_key_1=Ledger;
+			key_1=ledger;
+			revealed_only=yes;
+			}
+
+		    summary_vbox "widget/vbox"
+			{
+			x=0;
+			y=0;
+			width=350;
+			height=141;
+			spacing=4;
+
+			summary_form "widget/form"
+			    {
+			    cnt_label "widget/component" { height=12; label_width=120; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=cnt; text="Total Partners:"; }
+			    today_label "widget/component" { height=12; label_width=120; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=todaycnt; text="Added Today:"; }
+			    month_label "widget/component" { height=12; label_width=120; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=monthcnt; text="Added This Month:"; }
+			    year_label "widget/component" { height=12; label_width=120; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=yearcnt; text="Added This Year:"; }
+			    }
+			}
+		    }
+		}
+
+	    partner_growth_chart "widget/component"
+		{
+		y=6;
+		width=467;
+		fl_width=10;
+		fl_height=10;
+		path="/apps/kardia/modules/base/partner_growth_chart.cmp";
+		ledger_osrc=kardia_sysattrs_osrc;
+		}
+
+	    partner_loc_chart "widget/component"
+		{
+		y=6;
+		width=377;
+		fl_width=10;
+		fl_height=10;
+		path="/apps/kardia/modules/base/partner_location_chart.cmp";
+		ledger_osrc=kardia_sysattrs_osrc;
+		}
+	    }
+	}
+    }
