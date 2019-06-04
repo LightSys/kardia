@@ -3,11 +3,14 @@ from json import JSONEncoder
 import os.path		#Used to get relative filenames (os.path.join)
 import sys			#Used to get command line inputs (sys.argv)
 import datetime		#Used for now() function to name output changeLog file
-import subprocess	#Used to rollback changeSets
+import os			#Used to rollback changeSets
 
 """How to use this file:
-Use liquibase to generate a full changelog of the database using liquibase 
-3, 8, 11, 15, 
+Use liquibase to generate a full changelog of the database using liquibase
+Store database changelog file at ddl-[database]/liquibaseFiles/currentChangeLog.json
+Run parse_ddl.pl, which will create wikiChangeLog.json, which should be stored at ddl-[database]/
+Run this file with the [database] (mysql or sybase) as a parameter
+Once the json file with the differences is generated, include it in the master changeLog file and run "liquibase update"
 """
 
 class ChangeLog:
@@ -41,6 +44,7 @@ class ChangeLog:
 
 	#Used to create a JSON format that works with Liquibase
 	def updateJSON(self):
+		self.jsonList = []
 		if (self.changeSetList != []):
 			for item in self.changeSetList:
 				self.jsonList.append({"changeSet" : item})
@@ -50,15 +54,23 @@ class ChangeLog:
 			self.jsonList.append({"property" : self.property})
 		if (self.include != ""):
 			self.jsonList.append({"include" : self.include})
+		# print("changeSetList:\n", self.changeSetList)
+
 
 
 	def __str__(self):
 		return str(self.jsonList)
 
 	def __eq__(self, other):
+		self.updateJSON()
 		if not isinstance(other, ChangeLog):
+			print("Wrong type")
 			return False
 		if (self.jsonList == other.jsonList):
+			print("exactly equal")
+			print(self.jsonList)
+			print("---------------------")
+			print(other.jsonList)
 			return True
 		else:
 			try:
@@ -67,7 +79,9 @@ class ChangeLog:
 				assert(set(self.property) == set(other.property))
 				assert(set(self.include) == set(other.include))
 			except AssertionError:
+				print("some property unequal")
 				return False
+		print("all properties equal")
 		return True
 
 	def getChangeSetList(self):
@@ -119,7 +133,6 @@ class ChangeSet:
 		self.rollback = (inputDict["rollback"] if "rollback" in inputDict else "")
 
 	def __eq__(self, other):
-		print("testing changeSet equality...")
 		if not isinstance(other, ChangeSet):
 			return False
 		if (self.inputDict == other.inputDict):
@@ -128,7 +141,6 @@ class ChangeSet:
 			try:
 				#Don't need to check id and author because those will probably change from auto-generating the full ChangeLog
 				#Use set(variable) to check if lists are the same, just in scrambled order
-				# assert(self.changes == other.changes)
 				assert(set(self.dbms) == set(other.dbms))
 				assert(set(self.runAlways) == set(other.runAlways))
 				assert(set(self.runOnChange) == set(other.runOnChange))
@@ -140,8 +152,12 @@ class ChangeSet:
 				return False
 			#Tags can be different since they will be auto-generated from parse_ddl.pl
 			if (self.changes != other.changes):
+				# print("changes different")
+				# print(self.changes[0])
 				for item in self.changes[0]:
 					if item not in other.changes[0] and item != self.changes[0]["tagDatabase"]:
+						return False
+					if self.changes[0][item] != other.changes[0][item]:
 						return False
 				for item in other.changes[0]:
 					if item not in self.changes[0] and item != other.changes[0]["tagDatabase"]:
@@ -164,12 +180,11 @@ class MyEncoder(JSONEncoder):
 
 if __name__ == "__main__":
 
-
-	path1 = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentFullChangeLog.json")
-	path2 = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "wikiChangeLog.json")
-	with open(path1, "r") as file:
+	currentPath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
+	wikiPath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "wikiChangeLog.json")
+	with open(currentPath, "r") as file:
 		currentChangeLogFile = json.load(file) #Data is a dict of a list of changeSet dictionaries
-	with open(path2, "r") as file:
+	with open(wikiPath, "r") as file:
 		wikiChangeLogFile = json.load(file)
 
 	currentChangeLog = ChangeLog(currentChangeLogFile)
@@ -199,31 +214,32 @@ if __name__ == "__main__":
 			if changeSet not in wikiChangeSets:
 				#Shouln't happen unless there's been (offline) mods to the current database without using the wiki
 				#or something has been deleted from the wiki
-				# raise Exception("There is a change set in the current Kardia database that isn't in the wiki. Please rollback your database to before this changeset ({}) was implemented.".format(changeSet))
-				pass
-				# TODO: Nicer Handling to be implemented
-				# print("Note that a changeSet is in the current file, but not in the wiki file:\n{}".format(changeSet))
-				# print("Would you like to rollback this changeSet? (y/n)\n(Note: this will undo this changeSet. Data cannot be recovered from dropping a table)")
-				# choice = input()
-				# if (choice == "y" or "yes" or "Y" or "Yes"):
-				# 	# subprocess.run("liquibase rollback {}".format(changeSet.tag))
-				# 	subprocess.run("exit 0")
-				# 	print("changeSet rolled back")
+				# TODO: Handling of automating rollback of specific changesets.
+				#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
+				#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
+				print("Note that a changeSet is in the current file, but not in the wiki file:\n{}".format(changeSet))
+				print("Please remove this changeSet from the database manually or rollback to a certain date or changeset using Liquibase")
+				print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
+				print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
+
 		diffChangeLog.setChangeSetList(diffChangeSetList)
+
 
 	if not (diffChangeLog == ChangeLog()):
 		print("Creating file with differences...")
 		diffChangeLog.updateJSON()
 		diffJSON = json.dumps(diffChangeLog, cls=MyEncoder, indent=4)
 		currentDateTime = datetime.datetime.now()
-		outputFileName = str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"
-		writePath = os.path.join(__file__, "..", "ddl-mysql", "liquibaseFiles", outputFileName)
+		outputFileName = str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"	
+		writePath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
 		f = open(writePath, "w")
 		f.write(diffJSON)
 		f.close()
 		print("See %s for differences" % writePath)
-	print("checking to make sure formatting is correct...")
-	with open(writePath, "r") as file:
-		testChangeLogFile = json.load(file)
-	testChangeLog = ChangeLog(testChangeLogFile)
+		print("checking to make sure formatting is correct...")
+		with open(writePath, "r") as file:
+			testChangeLogFile = json.load(file)
+		testChangeLog = ChangeLog(testChangeLogFile)
+	else:
+		print("ChangeLogs are equal")
 	print("finished with no errors")
