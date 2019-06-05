@@ -29,6 +29,12 @@ use Carp;
 use LWP;
 use File::Slurp;
 
+####Get the day we were run so we can make a unique ID for the JSON
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+$year+=1900;
+$mon+=1; #For some reason, month is one less than actual
+$jsonRun=sprintf("%04d%02d%02d%02d%02d",$year,$mon,$mday,$hour,$min); 
+$jsonID=1;
 
 #################################
 # The default users we will add to the sql
@@ -1049,16 +1055,35 @@ sub print_table() {
     print WIKI "{| border\n";
     print WIKI "|- bgcolor=grey\n";
     print WIKI "!FIELD!!TYPE!!Default/Null!!ORIGINAL COMMENT!!DISCUSSION\n";
+
+    #################################
+    # JSON header for this table
+    print JSON "    {\n";
+    print JSON "    \"changeSet\": {\n";
+    print JSON "	\"id\": \"$jsonRun-$jsonID\",\n";
+    $jsonID++; #increment the id for every table we print
+    print JSON "	\"author\": \"parse_ddl.pl\",\n";
+    print JSON "	\"tagDatabase\": { \"tag\": \"tag-$jsonRun-$jsonID\" } ,\n";
+    print JSON "	\"changes\": [\n";
+    print JSON "	    {\n";
+    print JSON "		\"createTable\": {\n";
+    print JSON "		    \"tableName\": \"$table\",\n";
+    print JSON "		    \"columns\": [\n";
+
     foreach $field (keys(%{$glob_field{$table}})) { $num_fields++; }
     foreach $field (sort { $glob_field{$table}{$a}{'order'} <=> $glob_field{$table}{$b}{'order'} } (keys(%{$glob_field{$table}}))) {
         my $type=$glob_field{$table}{$field}{type};
         if ($type ne "") {
+            $count_num++;
             my $comment=$glob_field{$table}{$field}{comment};
             my $links=$glob_field{$table}{$field}{links};
             my $rest=$glob_field{$table}{$field}{rest};
             #my $null=$glob_nulls{$table}{$field};
             my $null="";
             my $default=$glob_field{$table}{$field}{default};
+	    my $jsonConstraint="";
+	    my $jsonType="";
+	    my $jsonName="";
             
             #compute the number of tabs after the field-name
             $tabs = 38-int(length($field));
@@ -1090,6 +1115,7 @@ sub print_table() {
 		if ($type ne "bit") {
 		    $glob_nulls{$table}{$field}="null";
 		    }
+		$jsonConstraint="\"nullable\": false";
 	    }
             if (defined ($glob_nulls{$table}{$field})) {
                 $string="$string  $glob_nulls{$table}{$field}";
@@ -1097,7 +1123,6 @@ sub print_table() {
             }
             # END add null/not null
             if ($rest ne "") { $string="$string  $rest"; }
-            $count_num++;
             $string="$string," if ($count_num < $num_fields);
             if ($comment ne "") {
                 $string=~ s/\t/        /g;
@@ -1107,6 +1132,38 @@ sub print_table() {
                 $gap="\n$gap" if (length($string) >= 70);
                 $string="$string$gap/* $comment */";
             }
+	    
+	    #JSON File
+	    $jsonName=$field;
+	    $jsonType=$type;
+	    foreach $index (keys(%{$glob_indexes{$table}}))
+	    {
+		if($index =~ /_pk/) { 
+		    #We are looking at the primary key.
+		    if( grep( /$jsonName/, $glob_indexes{$table}{$index}))
+		    {
+			$jsonConstraint="\"primaryKey\": true";
+		    }
+		}
+	    }
+
+            print JSON ",\n" if ($count_num != 1);
+	    print JSON "		    {\n";
+	    print JSON "			\"column\": {\n";
+	    print JSON "			    \"name\": \"$jsonName\",\n";
+	    print JSON "			    \"type\": \"$jsonType\"";
+	    if($jsonConstraint ne ""){
+		print JSON ",\n";
+		print JSON "			    \"constraints\": {\n";
+		print JSON "				$jsonConstraint\n";
+		print JSON "			    }\n";
+	    }
+	    else
+	    {
+		print JSON "\n";
+	    }
+	    print JSON "			}\n";
+	    print JSON "		    }";
 
             print SQL_C "$string\n";
             print WIKI "|- bgcolor=silver\n";
@@ -1120,6 +1177,15 @@ sub print_table() {
             print WIKI "|\n";
         }
     }
+    #End the JSON table
+    print JSON "\n"; #to go after the last }.  We either put a comma there, or this \n
+    print JSON "		]}\n";
+    print JSON "	    }\n";
+    print JSON "	    ]\n";
+    print JSON "	}\n";
+    print JSON "    }\n";
+
+
     #end the wiki table
     print WIKI "|}\n";
 
@@ -1337,13 +1403,18 @@ sub adddep(){
 
 sub processdeps(){
     my $table;
+    my $count=0;
+    my $total;
         #Now we process the tables from our list
         foreach $table (sort(@tables_to_process))  {
         print WIKI "[[Kardia:Tables_$table| $table]]\n";    
         }
+	$total = scalar(@tables_to_process);
         foreach $table (sort(@tables_to_process))  {
         print "processing table $table for SQL\n";
+	    print JSON "	,\n" if ($count > 0); #comma between records
                 &print_table($table);
+		$count++;
         }
 }
 
@@ -1545,6 +1616,7 @@ open(INX_D,">${index_out}_drop.sql");
 open(REF_D,">${references_out}_drop.sql");
 open(SEC_D,">${security_out}_drop.sql");
 open(KEY_D,">${keys_out}_drop.sql");
+open(JSON,">wikiChangeLog.json");
 open(WIKI,">${wiki_out}.txt");
 
 
@@ -1586,9 +1658,15 @@ if ($glob_backend eq "sybase") {
     print INX_C "print \"Ignore any 'Warning: Row size (X bytes) could exceed row size limit...' errors\"\n";
     print REF_C "print \"Ignore any 'Warning: Row size (X bytes) could exceed row size limit...' errors\"\n";
 }
+
+#Start the JSON file
+print JSON "{ \"databaseChangeLog\": [\n";
+
+
 #SQL_C "use kardia" is in make_SQL_header
 #print "glob_table = $glob_table\n";
 #print "glob_table = $glob_table\n";
+
 print SQL_D "use $glob_table$cmd_terminator\n";
 print INX_C "use $glob_table$cmd_terminator\n";
 print INX_D "use $glob_table$cmd_terminator\n";
@@ -1602,6 +1680,7 @@ print SQL_D "drop table ra$cmd_terminator";
 
 if ($#ARGV == -1) {
 print "Processing everything\n";
+my $count=0;
     #Now we process every table
     foreach $table (keys( %glob_field)) {
         print "Table: $table\n";
@@ -1611,6 +1690,8 @@ print "Processing everything\n";
             print WIKI "* [[Kardia:NewTables_$table| $table]]\n";    
         }
         foreach $table (sort { $glob_table_order{$a} <=> $glob_table_order{$b} } (keys (%glob_field)))  {
+	     print JSON "        ,\n" if ($count > 0); #comma between records
+	     $count++;
             &print_table($table);
         }
     } else { # no table order set, use standard sort
@@ -1618,6 +1699,8 @@ print "Processing everything\n";
             print WIKI "* [[Kardia:Tables_$table| $table]]\n";    
         }
         foreach $table (sort(keys (%glob_field)))  {
+	     print JSON "        ,\n" if ($count > 0); #comma between records
+	     $count++;
             &print_table($table);
         }
     }
@@ -1650,6 +1733,8 @@ if ($glob_backend eq "sybase") {
     print SEC_D "sp_dropgroup kardiausers$cmd_terminator\n";
 }
 
+print JSON "]}\n";
+
 make_sql_footer();
 close(SQL_C);
 close(INX_C);
@@ -1663,4 +1748,5 @@ close(REF_D);
 close(SEC_D);
 close(KEY_D);
 close(SQL_N);
+close(JSON);
 close(WIKI);

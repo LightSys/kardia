@@ -26,6 +26,12 @@ go
 /* p_contact_info */
 
 
+/* p_contact_usage */
+
+
+/* p_contact_usage_type */
+
+
 /* p_partner_relationship */
 
 
@@ -135,6 +141,9 @@ go
 
 
 /* e_tag_activity */
+
+
+/* e_tag_source */
 
 
 /* e_document_type */
@@ -428,7 +437,16 @@ go
 /* a_descriptives */
 
 
+/* a_descriptives_hist */
+
+
 /* a_subtrx_cashdisb */
+
+
+/* a_subtrx_payable */
+
+
+/* a_subtrx_payable_item */
 
 
 /* a_subtrx_xfer */
@@ -441,6 +459,9 @@ go
 
 
 /* i_eg_gift_import */
+
+
+/* i_eg_gift_trx_fees */
 
 
 /* i_eg_giving_url */
@@ -471,6 +492,33 @@ go
 
 
 /* c_member */
+
+
+/* t_project */
+
+
+/* t_sprint */
+
+
+/* t_sprint_time */
+
+
+/* t_task */
+
+
+/* t_participant */
+
+
+/* t_sprint_participant */
+
+
+/* t_assignee */
+
+
+/* t_task_state */
+
+
+/* t_task_history */
 
 
 /* s_config */
@@ -516,6 +564,18 @@ go
 
 
 /* s_audit */
+
+
+/* s_role */
+
+
+/* s_role_exclusivity */
+
+
+/* s_user_role */
+
+
+/* s_global_search */
 sp_dropgroup kardiausers
 go
 
