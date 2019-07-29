@@ -130,6 +130,10 @@ alter table p_country
 	drop primary key;
 
 
+alter table p_pol_division
+	drop primary key;
+
+
 alter table p_banking_details
 	drop primary key;
 
@@ -1251,4 +1255,8 @@ alter table s_user_role
 
 
 alter table s_global_search
+	drop primary key;
+
+
+alter table s_stats_cache
 	drop primary key;

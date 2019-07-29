@@ -57,6 +57,9 @@ revoke select on ra to public;
 /* p_country */
 
 
+/* p_pol_division */
+
+
 /* p_banking_details */
 
 
@@ -574,3 +577,6 @@ revoke select on ra to public;
 
 
 /* s_global_search */
+
+
+/* s_stats_cache */

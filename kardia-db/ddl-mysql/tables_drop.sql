@@ -75,6 +75,10 @@ drop table p_zipranges;
 drop table p_country;
 
 
+/* p_pol_division */
+drop table p_pol_division;
+
+
 /* p_banking_details */
 drop table p_banking_details;
 
@@ -765,3 +769,7 @@ drop table s_user_role;
 
 /* s_global_search */
 drop table s_global_search;
+
+
+/* s_stats_cache */
+drop table s_stats_cache;

@@ -61,6 +61,9 @@ alter table p_zipranges
 alter table p_country
 	add constraint p_country_code_pk primary key  (p_country_code);
 
+alter table p_pol_division
+	add constraint p_poldiv_pk primary key  (p_country_code, p_pol_division);
+
 alter table p_banking_details
 	add constraint p_banking_details_pk primary key  (p_banking_details_key);
 
@@ -455,7 +458,7 @@ alter table a_descriptives
 	add constraint a_descr_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center);
 
 alter table a_descriptives_hist
-	add constraint a_descrhist_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_amount);
+	add constraint a_descrhist_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id);
 
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
@@ -594,3 +597,6 @@ alter table s_user_role
 
 alter table s_global_search
 	add constraint s_global_search_pk primary key  (s_search_id, s_username, s_search_res_id);
+
+alter table s_stats_cache
+	add constraint s_stats_cache_pk primary key  (s_stat_type, s_stat_group, s_stat);

@@ -381,6 +381,75 @@ create table p_country (
 );
 
 
+/* p_pol_division */
+
+create table p_pol_division (
+        p_country_code                        char(2)  not null,       /* ISO 3166-1 Alpha-2 With UK exception (basically ccTLD codes) --  */
+        p_pol_division                        varchar(64)  not null,   /* Political division abbrev/code, or full name if no abbrev/code. --  */
+        p_pol_division_parent                 varchar(64)  null,       /* Political division that this is a part of (null == top level state or province) --  */
+        p_pol_division_name                   varchar(64)  not null,   /* Political division name or label --  */
+        p_local_name                          varchar(255)  null,      /* The localized name of the political division --  */
+        p_record_status_code                  char(1)  not null,       /* (A)ctive, (O)bsolete -- for old addresses that have an obsolete state/province. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AL' as p_pol_division, 'Alabama' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'GA' as p_pol_division, 'Georgia' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'HI' as p_pol_division, 'Hawaii' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'ID' as p_pol_division, 'Idaho' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'IL' as p_pol_division, 'Illinois' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'IN' as p_pol_division, 'Indiana' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'IA' as p_pol_division, 'Iowa' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'KS' as p_pol_division, 'Kansas' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'KY' as p_pol_division, 'Kentucky' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'LA' as p_pol_division, 'Louisiana' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'ME' as p_pol_division, 'Maine' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AK' as p_pol_division, 'Alaska' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MD' as p_pol_division, 'Maryland' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MA' as p_pol_division, 'Massachusetts' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MI' as p_pol_division, 'Michigan' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MN' as p_pol_division, 'Minnesota' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MS' as p_pol_division, 'Mississippi' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MO' as p_pol_division, 'Missouri' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MT' as p_pol_division, 'Montana' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NE' as p_pol_division, 'Nebraska' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NV' as p_pol_division, 'Nevada' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NH' as p_pol_division, 'New Hampshire' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AZ' as p_pol_division, 'Arizona' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NJ' as p_pol_division, 'New Jersey' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NM' as p_pol_division, 'New Mexico' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NY' as p_pol_division, 'New York' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NC' as p_pol_division, 'North Carolina' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'ND' as p_pol_division, 'North Dakota' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'OH' as p_pol_division, 'Ohio' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'OK' as p_pol_division, 'Oklahoma' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'OR' as p_pol_division, 'Oregon' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'PA' as p_pol_division, 'Pennsylvania' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'RI' as p_pol_division, 'Rhode Island' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AR' as p_pol_division, 'Arkansas' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'SC' as p_pol_division, 'South Carolina' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'SD' as p_pol_division, 'South Dakota' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'TN' as p_pol_division, 'Tennessee' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'TX' as p_pol_division, 'Texas' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'UT' as p_pol_division, 'Utah' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'VT' as p_pol_division, 'Vermont' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'VA' as p_pol_division, 'Virginia' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WA' as p_pol_division, 'Washington' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WV' as p_pol_division, 'West Virginia' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WI' as p_pol_division, 'Wisconsin' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'CA' as p_pol_division, 'California' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WY' as p_pol_division, 'Wyoming' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'DC' as p_pol_division, 'Washington DC' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'CO' as p_pol_division, 'Colorado' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'CT' as p_pol_division, 'Connecticut' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'DE' as p_pol_division, 'Delaware' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'FL' as p_pol_division, 'Florida' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+
+
 /* p_banking_details */
 
 create table p_banking_details (
@@ -2590,6 +2659,7 @@ create table a_cc_receipting (
         a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
         a_receiptable                         bit  default 1,          /* can we receipt revenue (gifts) into this account? --  */
+        a_disposition                         char(1)  null,           /* Donor management disposition of fund: N = not interesting, O = one-time gifts typical, R = recurring gifts typical --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2972,7 +3042,9 @@ create table a_descriptives (
         a_lapsed_days                         int  null,               /* number of days past the expected next gift date (positive) or before that date (negative) --  */
         a_is_current                          int  null,               /* is this giving pattern current (1) or lapsed/past (0)? --  */
         a_increase_pct                        float  null,             /* is this giving pattern an increase over the previous one? --  */
+        a_increase_date                       datetime  null,          /* is this giving pattern an increase over the previous one? --  */
         a_decrease_pct                        float  null,             /* is this giving pattern a decrease over the previous one? --  */
+        a_decrease_date                       datetime  null,          /* is this giving pattern a decrease over the previous one? --  */
         a_is_extra                            int  null,               /* is this giving pattern a one-time / occasional "extra" amount? --  */
         a_is_approximate                      int  null,               /* is this giving pattern an average of sporadic/irregular/as-able gifts? --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2990,6 +3062,7 @@ create table a_descriptives_hist (
         a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
         a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_hist_id                             integer  not null,       /* unique id for this histogram entry --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* amount given --  */
         a_first_gift                          datetime  null,          /* first gift date --  */
@@ -3000,13 +3073,15 @@ create table a_descriptives_hist (
         a_act_average_amount                  decimal(14,4)  null,     /* actual monthly average due to this gift amount --  */
         a_act_average_months                  integer  null,           /* number of months used for the average --  */
         a_act_average_interval                float  null,             /* actual average giving interval due to this gift amount --  */
-        a_merged_amount                       decimal(14,4)  null,     /* if we're doing a merge of catch-up amounts, we indicate it here --  */
+        a_merged_id                           integer  null,           /* if we're doing a merge of catch-up amounts, we indicate it here --  */
         a_lapsed_days                         int  null,               /* number of days past the expected next gift date (positive) or before that date (negative) --  */
         a_is_current                          int  null,               /* is this giving pattern current (1) or lapsed/past (0)? --  */
         a_increase_pct                        float  null,             /* is this giving pattern an increase over the previous one? --  */
         a_decrease_pct                        float  null,             /* is this giving pattern a decrease over the previous one? --  */
         a_is_extra                            int  null,               /* is this giving pattern a one-time / occasional "extra" amount? --  */
         a_is_approximate                      int  null,               /* is this giving pattern an average of sporadic/irregular/as-able gifts? --  */
+        a_prev_end                            datetime  null,          /* date of the last gift in the previous giving interval --  */
+        a_next_start                          datetime  null,          /* date of the first gift in the next giving interval --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3964,6 +4039,26 @@ create table s_global_search (
         s_desc                                varchar(1536)  not null,
                                                                       /* Expanded description of search result --  */
         s_key                                 varchar(255)  not null,  /* Unique ID so we can find the actual relevant object for this result --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_stats_cache */
+
+create table s_stats_cache (
+        s_stat_type                           varchar(16)  not null,   /* unique identifier of the statistic type --  */
+        s_stat_group                          varchar(64)  not null,   /* subgroup within the statistic type --  */
+        s_stat                                varchar(64)  not null,   /* identifier of this particular statistic --  */
+        s_string_value                        varchar(255)  null,      /* string value of the statistic --  */
+        s_integer_value                       int  null,               /* integer value of the statistic --  */
+        s_money_value                         decimal(14,4)  null,     /* currency value of the statistic --  */
+        s_double_value                        float  null,             /* floating point value of the statistic --  */
+        s_datetime_value                      datetime  null,          /* date/time value of the statistic --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
