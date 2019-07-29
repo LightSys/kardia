@@ -9,6 +9,13 @@ support_review "widget/component-decl"
 
     user_osrc "widget/parameter" { type=object; }
 
+    newperson_popover "widget/component"
+	{
+	path="popover_newperson_simple.cmp";
+
+	on_support_changed "widget/connector" { event=SupportChanged; target=support_osrc; action=Refresh; }
+	}
+
     support_osrc "widget/osrc"
 	{
 	staff_login "widget/parameter" { type=string; }
@@ -37,7 +44,9 @@ support_review "widget/component-decl"
 		    :c:a_ledger_number = :cs:a_ledger_number and
 		    :c:a_cost_center = :cs:a_cost_center and
 		    :c:a_bal_cost_center = :c:a_cost_center and
-		    :c:a_cost_center_class = 'MIS'
+		    (:c:a_cost_center_class = 'MIS' or :c:a_cost_center_class = 'MIP')
+		order by
+		    charindex(:c:a_cost_center_class, 'MISMIP')
 		limit
 		    1
 		;
@@ -368,9 +377,9 @@ support_review "widget/component-decl"
 		select
 		    :c:a_cc_desc,
 		    :l:a_ledger_desc,
-		    :gp:a_ledger_number,
+		    a_ledger_number = :info:ledger,
 		    :gp:p_donor_partner_key,
-		    :gp:a_cost_center,
+		    a_cost_center = :info:fund,
 		    :gp:a_pattern_id,
 		    :gp:a_amount,
 		    :gp:a_interval,
@@ -865,6 +874,21 @@ support_review "widget/component-decl"
 					ledger=runclient(:sd_ledger:value);
 					year=runclient(:summary_data:review_year);
 					}
+				    }
+
+				add_spacer "widget/autolayoutspacer" { width=50; }
+
+				add_btn "widget/textbutton"
+				    {
+				    fl_height=0; height=20; width=130;
+				    text = "Add...";
+				    enabled = runclient(:sd_ledger:value is not null and :sd_fund:value is not null);
+				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				    fgcolor1=white;
+				    fgcolor2=black;
+				    disable_color="#334466";
+
+				    on_add "widget/connector" { event=Click; target=newperson_popover; action=Open; Fund=runclient(:sd_fund:value); Ledger=runclient(:sd_ledger:value); }
 				    }
 				}
 			    help_box "widget/label"
