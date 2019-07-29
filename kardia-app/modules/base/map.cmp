@@ -32,8 +32,8 @@ map "widget/component-decl"
 			:g:p_feature_type = 'PC' and
 			:g:p_feature_name = substring(:l:p_postal_code, 1, char_length(:g:p_feature_name))
 		";
-	replicasize=50;
-	readahead = 50;
+	replicasize=100;
+	readahead = 100;
 	autoquery = never;
 
 	map_vbox "widget/vbox"
