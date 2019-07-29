@@ -20,30 +20,17 @@ partner_growth_chart "widget/component-decl"
 	sql = " declare object info;
 
 		select
-		    label = convert(string, datepart(year, :p:s_date_created)),
-		    cnt_before = sum(condition(dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created) < getdate(), 1, 0)),
-		    cnt_after = sum(condition(dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created) < getdate(), 0, 1))
+		    label = :s_stat,
+		    cnt_before = first(condition(:s_stat_group = 'BEFORE', :s_integer_value, null)),
+		    cnt_after = first(condition(:s_stat_group = 'AFTER', :s_integer_value, null))
 		from
-		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		    /apps/kardia/data/Kardia_DB/s_stats_cache/rows sc
+		where
+		    :s_stat_type = 'PARTNERGROWTH'
 		group by
-		    datepart(year, :p:s_date_created)
-		    --round((datediff(day, dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created), getdate()) - 0.5) / abs(datediff(day, dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created), getdate()) - 0.5))
-
---		select
---		    :info:thisyear = count(1) from /apps/kardia/data/Kardia_DB/p_partner/rows p where datepart(year, :p:s_date_created) = datepart(year, getdate()) and :p_status_code = 'A'
---		;
---
---		select
---		    :info:lastyear = count(1) from /apps/kardia/data/Kardia_DB/p_partner/rows p where datepart(year, :p:s_date_created) = datepart(year, getdate()) - 1 and :p_status_code = 'A'
---		;
---
---		select
---		    :info:prevyears = count(1) from /apps/kardia/data/Kardia_DB/p_partner/rows p where datepart(year, :p:s_date_created) <= datepart(year, getdate()) - 2 and :p_status_code = 'A'
---		;
---
---		select label='Added in ' + datepart(year, getdate()), cnt=:info:thisyear;
---		select label='Added in ' + (datepart(year, getdate()) - 1), cnt=:info:lastyear;
---		select label='Added in ' + (datepart(year, getdate()) - 2) + ' or Before', cnt=:info:prevyears
+		    :s_stat
+		order by
+		    :s_stat
 		";
 	readahead=30;
 	replicasize=30;

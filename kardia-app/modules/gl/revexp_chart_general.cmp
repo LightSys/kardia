@@ -1,0 +1,153 @@
+$Version=2$
+revexp_chart "widget/component-decl"
+    {
+    width=257;
+    height=135;
+
+    ledger_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    revbar_color "widget/parameter" { type=string; default="#3e7d38"; }
+    expbar_color "widget/parameter" { type=string; default="#964347"; }
+    chart_title "widget/parameter" { type=string; }
+    fund "widget/parameter" { type=string; deploy_to_client=yes; }
+    months "widget/parameter" { type=integer; default=13; deploy_to_client=yes; }
+
+    chart_osrc "widget/osrc"
+	{
+	chart_ledger "widget/parameter" { param_name=ledger; type=string; }
+	chart_months "widget/parameter" { param_name=months; type=integer; default=runclient(:months:value); }
+	chart_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:fund:value); }
+
+	sql = "	declare object info;
+	
+		select
+		    :info:GLExpLow = :GLExpLow,
+		    :info:GLExpHigh = :GLExpHigh,
+		    :info:GLRevLow = :GLRevLow,
+		    :info:GLRevHigh = :GLRevHigh
+		from
+		    object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:ledger)
+		;
+
+		select
+		    :info:endperiod = :a_period
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_summary_only = 0 and
+		    :a_start_date <= getdate()
+		order by
+		    :a_end_date desc
+		limit
+		    1
+		;
+
+		select
+		    :info:startperiod = :a_period
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_summary_only = 0 and
+		    :a_start_date > dateadd(month, 0 - :parameters:months, getdate())
+		order by
+		    :a_end_date asc
+		limit
+		    1
+		;
+
+		select
+		    month = dateformat(:p:a_start_date, 'MMM\\'yy'),
+		    year = datepart(year, :p:a_start_date),
+		    Expense = convert(integer, round(first(condition(:sc:s_stat_group = 'EXPENSE', :sc:s_money_value, null)),0)),
+		    Revenue = convert(integer, round(first(condition(:sc:s_stat_group = 'REVENUE', :sc:s_money_value, null)),0))
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows p,
+		    /apps/kardia/data/Kardia_DB/s_stats_cache/rows sc
+		where
+		    :p:a_ledger_number = :parameters:ledger and
+		    (:p:a_period >= :info:startperiod) and
+		    (:p:a_period <= :info:endperiod) and
+		    :p:a_summary_only = 0 and
+		    :sc:s_stat_type = 'GLREVEXP' and
+		    :sc:s_stat = rtrim(:p:a_ledger_number) + '*' + rtrim(:p:a_period)
+		group by
+		    :p:a_period
+		order by
+		    :p:a_start_date asc
+
+--		select
+--		    month = dateformat(:p:a_start_date, 'MMM\\'yy'),
+--		    year = datepart(year, :p:a_start_date),
+--		    Expense = convert(integer,isnull(sum(condition((:t:a_account_code >= :info:GLExpLow and :t:a_account_code <= :info:GLExpHigh and :t:a_account_category = '50'), :t:a_amount, $0)), $0)),
+--		    Revenue = convert(integer, $0 - isnull(sum(condition((:t:a_account_code >= :info:GLRevLow and :t:a_account_code <= :info:GLRevHigh and :t:a_account_category = '40'), :t:a_amount, $0)), $0))
+--		from
+--		    /apps/kardia/data/Kardia_DB/a_period/rows p,
+--		    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+--		where
+--		    :p:a_ledger_number = :parameters:ledger and
+--		    :p:a_period >= :info:startperiod and
+--		    :p:a_period <= :info:endperiod and
+--		    :p:a_summary_only = 0 and
+--		    :t:a_ledger_number =* :p:a_ledger_number and
+--		    :t:a_period =* :p:a_period and
+--		    (:parameters:fund is null or :t:a_cost_center = :parameters:fund)
+--		group by
+--		    :p:a_period
+--		order by
+--		    :p:a_start_date asc
+		";
+	readahead=30;
+	replicasize=30;
+	//autoquery=onload;
+
+	chart_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=ledger_osrc;
+	    target_key_1=Ledger;
+	    key_1=ledger;
+	    revealed_only=yes;
+	    }
+
+	chart "widget/chart"
+	    {
+	    x=0;
+	    y=0;
+	    width=257;
+	    height=135;
+	    fl_width=10;
+	    fl_height=10;
+	    chart_type="bar";
+	    title=runserver(:this:chart_title);
+	    titlecolor="#334466";
+	    //legend_position="right";
+	    start_at_zero=yes;
+	    title_size=16;
+
+	    series1 "widget/chart-series"
+		{
+		color=runserver(:this:revbar_color);
+		y_column="Revenue";
+		}
+	    
+	    series2 "widget/chart-series"
+		{
+		color=runserver(:this:expbar_color);
+		y_column="Expense";
+		}
+	    
+	    y_axis "widget/chart-axis" 
+		{
+		axis="y";
+		label="Revenue/Expense";
+		}
+
+	    x_axis "widget/chart-axis" 
+		{
+		condition=0;
+		label="Month";
+		}
+	    }
+	}
+    }

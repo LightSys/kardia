@@ -1,0 +1,250 @@
+$Version=2$
+stat_revexp_ledger "system/query"
+    {
+    ledger "query/parameter" { type=string; }
+
+    sql = " declare object info;
+	    declare collection trxdata scope application;
+
+	    delete from collection trxdata;
+	    
+	    delete
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    where
+		:s_stat_type = 'GLREVEXP' and
+		substring(:s_stat, 1, char_length(:parameters:ledger + '*')) = :parameters:ledger + '*'
+	    ;
+    
+	    select
+		:info:ratio = convert(double, isnull(:GLRsrvThres, '0.167')),
+		:info:equlo = :GLEquLow,
+		:info:equhi = :GLEquHigh,
+		:info:explo = :GLExpLow,
+		:info:exphi = :GLExpHigh,
+		:info:revlo = :GLRevLow,
+		:info:revhi = :GLRevHigh,
+		:info:astlo = :GLAssetLow,
+		:info:asthi = :GLAssetHigh,
+		:info:lialo = :GLLiabLow,
+		:info:liahi = :GLLiabHigh
+	    from
+		object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:ledger)
+	    ;
+
+	    select
+		:info:openperiods = sum(:a_period + ',') - ','
+	    from
+		/apps/kardia/data/Kardia_DB/a_period/rows
+	    where
+		:a_ledger_number = :parameters:ledger and
+		:a_status = 'O'
+	    ;
+
+	    insert
+		collection trxdata
+	    select
+		is_summary = 1,
+		ledger = :p:a_ledger_number,
+		period = :p:a_parent_period,
+		expense = sum(condition((:t:a_account_code >= :info:explo and :t:a_account_code <= :info:exphi and :t:a_account_category = '50'), :t:a_amount, $0)),
+		revenue = $0 - sum(condition((:t:a_account_code >= :info:revlo and :t:a_account_code <= :info:revhi and :t:a_account_category = '40'), :t:a_amount, $0)),
+		fundbal = $0 - sum(condition((:t:a_account_code >= :info:equlo and :t:a_account_code <= :info:equhi and :t:a_account_category = '30') or (:t:a_account_code >= :info:revlo and :t:a_account_code <= :info:revhi and :t:a_account_category = '40') or (:t:a_account_code >= :info:explo and :t:a_account_code <= :info:exphi and :t:a_account_category = '50'), :t:a_amount, $0)),
+		gainloss = $0 - sum(condition((:t:a_account_code >= :info:revlo and :t:a_account_code <= :info:revhi and :t:a_account_category = '40') or (:t:a_account_code >= :info:explo and :t:a_account_code <= :info:exphi and :t:a_account_category = '50'), :t:a_amount, $0)),
+		noncurr = isnull(sum(condition(:t:a_account_code >= :info:astlo and :t:a_account_code <= :info:asthi and :t:a_account_category != '11' and :t:a_account_category != '19', :t:a_amount, $0)), $0)
+	    from
+		/apps/kardia/data/Kardia_DB/a_period/rows p,
+		/apps/kardia/data/Kardia_DB/a_transaction/rows t
+	    where
+		:p:a_ledger_number = :parameters:ledger and
+		:p:a_summary_only = 0 and
+		:t:a_ledger_number = :p:a_ledger_number and
+		:t:a_period = :p:a_period
+		--and
+		--:t:a_period >= :info:startperiod and
+		--:t:a_period <= :info:endperiod
+	    group by
+		:p:a_parent_period
+	    ;
+
+	    insert
+		collection trxdata
+	    select
+		is_summary = 0,
+		period = :t:a_period,
+		ledger = :t:a_ledger_number,
+		expense = sum(condition((:t:a_account_code >= :info:explo and :t:a_account_code <= :info:exphi and :t:a_account_category = '50'), :t:a_amount, $0)),
+		revenue = $0 - sum(condition((:t:a_account_code >= :info:revlo and :t:a_account_code <= :info:revhi and :t:a_account_category = '40'), :t:a_amount, $0)),
+		fundbal = isnull($0 - sum(condition(((:t:a_account_code >= :info:equlo and :t:a_account_code <= :info:equhi and :t:a_account_category = '30') or (:t:a_account_code >= :info:revlo and :t:a_account_code <= :info:revhi and :t:a_account_category = '40') or (:t:a_account_code >= :info:explo and :t:a_account_code <= :info:exphi and :t:a_account_category = '50')), :t:a_amount, $0)), $0),
+		gainloss = $0 - sum(condition((:t:a_account_code >= :info:revlo and :t:a_account_code <= :info:revhi and :t:a_account_category = '40') or (:t:a_account_code >= :info:explo and :t:a_account_code <= :info:exphi and :t:a_account_category = '50'), :t:a_amount, $0)),
+		noncurr = isnull(sum(condition(:t:a_account_code >= :info:astlo and :t:a_account_code <= :info:asthi and :t:a_account_category != '11' and :t:a_account_category != '19', :t:a_amount, $0)), $0)
+	    from
+		/apps/kardia/data/Kardia_DB/a_transaction/rows t
+	    where
+		:t:a_ledger_number = :parameters:ledger
+		-- and
+		-- :t:a_period >= :info:startperiod and
+		-- :t:a_period <= :info:endperiod
+	    group by
+		:t:a_period desc
+	    -- order by
+	--	:t:a_period desc
+	    ;
+
+	    update
+		collection trxdata t
+	    set
+		:t:startperiod = (select :p2:a_period from /apps/kardia/data/Kardia_DB/a_period/rows p1, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p1:a_period = :t:period and :p1:a_ledger_number = :t:ledger and :p2:a_parent_period = :p1:a_parent_period and :p2:a_ledger_number = :p1:a_ledger_number order by :p2:a_start_date asc limit 1),
+		:t:estartperiod = (select :p2:a_period from /apps/kardia/data/Kardia_DB/a_period/rows p1, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p1:a_period = :t:period and :p1:a_ledger_number = :t:ledger and :p2:a_ledger_number = :p1:a_ledger_number and :p2:a_summary_only = 0 and :p2:a_start_date > dateadd(year, -1, :p1:a_start_date) order by :p2:a_start_date asc limit 1)
+	    where
+		:is_summary = 0 and
+		:ledger = :parameters:ledger
+	    ;
+
+	    update
+		collection trxdata t
+	    set
+		:fundbal = :fundbal + isnull(($0 - (select sum(condition((:t2:a_account_code >= :info:equlo and :t2:a_account_code <= :info:equhi) or (:t2:a_account_code >= :info:revlo and :t2:a_account_code <= :info:revhi) or (:t2:a_account_code >= :info:explo and :t2:a_account_code <= :info:exphi), :t2:a_amount, $0)) from /apps/kardia/data/Kardia_DB/a_transaction/rows t2 where :t2:a_ledger_number = :parameters:ledger and :t2:a_period >= :t:startperiod and :t2:a_period < :t:period)), $0),
+		:noncurr = :noncurr + isnull(((select sum(condition((:t2:a_account_code >= :info:astlo and :t2:a_account_code <= :info:asthi and :t2:a_account_category != '11' and :t2:a_account_category != '19'), :t2:a_amount, $0)) from /apps/kardia/data/Kardia_DB/a_transaction/rows t2 where :t2:a_ledger_number = :parameters:ledger and :t2:a_period >= :t:startperiod and :t2:a_period < :t:period)), $0)
+	    where
+		:is_summary = 0 and
+		:ledger = :parameters:ledger
+	    ;
+
+	    update
+		identity collection trxdata t
+	    set
+		:t:avgexp = (select avg(:t2:expense) from collection trxdata t2 where :t2:ledger = :t:ledger and :t2:period >= :t:estartperiod and :t2:period <= :t:period and :t2:is_summary = 0)
+	    where
+		charindex(',' + :t:period + ',', ',' + :info:openperiods + ',') == 0 and
+		:t:is_summary = 0 and
+		:ledger = :parameters:ledger
+	    ;
+		
+	    update
+		collection trxdata t
+	    set
+		:ratio = round(convert(double, :fundbal - :noncurr) / convert(double, (:avgexp * 12)), 3)
+	    where
+		isnull(:avgexp, $0) != $0 and
+		:ledger = :parameters:ledger
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'GLREVEXP',
+		s_stat_group = 'REVENUE',
+		s_stat = :ledger + '*' + :period,
+		s_money_value = :revenue,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection trxdata
+	    where
+		:ledger = :parameters:ledger
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'GLREVEXP',
+		s_stat_group = 'EXPENSE',
+		s_stat = :ledger + '*' + :period,
+		s_money_value = :expense,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection trxdata
+	    where
+		:ledger = :parameters:ledger
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'GLREVEXP',
+		s_stat_group = 'BALANCE',
+		s_stat = :ledger + '*' + :period,
+		s_money_value = :fundbal,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection trxdata
+	    where
+		:ledger = :parameters:ledger
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'GLREVEXP',
+		s_stat_group = 'GAINLOSS',
+		s_stat = :ledger + '*' + :period,
+		s_money_value = :gainloss,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection trxdata
+	    where
+		:ledger = :parameters:ledger
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'GLREVEXP',
+		s_stat_group = 'NCA',
+		s_stat = :ledger + '*' + :period,
+		s_money_value = :fundbal - :noncurr,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection trxdata
+	    where
+		:ledger = :parameters:ledger
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'GLREVEXP',
+		s_stat_group = 'RATIO',
+		s_stat = :ledger + '*' + :period,
+		s_double_value = :ratio,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection trxdata
+	    where
+		:ledger = :parameters:ledger
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'GLREVEXP',
+		s_stat_group = 'THRES',
+		s_stat = :ledger + '*' + :period,
+		s_money_value = convert(money, :info:ratio * :avgexp * 12),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection trxdata
+	    where
+		:ledger = :parameters:ledger
+	    ";
+    }

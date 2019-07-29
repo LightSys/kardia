@@ -1,0 +1,43 @@
+$Version=2$
+plugin_base_stat_partnergrowth "system/query"
+    {
+    sql = " delete
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    where
+		:s_stat_type = 'PARTNERGROWTH'
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'PARTNERGROWTH',
+		s_stat_group = 'BEFORE',
+		s_stat = convert(string, datepart(year, :p:s_date_created)),
+		s_integer_value = sum(condition(dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created) < getdate(), 1, 0)),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    group by
+		datepart(year, :p:s_date_created)
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'PARTNERGROWTH',
+		s_stat_group = 'AFTER',
+		s_stat = convert(string, datepart(year, :p:s_date_created)),
+		s_integer_value = sum(condition(dateadd(year, datepart(year, getdate()) - datepart(year, :p:s_date_created), :p:s_date_created) < getdate(), 0, 1)),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    group by
+		datepart(year, :p:s_date_created)
+	    ";
+    }

@@ -1,0 +1,20 @@
+$Version=2$
+plugin_gsearch_mod_gifthistory "widget/component-decl"
+    {
+    width=200;
+    height=150;
+    type="PAR";
+    sequence = 200;
+
+    search_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    gift_chart "widget/component"
+	{
+	x=0; y=0;
+	width=200; height=150;
+	path="/apps/kardia/modules/rcpt/gift_chart.cmp";
+	months=13;
+	ledger_osrc=kardia_sysattrs_osrc;
+	partner=runclient(:search_osrc:s_key);
+	}
+    }

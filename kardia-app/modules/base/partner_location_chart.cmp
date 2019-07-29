@@ -17,51 +17,62 @@ partner_location_chart "widget/component-decl"
 	chart_months "widget/parameter" { param_name=months; type=integer; default=runclient(:months:value); }
 	chart_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:fund:value); }
 
-	sql = " declare object info;
-		declare collection ploc;
-
-		insert
-		    collection ploc
-		select
-		    :p_state_province,
-		    :p_country_code,
-		    label = isnull(:p_country_code, 'US') + condition(char_length(isnull(:p_state_province, '')) > 1, '-' + :p_state_province, '   '),
-		    cnt = count(1)
+	sql = " select
+		    label = :s_stat + ' (' + :s_integer_value + ')',
+		    cnt = :s_integer_value
 		from
-		    /apps/kardia/data/Kardia_DB/p_location/rows l
+		    /apps/kardia/data/Kardia_DB/s_stats_cache/rows
 		where
-		    :p_record_status_code = 'A'
-		group by
-		    :p_state_province,
-		    isnull(:p_country_code, 'US')
-		;
-
-		select
-		    :info:states = substring(sum(rtrim(:label) + ',') - ',', 1, 38)
-		from
-		    collection ploc
+		    :s_stat_type = 'PARTNERLOC'
 		order by
-		    :cnt desc
-		;
-
-		select
-		    label = :label + ' (' + :cnt + ')',
-		    :cnt
-		from
-		    collection ploc
-		where
-		    charindex(',' + :label + ',', ',' + :info:states + ',') > 0
-		order by
-		    :cnt desc
-		;
-
-		select
-		    label = 'Other' + ' (' + isnull(sum(:cnt), 0) + ')',
-		    cnt = isnull(sum(:cnt), 0)
-		from
-		    collection ploc
-		where
-		    charindex(',' + :label + ',', ',' + :info:states + ',') = 0
+		    charindex('Other', :s_stat) asc,
+		    :s_integer_value desc
+	
+--		declare object info;
+--		declare collection ploc;
+--
+--		insert
+--		    collection ploc
+--		select
+--		    :p_state_province,
+--		    :p_country_code,
+--		    label = isnull(:p_country_code, 'US') + condition(char_length(isnull(:p_state_province, '')) > 1, '-' + :p_state_province, '   '),
+--		    cnt = count(1)
+--		from
+--		    /apps/kardia/data/Kardia_DB/p_location/rows l
+--		where
+--		    :p_record_status_code = 'A'
+--		group by
+--		    :p_state_province,
+--		    isnull(:p_country_code, 'US')
+--		;
+--
+--		select
+--		    :info:states = substring(sum(rtrim(:label) + ',') - ',', 1, 38)
+--		from
+--		    collection ploc
+--		order by
+--		    :cnt desc
+--		;
+--
+--		select
+--		    label = :label + ' (' + :cnt + ')',
+--		    :cnt
+--		from
+--		    collection ploc
+--		where
+--		    charindex(',' + :label + ',', ',' + :info:states + ',') > 0
+--		order by
+--		    :cnt desc
+--		;
+--
+--		select
+--		    label = 'Other' + ' (' + isnull(sum(:cnt), 0) + ')',
+--		    cnt = isnull(sum(:cnt), 0)
+--		from
+--		    collection ploc
+--		where
+--		    charindex(',' + :label + ',', ',' + :info:states + ',') = 0
 		";
 	readahead=30;
 	replicasize=30;

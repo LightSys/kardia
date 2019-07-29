@@ -1,0 +1,114 @@
+$Version=2$
+gift_chart_general "widget/component-decl"
+    {
+    width=654;
+    height=135;
+
+    ledger_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    bar_color "widget/parameter" { type=string; default="#3e7d38"; }
+    chart_title "widget/parameter" { type=string; }
+    months "widget/parameter" { type=integer; default=25; deploy_to_client=yes; }
+
+    chart_osrc "widget/osrc"
+	{
+	chart_ledger "widget/parameter" { param_name=ledger; type=string; }
+	chart_months "widget/parameter" { param_name=months; type=integer; default=runclient(:months:value); }
+
+	sql = "	declare object info;
+	
+		select
+		    :info:endperiod = :a_period
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_summary_only = 0 and
+		    :a_start_date <= getdate()
+		order by
+		    :a_end_date desc
+		limit
+		    1
+		;
+
+		select
+		    :info:startperiod = :a_period
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_summary_only = 0 and
+		    :a_start_date > dateadd(month, 0 - :parameters:months, getdate())
+		order by
+		    :a_end_date asc
+		limit
+		    1
+		;
+
+		select
+		    month = dateformat(:p:a_start_date, 'MMM\\'yy'),
+		    year = datepart(year, :p:a_start_date),
+		    Amount = convert(integer, :sc:s_money_value),
+		    total = :sc:s_money_value
+		from
+		    /apps/kardia/data/Kardia_DB/s_stats_cache/rows sc,
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_period >= :info:startperiod and
+		    :p:a_period <= :info:endperiod and
+		    :p:a_summary_only = 0 and
+		    :sc:s_stat_type = 'GIFT' and
+		    :sc:s_stat = :parameters:ledger + '*' + rtrim(:p:a_period)
+		order by
+		    :p:a_period asc
+		";
+	readahead=30;
+	replicasize=30;
+	//autoquery=onload;
+
+	chart_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=ledger_osrc;
+	    target_key_1=Ledger;
+	    key_1=ledger;
+	    target_key_2=Fund;
+	    key_2=fund;
+	    revealed_only=yes;
+	    }
+
+	chart "widget/chart"
+	    {
+	    x=0;
+	    y=0;
+	    width=654;
+	    height=135;
+	    fl_width=10;
+	    fl_height=10;
+	    chart_type="bar";
+	    title=runserver(:this:chart_title);
+	    titlecolor="#334466";
+	    //legend_position="right";
+	    start_at_zero=yes;
+	    title_size=16;
+
+	    series "widget/chart-series"
+		{
+		color=runserver(:this:bar_color);
+		y_column="Amount";
+		}
+	    
+	    y_axis "widget/chart-axis" 
+		{
+		axis="y";
+		label="Giving";
+		}
+
+	    x_axis "widget/chart-axis" 
+		{
+		condition=0;
+		label="Month";
+		}
+	    }
+	}
+    }
