@@ -13,6 +13,8 @@ mlists "system/report"
     margintop=3;
     marginbottom=3;
 
+    listtype "report/parameter" { type=string; }
+
     mlists_qy "report/query"
 	{
 	sql = "	select
@@ -34,6 +36,10 @@ mlists "system/report"
 		    subcnt = (select count(1) from /apps/kardia/data/Kardia_DB/m_list_membership/rows mm where :mm:m_list_code = :ml:m_list_code and :mm:m_membership_status = 'A')
 		from
 		    /apps/kardia/data/Kardia_DB/m_list/rows ml
+		where
+		    (:this:listtype is null or :this:listtype = :ml:m_list_type) and
+		    :ml:m_list_status = 'A' and
+		    isnull(:ml:m_discard_after, dateadd(day, 1, getdate())) >= getdate()
 		order by
 		    :ml:m_list_code
 		";
@@ -55,7 +61,7 @@ mlists "system/report"
 	font=helvetica;
 	align=left;
 	t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Master Mailing Lists Report\n"); }
-	t_d15 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+	t_d15 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n\n\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
 	}
 
     //mlists_mcol "report/section"
@@ -67,10 +73,10 @@ mlists "system/report"
 
 	mlists_table "report/table"
 	    {
-	    x=0; width=39.3; height=0;
+	    x=0; width=80; height=0;
 	    columns=3;
-	    widths=5,5,28.3;
-	    colsep=0.5;
+	    widths=12,10,56;
+	    colsep=1;
 	    nullformat="";
 	    moneyformat = "-###,###,##0.00";
 	    dateformat = "dd-MMM-yyyy";
@@ -87,8 +93,8 @@ mlists "system/report"
 		topborder=0.3;
 		bottomborder=0.05;
 
-		h_id "report/table-cell" { value='List'; align=center; }
-		h_cnt "report/table-cell" { value='#'; align=center; }
+		h_id "report/table-cell" { value='List ID'; align=center; }
+		h_cnt "report/table-cell" { value='# Subscribers'; align=center; }
 		h_name "report/table-cell" { value='Description'; align=center; }
 		}
 
@@ -100,7 +106,7 @@ mlists "system/report"
 		margintop = 0.1;
 
 		d_id "report/table-cell" { value=runserver(:mlists_qy:m_list_code); }
-		d_cnt "report/table-cell" { value=runserver(:mlists_qy:subcnt); }
+		d_cnt "report/table-cell" { value=runserver(:mlists_qy:subcnt); align=center; }
 		d_name "report/table-cell" { value=runserver(:mlists_qy:m_list_description); }
 		}
 	    }
