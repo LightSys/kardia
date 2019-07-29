@@ -1,0 +1,213 @@
+$Version=2$
+fm_revexp_chart "widget/component-decl"
+    {
+    width=654;
+    height=135;
+
+    // Revenue and Expense Chart for Fund Managers
+    ledger_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    revbar_color "widget/parameter" { type=string; default="#3e7d38"; }
+    expbar_color "widget/parameter" { type=string; default="#964347"; }
+    balbar_color "widget/parameter" { type=string; default="#997C44"; }
+    irevbar_color "widget/parameter" { type=string; default="#59b550"; }
+    iexpbar_color "widget/parameter" { type=string; default="#d96066"; }
+    chart_title "widget/parameter" { type=string; }
+    months "widget/parameter" { type=integer; default=25; deploy_to_client=yes; }
+    fund "widget/parameter" { type=string; deploy_to_client=yes; }
+
+    chart_osrc "widget/osrc"
+	{
+	chart_ledger "widget/parameter" { param_name=ledger; type=string; }
+	chart_months "widget/parameter" { param_name=months; type=integer; default=runclient(:months:value); }
+	chart_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:fund:value); }
+	//chart_fund "widget/parameter" { param_name=fund; type=string; }
+	//chart_period "widget/parameter" { param_name=period; type=string; }
+
+	sql = "	declare object info;
+		declare collection tmp scope application;
+
+		delete
+		    collection tmp
+		;
+	
+		select
+		    :info:endperiod = :a_period
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_summary_only = 0 and
+		    :a_start_date <= getdate()
+		order by
+		    :a_end_date desc
+		limit
+		    1
+		;
+
+		select
+		    :info:startperiod = :a_period,
+		    :info:startparent = :a_parent_period
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_summary_only = 0 and
+		    :a_start_date > dateadd(month, 0 - :parameters:months, getdate())
+		order by
+		    :a_end_date asc
+		limit
+		    1
+		;
+
+		select
+		    :info:dataperiod = :a_period,
+		    :info:datastartdate = :a_start_date,
+		    :info:n_periods = datediff(month, :a_start_date, :info:endstartdate) + 1
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_summary_only = 0 and
+		    :a_parent_period = :info:startparent
+		order by
+		    :a_end_date asc
+		limit
+		    1
+		;
+
+		select
+		    :info:openbal = convert(integer, isnull($0 - sum(:a_amount), $0))
+		from
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+		    :t:a_period >= :info:dataperiod and
+		    :t:a_period < :info:startperiod and
+		    :t:a_ledger_number = :parameters:ledger and
+		    (:parameters:fund is null or :parameters:fund = :t:a_cost_center) and
+		    (:t:a_account_category = '30' or :t:a_account_category = '40' or :t:a_account_category = '41' or :t:a_account_category = '42' or :t:a_account_category = '50' or :t:a_account_category = '51' or :t:a_account_category = '52')
+		;
+
+		insert
+		    collection tmp
+		select
+		    period = :p:a_period,
+		    month = dateformat(:p:a_start_date, 'MMM\\'yy'),
+		    year = datepart(year, :p:a_start_date),
+		    Revenue = convert(integer, isnull(sum(condition(:t:a_account_category = '40', $0 - :t:a_amount, $0)), $0)),
+		    IRevenue = convert(integer, isnull(sum(condition(:t:a_account_category = '41' or :t:a_account_category = '42', $0 - :t:a_amount, $0)), $0)),
+		    Expense = convert(integer, isnull(sum(condition(:t:a_account_category = '50', $0 - :t:a_amount, $0)), $0)),
+		    IExpense = convert(integer, isnull(sum(condition(:t:a_account_category = '51' or :t:a_account_category = '52', $0 - :t:a_amount, $0)), $0)),
+		    Equity = convert(integer, isnull(sum(condition(:t:a_account_category = '30', $0 - :t:a_amount, $0)), $0))
+		from
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t,
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_period >= :info:startperiod and
+		    :p:a_period <= :info:endperiod and
+		    (:p:a_status = 'C' or :p:a_status = 'P') and
+		    :p:a_period = :t:a_period and
+		    :p:a_ledger_number = :t:a_ledger_number and
+		    :t:a_transaction_type != 'B' and
+		    (:parameters:fund is null or :parameters:fund = :t:a_cost_center)
+		group by
+		    :t:a_period
+		order by
+		    :t:a_period asc
+		;
+
+		update
+		    collection tmp t1
+		set
+		    :t1:Balance = :info:openbal + (select isnull(sum(:t2:Revenue + :t2:IRevenue + :t2:Expense + :t2:IExpense + :t2:Equity), 0) from collection tmp t2 where :t2:period <= :t1:period)
+		;
+
+		select
+		    :month,
+		    :Revenue,
+		    :IRevenue,
+		    :Expense,
+		    :IExpense,
+		    :Balance
+		from
+		    collection tmp
+		";
+	readahead=30;
+	replicasize=30;
+	//autoquery=onload;
+
+	chart_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=ledger_osrc;
+	    target_key_1=Ledger;
+	    key_1=ledger;
+	    target_key_2=Fund;
+	    key_2=fund;
+	    revealed_only=yes;
+	    }
+
+	chart "widget/chart"
+	    {
+	    x=0;
+	    y=0;
+	    width=654;
+	    height=135;
+	    fl_width=10;
+	    fl_height=10;
+	    chart_type="bar";
+	    title=runserver(:this:chart_title);
+	    titlecolor="#334466";
+	    legend_position="right";
+	    start_at_zero=yes;
+	    title_size=16;
+	    stacked=yes;
+
+	    series5 "widget/chart-series"
+		{
+		color=runserver(:this:balbar_color);
+		y_column="Balance";
+		label="Balance";
+		chart_type="line";
+		}
+
+	    series1 "widget/chart-series"
+		{
+		color=runserver(:this:revbar_color);
+		y_column="Revenue";
+		}
+	    
+	    series2 "widget/chart-series"
+		{
+		color=runserver(:this:irevbar_color);
+		y_column="IRevenue";
+		label="Interfund Rev.";
+		}
+	    
+	    series3 "widget/chart-series"
+		{
+		color=runserver(:this:expbar_color);
+		y_column="Expense";
+		}
+	    
+	    series4 "widget/chart-series"
+		{
+		color=runserver(:this:iexpbar_color);
+		y_column="IExpense";
+		label="Interfund Exp.";
+		}
+	    
+	    y_axis "widget/chart-axis" 
+		{
+		axis="y";
+		label="Amount";
+		}
+
+	    x_axis "widget/chart-axis" 
+		{
+		condition=0;
+		label="Month";
+		}
+	    }
+	}
+    }
