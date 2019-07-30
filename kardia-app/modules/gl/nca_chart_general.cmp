@@ -80,76 +80,11 @@ nca_chart "widget/component-decl"
 		    1
 		;
 
---		select
---		    :info:assets = sum(:a_account_code + ',') - ','
---		from
---		    /apps/kardia/data/Kardia_DB/a_account/rows
---		where
---		    :a_ledger_number = :parameters:ledger and
---		    :a_default_category = '11'
---		;
---
---		insert
---		    collection gldata
---		select
---		    :p:a_period,
---		    :p:a_parent_period,
---		    :p:a_start_date,
---		    :p:a_status,
---		    expense = isnull(sum(condition((:t:a_account_code >= :info:GLExpLow and :t:a_account_code <= :info:GLExpHigh and :t:a_account_category = '50'), :t:a_amount, $0)), $0),
---		    curassets = sum(condition((:t:a_account_code >= :info:GLAssetLow and :t:a_account_code <= :info:GLAssetHigh) and charindex(',' + :t:a_account_code + ',', ',' + :info:assets + ',') > 0, :t:a_amount, $0)),
---		    noncurassets = sum(condition((:t:a_account_code >= :info:GLAssetLow and :t:a_account_code <= :info:GLAssetHigh) and charindex(',' + :t:a_account_code + ',', ',' + :info:assets + ',') = 0, :t:a_amount, $0)),
---		    curliabs = sum(condition((:t:a_account_code >= :info:GLLiabLow and :t:a_account_code <= :info:GLLiabHigh), :t:a_amount, $0)),
---		    noncurliabs = $0
---		from
---		    /apps/kardia/data/Kardia_DB/a_period/rows p,
---		    /apps/kardia/data/Kardia_DB/a_transaction/rows t
---		where
---		    :p:a_ledger_number = :parameters:ledger and
---		    :p:a_period >= :info:dataperiod and
---		    :p:a_period <= :info:endperiod and
---		    :p:a_summary_only = 0 and
---		    :t:a_ledger_number =* :p:a_ledger_number and
---		    :t:a_period =* :p:a_period and
---		    (:parameters:fund is null or :t:a_cost_center = :parameters:fund)
---		group by
---		    :p:a_period
---		order by
---		    :p:a_start_date asc
---		;
---
---		select
---		    :info:avg_exp = avg(:gd:expense)
---		from
---		    collection gldata gd
---		where
---		    :a_period >= :info:startperiod and
---		    :a_status != 'N' and :a_status != 'O'
---		;
---
---		update
---		    collection gldata gd1
---		set
---		    :nca = (select isnull(sum(:gd2:curassets), $0) + isnull(sum(:gd2:curliabs), $0) from collection gldata gd2 where :gd2:a_start_date <= :gd1:a_start_date and :gd2:a_parent_period = :gd1:a_parent_period)
---		;
---
---		select
---		    month = dateformat(:a_start_date, 'MMM\\'yy'),
---		    year = datepart(year, :a_start_date),
---		    NCA = convert(integer, :nca),
---		    Reserve = convert(integer, convert(double, :info:avg_exp) * 12 * :info:GLRsrvThres)
---		from
---		    collection gldata
---		where
---		    :a_period >= :info:startperiod
---		order by
---		    :a_start_date asc
-
 		select
 		    month = dateformat(:a_start_date, 'MMM\\'yy'),
 		    year = datepart(year, :a_start_date),
-		    NCA = convert(integer, round(first(condition(:sc:s_stat_group = 'NCA', :sc:s_money_value, null)),0)),
-		    Reserve = convert(integer, round(first(condition(:sc:s_stat_group = 'THRES', :sc:s_money_value, null)),0))
+		    NCA = condition(convert(integer, round(first(condition(:sc:s_stat_group = 'NCA', :sc:s_money_value, null)),0)) > convert(integer, round(first(condition(:sc:s_stat_group = 'THRES', :sc:s_money_value, null)),0)), convert(integer, round(first(condition(:sc:s_stat_group = 'NCA', :sc:s_money_value, null)),0)) - convert(integer, round(first(condition(:sc:s_stat_group = 'THRES', :sc:s_money_value, null)),0)), 0),
+		    Reserve = condition(convert(integer, round(first(condition(:sc:s_stat_group = 'NCA', :sc:s_money_value, null)),0)) > convert(integer, round(first(condition(:sc:s_stat_group = 'THRES', :sc:s_money_value, null)),0)), convert(integer, round(first(condition(:sc:s_stat_group = 'THRES', :sc:s_money_value, null)),0)), convert(integer, round(first(condition(:sc:s_stat_group = 'NCA', :sc:s_money_value, null)),0)))
 		from
 		    /apps/kardia/data/Kardia_DB/a_period/rows p,
 		    /apps/kardia/data/Kardia_DB/s_stats_cache/rows sc
@@ -190,18 +125,20 @@ nca_chart "widget/component-decl"
 	    //legend_position="right";
 	    start_at_zero=yes;
 	    title_size=16;
+	    stacked=1;
 
 	    series2 "widget/chart-series"
 		{
-		color=runserver(:this:line_color);
+		color=runserver(:this:bar_color);
 		y_column="Reserve";
-		chart_type="line";
+		//chart_type="line";
 		}
 	    
 	    series1 "widget/chart-series"
 		{
-		color=runserver(:this:bar_color);
+		color=runserver(:this:line_color);
 		y_column="NCA";
+		label="Above Reserve";
 		}
 	    
 	    y_axis "widget/chart-axis" 

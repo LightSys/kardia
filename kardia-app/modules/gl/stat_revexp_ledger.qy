@@ -119,7 +119,17 @@ stat_revexp_ledger "system/query"
 		:t:is_summary = 0 and
 		:ledger = :parameters:ledger
 	    ;
-		
+
+	    update
+		identity collection trxdata t
+	    set
+		:t:avgexp = (select first(:t2:avgexp) from collection trxdata t2 where :t2:ledger = :t:ledger and :t2:period < :t:period and :t2:is_summary = 0 and :t2:avgexp is not null order by :t2:period desc)
+	    where
+		charindex(',' + :t:period + ',', ',' + :info:openperiods + ',') > 0 and
+		:t:is_summary = 0 and
+		:t:ledger = :parameters:ledger
+	    ;
+
 	    update
 		collection trxdata t
 	    set
