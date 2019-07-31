@@ -64,13 +64,13 @@ class ChangeLog:
 	def __eq__(self, other):
 		self.updateJSON()
 		if not isinstance(other, ChangeLog):
-			print("Wrong type")
+			# print("Wrong type")
 			return False
 		if (self.jsonList == other.jsonList):
-			print("exactly equal")
-			print(self.jsonList)
-			print("---------------------")
-			print(other.jsonList)
+			# print("exactly equal")
+			# print(self.jsonList)
+			# print("---------------------")
+			# print(other.jsonList)
 			return True
 		else:
 			try:
@@ -79,9 +79,9 @@ class ChangeLog:
 				assert(set(self.property) == set(other.property))
 				assert(set(self.include) == set(other.include))
 			except AssertionError:
-				print("some property unequal")
+				# print("some property unequal")
 				return False
-		print("all properties equal")
+		# print("all properties equal")
 		return True
 
 	def getChangeSetList(self):
@@ -118,12 +118,12 @@ class ChangeSet:
 
 	def __init__(self, inputDict):
 		self.inputDict = inputDict
-		self.id = inputDict["id"]
-		self.author = inputDict["author"]
+		self.id = inputDict["id"].upper()
+		self.author = inputDict["author"].upper()
 		#Sets optional variables even if ChangeSet does not have them
 		#If __ is in the inputDict, sets the class varable to that thing, otherwise sets the class variable equal to ""
 		self.changes = (inputDict["changes"] if "changes" in inputDict else "")
-		self.tag = (inputDict["changes"][0]["tagDatabase"]["tag"] if "tagDatabase" in inputDict["changes"][0] else "")
+		self.tag = (inputDict["changes"][0]["tagDatabase"]["tag"].upper() if "tagDatabase" in inputDict["changes"][0] else "")
 		self.dbms = (inputDict["dbms"] if "dbms" in inputDict else "")
 		self.runAlways = (inputDict["runAlways"] if "runAlways" in inputDict else "")
 		self.runOnChange = (inputDict["runOnChange"] if "runOnChange" in inputDict else "")
@@ -131,6 +131,20 @@ class ChangeSet:
 		self.runInTransaction = (inputDict["runInTransaction"] if "runInTransaction" in inputDict else "")
 		self.failOnError= (inputDict["failOnError"] if "failOnError" in inputDict else "")
 		self.rollback = (inputDict["rollback"] if "rollback" in inputDict else "")
+		self.normalizeData()
+
+	def normalizeData(self):
+		changes = self.changes[0]
+		if "createTable" in changes:
+			for item in changes["createTable"]["columns"]:
+				typeString = item["column"]["type"]
+				typeString = typeString.lower()
+				typeArray = typeString.split(" ")
+				typeString = ""
+				for split in typeArray:
+					typeString += split
+				item["column"]["type"] = typeString
+
 
 	def __eq__(self, other):
 		if not isinstance(other, ChangeSet):
@@ -155,12 +169,12 @@ class ChangeSet:
 				# print("changes different")
 				# print(self.changes[0])
 				for item in self.changes[0]:
-					if item not in other.changes[0] and item != self.changes[0]["tagDatabase"]:
+					if item not in other.changes[0]:
 						return False
 					if self.changes[0][item] != other.changes[0][item]:
 						return False
 				for item in other.changes[0]:
-					if item not in self.changes[0] and item != other.changes[0]["tagDatabase"]:
+					if item not in self.changes[0]:
 						return False
 		return True
 
@@ -203,7 +217,7 @@ if __name__ == "__main__":
 		if (currentChangeLog.getIncludes() != wikiChangeLog.getIncludes()):
 			diffChangeLog.setIncludes(wikiChangeLog.getIncludes())
 	else:
-		#ChangeSets are different
+		#ChangeSet lists are different
 		currentChangeSets = currentChangeLog.getChangeSetList()
 		wikiChangeSets = wikiChangeLog.getChangeSetList()
 
@@ -212,8 +226,8 @@ if __name__ == "__main__":
 				diffChangeSetList.append(changeSet)
 		for changeSet in currentChangeSets:
 			if changeSet not in wikiChangeSets:
-				#Shouln't happen unless there's been (offline) mods to the current database without using the wiki
-				#or something has been deleted from the wiki
+				# Shouln't happen unless there's been (offline) mods to the current database without using the wiki
+				#	or something has been deleted from the wiki
 				# TODO: Handling of automating rollback of specific changesets.
 				#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
 				#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
@@ -235,7 +249,7 @@ if __name__ == "__main__":
 		f = open(writePath, "w")
 		f.write(diffJSON)
 		f.close()
-		print("See %s for differences" % writePath)
+		print("See %s for differences" % writePath[18:])
 		print("checking to make sure formatting is correct...")
 		with open(writePath, "r") as file:
 			testChangeLogFile = json.load(file)

@@ -1115,8 +1115,9 @@ sub print_table() {
 		if ($type ne "bit") {
 		    $glob_nulls{$table}{$field}="null";
 		    }
-		$jsonConstraint="\"nullable\": false";
-	    }
+	    } else {
+            $jsonConstraint="\"nullable\": false";
+        }
             if (defined ($glob_nulls{$table}{$field})) {
                 $string="$string  $glob_nulls{$table}{$field}";
                 #print "-$table- -$field- found a null -$glob_nulls{$table}{$field}-\n";
