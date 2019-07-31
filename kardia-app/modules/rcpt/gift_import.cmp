@@ -211,7 +211,7 @@ gift_import "widget/component-decl"
 							    )
 							),
 				    trx_date = substring(convert(string,:eg:i_eg_gift_trx_date),1,11),
-				    gs_donor_info = :eg:i_eg_donor_name + ' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')',
+				    gs_donor_info = :eg:i_eg_donor_name + isnull(' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')', ''),
 				    kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + ', ' + :l:p_state_province + ')', ''),
 				    gs_desig_info = :eg:i_eg_desig_name,
 				    kardia_desig_info = :eg:a_cost_center + isnull(' ' + :c:a_cc_desc,''),
