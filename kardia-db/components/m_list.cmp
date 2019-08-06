@@ -1,0 +1,133 @@
+$Version=2$
+m_list_component "widget/component-decl"
+    {
+    width=835;height=635;
+    m_list_osrc "widget/osrc"
+        {
+        sql="SELECT :p_postal_mode, :m_date_sent, :m_discard_after, :m_list_type, :m_list_parent, :m_list_status, :__cx_osml_control, :m_list_description, :s_modified_by, :m_list_code, :m_charge_ledger, :m_charge_cost_ctr, :m_delivery_method, :s_date_created, :s_date_modified, :s_created_by, :m_list_frozen FROM /lightsys/partner_DB/m_list/rows";
+        baseobj = "/lightsys/partner_DB/m_list/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        m_list_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            m_list_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            m_list_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                m_list_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_list_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_list_code; text="list code"; type="editbox"; form=m_list_form; tooltip="key -- "; }
+                    m_list_parent_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_list_parent; text="list parent"; type="editbox"; form=m_list_form; tooltip="if we have a hierarchy of lists, e.g., a publication has issues -- "; }
+                    m_list_description_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_list_description; text="list description"; type="editbox"; form=m_list_form; tooltip=" -- "; }
+                    }
+                m_list_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_list_status_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_list_status; text="list status"; type="editbox"; form=m_list_form; tooltip="O=obsolete, A=active -- "; }
+                    m_list_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_list_type; text="list type"; type="editbox"; form=m_list_form; tooltip="P=publication, I=issue, C=campaign, M=motivational code, O=other, etc. -- "; }
+                    m_delivery_method_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_delivery_method; text="delivery method"; type="editbox"; form=m_list_form; tooltip="default delivery method for this publication (E=email, M=mail) -- "; }
+                    }
+                m_list_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_discard_after_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_discard_after; text="discard after"; type="editbox"; form=m_list_form; tooltip="for temporary lists/extracts -- "; }
+                    m_list_frozen_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_list_frozen; text="list frozen"; type="editbox"; form=m_list_form; tooltip="do not permit add/remove memberships -- "; }
+                    m_date_sent_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_date_sent; text="date sent"; type="editbox"; form=m_list_form; tooltip=" -- "; }
+                    }
+                m_list_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_charge_ledger_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_charge_ledger; text="charge ledger"; type="editbox"; form=m_list_form; tooltip="who to charge for publ. costs -- "; }
+                    p_postal_mode_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_postal_mode; text="postal mode"; type="editbox"; form=m_list_form; tooltip="B-Bulk F-FirstClass Used to set postal modes on mailings -- "; }
+                    m_charge_cost_ctr_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_charge_cost_ctr; text="charge cost ctr"; type="editbox"; form=m_list_form; tooltip=" -- "; }
+                    }
+                m_list_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=m_list_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=m_list_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=m_list_form; tooltip=" -- "; }
+                    }
+                m_list_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=m_list_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=m_list_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

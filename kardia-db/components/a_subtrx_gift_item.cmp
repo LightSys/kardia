@@ -1,0 +1,187 @@
+$Version=2$
+a_subtrx_gift_item_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_subtrx_gift_item_osrc "widget/osrc"
+        {
+        sql="SELECT :a_amount, :p_dn_donor_partner_id, :a_calc_admin_fee, :a_gift_number, :a_calc_admin_fee_subtype, :a_batch_number, :p_recip_partner_id, :a_gift_admin_fee, :a_period, :a_dn_gift_received_date, :a_cost_center, :__cx_osml_control, :a_comment, :a_non_tax_deductible, :s_modified_by, :a_dn_receipt_number, :a_ledger_number, :a_split_number, :i_eg_source_key, :a_confidential, :s_date_created, :a_calc_admin_fee_type, :a_account_code, :a_posted_to_gl, :s_date_modified, :a_dn_gift_postmark_date, :a_posted, :a_gift_admin_subtype, :s_created_by, :a_motivational_code, :a_recv_document_id FROM /lightsys/partner_DB/a_subtrx_gift_item/rows";
+        baseobj = "/lightsys/partner_DB/a_subtrx_gift_item/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_subtrx_gift_item_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_subtrx_gift_item_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_subtrx_gift_item_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_subtrx_gift_item_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="ledger number for this gift. -- "; }
+                    a_batch_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_batch_number; text="batch number"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Batch id for this gift. -- "; }
+                    a_gift_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_gift_number; text="gift number"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="sequential gift number in the batch. -- "; }
+                    }
+                a_subtrx_gift_item_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_split_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_split_number; text="split number"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="sequential split number for line items in a gift (split gift between multiple designations) -- "; }
+                    a_period_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_period; text="period"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Accounting period this transaction is recorded in. -- "; }
+                    a_cost_center_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_cost_center; text="cost center"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Which fund the gift is given to. -- "; }
+                    }
+                a_subtrx_gift_item_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_account_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_account_code; text="account code"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Which GL Account this gift posts to in the above fund. -- "; }
+                    a_amount_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_amount; text="amount"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Amount of the gift. -- "; }
+                    a_recv_document_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_recv_document_id; text="recv document id"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Check number, transaction number, etc., for received gift. -- "; }
+                    }
+                a_subtrx_gift_item_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_posted_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_posted; text="posted"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Has this transaction been posted (in this table)? -- "; }
+                    a_posted_to_gl_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_posted_to_gl; text="posted to gl"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Has this transaction been posted to the GL - yes (1) or no (0)? -- "; }
+                    a_gift_admin_fee_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_gift_admin_fee; text="gift admin fee"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Total administration fee percent to use (optionally specified by user) -- "; }
+                    }
+                a_subtrx_gift_item_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_gift_admin_subtype_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_gift_admin_subtype; text="gift admin subtype"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Admin fee subtype to use (overrides that specified in a_cc_admin_fee) -- "; }
+                    a_calc_admin_fee_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_calc_admin_fee; text="calc admin fee"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Total administration fee percent as calculated by the system (set by admin fee logic) -- "; }
+                    a_calc_admin_fee_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_calc_admin_fee_type; text="calc admin fee type"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="admin fee type as calculated by the system (set by admin fee logic) -- "; }
+                    }
+                a_subtrx_gift_item_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_calc_admin_fee_subtype_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_calc_admin_fee_subtype; text="calc admin fee subtype"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="admin fee subtype as calculated by the system (set by admin fee logic) -- "; }
+                    p_recip_partner_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_recip_partner_id; text="recip partner id"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Partner ID of gift recipient. May not be needed for non-pool based financial setups. -- "; }
+                    a_confidential_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_confidential; text="confidential"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Set this if the donor wishes to remain anonymous (to the recipient) -- "; }
+                    }
+                a_subtrx_gift_item_hbox6 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_non_tax_deductible_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_non_tax_deductible; text="non tax deductible"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Set this if the gift is a non-tax-deductible gift, such as a personal gift (i.e., payable to missionary instead of support gift) -- "; }
+                    a_motivational_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_motivational_code; text="motivational code"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Optional motivational code that indicates what motivated the donor to give this gift. -- "; }
+                    a_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_comment; text="comment"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="Gift comments -- "; }
+                    }
+                a_subtrx_gift_item_hbox7 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    i_eg_source_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_eg_source_key; text="eg source key"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="If imported, this is the key value for i_eg_gift_import. -- "; }
+                    p_dn_donor_partner_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_dn_donor_partner_id; text="dn donor partner id"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="**Denormalized** Partner ID of gift donor. -- "; }
+                    a_dn_receipt_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_dn_receipt_number; text="dn receipt number"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="**Denormalized** Receipt number we sent out. -- "; }
+                    }
+                a_subtrx_gift_item_hbox8 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_dn_gift_received_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_dn_gift_received_date; text="dn gift received date"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="**Denormalized** Date gift was received -- "; }
+                    a_dn_gift_postmark_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_dn_gift_postmark_date; text="dn gift postmark date"; type="editbox"; form=a_subtrx_gift_item_form; tooltip="**Denormalized** Date gift was postmarked -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_subtrx_gift_item_form; tooltip=" -- "; }
+                    }
+                a_subtrx_gift_item_hbox9 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_subtrx_gift_item_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_subtrx_gift_item_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_subtrx_gift_item_form; tooltip=" -- "; }
+                    }
+                a_subtrx_gift_item_hbox10 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_subtrx_gift_item_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

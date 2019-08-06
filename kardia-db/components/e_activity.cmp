@@ -1,0 +1,123 @@
+$Version=2$
+e_activity_component "widget/component-decl"
+    {
+    width=835;height=635;
+    e_activity_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :e_info, :e_reference_info, :e_activity_group_id, :s_date_created, :e_activity_date, :e_activity_type, :s_date_modified, :e_sort_key, :p_partner_key, :s_created_by, :__cx_osml_control, :e_activity_id, :e_whom, :e_initiation FROM /lightsys/partner_DB/e_activity/rows";
+        baseobj = "/lightsys/partner_DB/e_activity/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        e_activity_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            e_activity_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            e_activity_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                e_activity_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_activity_group_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_activity_group_id; text="activity group id"; type="editbox"; form=e_activity_form; tooltip="A unique ID identifying the group of contact activity items that are being aggregated. -- "; }
+                    e_activity_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_activity_id; text="activity id"; type="editbox"; form=e_activity_form; tooltip="A unique ID identifying a single activity item within a group of items. -- "; }
+                    p_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_partner_key; text="partner key"; type="editbox"; form=e_activity_form; tooltip="The partner involved in the activity -- "; }
+                    }
+                e_activity_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_whom_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_whom; text="whom"; type="editbox"; form=e_activity_form; tooltip="The collaborator (with the organization) that was involved in the communication, if any. -- "; }
+                    e_initiation_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_initiation; text="initiation"; type="editbox"; form=e_activity_form; tooltip="Set to 'P' if the engaging partner initiated the activity, or 'C' if the collaborator (organization) initiated the activity. -- "; }
+                    e_sort_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_sort_key; text="sort key"; type="editbox"; form=e_activity_form; tooltip="A value we can use to sort this activity data, if needed -- "; }
+                    }
+                e_activity_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_activity_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_activity_date; text="activity date"; type="editbox"; form=e_activity_form; tooltip="The date that the activity took place -- "; }
+                    e_activity_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_activity_type; text="activity type"; type="editbox"; form=e_activity_form; tooltip="The type of activity. -- "; }
+                    e_reference_info_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_reference_info; text="reference info"; type="editbox"; form=e_activity_form; tooltip="Information we can use to track back to the source data of the activity (such as a history ID, a gift ledger+batch+giftid, or such). -- "; }
+                    }
+                e_activity_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_info_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_info; text="info"; type="editbox"; form=e_activity_form; tooltip="Informational notes regarding this activity -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=e_activity_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=e_activity_form; tooltip=" -- "; }
+                    }
+                e_activity_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=e_activity_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=e_activity_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=e_activity_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

@@ -1,0 +1,111 @@
+$Version=2$
+p_partner_sort_tmp_component "widget/component-decl"
+    {
+    width=835;height=635;
+    p_partner_sort_tmp_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :p_contact_id, :s_date_created, :p_sortkey, :p_sort_session_id, :s_date_modified, :p_partner_key, :p_location_id, :s_created_by, :__cx_osml_control, :s_username FROM /lightsys/partner_DB/p_partner_sort_tmp/rows";
+        baseobj = "/lightsys/partner_DB/p_partner_sort_tmp/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        p_partner_sort_tmp_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            p_partner_sort_tmp_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            p_partner_sort_tmp_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                p_partner_sort_tmp_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_partner_key; text="partner key"; type="editbox"; form=p_partner_sort_tmp_form; tooltip="partner key -- "; }
+                    s_username_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_username; text="username"; type="editbox"; form=p_partner_sort_tmp_form; tooltip="name of the user -- "; }
+                    p_sort_session_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_sort_session_id; text="sort session id"; type="editbox"; form=p_partner_sort_tmp_form; tooltip="ID of sort session, a unique integer. -- "; }
+                    }
+                p_partner_sort_tmp_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_sortkey_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_sortkey; text="sortkey"; type="editbox"; form=p_partner_sort_tmp_form; tooltip="the sorting key, determining the order in which sorted records are returned. -- "; }
+                    p_location_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_location_id; text="location id"; type="editbox"; form=p_partner_sort_tmp_form; tooltip="the location record to use for this partner -- "; }
+                    p_contact_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_contact_id; text="contact id"; type="editbox"; form=p_partner_sort_tmp_form; tooltip="the contact record to use for this partner -- "; }
+                    }
+                p_partner_sort_tmp_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=p_partner_sort_tmp_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=p_partner_sort_tmp_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=p_partner_sort_tmp_form; tooltip=" -- "; }
+                    }
+                p_partner_sort_tmp_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=p_partner_sort_tmp_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=p_partner_sort_tmp_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

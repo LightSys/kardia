@@ -1,0 +1,134 @@
+$Version=2$
+p_banking_details_component "widget/component-decl"
+    {
+    width=835;height=635;
+    p_banking_details_osrc "widget/osrc"
+        {
+        sql="SELECT :p_bank_expiration, :p_partner_id, :p_bank_account_name, :p_bank_partner_id, :p_banking_card_type, :__cx_osml_control, :p_comment, :p_banking_type, :a_ledger_number, :s_modified_by, :p_bank_account_number, :p_bank_routing_number, :s_date_created, :a_account_code, :p_next_check_number, :p_banking_details_key, :s_date_modified, :s_created_by FROM /lightsys/partner_DB/p_banking_details/rows";
+        baseobj = "/lightsys/partner_DB/p_banking_details/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        p_banking_details_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            p_banking_details_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            p_banking_details_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                p_banking_details_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_banking_details_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_banking_details_key; text="banking details key"; type="editbox"; form=p_banking_details_form; tooltip="banking details key (autonumbered) -- "; }
+                    p_banking_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_banking_type; text="banking type"; type="editbox"; form=p_banking_details_form; tooltip="type of account (C=checking, S=savings, R=revolving credit account such as VISA/MC) -- "; }
+                    p_banking_card_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_banking_card_type; text="banking card type"; type="editbox"; form=p_banking_details_form; tooltip="type of revolving credit - VI = visa, MC = mastercard, AE = american express, DI = discover, etc. -- "; }
+                    }
+                p_banking_details_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_partner_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_partner_id; text="partner id"; type="editbox"; form=p_banking_details_form; tooltip="partner id of the account owner (if relevant) -- "; }
+                    p_bank_partner_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_bank_partner_id; text="bank partner id"; type="editbox"; form=p_banking_details_form; tooltip="partner id of the financial institution itself (if available) -- "; }
+                    p_bank_account_name_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_bank_account_name; text="bank account name"; type="editbox"; form=p_banking_details_form; tooltip="name on the account (e.g., name on visa card, etc.) -- "; }
+                    }
+                p_banking_details_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_bank_account_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_bank_account_number; text="bank account number"; type="editbox"; form=p_banking_details_form; tooltip="number of the account -- "; }
+                    p_bank_routing_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_bank_routing_number; text="bank routing number"; type="editbox"; form=p_banking_details_form; tooltip="routing number, if applicable -- "; }
+                    p_next_check_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_next_check_number; text="next check number"; type="editbox"; form=p_banking_details_form; tooltip="next check number to use when writing checks -- "; }
+                    }
+                p_banking_details_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_bank_expiration_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_bank_expiration; text="bank expiration"; type="editbox"; form=p_banking_details_form; tooltip="expiration date on account -- "; }
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=p_banking_details_form; tooltip="GL ledger associated with this bank account -- "; }
+                    a_account_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_account_code; text="account code"; type="editbox"; form=p_banking_details_form; tooltip="GL account associated with this bank account -- "; }
+                    }
+                p_banking_details_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_comment; text="comment"; type="editbox"; form=p_banking_details_form; tooltip="comments / description of bank account -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=p_banking_details_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=p_banking_details_form; tooltip=" -- "; }
+                    }
+                p_banking_details_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=p_banking_details_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=p_banking_details_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=p_banking_details_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

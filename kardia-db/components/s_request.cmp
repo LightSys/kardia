@@ -1,0 +1,166 @@
+$Version=2$
+s_request_component "widget/component-decl"
+    {
+    width=835;height=635;
+    s_request_osrc "widget/osrc"
+        {
+        sql="SELECT :s_request_id, :s_date_requested, :s_deleted_comment, :s_object_key_1, :s_date_completed, :__cx_osml_control, :s_request_sec_context, :s_request_type, :s_modified_by, :s_assigned_to, :s_deleted_by, :s_approved_comment, :s_requested_by, :s_assigned_comment, :s_date_deleted, :s_date_created, :s_date_assigned, :s_completed_by, :s_date_modified, :s_date_approved, :s_approved_by, :s_created_by, :s_object_key_2, :s_assigned_by, :s_completed_comment, :s_request_comment FROM /lightsys/partner_DB/s_request/rows";
+        baseobj = "/lightsys/partner_DB/s_request/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        s_request_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            s_request_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            s_request_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                s_request_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_request_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_request_id; text="request id"; type="editbox"; form=s_request_form; tooltip="id of the request -- "; }
+                    s_request_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_request_type; text="request type"; type="editbox"; form=s_request_form; tooltip="type of request, see the s_request_type table -- "; }
+                    s_object_key_1_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_object_key_1; text="object key 1"; type="editbox"; form=s_request_form; tooltip="key value for object subject to the request -- "; }
+                    }
+                s_request_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_object_key_2_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_object_key_2; text="object key 2"; type="editbox"; form=s_request_form; tooltip="secondary key value for object subject to the request - if does not apply, leave empty (not null) -- "; }
+                    s_date_requested_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_requested; text="date requested"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_requested_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_requested_by; text="requested by"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    }
+                s_request_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_request_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_request_comment; text="request comment"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_request_sec_context_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_request_sec_context; text="request sec context"; type="editbox"; form=s_request_form; tooltip="context for the required security endorsement -- "; }
+                    s_date_assigned_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_assigned; text="date assigned"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    }
+                s_request_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_assigned_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_assigned_by; text="assigned by"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_assigned_to_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_assigned_to; text="assigned to"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_assigned_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_assigned_comment; text="assigned comment"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    }
+                s_request_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_deleted_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_deleted; text="date deleted"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_deleted_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_deleted_by; text="deleted by"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_deleted_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_deleted_comment; text="deleted comment"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    }
+                s_request_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_approved_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_approved; text="date approved"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_approved_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_approved_by; text="approved by"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_approved_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_approved_comment; text="approved comment"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    }
+                s_request_hbox6 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_completed_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_completed; text="date completed"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_completed_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_completed_by; text="completed by"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    s_completed_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_completed_comment; text="completed comment"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    }
+                s_request_hbox7 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=s_request_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=s_request_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=s_request_form; tooltip=" -- "; }
+                    }
+                s_request_hbox8 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=s_request_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=s_request_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

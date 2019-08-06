@@ -1,0 +1,167 @@
+$Version=2$
+a_descriptives_hist_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_descriptives_hist_osrc "widget/osrc"
+        {
+        sql="SELECT :a_merged_id, :a_amount, :a_act_average_interval, :a_lapsed_days, :a_total, :a_ntl_gift, :a_is_approximate, :a_decrease_pct, :a_next_start, :a_increase_pct, :p_donor_partner_key, :a_cost_center, :__cx_osml_control, :a_act_average_amount, :a_last_gift, :s_modified_by, :a_is_extra, :a_ledger_number, :a_is_current, :a_first_gift, :a_hist_id, :s_date_created, :a_count, :s_date_modified, :s_created_by, :a_prev_end, :a_act_average_months FROM /lightsys/partner_DB/a_descriptives_hist/rows";
+        baseobj = "/lightsys/partner_DB/a_descriptives_hist/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_descriptives_hist_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_descriptives_hist_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_descriptives_hist_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_descriptives_hist_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_descriptives_hist_form; tooltip="ledger number for the donations -- "; }
+                    p_donor_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_donor_partner_key; text="donor partner key"; type="editbox"; form=a_descriptives_hist_form; tooltip="Partner ID for the donor -- "; }
+                    a_cost_center_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_cost_center; text="cost center"; type="editbox"; form=a_descriptives_hist_form; tooltip="fund that this donor is giving toward -- "; }
+                    }
+                a_descriptives_hist_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_hist_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_hist_id; text="hist id"; type="editbox"; form=a_descriptives_hist_form; tooltip="unique id for this histogram entry -- "; }
+                    a_amount_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_amount; text="amount"; type="editbox"; form=a_descriptives_hist_form; tooltip="amount given -- "; }
+                    a_first_gift_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_first_gift; text="first gift"; type="editbox"; form=a_descriptives_hist_form; tooltip="first gift date -- "; }
+                    }
+                a_descriptives_hist_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_last_gift_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_last_gift; text="last gift"; type="editbox"; form=a_descriptives_hist_form; tooltip="most recent gift date -- "; }
+                    a_ntl_gift_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ntl_gift; text="ntl gift"; type="editbox"; form=a_descriptives_hist_form; tooltip="next to last gift date -- "; }
+                    a_count_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_count; text="count"; type="editbox"; form=a_descriptives_hist_form; tooltip="actual number of gifts of this amount -- "; }
+                    }
+                a_descriptives_hist_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_total_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_total; text="total"; type="editbox"; form=a_descriptives_hist_form; tooltip="actual total giving for this gift amount -- "; }
+                    a_act_average_amount_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_act_average_amount; text="act average amount"; type="editbox"; form=a_descriptives_hist_form; tooltip="actual monthly average due to this gift amount -- "; }
+                    a_act_average_months_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_act_average_months; text="act average months"; type="editbox"; form=a_descriptives_hist_form; tooltip="number of months used for the average -- "; }
+                    }
+                a_descriptives_hist_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_act_average_interval_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_act_average_interval; text="act average interval"; type="editbox"; form=a_descriptives_hist_form; tooltip="actual average giving interval due to this gift amount -- "; }
+                    a_merged_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_merged_id; text="merged id"; type="editbox"; form=a_descriptives_hist_form; tooltip="if we're doing a merge of catch-up amounts, we indicate it here -- "; }
+                    a_lapsed_days_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_lapsed_days; text="lapsed days"; type="editbox"; form=a_descriptives_hist_form; tooltip="number of days past the expected next gift date (positive) or before that date (negative) -- "; }
+                    }
+                a_descriptives_hist_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_is_current_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_is_current; text="is current"; type="editbox"; form=a_descriptives_hist_form; tooltip="is this giving pattern current (1) or lapsed/past (0)? -- "; }
+                    a_increase_pct_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_increase_pct; text="increase pct"; type="editbox"; form=a_descriptives_hist_form; tooltip="is this giving pattern an increase over the previous one? -- "; }
+                    a_decrease_pct_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_decrease_pct; text="decrease pct"; type="editbox"; form=a_descriptives_hist_form; tooltip="is this giving pattern a decrease over the previous one? -- "; }
+                    }
+                a_descriptives_hist_hbox6 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_is_extra_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_is_extra; text="is extra"; type="editbox"; form=a_descriptives_hist_form; tooltip="is this giving pattern a one-time / occasional "extra" amount? -- "; }
+                    a_is_approximate_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_is_approximate; text="is approximate"; type="editbox"; form=a_descriptives_hist_form; tooltip="is this giving pattern an average of sporadic/irregular/as-able gifts? -- "; }
+                    a_prev_end_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_prev_end; text="prev end"; type="editbox"; form=a_descriptives_hist_form; tooltip="date of the last gift in the previous giving interval -- "; }
+                    }
+                a_descriptives_hist_hbox7 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_next_start_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_next_start; text="next start"; type="editbox"; form=a_descriptives_hist_form; tooltip="date of the first gift in the next giving interval -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_descriptives_hist_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_descriptives_hist_form; tooltip=" -- "; }
+                    }
+                a_descriptives_hist_hbox8 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_descriptives_hist_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_descriptives_hist_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_descriptives_hist_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

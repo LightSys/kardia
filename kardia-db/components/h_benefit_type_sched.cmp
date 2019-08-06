@@ -1,0 +1,132 @@
+$Version=2$
+h_benefit_type_sched_component "widget/component-decl"
+    {
+    width=835;height=635;
+    h_benefit_type_sched_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :h_carryover_benefits, :h_min_years, :s_date_created, :h_accrual_threshold, :s_date_modified, :h_new_benefits, :p_partner_key, :h_benefit_mode, :s_created_by, :__cx_osml_control, :h_benefit_type_id, :h_max_years, :h_benefit_type_sched_id, :h_group_id, :h_usage_increment FROM /lightsys/partner_DB/h_benefit_type_sched/rows";
+        baseobj = "/lightsys/partner_DB/h_benefit_type_sched/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        h_benefit_type_sched_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            h_benefit_type_sched_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            h_benefit_type_sched_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                h_benefit_type_sched_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    h_benefit_type_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_benefit_type_id; text="benefit type id"; type="editbox"; form=h_benefit_type_sched_form; tooltip="The ID of the benefit type -- "; }
+                    h_benefit_type_sched_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_benefit_type_sched_id; text="benefit type sched id"; type="editbox"; form=h_benefit_type_sched_form; tooltip="A unique ID for the application of this benefit type -- "; }
+                    p_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_partner_key; text="partner key"; type="editbox"; form=h_benefit_type_sched_form; tooltip="This is set if the schedule applies just to one person -- "; }
+                    }
+                h_benefit_type_sched_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    h_group_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_group_id; text="group id"; type="editbox"; form=h_benefit_type_sched_form; tooltip="This is set if the schedule applies just to a specific group -- "; }
+                    h_min_years_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_min_years; text="min years"; type="editbox"; form=h_benefit_type_sched_form; tooltip="This is set if the schedule applies to a minimum # of years of service -- "; }
+                    h_max_years_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_max_years; text="max years"; type="editbox"; form=h_benefit_type_sched_form; tooltip="This is set if the schedule applies to a maximum # of years of service -- "; }
+                    }
+                h_benefit_type_sched_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    h_benefit_mode_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_benefit_mode; text="benefit mode"; type="editbox"; form=h_benefit_type_sched_form; tooltip="(L)imited to amount accrued, or (P)olicy-driven but not limited by system -- "; }
+                    h_new_benefits_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_new_benefits; text="new benefits"; type="editbox"; form=h_benefit_type_sched_form; tooltip="The number of hours of new benefits accrued in the period -- "; }
+                    h_carryover_benefits_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_carryover_benefits; text="carryover benefits"; type="editbox"; form=h_benefit_type_sched_form; tooltip="The number of hours of benefits that can be carried over from the prior period -- "; }
+                    }
+                h_benefit_type_sched_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    h_accrual_threshold_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_accrual_threshold; text="accrual threshold"; type="editbox"; form=h_benefit_type_sched_form; tooltip="The number of hours of benefits that must be accrued before any can be used -- "; }
+                    h_usage_increment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_usage_increment; text="usage increment"; type="editbox"; form=h_benefit_type_sched_form; tooltip="The increment (in hours) of this benefit that must be used (e.g. increments of 0.5 day or 4 hours) -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=h_benefit_type_sched_form; tooltip=" -- "; }
+                    }
+                h_benefit_type_sched_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=h_benefit_type_sched_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=h_benefit_type_sched_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=h_benefit_type_sched_form; tooltip=" -- "; }
+                    }
+                h_benefit_type_sched_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=h_benefit_type_sched_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

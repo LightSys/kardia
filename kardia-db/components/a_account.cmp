@@ -1,0 +1,145 @@
+$Version=2$
+a_account_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_account_osrc "widget/osrc"
+        {
+        sql="SELECT :a_reporting_level, :a_default_category, :a_is_intrafund_xfer, :a_acct_type, :__cx_osml_control, :a_acct_comment, :a_legacy_code, :s_modified_by, :a_ledger_number, :a_account_class, :a_is_interfund_xfer, :a_acct_desc, :a_is_posting, :a_parent_account_code, :s_date_created, :a_account_code, :p_banking_details_key, :a_is_inverted, :s_date_modified, :a_is_contra, :s_created_by FROM /lightsys/partner_DB/a_account/rows";
+        baseobj = "/lightsys/partner_DB/a_account/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_account_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_account_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_account_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_account_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_account_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_account_code; text="account code"; type="editbox"; form=a_account_form; tooltip="account code (alphanumeric allowed) -- "; }
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_account_form; tooltip="ledger number that uses this account -- "; }
+                    a_parent_account_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_parent_account_code; text="parent account code"; type="editbox"; form=a_account_form; tooltip="account that this data rolls up into for reporting (within same ledger) -- "; }
+                    }
+                a_account_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_acct_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_acct_type; text="acct type"; type="editbox"; form=a_account_form; tooltip="type of account: (A)sset, (L)iability, (Q)Equity, (R)evenue, (E)xpense -- "; }
+                    a_account_class_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_account_class; text="account class"; type="editbox"; form=a_account_form; tooltip="classification (used for managing which accts go with which cost centers) -- "; }
+                    a_reporting_level_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_reporting_level; text="reporting level"; type="editbox"; form=a_account_form; tooltip="at what detail level should this account be shown (in reports); smaller number = less detail, more generalized report -- "; }
+                    }
+                a_account_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_banking_details_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_banking_details_key; text="banking details key"; type="editbox"; form=a_account_form; tooltip="esp. for Asset accounts, this is the relevant bank account data -- "; }
+                    a_is_contra_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_is_contra; text="is contra"; type="editbox"; form=a_account_form; tooltip="is this a contra account - if so a_parent_account_code gives main account it balances against -- "; }
+                    a_is_posting_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_is_posting; text="is posting"; type="editbox"; form=a_account_form; tooltip="enables posting to this account -- "; }
+                    }
+                a_account_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_is_inverted_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_is_inverted; text="is inverted"; type="editbox"; form=a_account_form; tooltip="should the account total be inverted for reporting (credit vs debit account) -- "; }
+                    a_is_intrafund_xfer_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_is_intrafund_xfer; text="is intrafund xfer"; type="editbox"; form=a_account_form; tooltip="account is used for intra-fund transfers -- "; }
+                    a_is_interfund_xfer_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_is_interfund_xfer; text="is interfund xfer"; type="editbox"; form=a_account_form; tooltip="account is used for inter-fund transfers -- "; }
+                    }
+                a_account_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_acct_desc_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_acct_desc; text="acct desc"; type="editbox"; form=a_account_form; tooltip="short description of account for reporting -- "; }
+                    a_acct_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_acct_comment; text="acct comment"; type="editbox"; form=a_account_form; tooltip="comments / long description of account -- "; }
+                    a_legacy_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_legacy_code; text="legacy code"; type="editbox"; form=a_account_form; tooltip="Legacy account code from data import -- "; }
+                    }
+                a_account_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_default_category_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_default_category; text="default category"; type="editbox"; form=a_account_form; tooltip="default category (control acct) for this gl account. -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_account_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_account_form; tooltip=" -- "; }
+                    }
+                a_account_hbox6 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_account_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_account_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_account_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

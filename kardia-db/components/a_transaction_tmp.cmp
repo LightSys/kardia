@@ -1,0 +1,220 @@
+$Version=2$
+a_transaction_tmp_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_transaction_tmp_osrc "widget/osrc"
+        {
+        sql="SELECT :a_amount, :a_receipt_desired, :a_gift_type, :a_batch_number, :a_effective_date, :a_account_category, :a_sent_document_id, :a_origin, :a_cost_center, :a_receipt_sent, :a_corrected, :a_transaction_number, :a_first_gift, :a_gift_received_date, :s_date_created, :a_gift_postmark_date, :a_posted, :a_recv_document_id, :a_postprocessed, :a_corrected_transaction, :a_modified, :a_postprocess_type, :a_corrected_journal, :a_goods_provided, :p_ext_partner_id, :p_int_partner_id, :a_transaction_type, :a_period, :a_correcting, :__cx_osml_control, :a_comment, :a_journal_number, :a_legacy_code, :s_modified_by, :a_ledger_number, :a_account_code, :s_date_modified, :a_corrected_batch, :s_created_by, :a_reconciled FROM /lightsys/partner_DB/a_transaction_tmp/rows";
+        baseobj = "/lightsys/partner_DB/a_transaction_tmp/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_transaction_tmp_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_transaction_tmp_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_transaction_tmp_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_transaction_tmp_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_transaction_tmp_form; tooltip="ledger number for this transaction. -- "; }
+                    a_batch_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_batch_number; text="batch number"; type="editbox"; form=a_transaction_tmp_form; tooltip="Batch id for this transaction. -- "; }
+                    a_journal_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_journal_number; text="journal number"; type="editbox"; form=a_transaction_tmp_form; tooltip="journal id for this transaction. -- "; }
+                    }
+                a_transaction_tmp_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_transaction_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_transaction_number; text="transaction number"; type="editbox"; form=a_transaction_tmp_form; tooltip="transaction id -- "; }
+                    a_period_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_period; text="period"; type="editbox"; form=a_transaction_tmp_form; tooltip="Accounting period this transaction is recorded in. -- "; }
+                    a_effective_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_effective_date; text="effective date"; type="editbox"; form=a_transaction_tmp_form; tooltip="Effective date of transaction (e.g., accrual date) -- "; }
+                    }
+                a_transaction_tmp_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_transaction_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_transaction_type; text="transaction type"; type="editbox"; form=a_transaction_tmp_form; tooltip="B=Beginning balance, E=Ending (closing of exp/rev into equity), T=Transaction (normal) -- "; }
+                    a_cost_center_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_cost_center; text="cost center"; type="editbox"; form=a_transaction_tmp_form; tooltip="Cost center this transaction is posted to. -- "; }
+                    a_account_category_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_account_category; text="account category"; type="editbox"; form=a_transaction_tmp_form; tooltip="Broad category of account (object) -- "; }
+                    }
+                a_transaction_tmp_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_account_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_account_code; text="account code"; type="editbox"; form=a_transaction_tmp_form; tooltip="GL Account that this transaction is posted to -- "; }
+                    a_amount_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_amount; text="amount"; type="editbox"; form=a_transaction_tmp_form; tooltip="Amount of debit or credit -- "; }
+                    a_posted_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_posted; text="posted"; type="editbox"; form=a_transaction_tmp_form; tooltip="Has this transaction been posted - yes (1) or no (0)? -- "; }
+                    }
+                a_transaction_tmp_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_modified; text="modified"; type="editbox"; form=a_transaction_tmp_form; tooltip="Has this transaction been hand-edited (1) or auto-generated without hand edit (0)? -- "; }
+                    a_corrected_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_corrected; text="corrected"; type="editbox"; form=a_transaction_tmp_form; tooltip="Has a correcting transaction been posted affecting this entry - yes (1) or no (0)? -- "; }
+                    a_correcting_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_correcting; text="correcting"; type="editbox"; form=a_transaction_tmp_form; tooltip="Does this transaction correct a previous transaction? yes(1) or no(0) -- "; }
+                    }
+                a_transaction_tmp_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_corrected_batch_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_corrected_batch; text="corrected batch"; type="editbox"; form=a_transaction_tmp_form; tooltip="If a_correcting=1, which batch# is being corrected? -- "; }
+                    a_corrected_journal_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_corrected_journal; text="corrected journal"; type="editbox"; form=a_transaction_tmp_form; tooltip="If a_correcting=1, which journal# is being corrected? -- "; }
+                    a_corrected_transaction_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_corrected_transaction; text="corrected transaction"; type="editbox"; form=a_transaction_tmp_form; tooltip="If a_correcting=1, which transaction# is being corrected? -- "; }
+                    }
+                a_transaction_tmp_hbox6 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_reconciled_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_reconciled; text="reconciled"; type="editbox"; form=a_transaction_tmp_form; tooltip="Has this transaction been reconciled externally (e.g., our check deposited, their check cleared, etc.) - yes (1) or no (0)? -- "; }
+                    a_postprocessed_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_postprocessed; text="postprocessed"; type="editbox"; form=a_transaction_tmp_form; tooltip="Has postprocessing been done yet for this transaction (e.g., admin charges on gifts) - yes (1) or no (0)? -- "; }
+                    a_postprocess_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_postprocess_type; text="postprocess type"; type="editbox"; form=a_transaction_tmp_form; tooltip="Type of postprocessing to be done for this transaction (e.g., admin charge), "XX" = none -- "; }
+                    }
+                a_transaction_tmp_hbox7 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_origin_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_origin; text="origin"; type="editbox"; form=a_transaction_tmp_form; tooltip="Subsystem of origin (or "MN" for manually entered) E.g., "AP" accounts payable, "AR" accounts receivable, etc. -- "; }
+                    a_recv_document_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_recv_document_id; text="recv document id"; type="editbox"; form=a_transaction_tmp_form; tooltip="External supporting document that we received (e.g., gift check number, etc.) -- "; }
+                    a_sent_document_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_sent_document_id; text="sent document id"; type="editbox"; form=a_transaction_tmp_form; tooltip="Supporting document that we generated/sent (e.g., receipt number, our check number, etc.) -- "; }
+                    }
+                a_transaction_tmp_hbox8 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_ext_partner_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_ext_partner_id; text="ext partner id"; type="editbox"; form=a_transaction_tmp_form; tooltip="Partner ID of external entity (e.g., gift donor, payee for a check, etc.) -- "; }
+                    p_int_partner_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_int_partner_id; text="int partner id"; type="editbox"; form=a_transaction_tmp_form; tooltip="Partner ID of internal entity (e.g., gift "recipient", etc.) -- "; }
+                    a_legacy_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_legacy_code; text="legacy code"; type="editbox"; form=a_transaction_tmp_form; tooltip="Legacy key or record number for referencing a pre-conversion transaction. -- "; }
+                    }
+                a_transaction_tmp_hbox9 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_receipt_sent_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_receipt_sent; text="receipt sent"; type="editbox"; form=a_transaction_tmp_form; tooltip="*** Receipt sent to donor -- "; }
+                    a_receipt_desired_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_receipt_desired; text="receipt desired"; type="editbox"; form=a_transaction_tmp_form; tooltip="*** Receipt needed -- should be "1" for all gifts unless otherwise specified -- "; }
+                    a_first_gift_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_first_gift; text="first gift"; type="editbox"; form=a_transaction_tmp_form; tooltip="*** Donor's first gift? -- "; }
+                    }
+                a_transaction_tmp_hbox10 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_gift_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_gift_type; text="gift type"; type="editbox"; form=a_transaction_tmp_form; tooltip="*** Type of Gift? -- "; }
+                    a_goods_provided_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_goods_provided; text="goods provided"; type="editbox"; form=a_transaction_tmp_form; tooltip="*** Amount of gift that is considered a fee for goods provided in return -- "; }
+                    a_gift_received_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_gift_received_date; text="gift received date"; type="editbox"; form=a_transaction_tmp_form; tooltip="*** Date a gift actually was received by the office -- "; }
+                    }
+                a_transaction_tmp_hbox11 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_gift_postmark_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_gift_postmark_date; text="gift postmark date"; type="editbox"; form=a_transaction_tmp_form; tooltip="*** Date a gift was postmarked (if available) -- "; }
+                    a_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_comment; text="comment"; type="editbox"; form=a_transaction_tmp_form; tooltip="Transaction comments -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_transaction_tmp_form; tooltip=" -- "; }
+                    }
+                a_transaction_tmp_hbox12 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_transaction_tmp_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_transaction_tmp_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_transaction_tmp_form; tooltip=" -- "; }
+                    }
+                a_transaction_tmp_hbox13 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_transaction_tmp_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

@@ -1,0 +1,132 @@
+$Version=2$
+a_motivational_code_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_motivational_code_osrc "widget/osrc"
+        {
+        sql="SELECT :a_gift_comment, :a_motivational_code_status, :a_gift_admin_fee, :a_cost_center, :__cx_osml_control, :a_parent_motivational_code, :a_ledger_number, :s_modified_by, :m_list_code, :s_date_created, :a_account_code, :s_date_modified, :a_gift_admin_subtype, :a_comments, :s_created_by, :a_motivational_code FROM /lightsys/partner_DB/a_motivational_code/rows";
+        baseobj = "/lightsys/partner_DB/a_motivational_code/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_motivational_code_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_motivational_code_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_motivational_code_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_motivational_code_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_motivational_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_motivational_code; text="motivational code"; type="editbox"; form=a_motivational_code_form; tooltip="motivational code (alphanumeric allowed) -- "; }
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_motivational_code_form; tooltip="ledger number that uses this motivational code -- "; }
+                    a_motivational_code_status_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_motivational_code_status; text="motivational code status"; type="editbox"; form=a_motivational_code_form; tooltip="status of this motivational code: A=Active, O=Obsolete. -- "; }
+                    }
+                a_motivational_code_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_parent_motivational_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_parent_motivational_code; text="parent motivational code"; type="editbox"; form=a_motivational_code_form; tooltip="motivational code parent or category -- "; }
+                    m_list_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_list_code; text="list code"; type="editbox"; form=a_motivational_code_form; tooltip="(Optional) mailing list associated with this motivational code -- "; }
+                    a_cost_center_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_cost_center; text="cost center"; type="editbox"; form=a_motivational_code_form; tooltip="Optional cost center associated with this motivational code -- "; }
+                    }
+                a_motivational_code_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_account_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_account_code; text="account code"; type="editbox"; form=a_motivational_code_form; tooltip="Optional GL account associated with this motivational code -- "; }
+                    a_gift_admin_fee_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_gift_admin_fee; text="gift admin fee"; type="editbox"; form=a_motivational_code_form; tooltip="Optional override percentage for admin fees for gifts on this motiv code. -- "; }
+                    a_gift_admin_subtype_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_gift_admin_subtype; text="gift admin subtype"; type="editbox"; form=a_motivational_code_form; tooltip="Optional override admin subtype for admin fees for gifts on this motiv code. -- "; }
+                    }
+                a_motivational_code_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_gift_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_gift_comment; text="gift comment"; type="editbox"; form=a_motivational_code_form; tooltip="Optional comment to auto-fill the gift comment field. -- "; }
+                    a_comments_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_comments; text="comments"; type="editbox"; form=a_motivational_code_form; tooltip="comments -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_motivational_code_form; tooltip=" -- "; }
+                    }
+                a_motivational_code_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_motivational_code_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_motivational_code_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_motivational_code_form; tooltip=" -- "; }
+                    }
+                a_motivational_code_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_motivational_code_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

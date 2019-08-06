@@ -1,0 +1,121 @@
+$Version=2$
+e_tag_activity_component "widget/component-decl"
+    {
+    width=835;height=635;
+    e_tag_activity_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :e_tag_volatility, :e_tag_certainty, :e_tag_id, :s_date_created, :e_tag_activity_id, :e_tag_activity_group, :e_tag_origin, :s_date_modified, :p_partner_key, :s_created_by, :__cx_osml_control, :e_tag_strength FROM /lightsys/partner_DB/e_tag_activity/rows";
+        baseobj = "/lightsys/partner_DB/e_tag_activity/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        e_tag_activity_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            e_tag_activity_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            e_tag_activity_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                e_tag_activity_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_tag_activity_group_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_activity_group; text="tag activity group"; type="editbox"; form=e_tag_activity_form; tooltip="The group used for tag activity aggregation. -- "; }
+                    e_tag_activity_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_activity_id; text="tag activity id"; type="editbox"; form=e_tag_activity_form; tooltip="ID of the activity item -- "; }
+                    e_tag_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_id; text="tag id"; type="editbox"; form=e_tag_activity_form; tooltip="ID of the tag -- "; }
+                    }
+                e_tag_activity_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    p_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_partner_key; text="partner key"; type="editbox"; form=e_tag_activity_form; tooltip="ID of the partner -- "; }
+                    e_tag_strength_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_strength; text="tag strength"; type="editbox"; form=e_tag_activity_form; tooltip="The strength of the tag (-1.0 to 1.0) - negative values mean disinterest, etc. -- "; }
+                    e_tag_certainty_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_certainty; text="tag certainty"; type="editbox"; form=e_tag_activity_form; tooltip="The certainty of the tag (0.0 to 1.0) -- "; }
+                    }
+                e_tag_activity_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_tag_volatility_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_volatility; text="tag volatility"; type="editbox"; form=e_tag_activity_form; tooltip="The volatility of the tag: (P)ersistent - created by a user, (D)erived from other data, or merely (I)mplied from other tags. -- "; }
+                    e_tag_origin_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_origin; text="tag origin"; type="editbox"; form=e_tag_activity_form; tooltip="If the tag was derived from other data, this is the type of the source of that data. Values for this are not yet defined. -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=e_tag_activity_form; tooltip=" -- "; }
+                    }
+                e_tag_activity_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=e_tag_activity_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=e_tag_activity_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=e_tag_activity_form; tooltip=" -- "; }
+                    }
+                e_tag_activity_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=e_tag_activity_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

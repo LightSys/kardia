@@ -1,0 +1,132 @@
+$Version=2$
+a_batch_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_batch_osrc "widget/osrc"
+        {
+        sql="SELECT :a_default_effective_date, :a_batch_number, :a_period, :a_origin, :a_corrects_batch_number, :__cx_osml_control, :s_process_code, :a_batch_desc, :a_ledger_number, :s_modified_by, :a_next_journal_number, :s_date_created, :a_next_transaction_number, :s_date_modified, :s_created_by, :s_process_status_code FROM /lightsys/partner_DB/a_batch/rows";
+        baseobj = "/lightsys/partner_DB/a_batch/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_batch_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_batch_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_batch_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_batch_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_batch_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_batch_number; text="batch number"; type="editbox"; form=a_batch_form; tooltip="Batch identification code. -- "; }
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_batch_form; tooltip="ledger number for this batch. -- "; }
+                    a_period_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_period; text="period"; type="editbox"; form=a_batch_form; tooltip="accounting period for this batch. -- "; }
+                    }
+                a_batch_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_batch_desc_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_batch_desc; text="batch desc"; type="editbox"; form=a_batch_form; tooltip="description of batch -- "; }
+                    a_next_journal_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_next_journal_number; text="next journal number"; type="editbox"; form=a_batch_form; tooltip="counter of next journal id to use -- "; }
+                    a_next_transaction_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_next_transaction_number; text="next transaction number"; type="editbox"; form=a_batch_form; tooltip="counter of next transaction id to use -- "; }
+                    }
+                a_batch_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_default_effective_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_default_effective_date; text="default effective date"; type="editbox"; form=a_batch_form; tooltip="default effective date to use for transactions in this batch -- "; }
+                    a_origin_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_origin; text="origin"; type="editbox"; form=a_batch_form; tooltip="origin module for batch - e.g., CR, CD, PP, GL -- "; }
+                    s_process_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_process_code; text="process code"; type="editbox"; form=a_batch_form; tooltip="process/workflow for this batch -- "; }
+                    }
+                a_batch_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_process_status_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_process_status_code; text="process status code"; type="editbox"; form=a_batch_form; tooltip="process status for this batch - e.g., (N)ew, Posted In (O)rigin, (U)nposted, (P)osted -- "; }
+                    a_corrects_batch_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_corrects_batch_number; text="corrects batch number"; type="editbox"; form=a_batch_form; tooltip="If set, indicates a batch# that this batch corrects. -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_batch_form; tooltip=" -- "; }
+                    }
+                a_batch_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_batch_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_batch_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_batch_form; tooltip=" -- "; }
+                    }
+                a_batch_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_batch_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

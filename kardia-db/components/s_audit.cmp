@@ -1,0 +1,121 @@
+$Version=2$
+s_audit_component "widget/component-decl"
+    {
+    width=835;height=635;
+    s_audit_osrc "widget/osrc"
+        {
+        sql="SELECT :s_attrname, :s_key, :s_table, :s_valuemoney, :s_date_created, :s_attrtype, :s_valuestring, :s_valuedatetime, :s_created_by, :__cx_osml_control, :s_valuedouble, :s_sequence, :s_valueint FROM /lightsys/partner_DB/s_audit/rows";
+        baseobj = "/lightsys/partner_DB/s_audit/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        s_audit_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            s_audit_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            s_audit_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                s_audit_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_sequence_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_sequence; text="sequence"; type="editbox"; form=s_audit_form; tooltip="audit record ID (incrementing integer) -- "; }
+                    s_table_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_table; text="table"; type="editbox"; form=s_audit_form; tooltip="table (entity type) being modified -- "; }
+                    s_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_key; text="key"; type="editbox"; form=s_audit_form; tooltip="key (:name) of object being modified -- "; }
+                    }
+                s_audit_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_attrname_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_attrname; text="attrname"; type="editbox"; form=s_audit_form; tooltip="name of attribute being modified or created -- "; }
+                    s_attrtype_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_attrtype; text="attrtype"; type="editbox"; form=s_audit_form; tooltip="data type of attribute being modified or created -- "; }
+                    s_valuestring_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_valuestring; text="valuestring"; type="editbox"; form=s_audit_form; tooltip="string value -- "; }
+                    }
+                s_audit_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_valueint_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_valueint; text="valueint"; type="editbox"; form=s_audit_form; tooltip="integer value -- "; }
+                    s_valuedouble_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_valuedouble; text="valuedouble"; type="editbox"; form=s_audit_form; tooltip="float/double value -- "; }
+                    s_valuemoney_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_valuemoney; text="valuemoney"; type="editbox"; form=s_audit_form; tooltip="money value -- "; }
+                    }
+                s_audit_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_valuedatetime_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_valuedatetime; text="valuedatetime"; type="editbox"; form=s_audit_form; tooltip="date/time value -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=s_audit_form; tooltip="date the modification was made -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=s_audit_form; tooltip="user who made the modification -- "; }
+                    }
+                s_audit_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=s_audit_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

@@ -1,0 +1,123 @@
+$Version=2$
+e_highlights_component "widget/component-decl"
+    {
+    width=835;height=635;
+    e_highlights_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :e_highlight_strength, :e_highlight_type, :e_highlight_id, :e_highlight_reference_info, :e_highlight_data, :s_date_created, :e_highlight_precedence, :e_highlight_name, :e_highlight_user, :e_highlight_certainty, :s_date_modified, :s_created_by, :__cx_osml_control, :e_highlight_partner FROM /lightsys/partner_DB/e_highlights/rows";
+        baseobj = "/lightsys/partner_DB/e_highlights/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        e_highlights_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            e_highlights_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            e_highlights_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                e_highlights_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_highlight_user_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_user; text="highlight user"; type="editbox"; form=e_highlights_form; tooltip="The user that is viewing highlights. -- "; }
+                    e_highlight_partner_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_partner; text="highlight partner"; type="editbox"; form=e_highlights_form; tooltip="The partner for whom highlights are being viewed. -- "; }
+                    e_highlight_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_id; text="highlight id"; type="editbox"; form=e_highlights_form; tooltip="A unique name to identify the specific highlight. -- "; }
+                    }
+                e_highlights_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_highlight_name_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_name; text="highlight name"; type="editbox"; form=e_highlights_form; tooltip="The name of the data being displayed -- "; }
+                    e_highlight_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_type; text="highlight type"; type="editbox"; form=e_highlights_form; tooltip="The general type of the data being displayed -- "; }
+                    e_highlight_data_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_data; text="highlight data"; type="editbox"; form=e_highlights_form; tooltip="The data to be displayed -- "; }
+                    }
+                e_highlights_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_highlight_reference_info_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_reference_info; text="highlight reference info"; type="editbox"; form=e_highlights_form; tooltip="Reference info to underlying data (e.g., primary key of underlying record) -- "; }
+                    e_highlight_precedence_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_precedence; text="highlight precedence"; type="editbox"; form=e_highlights_form; tooltip="A value between 0.0 and infinity, providing the precedence level of this information. The results will be sorted by this value descending. -- "; }
+                    e_highlight_strength_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_strength; text="highlight strength"; type="editbox"; form=e_highlights_form; tooltip="The strength/level of this data (mainly used for tags). 0.0 renders with a white background. (x > 0.0) with various shades of green, and (x < 0.0) with various shades of red. -- "; }
+                    }
+                e_highlights_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_highlight_certainty_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_highlight_certainty; text="highlight certainty"; type="editbox"; form=e_highlights_form; tooltip="The certainty of this data (mainly used for tags). (0.7 <= x < 1.0) renders normally. (0.3 <= x < 0.7) renders with a question mark. (0.0 <= x < 0.3) renders with two question marks. -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=e_highlights_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=e_highlights_form; tooltip=" -- "; }
+                    }
+                e_highlights_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=e_highlights_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=e_highlights_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=e_highlights_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

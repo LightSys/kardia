@@ -383,6 +383,11 @@ create  index e_ditype_parent_idx on e_data_item_type (e_parent_data_item_type_i
 /* go */
 
 
+/* e_data_item_type_value */
+/* create  index e_dataitemval_pk on e_data_item_type_value (e_data_item_type_id, e_data_item_value_id)*/ 
+/* go */
+
+
 /* e_data_item_group */
 /* create  index e_digrp_pk on e_data_item_group (e_data_item_group_id)*/ 
 /* go */
@@ -914,9 +919,9 @@ create  index a_descr_par_idx on a_descriptives (p_donor_partner_key, a_ledger_n
 
 
 /* a_descriptives_hist */
-create  index a_descrhist_cc_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_amount);
-create  index a_descrhist_merge_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_merged_amount, a_amount);
-create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_cost_center, a_amount);
+create  index a_descrhist_cc_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_hist_id);
+create  index a_descrhist_merge_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_merged_id, a_hist_id);
+create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_cost_center, a_hist_id);
 /* create  index a_descrhist_pk on a_descriptives_hist (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id)*/ 
 /* go */
 

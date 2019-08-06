@@ -1,0 +1,143 @@
+$Version=2$
+a_payroll_group_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_payroll_group_osrc "widget/osrc"
+        {
+        sql="SELECT :a_payroll_group_id, :a_service_bureau_group_name, :a_cost_center, :__cx_osml_control, :a_service_bureau_id, :s_modified_by, :a_ledger_number, :a_paydate_delay, :a_payroll_group_name, :a_acct_method, :s_date_created, :a_cash_cost_center, :s_date_modified, :a_liab_cost_center, :s_created_by, :a_payroll_interval, :a_issue_checks, :a_start_date, :a_end_date FROM /lightsys/partner_DB/a_payroll_group/rows";
+        baseobj = "/lightsys/partner_DB/a_payroll_group/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_payroll_group_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_payroll_group_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_payroll_group_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_payroll_group_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_payroll_group_form; tooltip="ledger number that will be doing the payroll. -- "; }
+                    a_payroll_group_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payroll_group_id; text="payroll group id"; type="editbox"; form=a_payroll_group_form; tooltip="unique ID for this payroll group -- "; }
+                    a_payroll_group_name_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payroll_group_name; text="payroll group name"; type="editbox"; form=a_payroll_group_form; tooltip="the name of this payroll group -- "; }
+                    }
+                a_payroll_group_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_payroll_interval_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payroll_interval; text="payroll interval"; type="editbox"; form=a_payroll_group_form; tooltip="interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) -- "; }
+                    a_acct_method_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_acct_method; text="acct method"; type="editbox"; form=a_payroll_group_form; tooltip="accounting method: (A)ccrual - pay accrues on last date of pay period, or (C)ash - pay accrues on payment date -- "; }
+                    a_paydate_delay_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_paydate_delay; text="paydate delay"; type="editbox"; form=a_payroll_group_form; tooltip="the number of days after end date of period when payroll is typically paid (0 for issue on exact end date) -- "; }
+                    }
+                a_payroll_group_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_cost_center_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_cost_center; text="cost center"; type="editbox"; form=a_payroll_group_form; tooltip="default cost center that this payroll takes place within (can be overridden on payee entries) -- "; }
+                    a_liab_cost_center_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_liab_cost_center; text="liab cost center"; type="editbox"; form=a_payroll_group_form; tooltip="cost center to xfer payroll liabilities to, if any -- "; }
+                    a_cash_cost_center_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_cash_cost_center; text="cash cost center"; type="editbox"; form=a_payroll_group_form; tooltip="cost center for handling cash for payroll, if any -- "; }
+                    }
+                a_payroll_group_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_issue_checks_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_issue_checks; text="issue checks"; type="editbox"; form=a_payroll_group_form; tooltip="whether we write the checks (1) or some outside entity does (0) and we just record the total transaction. -- "; }
+                    a_service_bureau_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_service_bureau_id; text="service bureau id"; type="editbox"; form=a_payroll_group_form; tooltip="partner id of payroll service bureau that is being used, if any -- "; }
+                    a_service_bureau_group_name_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_service_bureau_group_name; text="service bureau group name"; type="editbox"; form=a_payroll_group_form; tooltip="identifier of this payroll group at the payroll service bureau -- "; }
+                    }
+                a_payroll_group_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_start_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_start_date; text="start date"; type="editbox"; form=a_payroll_group_form; tooltip="starting date that this payroll group applies to -- "; }
+                    a_end_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_end_date; text="end date"; type="editbox"; form=a_payroll_group_form; tooltip="ending date that this payroll group applies to -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_payroll_group_form; tooltip=" -- "; }
+                    }
+                a_payroll_group_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_payroll_group_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_payroll_group_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_payroll_group_form; tooltip=" -- "; }
+                    }
+                a_payroll_group_hbox6 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_payroll_group_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

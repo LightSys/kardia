@@ -1,0 +1,121 @@
+$Version=2$
+e_partner_document_component "widget/component-decl"
+    {
+    width=835;height=635;
+    e_partner_document_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :e_image_offset_y, :s_date_created, :e_pardoc_assoc_id, :e_image_offset_x, :e_workflow_instance_id, :s_date_modified, :p_partner_key, :s_created_by, :__cx_osml_control, :e_image_scale_height, :e_engagement_id, :e_document_id FROM /lightsys/partner_DB/e_partner_document/rows";
+        baseobj = "/lightsys/partner_DB/e_partner_document/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        e_partner_document_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            e_partner_document_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            e_partner_document_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                e_partner_document_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_document_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_document_id; text="document id"; type="editbox"; form=e_partner_document_form; tooltip="The ID of the document. -- "; }
+                    p_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_partner_key; text="partner key"; type="editbox"; form=e_partner_document_form; tooltip="The partner that is associated with the document -- "; }
+                    e_pardoc_assoc_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_pardoc_assoc_id; text="pardoc assoc id"; type="editbox"; form=e_partner_document_form; tooltip="A unique ID identifying the association of a document with a partner -- "; }
+                    }
+                e_partner_document_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_engagement_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_engagement_id; text="engagement id"; type="editbox"; form=e_partner_document_form; tooltip="The current engagement ID (track instance) associated with this document -- "; }
+                    e_workflow_instance_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_workflow_instance_id; text="workflow instance id"; type="editbox"; form=e_partner_document_form; tooltip="The current workflow instance associated with this document, if any -- "; }
+                    e_image_offset_x_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_image_offset_x; text="image offset x"; type="editbox"; form=e_partner_document_form; tooltip="The offset to the point in the image where we want to display -- "; }
+                    }
+                e_partner_document_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_image_offset_y_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_image_offset_y; text="image offset y"; type="editbox"; form=e_partner_document_form; tooltip="The offset to the point in the image where we want to display -- "; }
+                    e_image_scale_height_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_image_scale_height; text="image scale height"; type="editbox"; form=e_partner_document_form; tooltip="The scaling height of the image (scale width is set automatically) -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=e_partner_document_form; tooltip=" -- "; }
+                    }
+                e_partner_document_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=e_partner_document_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=e_partner_document_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=e_partner_document_form; tooltip=" -- "; }
+                    }
+                e_partner_document_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=e_partner_document_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

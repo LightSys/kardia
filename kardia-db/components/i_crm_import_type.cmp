@@ -1,0 +1,156 @@
+$Version=2$
+i_crm_import_type_component "widget/component-decl"
+    {
+    width=835;height=635;
+    i_crm_import_type_osrc "widget/osrc"
+        {
+        sql="SELECT :i_crm_field_surname, :i_crm_field_country, :i_crm_field_comment, :i_crm_field_addr1, :i_crm_field_stateprov, :i_crm_country_type, :__cx_osml_control, :i_crm_field_addr_comment, :i_crm_field_city, :i_crm_field_given_name, :i_crm_field_org_name, :i_crm_field_pk, :s_modified_by, :i_crm_field_phone, :i_crm_field_careof, :s_date_created, :i_crm_field_postal_code, :s_date_modified, :i_crm_field_email, :i_crm_field_addr2, :i_crm_field_date, :i_crm_field_addr3, :s_created_by, :i_crm_import_type_id FROM /lightsys/partner_DB/i_crm_import_type/rows";
+        baseobj = "/lightsys/partner_DB/i_crm_import_type/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        i_crm_import_type_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            i_crm_import_type_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            i_crm_import_type_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                i_crm_import_type_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    i_crm_import_type_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_import_type_id; text="crm import type id"; type="editbox"; form=i_crm_import_type_form; tooltip="unique import type -- "; }
+                    i_crm_field_pk_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_pk; text="crm field pk"; type="editbox"; form=i_crm_import_type_form; tooltip="field to be used for import key (this won't become the Partner Key, but will be stored in the legacy key 1 field) -- "; }
+                    i_crm_field_surname_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_surname; text="crm field surname"; type="editbox"; form=i_crm_import_type_form; tooltip="field for surname (last name / family name) field. -- "; }
+                    }
+                i_crm_import_type_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    i_crm_field_given_name_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_given_name; text="crm field given name"; type="editbox"; form=i_crm_import_type_form; tooltip="field for given name / first name -- "; }
+                    i_crm_field_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_date; text="crm field date"; type="editbox"; form=i_crm_import_type_form; tooltip="field for date the data was created -- "; }
+                    i_crm_field_org_name_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_org_name; text="crm field org name"; type="editbox"; form=i_crm_import_type_form; tooltip="field for name of organization -- "; }
+                    }
+                i_crm_import_type_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    i_crm_field_phone_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_phone; text="crm field phone"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for phone number -- "; }
+                    i_crm_field_email_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_email; text="crm field email"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for email address -- "; }
+                    i_crm_field_addr1_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_addr1; text="crm field addr1"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for Address Line 1 -- "; }
+                    }
+                i_crm_import_type_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    i_crm_field_addr2_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_addr2; text="crm field addr2"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for Address Line 2 -- "; }
+                    i_crm_field_addr3_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_addr3; text="crm field addr3"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for Address Line 3 -- "; }
+                    i_crm_field_careof_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_careof; text="crm field careof"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for in-care-of -- "; }
+                    }
+                i_crm_import_type_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    i_crm_field_city_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_city; text="crm field city"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for City -- "; }
+                    i_crm_field_stateprov_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_stateprov; text="crm field stateprov"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for State/Province -- "; }
+                    i_crm_field_postal_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_postal_code; text="crm field postal code"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for Postal (zip) code -- "; }
+                    }
+                i_crm_import_type_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    i_crm_field_country_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_country; text="crm field country"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for Country. -- "; }
+                    i_crm_country_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_country_type; text="crm country type"; type="editbox"; form=i_crm_import_type_form; tooltip="What code set (or full name) to be used for interpreting country data -- "; }
+                    i_crm_field_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_comment; text="crm field comment"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for Partner Comment -- "; }
+                    }
+                i_crm_import_type_hbox6 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    i_crm_field_addr_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=i_crm_field_addr_comment; text="crm field addr comment"; type="editbox"; form=i_crm_import_type_form; tooltip="field(spec) for Address Comment -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=i_crm_import_type_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=i_crm_import_type_form; tooltip=" -- "; }
+                    }
+                i_crm_import_type_hbox7 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=i_crm_import_type_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=i_crm_import_type_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=i_crm_import_type_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

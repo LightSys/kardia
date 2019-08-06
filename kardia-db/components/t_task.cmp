@@ -1,0 +1,121 @@
+$Version=2$
+t_task_component "widget/component-decl"
+    {
+    width=835;height=635;
+    t_task_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :t_task_desc, :t_project_id, :t_task_percent, :t_task_state, :s_date_created, :s_date_modified, :t_task_hours, :s_created_by, :__cx_osml_control, :t_task_id, :t_sprint_id, :t_task_label FROM /lightsys/partner_DB/t_task/rows";
+        baseobj = "/lightsys/partner_DB/t_task/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        t_task_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            t_task_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            t_task_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                t_task_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    t_task_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=t_task_id; text="task id"; type="editbox"; form=t_task_form; tooltip="unique task ID -- "; }
+                    t_sprint_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=t_sprint_id; text="sprint id"; type="editbox"; form=t_task_form; tooltip="unique sprint ID this task is assigned to (NULL if not assigned to a sprint yet) -- "; }
+                    t_project_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=t_project_id; text="project id"; type="editbox"; form=t_task_form; tooltip="unique project ID this task is assigned to -- "; }
+                    }
+                t_task_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    t_task_label_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=t_task_label; text="task label"; type="editbox"; form=t_task_form; tooltip="label for the task -- "; }
+                    t_task_desc_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=t_task_desc; text="task desc"; type="editbox"; form=t_task_form; tooltip="description for the task -- "; }
+                    t_task_hours_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=t_task_hours; text="task hours"; type="editbox"; form=t_task_form; tooltip="estimated number of hours needed for this task -- "; }
+                    }
+                t_task_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    t_task_percent_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=t_task_percent; text="task percent"; type="editbox"; form=t_task_form; tooltip="percent done (in decimal form: 0.0 through 1.0) -- "; }
+                    t_task_state_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=t_task_state; text="task state"; type="editbox"; form=t_task_form; tooltip="the state that the task is in (e.g.: back burner, to-do, in-progress, testing, done) -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=t_task_form; tooltip=" -- "; }
+                    }
+                t_task_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=t_task_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=t_task_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=t_task_form; tooltip=" -- "; }
+                    }
+                t_task_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=t_task_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

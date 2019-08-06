@@ -1,0 +1,122 @@
+$Version=2$
+a_payroll_import_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_payroll_import_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :a_ledger_number, :a_payroll_id, :s_date_created, :a_payee_name, :s_date_modified, :s_created_by, :a_cost_center, :__cx_osml_control, :a_priority, :a_payroll_interval, :a_end_date, :p_payee_partner_key, :a_start_date FROM /lightsys/partner_DB/a_payroll_import/rows";
+        baseobj = "/lightsys/partner_DB/a_payroll_import/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_payroll_import_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_payroll_import_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_payroll_import_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_payroll_import_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_payroll_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payroll_id; text="payroll id"; type="editbox"; form=a_payroll_import_form; tooltip="unique ID for this payroll entry -- "; }
+                    p_payee_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_payee_partner_key; text="payee partner key"; type="editbox"; form=a_payroll_import_form; tooltip="partner ID of the payee. -- "; }
+                    a_payee_name_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payee_name; text="payee name"; type="editbox"; form=a_payroll_import_form; tooltip="if necessary, this can be used to adjust the name used in payroll. -- "; }
+                    }
+                a_payroll_import_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_priority_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_priority; text="priority"; type="editbox"; form=a_payroll_import_form; tooltip="if more than one payroll in a cost ctr, this sets the priority (higher number = higher priority) -- "; }
+                    a_payroll_interval_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payroll_interval; text="payroll interval"; type="editbox"; form=a_payroll_import_form; tooltip="interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) -- "; }
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_payroll_import_form; tooltip="ledger number that will be doing the payroll. -- "; }
+                    }
+                a_payroll_import_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_cost_center_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_cost_center; text="cost center"; type="editbox"; form=a_payroll_import_form; tooltip="cost center that this payroll takes place within -- "; }
+                    a_start_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_start_date; text="start date"; type="editbox"; form=a_payroll_import_form; tooltip="starting date that this payroll record applies to -- "; }
+                    a_end_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_end_date; text="end date"; type="editbox"; form=a_payroll_import_form; tooltip="ending date that this payroll record applies to -- "; }
+                    }
+                a_payroll_import_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_payroll_import_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_payroll_import_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_payroll_import_form; tooltip=" -- "; }
+                    }
+                a_payroll_import_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_payroll_import_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_payroll_import_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

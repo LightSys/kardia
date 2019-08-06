@@ -1,0 +1,176 @@
+$Version=2$
+a_subtrx_payable_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_subtrx_payable_osrc "widget/osrc"
+        {
+        sql="SELECT :a_advance, :a_invoice_number, :a_payment_comment, :a_payment_method, :a_resolved_date, :a_resolved_by, :a_taxable, :a_payment_terms, :a_payable_id, :a_requested_date, :__cx_osml_control, :a_comment, :a_document_id, :s_modified_by, :a_ledger_number, :a_requested_by, :a_due_date, :s_date_created, :a_make_payment_to, :a_batch_number_resolution, :a_approved_by, :a_batch_number_payable, :a_account_with_payee, :s_date_modified, :a_approved_date, :a_posted, :s_created_by, :a_payee_partner_key FROM /lightsys/partner_DB/a_subtrx_payable/rows";
+        baseobj = "/lightsys/partner_DB/a_subtrx_payable/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_subtrx_payable_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_subtrx_payable_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_subtrx_payable_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_subtrx_payable_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_subtrx_payable_form; tooltip="ledger number for this disbursement -- "; }
+                    a_payable_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payable_id; text="payable id"; type="editbox"; form=a_subtrx_payable_form; tooltip="id number for this payable item -- "; }
+                    a_batch_number_payable_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_batch_number_payable; text="batch number payable"; type="editbox"; form=a_subtrx_payable_form; tooltip="Batch id for the payable/liability journal -- "; }
+                    }
+                a_subtrx_payable_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_batch_number_resolution_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_batch_number_resolution; text="batch number resolution"; type="editbox"; form=a_subtrx_payable_form; tooltip="Batch id for the resolution journal (cash disbursement) -- "; }
+                    a_posted_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_posted; text="posted"; type="editbox"; form=a_subtrx_payable_form; tooltip="Whether the payable is posted or not (0/1) -- "; }
+                    a_requested_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_requested_by; text="requested by"; type="editbox"; form=a_subtrx_payable_form; tooltip="Partner who requested the payable -- "; }
+                    }
+                a_subtrx_payable_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_requested_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_requested_date; text="requested date"; type="editbox"; form=a_subtrx_payable_form; tooltip="Date the payable was requested -- "; }
+                    a_approved_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_approved_by; text="approved by"; type="editbox"; form=a_subtrx_payable_form; tooltip="Partner who approved the payable -- "; }
+                    a_approved_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_approved_date; text="approved date"; type="editbox"; form=a_subtrx_payable_form; tooltip="Date the payable was approved -- "; }
+                    }
+                a_subtrx_payable_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_resolved_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_resolved_by; text="resolved by"; type="editbox"; form=a_subtrx_payable_form; tooltip="Partner who resolved (paid) the payable -- "; }
+                    a_resolved_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_resolved_date; text="resolved date"; type="editbox"; form=a_subtrx_payable_form; tooltip="When the payable was actually paid -- "; }
+                    a_taxable_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_taxable; text="taxable"; type="editbox"; form=a_subtrx_payable_form; tooltip="Whether this is a taxable payable (0/1) -- "; }
+                    }
+                a_subtrx_payable_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_advance_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_advance; text="advance"; type="editbox"; form=a_subtrx_payable_form; tooltip="Whether this is an expense advance (0/1) -- "; }
+                    a_payment_terms_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payment_terms; text="payment terms"; type="editbox"; form=a_subtrx_payable_form; tooltip="The terms on which the payment is required. Use "PAYROLL" to cause this to be disbursed with next payroll. -- "; }
+                    a_payment_method_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payment_method; text="payment method"; type="editbox"; form=a_subtrx_payable_form; tooltip="Requested payment method -- "; }
+                    }
+                a_subtrx_payable_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_document_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_document_id; text="document id"; type="editbox"; form=a_subtrx_payable_form; tooltip="A document/image providing proof of this expense, if available, such as a receipt or invoice -- "; }
+                    a_due_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_due_date; text="due date"; type="editbox"; form=a_subtrx_payable_form; tooltip="When the payable is due to be paid -- "; }
+                    a_payee_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payee_partner_key; text="payee partner key"; type="editbox"; form=a_subtrx_payable_form; tooltip="Partner id of the payee (recipient) -- "; }
+                    }
+                a_subtrx_payable_hbox6 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_account_with_payee_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_account_with_payee; text="account with payee"; type="editbox"; form=a_subtrx_payable_form; tooltip="Account number at payee -- "; }
+                    a_invoice_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_invoice_number; text="invoice number"; type="editbox"; form=a_subtrx_payable_form; tooltip="Invoice number associated with this payable -- "; }
+                    a_make_payment_to_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_make_payment_to; text="make payment to"; type="editbox"; form=a_subtrx_payable_form; tooltip="Name to make the payment to, if different from payee name -- "; }
+                    }
+                a_subtrx_payable_hbox7 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_payment_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_payment_comment; text="payment comment"; type="editbox"; form=a_subtrx_payable_form; tooltip="Comment to be included on the check or payment when it is sent -- "; }
+                    a_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_comment; text="comment"; type="editbox"; form=a_subtrx_payable_form; tooltip="Payable comments -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_subtrx_payable_form; tooltip=" -- "; }
+                    }
+                a_subtrx_payable_hbox8 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_subtrx_payable_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_subtrx_payable_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_subtrx_payable_form; tooltip=" -- "; }
+                    }
+                a_subtrx_payable_hbox9 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_subtrx_payable_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

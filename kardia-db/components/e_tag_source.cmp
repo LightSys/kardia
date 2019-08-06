@@ -1,0 +1,111 @@
+$Version=2$
+e_tag_source_component "widget/component-decl"
+    {
+    width=835;height=635;
+    e_tag_source_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :e_is_active, :e_tag_certainty, :e_tag_id, :e_tag_source_type, :s_date_created, :e_tag_source_key, :s_date_modified, :s_created_by, :__cx_osml_control, :e_tag_strength FROM /lightsys/partner_DB/e_tag_source/rows";
+        baseobj = "/lightsys/partner_DB/e_tag_source/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        e_tag_source_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            e_tag_source_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            e_tag_source_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                e_tag_source_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_tag_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_id; text="tag id"; type="editbox"; form=e_tag_source_form; tooltip="ID of the tag being derived -- "; }
+                    e_tag_source_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_source_type; text="tag source type"; type="editbox"; form=e_tag_source_form; tooltip="Source type (GIFT, MLIST, etc.) -- "; }
+                    e_tag_source_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_source_key; text="tag source key"; type="editbox"; form=e_tag_source_form; tooltip="They identity for the specific source record (for example, a ledger/fund/acct combination for gift tags) -- "; }
+                    }
+                e_tag_source_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_is_active_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_is_active; text="is active"; type="editbox"; form=e_tag_source_form; tooltip="1 if active, or 0 if this derivation is not active. -- "; }
+                    e_tag_strength_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_strength; text="tag strength"; type="editbox"; form=e_tag_source_form; tooltip="A value between -1.0 and 1.0 that indicates the strength of the derivation (negative values work against the tag) -- "; }
+                    e_tag_certainty_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_tag_certainty; text="tag certainty"; type="editbox"; form=e_tag_source_form; tooltip="A value between 0.0 and 1.0 that indicates the certainty of the derivation. -- "; }
+                    }
+                e_tag_source_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=e_tag_source_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=e_tag_source_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=e_tag_source_form; tooltip=" -- "; }
+                    }
+                e_tag_source_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=e_tag_source_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=e_tag_source_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

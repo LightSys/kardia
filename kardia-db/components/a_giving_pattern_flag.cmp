@@ -1,0 +1,134 @@
+$Version=2$
+a_giving_pattern_flag_component "widget/component-decl"
+    {
+    width=835;height=635;
+    a_giving_pattern_flag_osrc "widget/osrc"
+        {
+        sql="SELECT :a_history_id, :a_flag_type, :a_flag_resolution, :a_new_interval, :a_pattern_id, :p_donor_partner_key, :a_cost_center, :a_prior_interval, :__cx_osml_control, :a_comment, :a_review, :a_ledger_number, :s_modified_by, :a_new_amount, :s_date_created, :s_date_modified, :s_created_by, :a_prior_amount FROM /lightsys/partner_DB/a_giving_pattern_flag/rows";
+        baseobj = "/lightsys/partner_DB/a_giving_pattern_flag/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        a_giving_pattern_flag_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            a_giving_pattern_flag_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            a_giving_pattern_flag_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                a_giving_pattern_flag_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_ledger_number_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_ledger_number; text="ledger number"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="ledger number for this giving pattern -- "; }
+                    p_donor_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_donor_partner_key; text="donor partner key"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="Partner ID for the donor -- "; }
+                    a_cost_center_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_cost_center; text="cost center"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="fund that this donor is giving toward -- "; }
+                    }
+                a_giving_pattern_flag_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_pattern_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_pattern_id; text="pattern id"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="sequential integer ID of this giving pattern record. -- "; }
+                    a_history_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_history_id; text="history id"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="sequential integer ID of the giving pattern flag (since past/historical ones are kept around). However this DOES NOT relate to the history ID in the a_giving_pattern table. -- "; }
+                    a_review_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_review; text="review"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="An identifier for the support review this flag is associated with, if any -- "; }
+                    }
+                a_giving_pattern_flag_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_prior_interval_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_prior_interval; text="prior interval"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="The recorded giving interval at the time this flag was generated. -- "; }
+                    a_prior_amount_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_prior_amount; text="prior amount"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="The recorded giving amount at the time this flag was generated. -- "; }
+                    a_flag_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_flag_type; text="flag type"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="The type of flag (see _a_flag_type validation table) -- "; }
+                    }
+                a_giving_pattern_flag_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_flag_resolution_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_flag_resolution; text="flag resolution"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="How this flag was resolved (NULL if not yet resolved, or see _a_flag_resolution for values) -- "; }
+                    a_new_interval_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_new_interval; text="new interval"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="If the resolution involved a new giving interval, this specifies it. -- "; }
+                    a_new_amount_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_new_amount; text="new amount"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="If the resolution involved changing the giving amount, this specifies it. -- "; }
+                    }
+                a_giving_pattern_flag_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    a_comment_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=a_comment; text="comment"; type="editbox"; form=a_giving_pattern_flag_form; tooltip="Comment generated for this flag. -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=a_giving_pattern_flag_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=a_giving_pattern_flag_form; tooltip=" -- "; }
+                    }
+                a_giving_pattern_flag_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=a_giving_pattern_flag_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=a_giving_pattern_flag_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=a_giving_pattern_flag_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

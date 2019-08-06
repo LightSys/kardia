@@ -1,0 +1,101 @@
+$Version=2$
+h_benefit_period_component "widget/component-decl"
+    {
+    width=835;height=635;
+    h_benefit_period_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :h_benefit_period_end_date, :h_benefit_period_start_date, :s_date_created, :h_benefit_period_label, :s_date_modified, :h_benefit_period_id, :s_created_by, :__cx_osml_control FROM /lightsys/partner_DB/h_benefit_period/rows";
+        baseobj = "/lightsys/partner_DB/h_benefit_period/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        h_benefit_period_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            h_benefit_period_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            h_benefit_period_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                h_benefit_period_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    h_benefit_period_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_benefit_period_id; text="benefit period id"; type="editbox"; form=h_benefit_period_form; tooltip="The ID of the benefit period -- "; }
+                    h_benefit_period_label_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_benefit_period_label; text="benefit period label"; type="editbox"; form=h_benefit_period_form; tooltip="A label (short description) for the benefit period -- "; }
+                    h_benefit_period_start_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_benefit_period_start_date; text="benefit period start date"; type="editbox"; form=h_benefit_period_form; tooltip="The starting date for the period -- "; }
+                    }
+                h_benefit_period_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    h_benefit_period_end_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_benefit_period_end_date; text="benefit period end date"; type="editbox"; form=h_benefit_period_form; tooltip="The ending date for the period -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=h_benefit_period_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=h_benefit_period_form; tooltip=" -- "; }
+                    }
+                h_benefit_period_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=h_benefit_period_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=h_benefit_period_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=h_benefit_period_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

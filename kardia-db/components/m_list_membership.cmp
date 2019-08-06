@@ -1,0 +1,178 @@
+$Version=2$
+m_list_membership_component "widget/component-decl"
+    {
+    width=835;height=635;
+    m_list_membership_osrc "widget/osrc"
+        {
+        sql="SELECT :p_postal_mode, :m_hist_id, :m_show_contact, :m_sort_order, :m_membership_status, :m_comments, :m_reason_member, :p_partner_key, :__cx_osml_control, :m_hold_until_date, :m_start_date, :s_modified_by, :p_contact_id, :m_num_issues_recv, :m_end_date, :m_notice_sent_date, :m_list_code, :m_reason_cancel, :m_member_type, :s_date_created, :m_delivery_method, :m_contact, :s_date_modified, :m_complimentary, :p_location_id, :m_num_copies, :s_created_by, :m_num_issues_sub, :m_renewal_date, :m_cancel_date FROM /lightsys/partner_DB/m_list_membership/rows";
+        baseobj = "/lightsys/partner_DB/m_list_membership/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        m_list_membership_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            m_list_membership_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            m_list_membership_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                m_list_membership_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_list_code_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_list_code; text="list code"; type="editbox"; form=m_list_membership_form; tooltip=" -- "; }
+                    p_partner_key_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_partner_key; text="partner key"; type="editbox"; form=m_list_membership_form; tooltip=" -- "; }
+                    m_hist_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_hist_id; text="hist id"; type="editbox"; form=m_list_membership_form; tooltip="a history of previous subscriptions and removals -- "; }
+                    }
+                m_list_membership_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_num_copies_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_num_copies; text="num copies"; type="editbox"; form=m_list_membership_form; tooltip="usually just 1 copy; possible to be 0 copies -- "; }
+                    p_location_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_location_id; text="location id"; type="editbox"; form=m_list_membership_form; tooltip="if member specifies a particular Location to use -- "; }
+                    p_contact_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_contact_id; text="contact id"; type="editbox"; form=m_list_membership_form; tooltip="if member specifies a particular contact info record to use -- "; }
+                    }
+                m_list_membership_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_delivery_method_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_delivery_method; text="delivery method"; type="editbox"; form=m_list_membership_form; tooltip="E=email, M=postal mail. If NULL, use delivery method from m_list. -- "; }
+                    m_member_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_member_type; text="member type"; type="editbox"; form=m_list_membership_form; tooltip="O=owner, M=member -- "; }
+                    m_num_issues_sub_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_num_issues_sub; text="num issues sub"; type="editbox"; form=m_list_membership_form; tooltip="how many issues in subscription -- "; }
+                    }
+                m_list_membership_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_num_issues_recv_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_num_issues_recv; text="num issues recv"; type="editbox"; form=m_list_membership_form; tooltip="DENORMALIZATION: how many issues received? -- "; }
+                    m_start_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_start_date; text="start date"; type="editbox"; form=m_list_membership_form; tooltip=" -- "; }
+                    m_end_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_end_date; text="end date"; type="editbox"; form=m_list_membership_form; tooltip=" -- "; }
+                    }
+                m_list_membership_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_hold_until_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_hold_until_date; text="hold until date"; type="editbox"; form=m_list_membership_form; tooltip=""don't send for 5 months" -- "; }
+                    m_renewal_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_renewal_date; text="renewal date"; type="editbox"; form=m_list_membership_form; tooltip="date to bug the member -- "; }
+                    m_cancel_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_cancel_date; text="cancel date"; type="editbox"; form=m_list_membership_form; tooltip=" -- "; }
+                    }
+                m_list_membership_hbox5 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_notice_sent_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_notice_sent_date; text="notice sent date"; type="editbox"; form=m_list_membership_form; tooltip=" -- "; }
+                    p_postal_mode_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=p_postal_mode; text="postal mode"; type="editbox"; form=m_list_membership_form; tooltip="B-Bulk F-FirstClass Used to override postal modes for this membership -- "; }
+                    m_membership_status_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_membership_status; text="membership status"; type="editbox"; form=m_list_membership_form; tooltip="A=active, O=obsolete -- "; }
+                    }
+                m_list_membership_hbox6 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_complimentary_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_complimentary; text="complimentary"; type="editbox"; form=m_list_membership_form; tooltip="whether the subscription or issue was complimentary -- "; }
+                    m_comments_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_comments; text="comments"; type="editbox"; form=m_list_membership_form; tooltip=" -- "; }
+                    m_show_contact_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_show_contact; text="show contact"; type="editbox"; form=m_list_membership_form; tooltip="whether to show first/last name for an org's subscription -- "; }
+                    }
+                m_list_membership_hbox7 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_contact_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_contact; text="contact"; type="editbox"; form=m_list_membership_form; tooltip="text to use instead of first/last name when printing labels -- "; }
+                    m_reason_member_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_reason_member; text="reason member"; type="editbox"; form=m_list_membership_form; tooltip="why person is on this list -- "; }
+                    m_reason_cancel_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_reason_cancel; text="reason cancel"; type="editbox"; form=m_list_membership_form; tooltip="reason given for canceling -- "; }
+                    }
+                m_list_membership_hbox8 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    m_sort_order_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=m_sort_order; text="sort order"; type="editbox"; form=m_list_membership_form; tooltip="if a list was imported, and the order it prints in is significant in some way, this field can be used. -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=m_list_membership_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=m_list_membership_form; tooltip=" -- "; }
+                    }
+                m_list_membership_hbox9 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=m_list_membership_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=m_list_membership_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=m_list_membership_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

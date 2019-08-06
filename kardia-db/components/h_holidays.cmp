@@ -1,0 +1,110 @@
+$Version=2$
+h_holidays_component "widget/component-decl"
+    {
+    width=835;height=635;
+    h_holidays_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :h_holiday_end_date, :h_holiday_id, :h_holiday_label, :s_date_created, :s_date_modified, :s_created_by, :__cx_osml_control, :h_group_id, :h_holiday_date FROM /lightsys/partner_DB/h_holidays/rows";
+        baseobj = "/lightsys/partner_DB/h_holidays/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        h_holidays_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            h_holidays_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            h_holidays_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                h_holidays_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    h_holiday_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_holiday_id; text="holiday id"; type="editbox"; form=h_holidays_form; tooltip="The ID of this holiday -- "; }
+                    h_group_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_group_id; text="group id"; type="editbox"; form=h_holidays_form; tooltip="The group ID, if this holiday only applies to a particular group, otherwise null. -- "; }
+                    h_holiday_label_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_holiday_label; text="holiday label"; type="editbox"; form=h_holidays_form; tooltip="The label (short description) for the holiday. -- "; }
+                    }
+                h_holidays_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    h_holiday_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_holiday_date; text="holiday date"; type="editbox"; form=h_holidays_form; tooltip="The date this holiday occurs on. -- "; }
+                    h_holiday_end_date_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=h_holiday_end_date; text="holiday end date"; type="editbox"; form=h_holidays_form; tooltip="If the holiday is a limited number of hours, this shows the ending date/time. -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=h_holidays_form; tooltip=" -- "; }
+                    }
+                h_holidays_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=h_holidays_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=h_holidays_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=h_holidays_form; tooltip=" -- "; }
+                    }
+                h_holidays_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=h_holidays_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

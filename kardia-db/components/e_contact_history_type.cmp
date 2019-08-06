@@ -1,0 +1,111 @@
+$Version=2$
+e_contact_history_type_component "widget/component-decl"
+    {
+    width=835;height=635;
+    e_contact_history_type_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :e_short_name, :e_is_notes, :s_date_created, :e_contact_history_type, :e_description, :s_date_modified, :s_created_by, :__cx_osml_control, :e_user_selectable, :e_is_inperson FROM /lightsys/partner_DB/e_contact_history_type/rows";
+        baseobj = "/lightsys/partner_DB/e_contact_history_type/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        e_contact_history_type_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            e_contact_history_type_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            e_contact_history_type_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                e_contact_history_type_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_contact_history_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_contact_history_type; text="contact history type"; type="editbox"; form=e_contact_history_type_form; tooltip="The unique ID of this contact history type -- "; }
+                    e_short_name_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_short_name; text="short name"; type="editbox"; form=e_contact_history_type_form; tooltip="Short name of the history type (such as "Phone" or "Pray" or "Note") -- "; }
+                    e_description_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_description; text="description"; type="editbox"; form=e_contact_history_type_form; tooltip="The description of this history type -- "; }
+                    }
+                e_contact_history_type_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_user_selectable_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_user_selectable; text="user selectable"; type="editbox"; form=e_contact_history_type_form; tooltip="Whether this type is selectable by the user when hand-entering a contact history item (otherwise, it is only used for auto-generated records) -- "; }
+                    e_is_notes_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_is_notes; text="is notes"; type="editbox"; form=e_contact_history_type_form; tooltip="Whether this type reflects simple notes recorded (1) or an actual conversation (0) -- "; }
+                    e_is_inperson_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_is_inperson; text="is inperson"; type="editbox"; form=e_contact_history_type_form; tooltip="Whether this type reflects an in-person contact at a place (1) or via a contact method like email/phone/etc (0) -- "; }
+                    }
+                e_contact_history_type_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=e_contact_history_type_form; tooltip=" -- "; }
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=e_contact_history_type_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=e_contact_history_type_form; tooltip=" -- "; }
+                    }
+                e_contact_history_type_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=e_contact_history_type_form; tooltip=" -- "; }
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=e_contact_history_type_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }

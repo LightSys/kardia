@@ -1,0 +1,121 @@
+$Version=2$
+e_workflow_component "widget/component-decl"
+    {
+    width=835;height=635;
+    e_workflow_osrc "widget/osrc"
+        {
+        sql="SELECT :s_modified_by, :e_workflow_step_id, :e_workflow_id, :e_workflow_step_trigger_id, :e_workflow_trigger_id, :e_workflow_start, :s_date_created, :e_workflow_instance_id, :e_workflow_trigger_type, :s_date_modified, :e_workflow_step_start, :s_created_by, :__cx_osml_control FROM /lightsys/partner_DB/e_workflow/rows";
+        baseobj = "/lightsys/partner_DB/e_workflow/rows";
+        replicasize=6;
+        readahead=6;
+        autoquery=onload;
+        ConfirmWindow "widget/childwindow"
+            {
+            title = "Data Was Modified!";
+            titlebar = yes;
+            hdr_bgcolor="#c00000";
+            bgcolor= "#e0e0e0";
+            visible = false;
+            style = dialog;
+            x=200;y=200;width=300;height=140;
+
+            warninglabel "widget/label"
+                {
+                x=10;y=10;width=276;height=30;
+                text="Some data was modified.  Do you want to save it first, discard your modifications, or simply cancel the operation?";
+                }
+
+            _3bConfirmSave "widget/textbutton"
+                {
+                x=10;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Save";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmDiscard "widget/textbutton"
+                {
+                x=110;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Discard";
+                fgcolor1=black;fgcolor2=white;
+                }
+            _3bConfirmCancel "widget/textbutton"
+                {
+                x=210;y=75;width=80;height=30;
+                tristate=no;
+                background="/sys/images/grey_gradient.png";
+                text = "Cancel";
+                fgcolor1=black;fgcolor2=white;
+                }
+            }
+        e_workflow_form "widget/form"
+            {
+            _3bconfirmwindow = "ConfirmWindow";
+            e_workflow_ctl "widget/component"
+                {
+                x=0;y=0;width=835;height=24;
+                path="/sys/cmp/form_controls.cmp";
+                bgcolor="#d0d0d0";
+                }
+            e_workflow_vbox "widget/vbox"
+                {
+                x=10;y=40;width=800;height=800;cellsize=20; spacing=5;
+                e_workflow_hbox0 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_workflow_instance_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_workflow_instance_id; text="workflow instance id"; type="editbox"; form=e_workflow_form; tooltip="A particular workflow in progress -- "; }
+                    e_workflow_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_workflow_id; text="workflow id"; type="editbox"; form=e_workflow_form; tooltip="The workflow that is in progress -- "; }
+                    e_workflow_start_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_workflow_start; text="workflow start"; type="editbox"; form=e_workflow_form; tooltip="The starting date of the entire workflow -- "; }
+                    }
+                e_workflow_hbox1 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_workflow_trigger_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_workflow_trigger_id; text="workflow trigger id"; type="editbox"; form=e_workflow_form; tooltip="The ID of the object triggering the entire workflow to start -- "; }
+                    e_workflow_trigger_type_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_workflow_trigger_type; text="workflow trigger type"; type="editbox"; form=e_workflow_form; tooltip="The type of the trigger for the workflow, such as DOC or DOCP -- "; }
+                    e_workflow_step_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_workflow_step_id; text="workflow step id"; type="editbox"; form=e_workflow_form; tooltip="The current step in the workflow that we are at -- "; }
+                    }
+                e_workflow_hbox2 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    e_workflow_step_start_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_workflow_step_start; text="workflow step start"; type="editbox"; form=e_workflow_form; tooltip="The starting date of the current workflow step -- "; }
+                    e_workflow_step_trigger_id_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=e_workflow_step_trigger_id; text="workflow step trigger id"; type="editbox"; form=e_workflow_form; tooltip="The ID of the workflow step that triggered this step to begin -- "; }
+                    s_date_created_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_created; text="date created"; type="editbox_moddate"; form=e_workflow_form; tooltip=" -- "; }
+                    }
+                e_workflow_hbox3 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    s_created_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_created_by; text="created by"; type="editbox_creby"; form=e_workflow_form; tooltip=" -- "; }
+                    s_date_modified_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_date_modified; text="date modified"; type="editbox_credate"; form=e_workflow_form; tooltip=" -- "; }
+                    s_modified_by_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=s_modified_by; text="modified by"; type="editbox_modby"; form=e_workflow_form; tooltip=" -- "; }
+                    }
+                e_workflow_hbox4 "widget/hbox"
+                {
+                    x=0;y=0;
+                    cellsize=250;
+                    spacing=20;
+                    width=750;
+                    height=25;
+                    __cx_osml_control_cmp "widget/component" { path="/lightsys/smart_field.cmp"; field=__cx_osml_control; text=" cx osml control"; type="editbox"; form=e_workflow_form; tooltip=" -- "; }
+                    }
+                }
+            }
+        }
+    }
