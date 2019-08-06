@@ -1,4 +1,4 @@
-#!usr/python
+#!/usr/bin/python
 import json 		#Used for JSON processing (json.load and json.dump)
 from json import JSONEncoder
 import os.path		#Used to get relative filenames (os.path.join)
