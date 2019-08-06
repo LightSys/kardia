@@ -1185,7 +1185,6 @@ sub print_table() {
                 # default value is a char array or varchar array
                 my @defaultArray = split("'", $default);
                 my $charDefault = @defaultArray[1];
-                # print "Default before: ${default}\nDefault after: ${charDefault}\n";
                 print JSON "                \"defaultValue\": \"${charDefault}\",\n";
             } else {
                 print "Default value found to be added to JSON, but not numeric, boolean or char array!";
@@ -1472,8 +1471,6 @@ sub printIndices(){
 
     my @indexes = keys(%{$glob_indexes{$table}});
 
-    # print "table: ${table}\n";
-    # print "indices: @{indexes}\n";
     foreach $index (keys(%{$glob_indexes{$table}})) {
         if(!($index =~ /_pk/)) { 
 
@@ -1537,7 +1534,6 @@ sub printIndices(){
                         # default value is a char array or varchar array
                         my @defaultArray = split("'", $default);
                         my $charDefault = @defaultArray[1];
-                        # print "Default before: ${default}\nDefault after: ${charDefault}\n";
                         print JSON ",\n                \"defaultValue\": \"${charDefault}\"\n";
                     } else {
                         print "Default value found to be added to JSON, but not numeric, boolean or char array!\n";

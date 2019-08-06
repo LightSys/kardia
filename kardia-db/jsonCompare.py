@@ -54,7 +54,6 @@ class ChangeLog:
 			self.jsonList.append({"property" : self.property})
 		if (self.include != ""):
 			self.jsonList.append({"include" : self.include})
-		# print("changeSetList:\n", self.changeSetList)
 
 
 
@@ -65,26 +64,17 @@ class ChangeLog:
 		self.updateJSON()
 		other.updateJSON()
 		if not isinstance(other, ChangeLog):
-			print("Wrong type")
 			return False
 		if (self.jsonList == other.jsonList):
-			print("exactly equal")
-			print(self.jsonList)
-			print("---------------------")
-			print(other.jsonList)
 			return True
 		else:
 			try:
-				# print("Checking changeSet list")
 				assert(self.changeSetList == other.changeSetList)
-				print("ChangeSet lists are equal")
 				assert(set(self.preconditions) == set(other.preconditions))
 				assert(set(self.property) == set(other.property))
 				assert(set(self.include) == set(other.include))
 			except AssertionError:
-				print("some property unequal")
 				return False
-		print("all properties equal")
 		return True
 
 	def getChangeSetList(self):
@@ -141,7 +131,6 @@ class ChangeSet:
 		# set data types to lowercase, remove spaces in data types, and change integer to int
 		if "createTable" in changes:
 			for item in changes["createTable"]["columns"]:
-				# print(item["column"]["type"])
 				typeString = item["column"]["type"]
 				if (" " in typeString):
 					typeArray = typeString.split(" ")
@@ -159,7 +148,6 @@ class ChangeSet:
 				item["column"]["type"] = typeString
 		# Add CreateIndex item to changes so that createIndex == addUniqueConstraint
 		if "addUniqueConstraint" in changes:
-			# columnNames = changes["addUniqueConstraint"]["columnNames"]
 			columnNameList = changes["addUniqueConstraint"]["columnNames"].split(", ")
 			indexName = changes["addUniqueConstraint"]["constraintName"]
 			tableName = changes["addUniqueConstraint"]["tableName"]
@@ -168,14 +156,12 @@ class ChangeSet:
 			for item in columnNameList:
 				columns.append({"column":{"name":item}})
 			changes["createIndex"] = {"tableName": tableName, "indexName": indexName, "columns": columns}
-			print("createIndex: ", changes["createIndex"])
 
 
 
 
 	def __eq__(self, other):
 		if not isinstance(other, ChangeSet):
-			print("---------- Other is not a ChangeSet, but a", type(other), "! ----------")
 			return False
 		if (self.inputDict == other.inputDict):
 			return True
@@ -191,26 +177,16 @@ class ChangeSet:
 				assert(set(self.failOnError) == set(other.failOnError))
 				assert(set(self.rollback) == set(other.rollback))
 			except AssertionError:
-				if self.id == other.id:
-					print("---------- Various details are a mismatch ----------")
 				return False
 			#Tags can be different since they will be auto-generated from parse_ddl.pl
 			if (self.changes != other.changes):
-				# print("changes different")
-				# print(self.changes[0])
 				for item in self.changes[0]:
 					if item not in other.changes[0]:
-						if self.id == other.id:
-							print("---------- Item: ", item, " not in other ----------")
 						return False
 					if self.changes[0][item] != other.changes[0][item]:
-						if self.id == other.id:
-							print("---------- changes[Item]:", self.changes[0][item], " not in other changes ----------")
 						return False
 				for item in other.changes[0]:
 					if item not in self.changes[0]:
-						if self.id == other.id:
-							print("---------- Other item:", item, " not in self ----------")
 						return False
 		return True
 
@@ -240,15 +216,10 @@ if __name__ == "__main__":
 	currentChangeLog = ChangeLog(currentChangeLogFile)
 	wikiChangeLog = ChangeLog(wikiChangeLogFile)
 
-	print("current changeSet list:", currentChangeLog.changeSetList)
-	print("wiki changeSet list:", wikiChangeLog.changeSetList)
-
 	diffChangeLog = ChangeLog()
 	diffChangeSetList = []
 	if (currentChangeLog == wikiChangeLog):
-		print("Current changeLog:\n", currentChangeLog.jsonList)
-		print("Wiki changeLog:\n", wikiChangeLog.jsonList)
-		# pass
+		pass
 	elif (currentChangeLog.getChangeSetList() == wikiChangeLog.getChangeSetList()):
 		#Some property of the ChangeLogs are different (but not ChangeSets)
 		if (currentChangeLog.getPreconditions() != wikiChangeLog.getPreconditions()):
