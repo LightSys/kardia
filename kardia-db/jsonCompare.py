@@ -281,7 +281,7 @@ if __name__ == "__main__":
 		diffJSON = json.dumps(diffChangeLog, cls=MyEncoder, indent=4)
 		currentDateTime = datetime.datetime.now()
 		outputFileName = str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"	
-		writePath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
+		writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
 		f = open(writePath, "w")
 		f.write(diffJSON)
 		f.close()
