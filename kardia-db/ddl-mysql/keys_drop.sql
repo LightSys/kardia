@@ -458,6 +458,10 @@ alter table e_data_item_type
 	drop index e_ditype_parent_idx;
 
 
+alter table e_data_item_type_value
+	drop primary key;
+
+
 alter table e_data_item_group
 	drop primary key;
 

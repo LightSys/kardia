@@ -1272,8 +1272,29 @@ create table e_data_item_type (
         e_parent_data_item_type_id            integer  null,           /* The parent data item type ID (hierarchy reference) --  */
         e_data_item_type_label                varchar(40)  not null,   /* A short data item type label --  */
         e_data_item_type_desc                 varchar(255)  null,      /* A description of this data item type --  */
+        e_data_item_type_type                 varchar(16)  null,       /* Data type: string, integer, double, datetime, money --  */
         e_data_item_type_highlight            integer  null,           /* Set to 0 or null to not highlight this item, or 1 to highlight it on the profile page --  */
         e_data_item_type_highlight_if         varchar(64)  null,       /* If set, this is compared with the data item value and highlighted IF they match. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_data_item_type_value */
+
+create table e_data_item_type_value (
+        e_data_item_type_id                   integer  not null,       /* The data item type ID --  */
+        e_data_item_value_id                  integer  not null,       /* An identifier for this unique value list item --  */
+        e_data_item_string_value              varchar(999)  null,      /* The value of this data item. --  */
+        e_data_item_integer_value             integer  null,           /* The value of this data item. --  */
+        e_data_item_datetime_value            datetime  null,          /* The value of this data item. --  */
+        e_data_item_double_value              float  null,             /* The value of this data item. --  */
+        e_data_item_money_value               decimal(14,4)  null,     /* The value of this data item. --  */
+        e_is_default                          bit  not null,           /* Whether this value is the default value. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1305,8 +1326,12 @@ create table e_data_item_group (
 create table e_data_item (
         e_data_item_id                        integer  not null,       /* The data item ID --  */
         e_data_item_type_id                   integer  not null,       /* The data item type ID --  */
-        e_data_item_group_id                  integer  not null,       /* The data item group ID --  */
-        e_data_item_value                     varchar(999)  not null,  /* The value of this data item. --  */
+        e_data_item_group_id                  integer  null,           /* The data item group ID --  */
+        e_data_item_string_value              varchar(999)  null,      /* The value of this data item. --  */
+        e_data_item_integer_value             integer  null,           /* The value of this data item. --  */
+        e_data_item_datetime_value            datetime  null,          /* The value of this data item. --  */
+        e_data_item_double_value              float  null,             /* The value of this data item. --  */
+        e_data_item_money_value               decimal(14,4)  null,     /* The value of this data item. --  */
         e_data_item_highlight                 integer  null,           /* Set to 0 or null to not highlight this item, or 1 to highlight it on the profile page. Inherited from the data item type, but changeable for the particular data item. --  */
         p_partner_key                         char(10)  not null,      /* The engaging partner that this data item is about (denormalized from the data item group table) --  */
         s_date_created                        datetime  not null,      /*  --  */
