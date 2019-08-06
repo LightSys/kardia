@@ -1,3 +1,4 @@
+#!usr/python
 import json 		#Used for JSON processing (json.load and json.dump)
 from json import JSONEncoder
 import os.path		#Used to get relative filenames (os.path.join)
@@ -206,8 +207,31 @@ class MyEncoder(JSONEncoder):
 
 if __name__ == "__main__":
 
-	currentPath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
-	wikiPath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "wikiChangeLog.json")
+	if (len(sys.argv) < 2):
+		print("Not enough parameters!")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log]")
+		print("Change logs are optional parameters. Default parameters are:")
+		print("database change log: .ddl-[database]/liquibaseFiles/currentChangeLog.json")
+		print("wiki change log: .ddl-[database]/wikiChangeLog.json")
+		raise SystemExit(0)
+	elif (len(sys.argv) == 2):
+		# os.path.dirname(os.path.realpath(__file__) gets the pathname of the current file
+		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
+		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "wikiChangeLog.json")
+	elif (len(sys.argv) == 3):
+		# os.path.dirname(os.path.realpath(__file__) gets the pathname of the current file
+		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
+		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
+	elif (len(sys.argv) == 4):
+		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
+		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[3])
+	else:
+		print("Too many parameters!")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log]")
+		print("Change logs are optional parameters. Default parameters are:")
+		print("database change log: .ddl-[database]/liquibaseFiles/currentChangeLog.json")
+		print("wiki change log: .ddl-[database]/wikiChangeLog.json")
+		raise SystemExit(0)
 	with open(currentPath, "r") as file:
 		currentChangeLogFile = json.load(file) #Data is a dict of a list of changeSet dictionaries
 	with open(wikiPath, "r") as file:

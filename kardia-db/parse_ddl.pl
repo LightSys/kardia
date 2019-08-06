@@ -63,7 +63,7 @@ $security_out="users";
 $keys_out="keys";
 $sec_keys_out="sec_keys";
 $wiki_out="wiki";
-$component_directory="components";
+$component_directory="ddl-${glob_backend}/components";
 $order=0;
 
 ###############################
