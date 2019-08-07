@@ -2,7 +2,7 @@ $Version=2$
 plugin_crm_timeline_DATA "widget/component-decl"
     {
     width=434;
-    height=108;
+    height=137;
     icon = "/apps/kardia/images/icons/tumblicons-webform2.svg";
     type = "DATA";
     iconbar_icon = "/apps/kardia/images/icons/tumblicons-webform2.svg";
@@ -13,19 +13,22 @@ plugin_crm_timeline_DATA "widget/component-decl"
     timeline_osrc "widget/parameter" { type=object; }
     collaborator_osrc "widget/parameter" { type=object; }
 
+    DataNeedsEditing "widget/component-decl-event" { }
+
     data_form_vbox "widget/vbox"
 	{
 	x=38; y=4;
 	width=388;
-	height=100;
+	height=129;
 	spacing=5;
 
 	data_form_osrc "widget/osrc"
 	    {
 	    sql = " select
+			:di:e_data_item_group_id,
 			:dt:e_data_item_type_label,
 			:di:e_data_item_id,
-			:di:e_data_item_value
+			:di:e_data_item_string_value
 		    from
 			/apps/kardia/data/Kardia_DB/e_data_item_group/rows dg,
 			/apps/kardia/data/Kardia_DB/e_data_item/rows di,
@@ -79,8 +82,29 @@ plugin_crm_timeline_DATA "widget/component-decl"
 		    row2_bgcolor = "transparent";
 
 		    f_label "widget/table-column" { width=100; fieldname=e_data_item_type_label; style=bold; align=right; font_size=11;}
-		    f_value "widget/table-column" { width=292; fieldname=e_data_item_value; style=italic; align=left; wrap=yes; font_size=11;}
+		    f_value "widget/table-column" { width=292; fieldname=e_data_item_string_value; style=italic; align=left; wrap=yes; font_size=11;}
 		    }
+		}
+	    }
+
+	edit_btn_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    edit_btn "widget/textbutton"
+		{
+		width=130;
+		height=24;
+		text="Edit Form...";
+		enabled=runclient(:data_form_osrc:e_data_item_group_id is not null);
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+
+		on_edit "widget/connector" { event=Click; target=plugin_crm_timeline_DATA; action=DataNeedsEditing; group=runclient(:data_form_osrc:e_data_item_group_id); }
 		}
 	    }
 	}

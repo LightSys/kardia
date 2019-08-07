@@ -1,0 +1,156 @@
+$Version=2$
+edit_form "widget/component-decl"
+    {
+    width=700;
+    height=580;
+
+    EditForm "widget/component-decl-action" { }
+    on_EditForm "widget/connector"
+	{
+	event=EditForm;
+	event_condition=runclient(:group is not null);
+	target=form_meta;
+	action=QueryParam;
+	form_group=runclient(:group);
+	}
+
+    collaborator_osrc "widget/parameter" { type=object; }
+    profile_osrc "widget/parameter" { type=object; }
+    profile "widget/parameter" { type=object; }
+
+    form_editor_vbox "widget/vbox"
+	{
+	x=0; y=0; width=700; height=580;
+	spacing=8;
+
+	form_title_hbox "widget/hbox"
+	    {
+	    height=24;
+	    spacing=10;
+
+	    form_title_left_vbox "widget/vbox"
+		{
+		width=560;
+		spacing=8;
+
+		form_title_label "widget/label"
+		    {
+		    height=16;
+		    font_size=16;
+		    style=bold;
+		    value=runclient('Edit Form for ' + :profile_osrc:partnername);
+		    }
+		}
+
+	    back_to_profile "widget/textbutton"
+		{
+		width=130;
+		fl_width=0;
+		height=24;
+		text="Back to Profile";
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+		enabled=runclient(:profile_osrc:p_partner_key is not null);
+
+		on_back "widget/connector" { event=Click; target=profile; action=SelectPartner; partner_key=runclient(:profile_osrc:p_partner_key); }
+		}
+	    }
+
+	form_meta "widget/osrc"
+	    {
+	    form_group "widget/parameter" { type=integer; }
+	    sql = " select
+			*
+		    from
+			/apps/kardia/data/Kardia_DB/e_data_item_group/rows dg
+		    where
+			:dg:e_data_item_group_id = :parameters:form_group
+		    ";
+	    baseobj="/apps/kardia/data/Kardia_DB/e_data_item_group/rows";
+
+	    on_endquery_instantiate "widget/connector" { event=EndQuery; target=details_editor; action=Instantiate; group=runclient(:form_meta:e_data_item_group_id); }
+
+	    form_form "widget/form"
+		{
+		form_type "widget/component" { height=24; width=300; label_width=150; path="/sys/cmp/smart_field.cmp"; field=e_data_item_type_id; ctl_type=dropdown; text="Form Type:"; sql="select :e_data_item_type_label, :e_data_item_type_id from /apps/kardia/data/Kardia_DB/e_data_item_type/rows where :e_parent_data_item_type_id is null"; ft_hints "widget/hints" { style=notnull; } }
+		form_title "widget/component" { height=24; width=450; label_width=150; path="/sys/cmp/smart_field.cmp"; field=e_data_item_group_name; ctl_type=editbox; text="Form Title:"; sql=""; empty_desc="title is required"; fti_hints "widget/hints" { style=notnull; } }
+		form_partner "widget/variable" { fieldname=p_partner_key; fp_hints "widget/hints" { default=runclient(:profile_osrc:p_partner_key); } }
+		form_metadata "widget/component" { visual=no; path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+		}
+
+	    sep1 "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	    details "widget/osrc"
+		{
+		details_group "widget/parameter" { type=string; }
+		sql = "	select
+			    *
+			from
+			    object expression ('/apps/kardia/modules/crm/dataform.qyp/' + :parameters:details_group)
+			";
+		readahead=50;
+		replicasize=50;
+
+		details_link "widget/rule"
+		    {
+		    ruletype=osrc_relationship;
+		    target=form_meta;
+		    target_key_1=e_data_item_group_id;
+		    key_1=details_group;
+		    }
+
+		details_form "widget/form"
+		    {
+		    next_form_within = form_editor_vbox;
+
+		    details_scroll "widget/scrollpane"
+			{
+			height=430;
+
+			details_editor "widget/component"
+			    {
+			    width=676;
+			    height=430;
+			    mode=dynamic;
+			    path="form_editor.cmp";
+			    }
+			}
+		    }
+		}
+
+	    sep2 "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	    button_hbox "widget/hbox"
+		{
+		height=24;
+		spacing=10;
+		align=center;
+
+		save_btn "widget/textbutton"
+		    {
+		    height=24; width=130;
+		    text = "Save";
+		    enabled=runclient(:form_meta:is_client_savable);
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+		    on_save "widget/connector" { event=Click; target=form_meta; action=SaveClients; }
+		    }
+		cancel_btn "widget/textbutton"
+		    {
+		    height=24; width=130;
+		    text = "Cancel";
+		    enabled=runclient(:form_meta:is_client_discardable);
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+		    on_discard "widget/connector" { event=Click; target=form_meta; action=DiscardClients; }
+		    }
+		}
+	    }
+	}
+    }

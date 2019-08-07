@@ -34,6 +34,7 @@ partner_profile "widget/component-decl"
     Track "widget/component-decl-action" { }
     EditFile "widget/component-decl-action" { }
     EditPartner "widget/component-decl-action" { }
+    EditForm "widget/component-decl-action" { }
 
     on_EditPartner1 "widget/connector"
 	{
@@ -65,6 +66,9 @@ partner_profile "widget/component-decl"
 
     on_EditFile1 "widget/connector" { event=EditFile; target=profile_tab; action=SetTab; TabIndex=7; }
     on_EditFile2 "widget/connector" { event=EditFile; target=editfile_cmp; action=EditFile; Filename=runclient(:Filename); DocID=runclient(:DocID); AssocID=runclient(:AssocID); }
+    
+    on_EditForm1 "widget/connector" { event=EditForm; target=profile_tab; action=SetTab; TabIndex=9; }
+    on_EditForm2 "widget/connector" { event=EditForm; target=editform_cmp; action=EditForm; group=runclient(:group); }
     
     on_Refresh0 "widget/connector" { event=Refresh; target=profile_osrc; action=Refresh; }
     on_Refresh1 "widget/connector" { event=Refresh; target=profile_info; action=Refresh; }
@@ -321,6 +325,15 @@ partner_profile "widget/component-decl"
 				    action=SetTab;
 				    TabIndex=7;
 				    }
+
+				on_editdata "widget/connector"
+				    {
+				    event=DataNeedsEditing;
+				    target=partner_profile;
+				    action=TriggerEvent;
+				    EventName=runclient("EditForm");
+				    group=runclient(:group);
+				    }
 				}
 			    }
 
@@ -470,6 +483,7 @@ partner_profile "widget/component-decl"
 		path="edit_file.cmp";
 		collaborator_osrc = collaborator_osrc;
 		profile_osrc = profile_osrc;
+		profile = us;
 		}
 	    }
 
@@ -482,6 +496,18 @@ partner_profile "widget/component-decl"
 		collaborator_osrc = collaborator_osrc;
 		send_refresh=1;
 		send_refresh_to=us;
+		}
+	    }
+
+	editform_tab "widget/tabpage"
+	    {
+	    editform_cmp "widget/component"
+		{
+		x=0; y=0; width=698; height=578;
+		path="edit_form.cmp";
+		collaborator_osrc = collaborator_osrc;
+		profile_osrc = profile_osrc;
+		profile = us;
 		}
 	    }
 	}
