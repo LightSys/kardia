@@ -191,6 +191,7 @@ search "widget/component-decl"
 			max_rowheight=64;
 			mode=dynamicrow;
 			allow_selection = yes;
+			allow_deselection = no;
 			show_selection = yes;
 			initial_selection = no;
 			demand_scrollbar = yes;
@@ -338,6 +339,7 @@ search "widget/component-decl"
 			max_rowheight=64;
 			mode=dynamicrow;
 			allow_selection = yes;
+			allow_deselection = no;
 			show_selection = yes;
 			initial_selection = no;
 			demand_scrollbar = yes;
