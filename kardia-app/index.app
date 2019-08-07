@@ -394,6 +394,7 @@ index "widget/page"
 					    rowhighlight_shadow_radius=4;
 					    rowhighlight_shadow_offset=1;
 					    rowhighlight_shadow_color="#808080";
+					    rowhighlight_border_color="#b8b8b8";
 					    //rowhighlight_bgcolor = "#6080c0";
 					    //rowhighlight_shadow_angle=180;
 					    //rowhighlight_shadow_radius=4;
@@ -482,6 +483,7 @@ index "widget/page"
 					    rowhighlight_shadow_radius=4;
 					    rowhighlight_shadow_offset=1;
 					    rowhighlight_shadow_color="#808080";
+					    rowhighlight_border_color="#b8b8b8";
 					    //rowhighlight_bgcolor = "#6080c0";
 					    //rowhighlight_shadow_angle=180;
 					    //rowhighlight_shadow_radius=4;
@@ -672,6 +674,7 @@ index "widget/page"
 				rowhighlight_shadow_radius=4;
 				rowhighlight_shadow_offset=1;
 				rowhighlight_shadow_color="#808080";
+				rowhighlight_border_color="#b8b8b8";
 				//rowhighlight_bgcolor = "#6080c0";
 				//rowhighlight_shadow_angle=180;
 				//rowhighlight_shadow_radius=4;
@@ -685,7 +688,7 @@ index "widget/page"
 				//row2_bgcolor = "#496293";
 				row1_bgcolor = '';
 				row2_bgcolor = '';
-				nodata_message = "one moment...";
+				nodata_message = runclient(condition(:search_osrc:cx__pending, "no matching results", "one moment..."));
 
 				search_icon "widget/table-column" { width=40; fieldname=icon; type=image; align=right; }
 				search_title "widget/table-column" { width=820; fieldname=s_label; font_size=15; style=bold; caption_fieldname=s_desc; }
