@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import json 		#Used for JSON processing (json.load and json.dump)
 from json import JSONEncoder
 import os.path		#Used to get relative filenames (os.path.join)
@@ -54,7 +55,6 @@ class ChangeLog:
 			self.jsonList.append({"property" : self.property})
 		if (self.include != ""):
 			self.jsonList.append({"include" : self.include})
-		# print("changeSetList:\n", self.changeSetList)
 
 
 
@@ -63,14 +63,10 @@ class ChangeLog:
 
 	def __eq__(self, other):
 		self.updateJSON()
+		other.updateJSON()
 		if not isinstance(other, ChangeLog):
-			print("Wrong type")
 			return False
 		if (self.jsonList == other.jsonList):
-			print("exactly equal")
-			print(self.jsonList)
-			print("---------------------")
-			print(other.jsonList)
 			return True
 		else:
 			try:
@@ -79,9 +75,7 @@ class ChangeLog:
 				assert(set(self.property) == set(other.property))
 				assert(set(self.include) == set(other.include))
 			except AssertionError:
-				print("some property unequal")
 				return False
-		print("all properties equal")
 		return True
 
 	def getChangeSetList(self):
@@ -118,12 +112,12 @@ class ChangeSet:
 
 	def __init__(self, inputDict):
 		self.inputDict = inputDict
-		self.id = inputDict["id"]
-		self.author = inputDict["author"]
+		self.id = inputDict["id"].lower()
+		self.author = inputDict["author"].lower()
 		#Sets optional variables even if ChangeSet does not have them
 		#If __ is in the inputDict, sets the class varable to that thing, otherwise sets the class variable equal to ""
 		self.changes = (inputDict["changes"] if "changes" in inputDict else "")
-		self.tag = (inputDict["changes"][0]["tagDatabase"]["tag"] if "tagDatabase" in inputDict["changes"][0] else "")
+		self.tag = (inputDict["tagDatabase"]["tag"].lower() if "tagDatabase" in inputDict else "")
 		self.dbms = (inputDict["dbms"] if "dbms" in inputDict else "")
 		self.runAlways = (inputDict["runAlways"] if "runAlways" in inputDict else "")
 		self.runOnChange = (inputDict["runOnChange"] if "runOnChange" in inputDict else "")
@@ -131,6 +125,41 @@ class ChangeSet:
 		self.runInTransaction = (inputDict["runInTransaction"] if "runInTransaction" in inputDict else "")
 		self.failOnError= (inputDict["failOnError"] if "failOnError" in inputDict else "")
 		self.rollback = (inputDict["rollback"] if "rollback" in inputDict else "")
+		self.normalizeData()
+
+	def normalizeData(self):
+		changes = self.changes[0] if len(self.changes) > 0 else ""
+		# set data types to lowercase, remove spaces in data types, and change integer to int
+		if "createTable" in changes:
+			for item in changes["createTable"]["columns"]:
+				typeString = item["column"]["type"]
+				if (" " in typeString):
+					typeArray = typeString.split(" ")
+					typeString = ""
+					for split in typeArray:
+						typeString += split
+				# VARCHAR and DECIMAL may not have been make lowercase because of
+				if ("(" in typeString):
+					typeArray = typeString.split("(")
+					typeString = typeArray[0].lower() + "(" + typeArray[1]
+				typeString = typeString.lower()
+				# Some data types in wikiChangeLog were int, some were integer
+				if (typeString == "integer"):
+					typeString = "int"
+				item["column"]["type"] = typeString
+		# Add CreateIndex item to changes so that createIndex == addUniqueConstraint
+		if "addUniqueConstraint" in changes:
+			columnNameList = changes["addUniqueConstraint"]["columnNames"].split(", ")
+			indexName = changes["addUniqueConstraint"]["constraintName"]
+			tableName = changes["addUniqueConstraint"]["tableName"]
+			del changes["addUniqueConstraint"]
+			columns = []
+			for item in columnNameList:
+				columns.append({"column":{"name":item}})
+			changes["createIndex"] = {"tableName": tableName, "indexName": indexName, "columns": columns}
+
+
+
 
 	def __eq__(self, other):
 		if not isinstance(other, ChangeSet):
@@ -152,15 +181,13 @@ class ChangeSet:
 				return False
 			#Tags can be different since they will be auto-generated from parse_ddl.pl
 			if (self.changes != other.changes):
-				# print("changes different")
-				# print(self.changes[0])
 				for item in self.changes[0]:
-					if item not in other.changes[0] and item != self.changes[0]["tagDatabase"]:
+					if item not in other.changes[0]:
 						return False
 					if self.changes[0][item] != other.changes[0][item]:
 						return False
 				for item in other.changes[0]:
-					if item not in self.changes[0] and item != other.changes[0]["tagDatabase"]:
+					if item not in self.changes[0]:
 						return False
 		return True
 
@@ -180,8 +207,31 @@ class MyEncoder(JSONEncoder):
 
 if __name__ == "__main__":
 
-	currentPath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
-	wikiPath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "wikiChangeLog.json")
+	if (len(sys.argv) < 2):
+		print("Not enough parameters!")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log]")
+		print("Change logs are optional parameters. Default parameters are:")
+		print("database change log: .ddl-[database]/liquibaseFiles/currentChangeLog.json")
+		print("wiki change log: .ddl-[database]/wikiChangeLog.json")
+		raise SystemExit(0)
+	elif (len(sys.argv) == 2):
+		# os.path.dirname(os.path.realpath(__file__) gets the pathname of the current file
+		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
+		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "wikiChangeLog.json")
+	elif (len(sys.argv) == 3):
+		# os.path.dirname(os.path.realpath(__file__) gets the pathname of the current file
+		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
+		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
+	elif (len(sys.argv) == 4):
+		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
+		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[3])
+	else:
+		print("Too many parameters!")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log]")
+		print("Change logs are optional parameters. Default parameters are:")
+		print("database change log: .ddl-[database]/liquibaseFiles/currentChangeLog.json")
+		print("wiki change log: .ddl-[database]/wikiChangeLog.json")
+		raise SystemExit(0)
 	with open(currentPath, "r") as file:
 		currentChangeLogFile = json.load(file) #Data is a dict of a list of changeSet dictionaries
 	with open(wikiPath, "r") as file:
@@ -203,7 +253,7 @@ if __name__ == "__main__":
 		if (currentChangeLog.getIncludes() != wikiChangeLog.getIncludes()):
 			diffChangeLog.setIncludes(wikiChangeLog.getIncludes())
 	else:
-		#ChangeSets are different
+		#ChangeSet lists are different
 		currentChangeSets = currentChangeLog.getChangeSetList()
 		wikiChangeSets = wikiChangeLog.getChangeSetList()
 
@@ -212,8 +262,8 @@ if __name__ == "__main__":
 				diffChangeSetList.append(changeSet)
 		for changeSet in currentChangeSets:
 			if changeSet not in wikiChangeSets:
-				#Shouln't happen unless there's been (offline) mods to the current database without using the wiki
-				#or something has been deleted from the wiki
+				# Shouln't happen unless there's been (offline) mods to the current database without using the wiki
+				#	or something has been deleted from the wiki
 				# TODO: Handling of automating rollback of specific changesets.
 				#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
 				#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
@@ -231,11 +281,11 @@ if __name__ == "__main__":
 		diffJSON = json.dumps(diffChangeLog, cls=MyEncoder, indent=4)
 		currentDateTime = datetime.datetime.now()
 		outputFileName = str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"	
-		writePath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
+		writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
 		f = open(writePath, "w")
 		f.write(diffJSON)
 		f.close()
-		print("See %s for differences" % writePath)
+		print("See %s for differences" % writePath[18:])
 		print("checking to make sure formatting is correct...")
 		with open(writePath, "r") as file:
 			testChangeLogFile = json.load(file)
