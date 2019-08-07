@@ -383,6 +383,11 @@ alter table e_data_item_type drop index e_ditype_parent_idx;
 /* go */
 
 
+/* e_data_item_type_value */
+/* drop index e_data_item_type_value.e_dataitemval_pk */ 
+/* go */
+
+
 /* e_data_item_group */
 /* drop index e_data_item_group.e_digrp_pk */ 
 /* go */

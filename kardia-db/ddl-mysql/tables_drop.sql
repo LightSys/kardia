@@ -243,6 +243,10 @@ drop table e_todo;
 drop table e_data_item_type;
 
 
+/* e_data_item_type_value */
+drop table e_data_item_type_value;
+
+
 /* e_data_item_group */
 drop table e_data_item_group;
 

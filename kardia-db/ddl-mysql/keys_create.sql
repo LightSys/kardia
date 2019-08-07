@@ -190,6 +190,9 @@ alter table e_todo
 alter table e_data_item_type
 	add constraint e_ditype_pk primary key  (e_data_item_type_id);
 
+alter table e_data_item_type_value
+	add constraint e_dataitemval_pk primary key  (e_data_item_type_id, e_data_item_value_id);
+
 alter table e_data_item_group
 	add constraint e_digrp_pk primary key  (e_data_item_group_id);
 
