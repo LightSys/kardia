@@ -291,10 +291,11 @@ if __name__ == "__main__":
 
 	if (len(sys.argv) < 2):
 		print("Not enough parameters!")
-		print("Usage: jsonCompare.py [database] [database change log] [wiki change log]")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [output]")
 		print("Change logs are optional parameters. Default parameters are:")
-		print("database change log: .ddl-[database]/liquibaseFiles/currentChangeLog.json")
-		print("wiki change log: .ddl-[database]/wikiChangeLog.json")
+		print("database change log: ./ddl-[database]/liquibaseFiles/currentChangeLog.json")
+		print("wiki change log: ./ddl-[database]/wikiChangeLog.json")
+		print("output: ./ddl-[database]/liquibaseFiles/(datetime)ChangeLog.json")
 		raise SystemExit(0)
 	elif (len(sys.argv) == 2):
 		# os.path.dirname(os.path.realpath(__file__) gets the pathname of the current file
@@ -304,15 +305,16 @@ if __name__ == "__main__":
 		# os.path.dirname(os.path.realpath(__file__) gets the pathname of the current file
 		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
 		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
-	elif (len(sys.argv) == 4):
+	elif (4 <= len(sys.argv) <= 5):
 		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
 		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[3])
 	else:
 		print("Too many parameters!")
-		print("Usage: jsonCompare.py [database] [database change log] [wiki change log]")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [output]")
 		print("Change logs are optional parameters. Default parameters are:")
-		print("database change log: .ddl-[database]/liquibaseFiles/currentChangeLog.json")
-		print("wiki change log: .ddl-[database]/wikiChangeLog.json")
+		print("database change log: ./ddl-[database]/liquibaseFiles/currentChangeLog.json")
+		print("wiki change log: ./ddl-[database]/wikiChangeLog.json")
+		print("output: ./ddl-[database]/liquibaseFiles/(datetime)ChangeLog.json")
 		raise SystemExit(0)
 	with open(currentPath, "r") as file:
 		currentChangeLogFile = json.load(file) #Data is a dict of a list of changeSet dictionaries
@@ -418,13 +420,16 @@ if __name__ == "__main__":
 		print("Creating file with differences...")
 		diffChangeLog.updateJSON()
 		diffJSON = json.dumps(diffChangeLog, cls=MyEncoder, indent=4)
-		currentDateTime = datetime.datetime.now()
-		outputFileName = str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"	
-		writePath = os.path.join(__file__, "..", "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
+		if (len(sys.argv) != 5):
+			currentDateTime = datetime.datetime.now()
+			outputFileName = str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"	
+			writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
+		else:
+			writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[5])
 		f = open(writePath, "w")
 		f.write(diffJSON)
 		f.close()
-		print("See %s for differences" % writePath[18:])
+		print("See %s for differences" % writePath)
 		print("checking to make sure formatting is correct...")
 		with open(writePath, "r") as file:
 			testChangeLogFile = json.load(file)
