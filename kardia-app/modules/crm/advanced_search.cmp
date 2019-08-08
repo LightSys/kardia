@@ -138,6 +138,7 @@ advanced_search "widget/component-decl"
 			rowhighlight_shadow_radius=4;
 			rowhighlight_shadow_offset=1;
 			rowhighlight_shadow_color="#808080";
+		    rowhighlight_border_color="#b8b8b8";
 		    row_border_radius=6;
 		    //rowhighlight_bgcolor = "#f0f0f0";
 		    //rowhighlight_shadow_color = "#6080c0";
@@ -630,6 +631,7 @@ advanced_search "widget/component-decl"
 			rowhighlight_shadow_radius=4;
 			rowhighlight_shadow_offset=1;
 			rowhighlight_shadow_color="#808080";
+		    rowhighlight_border_color="#b8b8b8";
 		    //rowhighlight_bgcolor = "#fff090";
 		    //rowhighlight_bgcolor = white;
 		    //rowhighlight_shadow_color = "#f0e048";
