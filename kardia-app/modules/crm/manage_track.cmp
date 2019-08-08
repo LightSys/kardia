@@ -263,7 +263,7 @@ manage_track "widget/component-decl"
 			    step6_hist = nth(:pe2:e_hist_id, 6),
 			    step6_date = nth('' + datepart(month, :pe2:e_start_date) + '/' + datepart(year, :pe2:e_start_date), 6),
 			    start_date = min(:pe2:e_start_date),
-			    tag_names = (select sum(:tt:e_tag_desc + condition(char_length(:t:e_tag_comments) > 0, ' - ' + :t:e_tag_comments, '') + '\n') - '\n' from /apps/kardia/data/Kardia_DB/e_tag/rows t, /apps/kardia/data/Kardia_DB/e_tag_type/rows tt where :t:p_partner_key = :pe:p_partner_key and :t:e_tag_strength > 0.01 and :tt:e_tag_id = :t:e_tag_id),
+			    tag_names = (select sum(condition(char_length(isnull(:tt:e_tag_desc, '')) > 1, :tt:e_tag_desc, :tt:e_tag_label) + condition(char_length(:t:e_tag_comments) > 0, ' - ' + :t:e_tag_comments, '') + '\n') - '\n' from /apps/kardia/data/Kardia_DB/e_tag/rows t, /apps/kardia/data/Kardia_DB/e_tag_type/rows tt where :t:p_partner_key = :pe:p_partner_key and :t:e_tag_strength > 0.01 and :tt:e_tag_id = :t:e_tag_id),
 			    nextstep = first(condition(:pe2:e_engagement_id is null, :s:e_step_name, null)),
 			    curstep = last(condition(:pe2:e_completion_status == 'I' or :pe2:e_completion_status == 'C', :s:e_step_name, null)),
 			    curstepid = last(condition(:pe2:e_completion_status == 'I' or :pe2:e_completion_status == 'C', :s:e_step_id, null)),
