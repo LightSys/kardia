@@ -366,6 +366,96 @@ popover_track "widget/component-decl"
 					}
 				    }
 
+				t_detail_req_2 "widget/table-row-detail"
+				    {
+				    display_for=runclient(:steplist_osrc:e_object_type == 'R' and :steplist_osrc:e_completion_status != 'I');
+				    width=650;
+				    height=34;
+
+				    t_detail_req_hbox_2 "widget/hbox"
+					{
+					x=0; y=4; width=650; height=24;
+					spacing=8;
+					align=center;
+
+					incomplete_btn "widget/textbutton"
+					    {
+					    width=160; height=24;
+					    text="Mark Incomplete";
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_incomplete "widget/connector"
+						{
+						event=Click;
+						target=steplist_osrc;
+						action=Modify;
+						e_req_completion_status=runclient('I');
+						e_completion_status=runclient('I');
+						e_object_desc=runclient('Incomplete');
+						req_s_date_modified=runclient(getdate());
+						req_s_modified_by=runclient(user_name());
+						e_completion_date=runclient(null);
+						e_completed_by=runclient(null);
+						e_waived_date=runclient(null);
+						e_waived_by=runclient(null);
+						}
+					    }
+
+					changedate_label "widget/label"
+					    {
+					    width=100;
+					    height=21;
+					    y=3;
+					    text="-or- Change Date:";
+					    align=right;
+					    }
+				
+					changedate_form "widget/form"
+					    {
+					    changedate_tab "widget/tab"
+						{
+						width=150;
+						height=24;
+						tab_location=none;
+						background=null;
+						bgcolor=null;
+						selected_index=runclient(condition(:steplist_osrc:e_completion_status = 'C', 1, 2));
+
+						comp_page "widget/tabpage"
+						    {
+						    title="Completion";
+
+						    changedate_comp_dt "widget/datetime"
+							{
+							x=0; y=0;
+							width=150;
+							height=24;
+							fieldname=e_completion_date;
+							on_comp_change "widget/connector" { event=DataChange; target=changedate_form; action=Save; }
+							}
+						    }
+
+						waiv_page "widget/tabpage"
+						    {
+						    title="Waived";
+
+						    changedate_waiv_dt "widget/datetime"
+							{
+							x=0; y=0;
+							width=150;
+							height=24;
+							fieldname=e_waived_date;
+							on_waiv_change "widget/connector" { event=DataChange; target=changedate_form; action=Save; }
+							}
+						    }
+						}
+					    }
+					}
+				    }
+
 				t_detail_req "widget/table-row-detail"
 				    {
 				    display_for=runclient(:steplist_osrc:e_object_type == 'R' and :steplist_osrc:e_completion_status == 'I');
