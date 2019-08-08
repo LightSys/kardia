@@ -33,7 +33,7 @@ popover_track "widget/component-decl"
 
     track_win "widget/childwindow"
 	{
-	width=600; height=444;
+	width=700; height=444;
 	x=250; y=89;
 	fl_y=0;
 	titlebar=no;
@@ -50,7 +50,7 @@ popover_track "widget/component-decl"
 	track_vbox "widget/vbox"
 	    {
 	    x=15; y=15;
-	    width=568; height=412;
+	    width=668; height=412;
 	    spacing=10;
 
 	    track_osrc "widget/osrc"
@@ -153,7 +153,29 @@ popover_track "widget/component-decl"
 			    e_completion_status = :er:e_req_completion_status,
 			    e_object_name = :er:name,
 			    e_object_label = :er:e_req_name,
-			    e_object_desc = condition(:er:e_req_completion_status = 'C', 'Complete: ', condition(:er:e_req_completion_status = 'W', 'Waived: ', 'Incomplete')) + ' (' + condition(:er:e_req_whom == 'P', 'Partner', condition(:er:e_req_whom == 'O', 'Organization', 'Either')) + ')',
+			    e_object_desc = condition(	:er:e_req_completion_status = 'C', 
+							'Complete: ',
+							condition(  :er:e_req_completion_status = 'W', 
+								    'Waived: ', 
+								    'Incomplete'
+							)
+					    ) + 
+					    ' (' + 
+					    condition(	:er:e_req_whom == 'P', 
+							'Partner', 
+							condition(  :er:e_req_whom == 'O', 
+								    'Organization', 
+								    'Either'
+							)
+					    ) + 
+					    ')' + 
+					    condition(	:er:e_req_completion_status = 'C', 
+							' by ' + (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :er:e_completed_by) + ' on ' + dateformat(:er:e_completion_date, 'dd-MMM-yyyy'), 
+							condition(  :er:e_req_completion_status = 'W',
+								    ' by ' + (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :er:e_waived_by) + ' on ' + dateformat(:er:e_waived_date, 'dd-MMM-yyyy'),
+								    ''
+							)
+					    ),
 			    e_object_comm = null,
 			    :er:s_date_created,
 			    :er:s_created_by,
@@ -268,7 +290,7 @@ popover_track "widget/component-decl"
 
 			    steplist_table "widget/table"
 				{
-				x=8; y=8; width=550; height=295;
+				x=8; y=8; width=650; height=295;
 				min_rowheight=21;
 				max_rowheight=100;
 				allow_selection = yes;
@@ -312,12 +334,12 @@ popover_track "widget/component-decl"
 				t_step "widget/table-row-detail"
 				    {
 				    display_for=runclient(:steplist_osrc:e_object_type == 'S' and :steplist_osrc:e_completion_status != 'I');
-				    width = 550;
+				    width = 650;
 				    height = 34;
 
 				    t_step_hbox "widget/hbox"
 					{
-					x=0; y=4; width=550; height=24;
+					x=0; y=4; width=650; height=24;
 					spacing=8;
 					align=center;
 
@@ -347,12 +369,12 @@ popover_track "widget/component-decl"
 				t_detail_req "widget/table-row-detail"
 				    {
 				    display_for=runclient(:steplist_osrc:e_object_type == 'R' and :steplist_osrc:e_completion_status == 'I');
-				    width=550;
+				    width=650;
 				    height=34;
 
 				    t_detail_req_hbox "widget/hbox"
 					{
-					x=0; y=4; width=550; height=24;
+					x=0; y=4; width=650; height=24;
 					spacing=8;
 					align=center;
 
