@@ -237,8 +237,12 @@ def addColumnDiff(wiki, current):
 	wikiColumns = wiki.changes[0]["createTable"]["columns"]
 	currentColumns = current.changes[0]["createTable"]["columns"]
 	resColumns = []
+	currentColumnList = []
+	for column in currentColumns:
+		currentColumnList.append(column["column"]["name"])
+
 	for column in wikiColumns:
-		if column not in currentColumns:
+		if column not in currentColumns and column["column"]["name"] not in currentColumnList:
 			resColumns.append(column)
 	if len(resColumns) == 0:
 		return False
@@ -255,34 +259,78 @@ def dropColumnDiff(wiki, current):
 	wikiColumns = wiki.changes[0]["createTable"]["columns"]
 	currentColumns = current.changes[0]["createTable"]["columns"]
 	resColumns = []
+	wikiColumnList = []
+	for column in wikiColumns:
+		wikiColumnList.append(column["column"]["name"])
 	for column in currentColumns:
-		if column not in wikiColumns:
+		if column not in wikiColumns and column["column"]["name"] not in wikiColumnList:
 			resColumns.append(column)
 	if len(resColumns) == 0:
 		return []
 	count = 0
 	for column in resColumns:
 		resChangeSet = ChangeSet({"id": wiki.id + "-{}".format(count), "author": "jsonCompare.py"})
-		resChangeSet.changes = []
-		resChangeSet.changes.append({"dropColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columnName": column}})
+		resChangeSet.changes = [{"dropColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columnName": column}}]
+		# resChangeSet.changes.append({"dropColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columnName": column}})
 		resChangeSet.updateJSON()
 		resCSList.append(resChangeSet)
 		count += 1
 	return resCSList
 
-# Create new indexes for columns not in current
+def modifyColumnDiff(wiki, current):
+	resCSList = []
+	wikiColumns = wiki.changes[0]["createTable"]["columns"]
+	currentColumns = current.changes[0]["createTable"]["columns"]
+	resColumns = []
+	resColumnList = []
+	# Gather names of all columns in wiki and current
+	wikiColumnList = []
+	currentColumnList = []
+	for column in wikiColumns:
+		wikiColumnList.append(column["column"]["name"])
+	for column in currentColumns:
+		currentColumnList.append(column["column"]["name"])
+
+	for column in wikiColumns:
+		if column not in currentColumns and column["column"]["name"] in currentColumnList:
+			resColumns.append(column)
+			resColumnList.append(column["column"]["name"])
+	for column in currentColumns:
+		if column not in wikiColumns and column["column"]["name"] in wikiColumnList and column["column"]["name"] not in resColumnList:
+			print("Column in current, but not in wiki. Cannot change data type of column:", column)
+
+	if len(resCSList) == 0:
+		return []
+
+	count = 0
+	for column in resColumns:
+		resChangeSet = ChangeSet({"id": wiki.id + "-{}".format(count), "author": "jsonCompare.py"})
+		resChangeSet.changes = [{"modifyDataType": {"columnName": column["column"]["name"], "newDataType": column["column"]["type"], "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
+		resChangeSet.updateJSON()
+		resCSList.append(resChangeSet)
+		count += 1
+
+	return resCSList
+
+# Drop and re-add indexes if columns are different between wiki and current
 def addIndexDiff(wiki, current):
-	resChangeSet = ChangeSet({"id": wiki.id, "author": "jsonCompare.py"})
+	resCSList = []
 	wikiColumns = wiki.changes[0]["createIndex"]["columns"]
 	currentColumns = current.changes[0]["createIndex"]["columns"]
-	resColumns = []
 	for column in wikiColumns:
 		if column not in currentColumns:
-			resColumns.append(column)
-	if len(resColumns) == 0:
-		return False
-	resChangeSet.changes = [{"createIndex": {"columns": resColumns, "tableName": wiki.changes[0]["createIndex"]["tableName"], "indexName": wiki.changes[0]["createIndex"]["indexName"]}}]
-	resChangeSet.updateJSON()
+			# drop and re-add all columns if there is at least one different column
+			dropChangeSet = ChangeSet({"id": wiki.id + "-1", "author": "jsonCompare.py"})
+			dropChangeSet.changes = [{"dropIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"]}}]
+			dropChangeSet.updateJSON()
+			resCSList.append(dropChangeSet)
+			addChangeSet = ChangeSet({"id": wiki.id + "-2", "author": "jsonCompare.py"})
+			addChangeSet.changes = [{"createIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"], "columns": wikiColumns}}]
+			addChangeSet.updateJSON()
+			resCSList.append(addChangeSet)
+			break
+	if len(resCSList) == 0:
+		return []
 	return resChangeSet
 		
 
@@ -374,11 +422,17 @@ if __name__ == "__main__":
 				if "createTable" in wikiCS.changes[0] and "createTable" in currentCS.changes[0]:
 					# if the tables are equal
 					if wikiCS.changes[0]["createTable"]["tableName"] == currentCS.changes[0]["createTable"]["tableName"]:
-						# add changeSet to list with appropriate add/delete/modify columns
+						# add changeSet to list with appropriate drop columns
 						temp = dropColumnDiff(wikiCS, currentCS)
 						if temp != []:
 							for dropChangeSet in temp:
 								diffChangeSetList.append(dropChangeSet)
+						# add changeSet to list with appropriate modify columns (only data types)
+						temp = modifyColumnDiff(wikiCS, currentCS)
+						if temp != []:
+							for modifyChangeSet in temp:
+								diffChangeSetList.append(modifyChangeSet)
+						# add changeSet to list with appropriate add columns
 						temp = addColumnDiff(wikiCS, currentCS)
 						if temp != False:
 							diffChangeSetList.append(temp)
@@ -386,8 +440,11 @@ if __name__ == "__main__":
 				elif "createIndex" in wikiCS.changes[0] and "createIndex" in currentCS.changes[0]:
 					# if we're looking at the same index and same table
 					if (wikiCS.changes[0]["createIndex"]["tableName"] == currentCS.changes[0]["createIndex"]["tableName"]) and (wikiCS.changes[0]["createIndex"]["indexName"] == currentCS.changes[0]["createIndex"]["indexName"]):
-						# add changeSet to list with appropriate add/delete/modify indices
-						diffChangeSetList.append(addIndexDiff(wikiCS, currentCS))
+						# add changeSets to drop and re-add indexes if a column is different between wiki and current
+						temp = addIndexDiff(wikiCS, currentCS)
+						if temp != []:
+							diffChangeSetList.append(temp[0])
+							diffChangeSetList.append(temp[1])
 
 		for changeSet in currentChangeSets:
 			if "createTable" in changeSet.changes[0]:
