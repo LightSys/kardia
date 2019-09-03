@@ -11,7 +11,7 @@ partner_location_chart "widget/component-decl"
     fund "widget/parameter" { type=string; deploy_to_client=yes; }
     months "widget/parameter" { type=integer; default=13; deploy_to_client=yes; }
 
-    growth_chart_osrc "widget/osrc"
+    location_chart_osrc "widget/osrc"
 	{
 	chart_ledger "widget/parameter" { param_name=ledger; type=string; }
 	chart_months "widget/parameter" { param_name=months; type=integer; default=runclient(:months:value); }
@@ -85,6 +85,7 @@ partner_location_chart "widget/component-decl"
 	    target_key_1=Ledger;
 	    key_1=ledger;
 	    revealed_only=yes;
+	    master_null_action=norecs;
 	    }
 
 	chart "widget/chart"
