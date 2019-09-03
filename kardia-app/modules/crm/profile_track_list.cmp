@@ -69,6 +69,7 @@ profile_track_list "widget/component-decl"
 	    demand_scrollbar = yes;
 	    overlap_scrollbar = yes;
 	    initial_selection = no;
+	    allow_deselection = no;
 	    colsep = 0;
 	    titlebar = no;
 	    min_rowheight = 16;

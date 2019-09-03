@@ -130,6 +130,10 @@ alter table p_country
 	drop primary key;
 
 
+alter table p_pol_division
+	drop primary key;
+
+
 alter table p_banking_details
 	drop primary key;
 
@@ -452,6 +456,10 @@ alter table e_data_item_type
 
 alter table e_data_item_type
 	drop index e_ditype_parent_idx;
+
+
+alter table e_data_item_type_value
+	drop primary key;
 
 
 alter table e_data_item_group
@@ -1251,4 +1259,8 @@ alter table s_user_role
 
 
 alter table s_global_search
+	drop primary key;
+
+
+alter table s_stats_cache
 	drop primary key;

@@ -13,6 +13,6 @@ motd_edit "widget/page"
 	{
 	x=10; y=10;
 	width=780; height=580;
-	path = "/apps/kardia/modules/base/motd_edit.cmp";
+	path = "/apps/kardia/modules/system/motd_edit.cmp";
 	}
     }

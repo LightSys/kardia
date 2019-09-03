@@ -148,7 +148,7 @@ post_cd_batch "widget/component-decl"
 			:c:a_effective_date,
 			a_transaction_type='T',
 			:c:a_cost_center,
-			a_account_category=condition(:c:a_account_code >= '5000', '50', condition(:c:a_account_code >= '4000', '40', condition(:c:a_account_code <= '1999', '10', '20'))),
+			a_account_category=isnull((select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :c:a_ledger_number and :a:a_account_code = :c:a_account_code), condition(:c:a_account_code >= '5000', '50', condition(:c:a_account_code >= '4000', '40', condition(:c:a_account_code <= '1999', '10', '20')))),
 			:c:a_account_code,
 			:c:a_amount,
 			a_posted = 1,
@@ -189,7 +189,7 @@ post_cd_batch "widget/component-decl"
 			:c:a_effective_date,
 			a_transaction_type='T',
 			a_cost_center = isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows ac where :ac:a_ledger_number = :c:a_ledger_number and :ac:a_config_name = 'DisbCashFund'), 'GEN'),
-			a_account_category='10',
+			a_account_category=isnull((select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :c:a_ledger_number and :a:a_account_code = :c:a_cash_account_code), '11'),
 			a_account_code = :c:a_cash_account_code,
 			a_amount = $0 - sum(:c:a_amount),
 			a_posted = 1,
@@ -266,7 +266,20 @@ post_cd_batch "widget/component-decl"
 		ORDER BY
 			:t:a_cost_center
 		HAVING
-			:a_amount != $0";
+			:a_amount != $0
+		;
+
+		UPDATE
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
+		SET
+			:c:a_posted_to_gl = 1
+		WHERE
+			:c:a_batch_number = :parameters:a_batch_number and
+			:c:a_ledger_number = :parameters:a_ledger_number and
+			:c:a_period = :parameters:a_period and
+			:c:a_voided = 0
+		";
+
 	end_glpost "widget/connector"
 	    { 
 	    event=EndQuery;

@@ -113,6 +113,11 @@ alter table p_staff drop index p_staff_weblogin_idx;
 /* go */
 
 
+/* p_pol_division */
+/* drop index p_pol_division.p_poldiv_pk */ 
+/* go */
+
+
 /* p_banking_details */
 alter table p_banking_details drop index p_bankd_acct_idx;
 alter table p_banking_details drop index p_bankd_bpartner_idx;
@@ -375,6 +380,11 @@ alter table e_todo drop index e_todo_type_idx;
 /* e_data_item_type */
 alter table e_data_item_type drop index e_ditype_parent_idx;
 /* drop index e_data_item_type.e_ditype_pk */ 
+/* go */
+
+
+/* e_data_item_type_value */
+/* drop index e_data_item_type_value.e_dataitemval_pk */ 
 /* go */
 
 
@@ -1175,4 +1185,9 @@ alter table s_audit drop index s_audit_strval_idx;
 
 /* s_global_search */
 /* drop index s_global_search.s_global_search_pk */ 
+/* go */
+
+
+/* s_stats_cache */
+/* drop index s_stats_cache.s_stats_cache_pk */ 
 /* go */

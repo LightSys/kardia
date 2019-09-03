@@ -61,6 +61,9 @@ grant select on ra to public;
 /* p_country */
 
 
+/* p_pol_division */
+
+
 /* p_banking_details */
 
 
@@ -182,6 +185,9 @@ grant select on ra to public;
 
 
 /* e_data_item_type */
+
+
+/* e_data_item_type_value */
 
 
 /* e_data_item_group */
@@ -578,3 +584,6 @@ grant select on ra to public;
 
 
 /* s_global_search */
+
+
+/* s_stats_cache */

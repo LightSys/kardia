@@ -79,7 +79,7 @@ highlights "system/query"
 		e_highlight_name = isnull(:pdit:e_data_item_type_label + '::', '') + :dit:e_data_item_type_label,
 		e_highlight_type = 'DATA',
 		e_highlight_reference_info = convert(string, :di:e_data_item_id),
-		e_highlight_data = :di:e_data_item_value,
+		e_highlight_data = :di:e_data_item_string_value,
 		e_highlight_precedence = 1.0,
 		e_highlight_strength = 0.0,
 		e_highlight_certainty = 1.0,
@@ -95,7 +95,7 @@ highlights "system/query"
 		:di:p_partner_key = :parameters:partner_key and
 		:dit:e_data_item_type_id = :di:e_data_item_type_id and
 		isnull(:di:e_data_item_highlight, 1) > 0 and
-		(:dit:e_data_item_type_highlight > 0 or :dit:e_data_item_type_highlight_if = :di:e_data_item_value) and
+		(:dit:e_data_item_type_highlight > 0 or :dit:e_data_item_type_highlight_if = :di:e_data_item_string_value) and
 		:pdit:e_data_item_type_id =* :dit:e_parent_data_item_type_id
 	    ;
 

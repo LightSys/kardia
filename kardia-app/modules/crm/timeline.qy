@@ -399,7 +399,7 @@ timeline "system/query"
 		e_activity_date = :dg:s_date_created,
 		e_activity_type = 'DATA',
 		e_reference_info = :dg:name,
-		e_info = 'Data Form \"' + :dt:e_data_item_type_label + '\" completed (' + :dg:e_data_item_group_name + ')',
+		e_info = 'Form \"' + :dt:e_data_item_type_label + '\" completed (' + :dg:e_data_item_group_name + ')',
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :dg:s_created_by),
 		e_initiation = 'C',
 		s_date_created = getdate(),

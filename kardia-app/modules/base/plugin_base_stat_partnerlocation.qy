@@ -1,0 +1,70 @@
+$Version=2$
+plugin_base_stat_partnerlocation "system/query"
+    {
+    sql = " declare object info;
+	    declare collection ploc;
+
+	    delete
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    where
+		:s_stat_type = 'PARTNERLOC'
+	    ;
+
+	    insert
+		collection ploc
+	    select
+		:p_state_province,
+		:p_country_code,
+		label = isnull(:p_country_code, 'US') + condition(char_length(isnull(:p_state_province, '')) > 1, '-' + :p_state_province, '   '),
+		cnt = count(1)
+	    from
+		/apps/kardia/data/Kardia_DB/p_location/rows l
+	    where
+		:p_record_status_code = 'A'
+	    group by
+		:p_state_province,
+		isnull(:p_country_code, 'US')
+	    ;
+
+	    select
+		:info:states = substring(sum(rtrim(:label) + ',') - ',', 1, 38)
+	    from
+		collection ploc
+	    order by
+		:cnt desc
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'PARTNERLOC',
+		s_stat_group = '',
+		s_stat = :label, -- + ' (' + :cnt + ')',
+		s_integer_value = :cnt,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection ploc
+	    where
+		charindex(',' + :label + ',', ',' + :info:states + ',') > 0
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'PARTNERLOC',
+		s_stat_group = '',
+		s_stat = 'Other', -- + ' (' + isnull(sum(:cnt), 0) + ')',
+		s_integer_value = isnull(sum(:cnt), 0),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection ploc
+	    where
+		charindex(',' + :label + ',', ',' + :info:states + ',') = 0
+	    ";
+    }

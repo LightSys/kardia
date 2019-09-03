@@ -5,10 +5,15 @@ activity "system/query"
     login "query/parameter" { type=string; }
 
     sql = " declare object activitygroup;
+	    declare collection mpactivity scope application;
+
+	    delete
+		collection mpactivity
+	    ;
 
 	    select
 		:activitygroup:staff_key = :p:p_partner_key,
-		:activitygroup:group_key = condition(:p:p_parent_key is null or :p:p_parent_key = '' or :p:p_parent_key = ' ', null, :p:p_parent_key),
+		:activitygroup:group_key = condition(:p:p_parent_key is null or :p:p_parent_key = '' or :p:p_parent_key = ' ', 'NOGROUP', :p:p_parent_key),
 		:activitygroup:my_cclist = isnull( (select sum(rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center) + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number), '')
 	    from
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
@@ -24,50 +29,58 @@ activity "system/query"
 	    where
 		:p_partner_class = 'OFC'
 	    ;
+	    select
+		:activitygroup:partners = sum(rtrim(:p_partner_key) + ',') - ','
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    where
+		:p:p_partner_key = :activitygroup:staff_key or :p:p_partner_key = :activitygroup:group_key or :p:p_parent_key = :activitygroup:staff_key or :p:p_parent_key = :activitygroup:group_key
+	    ;
 
 	    -- Insert a header record to reserve the group ID.
 	    -- We will need locking around this in the future.
-	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
-	    select
-		e_activity_id = 1,
-		p_partner_key = :activitygroup:staff_key,
-		e_activity_date = getdate(),
-		e_activity_type = 'HEAD',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
-	    ;
+	    --insert
+	--	/apps/kardia/data/Kardia_DB/e_activity/rows
+	  --  select
+	--	e_activity_id = 1,
+	--	p_partner_key = :activitygroup:staff_key,
+	--	e_activity_date = getdate(),
+	--	e_activity_type = 'HEAD',
+	--	s_date_created = getdate(),
+	--	s_created_by = user_name(),
+	--	s_date_modified = getdate(),
+	--	s_modified_by = user_name()
+	  --  ;
 
-	    select
-		:activitygroup:id = :__inserted:e_activity_group_id
-	    ;
+	    --select
+	--	:activitygroup:id = :__inserted:e_activity_group_id
+	  --  ;
 
 	    -- Clean up
-	    delete
-		/apps/kardia/data/Kardia_DB/e_activity/rows
-	    where
-		:s_created_by = user_name() and
-		dateadd(hour,1,:s_date_created) < getdate()
-	    ;
+	    --delete
+	--	/apps/kardia/data/Kardia_DB/e_activity/rows
+	  --  where
+	--	:s_created_by = user_name() and
+	--	dateadd(hour,1,:s_date_created) < getdate()
+	  --  ;
 
 	    -- Unresolved flags on supporters
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection mpactivity
+		--/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		--e_activity_group_id = :activitygroup:id,
 		p_partner_key = :activitygroup:staff_key,
 		e_activity_date = :gpf:s_date_created,
 		e_activity_type = 'FLAG',
 		e_reference_info = :gpf:name,
 		e_info = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + ': ' + :ft:flag_desc + isnull(' (' + :gpf:a_comment + ')', ''),
 		e_whom = :activitygroup:office_key,
-		e_initiation = 'P',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'P' --,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf,
 		object wildcard '/apps/kardia/modules/*/plugin_mportal_sreview_*.cmp' ft,
@@ -77,31 +90,32 @@ activity "system/query"
 		:p:p_partner_key = :gpf:p_donor_partner_key and
 		:gpf:a_flag_resolution is null and
 		:ft:flag_code = :gpf:a_flag_type and
-		:gpf:s_date_created > dateadd(month, -3, getdate())
-	    ;
+		:gpf:s_date_created > dateadd(month, -3, getdate());
 
 
 	    -- Checks issued to the missionary
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection mpactivity
+		--/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		--e_activity_group_id = :activitygroup:id,
 		p_partner_key = :p:p_partner_key,
 		e_activity_date = :d:a_effective_date,
 		e_activity_type = 'DISB',
 		e_reference_info = :d:name,
 		e_info = 'Check #' + :d:a_check_number + ' for ' + sum(:d:a_amount) + ' issued to ' + condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + ' on ' + substring(convert(string,:d:a_effective_date),1,11) + ': ' + sum(:d:a_comment + ' '),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :d:s_created_by),
-		e_initiation = 'P',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'P' --,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
 		/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
 	    where
-		(:p:p_partner_key = :activitygroup:staff_key or (:activitygroup:group_key is not null and :p:p_partner_key = :activitygroup:group_key) or :p:p_parent_key = :activitygroup:staff_key or (:activitygroup:group_key is not null and :p:p_parent_key = :activitygroup:group_key)) and
+		--(:p:p_partner_key = :activitygroup:staff_key or (:activitygroup:group_key is not null and :p:p_partner_key = :activitygroup:group_key) or :p:p_parent_key = :activitygroup:staff_key or (:activitygroup:group_key is not null and :p:p_parent_key = :activitygroup:group_key)) and
+		charindex(',' + rtrim(:d:a_payee_partner_key) + ',', ',' + :activitygroup:partners + ',') > 0 and
 		:d:a_payee_partner_key = :p:p_partner_key and
 		:d:a_posted = 1 and
 		:d:a_effective_date > dateadd(month, -3, getdate())
@@ -109,26 +123,29 @@ activity "system/query"
 		:d:a_ledger_number,
 		:d:a_batch_number,
 		:d:a_disbursement_id
+	    having
+		:e_reference_info is not null
 	    ;
 
 	    -- Donation given - show only gifts to funds we manage, and
 	    -- for this query, only show detail for gifts that don't have a
 	    -- monthly gift pattern match in the missionary's support.
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection mpactivity
+		--/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		--e_activity_group_id = :activitygroup:id,
 		p_partner_key = :i:p_dn_donor_partner_id,
 		e_activity_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
 		e_activity_type = 'GIFT',
 		e_reference_info = :i:name,
 		e_info = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + ' gave ' + :i:a_amount + ' to ' + :cc:a_cost_center + ' - ' + :cc:a_cc_desc + isnull('\n' + :i:a_comment, ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :i:s_created_by),
-		e_initiation = 'P',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'P' --,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 		/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
@@ -147,25 +164,25 @@ activity "system/query"
 	    -- collapse regular monthly gifts into a one-per-month summary
 	    -- row.
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection mpactivity
+		--/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		--e_activity_group_id = :activitygroup:id,
 		p_partner_key = ' ',
 		e_activity_date = max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
 		e_activity_type = 'GIFT',
 		e_reference_info = sum(:i:name + ','),
-		e_info = '' + count(1) + ' regular monthly gifts received, totaling ' + sum(:i:a_amount) + '\nTo: ' + :i:a_cost_center + ' - ' + :cc:a_cc_desc + ' during ' + :m:short_name + ' ' + min(datepart(day, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) + '-' + max(datepart(day, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))),
+		e_info = '' + count(1) + ' regular monthly gifts received, totaling ' + sum(:i:a_amount) + '\nTo: ' + :i:a_cost_center + ' - ' + :cc:a_cc_desc + ' during ' + dateformat(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date), 'MMM') + ' ' + min(datepart(day, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))) + '-' + max(datepart(day, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date))),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :i:s_created_by),
-		e_initiation = 'P',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'P' --,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 		/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
-		/apps/kardia/data/Kardia_DB/p_partner/rows p,
-		/apps/kardia/data/Months.csv/rows m
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
 	    where
 		:cc:a_ledger_number = :i:a_ledger_number and
 		:cc:a_cost_center = :i:a_cost_center and
@@ -173,30 +190,32 @@ activity "system/query"
 		:i:a_posted = 1 and
 		:p:p_partner_key = :i:p_dn_donor_partner_id and
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -3, getdate()) and
-		:m:id == datepart(month, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)) - 1 and
 		(select count(1) from /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp where :gp:a_ledger_number = :i:a_ledger_number and :gp:a_amount = :i:a_amount and :gp:a_cost_center = :i:a_cost_center and :gp:a_interval = 1 and :gp:p_donor_partner_key = :i:p_dn_donor_partner_id) > 0 
 	    group by
 		datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
 		datepart(month, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
 		:i:a_cost_center
+	    having
+		:e_reference_info is not null
 	    ;
 
 	    -- Task creation date
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection mpactivity
+		--/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		--e_activity_group_id = :activitygroup:id,
 		p_partner_key = :activitygroup:staff_key,
 		e_activity_date = :t:s_date_created,
 		e_activity_type = 'TASK',
 		e_reference_info = '' + :t:e_todo_id,
 		e_info = 'Task created: ' + :tt:e_todo_type_label + ' - ' + :t:e_todo_desc + condition(:t:e_todo_status == 'C', ' (Complete)', condition(:t:e_todo_status == 'X', ' (Canceled)', condition(datediff(day, getdate(), :t:e_todo_due_date) == 0, ' - DUE NOW', condition(datediff(day, getdate(), :t:e_todo_due_date) < 0, ' - OVERDUE', '')))) + condition(char_length(:t:e_todo_comments) > 1, '\n' + :t:e_todo_comments, ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :t:s_created_by),
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C' --,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/e_todo/rows t,
 		/apps/kardia/data/Kardia_DB/e_todo_type/rows tt
@@ -208,20 +227,21 @@ activity "system/query"
 
 	    -- Communications / Mailings - Subscriptions
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection mpactivity
+		--/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		--e_activity_group_id = :activitygroup:id,
 		p_partner_key = :activitygroup:staff_key,
 		e_activity_date = isnull(:m:m_start_date, :m:s_date_created),
 		e_activity_type = 'COMM',
 		e_reference_info = :m:name,
 		e_info = 'Subscribed to \"' + :ml:m_list_description + '\"' + isnull(' (Reason: ' + :mmr:text + ')', ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :m:s_created_by),
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C' --,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m2,
@@ -241,20 +261,21 @@ activity "system/query"
 
 	    -- Communications / Mailings - Unsubscribe/Expire/Cancel
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection mpactivity
+		--/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		--e_activity_group_id = :activitygroup:id,
 		p_partner_key = :activitygroup:staff_key,
 		e_activity_date = isnull(:m:m_cancel_date, :m:s_date_modified),
 		e_activity_type = 'COMM',
 		e_reference_info = :m:name + '|U',
 		e_info = 'Unsubscribed from \"' + :ml:m_list_description + '\"' + condition(:m:m_membership_status = 'C', ' - Canceled' + isnull(' due to ' + :mcr:text, ''), ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :m:s_modified_by),
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C' --,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m2,
@@ -274,20 +295,21 @@ activity "system/query"
 
 	    -- Communications / Mailings -- specific Issues of a Mailing
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection mpactivity
+		--/apps/kardia/data/Kardia_DB/e_activity/rows
 	    select
-		e_activity_group_id = :activitygroup:id,
+		--e_activity_group_id = :activitygroup:id,
 		p_partner_key = :activitygroup:staff_key,
 		e_activity_date = :m:s_date_created,
 		e_activity_type = 'COMM',
 		e_reference_info = :m:name,
 		e_info = 'Received Issue \"' + :ml_iss:m_list_description + '\" of Mailing \"' + :ml_pub:m_list_description + '\"',
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :m:s_created_by),
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C' --,
+		--s_date_created = getdate(),
+		--s_created_by = user_name(),
+		--s_date_modified = getdate(),
+		--s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m2,
@@ -308,6 +330,6 @@ activity "system/query"
 	    -- Return the ID to the user
 	    select
 		name = 'ActivityGroupID',
-		activity_group_id = :activitygroup:id
+		activity_group_id = 1 -- :activitygroup:id
 	    ";
     }

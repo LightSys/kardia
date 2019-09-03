@@ -1,0 +1,10 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "System - Kardia System Management";
+    module_abbrev = "System";
+    module_description = "The System module in Kardia allows for maintenance and system administration of the Kardia installation.";
+    module_sequence = 9999;
+    module_context = 'kardia';
+    module_endorsement = 'kardia:sys_admin';
+    }

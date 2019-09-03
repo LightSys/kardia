@@ -1,0 +1,17 @@
+$Version=2$
+dataform "system/querypivot"
+    {
+    source = "/apps/kardia/modules/crm/dataform.qy";
+
+    groupname "system/querypivot" { type=string; usage=key; }
+    label "system/querypivot" { type=string; usage=name; }
+    e_data_item_string_value "system/querypivot" { type=string; usage=value; }
+    e_data_item_integer_value "system/querypivot" { type=integer; usage=value; }
+    e_data_item_double_value "system/querypivot" { type=double; usage=value; }
+    e_data_item_datetime_value "system/querypivot" { type=datetime; usage=value; }
+    e_data_item_money_value "system/querypivot" { type=money; usage=value; }
+    s_date_created "system/querypivot" { type=datetime; usage=createdate; }
+    s_created_by "system/querypivot" { type=string; usage=createuser; }
+    s_date_modified "system/querypivot" { type=datetime; usage=modifydate; }
+    s_modified_by "system/querypivot" { type=string; usage=modifyuser; }
+    }

@@ -34,107 +34,178 @@ activity "widget/component-decl"
 	    }
 	}
 
-    activity_osrc "widget/osrc"
+    hbox "widget/hbox"
 	{
-	activity_id "widget/parameter" { type=integer; default=runclient(:activity_data_osrc:activity_group_id); }
+	x=0; y=0; height=602; width=1172;
+	spacing=20;
 
-	autoquery=never;
-	sql = " declare object info;
-
-		select :info:my_id = :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :p_kardia_login = user_name()
-		;
-
-		select
-		    name = :e_activity_type + ':' + :e:e_reference_info,
-		    img = :c:icon,
-		    detail_height = :c:height,
-		    :e:e_activity_date,
-		    :e:e_activity_type,
-		    :e:e_reference_info,
-		    :e:e_info,
-		    first_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, 1, charindex('\n', :e:e_info) - 1), :e:e_info),
-		    last_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, charindex('\n', :e:e_info) + 1), null),
-		    :e:p_partner_key,
-		    shortdate = substring(convert(string,:e:e_activity_date),1,11),
-		    datewhom = isnull(condition(:e:e_whom == :info:my_id, 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' ', '') + 'on ' + substring(convert(string,:e:e_activity_date),1,11)
-		from
-		    /apps/kardia/data/Kardia_DB/e_activity/rows e,
-		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
-		    object wildcard '/apps/kardia/modules/mportal/plugin_mportal_activity_*.cmp' c
-		where
-		    :e:e_activity_group_id = :parameters:activity_id and
-		    :p:p_partner_key =* :e:e_whom and
-		    :c:type = rtrim(:e:e_activity_type)
-		order by
-		    :e:e_activity_date desc
-		";
-	readahead=50;
-	replicasize=50;
-
-	activity_table "widget/table"
+	activity_osrc "widget/osrc"
 	    {
-	    x=0; y=0;
-	    height=602;
-	    width=1172;
-	    row_border_radius=4;
-	    demand_scrollbar = yes;
-	    overlap_scrollbar = yes;
-	    initial_selection = no;
-	    colsep = 0;
-	    titlebar = no;
-	    min_rowheight = 16;
-	    max_rowheight = 200;
-	    cellvspacing = 4;
-	    row1_bgcolor = white;
-	    row2_bgcolor = white;
-	    show_selection = yes;
-	    inner_padding = 2;
-	    rowhighlight_bgcolor = "#fff090";
-	    textcolorhighlight = "#000000";
-	    nodata_message = runclient(condition(:activity_osrc:cx__pending, "No activity available.", "Loading the last three months' of activity..."));
+	    activity_id "widget/parameter" { type=integer; default=runclient(:activity_data_osrc:activity_group_id); }
 
-	    detail_rows "widget/repeat"
+	    autoquery=never;
+	    sql = " declare object info;
+		    declare collection mpactivity scope application;
+
+		    select :info:my_id = :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :p_kardia_login = user_name()
+		    ;
+
+		    select
+			name = :e_activity_type + ':' + :e:e_reference_info,
+			img = :c:icon,
+			detail_height = :c:height,
+			:e:e_activity_date,
+			:e:e_activity_type,
+			:e:e_reference_info,
+			:e:e_info,
+			first_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, 1, charindex('\n', :e:e_info) - 1), :e:e_info),
+			last_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, charindex('\n', :e:e_info) + 1), null),
+			:e:p_partner_key,
+			shortdate = substring(convert(string,:e:e_activity_date),1,11),
+			datewhom = isnull(condition(:e:e_whom == :info:my_id, 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' ', '') + 'on ' + substring(convert(string,:e:e_activity_date),1,11)
+		    from
+			--/apps/kardia/data/Kardia_DB/e_activity/rows e,
+			collection mpactivity e,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			object wildcard '/apps/kardia/modules/mportal/plugin_mportal_activity_*.cmp' c
+		    where
+			--:e:e_activity_group_id = :parameters:activity_id and
+			:p:p_partner_key =* :e:e_whom and
+			:c:type = rtrim(:e:e_activity_type)
+		    order by
+			:e:e_activity_date desc
+		    ";
+	    readahead=50;
+	    replicasize=50;
+
+	    activity_table "widget/table"
 		{
-		sql = "	select
-			    path = :cx__pathname,
-			    :type,
-			    :height,
-			    :icon
-			from
-			    object wildcard '/apps/kardia/modules/mportal/plugin_mportal_activity_*.cmp'
-			";
+		width=552;
+		row_border_radius=4;
+		demand_scrollbar = yes;
+		overlap_scrollbar = yes;
+		initial_selection = no;
+		colsep = 0;
+		titlebar = yes;
+		min_rowheight = 16;
+		max_rowheight = 200;
+		cellvspacing = 4;
+		row1_bgcolor = white;
+		row2_bgcolor = white;
+		show_selection = yes;
+		inner_padding = 2;
+		titlecolor = white;
+		hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+		rowhighlight_bgcolor = "#fff090";
+		textcolorhighlight = "#000000";
+		nodata_message = runclient(condition(:activity_osrc:cx__pending, "No activity available.", "Loading the last three months' of activity..."));
 
-		detail_item "widget/table-row-detail"
+		detail_rows "widget/repeat"
 		    {
-		    condition=runserver(:detail_rows:height > 0);
-		    display_for=runclient(:activity_osrc:e_activity_type == runserver(:detail_rows:type));
-		    height=runserver(:detail_rows:height + 8);
-		    width=1136;
+		    sql = "	select
+				path = :cx__pathname,
+				:type,
+				:height,
+				:icon
+			    from
+				object wildcard '/apps/kardia/modules/mportal/plugin_mportal_activity_*.cmp'
+			    ";
 
-		    detail_cmp "widget/component"
+		    detail_item "widget/table-row-detail"
 			{
-			x=4; y=4;
-			width=1128;
-			height=runserver(:detail_rows:height);
-			fl_height=0;
-			path = runserver(:detail_rows:path);
-			activity_osrc = activity_osrc;
+			condition=runserver(:detail_rows:height > 0);
+			display_for=runclient(:activity_osrc:e_activity_type == runserver(:detail_rows:type));
+			height=runserver(:detail_rows:height + 8);
+			width=1136;
+
+			detail_cmp "widget/component"
+			    {
+			    x=4; y=4;
+			    width=1128;
+			    height=runserver(:detail_rows:height);
+			    fl_height=0;
+			    path = runserver(:detail_rows:path);
+			    activity_osrc = activity_osrc;
+			    }
 			}
+		    }
+
+		t_img "widget/table-column" { title=""; fieldname="img"; width=36; type=image; align=center; image_maxwidth=24; image_maxheight=24; }
+		t_info "widget/table-column"
+		    {
+		    width=512;
+		    wrap=yes;
+		    title="Recent Activity";
+		    title_fieldname="first_info";
+		    title_style=bold;
+		    fieldname="last_info";
+		    style=runclient(condition(:activity_osrc:img is null, 'bold', 'plain'));
+		    font_size=runclient(condition(:activity_osrc:img is null, 16, 12));
+		    caption_fieldname=datewhom;
+		    caption_textcolor = "#a0a0a0";
+		    caption_style=italic;
+		    }
+		}
+	    }
+
+	chart_vbox "widget/vbox"
+	    {
+	    width=600;
+	    spacing=10;
+
+	    gift_hdr "widget/pane"
+		{
+		y=1;
+		height=24;
+		border_radius=4;
+		background = "/apps/kardia/images/bg/lsblue_gradient.png";
+		style = flat;
+
+		gift_label "widget/label"
+		    {
+		    x=6; y=2; width=588; height=16;
+		    font_size=16;
+		    style=bold;
+		    fgcolor=white;
+		    value=runclient('Giving History for Fund ' + substring(:user_osrc:Fund, charindex('|', :user_osrc:Fund) + 1, 99) + ' (' + :user_osrc:FundDesc + ')'); 
 		    }
 		}
 
-	    t_img "widget/table-column" { title=""; fieldname="img"; width=36; type=image; align=center; image_maxwidth=24; image_maxheight=24; }
-	    t_info "widget/table-column"
+	    gift_chart "widget/component"
 		{
-		width=1112;
-		wrap=yes;
-		title="Description";
-		title_fieldname="first_info";
-		title_style=bold;
-		fieldname="last_info";
-		caption_fieldname=datewhom;
-		caption_textcolor = "#a0a0a0";
-		caption_style=italic;
+		height=260;
+		path = "/apps/kardia/modules/rcpt/gift_chart.cmp";
+		months = 14;
+		//ledger = runclient(substring(:user_osrc:staff_cc, 1, charindex('|', :user_osrc:staff_cc) - 1));
+		ledger_osrc = user_osrc;
+		fund = runclient(substring(:user_osrc:Fund, charindex('|', :user_osrc:Fund) + 1, 99));
+		}
+
+	    revexp_hdr "widget/pane"
+		{
+		height=24;
+		border_radius=4;
+		background = "/apps/kardia/images/bg/lsblue_gradient.png";
+		style = flat;
+
+		revexp_label "widget/label"
+		    {
+		    x=6; y=2; width=588; height=16;
+		    font_size=16;
+		    style=bold;
+		    fgcolor=white;
+		    value=runclient('Revenue and Expense for Fund ' + substring(:user_osrc:Fund, charindex('|', :user_osrc:Fund) + 1, 99) + ' (' + :user_osrc:FundDesc + ')'); 
+		    }
+		}
+
+	    revexp_chart "widget/component"
+		{
+		height=260;
+		path = "/apps/kardia/modules/mportal/fm_revexp_chart.cmp";
+		months = 14;
+		//ledger = runclient(substring(:user_osrc:staff_cc, 1, charindex('|', :user_osrc:staff_cc) - 1));
+		ledger_osrc = user_osrc;
+		fund = runclient(substring(:user_osrc:Fund, charindex('|', :user_osrc:Fund) + 1, 99));
 		}
 	    }
 	}

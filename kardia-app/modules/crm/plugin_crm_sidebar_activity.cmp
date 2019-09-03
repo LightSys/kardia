@@ -70,7 +70,9 @@ activity_list "widget/component-decl"
 	activity_data_osrc "widget/osrc"
 	    {
 	    activity_id "widget/parameter" { type=integer; default=runclient(:activity_osrc:activity_group_id); }
-	    sql = " select
+	    sql = " -- declare collection e_activity scope application;
+	    
+		    select
 			:e:p_partner_key,
 			name = :e:e_reference_info,
 			:e:e_activity_date,
@@ -127,6 +129,7 @@ activity_list "widget/component-decl"
 		min_rowheight=16;
 		max_rowheight=72;
 		allow_selection = yes;
+		allow_deselection = no;
 		show_selection = yes;
 		initial_selection = no;
 		demand_scrollbar = yes;

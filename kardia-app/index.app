@@ -175,7 +175,7 @@ index "widget/page"
 
 			mt_img "widget/table-column" { title=""; fieldname="menuicon"; width=38; type=image; image_maxwidth=32; image_maxheight=32; align=center; textcolor=white; }
 
-			mt_name "widget/table-column" { title=""; fieldname="menutitle"; caption_value=runclient(condition(:menu_osrc:menutitle = 'Settings', 'Ledger: ' + :kardia_sysattrs_osrc:Ledger + '\nPeriod: ' + :kardia_sysattrs_osrc:CurrentPeriod + '\nYear: ' + :kardia_sysattrs_osrc:YearPeriod, :menu_osrc:menudesc)); width=166; textcolor=white; caption_textcolor="#f0f0f0"; style=bold; font_size=16; caption_style=italic; wrap=yes; }
+			mt_name "widget/table-column" { title=""; fieldname="menutitle"; caption_value=runclient(condition(:menu_osrc:menutitle = 'Settings', 'Ledger: ' + :kardia_sysattrs_osrc:Ledger + '\nPeriod: ' + :kardia_sysattrs_osrc:CurrentPeriod + '\nYear: ' + :kardia_sysattrs_osrc:YearPeriod, :menu_osrc:menudesc)); width=166; textcolor=white; caption_textcolor="#f0f0f0"; style=bold; font_size=15; caption_style=italic; wrap=yes; }
 
 			mt_cnt "widget/table-column" { fieldname=cnt; font_size=15; style=bold; padding=3; bgcolor=runclient(condition(:menu_osrc:cnt is null, '', 'black')); border_radius=15; width=32; align=center; textcolor=white; }
 
@@ -331,7 +331,7 @@ index "widget/page"
 
 			tabpage_vbox "widget/vbox"
 			    {
-			    x=10; y=20; width=924; height=600;
+			    x=20; y=20; width=904; height=600;
 			    spacing=10;
 
 			    tabpage_hbox "widget/hbox"
@@ -341,10 +341,10 @@ index "widget/page"
 
 				apps_list_vbox "widget/vbox"
 				    {
-				    width=457;
+				    width=447;
 				    spacing=10;
 
-				    apps_list_title "widget/label" { height=18; font_size=16; style=bold; align=center; text=runserver("Applications for " + :tabpages:module_abbrev); fl_width=100; }
+				    apps_list_title "widget/label" { height=18; font_size=15; style=bold; align=center; text=runserver("Applications for " + :tabpages:module_abbrev); fl_width=100; }
 
 				    apps_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
@@ -377,6 +377,7 @@ index "widget/page"
 					    mode=dynamicrow;
 					    show_mouse_focus = no;
 					    allow_selection = yes;
+					    allow_deselection = no;
 					    show_selection = yes;
 					    initial_selection = no;
 					    demand_scrollbar = yes;
@@ -384,10 +385,16 @@ index "widget/page"
 					    colsep = 0;
 					    titlebar = no;
 					    row_border_radius=4;
+					    //rowhighlight_bgcolor = "#f0f0f0";
+					    //rowhighlight_shadow_color = "#6080c0";
+					    //rowhighlight_shadow_location = 'inside';
+					    //rowhighlight_shadow_radius = 10;
 					    rowhighlight_bgcolor = "#f0f0f0";
-					    rowhighlight_shadow_color = "#6080c0";
-					    rowhighlight_shadow_location = 'inside';
-					    rowhighlight_shadow_radius = 10;
+					    rowhighlight_shadow_angle=180;
+					    rowhighlight_shadow_radius=4;
+					    rowhighlight_shadow_offset=1;
+					    rowhighlight_shadow_color="#808080";
+					    rowhighlight_border_color="#b8b8b8";
 					    //rowhighlight_bgcolor = "#6080c0";
 					    //rowhighlight_shadow_angle=180;
 					    //rowhighlight_shadow_radius=4;
@@ -401,16 +408,17 @@ index "widget/page"
 					    //row2_bgcolor = "#496293";
 					    row1_bgcolor = '';
 					    row2_bgcolor = '';
-					    nodata_message = "one moment...";
+					    nodata_message = runclient(condition(:apps_list_osrc:cx__pending, "", "one moment..."));
 
 					    alt_icon "widget/table-column" { width=40; fieldname=icon; type=image; align=right; }
-					    alt_title "widget/table-column" { width=400; fieldname=func_name; font_size=16; style=bold; caption_fieldname=func_description; }
+					    alt_title "widget/table-column" { width=400; fieldname=func_name; font_size=15; style=bold; caption_fieldname=func_description; }
 
 					    launchapp "widget/connector"
 						{
 						event = Click;
 						target = index;
 						action = Launch;
+						event_delay = 0.20;
 						Multi = 1;
 						Source = runclient(:apps_list_osrc:fullpath + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
 						Width = runclient(:apps_list_osrc:width);
@@ -422,10 +430,10 @@ index "widget/page"
 
 				rpts_list_vbox "widget/vbox"
 				    {
-				    width=457;
+				    width=447;
 				    spacing=10;
 
-				    rpts_list_title "widget/label" { height=18; font_size=16; style=bold; align=center; text=runserver("Reports for " + :tabpages:module_abbrev); fl_width=100; }
+				    rpts_list_title "widget/label" { height=18; font_size=15; style=bold; align=center; text=runserver("Reports for " + :tabpages:module_abbrev); fl_width=100; }
 
 				    rpts_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
@@ -458,6 +466,7 @@ index "widget/page"
 					    mode=dynamicrow;
 					    show_mouse_focus = no;
 					    allow_selection = yes;
+					    allow_deselection = no;
 					    show_selection = yes;
 					    initial_selection = no;
 					    demand_scrollbar = yes;
@@ -465,10 +474,16 @@ index "widget/page"
 					    colsep = 0;
 					    titlebar = no;
 					    row_border_radius=4;
+					    //rowhighlight_bgcolor = "#f0f0f0";
+					    //rowhighlight_shadow_color = "#6080c0";
+					    //rowhighlight_shadow_location = 'inside';
+					    //rowhighlight_shadow_radius = 10;
 					    rowhighlight_bgcolor = "#f0f0f0";
-					    rowhighlight_shadow_color = "#6080c0";
-					    rowhighlight_shadow_location = 'inside';
-					    rowhighlight_shadow_radius = 10;
+					    rowhighlight_shadow_angle=180;
+					    rowhighlight_shadow_radius=4;
+					    rowhighlight_shadow_offset=1;
+					    rowhighlight_shadow_color="#808080";
+					    rowhighlight_border_color="#b8b8b8";
 					    //rowhighlight_bgcolor = "#6080c0";
 					    //rowhighlight_shadow_angle=180;
 					    //rowhighlight_shadow_radius=4;
@@ -482,16 +497,17 @@ index "widget/page"
 					    //row2_bgcolor = "#496293";
 					    row1_bgcolor = '';
 					    row2_bgcolor = '';
-					    nodata_message = "one moment...";
+					    nodata_message = runclient(condition(:rpts_list_osrc:cx__pending, "", "one moment..."));
 
 					    rlt_icon "widget/table-column" { width=40; fieldname=icon; type=image; align=right; }
-					    rlt_title "widget/table-column" { width=400; fieldname=func_name; font_size=16; style=bold; caption_fieldname=func_description; }
+					    rlt_title "widget/table-column" { width=400; fieldname=func_name; font_size=15; style=bold; caption_fieldname=func_description; }
 
 					    launchrpt "widget/connector"
 						{
 						event = Click;
 						target = index;
 						action = Launch;
+						event_delay = 0.20;
 						Multi = 1;
 						Source = runclient(:rpts_list_osrc:fullpath + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
 						Width = runclient(:rpts_list_osrc:width);
@@ -515,7 +531,7 @@ index "widget/page"
 				one_tab_cmp "widget/component"
 				    {
 				    path=runserver(:tab_cmps:path);
-				    width=924;
+				    width=904;
 				    height=runserver(:tab_cmps:height);
 				    }
 				}
@@ -529,10 +545,10 @@ index "widget/page"
 
 		    search_results_vbox "widget/vbox"
 			{
-			x=10; y=20; width=924; height=600;
+			x=20; y=20; width=904; height=600;
 			spacing=10;
 
-			search_res_title "widget/label" { height=18; font_size=16; style=bold; align=center; text=runserver("Search Results..."); fl_width=100; }
+			search_res_title "widget/label" { height=18; font_size=15; style=bold; align=center; text=runserver("Search Results..."); fl_width=100; }
 
 			search_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
@@ -649,10 +665,16 @@ index "widget/page"
 				colsep = 0;
 				titlebar = no;
 				row_border_radius=4;
+				//rowhighlight_bgcolor = "#f0f0f0";
+				//rowhighlight_shadow_color = "#6080c0";
+				//rowhighlight_shadow_location = 'inside';
+				//rowhighlight_shadow_radius = 10;
 				rowhighlight_bgcolor = "#f0f0f0";
-				rowhighlight_shadow_color = "#6080c0";
-				rowhighlight_shadow_location = 'inside';
-				rowhighlight_shadow_radius = 10;
+				rowhighlight_shadow_angle=180;
+				rowhighlight_shadow_radius=4;
+				rowhighlight_shadow_offset=1;
+				rowhighlight_shadow_color="#808080";
+				rowhighlight_border_color="#b8b8b8";
 				//rowhighlight_bgcolor = "#6080c0";
 				//rowhighlight_shadow_angle=180;
 				//rowhighlight_shadow_radius=4;
@@ -666,10 +688,10 @@ index "widget/page"
 				//row2_bgcolor = "#496293";
 				row1_bgcolor = '';
 				row2_bgcolor = '';
-				nodata_message = "one moment...";
+				nodata_message = runclient(condition(:search_osrc:cx__pending, "no matching results", "one moment..."));
 
 				search_icon "widget/table-column" { width=40; fieldname=icon; type=image; align=right; }
-				search_title "widget/table-column" { width=820; fieldname=s_label; font_size=16; style=bold; caption_fieldname=s_desc; }
+				search_title "widget/table-column" { width=820; fieldname=s_label; font_size=15; style=bold; caption_fieldname=s_desc; }
 
 				search_tags "widget/repeat"
 				    {
@@ -680,20 +702,68 @@ index "widget/page"
 
 				search_details "widget/repeat"
 				    {
-				    sql = "select :height, :type, path = :cx__pathname from object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp'";
+				    sql = "select :type, height = max(:height), count(1) from object wildcard '/apps/kardia/modules/*/plugin_gsearch_mod_*.cmp' group by :type having count(1) > 0";
 
 				    one_detail "widget/table-row-detail"
 					{
-					height=runserver(:search_details:height + 20);
 					width=924;
+					height=runserver(:search_details:height + 20);
 					display_for=runclient(:search_osrc:s_type == runserver(:search_details:type));
 
-					one_detail_cmp "widget/component"
+					detail_vbox "widget/vbox"
+					    {
+					    x=10; y=15;
+					    width=904;
+					    height=runserver(:search_details:height + 5);
+					    spacing=4;
+
+					    detail_hbox "widget/hbox"
+						{
+						x=32;
+						height=runserver(:search_details:height);
+						spacing=10;
+
+						search_detail_items "widget/repeat"
+						    {
+						    sql = runserver("select :height, :width, path = :cx__pathname from object wildcard '/apps/kardia/modules/*/plugin_gsearch_mod_*.cmp' where :type = " + quote(:search_details:type) + " order by :sequence asc");
+
+						    one_item_cmp "widget/component"
+							{
+							width=runserver(:search_detail_items:width);
+							height=runserver(:search_detail_items:height);
+							path=runserver(:search_detail_items:path);
+							}
+						    }
+						}
+
+					    detail_sep "widget/image"
+						{
+						x=0;
+						height=1;
+						fl_height=0;
+						fl_width=100;
+						source="/apps/kardia/images/bg/lsblue_horizsep.png";
+						}
+					    }
+					}
+				    }
+
+				search_details_ctls "widget/repeat"
+				    {
+				    sql = "select :height, :type, path = :cx__pathname from object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp'";
+
+				    one_detail_ctl "widget/table-row-detail"
+					{
+					height=runserver(:search_details_ctls:height + 20);
+					width=924;
+					display_for=runclient(:search_osrc:s_type == runserver(:search_details_ctls:type));
+
+					one_detail_ctl_cmp "widget/component"
 					    {
 					    x=10; y=15; 
 					    width=904;
-					    height=runserver(:search_details:height);
-					    path=runserver(:search_details:path);
+					    height=runserver(:search_details_ctls:height);
+					    path=runserver(:search_details_ctls:path);
 					    }
 					}
 				    }

@@ -113,6 +113,11 @@ create  index p_staff_weblogin_idx on p_staff (p_kardiaweb_login, p_partner_key)
 /* go */
 
 
+/* p_pol_division */
+/* create  index p_poldiv_pk on p_pol_division (p_country_code, p_pol_division)*/ 
+/* go */
+
+
 /* p_banking_details */
 create  index p_bankd_acct_idx on p_banking_details (a_ledger_number, a_account_code, p_banking_details_key);
 create  index p_bankd_bpartner_idx on p_banking_details (p_bank_partner_id, p_banking_details_key);
@@ -375,6 +380,11 @@ create  index e_todo_type_idx on e_todo (e_todo_type_id, e_todo_id);
 /* e_data_item_type */
 create  index e_ditype_parent_idx on e_data_item_type (e_parent_data_item_type_id, e_data_item_type_id);
 /* create  index e_ditype_pk on e_data_item_type (e_data_item_type_id)*/ 
+/* go */
+
+
+/* e_data_item_type_value */
+/* create  index e_dataitemval_pk on e_data_item_type_value (e_data_item_type_id, e_data_item_value_id)*/ 
 /* go */
 
 
@@ -909,10 +919,10 @@ create  index a_descr_par_idx on a_descriptives (p_donor_partner_key, a_ledger_n
 
 
 /* a_descriptives_hist */
-create  index a_descrhist_cc_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_amount);
-create  index a_descrhist_merge_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_merged_amount, a_amount);
-create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_cost_center, a_amount);
-/* create  index a_descrhist_pk on a_descriptives_hist (a_ledger_number, p_donor_partner_key, a_cost_center, a_amount)*/ 
+create  index a_descrhist_cc_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_hist_id);
+create  index a_descrhist_merge_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_merged_id, a_hist_id);
+create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_cost_center, a_hist_id);
+/* create  index a_descrhist_pk on a_descriptives_hist (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id)*/ 
 /* go */
 
 
@@ -1175,4 +1185,9 @@ create  index s_audit_strval_idx on s_audit (s_table, s_attrname, s_valuestring,
 
 /* s_global_search */
 /* create  index s_global_search_pk on s_global_search (s_search_id, s_username, s_search_res_id)*/ 
+/* go */
+
+
+/* s_stats_cache */
+/* create  index s_stats_cache_pk on s_stats_cache (s_stat_type, s_stat_group, s_stat)*/ 
 /* go */
