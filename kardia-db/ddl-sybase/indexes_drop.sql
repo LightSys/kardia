@@ -131,6 +131,11 @@ go
 /* go */
 
 
+/* p_pol_division */
+/* drop index p_pol_division.p_poldiv_pk */ 
+/* go */
+
+
 /* p_banking_details */
 drop index p_banking_details.p_bankd_acct_idx
 go
@@ -451,6 +456,11 @@ go
 drop index e_data_item_type.e_ditype_parent_idx
 go
 /* drop index e_data_item_type.e_ditype_pk */ 
+/* go */
+
+
+/* e_data_item_type_value */
+/* drop index e_data_item_type_value.e_dataitemval_pk */ 
 /* go */
 
 
@@ -1381,4 +1391,9 @@ go
 
 /* s_global_search */
 /* drop index s_global_search.s_global_search_pk */ 
+/* go */
+
+
+/* s_stats_cache */
+/* drop index s_stats_cache.s_stats_cache_pk */ 
 /* go */

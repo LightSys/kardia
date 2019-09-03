@@ -163,6 +163,11 @@ alter table p_country
 go
 
 
+alter table p_pol_division
+	drop constraint p_poldiv_pk
+go
+
+
 alter table p_banking_details
 	drop constraint p_banking_details_pk
 go
@@ -565,6 +570,11 @@ go
 
 alter table e_data_item_type
 	drop constraint e_ditype_parent_idx
+go
+
+
+alter table e_data_item_type_value
+	drop constraint e_dataitemval_pk
 go
 
 
@@ -1565,4 +1575,9 @@ go
 
 alter table s_global_search
 	drop constraint s_global_search_pk
+go
+
+
+alter table s_stats_cache
+	drop constraint s_stats_cache_pk
 go

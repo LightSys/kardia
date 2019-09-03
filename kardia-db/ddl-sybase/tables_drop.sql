@@ -95,6 +95,11 @@ drop table p_country
 go
 
 
+/* p_pol_division */
+drop table p_pol_division
+go
+
+
 /* p_banking_details */
 drop table p_banking_details
 go
@@ -297,6 +302,11 @@ go
 
 /* e_data_item_type */
 drop table e_data_item_type
+go
+
+
+/* e_data_item_type_value */
+drop table e_data_item_type_value
 go
 
 
@@ -957,4 +967,9 @@ go
 
 /* s_global_search */
 drop table s_global_search
+go
+
+
+/* s_stats_cache */
+drop table s_stats_cache
 go
