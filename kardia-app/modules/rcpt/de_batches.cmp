@@ -60,8 +60,8 @@ de_batches "widget/component-decl"
 			:b:a_batch_number
 		");
 	baseobj = "/apps/kardia/data/Kardia_DB/a_batch/rows";
-	replicasize=50;
-	readahead=25;
+	replicasize=200;
+	readahead=200;
 	autoquery=never;
 	indicates_activity = no;
 
