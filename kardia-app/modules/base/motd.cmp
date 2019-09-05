@@ -1,7 +1,8 @@
 $Version=2$
 motd "widget/component-decl"
     {
-    width=800; height=600;
+    width=1200; height=700;
+
     motd_timer "widget/timer"
 	{
 	msec=300000; // 5 minutes
@@ -76,9 +77,9 @@ motd "widget/component-decl"
 	motd_window "widget/childwindow"
 	    {
 	    titlebar = no;
-	    width=500;
-	    height=400;
-	    x=150;
+	    width=600;
+	    height=500;
+	    x=300;
 	    y=100;
 	    visible = false;
 	    modal = yes;
@@ -86,6 +87,7 @@ motd "widget/component-decl"
 	    toplevel = yes;
 	    bgcolor = white;
 	    background = null;
+	    border_radius = 10;
 
 	    reset_timer_on_close "widget/connector"
 		{
@@ -98,16 +100,16 @@ motd "widget/component-decl"
 	    kardia_logo "widget/image"
 		{
 		source = "/apps/kardia/images/artwork/Kardia2011b-horiz-25.png";
-		x = 4;
-		y = 4;
+		x = 10;
+		y = 10;
 		height = 25;
 		width = 123;
 		}
 
 	    motd_header "widget/label"
 		{
-		x = 200;
-		y = 4;
+		x = 250;
+		y = 10;
 		height = 25;
 		width = 294;
 		style = bold;
@@ -121,14 +123,14 @@ motd "widget/component-decl"
 		{
 		source = "/apps/kardia/images/artwork/blue_rule.png";
 		x=0;
-		y=33;
-		width=498;
+		y=45;
+		width=598;
 		height=4;
 		}
 
 	    motd_pane "widget/pane"
 		{
-		x=0;y=37;height=361; width=498;
+		x=0;y=49;height=461; width=598;
 		style=flat;
 		background = "/apps/kardia/images/bg/light_bgnd.jpg";
 
@@ -137,7 +139,7 @@ motd "widget/component-decl"
 		    motd_vbox "widget/vbox"
 			{
 			x=8; y=8;
-			width=480; height=343;
+			width=580; height=443;
 			cellsize=16;
 			spacing=4;
 
@@ -147,15 +149,16 @@ motd "widget/component-decl"
 
 			pane_msg "widget/pane"
 			    {
-			    height=232;
+			    height=320;
 			    //style=lowered;
 			    style=bordered;
 			    border_color="#a0a0a0";
+			    border_radius=10;
 			    bgcolor=white;
 
 			    msg_label "widget/label"
 				{
-				x=4; y=4; width=470; height=210;
+				x=4; y=4; width=570; height=298;
 				value=runclient(:motd_osrc:s_message_text);
 				}
 			    }

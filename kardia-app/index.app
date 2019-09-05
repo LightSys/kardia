@@ -195,7 +195,14 @@ index "widget/page"
 				    width=186; height=24;
 				    empty_description="type search, press ENTER";
 
-				    enter_pressed_do_search "widget/connector"
+				    enter_pressed_do_search1 "widget/connector"
+					{
+					event=BeforeKeyPress;
+					event_condition=runclient(:Name == 'enter' and char_length(:search_box:content) > 1);
+					target=search_osrc;
+					action=Clear;
+					}
+				    enter_pressed_do_search2 "widget/connector"
 					{
 					event=BeforeKeyPress;
 					event_condition=runclient(:Name == 'enter' and char_length(:search_box:content) > 1);
@@ -210,7 +217,14 @@ index "widget/page"
 				    width=24; height=24;
 				    image="/apps/kardia/images/icons/ionicons-search-w.svg";
 
-				    btn_clicked_do_search "widget/connector"
+				    btn_clicked_do_search1 "widget/connector"
+					{
+					event=Click;
+					event_condition=runclient(char_length(:search_box:content) > 1);
+					target=search_osrc;
+					action=Clear;
+					}
+				    btn_clicked_do_search2 "widget/connector"
 					{
 					event=Click;
 					event_condition=runclient(char_length(:search_box:content) > 1);
@@ -562,20 +576,6 @@ index "widget/page"
 				    -- Clean up our temporary sort lists
 				    delete
 					collection global_search
-					--/apps/kardia/data/Kardia_DB/s_global_search/rows
-				    where
-					:s_username = user_name() and
-					dateadd(minute, 10, :s_date_modified) < getdate()
-				    ;
-
-				    -- Get a new ID
-				    select
-					:info:search_id = isnull(max(:s_search_id),0) + 1
-				    from
-					collection global_search
-					--/apps/kardia/data/Kardia_DB/s_global_search/rows
-				    where
-					:s_username = user_name()
 				    ;
 
 				    -- Break out the search criteria: we support up to 5 criteria
@@ -611,7 +611,7 @@ index "widget/page"
 				    ;
 
 				    -- Here are the queries from the plug-ins
-				    " + isnull((select sum(:sql + ';\n') from object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp'), '') + "
+				    " + isnull((select sum(:sql + ';\n') from object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp' ), '') + "
 
 				    -- Return the results to the user
 				    select
@@ -626,8 +626,6 @@ index "widget/page"
 					--/apps/kardia/data/Kardia_DB/s_global_search/rows gs,
 					object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp' cm
 				    where
-					:gs:s_search_id = :info:search_id and
-					:gs:s_username = user_name() and
 					(:gs:s_cri1 > 0 or isnull(:info:cri1,'') = '') and
 					(:gs:s_cri2 > 0 or isnull(:info:cri2,'') = '') and
 					(:gs:s_cri3 > 0 or isnull(:info:cri3,'') = '') and
@@ -638,8 +636,8 @@ index "widget/page"
 					:gs:s_score desc,
 					:gs:s_label asc
 				    ");
-			    replicasize=200;
-			    readahead=200;
+			    replicasize=500;
+			    readahead=500;
 			    autoquery=never;
 
 			    on_query_show_tab "widget/connector"
@@ -702,7 +700,7 @@ index "widget/page"
 
 				search_details "widget/repeat"
 				    {
-				    sql = "select :type, height = max(:height), count(1) from object wildcard '/apps/kardia/modules/*/plugin_gsearch_mod_*.cmp' group by :type having count(1) > 0";
+				    sql = "select :type, height = max(:height), count(1) from object wildcard '/apps/kardia/modules/*/plugin_gsearch_mod_*.cmp' where (:endorsement is null or has_endorsement(:endorsement, :endorsement_context)) group by :type having count(1) > 0";
 
 				    one_detail "widget/table-row-detail"
 					{
@@ -725,7 +723,7 @@ index "widget/page"
 
 						search_detail_items "widget/repeat"
 						    {
-						    sql = runserver("select :height, :width, path = :cx__pathname from object wildcard '/apps/kardia/modules/*/plugin_gsearch_mod_*.cmp' where :type = " + quote(:search_details:type) + " order by :sequence asc");
+						    sql = runserver("select :height, :width, path = :cx__pathname from object wildcard '/apps/kardia/modules/*/plugin_gsearch_mod_*.cmp' where (:endorsement is null or has_endorsement(:endorsement, :endorsement_context)) and :type = " + quote(:search_details:type) + " order by :sequence asc");
 
 						    one_item_cmp "widget/component"
 							{
@@ -773,5 +771,11 @@ index "widget/page"
 		    }
 		}
 	    }
+	}
+
+    motd_cmp "widget/component"
+	{
+	x=0; y=0; width=1200; height=700;
+	path="/apps/kardia/modules/base/motd.cmp";
 	}
     }
