@@ -85,7 +85,8 @@ donation_detail "system/report"
 			firstline = min(:i:a_split_number),
 			dcnt = count(:i:a_split_number),
 			checkmin = min(:i:a_recv_document_id),
-			checkmax = max(:i:a_recv_document_id)
+			checkmax = max(:i:a_recv_document_id),
+			send_rcpt = :d:a_receipt_desired
 		from
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows d,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
@@ -164,8 +165,8 @@ donation_detail "system/report"
 	table "report/table"
 	    {
 	    x=0; width=105; height=0;
-	    columns=10;
-	    widths=6,5,2,8,10,29,15,9,9,3;
+	    columns=11;
+	    widths=5.5,4.5,2,8,10,28.5,15,2.5,9,9,2;
 	    colsep=0.8;
 	    source=batch_qy, don_qy, item_qy;
 	    topborder=0.3;
@@ -181,13 +182,14 @@ donation_detail "system/report"
 		fontsize=8;
 		bottomborder=0.05;
 
-		h_batch "report/table-cell" { value='Batch'; align=center; style=bold; }
-		h_rcptno "report/table-cell" { value='Receipt'; align=center; style=bold; }
+		h_batch "report/table-cell" { value='Batch #'; align=center; style=bold; }
+		h_rcptno "report/table-cell" { value='Rcpt #'; align=center; style=bold; }
 		h_cnt "report/table-cell" { value=' '; align=center; style=bold; }
 		h_ck "report/table-cell" { value='Check #'; align=center; style=bold; }
 		h_date "report/table-cell" { value='Date'; align=center; style=bold; }
 		h_donor "report/table-cell" { value='Donor / Fund / Acct'; align=center; style=bold; }
 		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_rcpt "report/table-cell" { value='Rcpt'; align=center; style=bold; }
 		h_don "report/table-cell" { value='Gift Total'; align=center; style=bold; }
 		h_gl "report/table-cell" { value='GL Total'; align=center; style=bold; }
 		h_diff "report/table-cell" { value='Diff'; align=center; style=bold; }
@@ -222,6 +224,7 @@ donation_detail "system/report"
 		d_date "report/table-cell" { value=runserver(:don_qy:date); align=left; }
 		d_donor "report/table-cell" { value=runserver(:don_qy:extname); align=left; font=helvetica; }
 		d_desc "report/table-cell" { value=runserver(:don_qy:a_comment); align=left; font=helvetica; }
+		d_rcpt "report/table-cell" { value=runserver(:don_qy:send_rcpt); align=center; font=helvetica; }
 		d_don "report/table-cell" { value=runserver(:don_qy:dtotal); align=right; }
 		d_gl "report/table-cell" { value=runserver(''); align=right; }
 		d_diff "report/table-cell" { value=runserver(''); align=right; }
@@ -242,6 +245,7 @@ donation_detail "system/report"
 		i_date "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_cost_center + (' ' * (8 - char_length(:item_qy:a_cost_center))) + :item_qy:a_account_code); align=left; }
 		i_donor "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_cc_desc + ' / ' + :item_qy:a_acct_desc); align=left; font=helvetica; }
 		i_desc "report/table-cell" { value=runserver(:item_qy:a_comment); align=left; font=helvetica; }
+		i_rcpt "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
 		i_don "report/table-cell" { value=runserver(:item_qy:a_amount); align=right; }
 		i_gl "report/table-cell" { value=runserver(''); align=right; }
 		i_diff "report/table-cell" { value=runserver(''); align=right; }
@@ -265,6 +269,7 @@ donation_detail "system/report"
 		s_date "report/table-cell" { value=runserver(''); align=left; }
 		s_payee "report/table-cell" { value=runserver('' + :don_qy:batch_dcnt + ' RECEIPTS'); align=left; font=helvetica; }
 		s_desc "report/table-cell" { value=runserver('BATCH ' + :don_qy:batch_agg + ' TOTAL:'); align=left; font=helvetica; }
+		s_rcpt "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
 		s_don "report/table-cell" { value=runserver(:don_qy:batch_dtotal); align=right; }
 		s_gl "report/table-cell" { value=runserver(:batch_qy:batch_gtotal); align=right; }
 		s_diff "report/table-cell" { value=runserver(condition(:batch_qy:batch_gtotal2 - :don_qy:batch_dtotal2 = $0, '', 'X')); align=right; }
@@ -288,6 +293,7 @@ donation_detail "system/report"
 		s_date "report/table-cell" { value=runserver(''); align=left; }
 		s_donor "report/table-cell" { value=runserver('' + :don_qy:period_dcnt + ' RECEIPTS'); align=left; font=helvetica; }
 		s_desc "report/table-cell" { value=runserver('PERIOD ' + :don_qy:period_agg + ' TOTAL:'); align=left; font=helvetica; }
+		s_rcpt "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
 		s_don "report/table-cell" { value=runserver(:don_qy:period_dtotal); align=right; }
 		s_gl "report/table-cell" { value=runserver(:batch_qy:period_gtotal); align=right; }
 		s_diff "report/table-cell" { value=runserver(condition(:batch_qy:period_gtotal2 - :don_qy:period_dtotal2 = $0, '', 'X')); align=right; }
@@ -309,6 +315,7 @@ donation_detail "system/report"
 		s_date "report/table-cell" { value=runserver(''); align=left; }
 		s_donor "report/table-cell" { value=runserver('' + :don_qy:rpt_dcnt + ' RECEIPTS'); align=left; font=helvetica; }
 		s_desc "report/table-cell" { value=runserver('REPORT TOTAL:'); align=left; font=helvetica; }
+		s_rcpt "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
 		s_don "report/table-cell" { value=runserver(:don_qy:rpt_dtotal); align=right; }
 		s_gl "report/table-cell" { value=runserver(:batch_qy:rpt_gtotal); align=right; }
 		s_diff "report/table-cell" { value=runserver(condition(:batch_qy:rpt_gtotal - :don_qy:rpt_dtotal = $0, '', 'X')); align=right; }
