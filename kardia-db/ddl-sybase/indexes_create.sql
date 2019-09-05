@@ -21,7 +21,7 @@ create  index p_parent_key_idx on p_partner (p_parent_key, p_partner_key)
 go
 /* create  index p_partner_pk on p_partner (p_partner_key)*/ 
 /* go */
-/* create  clustered index p_surname_clustered_idx on p_partner (p_surname, p_given_name, p_org_name, p_partner_key)*/ 
+/* create  clustered index p_surname_clustered_idx on p_partner (p_surname, p_given_name, p_preferred_name, p_org_name, p_partner_key)*/ 
 /* go */
 
 
@@ -36,7 +36,7 @@ go
 
 
 /* p_location */
-create  index p_location_city_idx on p_location (p_city, p_state_province, p_partner_key, p_location_id, p_revision_id)
+create  index p_location_city_idx on p_location (p_city, p_state_province, p_postal_code, p_partner_key, p_location_id, p_revision_id)
 go
 /* create  index p_location_pk on p_location (p_partner_key, p_location_id, p_revision_id)*/ 
 /* go */

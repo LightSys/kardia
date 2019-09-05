@@ -9,7 +9,7 @@ alter table p_partner
 go
 
 alter table p_partner
-	add constraint p_surname_clustered_idx unique clustered (p_surname, p_given_name, p_org_name, p_partner_key)
+	add constraint p_surname_clustered_idx unique clustered (p_surname, p_given_name, p_preferred_name, p_org_name, p_partner_key)
 go
 
 print "working on table p_partner_key_cnt"
