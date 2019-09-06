@@ -130,7 +130,8 @@ index "widget/page"
 				:menutitle,
 				:menudesc,
 				:cnt,
-				:e_reference_info
+				:e_reference_info,
+				name = :e_reference_info
 			    from
 				collection activity
 			    order by
