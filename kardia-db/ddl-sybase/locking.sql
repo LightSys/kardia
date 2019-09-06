@@ -81,3 +81,18 @@ go
 
 alter table p_partner_search_results lock datarows
 go
+
+alter table a_descriptives lock datarows
+go
+
+alter table a_descriptives_hist lock datarows
+go
+
+alter table c_chat lock datarows
+go
+
+alter table c_message lock datarows
+go
+
+alter table c_member lock datarows
+go
