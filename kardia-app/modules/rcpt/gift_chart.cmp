@@ -72,13 +72,14 @@ gift_chart "widget/component-decl"
 		    :p:a_period *= :g:a_period and
 		    :p:a_ledger_number *= :g:a_ledger_number and
 		    (:parameters:fund is null or :parameters:fund = :g:a_cost_center) and
-		    (:parameters:partner is null or :parameters:partner = :g:p_dn_donor_partner_id)
+		    (:parameters:partner is null or :parameters:partner = :g:p_dn_donor_partner_id) and
+		    has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
 		group by
 		    :p:a_period
 		order by
 		    :p:a_period asc
-		having
-		    has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
+		--having
+		--    has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
 		;
 
 		select
@@ -100,13 +101,14 @@ gift_chart "widget/component-decl"
 		    :p:a_ledger_number *= :g:a_ledger_number and
 		    (:parameters:fund is null or :parameters:fund = :g:a_cost_center) and
 		    charindex(',' + :parameters:ledger + '|' + :g:a_cost_center + ',', ',' + :info:cclist + ',') > 0 and
-		    (:parameters:partner is null or :parameters:partner = :g:p_dn_donor_partner_id)
+		    (:parameters:partner is null or :parameters:partner = :g:p_dn_donor_partner_id) and
+		    not has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
 		group by
 		    :p:a_period
 		order by
 		    :p:a_period asc
-		having
-		    not has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
+		--having
+		--    not has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
 		";
 	readahead=30;
 	replicasize=30;
