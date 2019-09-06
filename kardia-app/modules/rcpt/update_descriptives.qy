@@ -62,6 +62,10 @@ update_descriptives "system/query"
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
+		:i:a_posted = 1 and
+		:i:a_amount != $0 and
+		char_length(rtrim(isnull(:i:p_dn_donor_partner_id,''))) > 1 and
+		char_length(rtrim(isnull(:i:a_cost_center,''))) > 1 and
 		(:parameters:fund is null or :parameters:fund = :i:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :i:p_dn_donor_partner_id)
 	    group by
@@ -107,6 +111,10 @@ update_descriptives "system/query"
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
+		char_length(rtrim(isnull(:i:p_dn_donor_partner_id,''))) > 1 and
+		char_length(rtrim(isnull(:i:a_cost_center,''))) > 1 and
+		:i:a_posted = 1 and
+		:i:a_amount != $0 and
 		(:parameters:fund is null or :parameters:fund = :i:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :i:p_dn_donor_partner_id)
 	    group by
@@ -128,7 +136,7 @@ update_descriptives "system/query"
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
 	    set
-		:a_merged_amount = :dh2:a_amount
+		:a_merged_id = :dh2:a_hist_id
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
@@ -160,14 +168,14 @@ update_descriptives "system/query"
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
 		:dh2:a_cost_center = :dh1:a_cost_center and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
-		:dh1:a_merged_amount = :dh2:a_amount
+		:dh1:a_merged_id = :dh2:a_hist_id
 	    ;
 	    delete
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
-		:dh1:a_merged_amount is not null
+		:dh1:a_merged_id is not null
 	    ;
 
 	    -- First histogram value
