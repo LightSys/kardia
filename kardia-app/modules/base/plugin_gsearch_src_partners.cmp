@@ -91,23 +91,28 @@ plugin_gsearch_partners "widget/component-decl"
 		s_score = 100.0,
 		s_cri1 = condition(
 				charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri1) >= 5) or
+				--nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
 				nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
 		s_cri2 = condition(
 				charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri2) >= 5) or
+				--nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
 				nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
 		s_cri3 = condition(
 				charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri3) >= 5) or
+				--nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
 				nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
 		s_cri4 = condition(
 				charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri4) >= 5) or
+				--nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
 				nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
 		s_cri5 = condition(
 				charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri5) >= 5) or
+				--nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
 				nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0)
 	    from
 		/apps/kardia/data/Kardia_DB/p_location/rows l,
@@ -124,11 +129,11 @@ plugin_gsearch_partners "widget/component-decl"
 		nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_state_province), :l:p_state_province) or
 		nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_state_province), :l:p_state_province) or
 		nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_state_province), :l:p_state_province) or
-		nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
-		nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
-		nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
-		nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
-		nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code))
+		(charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code))) = 1 or
+		(charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code))) = 1 or
+		(charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code))) = 1 or
+		(charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code))) = 1 or
+		(charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code))) = 1)
 	    having
 		:s_cri1 + :s_cri2 + :s_cri3 + :s_cri4 + :s_cri5 > 0
 	    on duplicate
@@ -137,23 +142,23 @@ plugin_gsearch_partners "widget/component-decl"
 		:s_desc = :s_desc + ', ' + isnull(:l:p_city + ', ','') + isnull(:l:p_state_province,'') + ' (' + rtrim(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3,'')) + ')',
 		:s_cri1 = :s_cri1 + condition(
 				charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri1,''), condition(:info:lower1 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri1) >= 5) or
 				nullif(:info:cri1,'') = condition(:info:lower1 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
 		:s_cri2 = :s_cri2 + condition(
 				charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri2,''), condition(:info:lower2 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri2) >= 5) or
 				nullif(:info:cri2,'') = condition(:info:lower2 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
 		:s_cri3 = :s_cri3 + condition(
 				charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri3,''), condition(:info:lower3 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri3) >= 5) or
 				nullif(:info:cri3,'') = condition(:info:lower3 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
 		:s_cri4 = :s_cri4 + condition(
 				charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri4,''), condition(:info:lower4 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri4) >= 5) or
 				nullif(:info:cri4,'') = condition(:info:lower4 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0),
 		:s_cri5 = :s_cri5 + condition(
 				charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:l:p_city), :l:p_city)) > 0 or
-				nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code) or
+				(charindex(nullif(:info:cri5,''), condition(:info:lower5 > 0, lower(:l:p_postal_code), :l:p_postal_code)) = 1 and char_length(:info:cri5) >= 5) or
 				nullif(:info:cri5,'') = condition(:info:lower5 > 0, lower(:l:p_state_province), :l:p_state_province), 1, 0)
 	    ;
 
