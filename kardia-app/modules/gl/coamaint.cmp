@@ -81,8 +81,8 @@ coamaint "widget/component-decl"
 			");
 
 		    baseobj = "/apps/kardia/data/Kardia_DB/a_cost_center/rows";
-		    replicasize=300;
-		    readahead=300;
+		    replicasize=800;
+		    readahead=800;
 		    autoquery=onfirstreveal;
 
 		    preselect_mainfund "widget/connector"
@@ -231,14 +231,14 @@ coamaint "widget/component-decl"
 		    preselect_fund "widget/connector"
 			{
 			event=EndQuery;
-			event_condition=runclient(not (:fund:value is null));
+			event_condition=runclient(:mainfund:value is null and not (:fund:value is null));
 			action=FindObject;
 			a_cost_center = runclient(:fund:value);
 			}
 		    dont_preselect_fund_twice "widget/connector"
 			{
 			event=EndQuery;
-			event_condition=runclient(not (:fund:value is null));
+			event_condition=runclient(:mainfund:value is null and not (:fund:value is null));
 			target=fund;
 			action=SetValue;
 			Value=runclient(null);
