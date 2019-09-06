@@ -39,7 +39,7 @@ alter table p_location
 go
 
 alter table p_location
-	add constraint p_location_city_idx unique nonclustered (p_city, p_state_province, p_partner_key, p_location_id, p_revision_id)
+	add constraint p_location_city_idx unique nonclustered (p_city, p_state_province, p_postal_code, p_partner_key, p_location_id, p_revision_id)
 go
 
 alter table p_staff
