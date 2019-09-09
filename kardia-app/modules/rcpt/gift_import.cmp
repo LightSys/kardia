@@ -1861,7 +1861,7 @@ gift_import "widget/component-decl"
 			    a_recv_document_id = condition(:i_eg_gift_pmt_type == 'ACH', 'EFT-', condition(:i_eg_gift_pmt_type == 'Visa', 'VISA-', condition(:i_eg_gift_pmt_type == 'MasterCard', 'MC-', condition(:i_eg_gift_pmt_type == 'Discover', 'DISC-', condition(:i_eg_gift_pmt_type == 'Amex', 'AMEX-', ''))))) + :i_eg_gift_lastfour,
 			    a_posted = 0,
 			    a_posted_to_gl = 0,
-			    a_confidential = 0,
+			    a_confidential = condition(isnull(:eg:i_eg_anonymous, 'NO') = 'YES', 1, 0),
 			    a_non_tax_deductible = isnull((select :a_non_tax_deductible from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ra where :ra:a_cost_center = :eg:a_cost_center and :ra:a_ledger_number = :eg:a_ledger_number and :ra:a_account_code = :eg:a_account_code), 0),
 			    a_comment = :i_eg_desig_notes,
 			    a_gift_admin_subtype = (select :ac:a_default_subtype from /apps/kardia/data/Kardia_DB/a_cc_admin_fee/rows ac where :ac:a_ledger_number = :eg:a_ledger_number and :ac:a_cost_center = :eg:a_cost_center),
