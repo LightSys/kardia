@@ -366,6 +366,11 @@ index "widget/page"
 				    apps_list_osrc "widget/osrc"
 					{
 					sql = runserver("
+						    declare collection funclist;
+
+						    -- Applications from this module
+						    insert
+							collection funclist
 						    select
 							:f:func_name,
 							:f:func_description,
@@ -378,8 +383,31 @@ index "widget/page"
 							object expression ('/apps/kardia/modules/" + :tabpages:modname + "/' + :f:func_file) a
 						    where
 							:f:func_type = 'APP'
+						    ;
+
+						    -- Applications from other modules
+						    insert
+							collection funclist
+						    select
+							:func_name,
+							:func_description,
+							icon = isnull(:icon, '/apps/kardia/images/icons/ionicons-gear.svg'),
+							:height,
+							:width,
+							fullpath = :cx__pathname
+						    from
+							object wildcard '/apps/kardia/modules/*/plugin_" + :tabpages:modname + "_app_*.app' a
+						    having
+							eval(isnull(:a:func_enable, '1')) != 0
+						    ;
+
+						    -- Return the list to the user
+						    select
+							*
+						    from
+							collection funclist
 						    order by
-							:f:func_name
+							:func_name
 						    ");
 					replicasize=30;
 					readahead=30;
@@ -455,6 +483,10 @@ index "widget/page"
 				    rpts_list_osrc "widget/osrc"
 					{
 					sql = runserver("
+						    declare collection funclist;
+
+						    insert
+							collection funclist
 						    select
 							:f:func_name,
 							:f:func_description,
@@ -467,8 +499,31 @@ index "widget/page"
 							object expression ('/apps/kardia/modules/" + :tabpages:modname + "/' + :f:func_file) a
 						    where
 							:f:func_type = 'RPT'
+						    ;
+
+						    -- Reports from other modules
+						    insert
+							collection funclist
+						    select
+							:func_name,
+							:func_description,
+							icon = isnull(:icon, '/apps/kardia/images/icons/tumblicons-file.svg'),
+							:height,
+							:width,
+							fullpath = :cx__pathname
+						    from
+							object wildcard '/apps/kardia/modules/*/plugin_" + :tabpages:modname + "_report_*.app' r
+						    having
+							eval(isnull(:r:func_enable, '1')) != 0
+						    ;
+
+						    -- Return the list to the user
+						    select
+							*
+						    from
+							collection funclist
 						    order by
-							:f:func_name
+							:func_name
 						    ");
 					replicasize=30;
 					readahead=30;
