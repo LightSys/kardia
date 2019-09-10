@@ -121,6 +121,11 @@ security_permissions "system/report"
 		";
 	}
 
+    onerow_qy "report/query"
+	{
+	sql = "	SELECT x = 1";
+	}
+
     // Main body of the report.
     main_form "report/form"
 	{
@@ -165,11 +170,39 @@ security_permissions "system/report"
 		fontsize=8;
 		topborder=0.3;
 		bottomborder=0.05;
+		style=bold;
 
 		//sp_user "report/table-cell" { value='User'; align=left; }
 		sp_name "report/table-cell" { value='Name'; align=left; }
 		sp_log "report/table-cell" { value='Last Login'; align=left; }
-		sp_perm "report/table-cell" { value='Permission / Context / Granted By'; align=left; }
+		sp_perm "report/table-cell"
+		    {
+		    //value='Permission / Context / Granted By'; align=left; 
+		    permhdr_table "report/table"
+			{
+			condition = runserver(:users_qy:privcnt > 0);
+			x=0; width=70.5; height=0;
+			columns=3;
+			widths=31.5,17,21;
+			colsep=0.5;
+			nullformat="";
+			dateformat = "dd-MMM-yyyy";
+			//bottomborder=0.3;
+			margintop=0;
+			source = onerow_qy;
+
+			phdr "report/table-row"
+			    {
+			    font=helvetica;
+			    fontsize=8;
+			    margintop=0;
+
+			    h_perm "report/table-cell" { value='Permission'; align=left; }
+			    h_ctx "report/table-cell" { value='Context'; align=left; }
+			    h_grant "report/table-cell" { value='Granted'; align=left; }
+			    }
+			}
+		    }
 		}
 
 	    one_user "report/table-row"
@@ -219,18 +252,7 @@ security_permissions "system/report"
 			//bottomborder=0.3;
 			margintop=0;
 			source=perms_qy;
-
-			phdr "report/table-row"
-			    {
-			    condition = 0;
-			    header = yes;
-			    font=helvetica;
-			    fontsize=8;
-
-			    h_perm "report/table-cell" { value='Permission'; align=center; }
-			    h_ctx "report/table-cell" { value='Context'; align=center; }
-			    h_grant "report/table-cell" { value='Granted'; align=center; }
-			    }
+			nodatamsg = no;
 
 			pdata "report/table-row"
 			    {
