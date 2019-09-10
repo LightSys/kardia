@@ -981,6 +981,8 @@ create  index a_gifttrxgrp_donor_id_idx on a_subtrx_gift_group (p_donor_partner_
 go
 create  index a_gifttrxgrp_gift_idx on a_subtrx_gift_group (a_gift_number, a_ledger_number, a_batch_number)
 go
+create  index a_gifttrxgrp_pass_id_idx on a_subtrx_gift_group (p_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number)
+go
 /* create  clustered index a_gifttrxgrp_pk on a_subtrx_gift_group (a_ledger_number, a_batch_number, a_gift_number)*/ 
 /* go */
 
@@ -988,13 +990,19 @@ go
 /* a_subtrx_gift_item */
 /* create  index a_gifttrx_pk on a_subtrx_gift_item (a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
 /* go */
+create  index a_gifttrxi_ack_idx on a_subtrx_gift_item (p_dn_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
 /* create  clustered index a_gifttrxi_cc_clustered_idx on a_subtrx_gift_item (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
 /* go */
+create  index a_gifttrxi_datetype_idx on a_subtrx_gift_item (a_dn_gift_received_date, a_dn_gift_postmark_date, a_dn_gift_type, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
 create  index a_gifttrxi_donor_idx on a_subtrx_gift_item (p_dn_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 create  index a_gifttrxi_gift_idx on a_subtrx_gift_item (a_gift_number, a_ledger_number, a_batch_number, a_split_number)
 go
 create  index a_gifttrxi_mcode_idx on a_subtrx_gift_item (a_motivational_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
+create  index a_gifttrxi_pass_idx on a_subtrx_gift_item (p_dn_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 create  index a_gifttrxi_rcpt_idx on a_subtrx_gift_item (a_dn_receipt_number, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go

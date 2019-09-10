@@ -3173,6 +3173,7 @@ create table a_subtrx_gift_group (
         a_receipt_number                      varchar(64)  null,       /* Receipt number that we sent out --  */
         p_donor_partner_id                    char(10)  null,          /* Partner ID of donor --  */
         p_ack_partner_id                      char(10)  null,          /* Partner ID to send non-receipt acknowledgment to --  */
+        p_pass_partner_id                     char(10)  null,          /* Partner ID of pass-through entity --  */
         a_receipt_sent                        bit  default 0,          /* Receipt sent to donor --  */
         a_receipt_desired                     char(1)  default 'I'  null,
                                                                       /* Receipt needed -- 'I' for immediate, 'A' for annual, 'N' for no receipt --  */
@@ -3220,9 +3221,12 @@ create table a_subtrx_gift_item (
         a_comment                             varchar(255)  null,      /* Gift comments --  */
         i_eg_source_key                       varchar(255)  null,      /* If imported, this is the key value for i_eg_gift_import. --  */
         p_dn_donor_partner_id                 char(10)  null,          /* **Denormalized** Partner ID of gift donor. --  */
+        p_dn_ack_partner_id                   char(10)  null,          /* **Denormalized** Partner ID to send gift acknowledgement. --  */
+        p_dn_pass_partner_id                  char(10)  null,          /* **Denormalized** Partner ID of gift pass-through entity. --  */
         a_dn_receipt_number                   varchar(64)  null,       /* **Denormalized** Receipt number we sent out. --  */
         a_dn_gift_received_date               datetime  null,          /* **Denormalized** Date gift was received --  */
         a_dn_gift_postmark_date               datetime  null,          /* **Denormalized** Date gift was postmarked --  */
+        a_dn_gift_type                        char(1)  null,           /* **Denormalized** Gift type (C/K/E/D). --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

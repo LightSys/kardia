@@ -20,6 +20,7 @@ plugin_crm_search_GFT "system/query"
 		:stage:fund = :sc:fund,
 		:stage:minamt = :sc:minamt,
 		:stage:maxamt = :sc:maxamt,
+		:stage:gift_type = :sc:gift_type,
 		:stage:comment = :sc:comment
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
@@ -89,6 +90,7 @@ plugin_crm_search_GFT "system/query"
 		(:stage:maxamt is null or :i:a_amount <= convert(money,:stage:maxamt)) and
 		(:stage:startdate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :stage:startdate) and
 		(:stage:enddate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :stage:enddate) and
+		(:stage:gift_type is null or charindex(:i:a_dn_gift_type, :stage:gift_type) > 0) and
 		:stage:op = 'A'
 	    group by
 		:i:p_dn_donor_partner_id
@@ -130,7 +132,8 @@ plugin_crm_search_GFT "system/query"
 		(:stage:minamt is null or :i:a_amount >= convert(money,:stage:minamt)) and
 		(:stage:maxamt is null or :i:a_amount <= convert(money,:stage:maxamt)) and
 		(:stage:startdate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :stage:startdate) and
-		(:stage:enddate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :stage:enddate)
+		(:stage:enddate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :stage:enddate) and
+		(:stage:gift_type is null or charindex(:i:a_dn_gift_type, :stage:gift_type) > 0)
 	    group by
 		:sr:p_partner_key,
 		:i:p_dn_donor_partner_id
@@ -166,7 +169,8 @@ plugin_crm_search_GFT "system/query"
 		(:stage:minamt is null or :i:a_amount >= convert(money,:stage:minamt)) and
 		(:stage:maxamt is null or :i:a_amount <= convert(money,:stage:maxamt)) and
 		(:stage:startdate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :stage:startdate) and
-		(:stage:enddate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :stage:enddate)
+		(:stage:enddate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :stage:enddate) and
+		(:stage:gift_type is null or charindex(:i:a_dn_gift_type, :stage:gift_type) > 0)
 	    group by
 		:sr:p_partner_key
 	    having

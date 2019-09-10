@@ -8,7 +8,7 @@ plugin_crm_search_lists "widget/component-decl"
     icon = "/apps/kardia/images/icons/openiconic-dollar.svg";
     sequence = 20;
     width=410;
-    height=136;
+    height=164;
 
     criteria_osrc "widget/parameter" { type=object; }
     criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
@@ -17,7 +17,7 @@ plugin_crm_search_lists "widget/component-decl"
     param_vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=410; height=136;
+	width=410; height=164;
 	spacing=4;
 
 	f_desig_cc "widget/component"
@@ -41,6 +41,7 @@ plugin_crm_search_lists "widget/component-decl"
 
 	minamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=minamt; height=24; width=300; label_width=150; form=criteria_params_form; text="Min Gift Amt:"; min_hints "widget/hints" { style=strnull; } }
 	maxamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxamt; height=24; width=300; label_width=150; form=criteria_params_form; text="Max Gift Amt:"; max_hints "widget/hints" { style=strnull; } }
+	gift_type "widget/component" { path="/sys/cmp/smart_field.cmp"; field=gift_type; height=24; width=300; label_width=150; form=criteria_params_form; text="Gift Type(s):"; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_gift_type/rows ; select text = 'EFT or Credit Card', tag = 'ED'; select text = 'Cash or Check', tag = 'CK'"; numdisplay=7; }
 	gift_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=comment; height=24; width=300; label_width=150; form=criteria_params_form; text="Gift Comment:"; comm_hints "widget/hints" { style=strnull; } }
 
 	gift_dates "widget/hbox"

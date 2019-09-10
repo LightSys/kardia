@@ -1118,6 +1118,11 @@ alter table a_subtrx_gift_group
 go
 
 
+alter table a_subtrx_gift_group
+	drop constraint a_gifttrxgrp_pass_id_idx
+go
+
+
 alter table a_subtrx_gift_item
 	drop constraint a_gifttrx_pk
 go
@@ -1144,12 +1149,27 @@ go
 
 
 alter table a_subtrx_gift_item
+	drop constraint a_gifttrxi_ack_idx
+go
+
+
+alter table a_subtrx_gift_item
+	drop constraint a_gifttrxi_pass_idx
+go
+
+
+alter table a_subtrx_gift_item
 	drop constraint a_gifttrxi_rcpt_idx
 go
 
 
 alter table a_subtrx_gift_item
 	drop constraint a_gifttrxi_src_idx
+go
+
+
+alter table a_subtrx_gift_item
+	drop constraint a_gifttrxi_datetype_idx
 go
 
 

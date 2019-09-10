@@ -165,7 +165,10 @@ post_cr_batch "widget/component-decl"
 		    :i:p_dn_donor_partner_id = :g:p_donor_partner_id,
 		    :i:a_dn_gift_received_date = :g:a_gift_received_date,
 		    :i:a_dn_gift_postmark_date = :g:a_gift_postmark_date,
-		    :i:a_dn_receipt_number = :g:a_receipt_number
+		    :i:a_dn_receipt_number = :g:a_receipt_number,
+		    :i:p_dn_ack_partner_id = :g:p_ack_partner_id,
+		    :i:p_dn_pass_partner_id = :g:p_pass_partner_id,
+		    :i:a_dn_gift_type = :g:a_gift_type
 		WHERE
 		    :g:a_ledger_number = :parameters:a_ledger_number and
 		    :g:a_batch_number = :parameters:a_batch_number and

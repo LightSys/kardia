@@ -980,6 +980,8 @@ drop index a_subtrx_gift_group.a_gifttrxgrp_donor_id_idx
 go
 drop index a_subtrx_gift_group.a_gifttrxgrp_gift_idx
 go
+drop index a_subtrx_gift_group.a_gifttrxgrp_pass_id_idx
+go
 /* drop index a_subtrx_gift_group.a_gifttrxgrp_pk */ 
 /* go */
 
@@ -987,13 +989,19 @@ go
 /* a_subtrx_gift_item */
 /* drop index a_subtrx_gift_item.a_gifttrx_pk */ 
 /* go */
+drop index a_subtrx_gift_item.a_gifttrxi_ack_idx
+go
 /* drop index a_subtrx_gift_item.a_gifttrxi_cc_clustered_idx */ 
 /* go */
+drop index a_subtrx_gift_item.a_gifttrxi_datetype_idx
+go
 drop index a_subtrx_gift_item.a_gifttrxi_donor_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_gift_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_mcode_idx
+go
+drop index a_subtrx_gift_item.a_gifttrxi_pass_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_rcpt_idx
 go
