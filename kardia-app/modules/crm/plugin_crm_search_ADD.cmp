@@ -3,12 +3,12 @@ plugin_crm_search_ADD "widget/component-decl"
     {
     stage_label = "Address";
     stage_short_label = "Addr";
-    stage_description_expr = "isnull((select isnull('Address Contains: ' + :param:addr + ', ', '') + isnull('City Begins With: ' + :param:city + ', ', '') + isnull('State/Province: ' + :param:stateprov + ', ', '') + isnull('Country: ' + :param:country + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
+    stage_description_expr = "isnull((select isnull('Address Contains: ' + :param:addr + ', ', '') + isnull('City Begins With: ' + :param:city + ', ', '') + isnull('State/Province: ' + :param:stateprov + ', ', '') + isnull('Country: ' + :param:country + ', ', '') + isnull('Within ' + :param:geo_within + ' mi of ' + :param:geo_of + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
     stage_type = "ADD";
     icon = "/apps/kardia/images/tango/go-home.png";
     sequence = 15;
     width=410;
-    height=108;
+    height=136;
 
     criteria_osrc "widget/parameter" { type=object; }
     criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
@@ -17,12 +17,21 @@ plugin_crm_search_ADD "widget/component-decl"
     param_vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=410; height=108;
+	width=410; height=136;
 	spacing=4;
 
 	addr "widget/component" { path="/sys/cmp/smart_field.cmp"; field=addr; height=24; width=300; label_width=150; form=criteria_params_form; text="Address Contains:"; addr_hints "widget/hints" { style=strnull; } }
 	city "widget/component" { path="/sys/cmp/smart_field.cmp"; field=city; height=24; width=300; label_width=150; form=criteria_params_form; text="City Begins With:"; city_hints "widget/hints" { style=strnull; } }
-	stateprov "widget/component" { path="/sys/cmp/smart_field.cmp"; field=stateprov; height=24; width=200; label_width=150; form=criteria_params_form; text="State/Province Abbrev:"; sp_hints "widget/hints" { style=strnull; } }
+	stateprov "widget/component" { path="/sys/cmp/smart_field.cmp"; field=stateprov; height=24; width=180; label_width=150; form=criteria_params_form; text="State/Province Abbrev:"; sp_hints "widget/hints" { style=strnull; } }
 	country "widget/component" { path="/sys/cmp/smart_field.cmp"; field=country; height=24; width=250; label_width=150; form=criteria_params_form; text="Country:"; ctl_type=dropdown; sql="select label=:p_country_name, value=:p_country_code from /apps/kardia/data/Kardia_DB/p_country/rows order by :p_country_name"; numdisplay=12; }
+
+	geo_hbox "widget/hbox"
+	    {
+	    height=24;
+	    spacing=8;
+
+	    within "widget/component" { path="/sys/cmp/smart_field.cmp"; field=geo_within; height=24; width=180; label_width=150; form=criteria_params_form; text="Within:"; ctl_type=editbox; wi_hints "widget/hints" { style=strnull; } }
+	    miles "widget/component" { path="/sys/cmp/smart_field.cmp"; field=geo_of; height=24; width=222; label_width=120; text="Miles of Postal Code:"; ctl_type=editbox; form=criteria_params_form; mi_hints "widget/hints" { style=strnull; } }
+	    }
 	}
     }

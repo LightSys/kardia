@@ -18,7 +18,9 @@ plugin_crm_search_ADD "system/query"
 		:stage:addr = lower(:sc:addr),
 		:stage:city = lower(:sc:city),
 		:stage:country = upper(:sc:country),
-		:stage:stateprov = upper(:sc:stateprov)
+		:stage:stateprov = upper(:sc:stateprov),
+		:stage:geo_within = convert(double, :sc:geo_within),
+		:stage:geo_of = :sc:geo_of
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
 		/apps/kardia/modules/crm/advanced_search_params.qyp sc
@@ -27,6 +29,20 @@ plugin_crm_search_ADD "system/query"
 		:s:p_search_stage_id = :parameters:cur_stage and
 		:sc:p_search_id = :s:p_search_id and
 		:sc:p_search_stage_id = :s:p_search_stage_id
+	    ;
+
+	    -- Find the list of zip codes that match the criteria.  Use
+	    -- haversine formula for calculating great circle distance
+	    select
+		:stage:postal_codes = sum(:g2:p_feature_name + ',') - ','
+	    from
+		/apps/kardia/data/Kardia_DB/p_gazetteer/rows g1,
+		/apps/kardia/data/Kardia_DB/p_gazetteer/rows g2
+	    where
+		:g1:p_feature_name = :stage:geo_of and
+		:g1:p_feature_type = 'PC' and
+		:g2:p_feature_type = 'PC' and
+		2.0 * atan2(sqrt(power(sin((radians(:g1:p_latitude) - radians(:g2:p_latitude)) / 2),2) + cos(radians(:g1:p_latitude)) * cos(radians(:g2:p_latitude)) * power(sin((radians(:g1:p_longitude) - radians(:g2:p_longitude)) / 2),2)), sqrt(1 - power(sin((radians(:g1:p_latitude) - radians(:g2:p_latitude)) / 2),2) + cos(radians(:g1:p_latitude)) * cos(radians(:g2:p_latitude)) * power(sin((radians(:g1:p_longitude) - radians(:g2:p_longitude)) / 2),2))) * 3958.8 <= :stage:geo_within
 	    ;
 
 	    -- Delete any previous results.
@@ -86,7 +102,8 @@ plugin_crm_search_ADD "system/query"
 		(:stage:addr is null or charindex(:stage:addr, lower(:l:p_in_care_of)) > 0 or charindex(:stage:addr, lower(:l:p_address_1)) > 0 or charindex(:stage:addr, lower(:l:p_address_2)) > 0 or charindex(:stage:addr, lower(:l:p_address_3)) > 0) and
 		(:stage:city is null or charindex(:stage:city, lower(:l:p_city)) = 1) and
 		(:stage:country is null or :stage:country = upper(:l:p_country_code)) and
-		(:stage:stateprov is null or :stage:stateprov = upper(:l:p_state_province))
+		(:stage:stateprov is null or :stage:stateprov = upper(:l:p_state_province)) and
+		(:stage:geo_within is null or :stage:geo_of is null or charindex(',' + condition(:l:p_country_code = 'US' or isnull(char_length(:l:p_country_code), 0) < 2, substring(:l:p_postal_code,1,5), :l:p_postal_code) + ',', ',' + :stage:postal_codes + ',') > 0)
 	    on duplicate
 		:p_partner_key,
 		:p_search_session_id,
@@ -124,7 +141,8 @@ plugin_crm_search_ADD "system/query"
 		(:stage:addr is null or charindex(:stage:addr, lower(:l:p_in_care_of)) > 0 or charindex(:stage:addr, lower(:l:p_address_1)) > 0 or charindex(:stage:addr, lower(:l:p_address_2)) > 0 or charindex(:stage:addr, lower(:l:p_address_3)) > 0) and
 		(:stage:city is null or charindex(:stage:city, lower(:l:p_city)) = 1) and
 		(:stage:country is null or :stage:country = upper(:l:p_country_code)) and
-		(:stage:stateprov is null or :stage:stateprov = upper(:l:p_state_province))
+		(:stage:stateprov is null or :stage:stateprov = upper(:l:p_state_province)) and
+		(:stage:geo_within is null or :stage:geo_of is null or charindex(',' + condition(:l:p_country_code = 'US' or isnull(char_length(:l:p_country_code), 0) < 2, substring(:l:p_postal_code,1,5), :l:p_postal_code) + ',', ',' + :stage:postal_codes + ',') > 0)
 	    ;
 
 	    -- Pass #4: filter existing results if we're excluding
@@ -156,7 +174,8 @@ plugin_crm_search_ADD "system/query"
 		(:stage:addr is null or charindex(:stage:addr, lower(:l:p_in_care_of)) > 0 or charindex(:stage:addr, lower(:l:p_address_1)) > 0 or charindex(:stage:addr, lower(:l:p_address_2)) > 0 or charindex(:stage:addr, lower(:l:p_address_3)) > 0) and
 		(:stage:city is null or charindex(:stage:city, lower(:l:p_city)) = 1) and
 		(:stage:country is null or :stage:country = upper(:l:p_country_code)) and
-		(:stage:stateprov is null or :stage:stateprov = upper(:l:p_state_province))
+		(:stage:stateprov is null or :stage:stateprov = upper(:l:p_state_province)) and
+		(:stage:geo_within is null or :stage:geo_of is null or charindex(',' + condition(:l:p_country_code = 'US' or isnull(char_length(:l:p_country_code), 0) < 2, substring(:l:p_postal_code,1,5), :l:p_postal_code) + ',', ',' + :stage:postal_codes + ',') > 0)
 	    group by
 		:sr:p_partner_key
 	    having
