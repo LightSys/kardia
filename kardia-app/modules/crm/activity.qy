@@ -5,6 +5,7 @@ activity "system/query"
     //my_cclist "query/parameter" { type=string; }
 
     sql = " declare object activitygroup;
+	    declare collection ud;
 
 	    -- Basic updates for the user's status.
 	    insert
@@ -47,6 +48,13 @@ activity "system/query"
 		    :s_modified_by = user_name()
 	    where
 		    :s_username = user_name()
+	    ;
+	    insert
+		    collection ud
+	    select
+		    *
+	    from
+		    /apps/kardia/data/Kardia_DB/s_user_data/rows
 	    ;
 
 	    -- Insert a header record to reserve the group ID.
@@ -335,7 +343,7 @@ activity "system/query"
 	    from
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
-		/apps/kardia/data/Kardia_DB/s_user_data/rows ud
+		collection ud ud
 	    where
 		:p:p_partner_key = :s:p_partner_key and
 		:ud:s_username = :s:p_kardia_login
@@ -386,7 +394,7 @@ activity "system/query"
 		/sys/cx.sysinfo/session/apps a,
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
-		/apps/kardia/data/Kardia_DB/s_user_data/rows ud
+		collection ud ud
 	    where
 		charindex('/apps/kardia/modules/crm', :a:app_path) > 0 and
 		:s:p_kardia_login = :a:username and

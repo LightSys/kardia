@@ -5,6 +5,8 @@ plugin_menu_act_logins "widget/component-decl"
     height=142;
     type = "User";
     sql = " -- Basic updates for the user's status.
+	    declare collection ud;
+
 	    insert
 		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
 	    select
@@ -44,6 +46,14 @@ plugin_menu_act_logins "widget/component-decl"
 		    :s_modified_by = user_name()
 	    ;
 
+	    insert
+		    collection ud
+	    select
+		    *
+	    from
+		    /apps/kardia/data/Kardia_DB/s_user_data/rows
+	    ;
+
 	    -- Users who are not currently online
 	    insert
 		collection activity
@@ -80,7 +90,7 @@ plugin_menu_act_logins "widget/component-decl"
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
 		/apps/kardia/data/Users.uxu ux,
-		/apps/kardia/data/Kardia_DB/s_user_data/rows ud
+		collection ud ud
 	    where
 		:p:p_partner_key = :s:p_partner_key and
 		:ud:s_username *= :s:p_kardia_login and
@@ -130,7 +140,7 @@ plugin_menu_act_logins "widget/component-decl"
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
 		/apps/kardia/data/Users.uxu ux,
-		/apps/kardia/data/Kardia_DB/s_user_data/rows ud
+		collection ud ud
 	    where
 		:s:p_kardia_login =* :a:username and
 		:p:p_partner_key = :s:p_partner_key and
