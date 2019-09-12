@@ -730,7 +730,7 @@ search "widget/component-decl"
 	titlebar=no;
 	toplevel=yes;
 	visible=no;
-	x=0; y=0; width=248; height=164;
+	x=0; y=0; width=300; height=runserver(100 + 32 * (select count(1) from object wildcard '/apps/kardia/modules/*/plugin_crm_searchreport_*.rpt?ls__type=system%2fstructure'));
 	fl_width=100;
 	border_radius=8;
 	border_style=solid;
@@ -743,7 +743,7 @@ search "widget/component-decl"
 
 	reports_vbox "widget/vbox"
 	    {
-	    x=10; y=10; width=228; height=118;
+	    x=10; y=10; width=300; height=runserver(54 + 32 * (select count(1) from object wildcard '/apps/kardia/modules/*/plugin_crm_searchreport_*.rpt?ls__type=system%2fstructure'));
 	    spacing=8;
 
 	    reports_title "widget/label" { height=16; font_size=15; align=center; style=bold; text="Download Report:"; }
@@ -755,7 +755,7 @@ search "widget/component-decl"
 
 		one_report_btn "widget/textbutton"
 		    {
-		    height=24; width=200;
+		    height=24; width=252;
 		    x=14;
 		    text=runserver(:reports_repeat:title);
 		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
@@ -786,9 +786,9 @@ search "widget/component-decl"
 
 	ctls_hbox "widget/hbox"
 	    {
-	    x=10; y=128;
+	    x=10; y=runserver(64 + 32 * (select count(1) from object wildcard '/apps/kardia/modules/*/plugin_crm_searchreport_*.rpt?ls__type=system%2fstructure'));
 	    height=24;
-	    width=228;
+	    width=280;
 	    align=center; spacing=10;
 
 	    cancel_btn "widget/textbutton"

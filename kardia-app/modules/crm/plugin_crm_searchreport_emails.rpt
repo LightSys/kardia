@@ -1,0 +1,148 @@
+$Version=2$
+plugin_crm_searchreport_donor "system/report"
+    {
+    title = "Email CSV List Report";
+
+    document_format="text/csv";
+    filename=runserver("email-list-" + :this:session_id + "-" + dateformat(getdate(), "yyyy-MMM-dd") + ".csv");
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.0;
+    marginright=2.0;
+    margintop=3;
+    marginbottom=3;
+
+    // Parameters for us to look up the result set
+    stage_id "report/parameter" { type=integer; default=null; }
+    session_id "report/parameter" { type=integer; default=null; }
+
+    // This report uses in-context application data (search results collection)
+    require_endorsements = "system:from_application";
+
+    // Query to get site information
+    site_qy "report/query"
+	{
+	sql = "	SELECT
+			*
+		FROM
+			OBJECT /apps/kardia/data/Site.struct
+		";
+	}
+
+    // Query for overall search information
+    search_qy "report/query"
+	{
+	sql = "	SELECT
+		    *
+		FROM
+		    /apps/kardia/data/Kardia_DB/p_partner_search/rows
+		WHERE
+		    :p_search_id = :this:session_id
+		";
+	}
+
+    // Query for search description
+    stages_qy "report/query"
+	{
+	sql = " select
+		    :ss:p_search_id,
+		    :ss:p_search_stage_id,
+		    :ss:p_stage_type,
+		    :ss:p_stage_op,
+		    :ss:p_result_count,
+		    :ss:p_sequence,
+		    :ss:s_date_created,
+		    :ss:s_created_by,
+		    :ss:s_date_modified,
+		    :ss:s_modified_by,
+		    prevcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence),
+		    stage_description = eval(:p:stage_description_expr),
+		    :p:icon,
+		    :p:stage_label
+		from
+		    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
+		    object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' p
+		where
+		    :p:stage_type = :ss:p_stage_type and
+		    :ss:p_search_id = :this:session_id
+		order by
+		    :p_sequence asc
+		";
+	}
+
+    // Query to pull the search resultset
+    results_qy "report/query"
+	{
+	sql = "	declare collection advsearch scope application;
+	
+		SELECT
+		    :p:p_partner_key,
+		    email = :ci:p_contact_data,
+		    firstname = isnull(:p:p_given_name, ''),
+		    lastname = condition(char_length(rtrim(:p:p_surname)) > 0, :p:p_surname, :p:p_org_name)
+		FROM    
+		    identity collection advsearch sr,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+		WHERE
+		    :sr:p_search_session_id = :this:session_id and
+		    :sr:p_search_stage_id = :this:stage_id and
+		    :p:p_partner_key =* :sr:p_partner_key and
+		    :ci:p_partner_key = :p:p_partner_key and
+		    :ci:p_contact_type = 'E' and
+		    :ci:p_record_status_code = 'A'
+		HAVING
+		    :email is not null
+		";
+
+	cnt "report/aggregate" { compute="count(1)"; }
+	}
+
+    // Main body of the report.
+    ledger_form "report/form"
+	{
+	moneyformat = "-###,###,##0.00";
+	dateformat = "dd-MMM-yyyy";
+
+	source = site_qy,search_qy;
+
+	donor_table "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    colsep=1.0;
+	    nullformat="";
+	    moneyformat = "-###,###,##0.00";
+	    dateformat = "dd-MMM-yyyy";
+	    bottomborder=0.3;
+	    margintop=0;
+	    source=results_qy;
+	    autowidth=yes;
+
+	    hdr "report/table-row"
+		{
+		header = yes;
+		font=helvetica;
+		fontsize=8;
+		topborder=0.3;
+		bottomborder=0.05;
+
+		t_eml "report/table-cell" { value='Email Address'; align=left; width=22; }
+		t_first "report/table-cell" { value='First Name'; align=left; width=20; }
+		t_last "report/table-cell" { value='Last Name'; align=left; width=36; }
+		}
+
+	    one_email "report/table-row"
+		{
+		allowbreak=no;
+		fontsize=8;
+		font=helvetica;
+		margintop = 0.5;
+
+		d_eml "report/table-cell" { value=runserver(:results_qy:email); align=left; }
+		d_first "report/table-cell" { value=runserver(:results_qy:firstname); align=left; }
+		d_last "report/table-cell" { value=runserver(:results_qy:lastname); align=left; }
+		}
+	    }
+	}
+    }
