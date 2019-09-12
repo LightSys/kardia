@@ -656,7 +656,7 @@ search "widget/component-decl"
 		    empty_desc = "list to create or add to";
 		    label_width=100;
 		    popup_height=250;
-		    lists_hints2 "widget/hints" { badchars=" ,"; }
+		    lists_hints2 "widget/hints" { badchars=" ,"; length=20; }
 
 		    list_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(:list_form:is_savable); target=listdesc_osrc; action=QueryParam; listcode=runclient(:list_code:content); }
 

@@ -226,7 +226,7 @@ generic_report "widget/component-decl"
 				spacing=4;
 				lbl1a "widget/label" { x=120; height=18; text="Create or add report results to a mailing list:"; style=bold; }
 
-				f_list_code "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="list_code"; popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/"); popup_text="Choose List to Add To:"; text="List Code:"; attach_point=editbox; empty_desc = "list to create or add to"; label_width=120; popup_height=250; lists_hints2 "widget/hints" { badchars=" ,"; } }
+				f_list_code "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="list_code"; popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/"); popup_text="Choose List to Add To:"; text="List Code:"; attach_point=editbox; empty_desc = "list to create or add to"; label_width=120; popup_height=250; lists_hints2 "widget/hints" { badchars=" ,"; length=20; } }
 				//f_list_code "widget/component" { height=24; path="/sys/cmp/smart_field.cmp"; field="list_code"; text="List Code:"; empty_desc = "to create or add, type list code"; ctl_type=editbox; label_width=120; }
 				sep1b "widget/autolayoutspacer" { height=8; }
 				lbl1b "widget/label" { x=120; height=18; text="For a new list, please specify the following:"; style=bold; }
