@@ -8,10 +8,10 @@ plugin_crm_search_GFT "system/query"
 
     search_id "query/parameter" { type=integer; }
     cur_stage "query/parameter" { type=integer; }
-    prev_stage "query/parameter" { type=integer; }
+    prev_keys "query/parameter" { type=string; }
 
     sql = " -- First, we need to get our search stage information and config.
-	    declare collection advsearch scope application;
+	    declare collection iresult scope application;
 	    declare object stage;
 	    select
 		:stage:op = :s:p_stage_op,
@@ -21,7 +21,10 @@ plugin_crm_search_GFT "system/query"
 		:stage:minamt = :sc:minamt,
 		:stage:maxamt = :sc:maxamt,
 		:stage:gift_type = :sc:gift_type,
-		:stage:comment = :sc:comment
+		:stage:comment = :sc:comment,
+		:stage:accts = condition(isnull(:sc:accts, 'AllGifts') = 'AllGifts', (select sum(:a_config_value + ',') - ',' from /apps/kardia/data/Kardia_DB/a_config/rows where (:a_config_name = 'RcptGiftAccts' or :a_config_name = 'RcptPGiftAccts') and (:sc:ledger is null or :a_ledger_number = :sc:ledger)), condition(:sc:accts = 'OrgGifts', (select sum(:a_config_value + ',') - ',' from /apps/kardia/data/Kardia_DB/a_config/rows where (:a_config_name = 'RcptGiftAccts') and (:sc:ledger is null or :a_ledger_number = :sc:ledger)), condition(:sc:accts = 'PersGifts', (select sum(:a_config_value + ',') - ',' from /apps/kardia/data/Kardia_DB/a_config/rows where (:a_config_name = 'RcptPGiftAccts') and (:sc:ledger is null or :a_ledger_number = :sc:ledger)), null))),
+		:stage:ledger = :sc:ledger,
+		:stage:minmaxtype = isnull(:sc:minmaxtype, 'GiftItem')
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
 		/apps/kardia/modules/crm/advanced_search_params.qyp sc
@@ -32,68 +35,44 @@ plugin_crm_search_GFT "system/query"
 		:sc:p_search_stage_id = :s:p_search_stage_id
 	    ;
 
-	    -- Delete any previous results.
---	    delete
---		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
---	    where
---		:s_username = user_name() and
---		:p_search_session_id = :parameters:search_id and
---		:p_search_stage_id = :parameters:cur_stage
---	    ;
-
-	    -- Now create this stage's results.
-	    -- Pass #1: copy previous results if we're ADDING.
-	    insert
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
-		collection advsearch
+	    -- Min/Max breakdown
 	    select
-		:p_partner_key,
-		--:s_username,
-		:p_search_session_id,
-		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = ''--,
-		--s_date_created = getdate(),
-		--s_created_by = user_name(),
-		--s_date_modified = getdate(),
-		--s_modified_by = user_name()
-	    from
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows s
-		collection advsearch s
-	    where
-		--:s:s_username = user_name() and
-		:s:p_search_session_id = :parameters:search_id and
-		:s:p_search_stage_id = :parameters:prev_stage and
-		:stage:op = 'A'
+		:stage:minitem = condition(:stage:minmaxtype = 'GiftItem', :stage:minamt, null),
+		:stage:maxitem = condition(:stage:minmaxtype = 'GiftItem', :stage:maxamt, null),
+		:stage:minrcpt = condition(:stage:minmaxtype = 'GiftRcpt', :stage:minamt, null),
+		:stage:maxrcpt = condition(:stage:minmaxtype = 'GiftRcpt', :stage:maxamt, null),
+		:stage:minttl = condition(:stage:minmaxtype = 'Total', :stage:minamt, null),
+		:stage:maxttl = condition(:stage:minmaxtype = 'Total', :stage:maxamt, null)
 	    ;
 
-	    -- Pass #2: generate new results if we're ADDING
+	    -- Get the intermediate results - the first query handles minmaxtypes of
+	    -- GiftItem and Total.
 	    insert
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
-		collection advsearch
+		collection iresult
 	    select
 		p_partner_key = :p_dn_donor_partner_id,
-		--s_username = user_name(),
 		p_search_session_id = :parameters:search_id,
-		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = ''--,
-		--s_date_created = getdate(),
-		--s_created_by = user_name(),
-		--s_date_modified = getdate(),
-		--s_modified_by = user_name()
+		p_search_stage_id = :parameters:cur_stage
 	    from
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
-		(:stage:comment is null or charindex(:stage:comment, :i:a_comment) > 0) and
-		(:stage:fund is null or :i:a_cost_center = :stage:fund) and
+		(:stage:comment is null or charindex(lower(:stage:comment), lower(:i:a_comment)) > 0) and
+		(:stage:fund is null or charindex(',' + rtrim(:i:a_cost_center) + ',', ',' + :stage:fund + ',') > 0) and
+		(:stage:accts is null or charindex(',' + rtrim(:i:a_account_code) + ',', ',' + :stage:accts + ',') > 0) and
+		(:stage:ledger is null or rtrim(:i:a_ledger_number) = :stage:ledger) and
 		:i:a_posted = 1 and
-		(:stage:minamt is null or :i:a_amount >= convert(money,:stage:minamt)) and
-		(:stage:maxamt is null or :i:a_amount <= convert(money,:stage:maxamt)) and
+		(:stage:minitem is null or :i:a_amount >= convert(money,:stage:minitem)) and
+		(:stage:maxitem is null or :i:a_amount <= convert(money,:stage:maxitem)) and
 		(:stage:startdate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :stage:startdate) and
 		(:stage:enddate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :stage:enddate) and
 		(:stage:gift_type is null or charindex(:i:a_dn_gift_type, :stage:gift_type) > 0) and
-		:stage:op = 'A'
+		(:parameters:prev_keys is null or charindex(',' + rtrim(:i:p_dn_donor_partner_id) + ',', ',' + :parameters:prev_keys + ',') > 0) and
+		(:stage:minmaxtype = 'GiftItem' or :stage:minmaxtype = 'Total')
 	    group by
 		:i:p_dn_donor_partner_id
+	    having
+		(:stage:minttl is null or sum(:i:a_amount) >= convert(money, :stage:minttl)) and
+		(:stage:maxttl is null or sum(:i:a_amount) <= convert(money, :stage:maxttl))
 	    on duplicate
 		:p_partner_key,
 		:p_search_session_id,
@@ -102,78 +81,37 @@ plugin_crm_search_GFT "system/query"
 		:p_partner_key = :p_partner_key
 	    ;
 
-	    -- Pass #3: filter existing results if we are restricting
+	    -- The second query here deals with the minmaxtype of GiftRcpt
 	    insert
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
-		collection advsearch
+		collection iresult
 	    select
-		:sr:p_partner_key,
-		--s_username = user_name(),
+		p_partner_key = :p_dn_donor_partner_id,
 		p_search_session_id = :parameters:search_id,
-		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = ''--,
-		--s_date_created = getdate(),
-		--s_created_by = user_name(),
-		--s_date_modified = getdate(),
-		--s_modified_by = user_name()
+		p_search_stage_id = :parameters:cur_stage
 	    from
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
-		collection advsearch sr,
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
-		--:sr:s_username = user_name() and
-		:sr:p_search_session_id = :parameters:search_id and
-		:sr:p_search_stage_id = :parameters:prev_stage and
-		:stage:op = 'R' and
-		:sr:p_partner_key = :i:p_dn_donor_partner_id and
-		:i:a_posted = 1 and
 		(:stage:comment is null or charindex(:stage:comment, :i:a_comment) > 0) and
-		(:stage:fund is null or :i:a_cost_center = :stage:fund) and
-		(:stage:minamt is null or :i:a_amount >= convert(money,:stage:minamt)) and
-		(:stage:maxamt is null or :i:a_amount <= convert(money,:stage:maxamt)) and
+		(:stage:fund is null or charindex(',' + rtrim(:i:a_cost_center) + ',', ',' + :stage:fund + ',') > 0) and
+		(:stage:accts is null or charindex(',' + rtrim(:i:a_account_code) + ',', ',' + :stage:accts + ',') > 0) and
+		(:stage:ledger is null or rtrim(:i:a_ledger_number) = :stage:ledger) and
+		:i:a_posted = 1 and
 		(:stage:startdate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :stage:startdate) and
 		(:stage:enddate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :stage:enddate) and
-		(:stage:gift_type is null or charindex(:i:a_dn_gift_type, :stage:gift_type) > 0)
+		(:stage:gift_type is null or charindex(:i:a_dn_gift_type, :stage:gift_type) > 0) and
+		(:parameters:prev_keys is null or charindex(',' + rtrim(:i:p_dn_donor_partner_id) + ',', ',' + :parameters:prev_keys + ',') > 0) and
+		(:stage:minmaxtype = 'GiftRcpt')
 	    group by
-		:sr:p_partner_key,
-		:i:p_dn_donor_partner_id
-	    ;
-
-	    -- Pass #4: filter existing results if we are excluding
-	    insert
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
-		collection advsearch
-	    select
-		:sr:p_partner_key,
-		--s_username = user_name(),
-		p_search_session_id = :parameters:search_id,
-		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = ''--,
-		--s_date_created = getdate(),
-		--s_created_by = user_name(),
-		--s_date_modified = getdate(),
-		--s_modified_by = user_name()
-	    from
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
-		collection advsearch sr,
-		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-	    where
-		--:sr:s_username = user_name() and
-		:sr:p_search_session_id = :parameters:search_id and
-		:sr:p_search_stage_id = :parameters:prev_stage and
-		:stage:op = 'E' and
-		:sr:p_partner_key *= :i:p_dn_donor_partner_id and
-		:i:a_posted = 1 and
-		(:stage:comment is null or charindex(:stage:comment, :i:a_comment) > 0) and
-		(:stage:fund is null or :i:a_cost_center = :stage:fund) and
-		(:stage:minamt is null or :i:a_amount >= convert(money,:stage:minamt)) and
-		(:stage:maxamt is null or :i:a_amount <= convert(money,:stage:maxamt)) and
-		(:stage:startdate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :stage:startdate) and
-		(:stage:enddate is null or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :stage:enddate) and
-		(:stage:gift_type is null or charindex(:i:a_dn_gift_type, :stage:gift_type) > 0)
-	    group by
-		:sr:p_partner_key
+		:i:p_dn_donor_partner_id,
+		:i:a_gift_number
 	    having
-		count(:i:p_dn_donor_partner_id) = 0
+		(:stage:minrcpt is null or sum(:i:a_amount) >= convert(money, :stage:minrcpt)) and
+		(:stage:maxrcpt is null or sum(:i:a_amount) <= convert(money, :stage:maxrcpt))
+	    on duplicate
+		:p_partner_key,
+		:p_search_session_id,
+		:p_search_stage_id
+	    update set
+		:p_partner_key = :p_partner_key
 	    ";
     }

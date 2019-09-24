@@ -55,7 +55,8 @@ advanced_search "widget/component-decl"
 	    criteria_osrc "widget/osrc"
 		{
 		p_search_id "widget/parameter" { type=integer; }
-		sql = "	-- Check to make sure first in the list is marked as 'A' (add / start-with)
+		sql = "	declare collection advsearch scope application;
+			-- Check to make sure first in the list is marked as 'A' (add / start-with)
 			update
 			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss
 			set
@@ -79,7 +80,8 @@ advanced_search "widget/component-decl"
 			    nextcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence > :ss:p_sequence),
 			    stage_description = eval(:p:stage_description_expr),
 			    :p:icon,
-			    :p:stage_label
+			    :p:stage_label,
+			    res = (select count(1) from collection advsearch sr where :sr:p_search_session_id = :ss:p_search_id and :sr:p_search_stage_id = :ss:p_search_stage_id)
 			from
 			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
 			    object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' p
@@ -153,7 +155,8 @@ advanced_search "widget/component-decl"
 
 		    ct_icon "widget/table-column" { title=""; width=32; fieldname=icon; type=image; image_maxwidth=24; image_maxheight=24; }
 		    ct_op "widget/table-column" { title=""; width=150; value=runclient(condition(:criteria_osrc:prevcnt = 0, 'Start With ', condition(:criteria_osrc:p_stage_op = 'A', 'Add With ', condition(:criteria_osrc:p_stage_op = 'E', 'Exclude ', 'Require '))) + :criteria_osrc:stage_label); style=bold; font_size=15; }
-		    ct_desc "widget/table-column" { title=""; width=250; fieldname=stage_description; wrap=yes; }
+		    ct_desc "widget/table-column" { title=""; width=200; fieldname=stage_description; wrap=yes; }
+		    ct_cnt "widget/table-column" { title=""; width=50; value=runclient(condition(:criteria_osrc:res = 0, '-', '' + :criteria_osrc:res)); align=right; }
 
 
 		    criteria_op_detail "widget/table-row-detail"
@@ -508,7 +511,8 @@ advanced_search "widget/component-decl"
 				1
 			    from
 				/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
-				expression ( '/apps/kardia/modules/crm/plugin_crm_search_' + :ss:p_stage_type + '.qy?search_id=' + :ss:p_search_id + '&cur_stage=' + :ss:p_search_stage_id + isnull('&prev_stage=' + (select :ss2:p_search_stage_id from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence order by :ss2:p_sequence desc limit 1) , ''))
+				expression ( '/apps/kardia/modules/crm/advanced_search_stage.qy?type=' + :ss:p_stage_type + '&search_id=' + :ss:p_search_id + '&cur_stage=' + :ss:p_search_stage_id + isnull('&prev_stage=' + (select :ss2:p_search_stage_id from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence order by :ss2:p_sequence desc limit 1) , ''))
+				--expression ( '/apps/kardia/modules/crm/plugin_crm_search_' + :ss:p_stage_type + '.qy?search_id=' + :ss:p_search_id + '&cur_stage=' + :ss:p_search_stage_id + isnull('&prev_stage=' + (select :ss2:p_search_stage_id from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence order by :ss2:p_sequence desc limit 1) , ''))
 			    where
 				:ss:p_search_id = :parameters:p_search_id
 			    order by
@@ -541,6 +545,7 @@ advanced_search "widget/component-decl"
 			session_id=runclient(:run_search_osrc:p_search_id);
 			stage_id=runclient(:run_search_osrc:p_search_stage_id);
 			}
+		    on_complete_do_refresh_2 "widget/connector" { event=EndQuery; event_delay=0.5; target=criteria_osrc; action=Refresh; }
 		    }
 		}
 	    }

@@ -317,6 +317,8 @@ search "widget/component-decl"
 				    :pl:p_record_status_code = 'A' and
 				    :p:p_record_status_code = 'A' and
 				    :p:p_status_code = 'A'
+			    group by
+				    :sr:p_partner_key
 			    order by
 				    :sr:p_sortkey,
 				    :sr:p_partner_key
@@ -610,7 +612,7 @@ search "widget/component-decl"
 	    event_condition=runclient(:email_em_osrc:emails is not null);
 	    target=search;
 	    action=Launch;
-	    Source=runclient("mailto:" + :email_em_osrc:emails);
+	    Source=runclient("mailto:" + replace(:email_em_osrc:emails, '&', '%26'));
 	    }
 	}
 

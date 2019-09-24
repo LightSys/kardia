@@ -1,14 +1,14 @@
 $Version=2$
-plugin_crm_search_lists "widget/component-decl"
+plugin_crm_search_GFT "widget/component-decl"
     {
     stage_label = "Gift Given";
     stage_short_label = "Gift";
-    stage_description_expr = "isnull((select isnull('Fund: ' + :param:fund + ', ', '') + isnull('Comment: ' + :param:comment + ', ', '') + isnull('Min: ' + :param:minamt + ', ', '') + isnull('Max: ' + :param:maxamt + ', ', '') + isnull('Gift Types: ' + :param:gift_type + ', ', '') + isnull('Gift After: ' + substring(convert(string,:param:start),1,12) + ', ', '') + isnull('Gift Before: ' + substring(convert(string,:param:end),1,12) + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
+    stage_description_expr = "isnull((select isnull('Org: ' + :param:ledger + ', ', '') + isnull('Fund: ' + :param:fund + ', ', '') + isnull('Include: ' + :param:accts + ', ', '') + isnull('Min/Max: ' + :param:minmaxtype + ', ', '') +  isnull('Comment: ' + :param:comment + ', ', '') + isnull('Min: ' + :param:minamt + ', ', '') + isnull('Max: ' + :param:maxamt + ', ', '') + isnull('Gift Via: ' + :param:gift_type + ', ', '') + isnull('Gift After: ' + (substring(convert(string,:param:start),1,12) - ',') + ', ', '') + isnull('Gift Before: ' + (substring(convert(string,:param:end),1,12) - ',') + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
     stage_type = "GFT";
     icon = "/apps/kardia/images/icons/openiconic-dollar.svg";
     sequence = 20;
     width=410;
-    height=164;
+    height=220;
 
     criteria_osrc "widget/parameter" { type=object; }
     criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
@@ -17,8 +17,40 @@ plugin_crm_search_lists "widget/component-decl"
     param_vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=410; height=164;
+	width=410; height=220;
 	spacing=4;
+
+	f_org_dd "widget/component"
+	    {
+	    height = 24;
+	    path = "/sys/cmp/smart_field.cmp";
+	    label_width=150;
+	    width=400;
+	    text = "To Organization:";
+	    field = "ledger";
+	    ctl_type = dropdown;
+	    sql = "select label=:a_ledger_desc + ' (' + :a_ledger_number + ')', value=:a_ledger_number, sel=condition(:l:a_ledger_number = (select :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows l2 having has_endorsement('kardia:gift', 'kardia:ledger:' + rtrim(:l2:a_ledger_number)) or  has_endorsement('kardia:gift_amt', 'kardia:ledger:' + rtrim(:l2:a_ledger_number)) limit 1), 1, 0) from /apps/kardia/data/Kardia_DB/a_ledger/rows l having has_endorsement('kardia:gift', 'kardia:ledger:' + rtrim(:l:a_ledger_number)) or has_endorsement('kardia:gift_amt', 'kardia:ledger:' + rtrim(:l:a_ledger_number))";
+	    invalid_select_default = yes;
+	    form=criteria_params_form;
+
+	    org_hints "widget/hints" { default=runclient(runserver((select :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows l having has_endorsement('kardia:gift', 'kardia:ledger:' + rtrim(:l:a_ledger_number)) or  has_endorsement('kardia:gift_amt', 'kardia:ledger:' + rtrim(:l:a_ledger_number)) limit 1))); }
+	    }
+	
+	f_desig_acct_dd "widget/component"
+	    {
+	    height = 24;
+	    path = "/sys/cmp/smart_field.cmp";
+	    label_width=150;
+	    width=400;
+	    text = "Include:";
+	    field = "accts";
+	    ctl_type = dropdown;
+	    sql = "select label='All Gifts (to Organization and Passthrough) (DEFAULT)', value='AllGifts', sel=1; select label='Only Gifts to Organization', value='OrgGifts', sel=0; select label='Only Passthrough/Personal Gifts', value='PersGifts', sel=0; select label='All Receipts (also including payments, refunds, etc.)', value='Everything', sel=0";
+	    invalid_select_default = yes;
+	    form=criteria_params_form;
+
+	    ac_hints "widget/hints" { style=notnull; default=runclient('AllGifts'); }
+	    }
 
 	f_desig_cc "widget/component"
 	    {
@@ -27,21 +59,62 @@ plugin_crm_search_lists "widget/component-decl"
 	    field='fund';
 	    text='Designation:';
 	    label_width=150;
-	    width=300;
+	    width=400;
 	    popup_width=380;
-	    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
+	    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center having has_endorsement('kardia:gift', 'kardia:ledger:' + rtrim(:cr:a_ledger_number)) or has_endorsement('kardia:gift_amt', 'kardia:ledger:' + rtrim(:cr:a_ledger_number))");
 	    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
 	    key_name="a_cost_center";
 	    object_name="Fund / Cost Center";
 	    popup_text="Select Designation:";
+	    empty_desc="one or more, separated by commas";
 	    form=criteria_params_form;
+	    multiselect=1;
 
-	    desig_hints "widget/hints" { style=applyonchange,uppercase,strnull; }
+	    desig_hints "widget/hints" { style=applyonchange,uppercase,strnull; badchars=' '; }
+
+	    cc_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(char_length(:f_desig_cc:value) > 0); target=ccdesc_osrc; action=QueryParam; a_ledger_number=runclient(:f_org_dd:value); a_cost_center=runclient(:f_desig_cc:content); }
+
+	    ccdesc_osrc "widget/osrc"
+		{
+		ccdesc_param1 "widget/parameter" { type=string; param_name=a_cost_center; }
+		ccdesc_param2 "widget/parameter" { type=string; param_name=a_ledger_number; }
+		sql = "select a_cc_desc = condition(charindex(',', :parameters:a_cost_center) > 0, '**MULTIPLE**', isnull(first(:cc:a_cc_desc),'**INVALID**')), :parameters:a_cost_center from /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cc:a_cost_center = :parameters:a_cost_center and (:parameters:a_ledger_number is null or :cc:a_ledger_number = :parameters:a_ledger_number) limit 1";
+		autoquery = never;
+		replicasize=2;
+		readahead=2;
+
+		cc_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:ccdesc_osrc:a_cost_center = :f_desig_cc:content); target=f_desig_cc; action=SetValueDescription; Description=runclient(:ccdesc_osrc:a_cc_desc); }
+		}
 	    }
 
-	minamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=minamt; height=24; width=300; label_width=150; form=criteria_params_form; text="Min Gift Amt:"; min_hints "widget/hints" { style=strnull; } }
-	maxamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxamt; height=24; width=300; label_width=150; form=criteria_params_form; text="Max Gift Amt:"; max_hints "widget/hints" { style=strnull; } }
-	gift_type "widget/component" { path="/sys/cmp/smart_field.cmp"; field=gift_type; height=24; width=300; label_width=150; form=criteria_params_form; text="Gift Type(s):"; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_gift_type/rows ; select text = 'EFT or Credit Card', tag = 'ED'; select text = 'Cash or Check', tag = 'CK'"; numdisplay=7; }
+	minmax_type "widget/component"
+	    {
+	    height = 24;
+	    path = "/sys/cmp/smart_field.cmp";
+	    label_width=150;
+	    width=400;
+	    text = "Apply Min/Max To:";
+	    field = "minmaxtype";
+	    ctl_type = dropdown;
+	    sql = "select label='Single Gift Designation Item (DEFAULT)', value='GiftItem', sel=1; select label='Single Gift Receipt Total', value='GiftRcpt', sel=0; select label='Total Giving', value='Total', sel=0";
+	    invalid_select_default = yes;
+	    form=criteria_params_form;
+
+	    mm_hints "widget/hints" { style=notnull; default=runclient('GiftItem'); }
+	    }
+
+        amt_hbox "widget/hbox"
+	    {
+	    height=24;
+	    spacing=10;
+
+	    minamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=minamt; width=235; label_width=150; form=criteria_params_form; text="Gift Amount, Min:"; min_hints "widget/hints" { style=strnull; allowchars="0123456789."; } }
+	    maxamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxamt; width=155; label_width=40; form=criteria_params_form; text="Max:"; max_hints "widget/hints" { style=strnull; allowchars="0123456789."; } }
+	    }
+
+	//minamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=minamt; height=24; width=300; label_width=150; form=criteria_params_form; text="Min Gift Amt:"; min_hints "widget/hints" { style=strnull; } }
+	//maxamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxamt; height=24; width=300; label_width=150; form=criteria_params_form; text="Max Gift Amt:"; max_hints "widget/hints" { style=strnull; } }
+	gift_type "widget/component" { path="/sys/cmp/smart_field.cmp"; field=gift_type; height=24; width=300; label_width=150; form=criteria_params_form; text="Gift Via:"; ctl_type=dropdown; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_gift_type/rows ; select text = 'EFT or Credit Card', tag = 'ED'; select text = 'Cash or Check', tag = 'CK'"; numdisplay=7; }
 	gift_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=comment; height=24; width=300; label_width=150; form=criteria_params_form; text="Gift Comment:"; comm_hints "widget/hints" { style=strnull; } }
 
 	gift_dates "widget/hbox"
@@ -54,7 +127,7 @@ plugin_crm_search_lists "widget/component-decl"
 		path="/sys/cmp/smart_field.cmp";
 		field=start;
 		text="Gift Between:";
-		width=250;
+		width=235;
 		label_width=150;
 		ctl_type=datetime;
 		date_only=1; default_time="00:00:00";
@@ -65,7 +138,7 @@ plugin_crm_search_lists "widget/component-decl"
 		path="/sys/cmp/smart_field.cmp";
 		field=end;
 		text="And:";
-		width=140;
+		width=155;
 		label_width=40;
 		ctl_type=datetime;
 		date_only=1; default_time="23:59:59";

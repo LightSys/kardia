@@ -22,7 +22,7 @@ plugin_crm_search_ADD "widget/component-decl"
 
 	addr "widget/component" { path="/sys/cmp/smart_field.cmp"; field=addr; height=24; width=300; label_width=150; form=criteria_params_form; text="Address Contains:"; addr_hints "widget/hints" { style=strnull; } }
 	city "widget/component" { path="/sys/cmp/smart_field.cmp"; field=city; height=24; width=300; label_width=150; form=criteria_params_form; text="City Begins With:"; city_hints "widget/hints" { style=strnull; } }
-	stateprov "widget/component" { path="/sys/cmp/smart_field.cmp"; field=stateprov; height=24; width=180; label_width=150; form=criteria_params_form; text="State/Province Abbrev:"; sp_hints "widget/hints" { style=strnull; } }
+	stateprov "widget/component" { path="/sys/cmp/smart_field.cmp"; field=stateprov; height=24; width=300; label_width=150; form=criteria_params_form; text="State/Prov. Abbrev(s):"; sp_hints "widget/hints" { style=strnull,uppercase; allowchars='ABCDEFGHIJKLMNOPQRSTUVWXYZ,'; } empty_desc="one or more, separated by commas"; }
 	country "widget/component" { path="/sys/cmp/smart_field.cmp"; field=country; height=24; width=250; label_width=150; form=criteria_params_form; text="Country:"; ctl_type=dropdown; sql="select label=:p_country_name, value=:p_country_code from /apps/kardia/data/Kardia_DB/p_country/rows order by :p_country_name"; numdisplay=12; }
 
 	geo_hbox "widget/hbox"
