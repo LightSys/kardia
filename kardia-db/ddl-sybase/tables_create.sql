@@ -638,6 +638,7 @@ create table p_gazetteer (
         p_feature_id                          integer  not null,       /* numeric ID of the feature (this depends on feature source) --  */
         p_alt_feature_id                      integer  not null,       /* alternate numeric ID of the feature (this depends on feature source) --  */
         p_feature_name                        varchar(80)  not null,   /* name of the feature (zip code, city name, etc.) --  */
+        p_feature_desc                        varchar(255)  null,      /* description of the feature (zip code, city name, etc.) --  */
         p_state_province                      varchar(64)  null,       /* if applicable, the state or province that this feature occurs in (data not always available) --  */
         p_area_land                           float  null,             /* land area of the feature, in square miles --  */
         p_area_water                          float  null,             /* water area of the feature, in square miles --  */
