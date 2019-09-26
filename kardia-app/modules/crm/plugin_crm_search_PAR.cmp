@@ -8,7 +8,7 @@ plugin_crm_search_partners "widget/component-decl"
     icon = "/apps/kardia/images/icons/ionicons-people.svg";
     sequence = 10;
     width=410;
-    height=248;
+    height=220;
 
     criteria_osrc "widget/parameter" { type=object; }
     criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
@@ -17,15 +17,14 @@ plugin_crm_search_partners "widget/component-decl"
     param_vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=410; height=248;
+	width=410; height=220;
 	spacing=4;
 
 	fname "widget/component" { path="/sys/cmp/smart_field.cmp"; field=given_name; height=24; width=300; label_width=150; form=criteria_params_form; text="First/Pref Name:"; fname_hints "widget/hints" { style=strnull; } }
 	lname "widget/component" { path="/sys/cmp/smart_field.cmp"; field=surname; height=24; width=300; label_width=150; form=criteria_params_form; text="Last Name:"; lname_hints "widget/hints" { style=strnull; } }
 	orgname "widget/component" { path="/sys/cmp/smart_field.cmp"; field=org_name; height=24; width=300; label_width=150; form=criteria_params_form; text="Organization:"; oname_hints "widget/hints" { style=strnull; } }
+	ptype "widget/component" { path="/sys/cmp/smart_field.cmp"; field=ptype; height=24; width=300; label_width=150; form=criteria_params_form; text="Partner Type:"; ctl_type=dropdown; sql="select label='Individual or Household', value='IND,HOU'; select label='Business or Christian Business', value='BUC,BUS'; select label='Church or Mission', value='CHU,MIS'; select label='Church, Mission, or Foundation', value='CHU,MIS,FOU'; select label=:text, value=:tag from /apps/kardia/data/Kardia_DB/_p_partner_class/rows order by :text"; }
 	gender "widget/component" { path="/sys/cmp/smart_field.cmp"; field=gender; height=24; width=250; label_width=150; form=criteria_params_form; text="Gender:"; ctl_type=dropdown; sql="select label=:text, value=:tag from /apps/kardia/data/Kardia_DB/_p_partner_gender/rows"; }
-	ptype "widget/component" { path="/sys/cmp/smart_field.cmp"; field=ptype; height=24; width=250; label_width=150; form=criteria_params_form; text="Partner Type:"; ctl_type=dropdown; sql="select label=:text, value=:tag from /apps/kardia/data/Kardia_DB/_p_partner_class/rows order by :text"; }
-	hascont "widget/component" { path="/sys/cmp/smart_field.cmp"; field=hascont; height=24; width=250; label_width=150; form=criteria_params_form; text="Has Contact:"; ctl_type=dropdown; sql="select label='Email', value='E'; select label='Phone or Cell', value='PC'"; }
 	comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=comment; height=24; width=300; label_width=150; form=criteria_params_form; text="Comment Contains:"; comm_hints "widget/hints" { style=strnull; } }
 
 	added_dates "widget/hbox"

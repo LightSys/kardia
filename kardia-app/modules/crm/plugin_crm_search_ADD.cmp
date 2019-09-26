@@ -31,7 +31,39 @@ plugin_crm_search_ADD "widget/component-decl"
 	    spacing=8;
 
 	    within "widget/component" { path="/sys/cmp/smart_field.cmp"; field=geo_within; height=24; width=180; label_width=150; form=criteria_params_form; text="Within:"; ctl_type=editbox; wi_hints "widget/hints" { style=strnull; } }
-	    miles "widget/component" { path="/sys/cmp/smart_field.cmp"; field=geo_of; height=24; width=222; label_width=120; text="Miles of Postal Code:"; ctl_type=editbox; form=criteria_params_form; mi_hints "widget/hints" { style=strnull; } }
+	    of_feature "widget/component"
+		{
+		height=24;
+		path="/apps/kardia/modules/base/editbox_table.cmp";
+		field=geo_of;
+		text='Miles of Postal Code:';
+		label_width=120;
+		width=222;
+		popup_width=380;
+		popup_sql=runserver("select value = :gaz:p_feature_name, label = :gaz:p_feature_name + ' - ' + :gaz:p_feature_desc + isnull(', ' + :gaz:p_state_province,'') from /apps/kardia/data/Kardia_DB/p_gazetteer/rows gaz where :gaz:p_feature_type = 'PC'");
+		search_field_list="p_feature_name*,*p_feature_desc*,p_state_province";
+		key_name="p_feature_name";
+		object_name="Postal Code";
+		popup_text="Select Postal Code:";
+		empty_desc="postal code";
+		form=criteria_params_form;
+
+		geo_of_hints "widget/hints" { style=strnull; }
+
+		//geo_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(char_length(:of_feature:value) > 0); target=geodesc_osrc; action=QueryParam; pc=runclient(:of_feature:content); }
+
+		//geodesc_osrc "widget/osrc"
+		//    {
+		//    geodesc_param1 "widget/parameter" { type=string; param_name=pc; }
+		//    sql = "select pc_desc = isnull(first(:gaz:p_feature_desc + isnull(', ' + :gaz:p_state_province, '')),'**INVALID**')), :parameters:pc from /apps/kardia/data/Kardia_DB/p_gazetteer/rows gaz where :gaz:p_feature_name = :parameters:pc limit 1";
+		//    autoquery = never;
+		//    replicasize=2;
+		//    readahead=2;
+
+		//    geo_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:geodesc_osrc:pc = :of_feature:content); target=of_feature; action=SetValueDescription; Description=runclient(:geodesc_osrc:pc_desc); }
+		//    }
+		}
+	    //miles "widget/component" { path="/sys/cmp/smart_field.cmp"; field=geo_of; height=24; width=222; label_width=120; text="Miles of Postal Code:"; ctl_type=editbox; form=criteria_params_form; mi_hints "widget/hints" { style=strnull; } }
 	    }
 	}
     }

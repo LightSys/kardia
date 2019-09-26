@@ -1,0 +1,27 @@
+$Version=2$
+plugin_crm_search_CON "widget/component-decl"
+    {
+    stage_label = "Contact Info";
+    stage_short_label = "Contact";
+    stage_description_expr = "isnull((select isnull('Type: ' + :param:hascont + ', ', '') + isnull('Comment: ' + :param:comment + ', ', '') + isnull('Contact: ' + :param:contact + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
+    stage_type = "CON";
+    icon = "/apps/kardia/images/icons/ionicons-contacts2.svg";
+    sequence = 16;
+    width=410;
+    height=80;
+
+    criteria_osrc "widget/parameter" { type=object; }
+    criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    criteria_params_form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    param_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=410; height=80;
+	spacing=4;
+
+	hascont "widget/component" { path="/sys/cmp/smart_field.cmp"; field=hascont; height=24; width=350; label_width=150; form=criteria_params_form; text="Contact Info Type:"; ctl_type=dropdown; sql="select label='Phone or Cell', value='PC'; select label='Web or Blog', value='WB'; select label='Facebook or Twitter', value='KT'; select label='Phone, Cell, Skype, or Email', 'PCSE'; select label=:text, value=:tag from /apps/kardia/data/Kardia_DB/_p_contact_type/rows"; }
+	cont "widget/component" { path="/sys/cmp/smart_field.cmp"; field=contact; height=24; width=350; label_width=150; form=criteria_params_form; text="Contact Info Contains:"; cont_hints "widget/hints" { style=strnull; } }
+	comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=comment; height=24; width=350; label_width=150; form=criteria_params_form; text="Comment Contains:"; comm_hints "widget/hints" { style=strnull; } }
+	}
+    }
