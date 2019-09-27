@@ -25,6 +25,7 @@ partner_profile "widget/component-decl"
     AdvancedResults "widget/component-decl-event" { }
 
     // Actions we support
+    UpdateSearchCounts "widget/component-decl-action" { }
     SelectPartner "widget/component-decl-action" { }
     AdvancedSearch "widget/component-decl-action" { }
     AllActivity "widget/component-decl-action" { }
@@ -35,6 +36,13 @@ partner_profile "widget/component-decl"
     EditFile "widget/component-decl-action" { }
     EditPartner "widget/component-decl-action" { }
     EditForm "widget/component-decl-action" { }
+
+    on_updatecounts "widget/connector"
+	{
+	event=UpdateSearchCounts;
+	target=adv_search_cmp;
+	action=UpdateSearchCounts;
+	}
 
     on_EditPartner1 "widget/connector"
 	{
@@ -251,14 +259,14 @@ partner_profile "widget/component-decl"
 
 			    timeline_hdr "widget/pane"
 				{
-				style=flat; height=13; 
+				style=flat; height=16; 
 				background="/apps/kardia/images/bg/lsblue_btngradient.png";
-				border_radius=4;
+				border_radius=5;
 
 				timeline_label "widget/label"
 				    {
-				    x=0; y=0;
-				    width=438; height=12;
+				    x=0; y=1;
+				    width=438; height=14;
 				    text="Activity Timeline";
 				    align=center;
 				    style=bold;
@@ -269,7 +277,7 @@ partner_profile "widget/component-decl"
 
 			    profile_timeline "widget/component"
 				{
-				height=429;
+				height=427;
 				path="profile_timeline.cmp";
 				iconbar = iconbar;
 				profile = partner_profile;
@@ -353,14 +361,14 @@ partner_profile "widget/component-decl"
 
 			    highlights_hdr "widget/pane"
 				{
-				style=flat; height=13; 
+				style=flat; height=16; 
 				background="/apps/kardia/images/bg/lsblue_btngradient.png";
-				border_radius=4;
+				border_radius=5;
 
 				highlights_label "widget/label"
 				    {
-				    x=0; y=0;
-				    width=250; height=12;
+				    x=0; y=1;
+				    width=250; height=14;
 				    text="Highlights";
 				    align=center;
 				    style=bold;
@@ -371,7 +379,7 @@ partner_profile "widget/component-decl"
 
 			    profile_highlights "widget/component"
 				{
-				height=429;
+				height=427;
 				path="profile_highlights.cmp";
 				iconbar = iconbar;
 				profile = partner_profile;

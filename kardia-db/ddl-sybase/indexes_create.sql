@@ -63,6 +63,8 @@ go
 
 
 /* p_contact_info */
+create  index p_contact_idx on p_contact_info (p_contact_data, p_phone_area_city, p_phone_country, p_partner_key, p_contact_id)
+go
 /* create  clustered index p_contact_info_pk on p_contact_info (p_partner_key, p_contact_id)*/ 
 /* go */
 

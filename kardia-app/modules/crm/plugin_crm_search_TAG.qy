@@ -16,6 +16,9 @@ plugin_crm_search_TAG "system/query"
 	    select
 		:stage:op = :s:p_stage_op,
 		:stage:tag = convert(integer,:sc:tag),
+		:stage:tag2 = convert(integer,:sc:tag2),
+		:stage:tag3 = convert(integer,:sc:tag3),
+		:stage:tag4 = convert(integer,:sc:tag4),
 		:stage:startdate = convert(datetime,:sc:start),
 		:stage:enddate = convert(datetime,:sc:end),
 		:stage:certainty = convert(double,:sc:certainty),
@@ -41,7 +44,7 @@ plugin_crm_search_TAG "system/query"
 	    from
 		/apps/kardia/data/Kardia_DB/e_tag/rows t
 	    where
-		(:stage:tag is null or :e_tag_id = :stage:tag) and
+		(isnull(isnull(isnull(:stage:tag,:stage:tag2),:stage:tag3),:stage:tag4) is null or :e_tag_id = :stage:tag or :e_tag_id = :stage:tag2 or :e_tag_id = :stage:tag3 or :e_tag_id = :stage:tag4) and
 		(:e_tag_certainty >= isnull(:stage:certainty, 0.0)) and
 		(:e_tag_strength >= isnull(:stage:strength, 0.01)) and
 		(:stage:startdate is null or :t:s_date_created >= :stage:startdate) and

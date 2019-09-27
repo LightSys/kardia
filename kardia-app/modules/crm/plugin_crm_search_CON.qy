@@ -1,0 +1,49 @@
+$Version=2$
+plugin_crm_search_CON "system/query"
+    {
+    // This query object provides the search stage support for
+    // searching based on partner information (name, gender, comment
+    // when added, and by whom)
+    //
+    require_endorsement="system:from_application";
+
+    search_id "query/parameter" { type=integer; }
+    cur_stage "query/parameter" { type=integer; }
+    prev_keys "query/parameter" { type=string; }
+
+    sql = " -- First, we need to get our search stage information and config.
+	    declare collection iresult scope application;
+	    declare object stage;
+	    select
+		:stage:op = :s:p_stage_op,
+		:stage:hascont = :sc:hascont,
+		:stage:comment = lower(:sc:comment),
+		:stage:contact = replace(replace(replace(replace(replace(lower(:sc:contact), ' ', ''), '-', ''), '+', ''), '(', ''), ')', '')
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
+		/apps/kardia/modules/crm/advanced_search_params.qyp sc
+	    where
+		:s:p_search_id = :parameters:search_id and
+		:s:p_search_stage_id = :parameters:cur_stage and
+		:sc:p_search_id = :s:p_search_id and
+		:sc:p_search_stage_id = :s:p_search_stage_id
+	    ;
+
+	    -- Generate the intermediate results
+	    insert
+		collection iresult
+	    select
+		:ci:p_partner_key,
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage
+	    from
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+	    where
+		(:stage:contact is null or charindex(:stage:contact, replace(replace(replace(replace(replace(lower(isnull(:ci:p_phone_area_city, '') + isnull(:ci:p_contact_data, '')), ' ', ''), '-', ''), '+', ''), '(', ''), ')', '')) > 0) and
+		(:stage:comment is null or charindex(:stage:comment, lower(:ci:p_contact_comments)) > 0) and
+		(:stage:hascont is null or charindex(:ci:p_contact_type, :stage:hascont) > 0) and
+		(:parameters:prev_keys is null or charindex(',' + rtrim(:ci:p_partner_key) + ',', ',' + :parameters:prev_keys + ',') > 0)
+	    group by
+		:ci:p_partner_key
+	    ";
+    }

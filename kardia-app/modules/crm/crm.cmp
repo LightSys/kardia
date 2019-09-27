@@ -254,6 +254,13 @@ crm "widget/component-decl"
 
 		on_collabchange2 "widget/connector" { event=CollabChanged; target=profile_cmp; action=RefreshCollab; }
 
+		onResults "widget/connector"
+		    {
+		    event=AdvancedResultsLoaded;
+		    target=profile_cmp;
+		    action=UpdateSearchCounts;
+		    }
+
 		onSetNumber "widget/connector"
 		    {
 		    event=SetNumber;
@@ -333,6 +340,13 @@ crm "widget/component-decl"
 		    action=AdvancedResults;
 		    session_id=runclient(:session_id);
 		    stage_id=runclient(:stage_id);
+		    }
+		onAdvancedResults2 "widget/connector"
+		    {
+		    event=AdvancedResults;
+		    target=iconbar;
+		    action=SetTab;
+		    PageID=3;
 		    }
 
 		on_tune "widget/connector"

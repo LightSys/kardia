@@ -98,6 +98,11 @@ alter table p_contact_info
 go
 
 
+alter table p_contact_info
+	drop constraint p_contact_idx
+go
+
+
 alter table p_contact_usage
 	drop constraint p_contact_usg_pk
 go

@@ -10,6 +10,7 @@ search "widget/component-decl"
     PartnerSelected "widget/component-decl-event" { }
     AdvancedSearch "widget/component-decl-event" { }
     AdvancedResults "widget/component-decl-action" { }
+    AdvancedResultsLoaded "widget/component-decl-event" { }
     AddPerson "widget/component-decl-event" { }
     Refresh "widget/component-decl-action" { }
     RefreshTasks "widget/component-decl-action" { }
@@ -99,7 +100,7 @@ search "widget/component-decl"
 	    fl_height=0;
 	    path = "/sys/cmp/smart_field.cmp";
 	    ctl_type = checkboxleft;
-	    text = "Search Only CRM People";
+	    text = "Show Only CRM People";
 
 	    search_crm_hints "widget/hints" { style=notnull; }
 
@@ -272,6 +273,13 @@ search "widget/component-decl"
 			TabIndex = 2;
 			}
 
+		    got_results_update_counts "widget/connector"
+			{
+			event=Results;
+			target=search;
+			action=AdvancedResultsLoaded;
+			}
+
 		    session_id "widget/parameter" { type=integer; }
 		    stage_id "widget/parameter" { type=integer; }
 		    a_only_crm "widget/parameter" { param_name=only_crm; type=integer; default=runclient(:search_only_crm:value); }
@@ -358,7 +366,7 @@ search "widget/component-decl"
 			cellvspacing = 4;
 			row1_bgcolor = "#f8f8f8";
 			row2_bgcolor = "#f8f8f8";
-			nodata_message = "(no results)";
+			nodata_message =  runclient(condition(not :advanced_results_osrc:cx__pending, "one moment...", "(no results)"));
 
 			advanced_item_detail "widget/table-row-detail"
 			    {

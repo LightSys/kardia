@@ -42,6 +42,10 @@ alter table p_location
 	add constraint p_location_city_idx unique nonclustered (p_city, p_state_province, p_postal_code, p_partner_key, p_location_id, p_revision_id)
 go
 
+alter table p_contact_info
+	add constraint p_contact_idx unique nonclustered (p_contact_data, p_phone_area_city, p_phone_country, p_partner_key, p_contact_id)
+go
+
 alter table p_staff
 	add constraint p_staff_login_idx unique nonclustered (p_kardia_login, p_partner_key)
 go

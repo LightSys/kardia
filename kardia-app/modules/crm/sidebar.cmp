@@ -10,6 +10,7 @@ sidebar "widget/component-decl"
     // Events we generate
     PartnerSelected "widget/component-decl-event" { }
     AdvancedSearch "widget/component-decl-event" { }
+    AdvancedResultsLoaded "widget/component-decl-event" { }
     AllActivity "widget/component-decl-event" { }
     AddPerson "widget/component-decl-event" { }
     EditTask "widget/component-decl-event" { }
@@ -100,6 +101,13 @@ sidebar "widget/component-decl"
 			    collaborator_osrc = collaborator_osrc;
 
 			    on_collabchange "widget/connector" { event=CollabChanged; target=sidebar; action=CollabChanged; }
+
+			    on_results "widget/connector"
+				{
+				event=AdvancedResultsLoaded;
+				target=sidebar;
+				action=AdvancedResultsLoaded;
+				}
 
 			    on_partner_select "widget/connector"
 				{

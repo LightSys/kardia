@@ -48,7 +48,7 @@ plugin_crm_search_PAR "system/query"
 	    where
 		(:stage:adduser is null or :p:s_created_by = :stage:adduser) and
 		(:stage:gender is null or :p:p_gender = :stage:gender) and
-		(:stage:ptype is null or :p:p_partner_class = :stage:ptype) and
+		(:stage:ptype is null or charindex(',' + :p:p_partner_class + ',', ',' + :stage:ptype + ',') > 0) and
 		(:stage:given_name is null or charindex(:stage:given_name, lower(:p:p_preferred_name)) > 0 or charindex(:stage:given_name, lower(:p:p_given_name)) > 0) and
 		(:stage:surname is null or charindex(:stage:surname, lower(:p:p_surname)) = 1) and
 		(:stage:org_name is null or charindex(:stage:org_name, lower(:p:p_org_name)) > 0) and
@@ -56,8 +56,8 @@ plugin_crm_search_PAR "system/query"
 		(:stage:enddate is null or :p:s_date_created <= :stage:enddate) and
 		(:stage:comment is null or charindex(:stage:comment, lower(:p:p_comments)) > 0) and
 		(:parameters:prev_keys is null or charindex(',' + rtrim(:p:p_partner_key) + ',', ',' + :parameters:prev_keys + ',') > 0)
-	    having
-		(:stage:hascont is null or (select count(1) from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where charindex(:ci:p_contact_type, :stage:hascont) > 0 and :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code = 'A'))
+	    --having
+	    --	(:stage:hascont is null or (select count(1) from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where charindex(:ci:p_contact_type, :stage:hascont) > 0 and :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code = 'A'))
 	    on duplicate
 		:p_partner_key,
 		:p_search_session_id,

@@ -62,6 +62,8 @@ go
 
 
 /* p_contact_info */
+drop index p_contact_info.p_contact_idx
+go
 /* drop index p_contact_info.p_contact_info_pk */ 
 /* go */
 
