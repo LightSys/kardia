@@ -735,6 +735,28 @@ function checkAndInstallRequiredPackages
 	rm -f $YUMTMPFILE
     }
 
+function installLiquibaseIfNeeded
+    {
+    todo=0
+    [ ! -e "/etc/profile.d/liquibase.sh" ] && todo=1
+    [ ! -e "/usr/local/liquibase/liquibase" ] && todo=1
+    if [ $todo == 1 ]; then
+	echo "Need to install liquibase - downloading"
+	#Use the following to grab the latest version possible
+	#lbURL=$(wget --quiet -O - https://download.liquibase.org/download/?frm=n | grep bin.tar.gz | sed 's/.*"\([^"]*\)".*/\1/' | grep github | head -1)
+	#use the following to grab a specific version
+	lbURL="https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.8.0/liquibase-3.8.0-bin.tar.gz"
+	lbBasename=$(basename $lbURL)
+	lbFilename="/tmp/$lbBasename"
+	wget -O $lbFilename $lbURL
+	mkdir -p /usr/local/liquibase
+	tar -C /usr/local/liquibase -xzvf $lbFilename
+	rm -f $lbFilename
+	#Add liquibase to the path
+	echo PATH=$PATH:/usr/local/liquibase > /etc/profile.d/liquibase.sh
+    fi
+    }
+
 # Set the system hostname.  Important because this will show up in
 # commits unless the user is working from a per-user repository and
 # has set their user.name and user.email.
@@ -3018,6 +3040,8 @@ function vm_prep_cleanYum
 {
 	echo "Making sure all critical packages are installed"
 	checkAndInstallRequiredPackages
+	echo "Install liquibase if needed"
+	installLiquibaseIfNeeded
 	echo "Cleaning YUM"
 	yum clean all
 	echo
