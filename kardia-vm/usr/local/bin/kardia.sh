@@ -2013,7 +2013,15 @@ function cxStop
     case "$RUNMODE" in
 	service)
 	    Root || echo "You must be root to start/stop the service"
-	    Root && service centrallix stop
+	    PIDFILE="/var/run/centrallix.pid"
+	    if [ -e $PIDFILE ]; then
+		pid=$( cat /var/run/centrallix.pid )
+		Root && kill $pid
+	    else
+		#we are trying to kill it and there is no pid
+		echo "No pid found for centrallix - already dead?"
+	    fi
+	    #Root && service centrallix stop
 	    sleep 0.5
 	    ;;
 	console)
@@ -2058,7 +2066,10 @@ function cxStart
     case "$RUNMODE" in
 	service)
 	    Root || echo "You must be root to start/stop the service"
-	    Root && service centrallix start
+	    centrallix=/usr/local/sbin/centrallix
+	    cxARGS="-q -d -c /usr/local/etc/centrallix.conf -p /var/run/centrallix.pid"
+
+	    Root && $centrallix $cxARGS
 	    sleep 0.5
 	    ;;
 	console)
@@ -2602,6 +2613,8 @@ function menuDevel
 	    fi
 	    StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
 	    StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
+	    [ $DEVMODE = "root" ] && ! systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Enable 'Enable Centrallix start at boot'"
+	    [ $DEVMODE = "root" ] && systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Disable 'Disable Centrallix start at boot'"
 	fi
 	DSTR="$DSTR '---' ''"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
@@ -2631,6 +2644,12 @@ function menuDevel
 		if [ "$AUTORESTART" = yes ]; then
 		    cxStart
 		fi
+		;;
+	    Disable)
+		systemctl disable centrallix;
+		;;
+	    Enable)
+		systemctl enable centrallix;
 		;;
 	    Status)
 		if [ "$WKFMODE" = shared -o "$USER" = root ]; then
@@ -3011,8 +3030,8 @@ function vm_prep_cleanYum
 # Etc directory #
 function vm_prep_setupEtc
 {
-	mkdir -p /etc/samba /etc/pam-script
-	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia"
+	mkdir -p /etc/samba /etc/pam-script /etc/systemd/system
+	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia systemd/system/centrallix.service"
 	directory="/usr/local/src/kardia-git/kardia-vm/etc/"
 	echo "Settting Up the ETC directory"
 	for file in $files; do
