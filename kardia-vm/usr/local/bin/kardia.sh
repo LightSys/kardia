@@ -424,9 +424,15 @@ function checkCert
 	todo=1
     else
 	certip=$(openssl x509 -in $certfile -subject -noout | sed 's/.*CN=\([^\/]*\).*/\1/')
-	if [ "$certip" != "$IPADDR" ]; then
-	    echo "SSL Certificate IP mismatch.  re-generating certificate"
-	    todo=1
+	#if we have a valid IP address, make sure it is our IP
+	if [[ $certip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+	    if [ "$certip" != "$IPADDR" ]; then
+		echo "SSL Certificate IP mismatch.  re-generating certificate"
+		todo=1
+	    fi
+	else
+	    echo "There is a certificate with a CN of something other than an IP."
+	    echo "We are assuming it is a valid FQDN and are going to leave it alone."
 	fi
     fi
     if [ "$todo" = "1" ]; then
