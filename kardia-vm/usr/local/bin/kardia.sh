@@ -2084,6 +2084,24 @@ function cxStart
     esac
     }
 
+#Start Centrallix - used from the commandline: kardia.sh daemonStart
+function daemonStart
+    {
+    AsStartStopUser cxStart
+    }
+
+#Stop Centrallix - used from the commandline: kardia.sh daemonStop
+function daemonStop
+    {
+    AsStartStopUser cxStop
+    }
+
+#Stop/Start Centrallix - used from the commandline: kardia.sh daemonRestart
+function daemonRestart
+    {
+    AsStartStopUser cxStop
+    AsStartStopUser cxStart
+    }
 
 function viewLog
     {
