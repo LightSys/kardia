@@ -703,6 +703,7 @@ function menuUsers
 # Do updates (yum update)
 function doUpdates
     {
+    checkAndInstallRequiredPackages
     echo ""
     echo "Running 'yum update'... this may take a while..."
     echo ""
@@ -3624,7 +3625,6 @@ function sg10UpdateStuff
     if [ "$?" != 0 ]; then
 	return 0
     fi
-    checkAndInstallRequiredPackages
     doUpdates
     UpdateMenus
     }
