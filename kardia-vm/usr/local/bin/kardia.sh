@@ -291,7 +291,7 @@ function UpdateMenus
 		/bin/mv -f /usr/local/bin/kardia.sh /usr/local/bin/kardia.sh.old
 		/bin/cp "$filename" /usr/local/bin/kardia.sh
 		chmod 755 /usr/local/bin/kardia.sh
-		chown root.root /usr/local/bin/kardia.sh
+		chown root:root /usr/local/bin/kardia.sh
 		if [ -d "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/$os_string" ]; then
 		(
 		cd "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/$os_string"
@@ -300,7 +300,7 @@ function UpdateMenus
 			    if [ -f "$UPFILE" ]; then
 				/bin/cp "$UPFILE" /usr/local/sbin/"$UPFILE"
 				chmod 755 "$UPFILE"
-				chown root.root "$UPFILE"
+				chown root:root "$UPFILE"
 				/usr/local/sbin/"$UPFILE"
 			    fi
 			fi
@@ -517,10 +517,10 @@ function manageUser
 	    echo "smbpasswd done"
 	    if [ ! -f "/home/$N_USER/.ssh/known_hosts" ]; then
 		mkdir "/home/$N_USER/.ssh"
-		/bin/chown "$N_USER". "/home/$N_USER/.ssh"
+		/bin/chown "$N_USER": "/home/$N_USER/.ssh"
 		/bin/chmod 700 "/home/$N_USER/.ssh"
 		touch "/home/$N_USER/.ssh/known_hosts"
-		/bin/chown "$N_USER". "/home/$N_USER/.ssh/known_hosts"
+		/bin/chown "$N_USER": "/home/$N_USER/.ssh/known_hosts"
 		/bin/chmod 600 "/home/$N_USER/.ssh/known_hosts"
 	    fi
 
@@ -553,7 +553,7 @@ function manageUser
 
 	    mkdir -p "/home/$N_USER/cxinst/etc/centrallix" 2>/dev/null
 	    sed -n "s/^\($N_USER:[^:]*\):.*/\1/p" < /etc/shadow > "/home/$N_USER/cxinst/etc/centrallix/cxpasswd"
-	    chown -R "$N_USER". "/home/$N_USER/cxinst/"
+	    chown -R "$N_USER": "/home/$N_USER/cxinst/"
 
 	    # Update /etc/issue
 	    cat /etc/issue.kardia > /etc/issue
@@ -1158,7 +1158,7 @@ function repoInitUser
     /bin/rm -rf cx-git kardia-git 2>/dev/null
     doGit clone "$CXORIGIN" cx-git
     doGit clone "$KORIGIN" kardia-git
-    chown -R "$RUSER". cx-git kardia-git 2>/dev/null
+    chown -R "$RUSER": cx-git kardia-git 2>/dev/null
     cd cx-git/centrallix-os/apps
     ln -s ../../../kardia-git/kardia-app kardia
 
@@ -1759,7 +1759,7 @@ function doMakeTplFiles
         if [ "$REALNAME" != "$UXUSERNAME" ]; then
             if [ ! -f "$KSRC/kardia-app/tpl/$UXUSER.tpl" ]; then
                 cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$UXUSER.tpl"
-                chown "$UXUSER". "$KSRC/kardia-app/tpl/$UXUSER.tpl"
+                chown "$UXUSER": "$KSRC/kardia-app/tpl/$UXUSER.tpl"
             fi
         fi
     done < /etc/passwd
