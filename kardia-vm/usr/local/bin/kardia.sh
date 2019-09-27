@@ -709,6 +709,24 @@ function doUpdates
     yum update --skip-broken
     }
 
+# Check to see if the required packages are installed
+function checkAndInstallRequiredPackages
+    {
+	#Go through and check to see if every package in the list is installed
+	if [ ! -e /usr/local/src/kardia-git/kardia-vm/rpms_needed.txt ]; then
+	    exit 2; #The file we need does not exist.  Cannot check
+	fi
+	YUMTMPFILE="$$-YUM.tmp"
+	rpm -qa > $YUMTMPFILE
+	NOTFOUNDLIST=""
+	for a in $( cat /usr/local/src/kardia-git/kardia-vm/rpms_needed.txt ); do
+	    if [ -z "`grep $a $YUMTMPFILE`" ]; then
+		NOTFOUNDLIST="$NOTFOUNDLIST $a" 
+		yum -y install $a
+	    fi
+	done
+	rm -f $YUMTMPFILE
+    }
 
 # Set the system hostname.  Important because this will show up in
 # commits unless the user is working from a per-user repository and
@@ -2954,6 +2972,8 @@ function vm_prep_cleanSystemTree
 ## YUM ##
 function vm_prep_cleanYum
 {
+	echo "Making sure all critical packages are installed"
+	checkAndInstallRequiredPackages
 	echo "Cleaning YUM"
 	yum clean all
 	echo
@@ -3604,6 +3624,7 @@ function sg10UpdateStuff
     if [ "$?" != 0 ]; then
 	return 0
     fi
+    checkAndInstallRequiredPackages
     doUpdates
     UpdateMenus
     }
