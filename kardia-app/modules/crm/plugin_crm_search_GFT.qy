@@ -69,10 +69,12 @@ plugin_crm_search_GFT "system/query"
 		(:parameters:prev_keys is null or charindex(',' + rtrim(:i:p_dn_donor_partner_id) + ',', ',' + :parameters:prev_keys + ',') > 0) and
 		(:stage:minmaxtype = 'GiftItem' or :stage:minmaxtype = 'Total')
 	    group by
+		:i:a_ledger_number,
 		:i:p_dn_donor_partner_id
 	    having
 		(:stage:minttl is null or sum(:i:a_amount) >= convert(money, :stage:minttl)) and
-		(:stage:maxttl is null or sum(:i:a_amount) <= convert(money, :stage:maxttl))
+		(:stage:maxttl is null or sum(:i:a_amount) <= convert(money, :stage:maxttl)) and
+		has_endorsement('kardia:gift_amt', 'kardia:ledger:' + first(:i:a_ledger_number))
 	    on duplicate
 		:p_partner_key,
 		:p_search_session_id,
@@ -103,10 +105,13 @@ plugin_crm_search_GFT "system/query"
 		(:stage:minmaxtype = 'GiftRcpt')
 	    group by
 		:i:p_dn_donor_partner_id,
+		:i:a_ledger_number,
+		:i:a_batch_number,
 		:i:a_gift_number
 	    having
 		(:stage:minrcpt is null or sum(:i:a_amount) >= convert(money, :stage:minrcpt)) and
-		(:stage:maxrcpt is null or sum(:i:a_amount) <= convert(money, :stage:maxrcpt))
+		(:stage:maxrcpt is null or sum(:i:a_amount) <= convert(money, :stage:maxrcpt)) and
+		has_endorsement('kardia:gift_amt', 'kardia:ledger:' + first(:i:a_ledger_number))
 	    on duplicate
 		:p_partner_key,
 		:p_search_session_id,
