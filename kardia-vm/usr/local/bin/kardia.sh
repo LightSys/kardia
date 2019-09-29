@@ -291,7 +291,7 @@ function UpdateMenus
 		/bin/mv -f /usr/local/bin/kardia.sh /usr/local/bin/kardia.sh.old
 		/bin/cp "$filename" /usr/local/bin/kardia.sh
 		chmod 755 /usr/local/bin/kardia.sh
-		chown root.root /usr/local/bin/kardia.sh
+		chown root:root /usr/local/bin/kardia.sh
 		if [ -d "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/$os_string" ]; then
 		(
 		cd "$BASEDIR/src/kardia-git/kardia-vm/usr/local/sbin/$os_string"
@@ -300,7 +300,7 @@ function UpdateMenus
 			    if [ -f "$UPFILE" ]; then
 				/bin/cp "$UPFILE" /usr/local/sbin/"$UPFILE"
 				chmod 755 "$UPFILE"
-				chown root.root "$UPFILE"
+				chown root:root "$UPFILE"
 				/usr/local/sbin/"$UPFILE"
 			    fi
 			fi
@@ -424,9 +424,15 @@ function checkCert
 	todo=1
     else
 	certip=$(openssl x509 -in $certfile -subject -noout | sed 's/.*CN=\([^\/]*\).*/\1/')
-	if [ "$certip" != "$IPADDR" ]; then
-	    echo "SSL Certificate IP mismatch.  re-generating certificate"
-	    todo=1
+	#if we have a valid IP address, make sure it is our IP
+	if [[ $certip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+	    if [ "$certip" != "$IPADDR" ]; then
+		echo "SSL Certificate IP mismatch.  re-generating certificate"
+		todo=1
+	    fi
+	else
+	    echo "There is a certificate with a CN of something other than an IP."
+	    echo "We are assuming it is a valid FQDN and are going to leave it alone."
 	fi
     fi
     if [ "$todo" = "1" ]; then
@@ -517,10 +523,10 @@ function manageUser
 	    echo "smbpasswd done"
 	    if [ ! -f "/home/$N_USER/.ssh/known_hosts" ]; then
 		mkdir "/home/$N_USER/.ssh"
-		/bin/chown "$N_USER". "/home/$N_USER/.ssh"
+		/bin/chown "$N_USER": "/home/$N_USER/.ssh"
 		/bin/chmod 700 "/home/$N_USER/.ssh"
 		touch "/home/$N_USER/.ssh/known_hosts"
-		/bin/chown "$N_USER". "/home/$N_USER/.ssh/known_hosts"
+		/bin/chown "$N_USER": "/home/$N_USER/.ssh/known_hosts"
 		/bin/chmod 600 "/home/$N_USER/.ssh/known_hosts"
 	    fi
 
@@ -553,7 +559,7 @@ function manageUser
 
 	    mkdir -p "/home/$N_USER/cxinst/etc/centrallix" 2>/dev/null
 	    sed -n "s/^\($N_USER:[^:]*\):.*/\1/p" < /etc/shadow > "/home/$N_USER/cxinst/etc/centrallix/cxpasswd"
-	    chown -R "$N_USER". "/home/$N_USER/cxinst/"
+	    chown -R "$N_USER": "/home/$N_USER/cxinst/"
 
 	    # Update /etc/issue
 	    cat /etc/issue.kardia > /etc/issue
@@ -703,12 +709,31 @@ function menuUsers
 # Do updates (yum update)
 function doUpdates
     {
+    checkAndInstallRequiredPackages
     echo ""
     echo "Running 'yum update'... this may take a while..."
     echo ""
     yum update --skip-broken
     }
 
+# Check to see if the required packages are installed
+function checkAndInstallRequiredPackages
+    {
+	#Go through and check to see if every package in the list is installed
+	if [ ! -e /usr/local/src/kardia-git/kardia-vm/rpms_needed.txt ]; then
+	    exit 2; #The file we need does not exist.  Cannot check
+	fi
+	YUMTMPFILE="$$-YUM.tmp"
+	rpm -qa > $YUMTMPFILE
+	NOTFOUNDLIST=""
+	for a in $( cat /usr/local/src/kardia-git/kardia-vm/rpms_needed.txt ); do
+	    if [ -z "`grep $a $YUMTMPFILE`" ]; then
+		NOTFOUNDLIST="$NOTFOUNDLIST $a" 
+		yum -y install $a
+	    fi
+	done
+	rm -f $YUMTMPFILE
+    }
 
 # Set the system hostname.  Important because this will show up in
 # commits unless the user is working from a per-user repository and
@@ -1139,7 +1164,7 @@ function repoInitUser
     /bin/rm -rf cx-git kardia-git 2>/dev/null
     doGit clone "$CXORIGIN" cx-git
     doGit clone "$KORIGIN" kardia-git
-    chown -R "$RUSER". cx-git kardia-git 2>/dev/null
+    chown -R "$RUSER": cx-git kardia-git 2>/dev/null
     cd cx-git/centrallix-os/apps
     ln -s ../../../kardia-git/kardia-app kardia
 
@@ -1740,7 +1765,7 @@ function doMakeTplFiles
         if [ "$REALNAME" != "$UXUSERNAME" ]; then
             if [ ! -f "$KSRC/kardia-app/tpl/$UXUSER.tpl" ]; then
                 cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$UXUSER.tpl"
-                chown "$UXUSER". "$KSRC/kardia-app/tpl/$UXUSER.tpl"
+                chown "$UXUSER": "$KSRC/kardia-app/tpl/$UXUSER.tpl"
             fi
         fi
     done < /etc/passwd
@@ -1988,7 +2013,15 @@ function cxStop
     case "$RUNMODE" in
 	service)
 	    Root || echo "You must be root to start/stop the service"
-	    Root && service centrallix stop
+	    PIDFILE="/var/run/centrallix.pid"
+	    if [ -e $PIDFILE ]; then
+		pid=$( cat /var/run/centrallix.pid )
+		Root && kill $pid
+	    else
+		#we are trying to kill it and there is no pid
+		echo "No pid found for centrallix - already dead?"
+	    fi
+	    #Root && service centrallix stop
 	    sleep 0.5
 	    ;;
 	console)
@@ -2033,7 +2066,10 @@ function cxStart
     case "$RUNMODE" in
 	service)
 	    Root || echo "You must be root to start/stop the service"
-	    Root && service centrallix start
+	    centrallix=/usr/local/sbin/centrallix
+	    cxARGS="-q -d -c /usr/local/etc/centrallix.conf -p /var/run/centrallix.pid"
+
+	    Root && $centrallix $cxARGS
 	    sleep 0.5
 	    ;;
 	console)
@@ -2059,6 +2095,24 @@ function cxStart
     esac
     }
 
+#Start Centrallix - used from the commandline: kardia.sh daemonStart
+function daemonStart
+    {
+    AsStartStopUser cxStart
+    }
+
+#Stop Centrallix - used from the commandline: kardia.sh daemonStop
+function daemonStop
+    {
+    AsStartStopUser cxStop
+    }
+
+#Stop/Start Centrallix - used from the commandline: kardia.sh daemonRestart
+function daemonRestart
+    {
+    AsStartStopUser cxStop
+    AsStartStopUser cxStart
+    }
 
 function viewLog
     {
@@ -2559,6 +2613,8 @@ function menuDevel
 	    fi
 	    StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
 	    StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
+	    [ $DEVMODE = "root" ] && ! systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Enable 'Enable Centrallix start at boot'"
+	    [ $DEVMODE = "root" ] && systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Disable 'Disable Centrallix start at boot'"
 	fi
 	DSTR="$DSTR '---' ''"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
@@ -2588,6 +2644,12 @@ function menuDevel
 		if [ "$AUTORESTART" = yes ]; then
 		    cxStart
 		fi
+		;;
+	    Disable)
+		systemctl disable centrallix;
+		;;
+	    Enable)
+		systemctl enable centrallix;
 		;;
 	    Status)
 		if [ "$WKFMODE" = shared -o "$USER" = root ]; then
@@ -2954,6 +3016,8 @@ function vm_prep_cleanSystemTree
 ## YUM ##
 function vm_prep_cleanYum
 {
+	echo "Making sure all critical packages are installed"
+	checkAndInstallRequiredPackages
 	echo "Cleaning YUM"
 	yum clean all
 	echo
@@ -2966,8 +3030,8 @@ function vm_prep_cleanYum
 # Etc directory #
 function vm_prep_setupEtc
 {
-	mkdir -p /etc/samba /etc/pam-script
-	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia"
+	mkdir -p /etc/samba /etc/pam-script /etc/systemd/system
+	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia systemd/system/centrallix.service"
 	directory="/usr/local/src/kardia-git/kardia-vm/etc/"
 	echo "Settting Up the ETC directory"
 	for file in $files; do
