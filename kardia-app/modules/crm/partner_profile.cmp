@@ -140,7 +140,7 @@ partner_profile "widget/component-decl"
 			    s_date_modified = getdate(),
 			    s_modified_by = user_name()
 			on duplicate
-			    :e_object_id, :e_whom
+			    :e_object_id, :e_whom, :e_ack_type
 			update set
 			    :s_date_modified = getdate(),
 			    :s_modified_by = user_name()

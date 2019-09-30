@@ -19,7 +19,7 @@ security_policy "widget/component-decl"
 		spacing=8;
 		cellsize=20;
 
-		user_list_hdr "widget/component" { path="section_label.cmp"; text="System Users..."; }
+		user_list_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="System Users..."; }
 
 		user_list_searchbox "widget/editbox"
 		    {
@@ -110,7 +110,7 @@ security_policy "widget/component-decl"
 		spacing=8;
 		cellsize=20;
 
-		user_info_hdr "widget/component" { path="section_label.cmp"; text=runclient("User Information" + isnull(" for " + :user_info_osrc:username, "") + "..."); }
+		user_info_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text=runclient("User Information" + isnull(" for " + :user_info_osrc:username, "") + "..."); }
 
 		user_info_osrc "widget/osrc"
 		    {
@@ -219,7 +219,7 @@ security_policy "widget/component-decl"
 
 		    sep1 "widget/autolayoutspacer" { height=8; }
 
-		    privs_hdr "widget/component" { path="section_label.cmp"; text="Privileges..."; }
+		    privs_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Privileges..."; }
 
 		    privs_form "widget/form"
 			{
@@ -252,7 +252,7 @@ security_policy "widget/component-decl"
 
 		sep2 "widget/autolayoutspacer" { height=8; }
 
-		user_staff_hdr "widget/component" { path="section_label.cmp"; text="Staff Record..."; }
+		user_staff_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Staff Record..."; }
 
 		user_staff_osrc "widget/osrc"
 		    {
@@ -457,7 +457,7 @@ security_policy "widget/component-decl"
 		spacing=8;
 		cellsize=20;
 
-		perm_hdr "widget/component" { path="section_label.cmp"; text="Grant/Revoke Privileges and Contexts for Users..."; }
+		perm_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Grant/Revoke Privileges and Contexts for Users..."; }
 
 		perm_mode_label "widget/label"
 		    {
@@ -683,7 +683,7 @@ security_policy "widget/component-decl"
 		spacing=8;
 		cellsize=20;
 
-		context_hdr "widget/component" { path="section_label.cmp"; text="Manage Data Contexts..."; }
+		context_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Manage Data Contexts..."; }
 
 		context_osrc "widget/osrc"
 		    {
@@ -772,7 +772,7 @@ security_policy "widget/component-decl"
 				f_c_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; text="Description:"; field=s_context_desc; }
 				//f_c_context "widget/variable" { fieldname=s_context; type=string; }
 
-				meta "widget/component" { path="record_metadata_hidden.cmp"; }
+				meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 				}
 
 			    context_buttons "widget/hbox"
@@ -808,7 +808,7 @@ security_policy "widget/component-decl"
 
 			    context_sep "widget/autolayoutspacer" { height=4; }
 
-			    context_perm_hdr "widget/component" { path="section_label.cmp"; text="Permissions that Apply to this Data Context..."; }
+			    context_perm_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Permissions that Apply to this Data Context..."; }
 
 			    ctxperms_osrc "widget/osrc"
 				{
@@ -874,7 +874,7 @@ security_policy "widget/component-decl"
 		spacing=8;
 		cellsize=20;
 
-		k_user_list_hdr "widget/component" { path="section_label.cmp"; text="Kardia Users..."; }
+		k_user_list_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Kardia Users..."; }
 
 		k_user_list_searchbox "widget/editbox"
 		    {
@@ -940,7 +940,7 @@ security_policy "widget/component-decl"
 		spacing=8;
 		cellsize=20;
 
-		user_activity_hdr "widget/component" { path="section_label.cmp"; text=runclient("Recent Activity for " + :k_user_list_osrc:username + "..."); }
+		user_activity_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text=runclient("Recent Activity for " + :k_user_list_osrc:username + "..."); }
 
 		user_act_osrc "widget/osrc"
 		    {
@@ -981,7 +981,7 @@ security_policy "widget/component-decl"
 
 		sep3 "widget/autolayoutspacer" { height=8; }
 
-		user_apps_hdr "widget/component" { path="section_label.cmp"; text=runclient("Current Activity for " + :k_user_list_osrc:username + "..."); }
+		user_apps_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text=runclient("Current Activity for " + :k_user_list_osrc:username + "..."); }
 
 		user_apps_osrc "widget/osrc"
 		    {
