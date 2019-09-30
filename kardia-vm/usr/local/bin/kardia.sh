@@ -509,6 +509,12 @@ function manageUser
 	    sleep 1
 	    return 1
 	fi
+	#Do not allow usernames that contain a colon or semicolon 
+	if [ "$( echo "$N_USER" | sed 's/[:;]//' )" != "$N_USER" ]; then 
+	    echo Invalid character in username.
+	    sleep 1
+	    return 1
+	fi
 	if [ "$1" = "new" ]; then
 	    EXISTS=$(grep "^$N_USER:" /etc/passwd)
 	    if [ "$EXISTS" != "" ]; then
