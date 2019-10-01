@@ -3011,6 +3011,8 @@ function doSystemUpdate
     if [ "${SEL%%Menus*}" != "$SEL" ]; then
 	AsRoot UpdateMenus
     fi
+    # copy the cron files and make sure they are updated
+    AsRoot doCopyCronFiles
     }
 
 ########################
@@ -3378,6 +3380,46 @@ function doCreateKardiaUnixUser
 	    #grant the kardia user sysadmin privs so they can do cron
 	    doGiveUserKardiaSysadmin kardia
 	fi
+    }
+
+#Set up the cron files for kardia from git
+function doCopyCronFiles
+    {
+    if [ -d /usr/local/src/kardia-git/kardia-vm/ ]; then
+	#copy this, deleting any cron files that do not exist on git
+	rsync -ra --delete /usr/local/src/kardia-git/kardia-vm/etc/cron.kardia.d/ /etc/cron.kardia.d/
+	doCreateMissingCronFiles
+	doCleanBadCronFiles
+    fi
+    }
+
+#Erase any broken links to kardia.cron.d 
+function doCleanBadCronFiles
+    {
+    for onecron in /etc/cron.d/*; do
+        if [ -L "$onecron" ]; then
+	    if [ ! -e "$onecron" ]; then
+		echo link $onecron is broken removing
+		rm -f $onecron
+	    fi
+	fi
+    done
+    }
+
+#Add any missing crontabs that should be there
+function doCreateMissingCronFiles
+    {
+    for onecron in /etc/cron.kardia.d/*; do
+        if [ -e "$onecron" ]; then
+	    dest_b=`basename $onecron`
+	    dest_full="/etc/cron.d/$dest_b"
+
+	    if [ ! -L "$dest_full" ]; then
+		echo cron file $dest_full does not exist.  Creating link
+		ln -s $onecron $dest_full
+	    fi
+	fi
+    done
     }
 
 function displyCentrallixConnectInfo
