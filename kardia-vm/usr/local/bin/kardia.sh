@@ -709,6 +709,8 @@ function menuUsers
 		;;
 	esac
     done
+    #create the kardia user if we need to do that
+    doCreateKardiaUnixUser
     }
 
 
@@ -3193,7 +3195,7 @@ function vm_prep_cleanSSH
 # Clean up the contents of history and other files
 function vm_prep_cleanFiles
 {
-    cxfiles="/usr/local/sbin/centrallix /usr/local/sbin/cxpasswd /usr/local/etc/centrallix"
+    cxfiles="/usr/local/sbin/centrallix /usr/local/sbin/cxpasswd /usr/local/etc/centrallix /usr/local/etc/kardia_pw.txt"
     cxlibs="/usr/local/lib/StPar* /usr/local/centrallix/ /usr/local/libCentrallix*"
     cxinc="/usr/local/include/cxlib/"
     cxetc="/etc/init.d/centrallix"
@@ -3251,15 +3253,17 @@ function vm_prep_cleanUsers
 {
 	#remove users
 	echo "Removing any Kardia Users"
-	for USERNAME in $(grep -- '- Kardia:' /etc/passwd | sed 's/^\([^:]*\):[^:]*:\([^:]*\):.*/\1/'); do
-		killall -u $USERNAME
+	for USERNAME in $(grep -- '- Kardia:' /etc/passwd | sed 's/^\([^:]*\):[^:]*:\([^:]*\):.*/\1/') kardia; do
+	    if [ -n "$( grep $USERNAME /etc/passwd )" ]; then
+		killall -u $USERNAME 2>/dev/null
 		echo "  removing Kardia user $USERNAME from linux"
-		userdel -r $USERNAME
+		userdel -r $USERNAME 2>/dev/null
 		echo "  removing Kardia user $USERNAME from samba"
-		pdbedit -u $USERNAMR -x
+		pdbedit -u $USERNAMR -x 2>/dev/null
 		echo "  removing mysql user $USERNAME"
 		mysql -e "DROP USER $USERNAME@'localhost';" 2> /dev/null
 		mysql -e "DROP USER $USERNAME@'%';" 2> /dev/null
+	    fi
 	done
 	echo "Dropping Kardia_DB"
 	mysql -e "DROP DATABASE Kardia_DB;" 2>/dev/null
@@ -3356,6 +3360,24 @@ function doRemoveUserKardiaSysadmin
 	    return
 	fi
 	echo "DELETE FROM s_sec_endorsement WHERE s_subject='u:THEUSER';" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+    }
+
+#Create a kardia unix user for use with shell scripts
+function doCreateKardiaUnixUser
+    {
+	if [ -z "$( grep kardia /etc/passwd )" ]; then
+	    #create a password
+	    KARDPW=$(dd if=/dev/random bs=1 count=16 2>/dev/null| md5sum | head -c 30)
+	    #store the password
+	    echo $KARDPW > /usr/local/etc/kardia_pw.txt
+	    chmod 400 /usr/local/etc/kardia_pw.txt
+	    #create the kardia user
+	    useradd -r kardia
+	    #set the password for the kardia user
+	    echo kardia:$KARDPW | chpasswd
+	    #grant the kardia user sysadmin privs so they can do cron
+	    doGiveUserKardiaSysadmin kardia
+	fi
     }
 
 function displyCentrallixConnectInfo
