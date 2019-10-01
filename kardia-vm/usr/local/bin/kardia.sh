@@ -3037,6 +3037,9 @@ function vm_prep_cleanSystemTree
 	echo "  Cleaning mail"
 	rm /var/spool/mail/* 2>/dev/null
 	echo
+	echo "  Cleaning random seed"
+	rm /var/lib/systemd/random-seed 2>/dev/null
+	echo
 
 }
 
