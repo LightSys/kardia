@@ -95,7 +95,7 @@ function insertLine
 
 BASEDIR=/usr/local
 USER=$(/usr/bin/id -un)
-VERSION="1.1"
+VERSION="1.3"
 sTITLE="Kardia/Centrallix VM Appliance $VERSION  (C) LightSys"
 Root || TITLE="[$USER]  $sTITLE"
 Root && TITLE="** ROOT **  $sTITLE"
@@ -3323,7 +3323,9 @@ function doCleanup
 	echo "Reindexing the server: updatedb"
 	updatedb
 	#
+	version_line=$( sed -n '/VERSION=/=' /usr/local/bin/kardia.sh | head -1 )
 	echo "This VM is prepped to be rolled out"
+	echo "The version is: $VERSION (update in kardia.sh on line $version_line)"
 	echo "Ensure the root password is set to what the PDF says it will be"
     else
 	command="$1"
