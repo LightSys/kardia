@@ -1894,11 +1894,12 @@ function lookupStatus
     IFDEV=$(ip addr list | grep "^[0-9]" | grep -v lo | sed 's/://g;s/[0-9]* \([^ ]*\).*/\1/' | head -1)
     IPADDR=$(ip addr show dev $IFDEV primary | sed -n 's/    inet \([0-9.]*\).*/\1/p')
     ETCDIR=$( dirname $CXETC )
-    DUPLICITY_CONF=$ETCDIR/duplicity.conf
-    DUPLICITY_USER=$(grep USER $DUPLICITY_CONF | sed 's/.*=//')
-    DUPLICITY_HOST=$(grep HOST $DUPLICITY_CONF | sed 's/.*=//')
-    DUPLICITY_PORT=$(grep PORT $DUPLICITY_CONF | sed 's/.*=//')
-    DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
+    export DUPLICITY_CONF=$ETCDIR/duplicity.conf
+    export DUPLICITY_USER=$(grep USER $DUPLICITY_CONF | sed 's/.*=//')
+    export DUPLICITY_HOST=$(grep HOST $DUPLICITY_CONF | sed 's/.*=//')
+    export DUPLICITY_PORT=$(grep PORT $DUPLICITY_CONF | sed 's/.*=//')
+    export DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
+    export DUPLICITY_ENABLED=$(grep ENABLED $DUPLICITY_CONF | sed 's/.*=//')
     }
 
 
@@ -3446,16 +3447,51 @@ function menuConfigureBackup
 	{
 	read N_USER; read N_HOST; read N_PORT; read N_PATH
 	if [ -n "$N_USER" -a -n "$N_HOST" -a -n "$N_PATH" ]; then
-	    echo "USER=$N_USER" >$DUPLICITY_CONF
-	    echo "HOST=$N_HOST" >>$DUPLICITY_CONF
-	    echo "PORT=$N_PORT" >>$DUPLICITY_CONF
-	    echo "PATH=$N_PATH" >>$DUPLICITY_CONF
-	    echo "USER=$N_USER"
-	    echo "HOST=$N_HOST"
-	    echo "PORT=$N_PORT"
-	    echo "PATH=$N_PATH"
+	    DUPLICITY_USER=$N_USER;
+	    DUPLICITY_PORT=$N_PORT;
+	    DUPLICITY_HOST=$N_HOST;
+	    DUPLICITY_PATH=$N_PATH;
+	    doWriteBackupConfiguration
 	fi
 	}
+    }
+
+function menuEnableDisableBackup
+    {
+    lookupStatus
+    if [ "$DUPLICITY_ENABLED" = "yes" ]; then
+	en=on
+	ds=off
+    else
+	en=off
+	ds=on
+    fi
+    DSTR="dialog --backtitle '$TITLE' --title 'Enable/Disable Backup' --radiolist 'Backup:' 16 72 10"
+    DSTR="$DSTR enabled 'Enable Backup' $en"
+    DSTR="$DSTR disabled 'Disable Backup' $ds"
+
+    SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+
+    if [ -n "$SEL" ]; then
+	#we have chosen one of them
+	if [ "$SEL" = "enabled" ]; then
+	    DUPLICITY_ENABLED=yes
+	else
+	    DUPLICITY_ENABLED=no
+	fi
+	doWriteBackupConfiguration
+    fi
+    }
+
+function doWriteBackupConfiguration
+    {
+	if [ -n "$DUPLICITY_USER" -a -n "$DUPLICITY_HOST" -a -n "$DUPLICITY_PATH" ]; then
+	    echo "USER=$DUPLICITY_USER" >$DUPLICITY_CONF
+	    echo "HOST=$DUPLICITY_HOST" >>$DUPLICITY_CONF
+	    echo "PORT=$DUPLICITY_PORT" >>$DUPLICITY_CONF
+	    echo "PATH=$DUPLICITY_PATH" >>$DUPLICITY_CONF
+	    echo "ENABLED=$DUPLICITY_ENABLED" >>$DUPLICITY_CONF
+	fi
     }
 
 function menuBackup
@@ -3466,7 +3502,14 @@ function menuBackup
 	ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
     fi
     while true; do
+	if [ "$DUPLICITY_ENABLED" = "yes" ]; then
+	    status="Enabled"
+	else
+	    status="Disabled"
+	fi
+
 	DSTR="dialog --no-cancel --backtitle '$TITLE' --menu 'Backup Menu' 0 0 0"
+	DSTR="$DSTR Alter 'Backup ($status)'"
 	DSTR="$DSTR Config 'Configure Backup'"
 	DSTR="$DSTR Do 'Do Backup'"
 	DSTR="$DSTR Restore 'Restore from Backup'"
@@ -3487,6 +3530,10 @@ function menuBackup
 	    menuRestore
 	    continue
 	fi
+	if [ "$SEL" = "Alter" ]; then
+	    menuEnableDisableBackup
+	    #lookupStatus
+	fi
 	if [ "$SEL" = "Back" ]; then 
 	    return
 	fi
@@ -3498,7 +3545,7 @@ function menuRestore
     lookupStatus
     if [ -n "DUPLICITY_USER" -a -n "DUPLICITY_HOST" -a -n "DUPLICITY_PATH" ]; then
 	echo "Gathering data: Please Wait"
-	DSTR="dialog --backtitle '$TITLE' --menu 'Restore Menu' 0 0 0"
+	DSTR="dialog --backtitle '$TITLE' --menu 'Choose an item to restore' 0 0 0"
 	dates=$( duplicity collection-status scp://root@tyounglightsys.ddns.info:2222////home/tyoung/duplicity/DB --no-encryption | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } )
 	for one in $dates; do
 	    DSTR="$DSTR $one $one";
@@ -3538,10 +3585,11 @@ function menuRestore
 
 	    echo restoring MYSQL database from sql file
 	    mysql -u root < $DBDUMP
+
+	    echo SUCCESS!
+	    echo -n "Press enter to continue"
+	    read line
 	fi
-	echo SUCCESS!
-	echo -n "Press enter to continue"
-	read line
     fi
     }
 
@@ -3574,11 +3622,8 @@ function restoreOneDir
 function doBackup
     {
     lookupStatus
-	#echo duser $DUPLICITY_USER
-	#echo dhost $DUPLICITY_HOST
-	#echo dport $DUPLICITY_PORT
-	#echo dpath $DUPLICITY_PATH
 
+    if [ "$DUPLICITY_ENABLED" = "yes" ]; then
 	if [ -n "DUPLICITY_USER" -a -n "DUPLICITY_HOST" -a -n "DUPLICITY_PATH" ]; then
 	    target="$DUPLICITY_USER@$DUPLICITY_HOST"
 	    if [ "`ssh -oBatchMode=yes -oStrictHostKeyChecking=no -p $DUPLICITY_PORT $target ls `" ]; then
@@ -3613,7 +3658,12 @@ function doBackup
 	    echo "Backup is not yet configured.  Please configure it"
 	    sleep 5
 	fi
+    else
+	echo "Backup is disabled.  Please enable first"
+	sleep 5
+    fi
     }
+
 
 function displyCentrallixConnectInfo
     {
@@ -4062,6 +4112,7 @@ while true; do
     Rootable && DSTR="$DSTR System 'Basic System Administration'"
     Rootable && DSTR="$DSTR Users 'Manage Users'"
     Rootable && DSTR="$DSTR Display 'Display Centrallix Connection Information'"
+    Rootable && DSTR="$DSTR Backup 'Backup or restore the system'"
     DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
 
     SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
@@ -4094,6 +4145,9 @@ while true; do
 	    ;;
 	IndRepoOth)
 	    AsRoot AsUser menuIndRepo
+	    ;;
+	Backup)
+	    menuBackup
 	    ;;
 	Devel)
 	    menuDevel
