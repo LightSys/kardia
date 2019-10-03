@@ -1893,6 +1893,12 @@ function lookupStatus
 
     IFDEV=$(ip addr list | grep "^[0-9]" | grep -v lo | sed 's/://g;s/[0-9]* \([^ ]*\).*/\1/' | head -1)
     IPADDR=$(ip addr show dev $IFDEV primary | sed -n 's/    inet \([0-9.]*\).*/\1/p')
+    ETCDIR=$( dirname $CXETC )
+    DUPLICITY_CONF=$ETCDIR/duplicity.conf
+    DUPLICITY_USER=$(grep USER $DUPLICITY_CONF | sed 's/.*=//')
+    DUPLICITY_HOST=$(grep HOST $DUPLICITY_CONF | sed 's/.*=//')
+    DUPLICITY_PORT=$(grep PORT $DUPLICITY_CONF | sed 's/.*=//')
+    DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
     }
 
 
@@ -3422,6 +3428,191 @@ function doCreateMissingCronFiles
 	    fi
 	fi
     done
+    }
+
+function menuConfigureBackup
+    {
+    lookupStatus
+    DSTR="dialog --title 'Define Backup' --backtitle 'Define Backup' --form"
+    DSTR="$DSTR 'Configure an SSH backup.  Enter a username, host, port, and destination path on the host.' 0 0 0"
+    DSTR="$DSTR 'DestUser:' 1 1 '$DUPLICITY_USER' 1 26 30 0"
+    DSTR="$DSTR 'DestHost:' 3 1 '$DUPLICITY_HOST' 3 26 30 0"
+    DSTR="$DSTR 'DestPort:' 5 1 '$DUPLICITY_PORT' 5 26 5 0"
+    DSTR="$DSTR 'DestPath:' 7 1 '$DUPLICITY_PATH' 7 26 30 0"
+
+    echo $DSTR
+ 
+    eval "$DSTR" 2>&1 >/dev/tty |
+	{
+	read N_USER; read N_HOST; read N_PORT; read N_PATH
+	if [ -n "$N_USER" -a -n "$N_HOST" -a -n "$N_PATH" ]; then
+	    echo "USER=$N_USER" >$DUPLICITY_CONF
+	    echo "HOST=$N_HOST" >>$DUPLICITY_CONF
+	    echo "PORT=$N_PORT" >>$DUPLICITY_CONF
+	    echo "PATH=$N_PATH" >>$DUPLICITY_CONF
+	    echo "USER=$N_USER"
+	    echo "HOST=$N_HOST"
+	    echo "PORT=$N_PORT"
+	    echo "PATH=$N_PATH"
+	fi
+	}
+    }
+
+function menuBackup
+    {
+    #check to see if we have an ssh key, and if not, create it
+    if [ ! -e ~/.ssh/id_rsa ]; then
+	# generate a ssh key for this user
+	ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
+    fi
+    while true; do
+	DSTR="dialog --no-cancel --backtitle '$TITLE' --menu 'Backup Menu' 0 0 0"
+	DSTR="$DSTR Config 'Configure Backup'"
+	DSTR="$DSTR Do 'Do Backup'"
+	DSTR="$DSTR Restore 'Restore from Backup'"
+	DSTR="$DSTR Back 'Go back one menu'"
+
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+
+	if [ "$SEL" = "Config" ]; then 
+	    menuConfigureBackup
+	    continue
+	fi
+	if [ "$SEL" = "Do" ]; then
+	    doBackup
+	    echo backin up
+	    continue
+	fi
+	if [ "$SEL" = "Restore" ]; then
+	    menuRestore
+	    continue
+	fi
+	if [ "$SEL" = "Back" ]; then 
+	    return
+	fi
+    done
+    }
+
+function menuRestore
+    {
+    lookupStatus
+    if [ -n "DUPLICITY_USER" -a -n "DUPLICITY_HOST" -a -n "DUPLICITY_PATH" ]; then
+	echo "Gathering data: Please Wait"
+	DSTR="dialog --backtitle '$TITLE' --menu 'Restore Menu' 0 0 0"
+	dates=$( duplicity collection-status scp://root@tyounglightsys.ddns.info:2222////home/tyoung/duplicity/DB --no-encryption | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } )
+	for one in $dates; do
+	    DSTR="$DSTR $one $one";
+	done
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+	echo $SEL
+	if [ -n "$SEL" ]; then
+	    #We are trying to restore a backup
+	    dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
+
+	    export DBDUMP="/tmp/mysql.tmp"
+
+	    #echo Dumping mysql
+	    #mysqldump -u root -h localhost --databases Kardia_DB --complete-insert --skip-extended-insert --add-drop-database > "$DBDUMP"
+	    echo recovering mysql sql file from $SEL
+	    #duplicity $DBDUMP $dup_path/DB --force --no-encryption --time $SEL
+	    restoreOneDir $dup_path/DB $DBDUMP $SEL
+
+	    echo Restoring etc from $SEL
+	    #restore the etc directory
+	    restoreOneDir $dup_path/etc $ETCDIR $SEL
+
+	    #restore the data directory
+	    echo Restoring data from $SEL
+	    #duplicity $dup_path/data $KSRC/kardia-app/data --force --no-encryption --time $SEL
+	    restoreOneDir $dup_path/data $KSRC/kardia-app/data $SEL
+
+	    #restore the files directory
+	    echo Restoring files from $SEL
+	    #duplicity $dup_path/files $KSRC/kardia-app/files --force --no-encryption --time $SEL
+	    restoreOneDir $dup_path/files $KSRC/kardia-app/files $SEL
+
+	    #restore the tpl directory
+	    echo Restoring tpl from $SEL
+	    #duplicity $dup_path/tpl $KSRC/kardia-app/tpl --force --no-encryption --time $SEL
+	    restoreOneDir $dup_path/tpl $KSRC/kardia-app/tpl $SEL
+
+	    echo restoring MYSQL database from sql file
+	    mysql -u root < $DBDUMP
+	fi
+	echo SUCCESS!
+	echo -n "Press enter to continue"
+	read line
+    fi
+    }
+
+function restoreOneDir
+    {
+	source=$1
+	dest=$2
+	time=$3
+	if [ -n "$source" -a -n "$dest" -a -n "$time" ]; then
+	    #move the old directory
+	    #restore the new dir
+	    #if we fail, put the old stuff back
+	    rm -rf /tmp/old 2>/dev/null
+	    mv $dest /tmp/old
+	    duplicity $source $dest --no-encryption --time $time
+	    if [ -d "$dest" -o -e "$dest" ]; then
+		#success!
+		rm -rf /tmp/old
+	    else
+		#failure!
+		mv /tmp/old $dest
+		echo "Failed to restore $dest.  Stopping"
+		exit
+	    fi
+	else
+	    echo malformed data
+	fi
+    }
+
+function doBackup
+    {
+    lookupStatus
+	#echo duser $DUPLICITY_USER
+	#echo dhost $DUPLICITY_HOST
+	#echo dport $DUPLICITY_PORT
+	#echo dpath $DUPLICITY_PATH
+
+	if [ -n "DUPLICITY_USER" -a -n "DUPLICITY_HOST" -a -n "DUPLICITY_PATH" ]; then
+	    target="$DUPLICITY_USER@$DUPLICITY_HOST"
+	    if [ "`ssh -oBatchMode=yes -oStrictHostKeyChecking=no -p $DUPLICITY_PORT $target ls `" ]; then
+		dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
+
+		export DBDUMP="/tmp/mysql.tmp"
+
+		echo Dumping mysql
+		mysqldump -u root -h localhost --databases Kardia_DB --complete-insert --skip-extended-insert --add-drop-database > "$DBDUMP"
+		echo Backing up mysql
+		duplicity $DBDUMP $dup_path/DB --no-encryption
+
+		echo backing up etc
+		#backup the etc directory
+		duplicity $ETCDIR $dup_path/etc --no-encryption
+		#backup the data directory
+		echo backing up data
+		duplicity $KSRC/kardia-app/data $dup_path/data --no-encryption
+		#backup the files directory
+		echo backing up files
+		duplicity $KSRC/kardia-app/files $dup_path/files --no-encryption
+		#backup the tpl directory
+		echo backing up tpl
+		duplicity $KSRC/kardia-app/tpl $dup_path/tpl --no-encryption
+	    else
+		echo --------------------------------
+		echo "There was an error testing SSH"
+		echo "Please check your configuration and network connection"
+		exit
+	    fi
+	else
+	    echo "Backup is not yet configured.  Please configure it"
+	    sleep 5
+	fi
     }
 
 function displyCentrallixConnectInfo
