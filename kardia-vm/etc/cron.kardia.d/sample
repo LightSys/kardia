@@ -1,0 +1,6 @@
+#This is a sample cron file.  It does nothing
+#It is formatted as a file from /etc/cron.d
+#SHELL=/bin/bash
+#PATH=/sbin:/bin:/usr/sbin:/usr/bin
+#MAILTO=root
+#01 * * * * root /path/to/command
