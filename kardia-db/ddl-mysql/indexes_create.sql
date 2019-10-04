@@ -12,7 +12,7 @@ create  index p_org_name_idx on p_partner (p_org_name, p_partner_key);
 create  index p_parent_key_idx on p_partner (p_parent_key, p_partner_key);
 /* create  index p_partner_pk on p_partner (p_partner_key)*/ 
 /* go */
-/* create  index p_surname_clustered_idx on p_partner (p_surname, p_given_name, p_org_name, p_partner_key)*/ 
+/* create  index p_surname_clustered_idx on p_partner (p_surname, p_given_name, p_preferred_name, p_org_name, p_partner_key)*/ 
 /* go */
 
 
@@ -27,7 +27,7 @@ create  index p_parent_key_idx on p_partner (p_parent_key, p_partner_key);
 
 
 /* p_location */
-create  index p_location_city_idx on p_location (p_city, p_state_province, p_partner_key, p_location_id, p_revision_id);
+create  index p_location_city_idx on p_location (p_city, p_state_province, p_postal_code, p_partner_key, p_location_id, p_revision_id);
 /* create  index p_location_pk on p_location (p_partner_key, p_location_id, p_revision_id)*/ 
 /* go */
 create  index p_location_rev_idx on p_location (p_partner_key, p_revision_id, p_location_id);
@@ -49,6 +49,7 @@ create  index p_af_country_idx on p_address_format (p_country_code, p_address_se
 
 
 /* p_contact_info */
+create  index p_contact_idx on p_contact_info (p_contact_data, p_phone_area_city, p_phone_country, p_partner_key, p_contact_id);
 /* create  index p_contact_info_pk on p_contact_info (p_partner_key, p_contact_id)*/ 
 /* go */
 
@@ -833,6 +834,7 @@ create  index a_gifttrxgrp_ack_id_idx on a_subtrx_gift_group (p_ack_partner_id, 
 create  index a_gifttrxgrp_batch_idx on a_subtrx_gift_group (a_batch_number, a_ledger_number, a_gift_number);
 create  index a_gifttrxgrp_donor_id_idx on a_subtrx_gift_group (p_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number);
 create  index a_gifttrxgrp_gift_idx on a_subtrx_gift_group (a_gift_number, a_ledger_number, a_batch_number);
+create  index a_gifttrxgrp_pass_id_idx on a_subtrx_gift_group (p_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number);
 /* create  index a_gifttrxgrp_pk on a_subtrx_gift_group (a_ledger_number, a_batch_number, a_gift_number)*/ 
 /* go */
 
@@ -840,11 +842,14 @@ create  index a_gifttrxgrp_gift_idx on a_subtrx_gift_group (a_gift_number, a_led
 /* a_subtrx_gift_item */
 /* create  index a_gifttrx_pk on a_subtrx_gift_item (a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
 /* go */
+create  index a_gifttrxi_ack_idx on a_subtrx_gift_item (p_dn_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 /* create  index a_gifttrxi_cc_clustered_idx on a_subtrx_gift_item (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
 /* go */
+create  index a_gifttrxi_datetype_idx on a_subtrx_gift_item (a_dn_gift_received_date, a_dn_gift_postmark_date, a_dn_gift_type, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_donor_idx on a_subtrx_gift_item (p_dn_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_gift_idx on a_subtrx_gift_item (a_gift_number, a_ledger_number, a_batch_number, a_split_number);
 create  index a_gifttrxi_mcode_idx on a_subtrx_gift_item (a_motivational_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+create  index a_gifttrxi_pass_idx on a_subtrx_gift_item (p_dn_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_rcpt_idx on a_subtrx_gift_item (a_dn_receipt_number, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_recip_id_idx on a_subtrx_gift_item (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_src_idx on a_subtrx_gift_item (i_eg_source_key, a_ledger_number, a_batch_number, a_gift_number, a_split_number);

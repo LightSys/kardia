@@ -263,7 +263,8 @@ gift_import "widget/component-decl"
 				    :eg:i_eg_gift_settlement_date,
 				    :eg:i_eg_deposit_date,
 				    :eg:i_eg_deposit_uuid,
-				    import_country_code = isnull(:egco:p_country_code, :eg:i_eg_donor_country)
+				    import_country_code = isnull(:egco:p_country_code, :eg:i_eg_donor_country),
+				    i_eg_anonymous = isnull(:eg:i_eg_anonymous, 'NO')
 			    FROM
 				    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
 				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
@@ -1013,6 +1014,7 @@ gift_import "widget/component-decl"
 		id_depdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_date; text="Deposited:"; ctl_type=label; }
 		id_depid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_uuid; text="Deposit ID:"; ctl_type=label; }
 		id_desig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; text="Designation:"; ctl_type=label; }
+		id_anon "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_anonymous; text="Anonymous?"; ctl_type=label; }
 		id_notes "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; text="Notes:"; ctl_type=label; }
 		}
 	    }

@@ -78,6 +78,10 @@ alter table p_contact_info
 	drop primary key;
 
 
+alter table p_contact_info
+	drop index p_contact_idx;
+
+
 alter table p_contact_usage
 	drop primary key;
 
@@ -894,6 +898,10 @@ alter table a_subtrx_gift_group
 	drop index a_gifttrxgrp_ack_id_idx;
 
 
+alter table a_subtrx_gift_group
+	drop index a_gifttrxgrp_pass_id_idx;
+
+
 alter table a_subtrx_gift_item
 	drop primary key;
 
@@ -915,11 +923,23 @@ alter table a_subtrx_gift_item
 
 
 alter table a_subtrx_gift_item
+	drop index a_gifttrxi_ack_idx;
+
+
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_pass_idx;
+
+
+alter table a_subtrx_gift_item
 	drop index a_gifttrxi_rcpt_idx;
 
 
 alter table a_subtrx_gift_item
 	drop index a_gifttrxi_src_idx;
+
+
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_datetype_idx;
 
 
 alter table a_subtrx_gift_rcptcnt

@@ -1,0 +1,6 @@
+#
+# run with: test_obj -q -f $PWD/Gaz_build.to
+#
+
+query delete /apps/kardia/data/Kardia_DB/p_gazetteer/rows where :p_feature_type = 'PC' and :p_source = 'USCENSUS2010'
+query insert /apps/kardia/data/Kardia_DB/p_gazetteer/rows select p_country_code = 'US', p_feature_type = 'PC', p_feature_id = convert(integer,'1' + :zcta) - 100000, p_alt_feature_id = convert(integer,'1' + :zcta) - 100000, p_feature_name = :zcta, p_feature_desc = '(from US Census 2010)', p_area_land = :aland_sqmi, p_area_water = :awater_sqmi, p_latitude = :lat, p_longitude = :lon, p_source = 'USCENSUS2010', p_validity_date = convert(datetime, '12/31/2010 23:59:59'), s_date_created=getdate(), s_created_by=user_name(), s_date_modified=getdate(), s_modified_by=user_name() FROM /apps/kardia/data/gazetteer/Gaz_zcta_national.csv/rows zcta on duplicate :p_country_code, :p_feature_id update set :p_area_land = :zcta:aland_sqmi, :p_area_water = :zcta:awater_sqmi
