@@ -1,0 +1,10 @@
+/var/log/cx_access_log {
+    compress
+    missingok
+}
+
+/var/log/cx_debug_log {
+    compress
+    missingok
+}
+
