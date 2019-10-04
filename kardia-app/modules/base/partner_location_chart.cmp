@@ -74,8 +74,8 @@ partner_location_chart "widget/component-decl"
 --		where
 --		    charindex(',' + :label + ',', ',' + :info:states + ',') = 0
 		";
-	readahead=30;
-	replicasize=30;
+	readahead=100;
+	replicasize=100;
 	//autoquery=onload;
 
 	chart_link "widget/rule"

@@ -62,6 +62,8 @@ go
 
 
 /* p_contact_info */
+drop index p_contact_info.p_contact_idx
+go
 /* drop index p_contact_info.p_contact_info_pk */ 
 /* go */
 
@@ -128,6 +130,11 @@ go
 
 /* p_country */
 /* drop index p_country.p_country_code_pk */ 
+/* go */
+
+
+/* p_pol_division */
+/* drop index p_pol_division.p_poldiv_pk */ 
 /* go */
 
 
@@ -451,6 +458,11 @@ go
 drop index e_data_item_type.e_ditype_parent_idx
 go
 /* drop index e_data_item_type.e_ditype_pk */ 
+/* go */
+
+
+/* e_data_item_type_value */
+/* drop index e_data_item_type_value.e_dataitemval_pk */ 
 /* go */
 
 
@@ -970,6 +982,8 @@ drop index a_subtrx_gift_group.a_gifttrxgrp_donor_id_idx
 go
 drop index a_subtrx_gift_group.a_gifttrxgrp_gift_idx
 go
+drop index a_subtrx_gift_group.a_gifttrxgrp_pass_id_idx
+go
 /* drop index a_subtrx_gift_group.a_gifttrxgrp_pk */ 
 /* go */
 
@@ -977,13 +991,19 @@ go
 /* a_subtrx_gift_item */
 /* drop index a_subtrx_gift_item.a_gifttrx_pk */ 
 /* go */
+drop index a_subtrx_gift_item.a_gifttrxi_ack_idx
+go
 /* drop index a_subtrx_gift_item.a_gifttrxi_cc_clustered_idx */ 
 /* go */
+drop index a_subtrx_gift_item.a_gifttrxi_datetype_idx
+go
 drop index a_subtrx_gift_item.a_gifttrxi_donor_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_gift_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_mcode_idx
+go
+drop index a_subtrx_gift_item.a_gifttrxi_pass_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_rcpt_idx
 go
@@ -1381,4 +1401,9 @@ go
 
 /* s_global_search */
 /* drop index s_global_search.s_global_search_pk */ 
+/* go */
+
+
+/* s_stats_cache */
+/* drop index s_stats_cache.s_stats_cache_pk */ 
 /* go */

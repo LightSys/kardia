@@ -32,8 +32,8 @@ partner_growth_chart "widget/component-decl"
 		order by
 		    :s_stat
 		";
-	readahead=30;
-	replicasize=30;
+	readahead=50;
+	replicasize=50;
 	//autoquery=onload;
 
 	chart_link "widget/rule"

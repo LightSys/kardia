@@ -1,0 +1,12 @@
+$Version=2$
+report_field_gift_type "widget/component-decl"
+    {
+    width=350;
+    height=24;
+    report_param = "gift_type";
+
+    rpt_form "widget/parameter" { type=object; find_container="report/form"; }
+    ledger "widget/parameter" { type=string; default=null; }
+
+    f_type "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="gift_type"; text="Gift Type(s):"; ctl_type=dropdown; label_width=120; form=rpt_form; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_gift_type/rows ; select text = 'EFT or Credit Card', tag = 'ED'; select text = 'Cash or Check', tag = 'CK'"; numdisplay=7; }
+    }

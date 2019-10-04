@@ -98,6 +98,11 @@ alter table p_contact_info
 go
 
 
+alter table p_contact_info
+	drop constraint p_contact_idx
+go
+
+
 alter table p_contact_usage
 	drop constraint p_contact_usg_pk
 go
@@ -160,6 +165,11 @@ go
 
 alter table p_country
 	drop constraint p_country_code_pk
+go
+
+
+alter table p_pol_division
+	drop constraint p_poldiv_pk
 go
 
 
@@ -565,6 +575,11 @@ go
 
 alter table e_data_item_type
 	drop constraint e_ditype_parent_idx
+go
+
+
+alter table e_data_item_type_value
+	drop constraint e_dataitemval_pk
 go
 
 
@@ -1108,6 +1123,11 @@ alter table a_subtrx_gift_group
 go
 
 
+alter table a_subtrx_gift_group
+	drop constraint a_gifttrxgrp_pass_id_idx
+go
+
+
 alter table a_subtrx_gift_item
 	drop constraint a_gifttrx_pk
 go
@@ -1134,12 +1154,27 @@ go
 
 
 alter table a_subtrx_gift_item
+	drop constraint a_gifttrxi_ack_idx
+go
+
+
+alter table a_subtrx_gift_item
+	drop constraint a_gifttrxi_pass_idx
+go
+
+
+alter table a_subtrx_gift_item
 	drop constraint a_gifttrxi_rcpt_idx
 go
 
 
 alter table a_subtrx_gift_item
 	drop constraint a_gifttrxi_src_idx
+go
+
+
+alter table a_subtrx_gift_item
+	drop constraint a_gifttrxi_datetype_idx
 go
 
 
@@ -1565,4 +1600,9 @@ go
 
 alter table s_global_search
 	drop constraint s_global_search_pk
+go
+
+
+alter table s_stats_cache
+	drop constraint s_stats_cache_pk
 go

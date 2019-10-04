@@ -10,6 +10,7 @@ search "widget/component-decl"
     PartnerSelected "widget/component-decl-event" { }
     AdvancedSearch "widget/component-decl-event" { }
     AdvancedResults "widget/component-decl-action" { }
+    AdvancedResultsLoaded "widget/component-decl-event" { }
     AddPerson "widget/component-decl-event" { }
     Refresh "widget/component-decl-action" { }
     RefreshTasks "widget/component-decl-action" { }
@@ -99,7 +100,7 @@ search "widget/component-decl"
 	    fl_height=0;
 	    path = "/sys/cmp/smart_field.cmp";
 	    ctl_type = checkboxleft;
-	    text = "Search Only CRM People";
+	    text = "Show Only CRM People";
 
 	    search_crm_hints "widget/hints" { style=notnull; }
 
@@ -272,18 +273,35 @@ search "widget/component-decl"
 			TabIndex = 2;
 			}
 
+		    got_results_update_counts "widget/connector"
+			{
+			event=Results;
+			target=search;
+			action=AdvancedResultsLoaded;
+			}
+
 		    session_id "widget/parameter" { type=integer; }
 		    stage_id "widget/parameter" { type=integer; }
 		    a_only_crm "widget/parameter" { param_name=only_crm; type=integer; default=runclient(:search_only_crm:value); }
 
 		    sql = " declare collection advsearch scope application;
+
+			    declare object collab_info;
+
+			    select
+				    :collab_info:p_partner_key = :s:p_partner_key
+			    from
+				    /apps/kardia/data/Kardia_DB/p_staff/rows s
+			    where
+				    :s:p_kardia_login = user_name()
+			    ;
 		    
 			    select
 				    :p:p_partner_key,
 				    nm = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 				    loc = isnull(:pl:p_city + ', ','') + isnull(:pl:p_state_province + ' ','') + isnull(:pl:p_postal_code, ''),
 				    in_crm_collab = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key),
-				    in_crm_collab_me = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c, /apps/kardia/data/Kardia_DB/p_staff/rows s where :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :s:p_partner_key and :s:p_kardia_login = user_name()),
+				    in_crm_collab_me = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :collab_info:p_partner_key),
 				    in_crm_track = (select count(1) from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e where :e:p_partner_key = :p:p_partner_key and :e:e_completion_status = 'I'),
 				    img = isnull( (
 					    select
@@ -317,6 +335,8 @@ search "widget/component-decl"
 				    :pl:p_record_status_code = 'A' and
 				    :p:p_record_status_code = 'A' and
 				    :p:p_status_code = 'A'
+			    group by
+				    :sr:p_partner_key
 			    order by
 				    :sr:p_sortkey,
 				    :sr:p_partner_key
@@ -356,7 +376,7 @@ search "widget/component-decl"
 			cellvspacing = 4;
 			row1_bgcolor = "#f8f8f8";
 			row2_bgcolor = "#f8f8f8";
-			nodata_message = "(no results)";
+			nodata_message =  runclient(condition(not :advanced_results_osrc:cx__pending, "one moment...", "(no results)"));
 
 			advanced_item_detail "widget/table-row-detail"
 			    {
@@ -453,7 +473,6 @@ search "widget/component-decl"
 			fgcolor1=white;
 			fgcolor2=black;
 			disable_color="#334466";
-			enabled=runclient(0);
 
 			on_ml_click "widget/connector"
 			    {
@@ -484,12 +503,87 @@ search "widget/component-decl"
 	    }
 	}
 
+    // Add advanced results to a mailing list
     makelist_osrc "widget/osrc"
 	{
 	m_session_id "widget/parameter" { type=integer; }
 	m_stage_id "widget/parameter" { type=integer; }
+	m_listcode "widget/parameter" { type=string; param_name=listcode; }
+	m_listdesc "widget/parameter" { type=string; param_name=listdesc; }
+	m_listtype "widget/parameter" { type=string; param_name=listtype; }
+
+	sql = "	declare collection advsearch scope application;
+		declare object info;
+
+		select :info:prevcnt = count(1) from /apps/kardia/data/Kardia_DB/m_list_membership/rows where :m_list_code = :parameters:listcode and :m_membership_status = 'A';
+
+		select :info:addcnt = count(1) from collection advsearch where :p_search_session_id = :parameters:m_session_id and :p_search_stage_id = :parameters:m_stage_id;
+
+		-- Create the list, if needed
+		insert
+			/apps/kardia/data/Kardia_DB/m_list/rows
+		select
+			m_list_code = :parameters:listcode,
+			m_list_description = :parameters:listdesc,
+			m_list_type = :parameters:listtype,
+			m_list_status = 'A',
+			m_list_frozen = 0,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		;
+
+		-- Add the members
+		insert
+			/apps/kardia/data/Kardia_DB/m_list_membership/rows
+		select
+			m_list_code = :parameters:listcode,
+			:sr:p_partner_key,
+			m_num_copies = 1,
+			m_member_type = 'M',
+			m_membership_status = 'A',
+			m_complimentary = 1,
+			m_show_contact = 0,
+			m_reason_member = 'O',
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		from
+			collection advsearch sr
+		where
+			:sr:p_search_session_id = :parameters:m_session_id and
+			:sr:p_search_stage_id = :parameters:m_stage_id
+		on duplicate
+			:m_list_code,
+			:p_partner_key
+		update set
+			:s_date_modified = getdate(),
+			:s_modified_by = user_name()
+		;
+
+		select :info:newcnt = count(1) from /apps/kardia/data/Kardia_DB/m_list_membership/rows where :m_list_code = :parameters:listcode and :m_membership_status = 'A';
+		select :info:dups = :info:addcnt - (:info:newcnt - :info:prevcnt) ;
+
+		-- Done
+		select
+			:info:newcnt,
+			:info:addcnt,
+			:info:prevcnt,
+			:info:dups,
+			:parameters:listcode
+		";
+	readahead=2;
+	replicasize=2;
+	autoquery=never;
+
+	on_makelist2 "widget/connector" { event=EndQuery; target=list_form; action=Discard; }
+	on_makelist3 "widget/connector" { event=EndQuery; target=makelist_win; action=Close; }
+	on_makelist4 "widget/connector" { event=EndQuery; event_delay = 0.1; target=search; action=Alert; Message=runclient("Added " + (:makelist_osrc:addcnt - :makelist_osrc:dups) + " people to list '" + :makelist_osrc:listcode + "'." + condition(:makelist_osrc:dups > 0, "  " + :makelist_osrc:dups + " duplicate members were not added.", "") + "  Total list membership is now " + :makelist_osrc:newcnt + " people."); }
 	}
 
+    // Send an email to adv search results
     email_em_osrc "widget/osrc"
 	{
 	e_session_id "widget/parameter" { type=integer; }
@@ -511,7 +605,8 @@ search "widget/component-decl"
 			:p:p_record_status_code = 'A' and
 			:p:p_status_code = 'A' and
 			:ci:p_partner_key =* :p:p_partner_key and
-			:ci:p_contact_type = 'E'
+			:ci:p_contact_type = 'E' and
+			:ci:p_record_status_code = 'A'
 		order by
 			:sr:p_sortkey,
 			:sr:p_partner_key
@@ -535,7 +630,7 @@ search "widget/component-decl"
 	    event_condition=runclient(:email_em_osrc:emails is not null);
 	    target=search;
 	    action=Launch;
-	    Source=runclient("mailto:" + :email_em_osrc:emails);
+	    Source=runclient("mailto:" + replace(:email_em_osrc:emails, '&', '%26'));
 	    }
 	}
 
@@ -544,7 +639,7 @@ search "widget/component-decl"
 	titlebar=no;
 	toplevel=yes;
 	visible=no;
-	x=0; y=0; width=248; height=204;
+	x=0; y=0; width=300; height=224;
 	fl_width=100;
 	border_radius=8;
 	border_style=solid;
@@ -557,7 +652,7 @@ search "widget/component-decl"
 
 	makelist_vbox "widget/vbox"
 	    {
-	    x=10; y=10; width=228; height=158;
+	    x=10; y=10; width=278; height=210;
 	    spacing=8;
 
 	    makelist_title "widget/label" { height=16; font_size=15; align=center; style=bold; text="Create or Add To a List:"; }
@@ -566,30 +661,86 @@ search "widget/component-decl"
 	    // Mailing List / Group setup
 	    list_form "widget/form"
 		{
-		list_code "widget/component" { width=220; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="list_code"; popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/"); popup_text="Choose List to Add To:"; text="List Code:"; attach_point=editbox; empty_desc = "list to create or add to"; label_width=120; popup_height=250; lists_hints2 "widget/hints" { badchars=" ,"; } }
+		confirm_discard = no;
+
+		list_code "widget/component"
+		    {
+		    width=270;
+		    height=24;
+		    path="/apps/kardia/modules/base/editbox_tree.cmp";
+		    field="list_code";
+		    popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/");
+		    popup_text="Choose List to Add To:";
+		    text="List Code:";
+		    attach_point=editbox;
+		    empty_desc = "list to create or add to";
+		    label_width=100;
+		    popup_height=250;
+		    lists_hints2 "widget/hints" { badchars=" ,"; length=20; }
+
+		    list_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(:list_form:is_savable); target=listdesc_osrc; action=QueryParam; listcode=runclient(:list_code:content); }
+
+		    listdesc_osrc "widget/osrc"
+			{
+			listdesc_param1 "widget/parameter" { type=string; param_name=listcode; }
+			sql = "select description = isnull(first(:m_list_description),'**NEW**'), list=:parameters:listcode from /apps/kardia/data/Kardia_DB/m_list/rows where :m_list_code = :parameters:listcode";
+			autoquery = never;
+			replicasize=2;
+			readahead=2;
+
+			list_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:listdesc_osrc:list = :list_code:content); target=list_code; action=SetValueDescription; Description=runclient(:listdesc_osrc:description); }
+			}
+		    }
+
+		list_form_sep1 "widget/autolayoutspacer" { height=1; }
+
 		lbl1b "widget/label" { height=18; text="For a new list, please specify the following:"; style=bold; align=center; }
-		list_desc "widget/component" { width=220; height=24; path="/sys/cmp/smart_field.cmp"; field="list_desc"; text="List Description:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; }
-		list_type "widget/component" { width=220; height=24; path="/sys/cmp/smart_field.cmp"; field="list_type"; text="List Type:"; ctl_type=dropdown; label_width=120; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_type/rows where :tag != 'I'"; }
+		list_desc "widget/component" { width=270; height=24; path="/sys/cmp/smart_field.cmp"; field="list_desc"; text="Description:"; empty_desc = "optional"; ctl_type=editbox; label_width=100; }
+		list_type "widget/component" { width=270; height=24; path="/sys/cmp/smart_field.cmp"; field="list_type"; text="List Type:"; ctl_type=dropdown; label_width=100; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_type/rows where :tag != 'I'"; }
 		}
-	    }
 
-	makelist_ctls_hbox "widget/hbox"
-	    {
-	    x=10; y=168;
-	    height=24;
-	    width=228;
-	    align=center; spacing=10;
+	    list_form_sep2 "widget/autolayoutspacer" { height=1; }
 
-	    makelist_cancel_btn "widget/textbutton"
+	    makelist_ctls_hbox "widget/hbox"
 		{
-		text = "Close";
-		height=24; width=130;
-		background="/apps/kardia/images/bg/lsblue_btngradient.png";
-		fgcolor1=white;
-		fgcolor2=black;
-		disable_color="#334466";
+		height=24;
+		align=center; spacing=10;
 
-		on_makelist_cancel "widget/connector" { event=Click; target=makelist_win; action=Close; }
+		makelist_btn "widget/textbutton"
+		    {
+		    text = "Make List";
+		    height=24; width=110;
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+		    enabled=runclient(:listdesc_osrc:list == :list_code:content and :listdesc_osrc:list is not null and (:listdesc_osrc:description != '**NEW**' or (char_length(:list_desc:content) > 1 and char_length(:list_type:value) = 1)));
+
+		    on_makelist1 "widget/connector"
+			{
+			event=Click;
+			target=makelist_osrc;
+			action=QueryParam;
+			listcode=runclient(:list_code:content);
+			listdesc=runclient(:list_desc:content);
+			listtype=runclient(:list_type:value);
+			m_session_id = runclient(:advanced_results_osrc:session_id);
+			m_stage_id = runclient(:advanced_results_osrc:stage_id);
+			}
+		    }
+
+		makelist_cancel_btn "widget/textbutton"
+		    {
+		    text = "Close";
+		    height=24; width=110;
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+
+		    on_makelist_cancel1 "widget/connector" { event=Click; target=list_form; action=Discard; }
+		    on_makelist_cancel2 "widget/connector" { event=Click; target=makelist_win; action=Close; }
+		    }
 		}
 	    }
 	}
@@ -599,7 +750,7 @@ search "widget/component-decl"
 	titlebar=no;
 	toplevel=yes;
 	visible=no;
-	x=0; y=0; width=248; height=164;
+	x=0; y=0; width=300; height=runserver(100 + 32 * (select count(1) from object wildcard '/apps/kardia/modules/*/plugin_crm_searchreport_*.rpt?ls__type=system%2fstructure'));
 	fl_width=100;
 	border_radius=8;
 	border_style=solid;
@@ -612,7 +763,7 @@ search "widget/component-decl"
 
 	reports_vbox "widget/vbox"
 	    {
-	    x=10; y=10; width=228; height=118;
+	    x=10; y=10; width=300; height=runserver(54 + 32 * (select count(1) from object wildcard '/apps/kardia/modules/*/plugin_crm_searchreport_*.rpt?ls__type=system%2fstructure'));
 	    spacing=8;
 
 	    reports_title "widget/label" { height=16; font_size=15; align=center; style=bold; text="Download Report:"; }
@@ -624,7 +775,7 @@ search "widget/component-decl"
 
 		one_report_btn "widget/textbutton"
 		    {
-		    height=24; width=200;
+		    height=24; width=252;
 		    x=14;
 		    text=runserver(:reports_repeat:title);
 		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
@@ -655,9 +806,9 @@ search "widget/component-decl"
 
 	ctls_hbox "widget/hbox"
 	    {
-	    x=10; y=128;
+	    x=10; y=runserver(64 + 32 * (select count(1) from object wildcard '/apps/kardia/modules/*/plugin_crm_searchreport_*.rpt?ls__type=system%2fstructure'));
 	    height=24;
-	    width=228;
+	    width=280;
 	    align=center; spacing=10;
 
 	    cancel_btn "widget/textbutton"

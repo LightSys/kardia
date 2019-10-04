@@ -5,6 +5,8 @@ plugin_menu_act_logins "widget/component-decl"
     height=142;
     type = "User";
     sql = " -- Basic updates for the user's status.
+	    declare collection ud;
+
 	    insert
 		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
 	    select
@@ -44,16 +46,24 @@ plugin_menu_act_logins "widget/component-decl"
 		    :s_modified_by = user_name()
 	    ;
 
+	    insert
+		    collection ud
+	    select
+		    *
+	    from
+		    /apps/kardia/data/Kardia_DB/s_user_data/rows
+	    ;
+
 	    -- Users who are not currently online
 	    insert
 		collection activity
 	    select
 		p_partner_key = :s:p_partner_key,
 		activitydate = :ud:s_date_modified,
-		e_reference_info = :s:p_kardia_login,
-		menuname = condition(:s:p_kardia_login = user_name(), 'Me', 'User'),
+		e_reference_info = :ud:s_username,
+		menuname = condition(:ud:s_username = user_name(), 'Me', 'User'),
 		is_online = 0,
-		menutitle = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+		menutitle = isnull(isnull(condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname), :ux:description), :ud:s_username),
 		menudesc = :ud:s_status,
 		cnt = (	select
 			    sum(sum(1)),
@@ -79,15 +89,18 @@ plugin_menu_act_logins "widget/component-decl"
 	    from
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
-		/apps/kardia/data/Kardia_DB/s_user_data/rows ud
+		/apps/kardia/data/Users.uxu ux,
+		collection ud ud
 	    where
 		:p:p_partner_key = :s:p_partner_key and
-		:ud:s_username = :s:p_kardia_login and
-		:s:p_is_staff = 1
+		:ud:s_username *= :s:p_kardia_login and
+		:s:p_is_staff = 1 and
+		:ux:name =* :ud:s_username
 	    group by
-		:s:p_kardia_login
+		:ud:s_username
 	    having
-		(select count(1) from /sys/cx.sysinfo/session/apps a where :a:username = :this:e_reference_info) = 0
+		(select count(1) from /sys/cx.sysinfo/session/apps a where :a:username = :this:e_reference_info) = 0 and
+		datediff(day, :this:activitydate, getdate()) <= 366
 	    ;
 
 	    -- Who is online on the CRM system
@@ -99,7 +112,7 @@ plugin_menu_act_logins "widget/component-decl"
 		e_reference_info = :a:username,
 		menuname = condition(:a:username = user_name(), 'Me', 'User'),
 		is_online = 1,
-		menutitle = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+		menutitle = isnull(isnull(condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname), :ux:description), :ud:s_username),
 		menudesc = :ud:s_status,
 		cnt = (	select
 			    sum(sum(1)),
@@ -126,11 +139,13 @@ plugin_menu_act_logins "widget/component-decl"
 		/sys/cx.sysinfo/session/apps a,
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
-		/apps/kardia/data/Kardia_DB/s_user_data/rows ud
+		/apps/kardia/data/Users.uxu ux,
+		collection ud ud
 	    where
-		:s:p_kardia_login = :a:username and
+		:s:p_kardia_login =* :a:username and
 		:p:p_partner_key = :s:p_partner_key and
-		:ud:s_username =* :a:username
+		:ud:s_username =* :a:username and
+		:ux:name =* :a:username
 	    group by
 		:a:username
 	    having
@@ -242,14 +257,14 @@ plugin_menu_act_logins "widget/component-decl"
 	    t_chat_text "widget/table-column" { width=166; fieldname=message_txt; wrap=yes; font_size=10; style=runclient(condition(:t_chat_osrc:is_hdr, 'bold', 'plain')); caption_value=runclient(:t_chat_osrc:date_txt + condition(:t_chat_osrc:is_not_seen, ' (not seen)', '')); caption_font_size=10; caption_style=italic; caption_textcolor="#e0e0e0"; }
 
 	    // Open a partner if we see the partner ID and '#' in the chat message.
-	    on_click_ref "widget/connector"
-		{
-		event=Click;
-		event_condition=runclient(:p_partner_key is not null);
-		target=activity_list;
-		action=PartnerSelected;
-		partner_key = runclient(:p_partner_key);
-		}
+	    //on_click_ref "widget/connector"
+	//	{
+	//	event=Click;
+	//	event_condition=runclient(:p_partner_key is not null);
+	//	target=activity_list;
+	//	action=PartnerSelected;
+	//	partner_key = runclient(:p_partner_key);
+	//	}
 	    }
 
 	t_chat_newosrc "widget/osrc"

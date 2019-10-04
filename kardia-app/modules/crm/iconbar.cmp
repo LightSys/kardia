@@ -36,13 +36,14 @@ iconbar "widget/component-decl"
 	event=SetTab;
 	target=iconbar;
 	action=SidebarSelect;
-	PageID=runserver(:page_id);
+	PageID=runclient(:PageID);
 	}
     onSetTab2 "widget/connector"
 	{
 	event=SetTab;
 	target=one_tabbutton;
 	action=SetBackground;
+	PageID=runclient(:PageID);
 	Image=runclient("/apps/kardia/images/bg/lsblue_gradient.png");
 	}
 
@@ -140,6 +141,7 @@ iconbar "widget/component-decl"
 		    {
 		    fl_width=0;
 		    active=runserver(:tabicons:cx__rowid == 0);
+		    page_id=runserver(:tabicons:cx__rowid + 1);
 		    path="button_tab.cmp";
 		    text=runserver(:tabicons:title);
 		    image=runserver(:tabicons:icon);
@@ -165,6 +167,7 @@ iconbar "widget/component-decl"
 			event=Click;
 			target=one_tabbutton;
 			action=SetBackground;
+			PageID=runserver(:tabicons:cx__rowid + 1);
 			Image=runclient("/apps/kardia/images/bg/lsblue_gradient.png");
 			}
 		    }

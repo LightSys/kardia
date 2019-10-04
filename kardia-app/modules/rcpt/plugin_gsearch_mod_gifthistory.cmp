@@ -5,6 +5,8 @@ plugin_gsearch_mod_gifthistory "widget/component-decl"
     height=150;
     type="PAR";
     sequence = 200;
+    endorsement = 'kardia:gift_amt';
+    endorsement_context = 'kardia:ledger:*';
 
     search_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 

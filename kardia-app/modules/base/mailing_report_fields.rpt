@@ -169,6 +169,7 @@ mailing_report "system/report"
 			:p:p_title,
 			:p:p_suffix,
 			:p:p_no_mail,
+			nomail_reason = (select :text from /apps/kardia/data/Kardia_DB/_p_nomail_reason/rows nmr where :nmr:tag = :p:p_no_mail_reason),
 			:p:p_no_solicitations,
 			:p:p_status_code,
 			:pl:p_in_care_of,
@@ -288,9 +289,9 @@ mailing_report "system/report"
 	partners_table "report/table"
 	    {
 	    x=0; width=80; height=0;
-	    columns=18;
-	    widths=4,4,4,7,7,7,4,4,8,8,7,7,4,4,4,4,4,11;
-	    colsep=0.5;
+	    columns=19;
+	    widths=4,4,4,4,7,7,7,4,4,7,7,7,7,4,4,4,4,4,9;
+	    colsep=0.4;
 	    nullformat="";
 	    moneyformat = "-###,###,##0.00";
 	    dateformat = "dd-MMM-yyyy";
@@ -308,6 +309,7 @@ mailing_report "system/report"
 
 		tg_id "report/table-cell" { value='Partner #'; align=center; }
 		tg_nomail "report/table-cell" { value='NO MAIL'; align=center; }
+		tg_nomailreason "report/table-cell" { value='REASON'; align=center; }
 		tg_nosol "report/table-cell" { value='NO SOL.'; align=center; }
 		tg_orgname "report/table-cell" { value='Org Name'; align=center; }
 		tg_surname "report/table-cell" { value='Surname'; align=center; }
@@ -335,6 +337,7 @@ mailing_report "system/report"
 
 		d_id "report/table-cell" { value=runserver(:partners_qy:p_partner_key); }
 		d_nomail "report/table-cell" { value=runserver(:partners_qy:p_no_mail); }
+		d_nomailreason "report/table-cell" { value=runserver(:partners_qy:nomail_reason); }
 		d_nosol "report/table-cell" { value=runserver(:partners_qy:p_no_solicitations); }
 		d_orgname "report/table-cell" { value=runserver(:partners_qy:p_org_name); }
 		d_surname "report/table-cell" { value=runserver(:partners_qy:p_surname); }

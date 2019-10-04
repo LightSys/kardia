@@ -211,7 +211,7 @@ gift_import "widget/component-decl"
 							    )
 							),
 				    trx_date = substring(convert(string,:eg:i_eg_gift_trx_date),1,11),
-				    gs_donor_info = :eg:i_eg_donor_name + ' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')',
+				    gs_donor_info = :eg:i_eg_donor_name + isnull(' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')', ''),
 				    kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + ', ' + :l:p_state_province + ')', ''),
 				    gs_desig_info = :eg:i_eg_desig_name,
 				    kardia_desig_info = :eg:a_cost_center + isnull(' ' + :c:a_cc_desc,''),
@@ -263,7 +263,8 @@ gift_import "widget/component-decl"
 				    :eg:i_eg_gift_settlement_date,
 				    :eg:i_eg_deposit_date,
 				    :eg:i_eg_deposit_uuid,
-				    import_country_code = isnull(:egco:p_country_code, :eg:i_eg_donor_country)
+				    import_country_code = isnull(:egco:p_country_code, :eg:i_eg_donor_country),
+				    i_eg_anonymous = isnull(:eg:i_eg_anonymous, 'NO')
 			    FROM
 				    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
 				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
@@ -1013,6 +1014,7 @@ gift_import "widget/component-decl"
 		id_depdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_date; text="Deposited:"; ctl_type=label; }
 		id_depid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_uuid; text="Deposit ID:"; ctl_type=label; }
 		id_desig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; text="Designation:"; ctl_type=label; }
+		id_anon "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_anonymous; text="Anonymous?"; ctl_type=label; }
 		id_notes "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; text="Notes:"; ctl_type=label; }
 		}
 	    }
@@ -1861,11 +1863,12 @@ gift_import "widget/component-decl"
 			    a_recv_document_id = condition(:i_eg_gift_pmt_type == 'ACH', 'EFT-', condition(:i_eg_gift_pmt_type == 'Visa', 'VISA-', condition(:i_eg_gift_pmt_type == 'MasterCard', 'MC-', condition(:i_eg_gift_pmt_type == 'Discover', 'DISC-', condition(:i_eg_gift_pmt_type == 'Amex', 'AMEX-', ''))))) + :i_eg_gift_lastfour,
 			    a_posted = 0,
 			    a_posted_to_gl = 0,
-			    a_confidential = 0,
+			    a_confidential = condition(isnull(:eg:i_eg_anonymous, 'NO') = 'YES', 1, 0),
 			    a_non_tax_deductible = isnull((select :a_non_tax_deductible from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ra where :ra:a_cost_center = :eg:a_cost_center and :ra:a_ledger_number = :eg:a_ledger_number and :ra:a_account_code = :eg:a_account_code), 0),
 			    a_comment = :i_eg_desig_notes,
 			    a_gift_admin_subtype = (select :ac:a_default_subtype from /apps/kardia/data/Kardia_DB/a_cc_admin_fee/rows ac where :ac:a_ledger_number = :eg:a_ledger_number and :ac:a_cost_center = :eg:a_cost_center),
 			    p_dn_donor_partner_id = :p_donor_partner_key,
+			    a_dn_gift_type = condition(:i_eg_gift_pmt_type == 'ACH', 'E', 'D'),
 			    a_dn_gift_received_date = :i_eg_gift_trx_date,
 			    a_dn_receipt_number = (select :a_receipt_number from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_batch_number = convert(integer, :parameters:batchno) and :g:p_donor_partner_id = :eg:p_donor_partner_key and :g:a_ledger_number = :eg:a_ledger_number),
 			    i_eg_source_key = :eg:name,

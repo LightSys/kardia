@@ -1,0 +1,58 @@
+$Version=2$
+update_gift_import "system/query"
+    {
+    sql = runserver(isnull((select
+			sum('insert into /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows select a_ledger_number = ' + quote(:l:a_ledger_number) + ',\n' + :p:sql + ' ' + :p:upsert_sql + '\n;\n' + isnull(:p:postprocess_sql + '\n;\n', ''))
+		from
+			/apps/kardia/data/Kardia_DB/a_ledger/rows l,
+			object wildcard '/apps/kardia/modules/*/plugin_rcpt_giftimport_*.cmp' p,
+			/apps/kardia/data/Kardia_DB/a_config/rows ac
+		where
+			:ac:a_ledger_number = :l:a_ledger_number and
+			:ac:a_config_name = 'GiftImport_' + :p:tag and
+			:ac:a_config_value = '1'
+		), '') +
+		"
+		-- Try to set donor key correlation based on prior data
+		--
+		update
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
+		set
+			:p_donor_partner_key = (select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_donormap_confidence = condition((select :e2:p_donor_partner_key from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:i_eg_donormap_future = 1 and :e2:i_eg_donormap_confidence = 2 and :e2:p_donor_partner_key is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+		where
+			:p_donor_partner_key is null and char_length(rtrim(:i_eg_trx_uuid)) > 1
+		;
+
+		-- Try to make the designation assignment based on prior data
+		--
+		update
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
+		set
+			:a_cost_center = (select :e2:a_cost_center from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_cost_center is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_fundmap_confidence = condition((select :e2:a_cost_center from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_cost_center is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+		where
+			:a_cost_center is null and char_length(rtrim(:i_eg_trx_uuid)) > 1
+		;
+
+		-- Try to make the GL account code assignment based on prior data,
+		-- first checking both donor and cost ctr match, and second checking
+		-- just cost ctr match.
+		--
+		update
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
+		set
+			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+		where
+			:a_account_code is null and char_length(rtrim(:i_eg_trx_uuid)) > 1
+		;
+		update
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
+		set
+			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+		where
+			:a_account_code is null and char_length(rtrim(:i_eg_trx_uuid)) > 1
+		");
+    }

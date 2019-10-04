@@ -39,7 +39,11 @@ alter table p_location
 go
 
 alter table p_location
-	add constraint p_location_city_idx unique nonclustered (p_city, p_state_province, p_partner_key, p_location_id, p_revision_id)
+	add constraint p_location_city_idx unique nonclustered (p_city, p_state_province, p_postal_code, p_partner_key, p_location_id, p_revision_id)
+go
+
+alter table p_contact_info
+	add constraint p_contact_idx unique nonclustered (p_contact_data, p_phone_area_city, p_phone_country, p_partner_key, p_contact_id)
 go
 
 alter table p_staff
@@ -330,6 +334,10 @@ alter table a_subtrx_gift_group
 	add constraint a_gifttrxgrp_ack_id_idx unique nonclustered (p_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number)
 go
 
+alter table a_subtrx_gift_group
+	add constraint a_gifttrxgrp_pass_id_idx unique nonclustered (p_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number)
+go
+
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_recip_id_idx unique nonclustered (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
@@ -343,11 +351,23 @@ alter table a_subtrx_gift_item
 go
 
 alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_ack_idx unique nonclustered (p_dn_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
+
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_pass_idx unique nonclustered (p_dn_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
+
+alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_rcpt_idx unique nonclustered (a_dn_receipt_number, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_src_idx unique nonclustered (i_eg_source_key, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
+
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_datetype_idx unique nonclustered (a_dn_gift_received_date, a_dn_gift_postmark_date, a_dn_gift_type, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 
 alter table a_motivational_code

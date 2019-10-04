@@ -47,6 +47,9 @@ popover_managerels "widget/component-decl"
 		profile_key "widget/parameter" { type=string; }
 		sql = "	select
 			    reltype = condition(:pr:p_partner_key == :parameters:profile_key, :prt:p_relation_type_label, :prt:p_relation_type_rev_label),
+			    reltype_desc = condition(:pr:p_partner_key == :parameters:profile_key, :prt:p_relation_type_label, :prt:p_relation_type_rev_label) + ' of ' + condition(:pr:p_partner_key == :parameters:profile_key, :prt:p_relation_type_rev_label, :prt:p_relation_type_label) + ' ' + condition(:pr:p_partner_key == :parameters:profile_key,
+				    condition(char_length(:p1:p_org_name) > 1, :p1:p_org_name, isnull(condition(char_length(:p1:p_preferred_name) > 1, :p1:p_preferred_name, :p1:p_given_name) + ' ', '') + isnull(:p1:p_surname,'')),
+				    condition(char_length(:p2:p_org_name) > 1, :p2:p_org_name, isnull(condition(char_length(:p2:p_preferred_name) > 1, :p2:p_preferred_name, :p2:p_given_name) + ' ', '') + isnull(:p2:p_surname,''))),
 			    nametxt = condition(:pr:p_partner_key == :parameters:profile_key,
 				    condition(char_length(:p2:p_org_name) > 1, :p2:p_org_name, isnull(condition(char_length(:p2:p_preferred_name) > 1, :p2:p_preferred_name, :p2:p_given_name) + ' ', '') + isnull(:p2:p_surname,'')),
 				    condition(char_length(:p1:p_org_name) > 1, :p1:p_org_name, isnull(condition(char_length(:p1:p_preferred_name) > 1, :p1:p_preferred_name, :p1:p_given_name) + ' ', '') + isnull(:p1:p_surname,''))),
@@ -136,8 +139,8 @@ popover_managerels "widget/component-decl"
 			}
 
 		    t_img "widget/table-column" { fieldname="img"; width=22; type=image; image_maxwidth=16; image_maxheight=16; align=center; }
-		    t_name "widget/table-column" { fieldname="nametxt"; width=320; style=bold; caption_fieldname=p_relation_comments; caption_style=italic; caption_textcolor="#a0a0a0"; }
-		    t_type "widget/table-column" { fieldname="reltype"; width=180; style=bold; textcolor="#334466"; }
+		    t_name "widget/table-column" { fieldname="nametxt"; width=180; style=bold; caption_fieldname=p_relation_comments; caption_style=italic; caption_textcolor="#a0a0a0"; }
+		    t_type "widget/table-column" { fieldname="reltype_desc"; width=320; style=bold; textcolor="#334466"; }
 		    }
 
 		add_rel_form "widget/form"

@@ -8,17 +8,19 @@ plugin_crm_search_ADD "system/query"
 
     search_id "query/parameter" { type=integer; }
     cur_stage "query/parameter" { type=integer; }
-    prev_stage "query/parameter" { type=integer; }
+    prev_keys "query/parameter" { type=string; }
 
     sql = " -- First, we need to get our search stage information and config.
-	    declare collection advsearch scope application;
+	    declare collection iresult scope application;
 	    declare object stage;
 	    select
 		:stage:op = :s:p_stage_op,
 		:stage:addr = lower(:sc:addr),
 		:stage:city = lower(:sc:city),
 		:stage:country = upper(:sc:country),
-		:stage:stateprov = upper(:sc:stateprov)
+		:stage:stateprov = upper(:sc:stateprov),
+		:stage:geo_within = convert(double, :sc:geo_within),
+		:stage:geo_of = :sc:geo_of
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
 		/apps/kardia/modules/crm/advanced_search_params.qyp sc
@@ -29,137 +31,43 @@ plugin_crm_search_ADD "system/query"
 		:sc:p_search_stage_id = :s:p_search_stage_id
 	    ;
 
-	    -- Delete any previous results.
-	    --delete
---		/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
---	    where
---		:s_username = user_name() and
---		:p_search_session_id = :parameters:search_id and
---		:p_search_stage_id = :parameters:cur_stage
---	    ;
-
-	    -- Now create this stage's results.
-	    -- Pass #1: copy previous results if we're ADDING.
-	    insert
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
-		collection advsearch
+	    -- Find the list of zip codes that match the criteria.  Use
+	    -- haversine formula for calculating great circle distance
 	    select
-		:sr:p_partner_key,
-		--:s_username,
-		:sr:p_search_session_id,
-		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = '' --,
-		--s_date_created = getdate(),
-		--s_created_by = user_name(),
-		--s_date_modified = getdate(),
-		--s_modified_by = user_name()
+		:stage:postal_codes = sum(:g2:p_feature_name + ',') - ','
 	    from
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows s
-		collection advsearch sr
+		/apps/kardia/data/Kardia_DB/p_gazetteer/rows g1,
+		/apps/kardia/data/Kardia_DB/p_gazetteer/rows g2
 	    where
-		--:s:s_username = user_name() and
-		:sr:p_search_session_id = :parameters:search_id and
-		:sr:p_search_stage_id = :parameters:prev_stage and
-		:stage:op = 'A'
+		:g1:p_feature_name = :stage:geo_of and
+		:g1:p_feature_type = 'PC' and
+		:g2:p_feature_type = 'PC' and
+		2.0 * atan2(sqrt(power(sin((radians(:g1:p_latitude) - radians(:g2:p_latitude)) / 2),2) + cos(radians(:g1:p_latitude)) * cos(radians(:g2:p_latitude)) * power(sin((radians(:g1:p_longitude) - radians(:g2:p_longitude)) / 2),2)), sqrt(1 - power(sin((radians(:g1:p_latitude) - radians(:g2:p_latitude)) / 2),2) + cos(radians(:g1:p_latitude)) * cos(radians(:g2:p_latitude)) * power(sin((radians(:g1:p_longitude) - radians(:g2:p_longitude)) / 2),2))) * 3958.8 <= :stage:geo_within
 	    ;
 
-	    -- Pass #2: generate new results if we're ADDING
+	    -- Get the intermediate results
 	    insert
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
-		collection advsearch
+		collection iresult
 	    select
 		:l:p_partner_key,
-		--s_username = user_name(),
 		p_search_session_id = :parameters:search_id,
-		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = '' --,
-		--s_date_created = getdate(),
-		--s_created_by = user_name(),
-		--s_date_modified = getdate(),
-		--s_modified_by = user_name()
+		p_search_stage_id = :parameters:cur_stage
 	    from
 		/apps/kardia/data/Kardia_DB/p_location/rows l
 	    where
-		:stage:op = 'A' and
 		:l:p_revision_id = 0 and
 		:l:p_record_status_code = 'A' and
 		(:stage:addr is null or charindex(:stage:addr, lower(:l:p_in_care_of)) > 0 or charindex(:stage:addr, lower(:l:p_address_1)) > 0 or charindex(:stage:addr, lower(:l:p_address_2)) > 0 or charindex(:stage:addr, lower(:l:p_address_3)) > 0) and
 		(:stage:city is null or charindex(:stage:city, lower(:l:p_city)) = 1) and
 		(:stage:country is null or :stage:country = upper(:l:p_country_code)) and
-		(:stage:stateprov is null or :stage:stateprov = upper(:l:p_state_province))
+		(:stage:stateprov is null or charindex(',' + upper(:l:p_state_province) + ',', ',' + :stage:stateprov + ',') > 0) and
+		(:stage:geo_within is null or :stage:geo_of is null or charindex(',' + condition(:l:p_country_code = 'US' or isnull(char_length(:l:p_country_code), 0) < 2, substring(:l:p_postal_code,1,5), :l:p_postal_code) + ',', ',' + :stage:postal_codes + ',') > 0) and
+		(:parameters:prev_keys is null or charindex(',' + rtrim(:l:p_partner_key) + ',', ',' + :parameters:prev_keys + ',') > 0)
 	    on duplicate
 		:p_partner_key,
 		:p_search_session_id,
 		:p_search_stage_id
 	    update set
 		:p_partner_key = :p_partner_key
-	    ;
-
-	    -- Pass #3: filter existing results if we're restricting
-	    insert
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
-		collection advsearch
-	    select
-		:p_partner_key,
-		--s_username = user_name(),
-		p_search_session_id = :parameters:search_id,
-		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = ''--,
-		--s_date_created = getdate(),
-		--s_created_by = user_name(),
-		--s_date_modified = getdate(),
-		--s_modified_by = user_name()
-	    from
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
-		collection advsearch sr,
-		/apps/kardia/data/Kardia_DB/p_location/rows l
-	    where
-		--:sr:s_username = user_name() and
-		:sr:p_search_session_id = :parameters:search_id and
-		:sr:p_search_stage_id = :parameters:prev_stage and
-		:stage:op = 'R' and
-		:sr:p_partner_key = :l:p_partner_key and
-		:l:p_revision_id = 0 and
-		:l:p_record_status_code = 'A' and
-		(:stage:addr is null or charindex(:stage:addr, lower(:l:p_in_care_of)) > 0 or charindex(:stage:addr, lower(:l:p_address_1)) > 0 or charindex(:stage:addr, lower(:l:p_address_2)) > 0 or charindex(:stage:addr, lower(:l:p_address_3)) > 0) and
-		(:stage:city is null or charindex(:stage:city, lower(:l:p_city)) = 1) and
-		(:stage:country is null or :stage:country = upper(:l:p_country_code)) and
-		(:stage:stateprov is null or :stage:stateprov = upper(:l:p_state_province))
-	    ;
-
-	    -- Pass #4: filter existing results if we're excluding
-	    insert
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows
-		collection advsearch
-	    select
-		:sr:p_partner_key,
-		--s_username = user_name(),
-		p_search_session_id = :parameters:search_id,
-		p_search_stage_id = :parameters:cur_stage,
-		p_sortkey = ''--,
-		--s_date_created = getdate(),
-		--s_created_by = user_name(),
-		--s_date_modified = getdate(),
-		--s_modified_by = user_name()
-	    from
-		--/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
-		collection advsearch sr,
-		/apps/kardia/data/Kardia_DB/p_location/rows l
-	    where
-		--:sr:s_username = user_name() and
-		:sr:p_search_session_id = :parameters:search_id and
-		:sr:p_search_stage_id = :parameters:prev_stage and
-		:stage:op = 'E' and
-		:sr:p_partner_key *= :l:p_partner_key and
-		:l:p_revision_id = 0 and
-		:l:p_record_status_code = 'A' and
-		(:stage:addr is null or charindex(:stage:addr, lower(:l:p_in_care_of)) > 0 or charindex(:stage:addr, lower(:l:p_address_1)) > 0 or charindex(:stage:addr, lower(:l:p_address_2)) > 0 or charindex(:stage:addr, lower(:l:p_address_3)) > 0) and
-		(:stage:city is null or charindex(:stage:city, lower(:l:p_city)) = 1) and
-		(:stage:country is null or :stage:country = upper(:l:p_country_code)) and
-		(:stage:stateprov is null or :stage:stateprov = upper(:l:p_state_province))
-	    group by
-		:sr:p_partner_key
-	    having
-		count(:l:p_partner_key) = 0
 	    ";
     }

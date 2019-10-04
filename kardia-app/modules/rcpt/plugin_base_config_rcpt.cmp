@@ -52,17 +52,21 @@ plugin_base_config_rcpt "widget/component-decl"
 		rcpt_label_1 "widget/label" { height=30; text="Asset account and fund: when a receipting batch is posted, this determines what cash account and fund are used.  The account should either be a deposit account, an undeposited funds account, or a receivable account."; }
 		//rcpt_post_cc "widget/component" { height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Asset Fund:"; tooltip="Cost Center / Fund for cash side of GL batch"; label_width=100; popup_source = runclient("/apps/kardia/modules/gl/costctrs.qyt/" + :ledger_osrc:a_ledger_number + "/"); popup_text="Select Fund:"; width=250; empty_desc = "asset fund"; field="RcptCashFund"; }
 		//rcpt_post_acct "widget/component" { height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Asset Account:"; tooltip="Cash GL Account for Deposit"; label_width=100; popup_source = runclient("/apps/kardia/modules/gl/accounts.qyt/" + :ledger_osrc:a_ledger_number + "/"); popup_text="Select Account:"; width=250; empty_desc = "GL account"; field="RcptCashAcct"; }
-		rcpt_cacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptCashAcct"; text="Asset Account:"; width=300; label_width=150; ctl_type=editbox; }
 		rcpt_cfund "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptCashFund"; text="Asset Fund:"; width=300; label_width=150; ctl_type=editbox; }
+		rcpt_cacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptCashAcct"; text="Asset Account:"; width=300; label_width=150; ctl_type=editbox; }
 
 		rcpt_label_2 "widget/label" { height=15; text="Admin Fees Accounts: This determines what GL accounts are used for the inter-fund transfer of admin fees for gifts."; }
 		rcpt_expacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptAdminExp"; text="Admin Expense:"; width=300; label_width=150; ctl_type=editbox; }
 		rcpt_revacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptAdminRev"; text="Admin Revenue:"; width=300; label_width=150; ctl_type=editbox; }
 
-		rcpt_label_3 "widget/label" { height=15; text="Gift received date: This controls whether the 'received date' field on the gift entry form is disabled (read only) or not."; }
+		rcpt_label_3 "widget/label" { height=15; text="Gift Accounts: Comma-separated lists of GL accounts for certain types of gifts."; }
+		rcpt_giftaccts "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptGiftAccts"; text="Normal Gifts:"; width=300; label_width=150; ctl_type=editbox; ga_hints "widget/hints" { badchars=" "; } }
+		rcpt_pgiftaccts "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptPGiftAccts"; text="Passthrough Gifts:"; width=300; label_width=150; ctl_type=editbox; pga_hints "widget/hints" { badchars=" "; } }
+
+		rcpt_label_4 "widget/label" { height=15; text="Gift received date: This controls whether the 'received date' field on the gift entry form is disabled (read only) or not."; }
 		rcpt_disrcv "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptDisabRcvdDt"; text="Disable Received Date:"; width=300; label_width=150; ctl_type=checkbox; rcvd_hints "widget/hints" { style=notnull; } }
 
-		rcpt_label_4 "widget/label" { height=30; text="When gifts are imported from an online giving service, what should the default receipt preference be for those gifts, if no donor receipting preference is on record?"; }
+		rcpt_label_5 "widget/label" { height=30; text="When gifts are imported from an online giving service, what should the default receipt preference be for those gifts, if no donor receipting preference is on record?"; }
 		rcpt_defrcpt "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptEGDefRcpt"; text="Online Receipt Pref:"; width=300; label_width=150; ctl_type=dropdown; sql = "select label=:a_receipt_type + ' - ' + :a_receipt_type_desc, value=:a_receipt_type from /apps/kardia/data/Kardia_DB/a_receipt_type/rows where :a_is_enabled = 1"; def_hints "widget/hints" { style=notnull; } }
 		}
 	    }

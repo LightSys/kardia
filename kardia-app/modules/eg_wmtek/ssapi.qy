@@ -16,7 +16,7 @@ ssapi "system/query"
 						isnull(upper(convert(string, :rec:recurring_interval) + :rec:recurring_period), '')
 						))),
 			i_eg_receipt_desired = null,
-			i_eg_anonymous = null,
+			i_eg_anonymous = condition(:contrib:is_anonymous == 1, 'YES', null),
 			i_eg_prayforme = null,
 			i_eg_acctmap_future = 1,
 			i_eg_fundmap_future = 1,
