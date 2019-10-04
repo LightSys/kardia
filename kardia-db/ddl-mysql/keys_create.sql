@@ -5,7 +5,7 @@ alter table p_partner
 	add constraint p_partner_pk primary key  (p_partner_key);
 
 alter table p_partner
-	add constraint p_surname_clustered_idx unique  (p_surname, p_given_name, p_org_name, p_partner_key);
+	add constraint p_surname_clustered_idx unique  (p_surname, p_given_name, p_preferred_name, p_org_name, p_partner_key);
 
 alter table p_partner_key_cnt
 	add constraint p_partner_key_cnt_pk primary key  (p_partner_key);
