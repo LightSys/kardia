@@ -15,6 +15,7 @@ generic_report "widget/component-decl"
     report_path_sep_csv "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     combine_criteria_format "widget/parameter" { type=integer; default=0; }
     show_preview "widget/parameter" { type=integer; default=0; }
+    default_format "widget/parameter" { type=string; default="application/pdf"; deploy_to_client=yes; }
 
     last_restored_paramset_id "widget/variable" { type = integer; value = -1; }
 
@@ -588,7 +589,7 @@ generic_report "widget/component-decl"
 		    Source=runclient(:generic_report:report_path);
 		    Width=800;
 		    Height=600;
-		    document_format=runclient(isnull(:format_fields:value, 'application/pdf'));
+		    document_format=runclient(isnull(:format_fields:value, :default_format:value));
 		    }
 
 		rpt_print_cn2 "widget/connector"
