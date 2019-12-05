@@ -1,0 +1,61 @@
+$Version=2$
+plugin_base_stat_gift "system/query"
+    {
+    sql = " declare object info;
+
+	    delete
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    where
+		:s_stat_type = 'GIFT'
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'GIFT',
+		s_stat_group = rtrim(:p:a_ledger_number) + '*' + rtrim(:p:a_parent_period),
+		s_stat = rtrim(:p:a_ledger_number) + '*' + rtrim(:p:a_period),
+		s_money_value = sum(:g:a_amount),
+		s_integer_value = count(:g:a_amount),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_period/rows p,
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g
+	    where
+		:p:a_summary_only = 0 and
+		:g:a_posted = 1 and
+		:p:a_period *= :g:a_period and
+		:p:a_ledger_number *= :g:a_ledger_number
+	    group by
+		:p:a_ledger_number,
+		:p:a_period
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    select
+		s_stat_type = 'GIFT',
+		s_stat_group = rtrim(:p:a_ledger_number) + '*' + rtrim(:p:a_parent_period),
+		s_stat = rtrim(:p:a_ledger_number) + '*' + rtrim(:p:a_parent_period),
+		s_money_value = sum(:sc:s_money_value),
+		s_integer_value = sum(:sc:s_integer_value),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_period/rows p,
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows sc
+	    where
+		:p:a_summary_only = 0 and
+		:sc:s_stat_type = 'GIFT' and
+		:sc:s_stat = rtrim(:p:a_ledger_number) + '*' + rtrim(:p:a_period) and
+		:sc:s_stat_group != :sc:s_stat
+	    group by
+		:p:a_ledger_number,
+		:p:a_parent_period
+	    ";
+    }

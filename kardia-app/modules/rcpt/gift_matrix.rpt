@@ -4,6 +4,7 @@ gift_matrix "system/report"
     title = "Gifts by Month";
     resolution = 300;
     document_format = "application/pdf";
+    filename = runserver("gifts_by_month_" + :this:end_period + condition(:this:document_format2 == 'text/csv', '.csv', '.pdf') );
 
     pagewidth = 110;
     pageheight = 51;
@@ -15,6 +16,7 @@ gift_matrix "system/report"
     ledger "report/parameter" { type=string; }
     costctr "report/parameter" { type=string; default=null; }
     end_period "report/parameter" { type=string; }
+    document_format2 "report/parameter" { type=string; }
 
     periods_qy "report/query"
 	{
@@ -69,6 +71,10 @@ gift_matrix "system/report"
     gift_sum_qy "report/query"
 	{
 	sql = runserver("
+		DECLARE OBJECT cclist;
+
+		SELECT :cclist:ccs = sum(rtrim(:a_cost_center) + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr;
+
 		SELECT
 			amt = isnull(sum(:i:a_amount), $0),
 			cnt = count(1),
@@ -104,6 +110,7 @@ gift_matrix "system/report"
 			:i:a_posted = 1 and
 			:i:a_period <= :p1_qy:a_period and
 			:i:a_period >= :p12_qy:a_period and
+			(:cclist:ccs is null or charindex(',' + rtrim(:i:a_cost_center) + ',', ',' + :cclist:ccs + ',') > 0) and
 			:c:a_cost_center = :i:a_cost_center and
 			:c:a_ledger_number = :i:a_ledger_number and
 			" + condition(:this:costctr is null, "", "(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr) and") + "

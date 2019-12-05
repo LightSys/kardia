@@ -11,7 +11,7 @@ plugin_menu_subui_partners "widget/component-decl"
 	height=200;
 	spacing=10;
 
-	stats_title "widget/label" { height=18; font_size=16; style=bold; align=center; text="Partner Overview..."; fl_width=100; }
+	stats_title "widget/label" { height=18; font_size=15; style=bold; align=center; text="Partner Overview..."; fl_width=100; }
 
 	search_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 

@@ -1,0 +1,1000 @@
+$Version=2$
+popover_newperson_simple "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+    SetupDonor "widget/component-decl-action" { }
+
+    PersonAdded "widget/component-decl-event" { }
+    PartnerSelected "widget/component-decl-event" { }
+    SupportChanged "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=newp_tab; action=SetTab; TabIndex=1; }
+    onOpen2 "widget/connector" { event=Open; target=point_var; action=SetValue; Value=runclient(:PointAt); }
+    onOpen3 "widget/connector" { event=Open; target=fund_var; action=SetValue; Value=runclient(:Fund); }
+    onOpen4 "widget/connector" { event=Open; target=ledger_var; action=SetValue; Value=runclient(:Ledger); }
+    onOpen5 "widget/connector" { event=Open; target=newp_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
+
+    onSetupDonor1 "widget/connector" { event=SetupDonor; target=newp_tab; action=SetTab; TabIndex=2; }
+    onSetupDonor2 "widget/connector" { event=SetupDonor; target=donation_form; action=Discard; }
+    onSetupDonor3 "widget/connector" { event=SetupDonor; target=donor_osrc; action=Clear; }
+    onSetupDonor4 "widget/connector" { event=SetupDonor; target=donation_form; action=Discard; }
+    onSetupDonor5 "widget/connector" { event=SetupDonor; target=donor_osrc; action=QueryParam; donor_key=runclient(:partner_key); }
+
+    point_var "widget/variable" { type=object; }
+
+    partner_var "widget/variable" { type=string; }
+    fund_var "widget/variable" { type=string; }
+    ledger_var "widget/variable" { type=string; }
+
+    dup_timer "widget/timer"
+	{
+	auto_start = 0;
+	auto_reset = 1;
+	msec = 500;
+
+	onExpire "widget/connector"
+	    {
+	    event=Expire;
+	    event_condition=runclient(char_length(:person_fname:content) > 2 or char_length(:person_lname:content) > 2 or char_length(:person_email:content) > 2 or char_length(:org_name:content) > 2);
+	    target=dups_osrc;
+	    action=QueryParam;
+	    }
+	}
+
+    nextpartner "widget/component"
+	{
+	path = "/apps/kardia/modules/base/next_partner.cmp";
+
+	got_key "widget/connector"
+	    {
+	    event=PartnerKey;
+	    target=partner_var;
+	    action=SetValue;
+	    Value=runclient(:p_partner_key);
+	    }
+	got_key2 "widget/connector"
+	    {
+	    event=PartnerKey;
+	    target=person_key;
+	    action=SetValue;
+	    Value=runclient(:p_partner_key);
+	    }
+	got_key3 "widget/connector" { event=PartnerKey; target=newemail_form; action=New; }
+	got_key3b "widget/connector" { event=PartnerKey; target=newphone_form; action=New; }
+	got_key4 "widget/connector" { event=PartnerKey; target=newloc_form; action=New; }
+	got_key5 "widget/connector" { event=PartnerKey; target=loc_person_key; action=SetValue; Value=runclient(:p_partner_key); }
+	got_key6 "widget/connector" { event=PartnerKey; target=em_person_key; action=SetValue; Value=runclient(:p_partner_key); }
+	got_key6b "widget/connector" { event=PartnerKey; target=ph_person_key; action=SetValue; Value=runclient(:p_partner_key); }
+	}
+
+    newp_win "widget/childwindow"
+	{
+	width=900; height=479;
+	x=50; y=74;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	toplevel=yes;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	new_on_open "widget/connector" { event=Open; target=newp_form; action=New; }
+	clear_on_open "widget/connector" { event=Open; target=dups_osrc; action=Clear; }
+
+	newp_tab "widget/tab"
+	    {
+	    x=15; y=5; width=868; height=467;
+	    tab_location=none;
+	    border_style=none;
+	    bgcolor="#f8f8f8";
+	    inactive_bgcolor="#f8f8f8";
+
+	    person_page "widget/tabpage"    
+		{
+		title = "Person";
+
+		newp_vbox "widget/vbox"
+		    {
+		    x=10; y=10;
+		    width=846; height=425;
+		    spacing=8;
+
+		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("Add a Donor"); align=center; }
+
+		    explain_label "widget/label" { height=32; style=italic; value=runclient("Enter in the information for the donor you want to add to your support. Possible donors already in the system will be displayed on the right.  Then, either select the existing donor on the right, or if none match, click the Add New button on the left to add your new donor."); }
+
+		    newp_osrc "widget/osrc"
+			{
+			sql = "	select
+				    *
+				from
+				    identity /apps/kardia/data/Kardia_DB/p_partner/rows p
+				";
+			baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+			replicasize=50;
+			readahead=50;
+			autoquery=never;
+
+			newp_hbox "widget/hbox"
+			    {
+			    height=340;
+			    spacing=20;
+
+			    newp_pane "widget/pane"
+				{
+				style=bordered;
+				border_radius=8;
+				border_color="#6080c0";
+				width=447;
+
+				newp_innervbox "widget/vbox"
+				    {
+				    x=10;
+				    y=10;
+				    width=427; height=304;
+				    spacing=8;
+
+				    newp_form "widget/form"
+					{
+					allow_search=no;
+					allow_view=no;
+					allow_modify=no;
+					allow_new=yes;
+					allow_obscure=yes;
+					next_form=newloc_form;
+					enter_mode=nextfield;
+
+					//close_on_save "widget/connector" { event=DataSaved; target=newp_win; action=Close; }
+					refresh_profile_on_save "widget/connector" { event=DataSaved; target=popover_newperson_simple; action=PersonAdded; PartnerID=runclient(:partner_var:value); Origin=runclient(:point_var:value); event_delay=0.5; }
+					nextTabOnSave "widget/connector" { event=DataSaved; target=popover_newperson_simple; action=TriggerEvent; EventName=runclient('SetupDonor'); partner_key=runclient(:newp_osrc:p_partner_key); }
+					disc_email_on_discard "widget/connector" { event=Discard; target=newemail_form; action=Discard; }
+					disc_phone_on_discard "widget/connector" { event=Discard; target=newphone_form; action=Discard; }
+					disc_loc_on_discard "widget/connector" { event=Discard; target=newloc_form; action=Discard; }
+					close_on_discard "widget/connector" { event=Discard; event_condition=runclient(:FromKeyboard); target=newp_win; action=Close; }
+
+					getkey_on_new "widget/connector" { event=New; target=nextpartner; action=GetPartnerKey; }
+
+					p_partner_class_dropdown "widget/component"
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    height=20;
+					    width=300;
+					    text="Partner Type:";
+					    ctl_type=dropdown;
+					    field = "p_partner_class";
+					    tooltip="This defines what type of partner this is." ; 
+					    sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_partner_class/rows";
+					    class_hints "widget/hints" { default=runclient('IND'); style=notnull; }
+					    }
+
+					org_name "widget/component"
+					    {
+					    field=p_org_name;
+					    path="/sys/cmp/smart_field.cmp";
+					    height=20;
+					    text="Organization:";
+					    ctl_type=editbox;
+					    width=415;
+					    label_width=100;
+					    setTimer0 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+					    orgname_hints "widget/hints" { style=strnull; }
+					    }
+
+					name_hbox "widget/hbox"
+					    {
+					    height=20;
+					    spacing=10;
+
+					    person_fname "widget/component"
+						{
+						field=p_given_name;
+						path="/sys/cmp/smart_field.cmp";
+						text="First Name:";
+						ctl_type=editbox;
+						width=212;
+						label_width=100;
+						setTimer1 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+						fname_hints "widget/hints" { style=strnull; }
+						}
+					    person_lname "widget/component"
+						{
+						field=p_surname;
+						path="/sys/cmp/smart_field.cmp";
+						text="Last Name:";
+						ctl_type=editbox;
+						width=192;
+						label_width=80;
+						setTimer2 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+						lname_hints "widget/hints" { style=strnull; }
+						}
+					    }
+
+					person_comm "widget/component"
+					    {
+					    field=p_comments;
+					    path="/sys/cmp/smart_field.cmp";
+					    height=20;
+					    text="Comments:";
+					    ctl_type=editbox;
+					    width=415;
+					    label_width=100;
+					    }
+
+					person_key "widget/variable" { fieldname=p_partner_key; type=string; }
+					create_ofc "widget/variable" { fieldname=p_creating_office; type=string; office_hints "widget/hints" { default=runclient('OFC'); } }
+					stat1 "widget/variable" { fieldname=p_status_code; type=string; stat1_hints "widget/hints" { default=runclient('A'); } }
+					stat2 "widget/variable" { fieldname=p_record_status_code; type=string; stat2_hints "widget/hints" { default=runclient('A'); } }
+					sur_first "widget/variable" { fieldname=p_surname_first; type=string; sf_hints "widget/hints" { default=runclient(0); } }
+					no_solicit "widget/variable" { fieldname=p_no_solicitations; type=string; nosol_hints "widget/hints" { default=runclient(0); } }
+					no_mail "widget/variable" { fieldname=p_no_mail; type=string; nomail_hints "widget/hints" { default=runclient(0); } }
+
+					newperson_meta "widget/component" { visual=no; path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					}
+
+				    newloc_osrc "widget/osrc"
+					{
+					sql = " select
+						    *
+						from
+						    identity /apps/kardia/data/Kardia_DB/p_location/rows l
+						";
+					baseobj = "/apps/kardia/data/Kardia_DB/p_location/rows";
+					replicasize=50;
+					readahead=50;
+					autoquery=never;
+
+					partner_link_loc "widget/rule"
+					    {
+					    condition=0;
+					    ruletype=osrc_relationship;
+					    target=newp_osrc;
+					    key_1=p_partner_key;
+					    target_key_1=p_partner_key;
+					    }
+
+					newloc_form "widget/form"
+					    {
+					    auto_focus=no;
+					    allow_obscure=yes;
+					    next_form=newemail_form;
+					    disc_partner_on_locdiscard "widget/connector" { event=Discard; target=newp_form; action=Discard; }
+					    loc_disc_ph_on_discard "widget/connector" { event=Discard; target=newphone_form; action=Discard; }
+					    loc_disc_em_on_discard "widget/connector" { event=Discard; target=newemail_form; action=Discard; }
+					    loc_close_on_discard "widget/connector" { event=Discard; event_condition=runclient(:FromKeyboard); target=newp_win; action=Close; }
+
+					    addr1 "widget/component"
+						{
+						field=p_address_1;
+						path="/sys/cmp/smart_field.cmp";
+						height=20;
+						text="Address Line 1:";
+						ctl_type=editbox;
+						width=415;
+						label_width=100;
+						setTimer9 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+						}
+
+					    addr2 "widget/component"
+						{
+						field=p_address_2;
+						path="/sys/cmp/smart_field.cmp";
+						height=20;
+						text="Address Line 2:";
+						ctl_type=editbox;
+						width=415;
+						label_width=100;
+						}
+
+					    citystate_hbox "widget/hbox"
+						{
+						height=20;
+						spacing=10;
+
+						person_city "widget/component"
+						    {
+						    field=p_city;
+						    path="/sys/cmp/smart_field.cmp";
+						    text="City:";
+						    ctl_type=editbox;
+						    width=212;
+						    label_width=100;
+						    setTimer4 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+						    }
+						person_state "widget/component"
+						    {
+						    field=p_state_province;
+						    path="/sys/cmp/smart_field.cmp";
+						    text="State/Prov:";
+						    ctl_type=editbox;
+						    width=192;
+						    label_width=80;
+						    setTimer5 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+						    }
+						}
+
+					    zipcountry_hbox "widget/hbox"
+						{
+						height=20;
+						spacing=10;
+
+						person_zip "widget/component"
+						    {
+						    field=p_postal_code;
+						    path="/sys/cmp/smart_field.cmp";
+						    text="Postal Code:";
+						    ctl_type=editbox;
+						    width=212;
+						    label_width=100;
+						    setTimer6 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+						    }
+						person_country "widget/component"
+						    {
+						    field=p_country_code;
+						    path="/sys/cmp/smart_field.cmp";
+						    text="Country:";
+						    ctl_type=editbox;
+						    width=192;
+						    label_width=80;
+						    setTimer7 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+						    }
+						}
+
+					    loc_rec_stat_internal "widget/variable" { fieldname=p_record_status_code; type=string; loc_rec_stat_hints "widget/hints" { default=runclient('A'); } }
+					    loc_rev_internal "widget/variable" { fieldname=p_revision_id; type=integer; loc_rev_hints "widget/hints" { default=runclient(0); } }
+					    loc_type_internal "widget/variable" { fieldname=p_location_type; type=string; loc_type_hints "widget/hints" { default=runclient('H'); } }
+					    loc_person_key "widget/variable" { fieldname=p_partner_key; type=string; }
+
+					    newloc_meta "widget/component" { visual=no; path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					    }
+					}
+
+				    newemail_osrc "widget/osrc"
+					{
+					sql = " select
+						    *
+						from
+						    identity /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+						";
+					baseobj = "/apps/kardia/data/Kardia_DB/p_contact_info/rows";
+					replicasize=50;
+					readahead=50;
+					autoquery=never;
+
+					partner_link "widget/rule"
+					    {
+					    condition=0;
+					    ruletype=osrc_relationship;
+					    target=newp_osrc;
+					    key_1=p_partner_key;
+					    target_key_1=p_partner_key;
+					    }
+
+					newemail_form "widget/form"
+					    {
+					    auto_focus=no;
+					    allow_view=no;
+					    allow_obscure=yes;
+					    next_form=newphone_form;
+					    enter_mode=nextfield;
+					    disc_partner_on_discard "widget/connector" { event=Discard; target=newp_form; action=Discard; }
+					    em_disc_loc_on_discard "widget/connector" { event=Discard; target=newloc_form; action=Discard; }
+					    em_disc_ph_on_discard "widget/connector" { event=Discard; target=newphone_form; action=Discard; }
+					    em_close_on_discard "widget/connector" { event=Discard; event_condition=runclient(:FromKeyboard); target=newp_win; action=Close; }
+
+					    person_email "widget/component"
+						{
+						field=p_contact_data;
+						path="/sys/cmp/smart_field.cmp";
+						height=20;
+						text="Email:";
+						ctl_type=editbox;
+						width=415;
+						label_width=100;
+						setTimer3 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+						}
+					    em_person_key "widget/variable" { fieldname=p_partner_key; type=string; }
+
+					    em_type_internal "widget/variable" { fieldname=p_contact_type; type=string; em_type_hints "widget/hints" { default=runclient('E'); } }
+					    em_rec_stat_internal "widget/variable" { fieldname=p_record_status_code; type=string; em_rec_stat_hints "widget/hints" { default=runclient('A'); } }
+
+					    newemail_meta "widget/component" { visual=no; path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					    }
+					}
+
+				    newphone_osrc "widget/osrc"
+					{
+					sql = " select
+						    *
+						from
+						    identity /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+						";
+					baseobj = "/apps/kardia/data/Kardia_DB/p_contact_info/rows";
+					replicasize=50;
+					readahead=50;
+					autoquery=never;
+
+					phone_partner_link "widget/rule"
+					    {
+					    condition=0;
+					    ruletype=osrc_relationship;
+					    target=newp_osrc;
+					    key_1=p_partner_key;
+					    target_key_1=p_partner_key;
+					    }
+
+					newphone_form "widget/form"
+					    {
+					    auto_focus=no;
+					    allow_view=no;
+					    allow_obscure=yes;
+					    next_form=newp_form;
+					    enter_mode=nextfield;
+					    disc_partner_on_pdiscard "widget/connector" { event=Discard; target=newp_form; action=Discard; }
+					    ph_disc_loc_on_discard "widget/connector" { event=Discard; target=newloc_form; action=Discard; }
+					    ph_disc_em_on_discard "widget/connector" { event=Discard; target=newemail_form; action=Discard; }
+					    ph_close_on_discard "widget/connector" { event=Discard; event_condition=runclient(:FromKeyboard); target=newp_win; action=Close; }
+
+					    person_phone "widget/component"
+						{
+						field=p_contact_data;
+						path="/sys/cmp/smart_field.cmp";
+						height=20;
+						text="Phone:";
+						ctl_type=editbox;
+						width=415;
+						label_width=100;
+						setTimer8 "widget/connector" { target=dup_timer; event=KeyPress; action=SetTimer; Time=300; AutoReset=0; }
+						}
+					    ph_person_key "widget/variable" { fieldname=p_partner_key; type=string; }
+
+					    ph_type_internal "widget/variable" { fieldname=p_contact_type; type=string; ph_type_hints "widget/hints" { default=runclient('P'); } }
+					    ph_rec_stat_internal "widget/variable" { fieldname=p_record_status_code; type=string; ph_rec_stat_hints "widget/hints" { default=runclient('A'); } }
+
+					    newphone_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					    }
+					}
+
+				    newp_btns "widget/hbox"
+					{
+					height=24;
+					align=center;
+					spacing=10;
+
+					add_btn "widget/textbutton"
+					    {
+					    height=24; width=150;
+					    text = "Add New";
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    enabled = runclient(:newp_form:is_savable and ((:person_lname:value is not null and :person_fname:value is not null) or :org_name:value is not null) and :partner_var:value is not null);
+
+					    on_add1 "widget/connector" { event=Click; event_condition=runclient(not (char_length(:person_email:content) > 1)); target=newemail_form; action=Discard; event_delay=1.0; }
+					    on_add1b "widget/connector" { event=Click; event_condition=runclient(not (char_length(:person_phone:content) > 1)); target=newphone_form; action=Discard; event_delay=1.0; }
+					    on_add2 "widget/connector" { event=Click; target=newp_osrc; action=SaveClients; }
+					    on_add3 "widget/connector" { event=Click; target=newloc_osrc; action=SaveClients; }
+					    on_add4 "widget/connector" { event=Click; target=newemail_osrc; action=SaveClients; event_condition=runclient(char_length(:person_email:content) > 1); }
+					    on_add5 "widget/connector" { event=Click; target=newphone_osrc; action=SaveClients; event_condition=runclient(char_length(:person_phone:content) > 1); }
+					    }
+					}
+				    }
+				}
+
+			    dups_pane "widget/pane"
+				{
+				style=bordered;
+				border_radius=8;
+				border_color="#6080c0";
+				width=379;
+
+				dups_osrc "widget/osrc"
+				    {
+				    dup_fname "widget/parameter" { type=string; default=runclient(:person_fname:content); }
+				    dup_lname "widget/parameter" { type=string; default=runclient(:person_lname:content); }
+				    dup_org "widget/parameter" { type=string; default=runclient(:org_name:content); }
+				    dup_email "widget/parameter" { type=string; default=runclient(:person_email:content); }
+				    dup_city "widget/parameter" { type=string; default=runclient(:person_city:content); }
+				    dup_state "widget/parameter" { type=string; default=runclient(:person_state:content); }
+				    dup_postal "widget/parameter" { type=string; default=runclient(:person_zip:content); }
+				    dup_addr "widget/parameter" { type=string; default=runclient(:addr1:content); }
+
+				    sql = " DELETE
+						    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows d
+					    WHERE
+						    :d:s_username = user_name()
+					    ;
+
+					    INSERT
+						    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+					    SELECT
+						    s_username = user_name(),
+						    :p:p_partner_key,
+						    p_score = condition(:l:p_revision_id == 0, 100, 60),
+						    p_comment = condition(:l:p_revision_id == 0, 'Matched Name+Addr', 'Matched Name+OLDaddr'),
+						    s_date_created = getdate(),
+						    s_created_by = user_name(),
+						    s_date_modified = getdate(),
+						    s_modified_by = user_name()
+					    FROM
+						    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+						    /apps/kardia/data/Kardia_DB/p_location/rows l
+					    WHERE
+						    :l:p_partner_key = :p:p_partner_key and
+						    ((upper(rtrim(:p:p_surname)) = upper(:parameters:dup_lname) and upper(rtrim(:p:p_given_name)) = upper(:parameters:dup_fname)) or 
+						      isnull(rtrim(isnull(:p:p_surname,'') + isnull(:p:p_given_name,'') + isnull(:parameters:dup_lname,'') + isnull(:parameters:dup_fname,'')),'') == '') and
+						    (upper(:p:p_org_name) = upper(:parameters:dup_org) or
+						      isnull(rtrim(isnull(:p:p_org_name,'') + isnull(:parameters:dup_org,'')),'') == '') and
+						    upper(:l:p_city) = upper(:parameters:dup_city) and
+						    upper(:l:p_state_province) = upper(:parameters:dup_state) and
+						    substring(upper(:l:p_postal_code),1,3) = substring(upper(:parameters:dup_postal),1,3)
+					    ;
+
+					    INSERT
+						    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+					    SELECT
+						    s_username = user_name(),
+						    :ci:p_partner_key,
+						    p_score = 90,
+						    p_comment = 'Same Email',
+						    s_date_created = getdate(),
+						    s_created_by = user_name(),
+						    s_date_modified = getdate(),
+						    s_modified_by = user_name()
+					    FROM
+						    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+					    WHERE
+						    :ci:p_contact_type = 'E' and
+						    :ci:p_record_status_code = 'A' and
+						    char_length(:ci:p_contact_data) >= 3 and
+						    upper(:ci:p_contact_data) = upper(:parameters:dup_email)
+					    ;
+
+					    INSERT
+						    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+					    SELECT
+						    s_username = user_name(),
+						    :l:p_partner_key,
+						    p_score = condition(:l:p_revision_id == 0, 70, 42),
+						    p_comment = condition(:l:p_revision_id == 0, 'Very Similar Addr', 'Very Similar OLD addr'),
+						    s_date_created = getdate(),
+						    s_created_by = user_name(),
+						    s_date_modified = getdate(),
+						    s_modified_by = user_name()
+					    FROM
+						    /apps/kardia/data/Kardia_DB/p_location/rows l
+					    WHERE
+						    substring(upper(:l:p_address_1),1,9) = substring(upper(:parameters:dup_addr),1,9) and
+						    (charindex(upper(:l:p_city),upper(:parameters:dup_city)) > 0 or
+						     charindex(upper(:parameters:dup_city),upper(:l:p_city)) > 0 or
+						     substring(upper(:l:p_city),1,8) = substring(upper(:parameters:dup_city),1,8)) and
+						    upper(:l:p_state_province) = upper(:parameters:dup_state) and
+						    substring(upper(:l:p_postal_code),1,3) = substring(upper(:parameters:dup_postal),1,3) and
+						    char_length(rtrim(:l:p_city)) > 0 and char_length(rtrim(:l:p_postal_code)) > 0
+					    ;
+
+					    INSERT
+						    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows
+					    SELECT
+						    s_username = user_name(),
+						    :p:p_partner_key,
+						    p_score = 50,
+						    p_comment = 'Similar Name',
+						    s_date_created = getdate(),
+						    s_created_by = user_name(),
+						    s_date_modified = getdate(),
+						    s_modified_by = user_name()
+					    FROM
+						    /apps/kardia/data/Kardia_DB/p_partner/rows p
+					    WHERE
+						    ((substring(upper(:p:p_surname),1,3) = substring(upper(:parameters:dup_lname),1,3) and
+						      (substring(upper(:p:p_given_name),1,4) = substring(upper(:parameters:dup_fname),1,4) or substring(upper(:p:p_preferred_name),1,4) = substring(upper(:parameters:dup_fname),1,4))) or
+						     (upper(:p:p_surname) = upper(:parameters:dup_lname) and
+						      (substring(upper(:p:p_given_name),1,3) = substring(upper(:parameters:dup_fname),1,3) or substring(upper(:p:p_preferred_name),1,3) = substring(upper(:parameters:dup_fname),1,3))) or
+						     (substring(upper(:p:p_surname),1,3) = substring(upper(:parameters:dup_lname),1,3) and
+						      ((charindex(upper(:p:p_given_name), upper(:parameters:dup_fname)) > 0 or charindex(upper(:parameters:dup_fname), upper(:p:p_given_name)) > 0) or
+						       (charindex(upper(:p:p_preferred_name), upper(:parameters:dup_fname)) > 0 or charindex(upper(:parameters:dup_fname), upper(:p:p_preferred_name)) > 0))) or
+						       (upper(:parameters:dup_org) = upper(:p:p_org_name))) and
+						    ((char_length(rtrim(:p:p_surname)) - 1) * (char_length(:parameters:dup_lname) - 1) > 0 or (char_length(rtrim(:p:p_given_name)) - 1) * (char_length(:parameters:dup_fname) - 1) > 0 or (char_length(rtrim(:p:p_org_name)) - 1) * (char_length(:parameters:dup_org) - 1) > 0)
+					    ;
+
+					    SELECT
+						    img = isnull( ( select
+								path = :doc:e_current_folder + '/' + :doc:e_current_filename
+							    from
+								/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+								/apps/kardia/data/Kardia_DB/e_document/rows doc,
+								/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+							    where
+								:pd:p_partner_key = :p:p_partner_key and
+								:pd:e_document_id = :doc:e_document_id and
+								:doc:e_doc_type_id = :dt:e_doc_type_id and
+								:dt:e_doc_type_label = 'Profile Photo'
+							    order by
+								:pd:s_date_modified desc
+							    limit
+								1
+							    ), '/apps/kardia/images/artwork/persona.png'),
+						    :p:p_partner_key,
+						    :d:p_score,
+						    :d:p_comment,
+						    :l:p_postal_code,
+						    disp_name = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 1, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+						    disp_addr = condition(char_length(:l:p_address_1) > 1, :l:p_address_1 + ' ', '') + condition(char_length(:l:p_address_2) > 1, :l:p_address_2 + ' ', '') + condition(char_length(:l:p_address_3) > 1, :l:p_address_3 + ' ', ''),
+						    disp_city = condition(char_length(:l:p_city) > 1, :l:p_city + ', ', '') + condition(char_length(:l:p_state_province) > 1, :l:p_state_province + ' ', ''),
+						    stat_text = :sc:text,
+						    score_asterisks = '*' * (:d:p_score / 20),
+						    email_addr = (select sum(:p_contact_data + ', ') - ', ' from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code = 'A' and :ci:p_contact_type = 'E'),
+						    is_donor = (select sum(isnull(:de:a_is_current, 0)) from /apps/kardia/data/Kardia_DB/a_descriptives/rows de where :de:p_donor_partner_key = :d:p_partner_key)
+					    FROM
+						    /apps/kardia/data/Kardia_DB/p_dup_check_tmp/rows d,
+						    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+						    /apps/kardia/data/Kardia_DB/p_location/rows l,
+						    /apps/kardia/data/Kardia_DB/_p_status_code/rows sc
+					    WHERE
+						    :d:s_username = user_name() and
+						    -- (:parameters:exclude_partner_key is null or :d:p_partner_key != :parameters:exclude_partner_key) and
+						    :p:p_partner_key = :d:p_partner_key and
+						    :l:p_partner_key =* :p:p_partner_key and
+						    :l:p_revision_id = 0 and
+						    :sc:tag = :p:p_status_code
+					    ORDER BY
+						    :d:p_score desc
+					    ";
+				    autoquery=never;
+				    replicasize=20;
+				    readahead=20;
+
+				    dups_table "widget/table"
+					{
+					x=10; y=10;
+					height=318;
+					width=357;
+					min_rowheight=12;
+					max_rowheight=64;
+					allow_selection = yes;
+					show_selection = yes;
+					initial_selection = no;
+					demand_scrollbar = yes;
+					overlap_scrollbar = yes;
+					colsep = 0;
+					titlebar = no;
+					row_border_radius=4;
+					inner_padding = 2;
+					cellvspacing = 2;
+					row1_bgcolor = "#f8f8f8";
+					row2_bgcolor = "#f8f8f8";
+					//rowhighlight_bgcolor = "#fff090";
+					rowhighlight_bgcolor = "#f0f0f0";
+					rowhighlight_shadow_angle=180;
+					rowhighlight_shadow_radius=4;
+					rowhighlight_shadow_offset=1;
+					rowhighlight_shadow_color="#808080";
+					textcolorhighlight = "#000000";
+					nodata_message = "Potential existing matches for your new Person will be displayed here.";
+
+					usethis_detail "widget/table-row-detail"
+					    {
+					    height=32;
+					    width=357;
+
+					    usethis_hbox "widget/hbox"
+						{
+						x=10; y=8; height=24; width=337;
+						align=center;
+						spacing=10;
+
+						usethis_btn "widget/textbutton"
+						    {
+						    width=150; height=24;
+						    text="Use This Person";
+						    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+						    fgcolor1=white;
+						    fgcolor2=black;
+						    disable_color="#334466";
+
+						    discardEmOnSelect "widget/connector" { event=Click; target=newemail_form; action=Discard; }
+						    discardPhOnSelect "widget/connector" { event=Click; target=newphone_form; action=Discard; }
+						    discardLocOnSelect "widget/connector" { event=Click; target=newloc_form; action=Discard; }
+						    discardParOnSelect "widget/connector" { event=Click; target=newp_form; action=Discard; }
+						    nextTabOnSelect "widget/connector" { event=Click; target=popover_newperson_simple; action=TriggerEvent; EventName=runclient('SetupDonor'); partner_key=runclient(:dups_osrc:p_partner_key); }
+						    }
+						}
+					    }
+
+					on_click_arrow "widget/connector"
+					    {
+					    event=Click;
+					    event_condition=runclient(:ColumnValue == '/sys/images/ico16ca.gif');
+					    target=popover_newperson_simple;
+					    action=PartnerSelected;
+					    partner_key=runclient(:p_partner_key);
+					    }
+					on_click_arrow_2 "widget/connector"
+					    {
+					    event=Click;
+					    event_condition=runclient(:ColumnValue == '/sys/images/ico16ca.gif');
+					    target=newp_form;
+					    action=Discard;
+					    }
+					on_click_arrow_3 "widget/connector"
+					    {
+					    event=Click;
+					    event_condition=runclient(:ColumnValue == '/sys/images/ico16ca.gif');
+					    target=newp_win;
+					    action=Close;
+					    }
+
+					t_img "widget/table-column" { fieldname=img; width=32; type=image; image_maxwidth=28; image_maxheight=28; align=center; }
+					t_dispname "widget/table-column" { value=runclient(:dups_osrc:disp_name + ' #' + :dups_osrc:p_partner_key + ''); width=333; style=bold; caption_value=runclient(isnull(:dups_osrc:disp_addr + ', ', '') + isnull(:dups_osrc:disp_city, '') + isnull(condition(char_length(isnull(:dups_osrc:disp_city,'')) > 1, '\n', '') + :dups_osrc:email_addr, '') + condition(:dups_osrc:is_donor is null, '', '\n' + condition(:dups_osrc:is_donor = 0, 'Donor', 'Donor'))); caption_textcolor='#606060'; wrap=yes; }
+					//t_dispaddr "widget/table-column" { fieldname=disp_city; width=130; }
+					//t_goto "widget/table-column" { value=runclient('/sys/images/ico16ca.gif'); type=image; align=left; width=40; }
+					}
+				    }
+				}
+			    }
+
+			sep1 "widget/autolayoutspacer" { height=1; }
+
+			ctl_btn_hbox "widget/hbox"
+			    {
+			    height=24;
+			    spacing=10;
+			    align=center;
+
+			    cancel_btn "widget/textbutton"
+				{
+				height=24; width=150;
+				text = runclient(condition(:newp_form:is_savable,"Cancel","Close"));
+				background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				fgcolor1=white;
+				fgcolor2=black;
+				disable_color="#334466";
+
+				on_cancel1 "widget/connector" { event=Click; target=newp_form; action=Discard; }
+				on_cancel2 "widget/connector" { event=Click; target=newp_win; action=Close; }
+				}
+			    }
+			}
+		    }
+		}
+
+	    donor_page "widget/tabpage"
+		{
+		title = "Donor";
+
+		donor_vbox "widget/vbox"
+		    {
+		    x=10; y=10;
+		    width=846; height=425;
+		    spacing=8;
+
+		    donor_hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("Add Support Information"); align=center; }
+
+		    donor_explain_label "widget/label" { height=32; style=italic; value=runclient("Now that you've added or selected a person, enter the new support that you expect to receive from this person or organization, and click Save."); }
+
+		    donor_osrc "widget/osrc"
+			{
+			donor_key "widget/parameter" { type=string; }
+			autoquery = never;
+			sql = "	select
+				    :p:p_partner_key,
+				    :l:p_postal_code,
+				    disp_name = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 1, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+				    disp_addr = condition(char_length(:l:p_address_1) > 1, :l:p_address_1 + ' ', '') + condition(char_length(:l:p_address_2) > 1, :l:p_address_2 + ' ', '') + condition(char_length(:l:p_address_3) > 1, :l:p_address_3 + ' ', ''),
+				    disp_city = condition(char_length(:l:p_city) > 1, :l:p_city + ', ', '') + condition(char_length(:l:p_state_province) > 1, :l:p_state_province + ' ', ''),
+				    email_addr = (select sum(:p_contact_data + ', ') - ', ' from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :p:p_partner_key and :ci:p_record_status_code = 'A' and :ci:p_contact_type = 'E'),
+				    is_donor = (select sum(isnull(:de:a_is_current, 0)) from /apps/kardia/data/Kardia_DB/a_descriptives/rows de where :de:p_donor_partner_key = :p:p_partner_key),
+				    :l:p_postal_code
+				from 
+				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_location/rows l
+				where
+				    :p:p_partner_key = :parameters:donor_key and
+				    :l:p_partner_key =* :p:p_partner_key and
+				    :l:p_revision_id = 0
+				limit
+				    1
+				";
+
+			donor_hbox "widget/hbox"
+			    {
+			    height=340;
+			    spacing=20;
+
+			    donor_pane "widget/pane"
+				{
+				style=flat;
+				width=347;
+
+				donor_innervbox "widget/vbox"
+				    {
+				    x=10;
+				    y=0;
+				    width=327; height=304;
+				    spacing=8;
+
+				    donor_innerhdr "widget/label" { height=20; style=bold; align=center; text="Selected Donor:"; }
+
+				    sep2 "widget/image" { height=1; fl_height=0; fl_width=100; source = "/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+				    donor_form "widget/form"
+					{
+					donor_label "widget/label"
+					    {
+					    height=288;
+					    font_size=16;
+					    value=runclient(:donor_osrc:disp_name + '\n' + isnull(:donor_osrc:disp_addr,'') + '\n' + isnull(:donor_osrc:disp_city, '') + isnull(' ' + :donor_osrc:p_postal_code, '') + '\n' + isnull(:donor_osrc:email_addr + '\n', '') + condition(:donor_osrc:is_donor is null, '', 'Donor'));
+					    }
+					}
+				    }
+				}
+
+			    donation_pane "widget/pane"
+				{
+				style=bordered;
+				border_radius=8;
+				border_color="#6080c0";
+				width=457;
+
+				donation_vbox "widget/vbox"
+				    {
+				    x=10; y=10;
+				    height=324;
+				    width=435;
+				    spacing=10;
+
+				    donation_osrc "widget/osrc"
+					{
+					donation_fund "widget/parameter" { type=string; default=runclient(:fund_var:value); }
+					donation_ledger "widget/parameter" { type=string; default=runclient(:ledger_var:value); }
+					sql = "	select
+						    *
+						from
+						    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
+						where
+						    :gp:a_ledger_number = :parameters:donation_ledger and
+						    :gp:a_cost_center = :parameters:donation_fund
+						";
+					baseobj = "/apps/kardia/data/Kardia_DB/a_giving_pattern/rows";
+					readahead=100;
+					replicasize=100;
+
+					on_donation_lookup "widget/connector" { event=EndQuery; target=donation_form; action=New; }
+
+					donation_link "widget/rule"
+					    {
+					    ruletype=osrc_relationship;
+					    key_1=p_donor_partner_key;
+					    target=donor_osrc;
+					    target_key_1=p_partner_key;
+					    revealed_only=yes;
+					    }
+
+					donation_form "widget/form"
+					    {
+					    on_save_signal_parent "widget/connector" { event=DataSaved; target=popover_newperson_simple; action=SupportChanged; Ledger=runclient(:donation_osrc:a_ledger_number); Form=runclient(:donation_osrc:a_cost_center); }
+					    on_save_close_win "widget/connector" { event=DataSaved; target=newp_win; action=Close; }
+
+					    donation_amount "widget/component"
+						{
+						text = "Gift Amount:";
+						path = "/sys/cmp/smart_field.cmp";
+						ctl_type = editbox;
+						width = 200;
+						height = 24;
+						field = a_amount;
+						}
+
+					    donation_interval "widget/component"
+						{
+						text = "How Often:";
+						path = "/sys/cmp/smart_field.cmp";
+						ctl_type = dropdown;
+						width = 300;
+						height = 24;
+						sql = " --select label='One-Time or Gives As Able', value=0, selected=0;
+							select label='Monthly', value=1, selected=0; 
+							select label='Every Other Month', value=2, selected=0;
+							select label='Quarterly', value=3, selected=0;
+							select label='Three times a Year', value=4, selected=0;
+							select label='Twice a Year', value=6, selected=0;
+							select label='Annually', value=12, selected=0
+							";
+						numdisplay = 10;
+						field = a_interval;
+						interval_hints "widget/hints" { style=notnull; default=runclient(0); }
+						}
+
+					    donation_comment "widget/component"
+						{
+						text = "My Notes:";
+						path = "/sys/cmp/smart_field.cmp";
+						ctl_type = editbox;
+						height = 24;
+						field = a_comment;
+						}
+
+					    is_active "widget/variable" { fieldname=a_is_active; type=integer; is_a_hints "widget/hints" { default=runclient(1); } }
+					    don_start "widget/variable" { fieldname=a_start_date; d_s_hints "widget/hints" { default=runclient(getdate()); } }
+					    don_review "widget/variable" { fieldname=a_evaluation_date; d_r_hints "widget/hints" { default=runclient(getdate()); } }
+					    don_ledger "widget/variable" { fieldname=a_ledger_number; d_l_hints "widget/hints" { default=runclient(:ledger_var:value); } }
+					    don_fund "widget/variable" { fieldname=a_cost_center; d_c_hints "widget/hints" { default=runclient(:fund_var:value); } }
+
+					    newdonation_meta "widget/component" { visual=no; path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+					    }
+					}
+
+				    don_entry_btn_hbox "widget/hbox"
+					{
+					height=24;
+					spacing=10;
+					align=center;
+
+					don_save "widget/textbutton"
+					    {
+					    width=150; height=24;
+					    text = "Save";
+					    enabled = runclient(:donation_form:is_savable and char_length(:donation_amount:content) > 0 and :donation_interval:value is not null);
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_save_don "widget/connector" { event=Click; target=donation_form; action=Save; }
+					    }
+					}
+				    }
+				}
+			    }
+			}
+
+		    sep3 "widget/autolayoutspacer" { height=1; }
+
+		    don_ctl_btn_hbox "widget/hbox"
+			{
+			height=24;
+			spacing=10;
+			align=center;
+
+			don_back_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = "<< Back";
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    on_back1 "widget/connector" { event=Click; target=donation_form; action=Discard; }
+			    on_back2 "widget/connector" { event=Click; target=newp_tab; action=SetTab; TabIndex=1; }
+			    on_back3 "widget/connector" { event=Click; target=newp_form; action=New; }
+			    }
+
+			don_cancel_btn "widget/textbutton"
+			    {
+			    height=24; width=150;
+			    text = runclient(condition(:donation_form:is_savable,"Cancel","Close"));
+			    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			    fgcolor1=white;
+			    fgcolor2=black;
+			    disable_color="#334466";
+
+			    on_doncancel1 "widget/connector" { event=Click; target=newp_form; action=Discard; }
+			    on_doncancel2 "widget/connector" { event=Click; target=newp_win; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

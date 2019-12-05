@@ -434,6 +434,129 @@ create table p_country (
 go
 
 
+/* p_pol_division */
+print "Creating table p_pol_division"
+
+create table p_pol_division (
+        p_country_code                        char(2)  not null,       /* ISO 3166-1 Alpha-2 With UK exception (basically ccTLD codes) --  */
+        p_pol_division                        varchar(64)  not null,   /* Political division abbrev/code, or full name if no abbrev/code. --  */
+        p_pol_division_parent                 varchar(64)  null,       /* Political division that this is a part of (null == top level state or province) --  */
+        p_pol_division_name                   varchar(64)  not null,   /* Political division name or label --  */
+        p_local_name                          varchar(255)  null,      /* The localized name of the political division --  */
+        p_record_status_code                  char(1)  not null,       /* (A)ctive, (O)bsolete -- for old addresses that have an obsolete state/province. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+print "Data for p_pol_division"
+insert into p_pol_division select p_country_code='US', p_pol_division='AL', p_pol_division_name='Alabama', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='GA', p_pol_division_name='Georgia', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='HI', p_pol_division_name='Hawaii', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='ID', p_pol_division_name='Idaho', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='IL', p_pol_division_name='Illinois', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='IN', p_pol_division_name='Indiana', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='IA', p_pol_division_name='Iowa', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='KS', p_pol_division_name='Kansas', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='KY', p_pol_division_name='Kentucky', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='LA', p_pol_division_name='Louisiana', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='ME', p_pol_division_name='Maine', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='AK', p_pol_division_name='Alaska', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='MD', p_pol_division_name='Maryland', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='MA', p_pol_division_name='Massachusetts', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='MI', p_pol_division_name='Michigan', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='MN', p_pol_division_name='Minnesota', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='MS', p_pol_division_name='Mississippi', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='MO', p_pol_division_name='Missouri', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='MT', p_pol_division_name='Montana', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='NE', p_pol_division_name='Nebraska', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='NV', p_pol_division_name='Nevada', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='NH', p_pol_division_name='New Hampshire', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='AZ', p_pol_division_name='Arizona', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='NJ', p_pol_division_name='New Jersey', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='NM', p_pol_division_name='New Mexico', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='NY', p_pol_division_name='New York', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='NC', p_pol_division_name='North Carolina', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='ND', p_pol_division_name='North Dakota', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='OH', p_pol_division_name='Ohio', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='OK', p_pol_division_name='Oklahoma', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='OR', p_pol_division_name='Oregon', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='PA', p_pol_division_name='Pennsylvania', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='RI', p_pol_division_name='Rhode Island', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='AR', p_pol_division_name='Arkansas', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='SC', p_pol_division_name='South Carolina', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='SD', p_pol_division_name='South Dakota', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='TN', p_pol_division_name='Tennessee', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='TX', p_pol_division_name='Texas', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='UT', p_pol_division_name='Utah', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='VT', p_pol_division_name='Vermont', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='VA', p_pol_division_name='Virginia', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='WA', p_pol_division_name='Washington', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='WV', p_pol_division_name='West Virginia', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='WI', p_pol_division_name='Wisconsin', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='CA', p_pol_division_name='California', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='WY', p_pol_division_name='Wyoming', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='DC', p_pol_division_name='Washington DC', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='CO', p_pol_division_name='Colorado', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='CT', p_pol_division_name='Connecticut', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='DE', p_pol_division_name='Delaware', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into p_pol_division select p_country_code='US', p_pol_division='FL', p_pol_division_name='Florida', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+
+
 /* p_banking_details */
 print "Creating table p_banking_details"
 
@@ -515,6 +638,7 @@ create table p_gazetteer (
         p_feature_id                          integer  not null,       /* numeric ID of the feature (this depends on feature source) --  */
         p_alt_feature_id                      integer  not null,       /* alternate numeric ID of the feature (this depends on feature source) --  */
         p_feature_name                        varchar(80)  not null,   /* name of the feature (zip code, city name, etc.) --  */
+        p_feature_desc                        varchar(255)  null,      /* description of the feature (zip code, city name, etc.) --  */
         p_state_province                      varchar(64)  null,       /* if applicable, the state or province that this feature occurs in (data not always available) --  */
         p_area_land                           float  null,             /* land area of the feature, in square miles --  */
         p_area_water                          float  null,             /* water area of the feature, in square miles --  */
@@ -1374,8 +1498,31 @@ create table e_data_item_type (
         e_parent_data_item_type_id            integer  null,           /* The parent data item type ID (hierarchy reference) --  */
         e_data_item_type_label                varchar(40)  not null,   /* A short data item type label --  */
         e_data_item_type_desc                 varchar(255)  null,      /* A description of this data item type --  */
+        e_data_item_type_type                 varchar(16)  null,       /* Data type: string, integer, double, datetime, money --  */
         e_data_item_type_highlight            integer  null,           /* Set to 0 or null to not highlight this item, or 1 to highlight it on the profile page --  */
         e_data_item_type_highlight_if         varchar(64)  null,       /* If set, this is compared with the data item value and highlighted IF they match. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* e_data_item_type_value */
+print "Creating table e_data_item_type_value"
+
+create table e_data_item_type_value (
+        e_data_item_type_id                   integer  not null,       /* The data item type ID --  */
+        e_data_item_value_id                  integer  not null,       /* An identifier for this unique value list item --  */
+        e_data_item_string_value              varchar(999)  null,      /* The value of this data item. --  */
+        e_data_item_integer_value             integer  null,           /* The value of this data item. --  */
+        e_data_item_datetime_value            datetime  null,          /* The value of this data item. --  */
+        e_data_item_double_value              float  null,             /* The value of this data item. --  */
+        e_data_item_money_value               money  null,             /* The value of this data item. --  */
+        e_is_default                          bit  not null,           /* Whether this value is the default value. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1411,8 +1558,12 @@ print "Creating table e_data_item"
 create table e_data_item (
         e_data_item_id                        integer  not null,       /* The data item ID --  */
         e_data_item_type_id                   integer  not null,       /* The data item type ID --  */
-        e_data_item_group_id                  integer  not null,       /* The data item group ID --  */
-        e_data_item_value                     varchar(999)  not null,  /* The value of this data item. --  */
+        e_data_item_group_id                  integer  null,           /* The data item group ID --  */
+        e_data_item_string_value              varchar(999)  null,      /* The value of this data item. --  */
+        e_data_item_integer_value             integer  null,           /* The value of this data item. --  */
+        e_data_item_datetime_value            datetime  null,          /* The value of this data item. --  */
+        e_data_item_double_value              float  null,             /* The value of this data item. --  */
+        e_data_item_money_value               money  null,             /* The value of this data item. --  */
         e_data_item_highlight                 integer  null,           /* Set to 0 or null to not highlight this item, or 1 to highlight it on the profile page. Inherited from the data item type, but changeable for the particular data item. --  */
         p_partner_key                         char(10)  not null,      /* The engaging partner that this data item is about (denormalized from the data item group table) --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2904,6 +3055,7 @@ create table a_cc_receipting (
         a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
         a_receiptable                         bit  default 1,          /* can we receipt revenue (gifts) into this account? --  */
+        a_disposition                         char(1)  null,           /* Donor management disposition of fund: N = not interesting, O = one-time gifts typical, R = recurring gifts typical --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3022,6 +3174,7 @@ create table a_subtrx_gift_group (
         a_receipt_number                      varchar(64)  null,       /* Receipt number that we sent out --  */
         p_donor_partner_id                    char(10)  null,          /* Partner ID of donor --  */
         p_ack_partner_id                      char(10)  null,          /* Partner ID to send non-receipt acknowledgment to --  */
+        p_pass_partner_id                     char(10)  null,          /* Partner ID of pass-through entity --  */
         a_receipt_sent                        bit  default 0,          /* Receipt sent to donor --  */
         a_receipt_desired                     char(1)  default 'I'  null,
                                                                       /* Receipt needed -- 'I' for immediate, 'A' for annual, 'N' for no receipt --  */
@@ -3069,9 +3222,12 @@ create table a_subtrx_gift_item (
         a_comment                             varchar(255)  null,      /* Gift comments --  */
         i_eg_source_key                       varchar(255)  null,      /* If imported, this is the key value for i_eg_gift_import. --  */
         p_dn_donor_partner_id                 char(10)  null,          /* **Denormalized** Partner ID of gift donor. --  */
+        p_dn_ack_partner_id                   char(10)  null,          /* **Denormalized** Partner ID to send gift acknowledgement. --  */
+        p_dn_pass_partner_id                  char(10)  null,          /* **Denormalized** Partner ID of gift pass-through entity. --  */
         a_dn_receipt_number                   varchar(64)  null,       /* **Denormalized** Receipt number we sent out. --  */
         a_dn_gift_received_date               datetime  null,          /* **Denormalized** Date gift was received --  */
         a_dn_gift_postmark_date               datetime  null,          /* **Denormalized** Date gift was postmarked --  */
+        a_dn_gift_type                        char(1)  null,           /* **Denormalized** Gift type (C/K/E/D). --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3312,6 +3468,14 @@ create table a_descriptives (
         a_hist_3_count                        integer  null,           /* gift histogram 3nd most common - count --  */
         a_hist_3_first                        datetime  null,          /* gift histogram 3nd most common - first occurrence --  */
         a_hist_3_last                         datetime  null,          /* gift histogram 3nd most common - last occurrence --  */
+        a_lapsed_days                         int  null,               /* number of days past the expected next gift date (positive) or before that date (negative) --  */
+        a_is_current                          int  null,               /* is this giving pattern current (1) or lapsed/past (0)? --  */
+        a_increase_pct                        float  null,             /* is this giving pattern an increase over the previous one? --  */
+        a_increase_date                       datetime  null,          /* is this giving pattern an increase over the previous one? --  */
+        a_decrease_pct                        float  null,             /* is this giving pattern a decrease over the previous one? --  */
+        a_decrease_date                       datetime  null,          /* is this giving pattern a decrease over the previous one? --  */
+        a_is_extra                            int  null,               /* is this giving pattern a one-time / occasional "extra" amount? --  */
+        a_is_approximate                      int  null,               /* is this giving pattern an average of sporadic/irregular/as-able gifts? --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3329,6 +3493,7 @@ create table a_descriptives_hist (
         a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
         a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_hist_id                             integer  not null,       /* unique id for this histogram entry --  */
         a_amount                              money  not null,         /* amount given --  */
         a_first_gift                          datetime  null,          /* first gift date --  */
         a_last_gift                           datetime  null,          /* most recent gift date --  */
@@ -3338,7 +3503,15 @@ create table a_descriptives_hist (
         a_act_average_amount                  money  null,             /* actual monthly average due to this gift amount --  */
         a_act_average_months                  integer  null,           /* number of months used for the average --  */
         a_act_average_interval                float  null,             /* actual average giving interval due to this gift amount --  */
-        a_merged_amount                       money  null,             /* if we're doing a merge of catch-up amounts, we indicate it here --  */
+        a_merged_id                           integer  null,           /* if we're doing a merge of catch-up amounts, we indicate it here --  */
+        a_lapsed_days                         int  null,               /* number of days past the expected next gift date (positive) or before that date (negative) --  */
+        a_is_current                          int  null,               /* is this giving pattern current (1) or lapsed/past (0)? --  */
+        a_increase_pct                        float  null,             /* is this giving pattern an increase over the previous one? --  */
+        a_decrease_pct                        float  null,             /* is this giving pattern a decrease over the previous one? --  */
+        a_is_extra                            int  null,               /* is this giving pattern a one-time / occasional "extra" amount? --  */
+        a_is_approximate                      int  null,               /* is this giving pattern an average of sporadic/irregular/as-able gifts? --  */
+        a_prev_end                            datetime  null,          /* date of the last gift in the previous giving interval --  */
+        a_next_start                          datetime  null,          /* date of the first gift in the next giving interval --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -4402,6 +4575,28 @@ create table s_global_search (
         s_desc                                varchar(1536)  not null,
                                                                       /* Expanded description of search result --  */
         s_key                                 varchar(255)  not null,  /* Unique ID so we can find the actual relevant object for this result --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* s_stats_cache */
+print "Creating table s_stats_cache"
+
+create table s_stats_cache (
+        s_stat_type                           varchar(16)  not null,   /* unique identifier of the statistic type --  */
+        s_stat_group                          varchar(64)  not null,   /* subgroup within the statistic type --  */
+        s_stat                                varchar(64)  not null,   /* identifier of this particular statistic --  */
+        s_string_value                        varchar(255)  null,      /* string value of the statistic --  */
+        s_integer_value                       int  null,               /* integer value of the statistic --  */
+        s_money_value                         money  null,             /* currency value of the statistic --  */
+        s_double_value                        float  null,             /* floating point value of the statistic --  */
+        s_datetime_value                      datetime  null,          /* date/time value of the statistic --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

@@ -1,0 +1,76 @@
+{ "databaseChangeLog": [
+  {
+    "changeSet": {
+      "id": "1559592998398-1",
+      "author": "Nate Gamble (generated)",
+      "tagDatabase":{
+        "tag":"Nate1"
+      },
+      "changes": [
+        {
+          "createTable": {
+            "columns": [
+              {
+                "column": {
+                  "name": "id",
+                  "type": "INT"
+                }
+              }]
+            ,
+            "tableName": "NatesTable"
+          }
+        }]
+      
+    }
+  },
+  
+  {
+    "changeSet": {
+      "id": "1559592998398-2",
+      "author": "Nate Gamble (generated)",
+      "tagDatabase":{
+        "tag":"Nate2"
+      },
+      "changes": [
+        {
+          "createTable": {
+            "columns": [
+              {
+                "column": {
+                  "name": "id",
+                  "type": "INT"
+                }
+              }]
+            ,
+            "tableName": "NatesTable2"
+          }
+        }]
+      
+    }
+  },
+  {
+    "changeSet": {
+      "id": "1559592998398-3",
+      "author": "Nate Gamble (generated)",
+      "tagDatabase":{
+        "tag":"Nate3"
+      },
+      "changes": [
+        {
+          "createTable": {
+            "columns": [
+              {
+                "column": {
+                  "name": "id",
+                  "type": "INT"
+                }
+              }]
+            ,
+            "tableName": "NatesTable3"
+          }
+        }]
+      
+    }
+  }
+  
+]}

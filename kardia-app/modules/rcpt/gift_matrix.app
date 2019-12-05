@@ -24,7 +24,7 @@ gift_matrix "widget/page"
 	    {
 	    x=32;y=8;width=514;height=496;
 	    spacing=4;
-	    lbl_opt "widget/label" { height=30; font_size=16; text="Gift/Donor List Options:"; align=center; }
+	    lbl_opt "widget/label" { height=30; font_size=16; text="Gifts by Month Options:"; align=center; }
 
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
 

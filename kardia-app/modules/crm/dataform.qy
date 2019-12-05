@@ -1,0 +1,28 @@
+$Version=2$
+formdata "system/query"
+    {
+    group "query/parameter" { type=integer; }
+    sql = " select
+		name=convert(string, :di:e_data_item_id),
+		:di:e_data_item_id,
+		:di:e_data_item_group_id,
+		groupname=convert(string, :di:e_data_item_group_id),
+		label=:dt:e_data_item_type_label,
+		:di:e_data_item_string_value,
+		:di:e_data_item_integer_value,
+		:di:e_data_item_double_value,
+		:di:e_data_item_datetime_value,
+		:di:e_data_item_money_value,
+		:di:s_date_created,
+		:di:s_date_modified,
+		:di:s_created_by,
+		:di:s_modified_by
+	    from
+		identity /apps/kardia/data/Kardia_DB/e_data_item/rows di,
+		/apps/kardia/data/Kardia_DB/e_data_item_type/rows dt
+	    where
+		(:di:e_data_item_group_id = :parameters:'group' or :parameters:group is null) and
+		:di:e_data_item_type_id = :dt:e_data_item_type_id
+	    ";
+    name_expression="convert(string, :di:e_data_item_id)";
+    }

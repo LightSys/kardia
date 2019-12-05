@@ -1,0 +1,24 @@
+{
+    "databaseChangeLog": [
+        {
+            "preconditions": [
+                {
+                    "onFail":"WARN",
+                    "runningAs":{
+                        "username":"devel"
+                    },
+                    "dbms":{
+                        "type":"mySql"
+                    }
+                }
+            ]
+
+        },
+        {
+            "include":{
+                "file":"liquibaseFiles\\currentChangeLog.json"
+
+            }
+        }
+    ]
+}

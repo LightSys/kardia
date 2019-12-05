@@ -955,15 +955,11 @@ gift_entry "widget/component-decl"
 						giftcnt =     (	select
 								    count(1)
 								from
-								    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 								    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 								where
-								    :g:p_donor_partner_id = :parameters:p_partner_key and
-								    :g:a_ledger_number = :c:a_ledger_number and
-								    :g:a_posted = 1 and
-								    :i:a_ledger_number = :g:a_ledger_number and
-								    :i:a_batch_number = :g:a_batch_number and
-								    :i:a_gift_number = :g:a_gift_number and
+								    :i:p_dn_donor_partner_id = :parameters:p_partner_key and
+								    :i:a_ledger_number = :c:a_ledger_number and
+								    :i:a_posted = 1 and
 								    :i:a_cost_center = :c:a_cost_center
 								)
 					    from

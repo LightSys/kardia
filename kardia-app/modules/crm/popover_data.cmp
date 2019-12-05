@@ -1,0 +1,229 @@
+$Version=2$
+popover_data "widget/component-decl"
+    {
+    width=1000; height=600;
+
+    Open "widget/component-decl-action" { }
+
+    DataUpdated "widget/component-decl-event" { }
+
+    DataNeedsEditing "widget/component-decl-event" { }
+
+    onOpen1 "widget/connector" { event=Open; target=partner_var; action=SetValue; Value=runclient(:partner); }
+    onOpen1b "widget/connector" { event=Open; target=partnername_var; action=SetValue; Value=runclient(:partnername); }
+    onOpen2 "widget/connector" { event=Open; target=collab_var; action=SetValue; Value=runclient(:collaborator); }
+    onOpen5 "widget/connector" { event=Open; target=data_win; action=Open; IsModal=1; PointAt=runclient(:PointAt); PointSide=runclient(:PointSide); }
+
+    // This is the context data
+    partner_var "widget/variable" { type=string; }
+    partnername_var "widget/variable" { type=string; }
+    collab_var "widget/variable" { type=string; }
+
+    // This creates a e_partner_document record
+    create_pardoc_osrc "widget/osrc"
+	{
+	cr_docid "widget/parameter" { type=integer; }
+	cr_partner "widget/parameter" { type=string; }
+	sql = "	insert
+		    /apps/kardia/data/Kardia_DB/e_partner_document/rows
+		select
+		    e_document_id = :parameters:cr_docid,
+		    p_partner_key = :parameters:cr_partner,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		";
+	autoquery=never;
+	replicasize=2;
+	readahead=2;
+
+	on_endquery_reset_optype "widget/connector" { event=EndQuery; target=op_type; action=SetValue; Value=runclient("Save"); }
+	on_endquery_refresh "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=unassigned_data_osrc;
+	    action=Refresh;
+	    }
+
+	on_endquery_refresh_profile "widget/connector" { event=EndQuery; target=popover_data; action=FileUpdated; }
+	}
+
+    data_win "widget/childwindow"
+	{
+	width=700; height=428;
+	x=250; y=89;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	data_icon "widget/image"
+	    {
+	    condition=0;
+	    x=12; y=12;
+	    width=24; height=24;
+	    source="/apps/kardia/images/icons/tumblicons-file.svg";
+	    }
+
+	data_vbox "widget/vbox"
+	    {
+	    x=15; y=15;
+	    width=668; height=396;
+	    spacing=10;
+
+	    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient("Manage Forms and Data..."); align=center; }
+
+	    forms_osrc "widget/osrc"
+		{
+		form_partner "widget/parameter" { type=string; default=runclient(:partner_var:value); }
+		sql = "	select
+			    form_name = :dt:e_data_item_type_label + ' (' + :dg:e_data_item_group_name + ')',
+			    form_id = :dg:e_data_item_group_id,
+			    type_id = :dg:e_data_item_type_id
+			from
+			    /apps/kardia/data/Kardia_DB/e_data_item_group/rows dg,
+			    /apps/kardia/data/Kardia_DB/e_data_item_type/rows dt
+			where
+			    :dg:p_partner_key = :parameters:form_partner and
+			    :dt:e_data_item_type_id = :dg:e_data_item_type_id
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/e_data_item_group/rows";
+		replicasize=50;
+		readahead=50;
+		autoquery=oneachreveal;
+
+		formselect_hbox "widget/hbox"
+		    {
+		    height=24;
+		    spacing=10;
+
+		    formselect_label "widget/label" { width=130; align=right; text="View Data/Form:"; style=bold; }
+
+		    formselect_dd "widget/dropdown"
+			{
+			width=300;
+			mode=objectsource; 
+			objectsource = forms_osrc;
+			numdisplay = 12;
+			fieldname = form_name;
+			}
+
+		    newform_btn "widget/textbutton"
+			{
+			width=130;
+			height=24;
+			text="New Form";
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_new1 "widget/connector" { event=Click; target=data_win; action=Close; }
+			on_new2 "widget/connector" { event=Click; target=popover_data; action=DataNeedsEditing; group=runclient(null); }
+			}
+		    }
+
+		sep1 "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+		form_data_osrc "widget/osrc"
+		    {
+		    sql = " select
+				:dt:e_data_item_type_label,
+				:di:e_data_item_group_id,
+				:di:e_data_item_id,
+				:di:e_data_item_string_value
+			    from
+				/apps/kardia/data/Kardia_DB/e_data_item_group/rows dg,
+				/apps/kardia/data/Kardia_DB/e_data_item/rows di,
+				/apps/kardia/data/Kardia_DB/e_data_item_type/rows dt
+			    where
+				:di:e_data_item_group_id = :dg:e_data_item_group_id and
+				:dt:e_data_item_type_id = :di:e_data_item_type_id
+			    ";
+		    baseobj="/apps/kardia/data/Kardia_DB/e_data_item/rows";
+		    readahead=100;
+		    replicasize=100;
+
+		    form_data_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=forms_osrc;
+			target_key_1=form_id;
+			key_1=e_data_item_group_id;
+			key_objname=dg;
+			revealed_only=yes;
+			}
+
+		    form_data_table "widget/table"
+			{
+			height=282;
+			min_rowheight=12;
+			max_rowheight=120;
+			allow_selection = yes;
+			show_selection = yes;
+			initial_selection = no;
+			demand_scrollbar = yes;
+			overlap_scrollbar = yes;
+			colsep = 0;
+			titlebar = no;
+			row_border_radius=4;
+			inner_padding = 2;
+			cellvspacing = 0;
+			row1_bgcolor = "#f8f8f8";
+			row2_bgcolor = "#f8f8f8";
+			rowhighlight_bgcolor = "#fff090";
+			textcolorhighlight = "#000000";
+			nodata_message = "Please select or create a form.";
+
+			t_fieldname "widget/table-column" { value=runclient(:form_data_osrc:e_data_item_type_label + ':'); width=150; style=bold; wrap=yes; align=right; }
+			t_data "widget/table-column" { fieldname=e_data_item_string_value; width=518; style=italic; wrap=yes; }
+			}
+		    }
+		}
+
+	    sep2 "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+
+	    btns_hbox "widget/hbox"
+		{
+		height=24; spacing=8;
+		align=center;
+
+		editform_btn "widget/textbutton"
+		    {
+		    height=24; width=130;
+		    text = "Edit Form";
+		    enabled = runclient(:form_data_osrc:e_data_item_id is not null);
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+		    on_edit1 "widget/connector" { event=Click; target=data_win; action=Close; }
+		    on_edit2 "widget/connector" { event=Click; target=popover_data; action=DataNeedsEditing; group=runclient(:form_data_osrc:e_data_item_group_id); }
+		    }
+
+		close_btn "widget/textbutton"
+		    {
+		    height=24; width=130;
+		    //text = runclient(condition(:doc_form:is_savable or :newfile_form:is_savable, "Cancel", "Close"));
+		    text = "Close";
+		    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		    fgcolor1=white;
+		    fgcolor2=black;
+		    disable_color="#334466";
+
+		    //on_close1 "widget/connector" { event=Click; target=doc_form; action=Discard; }
+		    //on_close2 "widget/connector" { event=Click; target=newfile_form; action=Discard; }
+		    on_close3 "widget/connector" { event=Click; target=data_win; action=Close; }
+		    }
+		}
+	    }
+	}
+    }

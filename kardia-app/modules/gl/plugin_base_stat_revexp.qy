@@ -1,0 +1,17 @@
+$Version=2$
+plugin_base_stat_revexp "system/query"
+    {
+    sql = " delete
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    where
+		:s_stat_type = 'GLREVEXP'
+	    ;
+	   
+	    -- Generate statistics for each ledger
+	    select
+		:l:a_ledger_number
+	    from
+		/apps/kardia/data/Kardia_DB/a_ledger/rows l,
+		expression ('/apps/kardia/modules/gl/stat_revexp_ledger.qy?ledger=' + :l:a_ledger_number )
+	    ";
+    }

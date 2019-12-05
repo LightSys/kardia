@@ -21,7 +21,7 @@ create  index p_parent_key_idx on p_partner (p_parent_key, p_partner_key)
 go
 /* create  index p_partner_pk on p_partner (p_partner_key)*/ 
 /* go */
-/* create  clustered index p_surname_clustered_idx on p_partner (p_surname, p_given_name, p_org_name, p_partner_key)*/ 
+/* create  clustered index p_surname_clustered_idx on p_partner (p_surname, p_given_name, p_preferred_name, p_org_name, p_partner_key)*/ 
 /* go */
 
 
@@ -36,7 +36,7 @@ go
 
 
 /* p_location */
-create  index p_location_city_idx on p_location (p_city, p_state_province, p_partner_key, p_location_id, p_revision_id)
+create  index p_location_city_idx on p_location (p_city, p_state_province, p_postal_code, p_partner_key, p_location_id, p_revision_id)
 go
 /* create  index p_location_pk on p_location (p_partner_key, p_location_id, p_revision_id)*/ 
 /* go */
@@ -63,6 +63,8 @@ go
 
 
 /* p_contact_info */
+create  index p_contact_idx on p_contact_info (p_contact_data, p_phone_area_city, p_phone_country, p_partner_key, p_contact_id)
+go
 /* create  clustered index p_contact_info_pk on p_contact_info (p_partner_key, p_contact_id)*/ 
 /* go */
 
@@ -129,6 +131,11 @@ go
 
 /* p_country */
 /* create  clustered index p_country_code_pk on p_country (p_country_code)*/ 
+/* go */
+
+
+/* p_pol_division */
+/* create  clustered index p_poldiv_pk on p_pol_division (p_country_code, p_pol_division)*/ 
 /* go */
 
 
@@ -452,6 +459,11 @@ go
 create  index e_ditype_parent_idx on e_data_item_type (e_parent_data_item_type_id, e_data_item_type_id)
 go
 /* create  clustered index e_ditype_pk on e_data_item_type (e_data_item_type_id)*/ 
+/* go */
+
+
+/* e_data_item_type_value */
+/* create  clustered index e_dataitemval_pk on e_data_item_type_value (e_data_item_type_id, e_data_item_value_id)*/ 
 /* go */
 
 
@@ -971,6 +983,8 @@ create  index a_gifttrxgrp_donor_id_idx on a_subtrx_gift_group (p_donor_partner_
 go
 create  index a_gifttrxgrp_gift_idx on a_subtrx_gift_group (a_gift_number, a_ledger_number, a_batch_number)
 go
+create  index a_gifttrxgrp_pass_id_idx on a_subtrx_gift_group (p_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number)
+go
 /* create  clustered index a_gifttrxgrp_pk on a_subtrx_gift_group (a_ledger_number, a_batch_number, a_gift_number)*/ 
 /* go */
 
@@ -978,13 +992,19 @@ go
 /* a_subtrx_gift_item */
 /* create  index a_gifttrx_pk on a_subtrx_gift_item (a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
 /* go */
+create  index a_gifttrxi_ack_idx on a_subtrx_gift_item (p_dn_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
 /* create  clustered index a_gifttrxi_cc_clustered_idx on a_subtrx_gift_item (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
 /* go */
+create  index a_gifttrxi_datetype_idx on a_subtrx_gift_item (a_dn_gift_received_date, a_dn_gift_postmark_date, a_dn_gift_type, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
 create  index a_gifttrxi_donor_idx on a_subtrx_gift_item (p_dn_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 create  index a_gifttrxi_gift_idx on a_subtrx_gift_item (a_gift_number, a_ledger_number, a_batch_number, a_split_number)
 go
 create  index a_gifttrxi_mcode_idx on a_subtrx_gift_item (a_motivational_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
+create  index a_gifttrxi_pass_idx on a_subtrx_gift_item (p_dn_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 create  index a_gifttrxi_rcpt_idx on a_subtrx_gift_item (a_dn_receipt_number, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
@@ -1081,13 +1101,13 @@ go
 
 
 /* a_descriptives_hist */
-create  index a_descrhist_cc_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_amount)
+create  index a_descrhist_cc_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_hist_id)
 go
-create  index a_descrhist_merge_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_merged_amount, a_amount)
+create  index a_descrhist_merge_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_merged_id, a_hist_id)
 go
-create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_cost_center, a_amount)
+create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_cost_center, a_hist_id)
 go
-/* create  clustered index a_descrhist_pk on a_descriptives_hist (a_ledger_number, p_donor_partner_key, a_cost_center, a_amount)*/ 
+/* create  clustered index a_descrhist_pk on a_descriptives_hist (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id)*/ 
 /* go */
 
 
@@ -1382,4 +1402,9 @@ go
 
 /* s_global_search */
 /* create  clustered index s_global_search_pk on s_global_search (s_search_id, s_username, s_search_res_id)*/ 
+/* go */
+
+
+/* s_stats_cache */
+/* create  clustered index s_stats_cache_pk on s_stats_cache (s_stat_type, s_stat_group, s_stat)*/ 
 /* go */

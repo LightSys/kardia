@@ -1,0 +1,13 @@
+$Version=2$
+update_statistics "system/query"
+    {
+    sql = " delete
+		/apps/kardia/data/Kardia_DB/s_stats_cache/rows
+	    ;
+	    
+	    select
+		*
+	    from
+		wildcard '/apps/kardia/modules/*/plugin_base_stat_*.qy'
+	    ";
+    }

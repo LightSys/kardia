@@ -130,7 +130,8 @@ index "widget/page"
 				:menutitle,
 				:menudesc,
 				:cnt,
-				:e_reference_info
+				:e_reference_info,
+				name = :e_reference_info
 			    from
 				collection activity
 			    order by
@@ -175,7 +176,7 @@ index "widget/page"
 
 			mt_img "widget/table-column" { title=""; fieldname="menuicon"; width=38; type=image; image_maxwidth=32; image_maxheight=32; align=center; textcolor=white; }
 
-			mt_name "widget/table-column" { title=""; fieldname="menutitle"; caption_value=runclient(condition(:menu_osrc:menutitle = 'Settings', 'Ledger: ' + :kardia_sysattrs_osrc:Ledger + '\nPeriod: ' + :kardia_sysattrs_osrc:CurrentPeriod + '\nYear: ' + :kardia_sysattrs_osrc:YearPeriod, :menu_osrc:menudesc)); width=166; textcolor=white; caption_textcolor="#f0f0f0"; style=bold; font_size=16; caption_style=italic; wrap=yes; }
+			mt_name "widget/table-column" { title=""; fieldname="menutitle"; caption_value=runclient(condition(:menu_osrc:menutitle = 'Settings', 'Ledger: ' + :kardia_sysattrs_osrc:Ledger + '\nPeriod: ' + :kardia_sysattrs_osrc:CurrentPeriod + '\nYear: ' + :kardia_sysattrs_osrc:YearPeriod, :menu_osrc:menudesc)); width=166; textcolor=white; caption_textcolor="#f0f0f0"; style=bold; font_size=15; caption_style=italic; wrap=yes; }
 
 			mt_cnt "widget/table-column" { fieldname=cnt; font_size=15; style=bold; padding=3; bgcolor=runclient(condition(:menu_osrc:cnt is null, '', 'black')); border_radius=15; width=32; align=center; textcolor=white; }
 
@@ -195,7 +196,14 @@ index "widget/page"
 				    width=186; height=24;
 				    empty_description="type search, press ENTER";
 
-				    enter_pressed_do_search "widget/connector"
+				    enter_pressed_do_search1 "widget/connector"
+					{
+					event=BeforeKeyPress;
+					event_condition=runclient(:Name == 'enter' and char_length(:search_box:content) > 1);
+					target=search_osrc;
+					action=Clear;
+					}
+				    enter_pressed_do_search2 "widget/connector"
 					{
 					event=BeforeKeyPress;
 					event_condition=runclient(:Name == 'enter' and char_length(:search_box:content) > 1);
@@ -210,7 +218,14 @@ index "widget/page"
 				    width=24; height=24;
 				    image="/apps/kardia/images/icons/ionicons-search-w.svg";
 
-				    btn_clicked_do_search "widget/connector"
+				    btn_clicked_do_search1 "widget/connector"
+					{
+					event=Click;
+					event_condition=runclient(char_length(:search_box:content) > 1);
+					target=search_osrc;
+					action=Clear;
+					}
+				    btn_clicked_do_search2 "widget/connector"
 					{
 					event=Click;
 					event_condition=runclient(char_length(:search_box:content) > 1);
@@ -344,13 +359,18 @@ index "widget/page"
 				    width=447;
 				    spacing=10;
 
-				    apps_list_title "widget/label" { height=18; font_size=16; style=bold; align=center; text=runserver("Applications for " + :tabpages:module_abbrev); fl_width=100; }
+				    apps_list_title "widget/label" { height=18; font_size=15; style=bold; align=center; text=runserver("Applications for " + :tabpages:module_abbrev); fl_width=100; }
 
 				    apps_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
 				    apps_list_osrc "widget/osrc"
 					{
 					sql = runserver("
+						    declare collection funclist;
+
+						    -- Applications from this module
+						    insert
+							collection funclist
 						    select
 							:f:func_name,
 							:f:func_description,
@@ -363,8 +383,31 @@ index "widget/page"
 							object expression ('/apps/kardia/modules/" + :tabpages:modname + "/' + :f:func_file) a
 						    where
 							:f:func_type = 'APP'
+						    ;
+
+						    -- Applications from other modules
+						    insert
+							collection funclist
+						    select
+							:func_name,
+							:func_description,
+							icon = isnull(:icon, '/apps/kardia/images/icons/ionicons-gear.svg'),
+							:height,
+							:width,
+							fullpath = :cx__pathname
+						    from
+							object wildcard '/apps/kardia/modules/*/plugin_" + :tabpages:modname + "_app_*.app' a
+						    having
+							eval(isnull(:a:func_enable, '1')) != 0
+						    ;
+
+						    -- Return the list to the user
+						    select
+							*
+						    from
+							collection funclist
 						    order by
-							:f:func_name
+							:func_name
 						    ");
 					replicasize=30;
 					readahead=30;
@@ -394,6 +437,7 @@ index "widget/page"
 					    rowhighlight_shadow_radius=4;
 					    rowhighlight_shadow_offset=1;
 					    rowhighlight_shadow_color="#808080";
+					    rowhighlight_border_color="#b8b8b8";
 					    //rowhighlight_bgcolor = "#6080c0";
 					    //rowhighlight_shadow_angle=180;
 					    //rowhighlight_shadow_radius=4;
@@ -407,16 +451,17 @@ index "widget/page"
 					    //row2_bgcolor = "#496293";
 					    row1_bgcolor = '';
 					    row2_bgcolor = '';
-					    nodata_message = "one moment...";
+					    nodata_message = runclient(condition(:apps_list_osrc:cx__pending, "", "one moment..."));
 
 					    alt_icon "widget/table-column" { width=40; fieldname=icon; type=image; align=right; }
-					    alt_title "widget/table-column" { width=400; fieldname=func_name; font_size=16; style=bold; caption_fieldname=func_description; }
+					    alt_title "widget/table-column" { width=400; fieldname=func_name; font_size=15; style=bold; caption_fieldname=func_description; }
 
 					    launchapp "widget/connector"
 						{
 						event = Click;
 						target = index;
 						action = Launch;
+						event_delay = 0.20;
 						Multi = 1;
 						Source = runclient(:apps_list_osrc:fullpath + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
 						Width = runclient(:apps_list_osrc:width);
@@ -431,13 +476,17 @@ index "widget/page"
 				    width=447;
 				    spacing=10;
 
-				    rpts_list_title "widget/label" { height=18; font_size=16; style=bold; align=center; text=runserver("Reports for " + :tabpages:module_abbrev); fl_width=100; }
+				    rpts_list_title "widget/label" { height=18; font_size=15; style=bold; align=center; text=runserver("Reports for " + :tabpages:module_abbrev); fl_width=100; }
 
 				    rpts_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
 				    rpts_list_osrc "widget/osrc"
 					{
 					sql = runserver("
+						    declare collection funclist;
+
+						    insert
+							collection funclist
 						    select
 							:f:func_name,
 							:f:func_description,
@@ -450,8 +499,31 @@ index "widget/page"
 							object expression ('/apps/kardia/modules/" + :tabpages:modname + "/' + :f:func_file) a
 						    where
 							:f:func_type = 'RPT'
+						    ;
+
+						    -- Reports from other modules
+						    insert
+							collection funclist
+						    select
+							:func_name,
+							:func_description,
+							icon = isnull(:icon, '/apps/kardia/images/icons/tumblicons-file.svg'),
+							:height,
+							:width,
+							fullpath = :cx__pathname
+						    from
+							object wildcard '/apps/kardia/modules/*/plugin_" + :tabpages:modname + "_report_*.app' r
+						    having
+							eval(isnull(:r:func_enable, '1')) != 0
+						    ;
+
+						    -- Return the list to the user
+						    select
+							*
+						    from
+							collection funclist
 						    order by
-							:f:func_name
+							:func_name
 						    ");
 					replicasize=30;
 					readahead=30;
@@ -481,6 +553,7 @@ index "widget/page"
 					    rowhighlight_shadow_radius=4;
 					    rowhighlight_shadow_offset=1;
 					    rowhighlight_shadow_color="#808080";
+					    rowhighlight_border_color="#b8b8b8";
 					    //rowhighlight_bgcolor = "#6080c0";
 					    //rowhighlight_shadow_angle=180;
 					    //rowhighlight_shadow_radius=4;
@@ -494,16 +567,17 @@ index "widget/page"
 					    //row2_bgcolor = "#496293";
 					    row1_bgcolor = '';
 					    row2_bgcolor = '';
-					    nodata_message = "one moment...";
+					    nodata_message = runclient(condition(:rpts_list_osrc:cx__pending, "", "one moment..."));
 
 					    rlt_icon "widget/table-column" { width=40; fieldname=icon; type=image; align=right; }
-					    rlt_title "widget/table-column" { width=400; fieldname=func_name; font_size=16; style=bold; caption_fieldname=func_description; }
+					    rlt_title "widget/table-column" { width=400; fieldname=func_name; font_size=15; style=bold; caption_fieldname=func_description; }
 
 					    launchrpt "widget/connector"
 						{
 						event = Click;
 						target = index;
 						action = Launch;
+						event_delay = 0.20;
 						Multi = 1;
 						Source = runclient(:rpts_list_osrc:fullpath + "?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
 						Width = runclient(:rpts_list_osrc:width);
@@ -541,10 +615,10 @@ index "widget/page"
 
 		    search_results_vbox "widget/vbox"
 			{
-			x=10; y=20; width=924; height=600;
+			x=20; y=20; width=904; height=600;
 			spacing=10;
 
-			search_res_title "widget/label" { height=18; font_size=16; style=bold; align=center; text=runserver("Search Results..."); fl_width=100; }
+			search_res_title "widget/label" { height=18; font_size=15; style=bold; align=center; text=runserver("Search Results..."); fl_width=100; }
 
 			search_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
@@ -558,20 +632,6 @@ index "widget/page"
 				    -- Clean up our temporary sort lists
 				    delete
 					collection global_search
-					--/apps/kardia/data/Kardia_DB/s_global_search/rows
-				    where
-					:s_username = user_name() and
-					dateadd(minute, 10, :s_date_modified) < getdate()
-				    ;
-
-				    -- Get a new ID
-				    select
-					:info:search_id = isnull(max(:s_search_id),0) + 1
-				    from
-					collection global_search
-					--/apps/kardia/data/Kardia_DB/s_global_search/rows
-				    where
-					:s_username = user_name()
 				    ;
 
 				    -- Break out the search criteria: we support up to 5 criteria
@@ -607,7 +667,7 @@ index "widget/page"
 				    ;
 
 				    -- Here are the queries from the plug-ins
-				    " + isnull((select sum(:sql + ';\n') from object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp'), '') + "
+				    " + isnull((select sum(:sql + ';\n') from object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp' ), '') + "
 
 				    -- Return the results to the user
 				    select
@@ -622,8 +682,6 @@ index "widget/page"
 					--/apps/kardia/data/Kardia_DB/s_global_search/rows gs,
 					object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp' cm
 				    where
-					:gs:s_search_id = :info:search_id and
-					:gs:s_username = user_name() and
 					(:gs:s_cri1 > 0 or isnull(:info:cri1,'') = '') and
 					(:gs:s_cri2 > 0 or isnull(:info:cri2,'') = '') and
 					(:gs:s_cri3 > 0 or isnull(:info:cri3,'') = '') and
@@ -634,8 +692,8 @@ index "widget/page"
 					:gs:s_score desc,
 					:gs:s_label asc
 				    ");
-			    replicasize=200;
-			    readahead=200;
+			    replicasize=500;
+			    readahead=500;
 			    autoquery=never;
 
 			    on_query_show_tab "widget/connector"
@@ -661,10 +719,16 @@ index "widget/page"
 				colsep = 0;
 				titlebar = no;
 				row_border_radius=4;
+				//rowhighlight_bgcolor = "#f0f0f0";
+				//rowhighlight_shadow_color = "#6080c0";
+				//rowhighlight_shadow_location = 'inside';
+				//rowhighlight_shadow_radius = 10;
 				rowhighlight_bgcolor = "#f0f0f0";
-				rowhighlight_shadow_color = "#6080c0";
-				rowhighlight_shadow_location = 'inside';
-				rowhighlight_shadow_radius = 10;
+				rowhighlight_shadow_angle=180;
+				rowhighlight_shadow_radius=4;
+				rowhighlight_shadow_offset=1;
+				rowhighlight_shadow_color="#808080";
+				rowhighlight_border_color="#b8b8b8";
 				//rowhighlight_bgcolor = "#6080c0";
 				//rowhighlight_shadow_angle=180;
 				//rowhighlight_shadow_radius=4;
@@ -678,10 +742,10 @@ index "widget/page"
 				//row2_bgcolor = "#496293";
 				row1_bgcolor = '';
 				row2_bgcolor = '';
-				nodata_message = "one moment...";
+				nodata_message = runclient(condition(:search_osrc:cx__pending, "no matching results", "one moment..."));
 
 				search_icon "widget/table-column" { width=40; fieldname=icon; type=image; align=right; }
-				search_title "widget/table-column" { width=820; fieldname=s_label; font_size=16; style=bold; caption_fieldname=s_desc; }
+				search_title "widget/table-column" { width=820; fieldname=s_label; font_size=15; style=bold; caption_fieldname=s_desc; }
 
 				search_tags "widget/repeat"
 				    {
@@ -692,20 +756,68 @@ index "widget/page"
 
 				search_details "widget/repeat"
 				    {
-				    sql = "select :height, :type, path = :cx__pathname from object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp'";
+				    sql = "select :type, height = max(:height), count(1) from object wildcard '/apps/kardia/modules/*/plugin_gsearch_mod_*.cmp' where (:endorsement is null or has_endorsement(:endorsement, :endorsement_context)) group by :type having count(1) > 0";
 
 				    one_detail "widget/table-row-detail"
 					{
-					height=runserver(:search_details:height + 20);
 					width=924;
+					height=runserver(:search_details:height + 20);
 					display_for=runclient(:search_osrc:s_type == runserver(:search_details:type));
 
-					one_detail_cmp "widget/component"
+					detail_vbox "widget/vbox"
+					    {
+					    x=10; y=15;
+					    width=904;
+					    height=runserver(:search_details:height + 5);
+					    spacing=4;
+
+					    detail_hbox "widget/hbox"
+						{
+						x=32;
+						height=runserver(:search_details:height);
+						spacing=10;
+
+						search_detail_items "widget/repeat"
+						    {
+						    sql = runserver("select :height, :width, path = :cx__pathname from object wildcard '/apps/kardia/modules/*/plugin_gsearch_mod_*.cmp' where (:endorsement is null or has_endorsement(:endorsement, :endorsement_context)) and :type = " + quote(:search_details:type) + " order by :sequence asc");
+
+						    one_item_cmp "widget/component"
+							{
+							width=runserver(:search_detail_items:width);
+							height=runserver(:search_detail_items:height);
+							path=runserver(:search_detail_items:path);
+							}
+						    }
+						}
+
+					    detail_sep "widget/image"
+						{
+						x=0;
+						height=1;
+						fl_height=0;
+						fl_width=100;
+						source="/apps/kardia/images/bg/lsblue_horizsep.png";
+						}
+					    }
+					}
+				    }
+
+				search_details_ctls "widget/repeat"
+				    {
+				    sql = "select :height, :type, path = :cx__pathname from object wildcard '/apps/kardia/modules/*/plugin_gsearch_src_*.cmp'";
+
+				    one_detail_ctl "widget/table-row-detail"
+					{
+					height=runserver(:search_details_ctls:height + 20);
+					width=924;
+					display_for=runclient(:search_osrc:s_type == runserver(:search_details_ctls:type));
+
+					one_detail_ctl_cmp "widget/component"
 					    {
 					    x=10; y=15; 
 					    width=904;
-					    height=runserver(:search_details:height);
-					    path=runserver(:search_details:path);
+					    height=runserver(:search_details_ctls:height);
+					    path=runserver(:search_details_ctls:path);
 					    }
 					}
 				    }
@@ -715,5 +827,11 @@ index "widget/page"
 		    }
 		}
 	    }
+	}
+
+    motd_cmp "widget/component"
+	{
+	x=0; y=0; width=1200; height=700;
+	path="/apps/kardia/modules/base/motd.cmp";
 	}
     }

@@ -11,7 +11,7 @@ plugin_menu_subui_disbstat "widget/component-decl"
 	height=200;
 	spacing=10;
 
-	stats_title "widget/label" { height=18; font_size=16; style=bold; align=center; text="Disbursements Overview..."; fl_width=100; }
+	stats_title "widget/label" { height=18; font_size=15; style=bold; align=center; text="Disbursements Overview..."; fl_width=100; }
 
 	search_sep "widget/image" { height=1; fl_width=100; fl_height=0; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 
@@ -55,35 +55,42 @@ plugin_menu_subui_disbstat "widget/component-decl"
 			    ;
 
 			    select
-				period = :info:parent,
-				cnt = count(1),
-				amt = sum(:a_amount),
-				intamt = convert(integer, sum(:a_amount))
+				period = :p:a_parent_period,
+				cnt = sum(:sc:s_integer_value),
+				amt = sum(:sc:s_money_value),
+				intamt = convert(integer, sum(:sc:s_money_value))
 			    from
-				/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+				/apps/kardia/data/Kardia_DB/a_period/rows p,
+				/apps/kardia/data/Kardia_DB/s_stats_cache/rows sc
 			    where
-				:d:a_ledger_number = :parameters:ledger and
-				:d:a_period >= :info:startperiod and
-				:d:a_period <= :info:endperiod and
-				:d:a_posted = 1
+				:p:a_ledger_number = :parameters:ledger and
+				:p:a_period >= :info:startperiod and
+				:p:a_period <= :info:endperiod and
+				:p:a_summary_only = 0 and
+				:p:a_status != 'N' and
+				:sc:s_stat_type = 'DISB' and
+				:sc:s_stat = :parameters:ledger + '*' + rtrim(:p:a_period)
 			    ;
 
 			    select
 				period = :a_period,
-				amt = sum(:a_amount),
-				intamt = convert(integer, sum(:a_amount))
+				cnt = :sc:s_integer_value,
+				amt = :sc:s_money_value,
+				intamt = convert(integer, :sc:s_money_value)
 			    from
-				/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+				/apps/kardia/data/Kardia_DB/a_period/rows p,
+				/apps/kardia/data/Kardia_DB/s_stats_cache/rows sc
 			    where
-				:d:a_ledger_number = :parameters:ledger and
-				:d:a_period >= :info:startperiod and
-				:d:a_period <= :info:endperiod and
-				:d:a_posted = 1
-			    group by
-				:a_period desc
+				:p:a_ledger_number = :parameters:ledger and
+				:p:a_period >= :info:startperiod and
+				:p:a_period <= :info:endperiod and
+				:p:a_summary_only = 0 and
+				:p:a_status != 'N' and
+				:sc:s_integer_value > 0 and
+				:sc:s_stat_type = 'DISB' and
+				:sc:s_stat = :parameters:ledger + '*' + rtrim(:p:a_period)
 			    order by
-				:a_period desc
-			    ;
+				:p:a_period desc
 
 			    --select :info:prevperiod = :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_period < :parameters:period and :a_ledger_number = :parameters:ledger order by :a_start_date desc limit 1;
 
@@ -162,7 +169,7 @@ plugin_menu_subui_disbstat "widget/component-decl"
 		{
 		width=674;
 		y=6;
-		path="/apps/kardia/modules/disb/disbursement_chart.cmp";
+		path="/apps/kardia/modules/disb/disbursement_chart_general.cmp";
 		ledger_osrc=kardia_sysattrs_osrc;
 		months=25;
 		}

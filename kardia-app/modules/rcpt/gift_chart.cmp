@@ -8,15 +8,24 @@ gift_chart "widget/component-decl"
     bar_color "widget/parameter" { type=string; default="#3e7d38"; }
     chart_title "widget/parameter" { type=string; }
     months "widget/parameter" { type=integer; default=25; deploy_to_client=yes; }
+    fund "widget/parameter" { type=string; deploy_to_client=yes; }
+    partner "widget/parameter" { type=string; deploy_to_client=yes; }
 
     chart_osrc "widget/osrc"
 	{
 	chart_ledger "widget/parameter" { param_name=ledger; type=string; }
 	chart_months "widget/parameter" { param_name=months; type=integer; default=runclient(:months:value); }
+	chart_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:fund:value); }
+	chart_partner "widget/parameter" { param_name=partner; type=string; default=runclient(:partner:value); }
+	//chart_fund "widget/parameter" { param_name=fund; type=string; }
 	//chart_period "widget/parameter" { param_name=period; type=string; }
 
 	sql = "	declare object info;
-	
+
+		select
+		    :info:cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc, /apps/kardia/data/Kardia_DB/p_staff/rows s where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number and :s:p_kardia_login = user_name()), '')
+		;
+
 		select
 		    :info:endperiod = :a_period
 		from
@@ -55,20 +64,56 @@ gift_chart "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g,
 		    /apps/kardia/data/Kardia_DB/a_period/rows p
 		where
-		    :g:a_ledger_number = :parameters:ledger and
-		    :g:a_period >= :info:startperiod and
-		    :g:a_period <= :info:endperiod and
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_period >= :info:startperiod and
+		    :p:a_period <= :info:endperiod and
+		    :p:a_summary_only = 0 and
 		    :g:a_posted = 1 and
-		    :p:a_period = :g:a_period and
-		    :p:a_ledger_number = :g:a_ledger_number
+		    :p:a_period *= :g:a_period and
+		    :p:a_ledger_number *= :g:a_ledger_number and
+		    (:parameters:fund is null or :parameters:fund = :g:a_cost_center) and
+		    (:parameters:partner is null or :parameters:partner = :g:p_dn_donor_partner_id) and
+		    has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
 		group by
-		    :g:a_period
+		    :p:a_period
 		order by
-		    :g:a_period asc
+		    :p:a_period asc
+		--having
+		--    has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
+		;
+
+		select
+		    month = dateformat(:p:a_start_date, 'MMM\\'yy'),
+		    year = datepart(year, :p:a_start_date),
+		    Amount = convert(integer,sum(:g:a_amount)),
+		    total = sum(:g:a_amount) --,
+		    --idx = datediff(month, :start_period_qy:a_start_date, :p:a_start_date)
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g,
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_period >= :info:startperiod and
+		    :p:a_period <= :info:endperiod and
+		    :g:a_posted = 1 and
+		    :p:a_summary_only = 0 and
+		    :p:a_period *= :g:a_period and
+		    :p:a_ledger_number *= :g:a_ledger_number and
+		    (:parameters:fund is null or :parameters:fund = :g:a_cost_center) and
+		    charindex(',' + :parameters:ledger + '|' + :g:a_cost_center + ',', ',' + :info:cclist + ',') > 0 and
+		    (:parameters:partner is null or :parameters:partner = :g:p_dn_donor_partner_id) and
+		    not has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
+		group by
+		    :p:a_period
+		order by
+		    :p:a_period asc
+		--having
+		--    not has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
 		";
 	readahead=30;
 	replicasize=30;
 	//autoquery=onload;
+	autoquery=oneachreveal;
 
 	chart_link "widget/rule"
 	    {
@@ -76,6 +121,8 @@ gift_chart "widget/component-decl"
 	    target=ledger_osrc;
 	    target_key_1=Ledger;
 	    key_1=ledger;
+	    target_key_2=Fund;
+	    key_2=fund;
 	    revealed_only=yes;
 	    }
 

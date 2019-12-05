@@ -49,6 +49,7 @@ alter table p_address_format drop index p_af_country_idx;
 
 
 /* p_contact_info */
+alter table p_contact_info drop index p_contact_idx;
 /* drop index p_contact_info.p_contact_info_pk */ 
 /* go */
 
@@ -110,6 +111,11 @@ alter table p_staff drop index p_staff_weblogin_idx;
 
 /* p_country */
 /* drop index p_country.p_country_code_pk */ 
+/* go */
+
+
+/* p_pol_division */
+/* drop index p_pol_division.p_poldiv_pk */ 
 /* go */
 
 
@@ -375,6 +381,11 @@ alter table e_todo drop index e_todo_type_idx;
 /* e_data_item_type */
 alter table e_data_item_type drop index e_ditype_parent_idx;
 /* drop index e_data_item_type.e_ditype_pk */ 
+/* go */
+
+
+/* e_data_item_type_value */
+/* drop index e_data_item_type_value.e_dataitemval_pk */ 
 /* go */
 
 
@@ -823,6 +834,7 @@ alter table a_subtrx_gift_group drop index a_gifttrxgrp_ack_id_idx;
 alter table a_subtrx_gift_group drop index a_gifttrxgrp_batch_idx;
 alter table a_subtrx_gift_group drop index a_gifttrxgrp_donor_id_idx;
 alter table a_subtrx_gift_group drop index a_gifttrxgrp_gift_idx;
+alter table a_subtrx_gift_group drop index a_gifttrxgrp_pass_id_idx;
 /* drop index a_subtrx_gift_group.a_gifttrxgrp_pk */ 
 /* go */
 
@@ -830,11 +842,14 @@ alter table a_subtrx_gift_group drop index a_gifttrxgrp_gift_idx;
 /* a_subtrx_gift_item */
 /* drop index a_subtrx_gift_item.a_gifttrx_pk */ 
 /* go */
+alter table a_subtrx_gift_item drop index a_gifttrxi_ack_idx;
 /* drop index a_subtrx_gift_item.a_gifttrxi_cc_clustered_idx */ 
 /* go */
+alter table a_subtrx_gift_item drop index a_gifttrxi_datetype_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_donor_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_gift_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_mcode_idx;
+alter table a_subtrx_gift_item drop index a_gifttrxi_pass_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_rcpt_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_recip_id_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_src_idx;
@@ -1175,4 +1190,9 @@ alter table s_audit drop index s_audit_strval_idx;
 
 /* s_global_search */
 /* drop index s_global_search.s_global_search_pk */ 
+/* go */
+
+
+/* s_stats_cache */
+/* drop index s_stats_cache.s_stats_cache_pk */ 
 /* go */

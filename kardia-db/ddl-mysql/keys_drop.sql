@@ -78,6 +78,10 @@ alter table p_contact_info
 	drop primary key;
 
 
+alter table p_contact_info
+	drop index p_contact_idx;
+
+
 alter table p_contact_usage
 	drop primary key;
 
@@ -127,6 +131,10 @@ alter table p_zipranges
 
 
 alter table p_country
+	drop primary key;
+
+
+alter table p_pol_division
 	drop primary key;
 
 
@@ -452,6 +460,10 @@ alter table e_data_item_type
 
 alter table e_data_item_type
 	drop index e_ditype_parent_idx;
+
+
+alter table e_data_item_type_value
+	drop primary key;
 
 
 alter table e_data_item_group
@@ -886,6 +898,10 @@ alter table a_subtrx_gift_group
 	drop index a_gifttrxgrp_ack_id_idx;
 
 
+alter table a_subtrx_gift_group
+	drop index a_gifttrxgrp_pass_id_idx;
+
+
 alter table a_subtrx_gift_item
 	drop primary key;
 
@@ -907,11 +923,23 @@ alter table a_subtrx_gift_item
 
 
 alter table a_subtrx_gift_item
+	drop index a_gifttrxi_ack_idx;
+
+
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_pass_idx;
+
+
+alter table a_subtrx_gift_item
 	drop index a_gifttrxi_rcpt_idx;
 
 
 alter table a_subtrx_gift_item
 	drop index a_gifttrxi_src_idx;
+
+
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_datetype_idx;
 
 
 alter table a_subtrx_gift_rcptcnt
@@ -1251,4 +1279,8 @@ alter table s_user_role
 
 
 alter table s_global_search
+	drop primary key;
+
+
+alter table s_stats_cache
 	drop primary key;

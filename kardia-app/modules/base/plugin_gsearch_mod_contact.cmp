@@ -1,0 +1,72 @@
+$Version=2$
+plugin_gsearch_mod_contact "widget/component-decl"
+    {
+    width=200;
+    height=150;
+    type="PAR";
+    sequence = 100;
+
+    search_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    partnerinfo_osrc "widget/osrc"
+	{
+	ledger "widget/parameter" { type=string; default=runclient(:kardia_sysattrs_osrc:Ledger); }
+	partner "widget/parameter" { type=string; }
+	sql = "	select
+		    :p:p_partner_key,
+		    donor_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+		    :pl:p_in_care_of,
+		    :pl:p_address_1,
+		    :pl:p_address_2,
+		    :pl:p_address_3,
+		    :pl:p_city,
+		    :pl:p_state_province,
+		    :pl:p_postal_code,
+		    :pl:p_country_code,
+		    :af:p_format,
+		    email = (select :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'E' and :ci:p_partner_key = :p:p_partner_key limit 1),
+		    phone = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'P' and :ci:p_partner_key = :p:p_partner_key limit 1),
+		    cell = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'C' and :ci:p_partner_key = :p:p_partner_key limit 1)
+		from
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_location/rows pl,
+		    /apps/kardia/data/Kardia_DB/p_country/rows c,
+		    /apps/kardia/data/Kardia_DB/p_address_format/rows af
+		where
+		    :p:p_partner_key = :parameters:partner and
+		    :pl:p_partner_key =* :p:p_partner_key and
+		    :pl:p_revision_id = 0 and
+		    :c:p_country_code =* :pl:p_country_code and
+		    :af:p_country_code =* :c:p_country_code and
+		    :af:p_address_set = 'STANDARD'
+		";
+	autoquery=oneachreveal;
+
+	partner_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=search_osrc;
+	    target_key_1=s_key;
+	    key_1=partner;
+	    revealed_only=yes;
+	    }
+
+	partner_label "widget/label"
+	    {
+	    x=0; y=0; width=200; height=150;
+	    style=bold;
+	    value=runclient(:partnerinfo_osrc:donor_name + '\n' + substitute(isnull(:partnerinfo_osrc:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=partnerinfo_osrc,p=partnerinfo_osrc') + '\n' + isnull('\nE: ' + :partnerinfo_osrc:email, '') + isnull('\nP: ' + :partnerinfo_osrc:phone, '') + isnull('\nC: ' + :partnerinfo_osrc:cell, ''));
+	    }
+	}
+
+    gift_chart "widget/component"
+	{
+	condition=0;
+	x=0; y=0;
+	width=300; height=150;
+	path="/apps/kardia/modules/rcpt/gift_chart.cmp";
+	months=25;
+	ledger_osrc=kardia_sysattrs_osrc;
+	partner=runclient(:search_osrc:s_key);
+	}
+    }

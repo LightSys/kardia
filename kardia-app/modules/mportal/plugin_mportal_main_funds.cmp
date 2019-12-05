@@ -28,7 +28,7 @@ funds "widget/component-decl"
 		    staff_login = :parameters:staff_login,
 		    :cc:a_cost_center,
 		    :cc:a_bal_cost_center,
-		    :cc:a_cc_desc,
+		    a_cc_desc = :cc:a_cc_desc + ' ' ,
 		    :l:a_ledger_number,
 		    :l:a_ledger_desc,
 		    isbal = condition(:cc:a_cost_center = :cc:a_bal_cost_center, 1, 0),

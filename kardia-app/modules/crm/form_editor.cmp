@@ -1,0 +1,35 @@
+$Version=2$
+form_editor "widget/component-decl"
+    {
+    width=676;
+    height=438;
+
+    group "widget/parameter" { type=integer; deploy_to_client=yes; }
+    osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    form_vbox "widget/vbox"
+	{
+	x=0; y=0; width=676; height=438;
+	spacing=5;
+
+	formeditor_form "widget/form"
+	    {
+	    objectsource = osrc;
+
+	    form_repeat "widget/repeat"
+		{
+		sql = runserver("select :dt:e_data_item_type_label, :dt:e_data_item_type_id from /apps/kardia/data/Kardia_DB/e_data_item_type/rows dt, /apps/kardia/data/Kardia_DB/e_data_item_group/rows dg where :dg:e_data_item_group_id = " + :this:group + " and :dt:e_parent_data_item_type_id = :dg:e_data_item_type_id");
+
+		one_field "widget/component"
+		    {
+		    path="/sys/cmp/smart_field.cmp";
+		    height=24;
+		    ctl_type=editbox;
+		    label_width=150;
+		    text=runserver(:form_repeat:e_data_item_type_label + ":");
+		    field=runserver(:form_repeat:e_data_item_type_label);
+		    }
+		}
+	    }
+	}
+    }

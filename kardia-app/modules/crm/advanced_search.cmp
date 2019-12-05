@@ -17,8 +17,17 @@ advanced_search "widget/component-decl"
     // This event is triggered when we have a completed result set
     AdvancedResults "widget/component-decl-event" { }
 
+    UpdateSearchCounts "widget/component-decl-action" { }
+
     // Access to the user's info as a collaborator
     collaborator_osrc "widget/parameter" { type=object; }
+
+    onUpdate "widget/connector"
+	{
+	event=UpdateSearchCounts;
+	target=criteria_osrc;
+	action=Refresh;
+	}
 
     adv_hbox "widget/hbox"
 	{
@@ -36,14 +45,14 @@ advanced_search "widget/component-decl"
 
 	    criteria_hdr "widget/pane"
 		{
-		style=flat; height=14; 
+		style=flat; height=16; 
 		background="/apps/kardia/images/bg/lsblue_btngradient.png";
-		border_radius=4;
+		border_radius=5;
 
 		criteria_label "widget/label"
 		    {
-		    x=0; y=0;
-		    width=450; height=13;
+		    x=0; y=1;
+		    width=450; height=15;
 		    text="Search Criteria Setup";
 		    align=center;
 		    style=bold;
@@ -55,13 +64,40 @@ advanced_search "widget/component-decl"
 	    criteria_osrc "widget/osrc"
 		{
 		p_search_id "widget/parameter" { type=integer; }
-		sql = "	-- Check to make sure first in the list is marked as 'A' (add / start-with)
+		sql = "	declare collection advsearch scope application;
+			-- Check to make sure first in the list is marked as 'A' (add / start-with)
+			declare object seqinfo;
+			select
+			    :seqinfo:firsttype = first(:ss:p_stage_op),
+			    :seqinfo:firstid = first(:ss:p_search_stage_id),
+			    :seqinfo:secondtype = nth(:ss:p_stage_op, 2),
+			    :seqinfo:secondid = nth(:ss:p_search_stage_id, 2)
+			from
+			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss
+			where
+			    :ss:p_search_id = :parameters:p_search_id
+			order by
+			    :ss:p_sequence asc
+			;
+			    
 			update
 			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss
 			set
-			    :ss:p_stage_op = condition(:ss:p_stage_op != 'A' and (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence) == 0, 'A', :ss:p_stage_op)
+			    --:ss:p_stage_op = condition(:ss:p_stage_op != 'A' and (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence) == 0, 'A', :ss:p_stage_op)
+			    :ss:p_stage_op = 'A'
 			where
-			    :ss:p_search_id = :parameters:p_search_id
+			    :ss:p_search_id = :parameters:p_search_id and
+			    :ss:p_search_stage_id = :seqinfo:firstid
+			;
+
+			update
+			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss
+			set
+			    :ss:p_stage_op = :seqinfo:firsttype
+			where
+			    :ss:p_search_id = :parameters:p_search_id and
+			    :ss:p_search_stage_id = :seqinfo:secondid and
+			    :seqinfo:firsttype != 'A'
 			;
 
 			select
@@ -79,7 +115,8 @@ advanced_search "widget/component-decl"
 			    nextcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence > :ss:p_sequence),
 			    stage_description = eval(:p:stage_description_expr),
 			    :p:icon,
-			    :p:stage_label
+			    :p:stage_label,
+			    res = (select count(1) from collection advsearch sr where :sr:p_search_session_id = :ss:p_search_id and :sr:p_search_stage_id = :ss:p_search_stage_id)
 			from
 			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
 			    object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' p
@@ -122,7 +159,7 @@ advanced_search "widget/component-decl"
 
 		criteria_table "widget/table"
 		    {
-		    height=450;
+		    height=448;
 		    min_rowheight=16;
 		    max_rowheight=64;
 		    mode=dynamicrow;
@@ -133,11 +170,17 @@ advanced_search "widget/component-decl"
 		    overlap_scrollbar = yes;
 		    colsep = 0;
 		    titlebar = no;
+			rowhighlight_bgcolor = "#f0f0f0";
+			rowhighlight_shadow_angle=180;
+			rowhighlight_shadow_radius=4;
+			rowhighlight_shadow_offset=1;
+			rowhighlight_shadow_color="#808080";
+		    rowhighlight_border_color="#b8b8b8";
 		    row_border_radius=6;
-		    rowhighlight_bgcolor = "#f0f0f0";
-		    rowhighlight_shadow_color = "#6080c0";
-		    rowhighlight_shadow_location = 'inside';
-		    rowhighlight_shadow_radius = 10;
+		    //rowhighlight_bgcolor = "#f0f0f0";
+		    //rowhighlight_shadow_color = "#6080c0";
+		    //rowhighlight_shadow_location = 'inside';
+		    //rowhighlight_shadow_radius = 10;
 		    //rowhighlight_bgcolor = "#fff090";
 		    textcolorhighlight = "#000000";
 		    inner_padding = 4;
@@ -145,9 +188,11 @@ advanced_search "widget/component-decl"
 		    row1_bgcolor = "#ffffff";
 		    row2_bgcolor = "#ffffff";
 
-		    ct_icon "widget/table-column" { title=""; width=32; fieldname=icon; type=image; image_maxwidth=24; image_maxheight=24; }
-		    ct_op "widget/table-column" { title=""; width=150; value=runclient(condition(:criteria_osrc:prevcnt = 0, 'Start With ', condition(:criteria_osrc:p_stage_op = 'A', 'Add With ', condition(:criteria_osrc:p_stage_op = 'E', 'Exclude ', 'Require '))) + :criteria_osrc:stage_label); style=bold; font_size=15; }
-		    ct_desc "widget/table-column" { title=""; width=250; fieldname=stage_description; wrap=yes; }
+		    ct_icon "widget/table-column" { title=""; width=32; fieldname=icon; type=image; image_maxwidth=24; image_maxheight=24; padding=2; }
+		    ct_op "widget/table-column" { title=""; width=335; value=runclient(condition(:criteria_osrc:prevcnt = 0, 'Start With ', condition(:criteria_osrc:p_stage_op = 'A', 'Add With ', condition(:criteria_osrc:p_stage_op = 'E', 'Exclude ', 'Require '))) + :criteria_osrc:stage_label); style=bold; font_size=15; caption_value=runclient(:criteria_osrc:stage_description); caption_textcolor=black; caption_style=italic; caption_font_size=10; wrap=yes; }
+		    //ct_desc "widget/table-column" { title=""; width=190; fieldname=stage_description; wrap=yes; padding=2; }
+		    //ct_cnt "widget/table-column" { title=""; width=50; value=runclient(condition(:criteria_osrc:res = 0, '-', '' + :criteria_osrc:res)); align=right; }
+		    ct_cnt "widget/table-column" { title=""; width=60; value=runclient(condition(:criteria_osrc:res = 0, '-', '' + :criteria_osrc:res)); style=bold; padding=2; bgcolor=runclient(condition(:criteria_osrc:res = 0, '', '#334466')); border_radius=9; align=center; textcolor=runclient(condition(:criteria_osrc:res = 0, 'black', 'white')); }
 
 
 		    criteria_op_detail "widget/table-row-detail"
@@ -161,7 +206,7 @@ advanced_search "widget/component-decl"
 			    form=criteria_form;
 			    ctl_type=dropdown;
 			    x=13; y=10;
-			    width=250;
+			    width=300;
 			    label_width=150;
 			    text = "Action:";
 			    height=24;
@@ -244,7 +289,7 @@ advanced_search "widget/component-decl"
 				    ctls_hbox "widget/hbox"
 					{
 					x=10;
-					y=runserver(:criteria_detail_repeat:height + 14);
+					y=runserver(:criteria_detail_repeat:height + 22);
 					height=24;
 					width=410;
 					align=center;
@@ -502,7 +547,8 @@ advanced_search "widget/component-decl"
 				1
 			    from
 				/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
-				expression ( '/apps/kardia/modules/crm/plugin_crm_search_' + :ss:p_stage_type + '.qy?search_id=' + :ss:p_search_id + '&cur_stage=' + :ss:p_search_stage_id + isnull('&prev_stage=' + (select :ss2:p_search_stage_id from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence order by :ss2:p_sequence desc limit 1) , ''))
+				expression ( '/apps/kardia/modules/crm/advanced_search_stage.qy?type=' + :ss:p_stage_type + '&search_id=' + :ss:p_search_id + '&cur_stage=' + :ss:p_search_stage_id + isnull('&prev_stage=' + (select :ss2:p_search_stage_id from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence order by :ss2:p_sequence desc limit 1) , ''))
+				--expression ( '/apps/kardia/modules/crm/plugin_crm_search_' + :ss:p_stage_type + '.qy?search_id=' + :ss:p_search_id + '&cur_stage=' + :ss:p_search_stage_id + isnull('&prev_stage=' + (select :ss2:p_search_stage_id from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence order by :ss2:p_sequence desc limit 1) , ''))
 			    where
 				:ss:p_search_id = :parameters:p_search_id
 			    order by
@@ -535,6 +581,7 @@ advanced_search "widget/component-decl"
 			session_id=runclient(:run_search_osrc:p_search_id);
 			stage_id=runclient(:run_search_osrc:p_search_stage_id);
 			}
+		    //on_complete_do_refresh_2 "widget/connector" { event=EndQuery; event_delay=0.5; target=criteria_osrc; action=Refresh; }
 		    }
 		}
 	    }
@@ -558,14 +605,14 @@ advanced_search "widget/component-decl"
 
 	    searches_hdr "widget/pane"
 		{
-		style=flat; height=14; 
+		style=flat; height=16; 
 		background="/apps/kardia/images/bg/lsblue_btngradient.png";
-		border_radius=4;
+		border_radius=5;
 
 		searches_label "widget/label"
 		    {
-		    x=0; y=0;
-		    width=249; height=13;
+		    x=0; y=1;
+		    width=249; height=15;
 		    text="Saved Searches";
 		    align=center;
 		    style=bold;
@@ -608,7 +655,7 @@ advanced_search "widget/component-decl"
 
 		searches_table "widget/table"
 		    {
-		    height=526;
+		    height=524;
 		    min_rowheight=16;
 		    max_rowheight=64;
 		    mode=dynamicrow;
@@ -620,14 +667,20 @@ advanced_search "widget/component-decl"
 		    colsep = 0;
 		    titlebar = no;
 		    row_border_radius=6;
+			rowhighlight_bgcolor = "#f0f0f0";
+			rowhighlight_shadow_angle=180;
+			rowhighlight_shadow_radius=4;
+			rowhighlight_shadow_offset=1;
+			rowhighlight_shadow_color="#808080";
+		    rowhighlight_border_color="#b8b8b8";
 		    //rowhighlight_bgcolor = "#fff090";
 		    //rowhighlight_bgcolor = white;
 		    //rowhighlight_shadow_color = "#f0e048";
 		    textcolorhighlight = "#000000";
-		    rowhighlight_bgcolor = "#f0f0f0";
-		    rowhighlight_shadow_color = "#6080c0";
-		    rowhighlight_shadow_location = 'inside';
-		    rowhighlight_shadow_radius = 10;
+		    //rowhighlight_bgcolor = "#f0f0f0";
+		    //rowhighlight_shadow_color = "#6080c0";
+		    //rowhighlight_shadow_location = 'inside';
+		    //rowhighlight_shadow_radius = 10;
 		    inner_padding = 4;
 		    cellvspacing = 2;
 		    row1_bgcolor = "#ffffff";

@@ -1,0 +1,12 @@
+[Unit]
+Description=Centrallix Service
+After=syslog.target network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/kardia.sh daemonStart
+ExecStop=/usr/local/bin/kardia.sh daemonStop
+PIDFile=/var/run/centrallix.pid
+
+[Install]
+WantedBy=multi-user.target

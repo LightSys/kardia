@@ -16,6 +16,7 @@ edit_file "widget/component-decl"
 
     collaborator_osrc "widget/parameter" { type=object; }
     profile_osrc "widget/parameter" { type=object; }
+    profile "widget/parameter" { type=object; }
 
     autosave_timer "widget/timer"
 	{
@@ -45,19 +46,46 @@ edit_file "widget/component-decl"
 	x=0; y=0; width=700; height=580;
 	spacing=8;
 
-	file_title_label "widget/label"
+	file_title_hbox "widget/hbox"
 	    {
-	    height=16;
-	    font_size=16;
-	    style=bold;
-	    value=runclient(:profile_osrc:partnername + ': ' + :fi_osrc:e_title);
-	    }
+	    height=36;
+	    spacing=10;
 
-	file_subtitle_label "widget/label"
-	    {
-	    height=12;
-	    font_size=12;
-	    value=runclient(:fi_osrc:e_current_filename + ', originally by ' + :fi_osrc:uploadername + ' as ' + :fi_osrc:e_orig_filename);
+	    file_title_left_vbox "widget/vbox"
+		{
+		width=560;
+		spacing=8;
+
+		file_title_label "widget/label"
+		    {
+		    height=16;
+		    font_size=16;
+		    style=bold;
+		    value=runclient(:profile_osrc:partnername + ': ' + :fi_osrc:e_title);
+		    }
+
+		file_subtitle_label "widget/label"
+		    {
+		    height=12;
+		    font_size=12;
+		    value=runclient('File "' + :fi_osrc:e_current_filename + '", originally by ' + :fi_osrc:uploadername + ' as "' + :fi_osrc:e_orig_filename + '"');
+		    }
+		}
+
+	    back_to_profile "widget/textbutton"
+		{
+		width=130;
+		fl_width=0;
+		height=24;
+		text="Back to Profile";
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+		enabled=runclient(:profile_osrc:p_partner_key is not null);
+
+		on_back "widget/connector" { event=Click; target=profile; action=SelectPartner; partner_key=runclient(:profile_osrc:p_partner_key); }
+		}
 	    }
 
 	fi_osrc "widget/osrc"

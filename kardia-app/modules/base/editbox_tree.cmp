@@ -6,6 +6,7 @@ editbox_tree "widget/component-decl"
     expose_events_for = eb;
     expose_actions_for = eb;
     expose_properties_for = eb;
+    apply_hints_to = eb;
 
     popup_width "widget/parameter" { type=integer; default=250; }
     popup_height "widget/parameter" { type=integer; default=300; }

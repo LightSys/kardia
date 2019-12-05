@@ -47,6 +47,8 @@ fund_balance "system/report"
 			cc_desc = max(condition(:c:a_cost_center == :c:a_bal_cost_center or :this:showsubsid, :c:a_cc_desc, '')),
 			:c:a_bal_cost_center,
 			:c:a_restricted_type,
+			:c:a_is_posting,
+			abssum = sum(abs(:tt:a_amount)),
 			cbal = sum(condition(:a:a_acct_type == 'E' or :a:a_acct_type == 'R' or :a:a_acct_type == 'Q', condition(:this:invert, $0 - :tt:a_amount, :tt:a_amount), $0.00)),
 			bbal = isnull(sum(condition((:tt:a_transaction_type = 'B' or :tt:a_period < :this:ref_period) and (:a:a_acct_type == 'E' or :a:a_acct_type == 'R' or :a:a_acct_type == 'Q'), condition(:this:invert, $0 - :tt:a_amount, :tt:a_amount), $0.00)), $0.00),
 			oldbbal = isnull(sum(condition(:tt:a_transaction_type = 'B' and (:a:a_acct_type == 'E' or :a:a_acct_type == 'R' or :a:a_acct_type == 'Q'), condition(:this:invert, $0 - :tt:a_amount, :tt:a_amount), $0.00)), $0.00) +
@@ -66,6 +68,11 @@ fund_balance "system/report"
 			" + condition(:this:cc_class is null, "", "and :c:a_cost_center_class = :this:cc_class") + "
 		group by
 			" + condition(:this:showsubsid, ":c:a_cost_center", ":c:a_bal_cost_center") + "
+		having
+			:a_is_posting = 1 or
+			:cbal != $0 or
+			:bbal != $0 or
+			:abssum != $0
 		");
 
 	sum_b "report/aggregate" { compute="sum(:bbal)"; reset=0; }

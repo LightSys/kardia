@@ -124,7 +124,8 @@ popup_tree_list "widget/component-decl"
 	    event_condition = runclient(:popup:is_visible and :Name = 'tab' and char_length(:editbox:content) > 0 and charindex(upper(:editbox:content), upper(:tree:selected_label)) > 0);
 	    target = editbox;
 	    action = SetValue;
-	    Value = runclient(substring(:tree:selected_name, 1, condition(charindex('|', :tree:selected_name) > charindex(' ', :tree:selected_name) and charindex(' ', :tree:selected_name) > 0, charindex(' ', :tree:selected_name), charindex('|', :tree:selected_name)) - 1));
+	    //Value = runclient(substring(:tree:selected_name, 1, condition(charindex('|', :tree:selected_name) > charindex(' ', :tree:selected_name) and charindex(' ', :tree:selected_name) > 0, charindex(' ', :tree:selected_name), charindex('|', :tree:selected_name)) - 1));
+	    Value = runclient(substring(:tree:selected_name, 1, condition(charindex('|', :tree:selected_name) > charindex(' ', :tree:selected_name) and charindex(' ', :tree:selected_name) > 0, charindex(' ', :tree:selected_name), condition(charindex('|', :tree:selected_name) > 0, charindex('|', :tree:selected_name) - 1, char_length(:tree:selected_name)))));
 	    }
 	kp_tab2 "widget/connector"
 	    {
@@ -181,23 +182,27 @@ popup_tree_list "widget/component-decl"
 
 		    clickitem1 "widget/connector"
 			{
-			event_condition = runclient(charindex('|', :Name) > 0 or charindex(' ', :Name) > 0);
+			//event_condition = runclient(charindex('|', :Name) > 0 or charindex(' ', :Name) > 0);
+			event_condition = runclient(:Name != :Label);
+			//event_confirm=runclient(:Label);
 			event = "ClickItem";
 			target = editbox;
 			action = "SetValue";
-			Value = runclient(substring(:Name, 1, condition(charindex('|', :Name) > charindex(' ', :Name) and charindex(' ', :Name) > 0, charindex(' ', :Name), charindex('|', :Name)) - 1));
+			Value = runclient(substring(:Name, 1, condition(charindex('|', :Name) > charindex(' ', :Name) and charindex(' ', :Name) > 0, charindex(' ', :Name), condition(charindex('|', :Name) > 0, charindex('|', :Name) - 1, char_length(:Name)))));
 			}
 		    clickitem2 "widget/connector"
 			{
 			event = "ClickItem";
-			event_condition = runclient((charindex('|', :Name) > 0 or charindex(' ', :Name) > 0) and charindex('-', :tree:selected_label) > 0);
+			//event_condition = runclient((charindex('|', :Name) > 0 or charindex(' ', :Name) > 0) and charindex('-', :tree:selected_label) > 0);
+			event_condition = runclient(:Name != :Label);
 			target = editbox;
 			action = SetValueDescription;
 			Description = runclient(substring(:tree:selected_label, charindex('-', :tree:selected_label) + 2));
 			}
 		    clickitem3 "widget/connector"
 			{
-			event_condition = runclient(charindex('|', :Name) > 0 or charindex(' ', :Name) > 0);
+			//event_condition = runclient(charindex('|', :Name) > 0 or charindex(' ', :Name) > 0);
+			event_condition = runclient(:Name != :Label);
 			event = "ClickItem";
 			target = popup;
 			action = "Close";

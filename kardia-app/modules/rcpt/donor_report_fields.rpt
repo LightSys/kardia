@@ -54,6 +54,7 @@ donor_report "system/report"
     end_period "report/parameter" { type=string; }
     min_total "report/parameter" { type=integer; }  // FIXME - money type
     max_total "report/parameter" { type=integer; }  // FIXME - money type
+    gift_type "report/parameter" { type=string; }  // FIXME - money type
     include_states "report/parameter" { type=string; }
     exclude_states "report/parameter" { type=string; }
     comment_text "report/parameter" { type=string; }
@@ -244,6 +245,7 @@ donor_report "system/report"
 			" + condition(:this:include_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_include_qy:cclist) > 0 and") + "
 			" + condition(:this:exclude_funds is null, "", "charindex(',' + rtrim(:i:a_cost_center) + ',', :cc_exclude_qy:cclist) == 0 and") + "
 			" + condition(:this:comment_text is null, "", "charindex(upper(:this:comment_text), upper(:i:a_comment)) > 0 and") + "
+			" + condition(:this:gift_type is null, "", "charindex(:i:a_dn_gift_type, :this:gift_type) > 0 and") + "
 			:p:p_partner_key =* :i:p_dn_donor_partner_id and
 			:pl:p_partner_key =* :p:p_partner_key and
 			:pl:p_revision_id = 0 and

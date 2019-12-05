@@ -6,6 +6,7 @@ button_tab "widget/component-decl"
     image "widget/parameter" { type=string; }
     text "widget/parameter" { type=string; deploy_to_client=yes; }
     active "widget/parameter" { type=integer; default=0; }
+    page_id "widget/parameter" { type=integer; default=1; deploy_to_client=yes; }
 
     expose_events_for = btn;
 
@@ -45,6 +46,7 @@ button_tab "widget/component-decl"
     on_SetBackground "widget/connector"
 	{
 	event=SetBackground;
+	event_condition=runclient(isnull(:PageID, :page_id:value) == :page_id:value);
 	target=pane;
 	action=SetBackground;
 	Image=runclient(:Image);
@@ -52,8 +54,8 @@ button_tab "widget/component-decl"
     on_SetBackground2 "widget/connector"
 	{
 	event=SetBackground;
+	event_condition=runclient(isnull(:PageID, :page_id:value) == :page_id:value and :Image == '/apps/kardia/images/bg/lsblue_gradient.png');
 	target=pane;
-	event_condition=runclient(:Image == '/apps/kardia/images/bg/lsblue_gradient.png');
 	action=Point;
 	X=24;
 	Y=86;
@@ -63,8 +65,8 @@ button_tab "widget/component-decl"
     on_SetBackground3 "widget/connector"
 	{
 	event=SetBackground;
+	event_condition=runclient(isnull(:Which, :page_id:value) == :page_id:value and :Image != '/apps/kardia/images/bg/lsblue_gradient.png');
 	target=pane;
-	event_condition=runclient(:Image != '/apps/kardia/images/bg/lsblue_gradient.png');
 	action=Point;
 	}
 

@@ -14,7 +14,7 @@ p_person_component "widget/component-decl"
     p_person_osrc "widget/osrc"
         {
         sql="SELECT :p_partner_key, :p_previous_surname, :p_date_of_birth, :p_marital_status, :p_academic_title, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by FROM /apps/kardia/data/Kardia_DB/p_person/rows";
-        baseobj = "//apps/kardia/data/Kardia_DB/p_person/rows";
+        baseobj = "/apps/kardia/data/Kardia_DB/p_person/rows";
         replicasize=6;
         readahead=6;
 	autoquery=never;

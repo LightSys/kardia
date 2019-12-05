@@ -9,25 +9,22 @@ ledger, payroll, gift receipting, and checking.
 
 === LICENSE ===
 
-Copyright (C) 2001-2011 LightSys Technology Services and Kardia Contributors.
+Copyright (C) 2001-2019 LightSys Technology Services and Kardia Contributors.
 
 This program is Free Software; this software is made available under the GNU
 General Publlic License, version 2.  A copy is included in this distribution
 in the file "COPYING".  You may also use this software under any later
 version of the GNU GPL published by the Free Software Foundation.
 
+Geonames postal code gazetteer (within kardia-app/data/gazetteer) is licensed
+under a Creative Commons Attribution 3.0 License.
+
 
 === DOWNLOAD ===
 
 You may download this software at:
 
-    http://sourceforge.net/projects/kardia
-
-This repository is incomplete.  It provides some files to look at in the
-meantime until we get to a "working build" state.  We have initially built
-this software for a specific organization, where the software has been "live"
-for two years now.  It is taking us a little bit of time to "genericize"
-Kardia; bear with us. :)
+    https://github.com/LightSys/kardia
 
 
 === DEPENDENCIES ===
@@ -43,13 +40,10 @@ for Centrallix; you'll need to check out the source and build from source.
 You will need a database backend to use Kardia.  At present, there are two
 choices available:
 
-    - Sybase ASE (the Express Edition for Linux is free of charge).
-      This is what we used at our initial client site and has the most
-      stable support at present.
-
     - MySQL (installed by default on most Linux distributions; also
-      available for Mac and Windows and other platforms).  The MySQL
-      support is newer and not as well-tested (yet).
+      available for Mac and Windows and other platforms).
+
+    - Sybase ASE (the Express Edition for Linux is free of charge).
 
 
 === INSTALLATION ===

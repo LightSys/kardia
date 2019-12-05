@@ -9,7 +9,7 @@ alter table p_partner
 go
 
 alter table p_partner
-	add constraint p_surname_clustered_idx unique clustered (p_surname, p_given_name, p_org_name, p_partner_key)
+	add constraint p_surname_clustered_idx unique clustered (p_surname, p_given_name, p_preferred_name, p_org_name, p_partner_key)
 go
 
 print "working on table p_partner_key_cnt"
@@ -116,6 +116,12 @@ print "working on table p_country"
 
 alter table p_country
 	add constraint p_country_code_pk primary key clustered (p_country_code)
+go
+
+print "working on table p_pol_division"
+
+alter table p_pol_division
+	add constraint p_poldiv_pk primary key clustered (p_country_code, p_pol_division)
 go
 
 print "working on table p_banking_details"
@@ -366,6 +372,12 @@ print "working on table e_data_item_type"
 
 alter table e_data_item_type
 	add constraint e_ditype_pk primary key clustered (e_data_item_type_id)
+go
+
+print "working on table e_data_item_type_value"
+
+alter table e_data_item_type_value
+	add constraint e_dataitemval_pk primary key clustered (e_data_item_type_id, e_data_item_value_id)
 go
 
 print "working on table e_data_item_group"
@@ -897,7 +909,7 @@ go
 print "working on table a_descriptives_hist"
 
 alter table a_descriptives_hist
-	add constraint a_descrhist_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_amount)
+	add constraint a_descrhist_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id)
 go
 
 print "working on table a_subtrx_cashdisb"
@@ -1174,4 +1186,10 @@ print "working on table s_global_search"
 
 alter table s_global_search
 	add constraint s_global_search_pk primary key clustered (s_search_id, s_username, s_search_res_id)
+go
+
+print "working on table s_stats_cache"
+
+alter table s_stats_cache
+	add constraint s_stats_cache_pk primary key clustered (s_stat_type, s_stat_group, s_stat)
 go

@@ -191,6 +191,18 @@ crm "widget/component-decl"
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		partnername=runclient(:profile_cmp:partnername);
 		}
+	    newdata_cn "widget/connector"
+		{
+		event=ButtonPressed;
+		event_condition=runclient(:Button == '#Data');
+		target=data_popover;
+		action=Open;
+		PointAt=runclient(:Origin);
+		PointSide=runclient(condition(:show_profile_only:value, "left", "top"));
+		partner=runclient(:profile_cmp:p_partner_key);
+		collaborator=runclient(:collaborator_osrc:p_partner_key);
+		partnername=runclient(:profile_cmp:partnername);
+		}
 	    newfile_cn "widget/connector"
 		{
 		event=ButtonPressed;
@@ -241,6 +253,13 @@ crm "widget/component-decl"
 		collaborator_osrc = collaborator_osrc;
 
 		on_collabchange2 "widget/connector" { event=CollabChanged; target=profile_cmp; action=RefreshCollab; }
+
+		onResults "widget/connector"
+		    {
+		    event=AdvancedResultsLoaded;
+		    target=profile_cmp;
+		    action=UpdateSearchCounts;
+		    }
 
 		onSetNumber "widget/connector"
 		    {
@@ -321,6 +340,13 @@ crm "widget/component-decl"
 		    action=AdvancedResults;
 		    session_id=runclient(:session_id);
 		    stage_id=runclient(:stage_id);
+		    }
+		onAdvancedResults2 "widget/connector"
+		    {
+		    event=AdvancedResults;
+		    target=iconbar;
+		    action=SetTab;
+		    PageID=3;
 		    }
 
 		on_tune "widget/connector"
@@ -540,6 +566,15 @@ crm "widget/component-decl"
 	path="popover_track.cmp";
 	on_trk_upd1 "widget/connector" { event=TrackUpdated; target=profile_cmp; action=Refresh; }
 	on_trk_upd2 "widget/connector" { event=TrackUpdated; target=sidebar_cmp; action=Refresh; }
+	}
+
+    data_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1000; height=600;
+	path="popover_data.cmp";
+	on_data_upd "widget/connector" { event=DataUpdated; target=profile_cmp; action=Refresh; }
+	on_data_edit "widget/connector" { event=DataNeedsEditing; target=profile_cmp; action=EditForm; group=runclient(:group); }
 	}
 
     file_popover "widget/component"

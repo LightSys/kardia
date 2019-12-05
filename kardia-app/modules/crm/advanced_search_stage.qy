@@ -1,0 +1,146 @@
+$Version=2$
+advanced_search_stage "system/query"
+    {
+    // This query object provides the overall search stage operation,
+    // including the logic to add/require/exclude results.
+    //
+    require_endorsement="system:from_application";
+
+    search_id "query/parameter" { type=integer; }
+    cur_stage "query/parameter" { type=integer; }
+    prev_stage "query/parameter" { type=integer; }
+    type "query/parameter" { type=string; }
+
+    sql = " -- First, we need to get our search stage information and config.
+	    declare collection advsearch scope application;
+	    declare collection iresult scope application;
+	    declare object stage;
+	    select
+		:stage:op = :s:p_stage_op
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
+		/apps/kardia/modules/crm/advanced_search_params.qyp sc
+	    where
+		:s:p_search_id = :parameters:search_id and
+		:s:p_search_stage_id = :parameters:cur_stage and
+		:sc:p_search_id = :s:p_search_id and
+		:sc:p_search_stage_id = :s:p_search_stage_id
+	    ;
+	    select
+		:stage:prev_cnt = count(1)
+	    from
+		collection advsearch sr
+	    where
+		:sr:p_search_session_id = :parameters:search_id and
+		:sr:p_search_stage_id = :parameters:prev_stage
+	    ;
+	    select
+		:stage:prev_keys = sum(:p_partner_key + ',') - ','
+	    from
+		collection advsearch sr
+	    where
+		:sr:p_search_session_id = :parameters:search_id and
+		:sr:p_search_stage_id = :parameters:prev_stage and
+		:stage:op = 'R' and
+		:stage:prev_cnt <= 100 -- this is a tuneable value
+	    ;
+
+	    delete from
+		collection iresult
+	    where
+		:p_search_session_id = :parameters:search_id and
+		:p_search_stage_id = :parameters:cur_stage
+	    ;
+
+	    -- Run the subquery to get the stage results
+	    select
+		1
+	    from
+		expression('/apps/kardia/modules/crm/plugin_crm_search_' + :parameters:type + '.qy?search_id=' + :parameters:search_id + '&cur_stage=' + :parameters:cur_stage + isnull('&prev_keys=' + :stage:prev_keys, '') )
+	    having
+		1=0
+	    ;
+
+	    -- Now create this stage's results.
+	    -- Pass #1: copy previous results if we're ADDING.
+	    insert
+		collection advsearch sr
+	    select
+		:sr:p_partner_key,
+		:sr:p_search_session_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = ''
+	    from
+		collection advsearch sr
+	    where
+		:sr:p_search_session_id = :parameters:search_id and
+		:sr:p_search_stage_id = :parameters:prev_stage and
+		:stage:op = 'A'
+	    ;
+
+	    -- Pass #2: generate new results if we're ADDING
+	    insert
+		collection advsearch
+	    select
+		:ir:p_partner_key,
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = ''
+	    from
+		collection iresult ir
+	    where
+		:stage:op = 'A' and
+		:ir:p_search_session_id = :parameters:search_id and
+		:ir:p_search_stage_id = :parameters:cur_stage
+	    on duplicate
+		:p_partner_key,
+		:p_search_session_id,
+		:p_search_stage_id
+	    update set
+		:p_partner_key = :p_partner_key
+	    ;
+
+	    -- Pass #3: filter existing results if we're restricting
+	    insert
+		collection advsearch
+	    select
+		:ir:p_partner_key,
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = ''
+	    from
+		collection advsearch sr,
+		collection iresult ir
+	    where
+		:sr:p_search_session_id = :parameters:search_id and
+		:sr:p_search_stage_id = :parameters:prev_stage and
+		:ir:p_search_session_id = :parameters:search_id and
+		:ir:p_search_stage_id = :parameters:cur_stage and
+		:stage:op = 'R' and
+		:sr:p_partner_key = :ir:p_partner_key
+	    ;
+
+	    -- Pass #4: filter existing results if we're excluding
+	    insert
+		collection advsearch
+	    select
+		:sr:p_partner_key,
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage,
+		p_sortkey = ''
+	    from
+		collection advsearch sr,
+		collection iresult ir
+	    where
+		:sr:p_search_session_id = :parameters:search_id and
+		:sr:p_search_stage_id = :parameters:prev_stage and
+		:ir:p_search_session_id = :parameters:search_id and
+		:ir:p_search_stage_id = :parameters:cur_stage and
+		:stage:op = 'E' and
+		:sr:p_partner_key *= :ir:p_partner_key
+	    group by
+		:sr:p_partner_key
+	    having
+		count(:ir:p_partner_key) = 0
+	    ";
+    }

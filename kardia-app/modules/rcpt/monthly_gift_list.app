@@ -21,6 +21,7 @@ monthly_gift_list "widget/page"
 	auto_focus = no;
 
 	qy_cn "widget/connector" { event=Query; target=f_period; action=SetValue; Value=runclient(:monthly_gift_list:period); }
+	qy_cn2 "widget/connector" { event=Query; target=f_show; action=SetValue; Value=runclient('PS'); }
 
 	vb2 "widget/vbox"
 	    {
@@ -42,6 +43,7 @@ monthly_gift_list "widget/page"
 
 		sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, (:a_period == " + quote(:this:period) + ") from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_parent_period desc, :a_period asc");
 		}
+	    f_show "widget/component" { path="/sys/cmp/smart_field.cmp"; field=show; height=24; width=350; ctl_type=dropdown; text="Show:"; label_width=120; form=rpt_form; sql = "select label='Selections and Publications', value='PS', def=1; select label='Selections', value='S', def=0; select label='Publications', value='P', def=0"; }
 	    sep "widget/autolayoutspacer" { height=4; }
 	    //f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=rpt_form; label_width=120; }
 	    f_level "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='report_level'; ctl_type=dropdown; text='Detail Level:'; sql=runserver("select '' + :a_reporting_level + ' - ' + :a_level_rpt_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows where :a_ledger_number = " + quote(:this:ledger)); form=rpt_form; label_width=120; }

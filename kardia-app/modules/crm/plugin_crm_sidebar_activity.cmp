@@ -18,6 +18,7 @@ activity_list "widget/component-decl"
 
     refresh_timer "widget/timer"
 	{
+	condition=0;
 	auto_start=0;
 	auto_reset=1;
 	msec=60000;
@@ -46,10 +47,11 @@ activity_list "widget/component-decl"
 	replicasize=2;
 	readahead=2;
 	indicates_activity=no;
+	refresh_interval=30000;
 
 	//on_endquery "widget/connector" { event=EndQuery; target=activity_data_osrc; action=QueryParam; e_activity_group_id=runclient(:activity_osrc:activity_group_id); }
 	on_endquery "widget/connector" { event=EndQuery; target=activity_data_osrc; action=Refresh; }
-	on_endquery_start_timer "widget/connector" { event=EndQuery; target=refresh_timer; action=SetTimer; Time=30000; AutoReset=1; }
+	on_endquery_start_timer "widget/connector" { event=EndQuery; target=refresh_timer; action=SetTimer; Time=30000; AutoReset=1; condition = 0; }
 
 	set_cnt_on_load "widget/connector"
 	    {
@@ -70,7 +72,9 @@ activity_list "widget/component-decl"
 	activity_data_osrc "widget/osrc"
 	    {
 	    activity_id "widget/parameter" { type=integer; default=runclient(:activity_osrc:activity_group_id); }
-	    sql = " select
+	    sql = " -- declare collection e_activity scope application;
+	    
+		    select
 			:e:p_partner_key,
 			name = :e:e_reference_info,
 			:e:e_activity_date,
@@ -127,6 +131,7 @@ activity_list "widget/component-decl"
 		min_rowheight=16;
 		max_rowheight=72;
 		allow_selection = yes;
+		allow_deselection = no;
 		show_selection = yes;
 		initial_selection = no;
 		demand_scrollbar = yes;
