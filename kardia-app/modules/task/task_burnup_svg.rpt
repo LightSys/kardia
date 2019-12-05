@@ -110,7 +110,7 @@ task_burnup_svg "system/report"
 		;
 
 		select
-		    :info:image_height = isnull(:this:image_height, :this:image_width * 2 / 3)
+		    :info:image_height = isnull(:this:image_height, :this:image_width * 5 / 8)
 		;
 
 		select
@@ -225,7 +225,7 @@ task_burnup_svg "system/report"
 			    //'    <line x1="0" y1="0" x2="0" y2="' + :overall_qy:image_height + '" style="stroke:#334466; stroke-width:2px;"/>\n' + 
 			    //'    <line x1="0" y1="' + :overall_qy:image_height + '" x2="' + :overall_qy:image_width + '" y2="' + :overall_qy:image_height + '" style="stroke:#334466; stroke-width:2px;"/>\n' +
 			    '    <line x1="0" y1="' + :overall_qy:image_height + '" x2="' + :overall_qy:image_width + '" y2="0" style="stroke:#496293; stroke-width:1px;"/>\n' +
-			    '    <line x1="0" y1="' + :overall_qy:image_height + '" x2="' + :overall_qy:image_width + '" y2="' + :overall_qy:y_task + '" style="stroke:' + :overall_qy:color + '; stroke-width:2px; stroke-dasharray:3,2;"/>\n'
+			    '    <line x1="0" y1="' + :overall_qy:image_height + '" x2="' + :overall_qy:image_width + '" y2="' + :overall_qy:y_task + '" style="stroke:' + :overall_qy:color + '; stroke-width:2px; stroke-dasharray:2,3;"/>\n'
 			    );
 	    }
 
@@ -238,7 +238,7 @@ task_burnup_svg "system/report"
 		{
 		x=0; width=255; height=0;
 		value=runserver(condition(:data_points_qy:rowid == 1,
-				'    <path stroke="' + :overall_qy:color + '" stroke-width="2" fill="none" d="M ' + :dp_geom_qy:x + ' ' + :dp_geom_qy:y + ' ',
+				'    <path stroke="' + :overall_qy:color + '" stroke-width="2" fill="none" d="M 0 ' + :overall_qy:image_height + ' L ' + :dp_geom_qy:x + ' ' + :dp_geom_qy:y + ' ',
 				'L ' + :dp_geom_qy:x + ' ' + :dp_geom_qy:y + ' ')
 			);
 		}

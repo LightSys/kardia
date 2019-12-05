@@ -679,15 +679,31 @@ manage_project "widget/component-decl"
 					    }
 					}
 
-				    newparticipant_btn "widget/textbutton"
+				    proj_btn_hbox "widget/hbox"
 					{
-					width=170;
-					fl_width=0;
 					height=24;
-					text = "Add a Team Member...";
-					enabled = runclient(not :part_form:is_discardable);
+					spacing=20;
 
-					on_newpart "widget/connector" { event=Click; target=add_part; action=Open; IsModal=1; }
+					newparticipant_btn "widget/textbutton"
+					    {
+					    width=170;
+					    fl_width=0;
+					    height=24;
+					    text = "Add a Team Member...";
+					    enabled = runclient(not :part_form:is_discardable);
+
+					    on_newpart "widget/connector" { event=Click; target=add_part; action=Open; IsModal=1; }
+					    }
+
+					allproj_btn "widget/textbutton"
+					    {
+					    width=170;
+					    fl_width=0;
+					    height=24;
+					    text = "View All Projects";
+					    enabled = runclient(not :part_form:is_discardable);
+					    on_allproj "widget/connector" { event=Click; target=page; action=LoadPage; Source="/apps/kardia/modules/task/"; }
+					    }
 					}
 				    }
 				}
@@ -1179,6 +1195,7 @@ manage_project "widget/component-decl"
 				    height=282;
 				    //rowheight=20;
 				    initial_selection=noexpand;
+				    allow_deselection=yes;
 				    nodata_message="No tasks yet...";
 
 				    t_tkname "widget/table-column" { title="Task"; fieldname=t_task_label; style=bold; width=100; }

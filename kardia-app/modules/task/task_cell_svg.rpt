@@ -96,7 +96,7 @@ task_cell_svg "system/report"
 		    :block:width = :this:image_width / :block:oneside
 		;
 		select
-		    :block:height = :block:width * 2 / 3
+		    :block:height = :block:width * 5 / 8
 		;
 
 		select
