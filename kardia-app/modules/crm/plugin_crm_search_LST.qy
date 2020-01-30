@@ -20,7 +20,8 @@ plugin_crm_search_LST "system/query"
 		:stage:enddate = convert(datetime,:sc:end),
 		:stage:adduser = :sc:adduser,
 		:stage:incl_lists = :sc:incl_lists,
-		:stage:searchtype = :sc:searchtype
+		:stage:searchtype = :sc:searchtype,
+		:stage:membstat = isnull(:sc:membstat, 'A')
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
 		/apps/kardia/modules/crm/advanced_search_params.qyp sc
@@ -48,6 +49,7 @@ plugin_crm_search_LST "system/query"
 		(:stage:adduser is null or :m:s_created_by = :stage:adduser) and
 		(:stage:startdate is null or :m:s_date_created >= :stage:startdate) and
 		(:stage:enddate is null or :m:s_date_created <= :stage:enddate) and
+		(:stage:membstat is null or charindex(:m:m_membership_status, :stage:membstat) > 0) and
 		(:parameters:prev_keys is null or charindex(',' + rtrim(:m:p_partner_key) + ',', ',' + :parameters:prev_keys + ',') > 0)
 	    group by
 		:m:p_partner_key
