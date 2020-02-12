@@ -5,12 +5,13 @@ Fund Balances,RPT,fund_balance.app,"Fund Balances (Equity, Revenue, and Expense)
 Transaction Report,RPT,transaction_report.app,GL Transactions by Various Criteria,
 Trial Balance,RPT,trial_balance.app,General Ledger Trial Balance,
 Fund Maintenance,APP,coamaint.app,Create and Edit Funds,
-GL Acct Maintenance,APP,acctmaint.app,Create and Edit GL Accounts,
+Account Maintenance,APP,acctmaint.app,Create and Edit GL Accounts,
 Batches,APP,batches.app,Enter and Manage GL (and other) batches,                                 
 Trial Balance - Ctl,RPT,trial_balance_ctl.app,General Ledger Trial Balance - Control Accts,""                             
 Revenue & Expense,RPT,inc_exp_balance.app,"Revenue and Expense by subfund, fund, or batch",""                                      
-GL Period Maintenance,APP,periodmaint.app,"Create, open, close, and archive accounting periods",                                 
+Period Maintenance,APP,periodmaint.app,"Create, open, close, and archive accounting periods",                                 
 Fund Manager Report,RPT,fundmgr_report.app,Report on all funds managed by a particular person,                                 
 Revenue & Expense Matrix,RPT,inc_exp_matrix.app,Revenue & Expense by Period and Classification,                                 
 Period Comparison,RPT,period_comparison.app,Revenue & Expense Period Comparison,                                        
 Liabilities,RPT,liabilities.app,Liabilities accrued and paid during period(s),                                 
+Transaction Research,APP,transaction_research.app,"Research GL transactions, journals, and batches."                                     
