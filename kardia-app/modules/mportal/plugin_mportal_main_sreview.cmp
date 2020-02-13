@@ -579,6 +579,7 @@ support_review "widget/component-decl"
 		hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
 		rowcache_size=200;
 		nodata_message = runclient(condition(:support_osrc:cx__pending, "No support information available.", "Looking up your supporters..."));
+		type_to_find = yes;
 
 		st_name "widget/table-column" { title = "Supporter"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:support_osrc:p_donor_partner_key + isnull(' - ' + :support_osrc:p_city + ', ' + :support_osrc:p_state_province, '')); }
 		st_amt "widget/table-column" { title = "Amount"; fieldname=a_amount; width=90; style=bold; font_size=16; caption_value=runclient(:support_osrc:interval_txt); align=right; caption_align=right; }

@@ -43,19 +43,24 @@ de_batches "widget/component-decl"
 			:b:a_batch_desc, 
 			:b:a_default_effective_date,
 			date_txt = substring(convert(string,:b:a_default_effective_date),1,11),
+			acct_desc = (select :a_acct_desc from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :de:a_ledger_number and :a:a_account_code = :de:a_account_code),
+			:de:a_account_code,
 			:b:s_date_created,
 			:b:s_created_by,
 			:b:s_date_modified,
 			:b:s_modified_by,
 			:b:a_period,
-			drec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows de where :de:a_batch_number = :b:a_batch_number and :de:a_ledger_number = :b:a_ledger_number limit 1),0),
-			dpost = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows de where :de:a_batch_number = :b:a_batch_number and :de:a_ledger_number = :b:a_ledger_number and :de:a_posted = 1 limit 1),0),
+			drec = condition(:de:a_batch_number is null, 0, 1),
+			dpost = isnull(:de:a_posted, 0),
 			glrec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1),0),
-			damt = (select sum(:de:a_amount) from /apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows de where :de:a_batch_number = :b:a_batch_number and :de:a_ledger_number = :b:a_ledger_number)
+			damt = :de:a_amount
 		FROM 
-			/apps/kardia/data/Kardia_DB/a_batch/rows b
+			identity /apps/kardia/data/Kardia_DB/a_batch/rows b,
+			/apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows de
 		WHERE
-			:b:a_origin = 'DE'
+			:b:a_origin = 'DE' and
+			:de:a_ledger_number =* :b:a_ledger_number and
+			:de:a_batch_number =* :b:a_batch_number
 		ORDER BY
 			:b:a_batch_number
 		");
@@ -154,7 +159,7 @@ de_batches "widget/component-decl"
 	    visible=no;
 
 	    preload_cc_on_open "widget/connector" { event=Open; target=gl_post_cc; action=SetValue; Value=runclient(:cash_cc:value); }
-	    preload_acct_on_open "widget/connector" { event=Open; target=gl_post_acct; action=SetValue; Value=runclient(:cash_toacct:value); }
+	    preload_acct_on_open "widget/connector" { event=Open; target=gl_post_acct; action=SetValue; Value=runclient(:dep_osrc:a_account_code); }
 	    preload_pendacct_on_open "widget/connector" { event=Open; target=gl_post_pendacct; action=SetValue; Value=runclient(:cash_fromacct:value); }
 
 	    gl_post_vbox "widget/vbox"
@@ -361,7 +366,8 @@ de_batches "widget/component-decl"
 		mode=dynamicrow;
 
 		t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=55; }
-		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=180; }
+		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=120; }
+		t_acct "widget/table-column" { title="Account"; fieldname="acct_desc"; width=60; }
 		t_amt "widget/table-column" { title="Amount"; fieldname="damt"; width=75; align=right; }
 		t_dt "widget/table-column" { title="Date"; fieldname="date_txt"; width=75; }
 		t_user "widget/table-column" { title="User"; fieldname="s_created_by"; width=50; }

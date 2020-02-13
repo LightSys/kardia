@@ -17,19 +17,11 @@ coamaint "widget/component-decl"
 	    {
 	    width=250; spacing=8;
 
-	    searchlbl_pane "widget/pane"
+	    searchlbl "widget/component"
 		{
-		height=20; width=250;
-		widget_class="label";
-		border_color = "#153f5f";
-
-		searchlbl "widget/label"
-		    {
-		    x=4;y=0;width=248;height=18;
-		    widget_class="label";
-		    align=left;
-		    text = "Search Funds";
-		    }
+		path="/apps/kardia/modules/base/section_label.cmp";
+		height=20;
+		text = "Search Funds";
 		}
 
 	    //searchlbl "widget/label" { height=20; text="Search Funds:"; align=center; style=bold; font_size=12; }
@@ -117,19 +109,11 @@ coamaint "widget/component-decl"
 	    {
 	    width=514; spacing=8;
 
-	    sublbl_pane "widget/pane"
+	    sublbl "widget/component"
 		{
-		height=20; width=514;
-		widget_class="label";
-		border_color = "#153f5f";
-
-		sublbl "widget/label"
-		    {
-		    x=4;y=0;width=512;height=18;
-		    widget_class="label";
-		    align=left;
-		    value = runclient("Subsidiary Funds" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
-		    }
+		path="/apps/kardia/modules/base/section_label.cmp";
+		height=20;
+		text = runclient("Subsidiary Funds" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
 		}
 	    //sublbl "widget/label" { height=20; text="Subsidiary Funds:"; align=center; style=bold; font_size=12; }
 
@@ -261,19 +245,12 @@ coamaint "widget/component-decl"
 			}
 		    }
 		}
-	    fundlbl_pane "widget/pane"
-		{
-		height=20; width=514;
-		widget_class="label";
-		border_color = "#153f5f";
 
-		fundlbl "widget/label"
-		    {
-		    x=4;y=0;width=512;height=18;
-		    widget_class="label";
-		    align=left;
-		    value = runclient(condition(:fund_form:form_mode == "New", "Creating a New " + condition(:adding_subfund:value,"Sub-Fund" + isnull(" of " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc, ""), "Fund"), "Editing Fund " + :fund_form:a_cost_center + " - " + :fund_form:a_cc_desc));
-		    }
+	    fundlbl "widget/component"
+		{
+		path="/apps/kardia/modules/base/section_label.cmp";
+		height=20;
+		text = runclient(condition(:fund_form:form_mode == "New", "Creating a New " + condition(:adding_subfund:value,"Sub-Fund" + isnull(" of " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc, ""), "Fund"), "Editing Fund " + :fund_form:a_cost_center + " - " + :fund_form:a_cc_desc));
 		}
 
 	    fund_form "widget/form"

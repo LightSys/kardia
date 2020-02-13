@@ -288,6 +288,7 @@ gifts "widget/component-decl"
 			    rowhighlight_shadow_angle=135;
 			    rowhighlight_bgcolor="#faf8ff";
 			    nodata_message = runclient(condition(:gifts_osrc:cx__pending, "No gifts available.", "Loading the past twelve months' gifts..."));
+			    type_to_find = yes;
 
 			    gt_name "widget/table-column" { title = "Donor Name"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:gifts_osrc:p_partner_key + isnull(' - ' + :gifts_osrc:p_city + ', ' + :gifts_osrc:p_state_province, '')); }
 			    gt_fund "widget/table-column" { title = "Fund"; fieldname=a_cost_center; width=80; style=bold; font_size=16; caption_value=runclient(:gifts_osrc:a_cc_desc); }
@@ -489,6 +490,7 @@ gifts "widget/component-decl"
 			    rowhighlight_shadow_angle=135;
 			    rowhighlight_bgcolor="#faf8ff";
 			    nodata_message = runclient(condition(:ygifts_osrc:cx__pending, "No gifts available.", "Loading the past twelve years' gifts..."));
+			    type_to_find = yes;
 
 			    ygt_name "widget/table-column" { title = "Donor Name"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:ygifts_osrc:p_partner_key + isnull(' - ' + :ygifts_osrc:p_city + ', ' + :ygifts_osrc:p_state_province, '')); }
 			    ygt_fund "widget/table-column" { title = "Fund"; fieldname=a_cost_center; width=80; style=bold; font_size=16; caption_value=runclient(:ygifts_osrc:a_cc_desc); }

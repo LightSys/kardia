@@ -360,6 +360,7 @@ annual_statement "system/report"
 			:g:p_donor_partner_id = :list_qy:p_donor_partner_id and
 			:g:a_posted = 1
 		ORDER BY
+			isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
 			:g:a_batch_number,
 			:g:a_gift_number
 		");

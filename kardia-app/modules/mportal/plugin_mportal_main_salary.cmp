@@ -63,6 +63,7 @@ salary "widget/component-decl"
 		    :pp:a_ledger_number = :pi:a_ledger_number and
 		    :pp:a_payroll_group_id = :pi:a_payroll_group_id and
 		    :pp:a_payroll_period = :pi:a_period and
+		    :pp:a_posted = 1 and
 		    datepart(year, :pp:a_pay_date) >= datepart(year, getdate()) - 1 and
 		    :pit:a_payroll_item_type_code = :pi:a_payroll_item_type_code and
 		    :pit:a_ledger_number = :pi:a_ledger_number
