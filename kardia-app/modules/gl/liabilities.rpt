@@ -54,6 +54,7 @@ liabilities "system/report"
 			:t:a_ledger_number = :this:ledger and
 			:t:a_period >= :this:ref_period and
 			:t:a_period <= :this:end_period and
+			:t:a_transaction_type != 'B' and
 			:t:a_account_code >= '2000' and
 			:t:a_account_code <= '2999' and
 			:a:a_ledger_number = :t:a_ledger_number and
@@ -88,6 +89,7 @@ liabilities "system/report"
 			:t:a_ledger_number = :this:ledger and
 			:t:a_period >= :this:ref_period and
 			:t:a_period <= :this:end_period and
+			:t:a_transaction_type != 'B' and
 			:t:a_account_code >= '2000' and
 			:t:a_account_code <= '2999' and
 			:a:a_ledger_number = :t:a_ledger_number and
