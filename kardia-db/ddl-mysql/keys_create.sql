@@ -358,6 +358,9 @@ alter table a_payroll
 alter table a_payroll_period
 	add constraint a_payperiod_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_period);
 
+alter table a_payroll_period_payee
+	add constraint a_payperiodpayee_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_period, a_payroll_id);
+
 alter table a_payroll_group
 	add constraint a_payroll_grp_pk primary key  (a_ledger_number, a_payroll_group_id);
 

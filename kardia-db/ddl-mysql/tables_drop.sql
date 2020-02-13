@@ -459,6 +459,10 @@ drop table a_payroll;
 drop table a_payroll_period;
 
 
+/* a_payroll_period_payee */
+drop table a_payroll_period_payee;
+
+
 /* a_payroll_group */
 drop table a_payroll_group;
 

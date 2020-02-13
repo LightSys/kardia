@@ -713,6 +713,11 @@ alter table a_payroll_period drop index a_payperiod_idx;
 /* go */
 
 
+/* a_payroll_period_payee */
+/* drop index a_payroll_period_payee.a_payperiodpayee_pk */ 
+/* go */
+
+
 /* a_payroll_group */
 /* drop index a_payroll_group.a_payroll_grp_pk */ 
 /* go */

@@ -2326,6 +2326,35 @@ create table a_payroll_period (
 );
 
 
+/* a_payroll_period_payee */
+
+create table a_payroll_period_payee (
+        a_ledger_number                       char(10)  not null,      /* ledger number (alphanumeric allowed) --  */
+        a_payroll_group_id                    integer  not null,       /* payroll group ID --  */
+        a_payroll_period                      char(12)  not null,      /* payroll period (alphanumeric allowed) --  */
+        a_payroll_id                          integer  not null,       /* Payee ID --  */
+        a_comment                             varchar(255)  null,      /* comments for this payee --  */
+        p_country_code                        char(2)  null,           /* country that this payee's withholdings are done for --  */
+        p_state_province                      char(2)  null,           /* state or province this payee's withholdings are done for. --  */
+        a_is_employee                         bit  not null,           /* whether this payee is an "employee" for legal purposes (employee vs 1099 in the US) --  */
+        a_is_fica                             bit  not null,           /* whether this payee uses FICA withholdings (1, US only), or SECA (0) --  */
+        a_is_exempt                           bit  not null,           /* whether this payee is exempt from wage and hour law --  */
+        a_is_salaried                         bit  not null,           /* whether this payee is paid a salary (1) or hourly (0) --  */
+        a_minimum_wage                        decimal(14,4)  null,     /* the statutory minimum wage that applies to this employee --  */
+        a_hours_worked                        float  null,             /* the TOTAL hours worked by this employee during this pay period --  */
+        a_overtime_hours_worked               float  null,             /* the overtime hours worked during this pay period --  */
+        a_base_hourly_pay                     decimal(14,4)  null,     /* The employee's base pay rate per hour --  */
+        a_base_pay                            decimal(14,4)  null,     /* The employee's total base pay --  */
+        a_overtime_pay                        decimal(14,4)  null,     /* the employee's overtime additional pay --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* a_payroll_group */
 
 create table a_payroll_group (
@@ -2443,6 +2472,7 @@ create table a_payroll_item_type (
         a_ledger_number                       char(10)  not null,      /* ledger number that will be doing the payroll. --  */
         a_payroll_item_type_code              char(4)  not null,       /* code for this payroll item type --  */
         a_payroll_item_class_code             char(1)  not null,       /* general category of payroll item --  */
+        a_payroll_item_subclass_code          char(2)  null,           /* specific category of payroll item --  */
         a_payroll_item_form_sequence          integer  null,           /* order this item comes in on the payroll form. --  */
         a_ref_account_code                    char(10)  null,          /* default GL account code to use for items of this type --  */
         a_xfer_cost_center                    char(20)  null,          /* default cost center to use when this item involves an xfer --  */
@@ -3136,10 +3166,15 @@ create table a_subtrx_cashdisb (
         a_cost_center                         char(20)  not null,      /* Cost center for the expense / liability side of the transaction --  */
         a_account_code                        char(10)  not null,      /* GL account for the expense / liability side of the transaction --  */
         a_payee_partner_key                   char(10)  not null,      /* Partner id of the payee (recipient) --  */
-        a_check_number                        integer  not null,       /* Check number being issued --  */
+        a_check_number                        varchar(16)  null,       /* Check number being issued --  */
         a_posted                              bit  default 0,          /* Has this disbursement been posted (in this file) --  */
         a_posted_to_gl                        bit  default 0,          /* Has this disbursement been posted into the GL - yes (1) or no (0)? --  */
         a_voided                              bit  default 0,          /* Has this check been voided --  */
+        a_approved_by                         varchar(20)  null,       /* Who approved the check --  */
+        a_approved_date                       datetime  null,          /* When the check was approved --  */
+        a_paid_by                             varchar(20)  null,       /* Who paid the check --  */
+        a_paid_date                           datetime  null,          /* When the check was paid --  */
+        a_reconciled                          bit  default 0,          /* Has this check been reconciled to the bank account (e.g. no longer outstanding) --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */

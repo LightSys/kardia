@@ -349,6 +349,9 @@ grant select on ra to public;
 /* a_payroll_period */
 
 
+/* a_payroll_period_payee */
+
+
 /* a_payroll_group */
 
 
