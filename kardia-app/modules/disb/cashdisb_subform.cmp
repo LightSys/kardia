@@ -216,7 +216,7 @@ $Version=2$
 //     event_conditions to prevent the user from trying to make modifications)
 cashdisb_subform "widget/component-decl"
 {
-	width=778; height=525;
+	width=878; height=525;
 	
 	// Debugging
 	alerter "widget/alerter" {}		// USED WHEN DEBUGGING
@@ -267,6 +267,7 @@ cashdisb_subform "widget/component-decl"
 	// Proposed Fix (20090512): move this in the connector of an Endquery event in the batch_osrc object? + add an event condition?
 	// Update the Batch #Label
 	GB_cn2 "widget/connector" {
+		condition = 0;
 		event="GotoBatch";
 		target=batch_lbl_3;
 		action="SetValue";
@@ -285,6 +286,7 @@ cashdisb_subform "widget/component-decl"
 		
 	// Usage Tested - 20091215
 	GBSR_cn2 "widget/connector" {
+		condition = 0;
 		event="GotoBatchSelectRow";
 		target=batch_lbl_3;
 		action="SetValue";
@@ -507,6 +509,10 @@ cashdisb_subform "widget/component-decl"
 		// ?? - Untested Addition? - 20090514
 		batch_form "widget/form"
 		{
+			allow_modify = runclient(isnull(:cashdisb_osrc:a_posted, 0) == 0);
+			allow_new = runclient(isnull(:cashdisb_osrc:a_posted, 0) == 0);
+			allow_query = no;
+
 			// TODO (20090520): on batch_form DataSaved call Query Param on update_batch_eff_date_osrc passing in the usual parameters and for ubedo_eff_date passing in :batch_osrc:a_default_effective_date  // the variable representation of the default effective batch date from the a_batch table.
 			// TODO (20090520): Add var_default_effective_date, from which to access | false, not needed; access directly :batch_osrc:a_default_effective_date 
 			
@@ -586,6 +592,38 @@ cashdisb_subform "widget/component-decl"
 		
 	} // END - void_osrc
 	
+	approve_osrc "widget/osrc"
+	{
+		approve_ledger_param "widget/parameter" { type=string; }
+		approve_batch_param "widget/parameter" { type=integer; }
+		approve_disbursement_id_param "widget/parameter" { type=integer; }
+		
+		approve_flag_param "widget/parameter" { type=integer; }
+		
+		sql = "UPDATE /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows SET :a_approved_date = condition(:parameters:approve_flag_param, getdate(), null), :a_approved_by=condition(:parameters:approve_flag_param, user_name(), null)  WHERE :a_ledger_number = :parameters:approve_ledger_param and :a_batch_number = :parameters:approve_batch_param and :a_disbursement_id = :parameters:approve_disbursement_id_param";
+		autoquery=never;
+		
+		// Reset Everything... (to reflect this change)
+		afterApproveUpdate_cn "widget/connector" { event="EndQuery"; target=cashdisb_osrc; action="Refresh"; }
+		
+	} // END - approve_osrc
+
+	recon_osrc "widget/osrc"
+	{
+		recon_ledger_param "widget/parameter" { type=string; }
+		recon_batch_param "widget/parameter" { type=integer; }
+		recon_disbursement_id_param "widget/parameter" { type=integer; }
+		
+		recon_flag_param "widget/parameter" { type=integer; }
+		
+		sql = "UPDATE /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows SET :a_reconciled = condition(:parameters:recon_flag_param, 1, 0)  WHERE :a_ledger_number = :parameters:recon_ledger_param and :a_batch_number = :parameters:recon_batch_param and :a_disbursement_id = :parameters:recon_disbursement_id_param";
+		autoquery=never;
+		
+		// Reset Everything... (to reflect this change)
+		afterReconUpdate_cn "widget/connector" { event="EndQuery"; target=cashdisb_osrc; action="Refresh"; }
+		
+	} // END - recon_osrc
+
 	// Post_One_Check_OSRC
 	// [Usage Tested - 2009 May 26]
 	post_one_check_osrc "widget/osrc"
@@ -676,6 +714,7 @@ cashdisb_subform "widget/component-decl"
 		// Usage Tested (20090616)
 		pbtdo_cn1 "widget/connector"
 		 {
+			condition = 0;
 			event_condition = runclient(:post_button_text_decider_osrc:pcnt == 0);
 			event="DataFocusChanged";
 			target=Post_btn;
@@ -697,6 +736,7 @@ cashdisb_subform "widget/component-decl"
 		// Usage Tested (20090616)
 		pbtdo_cn2 "widget/connector"
 		{
+			condition = 0;
 			event_condition = runclient(:post_button_text_decider_osrc:pcnt > 0 and :cashdisb_osrc:a_posted='0');
 			event="DataFocusChanged";
 			target=Post_btn;
@@ -719,6 +759,7 @@ cashdisb_subform "widget/component-decl"
 		// Usage Tested (20090616)
 		pbtdo_cn3 "widget/connector"
 		{
+			condition = 0;
 			event_condition = runclient(:cashdisb_osrc:a_posted='1'); // :post_button_text_decider_osrc:pcnt > 0 and 
 			event="DataFocusChanged";
 			target=Post_btn;
@@ -761,25 +802,35 @@ cashdisb_subform "widget/component-decl"
 			a_cc_disp = '' + :t:a_cost_center + ' - ' + isnull(:c:a_cc_desc, '**INVALID**'),
 			:t:a_account_code,
 			a_acct_disp = '' + :t:a_account_code + ' - ' + isnull(:a:a_acct_desc, '**INVALID**'),
+			payeename = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, isnull(:p:p_surname + ', ', '') + isnull(:p:p_given_name, '')),
 			:t:a_payee_partner_key,
 			:t:a_check_number,
 			:t:a_posted,
 			:t:a_posted_to_gl,
 			:t:a_voided,
+			:t:a_paid_date,
+			:t:a_paid_by,
+			:t:a_approved_date,
+			:t:a_approved_by,
+			approved = condition(:t:a_approved_date is null, 0, 1),
+			:t:a_reconciled,
 			:t:a_comment,
 			:t:s_date_created,
 			:t:s_created_by,
 			:t:s_date_modified,
-			:t:s_modified_by 
+			:t:s_modified_by,
+			status = condition(:t:a_voided, 'VOID', condition(:t:a_reconciled, 'Recon', condition(:t:a_paid_date is not null, 'Paid', condition(:t:a_approved_date is not null, 'Approved', 'New'))))
 		FROM 
 			IDENTITY /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows t,
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-			/apps/kardia/data/Kardia_DB/a_account/rows a
+			/apps/kardia/data/Kardia_DB/a_account/rows a,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
 		WHERE
 			:t:a_account_code *= :a:a_account_code and
 			:t:a_ledger_number *= :a:a_ledger_number and
 			:t:a_cost_center *= :c:a_cost_center and 
-			:t:a_ledger_number *= :c:a_ledger_number 
+			:t:a_ledger_number *= :c:a_ledger_number and
+			:p:p_partner_key =* :t:a_payee_partner_key
 		ORDER BY
 			:t:a_check_number, :t:a_disbursement_id, :t:a_line_item"); //  // CHANGE (20090902) to a_disbursement_id ORDER BY so things with the same check number don't intersperse...
 
@@ -867,6 +918,10 @@ cashdisb_subform "widget/component-decl"
 		// Displaying the line item
 		check_form "widget/form"
 		{
+			allow_modify = runclient(isnull(:cashdisb_osrc:a_posted, 0) == 0);
+			allow_new = runclient(isnull(:cashdisb_osrc:a_posted, 0) == 0);
+			allow_query = no;
+
 			// On DataDeleted, Refresh the underlying cashdisb_osrc
 			del_cn1 "widget/connector" { event="DataDeleted"; target="cashdisb_osrc"; action="Refresh"; }
 
@@ -939,11 +994,12 @@ cashdisb_subform "widget/component-decl"
 			set_eff_date "widget/connector" { event="New"; target=cd_batch_date; action="SetValue"; Value=runclient(isnull(:batch_osrc:a_default_effective_date, getdate())); }
 			
 			// Title
-			batch_lbl_2 "widget/label" { x=116;y=0;width=516;height=20;align=center;valign="middle";value="Checking - Cash Disbursements"; font_size=16; style=bold; }
+			batch_lbl_2 "widget/label" { x=0;y=0;width=878;height=20;align=center;valign="middle";value=runclient("Checking - Cash Disbursements" + isnull(": " + :batch_osrc:a_batch_desc, "")); font_size=16; style=bold; }
 			
 			// DONE: Wire up for automatically displaying the current batch number
 			// DONE(2009416): Should this use fieldname="a_batch_number"; smartfield or other control (similar to line item control) // Control is set by another connector...
-			batch_lbl_3 "widget/label" { x=10;y=25;width=516;height=20;align=left;valign="middle";value="Batch #: (none selected)"; font_size=16; style=bold; } // will need a smartfield I think to dynamically update the number?  Or maybe just set value will work?
+			//batch_lbl_3 "widget/label" { x=10;y=25;width=516;height=20;align=left;valign="middle";value="Batch #: (none selected)"; font_size=16; style=bold; } // will need a smartfield I think to dynamically update the number?  Or maybe just set value will work?
+			batch_lbl_3 "widget/label" { x=0;y=28;width=516;height=20;align=left;valign="middle";value=runclient("Batch #: " + isnull(:batch_osrc:a_batch_number, "(none selected)")); font_size=16; style=bold; } // will need a smartfield I think to dynamically update the number?  Or maybe just set value will work?
 			
 			// DONE: Wire up for automatically displaying the current check number // isnull( , "(none selectled)")
 			// DONE: Trigger to change Check # on cashdisb_table selection change -event trigger name: Click... / New Batch... -look up control object...
@@ -953,14 +1009,14 @@ cashdisb_subform "widget/component-decl"
 			//		 1. event triggers (connectors) can only target widgets (and not fieldnames)
 			//		 2. the variable (widget) acts as a terminal point where the connector can modify the variables
 			//		    and therefore (because it is attached to a fieldname) indirectly modifies the fieldname.
-			check_title_1 "widget/label" { x=310;y=245;width=216;height=20;align=left;valign="middle";value=runclient("Check #: " + isnull(convert(integer,:var_check_number:value), "(none selected)")); font_size=16; style=bold; }
+			//check_title_1 "widget/label" { x=310;y=245;width=216;height=20;align=left;valign="middle";value=runclient("Check #: " + isnull(convert(integer,:var_check_number:value), "(none selected)")); font_size=16; style=bold; }
 			
 			// DONE: Implement the necessary variables here to fill in blanks in the table....
 
 			// Checking Information Table for One Batch
 			cd_pane "widget/pane"
 			{
-				x=5;y=55;width=750;height=156;
+				x=0;y=55;width=878;height=156;
 				widget_class = "table_bgnd";
 				
 				// DONE
@@ -968,24 +1024,25 @@ cashdisb_subform "widget/component-decl"
 				// 2. On click event, update Check #
 				cd_table "widget/table"
 				{
-					x=0;y=0;width=748;height=154;
+					x=0;y=0;width=876;height=154;
 					mode=dynamicrow;
 
-					dd_a_check_number "widget/table-column" { title="CheckNo"; fieldname="a_check_number"; width=40; }
+					dd_a_check_number "widget/table-column" { title="Check#"; fieldname="a_check_number"; width=40; }
 					dd_a_line_item "widget/table-column" { title="Line"; fieldname="a_line_item"; width=30; }
+					dd_a_voided "widget/table-column" { title="Status"; fieldname="status"; width=40; }
+					dd_payee "widget/table-column" { title="Payee"; fieldname="payeename"; width=100; }
 					//dd_a_ledger_number "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=60; }
 					//dd_a_batch_number "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=60; }
 					//dd_a_period "widget/table-column" { title="Period"; fieldname="a_period"; width=60; }
 					//dd_a_effective_date "widget/table-column" { title="EffDate"; fieldname="a_effective_date"; width=60; }
 					//dd_a_cash_account_code "widget/table-column" { title="CAcode"; fieldname="a_cash_account_code"; width=60; }
-					dd_a_cost_center "widget/table-column" { title="CC"; fieldname="a_cc_disp"; width=130; }
-					dd_a_account_code  "widget/table-column" { title="AcctCode"; fieldname="a_acct_disp"; width=130; }
-					dd_a_amount "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
+					dd_a_cost_center "widget/table-column" { title="Fund"; fieldname="a_cc_disp"; width=130; }
+					dd_a_account_code  "widget/table-column" { title="Account"; fieldname="a_acct_disp"; width=130; }
 					//dd_a_posted "widget/table-column" { title="P"; fieldname="a_posted"; width=20; type="check"; }	
-					dd_a_voided "widget/table-column" { title="V"; fieldname="a_voided"; width=20; type="check"; }
 					//dd_a_payee_partner_key "widget/table-column" { title="PayeePartnerKey"; fieldname="a_payee_partner_key"; width=60; }
 					//dd_a_posted_to_gl "widget/table-column" { title="PostedGL"; fieldname="a_posted_to_gl"; width=60; }
 					dd_a_comment "widget/table-column" { title="Comment"; fieldname="a_comment"; width=160; }
+					dd_a_amount "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
 					//dd_s_date_created "widget/table-column" { title="DateCreated"; fieldname="s_date_created"; width=60; }
 					//dd_s_created_by "widget/table-column" { title="CreatedBy"; fieldname="s_created_by"; width=60; }
 					// dd_s_date_modified "widget/table-column" { title="DateModified; fieldname="s_date_modified"; width=60; }  // This needs to have isnull check??
@@ -1002,9 +1059,11 @@ cashdisb_subform "widget/component-decl"
 			
 			
 			// [New Check  New Trx Line  Delete Trx Line] Buttons
-			cd_ChkTrxBtns_hbox "widget/hbox"
+			cd_ChkTrxBtns_vbox "widget/vbox"
 			{
-				x=20;y=215;width=500;height=50;spacing=25;cellsize=20;
+				//x=20;y=215;width=500;height=50;spacing=25;cellsize=20;
+				x=718;y=230;width=160;height=150;
+				spacing=4;
 				
 				// DONE 20100903: Made it so that they user can not add new checks,
 				//                or add/remove transaction lines to a batch that has
@@ -1020,7 +1079,7 @@ cashdisb_subform "widget/component-decl"
 				// Implemented - 20090407 Usage Tested
 				New_Check_btn "widget/textbutton"
 				{
-					width=130;
+					width=160;
 					height = 30;
 					text="New Check";
 					// enabled = runclient(:check_form:is_newable);
@@ -1101,9 +1160,9 @@ cashdisb_subform "widget/component-decl"
 				//					or a widget/form "Data*" event.
 				New_Trx_Line_btn "widget/textbutton"
 				{
-					width=130;
+					width=160;
 					height = 30;
-					text="New Trx Line";
+					text="New Line Item";
 					
 					// tooltip = "New Transaction for this check";
 					enabled = runclient(:check_form:is_newable and not :cashdisb_osrc:a_voided and isnull(not :cashdisb_osrc:a_posted, true)); // TODO (20090420): Don't allow clicking this button unless an entry is highlighted on the table...
@@ -1247,9 +1306,9 @@ cashdisb_subform "widget/component-decl"
 				// Lightly Tested: 20090323
 				Delete_Trx_btn "widget/textbutton"
 				{
-					width=130;
+					width=160;
 					height = 30;
-					text="Delete Trx";
+					text="Delete Line Item";
 					event_confirm=runclient("Are you sure you would like to delete this line item?");
 					
 					enabled = runclient(:check_form:is_editable and not :cashdisb_osrc:a_voided and isnull(not :cashdisb_osrc:a_posted, true));
@@ -1267,18 +1326,21 @@ cashdisb_subform "widget/component-decl"
 					// DONE: Update the displayed "Batch Total: $"
 					cnDelete_cn2 "widget/connector" { event="Click"; target=batch_total_osrc; action="Refresh"; }
 				}
+
 				
 			} // END - cd_ChkTrxBtns_hbox
 			
 			// Payee GroupBox (Pane) Area
 			payee_pane "widget/pane"
 			{
-				x=20;y=265;width=250;height=125;
+				x=0;y=230;width=270;height=128;
 				bgcolor="#e0e0e0";
+				widget_class = "group";
+				border_radius = 6;
 				
 				payee_vbox "widget/vbox"
 				{
-					x=8;y=8;width=232;height=250;spacing=1;cellsize=30;
+					x=8;y=20;width=252;height=246;spacing=1;cellsize=30;
 					
 					// Group Box
 					payee_select_hbox  "widget/hbox"
@@ -1294,7 +1356,7 @@ cashdisb_subform "widget/component-decl"
 							field=a_payee_partner_key;
 							ctl_type=editbox;
 							text="Payee #:";
-							label_width=60; width=120;
+							label_width=60; width=140;
 							// enabled = runclient(:check_form:is_savable);  // BUG/TODO (20100224): Doesn't work as expected. Why?
 							
 							// Note (20091008): This connector should be associated with an intermediary
@@ -1331,6 +1393,7 @@ cashdisb_subform "widget/component-decl"
 							width=105;
 							height = 25;
 							text="Select Payee";
+							enabled=runclient(:cashdisb_osrc:a_posted = 0 or :check_form:form_mode == 'New');
 							// enabled=yes;
 							// TODO: enabled=form.modifiedstate;
 							// enabled = runclient(:check_form:is_savable);  // BUG/TODO (20100224): Doesn't work as expected. Why?
@@ -1414,7 +1477,7 @@ cashdisb_subform "widget/component-decl"
 
 						payee_label "widget/component"
 						{
-							height=78;
+							height=74;
 							path = "/apps/kardia/modules/base/address_label_fmt.cmp";
 						}
 						
@@ -1435,8 +1498,13 @@ cashdisb_subform "widget/component-decl"
 			// Display the Payee Pane's Title (Header)
 			payee_pane_hdr "widget/pane"
 			{
-				x=35;y=249;width=80;
+				x=15;y=222;width=80;
 				widget_class = "label";
+				style=flat;
+				shadow_radius=4;
+				shadow_offset=2;
+				shadow_color="#808080";
+				shadow_angle=135;
 
 				payee_pane_hdr_l "widget/label" { x=0;width=78;height=16;valign="middle";value="Payee"; widget_class="label"; }
 			}
@@ -1444,12 +1512,14 @@ cashdisb_subform "widget/component-decl"
 			// CheckingSummary GroupBox (Pane) Area
 			CheckSummary_pane "widget/pane"
 			{
-				x=20;y=410;width=250;height=80;
+				x=0;y=375;width=270;height=115;
 				bgcolor="#e0e0e0";
+				widget_class = "group";
+				border_radius = 6;
 				
 				CheckSummary_vbox "widget/vbox"
 				{
-					x=8;y=8;width=230;height=88;spacing=1;cellsize=20;
+					x=8;y=20;width=246;height=88;spacing=1;cellsize=20;
 					
 					// Checking Details Display (Similar to jnl_total_osrc)
 					// Usage Tested - 20090320
@@ -1493,6 +1563,15 @@ cashdisb_subform "widget/component-decl"
 								field='check_total';	// 20101211: GRB - trying this again.
 								ctl_type=label;
 								text='Check Total:';
+								label_width=100;
+							}
+							cd_cs_lbl_chk_count "widget/component" 
+							{ 
+								path="/sys/cmp/smart_field.cmp";
+								// field='check_total';	// 20091001: displays a large sum when the batch is empty
+								field='check_li_cnt';	// 20101211: GRB - trying this again.
+								ctl_type=label;
+								text='Line Items:';
 								label_width=100;
 							}
 						}
@@ -1550,8 +1629,25 @@ cashdisb_subform "widget/component-decl"
 					} // END - check_details_osrc
 					
 					// Checkbox Display
-					cs_lbl_check_voided "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_voided'; ctl_type=checkbox; text='Check Voided?:'; label_width=100; type="readonly"; voided_hints "widget/hints" { default=runclient(0); style=readonly; } } 
-					cs_lbl_check_posted "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_posted'; ctl_type=checkbox; text='Check Posted?:'; label_width=100; type="readonly"; posted_hints "widget/hints" { default=runclient(0); style=readonly; } } 
+					ckbox_vbox "widget/vbox"
+					{
+						height=44; spacing=1; cellsize=20; column_width=120;
+
+						cs_lbl_check_approve "widget/component"
+						{
+							condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') = 'Y');
+							path="/sys/cmp/smart_field.cmp"; field='approved'; ctl_type=checkbox; text='Approved?'; label_width=100; type="readonly";
+							approved_hints "widget/hints" { style=readonly; } 
+						} 
+						cs_lbl_check_posted "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_posted'; ctl_type=checkbox; text='Posted/Paid?'; label_width=100; type="readonly"; posted_hints "widget/hints" { default=runclient(0); style=readonly; } } 
+						cs_lbl_check_recon "widget/component"
+						{
+							condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbRecon') = 'Y');
+							path="/sys/cmp/smart_field.cmp"; field='a_reconciled'; ctl_type=checkbox; text='Reconciled?'; label_width=100; type="readonly";
+							recon_hints "widget/hints" { default=runclient(0); style=readonly; } 
+						} 
+						cs_lbl_check_voided "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_voided'; ctl_type=checkbox; text='Voided?'; label_width=100; type="readonly"; voided_hints "widget/hints" { default=runclient(0); style=readonly; } } 
+					}
 
 					// TODO
 					// 1. If Check is not voided -> comment can edit at any time without any prompting
@@ -1564,8 +1660,13 @@ cashdisb_subform "widget/component-decl"
 			// Display the Checking Summary Pane's Title
 			CheckSummary_pane_hdr "widget/pane"
 			{
-				x=35;y=394;width=130;
+				x=15;y=367;width=130;
 				widget_class = "label";
+				style=flat;
+				shadow_radius=4;
+				shadow_offset=2;
+				shadow_color="#808080";
+				shadow_angle=135;
 
 				cs_pane_hdr_l "widget/label" { x=0;width=128;height=16;valign="middle";value="Check Summary"; widget_class="label"; }
 			}
@@ -1573,17 +1674,52 @@ cashdisb_subform "widget/component-decl"
 			// Transaction Details GroupBox (Pane) Area
 			trx_details_pane "widget/pane"
 			{
-				x=300;y=290;width=290;height=200;
+				x=300;y=230;width=390;height=260;
 				bgcolor="#e0e0e0";
 				widget_class = "group";
+				border_radius = 6;
 				
 				trx_vbox "widget/vbox"
 				{
-					x=8;y=8;width=272;height=250;spacing=4;cellsize=20;
+					x=8;y=20;width=372;height=303;spacing=4;cellsize=20;
 					
+					ckno_lbl "widget/component"
+					{
+						condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbAutoNumber') = 'Y');
+						path="/sys/cmp/smart_field.cmp";
+						value=runclient(isnull(convert(integer,:var_check_number:value), "(none selected)"));
+						ctl_type=label;
+						text="Check #:";
+						label_width=75;
+						height=16;
+					}
+
+					ckno_edit "widget/component"
+					{
+						condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbAutoNumber') = 'N');
+						path="/sys/cmp/smart_field.cmp";
+						field=a_check_number;
+						ctl_type=editbox;
+						text="Check #:";
+						label_width=75;
+						width=225;
+						height=16;
+					}
+
+					lineitem_lbl "widget/component"
+					{
+						path="/sys/cmp/smart_field.cmp";
+						value=runclient(isnull(convert(integer,:var_line_item:value), "(none selected)"));
+						ctl_type=label;
+						text="Line Item:";
+						label_width=75;
+						height=16;
+					}
+
 					// Line Item Thingy
 					trx_details_hbox "widget/hbox"
 					{
+						condition = 0;
 						x=0;y=0;width=200;height=20;spacing=5;cellsize=100;
 						
 						// Inspiration Line: check_title_1 "widget/label" { x=310;y=245;width=216;height=20;align=left;valign="middle";value=runclient("Check #: " + isnull(convert(integer,:var_check_number:value), "(none selected)")); font_size=16; style=bold; }
@@ -1600,11 +1736,12 @@ cashdisb_subform "widget/component-decl"
 					{
 						path="/apps/kardia/modules/base/editbox_tree.cmp";
 						field=a_cost_center;
-						text="Cost Ctr:";
-						tooltip="Cost Center Number";
+						text="Fund:";
+						tooltip="Fund / Cost Center Number";
 						label_width=75;
+						width=300;
 						popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/");
-						popup_text="Select Cost Center:";
+						popup_text="Select Fund / Cost Center:";
 						
 						cc_get_desc_1 "widget/connector"
 						{
@@ -1634,6 +1771,7 @@ cashdisb_subform "widget/component-decl"
 						field=a_account_code;
 						text="Account:";
 						tooltip="GL Account Code";
+						width=300;
 						label_width=75;
 						popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/");
 						popup_text="Select Account:";
@@ -1706,6 +1844,7 @@ cashdisb_subform "widget/component-decl"
 						field=a_amount;
 						ctl_type=editbox;
 						text="Amount: ";
+						width=225;
 						label_width=75;
 					}
 					
@@ -1723,24 +1862,24 @@ cashdisb_subform "widget/component-decl"
 					
 					// TODO: If enter key is pressed, wire to trigger Save button click, then New Trx Line Button
 					// DONE: Cancel Button Wire up...
-					comment_lbl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=editbox; text="Comment: "; label_width=75; }
+					line_item_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_effective_date; ctl_type=datetime; text="Date:"; width=225; label_width=75; date_only=1; default_time="12:00:00"; effective_date_hints "widget/hints" { default=runclient(getdate()); } }
 
-					line_item_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_effective_date; ctl_type=datetime; text="Date "; label_width=75; effective_date_hints "widget/hints" { default=runclient(getdate()); } }
-					
+					comment_lbl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=textarea; text="Comment: "; label_width=75; height=55; }
+
 					// el Spacer 'o...
 					sp1 "widget/autolayoutspacer" { height=4; }
 					
 					// Save Cancel Area
 					cd_SaveCancel_hbox "widget/hbox"
 					{
-						y=215;height=50;spacing=25;cellsize=20;
+						height=40;spacing=25;
 						align=center;
 						
 						// Save Button
 						save_trx_changes_btn "widget/textbutton"
 						{
-							width=90;
-							height = 40;
+							width=130;
+							height = 30;
 							text="Save";
 							enabled = runclient(:check_form:is_savable);
 							
@@ -1818,8 +1957,8 @@ cashdisb_subform "widget/component-decl"
 						// DONE: Wire up the Cancel Button (Unsaved data message pops up)
 						cancel_trx_changes_btn "widget/textbutton"
 						{
-							width=90;
-							height = 40;
+							width=130;
+							height = 30;
 							text="Cancel";
 							enabled = runclient(:check_form:is_discardable);
 							
@@ -1851,18 +1990,23 @@ cashdisb_subform "widget/component-decl"
 			// Display the Transaction Details
 			trx_details_pane_hdr "widget/pane"
 			{
-				x=315;y=274;width=140;
+				x=315;y=222;width=140;
 				//x=40;y=35;width=80;
 				widget_class = "label";
+				style=flat;
+				shadow_radius=4;
+				shadow_offset=2;
+				shadow_color="#808080";
+				shadow_angle=135;
 
 				// trx_form_pane_hdr_l "widget/label" { x=0;width=178;height=16;valign="middle";value=runclient(isnull(condition(:trx_form:a_posted == 1, "Posted ", "Unposted "),"") + "Transaction"); widget_class="label"; }
-				trx_pane_hdr_l "widget/label" { x=0;width=138;height=16;valign="bottom";value="Transaction Details"; widget_class="label"; }
+				trx_pane_hdr_l "widget/label" { x=0; y=1; width=138;height=16;valign="bottom";value="Line Item Details"; widget_class="label"; }
 			}
 			
 			// Batch Modifiable Details
 			cd_UpperRightMost_hbox "widget/hbox"
 			{
-				x=565;y=30;width=200;spacing=0;cellsize=1;
+				x=578;y=30;width=300;spacing=0;cellsize=1;
 
 				// DONE: Effective Date: Change this to batch level: a_default_effective_date
 				cd_batch_date "widget/component"
@@ -1870,11 +2014,13 @@ cashdisb_subform "widget/component-decl"
 					path="/sys/cmp/smart_field.cmp";
 					field="a_default_effective_date";
 					ctl_type=datetime;
-					text="Batch Eff. Date:";
-					label_width=100;
+					text="Batch Effective Date:";
+					label_width=150;
 					label_width=15;
 					form=batch_form;
-					width=200;
+					width=300;
+					date_only=1;
+					default_time="12:00:00";
 					
 					// Working Debugging Code 20090707
 					// EffBatchChange_cn1 "widget/connector" { event="DataChange"; target=alerter; action="Alert";
@@ -1959,11 +2105,13 @@ cashdisb_subform "widget/component-decl"
 			// Displaying the Bottom Statistics Totals and Modification Infor
 			info_pane "widget/pane"
 			{
-				x=4;y=495;width=770;height=26;style=raised;
+				x=0;y=499;width=878;height=26;style=raised;
+				widget_class = "group";
+				border_radius = 6;
 				
 				info_hbox "widget/hbox"
 				{
-					x=0;y=2;width=768;height=20;spacing=5;
+					x=4;y=2;width=770;height=20;spacing=5;
 
 					// Calculate the Batch Total
 					batch_total_osrc "widget/osrc"
@@ -1989,15 +2137,17 @@ cashdisb_subform "widget/component-decl"
 							// have an osrc that does this calculation -- similar to gljournal_edit::jnl_total_osrc
 							batch_total_lbl2 "widget/label"
 							{
-								width=200;
+								width=300;
 								valign="middle";
+								style=bold;
 								height=20;
-								value = runclient("Batch Total: $0.00"); // + isnull(:batch_total_form:total, "(empty)"));
+								//value = runclient("Batch Total: $0.00"); // + isnull(:batch_total_form:total, "(empty)"));
+								value = runclient("Batch Total: " + isnull(:batch_total_osrc:total, "(empty)")); // + isnull(:batch_total_form:total, "(empty)"));
 							}
 							
 							batch_rec_info "widget/component"
 							{
-								x=200;y=0;height=20;width=562;
+								x=300;y=0;height=20;width=565;
 								path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
 								form = check_form;
 							}
@@ -2013,6 +2163,7 @@ cashdisb_subform "widget/component-decl"
 						// Reset the main osrc to reflect this change in state...
 						batch_total_cn "widget/connector"
 						{
+							condition = 0;
 							event="EndQuery";
 							event_condition = runclient( :batch_total_osrc:cnt > 0 );    // (20091001): "IS NOT NULL" causes this file to not compile...  TODO: Update Centrallix source code or remove listing from documentation
 							target=batch_total_lbl2;
@@ -2215,7 +2366,8 @@ cashdisb_subform "widget/component-decl"
 			// Batch Button Commands
 			cd_LowerRightMost_vbox "widget/vbox"
 			{
-				x=605;y=315;width=200;height=150;cellsize=1;
+				x=718;y=330;width=160;height=170;
+				spacing=4;
 				
 				// The following items are DONE (20090417)
 				// A. Button Text Display
@@ -2228,8 +2380,9 @@ cashdisb_subform "widget/component-decl"
 				// Usage Tested - 20070616
 				Post_btn "widget/textbutton"
 				{
-					width=130;
-					height = 40;
+					condition = 0; // GRB hide this, user should post batches only from CD Batches screen
+					width=150;
+					height = 30;
 					text="Post Button";
 					
 					// Question: Should the Post to subledger and the Print Button be combined? (e.g. Post/Print Batch)
@@ -2288,6 +2441,126 @@ cashdisb_subform "widget/component-decl"
 				} // END - Post_btn
 
 				
+				// Notes for the print dialog...
+				// alert confirm ask for text
+				// text string runclient can be constomized usign data-driven values
+				// Example: payrolcmp Delete button has example...  event driver message with confirm
+								
+				//sp2 "widget/autolayoutspacer" { height=12; }
+				
+				// DONE - If Unposted, This check has not been posted yet, would you like to delete this check from the system?
+				// DONE - If Posted, Ask: "Are you sure you would like to Void Check #: <check_number>?" 
+				// QUESTION: If Posted to the GL, append: "necessary changes will be made to the GL"  "(Yes/No/Cancel)
+				Void_This_Check_btn "widget/textbutton"
+				{
+					width=160;
+					height = 30;
+					text="Mark as Void";
+					
+					cnSave_cn324 "widget/connector" { event="Click"; target=batch_total_osrc; action="Refresh"; }
+					
+					enabled = runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
+					
+					// Void_This_Check_btn
+					
+					// Update the displayed "Batch Total: $"
+					// BUG Firing out of sequence...
+					//Void_cn2 "widget/connector"
+					//{
+					//	event="Click";
+					
+						//target=batch_total_osrc;  // This line does not work because the
+													 // batch_total_lbl2 label is located in
+													 // batch_total_form as value =, rather than
+													 // in an EndQuery...
+						// target=cashdisb_osrc;     // This doesn't work either... 
+						// target=batch_total_form;
+						// action="Refresh";
+						// action="Query"; //QueryExec  // nope...
+						
+						// Guess I'll have to implement an EndQuery because the ... or... last resort...
+						// target=cashdisb_osrc;
+						// action="QueryParam";
+						// TODO -- 
+						
+						// Yup, I'll have to implement an EndQuery in batch_total_osrc... 
+						
+						// On second thought, call the below from check_details_osrc EndQuery...
+					//	target="batch_total_osrc";
+					//	action="Refresh";
+					//}
+					
+					
+					
+					
+					// Call the osrc Query to void the check
+					Void_cn "widget/connector"
+					{
+						event="Click";
+						event_confirm = runclient(condition(:cashdisb_osrc:a_voided == '1', "Unvoid this Check?", "Void this Check?"));
+						
+						target="void_osrc";
+						action="QueryParam";
+						void_ledger_param = runclient(:batch_osrc:a_ledger_number);
+						void_batch_param = runclient(:batch_osrc:a_batch_number);
+						void_disbursement_id_param = runclient(:cashdisb_osrc:a_disbursement_id);
+						
+						void_flag_param = runclient(condition(:cashdisb_osrc:a_voided == '1', "0", "1"));
+						
+					} // END - Void_cn
+								
+				} // END - Void_This_Check_btn
+
+				Approve_btn "widget/textbutton"
+				{
+					condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') = 'Y');
+					height=30;
+					width=160;
+					text=runclient(condition(:cashdisb_osrc:approved == 1, "Mark Not Approved", "Mark as Approved"));
+					enabled = runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
+
+					Approve_cn "widget/connector"
+					{
+						event="Click";
+						//event_confirm = runclient(condition(:cashdisb_osrc:approved == 1, "Unapprove this Check?", "Approve this Check?"));
+						
+						target="approve_osrc";
+						action="QueryParam";
+						approve_ledger_param = runclient(:batch_osrc:a_ledger_number);
+						approve_batch_param = runclient(:batch_osrc:a_batch_number);
+						approve_disbursement_id_param = runclient(:cashdisb_osrc:a_disbursement_id);
+						
+						approve_flag_param = runclient(condition(:cashdisb_osrc:approved == 1, 0, 1));
+						
+					} // END - Approve_cn
+				}
+
+				Recon_btn "widget/textbutton"
+				{
+					condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbRecon') = 'Y');
+					height=30;
+					width=160;
+					text=runclient(condition(:cashdisb_osrc:a_reconciled == 1, "Mark Not Reconciled", "Mark as Reconciled"));
+					enabled = runclient(:cashdisb_osrc:a_posted);
+
+					Recon_cn "widget/connector"
+					{
+						event="Click";
+						//event_confirm = runclient(condition(:cashdisb_osrc:approved == 1, "Mark this Check as not reconciled?", "Mark this Check as reconciled?"));
+						
+						target="recon_osrc";
+						action="QueryParam";
+						recon_ledger_param = runclient(:batch_osrc:a_ledger_number);
+						recon_batch_param = runclient(:batch_osrc:a_batch_number);
+						recon_disbursement_id_param = runclient(:cashdisb_osrc:a_disbursement_id);
+						
+						recon_flag_param = runclient(condition(:cashdisb_osrc:a_reconciled == 1, 0, 1));
+						
+					} // END - Recon_cn
+				}
+
+				sep2 "widget/autolayoutspacer" { height=4; fl_height=0; }
+
 				// --- PRINTING CHECKS ---
 				
 				// TODO (20090416)
@@ -2307,9 +2580,10 @@ cashdisb_subform "widget/component-decl"
 				// Usage Testeed (DMJ)
 				Print_All_Checks_btn "widget/textbutton"
 				{
-					width=130;
-					height = 40;
-					text="Preview Checks";
+					width=160;
+					height = 30;
+					text=runserver(condition((select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbAutoNumber') = 'Y', 'Preview & Number', 'Preview Checks'));
+					enabled = runclient(:check_form:form_mode = 'View');
 					
 					// Checkpoint!
 					// GB_cn1_sawd "widget/connector"
@@ -2383,76 +2657,6 @@ cashdisb_subform "widget/component-decl"
 						// pbo_post_flag_param = runclient('0');	// DONE: Make Conditional so it switches?
 					// }
 				}
-				
-				// Notes for the print dialog...
-				// alert confirm ask for text
-				// text string runclient can be constomized usign data-driven values
-				// Example: payrolcmp Delete button has example...  event driver message with confirm
-								
-				sp2 "widget/autolayoutspacer" { height=12; }
-				
-				// DONE - If Unposted, This check has not been posted yet, would you like to delete this check from the system?
-				// DONE - If Posted, Ask: "Are you sure you would like to Void Check #: <check_number>?" 
-				// QUESTION: If Posted to the GL, append: "necessary changes will be made to the GL"  "(Yes/No/Cancel)
-				Void_This_Check_btn "widget/textbutton"
-				{
-					width=130;
-					height = 40;
-					text="Void This Check";
-					
-					cnSave_cn324 "widget/connector" { event="Click"; target=batch_total_osrc; action="Refresh"; }
-					
-					enabled = runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
-					
-					// Void_This_Check_btn
-					
-					// Update the displayed "Batch Total: $"
-					// BUG Firing out of sequence...
-					//Void_cn2 "widget/connector"
-					//{
-					//	event="Click";
-					
-						//target=batch_total_osrc;  // This line does not work because the
-													 // batch_total_lbl2 label is located in
-													 // batch_total_form as value =, rather than
-													 // in an EndQuery...
-						// target=cashdisb_osrc;     // This doesn't work either... 
-						// target=batch_total_form;
-						// action="Refresh";
-						// action="Query"; //QueryExec  // nope...
-						
-						// Guess I'll have to implement an EndQuery because the ... or... last resort...
-						// target=cashdisb_osrc;
-						// action="QueryParam";
-						// TODO -- 
-						
-						// Yup, I'll have to implement an EndQuery in batch_total_osrc... 
-						
-						// On second thought, call the below from check_details_osrc EndQuery...
-					//	target="batch_total_osrc";
-					//	action="Refresh";
-					//}
-					
-					
-					
-					
-					// Call the osrc Query to void the check
-					Void_cn "widget/connector"
-					{
-						event="Click";
-						event_confirm = runclient(condition(:cashdisb_osrc:a_voided == '1', "Unvoid this Check?", "Void this Check?"));
-						
-						target="void_osrc";
-						action="QueryParam";
-						void_ledger_param = runclient(:batch_osrc:a_ledger_number);
-						void_batch_param = runclient(:batch_osrc:a_batch_number);
-						void_disbursement_id_param = runclient(:cashdisb_osrc:a_disbursement_id);
-						
-						void_flag_param = runclient(condition(:cashdisb_osrc:a_voided == '1', "0", "1"));
-						
-					} // END - Void_cn
-								
-				} // END - Void_This_Check_btn
 				
 			} // END - cd_LowerRightMost_vbox
 			

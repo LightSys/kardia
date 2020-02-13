@@ -34,17 +34,59 @@ disbursements_detail "system/report"
 	sql = "select startp = :p:a_period, startp_desc = :p:a_period_desc, endp=:p2:a_period, endp_desc=:p2:a_period_desc  from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2  where :p:a_ledger_number = :this:ledger and :p:a_period = :this:start_period and :p2:a_ledger_number = :p:a_ledger_number and :p2:a_period = :this:end_period";
 	}
 
+    disb_batch_qy "report/query"
+	{
+	sql = runserver("
+		select
+			dcnt = count(:d:a_amount),
+			dtotal = isnull(sum(:d:a_amount), $0.00),
+			gtotal = (select
+					isnull(sum(:t:a_amount), $0.00)
+				    from
+					/apps/kardia/data/Kardia_DB/a_transaction/rows t
+				    where
+					:t:a_ledger_number = :d:a_ledger_number and
+					:t:a_batch_number = :d:a_batch_number and
+					:t:a_account_code != :d:a_cash_account_code
+					" + condition(:this:unposted, "", " and :t:a_posted = 1") + "
+					" + condition(:this:costctr is null, "", " and :t:a_cost_center = :this:costctr") + "
+					" + condition(:this:acct is null, "", " and :t:a_account_code = :this:acct") + "
+					" + condition(:this:payee is null, "", " and :t:p_ext_partner_id = :this:payee") + "),
+			batch = :d:a_batch_number,
+			period = :d:a_period
+		from
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+		where
+			:d:a_ledger_number = :this:ledger and
+			:d:a_period >= :period_qy:startp and
+			:d:a_period <= :period_qy:endp
+			" + condition(:this:payee is null, "", "and :d:a_payee_partner_key = :this:payee") + "
+			" + condition(:this:costctr is null, "", "and :d:a_cost_center = :this:costctr") + "
+			" + condition(:this:acct is null, "", "and :d:a_account_code = :this:acct") + "
+		group by
+			-- :d:a_period, :d:a_check_number, :d:a_batch_number
+			-- :d:a_period, :d:a_check_number, :d:a_disbursement_id, :d:a_batch_number
+			:d:a_period, :d:a_batch_number"
+		);
+
+	batch_gtotal "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
+	batch_gtotal2 "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
+	period_gtotal "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
+	period_gtotal2 "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
+	rpt_gtotal "report/aggregate" { compute="sum(:gtotal)"; reset=0; }
+	}
+
     disb_qy "report/query"
 	{
 	sql = runserver("
 		select
 			dcnt = count(:d:a_amount),
 			dtotal = isnull(sum(:d:a_amount), $0.00),
-			gtotal = (select isnull(sum(:t:a_amount), $0.00) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :d:a_ledger_number and :t:a_batch_number = :d:a_batch_number and :t:a_sent_document_id = convert(string, :d:a_check_number) " + condition(:this:unposted, "", " and :t:a_posted = 1") + condition(:this:costctr is null, "", " and :t:a_cost_center = :this:costctr") + condition(:this:acct is null, "", " and :t:a_account_code = :this:acct") +"),
 			batch = :d:a_batch_number,
 			period = :d:a_period,
 			date = :d:a_effective_date,
-			check = first(:d:a_check_number),
+			checkid = first(:d:a_check_number),
+			check = condition(first(:d:a_check_number) = '0', 'EFT', first(:d:a_check_number)),
 			disbid = first(:d:a_disbursement_id),
 			dacct = :d:a_account_code,
 			dcc = :d:a_cost_center,
@@ -60,37 +102,31 @@ disbursements_detail "system/report"
 			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p
 		where
+			:p:p_partner_key =* :d:a_payee_partner_key and
 			:d:a_ledger_number = :this:ledger and
-			:d:a_period >= :period_qy:startp and
-			:d:a_period <= :period_qy:endp and
-			:p:p_partner_key =* :d:a_payee_partner_key
+			:d:a_batch_number = :disb_batch_qy:batch
 			" + condition(:this:payee is null, "", "and :d:a_payee_partner_key = :this:payee") + "
 			" + condition(:this:costctr is null, "", "and :d:a_cost_center = :this:costctr") + "
 			" + condition(:this:acct is null, "", "and :d:a_account_code = :this:acct") + "
 		group by
 			-- :d:a_period, :d:a_check_number, :d:a_batch_number
 			-- :d:a_period, :d:a_check_number, :d:a_disbursement_id, :d:a_batch_number
-			:d:a_period, :d:a_batch_number, :d:a_check_number, :d:a_disbursement_id"
+			:d:a_check_number, :d:a_disbursement_id"
 		);
 
 	batch_agg "report/aggregate" { compute="last(:batch)"; reset=0; }
 	batch_dcnt "report/aggregate" { compute="sum(:dcnt)"; reset=1; }
 	batch_lcnt "report/aggregate" { compute="count(:dcnt)"; reset=1; }
-	batch_gtotal "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
 	batch_dtotal "report/aggregate" { compute="sum(:dtotal)"; reset=1; where=":a_voided = 0"; }
-	batch_gtotal2 "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
 	batch_dtotal2 "report/aggregate" { compute="sum(:dtotal)"; reset=1; where=":a_voided = 0"; }
 	period_agg "report/aggregate" { compute="last(:period)"; reset=0; }
 	period_dcnt "report/aggregate" { compute="sum(:dcnt)"; reset=1; }
 	period_lcnt "report/aggregate" { compute="count(:dcnt)"; reset=1; }
 	period_dtotal "report/aggregate" { compute="sum(:dtotal)"; reset=1; where=":a_voided = 0"; }
-	period_gtotal "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
 	period_dtotal2 "report/aggregate" { compute="sum(:dtotal)"; reset=1; where=":a_voided = 0"; }
-	period_gtotal2 "report/aggregate" { compute="sum(:gtotal)"; reset=1; }
 	rpt_dcnt "report/aggregate" { compute="sum(:dcnt)"; reset=0; }
 	rpt_lcnt "report/aggregate" { compute="count(:dcnt)"; reset=0; }
 	rpt_dtotal "report/aggregate" { compute="sum(:dtotal)"; reset=0; where=":a_voided = 0"; }
-	rpt_gtotal "report/aggregate" { compute="sum(:gtotal)"; reset=0; }
 	}
 
     item_qy "report/query"
@@ -113,7 +149,7 @@ disbursements_detail "system/report"
 			:d:a_ledger_number = :this:ledger and
 			:d:a_period = :disb_qy:period and
 			:d:a_batch_number = :disb_qy:batch and
-			:d:a_check_number = :disb_qy:check and
+			:d:a_check_number = :disb_qy:checkid and
 			:d:a_disbursement_id = :disb_qy:disbid and
 			:a:a_ledger_number = :d:a_ledger_number and
 			:a:a_account_code = :d:a_account_code and
@@ -173,9 +209,11 @@ disbursements_detail "system/report"
 	    {
 	    x=0; width=105; height=0;
 	    columns=9;
+	    //columns=7;
 	    widths=6,5,2,10,29,25,9,9,3;
+	    //widths=6,5,2,10,35,31,9;
 	    colsep=0.8;
-	    source=disb_qy, item_qy;
+	    source=disb_batch_qy, disb_qy, item_qy;
 	    topborder=0.3;
 	    bottomborder=0.3;
 	    nullformat="-";
@@ -229,8 +267,10 @@ disbursements_detail "system/report"
 		d_payee "report/table-cell" { value=runserver(:disb_qy:extname); align=left; font=helvetica; }
 		d_desc "report/table-cell" { value=runserver(condition(:this:show_line_items, '', :disb_qy:dcomm)); align=left; font=helvetica; }
 		d_disb "report/table-cell" { value=runserver(condition(:disb_qy:a_voided, '**VOID**', :disb_qy:dtotal)); align=right; }
-		d_gl "report/table-cell" { value=runserver(:disb_qy:gtotal); align=right; }
-		d_diff "report/table-cell" { value=runserver(condition(:disb_qy:gtotal - :disb_qy:dtotal = $0, '', 'X')); align=right; }
+		//d_gl "report/table-cell" { value=runserver(:disb_qy:gtotal); align=right; }
+		//d_diff "report/table-cell" { value=runserver(condition(:disb_qy:gtotal - :disb_qy:dtotal = $0, '', 'X')); align=right; }
+		d_gl "report/table-cell" { value=runserver(''); align=right; }
+		d_diff "report/table-cell" { value=runserver(''); align=right; }
 		}
 
 	    item_row "report/table-row"
@@ -249,6 +289,8 @@ disbursements_detail "system/report"
 		i_payee "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_cc_desc + ' / ' + :item_qy:a_acct_desc); align=left; font=helvetica; }
 		i_desc "report/table-cell" { value=runserver(:item_qy:a_comment); align=left; font=helvetica; }
 		i_disb "report/table-cell" { value=runserver(condition(:disb_qy:a_voided, '**VOID**', :item_qy:a_amount)); align=right; }
+		//i_gl "report/table-cell" { value=runserver(''); align=right; }
+		//i_diff "report/table-cell" { value=runserver(''); align=right; }
 		i_gl "report/table-cell" { value=runserver(''); align=right; }
 		i_diff "report/table-cell" { value=runserver(''); align=right; }
 		}
@@ -271,8 +313,8 @@ disbursements_detail "system/report"
 		s_payee "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
 		s_desc "report/table-cell" { value=runserver('BATCH ' + :disb_qy:batch_agg + ' TOTAL:'); align=left; font=helvetica; }
 		s_disb "report/table-cell" { value=runserver(:disb_qy:batch_dtotal); align=right; }
-		s_gl "report/table-cell" { value=runserver(:disb_qy:batch_gtotal); align=right; }
-		s_diff "report/table-cell" { value=runserver(condition(:disb_qy:batch_gtotal2 - :disb_qy:batch_dtotal2 = $0, '', 'X')); align=right; }
+		s_gl "report/table-cell" { value=runserver(:disb_batch_qy:batch_gtotal); align=right; }
+		s_diff "report/table-cell" { value=runserver(condition(:disb_batch_qy:batch_gtotal2 - :disb_qy:batch_dtotal2 = $0, '', 'X')); align=right; }
 		}
 
 	    tbl_sum_period "report/table-row"
@@ -293,8 +335,8 @@ disbursements_detail "system/report"
 		s_payee "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
 		s_desc "report/table-cell" { value=runserver('PERIOD ' + :disb_qy:period_agg + ' TOTAL:'); align=left; font=helvetica; }
 		s_disb "report/table-cell" { value=runserver(:disb_qy:period_dtotal); align=right; }
-		s_gl "report/table-cell" { value=runserver(:disb_qy:period_gtotal); align=right; }
-		s_diff "report/table-cell" { value=runserver(condition(:disb_qy:period_gtotal2 - :disb_qy:period_dtotal2 = $0, '', 'X')); align=right; }
+		s_gl "report/table-cell" { value=runserver(:disb_batch_qy:period_gtotal); align=right; }
+		s_diff "report/table-cell" { value=runserver(condition(:disb_batch_qy:period_gtotal2 - :disb_qy:period_dtotal2 = $0, '', 'X')); align=right; }
 		}
 
 	    tbl_sum_all "report/table-row"
@@ -313,8 +355,8 @@ disbursements_detail "system/report"
 		s_payee "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
 		s_desc "report/table-cell" { value=runserver('REPORT TOTAL:'); align=left; font=helvetica; }
 		s_disb "report/table-cell" { value=runserver(:disb_qy:rpt_dtotal); align=right; }
-		s_gl "report/table-cell" { value=runserver(:disb_qy:rpt_gtotal); align=right; }
-		s_diff "report/table-cell" { value=runserver(condition(:disb_qy:rpt_gtotal - :disb_qy:rpt_dtotal = $0, '', 'X')); align=right; }
+		s_gl "report/table-cell" { value=runserver(:disb_batch_qy:rpt_gtotal); align=right; }
+		s_diff "report/table-cell" { value=runserver(condition(:disb_batch_qy:rpt_gtotal - :disb_qy:rpt_dtotal = $0, '', 'X')); align=right; }
 		}
 	    }
 	}

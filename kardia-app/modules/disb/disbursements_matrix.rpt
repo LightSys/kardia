@@ -49,11 +49,17 @@ disbursements_matrix "system/report"
     pmt_summary "report/query"
 	{
 	sql =  runserver("
+		declare object dinfo;
+
+		select :dinfo:netpayacct = isnull(:a_config_value,'') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbNetPay';
+
 		SELECT
 			sum = sum(:c:a_amount),
 			count = count(:c:a_amount),
+			isnetpay = charindex(:c:a_account_code, :dinfo:netpayacct),
 			:c:a_payee_partner_key,
 			:c:a_period,
+			:c:a_account_code,
 			nametxt = :c:a_payee_partner_key + ' ' + condition(char_length(:p:p_org_name) > 1, :p:p_org_name, :p:p_surname + ', ' + :p:p_given_name),
 			p1 = :this:p1,
 			p2 = :this:p2,
@@ -167,7 +173,7 @@ disbursements_matrix "system/report"
 	    fontsize=7;
 	    margintop=0.1;
 	    marginbottom=0.1;
-	    r1 "report/table-cell" { value=runserver(substring(:pmt_summary:payee_agg, 1, 29)); align=left; font=helvetica; }
+	    r1 "report/table-cell" { value=runserver(substring(:pmt_summary:payee_agg, 1, 30)); align=left; font=helvetica; }
 	    r2 "report/table-cell" { value=runserver(:pmt_summary:mo1); align=right; }
 	    r3 "report/table-cell" { value=runserver(:pmt_summary:mo2); align=right; }
 	    r4 "report/table-cell" { value=runserver(:pmt_summary:mo3); align=right; }

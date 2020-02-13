@@ -24,11 +24,14 @@ post_cd_batch "widget/component-decl"
 	sql = "	UPDATE
 			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
 		SET
-			:d:a_posted = 0
+			:d:a_posted = 0,
+			:d:a_paid_date = null,
+			:d:a_paid_by = null
 		WHERE
 			:d:a_batch_number = :parameters:a_batch_number and
 			:d:a_ledger_number = :parameters:a_ledger_number and
-			:d:a_period = :parameters:a_period";
+			:d:a_period = :parameters:a_period
+		";
 
 	end_unpost "widget/connector"
 	    { 
@@ -64,7 +67,9 @@ post_cd_batch "widget/component-decl"
 	sql = "	UPDATE
 			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
 		SET
-			:d:a_posted = 1
+			:d:a_posted = 1,
+			:d:a_paid_date = :d:a_effective_date,
+			:d:a_paid_by = user_name()
 		WHERE
 			:d:a_batch_number = :parameters:a_batch_number and
 			:d:a_ledger_number = :parameters:a_ledger_number and
@@ -107,7 +112,18 @@ post_cd_batch "widget/component-decl"
 			:t:a_batch_number = :parameters:a_batch_number and
 			:t:a_origin = 'CD' and
 			:a_ledger_number = :parameters:a_ledger_number and
-			:t:a_period = :parameters:a_period";
+			:t:a_period = :parameters:a_period
+		;
+
+		UPDATE
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
+		SET
+			:c:a_posted_to_gl = 0
+		WHERE
+			:c:a_batch_number = :parameters:a_batch_number and
+			:c:a_ledger_number = :parameters:a_ledger_number and
+			:c:a_period = :parameters:a_period
+		";
 
 	end_glunpost "widget/connector"
 	    { 
