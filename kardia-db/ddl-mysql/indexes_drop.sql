@@ -1049,9 +1049,14 @@ alter table c_member drop index s_username_idx;
 
 
 /* t_sprint */
+alter table t_sprint drop index t_sprint_idx;
 /* drop index t_sprint.t_sprint_pk */ 
 /* go */
-alter table t_sprint drop index t_sprint_proj_idx;
+
+
+/* t_sprint_project */
+/* drop index t_sprint_project.t_sprintproj_pk */ 
+/* go */
 
 
 /* t_sprint_time */

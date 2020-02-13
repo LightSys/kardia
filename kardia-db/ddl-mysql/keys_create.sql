@@ -526,6 +526,9 @@ alter table t_project
 alter table t_sprint
 	add constraint t_sprint_pk primary key  (t_sprint_id);
 
+alter table t_sprint_project
+	add constraint t_sprintproj_pk primary key  (t_project_id, t_sprint_id);
+
 alter table t_sprint_time
 	add constraint t_sprint_time_pk primary key  (t_time_id);
 

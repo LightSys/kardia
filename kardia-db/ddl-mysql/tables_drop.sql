@@ -675,6 +675,10 @@ drop table t_project;
 drop table t_sprint;
 
 
+/* t_sprint_project */
+drop table t_sprint_project;
+
+
 /* t_sprint_time */
 drop table t_sprint_time;
 

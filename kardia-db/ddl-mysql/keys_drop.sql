@@ -1143,7 +1143,11 @@ alter table t_sprint
 
 
 alter table t_sprint
-	drop index t_sprint_proj_idx;
+	drop index t_sprint_idx;
+
+
+alter table t_sprint_project
+	drop primary key;
 
 
 alter table t_sprint_time

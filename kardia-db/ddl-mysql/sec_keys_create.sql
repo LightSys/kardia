@@ -332,7 +332,7 @@ alter table c_chat
 	add constraint c_public_idx unique  (c_public, c_chat_id);
 
 alter table t_sprint
-	add constraint t_sprint_proj_idx unique  (t_project_id, t_sprint_id);
+	add constraint t_sprint_idx unique  (t_sprint_id);
 
 alter table t_sprint_time
 	add constraint t_time_sprint_idx unique  (t_sprint_id, t_time_id);

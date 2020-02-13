@@ -1049,9 +1049,14 @@ create  index s_username_idx on c_member (s_username, c_chat_id);
 
 
 /* t_sprint */
+create  index t_sprint_idx on t_sprint (t_sprint_id);
 /* create  index t_sprint_pk on t_sprint (t_sprint_id)*/ 
 /* go */
-create  index t_sprint_proj_idx on t_sprint (t_project_id, t_sprint_id);
+
+
+/* t_sprint_project */
+/* create  index t_sprintproj_pk on t_sprint_project (t_project_id, t_sprint_id)*/ 
+/* go */
 
 
 /* t_sprint_time */

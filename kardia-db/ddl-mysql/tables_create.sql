@@ -3640,10 +3640,23 @@ create table t_project (
 
 create table t_sprint (
         t_sprint_id                           integer  not null,       /* unique sprint ID --  */
-        t_project_id                          integer  not null,       /* unique project ID --  */
         t_sprint_label                        varchar(64)  not null,   /* a short label (name) for the sprint. --  */
         t_sprint_start                        datetime  null,          /* starting date for the sprint --  */
         t_sprint_end                          datetime  null,          /* ending date for the sprint --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_sprint_project */
+
+create table t_sprint_project (
+        t_project_id                          integer  not null,       /* project ID --  */
+        t_sprint_id                           integer  not null,       /* the sprint the project is participating in --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3658,7 +3671,7 @@ create table t_sprint (
 create table t_sprint_time (
         t_time_id                             integer  not null,       /* unique time interval ID --  */
         t_sprint_id                           integer  not null,       /* unique sprint ID --  */
-        t_project_id                          integer  not null,       /* unique project ID --  */
+        t_project_id                          integer  null,           /* unique project ID - NULL if it applies to all projects in the sprint --  */
         t_time_start                          datetime  not null,      /* starting date and time for the time interval --  */
         t_time_hours                          float  not null,         /* number of hours in this time interval --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3696,7 +3709,6 @@ create table t_participant (
         p_partner_key                         char(10)  not null,      /* participant partner key in Kardia --  */
         t_project_id                          integer  not null,       /* unique project ID this participant is working in --  */
         t_role                                varchar(64)  null,       /* label for the role of this participant in the project --  */
-        t_skill_ratio                         float  null,             /* the typical skill of this participant (1.0 is nominal, <1.0 lower skill, and >1.0 greater skill) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3712,6 +3724,7 @@ create table t_sprint_participant (
         p_partner_key                         char(10)  not null,      /* participant partner key in Kardia --  */
         t_sprint_id                           integer  not null,       /* unique sprint ID this participant is working in --  */
         t_project_id                          integer  not null,       /* unique project ID this participant is working in --  */
+        t_skill_ratio                         float  null,             /* the typical skill of this participant (1.0 is nominal, <1.0 lower skill, and >1.0 greater skill) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
