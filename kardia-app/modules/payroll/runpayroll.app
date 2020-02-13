@@ -8,6 +8,7 @@ runpayroll "widget/page"
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     require_endorsements="kardia:pay_manage";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+    max_requests = 7;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
 

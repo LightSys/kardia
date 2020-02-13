@@ -57,6 +57,34 @@ init_payroll "widget/component-decl"
 			:a:a_payroll_group_id = :parameters:a_payroll_group_id and
 			:a:a_ledger_number = :parameters:a_ledger_number
 		;
+
+		INSERT
+			/apps/kardia/data/Kardia_DB/a_payroll_period_payee/rows
+		SELECT
+			:pp:a_ledger_number,
+			:pp:a_payroll_group_id,
+			a_payroll_period = :parameters:payperiod,
+			:pp:a_payroll_id,
+			:pp:a_comment,
+			:pp:p_country_code,
+			:pp:p_state_province,
+			:pp:a_is_employee,
+			:pp:a_is_fica,
+			:pp:a_is_exempt,
+			:pp:a_is_salaried,
+			:pp:a_minimum_wage,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		FROM
+			/apps/kardia/data/Kardia_DB/a_payroll_period_payee/rows pp
+		WHERE
+			:pp:a_payroll_period = :parameters:paylastperiod and
+			:pp:a_payroll_group_id = :parameters:a_payroll_group_id and
+			:pp:a_ledger_number = :parameters:a_ledger_number
+		;
+
 		UPDATE
 			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
 			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,

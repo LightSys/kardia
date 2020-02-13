@@ -9,6 +9,7 @@ pay_form_app "widget/page"
 
     require_one_endorsement="kardia:pay_manage";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+    max_requests = 10;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     groupid "widget/parameter" { type=integer; default=null; }

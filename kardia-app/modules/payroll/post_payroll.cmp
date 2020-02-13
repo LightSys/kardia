@@ -74,6 +74,13 @@ post_payroll "widget/component-decl"
 		    :pp:a_ledger_number = :parameters:ledger
 		;
 
+		DELETE
+		    /apps/kardia/data/Kardia_DB/a_transaction_tmp/rows
+		WHERE
+		    :a_ledger_number = :parameters:ledger and
+		    :a_batch_number = :parameters:batch
+		;
+
 		-- Handle the pre-tax benefits / pre-payroll transactions
 		-- (classes B and P, currently types VEH, TRV, INS)
 		INSERT INTO
