@@ -127,6 +127,7 @@ profile_timeline "widget/component-decl"
 		    inner_padding = 2;
 		    rowhighlight_bgcolor = "#fff090";
 		    textcolorhighlight = "#000000";
+		    type_to_find = yes;
 
 		    detail_rows "widget/repeat"
 			{

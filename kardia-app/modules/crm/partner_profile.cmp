@@ -259,13 +259,17 @@ partner_profile "widget/component-decl"
 
 			    timeline_hdr "widget/pane"
 				{
-				style=flat; height=16; 
+				style=flat; height=18; 
 				background="/apps/kardia/images/bg/lsblue_btngradient.png";
-				border_radius=5;
+				border_radius=6;
+				shadow_radius = 4;
+				shadow_offset = 2;
+				shadow_color = "#808080";
+				shadow_angle = 135;
 
 				timeline_label "widget/label"
 				    {
-				    x=0; y=1;
+				    x=0; y=2;
 				    width=438; height=14;
 				    text="Activity Timeline";
 				    align=center;
@@ -277,7 +281,7 @@ partner_profile "widget/component-decl"
 
 			    profile_timeline "widget/component"
 				{
-				height=427;
+				height=425;
 				path="profile_timeline.cmp";
 				iconbar = iconbar;
 				profile = partner_profile;
@@ -361,13 +365,17 @@ partner_profile "widget/component-decl"
 
 			    highlights_hdr "widget/pane"
 				{
-				style=flat; height=16; 
+				style=flat; height=18; 
 				background="/apps/kardia/images/bg/lsblue_btngradient.png";
-				border_radius=5;
+				border_radius=6;
+				shadow_radius = 4;
+				shadow_offset = 2;
+				shadow_color = "#808080";
+				shadow_angle = 135;
 
 				highlights_label "widget/label"
 				    {
-				    x=0; y=1;
+				    x=0; y=2;
 				    width=250; height=14;
 				    text="Highlights";
 				    align=center;
@@ -379,7 +387,7 @@ partner_profile "widget/component-decl"
 
 			    profile_highlights "widget/component"
 				{
-				height=427;
+				height=425;
 				path="profile_highlights.cmp";
 				iconbar = iconbar;
 				profile = partner_profile;

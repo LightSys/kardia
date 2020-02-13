@@ -8,7 +8,7 @@ plugin_crm_search_TAG "widget/component-decl"
     icon = "/apps/kardia/images/tango/start-here.png";
     sequence = 35;
     width=410;
-    height=136;
+    height=164;
 
     criteria_osrc "widget/parameter" { type=object; }
     criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
@@ -17,7 +17,7 @@ plugin_crm_search_TAG "widget/component-decl"
     track_param_vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=410; height=136;
+	width=410; height=164;
 	spacing=4;
 
 	track_type "widget/component"
@@ -39,14 +39,14 @@ plugin_crm_search_TAG "widget/component-decl"
 
 	track_opt_pane "widget/pane"
 	    {
-	    height=80;
+	    height=108;
 	    style=flat;
 	    enabled=runclient(:track_type:value is not null);
 
 	    track_opt_hbox "widget/vbox"
 		{
 		x=0; y=0;
-		height=80; width=410;
+		height=108; width=410;
 		spacing=4;
 
 		track_step "widget/component"
@@ -87,6 +87,18 @@ plugin_crm_search_TAG "widget/component-decl"
 			label_width=40;
 			ctl_type=datetime;
 			}
+		    }
+
+		track_curstep "widget/component"
+		    {
+		    form=criteria_params_form;
+		    path="/sys/cmp/smart_field.cmp";
+		    field=curstep;
+		    text="In Step Currently:";
+		    label_width=150;
+		    height=24;
+		    width=300;
+		    ctl_type=checkbox;
 		    }
 		
 		track_notstep "widget/component"
