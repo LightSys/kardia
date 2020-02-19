@@ -3627,6 +3627,7 @@ create table t_project (
         t_project_start                       datetime  null,          /* starting date for the project --  */
         t_project_end                         datetime  null,          /* ending date for the project --  */
         t_project_color                       varchar(32)  null,       /* a color (hex triplet, "#ffffff", or common name, "white") for the project --  */
+        t_project_status                      char(1)  null,           /* status (A)ctive, (O)bsolete --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
