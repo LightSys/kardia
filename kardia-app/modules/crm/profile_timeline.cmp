@@ -51,7 +51,7 @@ profile_timeline "widget/component-decl"
 	    event=EndQuery;
 	    target=profile_timeline_graph;
 	    action=LoadImage;
-	    Source=runclient("/apps/kardia/modules/crm/timeline_svg.rpt?id=" + :timeline_data_osrc:activity_group_id);
+	    Source=runclient("/apps/kardia/modules/crm/timeline_svg.rpt?id=");
 	    }
 	}
     
@@ -70,9 +70,11 @@ profile_timeline "widget/component-decl"
 		{
 		enabled_types "widget/parameter" { type=string; default=runclient(:iconbar:EnabledTypes); }
 		my_id "widget/parameter" { type=string; default=runclient(:collaborator_osrc:p_partner_key); }
-		activity_id "widget/parameter" { type=integer; default=runclient(:timeline_data_osrc:activity_group_id); }
+		activity_id "widget/parameter" { type=integer; default=runclient(:timeline_data_osrc:e_activity_id); }
 
-		sql = " select
+		sql = " DECLARE COLLECTION temp_collection SCOPE APPLICATION;
+
+				select
 			    name = :e_activity_type + ':' + :e:e_reference_info,
 			    img = :c:icon,
 			    detail_height = :c:height,
@@ -86,12 +88,12 @@ profile_timeline "widget/component-decl"
 			    shortdate = substring(convert(string,:e:e_activity_date),1,11),
 			    datewhom = isnull(condition(:e:e_whom == :parameters:my_id, 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' ', '') + 'on ' + substring(convert(string,:e:e_activity_date),1,11)
 			from
-			    /apps/kardia/data/Kardia_DB/e_activity/rows e,
+			    /apps/kardia/data/Kardia_DB/temp_collection/rows e,
 			    --'/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_cclist=' e,
 			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
 			    object wildcard '/apps/kardia/modules/crm/plugin_crm_timeline_*.cmp' c
 			where
-			    :e:e_activity_group_id = :parameters:activity_id and
+			    :e:e_activity_id = :parameters:activity_id and
 			    :p:p_partner_key =* :e:e_whom and
 			    charindex(rtrim(:e:e_activity_type), :parameters:enabled_types) > 0 and
 			    :c:type = rtrim(:e:e_activity_type)
