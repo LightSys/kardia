@@ -102,30 +102,25 @@ plugin_crm_searchreport_engage "system/report"
 	{
 	sql = runserver("
 		DECLARE object qinfo;
-
-		SELECT
-		    :qinfo:id = :activity_group_id
-		FROM
-		    /apps/kardia/modules/crm/timeline.qy?partner_key=" + :results_qy:p_partner_key + "
-		;
+		DECLARE COLLECTION tmp_collection SCOPE APPLICATION
 		
 		SELECT
-		    name = :e:e_activity_type + ':' + :e:e_reference_info,
-		    :e:e_activity_date,
-		    :e:e_activity_type,
-		    :e:e_reference_info,
-		    :e:e_info,
-		    first_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, 1, charindex('\n', :e:e_info) - 1), :e:e_info),
-		    last_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, charindex('\n', :e:e_info) + 1), null),
-		    :e:p_partner_key,
-		    shortdate = substring(convert(string,:e:e_activity_date),1,11)
+		    tmp_collection_type + ':' + e_reference_info,
+		    tmp_collection_date,
+		    tmp_collection_type,
+		    e_reference_info,
+		    e_info,
+		    first_info = condition(charindex('\n', e_info) > 0, substring(e_info, 1, charindex('\n', e_info) - 1), e_info),
+		    last_info = condition(charindex('\n', e_info) > 0, substring(e_info, charindex('\n', e_info) + 1), null),
+		    p_partner_key,
+		    shortdate = substring(convert(string,tmp_collection_date),1,11)
 		FROM
-		    /apps/kardia/data/Kardia_DB/e_activity/rows e
+		    COLLECTION tmp_collection
 		WHERE
-		    :e:e_activity_group_id = :qinfo:id and
-		    charindex(rtrim(:e:e_activity_type), 'TAG,TRK,GIFT,NOTE,COMM') > 0
+		    tmp_collection_group_id = :qinfo:id and
+		    charindex(rtrim(tmp_collection_type), 'TAG,TRK,GIFT,NOTE,COMM') > 0
 		ORDER BY
-		    :e:e_activity_date desc
+		    tmp_collection_date desc
 		");
 	}
 
