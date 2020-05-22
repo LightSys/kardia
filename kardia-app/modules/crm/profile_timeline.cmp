@@ -31,7 +31,6 @@ profile_timeline "widget/component-decl"
     //
     timeline_data_osrc "widget/osrc"
 	{
-	sql = "select :activity_group_id from '/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_cclist='";
 	baseobj = "/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_cclist=";
 	readahead=2;
 	replicasize=2;
