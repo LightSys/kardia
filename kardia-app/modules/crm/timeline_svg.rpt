@@ -26,7 +26,10 @@ timeline_svg "system/report"
     // First and last dates for events
     first_last_qy "report/query"
 	{
-	sql = runserver("select first_date=min(:e_activity_date), last_date=dateadd(year,1,max(:e_activity_date)) from /apps/kardia/data/Kardia_DB/e_activity/rows where :e_activity_group_id = :this:id");
+	sql = runserver("
+		DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+		
+		select first_date=min(:tmp_collection_date), last_date=dateadd(year,1,max(:tmp_collection_date)) from /apps/kardia/data/Kardia_DB/tmp_collection/rows where :tmp_collection_group_id = :this:id");
 	// We add a year here because we want to be able to see UP TO the next year.
 	}
 
@@ -47,17 +50,22 @@ timeline_svg "system/report"
     entrydate_qy "report/query"
 	{
 	// Select all the dates from entries
-	sql = "select :e_activity_date, :e_activity_type from /apps/kardia/data/Kardia_DB/e_activity/rows where :e_activity_group_id = :this:id 
-		order by :e_activity_date";
+	sql = "
+		DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+
+		select :tmp_collection_date, :tmp_collection_type from /apps/kardia/data/Kardia_DB/tmp_collection/rows where :tmp_collection_group_id = :this:id 
+		order by :tmp_collection_date";
 	}
 
     entrycompute_qy "report/query"
 	{
 	// Computes the x value for the entires and builds the strings to insert into the svg.
 	sql =  'declare object comp ;
-		select  :comp:year_percent = ((1.0 * (datepart(year,:entrydate_qy:e_activity_date) - datepart(year,:first_last_qy:first_date))) / (datepart(year,:first_last_qy:last_date) - datepart(year,:first_last_qy:first_date))) ; 
-		select :comp:month_percent = (1.0 * (datepart(month,:entrydate_qy:e_activity_date) - 1) / 12 / :interval_qy:range) ; 
-		select :comp:day_percent = (1.0 * (datepart(day,:entrydate_qy:e_activity_date) - 1) / 365 / :interval_qy:range) ; 
+		DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+		
+		select  :comp:year_percent = ((1.0 * (datepart(year,:entrydate_qy:tmp_collection_date) - datepart(year,:first_last_qy:first_date))) / (datepart(year,:first_last_qy:last_date) - datepart(year,:first_last_qy:first_date))) ; 
+		select :comp:month_percent = (1.0 * (datepart(month,:entrydate_qy:tmp_collection_date) - 1) / 12 / :interval_qy:range) ; 
+		select :comp:day_percent = (1.0 * (datepart(day,:entrydate_qy:tmp_collection_date) - 1) / 365 / :interval_qy:range) ; 
 		select :comp:full_percent = (:comp:year_percent + :comp:month_percent + :comp:day_percent) ; 
 		select :comp:x_value = (:comp:full_percent * :this:timeline_width + :this:timeline_start) ;
 		select :comp:drawgreenline = (
@@ -232,18 +240,18 @@ timeline_svg "system/report"
 		width=255; height=0;
 		// Look at this as an if-elseif block
 		value=runserver( condition(
-			    :entrydate_qy:e_activity_type == 'HEAD',	:draw_dotted_red_line,	    condition( // Today's date
-			    :entrydate_qy:e_activity_type == 'PAR',	:draw_dotted_blue_line,	    condition( // Partner added to system
-			    :entrydate_qy:e_activity_type == 'REL',	:draw_blue_tag,		    condition( // Relationship
-			    :entrydate_qy:e_activity_type == 'GIFT',	:draw_green_tag,	    condition( // Donation
-			    :entrydate_qy:e_activity_type == 'TAG',	:draw_red_tag,		    condition( // Tag added
-			    :entrydate_qy:e_activity_type == 'COMM',	:draw_blue_tag,		    condition( // Communication
-			    :entrydate_qy:e_activity_type == 'CONT',	:draw_blue_tag,		    condition( // Contact (email, phone call, etc.)
-			    :entrydate_qy:e_activity_type == 'NOTE',	:draw_purple_tag,	    condition( // Note
-			    :entrydate_qy:e_activity_type == 'FILE',	:draw_orange_tag,	    condition( // File uploaded
-			    :entrydate_qy:e_activity_type == 'ADDR',	:draw_dotted_yellow_line,   condition( // Address changed
-			    :entrydate_qy:e_activity_type == 'DATA',	:draw_orange_tag,	    condition( // Data Item/group activity
-			    :entrydate_qy:e_activity_type == 'TRK',	:draw_blue_arrow,	    condition( // New Track
+			    :entrydate_qy:tmp_collection_type == 'HEAD',	:draw_dotted_red_line,	    condition( // Today's date
+			    :entrydate_qy:tmp_collection_type == 'PAR',	:draw_dotted_blue_line,	    condition( // Partner added to system
+			    :entrydate_qy:tmp_collection_type == 'REL',	:draw_blue_tag,		    condition( // Relationship
+			    :entrydate_qy:tmp_collection_type == 'GIFT',	:draw_green_tag,	    condition( // Donation
+			    :entrydate_qy:tmp_collection_type == 'TAG',	:draw_red_tag,		    condition( // Tag added
+			    :entrydate_qy:tmp_collection_type == 'COMM',	:draw_blue_tag,		    condition( // Communication
+			    :entrydate_qy:tmp_collection_type == 'CONT',	:draw_blue_tag,		    condition( // Contact (email, phone call, etc.)
+			    :entrydate_qy:tmp_collection_type == 'NOTE',	:draw_purple_tag,	    condition( // Note
+			    :entrydate_qy:tmp_collection_type == 'FILE',	:draw_orange_tag,	    condition( // File uploaded
+			    :entrydate_qy:tmp_collection_type == 'ADDR',	:draw_dotted_yellow_line,   condition( // Address changed
+			    :entrydate_qy:tmp_collection_type == 'DATA',	:draw_orange_tag,	    condition( // Data Item/group activity
+			    :entrydate_qy:tmp_collection_type == 'TRK',	:draw_blue_arrow,	    condition( // New Track
 			    1,						:draw_black_tag,	    "ERROR"    // The default option. (Should always be true)
 				))))))))))))));
 		}
