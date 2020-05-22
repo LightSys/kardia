@@ -6,7 +6,8 @@ timeline "system/query"
 
     sql = " declare object activitygroup;
 
-	DECLARE COLLECTION tmp_collection SCOPE APPLICATION
+	DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	
 	    insert
 		collection tmp_collection
 	    select
@@ -21,6 +22,8 @@ timeline "system/query"
 	    ;
 
 	    -- Partner added to system
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 	    	collection tmp_collection
 	    select
@@ -45,6 +48,8 @@ timeline "system/query"
 	    ;
 
 	    -- Relationships (p_partner_relationship)
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -76,6 +81,8 @@ timeline "system/query"
 	    ;
 
 	    -- Donation given - if general gift permission is available.
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 		select
@@ -101,6 +108,8 @@ timeline "system/query"
 	    ;
 
 	    -- Donation given - if general gift permission is NOT available (show only gifts to funds we manage)
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -130,6 +139,8 @@ timeline "system/query"
 	    ;
 
 	    -- Task creation date
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -153,6 +164,8 @@ timeline "system/query"
 	    ;
 
 	    -- Tags
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -177,6 +190,8 @@ timeline "system/query"
 	    ;
 
 	    -- Communications / Mailings - Subscriptions
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -204,6 +219,8 @@ timeline "system/query"
 	    ;
 
 	    -- Communications / Mailings - Unsubscribe/Expire/Cancel
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -231,6 +248,8 @@ timeline "system/query"
 	    ;
 
 	    -- Communications / Mailings -- specific Issues of a Mailing
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -258,6 +277,8 @@ timeline "system/query"
 	    ;
 
 	    -- Various contact records (contact history)
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -285,6 +306,8 @@ timeline "system/query"
 	    ;
 
 	    -- Notes or Prayer Needs (contact history)
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -309,6 +332,8 @@ timeline "system/query"
 	    ;
 
 	    -- Document uploaded and associated with the partner
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -336,6 +361,8 @@ timeline "system/query"
 	    ;
 
 	    -- Address modified in the system
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -365,6 +392,8 @@ timeline "system/query"
 	    ;
 
 	    -- Data Item/group activity
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
@@ -388,6 +417,8 @@ timeline "system/query"
 	    ;
 
 	    -- Track/Step initiation activity
+	    DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+	    
 	    insert
 		collection tmp_collection
 	    select
