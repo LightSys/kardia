@@ -105,22 +105,22 @@ plugin_crm_searchreport_engage "system/report"
 		DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
 		
 		SELECT
-		    tmp_collection_type + ':' + e_reference_info,
-		    tmp_collection_date,
-		    tmp_collection_type,
+		    e_activity_type + ':' + e_reference_info,
+		    e_activity_date,
+		    e_activity_type,
 		    e_reference_info,
 		    e_info,
 		    first_info = condition(charindex('\n', e_info) > 0, substring(e_info, 1, charindex('\n', e_info) - 1), e_info),
 		    last_info = condition(charindex('\n', e_info) > 0, substring(e_info, charindex('\n', e_info) + 1), null),
 		    p_partner_key,
-		    shortdate = substring(convert(string,tmp_collection_date),1,11)
+		    shortdate = substring(convert(string,e_activity_date),1,11)
 		FROM
 		    COLLECTION tmp_collection
 		WHERE
-		    tmp_collection_group_id = :qinfo:id and
-		    charindex(rtrim(tmp_collection_type), 'TAG,TRK,GIFT,NOTE,COMM') > 0
+		    e_activity_group_id = :qinfo:id and
+		    charindex(rtrim(e_activity_type), 'TAG,TRK,GIFT,NOTE,COMM') > 0
 		ORDER BY
-		    tmp_collection_date desc
+		    e_activity_date desc
 		");
 	}
 
