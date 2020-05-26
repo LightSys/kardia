@@ -638,17 +638,17 @@ api_crm "system/querytree"
 			    DECLARE COLLECTION tmp_collection SCOPE APPLICATION
 			    
 			    SELECT
-				name = tmp_collection_type + '|' + :e_reference_info,
+				name = e_activity_type + '|' + :e_reference_info,
 				whom = :e_whom,
 				initiated_by = condition(:e_initiation == 'C', 'Collaborator', 'Partner'),
-				activity_date = tmp_collection_date,
-				activity_type = tmp_collection_type,
+				activity_date = e_activity_date,
+				activity_type = e_activity_type,
 				reference_info = :e_reference_info,
 				info = :e_info
 			    FROM
 				COLLECTION tmp_collection
 			    ORDER BY
-				tmp_collection_date desc
+				e_activity_date desc
 			    ");
 		    use_having = yes;
 		    }
