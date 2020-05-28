@@ -100,7 +100,7 @@ popover_track "widget/component-decl"
 			declare collection tmp_trackcollect scope application;
 
 			insert
-			    /apps/kardia/data/Kardia_DB/tmp_trackcollect
+			    collection tmp_trackcollect
 			select
 			    p_partner_key = :parameters:partner,
 			    e_username = user_name(),
@@ -137,7 +137,7 @@ popover_track "widget/component-decl"
 			declare collection tmp_trackcollect scope application
 
 			insert
-			    /apps/kardia/data/Kardia_DB/tmp_trackcollect
+			    collection tmp_trackcollect
 			select
 			    p_partner_key = :parameters:partner,
 			    e_username = user_name(),
@@ -257,7 +257,7 @@ popover_track "widget/component-decl"
 					todo_s_date_modified = :t:s_date_modified,
 					todo_s_modified_by = :t:s_modified_by
 				    from
-					identity /apps/kardia/data/Kardia_DB/tmp_trackcollect,
+					collection tmp_trackcollect,
 					/apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows per,
 					/apps/kardia/data/Kardia_DB/e_todo/rows t
 				    where
