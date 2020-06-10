@@ -1,0 +1,50 @@
+$Version=2$
+spart "system/query"
+    {
+    partner "query/parameter" { type=string; }
+
+    sql = " declare object info;
+	    declare collection tmp;
+
+	    -- Determine the latest sprint end date for a sprint that is
+	    -- being (or has been) worked on by this person.  If mid-sprint,
+	    -- then we use the current date.
+	    select
+		:info:recdate = condition(max(isnull(:spr:t_sprint_end, getdate())) >= getdate(), getdate(), max(isnull(:spr:t_sprint_end, getdate())))
+	    from
+		/apps/kardia/data/Kardia_DB/t_sprint_participant/rows spa,
+		/apps/kardia/data/Kardia_DB/t_sprint/rows spr
+	    where
+		:spa:p_partner_key = :parameters:partner and
+		:spr:t_sprint_id = :spa:t_sprint_id and
+		:spr:t_sprint_start <= getdate()
+	    ;
+
+	    -- Get the actual metrics for this sprint participant
+	    insert
+		collection tmp
+	    select
+		cap = sum(isnull(:spa:t_skill_ratio, 1.0) * (select isnull(sum(:st:t_time_hours), 0,0) from /apps/kardia/data/Kardia_DB/t_sprint_time/rows st where :st:t_sprint_id = :spa:t_sprint_id and (:st:t_project_id = :spa:t_project_id or :st:t_project_id is null))),
+		load = sum((select isnull(sum(:t:t_task_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_assignee/rows a, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :spa:t_project_id and :t:t_sprint_id = :spa:t_sprint_id and :a:t_task_id = :t:t_task_id and :a:p_partner_key = :spa:p_partner_key and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F')),
+		taskdone = sum((select isnull(sum(:t:t_task_hours * :t:t_task_percent), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_assignee/rows a, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :spa:t_project_id and :t:t_sprint_id = :spa:t_sprint_id and :a:t_task_id = :t:t_task_id and :a:p_partner_key = :spa:p_partner_key and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F')),
+		taskhrs = sum((select isnull(sum(:t:t_task_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_assignee/rows a, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :spa:t_project_id and :t:t_sprint_id = :spa:t_sprint_id and :a:t_task_id = :t:t_task_id and :a:p_partner_key = :spa:p_partner_key and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F'))
+	    from
+		identity /apps/kardia/data/Kardia_DB/t_sprint_participant/rows spa,
+		/apps/kardia/data/Kardia_DB/t_sprint/rows spr,
+		/apps/kardia/data/Kardia_DB/t_sprint_project/rows sproj,
+		/apps/kardia/data/Kardia_DB/t_project/rows pr
+	    where
+		:spa:p_partner_key = :parameters:partner and
+		:spr:t_sprint_id = :spa:t_sprint_id and
+		:spr:t_sprint_start <= :info:recdate and
+		isnull(:spr:t_sprint_end, getdate()) >= :info:recdate and
+		:sproj:t_sprint_id = :spr:t_sprint_id and
+		:pr:t_project_id = :sproj:t_project_id
+	    ;
+
+	    select
+		*
+	    from
+		collection tmp
+	    ";
+    }

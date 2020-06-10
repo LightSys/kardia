@@ -58,12 +58,13 @@ button_tab "widget/component-decl"
 	x=0; y=0;
 	width=48; height=76;
 	style=flat;
+	border_radius=0;
 	background=runclient(condition(:active:value,"/apps/kardia/images/bg/lsblue_gradient.png",null));
 
 	vbox "widget/vbox"
 	    {
-	    x=0; y=10;
-	    width=48; height=60;
+	    x=1; y=10;
+	    width=47; height=60;
 	    spacing=0;
 
 	    btn "widget/textbutton"

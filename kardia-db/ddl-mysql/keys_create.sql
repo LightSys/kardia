@@ -539,7 +539,7 @@ alter table t_participant
 	add constraint t_participant_pk primary key  (p_partner_key, t_project_id);
 
 alter table t_sprint_participant
-	add constraint t_sprint_participant_pk primary key  (p_partner_key, t_sprint_id);
+	add constraint t_sprint_participant_pk primary key  (p_partner_key, t_sprint_id, t_project_id);
 
 alter table t_assignee
 	add constraint t_assignee_pk primary key  (p_partner_key, t_task_id);
