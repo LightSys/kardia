@@ -74,9 +74,9 @@ transaction_research "widget/component-decl"
 				where
 				    :t:a_ledger_number = :parameters:ledger and
 				    (:parameters:period is null or :t:a_period = :parameters:period) and
-				    (:parameters:fund is null or :t:a_cost_center = :parameters:fund) and
+				    (:parameters:fund is null or charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :parameters:fund + ',') > 0) and
 				    (:parameters:batch is null or :t:a_batch_number = :parameters:batch) and
-				    (:parameters:account is null or :t:a_account_code = :parameters:account) and
+				    (:parameters:account is null or charindex(',' + rtrim(:t:a_account_code) + ',', ',' + :parameters:account + ',') > 0) and
 				    (:parameters:year is null or datepart(year, :t:a_effective_date) = :parameters:year) and
 				    (:parameters:origin is null or :t:a_origin = :parameters:origin) and
 				    (isnull(:parameters:filter,'') != 'I' or :t:a_account_code != :info:ixa) and
@@ -97,10 +97,11 @@ transaction_research "widget/component-decl"
 				    :t:a_transaction_number
 				having
 				    :minb is not null
-				" + condition(:f_groupby:value = 'B', "group by :t:a_batch_number", condition(:f_groupby:value = 'P', "group by :t:a_period", condition(:f_groupby:value = 'F', "group by :t:a_cost_center", condition(:f_groupby:value = 'A', "group by :t:a_account_code", "group by :t:a_period, :t:a_batch_number, :t:a_effective_date, :t:a_journal_number, :t:a_transaction_number")))) + "
+				" + condition(:f_groupby:value = 'B', "group by :t:a_batch_number", condition(:f_groupby:value = 'P', "group by :t:a_period", condition(:f_groupby:value = 'F', "group by :t:a_cost_center", condition(:f_groupby:value = 'A', "group by :t:a_account_code", condition(:f_groupby:value = 'O', "group by :t:a_origin", "group by :t:a_period, :t:a_batch_number, :t:a_effective_date, :t:a_journal_number, :t:a_transaction_number"))))) + "
 			    ");
 	    readahead=200;
 	    replicasize=600;
+	    autoquery=never;
 
 	    tr_table "widget/table"
 		{
@@ -161,6 +162,7 @@ transaction_research "widget/component-decl"
 			    tlp_gacct "widget/parameter" { param_name=gacct; type=string; default=runclient(:tr_osrc:minac); }
 			    tlp_gper "widget/parameter" { param_name=gperiod; type=string; default=runclient(:tr_osrc:minp); }
 			    tlp_gbatch "widget/parameter" { param_name=gbatch; type=string; default=runclient(:tr_osrc:minb); }
+			    tlp_gorigin "widget/parameter" { param_name=gorigin; type=string; default=runclient(:tr_osrc:mino); }
 			    tlp_tname "widget/parameter" { param_name=tname; type=string; }
 
 			    sql = " declare object info;
@@ -190,9 +192,9 @@ transaction_research "widget/component-decl"
 				    where
 					:t:a_ledger_number = :parameters:ledger and
 					(:parameters:period is null or :t:a_period = :parameters:period) and
-					(:parameters:fund is null or :t:a_cost_center = :parameters:fund) and
+					(:parameters:fund is null or charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :parameters:fund + ',') > 0) and
 					(:parameters:batch is null or :t:a_batch_number = :parameters:batch) and
-					(:parameters:account is null or :t:a_account_code = :parameters:account) and
+					(:parameters:account is null or charindex(',' + rtrim(:t:a_account_code) + ',', ',' + :parameters:account + ',') > 0) and
 					(:parameters:year is null or datepart(year, :t:a_effective_date) = :parameters:year) and
 					(:parameters:origin is null or :t:a_origin = :parameters:origin) and
 					(isnull(:parameters:filter,'') != 'I' or :t:a_account_code != :info:ixa) and
@@ -200,7 +202,8 @@ transaction_research "widget/component-decl"
 					(:parameters:groupby != 'F' or :t:a_cost_center = :parameters:gfund) and
 					(:parameters:groupby != 'A' or :t:a_account_code = :parameters:gacct) and
 					(:parameters:groupby != 'B' or :t:a_batch_number = :parameters:gbatch) and
-					(:parameters:groupby != 'P' or :t:a_period = :parameters:gperiod)
+					(:parameters:groupby != 'P' or :t:a_period = :parameters:gperiod) and
+					(:parameters:groupby != 'O' or :t:a_origin = :parameters:gorigin)
 				    order by
 					:t:a_period,
 					:t:a_batch_number,
@@ -379,7 +382,7 @@ transaction_research "widget/component-decl"
 			text="Summarize:";
 			ctl_type=dropdown;
 			label_width=70;
-			sql="select 'By Batch','B'; select 'By Period','P'; select 'By Fund','F'; select 'By Account','A'"; 
+			sql="select 'By Batch','B'; select 'By Period','P'; select 'By Fund','F'; select 'By Account','A'; select 'By Origin','O'"; 
 			}
 
 		    }
