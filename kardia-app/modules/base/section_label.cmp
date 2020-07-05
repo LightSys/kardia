@@ -5,6 +5,7 @@ section_label "widget/component-decl"
     width=200;
 
     text "widget/parameter" { type=string; default=''; deploy_to_client=yes; }
+    background "widget/parameter" { type=string; default=''; deploy_to_client=yes; }
 
     lbl_pane "widget/pane"
 	{
@@ -16,13 +17,15 @@ section_label "widget/component-decl"
 	shadow_offset = 2;
 	shadow_color = "#808080";
 	shadow_angle = 135;
+	background = runserver(isnull(:this:background, "/apps/kardia/images/bg/blue_gradient2.png"));
 
 	lbl "widget/label"
 	    {
-	    x=4;y=1;width=190;height=18;
+	    x=4;y=0;width=190;height=18;
 	    fl_height=1;
 	    widget_class="label";
 	    align=left;
+	    valign=middle;
 	    value=runclient(:text:value);
 	    }
 	}
