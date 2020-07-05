@@ -1,0 +1,10 @@
+$Version=2$
+exchangeratesapi "application/http"
+    {
+    base "http/parameter" { type=string; default="USD"; source=param; usage=url; }
+    server = "api.exchangeratesapi.io";
+    path = "";
+    protocol = "https";
+    method = GET;
+    allowsubdirs = 1;
+    }
