@@ -81,6 +81,7 @@ transaction_research "widget/component-decl"
 				    (:parameters:origin is null or :t:a_origin = :parameters:origin) and
 				    (isnull(:parameters:filter,'') != 'I' or :t:a_account_code != :info:ixa) and
 				    (isnull(:parameters:filter,'') != 'Q' or not ((:t:a_account_code >= :info:amin and :t:a_account_code <= :info:amax) or (:t:a_account_code >= :info:lmin and :t:a_account_code <= :info:lmax))) and
+				    (isnull(:parameters:filter,'') != 'X' or (:t:a_account_category != '51' and :t:a_account_category != '52' and :t:a_account_category != '41' and :t:a_account_category != '42' and :t:a_account_category != '19')) and
 				    :b:a_ledger_number = :t:a_ledger_number and
 				    :b:a_batch_number = :t:a_batch_number and
 				    :c:a_ledger_number = :t:a_ledger_number and
@@ -199,6 +200,7 @@ transaction_research "widget/component-decl"
 					(:parameters:origin is null or :t:a_origin = :parameters:origin) and
 					(isnull(:parameters:filter,'') != 'I' or :t:a_account_code != :info:ixa) and
 					(isnull(:parameters:filter,'') != 'Q' or not ((:t:a_account_code >= :info:amin and :t:a_account_code <= :info:amax) or (:t:a_account_code >= :info:lmin and :t:a_account_code <= :info:lmax))) and
+					(isnull(:parameters:filter,'') != 'X' or (:t:a_account_category != '51' and :t:a_account_category != '52' and :t:a_account_category != '41' and :t:a_account_category != '42' and :t:a_account_category != '19')) and
 					(:parameters:groupby != 'F' or :t:a_cost_center = :parameters:gfund) and
 					(:parameters:groupby != 'A' or :t:a_account_code = :parameters:gacct) and
 					(:parameters:groupby != 'B' or :t:a_batch_number = :parameters:gbatch) and
@@ -371,7 +373,7 @@ transaction_research "widget/component-decl"
 			text="Filter:";
 			ctl_type=dropdown;
 			label_width=70;
-			sql=runserver("select 'Hide IXA (" + (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLIfaAcct' and :a_ledger_number = :this:ledger) + ")', 'I'; select 'Hide Assets+Liabs', 'Q'"); 
+			sql=runserver("select 'Hide IXA (" + (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLIfaAcct' and :a_ledger_number = :this:ledger) + ")', 'I'; select 'Hide Assets+Liabs', 'Q'; select 'Hide Interfund/WithinFund', 'X'"); 
 			}
 
 		    f_groupby "widget/component"
