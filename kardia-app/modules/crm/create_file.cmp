@@ -1,0 +1,105 @@
+$Version=2$
+create_file "widget/component-decl"
+    {
+    // Create a new File - process
+    CreateFile "widget/component-decl-action" { }
+    FileCreated "widget/component-decl-event" { }
+
+    create_cn "widget/connector" { event=CreateFile; target=newfile_osrc; action=QueryParam; event_all_params=1; }
+
+    newfile_osrc "widget/osrc"
+	{
+	p_newfile_name "widget/parameter" { param_name=newfile_name; type=string; }
+	p_title "widget/parameter" { param_name=title; type=string; }
+	p_collab_id "widget/parameter" { param_name=collab_id; type=string; }
+	p_partner_id "widget/parameter" { param_name=partner_id; type=string; }
+	p_list_code "widget/parameter" { param_name=list_code; type=string; }
+
+	sql = "	declare object fileinfo;
+
+		-- Remove the .txt / .TXT from provided name, if any.
+		select :fileinfo:given_name = condition(upper(right(:parameters:newfile_name, 4)) == '.TXT', substring(:parameters:newfile_name, 1, char_length(:parameters:newfile_name) - 4), :parameters:newfile_name);
+
+		-- Create the file itself in the filesystem.
+		insert into
+		    /apps/kardia/files
+		select
+		    name = :fileinfo:given_name + '-' + convert(string,convert(integer,rand()*1000000)) + convert(string,convert(integer,rand()*1000000)) + '.txt',
+		    objcontent = ''
+		;
+		select
+		    :fileinfo:filename = :__inserted:name
+		;
+
+		-- Collab left null?
+		select
+		    :fileinfo:collab = isnull(:parameters:collab_id, first(:s:p_partner_key))
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows s
+		where
+		    :s:p_kardia_login = user_name()
+		;
+
+		-- Create the e_document record for the file.
+		insert into
+		    /apps/kardia/data/Kardia_DB/e_document/rows
+		select
+		    e_doc_type_id = 5, -- generic document
+		    e_title = :parameters:title,
+		    e_orig_filename = :fileinfo:given_name + '.txt',
+		    e_current_folder = '/apps/kardia/files',
+		    e_current_filename = :fileinfo:filename,
+		    e_uploading_collaborator = :fileinfo:collab,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		;
+		select
+		    :fileinfo:doc_id = :__inserted:e_document_id
+		;
+
+		-- Create the e_partner_document association record?
+		insert into
+		    /apps/kardia/data/Kardia_DB/e_partner_document/rows
+		select
+		    e_document_id = :fileinfo:doc_id,
+		    p_partner_key = :parameters:partner_id,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		where
+		    :parameters:partner_id is not null
+		;
+		select
+		    :fileinfo:assoc_id = :__inserted:e_pardoc_assoc_id
+		;
+
+		-- Associate with mailing list?
+		insert into
+		    /apps/kardia/data/Kardia_DB/m_list_document/rows
+		select
+		    m_list_code = :parameters:list_code,
+		    e_document_id = :fileinfo:doc_id,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		where
+		    :parameters:list_code is not null
+		;
+		
+		-- Return the information
+		select
+		    :fileinfo:filename,
+		    :fileinfo:given_name,
+		    :fileinfo:doc_id,
+		    :fileinfo:assoc_id
+		";
+	autoquery=never;
+	replicasize=2;
+
+	on_done "widget/connector" { event=EndQuery; target=create_file; action=FileCreated; event_all_params=1; }
+	}
+    }
