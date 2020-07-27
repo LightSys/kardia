@@ -462,7 +462,7 @@ myprojects "widget/component-decl"
 				:pr:t_project_end,
 				:pr:t_project_color,
 				:pr:t_project_desc,
-				participants = isnull((select sum(:p:p_given_name + ' ' + :p:p_surname + ', ') - ', ' from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/t_participant/rows pa where :pa:t_project_id = :pr:t_project_id and :p:p_partner_key = :pa:p_partner_key), ''),
+				participants = isnull(isnull((select sum(:p:p_given_name + ' ' + :p:p_surname + ', ') - ', ' from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp, /apps/kardia/data/Kardia_DB/t_sprint/rows s, /apps/kardia/data/Kardia_DB/t_sprint_participant/rows spart where :p:p_partner_key = :spart:p_partner_key and :spart:t_sprint_id = :s:t_sprint_id and :spart:t_project_id = :pr:t_project_id and :sp:t_project_id = :pr:t_project_id and :sp:t_sprint_id = :s:t_sprint_id and :s:t_sprint_start <= getdate() and :s:t_sprint_end >= getdate()), (select sum(:p:p_given_name + ' ' + :p:p_surname + ', ') - ', ' from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/t_participant/rows pa where :pa:t_project_id = :pr:t_project_id and :p:p_partner_key = :pa:p_partner_key)), ''),
 				rev = datediff(second, convert(datetime, '2019-01-01 00:00'), isnull((select max(:th:t_transition_date) from /apps/kardia/data/Kardia_DB/t_task_history/rows th, /apps/kardia/data/Kardia_DB/t_task/rows t where :t:t_project_id = :pr:t_project_id and :th:t_task_id = :t:t_task_id), convert(datetime, '2019-01-01 00:00'))),
 				srev = datediff(second, convert(datetime, '2019-01-01 00:00'), isnull((select max(:sp:s_date_modified) from /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp where :sp:t_project_id = :pr:t_project_id), convert(datetime, '2019-01-01 00:00'))),
 				color = hash('md5', isnull(:pr:t_project_color, 'gray')),
@@ -1876,7 +1876,16 @@ myprojects "widget/component-decl"
 				cp_proj "widget/parameter" { param_name=project; type=integer; }
 				cp_sprint "widget/parameter" { param_name=sprint; type=integer; }
 				autoquery=never;
-				sql = "insert into /apps/kardia/data/Kardia_DB/t_sprint_project/rows select t_project_id = :parameters:project, t_sprint_id = :parameters:sprint, s_date_created = getdate(), s_created_by = user_name(), s_date_modified = getdate(), s_modified_by = user_name()";
+				sql = "	insert into
+					    /apps/kardia/data/Kardia_DB/t_sprint_project/rows
+					select
+					    t_project_id = :parameters:project,
+					    t_sprint_id = :parameters:sprint,
+					    s_date_created = getdate(),
+					    s_created_by = user_name(),
+					    s_date_modified = getdate(),
+					    s_modified_by = user_name()
+					";
 				on_connect_done "widget/connector" { event=EndQuery; target=ns_proj_osrc; action=Refresh; }
 				}
 
@@ -1896,7 +1905,12 @@ myprojects "widget/component-decl"
 				dp_proj "widget/parameter" { param_name=project; type=integer; }
 				dp_sprint "widget/parameter" { param_name=sprint; type=integer; }
 				autoquery=never;
-				sql = "delete /apps/kardia/data/Kardia_DB/t_sprint_project/rows where :t_project_id = :parameters:project and :t_sprint_id = :parameters:sprint";
+				sql = "	delete
+					    /apps/kardia/data/Kardia_DB/t_sprint_project/rows
+					where
+					    :t_project_id = :parameters:project and
+					    :t_sprint_id = :parameters:sprint
+					";
 				on_disconnect_done "widget/connector" { event=EndQuery; target=ns_proj_osrc; action=Refresh; }
 				}
 			    }
@@ -2026,7 +2040,7 @@ myprojects "widget/component-decl"
 	    target=it_sprint_dd;
 	    action=SetItems;
 	    SQL=runclient(" select
-				label = :s:t_sprint_label,
+				label = :s:t_sprint_label + isnull(' (' + (select count(1) from /apps/kardia/data/Kardia_DB/t_task/rows t where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :sp:t_sprint_id and :t:t_task_percent < 0.9999999)  + ')', ''),
 				value = :s:t_sprint_id
 			    from
 				/apps/kardia/data/Kardia_DB/t_sprint/rows s,
