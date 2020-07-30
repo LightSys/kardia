@@ -161,18 +161,18 @@ insert _a_gift_type values('K','Check','','');
 insert _a_gift_type values('D','Credit Card','','');
 insert _a_gift_type values('E','EFT','','');
 create table _a_payroll_interval (
-  tag	char(1) not null,
+  tag	integer not null,
   text	varchar(60) not null,
   description varchar(255) null,
   __cx_osml_control varchar(255) null);
 alter table _a_payroll_interval add constraint pk__a_payroll_interval primary key  (tag);
-insert _a_payroll_interval values('0','Misc','','');
-insert _a_payroll_interval values('1','Daily','','');
-insert _a_payroll_interval values('2','Weekly','','');
-insert _a_payroll_interval values('3','Biweekly','','');
-insert _a_payroll_interval values('4','Semimonthly','','');
-insert _a_payroll_interval values('5','Monthly','','');
-insert _a_payroll_interval values('6','ALL','','');
+insert _a_payroll_interval values(0,'Misc','','');
+insert _a_payroll_interval values(1,'Daily','','');
+insert _a_payroll_interval values(2,'Weekly','','');
+insert _a_payroll_interval values(3,'Biweekly','','');
+insert _a_payroll_interval values(4,'Semimonthly','','');
+insert _a_payroll_interval values(5,'Monthly','','');
+insert _a_payroll_interval values(6,'ALL','','');
 create table _a_restricted_type (
   tag	char(1) not null,
   text	varchar(60) not null,
@@ -443,3 +443,33 @@ alter table _e_collaborator_status add constraint pk__e_collaborator_status prim
 insert _e_collaborator_status values('P','Priority','','');
 insert _e_collaborator_status values('A','Active','','');
 insert _e_collaborator_status values('I','Inactive','','');
+create table _a_giving_interval (
+  tag	integer not null,
+  text	varchar(60) not null,
+  description varchar(255) null,
+  __cx_osml_control varchar(255) null);
+alter table _a_giving_interval add constraint pk__a_giving_interval primary key  (tag);
+insert _a_giving_interval values(-1,'One-Time','','');
+insert _a_giving_interval values(0,'Gives As Able','','');
+insert _a_giving_interval values(1,'Monthly','','');
+insert _a_giving_interval values(2,'Every 2 Months','','');
+insert _a_giving_interval values(3,'Quarterly','','');
+insert _a_giving_interval values(4,'Every 4 Months','','');
+insert _a_giving_interval values(5,'Every 5 Months','','');
+insert _a_giving_interval values(6,'Twice a Year','','');
+insert _a_giving_interval values(7,'Every 7 Months','','');
+insert _a_giving_interval values(8,'Every 8 Months','','');
+insert _a_giving_interval values(9,'Every 9 Months','','');
+insert _a_giving_interval values(10,'Every 10 Months','','');
+insert _a_giving_interval values(11,'Every 11 Months','','');
+insert _a_giving_interval values(12,'Annually','','');
+create table _a_pledge_type (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,
+  __cx_osml_control varchar(255) null);
+alter table _a_pledge_type add constraint pk__a_pledge_type primary key  (tag);
+insert _a_pledge_type values('P','Pledge','','');
+insert _a_pledge_type values('F','Faith-Promise','','');
+insert _a_pledge_type values('I','Intention','','');
+insert _a_pledge_type values('R','Online Recurring','','');

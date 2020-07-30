@@ -64,7 +64,13 @@ while (<INFILE>)
 	    }
 	    print OUTD "drop table $table$cmd_terminator";
 	    print OUTC "create table $table (\n";
-	    print OUTC "  tag	char($keylen) not null,\n";
+	    if ($key =~ /^(\-|\+)?\d+?$/) {
+		print OUTC "  tag	integer not null,\n";
+		$isinteger = 1;
+	    } else {
+		print OUTC "  tag	char($keylen) not null,\n";
+		$isinteger = 0;
+	    }
 	#    if ( $table=~ /_partner_class/ ) {
 	#	print OUTC "char(3) not null,\n";
 	#    } else {
@@ -94,7 +100,11 @@ while (<INFILE>)
 	    print OUTC "alter table $table add constraint pk_$table primary key $clustered (tag)$cmd_terminator";
 	    #print OUTC "create unique index pki_$table on $table (tag)$cmd_terminator";
 	}
-	print OUTC "insert $table values('$key','$value','$explanation'";
+	if ($isinteger) {
+	    print OUTC "insert $table values($key,'$value','$explanation'";
+	} else {
+	    print OUTC "insert $table values('$key','$value','$explanation'";
+	}
 	print OUTC ",'$extra'" if ($table=~/relationship/);
 	print OUTC ",'')$cmd_terminator";
     }
