@@ -103,6 +103,9 @@ grant select on ra to public;
 /* m_list_membership */
 
 
+/* m_list_document */
+
+
 /* e_contact_autorecord */
 
 
@@ -343,6 +346,12 @@ grant select on ra to public;
 /* a_ledger_office */
 
 
+/* a_currency */
+
+
+/* a_currency_exch_rate */
+
+
 /* a_payroll */
 
 
@@ -409,6 +418,12 @@ grant select on ra to public;
 /* a_receipt_type */
 
 
+/* a_gift_payment_type */
+
+
+/* a_receipt_mailing */
+
+
 /* a_subtrx_gift */
 
 
@@ -416,6 +431,9 @@ grant select on ra to public;
 
 
 /* a_subtrx_gift_item */
+
+
+/* a_subtrx_gift_intent */
 
 
 /* a_subtrx_gift_rcptcnt */
@@ -449,6 +467,9 @@ grant select on ra to public;
 
 
 /* a_descriptives_hist */
+
+
+/* a_pledge */
 
 
 /* a_subtrx_cashdisb */

@@ -106,6 +106,9 @@ alter table m_list
 alter table m_list_membership
 	add constraint m_list_membership_clustered_pk primary key  (m_list_code, p_partner_key, m_hist_id);
 
+alter table m_list_document
+	add constraint m_doc_pk primary key  (m_list_code, e_document_id);
+
 alter table e_contact_autorecord
 	add constraint e_autorec_pk primary key  (p_partner_key, e_collaborator_id, e_contact_history_type, e_contact_id);
 
@@ -352,6 +355,12 @@ alter table a_cc_staff
 alter table a_ledger_office
 	add constraint a_lo_pk primary key  (a_ledger_number, p_office_partner_key);
 
+alter table a_currency
+	add constraint a_curr_pk primary key  (a_ledger_number, a_currency_code);
+
+alter table a_currency_exch_rate
+	add constraint a_curr_pk primary key  (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date);
+
 alter table a_payroll
 	add constraint a_payroll_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_id);
 
@@ -418,6 +427,12 @@ alter table a_cc_receipting_accts
 alter table a_receipt_type
 	add constraint a_rcpttype_pk primary key  (a_receipt_type);
 
+alter table a_gift_payment_type
+	add constraint a_gpmttype_pk primary key  (a_gift_payment_type);
+
+alter table a_receipt_mailing
+	add constraint a_giftlist_pk primary key  (a_ledger_number, m_list_code);
+
 alter table a_subtrx_gift
 	add constraint a_gifttrx_pk primary key  (a_ledger_number, a_batch_number, a_gift_number);
 
@@ -432,6 +447,9 @@ alter table a_subtrx_gift_item
 
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_cc_clustered_idx unique  (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
+alter table a_subtrx_gift_intent
+	add constraint a_gifttrxin_pk primary key  (a_ledger_number, a_batch_number, a_gift_number, a_intent_number);
 
 alter table a_subtrx_gift_rcptcnt
 	add constraint a_rcptno_pk primary key  (a_ledger_number);
@@ -465,6 +483,9 @@ alter table a_descriptives
 
 alter table a_descriptives_hist
 	add constraint a_descrhist_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id);
+
+alter table a_pledge
+	add constraint a_pledge_pk primary key  (a_ledger_number, a_pledge_id);
 
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
@@ -539,7 +560,7 @@ alter table t_participant
 	add constraint t_participant_pk primary key  (p_partner_key, t_project_id);
 
 alter table t_sprint_participant
-	add constraint t_sprint_participant_pk primary key  (p_partner_key, t_sprint_id);
+	add constraint t_sprint_participant_pk primary key  (p_partner_key, t_sprint_id, t_project_id);
 
 alter table t_assignee
 	add constraint t_assignee_pk primary key  (p_partner_key, t_task_id);

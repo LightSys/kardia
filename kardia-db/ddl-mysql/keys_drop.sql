@@ -214,6 +214,10 @@ alter table m_list_membership
 	drop primary key;
 
 
+alter table m_list_document
+	drop primary key;
+
+
 alter table e_contact_autorecord
 	drop primary key;
 
@@ -774,6 +778,14 @@ alter table a_ledger_office
 	drop primary key;
 
 
+alter table a_currency
+	drop primary key;
+
+
+alter table a_currency_exch_rate
+	drop primary key;
+
+
 alter table a_payroll
 	drop primary key;
 
@@ -874,6 +886,14 @@ alter table a_receipt_type
 	drop primary key;
 
 
+alter table a_gift_payment_type
+	drop primary key;
+
+
+alter table a_receipt_mailing
+	drop primary key;
+
+
 alter table a_subtrx_gift
 	drop primary key;
 
@@ -946,6 +966,10 @@ alter table a_subtrx_gift_item
 	drop index a_gifttrxi_datetype_idx;
 
 
+alter table a_subtrx_gift_intent
+	drop primary key;
+
+
 alter table a_subtrx_gift_rcptcnt
 	drop primary key;
 
@@ -1011,6 +1035,10 @@ alter table a_descriptives
 
 
 alter table a_descriptives_hist
+	drop primary key;
+
+
+alter table a_pledge
 	drop primary key;
 
 
@@ -1136,6 +1164,10 @@ alter table c_member
 
 alter table t_project
 	drop primary key;
+
+
+alter table t_project
+	drop index t_parent_idx;
 
 
 alter table t_sprint
