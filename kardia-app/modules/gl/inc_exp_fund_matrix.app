@@ -95,6 +95,7 @@ inc_exp_fund_matrix "widget/page"
 	    f_accts "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="accts"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Choose Accounts:"; text="Accounts:"; attach_point=editbox; empty_desc = "optional"; label_width=150; }
 	    f_exaccts "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="exclude_accts"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Choose Accounts:"; text="Exclude Accounts:"; attach_point=editbox; empty_desc = "optional"; label_width=150; }
 	    sep "widget/autolayoutspacer" { height=4; }
+	    f_other "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="other"; ctl_type='checkboxleft'; text="Include other GL accounts in 'Other' column"; form=rpt_form; label_width=150; }
 	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=rpt_form; label_width=150; }
 	    f_invert "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="invert"; ctl_type='checkboxleft'; text="Invert Debits/Credits (Executive Format)"; form=rpt_form; label_width=150; }
 	    //f_level "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='report_level'; ctl_type=dropdown; text='Detail Level:'; sql=runserver("select '' + :a_reporting_level + ' - ' + :a_level_rpt_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows where :a_ledger_number = " + quote(:this:ledger)); form=rpt_form; label_width=120; }
@@ -110,7 +111,7 @@ inc_exp_fund_matrix "widget/page"
 		label_width=150;
 		}
 
-	    sep2 "widget/autolayoutspacer" { height=60; }
+	    sep2 "widget/autolayoutspacer" { height=32; }
 	    pn_sep2 "widget/pane" { height=2; style=lowered; }
 
 	    ctls_hbox "widget/hbox"
