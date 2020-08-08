@@ -908,6 +908,8 @@ create table e_engagement_step_req (
         e_req_whom                            char(1)  not null,       /* Who this requirement is fulfilled by: (P)artner, (O)rganization, or (E)ither. --  */
         e_req_doc_type_id                     integer  null,           /* Does a document fulfill this step? If so, the corresponding document type ID is stored here. --  */
         e_req_waivable                        bit  not null,           /* Can this requirement be waived? 0 if not, or 1 if so --  */
+        e_req_sequence                        integer  not null,       /* The order in which the requirements appear --  */
+        e_is_active                           bit  not null,           /* Whether this requirement is active/visible or not. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -967,6 +969,8 @@ create table e_partner_engagement_req (
         e_completed_by                        char(10)  null,          /* Collaborator partner ID that caused the track/step to become complete --  */
         e_waived_date                         datetime  null,          /* The date the user exited this engagement step (whether completed or not) --  */
         e_waived_by                           char(10)  null,          /* Collaborator partner ID that caused the track/step to exit --  */
+        e_req_sequence                        integer  not null,       /* The order in which the requirements appear --  */
+        e_is_active                           bit  not null,           /* Whether this requirement is active/visible or not. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
