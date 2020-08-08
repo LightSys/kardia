@@ -488,6 +488,19 @@ partner_profile "widget/component-decl"
 		    EventName=runclient('SelectPartner');
 		    partner_key=runclient(:partner_key);
 		    }
+
+		// Open up track dialog
+		onTrkDialog "widget/connector"
+		    {
+		    event=TrackSelected;
+		    target=partner_profile;
+		    action=TrackSelected;
+		    engagement_id=runclient(:engagement_id);
+		    origin=runclient(:origin);
+		    point_side=runclient(null);
+		    center=runclient('yes');
+		    partner=runclient(:partner);
+		    }
 		}
 	    }
 
