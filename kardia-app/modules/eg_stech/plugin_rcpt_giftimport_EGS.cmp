@@ -25,7 +25,7 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			i_eg_account_uuid = :t:AccountGUID,
 			i_eg_gift_trx_date = convert(datetime, :t:TransactionDate),
 			i_eg_gift_settlement_date = condition(char_length(:t:SettlementDate) > 1, convert(datetime, :t:SettlementDate), null),
-			i_eg_status = condition(:t:Status = 'Cleared' and char_length(:t:SettlementDate) > 1, 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', 'pending'))),
+			i_eg_status = condition(:t:Status = 'Cleared' and char_length(:t:SettlementDate) > 1, 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', lower(:t:Status)))),
 
 			i_eg_deposit_uuid = convert(string, :depdet:DepositID),
 			i_eg_net_amount = convert(money, :depdet:NetAmount),
@@ -86,7 +86,7 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			:i_eg_deposit_amt = convert(money, :dep:NetAmount),
 			:i_eg_net_amount = convert(money, :depdet:NetAmount),
 			:i_eg_desig_notes = condition(char_length(isnull(:depdet:DesignationMemo,'')) > 1, :depdet:DesignationMemo, condition(char_length(isnull(:depdet:MainMemo, '')) > 1, :depdet:MainMemo, condition(char_length(isnull(:depdet:Memo, '')) > 1, :depdet:Memo, ''))),
-			:i_eg_status = condition(:t:Status = 'Cleared' and char_length(:t:SettlementDate) > 1, 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', 'pending'))),
+			:i_eg_status = condition(:t:Status = 'Cleared' and char_length(:t:SettlementDate) > 1, 'paid', condition(:t:Status = 'Processing', 'pending', condition(:t:Status = 'Returned', 'returned', lower(:t:Status)))),
 			:i_eg_returned_status = (select :rc:ResponseCodeDescr from /apps/kardia/modules/eg_stech/egsapi.http/ResponseCodesSelect/ResponseCodes rc where :rc:ResponseCodeValue = :t:ResponseCode),
 			:i_eg_gift_settlement_date = condition(char_length(:t:SettlementDate) > 1, convert(datetime, :t:SettlementDate), null),
 			:s_date_modified = getdate() IF MODIFIED,
