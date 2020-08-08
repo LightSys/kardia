@@ -1,0 +1,27 @@
+$Version=2$
+label_pane_small "widget/component-decl"
+    {
+    width=900;
+    height=20;
+
+    text "widget/parameter" { type=string; default=''; deploy_to_client=yes; }
+
+    pane "widget/pane"
+	{
+	x=0; y=0;
+	height=20;
+	width=900;
+	style=flat;
+	bgcolor = "#444444";
+	border_radius = 6;
+
+	label "widget/label"
+	    {
+	    x=4; y=1;
+	    width=892;
+	    height=18;
+	    style=bold;
+	    value=runclient(:text:value);
+	    }
+	}
+    }

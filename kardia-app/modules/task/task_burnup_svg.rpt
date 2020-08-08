@@ -28,48 +28,54 @@ task_burnup_svg "system/report"
 
 		-- Color
 		select
-		    :info:color = isnull(max(:t_project_color), '#606060')
+		    :info:color = condition(count(1) > 1, '#ffffff', isnull(max(:t_project_color), '#606060'))
 		from
 		    /apps/kardia/data/Kardia_DB/t_project/rows
 		where
-		    :t_project_id = :this:project
+		    :t_project_id = :this:project or :this:project = 0
 		;
 
 		-- Which sprint?
 		select
-		    :info:sprint = :t_sprint_id,
-		    :info:sprintname = :t_sprint_label
+		    :info:sprint = :s:t_sprint_id,
+		    :info:sprintname = :s:t_sprint_label
 		from
-		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s --,
+		    --/apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
 		where
-		    :t_project_id = :this:project and
-		    :t_sprint_id = :this:sprint
+		    --(:sp:t_project_id = :this:project or :this:project = 0) and
+		    :s:t_sprint_id = :this:sprint --and
+		    --:s:t_sprint_id = :sp:t_sprint_id
 		;
 		select
-		    :info:sprint = isnull(:info:sprint, :t_sprint_id),
-		    :info:sprintname = isnull(:info:sprintname, :t_sprint_label)
+		    :info:sprint = isnull(:info:sprint, :s:t_sprint_id),
+		    :info:sprintname = isnull(:info:sprintname, :s:t_sprint_label)
 		from
-		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s,
+		    /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
 		where
-		    :t_project_id = :this:project and
-		    getdate() >= :t_sprint_start and
-		    getdate() <= :t_sprint_end
+		    (:sp:t_project_id = :this:project or :this:project = 0) and
+		    getdate() >= :s:t_sprint_start and
+		    getdate() <= :s:t_sprint_end and
+		    :s:t_sprint_id = :sp:t_sprint_id
 		order by
-		    :t_sprint_start desc
+		    :s:t_sprint_start desc
 		limit
 		    1
 		;
 
 		-- Did not find one?
 		select
-		    :info:sprint = isnull(:info:sprint, :t_sprint_id),
-		    :info:sprintname = isnull(:info:sprintname, :t_sprint_label)
+		    :info:sprint = isnull(:info:sprint, :s:t_sprint_id),
+		    :info:sprintname = isnull(:info:sprintname, :s:t_sprint_label)
 		where
-		    :t_project_id = :this:project
+		    (:sp:t_project_id = :this:project or :this:project = 0) and
+		    :s:t_sprint_id = :sp:t_sprint_id
 		from
-		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s,
+		    /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
 		order by
-		    :t_sprint_start desc
+		    :s:t_sprint_start desc
 		limit
 		    1
 		;
@@ -84,29 +90,40 @@ task_burnup_svg "system/report"
 		    /apps/kardia/data/Kardia_DB/t_task_state/rows ts
 		where
 		    :t:t_sprint_id = :info:sprint and
-		    :ts:t_task_state_id = :t:t_task_state
+		    :ts:t_task_state_id = :t:t_task_state and
+		    (:t:t_project_id = :this:project or :this:project = 0)
 		;
 
 		-- Find the team multiplier for hours
 		select
-		    :info:multiplier = isnull(sum(isnull(:p:t_skill_ratio, 1.0)), 1.0)
+		    :info:multiplier = isnull(sum(isnull(:sp:t_skill_ratio, 1.0)), 1.0)
 		from
 		    /apps/kardia/data/Kardia_DB/t_sprint_participant/rows sp,
 		    /apps/kardia/data/Kardia_DB/t_participant/rows p
 		where
 		    :sp:t_sprint_id = :info:sprint and
 		    :sp:t_project_id = :p:t_project_id and
-		    :sp:p_partner_key = :p:p_partner_key
+		    :sp:p_partner_key = :p:p_partner_key and
+		    (:p:t_project_id = :this:project or :this:project = 0)
 		;
 
 		-- Find the work hours in-scope for this sprint
 		select
-		    :info:workhours = :info:multiplier * isnull(sum(:st:t_time_hours), 0.0),
-		    :info:workhoursdone = :info:multiplier * isnull(sum(condition(getdate() < :st:t_time_start, 0.0, condition(datediff(minute, :st:t_time_start, getdate()) / 60.0 > :st:t_time_hours, :st:t_time_hours, datediff(minute, :st:t_time_start, getdate()) / 60.0))), 0.0)
+		    :info:workhours = isnull(sum(isnull(:spart:t_skill_ratio, 1.0) * :st:t_time_hours), 0.0),
+		    :info:workhoursdone = isnull(sum(isnull(:spart:t_skill_ratio, 1.0) * condition(getdate() < :st:t_time_start, 0.0, condition(datediff(minute, :st:t_time_start, getdate()) / 60.0 > :st:t_time_hours, :st:t_time_hours, datediff(minute, :st:t_time_start, getdate()) / 60.0))), 0.0)
+		    --:info:workhours = :info:multiplier * isnull(sum(:st:t_time_hours), 0.0),
+		    --:info:workhoursdone = :info:multiplier * isnull(sum(condition(getdate() < :st:t_time_start, 0.0, condition(datediff(minute, :st:t_time_start, getdate()) / 60.0 > :st:t_time_hours, :st:t_time_hours, datediff(minute, :st:t_time_start, getdate()) / 60.0))), 0.0)
 		from
-		    /apps/kardia/data/Kardia_DB/t_sprint_time/rows st
+		    /apps/kardia/data/Kardia_DB/t_sprint_time/rows st,
+		    /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp,
+		    /apps/kardia/data/Kardia_DB/t_sprint_participant/rows spart
 		where
-		    :st:t_sprint_id = :info:sprint
+		    :st:t_sprint_id = :info:sprint and
+		    :st:t_sprint_id = :sp:t_sprint_id and
+		    (:sp:t_project_id = :this:project or :this:project = 0) and
+		    (:st:t_project_id is null or :sp:t_project_id = :st:t_project_id) and
+		    :spart:t_sprint_id = :sp:t_sprint_id and
+		    :spart:t_project_id = :sp:t_project_id
 		;
 
 		select
@@ -142,7 +159,8 @@ task_burnup_svg "system/report"
 		from
 		    /apps/kardia/data/Kardia_DB/t_task/rows t
 		where
-		    :t:t_sprint_id = :overall_qy:sprint
+		    :t:t_sprint_id = :overall_qy:sprint and
+		    (:t:t_project_id = :this:project or :this:project = 0)
 		;
 		    
 		select
@@ -193,11 +211,19 @@ task_burnup_svg "system/report"
     data_point_work_qy "report/query"
 	{
 	sql = "	select
-		    workhoursdone = :overall_qy:multiplier * isnull(sum(condition(:data_points_qy:transition_date < :st:t_time_start, 0.0, condition(datediff(minute, :st:t_time_start, :data_points_qy:transition_date) / 60.0 > :st:t_time_hours, :st:t_time_hours, datediff(minute, :st:t_time_start, :data_points_qy:transition_date) / 60.0))), 0.0)
+		    workhoursdone = isnull(sum(isnull(:spart:t_skill_ratio, 1.0) * condition(:data_points_qy:transition_date < :st:t_time_start, 0.0, condition(datediff(minute, :st:t_time_start, :data_points_qy:transition_date) / 60.0 > :st:t_time_hours, :st:t_time_hours, datediff(minute, :st:t_time_start, :data_points_qy:transition_date) / 60.0))), 0.0)
+		    --workhoursdone = :overall_qy:multiplier * isnull(sum(condition(:data_points_qy:transition_date < :st:t_time_start, 0.0, condition(datediff(minute, :st:t_time_start, :data_points_qy:transition_date) / 60.0 > :st:t_time_hours, :st:t_time_hours, datediff(minute, :st:t_time_start, :data_points_qy:transition_date) / 60.0))), 0.0)
 		from
-		    /apps/kardia/data/Kardia_DB/t_sprint_time/rows st
+		    /apps/kardia/data/Kardia_DB/t_sprint_time/rows st,
+		    /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp,
+		    /apps/kardia/data/Kardia_DB/t_sprint_participant/rows spart
 		where
-		    :st:t_sprint_id = :overall_qy:sprint
+		    :st:t_sprint_id = :overall_qy:sprint and
+		    :st:t_sprint_id = :sp:t_sprint_id and
+		    (:sp:t_project_id = :this:project or :this:project = 0) and
+		    (:st:t_project_id is null or :sp:t_project_id = :st:t_project_id) and
+		    :spart:t_sprint_id = :sp:t_sprint_id and
+		    :spart:t_project_id = :sp:t_project_id
 		";
 	}
 
