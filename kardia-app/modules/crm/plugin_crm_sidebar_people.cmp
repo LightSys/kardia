@@ -161,7 +161,8 @@ people_list "widget/component-decl"
 			(:parameters:search_tag2 is null or charindex('X' + :parameters:search_tag2 + 'X', :tag_ids) > 0) and
 			(:parameters:search_track is null or charindex('X' + :parameters:search_track + 'X', :track_ids) > 0) and
 			(:parameters:search_role is null or :parameters:search_role = :role_id) and
-			(:parameters:search_newonly is null or :parameters:search_newonly = 0 or :parameters:search_newonly = :is_new)
+			(:parameters:search_newonly is null or :parameters:search_newonly = 0 or :parameters:search_newonly = :is_new) and
+			:p_partner_key is not null
 		    ";
 	    readahead=600;
 	    replicasize=600;
