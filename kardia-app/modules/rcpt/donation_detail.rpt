@@ -56,7 +56,7 @@ donation_detail "system/report"
 			:t:a_batch_number =* :b:a_batch_number and
 			:t:a_journal_number = 1 and
 			:t:a_account_code != '1900' and
-			:t:a_amount < 0
+			charindex(' Gifts for ', :t:a_comment)
 		group by
 			:b:a_ledger_number, :b:a_batch_number
 		");
