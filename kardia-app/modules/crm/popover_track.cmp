@@ -29,6 +29,8 @@ popover_track "widget/component-decl"
 	step2 "widget/connector" { event=InitStepDone; target=popover_track; action=TrackUpdated; }
 	canceled "widget/connector" { event=CancelStepDone; target=track_osrc; action=Refresh; }
 	canceled2 "widget/connector" { event=CancelStepDone; target=popover_track; action=TrackUpdated; }
+	deleted "widget/connector" { event=DeleteStepDone; target=track_osrc; action=Refresh; }
+	deleted2 "widget/connector" { event=DeleteStepDone; target=popover_track; action=TrackUpdated; }
 	}
 
     track_win "widget/childwindow"
@@ -86,7 +88,7 @@ popover_track "widget/component-decl"
 			where
 			    :pe:e_engagement_id = :parameters:engagement_id and
 			    :pe:p_partner_key = :parameters:partner and
-			    :pe:e_is_archived = 0 and
+			    -- :pe:e_is_archived = 0 and
 			    :t:e_track_id = :pe:e_track_id
 			order by
 			    charindex(:pe:e_completion_status, 'ICE') asc,
@@ -197,6 +199,7 @@ popover_track "widget/component-decl"
 		autoquery=oneachreveal;
 
 		sync_on_endquery "widget/connector" { event=EndQuery; target=steplist_osrc; action=QueryParam; }
+		close_on_endquery "widget/connector" { event=EndQuery; event_condition=runclient(:track_osrc:e_hist_id is null); target=track_win; action=Close; }
 
 		track_form "widget/form"
 		    {
@@ -357,6 +360,42 @@ popover_track "widget/component-decl"
 						event=Click;
 						target=track_logic;
 						action=InitStep;
+						partner_key=runclient(:track_osrc:p_partner_key);
+						engagement_id=runclient(:track_osrc:e_engagement_id);
+						track_id=runclient(:track_osrc:e_track_id);
+						step_id=runclient(:steplist_osrc:e_step_id);
+						}
+					    }
+					}
+				    }
+
+				t_delstep "widget/table-row-detail"
+				    {
+				    display_for=runclient(:steplist_osrc:e_object_type == 'S' and :steplist_osrc:e_completion_status == 'I');
+				    width = 650;
+				    height = 34;
+
+				    t_delstep_hbox "widget/hbox"
+					{
+					x=0; y=4; width=650; height=24;
+					spacing=8;
+					align=center;
+
+					delstep_btn "widget/textbutton"
+					    {
+					    width=170; height=24;
+					    text="Delete / Undo Step";
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_delstep "widget/connector"
+						{
+						event=Click;
+						event_confirm=runclient("Are you sure you want to undo/delete this step?");
+						target=track_logic;
+						action=DeleteStep;
 						partner_key=runclient(:track_osrc:p_partner_key);
 						engagement_id=runclient(:track_osrc:e_engagement_id);
 						track_id=runclient(:track_osrc:e_track_id);
