@@ -1511,7 +1511,7 @@ payroll_run "widget/component-decl"
 			    a_line_item = 1,
 			    a_period = :parameters:period,
 			    a_effective_date = convert(datetime, :parameters:paydate),
-			    a_cash_account_code = (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAcct'),
+			    a_cash_account_code = isnull((select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAcctPay'), (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAcct')),
 			    a_account_code = (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbNetPay'),
 			    a_amount = :i:a_actual_amount,
 			    a_cost_center = :parameters:cashfund,
