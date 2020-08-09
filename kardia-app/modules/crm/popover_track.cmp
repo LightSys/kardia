@@ -149,7 +149,7 @@ popover_track "widget/component-decl"
 			select
 			    p_partner_key = :parameters:partner,
 			    e_username = user_name(),
-			    e_sort_key = '' + :s:e_step_sequence + ':' + :er:e_req_sequence,
+			    e_sort_key = '' + :s:e_step_sequence + ':' + right('000' + :er:e_req_sequence, 3),
 			    e_track_id = :s:e_track_id,
 			    e_step_id = :s:e_step_id,
 			    e_object_type = 'R',
@@ -281,8 +281,8 @@ popover_track "widget/component-decl"
 				    order by
 					:ta:e_sort_key asc
 				    ";
-			    replicasize=50;
-			    readahead=50;
+			    replicasize=200;
+			    readahead=200;
 			    autoquery=never;
 
 			    on_save_requirement "widget/connector"
