@@ -1457,6 +1457,8 @@ myprojects "widget/component-decl"
 
 			onTaskCreate "widget/connector" { event=Created; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); }
 			onTaskCreate2 "widget/connector" { event=Created; target=sprints_osrc; action=RefreshObject; }
+			onTaskMod "widget/connector" { event=Modified; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); }
+			onTaskMod2 "widget/connector" { event=Modified; target=sprints_osrc; action=RefreshObject; }
 
 			tasks_table "widget/table"
 			    {
@@ -1493,10 +1495,10 @@ myprojects "widget/component-decl"
 
 				    task_edit_form "widget/form"
 					{
-					onTaskSave "widget/connector" { event=DataSaved; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); }
-					onTaskSave2 "widget/connector" { event=DataSaved; target=sprints_osrc; action=RefreshObject; }
 					onTaskDel "widget/connector" { event=DataDeleted; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); }
 					onTaskDel2 "widget/connector" { event=DataDeleted; target=sprints_osrc; action=RefreshObject; }
+					onTaskSave "widget/connector" { event=DataSaved; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); }
+					onTaskSave2 "widget/connector" { event=DataSaved; target=sprints_osrc; action=RefreshObject; }
 
 					task_edit_vbox "widget/vbox"
 					    {
@@ -1529,6 +1531,7 @@ myprojects "widget/component-decl"
 						{
 						height=20;
 						align=center;
+						spacing=10;
 
 						deletetask_btn "widget/textbutton"
 						    {
@@ -1542,6 +1545,23 @@ myprojects "widget/component-decl"
 							event=Click;
 							target=task_edit_form;
 							action=Delete;
+							}
+						    }
+
+						donetask_btn "widget/textbutton"
+						    {
+						    height=20; width=130;
+						    fl_width=0;
+						    text="Done!";
+						    enabled=runclient(not :task_edit_form:is_discardable and (:tasks_osrc:t_task_percent != "1.0" or :tasks_osrc:t_task_state != runserver( (select :t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows where :t_task_state_type == 'C' order by :t_task_state_sequence desc limit 1) )));
+
+						    on_donetask "widget/connector"
+							{
+							event=Click;
+							target=tasks_osrc;
+							action=Modify;
+							t_task_percent=runclient("1.0");
+							t_task_state=runclient(runserver( (select :t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows where :t_task_state_type == 'C' order by :t_task_state_sequence desc limit 1) ));
 							}
 						    }
 						}
