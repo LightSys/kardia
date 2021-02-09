@@ -18,6 +18,7 @@ search "widget/component-decl"
     onRefresh "widget/connector"
 	{
 	event=Refresh;
+	event_condition=runclient(char_length(:search_edit:content) > 2);
 	target=search_osrc;
 	action=Refresh;
 	}

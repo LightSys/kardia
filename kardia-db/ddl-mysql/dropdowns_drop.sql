@@ -40,3 +40,5 @@ drop table _a_flag_type;
 drop table _a_flag_resolution;
 drop table _h_benefit_mode;
 drop table _e_collaborator_status;
+drop table _a_giving_interval;
+drop table _a_pledge_type;

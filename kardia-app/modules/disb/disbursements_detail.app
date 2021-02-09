@@ -78,6 +78,7 @@ disbursements_detail "widget/page"
 	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dropdown; text='Ending Period:';  form=rpt_form; label_width=120; sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period asc"); }
 	    f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Fund:"; attach_point=editbox; empty_desc = "optional"; label_width=120; }
 	    f_acct "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="acct"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Choose Account:"; text="Account:"; attach_point=editbox; empty_desc = "optional"; label_width=120; }
+	    f_cashacct "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="cashacct"; popup_source=runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Choose Account:"; text="Cash Account:"; attach_point=editbox; empty_desc = "optional"; label_width=120; }
 	    f_payeeid "widget/component"
 		{
 		height=24;
@@ -113,7 +114,7 @@ disbursements_detail "widget/page"
 		label_width=120;
 		}
 
-	    sep2 "widget/autolayoutspacer" { height=116; }
+	    sep2 "widget/autolayoutspacer" { height=88; }
 	    pn_sep2 "widget/pane" { height=2; style=lowered; }
 
 	    ctls_hbox "widget/hbox"

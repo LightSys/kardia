@@ -1,10 +1,11 @@
 $Version=2$
 plugin_base_mlist_autosub "widget/component-decl"
     {
-    width=490;
-    height=292;
+    width=690;
+    height=392;
     sequence=300;
     title = "Auto-Sub Donors";
+    types = 'P';
 
     Modified "widget/component-decl-event" { }
 
@@ -15,8 +16,8 @@ plugin_base_mlist_autosub "widget/component-decl"
 	{
 	x = 0;
 	y = 0;
-	width = 490;
-	height = 292;
+	width = 690;
+	height = 392;
 	spacing = 4;
 	cellsize = 20;
 
@@ -57,13 +58,13 @@ plugin_base_mlist_autosub "widget/component-decl"
 
 		as_table_pane "widget/pane"
 		    {
-		    height=106;
+		    height=206;
 		    widget_class=table_bgnd;
 
 		    as_table "widget/table"
 			{
 			x=0;y=0;
-			width=488; height=104;
+			width=688; height=204;
 			mode = dynamicrow;
 
 			t_ledger "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=60; }

@@ -16,8 +16,9 @@ taskstpl "widget/template"
 	{
 	nodata_message_textcolor = "#808080";
 	allow_selection = yes;
+	allow_deselection = yes;
 	show_selection = yes;
-	initial_selection = no;
+	initial_selection = noexpand;
 	demand_scrollbar = yes;
 	overlap_scrollbar = yes;
 	colsep = 0;
@@ -25,8 +26,8 @@ taskstpl "widget/template"
 	row_border_radius=6;
 	inner_padding = 2;
 	cellvspacing = 2;
-	row1_bgcolor = "#181818";
-	row2_bgcolor = "#202020";
+	row1_bgcolor = "#101010";
+	row2_bgcolor = "#181818";
 	textcolor = white;
 	rowhighlight_bgcolor = "#282828";
 	rowhighlight_shadow_color = '#6080c0';
@@ -37,6 +38,7 @@ taskstpl "widget/template"
 	row_maxheight=128;
 	rowheight = null;
 	hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+	type_to_find = yes;
 	}
     pane "widget/pane"
 	{

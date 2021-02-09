@@ -2,15 +2,17 @@ $Version=2$
 plugin_base_mlist_addmembers "widget/component-decl"
     {
     title = "Add Members";
+    types = 'PS';
+    req_add = 1;
     sequence = 100;
-    width=518;
-    height=324;
+    width=718;
+    height=424;
 
     mlist_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
     new_add_vbox "widget/vbox"
 	{
-	x=0;y=0;width=240;height=324;
+	x=0;y=0;width=240;height=424;
 	spacing=4;
 	cellsize=20;
 
@@ -98,7 +100,7 @@ plugin_base_mlist_addmembers "widget/component-decl"
 
 	    search_results_tbl "widget/table"
 		{
-		height=108;
+		height=208;
 		demand_scrollbar=yes;
 		overlap_scrollbar=yes;
 
@@ -167,7 +169,7 @@ plugin_base_mlist_addmembers "widget/component-decl"
 
     todays_adds_vbox "widget/vbox"
 	{
-	x=260;y=0;width=258;height=324;
+	x=260;y=0;width=458;height=424;
 	spacing=4;
 
 	todays_adds_label "widget/label" { height=16; text="Members Added Today..."; style=bold; }
@@ -217,7 +219,7 @@ plugin_base_mlist_addmembers "widget/component-decl"
 
 	    todays_adds_tbl "widget/table"
 		{
-		height=277;
+		height=377;
 		demand_scrollbar=yes;
 		overlap_scrollbar=yes;
 

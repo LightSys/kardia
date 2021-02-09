@@ -146,6 +146,7 @@ activity "system/query"
 		:p2:p_partner_key = :t:e_todo_collaborator and
 		datediff(day, :t:e_todo_completion_date, getdate()) > 0 and
 		datediff(minute, :t:e_todo_completion_date, getdate()) >= 720 and
+		datediff(day, :t:e_todo_completion_date, getdate()) < 90 and
 		:t:e_todo_status = 'C'
 	    group by
 		datepart(day, :t:e_todo_completion_date),
@@ -221,6 +222,7 @@ activity "system/query"
 		:t:e_track_id = :pe:e_track_id and
 		datediff(day, :pe:s_date_created, getdate()) > 0 and
 		datediff(minute, :pe:s_date_created, getdate()) >= 720 and
+		datediff(day, :pe:s_date_created, getdate()) < 90 and
 		:pe:e_is_archived = 0 and
 		:pe:e_completion_status != 'X'
 	    group by
@@ -292,6 +294,7 @@ activity "system/query"
 		:p2:p_partner_key = :c:p_partner_key and
 		datediff(day, :c:s_date_modified, getdate()) > 0 and
 		datediff(minute, :c:s_date_modified, getdate()) >= 720 and
+		datediff(day, :c:s_date_modified, getdate()) < 90 and
 		:c:e_is_automatic = 0
 	    group by
 		datepart(day, :c:s_date_modified),

@@ -29,6 +29,9 @@ popover_track "widget/component-decl"
 	step2 "widget/connector" { event=InitStepDone; target=popover_track; action=TrackUpdated; }
 	canceled "widget/connector" { event=CancelStepDone; target=track_osrc; action=Refresh; }
 	canceled2 "widget/connector" { event=CancelStepDone; target=popover_track; action=TrackUpdated; }
+	deleted "widget/connector" { event=DeleteStepDone; target=track_osrc; action=Refresh; }
+	deleted2 "widget/connector" { event=DeleteStepDone; target=popover_track; action=TrackUpdated; }
+	resynced "widget/connector" { event=ResyncStepDone; target=track_osrc; action=Refresh; }
 	}
 
     track_win "widget/childwindow"
@@ -85,7 +88,7 @@ popover_track "widget/component-decl"
 			where
 			    :pe:e_engagement_id = :parameters:engagement_id and
 			    :pe:p_partner_key = :parameters:partner and
-			    :pe:e_is_archived = 0 and
+			    -- :pe:e_is_archived = 0 and
 			    :t:e_track_id = :pe:e_track_id
 			order by
 			    charindex(:pe:e_completion_status, 'ICE') asc,
@@ -141,7 +144,7 @@ popover_track "widget/component-decl"
 			select
 			    p_partner_key = :parameters:partner,
 			    e_username = user_name(),
-			    e_sort_key = '' + :s:e_step_sequence + ':' + :er:e_req_item_id,
+			    e_sort_key = '' + :s:e_step_sequence + ':' + right('000' + :er:e_req_sequence, 3),
 			    e_track_id = :s:e_track_id,
 			    e_step_id = :s:e_step_id,
 			    e_object_type = 'R',
@@ -183,8 +186,11 @@ popover_track "widget/component-decl"
 			    :er:e_track_id = :trackinfo:e_track_id and
 			    :er:e_track_id = :s:e_track_id and
 			    :er:e_step_id = :s:e_step_id and
+			    :er:e_is_active = 1 and
 			    :er:p_partner_key = :parameters:partner and
 			    :er:e_engagement_id = :parameters:engagement_id
+			order by
+			    :er:e_req_sequence asc
 			";
 		baseobj = "/apps/kardia/data/Kardia_DB/e_partner_engagement/rows";
 		replicasize=2;
@@ -192,6 +198,7 @@ popover_track "widget/component-decl"
 		autoquery=oneachreveal;
 
 		sync_on_endquery "widget/connector" { event=EndQuery; target=steplist_osrc; action=QueryParam; }
+		close_on_endquery "widget/connector" { event=EndQuery; event_condition=runclient(:track_osrc:e_hist_id is null); target=track_win; action=Close; }
 
 		track_form "widget/form"
 		    {
@@ -249,6 +256,8 @@ popover_track "widget/component-decl"
 					req_s_modified_by = :per:s_modified_by,
 					:per:e_completed_by,
 					:per:e_waived_by,
+					:per:e_is_active,
+					:per:e_req_sequence,
 
 					-- linked in e_todo data
 					:t:e_todo_status,
@@ -270,8 +279,8 @@ popover_track "widget/component-decl"
 				    order by
 					:ta:e_sort_key asc
 				    ";
-			    replicasize=50;
-			    readahead=50;
+			    replicasize=200;
+			    readahead=200;
 			    autoquery=never;
 
 			    on_save_requirement "widget/connector"
@@ -344,7 +353,8 @@ popover_track "widget/component-decl"
 					jump_btn "widget/textbutton"
 					    {
 					    width=170; height=24;
-					    text="Jump to This Step";
+					    //text=runclient(condition(:steplist_osrc:e_completion_status == '-', "Jump to This Step", "Redo This Step"));
+					    text=runclient("Go to This Step");
 					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
 					    fgcolor1=white;
 					    fgcolor2=black;
@@ -355,6 +365,64 @@ popover_track "widget/component-decl"
 						event=Click;
 						target=track_logic;
 						action=InitStep;
+						partner_key=runclient(:track_osrc:p_partner_key);
+						engagement_id=runclient(:track_osrc:e_engagement_id);
+						track_id=runclient(:track_osrc:e_track_id);
+						step_id=runclient(:steplist_osrc:e_step_id);
+						}
+					    }
+					}
+				    }
+
+				t_delstep "widget/table-row-detail"
+				    {
+				    display_for=runclient(:steplist_osrc:e_object_type == 'S' and :steplist_osrc:e_completion_status == 'I');
+				    width = 650;
+				    height = 34;
+
+				    t_delstep_hbox "widget/hbox"
+					{
+					x=0; y=4; width=650; height=24;
+					spacing=8;
+					align=center;
+
+					delstep_btn "widget/textbutton"
+					    {
+					    width=170; height=24;
+					    text="Delete / Undo Step";
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_delstep "widget/connector"
+						{
+						event=Click;
+						event_confirm=runclient("Are you sure you want to undo/delete this step?  This will also undo any completed requirements for this step.");
+						target=track_logic;
+						action=DeleteStep;
+						partner_key=runclient(:track_osrc:p_partner_key);
+						engagement_id=runclient(:track_osrc:e_engagement_id);
+						track_id=runclient(:track_osrc:e_track_id);
+						step_id=runclient(:steplist_osrc:e_step_id);
+						}
+					    }
+
+					resync_btn "widget/textbutton"
+					    {
+					    width=170; height=24;
+					    text="Update Requirements";
+					    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+					    fgcolor1=white;
+					    fgcolor2=black;
+					    disable_color="#334466";
+
+					    on_resync "widget/connector"
+						{
+						event=Click;
+						event_confirm=runclient("Update this person's requirements list to match this track's current requirements?");
+						target=track_logic;
+						action=ResyncStep;
 						partner_key=runclient(:track_osrc:p_partner_key);
 						engagement_id=runclient(:track_osrc:e_engagement_id);
 						track_id=runclient(:track_osrc:e_track_id);

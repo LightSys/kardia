@@ -196,6 +196,11 @@ create  index p_search_stage_idx on p_partner_search_results (s_username,p_searc
 create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_code, m_hist_id);
 
 
+/* m_list_document */
+/* create  index m_doc_pk on m_list_document (m_list_code, e_document_id)*/ 
+/* go */
+
+
 /* e_contact_autorecord */
 create  index e_autorec_collab_idx on e_contact_autorecord (e_collaborator_id, p_partner_key, e_contact_history_type, e_contact_id);
 create  index e_autorec_collabhist_idx on e_contact_autorecord (e_collaborator_id, e_contact_history_type, p_partner_key, e_contact_id);
@@ -700,6 +705,16 @@ create  index a_cc_pfx_ledger_number_idx on a_cost_center_prefix (a_ledger_numbe
 /* go */
 
 
+/* a_currency */
+/* create  index a_curr_pk on a_currency (a_ledger_number, a_currency_code)*/ 
+/* go */
+
+
+/* a_currency_exch_rate */
+/* create  index a_curr_pk on a_currency_exch_rate (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date)*/ 
+/* go */
+
+
 /* a_payroll */
 create  index a_payroll_cc_idx on a_payroll (a_ledger_number, a_cost_center, a_payroll_group_id, a_payroll_id);
 create  index a_payroll_payee_idx on a_payroll (a_ledger_number, p_payee_partner_key, a_payroll_group_id, a_payroll_id);
@@ -823,6 +838,16 @@ create  index a_ccra_ledger_number_idx on a_cc_receipting_accts (a_ledger_number
 /* go */
 
 
+/* a_gift_payment_type */
+/* create  index a_gpmttype_pk on a_gift_payment_type (a_gift_payment_type)*/ 
+/* go */
+
+
+/* a_receipt_mailing */
+/* create  index a_giftlist_pk on a_receipt_mailing (a_ledger_number, m_list_code)*/ 
+/* go */
+
+
 /* a_subtrx_gift */
 create  index a_gifttrx_batch_idx on a_subtrx_gift (a_batch_number, a_ledger_number, a_gift_number);
 /* create  index a_gifttrx_cc_clustered_idx on a_subtrx_gift (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number)*/ 
@@ -858,6 +883,13 @@ create  index a_gifttrxi_pass_idx on a_subtrx_gift_item (p_dn_pass_partner_id, a
 create  index a_gifttrxi_rcpt_idx on a_subtrx_gift_item (a_dn_receipt_number, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_recip_id_idx on a_subtrx_gift_item (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_src_idx on a_subtrx_gift_item (i_eg_source_key, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
+
+/* a_subtrx_gift_intent */
+create  index a_gifttrxin_gift_idx on a_subtrx_gift_intent (a_ledger_number, a_batch_number, a_gift_number, a_split_number, a_intent_number);
+/* create  index a_gifttrxin_pk on a_subtrx_gift_intent (a_ledger_number, a_batch_number, a_gift_number, a_intent_number)*/ 
+/* go */
+create  index a_gifttrxin_pledge_idx on a_subtrx_gift_intent (a_ledger_number, a_pledge_id, a_batch_number, a_gift_number, a_intent_number);
 
 
 /* a_subtrx_gift_rcptcnt */
@@ -933,6 +965,13 @@ create  index a_descrhist_cc_idx on a_descriptives_hist (a_ledger_number, a_cost
 create  index a_descrhist_merge_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_merged_id, a_hist_id);
 create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_cost_center, a_hist_id);
 /* create  index a_descrhist_pk on a_descriptives_hist (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id)*/ 
+/* go */
+
+
+/* a_pledge */
+create  index a_pledge_donor_idx on a_pledge (a_ledger_number, p_donor_partner_id, a_pledge_id);
+create  index a_pledge_fund_idx on a_pledge (a_ledger_number, a_cost_center, a_pledge_id);
+/* create  index a_pledge_pk on a_pledge (a_ledger_number, a_pledge_id)*/ 
 /* go */
 
 
@@ -1044,6 +1083,7 @@ create  index s_username_idx on c_member (s_username, c_chat_id);
 
 
 /* t_project */
+create  index t_parent_idx on t_project (t_parent_project_id, t_project_id);
 /* create  index t_project_pk on t_project (t_project_id)*/ 
 /* go */
 
@@ -1081,8 +1121,8 @@ create  index t_part_proj_idx on t_participant (t_project_id, p_partner_key);
 
 /* t_sprint_participant */
 create  index t_spart_proj_idx on t_sprint_participant (t_project_id, t_sprint_id, p_partner_key);
-create  index t_spart_sprint_idx on t_sprint_participant (t_sprint_id, p_partner_key);
-/* create  index t_sprint_participant_pk on t_sprint_participant (p_partner_key, t_sprint_id)*/ 
+create  index t_spart_sprint_idx on t_sprint_participant (t_sprint_id, p_partner_key, t_project_id);
+/* create  index t_sprint_participant_pk on t_sprint_participant (p_partner_key, t_sprint_id, t_project_id)*/ 
 /* go */
 
 
@@ -1100,6 +1140,7 @@ create  index t_assignee_task_idx on t_assignee (t_task_id, p_partner_key);
 /* t_task_history */
 /* create  index t_history_pk on t_task_history (t_task_id, t_history_id)*/ 
 /* go */
+create  index t_taskhist_idx on t_task_history (t_task_id, t_transition_date, t_history_id);
 
 
 /* s_config */

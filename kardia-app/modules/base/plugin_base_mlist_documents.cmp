@@ -1,0 +1,95 @@
+$Version=2$
+plugin_base_mlist_documents "widget/component-decl"
+    {
+    title = "Document";
+    types = 'IP';
+    sequence = 400;
+    width=718;
+    height=424;
+
+    mlist_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    create_file_cmp "widget/component"
+	{
+	path="/apps/kardia/modules/crm/create_file.cmp";
+
+	on_created "widget/connector" { event=FileCreated; target=doc_osrc; action=Refresh; }
+	}
+
+    doc_osrc "widget/osrc"
+	{
+	mlist_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=mlist_osrc;
+	    key_1=m_list_code;
+	    target_key_1=m_list_code;
+	    }
+
+	sql = "	select
+		    :md:m_list_code,
+		    :md:e_document_id,
+		    :e:e_title,
+		    :e:e_current_filename
+		from
+		    /apps/kardia/data/Kardia_DB/m_list_document/rows md,
+		    /apps/kardia/data/Kardia_DB/e_document/rows e
+		where
+		    :e:e_document_id = :md:e_document_id
+		";
+
+	edit_on_load "widget/connector"
+	    {
+	    event=EndQuery;
+	    //event_condition=runclient(:doc_osrc:e_document_id is not null);
+	    target=file_editor;
+	    action=EditFile;
+	    DocID=runclient(:doc_osrc:e_document_id);
+	    AssocID=runclient(null);
+	    }
+
+	doc_vbox "widget/vbox"
+	    {
+	    x=0; y=0; width=718; height=424; spacing=10;
+
+	    make_doc_hbox "widget/hbox"
+		{
+		height=24; spacing=10; align=center;
+
+		make_doc "widget/textbutton"
+		    {
+		    height=24; width=170;
+		    enabled=runclient(:doc_osrc:e_document_id is null);
+		    text="Create Document";
+
+		    on_make_doc "widget/connector"
+			{
+			event=Click;
+			target=create_file_cmp;
+			action=CreateFile;
+			title=runclient("New Document");
+			newfile_name=runclient("list_document.txt");
+			list_code=runclient(:mlist_osrc:m_list_code);
+			}
+		    }
+		}
+
+	    file_editor_pane "widget/pane"
+		{
+		height=390;
+		style=flat;
+		bgcolor = null;
+		enabled=runclient(:doc_osrc:e_document_id is not null);
+
+		file_editor "widget/component"
+		    {
+		    x=0; y=0; 
+		    height=390; width=718;
+		    path="/apps/kardia/modules/crm/edit_file.cmp";
+		    profile_context=0;
+		    titlebar=0;
+		    }
+		}
+	    }
+	}
+    }

@@ -414,7 +414,7 @@ crm "widget/component-decl"
 		    Center=runclient(:center);
 		    //PointOffset=runclient(20);
 		    engagement_id=runclient(:engagement_id);
-		    partner=runclient(:profile_cmp:p_partner_key);
+		    partner=runclient(isnull(:partner, :profile_cmp:p_partner_key));
 		    partnername=runclient(:profile_cmp:partnername);
 		    collaborator=runclient(:collaborator_osrc:p_partner_key);
 		    }

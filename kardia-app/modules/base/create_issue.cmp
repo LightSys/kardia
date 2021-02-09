@@ -12,6 +12,7 @@ create_issue "widget/component-decl"
 	parent_mlist = runclient(:parent_mlist);
 	new_mlist = runclient(:new_mlist);
 	new_desc = runclient(:new_desc);
+	new_date = runclient(:new_date);
 	}
 
     create_osrc "widget/osrc"
@@ -19,6 +20,7 @@ create_issue "widget/component-decl"
 	cr_parent_mlist "widget/parameter"	{ param_name=parent_mlist; type=string; }
 	cr_new_mlist "widget/parameter"		{ param_name=new_mlist; type=string; }
 	cr_new_desc "widget/parameter"		{ param_name=new_desc; type=string; }
+	cr_new_date "widget/parameter"		{ param_name=new_date; type=string; }
 
 	replicasize=1; readahead=1; autoquery=never;
 	sql = " INSERT
@@ -30,6 +32,7 @@ create_issue "widget/component-decl"
 			m_list_status = 'A',
 			m_list_type = 'I',
 			m_list_frozen = 1,
+			m_date_sent = isnull(:parameters:new_date, getdate()),
 			:l:m_charge_ledger,
 			:l:p_postal_mode,
 			:l:m_charge_cost_ctr,

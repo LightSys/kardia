@@ -331,6 +331,9 @@ alter table i_eg_gift_import
 alter table c_chat
 	add constraint c_public_idx unique  (c_public, c_chat_id);
 
+alter table t_project
+	add constraint t_parent_idx unique  (t_parent_project_id, t_project_id);
+
 alter table t_sprint
 	add constraint t_sprint_idx unique  (t_sprint_id);
 
