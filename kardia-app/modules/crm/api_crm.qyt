@@ -620,8 +620,8 @@ api_crm "system/querytree"
 		activity_list "system/querytree"
 		    {
 		    sql = runserver("
-			    DECLARE OBJECT activity
-			    ;
+			    DECLARE OBJECT activity ;
+			    DECLARE COLLECTION tmp_collection SCOPE APPLICATION ;
 
 			    SELECT
 				:activity:cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number), '')
@@ -634,21 +634,25 @@ api_crm "system/querytree"
 			    LIMIT
 				1
 			    ;
-			    
-			    DECLARE COLLECTION tmp_collection SCOPE APPLICATION
+
+			    SELECT
+				:activity:group_id = 1
+			    FROM
+				identity '/apps/kardia/modules/crm/timeline.qy?partner_key=" + escape(:eng_list:partner_id, "'", "") + "&my_cclist='
+			    ;
 			    
 			    SELECT
-				name = e_activity_type + '|' + :e_reference_info,
+				name = :e_activity_type + '|' + :e_reference_info,
 				whom = :e_whom,
 				initiated_by = condition(:e_initiation == 'C', 'Collaborator', 'Partner'),
-				activity_date = e_activity_date,
-				activity_type = e_activity_type,
+				activity_date = :e_activity_date,
+				activity_type = :e_activity_type,
 				reference_info = :e_reference_info,
 				info = :e_info
 			    FROM
 				COLLECTION tmp_collection
 			    ORDER BY
-				e_activity_date desc
+				:e_activity_date desc
 			    ");
 		    use_having = yes;
 		    }

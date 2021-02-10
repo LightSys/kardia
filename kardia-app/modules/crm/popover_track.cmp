@@ -61,6 +61,8 @@ popover_track "widget/component-decl"
 		engagement_id "widget/parameter" { type=integer; default=runclient(:engagement_var:value); }
 		partner "widget/parameter" { type=string; default=runclient(:partner_var:value); }
 		sql = "	declare object trackinfo;
+			declare collection tmp_trackcollect scope application;
+
 			select
 			    :pe:p_partner_key,
 			    :pe:e_engagement_id,
@@ -99,9 +101,6 @@ popover_track "widget/component-decl"
 
 			-- Here we build the list of steps in this engagement track, and
 			-- map out how the person is doing in the list.
-
-			declare collection tmp_trackcollect scope application;
-
 			insert
 			    collection tmp_trackcollect
 			select
@@ -115,11 +114,7 @@ popover_track "widget/component-decl"
 			    e_object_name = :s:name,
 			    e_object_label = :s:e_step_name,
 			    e_object_desc = isnull(condition(:pe:e_completion_status = 'C', 'Complete: ', 'Exited: ') + substring(convert(string,:pe:e_start_date),1,11) + ' - ' + substring(convert(string,isnull(:pe:e_completion_date,:pe:e_exited_date)),1,11) + '\n', isnull('Started: ' + substring(convert(string,:pe:e_start_date),1,11) + '\n','')),
-			    e_object_comm = :pe:e_comments,
-			    s_date_created = isnull(:pe:s_date_created, :s:s_date_created),
-			    s_created_by = isnull(:pe:s_created_by, :s:s_created_by),
-			    s_date_modified = isnull(:pe:s_date_modified, :s:s_date_modified),
-			    s_modified_by = isnull(:pe:s_modified_by, :s:s_modified_by)
+			    e_object_comm = :pe:e_comments
 			from
 			    /apps/kardia/data/Kardia_DB/e_engagement_step/rows s,
 			    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
@@ -136,9 +131,6 @@ popover_track "widget/component-decl"
 			;
 
 			-- Add track step requirements to the list
-
-			declare collection tmp_trackcollect scope application
-
 			insert
 			    collection tmp_trackcollect
 			select
@@ -174,11 +166,7 @@ popover_track "widget/component-decl"
 								    ''
 							)
 					    ),
-			    e_object_comm = null,
-			    :er:s_date_created,
-			    :er:s_created_by,
-			    :er:s_date_modified,
-			    :er:s_modified_by
+			    e_object_comm = null
 			from
 			    /apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows er,
 			    /apps/kardia/data/Kardia_DB/e_engagement_step/rows s
@@ -230,7 +218,7 @@ popover_track "widget/component-decl"
 
 			    sql = " -- Return the completed list to the user.
 
-			    	declare collection tmp_trackcollect scope application
+				    declare collection tmp_trackcollect scope application;
 
 				    select
 					-- track activity
@@ -266,7 +254,7 @@ popover_track "widget/component-decl"
 					todo_s_date_modified = :t:s_date_modified,
 					todo_s_modified_by = :t:s_modified_by
 				    from
-					collection tmp_trackcollect,
+					collection tmp_trackcollect ta,
 					/apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows per,
 					/apps/kardia/data/Kardia_DB/e_todo/rows t
 				    where
