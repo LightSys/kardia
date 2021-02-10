@@ -51,7 +51,8 @@ profile_timeline "widget/component-decl"
 	    event=EndQuery;
 	    target=profile_timeline_graph;
 	    action=LoadImage;
-	    Source=runclient("/apps/kardia/modules/crm/timeline_svg.rpt?id=");
+	    Source=runclient("/apps/kardia/modules/crm/timeline_svg.rpt?id=" + :timeline_data_osrc:activity_group_id);
+	    LinkApp=1;
 	    }
 	}
     

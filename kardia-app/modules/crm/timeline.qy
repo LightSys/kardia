@@ -5,6 +5,10 @@ timeline "system/query"
     my_cclist "query/parameter" { type=string; }
 
     sql = " DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+
+	    delete from
+		collection tmp_collection
+	    ;
 	
 	    -- Partner added to system
 	    insert
@@ -271,6 +275,8 @@ timeline "system/query"
 		:dt:e_doc_type_id = :d:e_doc_type_id
 	    group by
 		:pd:e_document_id
+	    having
+		:e_activity_date is not null
 	    ;
 
 	    -- Address modified in the system
@@ -337,5 +343,11 @@ timeline "system/query"
 		:et:e_track_id = :pe:e_track_id and
 		:es:e_track_id = :pe:e_track_id and
 		:es:e_step_id = :pe:e_step_id
+	    ;
+
+	    -- There is a dependency on this ID being unique per view
+	    select
+		name = 'ActivityGroupID',
+		activity_group_id = convert(integer, getdate())
 	    ";
     }

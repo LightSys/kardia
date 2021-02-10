@@ -101,6 +101,10 @@ popover_track "widget/component-decl"
 
 			-- Here we build the list of steps in this engagement track, and
 			-- map out how the person is doing in the list.
+			delete from
+			    collection tmp_trackcollect
+			;
+
 			insert
 			    collection tmp_trackcollect
 			select
