@@ -8,6 +8,7 @@ batches "widget/page"
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     require_one_endorsement="kardia:gl_entry","kardia:gl_manage";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+    max_requests=5;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     year_period "widget/parameter" { type=string; default=null; }
