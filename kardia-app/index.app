@@ -351,6 +351,7 @@ index "widget/page"
 
 			    tabpage_hbox "widget/hbox"
 				{
+				condition=runserver(:tabpages:h_adj < 600);
 				height=runserver(600 - :tabpages:h_adj);
 				spacing=10;
 
