@@ -1,0 +1,174 @@
+$Version=2$
+intent_types "widget/component-decl"
+    {
+    // Manage intent/pledge types
+    width=780; height=580;
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+
+    intent_vbox "widget/vbox"
+	{
+	x=0; y=0; width=780; height=580;
+	spacing=10;
+
+	intent_type_osrc "widget/osrc"
+	    {
+	    it_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
+
+	    sql = " select
+			:it:a_ledger_number,
+			:it:a_intent_type,
+			:it:a_intent_desc,
+			:it:a_is_active,
+			:it:a_create_receivable,
+			:it:a_recv_account_code,
+			:it:a_allow_daf,
+			:it:a_comment,
+			:it:s_date_created,
+			:it:s_created_by,
+			:it:s_date_modified,
+			:it:s_modified_by,
+			cnt = count(:pl:a_is_active),
+			acnt = count(condition(:pl:a_is_active = 1 and (:pl:a_end_date is null or :pl:a_end_date > getdate()) and (:pl:a_start_date is null or :pl:a_start_date < getdate()), 1, null)),
+			amt = isnull(sum(:pl:a_amount), $0),
+			tamt = isnull(sum(:pl:a_total_amount), $0)
+		    from
+			identity /apps/kardia/data/Kardia_DB/a_intent_type/rows it,
+			/apps/kardia/data/Kardia_DB/a_pledge/rows pl
+		    where
+			:it:a_ledger_number = :parameters:ledger and
+			:pl:a_ledger_number =* :it:a_ledger_number and
+			:pl:a_intent_type =* :it:a_intent_type
+		    group by
+			:it:a_ledger_number,
+			:it:a_intent_type
+		    ";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_intent_type/rows";
+	    replicasize=50;
+	    readahead=50;
+
+	    intent_type_table "widget/table"
+		{
+		height=546;
+		titlebar=yes;
+		colsep=0;
+		overlap_scrollbar=yes;
+		demand_scrollbar=yes;
+		initial_selection = no;
+		rowheight=null;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=6;
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_color="#a0a0a0";
+		row_shadow_angle=135;
+
+		it_name "widget/table-column" { title="Type"; width=280; value=runclient('(' + :intent_type_osrc:a_intent_type + ') ' + :intent_type_osrc:a_intent_desc); style=bold; caption_value=runclient(:intent_type_osrc:a_comment); }
+		it_active "widget/table-column" { title="Active?"; width=100; type=check; fieldname=a_is_active; align=center; }
+		it_daf "widget/table-column" { title="Allow DAF?"; width=100; type=check; fieldname=a_allow_daf; align=center; }
+		it_recv "widget/table-column" { title="Receivable?"; width=100; type=check; fieldname=a_create_receivable; align=center; }
+		it_recvacct "widget/table-column" { title="Recv Acct"; width=100; fieldname=a_recv_account_code; align=center; }
+		it_cnt "widget/table-column" { title="Active/Total"; width=100; value=runclient('' + :intent_type_osrc:acnt + '/' + :intent_type_osrc:cnt); align=center; }
+
+		intent_type_detail "widget/table-row-detail"
+		    {
+		    width=780; height=160;
+		    show_on_new=1;
+
+		    intent_type_detail_pane "widget/pane"
+			{
+			x=8; y=5; width=762; height=150;
+			style=flat;
+			bgcolor="#f8f8f8";
+			border_radius=4;
+
+			intent_type_detail_vbox "widget/vbox"
+			    {
+			    x=10; y=10; width=440; height=130;
+			    spacing=8;
+			    cellsize=20;
+
+			    intent_type_form "widget/form"
+				{
+				typedesc_hbox "widget/hbox"
+				    {
+				    height=20; spacing=10;
+
+				    id_type "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_intent_type; width=130; text="Type Code:"; }
+				    id_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_intent_desc; width=300; label_width=90; text="Description:"; }
+				    }
+				id_active "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_is_active; width=300; text="Active?"; }
+				daf_hbox "widget/hbox"
+				    {
+				    height=20; spacing=10;
+
+				    id_daf "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_allow_daf; width=130; text="Allow DAF?"; }
+				    daf_warn "widget/label" { width=300; textcolor=red; value=runclient(condition(:id_daf:value and :id_recv:value, "Warning: legally binding pledges and DAFs don't mix", "")); }
+				    }
+				recv_hbox "widget/hbox"
+				    {
+				    height=20; spacing=10;
+
+				    id_recv "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_create_receivable; width=130; text="Receivable?"; }
+				    id_recvacct "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_recv_account_code; width=160; label_width=90; text="Account Code:"; }
+				    }
+				id_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_comment; width=440; text="Comment:"; }
+				intent_type_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+				ledger_var "widget/variable" { fieldname=a_ledger_number; type=string; lv_hints "widget/hints" { default=runclient(:ledger:value); } }
+				}
+			    }
+
+			intent_type_ctls_vbox "widget/vbox"
+			    {
+			    x=620; y=10; width=130; height=130;
+			    spacing=8;
+
+			    save_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Save";
+				enabled=runclient(:intent_type_form:is_savable and char_length(:id_type:content) > 0);
+				on_save "widget/connector" { event=Click; target=intent_type_form; action=Save; }
+				}
+
+			    discard_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Cancel";
+				enabled=runclient(:intent_type_form:is_discardable);
+				on_discard "widget/connector" { event=Click; target=intent_type_form; action=Discard; }
+				}
+
+			    delete_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Delete";
+				enabled=runclient(:intent_type_form:is_editable and :intent_type_osrc:cnt == 0 and :id_type:content != 'R');
+				on_delete "widget/connector" { event=Click; target=intent_type_form; action=Delete; }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=right;
+
+	    new_ctl "widget/textbutton"
+		{
+		width=130;
+		height=24;
+		text="New Intent Type";
+		enabled=runclient(:intent_type_form:is_newable);
+		on_new "widget/connector" { event=Click; target=intent_type_form; action=New; }
+		}
+	    }
+	}
+    }

@@ -39,6 +39,8 @@ section_header "widget/component-decl"
 	    fl_height=100;
 	    align=left;
 	    valign=middle;
+	    allow_break=no;
+	    overflow_ellipsis=yes;
 	    value=runclient(:text:value);
 	    }
 

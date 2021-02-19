@@ -1,9 +1,9 @@
 $Version=2$
-cc_admin_fee "widget/page"
+gift_types "widget/page"
     {
-    title = "Admin Fees for Funds Maintenance";
+    title = "Gift/Payment Types";
     width=800;
-    height=600;
+    height=500;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     require_endorsements="kardia:gift_manage";
@@ -11,10 +11,11 @@ cc_admin_fee "widget/page"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
 
-    af_cmp "widget/component"
+    gt_cmp "widget/component"
 	{
-	x=10; y=10; width=780; height=580;
-	path = "/apps/kardia/modules/rcpt/cc_admin_fee.cmp";
+	x=10; y=10; width=780; height=480;
+	condition = runserver(not (:this:ledger is null));
+	path = "/apps/kardia/modules/rcpt/gift_types.cmp";
 	ledger = runserver(:this:ledger);
 	}
     }

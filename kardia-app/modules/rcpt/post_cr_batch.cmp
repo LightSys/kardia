@@ -91,6 +91,7 @@ post_cr_batch "widget/component-decl"
 			:g:a_period = :parameters:a_period
 		;
 
+		-- Auto-subscribe
 		INSERT INTO
 			/apps/kardia/data/Kardia_DB/m_list_membership/rows
 		SELECT
@@ -158,6 +159,7 @@ post_cr_batch "widget/component-decl"
 		--	    (:m:m_membership_status = 'C' and :m:m_reason_cancel = 'G'))
 		--;
 
+		-- Ensure denormalized item data is correct
 		UPDATE
 		    identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
@@ -175,6 +177,54 @@ post_cr_batch "widget/component-decl"
 		    :i:a_ledger_number = :g:a_ledger_number and
 		    :i:a_batch_number = :g:a_batch_number and
 		    :i:a_gift_number = :g:a_gift_number
+		;
+
+		-- Create permanent records for pledges/intents
+		INSERT
+		    /apps/kardia/data/Kardia_DB/a_pledge/rows
+		SELECT
+		    :in:a_ledger_number,
+		    a_is_active = 1,
+		    p_donor_partner_id = isnull(:in:p_dn_ack_partner_id, :in:p_dn_donor_partner_id),
+		    :in:a_cost_center,
+		    :in:a_intent_type,
+		    :in:a_amount,
+		    :in:a_total_amount,
+		    a_pledge_date = isnull(:in:a_start_date, getdate()),
+		    :in:a_start_date,
+		    :in:a_end_date,
+		    :in:a_giving_interval,
+		    :in:a_gift_count,
+		    a_comment = '**NEW**',
+		    s_date_created=getdate(),
+		    s_created_by=user_name(),
+		    s_date_modified=getdate(),
+		    s_modified_by=user_name()
+		FROM
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in
+		WHERE
+		    :in:a_ledger_number = :parameters:a_ledger_number and
+		    :in:a_batch_number = :parameters:a_batch_number and
+		    :in:a_pledge_id is null
+		;
+
+		UPDATE
+		    identity /apps/kardia/data/Kardia_DB/a_pledge/rows p,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in
+		SET
+		    :p:a_comment = :in:a_comment,
+		    :in:a_pledge_id = :p:a_pledge_id
+		WHERE
+		    :p:a_ledger_number = :parameters:a_ledger_number and
+		    :p:a_comment = '**NEW**' and
+		    :in:a_ledger_number = :p:a_ledger_number and
+		    :in:a_cost_center = :p:a_cost_center and
+		    isnull(:in:p_dn_ack_partner_id, :in:p_dn_donor_partner_id) = :p:p_donor_partner_id and
+		    :in:a_intent_type = :p:a_intent_type and
+		    isnull(:in:a_amount, $0) = isnull(:p:a_amount, $0) and
+		    isnull(:in:a_total_amount, $0) = isnull(:p:a_total_amount, $0) and
+		    isnull(:in:a_giving_interval, 0) = isnull(:p:a_giving_interval, 0) and
+		    isnull(:in:a_gift_count, 0) = isnull(:p:a_gift_count, 0)
 		";
 
 	end_post "widget/connector"
@@ -212,7 +262,8 @@ post_cr_batch "widget/component-decl"
 
 	replicasize=1; readahead=1; autoquery=never;
 	sql = " UPDATE
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+			identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
 		SET
 			:g:a_receipt_sent = 1,
 			:g:a_receipt_sent_date = :parameters:a_receipt_sent_date
@@ -221,7 +272,10 @@ post_cr_batch "widget/component-decl"
 			:g:a_ledger_number = :parameters:a_ledger_number and
 			:g:a_period = :parameters:a_period and
 			:g:a_receipt_sent = 0 and
-			(:parameters:types = '_' or :parameters:types = :g:a_receipt_desired)
+			(:parameters:types = '_' or :parameters:types = :g:a_receipt_desired) and
+			:gt:a_ledger_number = :g:a_ledger_number and
+			:gt:a_gift_payment_type = :g:a_gift_type and
+			:gt:a_is_cash = 1
 		";
 	end_setdate "widget/connector"
 	    { 
@@ -231,6 +285,103 @@ post_cr_batch "widget/component-decl"
 	    a_batch_number = runclient(:setdate_osrc:a_batch_number);
 	    a_ledger_number = runclient(:setdate_osrc:a_ledger_number);
 	    a_period = runclient(:setdate_osrc:a_period); 
+	    }
+	}
+
+    // Set receipt sent date - process
+    SetNCSentDate "widget/component-decl-action" { }
+    SetNCSentDateComplete "widget/component-decl-event" { }
+    setncdate_cn "widget/connector"
+	{
+	event=SetNCSentDate;
+	target=setncdate_osrc;
+	action=QueryParam;
+	a_batch_number = runclient(:a_batch_number);
+	a_ledger_number = runclient(:a_ledger_number);
+	a_period = runclient(:a_period);
+	a_receipt_sent_date = runclient(:a_receipt_sent_date);
+	types = runclient(:types);
+	}
+    setncdate_osrc "widget/osrc"
+	{
+	nd_a_batch_number "widget/parameter"	{ param_name=a_batch_number; type=integer; }
+	nd_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
+	nd_a_period "widget/parameter"		{ param_name=a_period; type=string; }
+	nd_a_receipt_sent_date "widget/parameter" { param_name=a_receipt_sent_date; type=string; }
+	nd_types "widget/parameter" { param_name=types; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " UPDATE
+			identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
+		SET
+			:g:a_receipt_sent = 1,
+			:g:a_receipt_sent_date = :parameters:a_receipt_sent_date
+		WHERE
+			:g:a_batch_number = :parameters:a_batch_number and
+			:g:a_ledger_number = :parameters:a_ledger_number and
+			:g:a_period = :parameters:a_period and
+			:g:a_receipt_sent = 0 and
+			(:parameters:types = '_' or :parameters:types = :g:a_receipt_desired) and
+			:gt:a_ledger_number = :g:a_ledger_number and
+			:gt:a_gift_payment_type = :g:a_gift_type and
+			:gt:a_is_cash = 0
+		";
+	end_setncdate "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=post_cr_batch;
+	    action=SetNCSentDateComplete;
+	    a_batch_number = runclient(:setncdate_osrc:a_batch_number);
+	    a_ledger_number = runclient(:setncdate_osrc:a_ledger_number);
+	    a_period = runclient(:setncdate_osrc:a_period); 
+	    }
+	}
+
+    // Set ack sent date - process
+    SetAckSentDate "widget/component-decl-action" { }
+    SetAckSentDateComplete "widget/component-decl-event" { }
+    setackdate_cn "widget/connector"
+	{
+	event=SetAckSentDate;
+	target=setackdate_osrc;
+	action=QueryParam;
+	a_batch_number = runclient(:a_batch_number);
+	a_ledger_number = runclient(:a_ledger_number);
+	a_period = runclient(:a_period);
+	a_ack_receipt_sent_date = runclient(:a_ack_receipt_sent_date);
+	types = runclient(:types);
+	}
+    setackdate_osrc "widget/osrc"
+	{
+	ad_a_batch_number "widget/parameter"	{ param_name=a_batch_number; type=integer; }
+	ad_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
+	ad_a_period "widget/parameter"		{ param_name=a_period; type=string; }
+	ad_a_ack_receipt_sent_date "widget/parameter" { param_name=a_ack_receipt_sent_date; type=string; }
+	ad_types "widget/parameter" { param_name=types; type=string; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " UPDATE
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+		SET
+			:g:a_ack_receipt_sent = 1,
+			:g:a_ack_receipt_sent_date = :parameters:a_ack_receipt_sent_date
+		WHERE
+			:g:a_batch_number = :parameters:a_batch_number and
+			:g:a_ledger_number = :parameters:a_ledger_number and
+			:g:a_period = :parameters:a_period and
+			char_length(:g:p_ack_partner_id) >= 1 and
+			:g:a_ack_receipt_sent = 0 and
+			(:parameters:types = '_' or :parameters:types = :g:a_ack_receipt_desired)
+		";
+	end_setackdate "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=post_cr_batch;
+	    action=SetAckSentDateComplete;
+	    a_batch_number = runclient(:setackdate_osrc:a_batch_number);
+	    a_ledger_number = runclient(:setackdate_osrc:a_ledger_number);
+	    a_period = runclient(:setackdate_osrc:a_period); 
 	    }
 	}
 
@@ -303,16 +454,12 @@ post_cr_batch "widget/component-decl"
 	a_batch_number = runclient(:a_batch_number);
 	a_ledger_number = runclient(:a_ledger_number);
 	a_period = runclient(:a_period);
-	a_cash_account = runclient(:a_cash_account);
-	a_cash_costctr = runclient(:a_cash_costctr);
 	}
     glpost_osrc_1 "widget/osrc"
 	{
 	glp_a_batch_number "widget/parameter" { param_name=a_batch_number; type=integer; }
 	glp_a_ledger_number "widget/parameter" { param_name=a_ledger_number; type=string; }
 	glp_a_period "widget/parameter" { param_name=a_period; type=string; }
-	glp_a_cash_account "widget/parameter" { param_name=a_cash_account; type=string; }
-	glp_a_cash_costctr "widget/parameter" { param_name=a_cash_costctr; type=string; }
 	replicasize=1; readahead=1; autoquery=never;
 
 
@@ -398,9 +545,9 @@ post_cr_batch "widget/component-decl"
 			-- a_effective_date = isnull(:a_gift_postmark_date, :a_gift_received_date),
 			a_effective_date = :b:a_default_effective_date,
 			a_transaction_type='T',
-			a_cost_center = :parameters:a_cash_costctr,
-			a_account_category=:config:cash_class,
-			a_account_code = :parameters:a_cash_account,
+			a_cost_center = :gt:a_payment_cost_center,
+			a_account_category = isnull( (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :gt:a_ledger_number and :a:a_account_code = :gt:a_payment_account_code), '10'),
+			a_account_code = :gt:a_payment_account_code,
 			a_amount = sum(:gi:a_amount),
 			a_posted = 1,
 			a_modified = 0,
@@ -421,15 +568,20 @@ post_cr_batch "widget/component-decl"
 			a_comment = '' + count(:gi:a_amount) + ' Gifts deposited'
 		FROM
 			/apps/kardia/data/Kardia_DB/a_batch/rows b,
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
+			/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
 		WHERE
 			:b:a_batch_number = :parameters:a_batch_number and
 			:b:a_ledger_number = :parameters:a_ledger_number and
 			:b:a_period = :parameters:a_period and
 			:gi:a_ledger_number = :b:a_ledger_number and
-			:gi:a_batch_number = :b:a_batch_number
+			:gi:a_batch_number = :b:a_batch_number and
+			:gt:a_ledger_number = :gi:a_ledger_number and
+			:gt:a_gift_payment_type = :gi:a_dn_gift_type
 		GROUP BY
-			:b:a_ledger_number, :b:a_batch_number
+			:b:a_ledger_number,
+			:b:a_batch_number,
+			:gi:a_dn_gift_type
 		;
 
 		UPDATE
