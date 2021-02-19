@@ -235,7 +235,7 @@ activity "system/query"
 		e_activity_date = isnull(:m:m_start_date, :m:s_date_created),
 		e_activity_type = 'COMM',
 		e_reference_info = :m:name,
-		e_info = 'Subscribed to \"' + :ml:m_list_description + '\"' + isnull(' (Reason: ' + :mmr:text + ')', ''),
+		e_info = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + ' Subscribed to \"' + :ml:m_list_description + '\"' + isnull('\n(Reason: ' + :mmr:text + ')', ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :m:s_created_by),
 		e_initiation = 'C' --,
 		--s_date_created = getdate(),
@@ -246,8 +246,10 @@ activity "system/query"
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m2,
 		/apps/kardia/data/Kardia_DB/m_list/rows ml,
-		/apps/kardia/data/Kardia_DB/_m_member_reason/rows mmr
+		/apps/kardia/data/Kardia_DB/_m_member_reason/rows mmr,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
 	    where
+		:p:p_partner_key = :m:p_partner_key and
 		:m2:p_partner_key = :activitygroup:staff_key and
 		:m2:m_member_type = 'O' and
 		:m2:m_list_code = :ml:m_list_code and
@@ -269,7 +271,7 @@ activity "system/query"
 		e_activity_date = isnull(:m:m_cancel_date, :m:s_date_modified),
 		e_activity_type = 'COMM',
 		e_reference_info = :m:name + '|U',
-		e_info = 'Unsubscribed from \"' + :ml:m_list_description + '\"' + condition(:m:m_membership_status = 'C', ' - Canceled' + isnull(' due to ' + :mcr:text, ''), ''),
+		e_info = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + ' Unsubscribed from \"' + :ml:m_list_description + '\"' + isnull('\n' + condition(:m:m_membership_status = 'C', 'Canceled' + isnull(' due to ' + :mcr:text, ''), null), ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :m:s_modified_by),
 		e_initiation = 'C' --,
 		--s_date_created = getdate(),
@@ -280,8 +282,10 @@ activity "system/query"
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m,
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows m2,
 		/apps/kardia/data/Kardia_DB/m_list/rows ml,
-		/apps/kardia/data/Kardia_DB/_m_cancel_reason/rows mcr
+		/apps/kardia/data/Kardia_DB/_m_cancel_reason/rows mcr,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
 	    where
+		:p:p_partner_key = :m:p_partner_key and
 		:m2:p_partner_key = :activitygroup:staff_key and
 		:m2:m_member_type = 'O' and
 		:m2:m_list_code = :ml:m_list_code and
@@ -303,7 +307,7 @@ activity "system/query"
 		e_activity_date = :m:s_date_created,
 		e_activity_type = 'COMM',
 		e_reference_info = :m:name,
-		e_info = 'Received Issue \"' + :ml_iss:m_list_description + '\" of Mailing \"' + :ml_pub:m_list_description + '\"',
+		e_info = '' + count(1) + ' Partners Received Issue \"' + :ml_iss:m_list_description + '\" of Mailing \"' + :ml_pub:m_list_description + '\"',
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :m:s_created_by),
 		e_initiation = 'C' --,
 		--s_date_created = getdate(),
@@ -325,6 +329,10 @@ activity "system/query"
 		:ml_iss:m_list_type = 'I' and
 		:ml_pub:m_list_code = :ml_iss:m_list_parent and
 		:m:s_date_created > dateadd(month, -3, getdate())
+	    group by
+		:m2:m_list_code
+	    having
+		:e_info is not null
 	    ;
 
 	    -- Return the ID to the user
