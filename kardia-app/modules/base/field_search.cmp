@@ -1,0 +1,40 @@
+$Version=2$
+search "widget/component-decl"
+    {
+    width=226;
+    height=22;
+
+    empty_description "widget/parameter" { type=string; }
+
+    Search "widget/component-decl-event" { }
+
+    search_box "widget/editbox"
+	{
+	x=0; y=1; width=200; height=20;
+	empty_description=runserver(:this:empty_description);
+
+	enter_pressed_do_search "widget/connector"
+	    {
+	    event=BeforeKeyPress;
+	    event_condition=runclient(:Name == 'enter');
+	    event_cancel=runclient(:Name == 'enter');
+	    target=search;
+	    action=Search;
+	    query=runclient(:search_box:content);
+	    }
+	}
+    search_btn "widget/imagebutton"
+	{
+	x=204; y=0; width=22; height=22;
+	text="";
+	image = "/apps/kardia/images/tango/system-search-22.png";
+
+	btn_do_search "widget/connector"
+	    {
+	    event=Click;
+	    target=search;
+	    action=Search;
+	    query=runclient(:search_box:content);
+	    }
+	}
+    }
