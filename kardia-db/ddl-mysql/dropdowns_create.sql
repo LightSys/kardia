@@ -473,3 +473,19 @@ insert _a_pledge_type values('P','Pledge','','');
 insert _a_pledge_type values('F','Faith-Promise','','');
 insert _a_pledge_type values('I','Intention','','');
 insert _a_pledge_type values('R','Online Recurring','','');
+create table _a_item_intent_code (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,
+  __cx_osml_control varchar(255) null);
+alter table _a_item_intent_code add constraint pk__a_item_intent_code primary key  (tag);
+insert _a_item_intent_code values('A','As Able','','');
+insert _a_item_intent_code values('D','Decreasing','','');
+insert _a_item_intent_code values('E','Extra Giving','','');
+insert _a_item_intent_code values('I','Increasing','','');
+insert _a_item_intent_code values('L','Last Gift','','');
+insert _a_item_intent_code values('M','Monthly Recurring','','');
+insert _a_item_intent_code values('O','One-Time','','');
+insert _a_item_intent_code values('Q','Quarterly Recurring','','');
+insert _a_item_intent_code values('R','Recurring (Other)','','');
+insert _a_item_intent_code values('Y','Annually Recurring','','');

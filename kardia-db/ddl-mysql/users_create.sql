@@ -472,6 +472,9 @@ grant select on ra to public;
 /* a_pledge */
 
 
+/* a_intent_type */
+
+
 /* a_subtrx_cashdisb */
 
 

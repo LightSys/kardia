@@ -839,7 +839,7 @@ create  index a_ccra_ledger_number_idx on a_cc_receipting_accts (a_ledger_number
 
 
 /* a_gift_payment_type */
-/* create  index a_gpmttype_pk on a_gift_payment_type (a_gift_payment_type)*/ 
+/* create  index a_gpmttype_pk on a_gift_payment_type (a_ledger_number, a_gift_payment_type)*/ 
 /* go */
 
 
@@ -972,6 +972,11 @@ create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a
 create  index a_pledge_donor_idx on a_pledge (a_ledger_number, p_donor_partner_id, a_pledge_id);
 create  index a_pledge_fund_idx on a_pledge (a_ledger_number, a_cost_center, a_pledge_id);
 /* create  index a_pledge_pk on a_pledge (a_ledger_number, a_pledge_id)*/ 
+/* go */
+
+
+/* a_intent_type */
+/* create  index a_intenttype_pk on a_intent_type (a_ledger_number, a_intent_type)*/ 
 /* go */
 
 

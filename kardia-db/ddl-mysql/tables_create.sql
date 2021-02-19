@@ -277,6 +277,7 @@ create table p_donor (
         p_contact_id                          integer  null,           /* The contact info id (email/phone/etc) to use as a "best contact for" this donor --  */
         p_org_name_first                      bit  not null,           /* Whether to list organization name first on receipt address, rather than first/last name. --  */
         p_receipt_desired                     char(1)  null,           /* Indicates the donor's preference for receipts: (N)one, (I)mmediate, (A)nnual --  */
+        p_is_daf                              bit  default 0,          /* Whether this donor is a donor advised fund --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2818,10 +2819,12 @@ insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is
 /* a_gift_payment_type */
 
 create table a_gift_payment_type (
+        a_ledger_number                       char(10)  not null,      /* ledger number --  */
         a_gift_payment_type                   char(1)  not null,       /* payment type --  */
         a_gift_payment_type_desc              varchar(64)  not null,   /* payment type description --  */
         a_is_default                          bit  default 0,          /* is this the default payment type? --  */
         a_is_enabled                          bit  default 1,          /* is this payment type enabled? --  */
+        a_is_cash                             bit  default 1,          /* is this payment type a cash (check, cash, credit card, etc.) or noncash (in-kind) gift? --  */
         a_payment_cost_center                 char(20)  null,          /* cost center for payment (defaults to value in a_config) --  */
         a_payment_account_code                char(16)  null,          /* GL account for payment (defaults to value in a_config) --  */
         a_desig_account_code                  char(16)  null,          /* GL account code for designations, to force a specific one --  */
@@ -2923,15 +2926,18 @@ create table a_subtrx_gift_group (
         p_ack_partner_id                      char(10)  null,          /* Partner ID to send non-receipt acknowledgment to --  */
         p_pass_partner_id                     char(10)  null,          /* Partner ID of pass-through entity --  */
         a_receipt_sent                        bit  default 0,          /* Receipt sent to donor --  */
+        a_ack_receipt_sent                    bit  default 0,          /* Acknowledgement sent --  */
         a_receipt_desired                     char(1)  default 'I'  null,
                                                                       /* Receipt needed -- 'I' for immediate, 'A' for annual, 'N' for no receipt --  */
+        a_ack_receipt_desired                 char(1)  null,           /* Acknowledgement needed -- 'I' for immediate, 'A' for annual, 'N' for no receipt --  */
         a_first_gift                          bit  default 0,          /* Donor's first gift? --  */
         a_goods_provided                      decimal(14,4)  default 0.00  null,
                                                                       /* Amount of gift that is considered a fee for goods provided in return --  */
         a_gift_received_date                  datetime  null,          /* Date a gift actually was received by the office --  */
         a_gift_postmark_date                  datetime  null,          /* Date a gift was postmarked (if available) --  */
         a_receipt_sent_date                   datetime  null,          /* Date the receipt was sent to the donor --  */
-        a_comment                             varchar(255)  null,      /* Gift comments --  */
+        a_ack_receipt_sent_date               datetime  null,          /* Date the acknowledgement was sent --  */
+        a_comment                             varchar(900)  null,      /* Gift comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2969,6 +2975,7 @@ create table a_subtrx_gift_item (
         a_confidential                        bit  default 0,          /* Set this if the donor wishes to remain anonymous (to the recipient) --  */
         a_non_tax_deductible                  bit  default 0,          /* Set this if the gift is a non-tax-deductible gift, such as a personal gift (i.e., payable to missionary instead of support gift) --  */
         a_motivational_code                   varchar(16)  null,       /* Optional motivational code that indicates what motivated the donor to give this gift. --  */
+        a_item_intent_code                    char(1)  null,           /* Giver intention for this line item - different from intent type. E.g. Extra, Recurring, Increase, Decrease, LastGift, AsAble, OneTime. --  */
         a_comment                             varchar(255)  null,      /* Gift comments --  */
         i_eg_source_key                       varchar(255)  null,      /* If imported, this is the key value for i_eg_gift_import. --  */
         p_dn_donor_partner_id                 char(10)  null,          /* **Denormalized** Partner ID of gift donor. --  */
@@ -2996,13 +3003,18 @@ create table a_subtrx_gift_intent (
         a_intent_number                       integer  not null,       /* intent number for this gift --  */
         a_split_number                        integer  null,           /* the split gift ID, if this gift references a specific split gift item, otherwise NULL. --  */
         a_pledge_id                           integer  null,           /* Reference to pledges table to associate this gift intent with a pledge --  */
+        p_dn_donor_partner_id                 char(10)  not null,      /* Donor ID making the pledge - denormalized (from gift_group) --  */
+        p_dn_ack_partner_id                   char(10)  null,          /* Acknowledgement ID making the pledge - denormalized (from gift_group) --  */
+        a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
         a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention --  */
-        a_amount                              decimal(14,4)  null,     /* Amount for this intent - UI should default copy from gift data --  */
+        a_amount                              decimal(14,4)  null,     /* Amount for this intent (e.g. monthly amount) - UI should default copy from gift data --  */
+        a_total_amount                        decimal(14,4)  null,     /* Total amount for this intent (e.g. total pledge) --  */
         a_start_date                          datetime  null,          /* Starting date - UI should default copy from gift data --  */
         a_end_date                            datetime  null,          /* Ending date / due date - default is null --  */
         a_giving_interval                     integer  null,           /* Giving interval: 1=monthly, 12=annually, NULL=total or as-able --  */
         a_gift_count                          integer  null,           /* Number of gifts intended (NULL for unknown/no limit) --  */
         a_comment                             varchar(255)  null,      /* Comment about this intent or pledge --  */
+        a_autogen                             bit  not null,           /* Auto-generated by matching in the UI --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3284,15 +3296,37 @@ create table a_descriptives_hist (
 create table a_pledge (
         a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
         a_pledge_id                           integer  not null,       /* ID of this pledge --  */
+        a_is_active                           bit  not null,           /* Active pledge? --  */
         p_donor_partner_id                    char(10)  not null,      /* Donor ID making the pledge --  */
         a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
-        a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention --  */
-        a_amount                              decimal(14,4)  null,     /* Amount for this intent - UI should default copy from gift data --  */
+        a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention, R=online recurring --  */
+        a_amount                              decimal(14,4)  null,     /* Periodic amount for this intent (e.g. monthly) - UI should default copy from gift data --  */
+        a_total_amount                        decimal(14,4)  null,     /* Total amount this intent (e.g. pledged total for the year) --  */
         a_pledge_date                         datetime  null,          /* Date the pledge was made --  */
         a_start_date                          datetime  null,          /* Starting date - UI should default copy from gift data --  */
         a_end_date                            datetime  null,          /* Ending date / due date - default is null --  */
         a_giving_interval                     integer  null,           /* Giving interval: 1=monthly, 12=annually, NULL=total or as-able --  */
         a_gift_count                          integer  null,           /* Number of gifts intended (NULL for unknown/no limit) --  */
+        a_comment                             varchar(255)  null,      /* Comment about this intent or pledge --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_intent_type */
+
+create table a_intent_type (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
+        a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention, R=online recurring --  */
+        a_intent_desc                         varchar(80)  not null,   /* Intent type label/description --  */
+        a_is_active                           bit  not null,           /* Active intent type (selectable by the user) --  */
+        a_create_receivable                   bit  not null,           /* Whether to create a receivable for this intent type --  */
+        a_recv_account_code                   char(16)  null,          /* If creating receivables, this is the GL account to use --  */
+        a_allow_daf                           bit  not null,           /* Whether to allow donor advised fund (DAF) gifts to this intent type --  */
         a_comment                             varchar(255)  null,      /* Comment about this intent or pledge --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */

@@ -623,6 +623,10 @@ drop table a_descriptives_hist;
 drop table a_pledge;
 
 
+/* a_intent_type */
+drop table a_intent_type;
+
+
 /* a_subtrx_cashdisb */
 drop table a_subtrx_cashdisb;
 

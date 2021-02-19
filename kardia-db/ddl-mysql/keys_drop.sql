@@ -1042,6 +1042,10 @@ alter table a_pledge
 	drop primary key;
 
 
+alter table a_intent_type
+	drop primary key;
+
+
 alter table a_subtrx_cashdisb
 	drop primary key;
 

@@ -428,7 +428,7 @@ alter table a_receipt_type
 	add constraint a_rcpttype_pk primary key  (a_receipt_type);
 
 alter table a_gift_payment_type
-	add constraint a_gpmttype_pk primary key  (a_gift_payment_type);
+	add constraint a_gpmttype_pk primary key  (a_ledger_number, a_gift_payment_type);
 
 alter table a_receipt_mailing
 	add constraint a_giftlist_pk primary key  (a_ledger_number, m_list_code);
@@ -486,6 +486,9 @@ alter table a_descriptives_hist
 
 alter table a_pledge
 	add constraint a_pledge_pk primary key  (a_ledger_number, a_pledge_id);
+
+alter table a_intent_type
+	add constraint a_intenttype_pk primary key  (a_ledger_number, a_intent_type);
 
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);

@@ -975,6 +975,11 @@ alter table a_pledge drop index a_pledge_fund_idx;
 /* go */
 
 
+/* a_intent_type */
+/* drop index a_intent_type.a_intenttype_pk */ 
+/* go */
+
+
 /* a_subtrx_cashdisb */
 alter table a_subtrx_cashdisb drop index a_subtrx_cashdisb_acct_idx;
 alter table a_subtrx_cashdisb drop index a_subtrx_cashdisb_batch_idx;
