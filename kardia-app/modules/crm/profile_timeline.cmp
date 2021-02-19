@@ -84,7 +84,18 @@ profile_timeline "widget/component-decl"
 			    last_info = condition(charindex('\n', :e:e_info) > 0, substring(:e:e_info, charindex('\n', :e:e_info) + 1), null),
 			    :e:p_partner_key,
 			    shortdate = substring(convert(string,:e:e_activity_date),1,11),
-			    datewhom = isnull(condition(:e:e_whom == :parameters:my_id, 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)) + ' ', '') + 'on ' + substring(convert(string,:e:e_activity_date),1,11)
+			    datewhom = isnull(condition(:e:e_whom == :parameters:my_id, 'Me', condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)), '') + ', ' + 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) = 0, 'now',
+				    condition(datediff(minute,:e:e_activity_date,getdate()) = 1, '' + 'a minute ago', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 60, '' + datediff(minute,:e:e_activity_date,getdate()) + ' minutes ago', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 120, 'an hour ago', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 720, '' + (datediff(minute,:e:e_activity_date,getdate()) / 60) + ' hours ago', 
+				    condition(datediff(day,:e:e_activity_date,getdate()) = 1, 'yesterday', 
+				    condition(datediff(minute,:e:e_activity_date,getdate()) < 1440, '' + (datediff(minute,:e:e_activity_date,getdate()) / 60) + ' hours ago', 
+				    condition(datediff(day,:e:e_activity_date,getdate()) < 7, '' + datediff(day,:e:e_activity_date,getdate()) + ' days ago', 
+
+				    'on ' + substring(convert(string,:e:e_activity_date),1,11)
+				    ))))))))
 			from
 			    /apps/kardia/data/Kardia_DB/e_activity/rows e,
 			    --'/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_cclist=' e,

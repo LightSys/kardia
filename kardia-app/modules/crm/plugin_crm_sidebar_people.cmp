@@ -387,7 +387,7 @@ people_list "widget/component-decl"
 			on_add "widget/connector"
 			    {
 			    event=Click;
-			    target=search;
+			    target=people_list;
 			    action=AddPerson;
 			    Origin=add_btn;
 			    partner=runclient(:active_collab_osrc:p_partner_key);
