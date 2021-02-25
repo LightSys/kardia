@@ -33,8 +33,8 @@ plugin_crm_search_TAG "widget/component-decl"
 	    numdisplay=12;
 	    sql="select label=:t:e_track_name + condition(char_length(:t:e_track_description) > 1, ' (' + :t:e_track_description + ')', ''), value=:t:e_track_id from /apps/kardia/data/Kardia_DB/e_engagement_track/rows t order by :t:e_track_name";
 
-	    on_change_set_step_group "widget/connector" { event=DataModify; target=track_step; action=SetGroup; Group=runclient(:Value); }
-	    on_change_set_notstep_group "widget/connector" { event=DataModify; target=track_notstep; action=SetGroup; Group=runclient(:Value); }
+	    on_change_set_step_group "widget/connector" { event=DataChange; target=track_step; action=SetGroup; Group=runclient(:Value); }
+	    on_change_set_notstep_group "widget/connector" { event=DataChange; target=track_notstep; action=SetGroup; Group=runclient(:Value); }
 	    }
 
 	track_opt_pane "widget/pane"
