@@ -969,7 +969,7 @@ myprojects "widget/component-decl"
 			{
 			height=26;
 			path="/apps/kardia/modules/task/label_pane.cmp";
-			text = runclient(:project_osrc:t_project_label + ' Sprints');
+			text = runclient(condition(:project_osrc:t_project_id == 0, 'Sprints for All Active Projects', :project_osrc:t_project_label + ' Sprints'));
 			}
 
 		    sprints_osrc "widget/osrc"
@@ -991,13 +991,18 @@ myprojects "widget/component-decl"
 				    start = substring(convert(string, :s:t_sprint_start),1,11),
 				    end = substring(convert(string, :s:t_sprint_end),1,11),
 				    projcnt = count(:sp:t_project_id),
-				    activecnt = (select count(:sp:t_project_id) from /apps/kardia/data/Kardia_DB/t_project/rows proj where :proj:t_project_id = :sp:t_project_id and :proj:t_project_status = 'A'),
+				    activecnt = isnull(sum((select count(:proj:t_project_id) from /apps/kardia/data/Kardia_DB/t_project/rows proj where :proj:t_project_id = :sp:t_project_id and :proj:t_project_status = 'A')), 0),
 				    taskcnt = isnull(sum((select count(1) from /apps/kardia/data/Kardia_DB/t_task/rows t where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :s:t_sprint_id)), 0),
 				    partcnt = isnull(sum((select count(1) from /apps/kardia/data/Kardia_DB/t_sprint_participant/rows spr where :spr:t_project_id = :sp:t_project_id and :spr:t_sprint_id = :s:t_sprint_id)), 0),
 				    timecnt = isnull(sum((select count(1) from /apps/kardia/data/Kardia_DB/t_sprint_time/rows st where (:st:t_project_id = :sp:t_project_id or :st:t_project_id is null) and :st:t_sprint_id = :s:t_sprint_id)), 0),
 				    taskhrs = isnull(sum((select isnull(sum(:t:t_task_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :s:t_sprint_id and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F')), 0.0),
 				    taskhrsdone = isnull(sum((select isnull(sum(condition(:ts:t_task_state_type = 'C', :t:t_task_hours, :t:t_task_hours * isnull(:t:t_task_percent, 0.0))), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :s:t_sprint_id and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F')), 0.0),
-				    decdone = isnull(sum(condition((select isnull(sum(:t:t_task_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :s:t_project_id and :t:t_sprint_id = :s:t_sprint_id and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F') = 0, 0.0, (select isnull(sum(condition(:ts:t_task_state_type = 'C', :t:t_task_hours, :t:t_task_hours * isnull(:t:t_task_percent, 0.0))), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :s:t_sprint_id and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F') / (select isnull(sum(:t:t_task_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :s:t_sprint_id and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F'))), 0.0),
+				    decdone = isnull(condition(
+					    sum( (select isnull(sum(:t:t_task_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :s:t_sprint_id and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F') ) = 0, 
+					    0.0, 
+					    sum( (select isnull(sum(condition(:ts:t_task_state_type = 'C', :t:t_task_hours, :t:t_task_hours * isnull(:t:t_task_percent, 0.0))), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :s:t_sprint_id and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F') ) /
+					    sum( (select isnull(sum(:t:t_task_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :s:t_sprint_id and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F') ) ),
+					0.0),
 				    workcap = isnull(sum((select isnull(sum(:st:t_time_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_sprint_time/rows st where (:st:t_project_id = :sp:t_project_id or :st:t_project_id is null) and :st:t_sprint_id = :s:t_sprint_id) * (select isnull(sum(:spr:t_skill_ratio), 0.0) from /apps/kardia/data/Kardia_DB/t_sprint_participant/rows spr, /apps/kardia/data/Kardia_DB/t_participant/rows p where :spr:t_project_id = :sp:t_project_id and :spr:t_sprint_id = :s:t_sprint_id and :p:p_partner_key = :spr:p_partner_key and :p:t_project_id = :spr:t_project_id)), 0.0),
 				    workhrs = isnull(sum((select isnull(sum(:st:t_time_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_sprint_time/rows st where (:st:t_project_id = :sp:t_project_id or :st:t_project_id is null) and :st:t_sprint_id = :s:t_sprint_id)), 0.0)
 				from
