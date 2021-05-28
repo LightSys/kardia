@@ -63,6 +63,7 @@ copy_gift "widget/component-decl"
 		    :g:a_receipt_desired = isnull(:parameters:new_rcptdes, isnull(:g:a_receipt_desired, :g2:a_receipt_desired)),
 		    :g:a_ack_receipt_desired = isnull(:parameters:new_ackrcptdes, isnull(:g:a_ack_receipt_desired, condition(:parameters:new_ackdonor == :g2:p_ack_partner_id, :g2:a_ack_receipt_desired, condition(:parameters:new_ackdonor == :g2:p_donor_partner_id, :g2:a_receipt_desired, condition(:parameters:new_ackdonor is null, null, 'I'))))),
 		    :g:a_gift_type = isnull(:parameters:new_gifttype, :g:a_gift_type),
+		    :g:a_amount = isnull(:g2:a_amount, :g:a_amount),
 		    :g:a_comment = isnull(:parameters:new_adminnote, isnull(:g:a_comment, :g2:a_comment))
 		where
 		    :g:a_ledger_number = :parameters:a_ledger_number and

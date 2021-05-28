@@ -23,6 +23,7 @@ manage_pledges "widget/component-decl"
 			:pl:a_cost_center,
 			:pl:a_amount,
 			:pl:a_total_amount,
+			:pl:a_pledge_date,
 			:pl:a_start_date,
 			:pl:a_end_date,
 			:pl:a_giving_interval,
@@ -32,8 +33,8 @@ manage_pledges "widget/component-decl"
 			:pl:s_created_by,
 			:pl:s_date_modified,
 			:pl:s_modified_by,
-			cnt = count(:in:a_pledge_id),
-			given = isnull(sum(:in:a_amount), $0),
+			cnt = count(:gi:a_ledger_number),
+			given = isnull(sum(:gi:a_amount), $0),
 			donor = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 			:cc:a_cc_desc,
 			:it:a_intent_desc,
@@ -97,6 +98,7 @@ manage_pledges "widget/component-decl"
 			    + condition(:pledge_osrc:a_total_amount is not null, 'total gift ' + :pledge_osrc:a_total_amount + ' ', isnull('giving ' + :pledge_osrc:a_amount + ' ', '')) + 'for ' + :pledge_osrc:a_cc_desc
 			    );
 		    style=bold;
+		    wrap=yes;
 		    caption_value=runclient(
 			    condition(:pledge_osrc:a_intent_desc is not null, :pledge_osrc:a_intent_desc + ', ', '')
 			    + condition(:pledge_osrc:interval_desc is not null, :pledge_osrc:interval_desc + ', ', '') 
@@ -108,7 +110,7 @@ manage_pledges "widget/component-decl"
 			    );
 		    }
 		pl_active "widget/table-column" { title="Active?"; width=80; type=check; fieldname=a_is_active; align=center; }
-		pl_amt "widget/table-column" { title="Given"; width=100; value=runclient('' + :pledge_osrc:given + isnull(' / ' + :pledge_osrc:a_total_amount, '')); align=center; }
+		pl_amt "widget/table-column" { title="Given"; width=100; value=runclient('' + :pledge_osrc:given + isnull(' / ' + :pledge_osrc:a_total_amount, '') + ' (' + :pledge_osrc:cnt + ')'); align=center; }
 
 		pledge_detail "widget/table-row-detail"
 		    {
@@ -166,6 +168,7 @@ manage_pledges "widget/component-decl"
 				p_tamt "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_total_amount; text="Total Amount:"; }
 				p_interval "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=a_giving_interval; text="How Often:"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_a_giving_interval/rows order by :tag"; numdisplay=15; pi_default "widget/hints" { default=runclient(1); } }
 				p_cnt "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_gift_count; width=160; text="# Gifts:"; }
+				p_pdate "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; field=a_pledge_date; text="Date Made:"; date_only=1; default_time="12:00:00"; p_pdate_hints "widget/hints" { default=runclient(getdate()); } }
 				p_start "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; field=a_start_date; text="Starting:"; date_only=1; default_time="00:00:00"; p_start_hints "widget/hints" { default=runclient(getdate()); } }
 				p_end "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; field=a_end_date; text="Ending:"; date_only=1; default_time="23:59:59"; }
 				p_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_comment; text="Comment:"; }

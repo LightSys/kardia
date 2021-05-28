@@ -1873,6 +1873,7 @@ gift_import "widget/component-decl"
 			    a_dn_gift_received_date = :i_eg_gift_trx_date,
 			    a_dn_receipt_number = (select :a_receipt_number from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_batch_number = convert(integer, :parameters:batchno) and :g:p_donor_partner_id = :eg:p_donor_partner_key and :g:a_ledger_number = :eg:a_ledger_number),
 			    i_eg_source_key = :eg:name,
+			    a_item_intent_code = condition(:i_eg_gift_interval = 'MONTHLY', 'M', condition(:i_eg_gift_interval = 'QUARTERLY', 'Q', condition(:i_eg_gift_interval = 'ANNUAL', 'Y', null))),
 			    s_date_created = getdate(),
 			    s_created_by = user_name(),
 			    s_date_modified = getdate(),

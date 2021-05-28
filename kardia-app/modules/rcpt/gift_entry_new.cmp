@@ -1182,6 +1182,13 @@ gift_entry "widget/component-decl"
 						    action=QueryParam;
 						    do_automark=1;
 						    }
+						reload_pledges_on_save "widget/connector"
+						    {
+						    event=DataSaved;
+						    target=pledge_osrc;
+						    action=QueryParam;
+						    do_automark=1;
+						    }
 
 						clear_af_types "widget/connector"
 						    {
