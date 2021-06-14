@@ -385,11 +385,13 @@ update_descriptives "system/query"
 	    -- larger gift occurring within the overall pattern of other histogram entries.  We say it
 	    -- is NOT if it has more than one gift, or there is no histogram before it, or if the
 	    -- histogram entry before it is lapsed (current == 0).
+            -- TODO: Do we consider two consecutive donations 'extras' if they have different values
+            --  and the histograms immediately before and after them are the same same amount? (see donor 100400 in the test data)
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    set
-		:dh:a_is_extra = condition(:dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select count(1) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh2:a_count > 1 and :dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift) >= 1, 1, 0)
+		:dh:a_is_extra = condition(:dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select count(1) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_last_gift = :dh:a_prev_end or :dh2:a_first_gift = :dh:a_next_start) group by :a_amount) >= 2, 1, 0)
 	    where
 		:d:a_ledger_number = :dh:a_ledger_number and
 		:d:a_cost_center = :dh:a_cost_center and
