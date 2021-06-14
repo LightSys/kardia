@@ -1,0 +1,473 @@
+$Version=2$
+update_descriptives "system/query"
+    {
+    fund "query/parameter" { type=string; }
+    donor "query/parameter" { type=string; }
+    lookback "query/parameter" { type=integer; default=37; }
+
+    sql = " declare collection tmp scope application;
+
+	    delete collection tmp ;
+
+	    -- Clear out any old descriptives
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	    ;
+
+	    -- Make a working copy of the dataset in-memory
+	    insert
+		collection tmp
+	    select
+		donor = :i:p_dn_donor_partner_id,
+		giftdate = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+		amount = :i:a_amount,
+		fund = :i:a_cost_center,
+		ledger = :i:a_ledger_number,
+		id = row_number(),
+		seg = row_number() - row_number(:i:a_ledger_number, :i:a_cost_center, :i:p_dn_donor_partner_id, :i:a_amount)
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+	    where
+		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
+		:i:a_posted = 1 and
+		:i:a_amount != $0 and
+		(:parameters:fund is null or :parameters:fund = :i:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :i:p_dn_donor_partner_id)
+	    order by
+		:i:a_ledger_number,
+		:i:a_cost_center,
+		:i:p_dn_donor_partner_id,
+		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
+	    ;
+
+	    --select * from collection tmp order by :giftdate desc;
+
+	    -- Build a list of giving pattern descriptives for each of the fund's donors.  We want
+	    -- to optimize this to help staff interact with donors and ask good questions, instead
+	    -- of generating results simply based on math.
+	    insert
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    select
+		-- Primary key
+		a_ledger_number = :ledger,
+		a_cost_center = :fund,
+		p_donor_partner_key = :donor,
+
+		-- Basic descriptives
+		a_first_gift = last(:giftdate),
+		a_first_gift_amount = last(:amount),
+		a_last_gift = first(:giftdate),
+		a_last_gift_amount = first(:amount),
+		a_ntl_gift = nth(:giftdate, 2),
+		a_ntl_gift_amount = nth(:amount, 2),
+
+		-- Bootstrap the analysis process using the data we have.
+		a_act_lookback_date = last(:giftdate),
+		a_act_lookahead_date = first(:giftdate),
+		a_act_count = count(1),
+		a_act_total = sum(:amount),
+		a_act_average_months = convert(integer, round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)),
+		a_act_average_interval = condition(
+			count(1) < 2 or datediff(day, last(:giftdate), first(:giftdate)) = 0,
+			null,
+			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
+			),
+		a_act_average_amount = condition(
+			count(1) < 2 or datediff(month, last(:giftdate), first(:giftdate)) = 0,
+			null,
+			sum(:amount) * (convert(double, count(1) - 1) / count(1)) / datediff(month, last(:giftdate), first(:giftdate))
+			),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection tmp
+	    group by
+		:ledger,
+		:fund,
+		:donor
+	    order by
+		:ledger,
+		:fund,
+		:donor,
+		:giftdate desc
+	    ;
+
+	    -- Generate the amount histogram data, starting with the most recent gift amount.
+	    insert into
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows
+	    select
+		a_ledger_number = :ledger,
+		p_donor_partner_key = :donor,
+		a_cost_center = :fund,
+		a_amount = :amount,
+		a_first_gift = last(:giftdate),
+		a_last_gift = first(:giftdate),
+		a_ntl_gift = nth(:giftdate, 2),
+		a_count = count(1),
+		a_total = sum(:amount),
+		a_act_average_months = convert(integer, round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)),
+		a_act_average_interval = condition(
+			count(1) < 2 or datediff(day, last(:giftdate), first(:giftdate)) = 0,
+			null,
+			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
+			),
+		a_act_average_amount = condition(
+			count(1) < 2 or datediff(month, last(:giftdate), first(:giftdate)) = 0,
+			null,
+			sum(:amount) * (convert(double, count(1) - 1) / count(1)) / datediff(month, last(:giftdate), first(:giftdate))
+			),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection tmp
+	    group by
+		:ledger,
+		:fund,
+		:donor,
+		:seg
+	    order by
+		:ledger,
+		:fund,
+		:donor,
+		:seg,
+		:giftdate desc
+	    ;
+
+	    -- Update previous/next interval start/end dates
+	    update
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    set
+		:dh1:a_prev_end = (select :a_last_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift order by :dh2:a_last_gift desc limit 1),
+		:dh1:a_next_start = (select :a_first_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift order by :dh2:a_first_gift asc limit 1)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key)
+	    ;
+
+	    -- Merge in 'catch up' giving.  dh1 is the larger catch up amount, and dh2 is the regular giving.
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_catchup.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
+
+	    -- Merge in adjacent giving segments
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
+
+	    -- First histogram value
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_hist_1_amount = (select
+					first(:dh:a_amount)
+				    from
+					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+				    where
+					:d:a_ledger_number = :dh:a_ledger_number and
+					:d:a_cost_center = :dh:a_cost_center and
+					:d:p_donor_partner_key = :dh:p_donor_partner_key
+				    order by
+					:dh:a_last_gift desc
+				    )
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:d:a_hist_1_count = :dh:a_count,
+		:d:a_hist_1_first = :dh:a_first_gift,
+		:d:a_hist_1_last = :dh:a_last_gift
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		:d:a_hist_1_amount = :dh:a_amount and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+
+	    -- Second histogram value
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_hist_2_amount = (select
+					first(:dh:a_amount)
+				    from
+					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+				    where
+					:d:a_ledger_number = :dh:a_ledger_number and
+					:d:a_cost_center = :dh:a_cost_center and
+					:d:p_donor_partner_key = :dh:p_donor_partner_key and
+					:dh:a_amount != :d:a_hist_1_amount
+				    order by
+					:dh:a_last_gift desc
+				    )
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:d:a_hist_2_count = :dh:a_count,
+		:d:a_hist_2_first = :dh:a_first_gift,
+		:d:a_hist_2_last = :dh:a_last_gift
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		:d:a_hist_2_amount = :dh:a_amount and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+
+	    -- Third histogram value
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_hist_3_amount = (select
+					first(:dh:a_amount)
+				    from
+					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+				    where
+					:d:a_ledger_number = :dh:a_ledger_number and
+					:d:a_cost_center = :dh:a_cost_center and
+					:d:p_donor_partner_key = :dh:p_donor_partner_key and
+					:dh:a_amount != :d:a_hist_1_amount and
+					:dh:a_amount != :d:a_hist_2_amount
+				    order by
+					:dh:a_last_gift desc
+				    )
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:d:a_hist_3_count = :dh:a_count,
+		:d:a_hist_3_first = :dh:a_first_gift,
+		:d:a_hist_3_last = :dh:a_last_gift
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		:d:a_hist_3_amount = :dh:a_amount and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+
+	    -- Overall adjustments to a_act_average_xyz for a_descriptives
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_act_average_interval = null,
+		:a_act_average_months = null,
+		:a_act_average_amount = null,
+		:a_act_lookahead_date = getdate(),
+		:a_act_lookback_date = dateadd(day, -366, getdate())
+	    where
+		(datediff(day, :a_hist_1_first, :a_hist_1_last) >= 365 and
+		(isnull(:a_hist_2_count, 0) <= 1 or :a_hist_2_last < :a_hist_1_first) and
+		(isnull(:a_hist_3_count, 0) <= 1 or :a_hist_3_last < :a_hist_1_first)) and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+	    update 
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_act_average_interval = null,
+		:a_act_average_months = null,
+		:a_act_average_amount = null,
+		:a_act_lookahead_date = getdate(),
+		:a_act_lookback_date = condition(:a_hist_1_last < dateadd(day, -366, getdate()), dateadd(day, -366, getdate()), :a_hist_1_last)
+	    where
+		:a_act_average_months = 0 and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+	    update 
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_act_average_months = convert(integer, round(datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5)),
+		:a_act_average_amount = isnull((select condition(
+			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
+			null,
+			sum(:i:a_amount) / (datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5)
+		) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :d:a_act_lookback_date and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :d:a_act_lookahead_date and (:i:a_cost_center = :d:a_cost_center) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), $0),
+		:a_act_average_interval = (select condition(
+			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
+			null,
+			(datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5) / convert(double, count(1))
+		) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :d:a_act_lookback_date and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :d:a_act_lookahead_date and :i:a_cost_center = :d:a_cost_center and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key)
+	    where
+		:d:a_act_average_interval is null and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+
+	    -- Update past/current flags on histogram and on descriptives.  For a histogram entry with
+	    -- more than one gift, we base the current/lapsed indicator on the gift interval compared to
+	    -- the most recent gift and current date.  For a one-gift histogram entry, we look back 13
+	    -- months, considering the gift a onetime/annual gift.
+	    --
+	    -- a_is_current  Values: 0 = lapsed, 1 = due / possibly current, 2 = current
+	    -- a_lapsed_days Values: negative = days before the statistical next gift date,
+	    --                       positive = days after the next statistical gift date.
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:a_is_current = condition(:a_count >= 2,
+				    condition(:a_act_average_interval < 7.0,
+					condition(:a_last_gift > dateadd(day, -7 - convert(integer, round(30.5 * :a_act_average_interval)), getdate()),
+					    2,
+					    condition(:a_last_gift > dateadd(day, -30 - convert(integer, round(30.5 * :a_act_average_interval)), getdate()),
+						1,
+						0),
+					    ),
+					condition(:a_last_gift > dateadd(day, 30 - convert(integer, round(30.5 * :a_act_average_interval)), getdate()),
+					    2,
+					    condition(:a_last_gift > dateadd(day, -30 - convert(integer, round(30.5 * :a_act_average_interval)), getdate()),
+						1,
+						0),
+					    )
+					),
+				    condition(:a_last_gift > dateadd(day, -334, getdate()),
+					2,
+					condition(:a_last_gift > dateadd(day, -396, getdate()),
+					    1,
+					    0)
+					)
+				    ),
+		:a_lapsed_days = condition(:a_count >= 2,
+				    datediff(day, dateadd(day, convert(integer, round(30.5 * :a_act_average_interval)), :a_last_gift), getdate()),
+				    datediff(day, dateadd(day, 365, :a_last_gift), getdate())
+				    )
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	    ;
+
+	    -- For the past/current flag for the overall giving to a fund, we use the histogram entry
+	    -- with the most recent gift in it, ignoring other histogram entries even if they seem to
+	    -- still be current.
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_is_current = (select first(:dh:a_is_current) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1),
+		:a_lapsed_days = (select first(:dh:a_lapsed_days) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1)
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+
+	    -- Identify one-time-extra gifts.  We consider a gift as one-time-extra if it is a single
+	    -- larger gift occurring within the overall pattern of other histogram entries.  We say it
+	    -- is NOT if it has more than one gift, or there is no histogram before it, or if the
+	    -- histogram entry before it is lapsed (current == 0).
+            -- TODO: Do we consider two consecutive donations 'extras' if they have different values
+            --  and the histograms immediately before and after them are the same same amount? (see donor 100400 in the test data)
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:dh:a_is_extra = condition(:dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select count(1) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_last_gift = :dh:a_prev_end or :dh2:a_first_gift = :dh:a_next_start) group by :a_amount) >= 2, 1, 0)
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	    ;
+
+	    -- Identify increases in giving.  An increase is when the histogram entry has a larger amount
+	    -- than the immediately previous histogram entry that is not a one-time-extra gift.  We also
+	    -- require that the histogram entry have at least two months of giving -- the donor can either
+	    -- give less frequently than monthly, or if monthly the gift count has to be at least 2.
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:dh:a_increase_pct = convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	    ;
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:dh:a_increase_pct = condition((:dh:a_count > 1 or :d:a_act_average_interval > 1.8) and :dh:a_increase_pct > 0.001, :dh:a_increase_pct, null)
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	    ;
+
+	    -- Identify decreases in giving.  An increase is when the histogram entry has a smaller amount
+	    -- than the immediately previous histogram entry that is not a one-time-extra gift.  We do not
+	    -- require at least two months of giving in this case.
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:dh:a_decrease_pct = 1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount))
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	    ;
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    set
+		:dh:a_decrease_pct = condition(:dh:a_decrease_pct > 0.001, :dh:a_decrease_pct, null)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	    ;
+
+	    -- Propagate informational flags/data to the overall giving descriptives
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_increase_pct = (select :dh:a_increase_pct from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_increase_date = (select condition(:dh:a_increase_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_decrease_pct = (select :dh:a_decrease_pct from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_decrease_date = (select condition(:dh:a_decrease_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_is_extra = (select max(:dh:a_is_extra) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where datediff(day, :dh:a_last_gift, getdate()) < 366 order by :a_last_gift desc limit 2)
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+
+	    -- Return the dataset to the caller
+	    select
+		*
+	    from
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows d
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    order by
+		:a_hist_id desc
+	    ";
+    }
