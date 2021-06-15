@@ -32,8 +32,8 @@ update_descriptives_merge_catchup "system/query"
 		round(:dh2:a_act_average_interval, 0) != 0 and -- regular has an established interval (non-zero)
 		(:dh1:a_last_gift = :dh2:a_prev_end or :dh2:a_last_gift = :dh1:a_prev_end) and
 		datediff(month, condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift), condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift)) <= 14 and
-		(:dh1:a_total + :dh2:a_total) * ((1.0 * (:dh1:a_count + :dh2:a_count - 1)) / (1.0 * (:dh1:a_count + :dh2:a_count))) / (datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.95 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
-		(:dh1:a_total + :dh2:a_total) * ((1.0 * (:dh1:a_count + :dh2:a_count - 1)) / (1.0 * (:dh1:a_count + :dh2:a_count))) / (datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 1.05 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount)))
+		(:dh1:a_total + :dh2:a_total) * ((1.0 * (:dh1:a_count + :dh2:a_count - 1)) / (1.0 * (:dh1:a_count + :dh2:a_count))) / (datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.85 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
+		(:dh1:a_total + :dh2:a_total) * ((1.0 * (:dh1:a_count + :dh2:a_count - 1)) / (1.0 * (:dh1:a_count + :dh2:a_count))) / (datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 1.15 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount)))
 		--(:dh2:a_total * (1.0 * (:dh2:a_count - 1) / :dh2:a_count) / datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift))) * 30.5 < 0.95 * (:dh2:a_amount / round(:dh2:a_act_average_interval,0)) and
 		--((:dh2:a_total * (1.0 * (:dh2:a_count - 1) / :dh2:a_count) + :dh1:a_total) / datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift))) * 30.5 > 0.95 * (:dh2:a_amount / round(:dh2:a_act_average_interval,0)) and
 		--((:dh2:a_total * (1.0 * (:dh2:a_count - 1) / :dh2:a_count) + :dh1:a_total) / datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift))) * 30.5 < 1.05 * (:dh2:a_amount / round(:dh2:a_act_average_interval,0))
@@ -44,14 +44,20 @@ update_descriptives_merge_catchup "system/query"
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
 	    set
-		:dh2:a_act_average_amount = :dh2:a_act_average_amount / :dh2:a_total * (:dh2:a_total + :dh1:a_total),
-		:dh2:a_act_average_interval = :dh2:a_act_average_interval * convert(double, :dh2:a_count - 1) / (:dh2:a_count + round(:dh1:a_amount / :dh2:a_amount, 0)),
-		:dh2:a_count = :dh2:a_count + round(:dh1:a_amount / :dh2:a_amount, 0),
+		--:dh2:a_act_average_interval = :dh2:a_act_average_interval * convert(double, :dh2:a_count - 1) / (:dh2:a_count + round(:dh1:a_amount / :dh2:a_amount, 0) * :dh1:a_count),
+                :dh2:a_act_average_amount = (:dh2:a_total + :dh1:a_total) / round((datediff(day, condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh2:a_first_gift, :dh1:a_first_gift), condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh2:a_last_gift, :dh1:a_last_gift)) / 30.5)),
+                :dh2:a_act_average_months = convert(integer, round(datediff(day, condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh2:a_first_gift, :dh1:a_first_gift), condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh2:a_last_gift, :dh1:a_last_gift)) / 30.5)),
+                :dh2:a_act_average_interval = (datediff(day, condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh2:a_first_gift, :dh1:a_first_gift), condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh2:a_last_gift, :dh1:a_last_gift)) / 30.5) / (:dh2:a_count - 1),
+                :dh2:a_count = :dh2:a_count + round(:dh1:a_amount / :dh2:a_amount, 0) * :dh1:a_count,
 		:dh2:a_total = :dh2:a_total + :dh1:a_total,
-		:dh2:a_first_gift = condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh2:a_first_gift, :dh1:a_first_gift),
-		:dh2:a_last_gift = condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh2:a_last_gift, :dh1:a_last_gift),
-		:dh2:a_prev_end = condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end),
-		:dh2:a_next_start = condition(:dh1:a_next_start > :dh2:a_next_start, :dh1:a_next_start, :dh2:a_next_start)
+                :dh2:a_prev_end = condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end),
+		:dh2:a_next_start = condition(
+                                :dh1:a_next_start is null,
+                                null,
+                                condition(:dh1:a_next_start > :dh2:a_next_start, :dh1:a_next_start, :dh2:a_next_start)
+                                ),
+                :dh2:a_first_gift = condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh2:a_first_gift, :dh1:a_first_gift),
+		:dh2:a_last_gift = condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh2:a_last_gift, :dh1:a_last_gift)
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
