@@ -1,8 +1,8 @@
 $Version=2$
 update_descriptives_merge_catchup "system/query"
     {
-    fund "query/parameter" { type=string; }
-    donor "query/parameter" { type=string; }
+    fund "query/parameter" { type=string; style=strnull;}
+    donor "query/parameter" { type=string; style=strnull;}
 
     sql = " declare collection tmp scope application;
     
