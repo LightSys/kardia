@@ -326,6 +326,21 @@ update_descriptives "system/query"
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
+            -- Update average amount and months for histograms
+            update
+                identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+            set
+                :a_act_average_amount = condition(
+                                datediff(day, :dh:a_first_gift, :dh:a_last_gift) = 0,
+                                null,
+                                (:dh:a_total - :dh:a_amount) / round(datediff(day, :dh:a_first_gift, :dh:a_last_gift) / 30.5)
+                                ),
+                :a_act_average_months = convert(integer, round(datediff(day, :dh:a_first_gift, :dh:a_last_gift) / 30.5))
+            where
+                (:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+                (:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+            ;
+
 	    -- Update past/current flags on histogram and on descriptives.  For a histogram entry with
 	    -- more than one gift, we base the current/lapsed indicator on the gift interval compared to
 	    -- the most recent gift and current date.  For a one-gift histogram entry, we look back 13
