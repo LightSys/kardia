@@ -326,7 +326,7 @@ update_descriptives "system/query"
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
-            -- Update average amount and months for histograms
+            -- Update a_act_average_xyz for histograms
             update
                 identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
             set
@@ -335,7 +335,12 @@ update_descriptives "system/query"
                                 null,
                                 (:dh:a_total - :dh:a_amount) / round(datediff(day, :dh:a_first_gift, :dh:a_last_gift) / 30.5)
                                 ),
-                :a_act_average_months = convert(integer, round(datediff(day, :dh:a_first_gift, :dh:a_last_gift) / 30.5))
+                :a_act_average_months = convert(integer, round(datediff(day, :dh:a_first_gift, :dh:a_last_gift) / 30.5)),
+                :a_act_average_interval = condition(
+                                :dh:a_count = 1,
+                                null,
+                                (datediff(day, :dh:a_first_gift, :dh:a_last_gift) / 30.5) / (:dh:a_total / :dh:a_amount - 1)
+                                )
             where
                 (:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
                 (:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
