@@ -1,0 +1,28 @@
+Document:   Notes on Donor Analytics Corner Cases
+Author:	    David Stirn (DMS)
+Date:	    06-Jul-2021
+-------------------------------------------------------------------------------
+
+
+Donor with 1 time gifts: 100400
+
+Donor with possible failed catchup merge: 100925
+
+Donor with many catchups: 106743
+
+Donor with two catchup gifts in a row: 107065
+	First Merge: 	6 into 7, 3 into 4
+	Final Result: 	15 $10 gifts as 1st hist: Dec31-2019->Apr21-2021
+			18 $25 gifts as 2nd hist: Jun05-2018->Dec02-2019
+
+Donor 107077 has some weird stuff going on. Looks like some extra gifts mixed into regular giving.
+	ID 02 is a $150 extra
+	ID 04 is a  $30 extra
+	ID 06 is a pay in advance for Feb
+	ID 05 is a pay in advance for Mar (with no other money for the curr month (feb), bc it 		was already paid)
+	ID 10 is a $600 extra
+	ID 14 is 1st gift, so no special designation
+
+Donor 127200
+
+Donor 130120 
