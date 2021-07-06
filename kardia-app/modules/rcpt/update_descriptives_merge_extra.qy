@@ -11,8 +11,6 @@ update_descriptives_merge_catchup "system/query"
 	    -- larger gift occurring within the overall pattern of other histogram entries.  We say it
 	    -- is NOT if it has more than one gift, or there is no histogram before it, or if the
 	    -- histogram entry before it is lapsed (current == 0).
-            -- TODO: Do we consider two consecutive donations 'extras' if they have different values
-            --  and the histograms immediately before and after them are the same same amount? (see donor 100400 in the test data)
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
@@ -21,7 +19,7 @@ update_descriptives_merge_catchup "system/query"
                         :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select 
                                 count(1)
                                 from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
-                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh2:a_count > 1 and ((:dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift))
+                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh:a_amount > :dh2:a_amount and :dh2:a_count > 1 and ((:dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift))
                                 ) >= 1,
                         1,
                         0
@@ -58,10 +56,12 @@ update_descriptives_merge_catchup "system/query"
                 ledger = :dh1:a_ledger_number,
                 fund = :dh1:a_cost_center,
                 donor = :dh1:p_donor_partner_key,
-                merged = :dh1:a_hist_id,
-                reg = :dh2:a_hist_id,
+                merged_id = :dh1:a_hist_id,
+                regular_id = :dh2:a_hist_id,
 
-                dh1_is_only_gift_on_day = (select count(1) from collection tmp where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate = :dh1:a_first_gift) = 1
+                -- the fuzziness here can be tweaked. Right now it is false when
+                -- there are other gifts within +/- half an interval of the extra gift
+                includes_regular_giving = ((select count(1) from collection tmp where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift)) = 1)
             from
                 /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
                 /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
@@ -80,10 +80,9 @@ update_descriptives_merge_catchup "system/query"
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
                 collection tmp2 t
 	    set
-                :dh2:a_count = :dh2:a_count + :dh1:a_count,     --TODO determine how to count a gift that includes regular giving and an extra amt
 		:dh2:a_total = condition(
-                                :t:dh1_is_only_gift_on_day,
-                                :dh2:a_total + :dh1:a_amount - :dh2:a_amount,
+                                :t:includes_regular_giving,
+                                :dh2:a_total + :dh2:a_amount,
                                 :dh2:a_total
                                 ),
 		:dh2:a_prev_end = condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end),
@@ -109,8 +108,8 @@ update_descriptives_merge_catchup "system/query"
                 :t:ledger = :dh1:a_ledger_number and
                 :t:fund = :dh1:a_cost_center and
                 :t:donor = :dh1:p_donor_partner_key and
-                :t:merged = :dh1:a_hist_id and
-                :t:reg = :dh2:a_hist_id
+                :t:merged_id = :dh1:a_hist_id and
+                :t:regular_id = :dh2:a_hist_id
 	    ;
 
 	    -- Step Three: Adjust Merged
@@ -120,15 +119,16 @@ update_descriptives_merge_catchup "system/query"
                 collection tmp2 t
 	    set
                 :dh1:a_amount = condition(
-                                :t:dh1_is_only_gift_on_day,
+                                :t:includes_regular_giving,
                                 :dh1:a_amount - :dh2:a_amount,
                                 :dh1:a_amount
                                 ),
                 :dh1:a_total = condition(
-                                :t:dh1_is_only_gift_on_day,
+                                :t:includes_regular_giving,
                                 :dh1:a_total - :dh2:a_amount,
                                 :dh1:a_total
-                                )
+                                ),
+                :dh1:a_merged_id = null
             where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
@@ -139,7 +139,7 @@ update_descriptives_merge_catchup "system/query"
                 :t:ledger = :dh1:a_ledger_number and
                 :t:fund = :dh1:a_cost_center and
                 :t:donor = :dh1:p_donor_partner_key and
-                :t:merged = :dh1:a_hist_id and
-                :t:reg = :dh2:a_hist_id
+                :t:merged_id = :dh1:a_hist_id and
+                :t:regular_id = :dh2:a_hist_id
 	    ";
     }

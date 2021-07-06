@@ -8,6 +8,11 @@ delete_later_practice "system/query"
     sql = " declare collection tmp scope application;
 
 	    delete collection tmp ;
+            
+
+            -- Compiles the histograms, but does not exectute any merges (or any statements that follow merges).
+            -- Useful for testing, but not a part of deployment
+
 
 	    -- Clear out any old descriptives
 	    delete
@@ -161,7 +166,7 @@ delete_later_practice "system/query"
 	    select
 		*
 	    from
-		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows d
 	    where
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
