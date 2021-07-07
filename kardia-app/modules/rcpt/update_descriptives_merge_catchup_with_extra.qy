@@ -1,0 +1,143 @@
+$Version=2$
+update_descriptives_merge_catchup "system/query"
+    {
+    fund "query/parameter" { type=string; style=strnull;}
+    donor "query/parameter" { type=string; style=strnull;}
+
+    sql = " declare collection tmp scope application;
+            declare collection tmp2;
+    
+	    -- Merge in 'catch up' giving.  dh1 is the larger catch up amount, and dh2 is
+	    -- the regular giving. There is a possible extra amount tagged onto this giving
+	    --
+	    -- Step One: Locate
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+	    set
+		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id),
+                :a_is_extra = 2
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh2:a_amount < :dh1:a_amount and -- catchup more than regular
+		--(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
+		-- :dh2:a_first_gift < :dh1:a_first_gift and
+		-- :dh2:a_last_gift > :dh1:a_last_gift and
+		:dh2:a_act_average_interval < isnull(:dh1:a_act_average_interval, 100) and -- regular is more often than catchup
+		:dh1:a_count = 1 and -- extra has a single gift
+		:dh2:a_count >= 2 and -- regular has at least 2 gifts
+                :dh1:a_prev_end is not null and -- extra is not first gift
+		:dh2:a_first_gift < :dh2:a_last_gift and -- regular gifts are not on the same day
+		round(:dh2:a_act_average_interval, 0) != 0 and -- regular has an established interval (non-zero)
+		(:dh1:a_last_gift = :dh2:a_prev_end or :dh2:a_last_gift = :dh1:a_prev_end) and
+		datediff(month, condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift), condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift)) <= 14 and
+		(:dh1:a_total + :dh2:a_total) * ((1.0 * (:dh1:a_count + :dh2:a_count - 1)) / (1.0 * (:dh1:a_count + :dh2:a_count))) / (datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.85 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
+		--(:dh1:a_total + :dh2:a_total) * ((1.0 * (:dh1:a_count + :dh2:a_count - 1)) / (1.0 * (:dh1:a_count + :dh2:a_count))) / (datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 1.15 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount)))
+                (select count(1) from collection tmp where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift)) = 1 -- only 1 gift within +/- half an interval
+		--(:dh2:a_total * (1.0 * (:dh2:a_count - 1) / :dh2:a_count) / datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift))) * 30.5 < 0.95 * (:dh2:a_amount / round(:dh2:a_act_average_interval,0)) and
+		--((:dh2:a_total * (1.0 * (:dh2:a_count - 1) / :dh2:a_count) + :dh1:a_total) / datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift))) * 30.5 > 0.95 * (:dh2:a_amount / round(:dh2:a_act_average_interval,0)) and
+		--((:dh2:a_total * (1.0 * (:dh2:a_count - 1) / :dh2:a_count) + :dh1:a_total) / datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift))) * 30.5 < 1.05 * (:dh2:a_amount / round(:dh2:a_act_average_interval,0))
+	    ;
+
+
+            --Step 1.5 : Create Intermediate Values
+            insert
+                collection tmp2
+            select
+                ledger = :dh1:a_ledger_number,
+                fund = :dh1:a_cost_center,
+                donor = :dh1:p_donor_partner_key,
+                merged_id = :dh1:a_hist_id,
+                regular_id = :dh2:a_hist_id,
+
+                -- The interval shift is to compensate for merging into a giving pattern
+                -- that is monthly, but due to a short timespan, the giving interval deviates
+                -- greatly from the more appropriate value (See sample donor 100400)
+                catchup_amount = round((datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh1:a_prev_end), condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_next_start, :dh1:a_first_gift)) / 30.5) / ((datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh2:a_last_gift, :dh1:a_first_gift)) / 30.5) / ((:dh1:a_total + :dh2:a_total) / :dh2:a_amount - 1))) * :dh2:a_amount,
+                count = condition(
+                        catchup_amount = :dh1:a_amount,
+                        :dh1:a_count,
+                        0
+                        )
+            from
+                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+            where
+                (:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh1:a_merged_id = :dh2:a_hist_id
+            ;
+
+
+	    -- Step Two: Merge
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+                collection tmp2 t
+	    set
+                :dh2:a_count = :dh2:a_count + :t:count,
+		:dh2:a_total = :dh2:a_total + :t:catchup_amount,
+                :dh2:a_prev_end = condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end),
+		:dh2:a_next_start = condition(
+                                :dh1:a_next_start is null,
+                                null,
+                                condition(:dh1:a_next_start > :dh2:a_next_start, :dh1:a_next_start, :dh2:a_next_start)
+                                ),
+                :dh2:a_first_gift = condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh2:a_first_gift, :dh1:a_first_gift),
+		:dh2:a_last_gift = condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh2:a_last_gift, :dh1:a_last_gift),
+                :dh2:a_ntl_gift = condition(
+                                :dh1:a_ntl_gift is null, 
+                                :dh2:a_ntl_gift, 
+                                condition(:dh1:a_ntl_gift < :dh2:a_ntl_gift, :dh2:a_ntl_gift, :dh1:a_ntl_gift)
+                                )
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh1:a_merged_id = :dh2:a_hist_id and 
+                :t:ledger = :dh1:a_ledger_number and
+                :t:fund = :dh1:a_cost_center and
+                :t:donor = :dh1:p_donor_partner_key and
+                :t:merged_id = :dh1:a_hist_id and
+                :t:regular_id = :dh2:a_hist_id
+	    ;
+
+
+            -- Step Three: Update Merged
+            update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+                collection tmp2 t
+	    set
+		:dh1:a_total = :dh1:a_total - :t:catchup_amount,
+                :dh1:a_amount = :dh1:a_amount - :t:catchup_amount,
+                :dh1:a_merged_id = null,
+                :dh1:a_is_extra = 1
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
+                :t:ledger = :dh1:a_ledger_number and
+                :t:fund = :dh1:a_cost_center and
+                :t:donor = :dh1:p_donor_partner_key and
+                :t:merged_id = :dh1:a_hist_id
+	    ;
+
+
+	    -- Step Four: Delete Merged
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
+		:dh1:a_is_extra and
+                :dh1:a_amount = 0
+	    ";
+    }
