@@ -32,7 +32,7 @@ create_issue "widget/component-decl"
 			m_list_status = 'A',
 			m_list_type = 'I',
 			m_list_frozen = 1,
-			m_date_sent = isnull(:parameters:new_date, getdate()),
+			m_date_sent = isnull(convert(datetime, :parameters:new_date), getdate()),
 			:l:m_charge_ledger,
 			:l:p_postal_mode,
 			:l:m_charge_cost_ctr,

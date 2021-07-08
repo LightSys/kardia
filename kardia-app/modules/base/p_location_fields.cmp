@@ -86,7 +86,7 @@ p_location_fields "widget/component-decl"
 	    spacing=4;
 	    cellsize=20;
 
-	    p_addr_status "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_record_status_code; text="Status:"; ctl_type="dropdown"; tooltip="Status of this address record"; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows";  form=form; addr_stat_hints "widget/hints" { default=runclient('A'); style=readonly; } }
+	    p_addr_status "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_record_status_code; text="Status:"; ctl_type="dropdown"; tooltip="Status of this address record"; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows";  form=form; addr_stat_hints "widget/hints" { default=runclient('A'); } }
 	    p_date_added_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="Added On:"; ctl_type="datetime"; tooltip="Date when the location was added"; date_added_hints "widget/hints" { default=runclient(getdate()); style=readonly; }  form=form; }
 	    p_date_effective_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_effective; text="Effective:"; ctl_type="datetime"; tooltip="Date when the location becomes effective";  form=form; }
 	    p_date_good_until_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_date_good_until; text="Good Until:"; ctl_type="datetime"; tooltip="Date that this location stops being effective";  form=form; }

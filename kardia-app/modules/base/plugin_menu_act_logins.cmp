@@ -18,17 +18,17 @@ plugin_menu_act_logins "widget/component-decl"
 		    s_date_modified = getdate(),
 		    s_modified_by = user_name()
 	    having
-		    (select count(1) from /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows where :s_username = user_name() and dateadd(minute, 15, :s_last_seen) >= getdate()) = 0
+		    (select count(1) from /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows where :s_username = user_name() and dateadd(minute, 15, :s_date_modified) >= getdate()) = 0
 	    ;
 	    update
-		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
+		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows h
 	    set
-		    :s_last_seen = getdate(),
-		    :s_date_modified = getdate(),
-		    :s_modified_by = user_name()
+		    :h:s_last_seen = (select max(:a:last_activity) from /sys/cx.sysinfo/session/apps a where :a:username = user_name()),
+		    :h:s_date_modified = getdate(),
+		    :h:s_modified_by = user_name()
 	    where
-		    :s_username = user_name() and
-		    dateadd(minute, 15, :s_last_seen) >= getdate()
+		    :h:s_username = user_name() and
+		    dateadd(minute, 15, :h:s_date_modified) >= getdate()
 	    ;
 	    insert
 		    /apps/kardia/data/Kardia_DB/s_user_data/rows
@@ -59,7 +59,7 @@ plugin_menu_act_logins "widget/component-decl"
 		collection activity
 	    select
 		p_partner_key = :s:p_partner_key,
-		activitydate = :ud:s_date_modified,
+		activitydate = (select :h:s_last_seen from /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows h where :h:s_username = :ud:s_username order by :h:s_last_seen desc limit 1),
 		e_reference_info = :ud:s_username,
 		menuname = condition(:ud:s_username = user_name(), 'Me', 'User'),
 		is_online = 0,
@@ -85,7 +85,8 @@ plugin_menu_act_logins "widget/component-decl"
 			    ((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :s:p_kardia_login = user_name())
 			),
 		e_whom = :s:p_partner_key,
-		e_initiation = 'C'
+		e_initiation = 'C',
+		active_staff = :s:p_is_staff
 	    from
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
@@ -100,7 +101,8 @@ plugin_menu_act_logins "widget/component-decl"
 		:ud:s_username
 	    having
 		(select count(1) from /sys/cx.sysinfo/session/apps a where :a:username = :this:e_reference_info) = 0 and
-		datediff(day, :this:activitydate, getdate()) <= 366
+		datediff(day, :this:activitydate, getdate()) <= 366 and
+		:active_staff is not null
 	    ;
 
 	    -- Who is online on the CRM system
