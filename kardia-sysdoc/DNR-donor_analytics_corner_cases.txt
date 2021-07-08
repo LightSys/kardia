@@ -29,3 +29,11 @@ Donor 130120
 
 Should we make it so in the hist data it seperates also by months (ie if they miss a month without a catchup amount it should still be seperated?)
 Good example: donor 75107 missed a month in hist id 4 but it is not recorded in there
+
+Have some sort of identifier for whether or not something is a one-time gift (could be under isExtra?) 
+
+For donor 108705, shouldn't the ID 01 entry be counted as an extra?
+
+For donor 107541, ID 1 should be part of the other histogram (the donor was giving every year, and was simply a month behind)
+
+Donor 100400, ID 6 is not marked as extra 
