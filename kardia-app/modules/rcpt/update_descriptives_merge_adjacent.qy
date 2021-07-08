@@ -108,6 +108,17 @@ update_descriptives_merge_catchup "system/query"
                                 :t:ntl_dh1_gift is null, 
                                 :dh2:a_ntl_gift, 
                                 condition(:t:ntl_dh1_gift < :dh2:a_ntl_gift, :dh2:a_ntl_gift, :t:ntl_dh1_gift)
+                                ),
+                :dh2:a_act_average_amount = condition(
+                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
+                                null,
+                                (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)
+                                ),
+                :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
+                :dh2:a_act_average_interval = condition(
+                                :dh2:a_count = 1,
+                                null,
+                                (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
                                 )
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
