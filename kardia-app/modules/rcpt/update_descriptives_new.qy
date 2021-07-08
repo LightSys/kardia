@@ -169,6 +169,12 @@ update_descriptives "system/query"
 		donor=:parameters:donor
 	    ;
 
+            -- Merge in 'catch up' giving.  dh1 is the larger catch up amount, and dh2 is the regular giving.
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_catchup.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
+
             -- Merge in 'catch up' giving that includes extra giftx
 	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_catchup_with_extra.qy
 		fund=:parameters:fund,

@@ -10,7 +10,7 @@ Donor with 1 time gifts: 100400
         ID 02 is a  $70 extra
         ID 03 is a  $50 extra
         ID 05 is a $260 extra
-        ID 07 is a $275 extra
+        ID 07 is a $275 extra - currently merges in too much. may or may not be a problem
 
 
 Donor with possible failed catchup merge: 100925
@@ -42,6 +42,4 @@ Have some sort of identifier for whether or not something is a one-time gift (co
 
 For donor 108705, shouldn't the ID 01 entry be counted as an extra?
 
-For donor 107541, ID 1 should be part of the other histogram (the donor was giving every year, and was simply a month behind)
-
-Donor 100400, ID 6 is not marked as extra 
+Donor 100400, ID 6 is not marked as extra : This is an issue of a histogram not getting merged in
