@@ -746,7 +746,7 @@ cr_batches "widget/component-decl"
 		event=Click;
 		target=cr_batches;
 		action=Launch;
-		Source = runclient("/apps/kardia/modules/rcpt/gift_entry_new.app");
+		Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
 		Width=1000;
 		Height=700;
 		ledger=runclient(:rcpt_osrc:a_ledger_number);
@@ -769,7 +769,7 @@ cr_batches "widget/component-decl"
 		event_condition=runclient(:rcpt_osrc:s_created_by == user_name() or :rcpt_form:rpost == 1);
 		target=cr_batches;
 		action=Launch;
-		Source = runclient("/apps/kardia/modules/rcpt/gift_entry_new.app");
+		Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
 		Width=1000;
 		Height=700;
 		ledger=runclient(:rcpt_osrc:a_ledger_number);
@@ -782,7 +782,7 @@ cr_batches "widget/component-decl"
 		event_confirm=runclient("The batch " + :rcpt_osrc:a_batch_number + " was started by someone else (" + :rcpt_osrc:s_created_by + ").  Do you really want to enter receipts in this batch?");
 		target=cr_batches;
 		action=Launch;
-		Source = runclient("/apps/kardia/modules/rcpt/gift_entry_new.app");
+		Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
 		Width=1000;
 		Height=700;
 		ledger=runclient(:rcpt_osrc:a_ledger_number);
