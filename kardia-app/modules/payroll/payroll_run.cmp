@@ -954,38 +954,20 @@ payroll_run "widget/component-decl"
 		    }
 		}
 
-	    search_box "widget/editbox"
+	    search_box "widget/component"
 		{
-		x=20; y=472; width=200; height=20;
+		x=20; y=472; width=226; height=22;
+		path="/apps/kardia/modules/base/field_search.cmp";
 		empty_description="search for payees";
 
-		enter_pressed_do_search "widget/connector"
+		do_search "widget/connector"
 		    {
-		    event=BeforeKeyPress;
-		    event_condition=runclient(:Name == 'enter');
-		    event_cancel=runclient(:Name == 'enter');
+		    event=Search;
 		    target=payeelist_osrc;
 		    use_having = 1;
 		    action=QueryText;
 		    cx__case_insensitive = 1;
-		    query=runclient(:search_box:content);
-		    field_list = runclient("*ptxt*,*cctxt*");
-		    }
-		}
-	    search_btn "widget/imagebutton"
-		{
-		x=224; y=472; width=22; height=22;
-		text="";
-		image = "/apps/kardia/images/tango/system-search-22.png";
-
-		btn_do_search "widget/connector"
-		    {
-		    event=Click;
-		    target=payeelist_osrc;
-		    use_having = 1;
-		    action=QueryText;
-		    cx__case_insensitive = 1;
-		    query=runclient(:search_box:content);
+		    query=runclient(:query);
 		    field_list = runclient("*ptxt*,*cctxt*");
 		    }
 		}
