@@ -10,7 +10,7 @@ Donor with 1 time gifts: 100400
         ID 02 is a  $70 extra
         ID 03 is a  $50 extra
         ID 05 is a $260 extra
-        ID 07 is a $275 extra - currently merges in too much. may or may not be a problem
+        ID 07 is a $275 extra
 
 
 Donor with possible failed catchup merge: 100925
@@ -38,12 +38,26 @@ Donor 130120
 Should we make it so in the hist data it seperates also by months (ie if they miss a month without a catchup amount it should still be seperated?)
 Good example: donor 75107 missed a month in hist id 4 but it is not recorded in there
 
-Have some sort of identifier for whether or not something is a one-time gift (could be under isExtra?) 
+For donor 108705, shouldn't the ID 01 entry be counted as an extra? Technically not, because it "could" be a pay-ahead for the next several months
 
-For donor 108705, shouldn't the ID 01 entry be counted as an extra?
+Donor 130295
+        $150 monthly regular giving
+        ID 02 is a payahead for December 2020
+        ID 01 is a payahead for a year (based on their established giving pattern)
 
 Donor 100400, ID 6 is not marked as extra : This is an issue of a histogram not getting merged in
 
 Donor 93162, hist ID 3 should not be 0 on current right?
 
 Donor 93036, shouldnt hist id 1 be an increase not decrease?
+
+Donor 75107
+        This is very as-able giving and a bit complex for our system to currently handle gracefully
+
+        ID 01 is a payahead for Dec and a gift for Jan
+        ID 02 is a payahead for July -> November
+        ID 03 is a payahead for June
+        ID 04 is a catchup and a payahead for the months of Sept -> May 
+        ID 05 is reestablished regular giving
+        ID 06 is a payahead for Mar 2019
+        ID 08 is a payahead for Nov 2018
