@@ -43,3 +43,7 @@ Have some sort of identifier for whether or not something is a one-time gift (co
 For donor 108705, shouldn't the ID 01 entry be counted as an extra?
 
 Donor 100400, ID 6 is not marked as extra : This is an issue of a histogram not getting merged in
+
+Donor 93162, hist ID 3 should not be 0 on current right?
+
+Donor 93036, shouldnt hist id 1 be an increase not decrease?
