@@ -66,8 +66,13 @@ Donor 100400
         ID 08 doesn't have an "average amount" when it does have multiple donations
         ID 01 doesn't have any information on lapsed days, isCurrent, increase or decrease, or isExtra
 
+Note: Should we do things like increase and decrese when moving from a one-time gift to regular gift, or vice-a-versa? Because then, it could lead to us saying to the missionary "they've decreased their giving" when they haven't. They just simply gave a one-time gift
 
+Donor 107077 I have no idea where it is getting the calculations for increase and decrease pct
 
+Donor 108705, ID 1 should be an extra
+
+Donor 69559's isExtra counting seems to be really weird
 Donors who have a hist entry that is approximate. These should be checked to see if those tags are acceptable or if tweaks need made
 109498
 112378
@@ -80,5 +85,4 @@ Donors who have a hist entry that is approximate. These should be checked to see
 89169
 92284
 98931
-
 
