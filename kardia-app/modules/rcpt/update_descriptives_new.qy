@@ -193,6 +193,12 @@ update_descriptives "system/query"
 		donor=:parameters:donor
 	    ;
 
+            -- Approximate segments that did not fit in anywhere else
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_approx.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
+
 	    -- First histogram value
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d

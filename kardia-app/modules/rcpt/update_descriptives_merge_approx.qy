@@ -1,0 +1,146 @@
+$Version=2$
+update_descriptives_merge_catchup "system/query"
+    {
+    fund "query/parameter" { type=string; style=strnull;}
+    donor "query/parameter" { type=string; style=strnull;}
+
+    sql = " declare collection tmp scope application;
+            declare collection tmp2;
+            declare collection aggregated_seg;
+
+            delete collection tmp2;
+            delete collection aggregated_seg;
+
+	    
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:dh:a_is_approximate = condition(
+                        :dh:a_is_approximate is null and
+                        :dh:a_count <= 6 and -- these try to discount regular giving patterns from being approximated
+                        :dh:a_act_average_months <= 6 and
+                        not :dh:a_is_extra and
+                        (select 
+                                count(1)
+                                from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_hist_id = :dh:a_hist_id + 1 or :dh2:a_hist_id = :dh:a_hist_id - 1) and :dh2:a_count < 6 and :dh2:a_act_average_months < 6
+                                ) >= 1,
+                        2,
+                        0
+                        )
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	    ;
+            
+
+            -- Step 1.5 : segment the approximate regions
+            insert
+                collection tmp2
+            select
+                ledger = :dh1:a_ledger_number,
+                fund = :dh1:a_cost_center,
+                donor = :dh1:p_donor_partner_key,
+                hist_id = :dh1:a_hist_id,
+                is_approximate = :dh1:a_is_approximate,
+                seg = row_number() - row_number(:dh1:a_ledger_number, :dh1:a_cost_center, :dh1:p_donor_partner_key, :dh1:a_is_approximate),
+                amount = :dh1:a_amount,
+                first = :dh1:a_first_gift,
+                last = :dh1:a_last_gift,
+                ntl = :dh1:a_ntl_gift,
+                count = :dh1:a_count,
+                total = :dh1:a_total,
+                prev_end = :dh1:a_prev_end,
+                next_start = :dh1:a_next_start
+            from
+                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+            where
+                (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key)
+            ;
+
+            
+            insert
+		collection aggregated_seg
+            select
+                ledger = :t:ledger,
+                fund = :t:fund,
+                donor = :t:donor,
+                seg = :t:seg,
+                merged_id = last(:t:hist_id),
+                merge_count = count(1),
+                amount = sum(:t:amount*:t:count) / sum(:t:count), -- this history field is an approximate value
+                first = last(:t:first),
+                last = first(:t:last),
+                ntl = first(:t:ntl),
+                count = sum(:t:count),
+                total = sum(:t:total),
+                prev_end = last(:t:prev_end),
+                next_start = first(:t:next)
+            from
+                collection tmp2 t
+            where 
+                (:parameters:fund is null or :parameters:fund = :t:fund) and
+		(:parameters:donor is null or :parameters:donor = :t:donor) and
+                :t:is_approximate
+            order by
+                :t:ledger,
+                :t:fund,
+                :t:donor,
+                :t:hist_id,
+                :t:seg
+            group by
+                :t:ledger,
+                :t:fund,
+                :t:donor,
+                :t:seg
+            ;
+            
+
+	    -- Step Two: Merge
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
+                collection aggregated_seg t
+	    set
+                :dh2:a_amount = :t:amount,
+                :dh2:a_first_gift = :t:first,
+		:dh2:a_last_gift = :t:last,
+                :dh2:a_ntl_gift = :t:ntl,
+                :dh2:a_count = :t:count,
+		:dh2:a_total = :t:total,
+                :dh2:a_is_approximate = condition(:t:merge_count > 1, 1, 0),
+                :dh2:a_prev_end = :t:prev_end,
+		:dh2:a_next_start = :t:next_start,
+                :dh2:a_act_average_amount = condition(
+                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
+                                null,
+                                (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)
+                                ),
+                :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
+                :dh2:a_act_average_interval = condition(
+                                :dh2:a_count = 1,
+                                null,
+                                (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
+                                )
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+                :t:ledger = :dh2:a_ledger_number and
+                :t:fund = :dh2:a_cost_center and
+                :t:donor = :dh2:p_donor_partner_key and
+                :t:merged_id = :dh2:a_hist_id
+	    ;
+
+	    -- Step Three: Delete Merged
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+            where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
+		:dh1:a_is_approximate = 2
+	    ";
+    }
