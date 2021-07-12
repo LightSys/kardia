@@ -1,0 +1,60 @@
+$Version=2$
+plugin_crm_search_DON "system/query"
+    {
+    // This query object provides the search stage support for
+    // searching based on a specific gift given.
+    //
+    require_endorsement="system:from_application";
+
+    search_id "query/parameter" { type=integer; }
+    cur_stage "query/parameter" { type=integer; }
+    prev_stage "query/parameter" { type=integer; }
+
+    sql = " -- First, we need to get our search stage information and config.
+	    declare collection iresult scope application;
+	    declare object stage;
+	    select
+		:stage:op = :s:p_stage_op,
+		:stage:startdate = convert(datetime,:sc:start),
+		:stage:enddate = convert(datetime,:sc:end),
+		:stage:funds = :sc:funds,
+		:stage:notfunds = :sc:notfunds,
+		:stage:minamt = :sc:minamt,
+		:stage:maxamt = :sc:maxamt,
+		:stage:mintamt = :sc:mintamt,
+		:stage:maxtamt = :sc:maxtamt,
+		:stage:minfreq = :sc:minfreq,
+		:stage:maxfreq = :sc:maxfreq,
+		:stage:mincnt = :sc:mincnt,
+		:stage:maxcnt = :sc:maxcnt
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
+		/apps/kardia/modules/crm/advanced_search_params.qyp sc
+	    where
+		:s:p_search_id = :parameters:search_id and
+		:s:p_search_stage_id = :parameters:cur_stage and
+		:sc:p_search_id = :s:p_search_id and
+		:sc:p_search_stage_id = :s:p_search_stage_id
+	    ;
+
+	    -- Now, create our local result set; we will merge it into the
+	    -- main results later.
+	    insert
+		collection iresult
+	    select
+		p_partner_key = :dh:p_donor_partner_key,
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage
+	    from
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    where
+		:dh:a_ledger_number = :d:a_ledger_number and
+		:dh:a_cost_center = :d:a_cost_center and
+		:dh:p_donor_partner_key = :d:p_donor_partner_key and
+		(:stage:mincnt is null or :d:a_act_count >= :stage:mincnt) and
+		(:stage:maxcnt is null or :d:a_act_count <= :stage:maxcnt) and
+		(:stage:funds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:funds + ',') > 0) and
+		(:stage:notfunds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:notfunds + ',') = 0)
+	    ";
+    }
