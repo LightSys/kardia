@@ -3,6 +3,7 @@ plugin_crm_search_partners "widget/component-decl"
     {
     stage_label = "Person";
     stage_short_label = "Person";
+    stage_description = "Name, Partner Type, Gender, Comments";
     stage_description_expr = "isnull((select isnull('First/Pref Name contains: ' + :param:given_name + ', ', '') + isnull('Last Name starts with: ' + :param:surname + ', ', '') + isnull('Organization contains: ' + :param:org_name + ', ', '') + isnull('Gender: ' + :param:gender + ', ', '') + isnull('Type: ' + :param:ptype + ', ', '') + isnull('Has Contact: ' + :param:hascont + ', ', '') + isnull('Comment Contains: ' + :param:comment + ', ', '') + isnull('Added After: ' + substring(convert(string,:param:start),1,12) + ', ', '') + isnull('Added Before: ' + substring(convert(string,:param:end),1,12) + ', ', '') + isnull('Added By User: ' + :param:adduser + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
     stage_type = "PAR";
     icon = "/apps/kardia/images/icons/ionicons-people.svg";
