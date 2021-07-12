@@ -121,6 +121,8 @@ activity "system/query"
 		:t:e_todo_completion_date desc
 	    limit
 		200
+	    having
+		:p_partner_key is not null
 	    ;
 
 	    -- Track events - today (same cal day or within 12 hours)
