@@ -49,7 +49,7 @@ Donor 100400, ID 6 is not marked as extra : This is an issue of a histogram not 
 
 Donor 93162, hist ID 3 should not be 0 on current right?
 
-Donor 93036, shouldnt hist id 1 be an increase not decrease?
+Donor 93036, shouldnt hist id 1 be an increase not decrease? (Ask Greg about how to determine increase, off of the average monthly or amount?)
 
 Donor 75107
         This is very as-able giving and a bit complex for our system to currently handle gracefully
@@ -61,3 +61,8 @@ Donor 75107
         ID 05 is reestablished regular giving
         ID 06 is a payahead for Mar 2019
         ID 08 is a payahead for Nov 2018
+
+Donor 100400
+        ID 08 doesn't have an "average amount" when it does have multiple donations
+        ID 01 doesn't have any information on lapsed days, isCurrent, increase or decrease
+
