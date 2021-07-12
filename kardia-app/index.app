@@ -130,6 +130,7 @@ index "widget/page"
 				:menutitle,
 				:menudesc,
 				:cnt,
+				:is_online,
 				:e_reference_info,
 				name = :e_reference_info
 			    from
@@ -174,7 +175,7 @@ index "widget/page"
 			row2_bgcolor = "#496293";
 			nodata_message = "one moment please...";
 
-			mt_img "widget/table-column" { title=""; fieldname="menuicon"; width=38; type=image; image_maxwidth=32; image_maxheight=32; align=center; textcolor=white; }
+			mt_img "widget/table-column" { title=""; fieldname="menuicon"; width=38; type=image; image_maxwidth=32; image_maxheight=32; align=center; textcolor=white; image_border_radius=18; image_border_color=runclient(condition(:menu_osrc:is_online, '#00ff00', null)); image_border_width=2; }
 
 			mt_name "widget/table-column" { title=""; fieldname="menutitle"; caption_value=runclient(condition(:menu_osrc:menutitle = 'Settings', 'Ledger: ' + :kardia_sysattrs_osrc:Ledger + '\nPeriod: ' + :kardia_sysattrs_osrc:CurrentPeriod + '\nYear: ' + :kardia_sysattrs_osrc:YearPeriod, :menu_osrc:menudesc)); width=166; textcolor=white; caption_textcolor="#f0f0f0"; style=bold; font_size=15; caption_style=italic; wrap=yes; }
 
