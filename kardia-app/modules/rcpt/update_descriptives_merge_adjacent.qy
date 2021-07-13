@@ -7,6 +7,8 @@ update_descriptives_merge_catchup "system/query"
     sql = " declare collection tmp scope application;
             declare collection tmp2;
 
+            delete collection tmp2;
+
 	    -- Locate adjacent segments: compare the combined segments average to the
 	    -- longer segment's average.
 	    update

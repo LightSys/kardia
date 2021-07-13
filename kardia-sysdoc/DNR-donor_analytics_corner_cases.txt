@@ -61,6 +61,7 @@ Donor 75107
         ID 05 is reestablished regular giving
         ID 06 is a payahead for Mar 2019
         ID 08 is a payahead for Nov 2018
+        See merge_approx
 
 Donor 100400
         ID 08 doesn't have an "average amount" when it does have multiple donations
@@ -72,7 +73,6 @@ Donor 107077 I have no idea where it is getting the calculations for increase an
 
 Donor 108705, ID 1 should be an extra
 
-Donor 69559's isExtra counting seems to be really weird
 Donors who have a hist entry that is approximate. These should be checked to see if those tags are acceptable or if tweaks need made
 109498
 112378
@@ -83,6 +83,7 @@ Donors who have a hist entry that is approximate. These should be checked to see
 75107
 80267
 89169
+91224 - i think this one it is more helpful to not approximate
 92284
 98931
-
+Most recent check: nearly all of them look nice and are helpful

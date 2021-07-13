@@ -20,11 +20,10 @@ update_descriptives_merge_catchup "system/query"
                         :dh:a_is_approximate is null and
                         :dh:a_count <= 6 and -- these try to discount regular giving patterns from being approximated
                         :dh:a_act_average_months <= 6 and
-                        not :dh:a_is_extra and
                         (select 
                                 count(1)
                                 from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
-                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_hist_id = :dh:a_hist_id + 1 or :dh2:a_hist_id = :dh:a_hist_id - 1) and :dh2:a_count < 6 and :dh2:a_act_average_months < 6
+                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_hist_id = :dh:a_hist_id + 1 or :dh2:a_hist_id = :dh:a_hist_id - 1) and :dh2:a_count < 6 and :dh2:a_act_average_months < 6 and (not isnull(:dh:a_is_extra, 0) or not isnull(:dh2:a_is_extra, 0))
                                 ) >= 1,
                         2,
                         0
