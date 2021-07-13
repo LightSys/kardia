@@ -438,10 +438,16 @@ update_descriptives "system/query"
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
-		:dh:a_increase_pct = convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0
+		:dh:a_increase_pct = condition(
+                                :dh:a_act_average_interval > 7,
+                                convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0,
+                                convert(double, :dh:a_act_average_amount) / convert(double, isnull((select :dh2:a_act_average_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_act_average_amount)) - 1.0
+                                )
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
-		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
+                not isnull(:dh:a_is_extra, 0) and
+                :dh:a_count > 1
 	    ;
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
@@ -462,10 +468,16 @@ update_descriptives "system/query"
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
-		:dh:a_decrease_pct = 1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount))
+		:dh:a_decrease_pct = condition(
+                                :dh:a_act_average_interval > 7,
+                                1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)),
+                                1.0 - convert(double, :dh:a_act_average_amount) / convert(double, isnull((select :dh2:a_act_average_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_act_average_amount))
+                                )
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
-		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
+                not isnull(:dh:a_is_extra, 0) and
+                :dh:a_count > 1
 	    ;
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
