@@ -175,7 +175,7 @@ update_descriptives "system/query"
 		donor=:parameters:donor
 	    ;
 
-            -- Merge in 'catch up' giving that includes extra giftx
+            -- Merge in 'catch up' giving that includes extra gifts
 	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_catchup_with_extra.qy
 		fund=:parameters:fund,
 		donor=:parameters:donor
@@ -431,23 +431,27 @@ update_descriptives "system/query"
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
-	    -- Identify increases in giving.  An increase is when the histogram entry has a larger amount
-	    -- than the immediately previous histogram entry that is not a one-time-extra gift.  We also
-	    -- require that the histogram entry have at least two months of giving -- the donor can either
-	    -- give less frequently than monthly, or if monthly the gift count has to be at least 2.
+	    -- Identify increases in giving.  An increase is when the histogram entry has a larger monthly
+	    -- average than the immediately previous histogram entry that is not a one-time-extra gift. We
+	    -- also require that the histogram entry and its predecessor both have at least two gifts,
+            -- unless the giving interval is greater than 7 (effectively yearly), in which case any
+            -- number of gifts for either produces valid results.
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
 		:dh:a_increase_pct = condition(
-                                :dh:a_act_average_interval > 7,
+                                :dh:a_act_average_interval > 7 or datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334,
                                 convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0,
-                                convert(double, :dh:a_act_average_amount) / convert(double, isnull((select :dh2:a_act_average_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_act_average_amount)) - 1.0
+                                condition(
+                                        :dh:a_count > 1,
+                                        convert(double, :dh:a_act_average_amount) / convert(double, isnull((select :dh2:a_act_average_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_act_average_amount)) - 1.0,
+                                        null
+                                        )
                                 )
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
-                not isnull(:dh:a_is_extra, 0) and
-                :dh:a_count > 1
+                not isnull(:dh:a_is_extra, 0)
 	    ;
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
@@ -462,22 +466,27 @@ update_descriptives "system/query"
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 
-	    -- Identify decreases in giving.  An increase is when the histogram entry has a smaller amount
-	    -- than the immediately previous histogram entry that is not a one-time-extra gift.  We do not
-	    -- require at least two months of giving in this case.
+	    -- Identify decreases in giving.  A decrease is when the histogram entry has a smaller monthly
+	    -- average than the immediately previous histogram entry that is not a one-time-extra gift. We
+	    -- also require that the histogram entry and its predecessor both have at least two gifts,
+            -- unless the giving interval is greater than 7 (effectively yearly), in which case any
+            -- number of gifts for either produces valid results.
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
 		:dh:a_decrease_pct = condition(
-                                :dh:a_act_average_interval > 7,
+                                :dh:a_act_average_interval > 7 or datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334,
                                 1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)),
-                                1.0 - convert(double, :dh:a_act_average_amount) / convert(double, isnull((select :dh2:a_act_average_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_act_average_amount))
+                                condition(
+                                        :dh:a_count > 1,
+                                        1.0 - convert(double, :dh:a_act_average_amount) / convert(double, isnull((select :dh2:a_act_average_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_act_average_amount)),
+                                        null
+                                        )
                                 )
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
-                not isnull(:dh:a_is_extra, 0) and
-                :dh:a_count > 1
+                not isnull(:dh:a_is_extra, 0)
 	    ;
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
@@ -496,7 +505,8 @@ update_descriptives "system/query"
 		:a_increase_date = (select condition(:dh:a_increase_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
 		:a_decrease_pct = (select :dh:a_decrease_pct from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
 		:a_decrease_date = (select condition(:dh:a_decrease_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-		:a_is_extra = (select max(:dh:a_is_extra) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where datediff(day, :dh:a_last_gift, getdate()) < 366 order by :a_last_gift desc limit 2)
+		:a_is_extra = (select max(:dh:a_is_extra) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where datediff(day, :dh:a_last_gift, getdate()) < 366 order by :a_last_gift desc limit 2),
+                :a_is_approximate = (select max(:dh:a_is_approximate) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where datediff(day, :dh:a_last_gift, getdate()) < 366 order by :a_last_gift desc limit 2)
 	    where
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
