@@ -20,6 +20,7 @@ update_descriptives_merge_catchup "system/query"
                         :dh:a_is_approximate is null and
                         :dh:a_count <= 6 and -- these try to discount regular giving patterns from being approximated
                         :dh:a_act_average_months <= 6 and
+                         not datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334 and -- this prevents annual gifts from being merged together
                         (select 
                                 count(1)
                                 from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
@@ -79,7 +80,7 @@ update_descriptives_merge_catchup "system/query"
                 count = sum(:t:count),
                 total = sum(:t:total),
                 prev_end = last(:t:prev_end),
-                next_start = first(:t:next)
+                next_start = first(:t:next_start)
             from
                 collection tmp2 t
             where 
