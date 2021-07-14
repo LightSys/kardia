@@ -6,8 +6,10 @@ update_descriptives "system/query"
     lookback "query/parameter" { type=integer; default=37; }
 
     sql = " declare collection tmp_gift_items scope application;
+            declare collection tmp_intermediate_vals;
 
 	    delete collection tmp_gift_items;
+            delete collection tmp_intermediate_vals;
 
 	    -- Clear out any old descriptives
 	    delete
@@ -49,6 +51,57 @@ update_descriptives "system/query"
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
 	    ;
 
+            -- Delete negative giving values and cancel out a
+            -- corresponding positive gift
+            -- t1 is the negative gift, t2 is the gift to be
+            -- cancelled out, and t3 is the intermediate value
+            insert
+                collection tmp_intermediate_vals
+            select
+                ledger = :t1:ledger,
+                fund = :t1:fund,
+                donor = :t1:donor,
+                min_diff = (select min(abs(datediff(day, :t2:giftdate, :t1:giftdate))) from collection tmp_gift_items t2 where :t1:ledger = :t2:ledger and :t1:donor = :t2:donor and :t1:fund = :t2:fund and :t2:amount = -1 * :t1:amount group by :t2:ledger, :t2:donor, :t2:fund),
+                id = null
+            from
+                collection tmp_gift_items t1
+            where
+                (:parameters:fund is null or :parameters:fund = :t1:fund) and
+		(:parameters:donor is null or :parameters:donor = :t1:donor) and
+                :t1:amount < 0
+            ;
+            update
+                identity collection tmp_intermediate_vals t3,
+                collection tmp_gift_items t1
+            set
+                :t3:id = (select :t2:id from collection tmp_gift_items t2 where :t1:ledger = :t2:ledger and :t1:donor = :t2:donor and :t1:fund = :t2:fund and :t2:amount = -1 * :t1:amount and :t3:min_diff = datediff(day, :t2:giftdate, :t1:giftdate) limit 1)
+            where
+                (:parameters:fund is null or :parameters:fund = :t1:fund) and
+		(:parameters:donor is null or :parameters:donor = :t1:donor) and
+                :t1:ledger = :t3:ledger and
+                :t1:donor = :t3:donor and
+                :t1:fund = :t3:fund and
+                :t1:amount < 0
+            ;
+            delete
+                collection tmp_gift_items t1
+            where
+                (:parameters:fund is null or :parameters:fund = :t1:fund) and
+		(:parameters:donor is null or :parameters:donor = :t1:donor) and
+                :t1:amount < 0
+            ;
+            delete
+                identity collection tmp_gift_items t2,
+                collection tmp_intermediate_vals t3
+            where
+                (:parameters:fund is null or :parameters:fund = :t2:fund) and
+		(:parameters:donor is null or :parameters:donor = :t2:donor) and
+                :t2:ledger = :t3:ledger and
+                :t2:donor = :t3:donor and
+                :t2:fund = :t3:fund and
+                :t2:id = :t3:id
+            ;
+            
 	    -- Build a list of giving pattern descriptives for each of the fund's donors.  We want
 	    -- to optimize this to help staff interact with donors and ask good questions, instead
 	    -- of generating results simply based on math.
