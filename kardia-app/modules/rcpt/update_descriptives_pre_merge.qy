@@ -5,12 +5,12 @@ delete_later_practice "system/query"
     donor "query/parameter" { type=string; }
     lookback "query/parameter" { type=integer; default=37; }
 
-    sql = " declare collection tmp scope application;
+    sql = " declare collection tmp_gift_items scope application;
 
-	    delete collection tmp ;
+	    delete collection tmp_gift_items;
             
 
-            -- Compiles the histograms, but does not exectute any merges (or any statements that follow merges).
+            -- Compiles the histories, but does not exectute any merges (or any statements that follow merges).
             -- Useful for testing, but not a part of deployment
 
 
@@ -30,7 +30,7 @@ delete_later_practice "system/query"
 
 	    -- Make a working copy of the dataset in-memory
 	    insert
-		collection tmp
+		collection tmp_gift_items
 	    select
 		donor = :i:p_dn_donor_partner_id,
 		giftdate = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
@@ -53,8 +53,6 @@ delete_later_practice "system/query"
 		:i:p_dn_donor_partner_id,
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
 	    ;
-
-	    --select * from collection tmp order by :giftdate desc;
 
 	    -- Build a list of giving pattern descriptives for each of the fund's donors.  We want
 	    -- to optimize this to help staff interact with donors and ask good questions, instead
@@ -96,7 +94,7 @@ delete_later_practice "system/query"
 		s_date_modified = getdate(),
 		s_modified_by = user_name()
 	    from
-		collection tmp
+		collection tmp_gift_items
 	    group by
 		:ledger,
 		:fund,
@@ -108,7 +106,7 @@ delete_later_practice "system/query"
 		:giftdate desc
 	    ;
 
-	    -- Generate the amount histogram data, starting with the most recent gift amount.
+	    -- Generate the amount history data, starting with the most recent gift amount.
 	    insert into
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows
 	    select
@@ -137,7 +135,7 @@ delete_later_practice "system/query"
 		s_date_modified = getdate(),
 		s_modified_by = user_name()
 	    from
-		collection tmp
+		collection tmp_gift_items
 	    group by
 		:ledger,
 		:fund,

@@ -4,14 +4,14 @@ update_descriptives_merge_catchup "system/query"
     fund "query/parameter" { type=string; style=strnull;}
     donor "query/parameter" { type=string; style=strnull;}
 
-    sql = " declare collection tmp scope application;
-            declare collection tmp2;
-            declare collection aggregated_seg;
+    sql = " declare collection tmp_gift_items scope application;
+            declare collection tmp_segments;
+            declare collection tmp_aggregated_segments;
 
-            delete collection tmp2;
-            delete collection aggregated_seg;
+            delete collection tmp_segments;
+            delete collection tmp_aggregated_segments;
 
-	    
+	    -- Step One: Identify
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
@@ -20,7 +20,7 @@ update_descriptives_merge_catchup "system/query"
                         :dh:a_is_approximate is null and
                         :dh:a_count <= 6 and -- these try to discount regular giving patterns from being approximated
                         :dh:a_act_average_months <= 6 and
-                         not datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334 and -- this prevents annual gifts from being merged together
+                        not datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334 and -- this prevents annual gifts from being merged together
                         (select 
                                 count(1)
                                 from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
@@ -37,10 +37,9 @@ update_descriptives_merge_catchup "system/query"
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
             
-
-            -- Step 1.5 : segment the approximate regions
+            -- Step Two : segment the approximate regions
             insert
-                collection tmp2
+                collection tmp_segments
             select
                 ledger = :dh1:a_ledger_number,
                 fund = :dh1:a_cost_center,
@@ -63,9 +62,9 @@ update_descriptives_merge_catchup "system/query"
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key)
             ;
 
-            
+            -- Step Three: Aggregate Each Segment
             insert
-		collection aggregated_seg
+		collection tmp_aggregated_segments
             select
                 ledger = :t:ledger,
                 fund = :t:fund,
@@ -82,7 +81,7 @@ update_descriptives_merge_catchup "system/query"
                 prev_end = last(:t:prev_end),
                 next_start = first(:t:next_start)
             from
-                collection tmp2 t
+                collection tmp_segments t
             where 
                 (:parameters:fund is null or :parameters:fund = :t:fund) and
 		(:parameters:donor is null or :parameters:donor = :t:donor) and
@@ -100,11 +99,10 @@ update_descriptives_merge_catchup "system/query"
                 :t:seg
             ;
             
-
-	    -- Step Two: Merge
+	    -- Step Four: Merge
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
-                collection aggregated_seg t
+                collection tmp_aggregated_segments t
 	    set
                 :dh2:a_amount = :t:amount,
                 :dh2:a_first_gift = :t:first,
@@ -135,7 +133,7 @@ update_descriptives_merge_catchup "system/query"
                 :t:merged_id = :dh2:a_hist_id
 	    ;
 
-	    -- Step Three: Delete Merged
+	    -- Step Five: Delete Merged
 	    delete
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
             where
