@@ -22,7 +22,18 @@ print "Amount Errors: "
 print setAmountErrorsId
 print "\nDate Errors: "
 print setDatesErrorsId
-    
+
+f = open("thingsToEdit.txt", "w")
+f.write("Amount Errors: ")
+for error in setAmountErrorsId:
+    f.write(error)
+    f.write("\n")
+f.write("\n\nDate Errors: ")
+for error in setDatesErrorsId:
+    f.write(error)
+    f.write("\n")
+f.close()
+
 #    for row in rowReader:
 #        setID.add(row[1])
 #        setAmounts.add(row[4])
