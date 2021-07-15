@@ -4,24 +4,24 @@ update_descriptives_merge_catchup "system/query"
     fund "query/parameter" { type=string; style=strnull;}
     donor "query/parameter" { type=string; style=strnull;}
 
-    sql = " declare collection tmp scope application;
-            declare collection tmp2;
+    sql = " declare collection tmp_gift_items scope application;
+            declare collection tmp_intermediate_vals;
 
-            delete collection tmp2;
+            delete collection tmp_intermediate_vals;
 
-	    -- Identify one-time-extra gifts.  We consider a gift as one-time-extra if it is a single
-	    -- larger gift occurring within the overall pattern of other histogram entries.  We say it
-	    -- is NOT if it has more than one gift, or there is no histogram before it, or if the
-	    -- histogram entry before it is lapsed (current == 0).
+            -- Step One: Identify
+	    --  Identify one-time-extra gifts.  We consider a gift as one-time-extra if it is a single
+	    --  larger gift occurring within a regular giving pattern. We say it is NOT if it
+	    --  has more than one gift or is the most recent gift.
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    set
 		:dh:a_is_extra = condition(
-                        :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select 
+                        :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and :dh:a_next_start is not null and (select 
                                 count(1)
                                 from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
-                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh:a_amount > :dh2:a_amount and :dh2:a_count > 1 and :dh2:a_first_gift <= :dh:a_first_gift and :dh:a_hist_id != 1
+                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh:a_amount > :dh2:a_amount and :dh2:a_count > 1 and :dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift
                                 ) >= 1,
                         2,
                         0
@@ -48,12 +48,13 @@ update_descriptives_merge_catchup "system/query"
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
                 :dh1:a_is_extra = 2 and
                 :dh2:a_count > 1 and
-                :dh2:a_first_gift <= :dh1:a_first_gift
+                :dh2:a_first_gift <= :dh1:a_first_gift and
+                :dh2:a_last_gift >= :dh1:a_last_gift
             ;
 
-            --Step 1.5 : Create Intermediate Values
+            --Step Two: Create Intermediate Values
             insert
-                collection tmp2
+                collection tmp_intermediate_vals
             select
                 ledger = :dh1:a_ledger_number,
                 fund = :dh1:a_cost_center,
@@ -61,9 +62,10 @@ update_descriptives_merge_catchup "system/query"
                 merged_id = :dh1:a_hist_id,
                 regular_id = :dh2:a_hist_id,
 
-                -- the fuzziness here can be tweaked. Right now it is false when
-                -- there are other gifts within +/- half an interval of the extra gift
-                includes_regular_giving = ((select count(1) from collection tmp where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift)) = 1)
+                -- The fuzziness here can be tweaked. If there are no other gifts
+                -- within +/- half an interval of the extra gift, the gift is assumed
+                -- to contain the regular giving amount lumped with the gift amount.
+                includes_regular_giving = ((select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift)) = 1)
             from
                 /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
                 /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
@@ -76,11 +78,11 @@ update_descriptives_merge_catchup "system/query"
 		:dh1:a_merged_id = :dh2:a_hist_id
             ;
 
-	    -- Step Two: Merge
+	    -- Step Three: Merge
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
-                collection tmp2 t
+                collection tmp_intermediate_vals t
 	    set
 		:dh2:a_total = condition(
                                 :t:includes_regular_giving,
@@ -145,11 +147,11 @@ update_descriptives_merge_catchup "system/query"
                 :t:regular_id = :dh2:a_hist_id
 	    ;
 
-	    -- Step Three: Adjust Merged
+	    -- Step Four: Adjust Merged
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
                 /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
-                collection tmp2 t
+                collection tmp_intermediate_vals t
 	    set
                 :dh1:a_amount = condition(
                                 :t:includes_regular_giving,

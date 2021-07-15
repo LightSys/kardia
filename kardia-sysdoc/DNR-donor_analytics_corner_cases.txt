@@ -45,7 +45,7 @@ Donor 130295
         ID 02 is a payahead for December 2020
         ID 01 is a payahead for a year (based on their established giving pattern)
 
-Donor 100400, ID 6 is not marked as extra : This is an issue of a histogram not getting merged in
+Donor 100400, ID 6 is not marked as extra : This is an issue of a history not getting merged in
 
 Donor 93162, hist ID 3 should not be 0 on current right?
 
@@ -88,18 +88,25 @@ Donors who have a hist entry that is approximate. These should be checked to see
 98931
 Most recent check: nearly all of them look nice and are helpful
 
-Should we have a lapsed days for one-time gifts and isExtras if the person also gives regularly? Example: 123107, 100400
+115702  02 gifts: Aug and Jan (interval: 05.77)
+128066  02 gifts: Mar and Jan (interval: 10.13)
+69559   13 gifts: 10/18-02/21 (interval: 02.26)
+75107   09 gifts: 08/19-01/21 (interval: 01.83)
+80267   02 gifts: Aug and Nov (interval: 03.70)
+89169   02 gifts: Jul and Sep (interval: 02.33)
+91224   04 gifts: 07/19-09/19 (interval: 00.85) Note: ID 01 is lost and I think keeping it is helpful
+98931   08 gifts: 12/18-04/20 (interval: 02.22)
+Next check: several of these intervals are a pair of gifts, and all but 75107, 91224 have only one hist remaining
 
-
-
-
-
-
-
+Other extra gifts:
+123107
+74095
+93162
+After date range change:
+no change. keeping the change so that the comments are accurate
 
 Donor 87050: Hist id 4 should be merged into 2
 Donor 127276: Should hist ids 11, 8, and 6 be merged since they're the same amount?
 Donor 97947: Should hist ids 6, 4, and 2 be merged too?
 Should all the entries for Donor 73499 be merged?
 Donor 113406: Hist ID 12 should either be merged in or identified as extra
-
