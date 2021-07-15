@@ -24,11 +24,11 @@ print "\nDate Errors: "
 print setDatesErrorsId
 
 f = open("thingsToEdit.txt", "w")
-f.write("Amount Errors: ")
+f.write("Amount Errors: \n")
 for error in setAmountErrorsId:
     f.write(error)
     f.write("\n")
-f.write("\n\nDate Errors: ")
+f.write("\nDate Errors: \n")
 for error in setDatesErrorsId:
     f.write(error)
     f.write("\n")
