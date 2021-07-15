@@ -56,7 +56,7 @@ update_descriptives_merge_catchup "system/query"
                                 condition(:dh1:a_ntl_gift < :dh2:a_ntl_gift, :dh2:a_ntl_gift, :dh1:a_ntl_gift)
                                 ),
                 :dh2:a_act_average_amount = condition(
-                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
+                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,
                                 (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)
                                 ),

@@ -391,12 +391,12 @@ update_descriptives "system/query"
 	    set
 		:a_act_average_months = convert(integer, round(datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5)),
 		:a_act_average_amount = isnull((select condition(
-			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
+			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) < 16,
 			null,
 			sum(:i:amount) / (datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5)
 		) from collection tmp_gift_items i where :i:giftdate >= :d:a_act_lookback_date and :i:giftdate <= :d:a_act_lookahead_date and :i:fund = :d:a_cost_center and :i:ledger = :d:a_ledger_number and :i:donor = :d:p_donor_partner_key), $0),
 		:a_act_average_interval = (select condition(
-			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
+			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) < 16,
 			null,
 			(datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5) / convert(double, count(1))
 		) from collection tmp_gift_items i where :i:giftdate >= :d:a_act_lookback_date and :i:giftdate <= :d:a_act_lookahead_date and :i:fund = :d:a_cost_center and :i:ledger = :d:a_ledger_number and :i:donor = :d:p_donor_partner_key)
@@ -411,7 +411,7 @@ update_descriptives "system/query"
                 identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
             set
                 :a_act_average_amount = condition(
-                                datediff(day, :dh:a_first_gift, :dh:a_last_gift) = 0,
+                                datediff(day, :dh:a_first_gift, :dh:a_last_gift) < 16,
                                 null,
                                 (:dh:a_total - :dh:a_amount) / round(datediff(day, :dh:a_first_gift, :dh:a_last_gift) / 30.5)
                                 ),
@@ -494,7 +494,7 @@ update_descriptives "system/query"
                                 convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0,
                                 condition(
                                         :dh:a_count > 1,
-                                        convert(double, :dh:a_amount) / round(:dh:a_act_average_interval) / convert(double, isnull((select :dh2:a_amount / round(:dh2:a_act_average_interval) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / round(:dh:a_act_average_interval))) - 1.0,
+                                        convert(double, :dh:a_amount) / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)) / convert(double, isnull((select :dh2:a_amount / condition(round(:dh2:a_act_average_interval) < 1, 1, round(:dh2:a_act_average_interval)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)))) - 1.0,
                                         null
                                         )
                                 )
@@ -529,7 +529,7 @@ update_descriptives "system/query"
                                 1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)),
                                 condition(
                                         :dh:a_count > 1,
-                                        1.0 - convert(double, :dh:a_amount) / round(:dh:a_act_average_interval) / convert(double, isnull((select convert(double, :dh2:a_amount) / round(:dh2:a_act_average_interval) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / round(:dh:a_act_average_interval))),
+                                        1.0 - convert(double, :dh:a_amount) / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)) / convert(double, isnull((select convert(double, :dh2:a_amount) / condition(round(:dh2:a_act_average_interval) < 1, 1, round(:dh2:a_act_average_interval)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)))),
                                         null
                                         )
                                 )
