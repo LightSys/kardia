@@ -80,7 +80,11 @@ update_descriptives_merge_catchup "system/query"
 	    set
                 :dh2:a_count = :dh2:a_count + :t:count,
 		:dh2:a_total = :dh2:a_total + :t:catchup_amount,
-                :dh2:a_prev_end = condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end),
+                :dh2:a_prev_end = condition(
+                                :dh1:a_prev_end is null,
+                                null,
+                                condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end)
+                                ),
 		:dh2:a_next_start = condition(
                                 :dh1:a_next_start is null,
                                 null,

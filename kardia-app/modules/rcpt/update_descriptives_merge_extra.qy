@@ -91,7 +91,11 @@ update_descriptives_merge_catchup "system/query"
                                 ),
 		:dh2:a_prev_end = condition(
                                 :t:includes_regular_giving,
-                                condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end),
+                                condition(
+                                        :dh1:a_prev_end is null,
+                                        null,
+                                        condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end)
+                                        ),
                                 :dh2:a_prev_end,
                                 ),
 		:dh2:a_next_start = condition(

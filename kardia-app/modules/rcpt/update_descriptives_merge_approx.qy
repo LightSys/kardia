@@ -78,8 +78,8 @@ update_descriptives_merge_catchup "system/query"
                 ntl = first(:t:ntl),
                 count = sum(:t:count),
                 total = sum(:t:total),
-                prev_end = last(:t:prev_end),
-                next_start = first(:t:next_start)
+                prev_end = condition(last(isnull(:t:prev_end, 'null')) = 'null', null, last(:t:prev_end)),
+                next_start = condition(first(isnull(:t:next_start, 'null')) = 'null', null, first(:t:next_start))
             from
                 collection tmp_segments t
             where 

@@ -249,6 +249,30 @@ update_descriptives "system/query"
 		donor=:parameters:donor
 	    ;
 
+            -- Correct previous/next interval start/end dates
+            --  Extra gifts are all linked together, and regular gifts are
+            --  linked together.
+	    update
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    set
+		:dh1:a_prev_end = (select :a_last_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift and not :dh2:a_is_extra order by :dh2:a_last_gift desc limit 1),
+		:dh1:a_next_start = (select :a_first_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift and not :dh2:a_is_extra order by :dh2:a_first_gift asc limit 1)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
+                not :dh1:a_is_extra
+	    ;
+            update
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    set
+		:dh1:a_prev_end = (select :a_last_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift and :dh2:a_is_extra order by :dh2:a_last_gift desc limit 1),
+		:dh1:a_next_start = (select :a_first_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift and :dh2:a_is_extra order by :dh2:a_first_gift asc limit 1)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
+                :dh1:a_is_extra
+	    ;
+
 	    -- First history value
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
