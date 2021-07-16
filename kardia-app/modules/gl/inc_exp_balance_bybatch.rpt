@@ -26,6 +26,7 @@ inc_exp_balance_bybatch "system/report"
     end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     unposted "report/parameter" { type=integer; default=0; }
     invert "report/parameter" { type=integer; default=0; }
+    origin "report/parameter" { type=string; default=null; }
 
     // Queries
     inv_qy "report/query"
@@ -63,6 +64,7 @@ inc_exp_balance_bybatch "system/report"
 			:t:a_period <= :this:end_period and
 			:t:a_period >= :period_qy:first_period
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+			" + condition(:this:origin is null, "", "and :t:a_origin = " + quote(:this:origin)) + "
 		GROUP BY
 			:t:a_batch_number
 		");
@@ -101,7 +103,8 @@ inc_exp_balance_bybatch "system/report"
 	    t_d1 "report/data" { value = runserver("Change in Net Assets by Batch - for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
 	    t_d2 "report/data" { value = runserver("For periods " + :this:ref_period + " through " + :this:end_period + "\n"); }
 	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
-	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:origin is not null); value = runserver("Only including batch type: " + :this:origin + "\n"); }
+	    t_d5 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
 	    }
 
 	ie_table "report/table"
