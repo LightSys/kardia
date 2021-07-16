@@ -243,6 +243,16 @@ update_descriptives "system/query"
 		fund=:parameters:fund,
 		donor=:parameters:donor
 	    ;
+            -- Merge in 'catch up' giving
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_catchup.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
+            -- Merge in adjacent giving segments
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
             -- Approximate segments that did not fit in anywhere else
 	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_approx.qy
 		fund=:parameters:fund,
