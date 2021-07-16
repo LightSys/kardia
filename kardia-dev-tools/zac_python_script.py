@@ -3,18 +3,21 @@ import csv
 counter = 0
 setID = set()
 setAmounts = set()
-setAmountErrorsId = set()
-setDatesErrorsId = set()
+setAmountErrorsId = []
+setDatesErrorsId = []
 
 with open('moreData.csv') as csvfile:
     rowReader = csv.reader(csvfile)
     prevRow = rowReader.next()
     for row in rowReader:
-        if (row[2] == prevRow[2]):
-            if(row[20] != prevRow[6]):
-                setDatesErrorsId.add(row[1])
+        if (row[2] == prevRow[2] and row[1] == prevRow[1]):
+            if(row[6] != prevRow[20]):
+                setDatesErrorsId.append(row[1])
+                setDatesErrorsId.append(row[2])
+                setDatesErrorsId.append(row[3])
             if(row[4] == prevRow[4]):
-                setAmountErrorsId.add(row[1])
+                setAmountErrorsId.append(row[1])
+                setAmountErrorsId.append(row[2])
             
         prevRow = row
 
