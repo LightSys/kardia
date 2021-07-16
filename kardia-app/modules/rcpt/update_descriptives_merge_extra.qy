@@ -11,14 +11,13 @@ update_descriptives_merge_catchup "system/query"
 
             -- Step One: Identify
 	    --  Identify one-time-extra gifts.  We consider a gift as one-time-extra if it is a single
-	    --  larger gift occurring within a regular giving pattern. We say it is NOT if it
-	    --  has more than one gift or is the most recent gift.
+	    --  larger gift occurring within a regular giving pattern..
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    set
 		:dh:a_is_extra = condition(
-                        :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and :dh:a_next_start is not null and (select 
+                        :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select 
                                 count(1)
                                 from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
                                 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh:a_amount > :dh2:a_amount and :dh2:a_count > 1 and :dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift
