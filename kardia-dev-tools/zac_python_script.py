@@ -39,15 +39,17 @@ print "\n"
 
 f = open("thingsToEdit.txt", "w")
 f.write("Amount Errors: \n")
+f.write("Donor CostCenter Hist\n")
 for error in setAmountErrorsId:
     if(modCount % 3 == 2):
         f.write(error)
         f.write("\n")
     else:
         f.write(error)
-        f.write(" ")
+        f.write("\t")
     modCount += 1
 f.write("\nDate Errors Prev: \n")
+f.write("Donor CostCenter Hist\n")
 modCount = 0
 for error in setDatesErrorsPrev:
     if(modCount % 3 == 2):
@@ -55,9 +57,10 @@ for error in setDatesErrorsPrev:
         f.write("\n")
     else:
         f.write(error)
-        f.write(" ")
+        f.write("\t")
     modCount += 1
 f.write("\nDate Errors Next: \n")
+f.write("Donor CostCenter Hist\n")
 modCount = 0
 for error in setDatesErrorsNext:
     if(modCount % 3 == 2):
@@ -65,7 +68,7 @@ for error in setDatesErrorsNext:
         f.write("\n")
     else:
         f.write(error)
-        f.write(" ")
+        f.write("\t")
     modCount += 1
 f.close()
 
