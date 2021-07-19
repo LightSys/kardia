@@ -11,6 +11,7 @@ setDatesErrorsNext = []
 setErrorNTLOnce = []
 setErrorNTLTwice = []
 setErrorNTLMult = []
+setErrorNTLMultBlank = []
 
 with open('moreData.csv') as csvfile:
     rowReader = csv.reader(csvfile)
@@ -24,13 +25,17 @@ with open('moreData.csv') as csvfile:
                 setErrorNTLOnce.append(row[1])
                 setErrorNTLOnce.append(row[2])
                 setErrorNTLOnce.append(row[3])
-        elif (int(row[8]) == 2 and firstDate != lastDate):
+        elif (int(row[8]) == 2):
             if(row[7] != row[5]):
                 setErrorNTLTwice.append(row[1])
                 setErrorNTLTwice.append(row[2])
                 setErrorNTLTwice.append(row[3])
         else:
-            if(row[7] != ""):
+            if(row[7] == ""):
+                setErrorNTLMultBlank.append(row[1])
+                setErrorNTLMultBlank.append(row[2])
+                setErrorNTLMultBlank.append(row[3])
+            else:
                 ntlDate = datetime.strptime(row[7], "%d %b %Y %H:%M")
                 if(firstDate >= ntlDate or lastDate < ntlDate):
                     setErrorNTLMult.append(row[1])
@@ -123,6 +128,17 @@ f.write("\nNTL Errors Count Mult: \n")
 f.write("Donor CostCenter Hist\n")
 modCount = 0
 for error in setErrorNTLMult:
+    if(modCount % 3 == 2):
+        f.write(error)
+        f.write("\n")
+    else:
+        f.write(error)
+        f.write("\t")
+    modCount += 1
+f.write("\nNTL Errors Count Mult Blank: \n")
+f.write("Donor CostCenter Hist\n")
+modCount = 0
+for error in setErrorNTLMultBlank:
     if(modCount % 3 == 2):
         f.write(error)
         f.write("\n")
