@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 
 counter = 0
 modCount = 0
@@ -7,11 +8,33 @@ setAmounts = set()
 setAmountErrorsId = []
 setDatesErrorsPrev = []
 setDatesErrorsNext = []
+setErrorNTLOnce = []
+setErrorNTLTwice = []
+setErrorNTLMult = []
 
 with open('moreData.csv') as csvfile:
     rowReader = csv.reader(csvfile)
-    prevRow = rowReader.next()
+    prevRow = rowReader.__next__()
     for row in rowReader:
+        if (int(row[8]) < 2):
+            if(row[7] != ""):
+                setErrorNTLOnce.append(row[1])
+                setErrorNTLOnce.append(row[2])
+                setErrorNTLOnce.append(row[3])
+        elif (int(row[8]) == 2):
+            if(row[7] != row[5]):
+                setErrorNTLTwice.append(row[1])
+                setErrorNTLTwice.append(row[2])
+                setErrorNTLTwice.append(row[3])
+        else:
+            if(row[7] != ""):
+                ntlDate = datetime.strptime(row[7], "%d %b %Y %H:%M")
+                firstDate = datetime.strptime(row[5], "%d %b %Y %H:%M")
+                lastDate = datetime.strptime(row[6], "%d %b %Y %H:%M")
+                if(firstDate >= ntlDate or lastDate < ntlDate):
+                    setErrorNTLMult.append(row[1])
+                    setErrorNTLMult.append(row[2])
+                    setErrorNTLMult.append(row[3])
         if (row[2] == prevRow[2] and row[1] == prevRow[1]):
             if(row[6] != prevRow[20] and row[6] != "" and prevRow[20] != ""):
                 setDatesErrorsPrev.append(row[1])
@@ -29,13 +52,16 @@ with open('moreData.csv') as csvfile:
             
         prevRow = row
 
-print "Amount Errors: "
-print setAmountErrorsId
-print "\nDate Errors Prev: "
-print setDatesErrorsPrev
-print "\nDate Errors Next: "
-print setDatesErrorsNext
-print "\n"
+print ("Amount Errors: ")
+print (setAmountErrorsId)
+print ("\nDate Errors Prev: ")
+print (setDatesErrorsPrev)
+print ("\nDate Errors Next: ")
+print (setDatesErrorsNext)
+print ("\n", setErrorNTLOnce)
+print ("\n", setErrorNTLTwice)
+print ("\n", setErrorNTLMult)
+print ("\n")
 
 f = open("thingsToEdit.txt", "w")
 f.write("Amount Errors: \n")
@@ -70,7 +96,43 @@ for error in setDatesErrorsNext:
         f.write(error)
         f.write("\t")
     modCount += 1
+f.write("\nNTL Errors Count 1: \n")
+f.write("Donor CostCenter Hist\n")
+modCount = 0
+for error in setErrorNTLOnce:
+    if(modCount % 3 == 2):
+        f.write(error)
+        f.write("\n")
+    else:
+        f.write(error)
+        f.write("\t")
+    modCount += 1
+f.write("\nNTL Errors Count 2: \n")
+f.write("Donor CostCenter Hist\n")
+modCount = 0
+for error in setErrorNTLTwice:
+    if(modCount % 3 == 2):
+        f.write(error)
+        f.write("\n")
+    else:
+        f.write(error)
+        f.write("\t")
+    modCount += 1
+f.write("\nNTL Errors Count Mult: \n")
+f.write("Donor CostCenter Hist\n")
+modCount = 0
+for error in setErrorNTLMult:
+    if(modCount % 3 == 2):
+        f.write(error)
+        f.write("\n")
+    else:
+        f.write(error)
+        f.write("\t")
+    modCount += 1
 f.close()
+
+
+
 
 #    for row in rowReader:
 #        setID.add(row[1])

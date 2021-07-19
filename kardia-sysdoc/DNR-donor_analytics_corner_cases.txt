@@ -119,3 +119,47 @@ Donor 122757
 Donor 101812
 Donor 107077
 Donor 113406
+
+Donor 122614 has a lot of issues
+        The next and previouses are jacked up
+        Also, some of the histograms(such as 1 and 3) should be merged
+
+
+The NTL gift for these donors are equal to the first gift, but they have multiple gift entries:
+122614 hist 11
+66629 hist 6, 10, 12
+91686 hist 2
+99839 hist 3
+
+There is no NTL gift for a gift of count 2:
+Donor CostCenter Hist
+105247	6625.W	2
+107786	5165	2
+109181	5165	2
+109181	7200	2
+111582	4539.N	2
+111582	5165	2
+113240	7200	2
+115702	4361	2
+120191	5109	2
+122614	5109	13
+125019	5730.L	2
+128066	4361	2
+129998	6067	2
+66629	5280	8
+67277	5899	3
+71361	5165	2
+73528	6625.W	2
+76558	7453	5
+78269	7200	2
+80267	4361	2
+80267	5165	2
+87990	5109	9
+89169	4361	2
+89169	5165	2
+90700	5742.Eght	2
+95908	5634	2
+97799	5280	2
+98017	5109	3
+98642	5109	4
+99393	5109	5
