@@ -78,8 +78,8 @@ update_descriptives_merge_catchup "system/query"
                 ntl = first(:t:ntl),
                 count = sum(:t:count),
                 total = sum(:t:total),
-                prev_end = last(:t:prev_end),
-                next_start = first(:t:next_start)
+                prev_end = condition(last(isnull(:t:prev_end, 'null')) = 'null', null, last(:t:prev_end)),
+                next_start = condition(first(isnull(:t:next_start, 'null')) = 'null', null, first(:t:next_start))
             from
                 collection tmp_segments t
             where 
@@ -114,7 +114,7 @@ update_descriptives_merge_catchup "system/query"
                 :dh2:a_prev_end = :t:prev_end,
 		:dh2:a_next_start = :t:next_start,
                 :dh2:a_act_average_amount = condition(
-                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
+                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,
                                 (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)
                                 ),

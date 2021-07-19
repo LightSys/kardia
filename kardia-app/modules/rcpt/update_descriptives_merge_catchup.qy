@@ -31,8 +31,8 @@ update_descriptives_merge_catchup "system/query"
 		(:dh1:a_last_gift = :dh2:a_prev_end or :dh2:a_last_gift = :dh1:a_prev_end) and -- gifts are adjacent
 		datediff(month, condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift), condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift)) <= 14 and
                 -- checks that the average giving stays similar after the merge would occur
-		(:dh1:a_total + :dh2:a_total) * ((1.0 * (:dh1:a_count + :dh2:a_count - 1)) / (1.0 * (:dh1:a_count + :dh2:a_count))) / (datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.85 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
-		(:dh1:a_total + :dh2:a_total) * ((1.0 * (:dh1:a_count + :dh2:a_count - 1)) / (1.0 * (:dh1:a_count + :dh2:a_count))) / (datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 1.15 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount)))
+		(:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.85 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
+                (:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 1.15 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount)))
 	    ;
 
 	    -- Step Two: Merge
@@ -42,7 +42,11 @@ update_descriptives_merge_catchup "system/query"
 	    set
                 :dh2:a_count = :dh2:a_count + :dh1:a_count,
 		:dh2:a_total = :dh2:a_total + :dh1:a_total,
-                :dh2:a_prev_end = condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end),
+                :dh2:a_prev_end = condition(
+                                :dh1:a_prev_end is null,
+                                null,
+                                condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end)
+                                ),
 		:dh2:a_next_start = condition(
                                 :dh1:a_next_start is null,
                                 null,
@@ -56,7 +60,7 @@ update_descriptives_merge_catchup "system/query"
                                 condition(:dh1:a_ntl_gift < :dh2:a_ntl_gift, :dh2:a_ntl_gift, :dh1:a_ntl_gift)
                                 ),
                 :dh2:a_act_average_amount = condition(
-                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
+                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,
                                 (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)
                                 ),
