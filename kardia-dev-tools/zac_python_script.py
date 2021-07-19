@@ -16,12 +16,15 @@ with open('moreData.csv') as csvfile:
     rowReader = csv.reader(csvfile)
     prevRow = rowReader.__next__()
     for row in rowReader:
+        
+        firstDate = datetime.strptime(row[5], "%d %b %Y %H:%M")
+        lastDate = datetime.strptime(row[6], "%d %b %Y %H:%M")
         if (int(row[8]) < 2):
             if(row[7] != ""):
                 setErrorNTLOnce.append(row[1])
                 setErrorNTLOnce.append(row[2])
                 setErrorNTLOnce.append(row[3])
-        elif (int(row[8]) == 2):
+        elif (int(row[8]) == 2 and firstDate != lastDate):
             if(row[7] != row[5]):
                 setErrorNTLTwice.append(row[1])
                 setErrorNTLTwice.append(row[2])
@@ -29,8 +32,6 @@ with open('moreData.csv') as csvfile:
         else:
             if(row[7] != ""):
                 ntlDate = datetime.strptime(row[7], "%d %b %Y %H:%M")
-                firstDate = datetime.strptime(row[5], "%d %b %Y %H:%M")
-                lastDate = datetime.strptime(row[6], "%d %b %Y %H:%M")
                 if(firstDate >= ntlDate or lastDate < ntlDate):
                     setErrorNTLMult.append(row[1])
                     setErrorNTLMult.append(row[2])
