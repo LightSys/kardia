@@ -17,11 +17,11 @@ update_descriptives_merge_catchup "system/query"
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    set
 		:dh:a_is_extra = condition(
-                        :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select 
+                        :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and ((select 
                                 count(1)
                                 from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
                                 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh:a_amount > :dh2:a_amount and :dh2:a_count > 1 and :dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift
-                                ) >= 1,
+                                ) >= 1 or :dh:a_hist_id = 1),
                         2,
                         0
                         )
@@ -33,6 +33,7 @@ update_descriptives_merge_catchup "system/query"
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
                 :dh:a_is_extra is null
 	    ;
+            -- Case 1: Extra gift is contained by another giving interval
             -- dh1 is the extra amount, and dh2 is the regular giving
             update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
@@ -46,9 +47,28 @@ update_descriptives_merge_catchup "system/query"
 		:dh2:a_cost_center = :dh1:a_cost_center and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
                 :dh1:a_is_extra = 2 and
+                :dh1:a_hist_id != 1 and
                 :dh2:a_count > 1 and
                 :dh2:a_first_gift <= :dh1:a_first_gift and
                 :dh2:a_last_gift >= :dh1:a_last_gift
+            ;
+            -- Case 2: Extra gift is the most recent gift
+            -- dh1 is the extra amount, and dh2 is the regular giving
+            update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+	    set
+		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+                :dh1:a_is_extra = 2 and
+                :dh1:a_hist_id = 1 and
+                :dh2:a_count > 1 and
+                :dh2:a_last_gift = :dh1:a_prev_end
             ;
 
             --Step Two: Create Intermediate Values

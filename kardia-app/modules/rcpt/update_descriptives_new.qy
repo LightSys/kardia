@@ -213,18 +213,13 @@ update_descriptives "system/query"
             -- known limitation. These repeats provide good data, but are finite
             -- and may need to be repeated more for larger data sets.
 
-	    -- Merge in 'catch up' giving
-	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_catchup.qy
-		fund=:parameters:fund,
-		donor=:parameters:donor
-	    ;
-	    -- Merge in adjacent giving segments
-	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent.qy
-		fund=:parameters:fund,
-		donor=:parameters:donor
-	    ;
             -- Merge in 'catch up' giving
 	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_catchup.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
+            -- Merge in adjacent giving segments
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent.qy
 		fund=:parameters:fund,
 		donor=:parameters:donor
 	    ;
@@ -239,17 +234,7 @@ update_descriptives "system/query"
 		donor=:parameters:donor
 	    ;
             -- Merge in adjacent giving segments
-	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent.qy
-		fund=:parameters:fund,
-		donor=:parameters:donor
-	    ;
-            -- Merge in 'catch up' giving
-	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_catchup.qy
-		fund=:parameters:fund,
-		donor=:parameters:donor
-	    ;
-            -- Merge in adjacent giving segments
-	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent.qy
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent_2.qy
 		fund=:parameters:fund,
 		donor=:parameters:donor
 	    ;

@@ -5,7 +5,7 @@ update_descriptives_merge_catchup "system/query"
     donor "query/parameter" { type=string; style=strnull;}
 
     sql = " declare collection tmp_gift_items scope application;
-            declare collection tmp_segments;
+            declare collection tmp_segments scope application;
             declare collection tmp_aggregated_segments;
 
             delete collection tmp_segments;
@@ -13,8 +13,7 @@ update_descriptives_merge_catchup "system/query"
 
 	    -- Step One: Identify
 	    update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
-		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
 		:dh:a_is_approximate = condition(
                         :dh:a_is_approximate is null and
@@ -30,9 +29,6 @@ update_descriptives_merge_catchup "system/query"
                         0
                         )
 	    where
-		:d:a_ledger_number = :dh:a_ledger_number and
-		:d:a_cost_center = :dh:a_cost_center and
-		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
@@ -72,7 +68,7 @@ update_descriptives_merge_catchup "system/query"
                 seg = :t:seg,
                 merged_id = last(:t:hist_id),
                 merge_count = count(1),
-                amount = sum(:t:amount*:t:count) / sum(:t:count), -- this history field is an approximate value
+                amount = null,
                 first = last(:t:first),
                 last = first(:t:last),
                 ntl = first(:t:ntl),
@@ -85,7 +81,7 @@ update_descriptives_merge_catchup "system/query"
             where 
                 (:parameters:fund is null or :parameters:fund = :t:fund) and
 		(:parameters:donor is null or :parameters:donor = :t:donor) and
-                :t:is_approximate
+                :t:is_approximate = 2
             order by
                 :t:ledger,
                 :t:fund,
@@ -97,6 +93,18 @@ update_descriptives_merge_catchup "system/query"
                 :t:fund,
                 :t:donor,
                 :t:seg
+            ;
+            -- Sets the amount to the mode of all amounts being approximated together.
+            -- This is so that other descriptives come out cleaner and
+            -- because a real value for the amount provides better descriptives than
+            -- an averged value
+            update
+                collection tmp_aggregated_segments t
+            set
+                :t:amount = (select :amount from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg group by :amount order by count(1) desc, :amount limit 1)
+            where
+                (:parameters:fund is null or :parameters:fund = :t:fund) and
+		(:parameters:donor is null or :parameters:donor = :t:donor)
             ;
             
 	    -- Step Four: Merge
@@ -123,7 +131,8 @@ update_descriptives_merge_catchup "system/query"
                                 :dh2:a_count = 1,
                                 null,
                                 (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
-                                )
+                                ),
+                :dh2:a_is_extra = 0
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and

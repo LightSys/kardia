@@ -23,7 +23,7 @@ update_descriptives_merge_catchup "system/query"
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh2:a_amount < :dh1:a_amount and -- catchup more than regular
 		(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
-		:dh2:a_act_average_interval < isnull(:dh1:a_act_average_interval, 100) and -- regular is more often than catchup
+		round(:dh2:a_act_average_interval) <= round(isnull(:dh1:a_act_average_interval, 100)) and -- regular is more often than catchup
 		:dh2:a_count > :dh1:a_count and -- regular has more gifts than catchup
 		:dh2:a_count >= 2 and -- regular has at least 2 gifts
 		:dh2:a_first_gift < :dh2:a_last_gift and -- regular gifts are not on the same day
