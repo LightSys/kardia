@@ -238,6 +238,16 @@ update_descriptives "system/query"
 		fund=:parameters:fund,
 		donor=:parameters:donor
 	    ;
+            -- Merge in adjacent single-gift segments
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent_singles.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
+            -- Merge in adjacent giving segments
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent_2.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
             -- Approximate segments that did not fit in anywhere else
 	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_approx.qy
 		fund=:parameters:fund,

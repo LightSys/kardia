@@ -54,7 +54,8 @@ update_descriptives_merge_catchup "system/query"
                 -- The interval shift is to compensate for merging into a giving pattern
                 -- that is monthly, but due to a short timespan, the giving interval deviates
                 -- greatly from the more appropriate value (See sample donor 100400)
-                catchup_amount = round((datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh1:a_prev_end), condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_next_start, :dh1:a_first_gift)) / 30.5) / ((round(:dh2:a_act_average_interval) + :dh2:a_act_average_interval) / 2)) * :dh2:a_amount,
+                -- This also ensures that the catchup_amount won't cause a segment to go negative
+                catchup_amount = condition(round((datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh1:a_prev_end), condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_next_start, :dh1:a_first_gift)) / 30.5) / ((round(:dh2:a_act_average_interval) + :dh2:a_act_average_interval) / 2) <= truncate(:dh1:a_amount / :dh2:a_amount)), round((datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh1:a_prev_end), condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_next_start, :dh1:a_first_gift)) / 30.5) / ((round(:dh2:a_act_average_interval) + :dh2:a_act_average_interval) / 2) <= truncate(:dh1:a_amount / :dh2:a_amount)), truncate(:dh1:a_amount / :dh2:a_amount)) * :dh2:a_amount,
                 count = condition(
                         catchup_amount = :dh1:a_amount,
                         :dh1:a_count,

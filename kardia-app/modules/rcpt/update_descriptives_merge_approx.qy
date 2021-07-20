@@ -19,6 +19,7 @@ update_descriptives_merge_catchup "system/query"
                         :dh:a_is_approximate is null and
                         :dh:a_count <= 6 and -- these try to discount regular giving patterns from being approximated
                         :dh:a_act_average_months <= 6 and
+                        (:dh:a_prev_end is not null or :dh:a_count != 1) and -- first gifts are special
                         not datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334 and -- this prevents annual gifts from being merged together
                         (select 
                                 count(1)
@@ -97,10 +98,12 @@ update_descriptives_merge_catchup "system/query"
             -- Sets the amount to the mode of all amounts being approximated together.
             -- This is so that other descriptives come out cleaner and
             -- because a real value for the amount provides better descriptives than
-            -- an averged value
+            -- an averged value. In case of a tie, this (TODO : when implemented) chooses the largest
+            -- mode so the donor is not prematurely deemed lapsed
             update
                 collection tmp_aggregated_segments t
             set
+                :t:amount = (select :amount from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg group by :amount order by count(1) desc, :amount desc limit 1),
                 :t:ntl = (select nth(:giftdate, 2) from collection tmp_gift_items where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :giftdate <= :t:last order by :giftdate desc)
             where
                 (:parameters:fund is null or :parameters:fund = :t:fund) and
