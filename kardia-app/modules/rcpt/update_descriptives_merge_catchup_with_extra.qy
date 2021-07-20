@@ -90,13 +90,13 @@ update_descriptives_merge_catchup "system/query"
                                 null,
                                 condition(:dh1:a_next_start > :dh2:a_next_start, :dh1:a_next_start, :dh2:a_next_start)
                                 ),
-                :dh2:a_first_gift = condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh2:a_first_gift, :dh1:a_first_gift),
-		:dh2:a_last_gift = condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh2:a_last_gift, :dh1:a_last_gift),
                 :dh2:a_ntl_gift = condition(
                                 :dh1:a_ntl_gift is null, 
-                                :dh2:a_ntl_gift, 
+                                condition(:dh2:a_last_gift < :dh1:a_last_gift, :dh2:a_last_gift, :dh2:a_ntl_gift), 
                                 condition(:dh1:a_ntl_gift < :dh2:a_ntl_gift, :dh2:a_ntl_gift, :dh1:a_ntl_gift)
                                 ),
+                :dh2:a_first_gift = condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh2:a_first_gift, :dh1:a_first_gift),
+		:dh2:a_last_gift = condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh2:a_last_gift, :dh1:a_last_gift),
                 :dh2:a_act_average_amount = condition(
                                 datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,
