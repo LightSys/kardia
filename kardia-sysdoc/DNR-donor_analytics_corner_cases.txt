@@ -150,3 +150,19 @@ Donor CostCenter Hist
 99634	5165	3
 99634	7453	4
 99940	6067	3
+
+Donor 122614 hist ids 5 and 12 should be merged
+Donor 127276 hist ids 6 and 8 should be merged
+
+Prev End Issues:
+Donor 127276 hist id 4, 8
+Donor 75107 hist id 1
+Donor 87990 hist id 4, 5, 7
+
+Next Start Issues:
+Donor 127276 hist id 10
+Donor 68658 hist id 4 (shouldnt the next start technically be the same date as the last date since the next hist id starts there?)
+Same issue as donor 69559 id 10 and donor 75107 hist id 9
+Donor 75107 hist id 6
+
+
