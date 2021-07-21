@@ -8,6 +8,12 @@ update_descriptives "system/query"
     sql = " declare collection tmp_gift_items scope application;
             declare collection tmp_intermediate_vals;
 
+		--This is the main file for our donor analytics application
+		--The donor analytics is meant to make a new table, a_descriptives_hist, that keeps track of donor giving patterns and such
+		--The purpose of keeping track of all this is to be able to assist workers in keeping track of their donors
+		--If a donor randomly drops off for a month or two, we want to be able to tell the worker that so they can reach out to their donor
+		--This organizes the data so that we can easily tell what kind of pattern a donor has, which can therefore be used when someone stops doing their normal pattern
+
 	    delete collection tmp_gift_items;
             delete collection tmp_intermediate_vals;
 
