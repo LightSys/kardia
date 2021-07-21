@@ -28,8 +28,7 @@ update_descriptives_merge_catchup "system/query"
 		:dh2:a_amount <= :dh1:a_amount and -- catchup more than regular
 		(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
                 :dh1:a_hist_id < :dh2:a_hist_id and
-                not :dh1:a_is_extra and
-                not :dh2:a_is_extra and
+                (not :dh1:a_is_extra or not :dh2:a_is_extra) and
                 -- check how far out you are merging in
 		(datediff(day, condition(:dh2:a_last_gift < :dh1:a_first_gift, :dh2:a_last_gift, :dh1:a_last_gift), condition(:dh2:a_last_gift < :dh1:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift)) / 30.5 <= (:dh1:a_amount / :dh2:a_amount * 2 + 2)) --and
                 -- checks that the average giving stays similar after the merge would occur
@@ -80,7 +79,7 @@ update_descriptives_merge_catchup "system/query"
                 next_start_dh1 = condition(first(isnull(:dh1:a_next_start, 'null')) = 'null', null, first(:dh1:a_next_start)),
                 first_dh1_gift = min(:dh1:a_first_gift),
                 last_dh1_gift = max(:dh1:a_last_gift),
-                ntl_dh1_gift = max(:dh1:a_ntl_gift),
+                ntl_dh1_gift = condition(first(:dh1:a_count) >=2, first(:dh1:a_ntl_gift), nth(:dh1:a_first_gift, 2)),
                 merge_next = :dh2:a_merged_id
             from
                 /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
@@ -123,13 +122,13 @@ update_descriptives_merge_catchup "system/query"
                                 null,
                                 condition(:t:next_start_dh1 > :dh2:a_next_start, :t:next_start_dh1, :dh2:a_next_start)
                                 ),
-                :dh2:a_first_gift = condition(:t:first_dh1_gift > :dh2:a_first_gift, :dh2:a_first_gift, :t:first_dh1_gift),
-		:dh2:a_last_gift = condition(:t:last_dh1_gift < :dh2:a_last_gift, :dh2:a_last_gift, :t:last_dh1_gift),
                 :dh2:a_ntl_gift = condition(
                                 :t:ntl_dh1_gift is null, 
-                                condition(:dh2:a_ntl_gift is null, :dh2:a_first_gift, :dh2:a_ntl_gift), 
+                                condition(:dh2:a_last_gift < :t:last_dh1_gift, :dh2:a_last_gift, :dh2:a_ntl_gift),
                                 condition(:t:ntl_dh1_gift < :dh2:a_ntl_gift, :dh2:a_ntl_gift, :t:ntl_dh1_gift)
                                 ),
+                :dh2:a_first_gift = condition(:t:first_dh1_gift > :dh2:a_first_gift, :dh2:a_first_gift, :t:first_dh1_gift),
+		:dh2:a_last_gift = condition(:t:last_dh1_gift < :dh2:a_last_gift, :dh2:a_last_gift, :t:last_dh1_gift),
                 :dh2:a_act_average_amount = condition(
                                 datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,
@@ -177,8 +176,7 @@ update_descriptives_merge_catchup "system/query"
 		:dh2:a_amount <= :dh1:a_amount and -- merge down to smaller values
 		(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
                 :dh1:a_hist_id < :dh2:a_hist_id and
-                not :dh1:a_is_extra and
-                not :dh2:a_is_extra and
+                (not :dh1:a_is_extra or not :dh2:a_is_extra) and
                 (:dh1:a_first_gift > :dh2:a_first_gift and :dh1:a_first_gift < :dh2:a_last_gift) -- allow 'middle merges'
             ;
             -- Extra recurssions to ensure a merge does not occur
@@ -225,7 +223,7 @@ update_descriptives_merge_catchup "system/query"
                 next_start_dh1 = condition(first(isnull(:dh1:a_next_start, 'null')) = 'null', null, first(:dh1:a_next_start)),
                 first_dh1_gift = min(:dh1:a_first_gift),
                 last_dh1_gift = max(:dh1:a_last_gift),
-                ntl_dh1_gift = max(:dh1:a_ntl_gift),
+                ntl_dh1_gift = condition(first(:dh1:a_count) >=2, first(:dh1:a_ntl_gift), nth(:dh1:a_first_gift, 2)),
                 merge_next = :dh2:a_merged_id
             from
                 /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
@@ -268,13 +266,13 @@ update_descriptives_merge_catchup "system/query"
                                 null,
                                 condition(:t:next_start_dh1 > :dh2:a_next_start, :t:next_start_dh1, :dh2:a_next_start)
                                 ),
-                :dh2:a_first_gift = condition(:t:first_dh1_gift > :dh2:a_first_gift, :dh2:a_first_gift, :t:first_dh1_gift),
-		:dh2:a_last_gift = condition(:t:last_dh1_gift < :dh2:a_last_gift, :dh2:a_last_gift, :t:last_dh1_gift),
                 :dh2:a_ntl_gift = condition(
                                 :t:ntl_dh1_gift is null, 
-                                condition(:dh2:a_ntl_gift is null, :dh2:a_first_gift, :dh2:a_ntl_gift), 
+                                condition(:dh2:a_last_gift < :t:last_dh1_gift, :dh2:a_last_gift, :dh2:a_ntl_gift),
                                 condition(:t:ntl_dh1_gift < :dh2:a_ntl_gift, :dh2:a_ntl_gift, :t:ntl_dh1_gift)
                                 ),
+                :dh2:a_first_gift = condition(:t:first_dh1_gift > :dh2:a_first_gift, :dh2:a_first_gift, :t:first_dh1_gift),
+		:dh2:a_last_gift = condition(:t:last_dh1_gift < :dh2:a_last_gift, :dh2:a_last_gift, :t:last_dh1_gift),
                 :dh2:a_act_average_amount = condition(
                                 datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,

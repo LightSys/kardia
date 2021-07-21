@@ -244,6 +244,16 @@ update_descriptives "system/query"
 		fund=:parameters:fund,
 		donor=:parameters:donor
 	    ;
+            -- Merge in adjacent single-gift segments
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent_singles.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
+            -- Merge in adjacent giving segments
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent_2.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
             -- Approximate segments that did not fit in anywhere else
 	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_approx.qy
 		fund=:parameters:fund,
@@ -273,6 +283,18 @@ update_descriptives "system/query"
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
                 :dh1:a_is_extra
 	    ;
+
+            -- Correct NTL Tracking
+            update
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    set
+		:dh1:a_ntl_gift = (select nth(:t:giftdate, 2) from collection tmp_gift_items t where :t:ledger = :dh1:a_ledger_number and :t:fund = :dh1:a_cost_center and :t:donor = :dh1:p_donor_partner_key and :t:giftdate <= :dh1:a_last_gift order by :t:giftdate desc)
+            where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
+                :dh1:a_ntl_gift is null and
+                :dh1:a_count > 1
+            ;
 
 	    -- First history value
 	    update

@@ -19,6 +19,7 @@ update_descriptives_merge_catchup "system/query"
                         :dh:a_is_approximate is null and
                         :dh:a_count <= 6 and -- these try to discount regular giving patterns from being approximated
                         :dh:a_act_average_months <= 6 and
+                        (:dh:a_prev_end is not null or :dh:a_count != 1) and -- first gifts are special
                         not datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334 and -- this prevents annual gifts from being merged together
                         (select 
                                 count(1)
@@ -62,46 +63,48 @@ update_descriptives_merge_catchup "system/query"
             insert
 		collection tmp_aggregated_segments
             select
-                ledger = :t:ledger,
-                fund = :t:fund,
-                donor = :t:donor,
-                seg = :t:seg,
-                merged_id = last(:t:hist_id),
+                ledger = :t1:ledger,
+                fund = :t1:fund,
+                donor = :t1:donor,
+                seg = :t1:seg,
+                merged_id = max(:t1:hist_id),
                 merge_count = count(1),
                 amount = null,
-                first = last(:t:first),
-                last = first(:t:last),
-                ntl = first(:t:ntl),
-                count = sum(:t:count),
-                total = sum(:t:total),
-                prev_end = condition(last(isnull(:t:prev_end, 'null')) = 'null', null, last(:t:prev_end)),
-                next_start = condition(first(isnull(:t:next_start, 'null')) = 'null', null, first(:t:next_start))
+                first = min(:t1:first),
+                last = max(:t1:last),
+                ntl = null,
+                count = sum(:t1:count),
+                total = sum(:t1:total),
+                prev_end = condition(last(isnull(:t1:prev_end, 'null')) = 'null', null, last(:t1:prev_end)),
+                next_start = condition(first(isnull(:t1:next_start, 'null')) = 'null', null, first(:t1:next_start))
             from
-                collection tmp_segments t
+                collection tmp_segments t1
             where 
-                (:parameters:fund is null or :parameters:fund = :t:fund) and
-		(:parameters:donor is null or :parameters:donor = :t:donor) and
-                :t:is_approximate = 2
+                (:parameters:fund is null or :parameters:fund = :t1:fund) and
+		(:parameters:donor is null or :parameters:donor = :t1:donor) and
+                :t1:is_approximate = 2
             order by
-                :t:ledger,
-                :t:fund,
-                :t:donor,
-                :t:hist_id,
-                :t:seg
+                :t1:ledger,
+                :t1:fund,
+                :t1:donor,
+                :t1:hist_id,
+                :t1:seg
             group by
-                :t:ledger,
-                :t:fund,
-                :t:donor,
-                :t:seg
+                :t1:ledger,
+                :t1:fund,
+                :t1:donor,
+                :t1:seg
             ;
             -- Sets the amount to the mode of all amounts being approximated together.
             -- This is so that other descriptives come out cleaner and
             -- because a real value for the amount provides better descriptives than
-            -- an averged value
+            -- an averged value. In case of a tie, this (TODO : when implemented) chooses the largest
+            -- mode so the donor is not prematurely deemed lapsed
             update
                 collection tmp_aggregated_segments t
             set
-                :t:amount = (select :amount from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg group by :amount order by count(1) desc, :amount limit 1)
+                :t:amount = (select :amount from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg group by :amount order by count(1) desc, :amount desc limit 1),
+                :t:ntl = (select nth(:giftdate, 2) from collection tmp_gift_items where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :giftdate <= :t:last order by :giftdate desc)
             where
                 (:parameters:fund is null or :parameters:fund = :t:fund) and
 		(:parameters:donor is null or :parameters:donor = :t:donor)
@@ -115,7 +118,7 @@ update_descriptives_merge_catchup "system/query"
                 :dh2:a_amount = :t:amount,
                 :dh2:a_first_gift = :t:first,
 		:dh2:a_last_gift = :t:last,
-                :dh2:a_ntl_gift = :t:ntl,
+                :dh2:a_ntl_gift = condition(:t:count > 1, :t:ntl, null),
                 :dh2:a_count = :t:count,
 		:dh2:a_total = :t:total,
                 :dh2:a_is_approximate = condition(:t:merge_count > 1, 1, 0),
