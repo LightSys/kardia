@@ -128,7 +128,7 @@ update_descriptives_merge_catchup "system/query"
                                 ),
                 :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
                 :dh2:a_act_average_interval = condition(
-                                :dh2:a_count = 1,
+                                :dh2:a_count = 1 or datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
                                 null,
                                 (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
                                 )

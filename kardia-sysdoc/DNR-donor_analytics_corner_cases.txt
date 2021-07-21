@@ -166,3 +166,14 @@ Same issue as donor 69559 id 10 and donor 75107 hist id 9
 Donor 75107 hist id 6
 
 
+Merge Extra Testing
+-------------------
+#1 : merge_adj_2 if at most 1 extra
+#2 : merge_adj_2 if neither extra
+
+Donor	Fund    #1	#2      HistIDs         Notes
+66629	5280    2	3       1,7,(9)         number 1 looks better 
+75107	        0	1       6               number 2 looks better
+76558	        0	1       4               number 1 looks better
+87050	        0	1       3               number 1 looks better
+97192	        0	1       2               number 1 looks better

@@ -126,10 +126,10 @@ delete_later_practice "system/query"
 			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
 			),
 		a_act_average_amount = condition(
-			count(1) < 2 or datediff(month, last(:giftdate), first(:giftdate)) = 0,
-			null,
-			sum(:amount) * (convert(double, count(1) - 1) / count(1)) / datediff(month, last(:giftdate), first(:giftdate))
-			),
+                        datediff(day, last(:giftdate), first(:giftdate)) < 16,
+                        null,
+                        (sum(:amount) - :amount) / round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)
+                        ),
 		s_date_created = getdate(),
 		s_created_by = user_name(),
 		s_date_modified = getdate(),

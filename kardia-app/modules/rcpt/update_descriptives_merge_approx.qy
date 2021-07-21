@@ -20,6 +20,7 @@ update_descriptives_merge_catchup "system/query"
                         :dh:a_count <= 6 and -- these try to discount regular giving patterns from being approximated
                         :dh:a_act_average_months <= 6 and
                         (:dh:a_prev_end is not null or :dh:a_count != 1) and -- first gifts are special
+                        (:dh:a_hist_id != 1 or :dh:a_is_extra != 1) and-- don't merge most recent extra gifts, as there isn't enough info about them yet
                         not datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334 and -- this prevents annual gifts from being merged together
                         (select 
                                 count(1)
@@ -131,7 +132,7 @@ update_descriptives_merge_catchup "system/query"
                                 ),
                 :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
                 :dh2:a_act_average_interval = condition(
-                                :dh2:a_count = 1,
+                                :dh2:a_count = 1 or datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
                                 null,
                                 (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
                                 ),

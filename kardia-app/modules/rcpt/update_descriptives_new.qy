@@ -174,10 +174,10 @@ update_descriptives "system/query"
 			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
 			),
 		a_act_average_amount = condition(
-			count(1) < 2 or datediff(month, last(:giftdate), first(:giftdate)) = 0,
-			null,
-			sum(:amount) * (convert(double, count(1) - 1) / count(1)) / datediff(month, last(:giftdate), first(:giftdate))
-			),
+                        datediff(day, last(:giftdate), first(:giftdate)) < 16,
+                        null,
+                        (sum(:amount) - :amount) / round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)
+                        ),
 		s_date_created = getdate(),
 		s_created_by = user_name(),
 		s_date_modified = getdate(),
@@ -240,6 +240,11 @@ update_descriptives "system/query"
 	    ;
             -- Merge in adjacent single-gift segments
 	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent_singles.qy
+		fund=:parameters:fund,
+		donor=:parameters:donor
+	    ;
+            -- Merge in adjacent giving segments
+	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent_2.qy
 		fund=:parameters:fund,
 		donor=:parameters:donor
 	    ;
@@ -531,7 +536,7 @@ update_descriptives "system/query"
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
 		:dh:a_increase_pct = condition(
-                                :dh:a_act_average_interval > 7 or datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334,
+                                :dh:a_act_average_interval > 7 or datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 212,
                                 convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0,
                                 condition(
                                         :dh:a_count > 1,
@@ -566,7 +571,7 @@ update_descriptives "system/query"
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
 		:dh:a_decrease_pct = condition(
-                                :dh:a_act_average_interval > 7 or datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334,
+                                :dh:a_act_average_interval > 7 or datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 212,
                                 1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)),
                                 condition(
                                         :dh:a_count > 1,
