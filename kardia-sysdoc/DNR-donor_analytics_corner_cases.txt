@@ -1,0 +1,179 @@
+Document:   Notes on Donor Analytics Corner Cases
+Author:	    David Stirn (DMS)
+Date:	    06-Jul-2021
+-------------------------------------------------------------------------------
+
+
+Donor with 1 time gifts: 100400
+        35 gifts
+        $80 regular giving
+        ID 02 is a  $70 extra
+        ID 03 is a  $50 extra
+        ID 05 is a $260 extra
+        ID 07 is a $275 extra
+
+
+Donor with possible failed catchup merge: 100925
+
+Donor with many catchups: 106743
+
+Donor with two catchup gifts in a row: 107065
+	First Merge: 	6 into 7, 3 into 4
+	Final Result: 	15 $10 gifts as 1st hist: Dec31-2019->Apr21-2021
+			18 $25 gifts as 2nd hist: Jun05-2018->Dec02-2019
+
+Donor 107077 has some weird stuff going on. Looks like some extra gifts mixed into regular giving.
+        31 Gifts
+	ID 02 is a $150 extra
+	ID 04 is a  $30 extra
+	ID 06 is a pay in advance for Feb
+	ID 05 is a pay in advance for Mar (with no other money for the curr month (feb), bc it 		was already paid)
+	ID 10 is a $600 extra
+	ID 14 is 1st gift, so no special designation
+
+Donor 127200
+
+Donor 130120 
+
+Should we make it so in the hist data it seperates also by months (ie if they miss a month without a catchup amount it should still be seperated?)
+Good example: donor 75107 missed a month in hist id 4 but it is not recorded in there
+
+For donor 108705, shouldn't the ID 01 entry be counted as an extra? Technically not, because it "could" be a pay-ahead for the next several months
+
+Donor 130295
+        $150 monthly regular giving
+        ID 02 is a payahead for December 2020
+        ID 01 is a payahead for a year (based on their established giving pattern)
+
+Donor 100400, ID 6 is not marked as extra : This is an issue of a history not getting merged in
+
+Donor 93162, hist ID 3 should not be 0 on current right?
+
+Donor 93036, shouldnt hist id 1 be an increase not decrease? (Ask Greg about how to determine increase, off of the average monthly or amount?)
+
+Donor 75107
+        This is very as-able giving and a bit complex for our system to currently handle gracefully
+
+        ID 01 is reestablished regular giving
+        ID 02 is a catchup and payahead for June -> September
+        ID 04 is a catchup and a payahead for the months of Sept -> April 
+        ID 05 is reestablished regular giving
+        ID 06 is a payahead for Mar 2019
+        ID 08 is a payahead for Nov 2018
+        See merge_approx
+
+Donor 100400
+        ID 08 doesn't have an "average amount" when it does have multiple donations
+        ID 01 doesn't have any information on lapsed days, isCurrent, increase or decrease, or isExtra
+
+Note: Should we do things like increase and decrese when moving from a one-time gift to regular gift, or vice-a-versa? Because then, it could lead to us saying to the missionary "they've decreased their giving" when they haven't. They just simply gave a one-time gift
+
+Donor 107077 I have no idea where it is getting the calculations for increase and decrease pct
+
+Donor 108705, ID 1 should be an extra
+
+Donors who have a hist entry that is approximate. These should be checked to see if those tags are acceptable or if tweaks need made
+109498
+112378
+114014
+115702
+128066
+69559
+75107
+80267
+89169
+91224 - i think this one it is more helpful to not approximate
+92284
+98931
+Most recent check: nearly all of them look nice and are helpful
+
+115702  02 gifts: Aug and Jan (interval: 05.77)
+128066  02 gifts: Mar and Jan (interval: 10.13)
+69559   13 gifts: 10/18-02/21 (interval: 02.26)
+75107   09 gifts: 08/19-01/21 (interval: 01.83)
+80267   02 gifts: Aug and Nov (interval: 03.70)
+89169   02 gifts: Jul and Sep (interval: 02.33)
+91224   04 gifts: 07/19-09/19 (interval: 00.85) Note: ID 01 is lost and I think keeping it is helpful
+98931   08 gifts: 12/18-04/20 (interval: 02.22)
+Next check: several of these intervals are a pair of gifts, and all but 75107, 91224 have only one hist remaining
+
+Other extra gifts:
+123107
+74095
+93162
+After date range change:
+no change. keeping the change so that the comments are accurate
+
+Donor 87050: Hist id 4 should be merged into 2
+Donor 127276: Should hist ids 11, 8, and 6 be merged since they're the same amount?
+Donor 97947: Should hist ids 6, 4, and 2 be merged too?
+Should all the entries for Donor 73499 be merged?
+Donor 113406: Hist ID 12 should either be merged in or identified as extra
+
+A few examples of dates not lining up:
+Donor 100400 aka Mr. Prolific
+Donor 113406 cost center 5109
+Donor 122614
+Donor 122757
+Donor 101812
+Donor 107077
+Donor 113406
+
+Donor 122614 has a lot of issues
+        The next and previouses are jacked up
+        Also, some of the histograms(such as 1 and 3) should be merged
+
+
+The NTL gift for these donors are equal to the first gift, but they have multiple gift entries:
+122614 hist 11
+66629 hist 6, 10, 12
+91686 hist 2
+99839 hist 3
+
+There is no NTL gift for a gift of count 2:
+Donor CostCenter Hist
+107786	5165	2
+113240	7200	2
+81839	5165	1
+
+Blank NTL where there are more than 3 gifts
+Donor CostCenter Hist
+101812	5403	4
+127276	5280	12
+66629	6067	5
+67703	6409	9
+69559	4361	9
+75593	5634	4
+90700	6067	3
+93932	5109	3
+97947	6409	8
+99634	5165	3
+99634	7453	4
+99940	6067	3
+
+Donor 122614 hist ids 5 and 12 should be merged
+Donor 127276 hist ids 6 and 8 should be merged
+
+Prev End Issues:
+Donor 127276 hist id 4, 8
+Donor 75107 hist id 1
+Donor 87990 hist id 4, 5, 7
+
+Next Start Issues:
+Donor 127276 hist id 10
+Donor 68658 hist id 4 (shouldnt the next start technically be the same date as the last date since the next hist id starts there?)
+Same issue as donor 69559 id 10 and donor 75107 hist id 9
+Donor 75107 hist id 6
+
+
+Merge Extra Testing
+-------------------
+#1 : merge_adj_2 if at most 1 extra
+#2 : merge_adj_2 if neither extra
+
+Donor	Fund    #1	#2      HistIDs         Notes
+66629	5280    2	3       1,7,(9)         number 1 looks better 
+75107	        0	1       6               number 2 looks better
+76558	        0	1       4               number 1 looks better
+87050	        0	1       3               number 1 looks better
+97192	        0	1       2               number 1 looks better

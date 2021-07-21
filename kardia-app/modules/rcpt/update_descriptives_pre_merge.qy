@@ -1,0 +1,172 @@
+$Version=2$
+delete_later_practice "system/query"
+    {
+    fund "query/parameter" { type=string; }
+    donor "query/parameter" { type=string; }
+    lookback "query/parameter" { type=integer; default=37; }
+
+    sql = " declare collection tmp_gift_items scope application;
+
+	    delete collection tmp_gift_items;
+            
+
+            -- Compiles the histories, but does not exectute any merges (or any statements that follow merges).
+            -- Useful for testing, but not a part of deployment
+
+
+	    -- Clear out any old descriptives
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	    ;
+
+	    -- Make a working copy of the dataset in-memory
+	    insert
+		collection tmp_gift_items
+	    select
+		donor = :i:p_dn_donor_partner_id,
+		giftdate = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+		amount = :i:a_amount,
+		fund = :i:a_cost_center,
+		ledger = :i:a_ledger_number,
+		id = row_number(),
+		seg = row_number() - row_number(:i:a_ledger_number, :i:a_cost_center, :i:p_dn_donor_partner_id, :i:a_amount)
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+	    where
+		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
+		:i:a_posted = 1 and
+		:i:a_amount != $0 and
+		(:parameters:fund is null or :parameters:fund = :i:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :i:p_dn_donor_partner_id)
+	    order by
+		:i:a_ledger_number,
+		:i:a_cost_center,
+		:i:p_dn_donor_partner_id,
+		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
+	    ;
+
+	    -- Build a list of giving pattern descriptives for each of the fund's donors.  We want
+	    -- to optimize this to help staff interact with donors and ask good questions, instead
+	    -- of generating results simply based on math.
+	    insert
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    select
+		-- Primary key
+		a_ledger_number = :ledger,
+		a_cost_center = :fund,
+		p_donor_partner_key = :donor,
+
+		-- Basic descriptives
+		a_first_gift = last(:giftdate),
+		a_first_gift_amount = last(:amount),
+		a_last_gift = first(:giftdate),
+		a_last_gift_amount = first(:amount),
+		a_ntl_gift = nth(:giftdate, 2),
+		a_ntl_gift_amount = nth(:amount, 2),
+
+		-- Bootstrap the analysis process using the data we have.
+		a_act_lookback_date = last(:giftdate),
+		a_act_lookahead_date = first(:giftdate),
+		a_act_count = count(1),
+		a_act_total = sum(:amount),
+		a_act_average_months = convert(integer, round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)),
+		a_act_average_interval = condition(
+			count(1) < 2 or datediff(day, last(:giftdate), first(:giftdate)) = 0,
+			null,
+			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
+			),
+		a_act_average_amount = condition(
+			count(1) < 2 or datediff(month, last(:giftdate), first(:giftdate)) = 0,
+			null,
+			sum(:amount) * (convert(double, count(1) - 1) / count(1)) / datediff(month, last(:giftdate), first(:giftdate))
+			),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection tmp_gift_items
+	    group by
+		:ledger,
+		:fund,
+		:donor
+	    order by
+		:ledger,
+		:fund,
+		:donor,
+		:giftdate desc
+	    ;
+
+	    -- Generate the amount history data, starting with the most recent gift amount.
+	    insert into
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows
+	    select
+		a_ledger_number = :ledger,
+		p_donor_partner_key = :donor,
+		a_cost_center = :fund,
+		a_amount = :amount,
+		a_first_gift = last(:giftdate),
+		a_last_gift = first(:giftdate),
+		a_ntl_gift = nth(:giftdate, 2),
+		a_count = count(1),
+		a_total = sum(:amount),
+		a_act_average_months = convert(integer, round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)),
+		a_act_average_interval = condition(
+			count(1) < 2 or datediff(day, last(:giftdate), first(:giftdate)) = 0,
+			null,
+			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
+			),
+		a_act_average_amount = condition(
+                        datediff(day, last(:giftdate), first(:giftdate)) < 16,
+                        null,
+                        (sum(:amount) - :amount) / round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)
+                        ),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection tmp_gift_items
+	    group by
+		:ledger,
+		:fund,
+		:donor,
+		:seg
+	    order by
+		:ledger,
+		:fund,
+		:donor,
+		:seg,
+		:giftdate desc
+	    ;
+
+	    -- Update previous/next interval start/end dates
+	    update
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    set
+		:dh1:a_prev_end = (select :a_last_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift order by :dh2:a_last_gift desc limit 1),
+		:dh1:a_next_start = (select :a_first_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift order by :dh2:a_first_gift asc limit 1)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key)
+	    ;
+            
+            -- Return the dataset to the caller
+	    select
+		*
+	    from
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows d
+	    where
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+            ";    
+    }
