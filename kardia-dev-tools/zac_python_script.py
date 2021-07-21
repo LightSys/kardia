@@ -12,6 +12,9 @@ setErrorNTLOnce = []
 setErrorNTLTwice = []
 setErrorNTLMult = []
 setErrorNTLMultBlank = []
+setErrorNTLEqualFirst = []
+setAmountZero = []
+setIsExtraNull = []
 
 with open('moreData.csv') as csvfile:
     rowReader = csv.reader(csvfile)
@@ -20,6 +23,10 @@ with open('moreData.csv') as csvfile:
         
         firstDate = datetime.strptime(row[5], "%d %b %Y %H:%M")
         lastDate = datetime.strptime(row[6], "%d %b %Y %H:%M")
+        if(row[18] == ""):
+            setIsExtraNull.append(row[1])
+            setIsExtraNull.append(row[2])
+            setIsExtraNull.append(row[3])
         if (int(row[8]) < 2):
             if(row[7] != ""):
                 setErrorNTLOnce.append(row[1])
@@ -35,12 +42,20 @@ with open('moreData.csv') as csvfile:
                 setErrorNTLMultBlank.append(row[1])
                 setErrorNTLMultBlank.append(row[2])
                 setErrorNTLMultBlank.append(row[3])
+            elif(row[7] == row[5]):
+                setErrorNTLEqualFirst.append(row[1])
+                setErrorNTLEqualFirst.append(row[2])
+                setErrorNTLEqualFirst.append(row[3])
             else:
                 ntlDate = datetime.strptime(row[7], "%d %b %Y %H:%M")
                 if(firstDate >= ntlDate or lastDate < ntlDate):
                     setErrorNTLMult.append(row[1])
                     setErrorNTLMult.append(row[2])
                     setErrorNTLMult.append(row[3])
+        if(row[4][0] == "-"):
+            setAmountZero.append(row[1])
+            setAmountZero.append(row[2])
+            setAmountZero.append(row[3])
         if (row[2] == prevRow[2] and row[1] == prevRow[1]):
             if(row[6] != prevRow[20] and row[6] != "" and prevRow[20] != ""):
                 setDatesErrorsPrev.append(row[1])
@@ -139,6 +154,39 @@ f.write("\nNTL Errors Count Mult Blank: \n")
 f.write("Donor CostCenter Hist\n")
 modCount = 0
 for error in setErrorNTLMultBlank:
+    if(modCount % 3 == 2):
+        f.write(error)
+        f.write("\n")
+    else:
+        f.write(error)
+        f.write("\t")
+    modCount += 1
+f.write("\nNTL Errors Count Mult Equal First: \n")
+f.write("Donor CostCenter Hist\n")
+modCount = 0
+for error in setErrorNTLEqualFirst:
+    if(modCount % 3 == 2):
+        f.write(error)
+        f.write("\n")
+    else:
+        f.write(error)
+        f.write("\t")
+    modCount += 1
+f.write("\nSet Amounts Zero: \n")
+f.write("Donor CostCenter Hist\n")
+modCount = 0
+for error in setAmountZero:
+    if(modCount % 3 == 2):
+        f.write(error)
+        f.write("\n")
+    else:
+        f.write(error)
+        f.write("\t")
+    modCount += 1
+f.write("\nIs Extra is Null: \n")
+f.write("Donor CostCenter Hist\n")
+modCount = 0
+for error in setIsExtraNull:
     if(modCount % 3 == 2):
         f.write(error)
         f.write("\n")
