@@ -809,7 +809,25 @@ advanced_search "widget/component-decl"
 					Value=runclient('(new search)');
 					}
 				    }
-				search_temp "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; text="Temporary?"; field=p_is_temporary; ctl_type=checkbox; temp_hints "widget/hints" { style=notnull; } }
+
+				search_temp "widget/component"
+				    {
+				    path="/sys/cmp/smart_field.cmp";
+				    height=20;
+				    text="Temporary?";
+				    field=p_is_temporary;
+				    ctl_type=checkbox;
+				    temp_hints "widget/hints" { style=notnull; }
+
+				    on_make_nontemp "widget/connector"
+					{
+					event=DataChange;
+					event_condition=runclient(:search_name:value == '(unsaved new search)' and :search_temp:value == 0 and :FromOSRC = 0);
+					target=search_name;
+					action=SetValue;
+					Value=runclient('(new search)');
+					}
+				    }
 
 				edit_a_search_ctls "widget/hbox"
 				    {
