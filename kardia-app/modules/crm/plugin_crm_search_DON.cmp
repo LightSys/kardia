@@ -42,26 +42,7 @@ plugin_crm_search_lists "widget/component-decl"
 	    desig_hints "widget/hints" { style=applyonchange,uppercase,strnull; }
 	    }
 
-	f_desig_notcc "widget/component"
-	    {
-	    height=24;
-	    path="/apps/kardia/modules/base/editbox_table.cmp";
-	    field='notfunds';
-	    text='Not Designations:';
-	    label_width=150;
-	    width=400;
-	    popup_width=380;
-	    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
-	    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
-	    key_name="a_cost_center";
-	    object_name="Fund / Cost Center";
-	    popup_text="Select Designation:";
-	    form=criteria_params_form;
-	    empty_desc="comma-separated list";
-	    multiselect=1;
-
-	    notdesig_hints "widget/hints" { style=applyonchange,uppercase,strnull; }
-	    }
+		changes "widget/component" { path="/sys/cmp/smart_field.cmp"; field=changes; height=24; width=300; label_width=150; form=criteria_params_form; text="Changes:"; ctl_type=dropdown; sql="select label='Decrease', value='DCR'; select label='Increase', value='ICR'; select label='Extra Amount', value='EAM'; select label='First Gift', value='FGT'; select label='Last Gift', value='LGT'; select label='Increase/Extra/First', value='ICR,EAM,FGT'; select label='Decrease/Last', value='DCR,LGT';"; numdisplay=12; }
 
 	total_hbox "widget/hbox"
 	    {
@@ -136,6 +117,6 @@ plugin_crm_search_lists "widget/component-decl"
 		}
 	    }
 
-	cur_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=curstat; height=24; width=300; label_width=150; form=criteria_params_form; text="Current Status:"; ctl_type=dropdown; sql="select label='Currently Giving', value='C'; select label='Gave in the Past', value=2"; numdisplay=12; }
+	cur_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=curstat; height=24; width=300; label_width=150; form=criteria_params_form; text="Current Status:"; ctl_type=dropdown; sql="select label='Already Lapsed', value=0; select label='Lapsing', value=1; select label='Current', value=2"; numdisplay=12; }
 	}
     }
