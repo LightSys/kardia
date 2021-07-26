@@ -73,29 +73,47 @@ plugin_crm_search_DON "system/query"
 		(:stage:funds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:funds + ',') > 0) and
 		-- (:stage:notfunds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:notfunds + ',') = 0) and
                 
-                -- A decrease change means that a new giving history
-                -- began within the time interval with a decrease in giving
-                (:stage:changes is null or charindex(',DCR,', ',' + :stage:changes + ',') = 0 or :dh:a_decrease_pct is not null) and
-                (:stage:changes is null or charindex(',DCR,', ',' + :stage:changes + ',') = 0 or :dh:a_first_gift >= :stage:startdate) and
-                -- An increase change means that a new giving history
-                -- began within the time interval with an increase in giving
-                (:stage:changes is null or charindex(',ICR,', ',' + :stage:changes + ',') = 0 or :dh:a_increase_pct is not null) and
-                (:stage:changes is null or charindex(',ICR,', ',' + :stage:changes + ',') = 0 or :dh:a_first_gift >= :stage:startdate) and
-                -- An extra change means that an extra gift
-                -- was givin within the time interval
-                (:stage:changes is null or charindex(',EAM,', ',' + :stage:changes + ',') = 0 or :dh:a_is_extra = 1) and
-                -- A last gift change means that a giving history became lapsed within
-                -- the time interval and there are no other current active giving patterns.
-                -- This excludes donors who have given a single gift
-                (:stage:changes is null or charindex(',LGT,', ',' + :stage:changes + ',') = 0 or :dh:a_is_current = 0) and
-                (:stage:changes is null or charindex(',LGT,', ',' + :stage:changes + ',') = 0 or :dh:a_last_gift <= :stage:enddate) and
-                (:stage:changes is null or charindex(',LGT,', ',' + :stage:changes + ',') = 0 or :d:a_act_count > 1) and
-                -- A first gift change means that a new giving history was started within
-                -- the time interval that is not a decrease in giving or an extra gift. 
-                (:stage:changes is null or charindex(',FGT,', ',' + :stage:changes + ',') = 0 or :dh:a_decrease_pct is null) and
-                (:stage:changes is null or charindex(',FGT,', ',' + :stage:changes + ',') = 0 or :dh:a_first_gift >= :stage:startdate) and
-                (:stage:changes is null or charindex(',FGT,', ',' + :stage:changes + ',') = 0 or :dh:a_is_extra = 0) and
-                
+                -- For changes, if the start or the end date is null
+                -- no time restriction occurs
+                ((:stage:changes is null) +
+			-- A decrease change means that a new giving history
+	                -- began within the time interval with a decrease in giving
+			condition(
+				charindex(',DCR,', ',' + :stage:changes + ',') = 0, 
+				0,
+				(:dh:a_decrease_pct is not null) * (:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+				)
+	                -- An increase change means that a new giving history
+	                -- began within the time interval with an increase in giving
+			+ condition(
+				charindex(',ICR,', ',' + :stage:changes + ',') = 0,
+				0,
+				(:dh:a_increase_pct is not null) * (:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+				)
+	                -- An extra change means that an extra gift
+        	        -- was givin within the time interval
+			+ condition(
+				charindex(',EAM,', ',' + :stage:changes + ',') = 0,
+				0,
+				:dh:a_is_extra = 1
+				)
+	                -- A last gift change means that a giving history became lapsed within
+        	        -- the time interval and there are no other current active giving patterns.
+                	-- This excludes donors who have given a single gift
+			+ condition(
+				charindex(',LGT,', ',' + :stage:changes + ',') = 0,
+				0,
+				(:dh:a_is_current = 0) * (:dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift)) * (:d:a_act_count > 1)
+				)
+	                -- A first gift change means that a new giving history was started within
+        	        -- the time interval that is not a decrease in giving or an extra gift. 
+			+ condition(
+				charindex(',FGT,', ',' + :stage:changes + ',') = 0,
+				0,
+				(:dh:a_decrease_pct is null) * (:dh:a_first_gift >= :stage:startdate) * (:dh:a_is_extra = 0)
+				)
+		) and
+
                 (:parameters:prev_keys is null or charindex(',' + rtrim(:dh:p_donor_partner_key) + ',', ',' + :parameters:prev_keys + ',') > 0)
             group by
                 :d:a_ledger_number,
