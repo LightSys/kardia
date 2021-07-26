@@ -110,7 +110,7 @@ plugin_crm_search_DON "system/query"
 			+ condition(
 				charindex(',FGT,', ',' + :stage:changes + ',') = 0,
 				0,
-				(:dh:a_decrease_pct is null) * (:dh:a_first_gift >= :stage:startdate) * (:dh:a_is_extra = 0)
+				(:dh:a_decrease_pct is null) * (:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift)) * (:dh:a_is_extra = 0)
 				)
 		) and
 
