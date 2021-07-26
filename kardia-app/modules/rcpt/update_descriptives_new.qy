@@ -315,6 +315,17 @@ update_descriptives "system/query"
 					:d:p_donor_partner_key = :dh:p_donor_partner_key
 				    order by
 					:dh:a_last_gift desc
+				    ),
+                :a_hist_1_last = (select
+					first(:dh:a_last_gift)
+				    from
+					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+				    where
+					:d:a_ledger_number = :dh:a_ledger_number and
+					:d:a_cost_center = :dh:a_cost_center and
+					:d:p_donor_partner_key = :dh:p_donor_partner_key
+				    order by
+					:dh:a_last_gift desc
 				    )
 	    where
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
@@ -332,6 +343,7 @@ update_descriptives "system/query"
 		:d:a_cost_center = :dh:a_cost_center and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		:d:a_hist_1_amount = :dh:a_amount and
+                :d:a_hist_1_last = :dh:a_last_gift and
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
@@ -348,7 +360,19 @@ update_descriptives "system/query"
 					:d:a_ledger_number = :dh:a_ledger_number and
 					:d:a_cost_center = :dh:a_cost_center and
 					:d:p_donor_partner_key = :dh:p_donor_partner_key and
-					:dh:a_amount != :d:a_hist_1_amount
+					:dh:a_last_gift < :d:a_hist_1_last
+				    order by
+					:dh:a_last_gift desc
+				    ),
+                :a_hist_2_last = (select
+					first(:dh:a_last_gift)
+				    from
+					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+				    where
+					:d:a_ledger_number = :dh:a_ledger_number and
+					:d:a_cost_center = :dh:a_cost_center and
+					:d:p_donor_partner_key = :dh:p_donor_partner_key and
+					:dh:a_last_gift < :d:a_hist_1_last
 				    order by
 					:dh:a_last_gift desc
 				    )
@@ -361,13 +385,13 @@ update_descriptives "system/query"
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
 		:d:a_hist_2_count = :dh:a_count,
-		:d:a_hist_2_first = :dh:a_first_gift,
-		:d:a_hist_2_last = :dh:a_last_gift
+		:d:a_hist_2_first = :dh:a_first_gift
 	    where
 		:d:a_ledger_number = :dh:a_ledger_number and
 		:d:a_cost_center = :dh:a_cost_center and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		:d:a_hist_2_amount = :dh:a_amount and
+                :d:a_hist_2_last = :dh:a_last_gift and
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
@@ -384,8 +408,21 @@ update_descriptives "system/query"
 					:d:a_ledger_number = :dh:a_ledger_number and
 					:d:a_cost_center = :dh:a_cost_center and
 					:d:p_donor_partner_key = :dh:p_donor_partner_key and
-					:dh:a_amount != :d:a_hist_1_amount and
-					:dh:a_amount != :d:a_hist_2_amount
+					:dh:a_last_gift < :d:a_hist_1_last and
+					:dh:a_last_gift < :d:a_hist_2_last
+				    order by
+					:dh:a_last_gift desc
+				    ),
+                :a_hist_3_last = (select
+					first(:dh:a_last_gift)
+				    from
+					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+				    where
+					:d:a_ledger_number = :dh:a_ledger_number and
+					:d:a_cost_center = :dh:a_cost_center and
+					:d:p_donor_partner_key = :dh:p_donor_partner_key and
+					:dh:a_last_gift < :d:a_hist_1_last and
+					:dh:a_last_gift < :d:a_hist_2_last
 				    order by
 					:dh:a_last_gift desc
 				    )
@@ -398,13 +435,13 @@ update_descriptives "system/query"
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
 		:d:a_hist_3_count = :dh:a_count,
-		:d:a_hist_3_first = :dh:a_first_gift,
-		:d:a_hist_3_last = :dh:a_last_gift
+		:d:a_hist_3_first = :dh:a_first_gift
 	    where
 		:d:a_ledger_number = :dh:a_ledger_number and
 		:d:a_cost_center = :dh:a_cost_center and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		:d:a_hist_3_amount = :dh:a_amount and
+                :d:a_hist_3_last = :dh:a_last_gift and
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
