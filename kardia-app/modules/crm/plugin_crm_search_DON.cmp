@@ -47,7 +47,6 @@ plugin_crm_search_lists "widget/component-decl"
 	total_hbox "widget/hbox"
 	    {
 	    height=24;
-	    spacing=10;
 
 	    mintamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=mintamt; width=235; label_width=150; form=criteria_params_form; text="Total Amount, Min:"; mint_hints "widget/hints" { style=strnull; } }
 	    maxtamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxtamt; width=155; label_width=70; form=criteria_params_form; text="Max:"; maxt_hints "widget/hints" { style=strnull; } }
