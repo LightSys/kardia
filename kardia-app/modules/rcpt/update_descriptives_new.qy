@@ -139,9 +139,9 @@ update_descriptives "system/query"
 			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
 			),
 		a_act_average_amount = condition(
-			count(1) < 2 or datediff(month, last(:giftdate), first(:giftdate)) = 0,
+			count(1) < 2 or datediff(day, last(:giftdate), first(:giftdate)) < 16,
 			null,
-			sum(:amount) * (convert(double, count(1) - 1) / count(1)) / datediff(month, last(:giftdate), first(:giftdate))
+			sum(:amount) * (convert(double, count(1) - 1) / count(1)) / (datediff(day, last(:giftdate), first(:giftdate)) / 30.5)
 			),
 		s_date_created = getdate(),
 		s_created_by = user_name(),
@@ -447,29 +447,44 @@ update_descriptives "system/query"
 	    ;
 
 	    -- Overall adjustments to a_act_average_xyz for a_descriptives
-	    update
+	    -- if the interval is biannual or less, lookback slightly less than a year from the most recent gift
+            -- the lookahead date is half an interval past the most recent gift
+            update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    set
-		:a_act_average_interval = null,
+		:a_act_lookahead_date = dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift),
+		:a_act_lookback_date = condition(dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_first_gift) < dateadd(day, -366, dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift)), dateadd(day, -366, dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift)), dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_first_gift)),
+                :a_act_average_interval = null,
 		:a_act_average_months = null,
-		:a_act_average_amount = null,
-		:a_act_lookahead_date = getdate(),
-		:a_act_lookback_date = dateadd(day, -366, getdate())
+		:a_act_average_amount = null
 	    where
-		(datediff(day, :a_hist_1_first, :a_hist_1_last) >= 365 and
-		(isnull(:a_hist_2_count, 0) <= 1 or :a_hist_2_last < :a_hist_1_first) and
-		(isnull(:a_hist_3_count, 0) <= 1 or :a_hist_3_last < :a_hist_1_first)) and
+		:a_act_average_interval < 7 and
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
+            -- if the interval is greater than bi-annually, check back the last three intervals
+            update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    set
+		:a_act_lookahead_date = dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift),
+		:a_act_lookback_date = condition(dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_first_gift) < dateadd(day, convert(integer, round(-3.0 * 30.5 * :a_act_average_interval)), dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift)), dateadd(day, convert(integer, round(-3.0 * 30.5 * :a_act_average_interval)), dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift)), dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_first_gift)),
+                :a_act_average_interval = null,
+                :a_act_average_months = null,
+		:a_act_average_amount = null
+	    where
+		:a_act_average_interval >= 7 and
+		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+            -- this handles one time gifts (and giving that falls all within half a month)
 	    update 
 		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    set
 		:a_act_average_interval = null,
 		:a_act_average_months = null,
 		:a_act_average_amount = null,
-		:a_act_lookahead_date = getdate(),
-		:a_act_lookback_date = condition(:a_hist_1_last < dateadd(day, -366, getdate()), dateadd(day, -366, getdate()), :a_hist_1_last)
+		:a_act_lookahead_date = condition(getdate() < dateadd(day, 366, :a_last_gift), getdate(), dateadd(day, 366, :a_last_gift)),
+		:a_act_lookback_date = :a_first_gift
 	    where
 		:a_act_average_months = 0 and
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
