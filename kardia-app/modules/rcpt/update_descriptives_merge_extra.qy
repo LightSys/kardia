@@ -11,7 +11,7 @@ update_descriptives_merge_catchup "system/query"
 
             -- Step One: Identify
 	    --  Identify one-time-extra gifts.  We consider a gift as one-time-extra if it is a single
-	    --  larger gift occurring within a regular giving pattern..
+	    --  larger gift occurring within a regular giving pattern.
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
@@ -20,7 +20,12 @@ update_descriptives_merge_catchup "system/query"
                         :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select 
                                 count(1)
                                 from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
-                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh:a_amount > :dh2:a_amount and :dh2:a_count > 1 and ((:dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift) or :dh:a_hist_id = 1)
+                                where   :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and 
+                                        -- either the extra gift is a larger gift, or there are other gifts within +/- half an interval of the gift
+                                        (:dh:a_amount > :dh2:a_amount or (select count(1) from collection tmp_gift_items where :donor = :dh:p_donor_partner_key and :ledger = :dh:a_ledger_number and :fund = :dh:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh:a_first_gift)) > 1) and
+                                        :dh2:a_count > 1 and
+                                        -- either the extra gift falls within the regular giving or it is the most recent gift
+                                        ((:dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift) or :dh:a_hist_id = 1)
                                 ) >= 1,
                         2,
                         0
@@ -84,7 +89,7 @@ update_descriptives_merge_catchup "system/query"
                 -- The fuzziness here can be tweaked. If there are no other gifts
                 -- within +/- half an interval of the extra gift, the gift is assumed
                 -- to contain the regular giving amount lumped with the gift amount.
-                includes_regular_giving = ((select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift)) = 1)
+                includes_regular_giving = ((select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :dh1:a_amount > :dh2:a_amount) = 1)
             from
                 /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
                 /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
