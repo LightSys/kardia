@@ -103,7 +103,7 @@ update_descriptives_merge_catchup "system/query"
             update
                 collection tmp_aggregated_segments t
             set
-                :t:amount = condition((select count(1) from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg group by :amount order by :amount desc, count(1) desc limit 1) = 1, (select avg(:amount) from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg), (select :amount from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg group by :amount order by :amount desc, count(1) desc limit 1)),
+                :t:amount = condition((select count(1) from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg group by :amount order by :amount desc, count(1) desc limit 1) = 1, (select avg(:amount) from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg), (select :amount from collection tmp_segments where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :seg = :t:seg group by :amount order by sum(:count) desc, :amount desc, count(1) desc limit 1)),
                 :t:ntl = (select nth(:giftdate, 2) from collection tmp_gift_items where :ledger = :t:ledger and :fund = :t:fund and :donor = :t:donor and :giftdate <= :t:last order by :giftdate desc)
             where
                 (:parameters:fund is null or :parameters:fund = :t:fund) and
