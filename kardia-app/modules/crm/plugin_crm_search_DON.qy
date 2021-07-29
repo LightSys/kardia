@@ -43,7 +43,20 @@ plugin_crm_search_DON "system/query"
 
 	    -- Now, create our local result set; we will merge it into the
 	    -- main results later.
-            -- This section allows overlapping date ranges
+            -- This section allows overlapping date ranges by default,
+            -- though some analytics require a date fully within the provided range.
+
+            -- Summary of analytics that use table a_descriptives partially or wholy:
+            --          min and max total giving
+            --          min and max average monthly giving
+            --          min and max total gift count
+            --          status
+            --          changes: last gift (gift has to be lapsed)
+            -- Summary of analytics that use table a_descriptives_hist partially or wholy:
+            --          searching requires a hist entry to, at minimum, overlap start and end dates when they are provided
+            --          min and max gift amount
+            --          min and max giving interval
+            --          changes: all
 	    insert
 		collection iresult
 	    select
@@ -73,8 +86,9 @@ plugin_crm_search_DON "system/query"
 		(:stage:funds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:funds + ',') > 0) and
 		-- (:stage:notfunds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:notfunds + ',') = 0) and
                 
-                -- For changes, if the start or the end date is null
-                -- no time restriction occurs
+                -- Changes
+                -- See kardia-sysdoc/DNR-donor_analytics_misc.txt to see why
+                -- algebraic notation is used here.
                 ((:stage:changes is null) +
 			-- A decrease change means that a new giving history
 	                -- began within the time interval with a decrease in giving
