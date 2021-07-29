@@ -20,5 +20,24 @@ It then calculates increases and decreases in giving
 Then it returns the data to the user
 
 
+Uses of the Analytics:
+Right now the primary uses of the analytics are on end-of-year donor reports and when using Kardia's advanced search feature.
 
+In the advanced search feature, there is a mix of overall descriptives (a_descriptives table) and giving history descriptives (a_descriptives_hist table) used when filtering by analytics data.
+
+Here is a summary of where each type of descriptive is used:
+Summary of analytics that use table a_descriptives partially or wholy:
+- min and max total giving
+- min and max average monthly giving
+- min and max total gift count
+- status
+- changes: last gift (gift has to be lapsed)
+Summary of analytics that use table a_descriptives_hist partially or wholy:
+- searching requires a hist entry to, at minimum, overlap start and end dates when they are provided
+- min and max gift amount
+- min and max giving interval
+- changes: all
+
+When using advanced search, a date range can be specified to limit which giving histories are looked at. If one field is left blank, then the range effectively extends to the earliest/latest gift in the giving histories. If both fields are left blank, no limiting by dates is performed.
+In general, a giving history's timespan is only required to overlap to match a date range. However, when looking for when a change in giving occurs, the date of the change is required to be within the provided start and end dates.
 
