@@ -5,19 +5,32 @@ Date:	    26-Jul-2021
 Overview of the project:
 This project is meant to be able to give missionaries using Kardia updates on what is happening with their donors. 
 For example, if a donor hasn't given in a few months for no reason, we want the missionary to know, so we have this.
+
 The main file is the update_descriptives_new.qy file, found in kardia-app/modules/rcpt
+
+Two tables of information are used in this project to store the analytics: a_descriptives and a_descriptives_hist
+        a_descriptives holds all of the overall giving statistics for a specific donor giving to a specific fund
+        a_descriptives_hist holds giving history entries, created by analyzing and interpretting the donor's giving patterns heuristically. These entries have their own stats specific to that period of giving
+
 It first clears out old descriptives
-It then makes a working copy of the data
-Then it generates all the descriptives
-You can see a description of the a_descriptives_hist table on this website https://www.codn.net/projects/kardia/wiki/index.php/Kardia:NewTables_a_descriptives_hist
+It then makes a working copy of the data in memory
+Then it generates baseline descriptives and giving histories
+        The baseline descriptives create basic statistics about the data before any of the intelligence of the query runs
+        The baseline giving histories are created by segmenting the gifts into contiguous regions all with the same gift amount
+        You can see a description of the a_descriptives_hist table on this website https://www.codn.net/projects/kardia/wiki/index.php/Kardia:NewTables_a_descriptives_hist
 Then the merges execute
-It first merges catchups, then adjacent giving segments, then catchup gifts that have extras as well, then extras, then adjacent giving segments again, then adjacent single gifts, then adjacent giving segments twice, then approximate values for everything that doesn't fit in
+        These merges combine giving histories intelligently so that neat giving histories created by messy but thoughtful people can be viewed succinctly
+        It first merges catchups, then adjacent giving segments, then catchup gifts that have extras as well, then extras, then adjacent giving segments again, then adjacent single gifts, then adjacent giving segments twice, then approximate values for everything that doesn't fit in
+        These merges are finite and more may be necessary depending on the size of the data set in question. 
+        These merges also prove to be inexact and on occasion the giving histories can be made messier
 It then corrects issues with the prev_end and next_start fields that arose due to the merges
-Then it corrects the Next to Last tracking issues
-Then it adjusts the calculations for the averages
+Then it corrects NTL problems
+Then basic data about the three most recent giving histories is copied to the overall descriptives
+Then it adjusts the calculations for the averages, skipping over approximate segments because they receive special treatment
 It then updates whether or not the donation is current, lapsing, or already lapsed
 It then calculates increases and decreases in giving
-Then it returns the data to the user
+Next it propogates informational flags from the recent giving histories to the overall descriptives
+Then it returns the data to the user and calculations are complete
 
 
 Uses of the Analytics:
@@ -38,6 +51,5 @@ Summary of analytics that use table a_descriptives_hist partially or wholy:
 - min and max giving interval
 - changes: all
 
-When using advanced search, a date range can be specified to limit which giving histories are looked at. If one field is left blank, then the range effectively extends to the earliest/latest gift in the giving histories. If both fields are left blank, no limiting by dates is performed.
+When using advanced search, a date range can be specified to limit which giving histories are looked at. If one field is left blank, then the range is not limited in that direction in the giving histories. If both fields are left blank, no limiting by dates is performed.
 In general, a giving history's timespan is only required to overlap to match a date range. However, when looking for when a change in giving occurs, the date of the change is required to be within the provided start and end dates.
-

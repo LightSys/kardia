@@ -1,6 +1,32 @@
+Current Project Status:
+
+Initial implementation is mostly complete, with some possible cleanup to do before it is deployed with any sending offices. 
+Statistics fields being added in for certainty's sake have been discussed and will be a likely next step for the project.
+Most descriptives I have personally looked at look great. For some giving histories there is a clearer way to represent the donor's intent, but the data is always workable, especially the overall descriptives statistics.
+
+
+Notes on possible issues to resolve in the future:
+
+*Note: These donor and Fund ID's are using the obfruscated LightSys Gift Item Tables
+
+Donor	Fund	Issue
+100628 	4361	Gifts are being merged down to every half a month
+102909	5386.Xxuo	approx'd 2 gifts 11 months apart
+105884	5280	History got split apart when they were previously combined. This is good, but it leads to another problem with predicting when the next gift will be. This donor is giving about once every two years and the default lapsed date of a single gift is a year ahead
+111793	5109 	An extra gift was left out but it would've been better to be included in the regular giving
+99839	6409	extra gift left hanging out front
+113406	5109	two $75 gifts grouped together that would do better as two extra $25 gifts
+113751	4361	Gifts are being merged down to every half a month
+114955	4361	NTL gift isn't correct for oldest giving pattern
+122614	5109	Gifts are being merged down to every half a month
+122783	5280	May 7th gift history is not marked as extra
+125879	5677	$375 extra gift is being approx'd with the $1200 regular giving. The regular giving falls just shy of being considered 'regular' by the merge logic
+127276	5280	possible candidate for a merge_approx
+65792	6409	$60 extra merged with regular giving when it would be better separate
+
 
 kardia-app/modules/crm/plugin_crm_search_DON.qy
-        In the where clause of the intertion into iresult, there are five places (in the statements related to changes)
+        In the where clause of the insertion into iresult, there are five places (in the statements related to changes)
         where the arithmetic equivalent of boolean algebra is used instead of boolean expressions.
         This is due to a bug in the picking apart of the where clause that prevents higher levels of nesting.
 
