@@ -1,5 +1,5 @@
 $Version=2$
-delete_later_practice "system/query"
+update_descriptives_pre_merge "system/query"
     {
     fund "query/parameter" { type=string; }
     donor "query/parameter" { type=string; }

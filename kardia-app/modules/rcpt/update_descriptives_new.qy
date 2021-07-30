@@ -1,5 +1,5 @@
 $Version=2$
-update_descriptives "system/query"
+update_descriptives_new "system/query"
     {
     fund "query/parameter" { type=string; style=strnull; }
     donor "query/parameter" { type=string; style=strnull;}

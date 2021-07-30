@@ -1,5 +1,5 @@
 $Version=2$
-update_descriptives_merge_catchup "system/query"
+update_descriptives_merge_adjacent_singles "system/query"
     {
     fund "query/parameter" { type=string; style=strnull;}
     donor "query/parameter" { type=string; style=strnull;}
