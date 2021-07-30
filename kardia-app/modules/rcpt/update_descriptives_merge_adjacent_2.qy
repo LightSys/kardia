@@ -25,7 +25,7 @@ update_descriptives_merge_adjacent_2 "system/query"
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
 		:dh2:a_cost_center = :dh1:a_cost_center and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
-		:dh1:a_amount <= 4 * :dh2:a_amount and -- larger more than regular within reason
+		:dh1:a_amount <= 8 * :dh2:a_amount and -- larger more than regular within reason
 		(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
                 :dh2:a_count > :dh1:a_count and -- recipient has more gifts
                 (not :dh1:a_is_extra or not :dh2:a_is_extra) and
@@ -173,7 +173,7 @@ update_descriptives_merge_adjacent_2 "system/query"
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
 		:dh2:a_cost_center = :dh1:a_cost_center and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
-		:dh1:a_amount <= 4 * :dh2:a_amount and -- larger more than regular within reason
+		:dh1:a_amount <= 8 * :dh2:a_amount and -- larger more than regular within reason
 		(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
                 :dh1:a_hist_id < :dh2:a_hist_id and
                 (not :dh1:a_is_extra or not :dh2:a_is_extra) and

@@ -17,15 +17,14 @@ update_descriptives_merge_approx "system/query"
 	    set
 		:dh:a_is_approximate = condition(
                         :dh:a_is_approximate is null and
-                        :dh:a_count <= 6 and -- these try to discount regular giving patterns from being approximated
-                        :dh:a_act_average_months <= 6 and
+                        (:dh:a_count <= 6 or :dh:a_act_average_months <= 6) and -- these try to discount regular giving patterns from being approximated
                         --(:dh:a_prev_end is not null or :dh:a_count != 1) and -- first gifts are special
                         (:dh:a_hist_id != 1 or :dh:a_is_extra != 1) and-- don't merge most recent extra gifts, as there isn't enough info about them yet
                         not datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334 and -- this prevents annual gifts from being merged together
                         (select 
                                 count(1)
                                 from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
-                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_hist_id = :dh:a_hist_id + 1 or :dh2:a_hist_id = :dh:a_hist_id - 1) and :dh2:a_count < 6 and :dh2:a_act_average_months < 6 and (not isnull(:dh:a_is_extra, 0) or not isnull(:dh2:a_is_extra, 0))
+                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_hist_id = :dh:a_hist_id + 1 or :dh2:a_hist_id = :dh:a_hist_id - 1) and (:dh2:a_count <= 6 or :dh2:a_act_average_months <= 6) and (not isnull(:dh:a_is_extra, 0) or not isnull(:dh2:a_is_extra, 0))
                                 ) >= 1,
                         2,
                         0
@@ -133,7 +132,7 @@ update_descriptives_merge_approx "system/query"
                 :dh2:a_act_average_interval = condition(
                                 :dh2:a_count = 1 or datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
                                 null,
-                                (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
+                                (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_count - 1)
                                 ),
                 :dh2:a_is_extra = 0
 	    where
