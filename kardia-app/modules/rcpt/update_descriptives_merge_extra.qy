@@ -205,5 +205,16 @@ update_descriptives_merge_extra "system/query"
                 :t:donor = :dh1:p_donor_partner_key and
                 :t:merged_id = :dh1:a_hist_id and
                 :t:regular_id = :dh2:a_hist_id
+            ;
+
+            -- If merge failed, undo the extra tag
+            update
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows
+            set
+                :a_is_extra = 0
+            where
+                (:parameters:fund is null or :parameters:fund = :a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :p_donor_partner_key) and
+                :a_is_extra = 2
 	    ";
     }
