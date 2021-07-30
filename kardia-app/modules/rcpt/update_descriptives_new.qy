@@ -527,7 +527,8 @@ update_descriptives_new "system/query"
                                 )
             where
                 (:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
-                (:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+                (:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
+                :dh:is_approximate = 0
             ;
 
 	    -- Update past/current flags on histories and on descriptives. For a history entry with
@@ -659,8 +660,8 @@ update_descriptives_new "system/query"
 		:a_increase_date = (select condition(:dh:a_increase_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
 		:a_decrease_pct = (select :dh:a_decrease_pct from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
 		:a_decrease_date = (select condition(:dh:a_decrease_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-		:a_is_extra = (select max(:dh:a_is_extra) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where datediff(day, :dh:a_last_gift, getdate()) < 366 order by :a_last_gift desc limit 2),
-                :a_is_approximate = (select max(:dh:a_is_approximate) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where datediff(day, :dh:a_last_gift, getdate()) < 366 order by :a_last_gift desc limit 3)
+		:a_is_extra = (select max(:dh:a_is_extra) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 3),
+                :a_is_approximate = (select max(:dh:a_is_approximate) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 3)
 	    where
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
