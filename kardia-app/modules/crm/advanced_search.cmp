@@ -674,6 +674,16 @@ advanced_search "widget/component-decl"
 			;
 
 			delete
+			    identity /apps/kardia/data/Kardia_DB/p_search_stage_criteria/rows sc,
+			    /apps/kardia/data/Kardia_DB/p_partner_search/rows ps
+			where
+			    :parameters:cnt == 1 and
+			    :ps:s_created_by == user_name() and
+			    :ps:p_search_desc == '(unsaved new search)' and
+			    :sc:p_search_id == :ps:p_search_id
+			;
+
+			delete
 			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
 			    /apps/kardia/data/Kardia_DB/p_partner_search/rows ps
 			where
