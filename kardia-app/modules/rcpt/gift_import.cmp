@@ -1927,8 +1927,8 @@ gift_import "widget/component-decl"
 			    :p:p_donor_partner_id = :in:p_dn_donor_partner_id and
 			    :p:a_cost_center = :in:a_cost_center and
 			    :p:a_is_active = 1 and
-			    :p:a_start_date >= getdate() and
-			    :p:a_end_date <= getdate()
+			    isnull(:p:a_start_date, dateadd(day, -1, getdate())) <= getdate() and
+			    isnull(:p:a_end_date, dateadd(day, 1, getdate())) >= getdate()
 		    ";
 
 	    readahead=2;

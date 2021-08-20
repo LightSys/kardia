@@ -82,8 +82,11 @@ inc_exp_balance "widget/page"
 	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dropdown; text='Ending Period:';  form=rpt_form; label_width=120; sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period asc"); }
 	    sep "widget/autolayoutspacer" { height=4; }
 	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=rpt_form; label_width=120; }
-	    f_bybatch "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="bybatch"; ctl_type='checkboxleft'; text="Show Totals by Batch (instead of by Fund)"; form=rpt_form; label_width=120; checked=0; bybatch_hints "widget/hints" { style=notnull; default=0; } }
+	    f_bybatch "widget/component" { x=10; width=400; height=20; path="/sys/cmp/smart_field.cmp"; field="bybatch"; ctl_type='checkboxleft'; text="Show Totals by Batch (instead of by Fund)"; form=rpt_form; label_width=120; checked=0; bybatch_hints "widget/hints" { style=notnull; default=0; } }
+	    f_type "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='origin'; ctl_type=dropdown; text='Batch Type:';  form=rpt_form; label_width=120; sql = runserver("select 'CD - Cash Disbursements', 'CD'; select 'CR - Cash Receipts', 'CR'; select 'DE - Deposits', 'DE'; select 'EG - Electronic Giving', 'EG'; select 'GL - Manual GL Journal', 'GL'; select 'OB - Opening Balances', 'OB'; select 'PP - Payroll', 'PP'"); }
+	    sep0 "widget/autolayoutspacer" { height=4; }
 	    f_invert "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="invert"; ctl_type='checkboxleft'; text="Invert Debits/Credits (Executive Format)"; form=rpt_form; label_width=150; }
+	    sep1 "widget/autolayoutspacer" { height=4; }
 	    f_level "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='report_level'; ctl_type=dropdown; text='Detail Level:'; sql=runserver("select '' + :a_reporting_level + ' - ' + :a_level_rpt_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows where :a_ledger_number = " + quote(:this:ledger)); form=rpt_form; label_width=120; }
 	    f_docfmt "widget/component"
 		{ 
@@ -97,7 +100,7 @@ inc_exp_balance "widget/page"
 		label_width=120;
 		}
 
-	    sep2 "widget/autolayoutspacer" { height=176; }
+	    sep2 "widget/autolayoutspacer" { height=132; }
 	    pn_sep2 "widget/pane" { height=2; style=lowered; }
 
 	    ctls_hbox "widget/hbox"

@@ -184,6 +184,8 @@ activity "system/query"
 		datepart(month, :pe:s_date_created),
 		datepart(year, :pe:s_date_created),
 		:pe:e_track_id
+	    having
+		:p_partner_key is not null
 	    limit
 		200
 	    ;
@@ -244,6 +246,8 @@ activity "system/query"
 		datepart(year, :c:s_date_modified),
 		:c:e_collab_type_id,
 		:c:e_collaborator
+	    having
+		:e_activity_date is not null
 	    limit
 		200
 	    ;
@@ -335,6 +339,8 @@ activity "system/query"
 		:ud:s_username =* :a:username
 	    group by
 		:a:username
+	    having
+		:p_partner_key is not null
 	    ;
 
 	    -- Return the ID to the user

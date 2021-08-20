@@ -123,7 +123,7 @@ activity_list "widget/component-decl"
 
 	    activity_table "widget/table"
 		{
-		height=381;
+		height=413; // was 381 with button below
 		min_rowheight=16;
 		max_rowheight=72;
 		allow_selection = yes;
@@ -428,6 +428,7 @@ activity_list "widget/component-decl"
 
 	all_activity_btn "widget/textbutton"
 	    {
+	    condition=0;
 	    x=45;
 	    height=24;
 	    width=150;
