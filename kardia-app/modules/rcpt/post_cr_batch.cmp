@@ -218,6 +218,7 @@ post_cr_batch "widget/component-decl"
 		    :p:a_ledger_number = :parameters:a_ledger_number and
 		    :p:a_comment = '**NEW**' and
 		    :in:a_ledger_number = :p:a_ledger_number and
+		    :in:a_batch_number = :parameters:a_batch_number and
 		    :in:a_cost_center = :p:a_cost_center and
 		    isnull(:in:p_dn_ack_partner_id, :in:p_dn_donor_partner_id) = :p:p_donor_partner_id and
 		    :in:a_intent_type = :p:a_intent_type and
@@ -225,6 +226,36 @@ post_cr_batch "widget/component-decl"
 		    isnull(:in:a_total_amount, $0) = isnull(:p:a_total_amount, $0) and
 		    isnull(:in:a_giving_interval, 0) = isnull(:p:a_giving_interval, 0) and
 		    isnull(:in:a_gift_count, 0) = isnull(:p:a_gift_count, 0)
+		;
+
+		-- Mark donors via p_donor as 'donations allowed'.
+		insert
+		    /apps/kardia/data/Kardia_DB/p_donor/rows
+		select
+		    p_partner_key = :g:p_donor_partner_id,
+		    a_gl_ledger_number = :g:a_ledger_number,
+		    p_allow_contributions = 1,
+		    p_org_name_first = 1,
+		    p_is_daf = 0,
+		    s_date_created=getdate(),
+		    s_created_by=user_name(),
+		    s_date_modified=getdate(),
+		    s_modified_by=user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+		where
+		    :g:a_ledger_number = :parameters:a_ledger_number and
+		    :g:a_batch_number = :parameters:a_batch_number and
+		    :g:a_period = :parameters:a_period
+		group by
+		    :g:p_donor_partner_id
+		on duplicate
+		    :a_gl_ledger_number,
+		    :p_partner_key
+		update set
+		    :p_allow_contributions = 1,
+		    :s_date_modified=getdate() IF MODIFIED,
+		    :s_modified_by=user_name() IF MODIFIED
 		";
 
 	end_post "widget/connector"
