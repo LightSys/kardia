@@ -1,0 +1,43 @@
+$Version=2$
+update_descriptives "system/query"
+    {
+        sql = "
+            --select 
+            --count(1) 
+            --from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows 
+            --where 
+            --:a_dn_gift_received_date > getdate()
+            --;
+
+            --select 
+            --count(1) 
+            --from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows 
+            --;
+
+            --select 
+            --count(1) 
+            --from /apps/kardia/data/Kardia_DB/a_descriptives/rows 
+            --;
+
+            --select 
+            --count(1) 
+            --from /apps/kardia/data/Kardia_DB/a_descriptives/rows 
+            --where
+            --:a_last_gift > getdate()
+            --;
+
+            --update /apps/kardia/data/Kardia_DB/a_descriptives/rows 
+            --set :a_last_gift_amount = $100
+            --where
+            --:a_last_gift > getdate()
+            --;
+
+            select *
+            from 
+            /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows
+
+            
+
+        ";
+
+    }

@@ -8,7 +8,7 @@ plugin_crm_search_DON "system/query"
 
     search_id "query/parameter" { type=integer; }
     cur_stage "query/parameter" { type=integer; }
-    prev_stage "query/parameter" { type=integer; }
+    prev_keys "query/parameter" { type=string; }
 
     sql = " -- First, we need to get our search stage information and config.
 	    declare collection iresult scope application;
@@ -18,13 +18,17 @@ plugin_crm_search_DON "system/query"
 		:stage:startdate = convert(datetime,:sc:start),
 		:stage:enddate = convert(datetime,:sc:end),
 		:stage:funds = :sc:funds,
-		:stage:notfunds = :sc:notfunds,
-		:stage:minamt = :sc:minamt,
+		--:stage:notfunds = :sc:notfunds,
+		:stage:status = :sc:curstat,
+                :stage:changes = :sc:changes,
+                :stage:minamt = :sc:minamt,
 		:stage:maxamt = :sc:maxamt,
 		:stage:mintamt = :sc:mintamt,
 		:stage:maxtamt = :sc:maxtamt,
 		:stage:minfreq = :sc:minfreq,
 		:stage:maxfreq = :sc:maxfreq,
+                :stage:minavg = :sc:minavg,
+                :stage:maxavg = :sc:maxavg,
 		:stage:mincnt = :sc:mincnt,
 		:stage:maxcnt = :sc:maxcnt
 	    from
@@ -39,6 +43,20 @@ plugin_crm_search_DON "system/query"
 
 	    -- Now, create our local result set; we will merge it into the
 	    -- main results later.
+            -- This section allows overlapping date ranges by default,
+            -- though some analytics require a date fully within the provided range.
+
+            -- Summary of analytics that use table a_descriptives partially or wholy:
+            --          min and max total giving
+            --          min and max average monthly giving
+            --          min and max total gift count
+            --          status
+            --          changes: last gift (gift has to be lapsed)
+            -- Summary of analytics that use table a_descriptives_hist partially or wholy:
+            --          searching requires a hist entry to, at minimum, overlap start and end dates when they are provided
+            --          min and max gift amount
+            --          min and max giving interval
+            --          changes: all
 	    insert
 		collection iresult
 	    select
@@ -52,9 +70,76 @@ plugin_crm_search_DON "system/query"
 		:dh:a_ledger_number = :d:a_ledger_number and
 		:dh:a_cost_center = :d:a_cost_center and
 		:dh:p_donor_partner_key = :d:p_donor_partner_key and
-		(:stage:mincnt is null or :d:a_act_count >= :stage:mincnt) and
-		(:stage:maxcnt is null or :d:a_act_count <= :stage:maxcnt) and
+                (:stage:startdate is null or :stage:startdate <= :dh:a_last_gift ) and
+		(:stage:enddate is null or :dh:a_first_gift <= :stage:enddate) and
+                (:stage:mintamt is null or :d:a_act_total >= convert(money, :stage:mintamt)) and
+		(:stage:maxtamt is null or :d:a_act_total <= convert(money, :stage:maxtamt)) and
+                (:stage:minamt is null or :dh:a_amount >= convert(money, :stage:minamt)) and
+		(:stage:maxamt is null or :dh:a_amount <= convert(money, :stage:maxamt)) and
+                (:stage:minavg is null or :d:a_act_average_amount >= convert(money, :stage:minavg)) and
+		(:stage:maxavg is null or :d:a_act_average_amount <= convert(money, :stage:maxavg)) and
+                -- allows for 15% error
+                (:stage:minfreq is null or :dh:a_act_average_interval <= convert(double, :stage:minfreq) * 1.15) and
+		(:stage:maxfreq is null or :dh:a_act_average_interval >= convert(double, :stage:maxfreq) * 0.85) and
+                (:stage:mincnt is null or :d:a_act_count >= convert(integer, :stage:mincnt)) and
+		(:stage:maxcnt is null or :d:a_act_count <= convert(integer, :stage:maxcnt)) and
 		(:stage:funds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:funds + ',') > 0) and
-		(:stage:notfunds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:notfunds + ',') = 0)
+		-- (:stage:notfunds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:notfunds + ',') = 0) and
+                
+                -- Changes
+                -- See kardia-sysdoc/DNR-donor_analytics_misc.txt to see why
+                -- algebraic notation is used here.
+                ((:stage:changes is null) +
+			-- A decrease change means that a new giving history
+	                -- began within the time interval with a decrease in giving
+			condition(
+				charindex(',DCR,', ',' + :stage:changes + ',') = 0, 
+				0,
+				(:dh:a_decrease_pct is not null) * (:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+				)
+	                -- An increase change means that a new giving history
+	                -- began within the time interval with an increase in giving
+			+ condition(
+				charindex(',ICR,', ',' + :stage:changes + ',') = 0,
+				0,
+				(:dh:a_increase_pct is not null) * (:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+				)
+	                -- An extra change means that an extra gift
+        	        -- was givin within the time interval
+			+ condition(
+				charindex(',EAM,', ',' + :stage:changes + ',') = 0,
+				0,
+				:dh:a_is_extra = 1
+				)
+	                -- A last gift change means that a giving history became lapsed within
+        	        -- the time interval and there are no other current active giving patterns.
+                	-- This excludes donors who have given a single gift
+			+ condition(
+				charindex(',LGT,', ',' + :stage:changes + ',') = 0,
+				0,
+				(:dh:a_is_current = 0) * (:dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift)) * (:d:a_act_count > 1)
+				)
+	                -- A first gift change means that a new giving history was started within
+        	        -- the time interval that is not a decrease in giving or an extra gift. 
+			+ condition(
+				charindex(',FGT,', ',' + :stage:changes + ',') = 0,
+				0,
+				(:dh:a_decrease_pct is null) * (:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift)) * (:dh:a_is_extra = 0)
+				)
+		) and
+
+                (:parameters:prev_keys is null or charindex(',' + rtrim(:dh:p_donor_partner_key) + ',', ',' + :parameters:prev_keys + ',') > 0)
+            group by
+                :d:a_ledger_number,
+                :d:p_donor_partner_key
+            having
+                (:stage:status is null or convert(integer, :stage:status) = max(:d:a_is_current)) and
+                (:stage:changes is null or charindex(',LGT,', ',' + :stage:changes + ',') = 0 or max(:d:a_is_current) = 0)
+            on duplicate
+		:p_partner_key,
+		:p_search_session_id,
+		:p_search_stage_id
+	    update set
+		:p_partner_key = :p_partner_key
 	    ";
     }
