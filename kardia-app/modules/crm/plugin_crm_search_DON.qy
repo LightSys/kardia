@@ -25,8 +25,8 @@ plugin_crm_search_DON "system/query"
 		:stage:maxamt = :sc:maxamt,
 		:stage:mintamt = :sc:mintamt,
 		:stage:maxtamt = :sc:maxtamt,
-		:stage:minfreq = :sc:minfreq,
-		:stage:maxfreq = :sc:maxfreq,
+		:stage:minfreq = convert(double, :sc:minfreq),
+		:stage:maxfreq = convert(double, :sc:maxfreq),
                 :stage:minavg = :sc:minavg,
                 :stage:maxavg = :sc:maxavg,
 		:stage:mincnt = :sc:mincnt,
@@ -79,8 +79,8 @@ plugin_crm_search_DON "system/query"
                 (:stage:minavg is null or :d:a_act_average_amount >= convert(money, :stage:minavg)) and
 		(:stage:maxavg is null or :d:a_act_average_amount <= convert(money, :stage:maxavg)) and
                 -- allows for 15% error
-                (:stage:minfreq is null or :dh:a_act_average_interval <= convert(double, :stage:minfreq) * 1.15) and
-		(:stage:maxfreq is null or :dh:a_act_average_interval >= convert(double, :stage:maxfreq) * 0.85) and
+                (:stage:minfreq is null or :dh:a_act_average_interval <= :stage:minfreq * 1.15) and
+		(:stage:maxfreq is null or :dh:a_act_average_interval >= :stage:maxfreq * 0.85) and
                 (:stage:mincnt is null or :d:a_act_count >= convert(integer, :stage:mincnt)) and
 		(:stage:maxcnt is null or :d:a_act_count <= convert(integer, :stage:maxcnt)) and
 		(:stage:funds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:funds + ',') > 0) and
@@ -89,27 +89,27 @@ plugin_crm_search_DON "system/query"
                 -- Changes
                 -- See kardia-sysdoc/DNR-donor_analytics_misc.txt to see why
                 -- algebraic notation is used here.
-                ((:stage:changes is null) +
+                ((:stage:changes is null) or
 			-- A decrease change means that a new giving history
 	                -- began within the time interval with a decrease in giving
 			condition(
 				charindex(',DCR,', ',' + :stage:changes + ',') = 0, 
 				0,
-				(:dh:a_decrease_pct is not null) * (:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+				condition(:dh:a_decrease_pct is not null, 1, 0) * condition(:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift), 1, 0)
 				)
 	                -- An increase change means that a new giving history
 	                -- began within the time interval with an increase in giving
 			+ condition(
 				charindex(',ICR,', ',' + :stage:changes + ',') = 0,
 				0,
-				(:dh:a_increase_pct is not null) * (:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+				condition(:dh:a_increase_pct is not null, 1, 0) * condition(:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift), 1, 0)
 				)
 	                -- An extra change means that an extra gift
         	        -- was givin within the time interval
 			+ condition(
 				charindex(',EAM,', ',' + :stage:changes + ',') = 0,
 				0,
-				:dh:a_is_extra = 1
+				condition(:dh:a_is_extra = 1, 1, 0)
 				)
 	                -- A last gift change means that a giving history became lapsed within
         	        -- the time interval and there are no other current active giving patterns.
@@ -117,15 +117,16 @@ plugin_crm_search_DON "system/query"
 			+ condition(
 				charindex(',LGT,', ',' + :stage:changes + ',') = 0,
 				0,
-				(:dh:a_is_current = 0) * (:dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift)) * (:d:a_act_count > 1)
+				condition(:dh:a_is_current = 0, 1, 0) * condition(:dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift), 1, 0) * condition(:d:a_act_count > 1, 1, 0)
 				)
 	                -- A first gift change means that a new giving history was started within
         	        -- the time interval that is not a decrease in giving or an extra gift. 
 			+ condition(
 				charindex(',FGT,', ',' + :stage:changes + ',') = 0,
 				0,
-				(:dh:a_decrease_pct is null) * (:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift)) * (:dh:a_is_extra = 0)
+				condition(:dh:a_decrease_pct is null, 1, 0) * condition(:dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift), 1, 0) * condition(:dh:a_is_extra = 0, 1, 0)
 				)
+			> 0
 		) and
 
                 (:parameters:prev_keys is null or charindex(',' + rtrim(:dh:p_donor_partner_key) + ',', ',' + :parameters:prev_keys + ',') > 0)
