@@ -692,7 +692,7 @@ gift_entry "widget/component-decl"
 				{
 				height=20;
 				label_width=120;
-				path="/apps/kardia/modules/base/field_p_partner_key_with_new.cmp";
+				path="/apps/kardia/modules/rcpt/field_donor_with_new.cmp";
 				label="Donor";
 				field="p_donor_partner_id";
 
@@ -723,7 +723,7 @@ gift_entry "widget/component-decl"
 				{
 				height=20;
 				label_width=120;
-				path="/apps/kardia/modules/base/field_p_partner_key_with_new.cmp";
+				path="/apps/kardia/modules/rcpt/field_donor_with_new.cmp";
 				label="Acknowledgement";
 				object_name="Person";
 				field="p_ack_partner_id";
@@ -755,7 +755,7 @@ gift_entry "widget/component-decl"
 				{
 				height=20;
 				label_width=120;
-				path="/apps/kardia/modules/base/field_p_partner_key_with_new.cmp";
+				path="/apps/kardia/modules/rcpt/field_donor_with_new.cmp";
 				label="Transferred Via";
 				object_name="Person";
 				field="p_pass_partner_id";
