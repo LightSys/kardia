@@ -1,0 +1,69 @@
+$Version=2$
+api_report "system/querytree"
+    {
+
+    ScheduledReportsToBeSent "system/querytree"
+        {
+        text = "ScheduledReportsToBeSent";
+        
+        sched_reports_to_be_sent_list "system/querytree"
+            {
+            sql = " select
+                report_file = :report_group:r_group_module + '/' + :report_group:r_group_file,
+                report_group_name = :gsr:r_group_name,
+                delivery_method = :gsr:r_delivery_method,
+                report_group_sched_id = :gsr:r_group_sched_id,
+                report_id = :gsr:r_report_id,
+                send_date = :group_sched:r_group_sched_date,
+                recipient_partner_key = :gsr:p_recipient_partner_key
+                from
+                identity /apps/kardia/data/Kardia_DB/r_group_sched_report/rows gsr,
+                /apps/kardia/data/Kardia_DB/r_group/rows report_group,
+                /apps/kardia/data/Kardia_DB/r_group_sched/rows group_sched
+                where
+                :gsr:r_group_sched_status = 'N' and
+                :report_group:r_group_name =* :gsr:r_group_name and
+                :group_sched:r_group_name =* :gsr:r_group_name and
+                :group_sched:r_group_sched_id =* :gsr:r_group_sched_id
+                ";
+
+            Params "system/querytree"
+                {
+                text = "Params";
+
+                params_list "system/querytree"
+                    {
+                        sql = " declare collection params;
+
+                        insert collection params
+                        select
+                        name = :gsp:r_param_name,
+                        value = :gsp:r_param_value
+                        from
+                        /apps/kardia/data/Kardia_DB/r_group_sched_param/rows gsp
+                        where
+                        :gsp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
+                        :gsp:r_group_sched_id =* :sched_reports_to_be_sent_list:report_group_sched_id and
+                        :gsp:r_report_id =* :sched_reports_to_be_sent_list:report_id
+                        ;
+
+                        insert collection params
+                        select
+                        name = :grp:r_param_name,
+                        value = :grp:r_param_value
+                        from
+                        /apps/kardia/data/Kardia_DB/r_group_report_param/rows grp
+                        where
+                        :grp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
+                        :grp:r_delivery_method =* :sched_reports_to_be_sent_list:delivery_method and
+                        :grp:p_recipient_partner_key =* :sched_reports_to_be_sent_list:recipient_partner_key and
+                        :grp:r_report_id =* :sched_reports_to_be_sent_list:report_id
+                        ;
+
+                        select * from collection params
+                        ";
+                    } 
+                }
+            }
+        }
+    }
