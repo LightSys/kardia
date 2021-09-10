@@ -1,6 +1,8 @@
+from functools import partial
 from kardia_api import Kardia
 from kardia_clients.kardia_client import KardiaClient, ScheduledReport
-from typing import Dict, List
+from requests.models import Response
+from typing import Callable, Dict, List
 
 
 class RestAPIKardiaClient(KardiaClient):
@@ -10,11 +12,18 @@ class RestAPIKardiaClient(KardiaClient):
         self.kardia = Kardia(kardia_url, user, pw)
 
 
+    def _make_api_request(self, request_func: Callable[[], Response]) -> Dict[str, str]:
+        # other error handling can go here if needed in the future
+        response = request_func()
+        response.raise_for_status()
+        return response.json()
+
+
     def _get_params_for_sched_report(self, schedReportId: str) -> Dict[str, str]:
         params = {}
         self.kardia.report.setParams(res_attrs="basic")
-        # TODO: handle sad response
-        paramsJson = self.kardia.report.getSchedReportParams(schedReportId).json()
+        paramsRequest = partial(self.kardia.report.getSchedReportParams, schedReportId)
+        paramsJson = self._make_api_request(paramsRequest)
         for paramName, paramInfo in paramsJson.items():
             if paramName.startswith("@id"):
                 continue
@@ -25,8 +34,8 @@ class RestAPIKardiaClient(KardiaClient):
     def _get_emails_for_partner(self, partnerId: str) -> List[str]:
         recipientEmails = []
         self.kardia.partner.setParams(res_attrs="basic")
-        # TODO: handle sad response
-        partnerContactsJson = self.kardia.partner.getPartnerContactInfos(partnerId).json()
+        partnerContactsRequest = partial(self.kardia.partner.getPartnerContactInfos, partnerId)
+        partnerContactsJson = self._make_api_request(partnerContactsRequest)
         for contactId, contactInfo in partnerContactsJson.items():
             if contactId.startswith("@id"):
                 continue
@@ -38,8 +47,7 @@ class RestAPIKardiaClient(KardiaClient):
     
     def get_scheduled_reports_to_be_sent(self):
         self.kardia.report.setParams(res_attrs="basic")
-        # TODO: handle sad response
-        schedReportJson = self.kardia.report.getSchedReportsToBeSent().json()
+        schedReportJson = self._make_api_request(self.kardia.report.getSchedReportsToBeSent)
         schedReports = []
 
         for schedReportId, schedReportInfo in schedReportJson.items():
@@ -55,8 +63,8 @@ class RestAPIKardiaClient(KardiaClient):
             minute = schedReportInfo["send_date"]["minute"]
             second = schedReportInfo["send_date"]["second"]
 
-            # TODO: handle sad response
-            partnerJson = self.kardia.partner.getPartner(schedReportInfo["recipient_partner_key"]).json()
+            partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
+            partnerJson = self._make_api_request(partnerRequest)
             recipientName = partnerJson["partner_name"]
 
             recipientEmails = self._get_emails_for_partner(schedReportInfo["recipient_partner_key"])
