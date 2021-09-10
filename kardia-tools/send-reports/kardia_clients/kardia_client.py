@@ -27,7 +27,7 @@ class KardiaClient(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def call_report(self, report_file: str, params: Dict[str, str], generated_file_dir: str) -> str:
+    def generate_report(self, report_file: str, params: Dict[str, str], generated_file_dir: str) -> str:
         pass
     
     # @abc.abstractmethod

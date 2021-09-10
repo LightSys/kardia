@@ -1,3 +1,5 @@
+import re
+import requests
 from functools import partial
 from kardia_api import Kardia
 from kardia_clients.kardia_client import KardiaClient, ScheduledReport
@@ -10,6 +12,8 @@ class RestAPIKardiaClient(KardiaClient):
 
     def __init__(self, kardia_url, user, pw):
         self.kardia = Kardia(kardia_url, user, pw)
+        self.kardia_url = kardia_url
+        self.auth = (user, pw)
 
 
     def _make_api_request(self, request_func: Callable[[], Response]) -> Dict[str, str]:
@@ -72,11 +76,30 @@ class RestAPIKardiaClient(KardiaClient):
 
             schedReport = ScheduledReport(reportFile, year, month, day, hour, minute, second, recipientName,
                 recipientEmails, params)
-            print(schedReport)
             schedReports.append(schedReport)
         
         return schedReports
 
 
-    def call_report(self, report_file, params, generated_file_dir):
-        pass
+    def _generate_report_filename(self, report_file: str, params: Dict[str, str]) -> str:
+        # Prefix with report path minus / and .rpt
+        filename = report_file.replace("/", "_").replace(".rpt", "")
+        for key, value in params.items():
+            filename += f'_{key}_{value}'
+        # Strip out any non-alphanumeric characters
+        filename = re.sub(r'[^\w\s]', '', filename)
+        filename += ".pdf"
+        return filename
+
+
+    def generate_report(self, report_file, params, generated_file_dir):
+        filename = self._generate_report_filename(report_file, params)
+        file_path = f'{generated_file_dir}/{filename}'
+
+        # Not using kardia_api for this, since it's not really set up for getting arbitrary .rpts and a manual request
+        # is pretty simple
+        report_url = f'{self.kardia_url}/modules/{report_file}'
+        params["document_format"] = requests.utils.quote("application/pdf")
+        response = requests.get(report_url, auth=self.auth, params=params)
+        with open(file_path, "wb") as file:
+            file.write(response.content)
