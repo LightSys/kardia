@@ -99,7 +99,9 @@ class RestAPIKardiaClient(KardiaClient):
         # Not using kardia_api for this, since it's not really set up for getting arbitrary .rpts and a manual request
         # is pretty simple
         report_url = f'{self.kardia_url}/modules/{report_file}'
-        params["document_format"] = requests.utils.quote("application/pdf")
-        response = requests.get(report_url, auth=self.auth, params=params)
+        request_params = {**params, "document_format": requests.utils.quote("application/pdf")}
+        response = requests.get(report_url, auth=self.auth, params=request_params)
         with open(file_path, "wb") as file:
             file.write(response.content)
+
+        return file_path

@@ -10,6 +10,7 @@ class ScheduledReport:
         self.report_file = report_file
         self.send_date = datetime(year, month, day, hour=hour, minute=minute, second=second)
         self.recipient_name = recipient_name
+        # This could be changed to be just general recipient contact infos (inc email)
         self.recipient_emails = recipient_emails
         self.params = params
 
