@@ -270,7 +270,7 @@ p_location_component "widget/component-decl"
 			    text = runclient("Address: " + isnull('(' + :person_location_osrc:rec_stat_txt + ')',''));
 			    object_name = "Address";
 			    allow_new = 1;
-			    //allow_delete = 1;
+			    allow_delete = 1;
 			    }
 
 			location_fields "widget/component"
