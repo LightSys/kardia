@@ -1029,9 +1029,10 @@ cashdisb_subform "widget/component-decl"
 					x=0;y=0;width=876;height=154;
 					mode=dynamicrow;
 
-					dd_a_check_number "widget/table-column" { title="Check#"; fieldname="a_check_number"; width=40; }
-					dd_a_line_item "widget/table-column" { title="Line"; fieldname="a_line_item"; width=30; }
+					dd_a_check_number "widget/table-column" { title="Check#"; fieldname="a_check_number"; width=43; }
+					dd_a_line_item "widget/table-column" { title="Line"; fieldname="a_line_item"; width=27; }
 					dd_a_voided "widget/table-column" { title="Status"; fieldname="status"; width=40; }
+					dd_source "widget/table-column" { title="Source"; fieldname="a_cash_account_code"; width=40; }
 					dd_payee "widget/table-column" { title="Payee"; fieldname="payeename"; width=100; }
 					//dd_a_ledger_number "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=60; }
 					//dd_a_batch_number "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=60; }
