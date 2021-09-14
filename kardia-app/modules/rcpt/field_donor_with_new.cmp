@@ -52,7 +52,7 @@ field_donor_with_new "widget/component-decl"
 	    addnew_cn "widget/connector"
 		{
 		event=Click;
-		target=field_p_partner_key_with_new;
+		target=field_donor_with_new;
 		action=Launch;
 		Width=844;
 		Height=600;
