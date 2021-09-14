@@ -1342,7 +1342,7 @@ cashdisb_subform "widget/component-decl"
 				
 				payee_vbox "widget/vbox"
 				{
-					x=8;y=20;width=252;height=276;spacing=1;cellsize=30;
+					x=8;y=20;width=252;height=276;spacing=7;
 
 					// Cash account selection
 					cash_acct_dd "widget/component"
@@ -1353,6 +1353,7 @@ cashdisb_subform "widget/component-decl"
 							ctl_type=dropdown;
 							text="Source:";
 							label_width=60;
+							height=25;
 
 							sql = runserver("select :a:a_account_code + ' - ' + :a:a_acct_desc, :a:a_account_code from /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = " + quote(:this:ledger) + " and :c:a_config_name = 'DisbCashAccts' and charindex(',' + :a:a_account_code + ',', ',' + :c:a_config_value + ',') > 0");
 
@@ -1360,8 +1361,28 @@ cashdisb_subform "widget/component-decl"
 					}
 					
 					// Group Box
+					txt_payee_number "widget/component"
+					{
+						height = 20;
+						path="/apps/kardia/modules/disb/field_payee_with_new.cmp";
+						field=a_payee_partner_key;
+						label="Payee #";
+						label_width=60;
+						object_name="Payee";
+
+						query_on_id_change "widget/connector"
+						{
+							// update the mailing label thingy whenever our value changes.
+							event = DataChange;
+							target=payee_details_osrc;
+							action = QueryParam;
+							p_partner_key = runclient(:Value);
+						}
+					}
+
 					payee_select_hbox  "widget/hbox"
 					{
+					condition=0;
 						spacing = 4;
 						
 						// Payee Number Box
