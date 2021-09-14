@@ -374,6 +374,7 @@ annual_statement "system/report"
 	sql = runserver("
 		SELECT
 			item_amt = :i:a_amount,
+			show_amt = condition(:pt:a_is_cash = 1, :i:a_amount, 'noncash'),
 			start_limit = :stmt_start_period_qy:a_period,
 			this_period = :i:a_period,
 			cc = :i:a_cost_center,
@@ -381,23 +382,31 @@ annual_statement "system/report"
 			ckno = :i:a_recv_document_id,
 			:i:a_confidential,
 			:i:a_non_tax_deductible,
-			:i:a_comment
+			:i:a_comment,
+			:pt:a_is_cash
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows pt,
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
 		WHERE
 			:i:a_ledger_number = :gifts_qy:a_ledger_number and
 			:i:a_batch_number = :gifts_qy:a_batch_number and
-			:i:a_gift_number = :gifts_qy:a_gift_number " +
+			:i:a_gift_number = :gifts_qy:a_gift_number and
+			:pt:a_ledger_number = :i:a_ledger_number and
+			:pt:a_gift_payment_type = :i:a_dn_gift_type " +
 			condition(:this:which_accts = "only4100", " and :i:a_account_code = '4100' ", "") +
 			condition(:this:which_accts = "non2120", " and :i:a_account_code != '2120' ", "") +
 			"and :c:a_cost_center = :i:a_cost_center
 			and :c:a_ledger_number = :i:a_ledger_number
 		");
-	disp_item_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; reset=1; where=":this_period >= :start_limit"; }
-	item_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; reset = 1; }
-	item_nontaxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 1"; reset = 1; }
-	item_taxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 0"; reset = 1; }
+	disp_item_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; reset=1; where=":this_period >= :start_limit and :a_is_cash = 1"; }
+	disp_item_nc "report/aggregate" { compute="condition(count(:item_amt) > 0, 1, 0)"; reset=1; where=":this_period >= :start_limit and :a_is_cash = 0"; }
+	item_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; reset = 1; where=":a_is_cash = 1"; }
+	item_nc "report/aggregate" { compute="condition(count(:item_amt) > 0, 1, 0)"; reset = 1; where=":a_is_cash = 0"; }
+	item_nontaxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 1 and :a_is_cash = 1"; reset = 1; }
+	item_nontaxded_nc "report/aggregate" { compute="condition(count(:item_amt) > 0, 1, 0)"; where=":a_non_tax_deductible = 1 and :a_is_cash = 0"; reset = 1; }
+	item_taxded_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; where=":a_non_tax_deductible = 0 and :a_is_cash = 1"; reset = 1; }
+	item_taxded_nc "report/aggregate" { compute="condition(count(:item_amt) > 0, 1, 0)"; where=":a_non_tax_deductible = 0 and :a_is_cash = 0"; reset = 1; }
 	}
 
 
@@ -526,8 +535,8 @@ annual_statement "system/report"
 		g_rcpt "report/table-cell" { value=runserver(condition(:gift_items_qy:cx__rowid == 0, :gifts_qy:rcpt_no, '')); font=courier; }
 		g_goods "report/table-cell" { value=runserver(condition(:gift_items_qy:cx__rowid == 0, condition(:gifts_qy:goods == $0, '-   ', :gifts_qy:goods), '')); font=courier; align=right; }
 		g_ckno "report/table-cell" { value=runserver(:gift_items_qy:ckno); font=courier; }
-		g_desc "report/table-cell" { value=runserver(:gift_items_qy:cc + ' ' + :gift_items_qy:ccname); }
-		g_amt "report/table-cell" { value=runserver(:gift_items_qy:item_amt); font=courier; align=right; }
+		g_desc "report/table-cell" { value=runserver(:gift_items_qy:cc + ' ' + :gift_items_qy:ccname + condition(:gift_items_qy:a_is_cash = 0, '\n' + :gift_items_qy:a_comment, '')); }
+		g_amt "report/table-cell" { value=runserver(:gift_items_qy:show_amt); font=courier; align=right; }
 		g_anon "report/table-cell" { value=runserver(condition(:gift_items_qy:a_confidential, 'Anon', '-')); align=center; }
 		g_pers "report/table-cell" { value=runserver(condition(:gift_items_qy:a_non_tax_deductible, 'NonDed', '-')); align=center; }
 		}
@@ -554,7 +563,7 @@ annual_statement "system/report"
 		s_goods "report/table-cell" { value=runserver(:gifts_qy:disp_goods_total); font=courier; style=bold; align=right; }
 		s_ckno "report/table-cell" { value=runserver(''); font=courier; }
 		s_desc "report/table-cell" { value=runserver(:stmt_start_period_qy:a_period_desc + ' - ' + :stmt_end_period_qy:a_period_desc); }
-		s_amt "report/table-cell" { value=runserver(:gift_items_qy:disp_item_total); font=courier; align=right; style=bold; }
+		s_amt "report/table-cell" { value=runserver('' + :gift_items_qy:disp_item_total + condition(:gift_items_qy:disp_item_nc = 1, ' + noncash', '')); font=courier; align=right; style=bold; }
 		s_anon "report/table-cell" { value=runserver(''); align=center; }
 		s_pers "report/table-cell" { value=runserver(''); align=center; }
 		}
@@ -568,12 +577,12 @@ annual_statement "system/report"
 	    fontsize=10;
 
 	    s_d0 "report/data" { value=runserver("-- Year-to-Date " + datepart(year, :end_period_qy:a_end_date) + " --\nGifts through " + :stmt_end_period_qy:a_period_desc + ":"); }
-	    s_d0b "report/data" { value=runserver(isnull(:gift_items_qy:item_total,'none')); xpos=24; }
+	    s_d0b "report/data" { value=runserver(isnull('' + :gift_items_qy:item_total + condition(:gift_items_qy:item_nc = 1, ' + noncash', ''), 'none')); xpos=24; }
 	    s_d1 "report/data" { value=runserver("\nGoods Provided in Return for Gifts:\t" + isnull(:gifts_qy:goods_total,'none') + "\n"); }
-	    s_d2 "report/data" { value=runserver("Non-Tax Deductible Designations:\t" + isnull(:gift_items_qy:item_nontaxded_total, 'none') + "\n"); }
+	    s_d2 "report/data" { value=runserver("Non-Tax Deductible Designations:\t" + isnull(:gift_items_qy:item_nontaxded_total + condition(:gift_items_qy:item_nontaxded_nc = 1, ' + noncash', ''), 'none') + "\n"); }
 	    s_d3 "report/data" { value=runserver("\n"); }
 	    s_d4 "report/data" { value=runserver("Deductible Total, " + :stmt_end_period_qy:a_period_desc + ":"); }
-	    s_d4b "report/data" { value=runserver(isnull(:gift_items_qy:item_taxded_total - :gifts_qy:goods_total2, 'none')); xpos=24; }
+	    s_d4b "report/data" { value=runserver(isnull('' + (:gift_items_qy:item_taxded_total - :gifts_qy:goods_total2) + condition(:gift_items_qy:item_taxded_nc = 1, ' + noncash', ''), 'none')); xpos=24; }
 
 	    s_d5 "report/data" { fontsize=8; style=italic; value=runserver("\n\nUnless otherwise stated, no goods or services have been received by the donor in return for the gifts indicated.  Gifts which are not tax-deductible are marked as NonDed.  Anonymous and Confidential gifts are marked Anon.  All contributions received by " + :office_qy:p_org_name + " for ministries and projects under its control are income tax-deductible."); }
 	    }
