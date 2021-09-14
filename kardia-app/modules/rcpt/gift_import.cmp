@@ -1810,7 +1810,7 @@ gift_import "widget/component-decl"
 			    a_amount = sum(:i_eg_gift_amount),
 			    a_posted = 0,
 			    a_posted_to_gl = 0,
-			    a_gift_type = condition(:i_eg_gift_pmt_type == 'ACH', 'E', 'D'),
+			    a_gift_type = condition(:i_eg_gift_pmt_type == 'ACH', 'E', condition(:i_eg_gift_pmt_type == 'Paypal', 'P', 'D')),
 			    a_receipt_number = '', -- to be assigned later
 			    p_donor_partner_id = :p_donor_partner_key,
 			    a_receipt_sent = 0,
