@@ -17,7 +17,9 @@ donation_summary "system/report"
     // Parameters for GL Fund Balance
     ledger "report/parameter" { type=string; default=null; }
     period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    batch "report/parameter" { type=integer; default=null; }
     unposted "report/parameter" { type=integer; default=0; }
+    discrep_detail "report/parameter" { type=integer; default=0; }
 
     ledger_qy "report/query"
 	{
@@ -40,7 +42,9 @@ donation_summary "system/report"
 			code = :g:a_cost_center + '.' + :g:a_account_code,
 			txt = isnull(:c:a_cc_desc + ' / ' + :a:a_acct_desc, '**INVALID**'),
 			:g:a_cost_center,
-			:g:a_account_code
+			:g:a_account_code,
+			:g:a_ledger_number,
+			:g:a_period
 		from
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g,
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
@@ -48,6 +52,7 @@ donation_summary "system/report"
 		where
 			:g:a_ledger_number = :this:ledger and
 			:g:a_period = :this:period and
+			" + condition(:this:batch is not null, ":g:a_batch_number = :this:batch and", "") + "
 			:c:a_cost_center =* :g:a_cost_center and
 			:c:a_ledger_number =* :g:a_ledger_number and
 			:a:a_ledger_number =* :g:a_ledger_number and
@@ -76,6 +81,7 @@ donation_summary "system/report"
 		where
 			:g:a_ledger_number = :this:ledger and
 			:g:a_period = :this:period and
+			" + condition(:this:batch is not null, ":g:a_batch_number = :this:batch and", "") + "
 			:b:a_ledger_number =* :g:a_ledger_number and
 			:b:a_batch_number =* :g:a_batch_number
 		group by
@@ -95,6 +101,7 @@ donation_summary "system/report"
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t
 		where
 			:t:a_ledger_number = :this:ledger and
+			" + condition(:this:batch is not null, ":t:a_batch_number = :this:batch and", "") + "
 			:t:a_origin = 'CR' and
 			:t:a_period = :this:period and
 			:t:a_cost_center = :gifts_qy:a_cost_center and
@@ -113,6 +120,7 @@ donation_summary "system/report"
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t
 		where
 			:t:a_ledger_number = :this:ledger and
+			" + condition(:this:batch is not null, ":t:a_batch_number = :this:batch and", "") + "
 			:t:a_origin = 'CR' and
 			:t:a_period = :this:period and
 			(charindex('Gifts deposited', :t:a_comment) < 1) and
@@ -121,6 +129,59 @@ donation_summary "system/report"
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		");
 	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
+	}
+
+    // Used to display detail when a discrepancy exists between GL and CR
+    glccdetail_qy "report/query"
+	{
+	sql = runserver("
+		select
+			total = isnull(sum(:a_amount), $0.00)
+			:t:a_cost_center,
+			:t:a_account_code,
+			:t:a_ledger_number,
+			:t:a_batch_number,
+			:t:a_period
+		from
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		where
+			:t:a_ledger_number = :gifts_qy:a_ledger_number and
+			" + condition(:this:batch is not null, ":t:a_batch_number = :this:batch and", "") + "
+			:t:a_origin = 'CR' and
+			:t:a_period = :this:period and
+			:t:a_cost_center = :gifts_qy:a_cost_center and
+			:t:a_account_code = :gifts_qy:a_account_code
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+		group by
+			:t:a_batch_number
+		");
+	}
+
+    // Used to display detail when a discrepancy exists between GL and CR
+    ccdetail_qy "report/query"
+	{
+	sql = runserver("
+		select
+			cnt = count(:a_amount),
+			total = isnull(sum(:a_amount), $0.00),
+			:g:a_cost_center,
+			:g:a_account_code,
+			:g:a_batch_number,
+			:g:a_gift_number,
+			:g:a_receipt_number
+		from
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g
+		where
+			:g:a_ledger_number = :glccdetail_qy:a_ledger_number and
+			:g:a_period = :glccdetail_qy:a_period and
+			:g:a_cost_center = :glccdetail_qy:a_cost_center and
+			:g:a_account_code = :glccdetail_qy:a_account_code and
+			:g:a_batch_number = :glccdetail_qy:a_batch_number and
+			" + condition(:this:batch is not null, ":g:a_batch_number = :this:batch and", "") + "
+		group by
+			:g:a_gift_number
+		");
+	sum_total "report/aggregate" { compute="sum(:total)"; }
 	}
 
 //    gifts2_qy "report/query"
@@ -303,7 +364,15 @@ donation_summary "system/report"
 
 		d_acode "report/table-cell" { value=runserver(:gifts_qy:a_cost_center); align=left; }
 		d_ccode "report/table-cell" { value=runserver(:gifts_qy:a_account_code); align=left; }
-		d_desc "report/table-cell" { value=runserver(:gifts_qy:txt); align=left; font=helvetica; }
+		d_desc "report/table-cell"
+		    {
+		    descdata "report/data"
+			{
+			value=runserver(:gifts_qy:txt);
+			align=left;
+			font=helvetica;
+			}
+		    }
 		d_cnt "report/table-cell" { value=runserver(:gifts_qy:cnt); align=right; }
 		d_gift "report/table-cell" { value=runserver(:gifts_qy:total); align=right; }
 		d_gl "report/table-cell" { value=runserver(:gl_qy:total); align=right; }
