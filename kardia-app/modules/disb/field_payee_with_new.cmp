@@ -1,0 +1,66 @@
+$Version=2$
+field_payee_with_new "widget/component-decl"
+    {
+    width=340;
+    height=20;
+
+    field "widget/parameter" { type=string; default="p_partner_key"; }
+    label "widget/parameter" { type=string; default="Partner"; }
+    label_width "widget/parameter" { type=integer; default=100; }
+    object_name "widget/parameter" { type=string; }
+    ledger "widget/parameter" { type=string; deploy_to_client=yes; }
+
+    form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    expose_events_for = partner_key;
+    expose_actions_for = partner_key;
+    expose_properties_for = partner_key;
+    apply_hints_to = partner_key;
+    
+    hbox "widget/hbox"
+	{
+	x=0; y=0;
+	width=340;
+	height=20;
+	spacing=5;
+
+	partner_key "widget/component"
+	    {
+	    width=290;
+	    path="/apps/kardia/modules/base/editbox_table.cmp";
+	    form=form;
+	    field=runserver(:this:field);
+	    text=runserver(:this:label + ':');
+	    label_width=runserver(:this:label_width);
+	    popup_width=480;
+	    popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key + condition(isnull(:d:p_allow_payments,0) = 1, ' [PAYEE]', ''), '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl, /apps/kardia/data/Kardia_DB/p_payee/rows d where :p:p_partner_key *= :pl:p_partner_key and :d:p_partner_key =* :p:p_partner_key";
+	    search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+	    key_name="p_partner_key";
+	    object_name=runserver(isnull(:this:object_name, :this:label));
+	    popup_text=runserver("Select a " + isnull(:this:object_name, :this:label));
+
+	    hints "widget/hints" { style=applyonchange; }
+	    }
+
+	addnew "widget/textbutton" 
+	    {
+	    width=50;
+	    height=20;
+	    y=2;
+	    text="New";
+
+	    addnew_cn "widget/connector"
+		{
+		event=Click;
+		target=field_payee_with_new;
+		action=Launch;
+		Width=844;
+		Height=600;
+		Source="/apps/kardia/modules/base/new_partner.app";
+		return_to=partner_key;
+		set_payee=1;
+		ledger=runclient(:ledger:value);
+		}
+	    }
+	}
+    }
