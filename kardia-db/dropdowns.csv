@@ -1,10 +1,9 @@
 table,Value,Text,Description,AltField
-_p_record_status,A,Active,,
-_p_record_status,Q,Active/QA,,
-_p_record_status,U,Unknown,,
-_p_record_status,X,Unknown,,Use U.  This here until database rebuilt
-_p_record_status,M,Merged,Two records have been merged.  This is no longer used.,
-_p_record_status,O,Obsolete,,
+_p_record_status,A,Active,Valid and Active,
+_p_record_status,Q,Active/QA,Valid but needs QA,
+_p_record_status,I,Inactive,Valid but not currently active,
+_p_record_status,M,Merged,Two records have been merged.,
+_p_record_status,O,Obsolete,No longer valid,
 _p_contact_type,E,Email,,
 _p_contact_type,F,Fax,,
 _p_contact_type,C,Cell,,
