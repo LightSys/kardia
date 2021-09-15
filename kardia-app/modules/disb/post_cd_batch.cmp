@@ -24,11 +24,14 @@ post_cd_batch "widget/component-decl"
 	sql = "	UPDATE
 			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
 		SET
-			:d:a_posted = 0
+			:d:a_posted = 0,
+			:d:a_paid_date = null,
+			:d:a_paid_by = null
 		WHERE
 			:d:a_batch_number = :parameters:a_batch_number and
 			:d:a_ledger_number = :parameters:a_ledger_number and
-			:d:a_period = :parameters:a_period";
+			:d:a_period = :parameters:a_period
+		";
 
 	end_unpost "widget/connector"
 	    { 
@@ -64,11 +67,42 @@ post_cd_batch "widget/component-decl"
 	sql = "	UPDATE
 			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
 		SET
-			:d:a_posted = 1
+			:d:a_posted = 1,
+			:d:a_paid_date = :d:a_effective_date,
+			:d:a_paid_by = user_name()
 		WHERE
 			:d:a_batch_number = :parameters:a_batch_number and
 			:d:a_ledger_number = :parameters:a_ledger_number and
-			:d:a_period = :parameters:a_period";
+			:d:a_period = :parameters:a_period
+		;
+
+		-- Mark payees via p_payee as 'payments allowed'.
+		insert
+		    /apps/kardia/data/Kardia_DB/p_payee/rows
+		select
+		    p_partner_key = :d:a_payee_partner_key,
+		    a_gl_ledger_number = :d:a_ledger_number,
+		    p_allow_payments = 1,
+		    s_date_created=getdate(),
+		    s_created_by=user_name(),
+		    s_date_modified=getdate(),
+		    s_modified_by=user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+		where
+		    :d:a_ledger_number = :parameters:a_ledger_number and
+		    :d:a_batch_number = :parameters:a_batch_number and
+		    :d:a_period = :parameters:a_period
+		group by
+		    :d:a_payee_partner_key
+		on duplicate
+		    :a_gl_ledger_number,
+		    :p_partner_key
+		update set
+		    :p_allow_payments = 1,
+		    :s_date_modified=getdate() IF MODIFIED,
+		    :s_modified_by=user_name() IF MODIFIED
+		";
 
 	end_post "widget/connector"
 	    { 
@@ -107,7 +141,18 @@ post_cd_batch "widget/component-decl"
 			:t:a_batch_number = :parameters:a_batch_number and
 			:t:a_origin = 'CD' and
 			:a_ledger_number = :parameters:a_ledger_number and
-			:t:a_period = :parameters:a_period";
+			:t:a_period = :parameters:a_period
+		;
+
+		UPDATE
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
+		SET
+			:c:a_posted_to_gl = 0
+		WHERE
+			:c:a_batch_number = :parameters:a_batch_number and
+			:c:a_ledger_number = :parameters:a_ledger_number and
+			:c:a_period = :parameters:a_period
+		";
 
 	end_glunpost "widget/connector"
 	    { 

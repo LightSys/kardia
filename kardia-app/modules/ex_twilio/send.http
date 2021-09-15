@@ -1,0 +1,19 @@
+$Version=2$
+send "application/http"
+    {
+    // Pre-set parameters
+    Body "http/parameter" { type=string; source=param; usage=post; }
+    To "http/parameter" { type=string; source=param; usage=post; }
+    From "http/parameter" { type=string; source=param; usage=post; default=runserver( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'ExTwilioFrom') ); }
+
+    // Connection information
+    server = "api.twilio.com";
+    path = runserver("/2010-04-01/Accounts/" + (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'ExTwilioASID') + '/Messages.json');
+    username=runserver( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'ExTwilioASID') );
+    password=runserver( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'ExTwilioAuth') );
+    protocol = "https";
+    method = POST;
+    allowsubdirs = 0;
+    cache_max_ttl = 86400000;
+    cache_min_ttl = 3600000;
+    }

@@ -38,6 +38,8 @@ popover_addtrack "widget/component-decl"
 		    :sr:e_req_whom,
 		    :sr:e_req_doc_type_id,
 		    :sr:e_req_waivable,
+		    :sr:e_is_active,
+		    :sr:e_req_sequence,
 		    s_date_created = getdate(),
 		    s_created_by = user_name(),
 		    s_date_modified = getdate(),

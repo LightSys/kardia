@@ -1,0 +1,367 @@
+$Version=2$
+liabilities "system/report"
+    {
+    title = "GL Liabilities";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Parameters for GL Liabilities
+    ledger "report/parameter" { type=string; default=null; }
+    costctr "report/parameter" { type=string; default=null; }
+    ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    unposted "report/parameter" { type=integer; default=0; }
+    zero "report/parameter" { type=integer; default=0; }
+    byperiod "report/parameter" { type=integer; default=0; }
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    // This gets the description of the provided end_period as well
+    // as the first period in the year that the end_period is in.
+    period_qy "report/query"
+	{
+	sql = "select :p:a_period_desc, first_period = min(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
+	}
+
+
+    // Query to list accrued liabilities during the period
+    accrued_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:t:a_account_code,
+			:t:a_cost_center,
+			:t:a_origin,
+			:t:a_period,
+			minp = min(:t:a_period),
+			maxp = max(:t:a_period),
+			:a:a_acct_desc,
+			total = $0 - isnull(sum(:t:a_amount), $0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		WHERE
+			:t:a_ledger_number = :this:ledger and
+			:t:a_period >= :this:ref_period and
+			:t:a_period <= :this:end_period and
+			:t:a_transaction_type != 'B' and
+			:t:a_account_code >= '2000' and
+			:t:a_account_code <= '2999' and
+			:a:a_ledger_number = :t:a_ledger_number and
+			:a:a_account_code = :t:a_account_code and
+			:t:a_amount < $0
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+			" + condition(:this:costctr is null, "", "and :t:a_cost_center = :this:costctr") + "
+		GROUP BY
+			:t:a_cost_center, :t:a_account_code, " + condition(:this:byperiod, ":t:a_period, ", "") + ":t:a_origin
+		");
+
+	all_sum_c "report/aggregate" { compute="sum(:total)"; reset=0; }
+	}
+
+    // Query to list paid-down liabilities during the period
+    paid_qy "report/query"
+	{
+	sql = runserver("
+		SELECT
+			:t:a_account_code,
+			:t:a_cost_center,
+			:t:a_origin,
+			:t:a_period,
+			minp = min(:t:a_period),
+			maxp = max(:t:a_period),
+			:a:a_acct_desc,
+			total = isnull(sum(:t:a_amount), $0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		WHERE
+			:t:a_ledger_number = :this:ledger and
+			:t:a_period >= :this:ref_period and
+			:t:a_period <= :this:end_period and
+			:t:a_transaction_type != 'B' and
+			:t:a_account_code >= '2000' and
+			:t:a_account_code <= '2999' and
+			:a:a_ledger_number = :t:a_ledger_number and
+			:a:a_account_code = :t:a_account_code and
+			:t:a_amount > $0
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+			" + condition(:this:costctr is null, "", "and :t:a_cost_center = :this:costctr") + "
+		GROUP BY
+			:t:a_cost_center, :t:a_account_code, " + condition(:this:byperiod, ":t:a_period, ", "") + ":t:a_origin
+		");
+
+	all_sum_c "report/aggregate" { compute="sum(:total)"; reset=0; }
+	}
+
+
+    // Query to get Liability balances
+    liabs_qy "report/query"
+	{
+	sql = runserver("	
+		DECLARE OBJECT info;
+
+		SELECT
+			:info:zero = :this:zero
+		;
+
+		SELECT
+			total = $0 - isnull(sum(:t:a_amount), $0),
+			pre_total = $0 - isnull(sum(condition(:t:a_period < :this:ref_period or :t:a_transaction_type = 'B', :t:a_amount, $0)), $0),
+			:t:a_account_code,
+			:t:a_cost_center,
+			:a:a_acct_desc,
+			:a:a_parent_account_code
+		FROM
+			/apps/kardia/data/Kardia_DB/a_account/rows a,
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:a:a_ledger_number = :this:ledger and
+			:a:a_account_code = :t:a_account_code and
+			:t:a_ledger_number = :this:ledger and
+			:t:a_period >= :period_qy:first_period and
+			:t:a_period <= :this:end_period and
+			:a:a_account_code >= '2000' and
+			:a:a_account_code <= '2999'
+			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+			" + condition(:this:costctr is null, "", "and :t:a_cost_center = :this:costctr") + "
+		GROUP BY
+			:t:a_cost_center, :t:a_account_code
+		HAVING
+			:info:zero or :total != $0 or :pre_total != $0
+		");
+
+	total_sum1 "report/aggregate" { compute="sum(:total)"; }
+	total_sum2 "report/aggregate" { compute="sum(:total)"; }
+	total_sum3 "report/aggregate" { compute="sum(:total)"; }
+	total_sum4 "report/aggregate" { compute="sum(:total)"; }
+
+	pre_total_sum1 "report/aggregate" { compute="sum(:pre_total)"; }
+	pre_total_sum2 "report/aggregate" { compute="sum(:pre_total)"; }
+	pre_total_sum3 "report/aggregate" { compute="sum(:pre_total)"; }
+	pre_total_sum4 "report/aggregate" { compute="sum(:pre_total)"; }
+
+	all_sum_b "report/aggregate" { compute="sum(:pre_total)"; reset=0; }
+	all_sum_c "report/aggregate" { compute="sum(:total)"; reset=0; }
+	}
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy, period_qy;
+
+	// Report header
+	rpt_title "report/area"
+	    {
+	    x=0; width=80; height=3;
+	    font=helvetica;
+	    align=center;
+	    t_d1 "report/data" { value = runserver("GL Liabilities for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d2 "report/data" { value = runserver("For periods " + :this:ref_period + " through " + :this:end_period + "\n"); }
+	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    }
+
+	// Accrued hdr
+	rpt_accrued "report/area" { x=0; width=80; height=1; font=helvetica; style=bold; value="\nLiabilities Accrued:"; }
+
+	// Detail area
+	atable "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=6;
+	    widths=8,8,29,10,10,10;
+	    colsep=1;
+	    source=accrued_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    atbl_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=8;
+		header=yes;
+		bottomborder=0.05;
+		ha_cc "report/table-cell" { value='Fund'; align=center; style=bold; }
+		ha_acct "report/table-cell" { value='Liab Acct'; align=center; style=bold; }
+		ha_desc "report/table-cell" { value='Liab Description'; align=center; style=bold; }
+		ha_period "report/table-cell" { value=runserver('When'); align=center; style=bold; }
+		ha_origin "report/table-cell" { value=runserver('Via'); align=center; style=bold; }
+		ha_amount "report/table-cell" { value=runserver('Accrued'); align=center; style=bold; }
+		}
+
+	    atbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+		da_fund "report/table-cell" { value=runserver(:accrued_qy:a_cost_center); align=left; }
+		da_acct "report/table-cell" { value=runserver(:accrued_qy:a_account_code); align=left; }
+		da_desc "report/table-cell" { font=helvetica; value=runserver(:accrued_qy:a_acct_desc); align=left; }
+		da_when "report/table-cell" { font=helvetica; value=runserver(condition(:accrued_qy:minp == :accrued_qy:maxp, :accrued_qy:minp, :accrued_qy:minp + '-' + :accrued_qy:maxp)); align=left; }
+		da_origin "report/table-cell" { value=runserver(condition(:accrued_qy:a_origin = 'PP', 'Payroll', condition(:accrued_qy:a_origin = 'CD', 'Disbursements', condition(:accrued_qy:a_origin = 'GL', 'Journal Entry', :accrued_qy:a_origin)))); align=left; font=helvetica; }
+		da_cur "report/table-cell" { value=runserver(condition(:accrued_qy:total == $0, '-0-   ', :accrued_qy:total)); align=right; }
+		}
+
+	    atbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		sa_fund "report/table-cell" { value=''; align=left; style=bold; }
+		sa_acct "report/table-cell" { value=''; align=left; style=bold; }
+		sa_desc "report/table-cell" { font=helvetica; value=''; align=right; style=bold; }
+		sa_when "report/table-cell" { font=helvetica; value=''; align=right; style=bold; }
+		sa_origin "report/table-cell" { value='TOTAL:'; align=right; style=bold; }
+		sa_cur "report/table-cell" { value=runserver(condition(:accrued_qy:all_sum_c == $0, '-0-   ', :accrued_qy:all_sum_c)); align=right; style=bold; }
+		}
+	    }
+
+	// Paid hdr
+	rpt_paid "report/area" { x=0; width=80; height=1; font=helvetica; style=bold; value="\n\n\nLiabilities Paid:"; }
+
+	// Detail area
+	ptable "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=6;
+	    widths=8,8,29,10,10,10;
+	    colsep=1;
+	    source=paid_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    ptbl_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=8;
+		header=yes;
+		bottomborder=0.05;
+		hp_fund "report/table-cell" { value='Fund'; align=center; style=bold; }
+		hp_acct "report/table-cell" { value='Liab Acct'; align=center; style=bold; }
+		hp_desc "report/table-cell" { value='Liab Description'; align=center; style=bold; }
+		hp_period "report/table-cell" { value=runserver('When'); align=center; style=bold; }
+		hp_origin "report/table-cell" { value=runserver('Via'); align=center; style=bold; }
+		hp_amount "report/table-cell" { value=runserver('Paid'); align=center; style=bold; }
+		}
+
+	    ptbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+		dp_fund "report/table-cell" { value=runserver(:paid_qy:a_cost_center); align=left; }
+		dp_acct "report/table-cell" { value=runserver(:paid_qy:a_account_code); align=left; }
+		dp_desc "report/table-cell" { font=helvetica; value=runserver(:paid_qy:a_acct_desc); align=left; }
+		dp_when "report/table-cell" { font=helvetica; value=runserver(condition(:paid_qy:minp == :paid_qy:maxp, :paid_qy:minp, :paid_qy:minp + '-' + :paid_qy:maxp)); align=left; }
+		dp_origin "report/table-cell" { value=runserver(condition(:paid_qy:a_origin = 'PP', 'Payroll', condition(:paid_qy:a_origin = 'CD', 'Disbursements', condition(:paid_qy:a_origin = 'GL', 'Journal Entry', :paid_qy:a_origin)))); align=left; font=helvetica; }
+		dp_cur "report/table-cell" { value=runserver(condition(:paid_qy:total == $0, '-0-   ', :paid_qy:total)); align=right; }
+		}
+
+	    ptbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		sp_fund "report/table-cell" { value=''; align=left; style=bold; }
+		sp_acct "report/table-cell" { value=''; align=left; style=bold; }
+		sp_desc "report/table-cell" { font=helvetica; value=''; align=right; style=bold; }
+		sp_when "report/table-cell" { font=helvetica; value=''; align=right; style=bold; }
+		sp_origin "report/table-cell" { value='TOTAL:'; align=right; style=bold; }
+		sp_cur "report/table-cell" { value=runserver(condition(:paid_qy:all_sum_c == $0, '-0-   ', :paid_qy:all_sum_c)); align=right; style=bold; }
+		}
+	    }
+
+	// Liab hdr
+	rpt_liab "report/area" { x=0; width=80; height=1; font=helvetica; style=bold; value="\n\n\nLiabilities Balances:"; }
+
+	// Detail area
+	ltable "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=6;
+	    widths=8,8,29,10,10,10;
+	    colsep=1;
+	    source=liabs_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+
+	    ltbl_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=8;
+		header=yes;
+		bottomborder=0.05;
+		h_fund "report/table-cell" { value='Fund'; align=center; style=bold; }
+		h_acct "report/table-cell" { value='Liab Acct'; align=center; style=bold; }
+		h_desc "report/table-cell" { value='Liab Description'; align=center; style=bold; }
+		h_bbal "report/table-cell" { value=runserver('Begin ' + :this:ref_period); align=center; style=bold; }
+		h_chg "report/table-cell" { value='Change'; align=center; style=bold; }
+		h_cur "report/table-cell" { value=runserver('End ' + :this:end_period); align=center; style=bold; }
+		}
+
+	    ltbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+		d_fund "report/table-cell" { value=runserver(:liabs_qy:a_cost_center); align=left; }
+		d_acct "report/table-cell" { value=runserver(:liabs_qy:a_account_code); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:liabs_qy:a_acct_desc); align=left; }
+		d_bbal "report/table-cell" { value=runserver(condition(:liabs_qy:pre_total == $0, '-0-   ', :liabs_qy:pre_total)); align=right; }
+		d_chg "report/table-cell" { value=runserver(condition((:liabs_qy:total - :liabs_qy:pre_total) == $0, '-0-   ', (:liabs_qy:total - :liabs_qy:pre_total))); align=right; }
+		d_cur "report/table-cell" { value=runserver(condition(:liabs_qy:total == $0, '-0-   ', :liabs_qy:total)); align=right; }
+		}
+
+	    ltbl_sum "report/table-row"
+		{
+		summary=yes;
+		summarize_for = runserver(:liabs_qy:a_parent_account_code);
+		font=courier;
+		fontsize=8;
+		topborder=0.05;
+		//bottomborder=0.05;
+		marginbottom=0.5;
+		s_fund "report/table-cell" { value=''; align=left; style=bold; }
+		s_acct "report/table-cell" { value=''; align=left; style=bold; }
+		s_desc "report/table-cell" { font=helvetica; value=runserver("SUBTOTAL ==>"); align=right; style=bold; }
+		s_beg "report/table-cell" { value=runserver(condition(:liabs_qy:pre_total_sum2 == $0, '-0-   ', :liabs_qy:pre_total_sum1)); align=right; style=bold; }
+		s_chg "report/table-cell" { value=runserver(condition((:liabs_qy:total_sum3 - :liabs_qy:pre_total_sum3) == $0, '-0-   ', (:liabs_qy:total_sum4 - :liabs_qy:pre_total_sum4))); align=right; style=bold; }
+		s_cur "report/table-cell" { value=runserver(condition(:liabs_qy:total_sum2 == $0, '-0-   ', :liabs_qy:total_sum1)); align=right; style=bold; }
+		}
+
+	    ltbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		//bottomborder=0.05;
+		//marginbottom=1.0;
+		s2_fund "report/table-cell" { value=''; align=left; style=bold; }
+		s2_acct "report/table-cell" { value=''; align=left; style=bold; }
+		s2_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL LIABILITIES ==>"); align=right; style=bold; }
+		s2_bbal "report/table-cell" { value=runserver(condition(:liabs_qy:all_sum_b == $0, '-0-   ', :liabs_qy:all_sum_b)); align=right; style=bold; }
+		s2_chg "report/table-cell" { value=runserver(condition((:liabs_qy:all_sum_c - :liabs_qy:all_sum_b) == $0, '-0-   ', (:liabs_qy:all_sum_c - :liabs_qy:all_sum_b))); align=right; style=bold; }
+		s2_cur "report/table-cell" { value=runserver(condition(:liabs_qy:all_sum_c == $0, '-0-   ', :liabs_qy:all_sum_c)); align=right; style=bold; }
+		}
+	    }
+	}
+    }

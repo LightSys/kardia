@@ -3,12 +3,13 @@ plugin_crm_search_lists "widget/component-decl"
     {
     stage_label = "List Membership";
     stage_short_label = "List";
-    stage_description_expr = "isnull((select condition(isnull(:param:searchtype, 'M') == 'M', isnull('List Code(s): ' + (:param:incl_lists - ',') + ', ', ''), condition(:param:searchtype == 'A', 'On Any List, ', 'On No Lists, ')) + isnull('Added After: ' + substring(convert(string,:param:start),1,12) + ', ', '') + isnull('Added Before: ' + substring(convert(string,:param:end),1,12) + ', ', '') + isnull('Added By User: ' + :param:adduser + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
+    stage_description = "Mailings received and Mailing List Subscriptions";
+    stage_description_expr = "isnull((select condition(isnull(:param:searchtype, 'M') == 'M', isnull('List Code(s): ' + (:param:incl_lists - ',') + ', ', ''), condition(:param:searchtype == 'A', 'On Any List, ', 'On No Lists, ')) + isnull('Status: ' + :param:membstat + ', ', '') + isnull('Added After: ' + substring(convert(string,:param:start),1,12) + ', ', '') + isnull('Added Before: ' + substring(convert(string,:param:end),1,12) + ', ', '') + isnull('Added By User: ' + :param:adduser + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
     stage_type = "LST";
     icon = "/apps/kardia/images/icons/openiconic-envelope-closed.svg";
     sequence = 17;
     width=410;
-    height=108;
+    height=136;
 
     criteria_osrc "widget/parameter" { type=object; }
     criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
@@ -17,7 +18,7 @@ plugin_crm_search_lists "widget/component-decl"
     param_vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=410; height=108;
+	width=410; height=136;
 	spacing=4;
 
 	searchtype "widget/component"
@@ -56,6 +57,22 @@ plugin_crm_search_lists "widget/component-decl"
 	    form=criteria_params_form;
 	    multiselect=1;
 	    listcode_hints "widget/hints" { style=applyonchange; }
+	    }
+
+	f_membstat_dd "widget/component"
+	    {
+	    height = 24;
+	    path = "/sys/cmp/smart_field.cmp";
+	    label_width=150;
+	    width=400;
+	    text = "Membership:";
+	    field = "membstat";
+	    ctl_type = dropdown;
+	    sql = "select label='Active Only (DEFAULT)', value='A', sel=1; select label='Active or Pending', value='AP', sel=0; select label='Canceled, Expired, or Deleted', value='CED', sel=0; select label='Canceled', value='C', sel=0; select label='Expired', value='E', sel=0; select label='Deleted', value='D', sel=0";
+	    invalid_select_default = yes;
+	    form=criteria_params_form;
+
+	    ms_hints "widget/hints" { style=notnull; default=runclient('A'); }
 	    }
 
 	//comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=comment; height=24; width=300; label_width=150; form=criteria_params_form; text="Comment Contains:"; comm_hints "widget/hints" { style=strnull; } }

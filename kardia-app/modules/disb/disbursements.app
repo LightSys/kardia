@@ -2,12 +2,13 @@ $Version=2$
 disbursements "widget/page"
     {
     title = "Cash Disbursements - Checking";
-    width=800;
+    width=900;
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     require_one_endorsement = "kardia:disb_manage","kardia:disb_entry";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+    max_requests = 3;
 	
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     batch "widget/parameter" { type=integer; default=null; }
@@ -27,7 +28,7 @@ disbursements "widget/page"
     checking_cmp "widget/component"
 	{
 	path = "/apps/kardia/modules/disb/cashdisb_subform.cmp";
-	x=10; y=10; width=780;height=580;
+	x=10; y=10; width=880;height=580;
 	ledger = runserver(:this:ledger);
 	external_itself=disbursements;
 	}

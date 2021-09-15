@@ -1,0 +1,28 @@
+$Version=2$
+label_pane "widget/component-decl"
+    {
+    width=900;
+    height=26;
+
+    text "widget/parameter" { type=string; default=''; deploy_to_client=yes; }
+
+    pane "widget/pane"
+	{
+	x=0; y=0;
+	height=26;
+	width=900;
+	style=flat;
+	background = "/apps/kardia/images/bg/lsblue_gradient.png";
+	border_radius = 6;
+
+	label "widget/label"
+	    {
+	    x=9; y=2;
+	    width=882;
+	    height=18;
+	    style=bold;
+	    font_size=18;
+	    value=runclient(:text:value);
+	    }
+	}
+    }

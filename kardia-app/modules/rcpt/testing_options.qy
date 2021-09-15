@@ -1,0 +1,15 @@
+$Version=2$
+update_descriptives "system/query"
+    {
+        sql = "
+            select *
+            from 
+            /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows
+            where 
+            :a_is_extra = 1
+
+            
+
+        ";
+
+    }

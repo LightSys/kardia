@@ -14,19 +14,11 @@ admin_types "widget/component-decl"
 	    {
 	    width=250; spacing=8;
 
-	    searchlbl_pane "widget/pane"
+	    search_hdr "widget/component"
 		{
-		height=20; width=250;
-		widget_class="label";
-		border_color = "#153f5f";
-
-		searchlbl "widget/label"
-		    {
-		    x=4;y=0;width=248;height=18;
-		    widget_class="label";
-		    align=left;
-		    text = "Search Admin Fee Types";
-		    }
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		height = 20;
+		text = "Search Admin Fee Types:";
 		}
 
 	    searcheb "widget/editbox"
@@ -88,20 +80,13 @@ admin_types "widget/component-decl"
 
 	    sp1 "widget/autolayoutspacer" { height=2; }
 
-	    sublbl_pane "widget/pane"
+	    sub_hdr "widget/component"
 		{
-		height=20; width=250;
-		widget_class="label";
-		border_color = "#153f5f";
-
-		sublbl "widget/label"
-		    {
-		    x=4;y=0;width=248;height=18;
-		    widget_class="label";
-		    align=left;
-		    value = runclient("Subtypes" + condition(:searchlistosrc:a_admin_fee_type is null, "", " for " + :searchlistosrc:a_admin_fee_type) + ":");
-		    }
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		height = 20;
+		text = runclient("Subtypes" + condition(:searchlistosrc:a_admin_fee_type is null, "", " for " + :searchlistosrc:a_admin_fee_type) + ":");
 		}
+
 	    sublistpane "widget/pane"
 		{
 		height=152;
@@ -177,19 +162,11 @@ admin_types "widget/component-decl"
 		{
 		width=514; spacing=8;
 
-		adlbl_pane "widget/pane"
+		ad_hdr "widget/component"
 		    {
-		    height=20; width=514;
-		    widget_class="label";
-		    border_color = "#153f5f";
-
-		    adlbl "widget/label"
-			{
-			x=4;y=0;width=512;height=18;
-			widget_class="label";
-			align=left;
-			value = runclient("Admin Fee Settings" + condition(:sublistosrc:a_admin_fee_type is null, "", " for Type " + :sublistosrc:a_admin_fee_type + ", Subtype " + :sublistosrc:a_admin_fee_subtype) + ":");
-			}
+		    path = "/apps/kardia/modules/base/section_label.cmp";
+		    height = 20;
+		    text = runclient("Admin Fee Settings" + condition(:sublistosrc:a_admin_fee_type is null, "", " for Type " + :sublistosrc:a_admin_fee_type + ", Subtype " + :sublistosrc:a_admin_fee_subtype) + ":");
 		    }
 
 		btn_hbox "widget/hbox"
@@ -254,26 +231,18 @@ admin_types "widget/component-decl"
 
 		sp2 "widget/autolayoutspacer" { height=2; }
 
-		schedlbl_pane "widget/pane"
+		sched_hdr "widget/component"
 		    {
-		    height=20; width=514;
-		    widget_class="label";
-		    border_color = "#153f5f";
-
-		    schedlbl "widget/label"
-			{
-			x=4;y=0;width=510;height=18;
-			widget_class="label";
-			align=left;
-			value = runclient("Deduction Schedule" + condition(:sublistosrc:a_admin_fee_type is null, "", " for Type " + :sublistosrc:a_admin_fee_type + ", Subtype " + :sublistosrc:a_admin_fee_subtype) + ":");
-			}
+		    path = "/apps/kardia/modules/base/section_label.cmp";
+		    height = 20;
+		    text = runclient("Deduction Schedule" + condition(:sublistosrc:a_admin_fee_type is null, "", " for Type " + :sublistosrc:a_admin_fee_type + ", Subtype " + :sublistosrc:a_admin_fee_subtype) + ":");
 		    }
 
 		sched_pane "widget/pane"
 		    {
 		    height=313; width=514;
 		    style=raised;
-		    background="/apps/kardia/images/bg/light_bgnd2.jpg";
+		    background="/apps/kardia/images/bg/light_bgnd3.jpg";
 
 		    sched_vbox "widget/vbox"
 			{

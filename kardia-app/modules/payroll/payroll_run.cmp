@@ -107,7 +107,7 @@ payroll_run "widget/component-decl"
 	per_lbl "widget/label"
 	    {
 	    height=16;
-	    value = runclient("Period: " + isnull(:period_osrc:a_payroll_period, '(not selected)'));
+	    value = runclient("Period: " + condition(:editperiod_form:form_mode == 'New', '** NEW **', isnull(:period_osrc:a_payroll_period, '(not selected)')));
 	    }
 	}
 
@@ -179,6 +179,7 @@ payroll_run "widget/component-decl"
 
 		on_change "widget/connector"
 		    {
+		    condition = 0;
 		    event = DataFocusChanged;
 		    target=period_osrc;
 		    action=Refresh;
@@ -220,7 +221,9 @@ payroll_run "widget/component-decl"
 
 	    period_osrc "widget/osrc"
 		{
-		period_year "widget/parameter" { param_name=year; type=integer; default=runclient(:year_osrc:year); }
+		period_year "widget/parameter" { param_name=year; type=integer; }
+		period_ledger "widget/parameter" { param_name=a_ledger_number; type=string; }
+		period_group "widget/parameter" { param_name=a_payroll_group_id; type=integer; }
 		baseobj="/apps/kardia/data/Kardia_DB/a_payroll_period/rows";
 		sql = runserver("
 			select 
@@ -246,18 +249,25 @@ payroll_run "widget/component-decl"
 				a_ref_period = (select :p2:a_period from /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :p:a_ledger_number order by :p2:a_start_date limit 1), 
 				prev_period = (select :p3:a_payroll_period from /apps/kardia/data/Kardia_DB/a_payroll_period/rows p3 where :p3:a_ledger_number = :p:a_ledger_number and :p3:a_payroll_group_id = :ap:a_payroll_group_id and :p3:a_payroll_period < :ap:a_payroll_period order by :p3:a_payroll_period desc limit 1),
 				cnt = isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_payroll_item/rows i where :i:a_period = :ap:a_payroll_period and :i:a_ledger_number = :ap:a_ledger_number limit 1), 0),
-				glcnt = isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_period = :p:a_period and :t:a_origin = 'PP' and :t:a_ledger_number = :p:a_ledger_number and :t:a_batch_number = :ap:a_batch_number limit 1), 0)
+				glcnt = isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_period = :p:a_period and :t:a_origin = 'PP' and :t:a_ledger_number = :p:a_ledger_number and :t:a_batch_number = :ap:a_batch_number limit 1), 0),
+				ckcnt = isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :ap:a_checks_batch_number and :cd:a_ledger_number = :ap:a_ledger_number), 0)
 			from 
 				identity /apps/kardia/data/Kardia_DB/a_payroll_period/rows ap,
 				/apps/kardia/data/Kardia_DB/a_period/rows p
 			where 
 				:ap:a_period = :p:a_period and
 				:ap:a_ledger_number = :p:a_ledger_number and
+				:ap:a_payroll_group_id = :parameters:a_payroll_group_id and
+				:ap:a_ledger_number = :parameters:a_ledger_number and
 				:p:a_summary_only = 0 and
-				(datepart(year,:ap:a_accrual_date) = isnull(:parameters:year, datepart(year,getdate())) or
-				 datepart(year,:ap:a_start_date) = isnull(:parameters:year, datepart(year,getdate())) or
-				 datepart(year,:ap:a_end_date) = isnull(:parameters:year, datepart(year,getdate())) or
-				 datepart(year,:ap:a_pay_date) = isnull(:parameters:year, datepart(year,getdate())))
+				(datepart(year,:ap:a_accrual_date) = :parameters:year or
+				 datepart(year,:ap:a_start_date) = :parameters:year or
+				 datepart(year,:ap:a_end_date) = :parameters:year or
+				 datepart(year,:ap:a_pay_date) = :parameters:year)
+				--(datepart(year,:ap:a_accrual_date) = isnull(:parameters:year, datepart(year,getdate())) or
+				-- datepart(year,:ap:a_start_date) = isnull(:parameters:year, datepart(year,getdate())) or
+				-- datepart(year,:ap:a_end_date) = isnull(:parameters:year, datepart(year,getdate())) or
+				-- datepart(year,:ap:a_pay_date) = isnull(:parameters:year, datepart(year,getdate())))
 			group by
 				:ap:a_payroll_period
 			");
@@ -265,24 +275,37 @@ payroll_run "widget/component-decl"
 		readahead=200;
 		autoquery=never;
 
+		year_sync "widget/rule"
+		    {
+		    ruletype = "osrc_relationship";
+		    target = year_osrc;
+		    //key_objname = ap;
+		    key_1 = year;
+		    target_key_1 = year; 
+		    autoquery = true;
+		    master_null_action = norecs;
+		    }
+
 		ledger_sync "widget/rule"
 		    {
 		    ruletype = "osrc_relationship";
 		    target = ledger_osrc;
-		    key_objname = ap;
+		    //key_objname = ap;
 		    key_1 = a_ledger_number;
 		    target_key_1 = a_ledger_number;
 		    autoquery = true;
+		    master_null_action = norecs;
 		    }
 
 		group_sync "widget/rule"
 		    {
 		    ruletype = "osrc_relationship";
 		    target = group_osrc;
-		    key_objname = ap;
+		    //key_objname = ap;
 		    key_1 = a_payroll_group_id;
 		    target_key_1 = a_payroll_group_id;
 		    autoquery = true;
+		    master_null_action = norecs;
 		    }
 
 		period_form "widget/form" { }
@@ -303,12 +326,13 @@ payroll_run "widget/component-decl"
 		    row_shadow_angle=135;
 		    rowcache_size=200;
 
-		    t_payper "widget/table-column" { title="Payroll Period"; value=runclient(:period_osrc:a_payroll_period + ' - ' + :period_osrc:a_payroll_period_desc); width=270; caption_value=runclient(substring(:period_osrc:a_start_date,1,6) + ' - ' + substring(:period_osrc:a_end_date,1,6) + ';  accrued ' + substring(:period_osrc:a_accrual_date,1,6) + ';  paid ' + substring(:period_osrc:a_pay_date,1,6)); caption_textcolor="#909090"; style=bold; }
+		    t_payper "widget/table-column" { title="Payroll Period"; value=runclient(:period_osrc:a_payroll_period + ' - ' + :period_osrc:a_payroll_period_desc); width=265; caption_value=runclient(substring(:period_osrc:a_start_date,1,6) + ' - ' + substring(:period_osrc:a_end_date,1,6) + ';  accrued ' + substring(:period_osrc:a_accrual_date,1,6) + ';  paid ' + substring(:period_osrc:a_pay_date,1,6)); caption_textcolor="#909090"; style=bold; }
 		    //t_desc "widget/table-column" { title="Description"; fieldname="a_payroll_period_desc"; width=215; }
-		    t_per "widget/table-column" { title="Period"; fieldname="a_period"; caption_fieldname="a_period_desc"; caption_textcolor="#909090"; width=85; }
-		    t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=75; }
-		    t_rcnt "widget/table-column" { title="Recs?"; fieldname="cnt"; width=45; type=check; align=center; }
-		    t_glcnt "widget/table-column" { title="Post?"; fieldname="glcnt"; width=45; type=check; align=center; }
+		    t_per "widget/table-column" { title="Period"; fieldname="a_period"; caption_fieldname="a_period_desc"; caption_textcolor="#909090"; width=80; }
+		    t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=65; }
+		    //t_rcnt "widget/table-column" { title="Recs?"; fieldname="cnt"; width=45; type=check; align=center; }
+		    t_glcnt "widget/table-column" { title="Posted?"; fieldname="glcnt"; width=55; type=check; align=center; }
+		    t_ckcnt "widget/table-column" { title="Checks?"; fieldname="ckcnt"; width=55; type=check; align=center; }
 		    }
 		}
 
@@ -339,7 +363,7 @@ payroll_run "widget/component-decl"
 		spacing=4;
 
 		ttl2_lbl "widget/label" { height=16; text="Step Two:"; style=bold; }
-		desc2_lbl "widget/label" { height=44; value=runclient(condition(:editperiod_form:form_mode == 'New', "Since you've chosen to create a new payroll period, here is where you can set up your new payroll period.  If you need to update the accruals for this period later, you can return to this screen to do so.", condition(:period_osrc:glcnt > 0, "Since this payroll period has been posted, you cannot modify, update, or delete this period or its data.  Click Next to view the payroll information for this period.", "You can modify this period below, or update the balances and accruals for the payroll data for this period.  You can also delete this period entirely below."))); }
+		desc2_lbl "widget/label" { height=44; value=runclient(condition(:editperiod_form:form_mode == 'New', "Since you've chosen to create a new payroll period, here is where you can set up your new payroll period.  If you need to update the accruals for this period later, you can return to this screen to do so.", condition(:period_osrc:glcnt > 0, "Since this payroll period has been posted, you cannot modify or delete this period or its data.  Click Next to view the payroll information for this period.", "You can modify this period below, or update the balances and accruals for the payroll data for this period.  You can also delete this period entirely below."))); }
 
 		//whichperiod_lbl "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; text="Payroll Period:"; form=period_form; field=a_payroll_period_desc; ctl_type=label; label_width=160; }
 
@@ -411,7 +435,7 @@ payroll_run "widget/component-decl"
 			    width=400;
 			    sql = runserver("select label = :a_payroll_period + ' - ' + :a_payroll_period_desc, value = :a_payroll_period from /apps/kardia/data/Kardia_DB/a_payroll_period/rows where :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc");
 
-			    baseon_hints "widget/hints" { style=createonly; }
+			    baseon_hints "widget/hints" { style=createonly,notnull; }
 
 			    select_last_payper "widget/connector"
 				{
@@ -419,20 +443,36 @@ payroll_run "widget/component-decl"
 				event = DataFocusChanged;
 				action = SetItems;
 				//SQL = runclient("select label = :p:a_payroll_period + ' - ' + :p:a_payroll_period_desc, value = :p:a_payroll_period, selected = (:p:a_payroll_period == (select max(:p2:a_payroll_period) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows p2 where :p2:a_ledger_number = :p:a_ledger_number and :p2:a_payroll_period < " + quote(:period_osrc:a_payroll_period) + ")) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows p where :p:a_ledger_number = " + quote(:ledger_osrc:a_ledger_number) + " order by :p:a_start_date desc");
-				SQL = runclient("select label = :p:a_payroll_period + ' - ' + :p:a_payroll_period_desc, value = :p:a_payroll_period, selected = (:p:a_payroll_period == (select max(:p2:a_payroll_period) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows p2 where :p2:a_ledger_number = :p:a_ledger_number)) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows p where :p:a_ledger_number = " + quote(:ledger_osrc:a_ledger_number) + " order by :p:a_start_date desc");
+				SQL = runclient("select label = 'Template', value = null, selected = 0; select label = :p:a_payroll_period + ' - ' + :p:a_payroll_period_desc, value = :p:a_payroll_period, selected = (:p:a_payroll_period == (select max(:p2:a_payroll_period) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows p2 where :p2:a_ledger_number = :p:a_ledger_number)) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows p where :p:a_ledger_number = " + quote(:ledger_osrc:a_ledger_number) + " order by :p:a_start_date desc");
 				}
 			    }
 			ep_batch "widget/variable" { fieldname=a_batch_number; type=integer; }
 
 			save_create_sep "widget/autolayoutspacer" { height=8; }
 
-			save_create_btn "widget/textbutton"
+			btn_hbox "widget/hbox"
 			    {
-			    height=24; width=130; x=219;
-			    text = runclient(condition(:editperiod_form:form_mode == 'New', 'Create Period', 'Save Period'));
-			    enabled = runclient(:editperiod_form:is_savable);
+			    height=24;
+			    spacing=10;
+			    align=center;
 
-			    on_save_create "widget/connector" { event=Click; target=editperiod_form; action=Save; }
+			    save_create_btn "widget/textbutton"
+				{
+				height=24; width=130;
+				text = runclient(condition(:editperiod_form:form_mode == 'New', 'Create Period', 'Save Period'));
+				enabled = runclient(:editperiod_form:is_savable);
+
+				on_save_create "widget/connector" { event=Click; target=editperiod_form; action=Save; }
+				}
+
+			    cancel_create_btn "widget/textbutton"
+				{
+				height=24; width=130;
+				text = "Cancel";
+				enabled = runclient(:editperiod_form:is_discardable);
+
+				on_cancel_create "widget/connector" { event=Click; target=editperiod_form; action=Discard; }
+				}
 			    }
 
 			ep_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
@@ -537,7 +577,7 @@ payroll_run "widget/component-decl"
 				    :setup:groupinterval = '5'
 				;
 				select
-				    :setup:period = :setup:acctperiod + substring('ABCDEFGHIJKLMNOPQRSTUVWXYZabcde', (select count(1) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows where :a_period = :setup:acctperiod and :a_ledger_number = :parameters:ledger and :a_summary_only = 0) + 1, 1)
+				    :setup:period = :setup:acctperiod + substring('ABCDEFGHIJKLMNOPQRSTUVWXYZabcde', (select count(1) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows where :a_period = :setup:acctperiod and :a_ledger_number = :parameters:ledger) + 1, 1)
 				having
 				    :setup:groupinterval != '5'
 				;
@@ -603,7 +643,8 @@ payroll_run "widget/component-decl"
 		    readahead=1;
 		    autoquery = never;
 
-		    delete_end "widget/connector" { event=EndQuery; target=payrollcnt_osrc; action=Refresh; }
+		    //delete_end "widget/connector" { event=EndQuery; target=payrollcnt_osrc; action=Refresh; }
+		    delete_end "widget/connector" { event=EndQuery; target=period_osrc; action=RefreshObject; }
 		    }
 
 		create_recs_component "widget/component"
@@ -611,8 +652,10 @@ payroll_run "widget/component-decl"
 		    x=0; y=0; width=1; height=1;
 		    visual = no;
 		    path = "/apps/kardia/modules/payroll/init_payroll.cmp";
-		    create_end "widget/connector" { event=Initialized; target=payrollcnt_osrc; action=Refresh; }
-		    update_end "widget/connector" { event=Updated; target=payrollcnt_osrc; action=Refresh; }
+		    //create_end "widget/connector" { event=Initialized; target=payrollcnt_osrc; action=Refresh; }
+		    //update_end "widget/connector" { event=Updated; target=payrollcnt_osrc; action=Refresh; }
+		    create_end "widget/connector" { event=Initialized; target=period_osrc; action=RefreshObject; }
+		    //update_end "widget/connector" { event=Updated; target=period_osrc; action=RefreshObject; }
 		    }
 
 		//create_sep "widget/autolayoutspacer" { height=16; }
@@ -763,6 +806,13 @@ payroll_run "widget/component-decl"
 			    :p:a_payee_name,
 			    :c:a_cc_desc,
 			    cnt = count(1),
+			    :pp:a_is_fica,
+			    :pp:a_is_employee,
+			    :pp:a_is_exempt,
+			    :pp:a_is_salaried,
+			    :pp:p_country_code,
+			    :pp:p_state_province,
+			    :pp:a_comment,
 			    netpay = sum(condition(:pit:a_payroll_item_class_code == 'N', :pi:a_actual_amount, $0)),
 			    gross = sum(condition(:pit:a_payroll_item_class_code == 'G', :pi:a_actual_amount, $0)),
 			    ded = $0 - (sum(condition(:pit:a_payroll_item_class_code == 'G', :pi:a_actual_amount, $0)) - sum(condition(:pit:a_payroll_item_class_code == 'N', :pi:a_actual_amount, $0)))
@@ -771,7 +821,8 @@ payroll_run "widget/component-decl"
 			    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
 			    /apps/kardia/data/Kardia_DB/a_payroll_item/rows pi,
 			    /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows pit,
-			    /apps/kardia/data/Kardia_DB/p_partner/rows par
+			    /apps/kardia/data/Kardia_DB/p_partner/rows par,
+			    /apps/kardia/data/Kardia_DB/a_payroll_period_payee/rows pp
 			WHERE
 			    :p:a_ledger_number = :parameters:pl_a_ledger_number and
 			    :p:a_ledger_number = :c:a_ledger_number and
@@ -779,7 +830,10 @@ payroll_run "widget/component-decl"
 			    :p:a_payroll_id = :pi:a_payroll_id and
 			    :pit:a_payroll_item_type_code = :pi:a_payroll_item_type_code and
 			    :pit:a_ledger_number = :parameters:pl_a_ledger_number and
-			    :par:p_partner_key = :p:p_payee_partner_key
+			    :par:p_partner_key = :p:p_payee_partner_key and
+			    :pp:a_ledger_number = :p:a_ledger_number and
+			    :pp:a_payroll_period = :pi:a_period and
+			    :pp:a_payroll_id = :p:a_payroll_id
 			GROUP BY
 			    substring(:p:a_payee_name, charindex(' ', :p:a_payee_name) + 1, 99),
 			    :p:a_payroll_id
@@ -860,11 +914,19 @@ payroll_run "widget/component-decl"
 
 		    payee_detail "widget/table-row-detail"
 			{
-			width=544; height=32;
+			width=544; height=56;
+
+			status_label "widget/label"
+			    {
+			    x=2; y=4; height=16; width=540;
+			    fgcolor=white;
+			    align=center;
+			    value=runclient('Location: ' + :payeelist_osrc:p_country_code + ' / ' + :payeelist_osrc:p_state_province + '; Status: ' + condition(:payeelist_osrc:a_is_employee, 'Employee, ', 'Contractor, ') + condition(:payeelist_osrc:a_is_fica, 'FICA, ', 'SECA, ') + condition(:payeelist_osrc:a_is_salaried, 'Salaried, ', 'Hourly, ') + condition(:payeelist_osrc:a_is_exempt, 'WH Exempt, ', 'WH Nonexempt, ') - ', ');
+			    }
 
 			edit_btn "widget/textbutton"
 			    {
-			    x=207; y=4; width=130; height=24;
+			    x=207; y=28; width=130; height=24;
 			    text = runclient(condition(:period_osrc:glcnt > 0, "Review Payroll", "Edit Payroll"));
 			    //enabled = runclient(:payrollcnt_form:txt == 'Yes');
 			    edit_cn "widget/connector"
@@ -892,38 +954,20 @@ payroll_run "widget/component-decl"
 		    }
 		}
 
-	    search_box "widget/editbox"
+	    search_box "widget/component"
 		{
-		x=20; y=472; width=200; height=20;
+		x=20; y=472; width=226; height=22;
+		path="/apps/kardia/modules/base/field_search.cmp";
 		empty_description="search for payees";
 
-		enter_pressed_do_search "widget/connector"
+		do_search "widget/connector"
 		    {
-		    event=BeforeKeyPress;
-		    event_condition=runclient(:Name == 'enter');
-		    event_cancel=runclient(:Name == 'enter');
+		    event=Search;
 		    target=payeelist_osrc;
 		    use_having = 1;
 		    action=QueryText;
 		    cx__case_insensitive = 1;
-		    query=runclient(:search_box:content);
-		    field_list = runclient("*ptxt*,*cctxt*");
-		    }
-		}
-	    search_btn "widget/imagebutton"
-		{
-		x=224; y=472; width=22; height=22;
-		text="";
-		image = "/apps/kardia/images/tango/system-search-22.png";
-
-		btn_do_search "widget/connector"
-		    {
-		    event=Click;
-		    target=payeelist_osrc;
-		    use_having = 1;
-		    action=QueryText;
-		    cx__case_insensitive = 1;
-		    query=runclient(:search_box:content);
+		    query=runclient(:query);
 		    field_list = runclient("*ptxt*,*cctxt*");
 		    }
 		}
@@ -948,7 +992,7 @@ payroll_run "widget/component-decl"
 	task_create_glbatch "widget/tabpage"
 	    {
 	    ttl4_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Four:"; style=bold; }
-	    desc4_lbl "widget/label" { x=8;y=28;width=568;height=48; text="Now this payroll period can be posted to the General Ledger (GL).  Please review the list below to ensure there are no payroll data errors that need correcting."; }
+	    desc4_lbl "widget/label" { x=8;y=28;width=568;height=48; value=runclient(condition(:period_osrc:glcnt > 0, "This payroll period has already been posted to the General Ledger." + condition(:period_osrc:ckcnt > 0, "  Click Next >> to view the paychecks.", "  Click Next >> to create paychecks."), "Now this payroll period can be posted to the General Ledger (GL).  Please review the list below to ensure there are no payroll data errors that need correcting.")); }
 
 	    payroll_errors_osrc "widget/osrc"
 		{
@@ -1168,7 +1212,7 @@ payroll_run "widget/component-decl"
 			    not :parameters:ign_date
 			";
 		readahead=300;
-		replicasize=30;
+		replicasize=300;
 		autoquery=oneachreveal;
 
 		allow_mismatched_date "widget/component"
@@ -1218,7 +1262,7 @@ payroll_run "widget/component-decl"
 
 		post_payroll_btn "widget/textbutton"
 		    {
-		    x=227; y=469; width=130; height=24;
+		    x=207; y=469; width=170; height=24;
 		    text = "Post Payroll";
 		    enabled = runclient(:period_osrc:glcnt = 0 and not :payroll_errors_osrc:cx__pending and :payroll_errors_osrc:cx__last_id == 0);
 		    //enabled = runclient(:period_osrc:glcnt = 0 and :payroll_errors_osrc:cx__final_id < :payroll_errors_osrc:cx__first_id);
@@ -1273,13 +1317,128 @@ payroll_run "widget/component-decl"
 	task_create_checks "widget/tabpage"
 	    {
 	    ttl5_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Five:"; style=bold; }
-	    desc5_lbl "widget/label" { x=8;y=28;width=568;height=48; text="Finally, you can generate a checks batch for this payroll period.  Note that this feature is unavailable if you are using a payroll service provider."; }
+	    desc5_lbl "widget/label" { x=8;y=28;width=568;height=48; value=runclient(condition(:period_osrc:ckcnt > 0, "Checks for this payroll period have been created.", "Finally, you can create a checks batch for this payroll period.  Note that this feature is unavailable if you are using a payroll service provider.")); }
 
-	    checks_batch_btn "widget/textbutton"
+	    checks_osrc "widget/osrc"
 		{
-		x=227; y=469; width=130; height=24;
-		text = runclient(condition(:period_osrc:a_checks_batch_number is null, "Create Checks", "View Checks"));
-		enabled = runclient(:period_osrc:glcnt = 1 and :group_osrc:a_issue_checks = 1);
+		cks_period "widget/parameter" { type=string; param_name=period; default=runclient(:period_osrc:a_payroll_period); }
+		cks_group "widget/parameter" { type=string; param_name=groupid; default=runclient(:payeelist_osrc:a_payroll_group_id); }
+		cks_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
+
+		sql = "	select
+			    ptxt = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			    :cd:a_amount,
+			    :cd:a_comment,
+			    :cd:a_effective_date,
+			    :cd:a_check_number,
+			    datetxt=substring(convert(string, :cd:a_effective_date), 1, 11),
+			    status = condition(:cd:a_voided, 'VOID', condition(:cd:a_reconciled, 'Recon', condition(:cd:a_paid_date is not null, 'Paid', condition(:cd:a_approved_date is not null, 'Approved', 'New'))))
+			from
+			    /apps/kardia/data/Kardia_DB/a_payroll_period/rows pp,
+			    /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows p
+			where
+			    :pp:a_ledger_number = :parameters:ledger and
+			    :pp:a_payroll_group_id = :parameters:groupid and
+			    :pp:a_payroll_period = :parameters:period and
+			    :cd:a_ledger_number = :pp:a_ledger_number and
+			    :cd:a_batch_number = :pp:a_checks_batch_number and
+			    :p:p_partner_key = :cd:a_payee_partner_key
+			";
+
+		readahead=300;
+		replicasize=300;
+		autoquery=oneachreveal;
+
+		checks_table "widget/table"
+		    {
+		    x=20; y=100; width=544; height=361;
+		    overlap_scrollbar = yes;
+		    demand_scrollbar = yes;
+		    max_rowheight=36;
+		    colsep = 0;
+		    cellvspacing=4;
+		    inner_padding=2;
+		    initial_selection = no;
+		    row_border_radius=4;
+		    row_shadow_color="#a0a0a0";
+		    row_shadow_radius=2;
+		    row_shadow_offset=1;
+		    row_shadow_angle=135;
+		    rowcache_size=200;
+		    nodata_message = "No checks yet.";
+
+		    tc_status "widget/table-column" { title="Status"; fieldname=status; width=50; }
+		    tc_dt "widget/table-column" { title="Date"; fieldname=datetxt; width=95; }
+		    tc_partner "widget/table-column" { title="Payee Name"; fieldname=ptxt; width=120; }
+		    tc_ckno "widget/table-column" { title="Check #"; fieldname=a_check_number; width=60; }
+		    tc_comm "widget/table-column" { title="Comment"; fieldname=a_comment; width=160; }
+		    tc_amt "widget/table-column" { title="Amount"; fieldname=a_amount; width=70; align=right; }
+		    }
+		}
+
+	    checks_btns_hbox "widget/hbox"
+		{
+		x=20; y=469; width=544; height=24;
+		spacing=10;
+		align=center;
+
+		checks_batch_btn "widget/textbutton"
+		    {
+		    width=170; height=24;
+		    text = runclient(condition(:period_osrc:a_checks_batch_number is null, "Create Checks", "View Check Batch"));
+		    enabled = runclient(:period_osrc:glcnt = 1 and :group_osrc:a_issue_checks = 1);
+
+		    on_view_checks "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:period_osrc:a_checks_batch_number is not null);
+			target=container;
+			action=Launch;
+			Name=runclient('disb_window');
+			Multi=1;
+			Source = runclient("/apps/kardia/modules/disb/disbursements.app");
+			Width=900;
+			Height=600;
+			ledger=runclient(:ledger_osrc:a_ledger_number);
+			batch=runclient(:period_osrc:a_checks_batch_number);
+			}
+
+		    on_create_checks "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:period_osrc:a_checks_batch_number is null);
+			target=make_checks_osrc;
+			action=QueryParam;
+			ledger=runclient(:ledger_osrc:a_ledger_number);
+			period=runclient(:period_osrc:a_period);
+			payperiod=runclient(:period_osrc:a_payroll_period);
+			paydate=runclient(:period_osrc:a_pay_date);
+			cashfund=runclient(:group_osrc:a_cash_cost_center);
+			groupid=runclient(:group_osrc:a_payroll_group_id);
+			}
+		    }
+
+		disb_btn "widget/textbutton"
+		    {
+		    width=170; height=24;
+		    text = "Open Disbursements";
+		    enabled = runclient(:period_osrc:glcnt = 1 and :group_osrc:a_issue_checks = 1 and :period_osrc:a_checks_batch_number is not null);
+
+		    on_open_disb "widget/connector"
+			{
+			event=Click;
+			target=container;
+			action=Launch;
+			Name=runclient('disb_batch_window');
+			Multi=1;
+			Source = runclient("/apps/kardia/modules/disb/cd_batches.app");
+			Width=800;
+			Height=600;
+			ledger=runclient(:ledger_osrc:a_ledger_number);
+			period=runclient(:period_osrc:a_period);
+			}
+		    }
 		}
 
 	    make_checks_osrc "widget/osrc"
@@ -1334,14 +1493,18 @@ payroll_run "widget/component-decl"
 			    a_line_item = 1,
 			    a_period = :parameters:period,
 			    a_effective_date = convert(datetime, :parameters:paydate),
-			    a_cash_account_code = (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAcct'),
+			    a_cash_account_code = isnull((select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAcctPay'), (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAcct')),
+			    a_account_code = (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbNetPay'),
 			    a_amount = :i:a_actual_amount,
 			    a_cost_center = :parameters:cashfund,
 			    a_account_code = :i:a_ref_account_code,
 			    a_payee_partner_key = :p:p_payee_partner_key,
-			    a_check_number = 0,
+			    a_check_number = '',
 			    a_posted = 0,
 			    a_posted_to_gl = 0,
+			    a_reconciled = 0,
+			    a_approved_by = user_name(),
+			    a_approved_date = getdate(),
 			    a_voided = 0,
 			    a_comment = 'Paycheck for ' + condition(char_length(:p:a_payee_name) > 0, :p:a_payee_name, :par:p_surname + ', ' + :par:p_given_name),
 			    s_date_created = getdate(),
@@ -1366,6 +1529,18 @@ payroll_run "widget/component-decl"
 			    :par:p_partner_key = :p:p_payee_partner_key
 			;
 
+			update
+			    /apps/kardia/data/Kardia_DB/a_payroll_period/rows pp
+			set
+			    :a_checks_batch_number = :info:batch,
+			    :s_date_modified = getdate(),
+			    :s_modified_by = user_name()
+			where
+			    :a_ledger_number = :parameters:ledger and
+			    :a_payroll_group_id = :parameters:groupid and
+			    :a_payroll_period = :parameters:payperiod
+			;
+
 			-- Send the batch info back to the user so they can view it.
 			select
 			    :parameters:ledger,
@@ -1374,6 +1549,19 @@ payroll_run "widget/component-decl"
 		autoquery=never;
 		readahead=2;
 		replicasize=2;
+
+		create_checks_complete_1 "widget/connector"
+		    {
+		    event=EndQuery;
+		    target=checks_osrc;
+		    action=Refresh;
+		    }
+		create_checks_complete_2 "widget/connector"
+		    {
+		    event=EndQuery;
+		    target=period_osrc;
+		    action=RefreshObject;
+		    }
 		}
 
 	    sep5 "widget/pane" { x=8; y=520; height=2; width=568; style=lowered; }
@@ -1389,8 +1577,8 @@ payroll_run "widget/component-decl"
 		x=476; y=530; width=100;
 		text="Done";
 
-		//next_cn5 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=5; }
-		done_cn "widget/connector" { event=Click; target=container; action=Close; }
+		next_cn5 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=1; }
+		//done_cn "widget/connector" { event=Click; target=container; action=Close; }
 		}
 	    }
 	}

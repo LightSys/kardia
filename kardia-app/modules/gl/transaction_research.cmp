@@ -1,0 +1,409 @@
+$Version=2$
+transaction_research "widget/component-decl"
+    {
+    width=980;
+    height=680;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+
+    tr_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=980; height=680;
+	spacing=10;
+
+	header "widget/component"
+	    {
+	    path="/apps/kardia/modules/base/section_label.cmp";
+	    height=20;
+	    text = runserver("GL Transaction Research: Ledger " + :this:ledger);
+	    }
+
+	tr_osrc "widget/osrc"
+	    {
+	    trp_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
+	    trp_period "widget/parameter" { param_name=period; type=string; default=runclient(:f_period:value); }
+	    trp_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:f_costctr:value); }
+	    trp_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:f_batch:value); }
+	    trp_acct "widget/parameter" { param_name=account; type=string; default=runclient(:f_acct:value); }
+	    trp_group "widget/parameter" { param_name=groupby; type=string; default=runclient(:f_groupby:value); }
+	    trp_year "widget/parameter" { param_name=year; type=integer; default=runclient(:f_year:value); }
+	    trp_filter "widget/parameter" { param_name=filter; type=string; default=runclient(:f_filter:value); }
+	    trp_origin "widget/parameter" { param_name=origin; type=string; default=runclient(:f_origin:value); }
+
+	    sql = runclient("	declare object info;
+
+				select :info:ixa = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLIfaAcct' and :a_ledger_number = :parameters:ledger;
+				select :info:amin = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLAssetLow' and :a_ledger_number = :parameters:ledger;
+				select :info:amax = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLAssetHigh' and :a_ledger_number = :parameters:ledger;
+				select :info:lmin = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLLiabLow' and :a_ledger_number = :parameters:ledger;
+				select :info:lmax = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLLiabHigh' and :a_ledger_number = :parameters:ledger;
+	    
+				select
+				    cnt = count(1),
+				    minstat = condition(min(:t:a_posted = 1), 'Posted', 'New'),
+				    maxstat = condition(max(:t:a_posted = 1), 'Posted', 'New'),
+				    mincc = min(:t:a_cost_center),
+				    maxcc = max(:t:a_cost_center),
+				    minac = min(:t:a_account_code),
+				    maxac = max(:t:a_account_code),
+				    dmin = substring(convert(string, min(:t:a_effective_date)),1,6),
+				    dmax = substring(convert(string, max(:t:a_effective_date)),1,6),
+				    minp = min(:t:a_period),
+				    maxp = max(:t:a_period),
+				    a_amount = sum(:t:a_amount),
+				    cr_amt = condition(sum(:t:a_amount) < $0, sum(:t:a_amount), ''),
+				    dr_amt = condition(sum(:t:a_amount) >= $0, sum(:t:a_amount), ''),
+				    pdesc = :p:a_period_desc,
+				    bdesc = :b:a_batch_desc,
+				    cdesc = :c:a_cc_desc,
+				    adesc = :a:a_acct_desc,
+				    a_comment = isnull(:t:a_comment,''),
+				    minb = min(:t:a_batch_number),
+				    maxb = max(:t:a_batch_number),
+				    minj = min(:t:a_journal_number),
+				    maxj = max(:t:a_journal_number),
+				    mino = min(:t:a_origin),
+				    maxo = max(:t:a_origin)
+				from
+				    identity /apps/kardia/data/Kardia_DB/a_transaction/rows t,
+				    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+				    /apps/kardia/data/Kardia_DB/a_account/rows a,
+				    /apps/kardia/data/Kardia_DB/a_period/rows p,
+				    /apps/kardia/data/Kardia_DB/a_batch/rows b
+				where
+				    :t:a_ledger_number = :parameters:ledger and
+				    (:parameters:period is null or :t:a_period = :parameters:period) and
+				    (:parameters:fund is null or charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :parameters:fund + ',') > 0) and
+				    (:parameters:batch is null or :t:a_batch_number = :parameters:batch) and
+				    (:parameters:account is null or charindex(',' + rtrim(:t:a_account_code) + ',', ',' + :parameters:account + ',') > 0) and
+				    (:parameters:year is null or datepart(year, :t:a_effective_date) = :parameters:year) and
+				    (:parameters:origin is null or :t:a_origin = :parameters:origin) and
+				    (isnull(:parameters:filter,'') != 'I' or :t:a_account_code != :info:ixa) and
+				    (isnull(:parameters:filter,'') != 'Q' or not ((:t:a_account_code >= :info:amin and :t:a_account_code <= :info:amax) or (:t:a_account_code >= :info:lmin and :t:a_account_code <= :info:lmax))) and
+				    (isnull(:parameters:filter,'') != 'X' or (:t:a_account_category != '51' and :t:a_account_category != '52' and :t:a_account_category != '41' and :t:a_account_category != '42' and :t:a_account_category != '19')) and
+				    :b:a_ledger_number = :t:a_ledger_number and
+				    :b:a_batch_number = :t:a_batch_number and
+				    :c:a_ledger_number = :t:a_ledger_number and
+				    :c:a_cost_center = :t:a_cost_center and
+				    :a:a_ledger_number = :t:a_ledger_number and
+				    :a:a_account_code = :t:a_account_code and
+				    :p:a_ledger_number = :t:a_ledger_number and
+				    :p:a_period = :t:a_period
+				order by
+				    :t:a_period,
+				    :t:a_batch_number,
+				    :t:a_effective_date,
+				    :t:a_journal_number,
+				    :t:a_transaction_number
+				having
+				    :minb is not null
+				" + condition(:f_groupby:value = 'B', "group by :t:a_batch_number", condition(:f_groupby:value = 'P', "group by :t:a_period", condition(:f_groupby:value = 'F', "group by :t:a_cost_center", condition(:f_groupby:value = 'A', "group by :t:a_account_code", condition(:f_groupby:value = 'O', "group by :t:a_origin", "group by :t:a_period, :t:a_batch_number, :t:a_effective_date, :t:a_journal_number, :t:a_transaction_number"))))) + "
+			    ");
+	    readahead=200;
+	    replicasize=600;
+	    autoquery=never;
+
+	    tr_table "widget/table"
+		{
+		height=500;
+		overlap_scrollbar = yes;
+		demand_scrollbar = yes;
+		initial_selection = no;
+		max_rowheight=36;
+		colsep = 0;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=4;
+		row_shadow_color="#a0a0a0";
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_angle=135;
+		rowcache_size=200;
+		nodata_message = "No matching transactions";
+
+		trt_date "widget/table-column" { title = "Date"; value=runclient(condition(:tr_osrc:dmin == :tr_osrc:dmax, :tr_osrc:dmin, :tr_osrc:dmin + ' -\n' + :tr_osrc:dmax)); width=60; style=bold; }
+		trt_per "widget/table-column" { title = "Period"; value=runclient(condition(:tr_osrc:minp == :tr_osrc:maxp, :tr_osrc:minp, :tr_osrc:minp + ' - ' + :tr_osrc:maxp)); width=110; style=bold; caption_value=runclient(condition(:tr_osrc:minp == :tr_osrc:maxp, :tr_osrc:pdesc, '(multiple)')); }
+		trt_stat "widget/table-column" { title = "Status"; value=runclient(condition(:tr_osrc:minstat == :tr_osrc:maxstat, :tr_osrc:minstat, '(mixed)')); width=60; style=bold; caption_value=runclient(condition(:tr_osrc:mino == :tr_osrc:maxo, :tr_osrc:mino, '(multiple)')); }
+		trt_bat "widget/table-column" { title = "Batch / Jnl"; value=runclient(condition(:tr_osrc:minb == :tr_osrc:maxb, '' + :tr_osrc:minb + ' / ' + condition(:tr_osrc:minj == :tr_osrc:maxj, :tr_osrc:minj, '' + :tr_osrc:minj + ' - ' + :tr_osrc:maxj), '' + :tr_osrc:minb + ' - ' + :tr_osrc:maxb)); width=140; style=bold; caption_value=runclient(condition(:tr_osrc:minb == :tr_osrc:maxb, :tr_osrc:bdesc, '(multiple)')); }
+		trt_cc "widget/table-column" { title = "Fund"; value=runclient(condition(:tr_osrc:mincc == :tr_osrc:maxcc, :tr_osrc:mincc, :tr_osrc:mincc + ' - ' + :tr_osrc:maxcc)); width=140; style=bold; caption_value=runclient(condition(:tr_osrc:mincc == :tr_osrc:maxcc, :tr_osrc:cdesc, '(multiple)')); }
+		trt_acct "widget/table-column" { title = "Account"; value=runclient(condition(:tr_osrc:minac == :tr_osrc:maxac, :tr_osrc:minac, :tr_osrc:minac + ' - ' + :tr_osrc:maxac)); width=140; style=bold; caption_value=runclient(condition(:tr_osrc:minac == :tr_osrc:maxac, :tr_osrc:adesc, '(multiple)')); }
+		trt_comm "widget/table-column" { title = "Comment"; value=runclient(condition(:tr_osrc:cnt == 1, :tr_osrc:a_comment, '(' + :tr_osrc:cnt + ' transactions)')); width=140; wrap=yes; style=runclient(condition(:tr_osrc:a_amount is null, "bold", "")); font_size=runclient(condition(:tr_osrc:a_amount is null, null, 10)); }
+		trt_damt "widget/table-column" { title = "Debit"; fieldname=dr_amt; width=100; align=right; style=bold; }
+		trt_camt "widget/table-column" { title = "Credit"; fieldname=cr_amt; width=100; align=right; fgcolor="#e00000"; style=bold; }
+		//trt_amt "widget/table-column" { title = "+Debit / -Credit"; fieldname=a_amount; width=100; align=right; fgcolor=runclient(condition(isnull(:tr_osrc:cr_amt,'') != '', "#c00000", "black")); }
+
+		tr_list_pane "widget/table-row-detail"
+		    {
+		    height=200; width=980;
+		    display_for=runclient(:tr_osrc:cnt > 1);
+
+		    
+		    tr_list_vbox "widget/vbox"
+			{
+			x=10; y=10; width=960; height=180;
+			spacing=6;
+
+			tr_list_sep "widget/pane" { height=2; fl_height=0; style=lowered; }
+
+			tr_list_hdr "widget/label" { height=16; style=bold; text="Transaction List:"; fgcolor=white; }
+
+			tr_list_osrc "widget/osrc"
+			    {
+			    tlp_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
+			    tlp_period "widget/parameter" { param_name=period; type=string; default=runclient(:f_period:value); }
+			    tlp_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:f_costctr:value); }
+			    tlp_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:f_batch:value); }
+			    tlp_acct "widget/parameter" { param_name=account; type=string; default=runclient(:f_acct:value); }
+			    tlp_group "widget/parameter" { param_name=groupby; type=string; default=runclient(:f_groupby:value); }
+			    tlp_year "widget/parameter" { param_name=year; type=integer; default=runclient(:f_year:value); }
+			    tlp_filter "widget/parameter" { param_name=filter; type=string; default=runclient(:f_filter:value); }
+			    tlp_origin "widget/parameter" { param_name=origin; type=string; default=runclient(:f_origin:value); }
+			    tlp_gfund "widget/parameter" { param_name=gfund; type=string; default=runclient(:tr_osrc:mincc); }
+			    tlp_gacct "widget/parameter" { param_name=gacct; type=string; default=runclient(:tr_osrc:minac); }
+			    tlp_gper "widget/parameter" { param_name=gperiod; type=string; default=runclient(:tr_osrc:minp); }
+			    tlp_gbatch "widget/parameter" { param_name=gbatch; type=string; default=runclient(:tr_osrc:minb); }
+			    tlp_gorigin "widget/parameter" { param_name=gorigin; type=string; default=runclient(:tr_osrc:mino); }
+			    tlp_tname "widget/parameter" { param_name=tname; type=string; }
+
+			    sql = " declare object info;
+
+				    select :info:ixa = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLIfaAcct' and :a_ledger_number = :parameters:ledger;
+				    select :info:amin = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLAssetLow' and :a_ledger_number = :parameters:ledger;
+				    select :info:amax = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLAssetHigh' and :a_ledger_number = :parameters:ledger;
+				    select :info:lmin = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLLiabLow' and :a_ledger_number = :parameters:ledger;
+				    select :info:lmax = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLLiabHigh' and :a_ledger_number = :parameters:ledger;
+
+				    select
+					stat = condition(:t:a_posted = 1, 'Posted', 'New'),
+					cc = :t:a_cost_center,
+					ac = :t:a_account_code,
+					dtxt = substring(convert(string, :t:a_effective_date),1,6),
+					per = :t:a_period,
+					a_amount = :t:a_amount,
+					cr_amt = condition(:t:a_amount < $0, :t:a_amount, ''),
+					dr_amt = condition(:t:a_amount >= $0, :t:a_amount, ''),
+					a_comment = isnull(:t:a_comment,''),
+					:t:a_batch_number,
+					:t:a_journal_number,
+					bjt = '' + :t:a_batch_number + ' / ' + :t:a_journal_number,
+					:t:a_origin
+				    from
+					/apps/kardia/data/Kardia_DB/a_transaction/rows t
+				    where
+					:t:a_ledger_number = :parameters:ledger and
+					(:parameters:period is null or :t:a_period = :parameters:period) and
+					(:parameters:fund is null or charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :parameters:fund + ',') > 0) and
+					(:parameters:batch is null or :t:a_batch_number = :parameters:batch) and
+					(:parameters:account is null or charindex(',' + rtrim(:t:a_account_code) + ',', ',' + :parameters:account + ',') > 0) and
+					(:parameters:year is null or datepart(year, :t:a_effective_date) = :parameters:year) and
+					(:parameters:origin is null or :t:a_origin = :parameters:origin) and
+					(isnull(:parameters:filter,'') != 'I' or :t:a_account_code != :info:ixa) and
+					(isnull(:parameters:filter,'') != 'Q' or not ((:t:a_account_code >= :info:amin and :t:a_account_code <= :info:amax) or (:t:a_account_code >= :info:lmin and :t:a_account_code <= :info:lmax))) and
+					(isnull(:parameters:filter,'') != 'X' or (:t:a_account_category != '51' and :t:a_account_category != '52' and :t:a_account_category != '41' and :t:a_account_category != '42' and :t:a_account_category != '19')) and
+					(:parameters:groupby != 'F' or :t:a_cost_center = :parameters:gfund) and
+					(:parameters:groupby != 'A' or :t:a_account_code = :parameters:gacct) and
+					(:parameters:groupby != 'B' or :t:a_batch_number = :parameters:gbatch) and
+					(:parameters:groupby != 'P' or :t:a_period = :parameters:gperiod) and
+					(:parameters:groupby != 'O' or :t:a_origin = :parameters:gorigin)
+				    order by
+					:t:a_period,
+					:t:a_batch_number,
+					:t:a_effective_date,
+					:t:a_journal_number,
+					:t:a_transaction_number
+				    ";
+			    replicasize=100;
+			    readahead=100;
+
+			    tr_list_link "widget/rule"
+				{
+				ruletype=osrc_relationship;
+				target=tr_osrc;
+				revealed_only=yes;
+				key_1=tname;
+				target_key_1=name;
+				}
+
+			    tr_list_table "widget/table"
+				{
+				height=150;
+				titlebar = no;
+				overlap_scrollbar = yes;
+				demand_scrollbar = yes;
+				initial_selection = no;
+				min_rowheight=10;
+				max_rowheight=36;
+				colsep = 0;
+				cellvspacing=0;
+				inner_padding=1;
+				textcolor=white;
+				row1_bgcolor=null;
+				row2_bgcolor=null;
+				nodata_message = "No matching transactions";
+
+				tlt_date "widget/table-column" { title = "Date"; fieldname=dtxt; width=50; }
+				tlt_per "widget/table-column" { title = "Period"; fieldname=per; width=110; }
+				tlt_stat "widget/table-column" { title = "Status"; fieldname=stat; width=60; }
+				tlt_bat "widget/table-column" { title = "Batch / Jnl"; fieldname=bjt; width=140; }
+				tlt_cc "widget/table-column" { title = "Fund"; fieldname=cc; width=140; }
+				tlt_acct "widget/table-column" { title = "Account"; fieldname=ac; width=140; }
+				tlt_comm "widget/table-column" { title = "Comment"; fieldname=a_comment; width=140; }
+				tlt_damt "widget/table-column" { title = "Debit"; fieldname=dr_amt; width=100; align=right; style=bold; }
+				tlt_camt "widget/table-column" { title = "Credit"; fieldname=cr_amt; width=95; align=right; fgcolor="#ff0000"; }
+				}
+			    }
+			}
+		    }
+		}
+
+	    tr_ctls_hbox "widget/hbox"
+		{
+		height=92;
+		spacing=10;
+		row_height=24;
+
+		tr_form "widget/form"
+		    {
+		    allow_new=no;
+		    allow_modify=no;
+		    allow_view=no;
+		    allow_nodata=no;
+		    f_period "widget/component" { width=235; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="period"; popup_source=runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Period:"; text="Period:"; attach_point=editbox; label_width=70; }
+		    f_year "widget/component"
+			{
+			width=235;
+			path="/sys/cmp/smart_field.cmp";
+			field="year"; 
+			text="Year:";
+			ctl_type=dropdown;
+			label_width=70;
+			sql="select '' + datepart(year,:a_start_date), datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p group by datepart(year, :a_start_date) desc order by :a_start_date desc"; 
+			}
+		    f_batch "widget/component"
+			{
+			width=235;
+			label_width=70;
+			path="/apps/kardia/modules/base/editbox_table.cmp";
+			field=batch;
+			text='Batch:';
+			popup_width=300;
+			popup_height=210;
+			popup_sql = runserver("
+				SELECT
+				    value = :a_batch_number,
+				    label = '' + :a_batch_number + ' ' + :a_batch_desc
+				FROM
+				    /apps/kardia/data/Kardia_DB/a_batch/rows b
+				WHERE
+				    :a_ledger_number = " + quote(:this:ledger) + "
+				");
+			search_field_list="a_batch_number,*a_batch_desc*";
+			key_name="a_batch_number";
+			object_name="Batches";
+			popup_text="Choose Batch:";
+			attach_point=editbox;
+			}
+		    f_costctr "widget/component"
+			{
+			width=235;
+			label_width=70;
+			path="/apps/kardia/modules/base/editbox_table.cmp";
+			field=fund;
+			text='Fund:';
+			popup_width=300;
+			popup_height=210;
+			popup_sql = runserver("
+				SELECT
+				    value = :a_cost_center,
+				    label = :a_cost_center + ' ' + :a_cc_desc
+				FROM
+				    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+				WHERE
+				    :a_ledger_number = " + quote(:this:ledger) + " and
+				    :a_bal_cost_center = :a_cost_center
+				");
+			search_field_list="a_cost_center,*a_cc_desc*,a_legacy_code";
+			key_name="a_cost_center";
+			object_name="Funds";
+			popup_text="Choose Fund:";
+			attach_point=editbox;
+			}
+		    f_acct "widget/component"
+			{
+			width=235;
+			label_width=70;
+			path="/apps/kardia/modules/base/editbox_table.cmp";
+			field=account;
+			text='Account:';
+			popup_width=300;
+			popup_height=210;
+			popup_sql = runserver("
+				SELECT
+				    value = :a_account_code,
+				    label = :a_account_code + ' ' + :a_acct_desc
+				FROM
+				    /apps/kardia/data/Kardia_DB/a_account/rows a
+				WHERE
+				    :a_ledger_number = " + quote(:this:ledger) + "
+				");
+			search_field_list="a_account_code,*a_acct_desc*";
+			key_name="a_account";
+			object_name="Accounts";
+			popup_text="Choose Account:";
+			attach_point=editbox;
+			}
+
+		    f_origin "widget/component"
+			{
+			width=235;
+			path="/sys/cmp/smart_field.cmp";
+			field="origin"; 
+			text="Origin:";
+			ctl_type=dropdown;
+			label_width=70;
+			sql="select 'Cash Disbursements', 'CD'; select 'Cash Receipts', 'CR'; select 'Deposits', 'DE'; select 'Electronic Giving', 'EG'; select 'Journal Entry', 'GL'; select 'Opening Balances', 'OB'; select 'Payroll', 'PP'"; 
+			}
+
+		    f_filter "widget/component"
+			{
+			width=235;
+			path="/sys/cmp/smart_field.cmp";
+			field="filter"; 
+			text="Filter:";
+			ctl_type=dropdown;
+			label_width=70;
+			sql=runserver("select 'Hide IXA (" + (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLIfaAcct' and :a_ledger_number = :this:ledger) + ")', 'I'; select 'Hide Assets+Liabs', 'Q'; select 'Hide Interfund/WithinFund', 'X'"); 
+			}
+
+		    f_groupby "widget/component"
+			{
+			width=235;
+			path="/sys/cmp/smart_field.cmp";
+			field="groupby"; 
+			text="Summarize:";
+			ctl_type=dropdown;
+			label_width=70;
+			sql="select 'By Batch','B'; select 'By Period','P'; select 'By Fund','F'; select 'By Account','A'; select 'By Origin','O'"; 
+			}
+
+		    }
+		}
+
+	    btns_hbox "widget/hbox"
+		{
+		align=center;
+		height=24;
+
+		btn_search "widget/textbutton"
+		    {
+		    width=130;
+		    height=24;
+		    text="Update";
+		    enabled=runclient(:tr_form:is_queryexecutable);
+		    on_search "widget/connector" { event=Click; target=tr_form; action=QueryExec; }
+		    }
+		}
+	    }
+	}
+    }

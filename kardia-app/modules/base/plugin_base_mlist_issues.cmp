@@ -2,9 +2,10 @@ $Version=2$
 plugin_base_mlist_issues "widget/component-decl"
     {
     title = "Issues";
+    types = 'P';
     sequence = 200;
-    width=518;
-    height=324;
+    width=718;
+    height=424;
 
     mlist_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
@@ -16,7 +17,7 @@ plugin_base_mlist_issues "widget/component-decl"
 		:l:m_list_description,
 		:l:m_list_status,
 		status_text= :ls:text,
-		created = substring(convert(string,:l:s_date_created),1,12)
+		created = substring(convert(string,isnull(:l:m_date_sent, :l:s_date_created)),1,12)
 	    FROM 
 		/apps/kardia/data/Kardia_DB/m_list/rows l,
 		/apps/kardia/data/Kardia_DB/_m_list_status/rows ls
@@ -44,9 +45,9 @@ plugin_base_mlist_issues "widget/component-decl"
 
 	issues_tbl "widget/table"
 	    {
-	    x=0;y=0;width=518;height=204;
+	    x=0;y=0;width=718;height=280;
 
-	    issue_code "widget/table-column" { width=60; title = "List ID"; fieldname = m_list_code; }
+	    issue_code "widget/table-column" { width=60; title = "List Code"; fieldname = m_list_code; }
 	    issue_date "widget/table-column" { width=80; title = "Date"; fieldname = created; }
 	    issue_name "widget/table-column" { width=280; title = "Description"; fieldname = m_list_description; }
 	    issue_status_text "widget/table-column" { width=70; title = "Status"; fieldname = status_text; }
@@ -55,9 +56,9 @@ plugin_base_mlist_issues "widget/component-decl"
 	newissue_pane "widget/pane"
 	    {
 	    style=flat;
-	    x=0;y=208;
-	    height=116;
-	    width=518;
+	    x=0;y=284;
+	    height=140;
+	    width=718;
 	    enabled=runclient(:mlist_osrc:m_list_type == 'P');
 
 	    newissue_cmp "widget/component"
@@ -79,21 +80,23 @@ plugin_base_mlist_issues "widget/component-decl"
 
 	    newissue_grp "widget/pane"
 		{
-		x=0; y=8; width=518; height=108;
+		x=0; y=8; width=718; height=132;
 		widget_class = group;
 		background="/apps/kardia/images/bg/light_bgnd3.jpg";
 
 		newissue_form "widget/form"
 		    {
-		    allow_nodata = no;
+		    allow_nodata = yes;
+		    allow_modify = no;
 		    allow_view = no;
-		    allow_new = no;
+		    allow_new = yes;
+		    allow_query = no;
 		    auto_focus = no;
 		    enter_mode = nextfield;
 
 		    newissue_vbox "widget/vbox"
 			{
-			x=10; y=18; width=496; height=78;
+			x=10; y=18; width=696; height=102;
 			spacing = 4;
 			cellsize = 20;
 			
@@ -102,15 +105,14 @@ plugin_base_mlist_issues "widget/component-decl"
 			    width=350;
 			    label_width=120;
 			    path="/sys/cmp/smart_field.cmp";
-			    text="Issue List ID:";
+			    text="Issue List Code:";
 			    ctl_type="editbox";
-			    tooltip="Enter a unique new list ID for this issue";
+			    tooltip="Enter a unique new list code for this issue";
 			    field=m_list_code;
-			    empty_desc="leave empty for automatic id";
+			    empty_desc="leave empty for automatic code";
 			    nic_hints "widget/hints" { length=20; badchars=", "; }
 
 			    list_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(char_length(:ni_code:content) > 0); target=listdesc_osrc; action=QueryParam; listcode=runclient(:ni_code:content); }
-			    list_make_id_1 "widget/connector" { event=LoseFocus; event_condition=runclient(char_length(isnull(:ni_code:content, '')) = 0); target=listid_osrc; action=QueryParam; listcode=runclient(:mlist_osrc:m_list_code); }
 
 			    listdesc_osrc "widget/osrc"
 				{
@@ -128,6 +130,7 @@ plugin_base_mlist_issues "widget/component-decl"
 				listid_param1 "widget/parameter" { type=string; param_name=listcode; }
 				sql = "select newid = substring(:parameters:listcode,1,16) + '-' + (isnull(max(convert(integer,substring(:m_list_code, condition(char_length(:parameters:listcode) >= 16, 16, char_length(:parameters:listcode)) + 2, 20))), 0) + 1), list=:parameters:listcode from /apps/kardia/data/Kardia_DB/m_list/rows where substring(:m_list_code, 1, condition(char_length(:parameters:listcode) >= 16, 16, char_length(:parameters:listcode)) + 1) = :parameters:listcode + '-'";
 				list_get_newid_1 "widget/connector" { event=EndQuery; event_condition=runclient(isnull(:ni_code:content, '') = ''); target=ni_code; action=SetValue; Value=runclient(:listid_osrc:newid); }
+				autoquery=never;
 				}
 			    }
 			ni_desc "widget/component"
@@ -141,23 +144,43 @@ plugin_base_mlist_issues "widget/component-decl"
 			    field=m_list_desc;
 			    empty_desc="required";
 
+			    list_make_id_1 "widget/connector" { event=GetFocus; event_condition=runclient(char_length(isnull(:ni_code:content, '')) = 0); target=listid_osrc; action=QueryParam; listcode=runclient(:mlist_osrc:m_list_code); }
 			    list_make_id_2 "widget/connector" { event=DataModify; event_condition=runclient(not (:listid_osrc:cx__pending) and char_length(isnull(:ni_code:content, '')) = 0); target=listid_osrc; action=QueryParam; listcode=runclient(:mlist_osrc:m_list_code); }
 			    }
-
-			create_btn "widget/textbutton"
+			ni_date "widget/component"
 			    {
-			    height=24; width=120;
-			    text = "Create Issue";
-			    enabled=runclient(char_length(:ni_code:content) > 0 and char_length(:ni_desc:content) > 0);
+			    width=350;
+			    label_width=120;
+			    path="/sys/cmp/smart_field.cmp";
+			    text="Publication Date:";
+			    ctl_type="datetime";
+			    field=m_date_sent;
+			    date_only=1;
+			    default_time="00:00:00";
+			    }
 
-			    do_create "widget/connector"
+			btn_hbox "widget/hbox"
+			    {
+			    height=24;
+			    align=center;
+			    spacing=10;
+
+			    create_btn "widget/textbutton"
 				{
-				event=Click;
-				target=newissue_cmp;
-				action=CreateIssue;
-				parent_mlist=runclient(:mlist_osrc:m_list_code);
-				new_mlist=runclient(:ni_code:content);
-				new_desc=runclient(:ni_desc:content);
+				height=24; width=120;
+				text = "Create Issue";
+				enabled=runclient(char_length(:ni_code:content) > 0 and char_length(:ni_desc:content) > 0 and :listdesc_osrc:description != '**ALREADY EXISTS**');
+
+				do_create "widget/connector"
+				    {
+				    event=Click;
+				    target=newissue_cmp;
+				    action=CreateIssue;
+				    parent_mlist=runclient(:mlist_osrc:m_list_code);
+				    new_mlist=runclient(:ni_code:content);
+				    new_desc=runclient(:ni_desc:content);
+				    new_date=runclient(:ni_date:value);
+				    }
 				}
 			    }
 			}
@@ -168,6 +191,12 @@ plugin_base_mlist_issues "widget/component-decl"
 		{
 		x=16; y=0; width=170;
 		widget_class = label;
+		style=flat;
+		shadow_radius=4;
+		shadow_offset=2;
+		shadow_color="#808080";
+		shadow_angle=135;
+
 		newissue_label "widget/label" { x=0;y=0;width=168;height=16;value=runclient("Create New Issue"); widget_class="label"; }
 		}
 	    }

@@ -277,6 +277,7 @@ create table p_donor (
         p_contact_id                          integer  null,           /* The contact info id (email/phone/etc) to use as a "best contact for" this donor --  */
         p_org_name_first                      bit  not null,           /* Whether to list organization name first on receipt address, rather than first/last name. --  */
         p_receipt_desired                     char(1)  null,           /* Indicates the donor's preference for receipts: (N)one, (I)mmediate, (A)nnual --  */
+        p_is_daf                              bit  default 0,          /* Whether this donor is a donor advised fund --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -517,6 +518,7 @@ create table p_gazetteer (
         p_feature_id                          integer  not null,       /* numeric ID of the feature (this depends on feature source) --  */
         p_alt_feature_id                      integer  not null,       /* alternate numeric ID of the feature (this depends on feature source) --  */
         p_feature_name                        varchar(80)  not null,   /* name of the feature (zip code, city name, etc.) --  */
+        p_feature_desc                        varchar(255)  null,      /* description of the feature (zip code, city name, etc.) --  */
         p_state_province                      varchar(64)  null,       /* if applicable, the state or province that this feature occurs in (data not always available) --  */
         p_area_land                           float  null,             /* land area of the feature, in square miles --  */
         p_area_water                          float  null,             /* water area of the feature, in square miles --  */
@@ -721,6 +723,20 @@ create table m_list_membership (
 );
 
 
+/* m_list_document */
+
+create table m_list_document (
+        m_list_code                           varchar(20)  not null,   /* key --  */
+        e_document_id                         integer  not null,       /* document ID - see CRM system for document storage. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* e_contact_autorecord */
 
 create table e_contact_autorecord (
@@ -893,6 +909,8 @@ create table e_engagement_step_req (
         e_req_whom                            char(1)  not null,       /* Who this requirement is fulfilled by: (P)artner, (O)rganization, or (E)ither. --  */
         e_req_doc_type_id                     integer  null,           /* Does a document fulfill this step? If so, the corresponding document type ID is stored here. --  */
         e_req_waivable                        bit  not null,           /* Can this requirement be waived? 0 if not, or 1 if so --  */
+        e_req_sequence                        integer  not null,       /* The order in which the requirements appear --  */
+        e_is_active                           bit  not null,           /* Whether this requirement is active/visible or not. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -952,6 +970,8 @@ create table e_partner_engagement_req (
         e_completed_by                        char(10)  null,          /* Collaborator partner ID that caused the track/step to become complete --  */
         e_waived_date                         datetime  null,          /* The date the user exited this engagement step (whether completed or not) --  */
         e_waived_by                           char(10)  null,          /* Collaborator partner ID that caused the track/step to exit --  */
+        e_req_sequence                        integer  not null,       /* The order in which the requirements appear --  */
+        e_is_active                           bit  not null,           /* Whether this requirement is active/visible or not. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2277,6 +2297,39 @@ create table a_ledger_office (
 );
 
 
+/* a_currency */
+
+create table a_currency (
+        a_ledger_number                       char(10)  not null,      /* ledger number (a_ledger) --  */
+        a_currency_code                       char(3)  not null,       /* Code for this currency --  */
+        a_currency_desc                       varchar(64)  not null,   /* Description for this currency --  */
+        a_enabled                             bit  not null,           /* Whether this currency can be selected in data entry or not --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_currency_exch_rate */
+
+create table a_currency_exch_rate (
+        a_ledger_number                       char(10)  not null,      /* ledger number (a_ledger) --  */
+        a_base_currency_code                  char(3)  not null,       /* The base currency --  */
+        a_foreign_currency_code               char(3)  not null,       /* The foreign currency --  */
+        a_exch_rate_date                      datetime  not null,      /* The effective date for the exchange rate (date only) --  */
+        a_exch_rate                           double  not null,        /* The exchange rate. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* a_payroll */
 
 create table a_payroll (
@@ -2316,6 +2369,35 @@ create table a_payroll_period (
         a_batch_number                        int  null,               /* GL batch number for this period --  */
         a_checks_batch_number                 int  null,               /* GL batch number for checks issued for this period --  */
         a_base_on_period                      char(12)  null,          /* Which period this period's data was based on. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_payroll_period_payee */
+
+create table a_payroll_period_payee (
+        a_ledger_number                       char(10)  not null,      /* ledger number (alphanumeric allowed) --  */
+        a_payroll_group_id                    integer  not null,       /* payroll group ID --  */
+        a_payroll_period                      char(12)  not null,      /* payroll period (alphanumeric allowed) --  */
+        a_payroll_id                          integer  not null,       /* Payee ID --  */
+        a_comment                             varchar(255)  null,      /* comments for this payee --  */
+        p_country_code                        char(2)  null,           /* country that this payee's withholdings are done for --  */
+        p_state_province                      char(2)  null,           /* state or province this payee's withholdings are done for. --  */
+        a_is_employee                         bit  not null,           /* whether this payee is an "employee" for legal purposes (employee vs 1099 in the US) --  */
+        a_is_fica                             bit  not null,           /* whether this payee uses FICA withholdings (1, US only), or SECA (0) --  */
+        a_is_exempt                           bit  not null,           /* whether this payee is exempt from wage and hour law --  */
+        a_is_salaried                         bit  not null,           /* whether this payee is paid a salary (1) or hourly (0) --  */
+        a_minimum_wage                        decimal(14,4)  null,     /* the statutory minimum wage that applies to this employee --  */
+        a_hours_worked                        float  null,             /* the TOTAL hours worked by this employee during this pay period --  */
+        a_overtime_hours_worked               float  null,             /* the overtime hours worked during this pay period --  */
+        a_base_hourly_pay                     decimal(14,4)  null,     /* The employee's base pay rate per hour --  */
+        a_base_pay                            decimal(14,4)  null,     /* The employee's total base pay --  */
+        a_overtime_pay                        decimal(14,4)  null,     /* the employee's overtime additional pay --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2442,6 +2524,7 @@ create table a_payroll_item_type (
         a_ledger_number                       char(10)  not null,      /* ledger number that will be doing the payroll. --  */
         a_payroll_item_type_code              char(4)  not null,       /* code for this payroll item type --  */
         a_payroll_item_class_code             char(1)  not null,       /* general category of payroll item --  */
+        a_payroll_item_subclass_code          char(2)  null,           /* specific category of payroll item --  */
         a_payroll_item_form_sequence          integer  null,           /* order this item comes in on the payroll form. --  */
         a_ref_account_code                    char(10)  null,          /* default GL account code to use for items of this type --  */
         a_xfer_cost_center                    char(20)  null,          /* default cost center to use when this item involves an xfer --  */
@@ -2733,6 +2816,52 @@ insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is
 insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "M" as a_receipt_type, "Monthly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
+/* a_gift_payment_type */
+
+create table a_gift_payment_type (
+        a_ledger_number                       char(10)  not null,      /* ledger number --  */
+        a_gift_payment_type                   char(1)  not null,       /* payment type --  */
+        a_gift_payment_type_desc              varchar(64)  not null,   /* payment type description --  */
+        a_is_default                          bit  default 0,          /* is this the default payment type? --  */
+        a_is_enabled                          bit  default 1,          /* is this payment type enabled? --  */
+        a_is_cash                             bit  default 1,          /* is this payment type a cash (check, cash, credit card, etc.) or noncash (in-kind) gift? --  */
+        a_payment_cost_center                 char(20)  null,          /* cost center for payment (defaults to value in a_config) --  */
+        a_payment_account_code                char(16)  null,          /* GL account for payment (defaults to value in a_config) --  */
+        a_desig_account_code                  char(16)  null,          /* GL account code for designations, to force a specific one --  */
+        a_min_gift                            decimal(14,4)  null,     /* Minimum gift for this payment type --  */
+        a_max_gift                            decimal(14,4)  null,     /* Maximum gift for this payment type --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "K" as a_gift_payment_type, "Check" as a_gift_payment_type_desc, 1 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "C" as a_gift_payment_type, "Cash" as a_gift_payment_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "E" as a_gift_payment_type, "EFT" as a_gift_payment_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "D" as a_gift_payment_type, "Credit Card" as a_gift_payment_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "N" as a_gift_payment_type, "In-Kind Non-Capitalized" as a_gift_payment_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "I" as a_gift_payment_type, "In-Kind Capitalized" as a_gift_payment_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+
+
+/* a_receipt_mailing */
+
+create table a_receipt_mailing (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
+        m_list_code                           varchar(20)  not null,   /* Code for the mailing list associated with receipting --  */
+        a_prev_issue_lookback                 integer  null,           /* Number of days to look back for a previous issue if the donor hasn't yet gotten issue --  */
+        a_prev_issue_max_interval             float  null,             /* Maximum giving interval for lookback to happen (1.0 = monthly, 3.0 = quarterly, etc.) --  */
+        a_comment                             varchar(255)  null,      /* Comment about the use of this mailing list in receipting --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* a_subtrx_gift */
 
 create table a_subtrx_gift (
@@ -2785,22 +2914,30 @@ create table a_subtrx_gift_group (
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of the gift. --  */
+        a_foreign_amount                      decimal(14,4)  null,     /* Amount of the gift in the donor's foreign currency --  */
+        a_foreign_currency                    char(3)  null,           /* Foreign currency code for this gift. --  */
+        a_foreign_currency_exch_rate          double  null,            /* Foreign currency effective exchange rate --  */
+        a_foreign_currency_date               double  null,            /* Foreign currency effective date for exchange rate --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_type                           char(1)  not null,       /* Type of gift: (C)ash, chec(K), credit car(D), (E)FT --  */
         a_receipt_number                      varchar(64)  null,       /* Receipt number that we sent out --  */
         p_donor_partner_id                    char(10)  null,          /* Partner ID of donor --  */
         p_ack_partner_id                      char(10)  null,          /* Partner ID to send non-receipt acknowledgment to --  */
+        p_pass_partner_id                     char(10)  null,          /* Partner ID of pass-through entity --  */
         a_receipt_sent                        bit  default 0,          /* Receipt sent to donor --  */
+        a_ack_receipt_sent                    bit  default 0,          /* Acknowledgement sent --  */
         a_receipt_desired                     char(1)  default 'I'  null,
                                                                       /* Receipt needed -- 'I' for immediate, 'A' for annual, 'N' for no receipt --  */
+        a_ack_receipt_desired                 char(1)  null,           /* Acknowledgement needed -- 'I' for immediate, 'A' for annual, 'N' for no receipt --  */
         a_first_gift                          bit  default 0,          /* Donor's first gift? --  */
         a_goods_provided                      decimal(14,4)  default 0.00  null,
                                                                       /* Amount of gift that is considered a fee for goods provided in return --  */
         a_gift_received_date                  datetime  null,          /* Date a gift actually was received by the office --  */
         a_gift_postmark_date                  datetime  null,          /* Date a gift was postmarked (if available) --  */
         a_receipt_sent_date                   datetime  null,          /* Date the receipt was sent to the donor --  */
-        a_comment                             varchar(255)  null,      /* Gift comments --  */
+        a_ack_receipt_sent_date               datetime  null,          /* Date the acknowledgement was sent --  */
+        a_comment                             varchar(900)  null,      /* Gift comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2822,6 +2959,10 @@ create table a_subtrx_gift_item (
         a_account_code                        char(16)  not null,      /* Which GL Account this gift posts to in the above fund. --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of the gift. --  */
+        a_foreign_amount                      decimal(14,4)  null,     /* Amount of the gift in the donor's foreign currency --  */
+        a_foreign_currency                    char(3)  null,           /* Foreign currency code for this gift. --  */
+        a_foreign_currency_exch_rate          double  null,            /* Foreign currency effective exchange rate --  */
+        a_foreign_currency_date               double  null,            /* Foreign currency effective date for exchange rate --  */
         a_recv_document_id                    varchar(64)  null,       /* Check number, transaction number, etc., for received gift. --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
@@ -2834,12 +2975,46 @@ create table a_subtrx_gift_item (
         a_confidential                        bit  default 0,          /* Set this if the donor wishes to remain anonymous (to the recipient) --  */
         a_non_tax_deductible                  bit  default 0,          /* Set this if the gift is a non-tax-deductible gift, such as a personal gift (i.e., payable to missionary instead of support gift) --  */
         a_motivational_code                   varchar(16)  null,       /* Optional motivational code that indicates what motivated the donor to give this gift. --  */
+        a_item_intent_code                    char(1)  null,           /* Giver intention for this line item - different from intent type. E.g. Extra, Recurring, Increase, Decrease, LastGift, AsAble, OneTime. --  */
         a_comment                             varchar(255)  null,      /* Gift comments --  */
         i_eg_source_key                       varchar(255)  null,      /* If imported, this is the key value for i_eg_gift_import. --  */
         p_dn_donor_partner_id                 char(10)  null,          /* **Denormalized** Partner ID of gift donor. --  */
+        p_dn_ack_partner_id                   char(10)  null,          /* **Denormalized** Partner ID to send gift acknowledgement. --  */
+        p_dn_pass_partner_id                  char(10)  null,          /* **Denormalized** Partner ID of gift pass-through entity. --  */
         a_dn_receipt_number                   varchar(64)  null,       /* **Denormalized** Receipt number we sent out. --  */
         a_dn_gift_received_date               datetime  null,          /* **Denormalized** Date gift was received --  */
         a_dn_gift_postmark_date               datetime  null,          /* **Denormalized** Date gift was postmarked --  */
+        a_dn_gift_type                        char(1)  null,           /* **Denormalized** Gift type (C/K/E/D). --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_subtrx_gift_intent */
+
+create table a_subtrx_gift_intent (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
+        a_batch_number                        integer  not null,       /* Batch id for this gift. --  */
+        a_gift_number                         integer  not null,       /* sequential gift number in the batch. --  */
+        a_intent_number                       integer  not null,       /* intent number for this gift --  */
+        a_split_number                        integer  null,           /* the split gift ID, if this gift references a specific split gift item, otherwise NULL. --  */
+        a_pledge_id                           integer  null,           /* Reference to pledges table to associate this gift intent with a pledge --  */
+        p_dn_donor_partner_id                 char(10)  not null,      /* Donor ID making the pledge - denormalized (from gift_group) --  */
+        p_dn_ack_partner_id                   char(10)  null,          /* Acknowledgement ID making the pledge - denormalized (from gift_group) --  */
+        a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
+        a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention --  */
+        a_amount                              decimal(14,4)  null,     /* Amount for this intent (e.g. monthly amount) - UI should default copy from gift data --  */
+        a_total_amount                        decimal(14,4)  null,     /* Total amount for this intent (e.g. total pledge) --  */
+        a_start_date                          datetime  null,          /* Starting date - UI should default copy from gift data --  */
+        a_end_date                            datetime  null,          /* Ending date / due date - default is null --  */
+        a_giving_interval                     integer  null,           /* Giving interval: 1=monthly, 12=annually, NULL=total or as-able --  */
+        a_gift_count                          integer  null,           /* Number of gifts intended (NULL for unknown/no limit) --  */
+        a_comment                             varchar(255)  null,      /* Comment about this intent or pledge --  */
+        a_autogen                             bit  not null,           /* Auto-generated by matching in the UI --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3116,6 +3291,52 @@ create table a_descriptives_hist (
 );
 
 
+/* a_pledge */
+
+create table a_pledge (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
+        a_pledge_id                           integer  not null,       /* ID of this pledge --  */
+        a_is_active                           bit  not null,           /* Active pledge? --  */
+        p_donor_partner_id                    char(10)  not null,      /* Donor ID making the pledge --  */
+        a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
+        a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention, R=online recurring --  */
+        a_amount                              decimal(14,4)  null,     /* Periodic amount for this intent (e.g. monthly) - UI should default copy from gift data --  */
+        a_total_amount                        decimal(14,4)  null,     /* Total amount this intent (e.g. pledged total for the year) --  */
+        a_pledge_date                         datetime  null,          /* Date the pledge was made --  */
+        a_start_date                          datetime  null,          /* Starting date - UI should default copy from gift data --  */
+        a_end_date                            datetime  null,          /* Ending date / due date - default is null --  */
+        a_giving_interval                     integer  null,           /* Giving interval: 1=monthly, 12=annually, NULL=total or as-able --  */
+        a_gift_count                          integer  null,           /* Number of gifts intended (NULL for unknown/no limit) --  */
+        a_comment                             varchar(255)  null,      /* Comment about this intent or pledge --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_intent_type */
+
+create table a_intent_type (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
+        a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention, R=online recurring --  */
+        a_intent_desc                         varchar(80)  not null,   /* Intent type label/description --  */
+        a_is_active                           bit  not null,           /* Active intent type (selectable by the user) --  */
+        a_create_receivable                   bit  not null,           /* Whether to create a receivable for this intent type --  */
+        a_recv_account_code                   char(16)  null,          /* If creating receivables, this is the GL account to use --  */
+        a_allow_daf                           bit  not null,           /* Whether to allow donor advised fund (DAF) gifts to this intent type --  */
+        a_comment                             varchar(255)  null,      /* Comment about this intent or pledge --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* a_subtrx_cashdisb */
 
 create table a_subtrx_cashdisb (
@@ -3131,10 +3352,15 @@ create table a_subtrx_cashdisb (
         a_cost_center                         char(20)  not null,      /* Cost center for the expense / liability side of the transaction --  */
         a_account_code                        char(10)  not null,      /* GL account for the expense / liability side of the transaction --  */
         a_payee_partner_key                   char(10)  not null,      /* Partner id of the payee (recipient) --  */
-        a_check_number                        integer  not null,       /* Check number being issued --  */
+        a_check_number                        varchar(16)  null,       /* Check number being issued --  */
         a_posted                              bit  default 0,          /* Has this disbursement been posted (in this file) --  */
         a_posted_to_gl                        bit  default 0,          /* Has this disbursement been posted into the GL - yes (1) or no (0)? --  */
         a_voided                              bit  default 0,          /* Has this check been voided --  */
+        a_approved_by                         varchar(20)  null,       /* Who approved the check --  */
+        a_approved_date                       datetime  null,          /* When the check was approved --  */
+        a_paid_by                             varchar(20)  null,       /* Who paid the check --  */
+        a_paid_date                           datetime  null,          /* When the check was paid --  */
+        a_reconciled                          bit  default 0,          /* Has this check been reconciled to the bank account (e.g. no longer outstanding) --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -3236,6 +3462,7 @@ create table a_subtrx_deposit (
         a_batch_number                        integer  not null,       /* Batch id for this deposit --  */
         a_period                              char(8)  not null,       /* Accounting period this deposit is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of deposit (e.g., accrual date) --  */
+        a_from_account_code                   char(10)  null,          /* GL account drawn from (typically an "undeposited funds" GL account) --  */
         a_account_code                        char(10)  not null,      /* Cash account the funds are deposited into --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Total amount of deposit --  */
@@ -3582,11 +3809,13 @@ create table c_member (
 
 create table t_project (
         t_project_id                          integer  not null,       /* unique project ID --  */
+        t_parent_project_id                   integer  null,           /* project ID of parent project - for nesting subprojects --  */
         t_project_label                       varchar(64)  not null,   /* a short label (name) for the project. --  */
         t_project_desc                        varchar(900)  null,      /* a description for the project --  */
         t_project_start                       datetime  null,          /* starting date for the project --  */
         t_project_end                         datetime  null,          /* ending date for the project --  */
         t_project_color                       varchar(32)  null,       /* a color (hex triplet, "#ffffff", or common name, "white") for the project --  */
+        t_project_status                      char(1)  null,           /* status (A)ctive, (O)bsolete --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3600,10 +3829,23 @@ create table t_project (
 
 create table t_sprint (
         t_sprint_id                           integer  not null,       /* unique sprint ID --  */
-        t_project_id                          integer  not null,       /* unique project ID --  */
         t_sprint_label                        varchar(64)  not null,   /* a short label (name) for the sprint. --  */
         t_sprint_start                        datetime  null,          /* starting date for the sprint --  */
         t_sprint_end                          datetime  null,          /* ending date for the sprint --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* t_sprint_project */
+
+create table t_sprint_project (
+        t_project_id                          integer  not null,       /* project ID --  */
+        t_sprint_id                           integer  not null,       /* the sprint the project is participating in --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3618,7 +3860,7 @@ create table t_sprint (
 create table t_sprint_time (
         t_time_id                             integer  not null,       /* unique time interval ID --  */
         t_sprint_id                           integer  not null,       /* unique sprint ID --  */
-        t_project_id                          integer  not null,       /* unique project ID --  */
+        t_project_id                          integer  null,           /* unique project ID - NULL if it applies to all projects in the sprint --  */
         t_time_start                          datetime  not null,      /* starting date and time for the time interval --  */
         t_time_hours                          float  not null,         /* number of hours in this time interval --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3656,7 +3898,6 @@ create table t_participant (
         p_partner_key                         char(10)  not null,      /* participant partner key in Kardia --  */
         t_project_id                          integer  not null,       /* unique project ID this participant is working in --  */
         t_role                                varchar(64)  null,       /* label for the role of this participant in the project --  */
-        t_skill_ratio                         float  null,             /* the typical skill of this participant (1.0 is nominal, <1.0 lower skill, and >1.0 greater skill) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3672,6 +3913,7 @@ create table t_sprint_participant (
         p_partner_key                         char(10)  not null,      /* participant partner key in Kardia --  */
         t_sprint_id                           integer  not null,       /* unique sprint ID this participant is working in --  */
         t_project_id                          integer  not null,       /* unique project ID this participant is working in --  */
+        t_skill_ratio                         float  null,             /* the typical skill of this participant (1.0 is nominal, <1.0 lower skill, and >1.0 greater skill) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

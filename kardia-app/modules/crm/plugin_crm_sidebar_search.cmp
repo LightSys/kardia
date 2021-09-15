@@ -14,10 +14,24 @@ search "widget/component-decl"
     AddPerson "widget/component-decl-event" { }
     Refresh "widget/component-decl-action" { }
     RefreshTasks "widget/component-decl-action" { }
+    BasicSearch "widget/component-decl-action" { }
+
+    do_search "widget/connector"
+	{
+	event=BasicSearch;
+	event_condition=runclient(char_length(:search_edit:content) > 2);
+	target=search_osrc;
+	action=QueryText;
+	cx__case_insensitive = 1;
+	query=runclient(:search_edit:content);
+	objname = runclient("p");
+	field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,*p_preferred_name*,p_legacy_key_1,*p_legacy_key_2*");
+	}
 
     onRefresh "widget/connector"
 	{
 	event=Refresh;
+	event_condition=runclient(char_length(:search_edit:content) > 2);
 	target=search_osrc;
 	action=Refresh;
 	}
@@ -35,7 +49,7 @@ search "widget/component-decl"
 
 	    search_edit "widget/editbox"
 		{
-		width=206;
+		width=174;
 		height=24;
 		empty_description="type search, press Enter";
 
@@ -53,20 +67,25 @@ search "widget/component-decl"
 		    event=BeforeKeyPress;
 		    event_condition=runclient(:Name == 'enter' and char_length(:search_edit:content) > 2);
 		    event_cancel=runclient(:Name == 'enter');
-		    target=search_osrc;
-		    action=QueryText;
-		    cx__case_insensitive = 1;
-		    query=runclient(:search_edit:content);
-		    objname = runclient("p");
-		    field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,*p_preferred_name*,p_legacy_key_1,*p_legacy_key_2*");
+		    target=search;
+		    action=TriggerEvent;
+		    EventName=runclient("BasicSearch");
 		    }
 		}
 
-	    search_btn "widget/imagebutton"
+	    search_btn "widget/textbutton"
 		{
+		widget_class=crm_iconbutton;
 		width=24;
 		height=24;
-		text="";
+		fl_width=0;
+		text=" ";
+		background=null;
+		align=right;
+		image_position=right;
+		image_margin=2;
+		image_width=18;
+		image_height=18;
 		//image_position=top;
 		//background="/apps/kardia/images/bg/lsblue_btngradient.png";
 		image = "/apps/kardia/images/icons/ionicons-search.svg";
@@ -84,51 +103,41 @@ search "widget/component-decl"
 		    {
 		    event=Click;
 		    event_condition=runclient(char_length(:search_edit:content) > 2);
-		    target=search_osrc;
-		    action=QueryText;
-		    cx__case_insensitive = 1;
-		    query=runclient(:search_edit:content);
-		    objname = runclient("p");
-		    field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,*p_preferred_name*,p_legacy_key_1,*p_legacy_key_2*");
+		    target=search;
+		    action=TriggerEvent;
+		    EventName=runclient("BasicSearch");
 		    }
 		}
-	    }
 
-	search_only_crm "widget/component"
-	    {
-	    height=12;
-	    fl_height=0;
-	    path = "/sys/cmp/smart_field.cmp";
-	    ctl_type = checkboxleft;
-	    text = "Show Only CRM People";
-
-	    search_crm_hints "widget/hints" { style=notnull; }
-
-	    onchange_switch_tab "widget/connector"
+	    customize_menu "widget/textbutton"
 		{
-		event = DataChange;
-		event_condition=runclient(char_length(:search_edit:content) > 2);
-		target = search_tab;
-		action = SetTab;
-		TabIndex = 1;
-		}
+		widget_class=crm_iconbutton;
+		height=24; width=24;
+		fl_width=0;
+		text=" ";
+		image="/apps/kardia/images/icons/ionicons-hamburger.svg";
+		image_position=right;
+		image_margin=2;
+		background=null;
+		align=right;
+		image_width=18;
+		image_height=18;
 
-	    redo_search_on_change "widget/connector"
-		{
-		event=DataChange;
-		event_condition=runclient(char_length(:search_edit:content) > 2);
-		target=search_osrc;
-		action=QueryText;
-		cx__case_insensitive = 1;
-		query=runclient(:search_edit:content);
-		objname = runclient("p");
-		field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_preferred_name*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*");
+		custom_on_click "widget/connector"
+		    {
+		    event=Click;
+		    target=customize_win;
+		    action=ToggleVisibility;
+		    IsModal=1;
+		    PointAt=customize_menu;
+		    PointSide=runclient('top');
+		    }
 		}
 	    }
 
 	search_tab "widget/tab"
 	    {
-	    height=321;
+	    height=331;
 	    tab_location = none;
 	    border_style=none;
 	    background=null;
@@ -139,6 +148,7 @@ search "widget/component-decl"
 		search_osrc "widget/osrc"
 		    {
 		    only_crm "widget/parameter" { type=integer; default=runclient(:search_only_crm:value); }
+		    show_obs "widget/parameter" { type=integer; default=runclient(:show_obsolete:value); }
 		    sql = " SELECT
 				    :p:p_partner_key,
 				    nm = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
@@ -168,9 +178,9 @@ search "widget/component-decl"
 			    WHERE
 				    :p:p_partner_key *= :pl:p_partner_key and
 				    :pl:p_revision_id = 0 and
-				    :pl:p_record_status_code = 'A' and
-				    :p:p_record_status_code = 'A' and
-				    :p:p_status_code = 'A'
+				    (:pl:p_record_status_code = 'A' or :parameters:show_obs) and
+				    (:p:p_record_status_code = 'A' or :parameters:show_obs) and
+				    (:p:p_status_code = 'A' or :parameters:show_obs)
 			    GROUP BY
 				    :p:p_partner_key
 			    HAVING
@@ -186,7 +196,7 @@ search "widget/component-decl"
 			{
 			x=0; y=0;
 			width=240;
-			height=321;
+			height=331;
 			//rowheight = 20;
 			min_rowheight=16;
 			max_rowheight=64;
@@ -283,6 +293,7 @@ search "widget/component-decl"
 		    session_id "widget/parameter" { type=integer; }
 		    stage_id "widget/parameter" { type=integer; }
 		    a_only_crm "widget/parameter" { param_name=only_crm; type=integer; default=runclient(:search_only_crm:value); }
+		    a_show_obs "widget/parameter" { param_name=show_obs; type=integer; default=runclient(:show_obsolete:value); }
 
 		    sql = " declare collection advsearch scope application;
 
@@ -332,9 +343,9 @@ search "widget/component-decl"
 				    :p:p_partner_key = :sr:p_partner_key and
 				    :p:p_partner_key *= :pl:p_partner_key and
 				    :pl:p_revision_id = 0 and
-				    :pl:p_record_status_code = 'A' and
-				    :p:p_record_status_code = 'A' and
-				    :p:p_status_code = 'A'
+				    (:pl:p_record_status_code = 'A' or :parameters:show_obs) and
+				    (:p:p_record_status_code = 'A' or :parameters:show_obs) and
+				    (:p:p_status_code = 'A' or :parameters:show_obs)
 			    group by
 				    :sr:p_partner_key
 			    order by
@@ -353,7 +364,7 @@ search "widget/component-decl"
 			{
 			x=0; y=0;
 			width=240;
-			height=289;
+			height=299;
 			//rowheight = 20;
 			min_rowheight=16;
 			max_rowheight=64;
@@ -419,7 +430,7 @@ search "widget/component-decl"
 
 		action_btns "widget/hbox"
 		    {
-		    x=0; y=297; height=24; width=240;
+		    x=0; y=307; height=24; width=240;
 		    spacing=8;
 		    align=center;
 
@@ -488,18 +499,65 @@ search "widget/component-decl"
 		}
 	    }
 
-	advanced_search_btn "widget/textbutton"
+	search_mode_ind "widget/hbox"
 	    {
-	    x=45;
-	    height=24;
-	    width=150;
-	    text="Advanced Search...";
-	    background="/apps/kardia/images/bg/lsblue_btngradient.png";
-	    fgcolor1=white;
-	    fgcolor2=black;
-	    disable_color="#334466";
+	    height=2;
+	    align=center;
+	    spacing=10;
 
-	    on_adv "widget/connector" { event=Click; target=search; action=AdvancedSearch; }
+	    basic_ind "widget/pane"
+		{
+		width=100;
+		height=2;
+		style=flat;
+		bgcolor=runclient(condition(:search_tab:selected_index == 1, '#334466', '#f8f8f8'));
+		}
+
+	    adv_ind "widget/pane"
+		{
+		width=100;
+		height=2;
+		style=flat;
+		bgcolor=runclient(condition(:search_tab:selected_index == 2, '#334466', '#f8f8f8'));
+		}
+	    }
+
+	search_ctls "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    basic_search_btn "widget/textbutton"
+		{
+		x=45;
+		height=24;
+		width=100;
+		text="Basic";
+		//enabled=runclient(:search_tab:selected_index == 2);
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+
+		on_bas1 "widget/connector" { event=Click; target = search_tab; action = SetTab; TabIndex = 1; }
+		}
+
+	    advanced_search_btn "widget/textbutton"
+		{
+		x=45;
+		height=24;
+		width=100;
+		text="Advanced...";
+		//enabled=runclient(:search_tab:selected_index == 1);
+		background="/apps/kardia/images/bg/lsblue_btngradient.png";
+		fgcolor1=white;
+		fgcolor2=black;
+		disable_color="#334466";
+
+		on_adv "widget/connector" { event=Click; target=search; action=AdvancedSearch; }
+		on_adv2 "widget/connector" { event=Click; target = search_tab; action = SetTab; TabIndex = 2; }
+		}
 	    }
 	}
 
@@ -821,6 +879,127 @@ search "widget/component-decl"
 		disable_color="#334466";
 
 		on_cancel "widget/connector" { event=Click; target=reports_win; action=Close; }
+		}
+	    }
+	}
+
+    customize_win "widget/childwindow"
+	{
+	titlebar=no;
+	toplevel=yes;
+	visible=no;
+	x=0; y=0; width=400; height=135;
+	fl_width=100;
+	border_radius=8;
+	border_style=solid;
+	border_color="#6080c0";
+	shadow_radius=8;
+	shadow_color="#6080c0";
+	shadow_offset=0;
+	background=null;
+	bgcolor="#f8f8f8";
+
+	customize_vbox "widget/vbox"
+	    {
+	    x=20; y=10; width=358; height=108;
+	    spacing=8;
+
+	    customize_form "widget/form"
+		{
+		allow_nodata=no;
+		allow_new=yes;
+		allow_query=no;
+		allow_view=no;
+		allow_modify=no;
+		allow_obscure=yes;
+		//confirm_discard=no;
+
+		heading "widget/label"
+		    {
+		    height=24;
+		    font_size=15;
+		    style=bold;
+		    align=center;
+		    text="Search Options:";
+		    }
+
+		search_only_crm "widget/component"
+		    {
+		    height=20;
+		    fl_height=0;
+		    path = "/sys/cmp/smart_field.cmp";
+		    ctl_type = checkboxleft;
+		    text = "Show Only CRM People";
+
+		    search_crm_hints "widget/hints" { style=notnull; }
+
+		    onchange_switch_tab "widget/connector"
+			{
+			condition=0;
+			event = DataChange;
+			event_condition=runclient(char_length(:search_edit:content) > 2);
+			target = search_tab;
+			action = SetTab;
+			TabIndex = 1;
+			}
+
+		    redo_search_on_change "widget/connector"
+			{
+			event=DataChange;
+			event_condition=runclient(char_length(:search_edit:content) > 2);
+			target=search;
+			action=TriggerEvent;
+			EventName=runclient("BasicSearch");
+			}
+		    }
+
+		show_obsolete "widget/component"
+		    {
+		    height=20;
+		    fl_height=0;
+		    path = "/sys/cmp/smart_field.cmp";
+		    ctl_type = checkboxleft;
+		    text = "Include Obsolete Partners";
+
+		    obs_hints "widget/hints" { style=notnull; }
+
+		    obs_onchange_switch_tab "widget/connector"
+			{
+			condition=0;
+			event = DataChange;
+			event_condition=runclient(char_length(:search_edit:content) > 2);
+			target = search_tab;
+			action = SetTab;
+			TabIndex = 1;
+			}
+
+		    obs_redo_search_on_change "widget/connector"
+			{
+			event=DataChange;
+			event_condition=runclient(char_length(:search_edit:content) > 2);
+			target=search;
+			action=TriggerEvent;
+			EventName=runclient("BasicSearch");
+			}
+		    }
+
+		btns_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    align=center;
+
+		    close_btn "widget/textbutton"
+			{
+			text = "Close";
+			height=24; width=130;
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+
+			on_close "widget/connector" { event=Click; target=customize_win; action=Close; }
+			}
+		    }
 		}
 	    }
 	}

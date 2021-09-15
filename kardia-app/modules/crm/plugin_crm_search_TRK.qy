@@ -17,6 +17,7 @@ plugin_crm_search_TRK "system/query"
 		:stage:op = :s:p_stage_op,
 		:stage:track = convert(integer,:sc:track),
 		:stage:step = convert(integer,:sc:step),
+		:stage:curstep = convert(integer, :sc:curstep),
 		:stage:notstep = convert(integer,:sc:notstep),
 		:stage:startdate = convert(datetime,:sc:start),
 		:stage:enddate = convert(datetime,:sc:end),
@@ -45,6 +46,7 @@ plugin_crm_search_TRK "system/query"
 		:e:e_completion_status != 'E' and
 		(:stage:track is null or :e:e_track_id = :stage:track) and
 		(:stage:comment is null or charindex(:stage:comment, lower(:e:e_comments)) > 0 or charindex(:stage:comment, lower(:e:e_desc)) > 0) and
+		(isnull(:stage:curstep, 0) = 0 or :e:e_completion_status = 'I') and
 		(:parameters:prev_keys is null or charindex(',' + rtrim(:e:p_partner_key) + ',', ',' + :parameters:prev_keys + ',') > 0)
 	    group by
 		:e:p_partner_key

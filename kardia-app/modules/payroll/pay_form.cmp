@@ -23,7 +23,7 @@ pay_form "widget/component-decl"
 	event=LoadComplete;
 	target=current_box;
 	action=Resize;
-	Height=runclient(:ttl_hbox:y - 67);
+	Height=runclient(:ttl_hbox:y - 66);
 	}
 
     resize_box_on_load "widget/connector"
@@ -31,7 +31,7 @@ pay_form "widget/component-decl"
 	event=LoadComplete;
 	target=budget_box;
 	action=Resize;
-	Height=runclient(:ttl_hbox:y - 67);
+	Height=runclient(:ttl_hbox:y - 66);
 	}
 
     resize_box2_on_load "widget/connector"
@@ -39,7 +39,7 @@ pay_form "widget/component-decl"
 	event=LoadComplete;
 	target=prev_box;
 	action=Resize;
-	Height=runclient(:ttl_hbox:y - 67);
+	Height=runclient(:ttl_hbox:y - 66);
 	}
 
     resize_box3_on_load "widget/connector"
@@ -47,7 +47,7 @@ pay_form "widget/component-decl"
 	event=LoadComplete;
 	target=fromgl_box;
 	action=Resize;
-	Height=runclient(:ttl_hbox:y - 67);
+	Height=runclient(:ttl_hbox:y - 66);
 	}
 
     current_box "widget/pane"
@@ -55,6 +55,7 @@ pay_form "widget/component-decl"
 	x=163; y=36; width=163; height=570;
 	style=flat;
 	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	border_radius=6;
 	}
 
     budget_box "widget/pane"
@@ -62,6 +63,7 @@ pay_form "widget/component-decl"
 	x=334; y=36; width=93; height=570;
 	style=flat;
 	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	border_radius=6;
 	}
 
     prev_box "widget/pane"
@@ -69,6 +71,7 @@ pay_form "widget/component-decl"
 	x=435; y=36; width=82; height=570;
 	style=flat;
 	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	border_radius=6;
 	}
 
     fromgl_box "widget/pane"
@@ -76,6 +79,7 @@ pay_form "widget/component-decl"
 	x=525; y=36; width=94; height=570;
 	style=flat;
 	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	border_radius=6;
 	}
 
     // This is used to resync the various computed fields when a change is signaled.
@@ -178,13 +182,18 @@ pay_form "widget/component-decl"
 		widget_class="label";
 		border_color = "#153f5f";
 		border_radius = 6;
+		style=flat;
+		shadow_radius = 4;
+		shadow_offset = 2;
+		shadow_color = "#808080";
+		shadow_angle = 135;
 
 		categorylbl_rp "widget/repeat"
 		    {
 		    sql = runserver("SELECT label = sum(:ic:a_desc + ', ') - ', '  FROM /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows ic  WHERE charindex(:ic:a_payroll_item_class_code, " + quote(:category_rp:codes) + ") > 0  ORDER BY charindex(:ic:a_payroll_item_class_code, " + quote(:category_rp:codes) + ")");
 		    category_lbl "widget/label"
 			{
-			x=4;y=1;width=400;height=18;
+			x=5;y=1;width=400;height=18;
 			//font_size = 13;
 			widget_class="label";
 			align=left;

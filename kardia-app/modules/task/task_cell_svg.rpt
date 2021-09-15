@@ -6,7 +6,7 @@ task_cell_svg "system/report"
     document_format="text/plain";
     content_type="image/svg+xml";
     pagewidth=255;
-    pageheight=255;
+    pageheight=1023;
     marginleft=0;
     marginright=0;
     margintop=0;
@@ -28,39 +28,45 @@ task_cell_svg "system/report"
 
 		-- Which sprint?
 		select
-		    :block:sprint = :t_sprint_id,
-		    :block:sprintname = :t_sprint_label
+		    :block:sprint = :s:t_sprint_id,
+		    :block:sprintname = :s:t_sprint_label
 		from
-		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s --,
+		    --/apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
 		where
-		    :t_project_id = :this:project and
-		    :t_sprint_id = :this:sprint
+		    --(:sp:t_project_id = :this:project or :this:project = 0) and
+		    :s:t_sprint_id = :this:sprint --and
+		    --:s:t_sprint_id = :sp:t_sprint_id
 		;
 		select
-		    :block:sprint = isnull(:block:sprint, :t_sprint_id),
-		    :block:sprintname = isnull(:block:sprintname, :t_sprint_label)
+		    :block:sprint = isnull(:block:sprint, :s:t_sprint_id),
+		    :block:sprintname = isnull(:block:sprintname, :s:t_sprint_label)
 		from
-		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s,
+		    /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
 		where
-		    :t_project_id = :this:project and
-		    getdate() >= :t_sprint_start and
-		    getdate() <= :t_sprint_end
+		    (:sp:t_project_id = :this:project or :this:project = 0) and
+		    getdate() >= :s:t_sprint_start and
+		    getdate() <= :s:t_sprint_end and
+		    :s:t_sprint_id = :sp:t_sprint_id
 		order by
-		    :t_sprint_start desc
+		    :s:t_sprint_start desc
 		limit
 		    1
 		;
 
 		-- Did not find one?
 		select
-		    :block:sprint = isnull(:block:sprint, :t_sprint_id),
-		    :block:sprintname = isnull(:block:sprintname, :t_sprint_label)
+		    :block:sprint = isnull(:block:sprint, :s:t_sprint_id),
+		    :block:sprintname = isnull(:block:sprintname, :s:t_sprint_label)
 		where
-		    :t_project_id = :this:project
+		    (:sp:t_project_id = :this:project or :this:project = 0) and
+		    :s:t_sprint_id = :sp:t_sprint_id
 		from
-		    /apps/kardia/data/Kardia_DB/t_sprint/rows s
+		    /apps/kardia/data/Kardia_DB/t_sprint/rows s,
+		    /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
 		order by
-		    :t_sprint_start desc
+		    :s:t_sprint_start desc
 		limit
 		    1
 		;
@@ -70,7 +76,7 @@ task_cell_svg "system/report"
 		from
 		    /apps/kardia/data/Kardia_DB/t_task/rows t
 		where
-		    :t:t_project_id = :this:project and
+		    (:t:t_project_id = :this:project or :this:project = 0) and
 		    :t:t_sprint_id = :block:sprint and
 		    :t:t_task_state = :this:state
 		;
@@ -80,7 +86,7 @@ task_cell_svg "system/report"
 		from
 		    /apps/kardia/data/Kardia_DB/t_task/rows t
 		where
-		    :t:t_project_id = :this:project and
+		    (:t:t_project_id = :this:project or :this:project = 0) and
 		    :t:t_sprint_id = :block:sprint
 		group by
 		    :t:t_task_state
@@ -96,15 +102,15 @@ task_cell_svg "system/report"
 		    :block:width = :this:image_width / :block:oneside
 		;
 		select
-		    :block:height = :block:width * 2 / 3
+		    :block:height = :block:width * 5 / 8
 		;
 
 		select
-		    :block:color = isnull(max(:t_project_color), '#606060')
+		    :block:color = condition(count(1) > 1, '#ffffff', isnull(max(:t_project_color), '#606060'))
 		from
 		    /apps/kardia/data/Kardia_DB/t_project/rows
 		where
-		    :t_project_id = :this:project
+		    :t_project_id = :this:project or :this:project = 0
 		;
 
 		select
@@ -132,15 +138,19 @@ task_cell_svg "system/report"
 		    :t1:t_task_label,
 		    :t1:t_task_desc,
 		    :t1:t_task_hours,
+		    :p:t_project_color,
 		    seq = count(:t2:t_task_id)
 		from
 		    /apps/kardia/data/Kardia_DB/t_task/rows t1,
+		    /apps/kardia/data/Kardia_DB/t_project/rows p,
 		    /apps/kardia/data/Kardia_DB/t_task/rows t2
 		where
-		    :t1:t_project_id = :this:project and
+		    :p:t_project_id = :t1:t_project_id and
+		    (:t1:t_project_id = :this:project or :this:project = 0) and
+		    (:t2:t_project_id = :this:project or :this:project = 0) and
 		    :t1:t_sprint_id = :block_qy:sprint and
 		    :t1:t_task_state = :this:state and
-		    :t2:t_project_id =* :t1:t_project_id and
+		    --:t2:t_project_id =* :t1:t_project_id and
 		    :t2:t_sprint_id =* :t1:t_sprint_id and
 		    :t2:t_task_state =* :t1:t_task_state and
 		    :t2:t_task_id <* :t1:t_task_id
@@ -166,8 +176,8 @@ task_cell_svg "system/report"
 	sql = "	select
 		    x = (:tasks_qy:seq - (:tasks_qy:seq / :block_qy:oneside * :block_qy:oneside)) * :block_qy:width,
 		    y = (:tasks_qy:seq / :block_qy:oneside) * :block_qy:height,
-		    width = :block_qy:width - 5,
-		    height = :block_qy:height - 5,
+		    width = condition(:block_qy:width < 10, :block_qy:width - 1, :block_qy:width - 5),
+		    height = condition(:block_qy:height < 10, :block_qy:height - 1, :block_qy:height - 5),
 		    title_x = (:tasks_qy:seq - (:tasks_qy:seq / :block_qy:oneside * :block_qy:oneside)) * :block_qy:width + 2,
 		    title_y = (:tasks_qy:seq / :block_qy:oneside) * :block_qy:height + 2 + :block_qy:titlesize,
 		    num_x = (:tasks_qy:seq - (:tasks_qy:seq / :block_qy:oneside * :block_qy:oneside)) * :block_qy:width + 2,
@@ -201,10 +211,12 @@ task_cell_svg "system/report"
 		{
 		x=0; width=255; height=0;
 		value=runserver(
-			'    <rect x="' + :task_geom_qy:x + 'px" y="' + :task_geom_qy:y + 'px" width="' + :task_geom_qy:width + 'px" height="' + :task_geom_qy:height + 'px" rx="4px" ry="4px" style="stroke:none; fill:' + :block_qy:color + ';" />\n' +
-			'    <text x="' + (:task_geom_qy:title_x) + 'px" y="' + (:task_geom_qy:title_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + replace(replace(replace(:tasks_qy:t_task_label, '&', '&amp;'), '<', '&lt;'), '>', '&gt;')  + '</text>\n' +
-			'    <text x="' + (:task_geom_qy:num_x) + 'px" y="' + (:task_geom_qy:num_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + :tasks_qy:t_task_hours + '</text>\n' +
-			'    <text x="' + (:task_geom_qy:assign_x) + 'px" y="' + (:task_geom_qy:assign_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + :assign_qy:assignees + '</text>\n'
+			'    <rect x="' + :task_geom_qy:x + 'px" y="' + :task_geom_qy:y + 'px" width="' + :task_geom_qy:width + 'px" height="' + :task_geom_qy:height + 'px" rx="4px" ry="4px" style="stroke:none; fill:' + :tasks_qy:t_project_color + ';" />\n' +
+			condition(:task_geom_qy:width < 30, '', 
+			    '    <text x="' + (:task_geom_qy:title_x) + 'px" y="' + (:task_geom_qy:title_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + replace(replace(replace(:tasks_qy:t_task_label, '&', '&amp;'), '<', '&lt;'), '>', '&gt;')  + '</text>\n' +
+			    '    <text x="' + (:task_geom_qy:num_x) + 'px" y="' + (:task_geom_qy:num_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + :tasks_qy:t_task_hours + '</text>\n' +
+			    '    <text x="' + (:task_geom_qy:assign_x) + 'px" y="' + (:task_geom_qy:assign_y) + 'px" style="font-family:arial,helvetica,sans-serif; font-size:' + :block_qy:titlesize + 'pt; font-weight:bold; stroke:none; fill:black; text-anchor:start;">' + :assign_qy:assignees + '</text>\n'
+			    )
 			);
 		}
 	    }

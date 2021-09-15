@@ -3,6 +3,7 @@ plugin_crm_search_CON "widget/component-decl"
     {
     stage_label = "Contact Info";
     stage_short_label = "Contact";
+    stage_description = "Phone, Email, etc.";
     stage_description_expr = "isnull((select isnull('Type: ' + :param:hascont + ', ', '') + isnull('Comment: ' + :param:comment + ', ', '') + isnull('Contact: ' + :param:contact + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
     stage_type = "CON";
     icon = "/apps/kardia/images/icons/ionicons-contacts2.svg";

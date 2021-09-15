@@ -1,0 +1,38 @@
+$Version=2$
+admin_fees "widget/component-decl"
+    {
+    width=800; height=630;
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+
+    admin_fees_tabctl "widget/tab"
+	{
+	x=0; y=0; width=800; height=605;
+	background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+	border_radius=6;
+
+	cc_admin_tab "widget/tabpage"
+	    {
+	    title = "Admin Fees for Funds";
+
+	    af_cmp "widget/component"
+		{
+		x=10; y=10; width=780; height=583;
+		path = "/apps/kardia/modules/rcpt/cc_admin_fee.cmp";
+		ledger = runserver(:this:ledger);
+		}
+	    }
+
+	admin_types_tab "widget/tabpage"
+	    {
+	    title = "Admin Fee Types";
+
+	    at_cmp "widget/component"
+		{
+		x=10; y=10; width=780; height=583;
+		path = "/apps/kardia/modules/rcpt/admin_types.cmp";
+		ledger = runserver(:this:ledger);
+		}
+	    }
+	}
+    }

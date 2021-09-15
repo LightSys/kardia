@@ -48,6 +48,7 @@ plugin_crm_timeline_TAG "widget/component-decl"
 		save_tag "widget/component" { width=18; path="/sys/cmp/save_btn.cmp"; object_name="Tag"; }
 		cancel_tag "widget/component" { width=18; path="/sys/cmp/cancel_btn.cmp"; object_name="Tag"; }
 		delete_tag "widget/component" { width=18; path="/sys/cmp/delete_btn.cmp"; object_name="Tag"; }
+		tag_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 		}
 	    }
 	}

@@ -99,6 +99,9 @@ revoke select on ra to public;
 /* m_list_membership */
 
 
+/* m_list_document */
+
+
 /* e_contact_autorecord */
 
 
@@ -339,10 +342,19 @@ revoke select on ra to public;
 /* a_ledger_office */
 
 
+/* a_currency */
+
+
+/* a_currency_exch_rate */
+
+
 /* a_payroll */
 
 
 /* a_payroll_period */
+
+
+/* a_payroll_period_payee */
 
 
 /* a_payroll_group */
@@ -402,6 +414,12 @@ revoke select on ra to public;
 /* a_receipt_type */
 
 
+/* a_gift_payment_type */
+
+
+/* a_receipt_mailing */
+
+
 /* a_subtrx_gift */
 
 
@@ -409,6 +427,9 @@ revoke select on ra to public;
 
 
 /* a_subtrx_gift_item */
+
+
+/* a_subtrx_gift_intent */
 
 
 /* a_subtrx_gift_rcptcnt */
@@ -442,6 +463,12 @@ revoke select on ra to public;
 
 
 /* a_descriptives_hist */
+
+
+/* a_pledge */
+
+
+/* a_intent_type */
 
 
 /* a_subtrx_cashdisb */
@@ -502,6 +529,9 @@ revoke select on ra to public;
 
 
 /* t_sprint */
+
+
+/* t_sprint_project */
 
 
 /* t_sprint_time */

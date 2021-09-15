@@ -15,19 +15,11 @@ cc_admin_fee "widget/component-decl"
 	    {
 	    width=250; spacing=8;
 
-	    searchlbl_pane "widget/pane"
+	    search_hdr "widget/component"
 		{
-		height=20; width=250;
-		widget_class="label";
-		border_color = "#153f5f";
-
-		searchlbl "widget/label"
-		    {
-		    x=4;y=0;width=248;height=18;
-		    widget_class="label";
-		    align=left;
-		    text = "Search Funds";
-		    }
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		height = 20;
+		text = "Search Funds:";
 		}
 
 	    //searchlbl "widget/label" { height=20; text="Search Funds:"; align=center; style=bold; font_size=12; }
@@ -117,19 +109,11 @@ cc_admin_fee "widget/component-decl"
 	    {
 	    width=514; spacing=8;
 
-	    adlbl_pane "widget/pane"
+	    ad_hdr "widget/component"
 		{
-		height=20; width=514;
-		widget_class="label";
-		border_color = "#153f5f";
-
-		adlbl "widget/label"
-		    {
-		    x=4;y=0;width=512;height=18;
-		    widget_class="label";
-		    align=left;
-		    value = runclient("Admin Fee Settings" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
-		    }
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		height = 20;
+		text = runclient("Admin Fee Settings" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
 		}
 
 	    view_form "widget/form"
@@ -149,19 +133,11 @@ cc_admin_fee "widget/component-decl"
 		f_actpct "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='pct'; ctl_type=label; text='Actual %:'; label_width=120; }
 		}
 
-	    editlbl_pane "widget/pane"
+	    edit_hdr "widget/component"
 		{
-		height=20; width=514;
-		widget_class="label";
-		border_color = "#153f5f";
-
-		editlbl "widget/label"
-		    {
-		    x=4;y=0;width=512;height=18;
-		    widget_class="label";
-		    align=left;
-		    value = runclient("Edit Admin Fee Settings" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
-		    }
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		height = 20;
+		text = runclient("Edit Admin Fee Settings" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
 		}
 
 	    editcmp "widget/component"

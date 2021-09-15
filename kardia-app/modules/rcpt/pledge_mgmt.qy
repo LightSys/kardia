@@ -1,0 +1,440 @@
+$Version=2$
+pledge_mgmt "system/query"
+    {
+    // This .qy provides management of pledges and intents that are associated
+    // with gifts at the time of gift entry.
+
+    // Basic criteria
+    a_ledger_number "query/parameter" { type=string; }
+    a_batch_number "query/parameter" { type=integer; }
+    a_gift_number "query/parameter" { type=integer; }
+    donor "query/parameter" { type=string; }
+    ackdonor "query/parameter" { type=string; }
+    date "query/parameter" { type=string; }
+    posted "query/parameter" { type=integer; }
+    name "query/parameter" { type=string; style=strnull; }
+
+    // Automarking criteria
+    do_automark "query/parameter" { type=integer; default=0; }
+    curdesig "query/parameter" { type=string; }
+    curamt "query/parameter" { type=string; }
+    curitem "query/parameter" { type=integer; }
+
+    // Pledge activate/inactivate
+    do_active "query/parameter" { type=integer; default=0; }
+    pledge_id "query/parameter" { type=integer; }
+    pledge_active "query/parameter" { type=integer; }
+
+    // Pledge/intent connect/disconnect from current gift.
+    do_connect "query/parameter" { type=integer; default=0; }
+    //pledge_id "query/parameter" { type=integer; } // already included above
+    intent_id "query/parameter" { type=integer; }
+    selected "query/parameter" { type=integer; }
+
+    sql = " declare collection intentdata scope application;
+	    declare object info;
+	    
+	    ----
+	    ---- Intent Toggle:  Toggle intent inclusion in a gift
+	    ----
+	    insert
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows
+	    select
+		a_ledger_number = :parameters:a_ledger_number,
+		a_batch_number = :parameters:a_batch_number,
+		a_gift_number = :parameters:a_gift_number,
+		a_pledge_id = :p:a_pledge_id,
+		p_dn_donor_partner_id = :parameters:donor,
+		p_dn_ack_partner_id = condition(char_length(:parameters:ackdonor) > 0, :parameters:ackdonor, null),
+		:p:a_cost_center,
+		:p:a_intent_type,
+		:p:a_amount,
+		:p:a_total_amount,
+		:p:a_start_date,
+		:p:a_end_date,
+		:p:a_giving_interval,
+		:p:a_gift_count,
+		:p:a_comment,
+		a_autogen = 0,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_pledge/rows p
+	    where
+		:p:a_pledge_id = :parameters:pledge_id and
+		:p:a_ledger_number = :parameters:a_ledger_number and
+		:parameters:selected = 1 and
+		:parameters:intent_id is null and
+		:parameters:do_connect = 1 and
+		:parameters:name is null
+	    ;
+
+	    delete
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows
+	    where
+		isnull(:a_pledge_id, 0) = isnull(:parameters:pledge_id, 0) and
+		:a_ledger_number = :parameters:a_ledger_number and
+		:a_intent_number = :parameters:intent_id and
+		:parameters:selected = 0 and
+		:parameters:intent_id is not null and
+		:parameters:do_connect = 1 and
+		:parameters:name is null
+	    ;
+
+	    ----
+	    ---- Active Toggle: Adjust active flag and ending date
+	    ----
+	    update
+		/apps/kardia/data/Kardia_DB/a_pledge/rows
+	    set
+		:a_is_active = :parameters:pledge_active,
+		:a_end_date = condition(:a_end_date is null and not :parameters:pledge_active, dateadd(day, 1, getdate()), 
+			      condition(:a_end_date is not null and :parameters:pledge_active and :a_end_date < dateadd(day, 2, getdate()), null, :a_end_date)),
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    where
+		:a_ledger_number = :parameters:a_ledger_number and
+		:a_pledge_id = :parameters:pledge_id and
+		:parameters:do_active = 1 and
+		:parameters:name is null
+	    ;
+	    update
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows
+	    set
+		:a_end_date = condition(:a_end_date is null and not :parameters:pledge_active, dateadd(day, 1, getdate()), 
+			      condition(:a_end_date is not null and :parameters:pledge_active and :a_end_date < dateadd(day, 2, getdate()), null, :a_end_date)),
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    where
+		:a_ledger_number = :parameters:a_ledger_number and
+		:a_batch_number = :parameters:a_batch_number and
+		:a_gift_number = :parameters:a_gift_number and
+		:a_pledge_id = :parameters:pledge_id and
+		(:a_autogen = 0 or :parameters:pledge_active = 1) and
+		:parameters:do_active = 1 and
+		:parameters:name is null
+	    ;
+
+	    -- Remove gift entry intents associated with an inactive pledge.
+	    delete
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows
+	    where
+		:a_ledger_number = :parameters:a_ledger_number and
+		:a_batch_number = :parameters:a_batch_number and
+		:a_gift_number = :parameters:a_gift_number and
+		:a_pledge_id = :parameters:pledge_id and
+		:a_autogen = 1 and
+		:parameters:pledge_active = 0 and
+		:parameters:do_active = 1 and
+		:parameters:name is null
+	    ;
+
+	    ----
+	    ---- Automarking: Match based on saved data.
+	    ----
+	    update
+		identity collection intentdata id,
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+	    set
+		:id:marked = 1,
+		:id:a_batch_number = :parameters:a_batch_number,
+		:id:a_gift_number = :parameters:a_gift_number,
+		:id:a_split_number = :gi:a_split_number
+	    where
+		:gi:a_ledger_number = :id:a_ledger_number and
+		:gi:a_batch_number = :parameters:a_batch_number and
+		:gi:a_gift_number = :parameters:a_gift_number and
+		:gi:a_split_number != isnull(:parameters:curitem, -1) and
+		:id:marked is null and
+		(:id:has_intent = 0 or :id:a_autogen) and
+		:id:a_is_active = 1 and
+		(:gi:a_cost_center = :id:a_cost_center or :id:a_cost_center is null) and
+		(:gi:a_amount = :id:a_amount or :id:a_amount is null) and
+		:g:a_ledger_number = :gi:a_ledger_number and
+		:g:a_batch_number = :gi:a_batch_number and
+		:g:a_gift_number = :gi:a_gift_number and
+		:parameters:do_automark = 1 and
+		:parameters:posted = 0 and
+		:parameters:name is null
+	    ;
+
+	    -- Match based on currently viewed or edited record
+	    update
+		identity collection intentdata id
+	    set
+		:id:marked = 1,
+		:id:a_batch_number = :parameters:a_batch_number,
+		:id:a_gift_number = :parameters:a_gift_number,
+		:id:a_split_number = :parameters:curitem
+	    where
+		:id:marked is null and
+		(:id:has_intent = 0 or :id:a_autogen) and
+		:id:a_is_active = 1 and
+		:id:a_cost_center = :parameters:curdesig and
+		:id:a_amount = convert(money, :parameters:curamt) and
+		:parameters:do_automark = 1 and
+		:parameters:posted = 0 and
+		:parameters:name is null
+	    ;
+
+	    -- Clear out previously auto-marked pledges.
+	    delete
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in
+	    where
+		:in:a_ledger_number = :parameters:a_ledger_number and
+		:in:a_batch_number = :parameters:a_batch_number and
+		:in:a_gift_number = :parameters:a_gift_number and
+		:in:a_autogen = 1 and
+		:parameters:do_automark = 1 and
+		:parameters:posted = 0 and
+		:parameters:name is null
+	    ;
+
+	    -- Create the new auto-marked pledges.
+	    insert
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows
+	    select
+		:id:a_ledger_number,
+		:id:a_batch_number,
+		:id:a_gift_number,
+		:id:a_split_number,
+		:id:a_pledge_id,
+		:id:p_dn_donor_partner_id,
+		:id:p_dn_ack_partner_id,
+		:id:a_cost_center,
+		:id:a_intent_type,
+		:id:a_amount,
+		:id:a_total_amount,
+		:id:a_start_date,
+		:id:a_end_date,
+		:id:a_giving_interval,
+		:id:a_gift_count,
+		:id:a_comment,
+		a_autogen = 1,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		collection intentdata id
+	    where
+		:id:marked = 1 and
+		:parameters:do_automark = 1 and
+		:parameters:name is null and
+		:parameters:posted = 0
+	    on duplicate
+		:a_ledger_number,
+		:a_batch_number,
+		:a_gift_number,
+		:a_cost_center,
+		:a_amount
+	    update set
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    ;
+
+	    ----
+	    ---- Now onto our main intent retrieval
+	    ----
+	    select :info:giftdate = convert(datetime, :parameters:date);
+
+	    -- Clear out our temp collection
+	    delete from collection intentdata where :parameters:name is null;
+
+	    -- Create suggested intents based on the item intent codes entered in designations
+	    insert
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows
+	    select
+		:i:a_ledger_number,
+		:i:a_batch_number,
+		:i:a_gift_number,
+		:i:a_split_number,
+		a_is_active = null,
+		:pl:a_pledge_id,
+		a_autogen = 1,
+		p_dn_donor_partner_id = :parameters:donor,
+		p_dn_ack_partner_id = :parameters:ackdonor,
+		:i:a_cost_center,
+		a_start_date = getdate(),
+		a_end_date = null,
+		:i:a_amount,
+		a_total_amount = null,
+		a_intent_type = 'I',
+		a_giving_interval = condition(:i:a_item_intent_code = 'M', 1, condition(:i:a_item_intent_code = 'Y', 12, condition(:i:a_item_intent_code = 'Q', 3, null))),
+		a_gift_count = null,
+		a_comment = '',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		/apps/kardia/data/Kardia_DB/a_pledge/rows pl,
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in,
+		collection intentdata id,
+		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+	    where
+		:i:a_ledger_number = :parameters:a_ledger_number and
+		:i:a_batch_number = :parameters:a_batch_number and
+		:i:a_gift_number = :parameters:a_gift_number and
+		:pl:a_ledger_number =* :i:a_ledger_number and
+		:pl:a_cost_center =* :i:a_cost_center and
+		(:pl:p_donor_partner_id = :parameters:donor or :pl:p_donor_partner_id = :parameters:ackdonor) and
+		:pl:a_amount =* :i:a_amount and
+		:pl:a_is_active = 1 and
+		:in:a_ledger_number =* :i:a_ledger_number and
+		:in:a_batch_number =* :i:a_batch_number and
+		:in:a_gift_number =* :i:a_gift_number and
+		:in:a_cost_center =* :i:a_cost_center and
+		:in:a_amount =* :i:a_amount and
+		:id:a_ledger_number =* :i:a_ledger_number and
+		:id:a_batch_number =* :i:a_batch_number and
+		:id:a_gift_number =* :i:a_gift_number and
+		:id:a_cost_center =* :i:a_cost_center and
+		:id:a_amount =* :i:a_amount and
+		:c:a_ledger_number = :i:a_ledger_number and
+		:c:a_cost_center = :i:a_cost_center
+	    having
+		:in:a_ledger_number is null and
+		:id:a_ledger_number is null and
+		:a_giving_interval is not null
+	    on duplicate
+		:a_ledger_number,
+		:a_batch_number,
+		:a_gift_number,
+		:a_pledge_id
+	    update set
+		:s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    ;
+
+	    -- Find active pledges for this donor, with or without entered intents
+	    insert
+		collection intentdata
+	    select
+		name = isnull(:in:name, :pl:name),
+		:pl:a_ledger_number,
+		:pl:a_pledge_id,
+		:pl:a_is_active,
+		:in:a_intent_number,
+		:in:a_batch_number,
+		:in:a_gift_number,
+		:in:a_split_number,
+		has_pledge = 1,
+		has_intent = condition(:in:a_pledge_id is null, 0, 1),
+		:in:a_autogen,
+		p_dn_donor_partner_id = :parameters:donor,
+		p_dn_ack_partner_id = condition(char_length(:parameters:ackdonor) > 0, :parameters:ackdonor, null),
+		a_cost_center = isnull(:in:a_cost_center, :pl:a_cost_center),
+		a_start_date = isnull(:in:a_start_date, :pl:a_start_date),
+		a_end_date = isnull(:in:a_end_date, :pl:a_end_date),
+		a_amount = isnull(:in:a_amount, :pl:a_amount),
+		a_total_amount = isnull(:in:a_total_amount, :pl:a_total_amount),
+		a_intent_type = isnull(:in:a_intent_type, :pl:a_intent_type),
+		a_giving_interval = isnull(:in:a_giving_interval, :pl:a_giving_interval),
+		a_gift_count = isnull(:in:a_gift_count, :pl:a_gift_count),
+		a_comment = isnull(:in:a_comment, :pl:a_comment),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name(),
+		fund_desc = :pl:a_cost_center + isnull(' ' + :c:a_cc_desc, ''),
+		type_desc = isnull(:pt:a_intent_desc, :pl:a_intent_type),
+		interval_desc = isnull(:gi:text, 'Every ' + :pl:a_giving_interval + ' Months'),
+		start_desc = dateformat(:pl:a_start_date, 'dd-MMM-yyyy'),
+		end_desc = dateformat(:pl:a_end_date, 'dd-MMM-yyyy'),
+		:pt:a_allow_daf,
+		pledge_partner = :pl:p_donor_partner_id
+	    from
+		identity /apps/kardia/data/Kardia_DB/a_pledge/rows pl,
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in,
+		/apps/kardia/data/Kardia_DB/a_intent_type/rows pt,
+		/apps/kardia/data/Kardia_DB/_a_giving_interval/rows gi,
+		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+	    where
+		(:pl:p_donor_partner_id = :parameters:donor or :pl:p_donor_partner_id = :parameters:ackdonor) and
+		:pl:a_ledger_number = :parameters:a_ledger_number and
+		(:pl:a_start_date is null or :pl:a_start_date <= convert(datetime, :info:giftdate)) and
+		(:pl:a_end_date is null or :pl:a_end_date >= convert(datetime, :info:giftdate)) and
+		(:pl:a_is_active = 1 or :pl:s_date_modified >= dateadd(hour, -24, getdate())) and
+		:in:a_pledge_id =* :pl:a_pledge_id and
+		:in:a_ledger_number =* :pl:a_ledger_number and
+		:in:a_batch_number = :parameters:a_batch_number and
+		:in:a_gift_number = :parameters:a_gift_number and
+		:pt:a_intent_type =* :pl:a_intent_type and
+		:pt:a_ledger_number =* :pl:a_ledger_number and
+		:gi:tag =* :pl:a_giving_interval and
+		:c:a_ledger_number = :pl:a_ledger_number and
+		:c:a_cost_center = :pl:a_cost_center and
+		:parameters:posted = 0
+	    having
+		:parameters:name is null and
+		(:a_allow_daf = 1 or :pledge_partner = :parameters:donor)
+	    ;
+
+	    -- Return to user, but only display ones that do NOT have an entered intent
+	    select
+		*
+	    from
+		identity collection intentdata
+	    where
+		not :has_intent and
+		:parameters:name is null
+	    ;
+
+	    -- Next, find entered intents
+	    select
+		:in:a_ledger_number,
+		:pl:a_pledge_id,
+		a_is_active = isnull(:pl:a_is_active, 1),
+		:in:a_intent_number,
+		:in:a_batch_number,
+		:in:a_gift_number,
+		:in:a_split_number,
+		has_pledge = condition(:pl:a_pledge_id is null, 0, 1),
+		has_intent = 1,
+		:in:a_autogen,
+		:in:p_dn_donor_partner_id,
+		:in:p_dn_ack_partner_id,
+		:in:a_cost_center,
+		:in:a_start_date,
+		:in:a_end_date,
+		:in:a_amount,
+		:in:a_total_amount,
+		:in:a_intent_type,
+		:in:a_giving_interval,
+		:in:a_gift_count,
+		:in:a_comment,
+		:in:s_date_created,
+		:in:s_created_by,
+		:in:s_date_modified,
+		:in:s_modified_by,
+		fund_desc = :in:a_cost_center + isnull(' ' + :c:a_cc_desc, ''),
+		type_desc = isnull(:pt:a_intent_desc, :in:a_intent_type),
+		interval_desc = isnull(:gi:text, 'Every ' + :in:a_giving_interval + ' Months'),
+		start_desc = dateformat(:in:a_start_date, 'dd-MMM-yyyy'),
+		end_desc = dateformat(:in:a_end_date, 'dd-MMM-yyyy')
+	    from
+		identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in,
+		/apps/kardia/data/Kardia_DB/a_pledge/rows pl,
+		/apps/kardia/data/Kardia_DB/a_intent_type/rows pt,
+		/apps/kardia/data/Kardia_DB/_a_giving_interval/rows gi,
+		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+	    where
+		:in:a_ledger_number = :parameters:a_ledger_number and
+		:in:a_batch_number = :parameters:a_batch_number and
+		:in:a_gift_number = :parameters:a_gift_number and
+		:in:a_pledge_id *= :pl:a_pledge_id and
+		:in:a_ledger_number *= :pl:a_ledger_number and
+		:pt:a_intent_type =* :in:a_intent_type and
+		:pt:a_ledger_number =* :in:a_ledger_number and
+		:gi:tag =* :in:a_giving_interval and
+		:c:a_ledger_number = :in:a_ledger_number and
+		:c:a_cost_center = :in:a_cost_center
+	    having
+		(:parameters:name is null or :in:name = :parameters:name)
+	    ";
+    }

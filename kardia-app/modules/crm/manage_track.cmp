@@ -5,6 +5,7 @@ manage_track "widget/component-decl"
     height=580;
 
     PartnerSelected "widget/component-decl-event" { }
+    TrackSelected "widget/component-decl-event" { }
 
     collaborator_osrc "widget/parameter" { type=object; }
 
@@ -344,6 +345,7 @@ manage_track "widget/component-decl"
 		    cellvspacing = 8;
 		    row1_bgcolor = runclient("#ffffff");
 		    row2_bgcolor = runclient("#ffffff");
+		    type_to_find = yes;
 		    nodata_message = "(no people to show)";
 
 		    t_img "widget/table-column" { fieldname="img"; width=40; type=image; image_maxwidth=32; image_maxheight=32; align=center; }
@@ -412,6 +414,27 @@ manage_track "widget/component-decl"
 				    view_profile "widget/connector" { event=Click; target=manage_track; action=PartnerSelected; partner_key=runclient(:people_osrc:p_partner_key); }
 				    }
 
+				managetrk_btn "widget/textbutton"
+				    {
+				    condition=0;
+				    width=130; height=24;
+				    fl_width=0;
+				    text="Manage...";
+				    background="/apps/kardia/images/bg/lsblue_btngradient.png";
+				    fgcolor1=white;
+				    fgcolor2=black;
+				    disable_color="#334466";
+
+				    on_managetrk "widget/connector"
+					{
+					event=Click;
+					target=manage_track;
+					action=TrackSelected;
+					partner=runclient(:people_osrc:p_partner_key);
+					engagement_id=runclient(:people_osrc:e_engagement_id);
+					track_id=runclient(:people_osrc:e_track_id);
+					}
+				    }
 				complete_step_btn "widget/textbutton"
 				    {
 				    width=130; height=24;

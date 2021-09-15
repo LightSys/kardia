@@ -72,7 +72,7 @@ activity_list "widget/component-decl"
 	activity_data_osrc "widget/osrc"
 	    {
 	    activity_id "widget/parameter" { type=integer; default=runclient(:activity_osrc:activity_group_id); }
-	    sql = " -- declare collection e_activity scope application;
+	    sql = " declare collection e_activity scope application;
 	    
 		    select
 			:e:p_partner_key,
@@ -112,13 +112,9 @@ activity_list "widget/component-decl"
 				    1
 				), '/apps/kardia/images/artwork/persona.png')
 		    from
-			/apps/kardia/data/Kardia_DB/e_activity/rows e
+			collection e_activity e
 		    order by
 			:e:e_activity_date desc
-		    where
-			:e:e_activity_type != 'HEAD' and
-			:e:e_activity_group_id = :parameters:activity_id and
-			:e:s_created_by = user_name()
 		    ";
 	    autoquery=never;
 	    readahead=50;
@@ -127,7 +123,7 @@ activity_list "widget/component-decl"
 
 	    activity_table "widget/table"
 		{
-		height=381;
+		height=413; // was 381 with button below
 		min_rowheight=16;
 		max_rowheight=72;
 		allow_selection = yes;
@@ -432,6 +428,7 @@ activity_list "widget/component-decl"
 
 	all_activity_btn "widget/textbutton"
 	    {
+	    condition=0;
 	    x=45;
 	    height=24;
 	    width=150;

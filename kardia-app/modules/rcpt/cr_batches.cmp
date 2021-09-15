@@ -6,7 +6,9 @@ cr_batches "widget/component-decl"
 
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     periods_osrc "widget/parameter" { type=object; default=null; }
-    receipts_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'ReceiptReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
+    receipts_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
+    ncreceipts_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptNCReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
+    acks_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptAckReport'), "/apps/kardia/modules/rcpt/acknowledgement_batch.rpt")); deploy_to_client=yes; }
     cash_cc "widget/parameter" { type=string; default=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptCashFund' and :a_ledger_number = :this:ledger), '')); deploy_to_client=yes; }
     cash_acct "widget/parameter" { type=string; default=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptCashAcct' and :a_ledger_number = :this:ledger), '')); deploy_to_client=yes; }
     gotobatch "widget/parameter" { type=integer; deploy_to_client=yes; }
@@ -21,6 +23,10 @@ cr_batches "widget/component-decl"
 	glunpost_cn "widget/connector" { event=GLUnposted; target=rcpt_osrc; action=Refresh; }
 	setdate_cn1 "widget/connector" { event=SetSentDateComplete; target=cr_batches; action=Launch; Source=runclient(:receipts_rpt:value); Width=800; Height=600; ledger=runclient(:rcpt_osrc:a_ledger_number); batch_number=runclient(:rcpt_osrc:a_batch_number); show_background=runclient(:show_bg:value); types=runclient(:print_which_type:value); }
 	setdate_cn2 "widget/connector" { event=SetSentDateComplete; target=rcpt_osrc; action=Refresh; }
+	setackdate_cn1 "widget/connector" { event=SetAckSentDateComplete; target=cr_batches; action=Launch; Source=runclient(:acks_rpt:value); Width=800; Height=600; ledger=runclient(:rcpt_osrc:a_ledger_number); batch_number=runclient(:rcpt_osrc:a_batch_number); show_background=runclient(:show_bg:value); types=runclient(:print_which_type:value); }
+	setackdate_cn2 "widget/connector" { event=SetAckSentDateComplete; target=rcpt_osrc; action=Refresh; }
+	setncdate_cn1 "widget/connector" { event=SetNCSentDateComplete; target=cr_batches; action=Launch; Source=runclient(:ncreceipts_rpt:value); Width=800; Height=600; ledger=runclient(:rcpt_osrc:a_ledger_number); batch_number=runclient(:rcpt_osrc:a_batch_number); show_background=runclient(:show_bg:value); types=runclient(:print_which_type:value); }
+	setncdate_cn2 "widget/connector" { event=SetNCSentDateComplete; target=rcpt_osrc; action=Refresh; }
 	}
 
     refresh_timer "widget/timer"
@@ -105,14 +111,15 @@ cr_batches "widget/component-decl"
 	    style=dialog;
 	    titlebar=no;
 	    toplevel=yes;
-	    width=480; height=330;
-	    x=150; y=149;
+	    width=640; height=400;
+	    x=70; y=70;
 	    visible=no;
 	    modal=yes;
+	    border_radius=8;
 
 	    print_vbox "widget/vbox"
 		{
-		width=458; height=260; x=10; y=10;
+		width=618; height=378; x=10; y=10;
 		spacing=10;
 
 		print_lbl "widget/label" { height=24; font_size=16; value=runclient("Print Batch " + :rcpt_osrc:a_batch_number + " of Receipts"); align=center; style=bold; }
@@ -154,39 +161,6 @@ cr_batches "widget/component-decl"
 		    set_zero_on_open "widget/connector" { source=print_rcpt_window; event=Open; action=SetValue; Value=0; }
 		    }
 
-		print_info_osrc "widget/osrc"
-		    {
-		    print_wt_param "widget/parameter" { type=string; default=runclient(:print_which_type:value); }
-		    sql = "select
-				min_rcptno = min(:a_receipt_number),
-				max_rcptno = max(:a_receipt_number),
-				num_rcpts = count(:a_receipt_number),
-				min_sent = min(:a_receipt_sent)
-			    from
-				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows
-			    where
-				:parameters:print_wt_param = '_' or :a_receipt_desired = :parameters:print_wt_param
-			    ";
-		    readahead = 2;
-		    replicasize = 2;
-		    autoquery = never;
-
-		    do_print_info_qy "widget/connector"
-			{
-			source = print_rcpt_window;
-			event = Open;
-			action = QueryParam;
-			a_ledger_number = runclient(:rcpt_osrc:a_ledger_number);
-			a_batch_number = runclient(:rcpt_osrc:a_batch_number);
-			}
-
-		    print_info_form "widget/form"
-			{
-			f_min_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=min_rcptno; text="Starting Receipt:"; label_width=140; }
-			f_max_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=max_rcptno; text="Ending Receipt:"; label_width=140; }
-			f_num_rcpts "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=num_rcpts; text="Number of Receipts:"; label_width=140; }
-			}
-		    }
 		sent_date_pane "widget/pane"
 		    {
 		    width=350; height=20;
@@ -194,49 +168,263 @@ cr_batches "widget/component-decl"
 		    enabled = runclient(not :print_info_osrc:min_sent);
 		    f_sent_date "widget/component" { x=0; y=0; width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; field=sent_date; text="Mailing Date:"; label_width=140; sd_hints "widget/hints" { default=runclient(getdate()); } }
 		    }
-		sent_date_set "widget/connector"
-		    {
-		    source = print_rcpt_window;
-		    event = Open;
-		    target = f_sent_date;
-		    action = SetValue;
-		    Value = runclient(getdate());
-		    }
-		resend_label "widget/label"
-		    {
-		    height=40;
-		    style=italic;
-		    value = runclient(condition(:print_info_osrc:min_sent, "This batch of receipts has already been printed.  The 'receipt sent date' will not be updated for this batch.", ""));
-		    }
-		}
 
-	    print_ctls_hbox "widget/hbox"
-		{
-		width=458; height=24; x=10; y=285;
-		spacing=10;
-		align=center;
+		sep_line5 "widget/pane" { height=2; fl_height=0; style=lowered; }
 
-		print_ok "widget/textbutton"
+		types_hbox "widget/hbox"
 		    {
-		    text = runclient(condition(:print_info_osrc:min_sent, "Reprint", "Print"));
-		    print_ok_cn "widget/connector" 
+		    height=190;
+		    spacing=10;
+
+		    donor_receipts_vbox "widget/vbox"
 			{
-			event=Click;
-			target=post_cr;
-			action=SetSentDate; 
-			a_ledger_number=runclient(:cr_batches:ledger);
-			a_period=runclient(:periods_osrc:a_period);
-			a_batch_number=runclient(:rcpt_osrc:a_batch_number);
-			a_receipt_sent_date=runclient(:f_sent_date:value);
-			types = runclient(:print_which_type:value);
+			width=200;
+			spacing=5;
+
+			donor_title "widget/label" { height=20; font_size=16; style=bold; text="Cash Receipts:"; align=center; }
+
+			print_info_osrc "widget/osrc"
+			    {
+			    print_wt_param "widget/parameter" { type=string; default=runclient(:print_which_type:value); }
+			    sql = "select
+					min_rcptno = min(:g:a_receipt_number),
+					max_rcptno = max(:g:a_receipt_number),
+					num_rcpts = count(:g:a_receipt_number),
+					min_sent = min(:g:a_receipt_sent)
+				    from
+					/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+					/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
+				    where
+					(:parameters:print_wt_param = '_' or :a_receipt_desired = :parameters:print_wt_param) and
+					:gt:a_gift_payment_type = :g:a_gift_type and
+					:gt:a_ledger_number = :g:a_ledger_number and
+					:gt:a_is_cash = 1
+				    ";
+			    readahead = 2;
+			    replicasize = 2;
+			    autoquery = never;
+
+			    do_print_info_qy "widget/connector"
+				{
+				source = print_rcpt_window;
+				event = Open;
+				action = QueryParam;
+				a_ledger_number = runclient(:rcpt_osrc:a_ledger_number);
+				a_batch_number = runclient(:rcpt_osrc:a_batch_number);
+				}
+
+			    print_info_form "widget/form"
+				{
+				f_min_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=min_rcptno; text="Starting Receipt:"; label_width=140; }
+				f_max_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=max_rcptno; text="Ending Receipt:"; label_width=140; }
+				f_num_rcpts "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=num_rcpts; text="Number of Receipts:"; label_width=140; }
+				}
+			    }
+			sent_date_set "widget/connector"
+			    {
+			    source = print_rcpt_window;
+			    event = Open;
+			    target = f_sent_date;
+			    action = SetValue;
+			    Value = runclient(getdate());
+			    }
+			resend_label "widget/label"
+			    {
+			    height=50;
+			    style=italic;
+			    value = runclient(condition(:print_info_osrc:min_sent, "This batch of receipts has already been printed.  The 'receipt sent date' will not be updated for this batch.", ""));
+			    }
+
+			donor_ctls_hbox "widget/hbox"
+			    {
+			    height=24;
+			    spacing=10;
+			    align=center;
+
+			    print_ok "widget/textbutton"
+				{
+				text = runclient(isnull(condition(:print_info_osrc:min_sent, "Reprint", "Print"), "(none)"));
+				enabled=runclient(:print_info_osrc:min_sent is not null);
+				print_ok_cn "widget/connector" 
+				    {
+				    event=Click;
+				    target=post_cr;
+				    action=SetSentDate; 
+				    a_ledger_number=runclient(:cr_batches:ledger);
+				    a_period=runclient(:periods_osrc:a_period);
+				    a_batch_number=runclient(:rcpt_osrc:a_batch_number);
+				    a_receipt_sent_date=runclient(:f_sent_date:value);
+				    types = runclient(:print_which_type:value);
+				    }
+				//print_ok_cn2 "widget/connector" { event=Click; target=print_rcpt_window; action=Close; }
+				}
+			    }
 			}
-		    print_ok_cn2 "widget/connector" { event=Click; target=print_rcpt_window; action=Close; }
+
+		    inkind_receipts_vbox "widget/vbox"
+			{
+			width=200;
+			spacing=5;
+
+			inkind_title "widget/label" { height=20; font_size=16; style=bold; text="Noncash Receipts:"; align=center; }
+
+			nc_info_osrc "widget/osrc"
+			    {
+			    nc_wt_param "widget/parameter" { type=string; default=runclient(:print_which_type:value); }
+			    sql = "select
+					min_rcptno = min(:g:a_receipt_number),
+					max_rcptno = max(:g:a_receipt_number),
+					num_rcpts = count(:g:a_receipt_number),
+					min_sent = min(:g:a_receipt_sent)
+				    from
+					/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+					/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
+				    where
+					(:parameters:nc_wt_param = '_' or :a_receipt_desired = :parameters:nc_wt_param) and
+					:gt:a_gift_payment_type = :g:a_gift_type and
+					:gt:a_ledger_number = :g:a_ledger_number and
+					:gt:a_is_cash = 0
+				    ";
+			    readahead = 2;
+			    replicasize = 2;
+			    autoquery = never;
+
+			    do_nc_info_qy "widget/connector"
+				{
+				source = print_rcpt_window;
+				event = Open;
+				action = QueryParam;
+				a_ledger_number = runclient(:rcpt_osrc:a_ledger_number);
+				a_batch_number = runclient(:rcpt_osrc:a_batch_number);
+				}
+
+			    nc_info_form "widget/form"
+				{
+				fn_min_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=min_rcptno; text="Starting Receipt:"; label_width=140; }
+				fn_max_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=max_rcptno; text="Ending Receipt:"; label_width=140; }
+				fn_num_rcpts "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=num_rcpts; text="Number of Receipts:"; label_width=140; }
+				}
+			    }
+			nc_resend_label "widget/label"
+			    {
+			    height=50;
+			    style=italic;
+			    value = runclient(condition(:nc_info_osrc:min_sent, "This batch of receipts has already been printed.  The 'receipt sent date' will not be updated for this batch.", ""));
+			    }
+			nc_ctls_hbox "widget/hbox"
+			    {
+			    height=24;
+			    spacing=10;
+			    align=center;
+
+			    ncprint_ok "widget/textbutton"
+				{
+				text = runclient(isnull(condition(:nc_info_osrc:min_sent, "Reprint", "Print"), "(none)"));
+				enabled=runclient(:nc_info_osrc:min_sent is not null);
+				ncprint_ok_cn "widget/connector" 
+				    {
+				    event=Click;
+				    target=post_cr;
+				    action=SetNCSentDate; 
+				    a_ledger_number=runclient(:cr_batches:ledger);
+				    a_period=runclient(:periods_osrc:a_period);
+				    a_batch_number=runclient(:rcpt_osrc:a_batch_number);
+				    a_receipt_sent_date=runclient(:f_sent_date:value);
+				    types = runclient(:print_which_type:value);
+				    }
+				//print_ok_cn2 "widget/connector" { event=Click; target=print_rcpt_window; action=Close; }
+				}
+			    }
+			}
+
+		    ack_receipts_vbox "widget/vbox"
+			{
+			width=200;
+			spacing=5;
+
+			ack_title "widget/label" { height=20; font_size=16; style=bold; text="Acknowledgements:"; align=center; }
+
+			ack_info_osrc "widget/osrc"
+			    {
+			    ack_wt_param "widget/parameter" { type=string; default=runclient(:print_which_type:value); }
+			    sql = "select
+					min_rcptno = min(:g:a_receipt_number),
+					max_rcptno = max(:g:a_receipt_number),
+					num_rcpts = count(:g:a_receipt_number),
+					min_sent = min(:g:a_ack_receipt_sent)
+				    from
+					/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+					/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
+				    where
+					(:parameters:ack_wt_param = '_' or :a_ack_receipt_desired = :parameters:ack_wt_param) and
+					:gt:a_gift_payment_type = :g:a_gift_type and
+					:gt:a_ledger_number = :g:a_ledger_number and
+					char_length(:g:p_ack_partner_id) > 1
+				    ";
+			    readahead = 2;
+			    replicasize = 2;
+			    autoquery = never;
+
+			    do_ack_info_qy "widget/connector"
+				{
+				source = print_rcpt_window;
+				event = Open;
+				action = QueryParam;
+				a_ledger_number = runclient(:rcpt_osrc:a_ledger_number);
+				a_batch_number = runclient(:rcpt_osrc:a_batch_number);
+				}
+
+			    ack_info_form "widget/form"
+				{
+				fa_min_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=min_rcptno; text="Starting Receipt:"; label_width=140; }
+				fa_max_rcptno "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=max_rcptno; text="Ending Receipt:"; label_width=140; }
+				fa_num_rcpts "widget/component" { width=350; height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=num_rcpts; text="Number of Receipts:"; label_width=140; }
+				}
+			    }
+			ack_resend_label "widget/label"
+			    {
+			    height=50;
+			    style=italic;
+			    value = runclient(condition(:ack_info_osrc:min_sent, "This batch of acknowledgements has already been printed.  The 'sent date' will not be updated for this batch.", ""));
+			    }
+			ack_ctls_hbox "widget/hbox"
+			    {
+			    height=24;
+			    spacing=10;
+			    align=center;
+
+			    ackprint_ok "widget/textbutton"
+				{
+				text = runclient(isnull(condition(:ack_info_osrc:min_sent, "Reprint", "Print"), "(none)"));
+				enabled=runclient(:ack_info_osrc:min_sent is not null);
+				ackprint_ok_cn "widget/connector" 
+				    {
+				    event=Click;
+				    target=post_cr;
+				    action=SetAckSentDate; 
+				    a_ledger_number=runclient(:cr_batches:ledger);
+				    a_period=runclient(:periods_osrc:a_period);
+				    a_batch_number=runclient(:rcpt_osrc:a_batch_number);
+				    a_ack_receipt_sent_date=runclient(:f_sent_date:value);
+				    types = runclient(:print_which_type:value);
+				    }
+				//ack_ok_cn2 "widget/connector" { event=Click; target=print_rcpt_window; action=Close; }
+				}
+			    }
+			}
 		    }
 
-		print_cancel "widget/textbutton"
+		print_ctls_hbox "widget/hbox"
 		    {
-		    text = "Cancel";
-		    print_cancel_cn "widget/connector" { event=Click; target=print_rcpt_window; action=Close; }
+		    height=24;
+		    spacing=10;
+		    align=center;
+
+		    print_cancel "widget/textbutton"
+			{
+			text = "Close";
+			print_cancel_cn "widget/connector" { event=Click; target=print_rcpt_window; action=Close; }
+			}
 		    }
 		}
 	    }
@@ -254,6 +442,7 @@ cr_batches "widget/component-decl"
 	    width=480; height=300;
 	    x=150; y=140;
 	    visible=no;
+	    border_radius=8;
 
 	    on_req_unpost_1 "widget/connector" { event=Open; target=gl_only_var; action=SetValue; Value=:gl_only; }
 	    on_req_unpost_2 "widget/connector" { event=Open; target=unpost_from_gl; action=SetValue; Value=runclient(condition(:rcpt_form:glrec > 0, 1, 0)); }
@@ -310,53 +499,148 @@ cr_batches "widget/component-decl"
 	    titlebar=no;
 	    toplevel=yes;
 	    width=480; height=300;
-	    x=150; y=140;
+	    x=150; y=120;
 	    visible=no;
-
-	    preload_cc_on_open "widget/connector" { event=Open; target=gl_post_cc; action=SetValue; Value=runclient(:cash_cc:value); }
-	    preload_acct_on_open "widget/connector" { event=Open; target=gl_post_acct; action=SetValue; Value=runclient(:cash_acct:value); }
+	    border_radius=8;
 
 	    gl_post_vbox "widget/vbox"
 		{
-		width=458; height=220; x=10; y=10;
+		width=458; height=280; x=10; y=10;
 		spacing=10;
 
 		gl_post_lbl "widget/label" { height=24; font_size=16; value=runclient("Post Batch " + :rcpt_osrc:a_batch_number + " to General Ledger"); align=center; style=bold; }
 		gl_post_sep "widget/pane" { height=2; style=lowered; }
 
-		sp3 "widget/autolayoutspacer" { height=8; }
-
-		gl_post_cc "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Cash CostCtr:"; tooltip="Cost Center / Fund for cash side of GL batch"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select CostCtr:"; width=300; empty_desc = "cost center"; }
-		gl_post_acct "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Cash Account:"; tooltip="Cash GL Account for Deposit"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; width=300; empty_desc = "GL account"; }
-		}
-	    gl_post_ctls_hbox "widget/hbox"
-		{
-		width=458; height=24; x=10; y=240;
-		spacing=10;
-		align=center;
-
-		gl_post_ok "widget/textbutton"
+		rev_osrc "widget/osrc"
 		    {
-		    text = "Post";
-		    enabled = runclient(char_length(:gl_post_acct:content) > 0 and char_length(:gl_post_cc:content) > 0);
+		    readahead=20;
+		    replicasize=20;
 
-		    doglpost_cn "widget/connector"
+		    sql = " select
+				rev_amt = sum(:i:a_amount),
+				rev_type = :a:a_account_code + ' ' + :a:a_acct_desc
+			    from
+				identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+				/apps/kardia/data/Kardia_DB/a_account/rows a
+			    where
+				:a:a_ledger_number = :i:a_ledger_number and
+				:a:a_account_code = :i:a_account_code
+			    group by
+				:i:a_account_code
+			    ";
+
+		    rcpt_rev_link "widget/rule"
 			{
-			event=Click;
-			target=post_cr;
-			action=GLPost;
-			a_ledger_number=runclient(:cr_batches:ledger);
-			a_period=runclient(:periods_osrc:a_period);
-			a_batch_number=runclient(:rcpt_osrc:a_batch_number);
-			a_cash_account=runclient(:gl_post_acct:content);
-			a_cash_costctr=runclient(:gl_post_cc:content);
+			ruletype=osrc_relationship;
+			target=rcpt_osrc;
+			key_1=a_ledger_number;
+			key_2=a_batch_number;
+			target_key_1=a_ledger_number;
+			target_key_2=a_batch_number;
+			key_objname=i;
+			revealed_only=yes;
 			}
-		    win_close_cn "widget/connector" { event=Click; target=post_to_gl_window; action=Close; }
+
+		    rev_table "widget/table"
+			{
+			height=90;
+			titlebar=yes;
+			colsep=0;
+			overlap_scrollbar=yes;
+			demand_scrollbar=yes;
+			show_selection=no;
+			rowheight=null;
+			cellvspacing=4;
+			inner_padding=2;
+			row_border_radius=6;
+			row_shadow_radius=2;
+			row_shadow_offset=1;
+			row_shadow_color="#a0a0a0";
+			row_shadow_angle=135;
+
+			rt_revtype "widget/table-column" { title="Revenue Category:"; width=200; fieldname=rev_type; style=bold; }
+			rt_amount "widget/table-column" { title=""; width=200; fieldname=rev_amt; align=right; }
+			}
 		    }
-		gl_post_cancel "widget/textbutton"
+
+		gt_osrc "widget/osrc"
 		    {
-		    text = "Cancel";
-		    cancel_cn "widget/connector" { event=Click; target=post_to_gl_window; action=Close; }
+		    readahead=20;
+		    replicasize=20;
+
+		    sql = " select
+				gt_amt = sum(:i:a_amount),
+				gt_type = :gt:a_payment_cost_center + '/' + :gt:a_payment_account_code + ' ' + :gt:a_gift_payment_type_desc
+			    from
+				identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+				/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
+			    where
+				:gt:a_ledger_number = :i:a_ledger_number and
+				:gt:a_gift_payment_type = :i:a_dn_gift_type
+			    group by
+				:i:a_dn_gift_type
+			    ";
+
+		    rcpt_gt_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=rcpt_osrc;
+			key_1=a_ledger_number;
+			key_2=a_batch_number;
+			target_key_1=a_ledger_number;
+			target_key_2=a_batch_number;
+			key_objname=i;
+			revealed_only=yes;
+			}
+
+		    gt_table "widget/table"
+			{
+			height=90;
+			titlebar=yes;
+			colsep=0;
+			overlap_scrollbar=yes;
+			demand_scrollbar=yes;
+			show_selection=no;
+			rowheight=null;
+			cellvspacing=4;
+			inner_padding=2;
+			row_border_radius=6;
+			row_shadow_radius=2;
+			row_shadow_offset=1;
+			row_shadow_color="#a0a0a0";
+			row_shadow_angle=135;
+
+			gt_type "widget/table-column" { title="Gift/Payment Type:"; width=200; fieldname=gt_type; style=bold; }
+			gt_amount "widget/table-column" { title=""; width=200; fieldname=gt_amt; align=right; }
+			}
+		    }
+
+		gl_post_ctls_hbox "widget/hbox"
+		    {
+		    height=24;
+		    spacing=10;
+		    align=center;
+
+		    gl_post_ok "widget/textbutton"
+			{
+			text = "Post";
+
+			doglpost_cn "widget/connector"
+			    {
+			    event=Click;
+			    target=post_cr;
+			    action=GLPost;
+			    a_ledger_number=runclient(:cr_batches:ledger);
+			    a_period=runclient(:periods_osrc:a_period);
+			    a_batch_number=runclient(:rcpt_osrc:a_batch_number);
+			    }
+			win_close_cn "widget/connector" { event=Click; target=post_to_gl_window; action=Close; }
+			}
+		    gl_post_cancel "widget/textbutton"
+			{
+			text = "Cancel";
+			cancel_cn "widget/connector" { event=Click; target=post_to_gl_window; action=Close; }
+			}
 		    }
 		}
 	    }
@@ -370,6 +654,7 @@ cr_batches "widget/component-decl"
 	    width=480; height=300;
 	    x=150; y=140;
 	    visible=no;
+	    border_radius=8;
 
 	    new_batch_form "widget/form"
 		{
@@ -462,8 +747,8 @@ cr_batches "widget/component-decl"
 		target=cr_batches;
 		action=Launch;
 		Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
-		Width=800;
-		Height=600;
+		Width=1000;
+		Height=700;
 		ledger=runclient(:rcpt_osrc:a_ledger_number);
 		batch=runclient(:rcpt_osrc:a_batch_number);
 		}
@@ -485,8 +770,8 @@ cr_batches "widget/component-decl"
 		target=cr_batches;
 		action=Launch;
 		Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
-		Width=800;
-		Height=600;
+		Width=1000;
+		Height=700;
 		ledger=runclient(:rcpt_osrc:a_ledger_number);
 		batch=runclient(:rcpt_osrc:a_batch_number);
 		}
@@ -498,8 +783,8 @@ cr_batches "widget/component-decl"
 		target=cr_batches;
 		action=Launch;
 		Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
-		Width=800;
-		Height=600;
+		Width=1000;
+		Height=700;
 		ledger=runclient(:rcpt_osrc:a_ledger_number);
 		batch=runclient(:rcpt_osrc:a_batch_number);
 		}

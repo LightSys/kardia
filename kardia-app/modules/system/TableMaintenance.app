@@ -68,6 +68,32 @@ TableMaintenance "widget/page"
 				}
 			    }
 			}
+
+		    mnMore2 "widget/menu"
+			{
+			condition = runserver(:type_rpt:cnt > 64);
+			label = runserver("More " + :type_rpt:description + " Tables");
+			widget_class = "popup";
+
+			tbl_rpt3 "widget/repeat"
+			    {
+			    sql = runserver("select :name from /apps/kardia/data/Kardia_DB where substring(:name, 1, " + (char_length(:type_rpt:prefix)) + ") = " + quote(:type_rpt:prefix) + " and :name != 'ra' limit 64,32");
+
+			    mnItem3 "widget/menuitem"
+				{
+				label = runserver(:tbl_rpt3:name);
+
+				mnLink3 "widget/connector"
+				    {
+				    event = Select;
+				    target = cmp;
+				    action = "Instantiate";
+				    table=runclient(runserver('/apps/kardia/data/Kardia_DB/' + :tbl_rpt3:name));
+				    title=runclient(runserver('/apps/kardia/data/Kardia_DB/' + :tbl_rpt3:name));
+				    }
+				}
+			    }
+			}
 		    }
 		}
 	    }

@@ -1,0 +1,384 @@
+$Version=2$
+payroll_reg "system/report"
+    {
+    title = "Tabular Payroll Register";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=110;
+    pageheight=51;
+    //pagewidth=85;
+    //pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=2;
+    marginbottom=2;
+
+    // Parameters for Payroll Register
+    ledger "report/parameter" { type=string; default=null; }
+    groupid "report/parameter" { type=integer; default=null; }
+    startperiod "report/parameter" { type=string; default=null; }
+    endperiod "report/parameter" { type=string; default=null; }
+    startdate "report/parameter" { type=string; default=null; }
+    enddate "report/parameter" { type=string; default=null; }
+    payee "report/parameter" { type=string; default=null; }
+    state "report/parameter" { type=string; default=null; }
+    country "report/parameter" { type=string; default=null; }
+
+
+    ledger_qy "report/query"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
+	}
+
+    startperiod_qy "report/query"
+	{
+	sql = "select a_payroll_period_desc = first(:p:a_payroll_period_desc), a_payroll_period = first(:p:a_payroll_period) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows p where :p:a_payroll_period = :this:startperiod and :p:a_ledger_number = :this:ledger";
+	}
+
+    endperiod_qy "report/query"
+	{
+	sql = "select a_payroll_period_desc = first(:p:a_payroll_period_desc), a_payroll_period = first(:p:a_payroll_period) from /apps/kardia/data/Kardia_DB/a_payroll_period/rows p where :p:a_payroll_period = :this:endperiod and :p:a_ledger_number = :this:ledger";
+	}
+
+    group_qy "report/query"
+	{
+	sql = "select a_payroll_group_name = first(:pg:a_payroll_group_name) from /apps/kardia/data/Kardia_DB/a_payroll_group/rows pg where :pg:a_ledger_number = :this:ledger and :pg:a_payroll_group_id = :this:groupid";
+	}
+
+    payee_qy "report/query"
+	{
+	sql = "select payeename = first(condition(char_length(:p:a_payee_name) > 0, :p:a_payee_name, :par:p_surname + ', ' + :par:p_given_name)) from /apps/kardia/data/Kardia_DB/a_payroll/rows p, /apps/kardia/data/Kardia_DB/p_partner/rows par where :par:p_partner_key =* :p:p_payee_partner_key and :p:a_ledger_number = :this:ledger and :p:p_payee_partner_key = :this:payee";
+	}
+
+    info_qy "report/query"
+	{
+	sql = "select startdate = convert(datetime, :this:startdate), enddate = convert(datetime, :this:enddate)";
+	}
+
+    // assumes only *one* "NET" line per payee per period
+    payee_cnt_qy "report/query"
+	{
+	sql = "	SELECT
+			cnt = count(1)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t,
+			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
+			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i
+		WHERE
+			:t:a_payroll_item_class_code = 'N' and
+			:t:a_ledger_number = :this:ledger and
+			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:y:a_ledger_number = :i:a_ledger_number and
+			:y:a_ledger_number = :this:ledger and
+			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
+			(:y:a_payroll_group_id = :this:groupid or :this:groupid is null) and
+			(:i:a_period >= :this:startperiod or :this:startperiod is null) and
+			(:i:a_period <= :this:endperiod or :this:endperiod is null) and
+			(:i:a_effective_date >= :info_qy:startdate or :info_qy:startdate is null) and
+			(:i:a_effective_date <= :info_qy:enddate or :info_qy:enddate is null) and
+			(:y:p_payee_partner_key = :this:payee or :this:payee is null)
+		";
+	}
+
+    // assumes only *one* "NET" line per payee per period
+    payee_list_qy "report/query"
+	{
+	sql = "	SELECT
+			:y:a_ledger_number,
+			:y:a_payroll_group_id,
+			:y:a_payroll_id,
+			:y:a_payee_name,
+			:y:p_payee_partner_key,
+			ptxt = condition(char_length(:y:a_payee_name) > 0, :y:a_payee_name, :p:p_surname + ', ' + :p:p_given_name),
+			:p:p_partner_key
+		FROM
+			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t,
+			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
+			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE
+			:t:a_payroll_item_class_code = 'N' and
+			:t:a_ledger_number = :this:ledger and
+			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:y:a_ledger_number = :i:a_ledger_number and
+			:y:a_ledger_number = :this:ledger and
+			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
+			(:y:a_payroll_group_id = :this:groupid or :this:groupid is null) and
+			(:i:a_period >= :this:startperiod or :this:startperiod is null) and
+			(:i:a_period <= :this:endperiod or :this:endperiod is null) and
+			(:i:a_effective_date >= :info_qy:startdate or :info_qy:startdate is null) and
+			(:i:a_effective_date <= :info_qy:enddate or :info_qy:enddate is null) and
+			(:y:p_payee_partner_key = :this:payee or :this:payee is null) and
+			:p:p_partner_key = :y:p_payee_partner_key
+		GROUP BY
+			substring(:y:a_payee_name, charindex(' ', :y:a_payee_name) + 1, 99),
+			:y:p_payee_partner_key
+		";
+	}
+
+    // pay
+    pay_list_qy "report/query"
+	{
+	sql = "	declare object info;
+		
+		select :info:state = :this:state;
+		select :info:country = :this:country;
+
+		SELECT
+			:y:a_ledger_number,
+			:y:a_payroll_group_id,
+			:y:a_payroll_id,
+			:y:a_payee_name,
+			a_period = :p:a_payroll_period,
+			:p:a_payroll_period_desc,
+			:p:a_pay_date,
+			paydate = substring(convert(string,:p:a_pay_date),1,11),
+			:pp:p_state_province,
+			:pp:p_country_code,
+			batch = :p:a_checks_batch_number,
+			net = sum(condition(:t:a_payroll_item_class_code = 'N', :i:a_actual_amount, $0)),
+			gross = sum(condition(:t:a_payroll_item_class_code = 'G', :i:a_actual_amount, $0)),
+			fica = sum(condition(:t:a_payroll_item_subclass_code = 'TI', :i:a_actual_amount, $0)),
+			fed = sum(condition(:t:a_payroll_item_subclass_code = 'TF', :i:a_actual_amount, $0)),
+			state = sum(condition(:t:a_payroll_item_subclass_code = 'TS', :i:a_actual_amount, $0)),
+			local = sum(condition(:t:a_payroll_item_subclass_code = 'TL', :i:a_actual_amount, $0)),
+			ui = sum(condition(:t:a_payroll_item_subclass_code = 'TU', :i:a_actual_amount, $0)),
+			recv = sum(condition(:t:a_payroll_item_subclass_code = 'V' or :t:a_payroll_item_subclass_code = 'D', :i:a_actual_amount, $0)),
+			add = sum(condition(:t:a_payroll_item_subclass_code = 'M', :i:a_actual_amount, $0))
+		FROM
+			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t,
+			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
+			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_payroll_period/rows p,
+			/apps/kardia/data/Kardia_DB/a_payroll_period_payee/rows pp
+		WHERE
+			:t:a_ledger_number = :this:ledger and
+			:y:a_payroll_id = :i:a_payroll_id and
+			:y:a_payroll_group_id = :i:a_payroll_group_id and
+			:y:a_ledger_number = :i:a_ledger_number and
+			:y:a_ledger_number = :this:ledger and
+			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
+			(:y:a_payroll_group_id = :this:groupid or :this:groupid is null) and
+			(:p:a_payroll_period >= :this:startperiod or :this:startperiod is null) and
+			(:p:a_payroll_period <= :this:endperiod or :this:endperiod is null) and
+			(:p:a_pay_date >= :info_qy:startdate or :info_qy:startdate is null) and
+			(:p:a_pay_date <= :info_qy:enddate or :info_qy:enddate is null) and
+			(:y:p_payee_partner_key = :payee_list_qy:p_payee_partner_key) and
+			:p:a_ledger_number = :i:a_ledger_number and
+			:p:a_payroll_period = :i:a_period and
+			:pp:a_payroll_period = :p:a_payroll_period and
+			:pp:a_ledger_number = :p:a_ledger_number and
+			:pp:a_payroll_id = :y:a_payroll_id
+		GROUP BY
+			:y:p_payee_partner_key,
+			:p:a_payroll_period
+		HAVING
+			(:info:country is null or :info:country = :p_country_code) and
+			(:info:state is null or :info:state = :p_state_province)
+		";
+
+	total_gross "report/aggregate" { compute="sum(:gross)"; }
+	total_net "report/aggregate" { compute="sum(:net)"; }
+	total_fica "report/aggregate" { compute="sum(:fica)"; }
+	total_fed "report/aggregate" { compute="sum(:fed)"; }
+	total_state "report/aggregate" { compute="sum(:state)"; }
+	total_local "report/aggregate" { compute="sum(:local)"; }
+	total_ui "report/aggregate" { compute="sum(:ui)"; }
+	total_recv "report/aggregate" { compute="sum(:recv)"; }
+	total_add "report/aggregate" { compute="sum(:add)"; }
+	total_cnt "report/aggregate" { compute="count(:net)"; }
+
+	subtotal_gross "report/aggregate" { compute="sum(:gross)"; reset=1; }
+	subtotal_net "report/aggregate" { compute="sum(:net)"; reset=1; }
+	subtotal_fica "report/aggregate" { compute="sum(:fica)"; reset=1; }
+	subtotal_fed "report/aggregate" { compute="sum(:fed)"; reset=1; }
+	subtotal_state "report/aggregate" { compute="sum(:state)"; reset=1; }
+	subtotal_local "report/aggregate" { compute="sum(:local)"; reset=1; }
+	subtotal_ui "report/aggregate" { compute="sum(:ui)"; reset=1; }
+	subtotal_recv "report/aggregate" { compute="sum(:recv)"; reset=1; }
+	subtotal_add "report/aggregate" { compute="sum(:add)"; reset=1; }
+	subtotal_cnt "report/aggregate" { compute="count(:net)"; reset=1; }
+	}
+
+    // Get the check #
+    ckno_qy "report/query"
+	{
+	sql = "	SELECT
+			:d:a_check_number
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+		WHERE
+			:d:a_ledger_number = :pay_list_qy:a_ledger_number and
+			:d:a_batch_number = :pay_list_qy:batch and
+			:d:a_payee_partner_key = :payee_list_qy:p_partner_key and
+			:d:a_amount = :pay_list_qy:net
+		";
+	}
+
+    // Reference period (beginning of year) for a given pay stub
+    refperiod_qy "report/query"
+	{
+	sql = "	SELECT
+			:pp2:a_payroll_period
+		FROM
+			/apps/kardia/data/Kardia_DB/a_payroll_period/rows pp1,
+			/apps/kardia/data/Kardia_DB/a_payroll_period/rows pp2
+		WHERE
+			:pp1:a_payroll_period = :pay_list_qy:a_period and
+			:pp1:a_ledger_number = :pay_list_qy:a_ledger_number and
+			datepart(year, :pp1:a_pay_date) = datepart(year, :pp2:a_pay_date) and
+			:pp2:a_ledger_number = :pp1:a_ledger_number
+		ORDER BY
+			:pp1:a_pay_date asc,
+			:pp2:a_pay_date asc
+		LIMIT
+			1
+		";
+	}
+
+    // This switches us between one period and YTD.
+    ytd_qy "report/query"
+	{
+	sql = "	SELECT
+			txt = 'Payroll On:\n' + :pay_list_qy:paydate,
+			start = :pay_list_qy:a_period,
+			end = :pay_list_qy:a_period
+		";
+	}
+
+    ledger_form "report/form"
+	{
+	source = ledger_qy, startperiod_qy, endperiod_qy, group_qy, info_qy, payee_qy, payee_cnt_qy;
+
+	hdrimg "report/image"
+	    {
+	    x=92.85;y=0;height=4;width=12.15;
+	    source=/apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=105; height=4;
+	    font=helvetica;
+	    align=left;
+
+	    t_d3 "report/data" { fontsize=15; style=bold; value = runserver("Payroll Register" + condition(:payee_qy:payeename is null, "", " for " + :payee_qy:payeename) + "\n"); }
+	    t_d1 "report/data" { fontsize=8; value = runserver(
+			    "Payroll Register from " + :ledger_qy:a_ledger_desc + "\n" + 
+			    condition(:this:country is null, "", "Country: " + :this:country + "\n") +
+			    condition(:this:state is null, "", "State: " + :this:state + "\n") +
+			    condition(:this:groupid is null, "", "Pay Group: " + :group_qy:a_payroll_group_name + " (" + :this:groupid + ")\n") +
+			    condition(:this:startperiod is not null or :this:endperiod is not null, "Period(s): " + isnull(:this:startperiod,"") + " through " + isnull(:this:endperiod, "current") + "\n", "") +
+			    condition(:this:startdate is not null or :this:enddate is not null, "Dates: " + isnull(substring(:this:startdate,1,11),"") + " through " + isnull(substring(:this:enddate,1,11), "current") + "\n", "") +
+			    "Printed by: " + user_name() + " on " + getdate() + "\n\n"
+			    ); }
+	    //t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n\n"); }
+	    }
+
+	pay_table "report/table"
+	    {
+	    x=0;width=105;height=0;
+	    columns=14;
+	    widths=9.5,6.5,15.8,6.7,9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.3,8.5;
+	    colsep=0.1;
+	    source=payee_list_qy, pay_list_qy, refperiod_qy, ytd_qy, ckno_qy;
+	    moneyformat = "-###,###,##0.00";
+	    font=helvetica;
+	    fontsize=8;
+	    topborder=0.3;
+	    bottomborder=0.3;
+
+	    payroll_list_hdr "report/table-row"
+		{
+		header=yes;
+		bottomborder = 0.01;
+
+		ph_date "report/table-cell" { value='Date'; style=bold; align=center; }
+		ph_id "report/table-cell" { value='ID'; style=bold; align=center; }
+		ph_name "report/table-cell" { value='Payee Name'; style=bold; align=center; }
+		ph_state "report/table-cell" { value='Ctry/St'; style=bold; align=center; }
+		ph_gross "report/table-cell" { value='Gross'; style=bold; align=center; }
+		ph_fica "report/table-cell" { value='FICA'; style=bold; align=center; }
+		ph_fed "report/table-cell" { value='Fed'; style=bold; align=center; }
+		ph_st "report/table-cell" { value='State'; style=bold; align=center; }
+		ph_local "report/table-cell" { value='Local'; style=bold; align=center; }
+		ph_ui "report/table-cell" { value='UI'; style=bold; align=center; }
+		ph_recv "report/table-cell" { value='Recv'; style=bold; align=center; }
+		ph_add "report/table-cell" { value='Add'; style=bold; align=center; }
+		ph_net "report/table-cell" { value='Net'; style=bold; align=center; }
+		ph_ckno "report/table-cell" { value='Ck #'; style=bold; align=center; }
+		}
+
+	    payroll_list_data "report/table-row"
+		{
+		margintop=0.10;
+
+		pd_date "report/table-cell" { value=runserver(:pay_list_qy:paydate); align=left; }
+		pd_id "report/table-cell" { value=runserver(:payee_list_qy:p_partner_key); align=left; }
+		pd_name "report/table-cell" { value=runserver(:payee_list_qy:ptxt); align=left; }
+		pd_state "report/table-cell" { value=runserver(:pay_list_qy:p_country_code + ' / ' + :pay_list_qy:p_state_province); align=left; }
+		pd_gross "report/table-cell" { value=runserver(:pay_list_qy:gross); font=courier; align=right; }
+		pd_fica "report/table-cell" { value=runserver(:pay_list_qy:fica); font=courier; align=right; }
+		pd_fed "report/table-cell" { value=runserver(:pay_list_qy:fed); font=courier; align=right; }
+		pd_st "report/table-cell" { value=runserver(:pay_list_qy:state); font=courier; align=right; }
+		pd_local "report/table-cell" { value=runserver(:pay_list_qy:local); font=courier; align=right; }
+		pd_ui "report/table-cell" { value=runserver(:pay_list_qy:ui); font=courier; align=right; }
+		pd_recv "report/table-cell" { value=runserver(:pay_list_qy:recv); font=courier; align=right; }
+		pd_add "report/table-cell" { value=runserver(:pay_list_qy:add); font=courier; align=right; }
+		pd_net "report/table-cell" { value=runserver(:pay_list_qy:net); font=courier; align=right; }
+		pd_ckno "report/table-cell" { value=runserver(:ckno_qy:a_check_number); align=right; }
+		}
+
+	    payroll_list_subtotal "report/table-row"
+		{
+		summary = yes;
+		summarize_for = runserver(:payee_list_qy:p_partner_key);
+		topborder = 0.01;
+		marginbottom = 1;
+		margintop=0.10;
+		style=bold;
+
+		ps_date "report/table-cell" { value=runserver(''); align=left; }
+		ps_id "report/table-cell" { value=runserver(''); align=left; }
+		ps_name "report/table-cell" { value=runserver('SUBTOTAL >>'); align=right; }
+		ps_state "report/table-cell" { value=runserver(''); align=left; }
+		ps_gross "report/table-cell" { value=runserver(:pay_list_qy:subtotal_gross); font=courier; align=right; }
+		ps_fica "report/table-cell" { value=runserver(:pay_list_qy:subtotal_fica); font=courier; align=right; }
+		ps_fed "report/table-cell" { value=runserver(:pay_list_qy:subtotal_fed); font=courier; align=right; }
+		ps_st "report/table-cell" { value=runserver(:pay_list_qy:subtotal_state); font=courier; align=right; }
+		ps_local "report/table-cell" { value=runserver(:pay_list_qy:subtotal_local); font=courier; align=right; }
+		ps_ui "report/table-cell" { value=runserver(:pay_list_qy:subtotal_ui); font=courier; align=right; }
+		ps_recv "report/table-cell" { value=runserver(:pay_list_qy:subtotal_recv); font=courier; align=right; }
+		ps_add "report/table-cell" { value=runserver(:pay_list_qy:subtotal_add); font=courier; align=right; }
+		ps_net "report/table-cell" { value=runserver(:pay_list_qy:subtotal_net); font=courier; align=right; }
+		ps_ckno "report/table-cell" { value=runserver(:pay_list_qy:subtotal_cnt); align=right; }
+		}
+
+	    payroll_list_summ "report/table-row"
+		{
+		summary = yes;
+		topborder = 0.3;
+		style=bold;
+
+		pt_date "report/table-cell" { value=runserver(''); align=left; }
+		pt_id "report/table-cell" { value=runserver(''); align=left; }
+		pt_name "report/table-cell" { value=runserver('TOTALS >>'); align=right; }
+		pt_state "report/table-cell" { value=runserver(''); align=left; }
+		pt_gross "report/table-cell" { value=runserver(:pay_list_qy:total_gross); font=courier; align=right; }
+		pt_fica "report/table-cell" { value=runserver(:pay_list_qy:total_fica); font=courier; align=right; }
+		pt_fed "report/table-cell" { value=runserver(:pay_list_qy:total_fed); font=courier; align=right; }
+		pt_st "report/table-cell" { value=runserver(:pay_list_qy:total_state); font=courier; align=right; }
+		pt_local "report/table-cell" { value=runserver(:pay_list_qy:total_local); font=courier; align=right; }
+		pt_ui "report/table-cell" { value=runserver(:pay_list_qy:total_ui); font=courier; align=right; }
+		pt_recv "report/table-cell" { value=runserver(:pay_list_qy:total_recv); font=courier; align=right; }
+		pt_add "report/table-cell" { value=runserver(:pay_list_qy:total_add); font=courier; align=right; }
+		pt_net "report/table-cell" { value=runserver(:pay_list_qy:total_net); font=courier; align=right; }
+		pt_ckno "report/table-cell" { value=runserver(:pay_list_qy:total_cnt); align=right; }
+		}
+	    }
+	}
+    }
+

@@ -1,7 +1,7 @@
 $Version=2$
 inc_exp_balance_bybatch "system/report"
     {
-    title = "Income & Expense Balance Report - By Batch";
+    title = "Change in Net Assets - By Batch";
 
     // Income and Expense Balance
     //
@@ -25,8 +25,15 @@ inc_exp_balance_bybatch "system/report"
     ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     unposted "report/parameter" { type=integer; default=0; }
+    invert "report/parameter" { type=integer; default=0; }
+    origin "report/parameter" { type=string; default=null; }
 
     // Queries
+    inv_qy "report/query"
+	{
+	sql = "select inv=condition(:this:invert, -1, 1)";
+	}
+
     ledger_qy "report/query"
 	{
 	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
@@ -42,14 +49,14 @@ inc_exp_balance_bybatch "system/report"
 	sql = runserver("
 		SELECT
 			:t:a_batch_number,
-			ob = isnull(sum(condition((:t:a_period < :this:ref_period or :t:a_transaction_type == 'B') and :t:a_account_category >= '3', :t:a_amount, $0)), $0),
-			rev = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '40', :t:a_amount, $0)), $0),
-			exp = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '50', :t:a_amount, $0)), $0),
-			irev = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '42', :t:a_amount, $0)), $0),
-			iexp = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '52', :t:a_amount, $0)), $0),
-			wrev = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '41', :t:a_amount, $0)), $0),
-			wexp = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '51', :t:a_amount, $0)), $0),
-			equity = isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_transaction_type != 'B' and substring(:t:a_account_category,1,1) == '3', :t:a_amount, $0)), $0)
+			ob = :inv_qy:inv * isnull(sum(condition((:t:a_period < :this:ref_period or :t:a_transaction_type == 'B') and :t:a_account_category >= '3', :t:a_amount, $0)), $0),
+			rev = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '40', :t:a_amount, $0)), $0),
+			exp = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '50', :t:a_amount, $0)), $0),
+			irev = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '42', :t:a_amount, $0)), $0),
+			iexp = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '52', :t:a_amount, $0)), $0),
+			wrev = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '41', :t:a_amount, $0)), $0),
+			wexp = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '51', :t:a_amount, $0)), $0),
+			equity = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_transaction_type != 'B' and substring(:t:a_account_category,1,1) == '3', :t:a_amount, $0)), $0)
 		FROM
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t
 		WHERE
@@ -57,6 +64,7 @@ inc_exp_balance_bybatch "system/report"
 			:t:a_period <= :this:end_period and
 			:t:a_period >= :period_qy:first_period
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
+			" + condition(:this:origin is null, "", "and :t:a_origin = " + quote(:this:origin)) + "
 		GROUP BY
 			:t:a_batch_number
 		");
@@ -85,25 +93,26 @@ inc_exp_balance_bybatch "system/report"
 
     ledger_form "report/form"
 	{
-	source = ledger_qy, period_qy;
+	source = inv_qy, ledger_qy, period_qy;
 
 	rpt_title "report/area"
 	    {
 	    x=0; width=105; height=3;
 	    font=helvetica;
 	    align=center;
-	    t_d1 "report/data" { value = runserver("Income & Expense & Balances - By Batch - for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
+	    t_d1 "report/data" { value = runserver("Change in Net Assets by Batch - for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
 	    t_d2 "report/data" { value = runserver("For periods " + :this:ref_period + " through " + :this:end_period + "\n"); }
 	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
-	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
+	    t_d4 "report/data" { condition=runserver(:this:origin is not null); value = runserver("Only including batch type: " + :this:origin + "\n"); }
+	    t_d5 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
 	    }
 
 	ie_table "report/table"
 	    {
 	    x=0; width=105; height=0;
-	    columns=12;
-	    widths=5,2,20.5,8,8,8,8,8,8,8,8,8;
-	    colsep=0.5;
+	    columns=13;
+	    widths=4.2,2,14.0,8,8,8,8,8,8,8,8,8,8;
+	    colsep=0.4;
 	    source=accts_qy, binfo_qy;
 	    topborder=0.3;
 	    bottomborder=0.3;
@@ -127,6 +136,7 @@ inc_exp_balance_bybatch "system/report"
 		h_iexp "report/table-cell" { value='IF Expense'; align=right; style=bold; }
 		h_wexp "report/table-cell" { value='WF Expense'; align=right; style=bold; }
 		h_eq "report/table-cell" { value='Equity Adj'; align=right; style=bold; }
+		h_chg "report/table-cell" { value='Total Change'; align=right; style=bold; }
 		h_cur "report/table-cell" { value=runserver('End ' + :this:end_period); align=right; style=bold; }
 		}
 
@@ -147,6 +157,7 @@ inc_exp_balance_bybatch "system/report"
 		d_iexp "report/table-cell" { value=runserver(:accts_qy:iexp); align=right; }
 		d_wexp "report/table-cell" { value=runserver(:accts_qy:wexp); align=right; }
 		d_eq "report/table-cell" { value=runserver(:accts_qy:equity); align=right; }
+		d_chg "report/table-cell" { value=runserver(:accts_qy:rev + :accts_qy:irev + :accts_qy:wrev + :accts_qy:exp + :accts_qy:iexp + :accts_qy:wexp + :accts_qy:equity); align=right; }
 		d_cur "report/table-cell" { value=runserver(:accts_qy:ob + :accts_qy:rev + :accts_qy:irev + :accts_qy:wrev + :accts_qy:exp + :accts_qy:iexp + :accts_qy:wexp + :accts_qy:equity); align=right; }
 		}
 
@@ -155,12 +166,12 @@ inc_exp_balance_bybatch "system/report"
 		summary = yes;
 		font=courier;
 		fontsize=7;
+		style=bold;
 		marginbottom=0.0;
 		margintop=0.3;
 		topborder=0.05;
 		s_cc "report/table-cell" { value=runserver(""); align=left; font=helvetica; }
-		s_org "report/table-cell" { value=runserver(""); align=left; font=helvetica; }
-		s_desc "report/table-cell" { value=runserver("TOTALS:"); align=left; font=helvetica; }
+		s_desc "report/table-cell" { value=runserver("TOTALS:"); align=left; font=helvetica; colspan=2; }
 		s_bbal "report/table-cell" { value=runserver(:accts_qy:sum_ob); align=right; }
 		s_rev "report/table-cell" { value=runserver(:accts_qy:sum_rev); align=right; }
 		s_irev "report/table-cell" { value=runserver(:accts_qy:sum_irev); align=right; }
@@ -169,7 +180,51 @@ inc_exp_balance_bybatch "system/report"
 		s_iexp "report/table-cell" { value=runserver(:accts_qy:sum_iexp); align=right; }
 		s_wexp "report/table-cell" { value=runserver(:accts_qy:sum_wexp); align=right; }
 		s_eq "report/table-cell" { value=runserver(:accts_qy:sum_equity); align=right; }
+		s_chg "report/table-cell" { value=runserver(:accts_qy:sum_rev + :accts_qy:sum_irev + :accts_qy:sum_wrev + :accts_qy:sum_exp + :accts_qy:sum_iexp + :accts_qy:sum_wexp + :accts_qy:sum_equity); align=right; }
 		s_cur "report/table-cell" { value=runserver(:accts_qy:sum_ob + :accts_qy:sum_rev + :accts_qy:sum_irev + :accts_qy:sum_wrev + :accts_qy:sum_exp + :accts_qy:sum_iexp + :accts_qy:sum_wexp + :accts_qy:sum_equity); align=right; }
+		}
+
+	    ifsum_row "report/table-row"
+		{
+		summary = yes;
+		font=courier;
+		style=bold;
+		fontsize=7;
+		marginbottom=0.0;
+		margintop=0.2;
+		s_cc "report/table-cell" { value=runserver(""); align=left; font=helvetica; }
+		s_desc "report/table-cell" { value=runserver("Interfund Rev/Exp Balance:"); align=left; font=helvetica; colspan=2; }
+		s_bbal "report/table-cell" { value=runserver(:accts_qy:sum_iob); align=right; }
+		s_rev "report/table-cell" { value=runserver(''); align=right; }
+		s_irev "report/table-cell" { value=runserver(:accts_qy:sum_irev); align=right; }
+		s_wrev "report/table-cell" { value=runserver(''); align=right; }
+		s_exp "report/table-cell" { value=runserver(''); align=right; }
+		s_iexp "report/table-cell" { value=runserver(:accts_qy:sum_iexp); align=right; }
+		s_wexp "report/table-cell" { value=runserver(''); align=right; }
+		s_eq "report/table-cell" { value=runserver(''); align=right; }
+		s_chg "report/table-cell" { value=runserver(:accts_qy:sum_irev + :accts_qy:sum_iexp); align=right; }
+		s_cur "report/table-cell" { value=runserver(:accts_qy:sum_iob + :accts_qy:sum_irev + :accts_qy:sum_iexp); align=right; }
+		}
+	    wfsum_row "report/table-row"
+		{
+		summary = yes;
+		font=courier;
+		style=bold;
+		fontsize=7;
+		marginbottom=0.0;
+		margintop=0.2;
+		s_cc "report/table-cell" { value=runserver(""); align=left; font=helvetica; }
+		s_desc "report/table-cell" { value=runserver("Within-fund Rev/Exp Balance:"); align=left; font=helvetica; colspan=2; }
+		s_bbal "report/table-cell" { value=runserver(:accts_qy:sum_wob); align=right; }
+		s_rev "report/table-cell" { value=runserver(''); align=right; }
+		s_irev "report/table-cell" { value=runserver(''); align=right; }
+		s_wrev "report/table-cell" { value=runserver(:accts_qy:sum_wrev); align=right; }
+		s_exp "report/table-cell" { value=runserver(''); align=right; }
+		s_iexp "report/table-cell" { value=runserver(''); align=right; }
+		s_wexp "report/table-cell" { value=runserver(:accts_qy:sum_wexp); align=right; }
+		s_eq "report/table-cell" { value=runserver(''); align=right; }
+		s_chg "report/table-cell" { value=runserver(:accts_qy:sum_wrev + :accts_qy:sum_wexp); align=right; }
+		s_cur "report/table-cell" { value=runserver(:accts_qy:sum_wob + :accts_qy:sum_wrev + :accts_qy:sum_wexp); align=right; }
 		}
 	    }
 	}

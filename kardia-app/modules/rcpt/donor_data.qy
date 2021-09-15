@@ -1,0 +1,28 @@
+$Version=2$
+donor_data "system/query"
+    {
+    partner "query/parameter" { type=string; style=notnull; }
+    ledger "query/parameter" { type=string; style=notnull; }
+    name "query/parameter" { type=string; }
+
+    sql = " select
+		*
+	    from
+		expression ( '/apps/kardia/modules/base/person_data.qy?partner=' + :parameters:partner + isnull('&name=' + :parameters:name, '') )
+	    ;
+
+	    -- Donor info
+	    select
+		name='Donor Prefs',
+		key=:d:name,
+		partner=:d:p_partner_key,
+		data=isnull('Receipt Type: ' + isnull(:rt:a_receipt_type_desc, '(unset)') + '\n' + condition(:d:p_is_daf = 1, 'Donor-Advised Fund\n', ''), '') - '\n'
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_donor/rows d,
+		/apps/kardia/data/Kardia_DB/a_receipt_type/rows rt
+	    where
+		:d:p_partner_key = :parameters:partner and
+		isnull(:parameters:name, 'Donor Prefs') = 'Donor Prefs' and
+		:rt:a_receipt_type =* :d:p_receipt_desired
+	    ";
+    }

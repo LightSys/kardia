@@ -1,0 +1,192 @@
+$Version=2$
+plugin_base_config_rcptrpt "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Receipts";
+    description = "Receipt Printing Options";
+    sequence = 650;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		rcpt_lbl "widget/label" { height=16; style=bold; text="Receipt Printing:"; }
+
+		rcpt_label_1 "widget/label" { height=15; text="Receipt Report Filenames: these are the .rpt files that are used for printing your own custom receipts."; }
+		rcpt_path_hbox "widget/hbox"
+		    {
+		    width=550;
+		    height=24;
+		    spacing=10;
+		    rcpt_path "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptReport"; text="Receipt File:"; width=500; label_width=150; ctl_type=editbox; }
+		    choose_file_btn "widget/textbutton"
+			{
+			width=40;
+			height=20;
+			text="...";
+			on_choose "widget/connector" { event=Click; target=filedialog; action=OpenModal; }
+			}
+		    }
+		ncrcpt_path_hbox "widget/hbox"
+		    {
+		    width=550;
+		    height=24;
+		    spacing=10;
+		    ncrcpt_path "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptNCReport"; text="Noncash Receipt File:"; width=500; label_width=150; ctl_type=editbox; }
+		    ncchoose_file_btn "widget/textbutton"
+			{
+			width=40;
+			height=20;
+			text="...";
+			on_ncchoose "widget/connector" { event=Click; target=ncfiledialog; action=OpenModal; }
+			}
+		    }
+		arcpt_path_hbox "widget/hbox"
+		    {
+		    width=550;
+		    height=24;
+		    spacing=10;
+		    arcpt_path "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptAckReport"; text="Acknowledgement File:"; width=500; label_width=150; ctl_type=editbox; }
+		    achoose_file_btn "widget/textbutton"
+			{
+			width=40;
+			height=20;
+			text="...";
+			on_achoose "widget/connector" { event=Click; target=afiledialog; action=OpenModal; }
+			}
+		    }
+
+		rcpt_label_2 "widget/label" { height=15; text="Receipt Publication: configure tracking receipts sent as publications, via mailing lists."; }
+		rcpt_listcode "widget/component"
+		    {
+		    height=24;
+		    width=500;
+		    path="/apps/kardia/modules/base/editbox_table.cmp";
+		    field='RcptPubl';
+		    text='Publication:';
+		    label_width=150;
+		    validate=1;
+		    popup_width=300;
+		    popup_height=210;
+		    popup_sql="select value = :m:m_list_code, label = :m:m_list_description + ' (' + :m:m_list_code + ')' from /apps/kardia/data/Kardia_DB/m_list/rows m where :m:m_list_type = 'P'";
+		    search_field_list="m_list_code,*m_list_description*";
+		    key_name="m_list_code";
+		    object_name="Publication";
+		    popup_text="Select a Publication:";
+		    //attach_point=editbox;
+
+		    listcode_hints "widget/hints" { style=applyonchange; }
+		    }
+		rcpt_listmode "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptPublType"; text="Use Issues?"; width=500; label_width=150; ctl_type=dropdown; sql = "select label='Yes, receipts each month are an issue of a publication', value='Y'; select label='No, receipts are one publication', value='N'"; mode_hints "widget/hints" { style=notnull; } }
+		rcpt_label_2a "widget/label" { height=30; text="Lookback controls the number of days we look back for a previous issue, if the donor has not yet received it, after a new issue has been created.  This is used to help ensure each monthly donor gets each issue, even if the donor's giving pattern is somewhat irregular."; }
+		rcpt_lookback "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptPublLkbk"; text="Lookback Days:"; width=300; label_width=150; ctl_type=editbox; }
+
+		rcpt_label_3 "widget/label" { height=30; text="When gifts are imported from an online giving service, what should the default receipt preference be for those gifts, if no donor receipting preference is on record?"; }
+		rcpt_defrcpt "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptEGDefRcpt"; text="Online Receipt Pref:"; width=300; label_width=150; ctl_type=dropdown; sql = "select label=:a_receipt_type + ' - ' + :a_receipt_type_desc, value=:a_receipt_type from /apps/kardia/data/Kardia_DB/a_receipt_type/rows where :a_is_enabled = 1"; def_hints "widget/hints" { style=notnull; } }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+
+    filedialog "widget/component"
+	{
+	path = "/sys/cmp/window_container.cmp";
+	component = "/sys/cmp/file_selection.cmp";
+	visible = no;
+	title = "Select Receipt Report:";
+	toplevel = yes;
+	padding = 10;
+
+	select_cn1 "widget/connector" { event="Selected"; target=rcpt_path; action=SetValue; Value=runclient(:Pathname); }
+	select_cn2 "widget/connector" { event="Selected"; target=filedialog; action=Close; }
+	cancel_cn1 "widget/connector" { event="Cancel"; target=filedialog; action=Close; }
+	}
+    ncfiledialog "widget/component"
+	{
+	path = "/sys/cmp/window_container.cmp";
+	component = "/sys/cmp/file_selection.cmp";
+	visible = no;
+	title = "Select Noncash Receipt Report:";
+	toplevel = yes;
+	padding = 10;
+
+	ncselect_cn1 "widget/connector" { event="Selected"; target=ncrcpt_path; action=SetValue; Value=runclient(:Pathname); }
+	ncselect_cn2 "widget/connector" { event="Selected"; target=ncfiledialog; action=Close; }
+	nccancel_cn1 "widget/connector" { event="Cancel"; target=ncfiledialog; action=Close; }
+	}
+    afiledialog "widget/component"
+	{
+	path = "/sys/cmp/window_container.cmp";
+	component = "/sys/cmp/file_selection.cmp";
+	visible = no;
+	title = "Select Acknowledgements Report:";
+	toplevel = yes;
+	padding = 10;
+
+	aselect_cn1 "widget/connector" { event="Selected"; target=arcpt_path; action=SetValue; Value=runclient(:Pathname); }
+	aselect_cn2 "widget/connector" { event="Selected"; target=afiledialog; action=Close; }
+	acancel_cn1 "widget/connector" { event="Cancel"; target=afiledialog; action=Close; }
+	}
+    }
+

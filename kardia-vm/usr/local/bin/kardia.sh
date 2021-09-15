@@ -1895,11 +1895,13 @@ function lookupStatus
     IPADDR=$(ip addr show dev $IFDEV primary | sed -n 's/    inet \([0-9.]*\).*/\1/p')
     ETCDIR=$( dirname $CXETC )
     export DUPLICITY_CONF=$ETCDIR/duplicity.conf
-    export DUPLICITY_USER=$(grep USER $DUPLICITY_CONF | sed 's/.*=//')
-    export DUPLICITY_HOST=$(grep HOST $DUPLICITY_CONF | sed 's/.*=//')
-    export DUPLICITY_PORT=$(grep PORT $DUPLICITY_CONF | sed 's/.*=//')
-    export DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
-    export DUPLICITY_ENABLED=$(grep ENABLED $DUPLICITY_CONF | sed 's/.*=//')
+    if [ -e "$DUPLICITY_CONF" ]; then
+	export DUPLICITY_USER=$(grep USER $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_HOST=$(grep HOST $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_PORT=$(grep PORT $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_ENABLED=$(grep ENABLED $DUPLICITY_CONF | sed 's/.*=//')
+    fi
     }
 
 
@@ -3433,27 +3435,81 @@ function doCreateMissingCronFiles
 
 function menuConfigureBackup
     {
-    lookupStatus
-    DSTR="dialog --title 'Define Backup' --backtitle 'Define Backup' --form"
-    DSTR="$DSTR 'Configure an SSH backup.  Enter a username, host, port, and destination path on the host.' 0 0 0"
-    DSTR="$DSTR 'DestUser:' 1 1 '$DUPLICITY_USER' 1 26 30 0"
-    DSTR="$DSTR 'DestHost:' 3 1 '$DUPLICITY_HOST' 3 26 30 0"
-    DSTR="$DSTR 'DestPort:' 5 1 '$DUPLICITY_PORT' 5 26 5 0"
-    DSTR="$DSTR 'DestPath:' 7 1 '$DUPLICITY_PATH' 7 26 30 0"
+    while true; do
+	lookupStatus
+	DSTR="dialog --title 'Define Backup' --backtitle 'Define Backup' --form"
+	DSTR="$DSTR 'Configure an SSH backup.  Enter a username, host, port, and destination path on the host.' 0 0 0"
+	DSTR="$DSTR 'DestUser:' 1 1 '$DUPLICITY_USER' 1 26 30 0"
+	DSTR="$DSTR 'DestHost:' 3 1 '$DUPLICITY_HOST' 3 26 30 0"
+	DSTR="$DSTR 'DestPort:' 5 1 '$DUPLICITY_PORT' 5 26 5 0"
+	DSTR="$DSTR 'DestPath:' 7 1 '$DUPLICITY_PATH' 7 26 30 0"
 
-    echo $DSTR
+	echo $DSTR
  
-    eval "$DSTR" 2>&1 >/dev/tty |
-	{
-	read N_USER; read N_HOST; read N_PORT; read N_PATH
-	if [ -n "$N_USER" -a -n "$N_HOST" -a -n "$N_PATH" ]; then
-	    DUPLICITY_USER=$N_USER;
-	    DUPLICITY_PORT=$N_PORT;
-	    DUPLICITY_HOST=$N_HOST;
-	    DUPLICITY_PATH=$N_PATH;
-	    doWriteBackupConfiguration
+	ANS=$(eval "$DSTR" 2>&1 >/dev/tty | 
+	    {
+	    read N_USER; read N_HOST; read N_PORT; read N_PATH
+	    if [ -z "$N_USER" -a -z "$N_HOST" -a -z "$N_PATH" ]; then
+		return 0 #We are canceling out, or nothing defined	
+	    fi
+	    #We need to test before we commit
+	    #try a silent ssh that would fail if something wrong to get an error
+	    #if the error is such that we need a key, try doing ssh-copy-id
+	    #see where we go from that
+	    echo Testing settings
+	    target="$N_USER@$N_HOST"
+	    working=$( ssh -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=3 -p $N_PORT $target ls 2>&1 )
+	    #track the response
+	    response=$?
+	    #echo working = $working
+	    #echo response = $response
+	    #we are looking for "Permission denied (publickey,password)."
+	    
+	    if [ $response -ne 0 ]; then
+		if [ -n "$( echo $working | grep publickey )" ]; then
+		    echo ---------------------------------------------------
+		    echo Trying to push the id to the server with ssh-copy-id
+		    echo Enter the password for $N_USER if prompted for it
+		    echo ---------------------------------------------------
+		    #we believe we can fix it by doing ssh-copy-id
+		    ssh-copy-id -p $N_PORT $target
+		    export hostfile=~/.ssh/known_hosts
+		    ( cat $hostfile; ssh-keyscan -p$N_PORT $N_HOST )2>/dev/null|  sort -u > $hostfile
+		    echo ---------------------------------------------------
+		    echo We will return to the menu and try again now that
+		    echo We think it is fixed.
+		    DUPLICITY_USER=$N_USER;
+		    DUPLICITY_PORT=$N_PORT;
+		    DUPLICITY_HOST=$N_HOST;
+		    DUPLICITY_PATH=$N_PATH;
+		    doWriteBackupConfiguration
+		    sleep 2
+		else
+		    echo There is an error we cannot fix:
+		    echo "ERROR: $working"
+		    exit
+		fi
+	    else
+		if [ -n "$N_USER" -a -n "$N_HOST" -a -n "$N_PATH" ]; then
+		    DUPLICITY_USER=$N_USER;
+		    DUPLICITY_PORT=$N_PORT;
+		    DUPLICITY_HOST=$N_HOST;
+		    DUPLICITY_PATH=$N_PATH;
+		    doWriteBackupConfiguration
+		    return 0
+		else
+		    echo Missing some settings - not saved 1>&2
+		    sleep 2
+		    break
+		    return 1
+		fi
+	    fi
+	    return 1
+	    } 1>&2)
+	if [ $? -eq 0 ]; then
+	    break	
 	fi
-	}
+	done
     }
 
 function menuEnableDisableBackup
@@ -3546,7 +3602,16 @@ function menuRestore
     if [ -n "DUPLICITY_USER" -a -n "DUPLICITY_HOST" -a -n "DUPLICITY_PATH" ]; then
 	echo "Gathering data: Please Wait"
 	DSTR="dialog --backtitle '$TITLE' --menu 'Choose an item to restore' 0 0 0"
-	dates=$( duplicity collection-status scp://root@tyounglightsys.ddns.info:2222////home/tyoung/duplicity/DB --no-encryption | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } )
+	dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
+	dates=$( duplicity collection-status $dup_path/DB --no-encryption | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } )
+	echo $dates;
+	if [ -z "$dates" ]; then
+	    echo -----------------------------------
+	    echo No backups yet.  Nothing to recover
+	    echo -----------------------------------
+	    sleep 3
+	    return
+	fi
 	for one in $dates; do
 	    DSTR="$DSTR $one $one";
 	done

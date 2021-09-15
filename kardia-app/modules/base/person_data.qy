@@ -1,0 +1,68 @@
+$Version=2$
+person_data "system/query"
+    {
+    partner "query/parameter" { type=string; }
+    name "query/parameter" { type=string; }
+
+    sql = " select
+		name = 'Name',
+		key = :p:p_partner_key,
+		partner=:p:p_partner_key,
+		data = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    where
+		:p:p_partner_key = :parameters:partner
+	    having
+		isnull(:parameters:name, 'Name') = 'Name'
+	    ;
+
+	    select
+		name = isnull(:lt:text + ' ', '') + 'Address',
+		key = :pl:name,
+		partner=:pl:p_partner_key,
+		data = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl,p=pl')
+	    from
+		/apps/kardia/data/Kardia_DB/p_location/rows pl,
+		/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+		/apps/kardia/data/Kardia_DB/p_country/rows c,
+		/apps/kardia/data/Kardia_DB/p_address_format/rows af
+	    where
+		:parameters:partner = :pl:p_partner_key and
+		:pl:p_location_type *= :lt:tag and
+		:c:p_country_code =* :pl:p_country_code and
+		:af:p_country_code =* :pl:p_country_code and
+		:af:p_address_set = 'STANDARD'
+	    limit
+		1
+	    having
+		isnull(:parameters:name, 'Address') = 'Address'
+	    ;
+
+	    select
+		name = isnull(:lt:text, isnull(:lt2:text,'-')) + ' ' + :ct:text,
+		key = :c:name,
+		partner=:c:p_partner_key,
+		data=(isnull(:c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + :c:p_contact_data)
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
+		/apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
+		/apps/kardia/data/Kardia_DB/p_location/rows l,
+		/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+		/apps/kardia/data/Kardia_DB/_p_location_type/rows lt2
+	    where
+		:c:p_partner_key = :parameters:partner and
+		:c:p_contact_type = :ct:tag and
+		convert(integer,:c:p_location_id) *= :l:p_location_id and
+		:c:p_partner_key *= :l:p_partner_key and
+		:l:p_location_type *= :lt:tag and
+		:l:p_revision_id = 0 and
+		convert(string,:c:p_location_id) *= :lt2:tag and
+		:c:p_record_status_code = 'A'
+	    order by
+		:c:p_location_id,
+		:c:p_contact_id
+	    having
+		isnull(:parameters:name, :this:name) = :this:name
+	    ";
+    }

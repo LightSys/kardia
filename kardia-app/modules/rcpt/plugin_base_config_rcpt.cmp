@@ -65,9 +65,6 @@ plugin_base_config_rcpt "widget/component-decl"
 
 		rcpt_label_4 "widget/label" { height=15; text="Gift received date: This controls whether the 'received date' field on the gift entry form is disabled (read only) or not."; }
 		rcpt_disrcv "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptDisabRcvdDt"; text="Disable Received Date:"; width=300; label_width=150; ctl_type=checkbox; rcvd_hints "widget/hints" { style=notnull; } }
-
-		rcpt_label_5 "widget/label" { height=30; text="When gifts are imported from an online giving service, what should the default receipt preference be for those gifts, if no donor receipting preference is on record?"; }
-		rcpt_defrcpt "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptEGDefRcpt"; text="Online Receipt Pref:"; width=300; label_width=150; ctl_type=dropdown; sql = "select label=:a_receipt_type + ' - ' + :a_receipt_type_desc, value=:a_receipt_type from /apps/kardia/data/Kardia_DB/a_receipt_type/rows where :a_is_enabled = 1"; def_hints "widget/hints" { style=notnull; } }
 		}
 	    }
 

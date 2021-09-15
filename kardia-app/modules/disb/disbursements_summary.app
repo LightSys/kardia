@@ -39,7 +39,7 @@ disbursements_summary "widget/page"
 		label_width=120;
 		form=rpt_form;
 
-		sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, (:a_period == " + quote(:this:period) + ") from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_parent_period desc, :a_period asc");
+		sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, (:a_period == " + quote(:this:period) + ") from /apps/kardia/data/Kardia_DB/a_period/rows p where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :p:a_parent_period desc, :p:a_period asc");
 		}
 	    sep "widget/autolayoutspacer" { height=4; }
 	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=rpt_form; label_width=120; }

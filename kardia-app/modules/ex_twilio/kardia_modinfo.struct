@@ -1,0 +1,10 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Twilio SMS Integration";
+    module_abbrev = "Twilio Integration";
+    module_description = "This module provides integration with Twilio for SMS sending and receiving";
+    module_sequence = null;
+    module_context = 'kardia';
+    module_endorsement = null;
+    }

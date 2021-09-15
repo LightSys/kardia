@@ -29,7 +29,10 @@ alter table p_location
 	add constraint p_location_zip_idx unique  (p_postal_code, p_state_province, p_partner_key, p_location_id, p_revision_id);
 
 alter table p_location
-	add constraint p_location_city_idx unique  (p_city, p_state_province, p_partner_key, p_location_id, p_revision_id);
+	add constraint p_location_city_idx unique  (p_city, p_state_province, p_postal_code, p_partner_key, p_location_id, p_revision_id);
+
+alter table p_contact_info
+	add constraint p_contact_idx unique  (p_contact_data, p_phone_area_city, p_phone_country, p_partner_key, p_contact_id);
 
 alter table p_staff
 	add constraint p_staff_login_idx unique  (p_kardia_login, p_partner_key);
@@ -247,6 +250,9 @@ alter table a_subtrx_gift_group
 alter table a_subtrx_gift_group
 	add constraint a_gifttrxgrp_ack_id_idx unique  (p_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number);
 
+alter table a_subtrx_gift_group
+	add constraint a_gifttrxgrp_pass_id_idx unique  (p_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number);
+
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_recip_id_idx unique  (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
@@ -257,10 +263,19 @@ alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_donor_idx unique  (p_dn_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
 alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_ack_idx unique  (p_dn_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_pass_idx unique  (p_dn_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
+alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_rcpt_idx unique  (a_dn_receipt_number, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_src_idx unique  (i_eg_source_key, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_datetype_idx unique  (a_dn_gift_received_date, a_dn_gift_postmark_date, a_dn_gift_type, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
 alter table a_motivational_code
 	add constraint a_motiv_code_list unique  (m_list_code, a_ledger_number, a_motivational_code);
@@ -316,8 +331,11 @@ alter table i_eg_gift_import
 alter table c_chat
 	add constraint c_public_idx unique  (c_public, c_chat_id);
 
+alter table t_project
+	add constraint t_parent_idx unique  (t_parent_project_id, t_project_id);
+
 alter table t_sprint
-	add constraint t_sprint_proj_idx unique  (t_project_id, t_sprint_id);
+	add constraint t_sprint_idx unique  (t_sprint_id);
 
 alter table t_sprint_time
 	add constraint t_time_sprint_idx unique  (t_sprint_id, t_time_id);

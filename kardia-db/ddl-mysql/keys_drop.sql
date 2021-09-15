@@ -78,6 +78,10 @@ alter table p_contact_info
 	drop primary key;
 
 
+alter table p_contact_info
+	drop index p_contact_idx;
+
+
 alter table p_contact_usage
 	drop primary key;
 
@@ -207,6 +211,10 @@ alter table m_list
 
 
 alter table m_list_membership
+	drop primary key;
+
+
+alter table m_list_document
 	drop primary key;
 
 
@@ -770,6 +778,14 @@ alter table a_ledger_office
 	drop primary key;
 
 
+alter table a_currency
+	drop primary key;
+
+
+alter table a_currency_exch_rate
+	drop primary key;
+
+
 alter table a_payroll
 	drop primary key;
 
@@ -780,6 +796,10 @@ alter table a_payroll_period
 
 alter table a_payroll_period
 	drop index a_payperiod_idx;
+
+
+alter table a_payroll_period_payee
+	drop primary key;
 
 
 alter table a_payroll_group
@@ -866,6 +886,14 @@ alter table a_receipt_type
 	drop primary key;
 
 
+alter table a_gift_payment_type
+	drop primary key;
+
+
+alter table a_receipt_mailing
+	drop primary key;
+
+
 alter table a_subtrx_gift
 	drop primary key;
 
@@ -894,6 +922,10 @@ alter table a_subtrx_gift_group
 	drop index a_gifttrxgrp_ack_id_idx;
 
 
+alter table a_subtrx_gift_group
+	drop index a_gifttrxgrp_pass_id_idx;
+
+
 alter table a_subtrx_gift_item
 	drop primary key;
 
@@ -915,11 +947,27 @@ alter table a_subtrx_gift_item
 
 
 alter table a_subtrx_gift_item
+	drop index a_gifttrxi_ack_idx;
+
+
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_pass_idx;
+
+
+alter table a_subtrx_gift_item
 	drop index a_gifttrxi_rcpt_idx;
 
 
 alter table a_subtrx_gift_item
 	drop index a_gifttrxi_src_idx;
+
+
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_datetype_idx;
+
+
+alter table a_subtrx_gift_intent
+	drop primary key;
 
 
 alter table a_subtrx_gift_rcptcnt
@@ -987,6 +1035,14 @@ alter table a_descriptives
 
 
 alter table a_descriptives_hist
+	drop primary key;
+
+
+alter table a_pledge
+	drop primary key;
+
+
+alter table a_intent_type
 	drop primary key;
 
 
@@ -1114,12 +1170,20 @@ alter table t_project
 	drop primary key;
 
 
+alter table t_project
+	drop index t_parent_idx;
+
+
 alter table t_sprint
 	drop primary key;
 
 
 alter table t_sprint
-	drop index t_sprint_proj_idx;
+	drop index t_sprint_idx;
+
+
+alter table t_sprint_project
+	drop primary key;
 
 
 alter table t_sprint_time

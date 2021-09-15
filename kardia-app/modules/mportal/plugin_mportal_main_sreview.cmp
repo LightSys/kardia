@@ -98,6 +98,39 @@ support_review "widget/component-decl"
 		    (select count(1) from /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp3 where :gp3:a_ledger_number = :gp:a_ledger_number and :gp3:p_donor_partner_key = :gp:p_donor_partner_key and :gp3:a_cost_center = :gp:a_cost_center and :gp3:s_date_modified > :gp:s_date_modified) = 0
 		;
 
+		-- Pledges?
+		insert
+		    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows
+		select
+		    a_ledger_number = :info:ledger,
+		    p_donor_partner_key = :pl:p_donor_partner_id,
+		    a_cost_center = :info:fund,
+		    a_amount = :pl:a_amount,
+		    a_interval = :pl:a_giving_interval,
+		    a_is_active = 1,
+		    a_start_date = isnull(:pl:a_start_date, :pl:a_pledge_date),
+		    a_evaluation_date = getdate(),
+		    a_comment = '',
+		    s_date_created = getdate(),
+		    s_created_by = :info:login,
+		    s_date_modified = getdate(),
+		    s_modified_by = :info:login
+		from
+		    /apps/kardia/data/Kardia_DB/a_pledge/rows pl
+		where
+		    :pl:a_ledger_number = :info:ledger and
+		    :pl:a_cost_center = :info:fund and
+		    :pl:a_is_active = 1 and
+		    (:pl:a_end_date <= getdate() or :pl:a_end_date is null)
+		on duplicate
+		    :a_ledger_number,
+		    :p_donor_partner_key,
+		    :a_cost_center,
+		    :a_is_active
+		update set
+		    0 = 0
+		;
+
 		-- New donors?  We scan for gifts that don't have a corresponding active a_giving_pattern entry,
 		-- and also look up any electronic giving gift import data that implies a recurring gift.
 		insert
@@ -579,6 +612,7 @@ support_review "widget/component-decl"
 		hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
 		rowcache_size=200;
 		nodata_message = runclient(condition(:support_osrc:cx__pending, "No support information available.", "Looking up your supporters..."));
+		type_to_find = yes;
 
 		st_name "widget/table-column" { title = "Supporter"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:support_osrc:p_donor_partner_key + isnull(' - ' + :support_osrc:p_city + ', ' + :support_osrc:p_state_province, '')); }
 		st_amt "widget/table-column" { title = "Amount"; fieldname=a_amount; width=90; style=bold; font_size=16; caption_value=runclient(:support_osrc:interval_txt); align=right; caption_align=right; }

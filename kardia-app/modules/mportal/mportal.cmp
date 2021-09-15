@@ -28,7 +28,8 @@ mportal "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/p_partner/rows p
 		where
 		    :p:p_partner_key = :s:p_partner_key and
-		    :s:p_kardia_login is not null
+		    :s:p_kardia_login is not null and
+		    :s:p_is_staff = 1
 		having
 		    :staff_login = user_name() or
 		    has_endorsement('kardia:portal_manage','kardia')

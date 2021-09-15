@@ -3,6 +3,7 @@ plugin_crm_search_ADD "widget/component-decl"
     {
     stage_label = "Address";
     stage_short_label = "Addr";
+    stage_description = "Street, City, State/Province, Postal Code, Country, or Geolocation";
     stage_description_expr = "isnull((select isnull('Address Contains: ' + :param:addr + ', ', '') + isnull('City Begins With: ' + :param:city + ', ', '') + isnull('State/Province: ' + :param:stateprov + ', ', '') + isnull('Country: ' + :param:country + ', ', '') + isnull('Within ' + :param:geo_within + ' mi of ' + :param:geo_of + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
     stage_type = "ADD";
     icon = "/apps/kardia/images/tango/go-home.png";

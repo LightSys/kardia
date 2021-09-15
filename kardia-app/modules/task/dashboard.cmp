@@ -35,9 +35,9 @@ dashboard "widget/component-decl"
 		    participants = isnull((select sum(:p:p_given_name + ' ' + :p:p_surname + ', ') - ', ' from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/t_participant/rows pa where :pa:t_project_id = :pr:t_project_id and :p:p_partner_key = :pa:p_partner_key), ''),
 		    rev = datediff(second, convert(datetime, '2019-01-01 00:00'), isnull((select max(:th:t_transition_date) from /apps/kardia/data/Kardia_DB/t_task_history/rows th, /apps/kardia/data/Kardia_DB/t_task/rows t where :t:t_project_id = :pr:t_project_id and :th:t_task_id = :t:t_task_id), convert(datetime, '2019-01-01 00:00'))),
 		    color = hash('md5', isnull(:pr:t_project_color, 'gray')),
-		    hours = (select isnull(sum(:p:t_skill_ratio), 0.0) from /apps/kardia/data/Kardia_DB/t_participant/rows p, /apps/kardia/data/Kardia_DB/t_sprint_participant/rows sp where :p:t_project_id = :pr:t_project_id and :sp:t_project_id = :p:t_project_id and :sp:p_partner_key = :p:p_partner_key),
+		    hours = (select isnull(sum(:sp:t_skill_ratio), 0.0) from /apps/kardia/data/Kardia_DB/t_participant/rows p, /apps/kardia/data/Kardia_DB/t_sprint_participant/rows sp where :p:t_project_id = :pr:t_project_id and :sp:t_project_id = :p:t_project_id and :sp:p_partner_key = :p:p_partner_key),
 		    -- rev = datepart(minute, getdate()) * 60 + datepart(second, getdate()),
-		    lasttask = (select max(:th:t_transition_date) from /apps/kardia/data/Kardia_DB/t_task_history/rows th, /apps/kardia/data/Kardia_DB/t_task/rows t where :t:t_project_id = :pr:t_project_id and :th:t_task_id = :t:t_task_id)
+		    lasttask = (select isnull(max(:th:t_transition_date), dateadd(year, -1, getdate())) from /apps/kardia/data/Kardia_DB/t_task_history/rows th, /apps/kardia/data/Kardia_DB/t_task/rows t where :t:t_project_id = :pr:t_project_id and :th:t_task_id = :t:t_task_id)
 		from	
 		    /apps/kardia/data/Kardia_DB/t_project/rows pr
 		where

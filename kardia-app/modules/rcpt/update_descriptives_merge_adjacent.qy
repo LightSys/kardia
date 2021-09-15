@@ -1,0 +1,154 @@
+$Version=2$
+update_descriptives_merge_adjacent "system/query"
+    {
+    fund "query/parameter" { type=string; style=strnull;}
+    donor "query/parameter" { type=string; style=strnull;}
+
+    sql = " declare collection tmp_gift_items scope application;
+            declare collection tmp_merge_aggregates;
+
+            delete collection tmp_merge_aggregates;
+
+	    -- Step One: Locate adjacent segments
+            --  compare the combined segments average to the
+	    --  longer segment's average.
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+	    set
+		:a_merged_id = :dh2:a_hist_id
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh2:a_amount = :dh1:a_amount and
+		:dh1:a_hist_id < :dh2:a_hist_id and
+		(:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.85 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
+                (:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 1.15 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount)))
+	    ;
+            -- Extra recurssions to ensure a merge does not occur
+            -- into a history that is also getting merged away
+            update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+	    set
+		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh1:a_merged_id = :dh2:a_hist_id
+	    ;
+            update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+	    set
+		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh1:a_merged_id = :dh2:a_hist_id
+	    ;
+
+            -- Step Two : Aggregate fields that are going to be merged into the same history
+            insert
+                collection tmp_merge_aggregates
+            select
+                ledger = :dh1:a_ledger_number,
+                fund = :dh1:a_cost_center,
+                donor = :dh1:p_donor_partner_key,
+                merged = :dh1:a_merged_id,
+
+                sum_dh1_a_count = sum(:dh1:a_count),
+                sum_dh1_a_total = sum(:dh1:a_total),
+                prev_end_dh1 = condition(last(isnull(:dh1:a_prev_end, 'null')) = 'null', null, last(:dh1:a_prev_end)),
+                next_start_dh1 = condition(first(isnull(:dh1:a_next_start, 'null')) = 'null', null, first(:dh1:a_next_start)),
+                first_dh1_gift = min(:dh1:a_first_gift),
+                last_dh1_gift = max(:dh1:a_last_gift),
+                ntl_dh1_gift = condition(first(:dh1:a_count) >=2, first(:dh1:a_ntl_gift), nth(:dh1:a_first_gift, 2)),
+                merge_next = :dh2:a_merged_id
+            from
+                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+            where
+                (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
+                :dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh1:a_merged_id = :dh2:a_hist_id
+            group by
+                :dh1:a_ledger_number,
+                :dh1:p_donor_partner_key,
+                :dh1:a_cost_center,
+                :dh1:a_merged_id
+            order by
+                :dh1:a_ledger_number,
+                :dh1:p_donor_partner_key,
+                :dh1:a_cost_center,
+                :dh1:a_hist_id
+            ;
+
+	    -- Step Three: Merge dh1 into dh2, but only if it is safe
+            --  Due to extra merges, it should always be safe. However,
+            --  this is not guaranteed for exceptionally large data sets
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
+                identity collection tmp_merge_aggregates t
+	    set
+                :dh2:a_count = :dh2:a_count + :t:sum_dh1_a_count,
+		:dh2:a_total = :dh2:a_total + :t:sum_dh1_a_total,
+		:dh2:a_prev_end = condition(
+                                :t:prev_end_dh1 is null,
+                                null,
+                                condition(:t:prev_end_dh1 < :dh2:a_prev_end, :t:prev_end_dh1, :dh2:a_prev_end)
+                                ),
+		:dh2:a_next_start = condition(
+                                :t:next_start_dh1 is null,
+                                null,
+                                condition(:t:next_start_dh1 > :dh2:a_next_start, :t:next_start_dh1, :dh2:a_next_start)
+                                ),
+                :dh2:a_ntl_gift = condition(
+                                :t:ntl_dh1_gift is null, 
+                                condition(:dh2:a_last_gift < :t:last_dh1_gift, :dh2:a_last_gift, :dh2:a_ntl_gift),
+                                condition(:t:ntl_dh1_gift < :dh2:a_ntl_gift, :dh2:a_ntl_gift, :t:ntl_dh1_gift)
+                                ),
+                :dh2:a_first_gift = condition(:t:first_dh1_gift > :dh2:a_first_gift, :dh2:a_first_gift, :t:first_dh1_gift),
+		:dh2:a_last_gift = condition(:t:last_dh1_gift < :dh2:a_last_gift, :dh2:a_last_gift, :t:last_dh1_gift),
+                :dh2:a_act_average_amount = condition(
+                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
+                                null,
+                                (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)
+                                ),
+                :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
+                :dh2:a_act_average_interval = condition(
+                                :dh2:a_count = 1 or datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
+                                null,
+                                (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
+                                )
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+                :t:ledger = :dh2:a_ledger_number and
+                :t:fund = :dh2:a_cost_center and
+                :t:donor = :dh2:p_donor_partner_key and
+                :t:merged = :dh2:a_hist_id and
+                :dh2:a_merged_id is null
+	    ;
+
+	    -- Step Four: Delete Merged
+	    delete
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
+		:dh1:a_merged_id is not null
+	    ";
+    }

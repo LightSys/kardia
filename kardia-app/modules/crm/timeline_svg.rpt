@@ -26,7 +26,10 @@ timeline_svg "system/report"
     // First and last dates for events
     first_last_qy "report/query"
 	{
-	sql = runserver("select first_date=min(:e_activity_date), last_date=dateadd(year,1,max(:e_activity_date)) from /apps/kardia/data/Kardia_DB/e_activity/rows where :e_activity_group_id = :this:id");
+	sql = runserver("
+		DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+		
+		select first_date=min(:e_activity_date), last_date=dateadd(year,1,max(:e_activity_date)) from collection tmp_collection");
 	// We add a year here because we want to be able to see UP TO the next year.
 	}
 
@@ -47,7 +50,9 @@ timeline_svg "system/report"
     entrydate_qy "report/query"
 	{
 	// Select all the dates from entries
-	sql = "select :e_activity_date, :e_activity_type from /apps/kardia/data/Kardia_DB/e_activity/rows where :e_activity_group_id = :this:id 
+	sql = " DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+
+		select :e_activity_date, :e_activity_type from collection tmp_collection 
 		order by :e_activity_date";
 	}
 
@@ -55,6 +60,7 @@ timeline_svg "system/report"
 	{
 	// Computes the x value for the entires and builds the strings to insert into the svg.
 	sql =  'declare object comp ;
+		
 		select  :comp:year_percent = ((1.0 * (datepart(year,:entrydate_qy:e_activity_date) - datepart(year,:first_last_qy:first_date))) / (datepart(year,:first_last_qy:last_date) - datepart(year,:first_last_qy:first_date))) ; 
 		select :comp:month_percent = (1.0 * (datepart(month,:entrydate_qy:e_activity_date) - 1) / 12 / :interval_qy:range) ; 
 		select :comp:day_percent = (1.0 * (datepart(day,:entrydate_qy:e_activity_date) - 1) / 365 / :interval_qy:range) ; 

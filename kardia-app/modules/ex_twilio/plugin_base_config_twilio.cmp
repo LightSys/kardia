@@ -1,0 +1,63 @@
+$Version=2$
+plugin_base_config_twilio "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Twilio Messaging";
+    description = "Configure integration with Twilio's SMS and WhatsApp sending and receiving service (Programmable Messaging)";
+    sequence = 1100;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	config_lbl "widget/label" { height=16; style=bold; text="Twilio Integration Configuration:"; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object /apps/kardia/modules/base/config.qyp";
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		twi_label_0 "widget/label" { height=15; text="Select this checkbox to enable Kardia/Twilio Programmable Messaging integration."; }
+		twi_enab "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ExTwilioMsg"; text="Enabled:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
+
+		twi_label_1 "widget/label" { height=30; text="The Account SID, Auth Token, and From SMS Number are all obtained from Twilio. Note that you cannot just use any From SMS number: you have to use one that was obtained through your Twilio account."; }
+		twi_sid "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ExTwilioASID"; text="Account SID:"; width=500; ctl_type=editbox; }
+		twi_tok "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ExTwilioAuth"; text="Auth Token:"; width=500; ctl_type=editbox; }
+		twi_from "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ExTwilioFrom"; text="From Phone:"; width=300; ctl_type=editbox; tf_hints "widget/hints" { allowchars="0123456789+"; } }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+

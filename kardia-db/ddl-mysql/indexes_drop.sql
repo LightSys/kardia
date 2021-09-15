@@ -49,6 +49,7 @@ alter table p_address_format drop index p_af_country_idx;
 
 
 /* p_contact_info */
+alter table p_contact_info drop index p_contact_idx;
 /* drop index p_contact_info.p_contact_info_pk */ 
 /* go */
 
@@ -193,6 +194,11 @@ alter table p_partner_search_results drop index p_search_stage_idx;
 /* drop index m_list_membership.m_list_membership_clustered_pk */ 
 /* go */
 alter table m_list_membership drop index m_lists_by_partner;
+
+
+/* m_list_document */
+/* drop index m_list_document.m_doc_pk */ 
+/* go */
 
 
 /* e_contact_autorecord */
@@ -699,6 +705,16 @@ alter table a_cost_center_prefix drop index a_cc_pfx_ledger_number_idx;
 /* go */
 
 
+/* a_currency */
+/* drop index a_currency.a_curr_pk */ 
+/* go */
+
+
+/* a_currency_exch_rate */
+/* drop index a_currency_exch_rate.a_curr_pk */ 
+/* go */
+
+
 /* a_payroll */
 alter table a_payroll drop index a_payroll_cc_idx;
 alter table a_payroll drop index a_payroll_payee_idx;
@@ -709,6 +725,11 @@ alter table a_payroll drop index a_payroll_payee_idx;
 /* a_payroll_period */
 alter table a_payroll_period drop index a_payperiod_idx;
 /* drop index a_payroll_period.a_payperiod_pk */ 
+/* go */
+
+
+/* a_payroll_period_payee */
+/* drop index a_payroll_period_payee.a_payperiodpayee_pk */ 
 /* go */
 
 
@@ -817,6 +838,16 @@ alter table a_cc_receipting_accts drop index a_ccra_ledger_number_idx;
 /* go */
 
 
+/* a_gift_payment_type */
+/* drop index a_gift_payment_type.a_gpmttype_pk */ 
+/* go */
+
+
+/* a_receipt_mailing */
+/* drop index a_receipt_mailing.a_giftlist_pk */ 
+/* go */
+
+
 /* a_subtrx_gift */
 alter table a_subtrx_gift drop index a_gifttrx_batch_idx;
 /* drop index a_subtrx_gift.a_gifttrx_cc_clustered_idx */ 
@@ -833,6 +864,7 @@ alter table a_subtrx_gift_group drop index a_gifttrxgrp_ack_id_idx;
 alter table a_subtrx_gift_group drop index a_gifttrxgrp_batch_idx;
 alter table a_subtrx_gift_group drop index a_gifttrxgrp_donor_id_idx;
 alter table a_subtrx_gift_group drop index a_gifttrxgrp_gift_idx;
+alter table a_subtrx_gift_group drop index a_gifttrxgrp_pass_id_idx;
 /* drop index a_subtrx_gift_group.a_gifttrxgrp_pk */ 
 /* go */
 
@@ -840,14 +872,24 @@ alter table a_subtrx_gift_group drop index a_gifttrxgrp_gift_idx;
 /* a_subtrx_gift_item */
 /* drop index a_subtrx_gift_item.a_gifttrx_pk */ 
 /* go */
+alter table a_subtrx_gift_item drop index a_gifttrxi_ack_idx;
 /* drop index a_subtrx_gift_item.a_gifttrxi_cc_clustered_idx */ 
 /* go */
+alter table a_subtrx_gift_item drop index a_gifttrxi_datetype_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_donor_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_gift_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_mcode_idx;
+alter table a_subtrx_gift_item drop index a_gifttrxi_pass_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_rcpt_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_recip_id_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_src_idx;
+
+
+/* a_subtrx_gift_intent */
+alter table a_subtrx_gift_intent drop index a_gifttrxin_gift_idx;
+/* drop index a_subtrx_gift_intent.a_gifttrxin_pk */ 
+/* go */
+alter table a_subtrx_gift_intent drop index a_gifttrxin_pledge_idx;
 
 
 /* a_subtrx_gift_rcptcnt */
@@ -923,6 +965,18 @@ alter table a_descriptives_hist drop index a_descrhist_cc_idx;
 alter table a_descriptives_hist drop index a_descrhist_merge_idx;
 alter table a_descriptives_hist drop index a_descrhist_par_idx;
 /* drop index a_descriptives_hist.a_descrhist_pk */ 
+/* go */
+
+
+/* a_pledge */
+alter table a_pledge drop index a_pledge_donor_idx;
+alter table a_pledge drop index a_pledge_fund_idx;
+/* drop index a_pledge.a_pledge_pk */ 
+/* go */
+
+
+/* a_intent_type */
+/* drop index a_intent_type.a_intenttype_pk */ 
 /* go */
 
 
@@ -1034,14 +1088,20 @@ alter table c_member drop index s_username_idx;
 
 
 /* t_project */
+alter table t_project drop index t_parent_idx;
 /* drop index t_project.t_project_pk */ 
 /* go */
 
 
 /* t_sprint */
+alter table t_sprint drop index t_sprint_idx;
 /* drop index t_sprint.t_sprint_pk */ 
 /* go */
-alter table t_sprint drop index t_sprint_proj_idx;
+
+
+/* t_sprint_project */
+/* drop index t_sprint_project.t_sprintproj_pk */ 
+/* go */
 
 
 /* t_sprint_time */
@@ -1085,6 +1145,7 @@ alter table t_assignee drop index t_assignee_task_idx;
 /* t_task_history */
 /* drop index t_task_history.t_history_pk */ 
 /* go */
+alter table t_task_history drop index t_taskhist_idx;
 
 
 /* s_config */
