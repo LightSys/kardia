@@ -37,18 +37,12 @@ class RestAPIKardiaClient(KardiaClient):
         return params
 
 
-    def _get_emails_for_partner(self, partnerId: str) -> List[str]:
-        recipientEmails = []
+    def _get_contact_info_for_partner(self, partnerId: str) -> List[str]:
+        # only handling email for now
         self.kardia.partner.setParams(res_attrs="basic")
-        partnerContactsRequest = partial(self.kardia.partner.getPartnerContactInfos, partnerId)
-        partnerContactsJson = self._make_api_request(partnerContactsRequest)
-        for contactId, contactInfo in partnerContactsJson.items():
-            if contactId.startswith("@id"):
-                continue
-            if contactInfo["contact_type"] != "Email":
-                continue
-            recipientEmails.append(contactInfo["contact"])
-        return recipientEmails
+        preferredEmailRequest = partial(self.kardia.partner.getPartnerPreferredEmail, partnerId)
+        preferredEmailJson = self._make_api_request(preferredEmailRequest)
+        return preferredEmailJson["response"]["email"]
 
     
     def get_scheduled_reports_to_be_sent(self):
@@ -73,11 +67,11 @@ class RestAPIKardiaClient(KardiaClient):
             partnerJson = self._make_api_request(partnerRequest)
             recipientName = partnerJson["partner_name"]
 
-            recipientEmails = self._get_emails_for_partner(schedReportInfo["recipient_partner_key"])
+            recipientContactInfo = self._get_contact_info_for_partner(schedReportInfo["recipient_partner_key"])
             params = self._get_params_for_sched_report(schedReportId)
 
             schedReport = ScheduledReport(schedReportId, reportFile, year, month, day, hour, minute, second,
-                recipientName, recipientEmails, params)
+                recipientName, recipientContactInfo, params)
             schedReports.append(schedReport)
         
         return schedReports
