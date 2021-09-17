@@ -60,12 +60,12 @@ class RestAPIKardiaClient(KardiaClient):
             if schedReportInfo["delivery_method"] != "E":
                 continue
             reportFile = schedReportInfo["report_file"]
-            year = schedReportInfo["send_date"]["year"]
-            month = schedReportInfo["send_date"]["month"]
-            day = schedReportInfo["send_date"]["day"]
-            hour = schedReportInfo["send_date"]["hour"]
-            minute = schedReportInfo["send_date"]["minute"]
-            second = schedReportInfo["send_date"]["second"]
+            year = schedReportInfo["date_to_send"]["year"]
+            month = schedReportInfo["date_to_send"]["month"]
+            day = schedReportInfo["date_to_send"]["day"]
+            hour = schedReportInfo["date_to_send"]["hour"]
+            minute = schedReportInfo["date_to_send"]["minute"]
+            second = schedReportInfo["date_to_send"]["second"]
 
             partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
             partnerJson = self._make_api_request(partnerRequest)

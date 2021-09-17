@@ -14,8 +14,12 @@ api_report "system/querytree"
                 delivery_method = :gsr:r_delivery_method,
                 report_group_sched_id = :gsr:r_group_sched_id,
                 report_id = :gsr:r_report_id,
-                send_date = :group_sched:r_group_sched_date,
-                recipient_partner_key = :gsr:p_recipient_partner_key
+                date_to_send = :group_sched:r_group_sched_date,
+                recipient_partner_key = :gsr:p_recipient_partner_key,
+                sent_status = :gsr:r_group_sched_status,
+                sent_error = :gsr:r_group_sched_error,
+                sent_date = :gsr:r_group_sched_sent_date,
+                generated_report_path = :gsr:r_group_sched_file
                 from
                 identity /apps/kardia/data/Kardia_DB/r_group_sched_report/rows gsr,
                 /apps/kardia/data/Kardia_DB/r_group/rows report_group,
