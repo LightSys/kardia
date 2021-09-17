@@ -15,4 +15,4 @@ To run:
 
 - Install your Kardia API .whl: `pip install kardia_api.whl`
 
-- Now whenever you'd like to run the script, just call `./venv/bin/python send-reports.py`
+- Now whenever you'd like to run the script, just call `./venv/bin/python -m send_reports`

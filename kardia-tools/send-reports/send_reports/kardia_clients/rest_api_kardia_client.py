@@ -2,7 +2,7 @@ import re
 import requests
 from functools import partial
 from kardia_api import Kardia
-from kardia_clients.kardia_client import KardiaClient, ScheduledReport
+from send_reports.kardia_clients.kardia_client import KardiaClient, ScheduledReport
 from requests.models import Response
 from typing import Callable, Dict, List
 

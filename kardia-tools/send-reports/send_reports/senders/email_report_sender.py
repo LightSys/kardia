@@ -3,7 +3,7 @@ import email.policy
 import os
 import smtplib
 from datetime import datetime
-from senders.sender import ReportSender, SendingInfo, SentStatus
+from send_reports.senders.sender import ReportSender, SendingInfo, SentStatus
 from typing import Dict, List
 
 class EmailReportSender(ReportSender):

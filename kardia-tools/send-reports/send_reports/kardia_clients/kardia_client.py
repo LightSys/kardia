@@ -1,6 +1,7 @@
 import abc
 from datetime import datetime
 from enum import Enum
+from send_reports.senders.sender import SendingInfo
 from typing import Dict, List
 
 

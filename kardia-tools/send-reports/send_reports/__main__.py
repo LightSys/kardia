@@ -1,6 +1,6 @@
 import toml
-from kardia_clients.rest_api_kardia_client import RestAPIKardiaClient
-from senders.email_report_sender import EmailReportSender
+from send_reports.kardia_clients.rest_api_kardia_client import RestAPIKardiaClient
+from send_reports.senders.email_report_sender import EmailReportSender
 
 config = toml.load("config.toml")
 kardia_client = RestAPIKardiaClient(config["kardia_url"], config["user"], config["pw"])
