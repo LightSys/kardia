@@ -2,7 +2,9 @@ import re
 import requests
 from functools import partial
 from kardia_api import Kardia
+from kardia_api.objects.report_objects import SchedReportStatus
 from send_reports.kardia_clients.kardia_client import KardiaClient, ScheduledReport
+from send_reports.senders.sender import SendingInfo
 from requests.models import Response
 from typing import Callable, Dict, List
 
@@ -74,8 +76,8 @@ class RestAPIKardiaClient(KardiaClient):
             recipientEmails = self._get_emails_for_partner(schedReportInfo["recipient_partner_key"])
             params = self._get_params_for_sched_report(schedReportId)
 
-            schedReport = ScheduledReport(reportFile, year, month, day, hour, minute, second, recipientName,
-                recipientEmails, params)
+            schedReport = ScheduledReport(schedReportId, reportFile, year, month, day, hour, minute, second,
+                recipientName, recipientEmails, params)
             schedReports.append(schedReport)
         
         return schedReports
@@ -105,3 +107,14 @@ class RestAPIKardiaClient(KardiaClient):
             file.write(response.content)
 
         return file_path
+
+    
+    def update_scheduled_report_status(self, sched_report_id: str, sending_info: SendingInfo, report_path: str):
+        sent_status = SchedReportStatus.SchedStatusTypes(sending_info.sent_status.value)
+        report_status = SchedReportStatus(
+            sent_status,
+            sending_info.error_message,
+            sending_info.time_sent,
+            report_path)
+        updateRequest = partial(self.kardia.report.updateSchedReportStatus, sched_report_id, report_status)
+        self._make_api_request(updateRequest)

@@ -15,4 +15,5 @@ for scheduled_report in scheduled_reports:
         config["generated_pdf_path"]
     )
     replaceable_params = {**scheduled_report.params, "name": scheduled_report.recipient_name}
-    print(report_sender.send_report(generated_filepath, scheduled_report.recipient_emails, replaceable_params))
+    sending_info = report_sender.send_report(generated_filepath, scheduled_report.recipient_emails, replaceable_params)
+    kardia_client.update_scheduled_report_status(scheduled_report.sched_report_id, sending_info, generated_filepath)

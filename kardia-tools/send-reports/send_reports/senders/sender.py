@@ -1,8 +1,9 @@
 import abc
 from datetime import datetime
+from enum import Enum
 from typing import Dict, List
 
-class SentStatus:
+class SentStatus(Enum):
     NOT_SENT = "N"
     SENT = "S"
     TEMPORARY_ERROR = "T"
@@ -10,9 +11,9 @@ class SentStatus:
     FAILURE_OTHER_ERROR = "F"
 
 class SendingInfo:
-    def __init__(self, sent_status: SentStatus, time_sent: datetime, error_message=None):
+    def __init__(self, sent_status: SentStatus, time_sent: datetime, error_message=""):
         self.sent_status = sent_status
-        self.time_sent = datetime
+        self.time_sent = time_sent
         self.error_message = error_message
 
     def __repr__(self) -> str:

@@ -6,8 +6,9 @@ from typing import Dict, List
 
 
 class ScheduledReport:
-    def __init__(self, report_file: str, year: int, month: int, day: int, hour: int, minute: int, second: int,
-            recipient_name: str, recipient_emails: List[str], params: Dict[str, str]):
+    def __init__(self, sched_report_id: str, report_file: str, year: int, month: int, day: int, hour: int, minute: int,
+            second: int, recipient_name: str, recipient_emails: List[str], params: Dict[str, str]):
+        self.sched_report_id = sched_report_id
         self.report_file = report_file
         self.date_to_send = datetime(year, month, day, hour=hour, minute=minute, second=second)
         self.recipient_name = recipient_name
@@ -32,9 +33,9 @@ class KardiaClient(abc.ABC):
     def generate_report(self, report_file: str, params: Dict[str, str], generated_file_dir: str) -> str:
         pass
     
-    # @abc.abstractmethod
-    # def update_scheduled_report_status(self):
-    #     pass
+    @abc.abstractmethod
+    def update_scheduled_report_status(self, sched_report_id: str, sending_info: SendingInfo, report_path: str):
+        pass
     
     # @abc.abstractmethod
     # def update_scheduled_report_group_status(self):
