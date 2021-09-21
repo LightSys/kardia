@@ -57,7 +57,7 @@ payroll_run "widget/component-decl"
 
 	tasklist_rpt "widget/repeat"
 	    {
-	    sql = "select id=substring(:tag, 2, 1), :text from /apps/kardia/data/Kardia_DB/_s_process/rows where substring(:tag, 1, 1) = 'P' order by :tag";
+	    sql = runserver("select id=substring(:tag, 2, 1), :text from /apps/kardia/data/Kardia_DB/_s_process/rows where substring(:tag, 1, 1) = 'P' and (substring(:tag, 2, 1) != 5 or isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'PayIssueCks' and :a_ledger_number = " + quote(:this:ledger) + "), 'Y') == 'Y') order by :tag");
 
 	    tasklist_item_pane "widget/pane"
 		{
@@ -938,7 +938,7 @@ payroll_run "widget/component-decl"
 				Source=runclient('/apps/kardia/modules/payroll/pay_form.app');
 				Multi=1;
 				Width=800;
-				Height=630;
+				Height=700;
 
 				payperiod = runclient(:period_osrc:a_payroll_period);
 				period = runclient(:period_osrc:a_period);
@@ -992,7 +992,18 @@ payroll_run "widget/component-decl"
 	task_create_glbatch "widget/tabpage"
 	    {
 	    ttl4_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Four:"; style=bold; }
-	    desc4_lbl "widget/label" { x=8;y=28;width=568;height=48; value=runclient(condition(:period_osrc:glcnt > 0, "This payroll period has already been posted to the General Ledger." + condition(:period_osrc:ckcnt > 0, "  Click Next >> to view the paychecks.", "  Click Next >> to create paychecks."), "Now this payroll period can be posted to the General Ledger (GL).  Please review the list below to ensure there are no payroll data errors that need correcting.")); }
+	    desc4_lbl_1 "widget/label"
+		{
+		condition=runserver(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'PayIssueCks' and :a_ledger_number = :this:ledger), 'Y') == 'Y');
+		x=8;y=28;width=568;height=48;
+		value=runclient(condition(:period_osrc:glcnt > 0, "This payroll period has already been posted to the General Ledger." + condition(:period_osrc:ckcnt > 0, "  Click Next >> to view the paychecks.", "  Click Next >> to create paychecks."), "Now this payroll period can be posted to the General Ledger (GL).  Please review the list below to ensure there are no payroll data errors that need correcting."));
+		}
+	    desc4_lbl_2 "widget/label"
+		{
+		condition=runserver(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'PayIssueCks' and :a_ledger_number = :this:ledger), 'Y') != 'Y');
+		x=8;y=28;width=568;height=48;
+		value=runclient(condition(:period_osrc:glcnt > 0, "This payroll period has already been posted to the General Ledger." + condition(:period_osrc:ckcnt > 0, "  Click Done to finish.", "  Click Done to finish."), "Now this payroll period can be posted to the General Ledger (GL).  Please review the list below to ensure there are no payroll data errors that need correcting."));
+		}
 
 	    payroll_errors_osrc "widget/osrc"
 		{
@@ -1303,13 +1314,25 @@ payroll_run "widget/component-decl"
 
 		back_cn4 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=3; }
 		}
-	    btn4_next "widget/textbutton" 
+	    btn4_next_1 "widget/textbutton" 
 		{
+		condition=runserver(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'PayIssueCks' and :a_ledger_number = :this:ledger), 'Y') == 'Y');
 		x=476; y=530; width=100;
+		//text=runserver(condition(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'PayIssueCks' and :a_ledger_number = :this:ledger), 'Y') == 'Y', "Next >>", "Done"));
 		text="Next >>";
 
-		next_cn4 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=5; }
 		enabled = runclient(:period_osrc:glcnt > 0 and not :payroll_errors_osrc:cx__pending and :payroll_errors_osrc:cx__last_id == 0);
+		next_cn4 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=5; }
+		//done_cn "widget/connector" { event=Click; target=container; action=Close; }
+		}
+	    btn4_next_2 "widget/textbutton" 
+		{
+		condition=runserver(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'PayIssueCks' and :a_ledger_number = :this:ledger), 'Y') != 'Y');
+		x=476; y=530; width=100;
+		text="Done";
+
+		enabled = runclient(:period_osrc:glcnt > 0 and not :payroll_errors_osrc:cx__pending and :payroll_errors_osrc:cx__last_id == 0);
+		next_cn4_2 "widget/connector" { event=Click; target=tasklist_tab; action=SetTab; TabIndex=1; }
 		//done_cn "widget/connector" { event=Click; target=container; action=Close; }
 		}
 	    }
