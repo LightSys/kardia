@@ -310,27 +310,29 @@ search "widget/component-decl"
 			    select
 				    :p:p_partner_key,
 				    nm = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
-				    loc = isnull(:pl:p_city + ', ','') + isnull(:pl:p_state_province + ' ','') + isnull(:pl:p_postal_code, ''),
-				    in_crm_collab = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key),
-				    in_crm_collab_me = (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :collab_info:p_partner_key),
-				    in_crm_track = (select count(1) from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e where :e:p_partner_key = :p:p_partner_key and :e:e_completion_status = 'I'),
-				    img = isnull( (
-					    select
-						path = :d:e_current_folder + '/' + :d:e_current_filename
-					    from
-						/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
-						/apps/kardia/data/Kardia_DB/e_document/rows d,
-						/apps/kardia/data/Kardia_DB/e_document_type/rows dt
-					    where
-						:pd:p_partner_key = :p:p_partner_key and
-						:pd:e_document_id = :d:e_document_id and
-						:d:e_doc_type_id = :dt:e_doc_type_id and
-						:dt:e_doc_type_label = 'Profile Photo'
-					    order by
-						:pd:s_date_modified desc
-					    limit
-						1
-					    ), '/apps/kardia/images/artwork/persona.png')
+				    loc = isnull(:pl:p_city + ', ','') + isnull(:pl:p_state_province + ' ',''),
+				    --loc = isnull(:pl:p_city + ', ','') + isnull(:pl:p_state_province + ' ','') + isnull(:pl:p_postal_code, ''),
+				    in_crm_collab = 0, -- (select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key),
+				    in_crm_collab_me = 0, --(select count(1) from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key and :c:e_collaborator = :collab_info:p_partner_key),
+				    in_crm_track = 0, --(select count(1) from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e where :e:p_partner_key = :p:p_partner_key and :e:e_completion_status = 'I'),
+				    :sr:p_description
+				    --img = isnull( (
+				--	    select
+				--		path = :d:e_current_folder + '/' + :d:e_current_filename
+				--	    from
+				--		/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+				--		/apps/kardia/data/Kardia_DB/e_document/rows d,
+				--		/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+				--	    where
+				--		:pd:p_partner_key = :p:p_partner_key and
+				--		:pd:e_document_id = :d:e_document_id and
+				--		:d:e_doc_type_id = :dt:e_doc_type_id and
+				--		:dt:e_doc_type_label = 'Profile Photo'
+				--	    order by
+				--		:pd:s_date_modified desc
+				--	    limit
+				--		1
+				--	    ), '/apps/kardia/images/artwork/persona.png')
 			    from
 				    --/apps/kardia/data/Kardia_DB/p_partner_search_results/rows sr,
 				    collection advsearch sr,
@@ -349,12 +351,12 @@ search "widget/component-decl"
 			    group by
 				    :sr:p_partner_key
 			    order by
-				    :sr:p_sortkey,
+				    --:sr:p_sortkey,
 				    :sr:p_partner_key
-			    having
-				    (not :parameters:only_crm) or
-				    :in_crm_collab > 0 or
-				    :in_crm_track > 0
+			    --having
+			--	    (not :parameters:only_crm) or
+			--	    :in_crm_collab > 0 or
+			--	    :in_crm_track > 0
 			    ";
 		    readahead=200;
 		    replicasize=200;
@@ -384,7 +386,7 @@ search "widget/component-decl"
 			rowhighlight_bgcolor = "#fff090";
 			textcolorhighlight = "#000000";
 			inner_padding = 2;
-			cellvspacing = 4;
+			cellvspacing = 0;
 			row1_bgcolor = "#f8f8f8";
 			row2_bgcolor = "#f8f8f8";
 			nodata_message =  runclient(condition(not :advanced_results_osrc:cx__pending, "one moment...", "(no results)"));
@@ -422,9 +424,13 @@ search "widget/component-decl"
 
 			a_onclick "widget/connector" { event=Click; target=search; action=PartnerSelected; partner_key=runclient(:p_partner_key); }
 
-			ta_crm_image "widget/table-column" { width=22; value=runclient(condition(:advanced_results_osrc:in_crm_collab or :advanced_results_osrc:in_crm_track, condition(:advanced_results_osrc:in_crm_collab_me, '/sys/images/green_check.gif', '/sys/images/dotted_check.gif'), '/sys/images/trans_1.gif')); type=image; image_maxwidth=16; image_maxheight=16; }
-			ta_img "widget/table-column" { title=""; fieldname="img"; width=30; type=image; image_maxwidth=24; image_maxheight=24; align=center; }
-			ta_name "widget/table-column" { title="Partner"; fieldname=nm; caption_value=runclient(:advanced_results_osrc:loc + ' (ID# ' + :advanced_results_osrc:p_partner_key + ')'); width=184; caption_textcolor="#9b8707"; style=bold; font_size=15; caption_style=italic; }
+			//ta_crm_image "widget/table-column" { width=22; value=runclient(condition(:advanced_results_osrc:in_crm_collab or :advanced_results_osrc:in_crm_track, condition(:advanced_results_osrc:in_crm_collab_me, '/sys/images/green_check.gif', '/sys/images/dotted_check.gif'), '/sys/images/trans_1.gif')); type=image; image_maxwidth=16; image_maxheight=16; }
+			//ta_img "widget/table-column" { title=""; fieldname="img"; width=30; type=image; image_maxwidth=24; image_maxheight=24; align=center; }
+			//ta_name "widget/table-column" { title="Partner"; fieldname=nm; caption_value=runclient(:advanced_results_osrc:loc + ' (ID# ' + :advanced_results_osrc:p_partner_key + ')'); width=184; caption_textcolor="#9b8707"; style=bold; font_size=12; caption_style=italic; }
+			ta_id "widget/table-column" { title="ID"; fieldname=p_partner_key; width=38; font_size=12; }
+			ta_nameaddr "widget/table-column" { title="Partner"; value=runclient(:advanced_results_osrc:nm + ', ' + :advanced_results_osrc:loc); width=202; font_size=12; caption_value=runclient(:advanced_results_osrc:p_description); caption_font_size=10; caption_style=italic; caption_fgcolor=black; }
+			//ta_name "widget/table-column" { title="Partner"; fieldname=nm; width=130; font_size=12; }
+			//ta_addr "widget/table-column" { title="Address"; fieldname=loc; width=72; font_size=12; }
 			}
 		    }
 
@@ -666,7 +672,7 @@ search "widget/component-decl"
 			:ci:p_contact_type = 'E' and
 			:ci:p_record_status_code = 'A'
 		order by
-			:sr:p_sortkey,
+			--:sr:p_sortkey,
 			:sr:p_partner_key
 		";
 	readahead=2;

@@ -575,7 +575,9 @@ advanced_search "widget/component-decl"
 		    r_p_search_id "widget/parameter" { param_name=p_search_id; type=integer; }
 		    sql = " declare collection advsearch scope application;
 
+			    print 'Clearing old results at ' + datepart(second, getdate());
 			    delete from collection advsearch where :p_search_session_id = :parameters:p_search_id;
+			    print 'Done clearing old results at ' + datepart(second, getdate());
 		    
 			    select
 				1
@@ -590,6 +592,7 @@ advanced_search "widget/component-decl"
 			    having
 				1=0
 			    ;
+			    print 'Complete at ' + datepart(second, getdate());
 
 			    select
 				:ss2:p_search_id,
