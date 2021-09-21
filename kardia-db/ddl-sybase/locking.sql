@@ -96,3 +96,12 @@ go
 
 alter table c_member lock datarows
 go
+
+alter table e_highlights lock datarows
+go
+
+alter table a_payroll_period_payee lock datarows
+go
+
+alter table a_subtrx_gift_intent lock datarows
+go

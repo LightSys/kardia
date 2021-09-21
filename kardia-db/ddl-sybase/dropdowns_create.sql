@@ -11,17 +11,15 @@ create table _p_record_status (
 go
 alter table _p_record_status add constraint pk__p_record_status primary key clustered (tag)
 go
-insert _p_record_status values('A','Active','','')
+insert _p_record_status values('A','Active','Valid and Active','')
 go
-insert _p_record_status values('Q','Active/QA','','')
+insert _p_record_status values('Q','Active/QA','Valid but needs QA','')
 go
-insert _p_record_status values('U','Unknown','','')
+insert _p_record_status values('I','Inactive','Valid but not currently active','')
 go
-insert _p_record_status values('X','Unknown','','')
+insert _p_record_status values('M','Merged','Two records have been merged.','')
 go
-insert _p_record_status values('M','Merged','Two records have been merged.  This is no longer used.','')
-go
-insert _p_record_status values('O','Obsolete','','')
+insert _p_record_status values('O','Obsolete','No longer valid','')
 go
 
 print 'adding table _p_contact_type'
@@ -275,6 +273,8 @@ insert _a_period_status values('C','Closed','','')
 go
 insert _a_period_status values('A','Archived','','')
 go
+insert _a_period_status values('P','Provisional','','')
+go
 
 print 'adding table _a_gift_type'
 create table _a_gift_type (
@@ -296,26 +296,26 @@ go
 
 print 'adding table _a_payroll_interval'
 create table _a_payroll_interval (
-  tag	char(1) not null,
+  tag	integer not null,
   text	varchar(60) not null,
   description varchar(255) null,
   __cx_osml_control varchar(255) null)
 go
 alter table _a_payroll_interval add constraint pk__a_payroll_interval primary key clustered (tag)
 go
-insert _a_payroll_interval values('0','Misc','','')
+insert _a_payroll_interval values(0,'Misc','','')
 go
-insert _a_payroll_interval values('1','Daily','','')
+insert _a_payroll_interval values(1,'Daily','','')
 go
-insert _a_payroll_interval values('2','Weekly','','')
+insert _a_payroll_interval values(2,'Weekly','','')
 go
-insert _a_payroll_interval values('3','Biweekly','','')
+insert _a_payroll_interval values(3,'Biweekly','','')
 go
-insert _a_payroll_interval values('4','Semimonthly','','')
+insert _a_payroll_interval values(4,'Semimonthly','','')
 go
-insert _a_payroll_interval values('5','Monthly','','')
+insert _a_payroll_interval values(5,'Monthly','','')
 go
-insert _a_payroll_interval values('6','ALL','','')
+insert _a_payroll_interval values(6,'ALL','','')
 go
 
 print 'adding table _a_restricted_type'
@@ -806,4 +806,90 @@ go
 insert _e_collaborator_status values('A','Active','','')
 go
 insert _e_collaborator_status values('I','Inactive','','')
+go
+
+print 'adding table _a_giving_interval'
+create table _a_giving_interval (
+  tag	integer not null,
+  text	varchar(60) not null,
+  description varchar(255) null,
+  __cx_osml_control varchar(255) null)
+go
+alter table _a_giving_interval add constraint pk__a_giving_interval primary key clustered (tag)
+go
+insert _a_giving_interval values(-1,'One-Time','','')
+go
+insert _a_giving_interval values(0,'Gives As Able','','')
+go
+insert _a_giving_interval values(1,'Monthly','','')
+go
+insert _a_giving_interval values(2,'Every 2 Months','','')
+go
+insert _a_giving_interval values(3,'Quarterly','','')
+go
+insert _a_giving_interval values(4,'Every 4 Months','','')
+go
+insert _a_giving_interval values(5,'Every 5 Months','','')
+go
+insert _a_giving_interval values(6,'Twice a Year','','')
+go
+insert _a_giving_interval values(7,'Every 7 Months','','')
+go
+insert _a_giving_interval values(8,'Every 8 Months','','')
+go
+insert _a_giving_interval values(9,'Every 9 Months','','')
+go
+insert _a_giving_interval values(10,'Every 10 Months','','')
+go
+insert _a_giving_interval values(11,'Every 11 Months','','')
+go
+insert _a_giving_interval values(12,'Annually','','')
+go
+
+print 'adding table _a_pledge_type'
+create table _a_pledge_type (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,
+  __cx_osml_control varchar(255) null)
+go
+alter table _a_pledge_type add constraint pk__a_pledge_type primary key clustered (tag)
+go
+insert _a_pledge_type values('P','Pledge','','')
+go
+insert _a_pledge_type values('F','Faith-Promise','','')
+go
+insert _a_pledge_type values('I','Intention','','')
+go
+insert _a_pledge_type values('R','Online Recurring','','')
+go
+
+print 'adding table _a_item_intent_code'
+create table _a_item_intent_code (
+  tag	char(1) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,
+  __cx_osml_control varchar(255) null)
+go
+alter table _a_item_intent_code add constraint pk__a_item_intent_code primary key clustered (tag)
+go
+insert _a_item_intent_code values('A','As Able','','')
+go
+insert _a_item_intent_code values('D','Decreasing','','')
+go
+insert _a_item_intent_code values('E','Extra Giving','','')
+go
+insert _a_item_intent_code values('F','Final Gift','','')
+go
+insert _a_item_intent_code values('I','Increasing','','')
+go
+insert _a_item_intent_code values('M','Monthly Recurring','','')
+go
+insert _a_item_intent_code values('O','One-Time','','')
+go
+insert _a_item_intent_code values('Q','Quarterly Recurring','','')
+go
+insert _a_item_intent_code values('R','Recurring (Other)','','')
+go
+insert _a_item_intent_code values('Y','Yearly Recurring','','')
 go

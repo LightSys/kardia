@@ -206,6 +206,12 @@ alter table m_list_membership
 	add constraint m_list_membership_clustered_pk primary key clustered (m_list_code, p_partner_key, m_hist_id)
 go
 
+print "working on table m_list_document"
+
+alter table m_list_document
+	add constraint m_doc_pk primary key clustered (m_list_code, e_document_id)
+go
+
 print "working on table e_contact_autorecord"
 
 alter table e_contact_autorecord
@@ -506,6 +512,24 @@ alter table h_benefits
 	add constraint h_ben_pk primary key clustered (h_benefit_type_id, p_partner_key, h_benefit_period_id)
 go
 
+print "working on table r_group_sched"
+
+alter table r_group_sched
+	add constraint r_grp_sch_pk primary key clustered (r_group_name, r_group_sched_id)
+go
+
+print "working on table r_group_sched_param"
+
+alter table r_group_sched_param
+	add constraint r_sparam_pk primary key clustered (r_group_name, r_group_sched_id, r_param_name)
+go
+
+print "working on table r_group_sched_report"
+
+alter table r_group_sched_report
+	add constraint r_grp_sch_r_pk primary key clustered (r_group_name, r_delivery_method, r_group_sched_id, p_recipient_partner_key, r_report_id)
+go
+
 print "working on table r_group"
 
 alter table r_group
@@ -694,6 +718,18 @@ alter table a_ledger_office
 	add constraint a_lo_pk primary key clustered (a_ledger_number, p_office_partner_key)
 go
 
+print "working on table a_currency"
+
+alter table a_currency
+	add constraint a_curr_pk primary key clustered (a_ledger_number, a_currency_code)
+go
+
+print "working on table a_currency_exch_rate"
+
+alter table a_currency_exch_rate
+	add constraint a_curr_pk primary key clustered (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date)
+go
+
 print "working on table a_payroll"
 
 alter table a_payroll
@@ -704,6 +740,12 @@ print "working on table a_payroll_period"
 
 alter table a_payroll_period
 	add constraint a_payperiod_pk primary key clustered (a_ledger_number, a_payroll_group_id, a_payroll_period)
+go
+
+print "working on table a_payroll_period_payee"
+
+alter table a_payroll_period_payee
+	add constraint a_payperiodpayee_pk primary key clustered (a_ledger_number, a_payroll_group_id, a_payroll_period, a_payroll_id)
 go
 
 print "working on table a_payroll_group"
@@ -740,6 +782,12 @@ print "working on table a_payroll_item_class"
 
 alter table a_payroll_item_class
 	add constraint a_payroll_ic_pk primary key clustered (a_payroll_item_class_code)
+go
+
+print "working on table a_payroll_item_subclass"
+
+alter table a_payroll_item_subclass
+	add constraint a_payroll_isc_pk primary key clustered (a_payroll_item_class_code, a_payroll_item_subclass_code)
 go
 
 print "working on table a_payroll_form_group"
@@ -820,6 +868,18 @@ alter table a_receipt_type
 	add constraint a_rcpttype_pk primary key clustered (a_receipt_type)
 go
 
+print "working on table a_gift_payment_type"
+
+alter table a_gift_payment_type
+	add constraint a_gpmttype_pk primary key clustered (a_ledger_number, a_gift_payment_type)
+go
+
+print "working on table a_receipt_mailing"
+
+alter table a_receipt_mailing
+	add constraint a_giftlist_pk primary key clustered (a_ledger_number, m_list_code)
+go
+
 print "working on table a_subtrx_gift"
 
 alter table a_subtrx_gift
@@ -844,6 +904,12 @@ go
 
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_cc_clustered_idx unique clustered (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
+
+print "working on table a_subtrx_gift_intent"
+
+alter table a_subtrx_gift_intent
+	add constraint a_gifttrxin_pk primary key clustered (a_ledger_number, a_batch_number, a_gift_number, a_intent_number)
 go
 
 print "working on table a_subtrx_gift_rcptcnt"
@@ -910,6 +976,18 @@ print "working on table a_descriptives_hist"
 
 alter table a_descriptives_hist
 	add constraint a_descrhist_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id)
+go
+
+print "working on table a_pledge"
+
+alter table a_pledge
+	add constraint a_pledge_pk primary key clustered (a_ledger_number, a_pledge_id)
+go
+
+print "working on table a_intent_type"
+
+alter table a_intent_type
+	add constraint a_intenttype_pk primary key clustered (a_ledger_number, a_intent_type)
 go
 
 print "working on table a_subtrx_cashdisb"
@@ -1032,6 +1110,12 @@ alter table t_sprint
 	add constraint t_sprint_pk primary key clustered (t_sprint_id)
 go
 
+print "working on table t_sprint_project"
+
+alter table t_sprint_project
+	add constraint t_sprintproj_pk primary key clustered (t_project_id, t_sprint_id)
+go
+
 print "working on table t_sprint_time"
 
 alter table t_sprint_time
@@ -1053,7 +1137,7 @@ go
 print "working on table t_sprint_participant"
 
 alter table t_sprint_participant
-	add constraint t_sprint_participant_pk primary key clustered (p_partner_key, t_sprint_id)
+	add constraint t_sprint_participant_pk primary key clustered (p_partner_key, t_sprint_id, t_project_id)
 go
 
 print "working on table t_assignee"

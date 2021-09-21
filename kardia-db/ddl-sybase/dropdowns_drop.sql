@@ -81,3 +81,9 @@ drop table _h_benefit_mode
 go
 drop table _e_collaborator_status
 go
+drop table _a_giving_interval
+go
+drop table _a_pledge_type
+go
+drop table _a_item_intent_code
+go

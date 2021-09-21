@@ -226,6 +226,11 @@ create  index m_lists_by_partner on m_list_membership (p_partner_key, m_list_cod
 go
 
 
+/* m_list_document */
+/* create  clustered index m_doc_pk on m_list_document (m_list_code, e_document_id)*/ 
+/* go */
+
+
 /* e_contact_autorecord */
 create  index e_autorec_collab_idx on e_contact_autorecord (e_collaborator_id, p_partner_key, e_contact_history_type, e_contact_id)
 go
@@ -610,6 +615,23 @@ go
 /* go */
 
 
+/* r_group_sched */
+/* create  clustered index r_grp_sch_pk on r_group_sched (r_group_name, r_group_sched_id)*/ 
+/* go */
+
+
+/* r_group_sched_param */
+/* create  clustered index r_sparam_pk on r_group_sched_param (r_group_name, r_group_sched_id, r_param_name)*/ 
+/* go */
+
+
+/* r_group_sched_report */
+/* create  clustered index r_grp_sch_r_pk on r_group_sched_report (r_group_name, r_delivery_method, r_group_sched_id, p_recipient_partner_key, r_report_id)*/ 
+/* go */
+create  index r_schrpt_partner_idx on r_group_sched_report (p_recipient_partner_key, r_group_name, r_delivery_method, r_group_sched_id, r_report_id)
+go
+
+
 /* r_group */
 create  index r_grp_modfile_idx on r_group (r_group_module, r_group_file, r_group_name)
 go
@@ -830,6 +852,16 @@ go
 /* go */
 
 
+/* a_currency */
+/* create  clustered index a_curr_pk on a_currency (a_ledger_number, a_currency_code)*/ 
+/* go */
+
+
+/* a_currency_exch_rate */
+/* create  clustered index a_curr_pk on a_currency_exch_rate (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date)*/ 
+/* go */
+
+
 /* a_payroll */
 create  index a_payroll_cc_idx on a_payroll (a_ledger_number, a_cost_center, a_payroll_group_id, a_payroll_id)
 go
@@ -843,6 +875,11 @@ go
 create  index a_payperiod_idx on a_payroll_period (a_period, a_ledger_number, a_payroll_group_id, a_payroll_period)
 go
 /* create  clustered index a_payperiod_pk on a_payroll_period (a_ledger_number, a_payroll_group_id, a_payroll_period)*/ 
+/* go */
+
+
+/* a_payroll_period_payee */
+/* create  clustered index a_payperiodpayee_pk on a_payroll_period_payee (a_ledger_number, a_payroll_group_id, a_payroll_period, a_payroll_id)*/ 
 /* go */
 
 
@@ -877,6 +914,11 @@ go
 
 /* a_payroll_item_class */
 /* create  clustered index a_payroll_ic_pk on a_payroll_item_class (a_payroll_item_class_code)*/ 
+/* go */
+
+
+/* a_payroll_item_subclass */
+/* create  clustered index a_payroll_isc_pk on a_payroll_item_subclass (a_payroll_item_class_code, a_payroll_item_subclass_code)*/ 
 /* go */
 
 
@@ -959,6 +1001,16 @@ go
 /* go */
 
 
+/* a_gift_payment_type */
+/* create  clustered index a_gpmttype_pk on a_gift_payment_type (a_ledger_number, a_gift_payment_type)*/ 
+/* go */
+
+
+/* a_receipt_mailing */
+/* create  clustered index a_giftlist_pk on a_receipt_mailing (a_ledger_number, m_list_code)*/ 
+/* go */
+
+
 /* a_subtrx_gift */
 create  index a_gifttrx_batch_idx on a_subtrx_gift (a_batch_number, a_ledger_number, a_gift_number)
 go
@@ -1011,6 +1063,15 @@ go
 create  index a_gifttrxi_recip_id_idx on a_subtrx_gift_item (p_recip_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 create  index a_gifttrxi_src_idx on a_subtrx_gift_item (i_eg_source_key, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
+
+
+/* a_subtrx_gift_intent */
+create  index a_gifttrxin_gift_idx on a_subtrx_gift_intent (a_ledger_number, a_batch_number, a_gift_number, a_split_number, a_intent_number)
+go
+/* create  clustered index a_gifttrxin_pk on a_subtrx_gift_intent (a_ledger_number, a_batch_number, a_gift_number, a_intent_number)*/ 
+/* go */
+create  index a_gifttrxin_pledge_idx on a_subtrx_gift_intent (a_ledger_number, a_pledge_id, a_batch_number, a_gift_number, a_intent_number)
 go
 
 
@@ -1108,6 +1169,20 @@ go
 create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_cost_center, a_hist_id)
 go
 /* create  clustered index a_descrhist_pk on a_descriptives_hist (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id)*/ 
+/* go */
+
+
+/* a_pledge */
+create  index a_pledge_donor_idx on a_pledge (a_ledger_number, p_donor_partner_id, a_pledge_id)
+go
+create  index a_pledge_fund_idx on a_pledge (a_ledger_number, a_cost_center, a_pledge_id)
+go
+/* create  clustered index a_pledge_pk on a_pledge (a_ledger_number, a_pledge_id)*/ 
+/* go */
+
+
+/* a_intent_type */
+/* create  clustered index a_intenttype_pk on a_intent_type (a_ledger_number, a_intent_type)*/ 
 /* go */
 
 
@@ -1236,15 +1311,22 @@ go
 
 
 /* t_project */
+create  index t_parent_idx on t_project (t_parent_project_id, t_project_id)
+go
 /* create  clustered index t_project_pk on t_project (t_project_id)*/ 
 /* go */
 
 
 /* t_sprint */
+create  index t_sprint_idx on t_sprint (t_sprint_id)
+go
 /* create  clustered index t_sprint_pk on t_sprint (t_sprint_id)*/ 
 /* go */
-create  index t_sprint_proj_idx on t_sprint (t_project_id, t_sprint_id)
-go
+
+
+/* t_sprint_project */
+/* create  clustered index t_sprintproj_pk on t_sprint_project (t_project_id, t_sprint_id)*/ 
+/* go */
 
 
 /* t_sprint_time */
@@ -1275,9 +1357,9 @@ go
 /* t_sprint_participant */
 create  index t_spart_proj_idx on t_sprint_participant (t_project_id, t_sprint_id, p_partner_key)
 go
-create  index t_spart_sprint_idx on t_sprint_participant (t_sprint_id, p_partner_key)
+create  index t_spart_sprint_idx on t_sprint_participant (t_sprint_id, p_partner_key, t_project_id)
 go
-/* create  clustered index t_sprint_participant_pk on t_sprint_participant (p_partner_key, t_sprint_id)*/ 
+/* create  clustered index t_sprint_participant_pk on t_sprint_participant (p_partner_key, t_sprint_id, t_project_id)*/ 
 /* go */
 
 
@@ -1296,6 +1378,8 @@ go
 /* t_task_history */
 /* create  clustered index t_history_pk on t_task_history (t_task_id, t_history_id)*/ 
 /* go */
+create  index t_taskhist_idx on t_task_history (t_task_id, t_transition_date, t_history_id)
+go
 
 
 /* s_config */
