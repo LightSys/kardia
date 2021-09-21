@@ -1,7 +1,7 @@
 $Version=2$
 pay_detail "widget/page"
     {
-    title = "Pay Detail Items - by Item Type";
+    title = "Pay Detail Items - by Payee";
     width=778; height=525;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
@@ -12,7 +12,9 @@ pay_detail "widget/page"
 
     // the ledger we are working with
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
-    item_type "widget/parameter" { type=string; default=null; }
+    payee "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+    paygroup "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+    period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
     // Payroll detail screen
     paydet "widget/component" 
@@ -20,7 +22,16 @@ pay_detail "widget/page"
 	condition = runserver(not (:this:ledger is null));
 	path = "/apps/kardia/modules/payroll/pay_detail.cmp";
 	ledger = runserver(:this:ledger);
-	item_type = runserver(:this:item_type);
-	by_item_type = 1;
+	period = runserver(:this:period);
+	by_item_type = 0;
+
+	preload "widget/connector"
+	    {
+	    source=pay_detail;
+	    event=Load;
+	    action=GotoPayee;
+	    Payee=runclient(:payee:value);
+	    Group=runclient(:paygroup:value);
+	    }
 	}
     }
