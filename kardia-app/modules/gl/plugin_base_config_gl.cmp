@@ -5,7 +5,7 @@ plugin_base_config_gl "widget/component-decl"
     height=490;
     title = "GL Numbering";
     description = "Configure the numbering plan for funds and accounts in the General Ledger";
-    sequence = 500;
+    sequence = 501;
 
     vbox "widget/vbox"
 	{
