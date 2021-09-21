@@ -2,16 +2,16 @@ $Version=2$
 pay_form "widget/component-decl"
     {
     width=778;
-    height=620;
+    height=690;
 
-    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
-    payperiod "widget/parameter" { type=string; default=null; }
-    period "widget/parameter" { type=string; default=null; }
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+    payperiod "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     ref_period "widget/parameter" { type=string; default=null; }
     prev_period "widget/parameter" { type=string; default=""; }
     costctr "widget/parameter" { type=string; default=null; }
-    group_id "widget/parameter" { type=integer; default=null; }
-    payroll_id "widget/parameter" { type=integer; default=null; }
+    group_id "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+    payroll_id "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
     payee_name "widget/parameter" { type=string; default=null; }
     payee_data_osrc "widget/parameter" { type=object; }
     readonly "widget/parameter" { type=integer; default=0; }
@@ -91,7 +91,7 @@ pay_form "widget/component-decl"
 
     form_vbox "widget/vbox"
 	{
-	x=0; y=0; width=778; height=620;
+	x=0; y=0; width=778; height=690;
 	spacing=2;
 
 	//title_lbl "widget/label" { height=24; font_size=15; style=bold; align=center; value=runclient(:payee_data_osrc:ptxt); }
@@ -368,8 +368,24 @@ pay_form "widget/component-decl"
 
     add_line_item_btn "widget/textbutton"
 	{
-	x=648; y=0; width=130; height=20;
-	text = "Add Line Item";
+	x=628; y=0; width=150; height=20;
+	text = "Manage Line Items";
+
+	on_add_line "widget/connector"
+	    {
+	    event=Click;
+	    target=pay_form;
+	    action=Launch;
+	    Name=runclient('payeeitem_window');
+	    Multi=1;
+	    Source = runclient("/apps/kardia/modules/payroll/pay_detail_by_payee.app");
+	    Width=800;
+	    Height=600;
+	    ledger=runclient(:ledger:value);
+	    paygroup=runclient(:group_id:value);
+	    payee=runclient(:payroll_id:value);
+	    period=runclient(:payperiod:value);
+	    }
 	}
 
     edit_budget_win "widget/childwindow"
