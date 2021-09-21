@@ -59,7 +59,7 @@ disbursements_detail "system/report"
 				    where
 					:t:a_ledger_number = :d:a_ledger_number and
 					:t:a_batch_number = :d:a_batch_number and
-					charindex(',' + :t:a_account_code + ',', ',' + isnull(:disbinfo:cashaccts, :d:a_cash_account_code) + ',') = 0
+					charindex(',' + rtrim(:t:a_account_code) + ',', ',' + isnull(:disbinfo:cashaccts, :d:a_cash_account_code) + ',') = 0
 					" + condition(:this:unposted, "", " and :t:a_posted = 1") + "
 					" + condition(:this:costctr is null, "", " and :t:a_cost_center = :this:costctr") + "
 					" + condition(:this:acct is null, "", " and :t:a_account_code = :this:acct") + "
