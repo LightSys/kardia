@@ -1,0 +1,69 @@
+$Version=2$
+plugin_crm_search_INT "system/query"
+    {
+    // This query object provides the search stage support for
+    // searching based on a specific gift given.
+    //
+    require_endorsement="system:from_application";
+
+    search_id "query/parameter" { type=integer; }
+    cur_stage "query/parameter" { type=integer; }
+    prev_keys "query/parameter" { type=string; }
+
+    sql = " -- First, we need to get our search stage information and config.
+	    declare collection iresult scope application;
+	    declare object stage;
+	    select
+		:stage:op = :s:p_stage_op,
+		:stage:startdate = convert(datetime,:sc:start),
+		:stage:enddate = convert(datetime,:sc:end),
+		:stage:funds = :sc:funds,
+		:stage:active = :sc:active,
+                :stage:minamt = :sc:minamt,
+		:stage:maxamt = :sc:maxamt,
+		:stage:mintamt = :sc:mintamt,
+		:stage:maxtamt = :sc:maxtamt,
+		:stage:minfreq = :sc:minfreq,
+		:stage:maxfreq = :sc:maxfreq,
+		:stage:intenttype = :sc:intenttype
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
+		/apps/kardia/modules/crm/advanced_search_params.qyp sc
+	    where
+		:s:p_search_id = :parameters:search_id and
+		:s:p_search_stage_id = :parameters:cur_stage and
+		:sc:p_search_id = :s:p_search_id and
+		:sc:p_search_stage_id = :s:p_search_stage_id
+	    ;
+
+	    -- Now, create our local result set; we will merge it into the
+	    -- main results later.
+	    insert
+		collection iresult
+	    select
+		p_partner_key = :p:p_donor_partner_id,
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage
+	    from
+		/apps/kardia/data/Kardia_DB/a_pledge/rows p
+	    where
+                (:stage:startdate is null or :stage:startdate <= isnull(:p:a_start_date, :p:s_date_created)) and
+		(:stage:enddate is null or :stage:enddate >= :p:a_end_date or :p:a_end_date is null) and
+                (:stage:mintamt is null or :p:a_total_amount >= convert(money, :stage:mintamt)) and
+		(:stage:maxtamt is null or :p:a_total_amount <= convert(money, :stage:maxtamt)) and
+                (:stage:minamt is null or :p:a_amount >= convert(money, :stage:minamt)) and
+		(:stage:maxamt is null or :p:a_amount <= convert(money, :stage:maxamt)) and
+                (:stage:minfreq is null or :p:a_giving_interval <= :stage:minfreq) and
+		(:stage:maxfreq is null or :p:a_giving_interval >= :stage:maxfreq) and
+		(:stage:funds is null or charindex(',' + rtrim(:p:a_cost_center) + ',', ',' + :stage:funds + ',') > 0) and
+		(:stage:active is null or :stage:active = :p:a_is_active) and
+		(:stage:intenttype is null or :stage:intenttype = :p:a_intent_type) and
+                (:parameters:prev_keys is null or charindex(',' + rtrim(:p:p_donor_partner_id) + ',', ',' + :parameters:prev_keys + ',') > 0)
+            on duplicate
+		:p_partner_key,
+		:p_search_session_id,
+		:p_search_stage_id
+	    update set
+		:p_partner_key = :p_partner_key
+	    ";
+    }
