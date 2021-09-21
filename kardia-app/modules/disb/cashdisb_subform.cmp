@@ -1356,7 +1356,7 @@ cashdisb_subform "widget/component-decl"
 							label_width=60;
 							height=25;
 
-							sql = runserver("select :a:a_account_code + ' - ' + :a:a_acct_desc, :a:a_account_code from /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = " + quote(:this:ledger) + " and :c:a_config_name = 'DisbCashAccts' and charindex(',' + :a:a_account_code + ',', ',' + :c:a_config_value + ',') > 0");
+							sql = runserver("select :a:a_account_code + ' - ' + :a:a_acct_desc, :a:a_account_code from /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = " + quote(:this:ledger) + " and :c:a_config_name = 'DisbCashAccts' and charindex(',' + rtrim(:a:a_account_code) + ',', ',' + :c:a_config_value + ',') > 0 and :a:a_ledger_number = :c:a_ledger_number");
 
 							default_cash_acct_code "widget/hints" { style=notnull; default=runserver( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbCashAcct') ); }
 					}
@@ -1679,14 +1679,14 @@ cashdisb_subform "widget/component-decl"
 
 						cs_lbl_check_approve "widget/component"
 						{
-							condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') = 'Y');
+							//condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') = 'Y');
 							path="/sys/cmp/smart_field.cmp"; field='approved'; ctl_type=checkbox; text='Approved?'; label_width=100; type="readonly";
 							approved_hints "widget/hints" { style=readonly; } 
 						} 
 						cs_lbl_check_posted "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_posted'; ctl_type=checkbox; text='Posted/Paid?'; label_width=100; type="readonly"; posted_hints "widget/hints" { default=runclient(0); style=readonly; } } 
 						cs_lbl_check_recon "widget/component"
 						{
-							condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbRecon') = 'Y');
+							//condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbRecon') = 'Y');
 							path="/sys/cmp/smart_field.cmp"; field='a_reconciled'; ctl_type=checkbox; text='Reconciled?'; label_width=100; type="readonly";
 							recon_hints "widget/hints" { default=runclient(0); style=readonly; } 
 						} 
@@ -2505,7 +2505,7 @@ cashdisb_subform "widget/component-decl"
 					
 					cnSave_cn324 "widget/connector" { event="Click"; target=batch_total_osrc; action="Refresh"; }
 					
-					enabled = runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
+					enabled = runclient(:check_form:is_newable and :check_form:a_ledger_number is not null and isnull(not :cashdisb_osrc:a_posted, true));
 					
 					// Void_This_Check_btn
 					
