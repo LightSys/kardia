@@ -8,8 +8,8 @@ pledge_mgmt "system/query"
     a_ledger_number "query/parameter" { type=string; }
     a_batch_number "query/parameter" { type=integer; }
     a_gift_number "query/parameter" { type=integer; }
-    donor "query/parameter" { type=string; }
-    ackdonor "query/parameter" { type=string; }
+    donor "query/parameter" { type=string; style=strnull; }
+    ackdonor "query/parameter" { type=string; style=strnull; }
     date "query/parameter" { type=string; }
     posted "query/parameter" { type=integer; }
     name "query/parameter" { type=string; style=strnull; }
