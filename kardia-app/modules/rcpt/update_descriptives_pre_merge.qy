@@ -16,13 +16,13 @@ update_descriptives_pre_merge "system/query"
 
 	    -- Clear out any old descriptives
 	    delete
-		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+		collection a_descriptives d
 	    where
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    delete
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+		collection a_descriptives_hist dh
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
@@ -58,7 +58,7 @@ update_descriptives_pre_merge "system/query"
 	    -- to optimize this to help staff interact with donors and ask good questions, instead
 	    -- of generating results simply based on math.
 	    insert
-		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+		collection a_descriptives d
 	    select
 		-- Primary key
 		a_ledger_number = :ledger,
@@ -81,12 +81,12 @@ update_descriptives_pre_merge "system/query"
 		a_act_average_months = convert(integer, round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)),
 		a_act_average_interval = condition(
 			count(1) < 2 or datediff(day, last(:giftdate), first(:giftdate)) = 0,
-			null,
+			convert(double, null),
 			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
 			),
 		a_act_average_amount = condition(
 			count(1) < 2 or datediff(month, last(:giftdate), first(:giftdate)) = 0,
-			null,
+			convert(money, null),
 			sum(:amount) * (convert(double, count(1) - 1) / count(1)) / datediff(month, last(:giftdate), first(:giftdate))
 			),
 		s_date_created = getdate(),
@@ -108,7 +108,7 @@ update_descriptives_pre_merge "system/query"
 
 	    -- Generate the amount history data, starting with the most recent gift amount.
 	    insert into
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows
+		collection a_descriptives_hist
 	    select
 		a_ledger_number = :ledger,
 		p_donor_partner_key = :donor,
@@ -122,12 +122,12 @@ update_descriptives_pre_merge "system/query"
 		a_act_average_months = convert(integer, round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)),
 		a_act_average_interval = condition(
 			count(1) < 2 or datediff(day, last(:giftdate), first(:giftdate)) = 0,
-			null,
+			convert(double, null),
 			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
 			),
 		a_act_average_amount = condition(
                         datediff(day, last(:giftdate), first(:giftdate)) < 16,
-                        null,
+                        convert(money, null),
                         (sum(:amount) - :amount) / round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)
                         ),
 		s_date_created = getdate(),
@@ -151,10 +151,10 @@ update_descriptives_pre_merge "system/query"
 
 	    -- Update previous/next interval start/end dates
 	    update
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+		collection a_descriptives_hist dh1
 	    set
-		:dh1:a_prev_end = (select :a_last_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift order by :dh2:a_last_gift desc limit 1),
-		:dh1:a_next_start = (select :a_first_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift order by :dh2:a_first_gift asc limit 1)
+		:dh1:a_prev_end = (select :a_last_gift from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift order by :dh2:a_last_gift desc limit 1),
+		:dh1:a_next_start = (select :a_first_gift from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift order by :dh2:a_first_gift asc limit 1)
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key)
@@ -164,7 +164,7 @@ update_descriptives_pre_merge "system/query"
 	    select
 		*
 	    from
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows d
+		collection a_descriptives_hist d
 	    where
 		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)

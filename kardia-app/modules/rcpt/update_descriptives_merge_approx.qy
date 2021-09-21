@@ -15,7 +15,7 @@ update_descriptives_merge_approx "system/query"
 
 	    -- Step One: Identify
 	    update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
+		identity collection a_descriptives_hist dh
 	    set
 		:dh:a_is_approximate = condition(
                         :dh:a_is_approximate is null and
@@ -25,7 +25,7 @@ update_descriptives_merge_approx "system/query"
                         not datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 334 and -- this prevents annual gifts from being merged together
                         (select 
                                 count(1)
-                                from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+                                from collection a_descriptives_hist dh2
                                 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_hist_id = :dh:a_hist_id + 1 or :dh2:a_hist_id = :dh:a_hist_id - 1) and (:dh2:a_count < 5 or :dh2:a_act_average_months < 5) and (not isnull(:dh:a_is_extra, 0) or not isnull(:dh2:a_is_extra, 0))
                                 ) >= 1,
                         2,
@@ -55,7 +55,7 @@ update_descriptives_merge_approx "system/query"
                 prev_end = :dh1:a_prev_end,
                 next_start = :dh1:a_next_start
             from
-                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+                collection a_descriptives_hist dh1
             where
                 (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key)
@@ -113,7 +113,7 @@ update_descriptives_merge_approx "system/query"
             
 	    -- Step Four: Merge
 	    update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
+		identity collection a_descriptives_hist dh2,
                 collection tmp_aggregated_segments t
 	    set
                 :dh2:a_amount = :t:amount,
@@ -128,7 +128,7 @@ update_descriptives_merge_approx "system/query"
                 :dh2:a_act_average_amount = condition(
                                 datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,
-                                condition((select count(1) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows where :a_ledger_number = :t:ledger and :a_cost_center = :t:fund and :p_donor_partner_key = :t:donor and :a_is_approximate != 2) = 1, :dh2:a_total / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5), (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5))
+                                condition((select count(1) from collection a_descriptives_hist where :a_ledger_number = :t:ledger and :a_cost_center = :t:fund and :p_donor_partner_key = :t:donor and :a_is_approximate != 2) = 1, :dh2:a_total / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5), (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5))
                                 ),
                 :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
                 :dh2:a_act_average_interval = condition(
@@ -148,7 +148,7 @@ update_descriptives_merge_approx "system/query"
 
 	    -- Step Five: Delete Merged
 	    delete
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+		collection a_descriptives_hist dh1
             where
 		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
@@ -158,10 +158,10 @@ update_descriptives_merge_approx "system/query"
             -- Merge extra gifts if there are only extras and an approximate history
             -- Step One : Identify
             update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
-                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+		identity collection a_descriptives_hist dh1,
+                collection a_descriptives_hist dh2
 	    set
-		:dh1:a_merged_id = condition((select count(1) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows where :a_ledger_number = :dh1:a_ledger_number and :a_cost_center = :dh1:a_cost_center and :p_donor_partner_key = :dh1:p_donor_partner_key and :a_is_extra = 0 and :a_is_approximate = 0) = 0, :dh2:a_hist_id, null)
+		:dh1:a_merged_id = condition((select count(1) from collection a_descriptives_hist where :a_ledger_number = :dh1:a_ledger_number and :a_cost_center = :dh1:a_cost_center and :p_donor_partner_key = :dh1:p_donor_partner_key and :a_is_extra = 0 and :a_is_approximate = 0) = 0, :dh2:a_hist_id, null)
             where
                 (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
@@ -189,8 +189,8 @@ update_descriptives_merge_approx "system/query"
                 last = max(:dh1:a_last_gift),
                 ntl = condition(first(:dh1:a_count) >=2, first(:dh1:a_ntl_gift), nth(:dh1:a_first_gift, 2))
             from
-                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
-                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+                collection a_descriptives_hist dh1,
+                collection a_descriptives_hist dh2
             where
                 (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
@@ -226,7 +226,7 @@ update_descriptives_merge_approx "system/query"
             
 	    -- Step Four: Merge
 	    update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
+		identity collection a_descriptives_hist dh2,
                 collection tmp_merge_aggregates t
 	    set
                 :dh2:a_amount = :t:amount,
@@ -240,7 +240,7 @@ update_descriptives_merge_approx "system/query"
                 :dh2:a_act_average_amount = condition(
                                 datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,
-                                condition((select count(1) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows where :a_ledger_number = :t:ledger and :a_cost_center = :t:fund and :p_donor_partner_key = :t:donor and :a_is_approximate != 2) = 1, :dh2:a_total / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5), (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5))
+                                condition((select count(1) from collection a_descriptives_hist where :a_ledger_number = :t:ledger and :a_cost_center = :t:fund and :p_donor_partner_key = :t:donor and :a_is_approximate != 2) = 1, :dh2:a_total / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5), (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5))
                                 ),
                 :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
                 :dh2:a_act_average_interval = condition(
@@ -260,7 +260,7 @@ update_descriptives_merge_approx "system/query"
 
 	    -- Step Five: Delete Merged
 	    delete
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+		collection a_descriptives_hist dh1
             where
 		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and

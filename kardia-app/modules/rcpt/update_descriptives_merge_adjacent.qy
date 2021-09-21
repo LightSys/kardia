@@ -13,8 +13,8 @@ update_descriptives_merge_adjacent "system/query"
             --  compare the combined segments average to the
 	    --  longer segment's average.
 	    update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+		identity collection a_descriptives_hist dh1,
+		collection a_descriptives_hist dh2
 	    set
 		:a_merged_id = :dh2:a_hist_id
 	    where
@@ -31,8 +31,8 @@ update_descriptives_merge_adjacent "system/query"
             -- Extra recurssions to ensure a merge does not occur
             -- into a history that is also getting merged away
             update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+		identity collection a_descriptives_hist dh1,
+		collection a_descriptives_hist dh2
 	    set
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
 	    where
@@ -44,8 +44,8 @@ update_descriptives_merge_adjacent "system/query"
 		:dh1:a_merged_id = :dh2:a_hist_id
 	    ;
             update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+		identity collection a_descriptives_hist dh1,
+		collection a_descriptives_hist dh2
 	    set
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
 	    where
@@ -75,8 +75,8 @@ update_descriptives_merge_adjacent "system/query"
                 ntl_dh1_gift = condition(first(:dh1:a_count) >=2, first(:dh1:a_ntl_gift), nth(:dh1:a_first_gift, 2)),
                 merge_next = :dh2:a_merged_id
             from
-                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
-                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+                collection a_descriptives_hist dh1,
+                collection a_descriptives_hist dh2
             where
                 (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
@@ -100,7 +100,7 @@ update_descriptives_merge_adjacent "system/query"
             --  Due to extra merges, it should always be safe. However,
             --  this is not guaranteed for exceptionally large data sets
 	    update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
+		identity collection a_descriptives_hist dh2,
                 identity collection tmp_merge_aggregates t
 	    set
                 :dh2:a_count = :dh2:a_count + :t:sum_dh1_a_count,
@@ -145,7 +145,7 @@ update_descriptives_merge_adjacent "system/query"
 
 	    -- Step Four: Delete Merged
 	    delete
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+		collection a_descriptives_hist dh1
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
