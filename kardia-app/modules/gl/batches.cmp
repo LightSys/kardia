@@ -163,6 +163,7 @@ batches "widget/component-decl"
 			    target=batches;
 			    action=Launch;
 			    Source = runclient("/apps/kardia/modules/gl/journal_entry.app");
+			    Multi = 1;
 			    Width=800;
 			    Height=600;
 			    ledger=runclient(:batch_osrc:a_ledger_number);
@@ -185,6 +186,7 @@ batches "widget/component-decl"
 			    target = batches;
 			    action = Launch;
 			    Source = runclient("/apps/kardia/modules/gl/new_post_batch.app");
+			    Multi = 1;
 			    Width=800;
 			    Height=600;
 			    ledger=runclient(:batch_osrc:a_ledger_number);
@@ -207,6 +209,7 @@ batches "widget/component-decl"
 			    target = batches;
 			    action= Launch;
 			    Source = runclient("/apps/kardia/modules/gl/transaction_report.rpt");
+			    Multi = 1;
 			    Width = 800;
 			    Height = 600;
 			    ledger = runclient(:batch_osrc:a_ledger_number);
@@ -227,6 +230,7 @@ batches "widget/component-decl"
 			    event=Click;
 			    target = batches;
 			    action= Launch;
+			    Multi = 1;
 			    Source = runclient("/apps/kardia/modules/gl/batch_balance.rpt");
 			    Width = 800;
 			    Height = 600;
