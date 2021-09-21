@@ -287,7 +287,7 @@ check_report "system/report"
 	update_check_number_qy "report/query"
 	{
 		sql = runclient("UPDATE /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows
-						 SET	:a_check_number = :batch_disb_qy:rowid + :this:start_check_number - 1
+						 SET	:a_check_number = convert(string, :batch_disb_qy:rowid + :this:start_check_number - 1)
 						 WHERE	:a_ledger_number = :this:ledger and
 								:a_batch_number = :this:batch_number and
 								:a_disbursement_id = :batch_disb_qy:a_disbursement_id");
