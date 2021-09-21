@@ -102,7 +102,7 @@ plugin_base_config_rcptrpt "widget/component-decl"
 		    field='RcptPubl';
 		    text='Publication:';
 		    label_width=150;
-		    validate=1;
+		    validate=0;
 		    popup_width=300;
 		    popup_height=210;
 		    popup_sql="select value = :m:m_list_code, label = :m:m_list_description + ' (' + :m:m_list_code + ')' from /apps/kardia/data/Kardia_DB/m_list/rows m where :m:m_list_type = 'P'";
