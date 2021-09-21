@@ -1,0 +1,85 @@
+$Version=2$
+plugin_base_config_payroll "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Payroll";
+    description = "Configure payroll options";
+    sequence = 750;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		pay_lbl "widget/label" { height=16; style=bold; text="Payroll Configuration:"; }
+
+		pay_label_1 "widget/label" { height=30; text="Liabilities Transfer: when payroll is run, liabilities are transferred to the general fund for later payment.  Here you configure which GL liability account balances remain in the individual funds."; }
+		pay_noxfr "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="NoXferLiabs"; text="No Transfer Liab. Accts:"; width=400; label_width=150; ctl_type=editbox; }
+		pay_label_2 "widget/label" { height=30; text="Issue Paychecks: enable this if you write your own paychecks or initiate your own direct deposits (in Cash Disbursements) for any of your payroll groups.  Disable it if a payroll service issues all of your paychecks and you later disburse those funds in one lump sum via check or EFT."; }
+		pay_dochecks "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="PayIssueCks"; text="Issue Checks:"; width=400; label_width=150; ctl_type=dropdown; sql="select 'Yes, issue individual disbursements', 'Y'; select 'No, pay via payroll service', 'N'"; }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+
