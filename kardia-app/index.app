@@ -276,6 +276,28 @@ index "widget/page"
 		widget_class = crm_iconbar;
 		fl_height=0;
 
+		action_bar_label_nonpriv "widget/label"
+		    {
+		    require_endorsement="kardia:sys_admin";
+		    endorsement_context="kardia";
+		    invert_security_check=yes;
+		    x=10; y=10;
+		    width=150; height=40;
+		    fgcolor=white;
+		    font_size=10;
+		    text=runserver( /apps/kardia/data/Site.struct:site_description );
+		    }
+		action_bar_label "widget/label"
+		    {
+		    require_endorsement="kardia:sys_admin";
+		    endorsement_context="kardia";
+		    x=10; y=10;
+		    width=150; height=40;
+		    fgcolor=white;
+		    font_size=10;
+		    text=runserver( /apps/kardia/data/Site.struct:site_description + '\nRev. ' + /apps/kardia/app_info.struct:app_version + ', ' + /apps/kardia/app_info.struct:app_release );
+		    }
+
 		action_bar_hbox "widget/hbox"
 		    {
 		    x=10; y=0;
