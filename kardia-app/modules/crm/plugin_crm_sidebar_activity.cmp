@@ -340,11 +340,15 @@ activity_list "widget/component-decl"
 				new_chatid_osrc "widget/osrc"
 				    {
 				    new_chatid_whom "widget/parameter" { type=string; }
-				    sql = " select
+				    sql = " declare collection c_member scope application;
+					    delete collection c_member;
+					    insert collection c_member select * from /apps/kardia/data/Kardia_DB/c_member/rows ;
+				    
+					    select
 						:c:c_chat_id
 					    from
-						/apps/kardia/data/Kardia_DB/c_member/rows m1,
-						/apps/kardia/data/Kardia_DB/c_member/rows m2,
+						collection c_member m1,
+						collection c_member m2,
 						/apps/kardia/data/Kardia_DB/c_chat/rows c
 					    where
 						:m1:s_username = user_name() and
@@ -352,8 +356,7 @@ activity_list "widget/component-decl"
 						:c:c_chat_id = :m1:c_chat_id and
 						:m1:c_chat_id = :m2:c_chat_id
 					    having
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 2 and :parameters:new_chatid_whom != user_name()) or
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :parameters:new_chatid_whom = user_name())
+						((select count(1) from collection c_member m3 where :m3:c_chat_id = :this:c_chat_id) = condition(:parameters:new_chatid_whom = user_name(), 1, 2))
 					    ";
 				    readahead=2;
 				    replicasize=2;

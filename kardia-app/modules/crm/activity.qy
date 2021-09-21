@@ -252,6 +252,10 @@ activity "system/query"
 		200
 	    ;
 
+	    declare collection c_member scope application;
+	    delete collection c_member;
+	    insert collection c_member select * from /apps/kardia/data/Kardia_DB/c_member/rows ;
+
 	    -- Users who are not currently online
 	    insert
 		collection e_activity
@@ -265,8 +269,8 @@ activity "system/query"
 						sum(sum(1)),
 						:m1:c_chat_id
 					    from
-						/apps/kardia/data/Kardia_DB/c_member/rows m1,
-						/apps/kardia/data/Kardia_DB/c_member/rows m2,
+						collection c_member m1,
+						collection c_member m2,
 						/apps/kardia/data/Kardia_DB/c_message/rows msg
 					    where
 						:m1:s_username = user_name() and
@@ -277,8 +281,7 @@ activity "system/query"
 					    group by
 						:m1:c_chat_id
 					    having
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 2 and :s:p_kardia_login != user_name()) or
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :s:p_kardia_login = user_name())
+						((select count(1) from collection c_member m3 where :m3:c_chat_id = :this:c_chat_id) = condition(:s:p_kardia_login = user_name(), 1, 2))
 					    ) + ' unread message(s))', '')
 			+ ' (offline)\n' + isnull(:ud:s_status,''),
 		e_whom = :s:p_partner_key,
@@ -309,8 +312,8 @@ activity "system/query"
 						sum(sum(1)),
 						:m1:c_chat_id
 					    from
-						/apps/kardia/data/Kardia_DB/c_member/rows m1,
-						/apps/kardia/data/Kardia_DB/c_member/rows m2,
+						collection c_member m1,
+						collection c_member m2,
 						/apps/kardia/data/Kardia_DB/c_message/rows msg
 					    where
 						:m1:s_username = user_name() and
@@ -321,8 +324,7 @@ activity "system/query"
 					    group by
 						:m1:c_chat_id
 					    having
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 2 and :a:username != user_name()) or
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :a:username = user_name())
+						((select count(1) from collection c_member m3 where :m3:c_chat_id = :this:c_chat_id) = condition(:a:username = user_name(), 1, 2))
 					    ) + ' unread message(s))', '')
 			+ '\n' + isnull(:ud:s_status,''),
 		e_whom = :s:p_partner_key,
