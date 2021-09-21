@@ -2,11 +2,12 @@ $Version=2$
 payees "widget/page"
     {
     title = "Payees (for Payroll)";
-    width=778; height=525;
+    width=900; height=700;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     require_endorsements="kardia:pay_manage";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+    max_requests = 5;
 
     // the ledger we are working with
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
