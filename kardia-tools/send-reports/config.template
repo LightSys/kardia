@@ -3,3 +3,11 @@ kardia_url = "http://example.com/apps/kardia"
 user = "username"
 pw = "password"
 generated_pdf_path = "/home/alphonse/tmp"
+
+[email]
+email_template_path = "/home/alphonse/email.in"
+
+  # You can include any parameters here that can be passed to Python's smtplib.SMTP():
+  # https://docs.python.org/3/library/smtplib.html#smtplib.SMTP
+  [email.smtp]
+  host = "localhost"

@@ -8,9 +8,10 @@ from typing import Dict, List
 
 class EmailReportSender(ReportSender):
 
-    def __init__(self, email_template_path: str):
+    def __init__(self, email_template_path: str, smtp_params: Dict[str, str]):
         with open(email_template_path) as fp:
             self.email_template = fp.read()
+        self.smtp_params = smtp_params
 
     def _add_replaceable_params(self, replaceable_params: Dict[str, str], contact_info):
         replaceable_params["email"] = contact_info
@@ -35,7 +36,7 @@ class EmailReportSender(ReportSender):
             msg.add_attachment(fp.read(), maintype="application", subtype="pdf", filename=filename)
 
         try:
-            smtp = smtplib.SMTP("localhost")
+            smtp = smtplib.SMTP(**self.smtp_params)
             smtp.send_message(msg)
             smtp.quit()
         except smtplib.SMTPResponseException as se:
