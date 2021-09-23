@@ -27,6 +27,9 @@ class EmailReportSender(ReportSender):
 
         # Create an email message and attach the report file
         msg = email.message_from_string(email_text, policy=email.policy.EmailPolicy())
+        # These headers necessary for add_attachment to notice there's an existing email body and not just overwrite it
+        msg["Content-Type"] = 'text/plain; charset="utf-8"'
+        msg["Content-Transfer-Encoding"] = "7bit"
         (_, filename) = os.path.split(report_path)
         with open(report_path, 'rb') as fp:
             msg.add_attachment(fp.read(), maintype="application", subtype="pdf", filename=filename)
