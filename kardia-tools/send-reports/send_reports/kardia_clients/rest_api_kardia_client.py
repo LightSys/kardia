@@ -45,6 +45,15 @@ class RestAPIKardiaClient(KardiaClient):
         return preferredEmailJson["response"]["email"]
 
     
+    def _get_template(self, template_file: str) -> str:
+        # Not using kardia_api for this, since it's trivial to just request a file manually
+        template_url = f'{self.kardia_url}/files/{template_file}'
+        response = requests.get(template_url, auth=self.auth)
+        # Need to strip out HTML wrapping the response
+        template = response.text.removeprefix("<HTML><PRE>").removesuffix("</HTML></PRE>")
+        return template
+
+    
     def get_scheduled_reports_to_be_sent(self):
         self.kardia.report.setParams(res_attrs="basic")
         schedReportJson = self._make_api_request(self.kardia.report.getSchedReportsToBeSent)
@@ -70,8 +79,10 @@ class RestAPIKardiaClient(KardiaClient):
             recipientContactInfo = self._get_contact_info_for_partner(schedReportInfo["recipient_partner_key"])
             params = self._get_params_for_sched_report(schedReportId)
 
+            template = self._get_template(schedReportInfo["template_file"])
+
             schedReport = ScheduledReport(schedReportId, reportFile, year, month, day, hour, minute, second,
-                recipientName, recipientContactInfo, params)
+                recipientName, recipientContactInfo, template, params)
             schedReports.append(schedReport)
         
         return schedReports

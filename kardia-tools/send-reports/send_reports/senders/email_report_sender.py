@@ -8,9 +8,7 @@ from typing import Dict, List
 
 class EmailReportSender(ReportSender):
 
-    def __init__(self, email_template_path: str, smtp_params: Dict[str, str]):
-        with open(email_template_path) as fp:
-            self.email_template = fp.read()
+    def __init__(self, smtp_params: Dict[str, str]):
         self.smtp_params = smtp_params
 
     def _add_replaceable_params(self, replaceable_params: Dict[str, str], contact_info):
@@ -19,10 +17,10 @@ class EmailReportSender(ReportSender):
         replaceable_params["month"] = now.strftime("%B")
 
     # contact_info is assumed to be a string email
-    def send_report(self, report_path, contact_info: str, replaceable_params):
+    def send_report(self, report_path, contact_info: str, template, replaceable_params):
         # Gather replaceable parameters and replace them in the template
         self._add_replaceable_params(replaceable_params, contact_info)
-        email_text = self.email_template
+        email_text = template
         for param_name, param_value in replaceable_params.items():
             email_text = email_text.replace(f'[:{param_name}]', param_value)
 

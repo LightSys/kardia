@@ -4,8 +4,7 @@ from send_reports.senders.email_report_sender import EmailReportSender
 
 config = toml.load("config.toml")
 kardia_client = RestAPIKardiaClient(config["kardia_url"], config["user"], config["pw"])
-# TODO: Currently you can only set one email template for all reports to send out
-report_sender = EmailReportSender(config["email"]["email_template_path"], config["email"]["smtp"])
+report_sender = EmailReportSender(config["email"]["smtp"])
 
 scheduled_reports = kardia_client.get_scheduled_reports_to_be_sent()
 for scheduled_report in scheduled_reports:
@@ -16,5 +15,5 @@ for scheduled_report in scheduled_reports:
     )
     replaceable_params = {**scheduled_report.params, "name": scheduled_report.recipient_name}
     sending_info = report_sender.send_report(generated_filepath, scheduled_report.recipient_contact_info,
-        replaceable_params)
+        scheduled_report.template, replaceable_params)
     kardia_client.update_scheduled_report_status(scheduled_report.sched_report_id, sending_info, generated_filepath)

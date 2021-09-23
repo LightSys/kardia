@@ -22,5 +22,6 @@ class SendingInfo:
 
 class ReportSender(abc.ABC):
     @abc.abstractmethod
-    def send_report(self, report_path: str, contact_info, replaceable_params: Dict[str, str]) -> SendingInfo:
+    def send_report(self, report_path: str, contact_info, template: str,
+        replaceable_params: Dict[str, str]) -> SendingInfo:
         pass

@@ -16,6 +16,7 @@ api_report "system/querytree"
                 report_id = :gsr:r_report_id,
                 date_to_send = :group_sched:r_group_sched_date,
                 recipient_partner_key = :gsr:p_recipient_partner_key,
+                template_file = :report_group:r_group_template_file,
                 sent_status = :gsr:r_group_sched_status,
                 sent_error = :gsr:r_group_sched_error,
                 sent_date = :gsr:r_group_sched_sent_date,
