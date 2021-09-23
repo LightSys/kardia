@@ -23,7 +23,7 @@ class EmailReportSender(ReportSender):
         self._add_replaceable_params(replaceable_params, contact_info)
         email_text = self.email_template
         for param_name, param_value in replaceable_params.items():
-            email_text = email_text.replace(f'{{{{{param_name}}}}}', param_value)
+            email_text = email_text.replace(f'[:{param_name}]', param_value)
 
         # Create an email message and attach the report file
         msg = email.message_from_string(email_text, policy=email.policy.EmailPolicy())
