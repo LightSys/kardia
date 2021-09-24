@@ -48,8 +48,7 @@ api_report "system/querytree"
                         /apps/kardia/data/Kardia_DB/r_group_sched_param/rows gsp
                         where
                         :gsp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
-                        :gsp:r_group_sched_id =* :sched_reports_to_be_sent_list:report_group_sched_id and
-                        :gsp:r_report_id =* :sched_reports_to_be_sent_list:report_id
+                        :gsp:r_group_sched_id =* :sched_reports_to_be_sent_list:report_group_sched_id
                         ;
 
                         insert collection params
