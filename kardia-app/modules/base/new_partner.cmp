@@ -472,6 +472,7 @@ new_partner "widget/component-decl"
 		donor_rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
 		donor_ledger_internal "widget/variable" { fieldname=a_gl_ledger_number; type=string; donor_ledger_hints "widget/hints" { default=runclient(:ledger:value); } }
 		donor_org_first "widget/variable" { fieldname=p_org_name_first; type=integer; org_first_hints "widget/hints" { default=runclient(1); } }
+		donor_is_daf "widget/variable" { fieldname=p_is_daf; type=integer; isdaf_hints "widget/hints" { default=runclient(0); } }
 
 		allow_donor "widget/component"
 		    {
