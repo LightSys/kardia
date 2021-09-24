@@ -38,33 +38,23 @@ api_report "system/querytree"
 
                 params_list "system/querytree"
                     {
-                        sql = " declare collection params;
-
-                        insert collection params
-                        select
-                        name = :gsp:r_param_name,
-                        value = :gsp:r_param_value
+                        sql = " select
+                        param_name = :gp:r_param_name,
+                        param_value = isnull(:grp:r_param_value, isnull(:gsp:r_param_value, :gp:r_param_default))
                         from
+                        identity /apps/kardia/data/Kardia_DB/r_group_param/rows gp,
+                        /apps/kardia/data/Kardia_DB/r_group_report_param/rows grp,
                         /apps/kardia/data/Kardia_DB/r_group_sched_param/rows gsp
                         where
-                        :gsp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
-                        :gsp:r_group_sched_id =* :sched_reports_to_be_sent_list:report_group_sched_id
-                        ;
-
-                        insert collection params
-                        select
-                        name = :grp:r_param_name,
-                        value = :grp:r_param_value
-                        from
-                        /apps/kardia/data/Kardia_DB/r_group_report_param/rows grp
-                        where
+                        :gp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
                         :grp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
                         :grp:r_delivery_method =* :sched_reports_to_be_sent_list:delivery_method and
                         :grp:p_recipient_partner_key =* :sched_reports_to_be_sent_list:recipient_partner_key and
-                        :grp:r_report_id =* :sched_reports_to_be_sent_list:report_id
-                        ;
-
-                        select * from collection params
+                        :grp:r_report_id =* :sched_reports_to_be_sent_list:report_id and
+                        :grp:r_param_name =* :gp:r_param_name and
+                        :gsp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
+                        :gsp:r_group_sched_id =* :sched_reports_to_be_sent_list:report_group_sched_id and
+                        :gsp:r_param_name =* :gp:r_param_name
                         ";
                     } 
                 }

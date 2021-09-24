@@ -33,7 +33,10 @@ class RestAPIKardiaClient(KardiaClient):
         for paramName, paramInfo in paramsJson.items():
             if paramName.startswith("@id"):
                 continue
-            params[paramName] = paramInfo["value"]
+            # Don't include null parameters
+            if paramInfo["param_value"] is None:
+                continue
+            params[paramInfo["param_name"]] = paramInfo["param_value"]
         return params
 
 
@@ -106,8 +109,7 @@ class RestAPIKardiaClient(KardiaClient):
         # Not using kardia_api for this, since it's not really set up for getting arbitrary .rpts and a manual request
         # is pretty simple
         report_url = f'{self.kardia_url}/modules/{report_file}'
-        request_params = {**params, "document_format": requests.utils.quote("application/pdf")}
-        response = requests.get(report_url, auth=self.auth, params=request_params)
+        response = requests.get(report_url, auth=self.auth, params=params)
         with open(file_path, "wb") as file:
             file.write(response.content)
 
