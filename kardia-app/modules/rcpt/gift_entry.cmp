@@ -390,7 +390,7 @@ gift_entry "widget/component-decl"
 			    action=QueryText;
 			    cx__case_insensitive = 1;
 			    query=runclient(:srchbox:content);
-			    field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*");
+			    field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,p_legacy_key_2*");
 			    }
 			}
 
