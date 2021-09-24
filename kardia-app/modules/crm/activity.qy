@@ -8,47 +8,8 @@ activity "system/query"
 	    declare collection e_activity scope application;
 
 	    -- Basic updates for the user's status.
-	    insert
-		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
-	    select
-		    s_username = user_name(),
-		    s_first_seen = getdate(),
-		    s_last_seen = getdate(),
-		    s_date_created = getdate(),
-		    s_created_by = user_name(),
-		    s_date_modified = getdate(),
-		    s_modified_by = user_name()
-	    having
-		    (select count(1) from /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows where :s_username = user_name() and dateadd(minute, 15, :s_last_seen) >= getdate()) = 0
-	    ;
-	    update
-		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
-	    set
-		    :s_last_seen = getdate(),
-		    :s_date_modified = getdate(),
-		    :s_modified_by = user_name()
-	    where
-		    :s_username = user_name() and
-		    dateadd(minute, 15, :s_last_seen) >= getdate()
-	    ;
-	    insert
-		    /apps/kardia/data/Kardia_DB/s_user_data/rows
-	    select
-		    s_username = user_name(),
-		    s_status = '',
-		    s_date_created = getdate(),
-		    s_created_by = user_name(),
-		    s_date_modified = getdate(),
-		    s_modified_by = user_name()
-	    ;
-	    update
-		    /apps/kardia/data/Kardia_DB/s_user_data/rows ud
-	    set
-		    :s_date_modified = getdate(),
-		    :s_modified_by = user_name()
-	    where
-		    :s_username = user_name()
-	    ;
+	    exec /apps/kardia/modules/base/record_login_history.qy ;
+
 	    insert
 		    collection ud
 	    select
