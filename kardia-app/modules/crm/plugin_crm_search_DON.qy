@@ -34,7 +34,9 @@ plugin_crm_search_DON "system/query"
                 :stage:minavg = convert(money,:sc:minavg),
                 :stage:maxavg = convert(money,:sc:maxavg),
 		:stage:mincnt = :sc:mincnt,
-		:stage:maxcnt = :sc:maxcnt
+		:stage:maxcnt = :sc:maxcnt,
+		:stage:mindesig = convert(integer,:sc:mindesig),
+		:stage:maxdesig = convert(integer,:sc:maxdesig)
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner_search_stage/rows s,
 		/apps/kardia/modules/crm/advanced_search_params.qyp sc
@@ -67,7 +69,7 @@ plugin_crm_search_DON "system/query"
 		p_partner_key = :dh:p_donor_partner_key,
 		p_search_session_id = :parameters:search_id,
 		p_search_stage_id = :parameters:cur_stage,
-		p_description = last(condition(charindex(',INC,', ',' + :stage:changes + ',') > 0, '' + round(:dh:a_increase_pct * 100) + '% increase on ' + dateformat(:dh:a_first_gift, 'yyyy/MM/dd'), condition(charindex(',DEC,', ',' + :stage:changes + ',') > 0, '' + round(:dh:a_decrease_pct * 100) + '% decrease on ' + dateformat(:dh:a_first_gift, 'yyyy/MM/dd'), '')))
+		p_description = isnull(last(condition(charindex(',INC,', ',' + :stage:changes + ',') > 0, '' + round(:dh:a_increase_pct * 100) + '% increase on ' + dateformat(:dh:a_first_gift, 'yyyy/MM/dd') + ', ', condition(charindex(',DEC,', ',' + :stage:changes + ',') > 0, '' + round(:dh:a_decrease_pct * 100) + '% decrease on ' + dateformat(:dh:a_first_gift, 'yyyy/MM/dd') + ', ', ''))), '') + isnull(condition(:stage:mindesig is not null or :stage:maxdesig is not null, '' + count(:d:a_act_count) + ' designation' + condition(count(:d:a_act_count) == 1, '', 's') + ', ', ''), '') - ', '
 	    from
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
@@ -148,7 +150,9 @@ plugin_crm_search_DON "system/query"
                 --(:stage:mintamt is null or sum(:d:a_act_total) >= :stage:mintamt) and
 		--(:stage:maxtamt is null or sum(:d:a_act_total) <= :stage:maxtamt) and
                 (:stage:status is null or convert(integer, :stage:status) = max(:d:a_is_current)) and
-                (:stage:changes is null or charindex(',LST,', ',' + :stage:changes + ',') = 0 or max(:d:a_is_current) = 0)
+                (:stage:changes is null or charindex(',LST,', ',' + :stage:changes + ',') = 0 or max(:d:a_is_current) = 0) and
+		(:stage:mindesig is null or :stage:mindesig <= count(:d:a_act_count)) and
+		(:stage:maxdesig is null or :stage:maxdesig >= count(:d:a_act_count))
             on duplicate
 		:p_partner_key,
 		:p_search_session_id,

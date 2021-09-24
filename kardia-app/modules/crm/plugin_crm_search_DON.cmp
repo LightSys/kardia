@@ -85,6 +85,16 @@ plugin_crm_search_lists "widget/component-decl"
 	    maxcnt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxcnt; width=155; label_width=70; form=criteria_params_form; text="Max:"; maxc_hints "widget/hints" { style=strnull; } }
 	    }
 
+	desigcnt_hbox "widget/hbox"
+	    {
+	    condition=0;
+	    height=24;
+
+	    mindesig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=mindesig; width=235; label_width=150; form=criteria_params_form; text="# of Designations, Min:"; dcmin_hints "widget/hints" { style=strnull; } }
+	    maxdesig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxdesig; width=155; label_width=70; form=criteria_params_form; text="Max:"; dcmax_hints "widget/hints" { style=strnull; } }
+	    }
+
+
 	gift_dates "widget/hbox"
 	    {
 	    height=24;
