@@ -2,7 +2,7 @@ import re
 import requests
 from functools import partial
 from kardia_api import Kardia
-from kardia_api.objects.report_objects import SchedReportStatus
+from kardia_api.objects.report_objects import SchedReportStatus, SchedStatusTypes
 from send_reports.kardia_clients.kardia_client import KardiaClient, ScheduledReport
 from send_reports.senders.sender import SendingInfo
 from requests.models import Response
@@ -117,7 +117,7 @@ class RestAPIKardiaClient(KardiaClient):
 
     
     def update_scheduled_report_status(self, sched_report_id: str, sending_info: SendingInfo, report_path: str):
-        sent_status = SchedReportStatus.SchedStatusTypes(sending_info.sent_status.value)
+        sent_status = SchedStatusTypes(sending_info.sent_status.value)
         report_status = SchedReportStatus(
             sent_status,
             sending_info.error_message,
