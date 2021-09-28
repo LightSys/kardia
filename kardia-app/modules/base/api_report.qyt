@@ -60,4 +60,22 @@ api_report "system/querytree"
                 }
             }
         }
+
+    ScheduledReportBatches "system/querytree"
+        {
+        text = "ScheduledReportBatches";
+
+        sched_reports_batches_list "system/querytree"
+            {
+            sql = " select
+                report_group_name = :group_sched:r_group_name,
+                r_group_sched_id = :group_sched:r_group_sched_id,
+                scheduled_date = :group_sched:r_group_sched_date,
+                sent_status = :group_sched:r_group_sched_status,
+                sent_by = :group_sched:r_group_sched_sent_by
+                from
+                identity /apps/kardia/data/Kardia_DB/r_group_sched/rows group_sched
+                ";
+            }
+        }
     }
