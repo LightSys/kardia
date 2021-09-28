@@ -6,9 +6,11 @@ from typing import Dict, List
 
 
 class ScheduledReport:
-    def __init__(self, sched_report_id: str, report_file: str, year: int, month: int, day: int, hour: int, minute: int,
-            second: int, recipient_name: str, recipient_contact_info, template: str, params: Dict[str, str]):
+    def __init__(self, sched_report_id: str, sched_batch_id: str, report_file: str, year: int, month: int, day: int,
+            hour: int, minute: int, second: int, recipient_name: str, recipient_contact_info, template: str,
+            params: Dict[str, str]):
         self.sched_report_id = sched_report_id
+        self.sched_batch_id = sched_batch_id
         self.report_file = report_file
         self.date_to_send = datetime(year, month, day, hour=hour, minute=minute, second=second)
         self.recipient_name = recipient_name
@@ -18,11 +20,7 @@ class ScheduledReport:
 
     
     def __repr__(self) -> str:
-        return (f'report_file: {self.report_file}\n' +
-            f'date_to_send: {str(self.date_to_send)}\nrecipient_name: {self.recipient_name}\n' +
-            f'recipient_contact_info: {str(self.recipient_contact_info)}\ntemplate: {self.template}\n' + 
-            f'params: {str(self.params)}\n')
-
+        return str(self.__dict__)
 
 class KardiaClient(abc.ABC):
 

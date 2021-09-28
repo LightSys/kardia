@@ -9,6 +9,7 @@ api_report "system/querytree"
         sched_reports_to_be_sent_list "system/querytree"
             {
             sql = " select
+                sched_report_batch_name = :gsr:r_group_name + '|' + :gsr:r_group_sched_id,
                 report_file = :report_group:r_group_module + '/' + :report_group:r_group_file,
                 report_group_name = :gsr:r_group_name,
                 delivery_method = :gsr:r_delivery_method,

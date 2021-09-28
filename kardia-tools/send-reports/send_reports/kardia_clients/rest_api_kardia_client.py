@@ -67,6 +67,7 @@ class RestAPIKardiaClient(KardiaClient):
                 continue
             if schedReportInfo["delivery_method"] != "E":
                 continue
+            schedBatchId = schedReportInfo["sched_report_batch_name"]
             reportFile = schedReportInfo["report_file"]
             year = schedReportInfo["date_to_send"]["year"]
             month = schedReportInfo["date_to_send"]["month"]
@@ -84,8 +85,8 @@ class RestAPIKardiaClient(KardiaClient):
 
             template = self._get_template(schedReportInfo["template_file"])
 
-            schedReport = ScheduledReport(schedReportId, reportFile, year, month, day, hour, minute, second,
-                recipientName, recipientContactInfo, template, params)
+            schedReport = ScheduledReport(schedReportId, schedBatchId, reportFile, year, month, day, hour, minute,
+                second, recipientName, recipientContactInfo, template, params)
             schedReports.append(schedReport)
         
         return schedReports
