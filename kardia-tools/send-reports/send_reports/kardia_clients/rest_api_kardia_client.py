@@ -2,7 +2,7 @@ import re
 import requests
 from functools import partial
 from kardia_api import Kardia
-from kardia_api.objects.report_objects import SchedReportStatus, SchedStatusTypes
+from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
 from send_reports.kardia_clients.kardia_client import KardiaClient, ScheduledReport
 from send_reports.senders.sender import SendingInfo
 from requests.models import Response
@@ -16,6 +16,9 @@ class RestAPIKardiaClient(KardiaClient):
         self.kardia = Kardia(kardia_url, user, pw)
         self.kardia_url = kardia_url
         self.auth = (user, pw)
+        # If a scheduled report batch's ID is a key in this dictionary, it means that its "sent by" information has
+        # already been updated and doesn't need to be updated again
+        self.batch_sent_by_already_updated = {}
 
 
     def _make_api_request(self, request_func: Callable[[], Response]) -> Dict[str, str]:
@@ -90,6 +93,15 @@ class RestAPIKardiaClient(KardiaClient):
             schedReports.append(schedReport)
         
         return schedReports
+
+
+    def update_sent_by_for_scheduled_batch(self, sched_batch_id: str):
+        if sched_batch_id in self.batch_sent_by_already_updated:
+            return
+        batch_status = SchedReportBatchStatus(sent_by = self.auth[0])
+        update_request = partial(self.kardia.report.updateSchedReportBatchStatus, sched_batch_id, batch_status)
+        self._make_api_request(update_request)
+        self.batch_sent_by_already_updated[sched_batch_id] = True
 
 
     def _generate_report_filename(self, report_file: str, params: Dict[str, str]) -> str:

@@ -29,6 +29,10 @@ class KardiaClient(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def update_sent_by_for_scheduled_batch(self, sched_batch_id: str):
+        pass
+
+    @abc.abstractmethod
     def generate_report(self, report_file: str, params: Dict[str, str], generated_file_dir: str) -> str:
         pass
     
