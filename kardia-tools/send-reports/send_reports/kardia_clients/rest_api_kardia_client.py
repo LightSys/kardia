@@ -4,7 +4,7 @@ from functools import partial
 from kardia_api import Kardia
 from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
 from send_reports.kardia_clients.kardia_client import KardiaClient, ScheduledReport
-from send_reports.senders.sender import SendingInfo
+from send_reports.senders.sender import SendingInfo, SentStatus
 from requests.models import Response
 from typing import Callable, Dict, List
 
@@ -138,3 +138,9 @@ class RestAPIKardiaClient(KardiaClient):
             report_path)
         updateRequest = partial(self.kardia.report.updateSchedReportStatus, sched_report_id, report_status)
         self._make_api_request(updateRequest)
+
+
+    def update_sent_status_for_scheduled_batch(self, sched_batch_id: str, sent_status: SentStatus):
+        batch_status = SchedReportBatchStatus(sent_status = SchedStatusTypes(sent_status.value))
+        update_request = partial(self.kardia.report.updateSchedReportBatchStatus, sched_batch_id, batch_status)
+        self._make_api_request(update_request)

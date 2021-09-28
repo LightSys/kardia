@@ -1,7 +1,7 @@
 import abc
 from datetime import datetime
 from enum import Enum
-from send_reports.senders.sender import SendingInfo
+from send_reports.senders.sender import SendingInfo, SentStatus
 from typing import Dict, List
 
 
@@ -39,7 +39,7 @@ class KardiaClient(abc.ABC):
     @abc.abstractmethod
     def update_scheduled_report_status(self, sched_report_id: str, sending_info: SendingInfo, report_path: str):
         pass
-    
-    # @abc.abstractmethod
-    # def update_scheduled_report_group_status(self):
-    #     pass
+
+    @abc.abstractmethod
+    def update_sent_status_for_scheduled_batch(self, sched_batch_id: str, sent_status: SentStatus):
+        pass
