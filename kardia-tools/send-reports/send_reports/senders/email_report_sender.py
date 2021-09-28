@@ -18,6 +18,12 @@ class EmailReportSender(ReportSender):
 
     # contact_info is assumed to be a string email
     def send_report(self, report_path, contact_info: str, template, replaceable_params):
+        if contact_info is None:
+            return SendingInfo(
+                SentStatus.INVALID_EMAIL_ERROR,
+                None,
+                error_message='No email address')
+
         # Gather replaceable parameters and replace them in the template
         self._add_replaceable_params(replaceable_params, contact_info)
         email_text = template
