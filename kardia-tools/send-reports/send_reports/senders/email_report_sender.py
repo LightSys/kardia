@@ -3,7 +3,8 @@ import email.policy
 import os
 import smtplib
 from datetime import datetime
-from send_reports.senders.sender import ReportSender, SendingInfo, SentStatus
+from send_reports.models import ScheduledReport, SendingInfo, SentStatus
+from send_reports.senders.sender import ReportSender
 from typing import Dict, List
 
 class EmailReportSender(ReportSender):
@@ -11,22 +12,27 @@ class EmailReportSender(ReportSender):
     def __init__(self, smtp_params: Dict[str, str]):
         self.smtp_params = smtp_params
 
-    def _add_replaceable_params(self, replaceable_params: Dict[str, str], contact_info):
-        replaceable_params["email"] = contact_info
-        now = datetime.now()
-        replaceable_params["month"] = now.strftime("%B")
+    def _get_replaceable_params(self, scheduled_report: ScheduledReport):
+        replaceable_params = {
+            param_name: param.value 
+            for param_name, param in scheduled_report.params.items() 
+            if param.pass_to_template
+        }
+        replaceable_params["name"] = scheduled_report.recipient_name
+        replaceable_params["email"] = scheduled_report.recipient_contact_info
+        return replaceable_params
 
     # contact_info is assumed to be a string email
-    def send_report(self, report_path, contact_info: str, template, replaceable_params):
-        if contact_info is None:
+    def send_report(self, report_path, scheduled_report):
+        if scheduled_report.recipient_contact_info is None:
             return SendingInfo(
                 SentStatus.INVALID_EMAIL_ERROR,
                 None,
                 error_message='No email address')
 
         # Gather replaceable parameters and replace them in the template
-        self._add_replaceable_params(replaceable_params, contact_info)
-        email_text = template
+        replaceable_params = self._get_replaceable_params(scheduled_report)
+        email_text = scheduled_report.template
         for param_name, param_value in replaceable_params.items():
             email_text = email_text.replace(f'[:{param_name}]', param_value)
 

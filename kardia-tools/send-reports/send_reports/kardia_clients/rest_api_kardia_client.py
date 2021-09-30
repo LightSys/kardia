@@ -3,8 +3,8 @@ import requests
 from functools import partial
 from kardia_api import Kardia
 from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
-from send_reports.kardia_clients.kardia_client import KardiaClient, ScheduledReport
-from send_reports.senders.sender import SendingInfo, SentStatus
+from send_reports.kardia_clients.kardia_client import KardiaClient
+from send_reports.models import ScheduledReport, ScheduledReportParam, SendingInfo, SentStatus
 from requests.models import Response
 from typing import Callable, Dict, List
 
@@ -33,13 +33,18 @@ class RestAPIKardiaClient(KardiaClient):
         self.kardia.report.setParams(res_attrs="basic")
         paramsRequest = partial(self.kardia.report.getSchedReportParams, schedReportId)
         paramsJson = self._make_api_request(paramsRequest)
-        for paramName, paramInfo in paramsJson.items():
-            if paramName.startswith("@id"):
+        for paramId, paramInfo in paramsJson.items():
+            if paramId.startswith("@id"):
                 continue
             # Don't include null parameters
             if paramInfo["param_value"] is None:
                 continue
-            params[paramInfo["param_name"]] = paramInfo["param_value"]
+            # Centrallix JSON just uses 0 for false, 1 for true
+            pass_to_report = paramInfo["pass_to_report"] != 0
+            pass_to_template = paramInfo["pass_to_template"] != 0
+            param = ScheduledReportParam(paramInfo["param_value"], pass_to_report, pass_to_template)
+
+            params[paramInfo["param_name"]] = param
         return params
 
 
@@ -115,28 +120,34 @@ class RestAPIKardiaClient(KardiaClient):
         return filename
 
 
-    def generate_report(self, report_file, params, generated_file_dir):
-        filename = self._generate_report_filename(report_file, params)
+    def generate_report(self, scheduled_report, generated_file_dir):
+        report_params = {
+            param_name: param.value 
+            for param_name, param in scheduled_report.params.items() 
+            if param.pass_to_report
+        }
+        filename = self._generate_report_filename(scheduled_report.report_file, report_params)
         file_path = f'{generated_file_dir}/{filename}'
 
         # Not using kardia_api for this, since it's not really set up for getting arbitrary .rpts and a manual request
         # is pretty simple
-        report_url = f'{self.kardia_url}/modules/{report_file}'
-        response = requests.get(report_url, auth=self.auth, params=params)
+        report_url = f'{self.kardia_url}/modules/{scheduled_report.report_file}'
+        response = requests.get(report_url, auth=self.auth, params=report_params)
         with open(file_path, "wb") as file:
             file.write(response.content)
 
         return file_path
 
     
-    def update_scheduled_report_status(self, sched_report_id: str, sending_info: SendingInfo, report_path: str):
+    def update_scheduled_report_status(self, scheduled_report, sending_info, report_path):
         sent_status = SchedStatusTypes(sending_info.sent_status.value)
         report_status = SchedReportStatus(
             sent_status,
             sending_info.error_message,
             sending_info.time_sent,
             report_path)
-        updateRequest = partial(self.kardia.report.updateSchedReportStatus, sched_report_id, report_status)
+        updateRequest = partial(self.kardia.report.updateSchedReportStatus, scheduled_report.sched_report_id,
+            report_status)
         self._make_api_request(updateRequest)
 
 
