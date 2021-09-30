@@ -41,7 +41,9 @@ api_report "system/querytree"
                     {
                         sql = " select
                         param_name = :gp:r_param_name,
-                        param_value = isnull(:grp:r_param_value, isnull(:gsp:r_param_value, :gp:r_param_default))
+                        param_value = isnull(:grp:r_param_value, isnull(:gsp:r_param_value, :gp:r_param_default)),
+                        pass_to_report = :gp:r_pass_to_report,
+                        pass_to_template = :gp:r_pass_to_template
                         from
                         identity /apps/kardia/data/Kardia_DB/r_group_param/rows gp,
                         /apps/kardia/data/Kardia_DB/r_group_report_param/rows grp,
