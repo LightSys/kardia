@@ -1,3 +1,4 @@
+import mimetypes
 import re
 import requests
 from functools import partial
@@ -108,15 +109,28 @@ class RestAPIKardiaClient(KardiaClient):
         self._make_api_request(update_request)
         self.batch_sent_by_already_updated[sched_batch_id] = True
 
+    
+    def _get_report_filename(self, response: Response, scheduled_report: ScheduledReport, params: Dict[str, str]):
+        # First try to get Content-Disposition filename from response header
+        content_disposition = response.headers["Content-Disposition"]
+        filename_match = re.search(r'filename="(.+?)"', content_disposition)
+        if filename_match is not None:
+            return filename_match.group(1)
 
-    def _generate_report_filename(self, report_file: str, params: Dict[str, str]) -> str:
+        # If one isn't found, generate a filename from params
         # Prefix with report path minus / and .rpt
-        filename = report_file.replace("/", "_").replace(".rpt", "")
+        filename = scheduled_report.report_file.replace("/", "_").replace(".rpt", "")
         for key, value in params.items():
             filename += f'_{key}_{value}'
         # Strip out any non-alphanumeric characters
         filename = re.sub(r'[^\w\s]', '', filename)
-        filename += ".pdf"
+        # Try to guess the correct extension based on the response, but if there isn't one, default to pdf
+        extension = ".pdf"
+        if response.headers["Content-Type"] is not None:
+            guessed_extension = mimetypes.guess_extension(response.headers["Content-Type"])
+            if guessed_extension is not None:
+                extension = guessed_extension
+        filename += extension
         return filename
 
 
@@ -126,13 +140,15 @@ class RestAPIKardiaClient(KardiaClient):
             for param_name, param in scheduled_report.params.items() 
             if param.pass_to_report
         }
-        filename = self._generate_report_filename(scheduled_report.report_file, report_params)
-        file_path = f'{generated_file_dir}/{filename}'
 
         # Not using kardia_api for this, since it's not really set up for getting arbitrary .rpts and a manual request
         # is pretty simple
         report_url = f'{self.kardia_url}/modules/{scheduled_report.report_file}'
         response = requests.get(report_url, auth=self.auth, params=report_params)
+
+        filename = self._get_report_filename(response, scheduled_report, report_params)
+        file_path = f'{generated_file_dir}/{filename}'
+
         with open(file_path, "wb") as file:
             file.write(response.content)
 
