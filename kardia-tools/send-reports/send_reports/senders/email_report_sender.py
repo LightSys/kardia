@@ -1,5 +1,6 @@
 import email
 import email.policy
+import mimetypes
 import os
 import smtplib
 from datetime import datetime
@@ -42,8 +43,11 @@ class EmailReportSender(ReportSender):
         msg["Content-Type"] = 'text/plain; charset="utf-8"'
         msg["Content-Transfer-Encoding"] = "7bit"
         (_, filename) = os.path.split(report_path)
+        # Try to guess the report file's MIME type, but default to PDF
+        report_type = mimetypes.guess_type(filename)[0] or "application/pdf"
+        maintype, subtype = report_type.split("/"))
         with open(report_path, 'rb') as fp:
-            msg.add_attachment(fp.read(), maintype="application", subtype="pdf", filename=filename)
+            msg.add_attachment(fp.read(), maintype=maintype, subtype=subtype, filename=filename)
 
         try:
             smtp = smtplib.SMTP(**self.smtp_params)
