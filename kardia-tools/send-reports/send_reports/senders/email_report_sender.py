@@ -45,7 +45,7 @@ class EmailReportSender(ReportSender):
         (_, filename) = os.path.split(report_path)
         # Try to guess the report file's MIME type, but default to PDF
         report_type = mimetypes.guess_type(filename)[0] or "application/pdf"
-        maintype, subtype = report_type.split("/"))
+        maintype, subtype = report_type.split("/")
         with open(report_path, 'rb') as fp:
             msg.add_attachment(fp.read(), maintype=maintype, subtype=subtype, filename=filename)
 
