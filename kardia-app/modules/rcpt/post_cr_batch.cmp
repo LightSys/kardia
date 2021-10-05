@@ -507,7 +507,6 @@ post_cr_batch "widget/component-decl"
 		SELECT
 			:config:admin_exp_class = isnull( (select :a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:a_ledger_number and :a:a_account_code = :config:admin_exp), '52'),
 			:config:admin_rev_class = isnull( (select :a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:a_ledger_number and :a:a_account_code = :config:admin_rev), '42'),
-			:config:cash_class = isnull( (select :a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:a_ledger_number and :a:a_account_code = :parameters:a_cash_account), '10'),
 			:config:ifa_class = isnull( (select :a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:a_ledger_number and :a:a_account_code = :config:ifa_acct), '19')
 		;
 	
