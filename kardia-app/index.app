@@ -278,7 +278,7 @@ index "widget/page"
 
 		action_bar_label_nonpriv "widget/label"
 		    {
-		    require_endorsement="kardia:sys_admin";
+		    require_endorsements="kardia:sys_admin";
 		    endorsement_context="kardia";
 		    invert_security_check=yes;
 		    x=10; y=10;
@@ -289,7 +289,7 @@ index "widget/page"
 		    }
 		action_bar_label "widget/label"
 		    {
-		    require_endorsement="kardia:sys_admin";
+		    require_endorsements="kardia:sys_admin";
 		    endorsement_context="kardia";
 		    x=10; y=10;
 		    width=150; height=40;
