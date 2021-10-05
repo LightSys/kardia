@@ -44,7 +44,7 @@ for batch_id, batch_reports in batches.items():
     one_report_succeeded = False
     for scheduled_report in batch_reports:
         try:
-            generated_filepath = kardia_client.generate_report(scheduled_report, config["generated_pdf_path"])
+            generated_filepath = kardia_client.generate_report(scheduled_report, config["generated_report_path"])
             sending_info = report_sender.send_report(generated_filepath, scheduled_report)
             kardia_client.update_scheduled_report_status(scheduled_report, sending_info, generated_filepath)
             if sending_info.sent_status == SentStatus.SENT:

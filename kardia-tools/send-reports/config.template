@@ -2,7 +2,7 @@
 kardia_url = "http://example.com/apps/kardia"
 user = "username"
 pw = "password"
-generated_pdf_path = "/home/alphonse/tmp"
+generated_report_path = "/home/alphonse/tmp"
 
 [email]
   # You can include any parameters here that can be passed to Python's smtplib.SMTP():
