@@ -1,5 +1,5 @@
 import abc
-from send_reports.models import ScheduledReport, ScheduledReportParam, SendingInfo, SentStatus
+from send_reports.models import OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, SentStatus
 from typing import Dict, List
 
 class KardiaClient(abc.ABC):
@@ -13,12 +13,12 @@ class KardiaClient(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def generate_report(self, scheduled_report: ScheduledReport, generated_file_dir: str) -> str:
+    def generate_report(self, scheduled_report: ScheduledReport, generated_file_dir: OSMLPath) -> OSMLPath:
         pass
     
     @abc.abstractmethod
     def update_scheduled_report_status(self, scheduled_report: ScheduledReport, sending_info: SendingInfo,
-        report_path: str):
+        report_path: OSMLPath):
         pass
 
     @abc.abstractmethod

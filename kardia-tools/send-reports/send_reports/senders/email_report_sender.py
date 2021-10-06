@@ -42,11 +42,11 @@ class EmailReportSender(ReportSender):
         # These headers necessary for add_attachment to notice there's an existing email body and not just overwrite it
         msg["Content-Type"] = 'text/plain; charset="utf-8"'
         msg["Content-Transfer-Encoding"] = "7bit"
-        (_, filename) = os.path.split(report_path)
+        (_, filename) = os.path.split(report_path.get_full_path())
         # Try to guess the report file's MIME type, but default to PDF
         report_type = mimetypes.guess_type(filename)[0] or "application/pdf"
         maintype, subtype = report_type.split("/")
-        with open(report_path, 'rb') as fp:
+        with open(report_path.get_full_path(), 'rb') as fp:
             msg.add_attachment(fp.read(), maintype=maintype, subtype=subtype, filename=filename)
 
         try:

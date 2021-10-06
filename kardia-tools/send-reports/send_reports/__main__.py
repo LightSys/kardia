@@ -1,3 +1,4 @@
+import re
 import sys
 import syslog
 import toml
@@ -5,7 +6,7 @@ import traceback
 from collections import defaultdict
 from send_reports.kardia_clients.kardia_client import KardiaClient
 from send_reports.kardia_clients.rest_api_kardia_client import RestAPIKardiaClient
-from send_reports.models import ScheduledReport, SentStatus
+from send_reports.models import OSMLPath, ScheduledReport, SentStatus
 from send_reports.senders.email_report_sender import EmailReportSender
 from send_reports.senders.sender import ReportSender
 from typing import List
@@ -17,7 +18,18 @@ def _handle_error(message, should_exit):
         sys.exit(1)
 
 
-def _process_batch(batch_id: str, batch_reports: List[ScheduledReport], generated_report_path: str,
+def _get_generated_report_path(generated_report_osml_dir: str) -> OSMLPath:
+    try:
+        rootnode_config_path = "/usr/local/etc/centrallix/rootnode"
+        with open(rootnode_config_path, 'r') as fp:
+            rootnode_info = fp.read()
+            rootnode_path = re.search(r'path = "(.+?)";', rootnode_info).group(1)
+            return OSMLPath(rootnode_path, generated_report_osml_dir)
+    except Exception:
+        _handle_error(f"Error finding system path for OSML path {generated_report_osml_dir}, quitting", True)
+
+
+def _process_batch(batch_id: str, batch_reports: List[ScheduledReport], generated_report_path: OSMLPath,
     kardia_client: KardiaClient, report_sender: ReportSender):
     try:
         kardia_client.update_sent_by_for_scheduled_batch(batch_id)
@@ -44,7 +56,7 @@ def _process_batch(batch_id: str, batch_reports: List[ScheduledReport], generate
             False)
 
 
-def _process_scheduled_report(scheduled_report: ScheduledReport, generated_report_path: str,
+def _process_scheduled_report(scheduled_report: ScheduledReport, generated_report_path: OSMLPath,
     kardia_client: KardiaClient, report_sender: ReportSender) -> bool:
     try:
         generated_filepath = kardia_client.generate_report(scheduled_report, generated_report_path)
@@ -61,7 +73,7 @@ try:
     syslog.openlog(ident="kardia_python_send_reports")
     config = toml.load("config.toml")
 except Exception:
-    _handle_error("Error opening log or configuration", True)
+    _handle_error("Error opening log or configuration, quitting", True)
 
 kardia_client = None
 report_sender = None
@@ -71,11 +83,18 @@ try:
     kardia_client = RestAPIKardiaClient(config["kardia_url"], config["user"], config["pw"])
     report_sender = EmailReportSender(config["email"]["smtp"])
     scheduled_reports = kardia_client.get_scheduled_reports_to_be_sent()
+
+    # If there are no scheduled reports to be sent, just exit now
+    if not scheduled_reports:
+        sys.exit(0)
+
     batches = defaultdict(list)
     for scheduled_report in scheduled_reports:
         batches[scheduled_report.sched_batch_id].append(scheduled_report)
 except Exception:
     _handle_error("Error initializing Kardia + email clients and getting scheduled reports", True)
 
+generated_report_path = _get_generated_report_path(config["generated_report_osml_dir"])
+
 for batch_id, batch_reports in batches.items():
-    _process_batch(batch_id, batch_reports, config["generated_report_path"], kardia_client, report_sender)
+    _process_batch(batch_id, batch_reports, generated_report_path, kardia_client, report_sender)

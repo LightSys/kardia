@@ -3,6 +3,17 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict
 
+class OSMLPath:
+    def __init__(self, path_to_rootnode: str, osml_path: str):
+        self.path_to_rootnode = path_to_rootnode
+        self.osml_path = osml_path
+
+    def get_full_path(self):
+        return f'{self.path_to_rootnode}{self.osml_path}'
+
+    def __repr__(self) -> str:
+        return str(self.__dict__)
+
 class ScheduledReportParam:
     def __init__(self, value: str, pass_to_report: bool, pass_to_template: bool):
         self.value = value

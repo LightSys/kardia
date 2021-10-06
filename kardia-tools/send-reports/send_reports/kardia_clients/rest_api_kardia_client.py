@@ -5,7 +5,7 @@ from functools import partial
 from kardia_api import Kardia
 from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
 from send_reports.kardia_clients.kardia_client import KardiaClient
-from send_reports.models import ScheduledReport, ScheduledReportParam, SendingInfo, SentStatus
+from send_reports.models import OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, SentStatus
 from requests.models import Response
 from typing import Callable, Dict, List
 
@@ -147,9 +147,9 @@ class RestAPIKardiaClient(KardiaClient):
         response = requests.get(report_url, auth=self.auth, params=report_params)
 
         filename = self._get_report_filename(response, scheduled_report, report_params)
-        file_path = f'{generated_file_dir}/{filename}'
+        file_path = OSMLPath(generated_file_dir.path_to_rootnode, f'{generated_file_dir.osml_path}/{filename}')
 
-        with open(file_path, "wb") as file:
+        with open(file_path.get_full_path(), "wb") as file:
             file.write(response.content)
 
         return file_path
@@ -161,7 +161,7 @@ class RestAPIKardiaClient(KardiaClient):
             sent_status,
             sending_info.error_message,
             sending_info.time_sent,
-            report_path)
+            report_path.osml_path)
         updateRequest = partial(self.kardia.report.updateSchedReportStatus, scheduled_report.sched_report_id,
             report_status)
         self._make_api_request(updateRequest)
