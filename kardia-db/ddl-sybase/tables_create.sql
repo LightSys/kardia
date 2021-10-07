@@ -2014,6 +2014,7 @@ create table r_group_sched_report (
         r_group_sched_id                      int  not null,           /* ID of the scheduled sending --  */
         p_recipient_partner_key               char(10)  not null,      /* Recipient of the report --  */
         r_report_id                           int  not null,           /* ID of the report (a person can receive more than one report of a given type/group, e.g. with different parameters) --  */
+        r_group_sched_address                 varchar(80)  null,       /* The address (e.g. email) that this report was actually sent to, or attempted to be sent to. --  */
         r_group_sched_status                  char(1)  not null,       /* N = not sent, S = sent, T = temporary error / will be retried, I = invalid email address error, F = other error / failure --  */
         r_group_sched_error                   varchar(900)  null,      /* Textual error message from email sending facility --  */
         r_group_sched_sent_date               datetime  null,          /* Date/time that this report was actually sent --  */
@@ -2036,6 +2037,7 @@ create table r_group (
         r_group_description                   varchar(255)  null,      /* description of the report group --  */
         r_group_module                        varchar(20)  not null,   /* directory name of the module containing the report to run (e.g., 'base', 'rcpt', 'disb', etc.) --  */
         r_group_file                          varchar(255)  not null,  /* file name of the .rpt file in the above module. --  */
+        r_group_template_file                 varchar(255)  null,      /* file name of a mail merge / template document (txt file) to be used --  */
         r_is_active                           bit,                     /* Whether or not the group is 'active'. Kardia may come with many preconfigured report groups that are not activated by the user yet. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2075,7 +2077,10 @@ create table r_group_param (
         r_param_description                   varchar(255)  null,      /* description of the report parameter --  */
         r_is_group_param                      bit,                     /* whether this parameter can be supplied by the user running the report group --  */
         r_is_report_param                     bit,                     /* whether this parameter can be supplied by individual reports in the group --  */
+        r_is_sched_param                      bit,                     /* whether this parameter can be supplied by the scheduled report run --  */
         r_is_required                         bit,                     /* whether this parameter MUST be supplied --  */
+        r_pass_to_report                      bit,                     /* whether this parameter will be passed to the .rpt object --  */
+        r_pass_to_template                    bit,                     /* whether this parameter can be used for mail merge / template substitution --  */
         r_param_cmp_module                    varchar(64)  null,       /* component module (directory name) used for getting user input on this parameter. --  */
         r_param_cmp_file                      varchar(256)  null,      /* component file (.cmp) used for getting user input on this parameter. --  */
         r_param_default                       varchar(1536)  null,     /* default value for the parameter (in string format). --  */

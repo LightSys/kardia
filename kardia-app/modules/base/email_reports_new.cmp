@@ -1,0 +1,314 @@
+$Version=2$
+email_reports "widget/component-decl"
+    {
+    width = 980;
+    height = 680;
+
+    emailreports_hbox "widget/hbox"
+	{
+	x=0; y=0; width=980; height=680;
+	spacing=10;
+
+	reportlist_pane "widget/pane"
+	    {
+	    width=350;
+
+	    reportlist_vbox "widget/vbox"
+		{
+		x=5; y=5;
+		width=340;
+		height=672;
+		spacing=10;
+
+		rptslbl "widget/component"
+		    {
+		    path="/apps/kardia/modules/base/section_label.cmp";
+		    height=26;
+		    fl_height=0;
+		    text = runclient("Reports/Statements:");
+		    }
+
+		rptsosrc "widget/osrc"
+		    {
+		    sql = " declare collection staff scope application;
+
+			    delete from collection staff ;
+			    insert collection staff select :p_partner_key, :p_is_staff from /apps/kardia/data/Kardia_DB/p_staff/rows ;
+		    
+			    select
+				:r:r_group_name,
+				:r:r_group_description,
+				:r:r_group_module,
+				:r:r_group_file,
+				:r:r_group_template_file,
+				:r:r_is_active,
+				:r:s_date_created,
+				:r:s_created_by,
+				:r:s_date_modified,
+				:r:s_modified_by,
+				cnt = (select count(1) from /apps/kardia/data/Kardia_DB/r_group_report/rows rr, collection staff s where :rr:r_group_name = :r:r_group_name and :rr:r_is_active = 1 and :s:p_partner_key = :rr:p_recipient_partner_key and :s:p_is_staff = 1),
+				rcnt = (select count(count(1)) from /apps/kardia/data/Kardia_DB/r_group_report/rows rr, collection staff s where :rr:r_group_name = :r:r_group_name and :rr:r_is_active = 1 and :s:p_partner_key = :rr:p_recipient_partner_key and :s:p_is_staff = 1 group by :rr:p_recipient_partner_key),
+				filecontent = :f:objcontent
+			    from
+				/apps/kardia/data/Kardia_DB/r_group/rows r,
+				object expression (:r:r_group_template_file) f
+			    ";
+		    replicasize=25;
+		    readahead=25;
+
+		    rptstable "widget/table"
+			{
+			height=300;
+
+			t_rptname "widget/table-column" { title="Report"; fieldname="r_group_name"; width=122; style=bold; caption_fieldname="r_group_description"; wrap=yes; }
+			t_rptcnt "widget/table-column" { title="#"; value=runclient('' + :rptsosrc:cnt + ' reports'); width=75; style=bold; align=right; caption_value=runclient('(' + :rptsosrc:rcnt + condition(:rptsosrc:rcnt == 1, ' recipient)', ' recipients)')); caption_align=right; }
+			}
+
+		    rpteditlbl "widget/component"
+			{
+			path="/apps/kardia/modules/base/section_label.cmp";
+			height=26;
+			fl_height=0;
+			text = runclient("Information for " + :rptsosrc:r_group_name + ":");
+			}
+
+		    rpteditform "widget/form"
+			{
+			rptdesc "widget/component" { height=20; text="Description:"; ctl_type=editbox; field=r_group_description; path="/sys/cmp/smart_field.cmp"; }
+			meta "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+			}
+
+		    rptsep1 "widget/autolayoutspacer" { height=1; }
+
+		    rpttpllbl "widget/component"
+			{
+			path="/apps/kardia/modules/base/section_label.cmp";
+			height=26;
+			fl_height=0;
+			text = runclient("Template for " + :rptsosrc:r_group_name + ":");
+			}
+
+		    file_label "widget/label"
+			{
+			height=200;
+			x=5; width=330;
+			value=runclient(:rptsosrc:filecontent);
+			}
+
+		    file_editor_pane "widget/pane"
+			{
+			condition=0;
+			height=200;
+			style=flat;
+			bgcolor = null;
+			enabled=runclient(:rptsosrc:r_group_template_file is not null);
+
+			file_editor "widget/component"
+			    {
+			    x=0; y=0; 
+			    height=200; width=340;
+			    path="/apps/kardia/modules/crm/edit_file.cmp";
+			    profile_context=0;
+			    titlebar=0;
+			    }
+			}
+		    }
+		}
+	    }
+
+	reciplist_pane "widget/pane"
+	    {
+	    width=620;
+	    
+	    reciplist_vbox "widget/vbox"
+		{
+		x=5; y=5;
+		width=610;
+		height=672;
+		spacing=10;
+
+		schedslbl "widget/component"
+		    {
+		    path="/apps/kardia/modules/base/section_header.cmp";
+		    height=26;
+		    fl_height=0;
+		    text = runclient("Sendings for " + :rptsosrc:r_group_description + ":");
+		    //form=
+		    custom_new=0;
+		    allow_save=1;
+		    allow_cancel=1;
+		    allow_new=1;
+		    allow_delete=1;
+
+		    on_add "widget/connector" { event=New; target=popover_add_item; action=Open; IsModal=1; PointAt=managelbl; PointSide=runclient('top'); }
+		    }
+
+		schedsosrc "widget/osrc"
+		    {
+		    rptname "widget/parameter" { type=string; }
+		    sql = " declare collection staff scope application;
+
+			    delete from collection staff ;
+			    insert collection staff select :p_partner_key, :p_is_staff from /apps/kardia/data/Kardia_DB/p_staff/rows ;
+
+			    select
+				r_group_name = :parameters:rptname,
+				r_group_sched_id = null,
+				r_group_sched_date = null,
+				r_group_sched_status = null,
+				r_group_sched_sent_by = null,
+				s_date_created = getdate(),
+				s_created_by = user_name(),
+				s_date_modified = getdate(),
+				s_modified_by = user_name(),
+				cnt = (select count(1) from /apps/kardia/data/Kardia_DB/r_group_report/rows rr, collection staff s where :rr:r_group_name = :parameters:rptname and :rr:r_is_active = 1 and :s:p_partner_key = :rr:p_recipient_partner_key and :s:p_is_staff = 1),
+				scnt = null,
+				ecnt = null
+			    ;
+
+			    select
+				:rs:r_group_name,
+				:rs:r_group_sched_id,
+				:rs:r_group_sched_date,
+				datetxt = dateformat(:rs:r_group_sched_date, 'dd-MMM-yyyy'),
+				:rs:r_group_sched_status,
+				:rs:r_group_sched_sent_by,
+				:rs:s_date_created,
+				:rs:s_created_by,
+				:rs:s_date_modified,
+				:rs:s_modified_by,
+				cnt = (select count(1) from /apps/kardia/data/Kardia_DB/r_group_sched_report/rows rsr where :rsr:r_group_name = :rs:r_group_name),
+				scnt = (select count(1) from /apps/kardia/data/Kardia_DB/r_group_sched_report/rows rsr where :rsr:r_group_name = :rs:r_group_name and :rsr:r_group_sched_status = 'S'),
+				ecnt = (select count(1) from /apps/kardia/data/Kardia_DB/r_group_sched_report/rows rsr where :rsr:r_group_name = :rs:r_group_name and (:rsr:r_group_sched_status = 'I' or :rsr:r_group_sched_status = 'F'))
+			    from
+				/apps/kardia/data/Kardia_DB/r_group_sched/rows rs
+			    where
+				:rs:r_group_name = :parameters:rptname
+			    order by
+				:rs:r_group_sched_date desc
+			    ";
+
+		    scheds_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=rptsosrc;
+			key_1=rptname;
+			target_key_1=r_group_name;
+			}
+
+		    schedstable "widget/table"
+			{
+			height=200;
+
+			t_schdate "widget/table-column" { title="Date"; value=runclient(isnull(:schedsosrc:datetxt, 'Current Recipients')); width=425; style=bold; }
+			t_schcnt "widget/table-column" { title="#"; fieldname="cnt"; width=75; style=bold; align=right; }
+			}
+		    }
+
+		recipslbl "widget/component"
+		    {
+		    path="/apps/kardia/modules/base/section_label.cmp";
+		    height=26;
+		    fl_height=0;
+		    text = runclient("Recipients for " + :rptsosrc:r_group_description + isnull(", " + :schedsosrc:datetxt + " sending", "") + ":");
+		    }
+
+		recipsosrc "widget/osrc"
+		    {
+		    reciprptname "widget/parameter" { type=string; }
+		    reciprptsid "widget/parameter" { type=integer; }
+		    recipquery "widget/parameter" { type=string; style=strnull; }
+		    sql = " exec /apps/kardia/modules/base/reportlist.qy
+				reciprptname = :parameters:reciprptname,
+				reciprptsid = :parameters:reciprptsid,
+				recipquery = :parameters:recipquery
+			    ";
+		    replicasize=200;
+		    readahead=200;
+
+		    recips_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=schedsosrc;
+			key_1=reciprptname;
+			target_key_1=r_group_name;
+			key_2=reciprptsid;
+			target_key_2=r_group_sched_id;
+			}
+
+		    recipstable "widget/table"
+			{
+			height=354;
+			rowcache_size=200;
+
+			t_pkey "widget/table-column" { title="Partner"; fieldname=p_partner_key; width=50; }
+			t_pname "widget/table-column" { title="Name"; fieldname=disp_name; width=190; }
+			t_email "widget/table-column" { title="Email"; fieldname=email; width=200;  }
+			t_params "widget/table-column" { title="Params"; fieldname=params; width=120; }
+			}
+
+		    ctls_hbox "widget/hbox"
+			{
+			x=2;
+			height=22; spacing=10;
+
+			search_box "widget/component"
+			    {
+			    width=300;
+			    path="/apps/kardia/modules/base/field_search.cmp";
+			    empty_description="search for recipients";
+
+			    do_search "widget/connector"
+				{
+				event=Search;
+				target=recipsosrc;
+				action=QueryParam;
+				recipquery=runclient(lower(:query));
+				}
+			    }
+
+			csvlist "widget/textbutton"
+			    {
+			    height=22; width=145;
+			    text = "CSV List";
+
+			    csv_cn "widget/connector"
+				{
+				event=Click;
+				target=email_reports;
+				action=Launch;
+				Source = runclient("/apps/kardia/modules/base/reportlist.rpt");
+				Width=800;
+				Height=600;
+				document_format=runclient("text/csv");
+				group_name=runclient(:schedsosrc:r_group_name);
+				sched_id=runclient(isnull(:schedsosrc:r_group_sched_id, ''));
+				querytxt=runclient(isnull(:recipquery:value, ''));
+				}
+			    }
+
+			pdflist "widget/textbutton"
+			    {
+			    height=22; width=145;
+			    text = "PDF List";
+
+			    pdf_cn "widget/connector"
+				{
+				event=Click;
+				target=email_reports;
+				action=Launch;
+				Source = runclient("/apps/kardia/modules/base/reportlist.rpt");
+				Width=800;
+				Height=600;
+				document_format=runclient("application/pdf");
+				group_name=runclient(:schedsosrc:r_group_name);
+				sched_id=runclient(isnull(:schedsosrc:r_group_sched_id, ''));
+				querytxt=runclient(isnull(:recipquery:value, ''));
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
