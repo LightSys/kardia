@@ -62,7 +62,11 @@ class RestAPIKardiaClient(KardiaClient):
         template_url = f'{self.kardia_url}/files/{template_file}'
         response = requests.get(template_url, auth=self.auth)
         # Need to strip out HTML wrapping the response
-        template = response.text.removeprefix("<HTML><PRE>").removesuffix("</HTML></PRE>")
+        template = response.text
+        if template.startswith("<HTML><PRE>"):
+            template = template[11:]
+        if template.endswith("</HTML></PRE>"):
+            template = template[:-13]
         return template
 
     
